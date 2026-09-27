@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
 import Mettapedia.GraphTheory.FourColor.ShortPathReconstruction
+import Mettapedia.GraphTheory.FourColor.ShortPathKempeLifting
 
 /-!
 # A facial rollback crosses a trapped Kempe family
@@ -218,5 +219,69 @@ theorem reconstruction_geometry :
 theorem completion_on_rotation : Proper rotation.endpoints Finset.univ assembled := by
   rw [show rotation.endpoints = inc from funext endpoints_eq]
   exact assembled_proper
+
+private theorem pair_missing (a b : Fin 3) (hab : a ≠ b) :
+    ∃ m : Fin 3, ∀ q, q ∉ ({a,b} : Finset (Fin 3)) ↔ q = m := by
+  have hcard : (({a,b} : Finset (Fin 3))ᶜ).card = 1 := by
+    rw [Finset.card_compl]
+    simp [hab]
+  obtain ⟨m, hm, unique⟩ : ∃! m : Fin 3, m ∉ ({a,b} : Finset (Fin 3)) := by
+    simpa only [Finset.mem_compl] using Finset.card_eq_one_iff_existsUnique.mp hcard
+  exact ⟨m, fun q => ⟨unique q, fun h => h.symm ▸ hm⟩⟩
+
+/-- The endpoint hypothesis of the lifting theorem follows from the two
+actual retained edges at each end, for every proper smaller colouring. -/
+theorem all_endpoint_colours (C : (IncidenceKempeSwitch.graph inc core).Coloring (Fin 3)) :
+    ∃ m n : Fin 3,
+      (∀ q, q ∉ profile inc core C erasedPath.first ↔ q = m) ∧
+      (∀ q, q ∉ profile inc core C erasedPath.last ↔ q = n) := by
+  have firstProfile : profile inc core C erasedPath.first = {C 0, C 10} := by
+    change (core.filter fun e => (4 : Vertex) ∈ inc e).image C = _
+    rw [show core.filter (fun e => (4 : Vertex) ∈ inc e) = {0,10} by decide +kernel]
+    simp
+  have lastProfile : profile inc core C erasedPath.last = {C 2, C 16} := by
+    change (core.filter fun e => (8 : Vertex) ∈ inc e).image C = _
+    rw [show core.filter (fun e => (8 : Vertex) ∈ inc e) = {2,16} by decide +kernel]
+    simp
+  obtain ⟨m, hm⟩ := pair_missing (C 0) (C 10)
+    ((proper inc core C) 0 (by decide) 10 (by decide) (by decide) ⟨4, by decide⟩)
+  obtain ⟨n, hn⟩ := pair_missing (C 2) (C 16)
+    ((proper inc core C) 2 (by decide) 16 (by decide) (by decide) ⟨8, by decide⟩)
+  exact ⟨m, n, firstProfile ▸ hm, lastProfile ▸ hn⟩
+
+def initialImage : ShortPathKempeLifting.ImageColouring
+    (inc := inc) (S := ({11,15} : Finset Edge)) core :=
+  ⟨restricted, colouring inc (core ∪ {11,15}) base
+    (by rw [core_union_path]; exact proper inc old base), fun _ _ => rfl⟩
+
+def finalImage : ShortPathKempeLifting.ImageColouring
+    (inc := inc) (S := ({11,15} : Finset Edge)) core :=
+  ⟨afterSecond, colouring inc (core ∪ {11,15}) assembled
+    (by rw [core_union_path]; exact proper_of_subset (Finset.subset_univ _) assembled_proper),
+    assembled_agrees_core⟩
+
+/-- Every smaller path between these endpoints must leave the image of
+reconstruction, not only the displayed two-step repair. -/
+theorem no_reconstructible_route :
+    ¬ Nonempty (Route (ShortPathKempeLifting.ImageStep core) initialImage finalImage) := by
+  rintro ⟨history⟩
+  let initialOld := colouring inc (core ∪ {11,15}) base
+    (by rw [core_union_path]; exact proper inc old base)
+  obtain h := ShortPathKempeLifting.image_route_lifts erasedPath core (by decide)
+    (by decide) all_endpoint_colours history initialOld (fun _ _ => rfl)
+  change ∃ next : (graph inc (core ∪ {11,15})).Coloring (Fin 3),
+    Nonempty (History initialOld next) ∧ ∀ x ∈ core, next x = afterSecond x at h
+  have transfer (B : Finset Edge) (hB : B = old) (hb : Proper inc B base)
+      (h : ∃ next : (graph inc B).Coloring (Fin 3),
+        Nonempty (History (colouring inc B base hb) next) ∧
+          ∀ x ∈ core, next x = afterSecond x) : False := by
+    subst B
+    have hbase : colouring inc old base hb = base := by
+      apply DFunLike.ext
+      intro x
+      rfl
+    apply history_does_not_lift
+    simpa only [hbase] using h
+  exact transfer _ core_union_path _ h
 
 end Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair

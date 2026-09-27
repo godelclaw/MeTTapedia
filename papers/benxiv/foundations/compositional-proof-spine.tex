@@ -19052,3 +19052,55 @@ This proves a successful revised construction for the checked witness.
 It supplies neither universal existence of a successful one-face rollback
 nor a progress argument for arbitrary repeated rollback. Those are
 separate geometric questions, not consequences of witness composition.
+
+\subsection{Reconstructible short-path histories lift}
+
+The distinction between reconstructing an endpoint and reconstructing
+every intermediate state admits a general theorem. Let $P$ be a literal
+simple path of one or two edges, disjoint from a retained edge set $A$.
+Suppose the retained profiles at both attachment vertices each omit a
+unique colour. If two smaller colourings differ by one physical Kempe
+switch, and both have proper reconstructions on $A\cup P$, the two old
+reconstructions are connected by a finite Kempe history. Values on unused
+edge identifiers can be held fixed.
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortPathKempeLifting.step_lifts}
+
+The reason uses actual components. At every retained edge, the smaller
+switch applies either the identity or a fixed transposition. The forced
+missing colours impose the same alternatives at the end edges of $P$;
+these are all its edges. For any two proper colourings of any finite
+graph related pointwise in this way, a changed vertex forces every
+active neighbour to change. The changed set therefore consists of whole
+bichromatic components. Switching a component rooted at a disagreement
+strictly decreases the number of disagreements, constructing the finite
+history. This argument has no planarity or palette-size restriction.
+\Sverified{SimpleGraph.Coloring.changed_neighbour_of_pointwise_swap}
+\Sverified{SimpleGraph.Coloring.component_changed_of_pointwise_swap}
+\Sverified{SimpleGraph.Coloring.mem_kempeClosure_of_pointwise_swap}
+The existing proof-relevant GSLT histories and the existing Kempe closure
+are proved to express the same reachability assertion.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeChainCertificate.nonempty_history_iff}
+
+Restrict the smaller state space to those colourings admitting proper
+reconstruction, retaining the usual physical switches between them.
+Every GSLT route in this image yields old Kempe reachability. One smaller
+step may be represented by several old switches. The theorem does not
+assume that the image is connected or that arbitrary smaller colourings
+lie in it.
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortPathKempeLifting.image_route_lifts}
+For an actual short facial attachment in the source spherical class, the
+already proved geometry constructs the exposed path and both missing
+endpoint colours. Hence those profile hypotheses are discharged for
+every proper smaller colouring.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceKempeRepair.reconstructible_route_lifts}
+
+In the explicit rollback witness, the initial and final smaller
+colourings both belong to the reconstruction image, but there is no
+GSLT route between them within that image. Such a route would lift and
+contradict the old closed-family obstruction. Thus leaving the image
+is necessary for any smaller repair path between these endpoints, not
+merely a feature of the displayed two-step path.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.all_endpoint_colours}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.no_reconstructible_route}
+Universal existence of a successful rollback, a route which exits and
+returns to the image, and a geometric progress argument remain open.

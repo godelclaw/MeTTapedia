@@ -171,6 +171,18 @@ at any colouring restricting to the final smaller witness. Thus uniqueness
 of colouring reconstruction does not imply lifting of recolouring histories.
 This certificate supplies one successful revised construction; universal
 availability of a successful rollback and a general bound remain unproved.
+For a removed path of one or two edges, a smaller physical switch whose
+endpoints both reconstruct now lifts to a finite old Kempe history. Forced
+endpoint colours make the change a pointwise partial transposition; a
+generic theorem for finite graphs decomposes every proper such change into
+actual components. Consequently every GSLT route within the image of
+reconstruction gives old reachability. The actual spherical face theorem
+supplies all endpoint-profile hypotheses. Applied to the trapped witness,
+there is no route between its initial and final smaller colourings that
+stays in that image. Thus leaving reconstructibility is necessary for
+every escape between those endpoints, not only the exhibited two switches.
+This identifies a necessary feature of repair without supplying such an
+escape for arbitrary maps.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/

@@ -41,6 +41,19 @@ theorem Path.end_colours_of_extension
     rw [p.profile_last] at h
     exact Finset.disjoint_singleton_right.mp h
 
+omit [DecidableEq E] in
+/-- A path of at most two edges consists entirely of its end edges. -/
+theorem Path.edge_eq_first_or_last (hshort : p.length ≤ 2) {x : E} (hx : x ∈ S) :
+    x = p.firstEdge ∨ x = p.lastEdge := by
+  obtain ⟨i, hi⟩ := p.edge.surjective ⟨x, hx⟩
+  have hix : (p.edge i).val = x := congrArg Subtype.val hi
+  by_cases hi0 : i.val = 0
+  · have hiz : i = ⟨0, p.positive⟩ := Fin.ext hi0
+    exact Or.inl (hix.symm.trans (congrArg (fun j => (p.edge j).val) hiz))
+  · have hil : i = ⟨p.length - 1, by have := p.positive; omega⟩ :=
+      Fin.ext (by change i.val = p.length - 1; have := i.isLt; omega)
+    exact Or.inr (hix.symm.trans (congrArg (fun j => (p.edge j).val) hil))
+
 /-- For a one- or two-edge exposed path, there is at most one extension
 on the retained union. Values outside the union remain irrelevant. -/
 theorem Path.extension_unique_of_length_le_two (hshort : p.length ≤ 2)
@@ -55,15 +68,8 @@ theorem Path.extension_unique_of_length_le_two (hshort : p.length ≤ 2)
   intro x hx
   rcases Finset.mem_union.mp hx with hx | hx
   · exact (hda x hx).trans (hea x hx).symm
-  · obtain ⟨i, hi⟩ := p.edge.surjective ⟨x, hx⟩
-    have hix : (p.edge i).val = x := congrArg Subtype.val hi
-    by_cases hi0 : i.val = 0
-    · have hiz : i = ⟨0, p.positive⟩ := Fin.ext hi0
-      rw [← hix, hiz]
-      exact hendsD.1.trans hendsE.1.symm
-    · have hil : i = ⟨p.length - 1, by have := p.positive; omega⟩ :=
-        Fin.ext (by change i.val = p.length - 1; have := i.isLt; omega)
-      rw [← hix, hil]
-      exact hendsD.2.trans hendsE.2.symm
+  · rcases p.edge_eq_first_or_last hshort hx with rfl | rfl
+    · exact hendsD.1.trans hendsE.1.symm
+    · exact hendsD.2.trans hendsE.2.symm
 
 end Mettapedia.GraphTheory.FourColor.OrderedEdgePath

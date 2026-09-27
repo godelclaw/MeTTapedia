@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.FacePathExtension
 import Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch
+import Mettapedia.GraphTheory.FourColor.ShortPathKempeLifting
 
 /-!
 # Component-switch repair of short facial steps
@@ -173,6 +174,32 @@ theorem exists_component_test (hfail : ¬ Extends data S R C) :
     refine ⟨p, hlength, m, s, hsm.symm, K, hK,
       two_edge_switch_iff data e oR ambient hR arc C m s K hsm.symm hm hn hlen hK, ?_⟩
     exact fun h => exists_walk_of_touches C m s K hK h
+
+include ambient in
+/-- On an actual short facial attachment, every smaller path which stays
+reconstructible lifts. The sphere geometry supplies the endpoint profiles;
+the union below is the target region by `FaceColourTransfer.shores_union`.
+The lifted path may use several physical switches per smaller switch. -/
+theorem reconstructible_route_lifts (hshort : (exposedEdges data e).card ≤ 2)
+    {C D : ShortPathKempeLifting.ImageColouring
+      (inc := data.toRotationSystem.endpoints) (S := exposedEdges data e)
+      (edges data.toRotationSystem S.faces)}
+    (history : Mettapedia.GSLT.Ultrainfinite.Route
+      (ShortPathKempeLifting.ImageStep (edges data.toRotationSystem S.faces)) C D)
+    (old : (IncidenceKempeSwitch.graph data.toRotationSystem.endpoints
+      (edges data.toRotationSystem S.faces ∪ exposedEdges data e)).Coloring (Fin 3))
+    (hold : ∀ x ∈ edges data.toRotationSystem S.faces, old x = C.val x) :
+    ∃ next : (IncidenceKempeSwitch.graph data.toRotationSystem.endpoints
+      (edges data.toRotationSystem S.faces ∪ exposedEdges data e)).Coloring (Fin 3),
+      Nonempty (KempeChainCertificate.History old next) ∧
+        ∀ x ∈ edges data.toRotationSystem S.faces, next x = D.val x := by
+  obtain ⟨oR, hR, _, _⟩ := Region.realizes ambient R
+  obtain ⟨arc⟩ := exists_exposed_arc data e oR ambient hR
+  apply ShortPathKempeLifting.image_route_lifts
+    (path data e oR ambient hR arc) (edges data.toRotationSystem S.faces)
+    (by rwa [path_length]) (FaceColourTransfer.shores_disjoint data e) ?_ history old hold
+  intro C
+  exact FacePathExtension.endpoint_colours data e oR ambient hR arc C (proper _ _ C)
 
 end
 end Mettapedia.GraphTheory.FourColor.FaceKempeRepair

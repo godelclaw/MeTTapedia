@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.Coloring
+import Mettapedia.GraphTheory.Kempe
 import Mettapedia.GSLT.Core.Ultrainfinite
 import Mathlib.Data.List.Chain
 
@@ -86,6 +86,28 @@ inductive Step : G.Coloring α → G.Coloring α → Type _ where
 /-- Finite physical recolouring histories use the same free route type as
 the construction language. There is no bound on their length. -/
 abbrev History (C D : G.Coloring α) := Route Step C D
+
+theorem Step.toKempeStep {C D : G.Coloring α} (step : Step C D) : G.KempeStep C D := by
+  cases step with
+  | switch a b K => exact ⟨a, b, K, rfl⟩
+
+/-- The proof-relevant histories present the existing Kempe closure;
+forgetting their step witnesses changes no reachability assertion. -/
+theorem nonempty_history_iff {C D : G.Coloring α} :
+    Nonempty (History C D) ↔ D ∈ G.KempeClosure C := by
+  constructor
+  · rintro ⟨p⟩
+    induction p with
+    | refl => exact .refl
+    | cons step rest ih =>
+      exact (Relation.ReflTransGen.single step.toKempeStep).trans ih
+  · intro h
+    induction h with
+    | refl => exact ⟨.refl _⟩
+    | tail _ step ih =>
+      obtain ⟨p⟩ := ih
+      obtain ⟨a, b, K, rfl⟩ := step
+      exact ⟨p.append (.cons (.switch _ a b K) (.refl _))⟩
 
 /-- A predicate closed under physical switches holds along every history. -/
 theorem history_preserves (P : G.Coloring α → Prop)
