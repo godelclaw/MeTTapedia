@@ -39,8 +39,10 @@ not exclude an allowance depending on the full datum or a separately
 chosen cutoff. A further positive estimate absorbs stretching pairs whose
 parents are sufficiently far above their output, uniformly over all
 occupied shells. The corresponding modified caloric balance retains the
-complete Navier--Stokes source. Its remaining signed history bound is
-unproved; no arbitrary-data unforced regularity estimate is obtained.
+complete Navier--Stokes source. A second estimate absorbs sufficiently
+separated parents inside the nonlinear derivative slot. The remaining
+signed history bound is unproved; no arbitrary-data unforced regularity
+estimate is obtained.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -1068,6 +1070,102 @@ does not remove all positive renewal or make a sign claim about the
 remaining term. It pays one frequency sector uniformly, leaving a
 smaller physical-time problem.
 
+\subsection{Separated parents inside the nonlinear direction}
+
+The two parents inside the $N(v)$ slot admit another uniform payment.
+Expand $\mathcal T_{\rm core}$ in its ordered quartic derivative slots
+and then expand the actual quadratic source in the differentiated slot.
+There are five original velocity inputs. For each such term let
+$\zeta_1,\zeta_2,\zeta_3$ be the three undifferentiated input frequencies,
+and let $p,q$ be the two parents inside $N(v)$, with output $\xi=p+q$.
+Frequency conservation expresses $\xi$ as a signed sum of the three
+$\zeta_i$, so $|\xi|\leq\sum_i|\zeta_i|$. Write
+\[
+ m=\left\lfloor\log_2\max_i|\zeta_i|\right\rfloor,\qquad
+ n=\left\lfloor\log_2\max\{|p|,|q|\}\right\rfloor,\qquad
+ b_m=\lceil11m/8\rceil.
+\]
+Here $m\geq J\geq0$, since all original inputs are above $K$.
+Fix an integer $\rho\geq4$ and let $\mathcal T_{\rm inner}$ be the
+part of this expansion with $n\geq b_m+\rho$, retaining all the
+previous masks. This is a partition of the quintic return, not a
+replacement for the equation or the differentiated capacity.
+
+\begin{proposition}\label{prop:innerparents}
+Uniformly in the fixed cutoffs and outer separation,
+\begin{equation}\label{eq:innerparents}
+ |\mathcal T_{\rm inner}(u)|
+ \leq \frac{20\,2^{-4\rho}}{\nu^2}E^{3/2}D.
+\end{equation}
+Thus, if $E\leq M$, for any $\zeta>0$ choosing $\rho$ from
+$20\,2^{-4\rho}M^{3/2}\leq\zeta\nu^3$ pays this entire term by
+$\zeta\nu D$.
+\end{proposition}
+\begin{proof}
+Put $R_m=2^{m+1}$. The three undifferentiated frequencies lie in
+the ball of radius $R_m$, and $|\xi|<3R_m$. Since $n\geq m+4$,
+both inner parents lie in
+$B_n=\{2^{n-1}\leq|\xi'|<2^{n+1}\}$:
+their difference in magnitude is at most
+$|\xi|<6\,2^m\leq(3/8)2^n$. Define
+$E_n=\int_{B_n}|\widehat v|^2$.
+The divergence form of $N$ bounds its part with maximal parent shell
+$n$ by
+\[
+ |\widehat{N_n(v)}(\xi)|
+ \leq(2\pi)^{-3/2}|\xi|E_n.
+\]
+Each ordered quartic heat kernel is bounded by $1/(2\nu^2)$
+as in~\eqref{eq:quartickernel}; the previous masks only decrease its
+absolute majorant. Summing the four derivative slots, then integrating
+the three undifferentiated Fourier magnitudes, bounds the contribution
+at $(m,n)$ by
+\begin{align*}
+ \frac2{\nu^2}(3R_m)E_n
+ \left((2\pi)^{-3/2}\int_{|\xi'|<R_m}
+                                  |\widehat v(\xi')|\dd\xi'\right)^3
+ &\leq \frac{6c_1^3}{\nu^2}R_m^{11/2}E^{3/2}E_n\\
+ &\leq \frac1{\nu^2}2^{11m/2}E^{3/2}E_n,
+\end{align*}
+where $c_1=(6\pi^2)^{-1/2}$ and
+$6c_1^3\,2^{11/2}<1$. The three convolution normalization factors
+are included. The $N$ slot is heat-evolved at frequency $\xi$:
+one must not replace its heat rate $|\xi|^2$ by $|p|^2+|q|^2$.
+
+Set $e_n=2^{4n}E_n$. Since $b_m$ strictly increases,
+\[
+ \sum_{\{m:\ b_m+\rho\leq n\}}
+       2^{11m/2-4n}
+ \leq\sum_{\{m:\ b_m+\rho\leq n\}}2^{4b_m-4n}
+ \leq\frac{16}{15}\,2^{-4\rho}.
+\]
+Finally $\sum_n e_n\leq17D$, by the same enlarged-band overlap
+calculation as before. Summing the nonnegative majorants first over
+$m$ and then $n$ gives constant $272/15<20$ in
+\eqref{eq:innerparents}. These estimates also justify the regrouping
+of the absolutely convergent separated sector.
+\end{proof}
+
+Define the remaining return by
+$\mathcal T_{\rm rem}=\mathcal T_{\rm core}-\mathcal T_{\rm inner}$.
+It suffices in~\eqref{eq:retainedtarget} to bound $\mathcal T_{\rm rem}$
+instead, with
+$\theta<1-2\eta-\zeta$ and
+$0<\varepsilon<1-2\eta-\zeta-\theta$. The same bound for
+$\mathcal G_{\rm keep}$ then follows. The new parameter $\rho$ is
+fixed from the energy bound, viscosity and desired absorbed fraction,
+uniformly over the physical history. No sign assumption is used in
+either separated sector. This still leaves nontrivial signed renewal:
+the positive coefficient~\eqref{eq:positivechild} is unchanged after
+this second removal at $J=2$, $r=3$, $\rho=4$.
+
+This refinement constrains very unequal parent frequencies. It does
+not establish that all remaining frequencies are comparable, that a
+pancake geometry persists, or that positive renewal cannot repeat.
+The all-prefix bound for $\mathcal T_{\rm rem}$ is still an open
+estimate with full-initial-data quantifiers. It also fails on the
+forced singularity construction, for the same continuation reason.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -1101,6 +1199,17 @@ $200$, not the whole-space constant $10$: counting at most
 $125\,2^{3j}$ lattice points in $\Omega_j$ replaces
 $2\sqrt{17}$ by $20\sqrt{85}<200$ in the proof.
 The infinite-shell estimate and its whole-space use remain analytic.
+The checker \texttt{labs/inner\_caloric.py} expands all five original
+inputs and verifies that their separated and remaining parts add to
+the independently evaluated derivative. It keeps the correct heat rate
+of the nonlinear output. A family with cancelling parent frequencies
+$128$, $8192$ and $2097152$ gives the same positive separated return
+$166548224/(167049575\,\nu^2)$; reversing the velocity reverses its sign.
+The test therefore checks a nonzero payment, not just a vanishing sector.
+Its norm inequality uses a conservative periodic constant $10^6$ in
+place of the whole-space $20$. Counting a ball by $(3R_m)^3$ gives
+constant $(272/15)\,6\cdot81\sqrt3\,2^{11/2}<10^6$ in the same argument.
+The general estimate remains the analytic proof above.
 Arbitrary-data unforced regularity remains open.
 
 \begin{thebibliography}{9}

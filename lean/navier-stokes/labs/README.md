@@ -1202,6 +1202,49 @@ at `J=2,r=3`, with exactly the same coefficient. These rational checks
 are not a Lean certificate or a physical-time enclosure; the uniform
 whole-space estimate is proved analytically in the paper.
 
+### Separating the two parents inside the nonlinear direction
+
+Run `python3 -O labs/inner_caloric.py` for the next split. Expand the
+retained return in all five original inputs: three occur directly in
+the quartic derivative, and two occur inside its `N` slot. Let `m` be
+the maximal shell of the first three and `n` the maximal shell of the
+last two. For a fixed integer `rho>=4`, select
+
+```text
+n >= ceil(11m/8)+rho.
+```
+
+The whole-space analytic estimate is
+
+```text
+|T_inner| <= 20 * 2^(-4rho) * E^(3/2) * D / nu^2.
+```
+
+It pays this entire sector from a prescribed fraction of `nu D`, after
+choosing `rho` from energy and viscosity. Each of the four differentiated
+quartic kernels is bounded by `1/(2nu^2)`. The three other frequencies
+lie in a ball of radius `2^(m+1)`; Fourier `L1` bounds and divergence
+form give a factor `2^(11m/2) E^(3/2) E_n`. Summing the parent columns
+before using the fourth-order band overlap proves the bound with no
+shell-count factor. The remaining return is `T_core-T_inner`; this
+algebraic partition does not change the actual evolution or `W_keep`.
+
+The checker compares the full five-input expansion to the independently
+evaluated capacity derivative. In that derivative, `N(u)` is formed
+first and then heat-evolved at its **output** frequency. Heating its two
+parents separately would give the wrong denominator. Cancelling parents
+at frequencies `128,8192,2097152` feed the same lower mode and give the
+same positive separated return `166548224/(167049575*nu^2)`. Reversing
+the velocity reverses this quintic sign. The program also checks the
+exact separation boundary and a conservative periodic bound, with
+constant `10^6` instead of the whole-space constant `20`.
+
+The previous positive first-generated-mode coefficient survives both
+separations unchanged. This estimate pays very unequal parent scales;
+it gives neither comparability of all remaining frequencies nor control
+of their repeated positive renewal. The sufficient signed history
+bound, with full-datum allowances and fixed cutoffs, remains open.
+
 ### Kida–Pelz evolution
 
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
