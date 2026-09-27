@@ -669,6 +669,48 @@ evidence that the initial real sign does not describe the subsequent
 history. It establishes neither an infinite-time forcing tail nor control
 of an actual nonlinear remainder.
 
+### Full nonlinear viscous history
+
+`full_history.py` evolves the complete retained velocity, with both parents,
+the mean and all generated Fourier modes free to change. Its initial
+streamfunction is `exp(-r²) + ε Re((q² + q⁴(1-2r²/5)) exp(-r²) exp(2iz))`,
+where `q=x+iy`, and the initial velocity is its horizontal curl. The domain
+is a periodic horizontal square times an axial circle of period `π`.
+This remains a finite Galerkin diagnostic, not a continuum enclosure or
+a finite-energy whole-space construction.
+
+From the NS workspace, with NumPy and SciPy installed:
+
+```sh
+python3 labs/full_history.py --n 256 --nz 32 --box 14 --time 3 --step .005
+python3 labs/full_history.py --n 384 --nz 32 --box 14 --time 3 --step .005
+```
+
+The defaults are `ε=.1` and viscosity `.001`. Norms use the horizontal
+integral divided by `2π` and the average over the axial period. Initial
+kinetic energy is `.2545` and enstrophy is `1.0825`. RK4 integrates the
+kinetic dissipation, signed enstrophy production and enstrophy dissipation
+at the same stages as the field. At time 3:
+
+| Horizontal grid | Enstrophy | Integrated signed production | Integrated enstrophy dissipation |
+| --- | --- | --- | --- |
+| 256 | 1.09416368675 | .07344871143 | .06178502469 |
+| 384 | 1.09416462772 | .07345183378 | .06178720607 |
+
+Thus the observed total production exceeds dissipation by about `.011665`.
+At grid 384 the energy-ledger errors are below `1e-11`, and the fraction
+of palinstrophy above 80% of any retained coordinate cutoff is about
+`1.12e-4` (versus `8.65e-3` at grid 256). These fractions are diagnostics,
+not estimates of the omitted modes. No rigorous PDE error bound follows.
+
+The earlier cubic test, applied to the full axial mode and multiplied by
+`8/ε³`, is approximately `-1.01349505 + 2.95094567i` at time 3 on grid 384.
+It includes all retained amplitude orders; it is not the cubic variation
+itself. The program also reports circulation at radius one over the axial
+grid. That observable is not a maximization over radius. Neither this
+finite history nor the earlier cubic calculation establishes recurrence
+or a uniform allowance for arbitrary data.
+
 ### Simultaneous stretching and mean-circulation gain
 
 Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.

@@ -1991,6 +1991,34 @@ inviscid column, not the full nonlinear viscous flow or a finite-energy
 whole-space background. It neither determines the infinite-time signed
 integral nor controls a nonlinear remainder on a growing time interval.
 
+The separate program \texttt{labs/full\_history.py} evolves the complete
+retained velocity from the real mixed-parent datum, with
+$\epsilon=0.1$ and normalized viscosity $0.001$. It uses a periodic
+horizontal square of side $14$, axial period $\pi$, two-thirds
+dealiasing in all three coordinates and time step $0.005$. Neither the
+mean nor either parent is held fixed. Normalize the spatial integral by
+$1/(2\pi)$ horizontally and by the axial average. The initial kinetic
+energy and enstrophy are then $0.2545$ and $1.0825$. At time $s=3$:
+\[
+\begin{array}{c|c|r|r|r}
+ N&N_z&\tfrac12\norm{\nabla U}^2&\int\Pi&
+                                  \eta\int\norm{\Delta U}^2\\ \hline
+ 256&32&1.09416368675&0.07344871143&0.06178502469\\
+ 384&32&1.09416462772&0.07345183378&0.06178720607
+\end{array}
+\]
+Thus the observed signed production exceeds dissipation by approximately
+$0.011665$. Both discrete energy ledgers close to less than $10^{-11}$
+on the finer grid. Its palinstrophy fraction above $80\%$ of any
+retained coordinate cutoff is about $1.12\cdot10^{-4}$, compared with
+$8.65\cdot10^{-3}$ on the coarser grid; these fractions do not bound
+the omitted modes. Applying the preceding test to the full positive
+axial mode and multiplying by $8/\epsilon^3$ gives approximately
+$-1.01349505+2.95094567i$ on the finer grid. This observable includes
+all retained amplitude orders. These are full nonlinear Galerkin
+diagnostics, not validated continuum estimates, whole-space evolutions,
+or evidence of an infinite cascade.
+
 \subsection{Stretching need not drain the maximum mean circulation}
 
 For the simplest helical parent, the total enstrophy initially curves
