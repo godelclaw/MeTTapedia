@@ -1,0 +1,74 @@
+{
+  "status": "kernel checked",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "gate": "lake build Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivisionAudit",
+  "working_directory": "lean/mettapedia",
+  "completed_utc": "2026-09-27T23:31:12Z",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleSubdivision.lean",
+      "source_sha256": "9393f644ab706c01a44f3cbed720e0abdcd831407bbf23a794a41da3853ed12e",
+      "artifact_sha256": "5ad068d965012925a202fd509b0c4abd764182255fa76bb75b1f386688228be0",
+      "artifact_bytes": 437728,
+      "reported_module_seconds": 5.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivisionAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleSubdivisionAudit.lean",
+      "source_sha256": "d5b728a8c76faf1756692260769e44dae9d1ebe18b44a317a9f7f33d36d0ea51",
+      "artifact_sha256": "207c3bfe9a1154934e243400fea8de6d266b1797fcc9ac8cc811405224745ed2",
+      "artifact_bytes": 3848,
+      "reported_module_seconds": 3.2
+    }
+  ],
+  "reported_total_module_seconds": 8.2,
+  "timing_scope": "Rounded module durations reported by Lake, including elaboration, kernel checking, serialization and C emission; existing dependencies were reused.",
+  "peak_lean_rss_kib": null,
+  "memory_scope": "No valid Lean RSS sample was captured for this short gate; no peak-memory claim is made.",
+  "audit": {
+    "roots": {
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.Operational.presentation": [
+        "propext"
+      ],
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.coloringEquiv": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.coloring_card": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.extend_boundary": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.Operational.liftRoute_retained": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "combined_dependency_closure": 6562,
+    "scope": "Named roots, their required mathematical dependencies and their transitive axiom sets."
+  },
+  "mathematical_scope": [
+    "Delete one edge and join a fresh vertex to its endpoints and a third named vertex.",
+    "Every existing four-colouring extends while keeping every retained vertex colour.",
+    "For a triangle, this is a bijection onto target colourings which distinguish the deleted edge endpoints.",
+    "The bijection gives equal colouring counts on those two fibres.",
+    "An explicit GSLT step presentation and its relational semantics lift chosen colourings along arbitrary finite routes of these operations."
+  ],
+  "not_established": [
+    "Planarity preservation without a specified boundary face.",
+    "A Lean correspondence between the program-checked diamond isomorphisms and the pinned configuration decoder.",
+    "Transport of arbitrary exterior colourings, Kempe closure or reducibility certificates.",
+    "Colourability without an initial colouring or coverage of all planar graphs by these operations."
+  ],
+  "catalogue_match_record": "internal-template-probe.json",
+  "configurations_removed": 0,
+  "independent_reducibility_checks_replaced": 0
+}

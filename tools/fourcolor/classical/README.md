@@ -126,8 +126,32 @@ supports, using four vertex colours and their nonzero XOR differences around
 the ring. These agree with the stored supports, up to boundary orientation.
 The three support sizes are 96, 234 and 486.
 
+The weaker, existential transport condition does succeed: each pair has four
+fixed attachment alignments where every source word admits at least one
+target-supported branch. `diamond_subdivision_geometry.py` explains this
+through actual graph operations. Subdividing the edge of a boundary triangle
+and joining the new vertex to its opposite vertex produces configuration 2
+from 1, and configuration 4 from 2. Saved isomorphisms preserve cyclic order
+and the outer ring; corrupted mappings, orientations and boundary images are
+rejected. These catalogue identifications are program checks.
+
+The general colouring result is kernel-checked in
+[`BoundaryTriangleSubdivision.lean`](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleSubdivision.lean).
+Every old colouring extends, preserving all retained vertices. When the three
+chosen vertices form a triangle, the new vertex has exactly one available
+colour. This gives a bijection onto the target colourings which still
+distinguish the deleted edge's endpoints, and an exact counting consequence.
+Its GSLT step presentation carries no assumed colouring; the route semantics
+constructs compatible witnesses from an explicit starting colouring.
+
+The graph theorem assumes no embedding. Using it as a planar boundary
+operation additionally needs the specified boundary face. It does not show
+that an arbitrary exterior supplies compatible new boundary colours or Kempe
+choices. Consequently it does not replace the family's reducibility checks.
+
 `internal-template-probe.json` records the source and program hashes, timings,
-controls and scope. These are program checks, not Lean theorems. The template
+controls and scope of the finite probes. `triangle-subdivision-measurements.json`
+records the separate Lean gate and axiom audit. The template
 count does not count reducibility proofs, and the failed star inclusion does
 not refute a uniform diamond-family theorem or other ways of choosing compatible
 colourings. This experiment removes no configuration or independent proof check.
@@ -145,6 +169,15 @@ python3 tools/fourcolor/classical/verify_internal_templates.py \
 python3 tools/fourcolor/classical/probe_diamond_star.py \
   --configurations unavoidable.conf --inputs generated-inputs \
   --output diamond-star-results.json
+python3 tools/fourcolor/classical/diamond_subdivision_geometry.py \
+  --configurations unavoidable.conf --output diamond-subdivision-results.json
+```
+
+The Lean audit checks five roots, their named mathematical dependencies and
+their axiom sets. From `lean/mettapedia`, reproduce it with:
+
+```sh
+lake build Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivisionAudit
 ```
 
 ## What the compositional bridge must preserve

@@ -105,7 +105,7 @@
   "star_probe": {
     "evidence": "Finite program probe; no geometric or Kempe-transport proof.",
     "configurations_sha256": "1c92fc280a9b384f736b94077fc59aac75e3d830d441ffd2d18683ee4b524e84",
-    "probe_sha256": "b300bbb1123b1a9d2fa91938aa60a890a2f25a5d8a7d71e7eea1ac6d82899429",
+    "probe_sha256": "37178eb5716ba2e5d51746a662c03f562c0159018d3e5386f3a606c729c9b75d",
     "source_sha256": {
       "1": "cbb90220c26e162c752847c87057b9f59291b2ae21a844b7f3df81ab95354faa",
       "2": "5964d1abb43cf7fa124df7ee5a459e4c4421294b80eb9eee6626c37b7249d02b",
@@ -176,6 +176,189 @@
     ],
     "comparisons": 196,
     "containments": [],
+    "existential_attachments": [
+      {
+        "source": 1,
+        "target": 2,
+        "port": 2,
+        "reflection": false,
+        "rotation": 5,
+        "source_support": 96,
+        "star_image": 192,
+        "target_support": 234,
+        "missing": 60,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          1
+        ]
+      },
+      {
+        "source": 1,
+        "target": 2,
+        "port": 2,
+        "reflection": true,
+        "rotation": 3,
+        "source_support": 96,
+        "star_image": 192,
+        "target_support": 234,
+        "missing": 60,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          1
+        ]
+      },
+      {
+        "source": 1,
+        "target": 2,
+        "port": 5,
+        "reflection": false,
+        "rotation": 2,
+        "source_support": 96,
+        "star_image": 192,
+        "target_support": 234,
+        "missing": 60,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1
+        ]
+      },
+      {
+        "source": 1,
+        "target": 2,
+        "port": 5,
+        "reflection": true,
+        "rotation": 0,
+        "source_support": 96,
+        "star_image": 192,
+        "target_support": 234,
+        "missing": 60,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1
+        ]
+      },
+      {
+        "source": 2,
+        "target": 4,
+        "port": 4,
+        "reflection": false,
+        "rotation": 0,
+        "source_support": 234,
+        "star_image": 468,
+        "target_support": 486,
+        "missing": 222,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1
+        ]
+      },
+      {
+        "source": 2,
+        "target": 4,
+        "port": 4,
+        "reflection": false,
+        "rotation": 4,
+        "source_support": 234,
+        "star_image": 468,
+        "target_support": 486,
+        "missing": 222,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1
+        ]
+      },
+      {
+        "source": 2,
+        "target": 4,
+        "port": 4,
+        "reflection": true,
+        "rotation": 2,
+        "source_support": 234,
+        "star_image": 468,
+        "target_support": 486,
+        "missing": 222,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1
+        ]
+      },
+      {
+        "source": 2,
+        "target": 4,
+        "port": 4,
+        "reflection": true,
+        "rotation": 6,
+        "source_support": 234,
+        "star_image": 468,
+        "target_support": 486,
+        "missing": 222,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
+        "outside_witness": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          2,
+          1
+        ]
+      }
+    ],
+    "existential_scope": "For one fixed port and target orientation, every source word has at least one target-supported star branch.",
     "closest_per_pair": [
       {
         "source": 1,
@@ -187,6 +370,8 @@
         "star_image": 192,
         "target_support": 234,
         "missing": 60,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
         "outside_witness": [
           1,
           1,
@@ -207,6 +392,8 @@
         "star_image": 468,
         "target_support": 486,
         "missing": 222,
+        "blocked_source_words": 0,
+        "blocked_source_witness": null,
         "outside_witness": [
           1,
           1,
@@ -219,20 +406,235 @@
         ]
       }
     ],
-    "elapsed_seconds": 0.19
+    "elapsed_seconds": 0.194
   },
-  "star_trials_sha256": "a94cf9c10ee735c1882e1f6dadf190aea1e612ee1fbf8afdf511b71f1b1a0968",
+  "star_trials_sha256": "dc431a4362daccfd8a5a9d21c3765e144866a8eff472a4e23ae07167a6986827",
   "output_sha256": {
     "classification.json": "235d9fee6d74a32a509ac53cb82bcfa97534f15a3b9a06215b5d2c6c98ef4631",
     "independent.json": "f3f61ab5cd4318a857296c7a30b67d8fa5c091d7e85eb7b036f582af0e4b3e6a",
-    "star.json": "d05029cdcc1916d98f5fd894aaa5d8a646014de6b35d2896e70291eaa2009dac"
+    "star-lifting.json": "474842c4c389a8145f1fc4fccbc01b3d26cdc49cae8f3f031ac9b0f50cf6c1a3",
+    "subdivision-geometry.json": "a5100a9504e00d75bd08bd344d88273c6ebd4e138f95e14b467778e8d19d4c26"
   },
   "limits": [
     "Template equivalence forgets the boundary, vertex degrees and contracts; these are retained separately in each saved witness.",
     "140 internal templates are not 140 reducibility proofs or a smaller unavoidable set.",
-    "The star probe tests only source-to-target support inclusion after one local star relation, for pairs 1 to 2 and 2 to 4 and all cyclic/reflected boundary alignments.",
+    "The star probe checks both all-branches inclusion and forall-source exists-branch lifting, only for pairs 1 to 2 and 2 to 4 with fixed attachment and boundary alignment.",
     "Failure does not refute uniform reducibility of the diamond family or a construction with other intermediate colourings.",
+    "The catalogue subdivision isomorphisms are program-checked. The separate Lean theorem concerns the actual general graph operation; a bridge to the pinned Lean configuration decoder and reducibility is not supplied here.",
     "All ordinals are one-based. Original data and generated witness files are not redistributed here."
   ],
-  "credited_compression": 0
+  "credited_compression": 0,
+  "subdivision_geometry": {
+    "evidence": "Finite cyclic-map isomorphisms; not a Lean theorem.",
+    "attempts": 13,
+    "successes": [
+      {
+        "source": 1,
+        "target": 2,
+        "triangle": [
+          1,
+          2,
+          7
+        ],
+        "fresh": 11,
+        "mapping": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            2
+          ]
+        ],
+        "orientation": 1,
+        "boundary_image": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      {
+        "source": 1,
+        "target": 2,
+        "triangle": [
+          4,
+          5,
+          9
+        ],
+        "fresh": 11,
+        "mapping": [
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            8,
+            11
+          ],
+          [
+            9,
+            8
+          ],
+          [
+            10,
+            9
+          ],
+          [
+            11,
+            2
+          ]
+        ],
+        "orientation": 1,
+        "boundary_image": [
+          5,
+          6,
+          7,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      {
+        "source": 2,
+        "target": 4,
+        "triangle": [
+          5,
+          6,
+          10
+        ],
+        "fresh": 12,
+        "mapping": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            5
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            11
+          ],
+          [
+            11,
+            12
+          ],
+          [
+            12,
+            6
+          ]
+        ],
+        "orientation": 1,
+        "boundary_image": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    ],
+    "source_sha256": "1c92fc280a9b384f736b94077fc59aac75e3d830d441ffd2d18683ee4b524e84",
+    "verifier_sha256": "f67fd39a87248acb321d6c1601b5dec2000d6cfd093fc9a5c8f2852086b18874",
+    "negative_controls_rejected": 9,
+    "elapsed_seconds": 0.146
+  }
 }

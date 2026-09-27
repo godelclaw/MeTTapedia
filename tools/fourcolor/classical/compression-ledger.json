@@ -52,8 +52,8 @@
     {
       "name": "embedded internal templates and diamond star transport",
       "record": "internal-template-probe.json",
-      "status": "140 internal templates independently verified; the single-star support-inclusion mechanism failed all 196 tested alignments for configurations 1, 2 and 4 and is stopped.",
-      "evidence": "program checks, including independent vertex-colouring reconstruction of the three supports",
+      "status": "140 internal templates verified. All-branches star inclusion fails at all 196 alignments; existential branch lifting succeeds at eight. Literal boundary-triangle subdivisions connect configurations 1 to 2 and 2 to 4.",
+      "evidence": "Program checks for catalogue matches; a separate kernel-checked generic subdivision theorem transports colouring witnesses. No reducibility checks are replaced.",
       "credited_compression": false
     }
   ],

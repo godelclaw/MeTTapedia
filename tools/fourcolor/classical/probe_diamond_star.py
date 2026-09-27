@@ -2,8 +2,9 @@
 
 The original embedded graphs share the diamond as their internal graph.
 Their boundary supports are independently recomputed by vertex colouring.
-The test only concerns inclusion of stored supports under a specified local
-relation. It does not establish graph or Kempe transport, nor reducibility.
+The test distinguishes inclusion of the entire star image from existence of
+at least one compatible branch for each source word. It does not establish
+graph or Kempe transport, nor reducibility.
 """
 
 import argparse
@@ -133,15 +134,20 @@ def main():
         assert target_ring == ring + 1
         for port in range(ring):
             image = attach(left, port)
+            branches = {word: attach({word}, port) for word in left}
             for reflection in (False, True):
                 for rotation in range(target_ring):
                     target = orient(right, rotation, reflection)
                     assert len(target) == len(right)
                     missing = image - target
+                    blocked = sorted(word for word, choices in branches.items()
+                                     if choices.isdisjoint(target))
                     trials.append(dict(source=first, target=second, port=port,
                         reflection=reflection, rotation=rotation,
                         source_support=len(left), star_image=len(image),
                         target_support=len(target), missing=len(missing),
+                        blocked_source_words=len(blocked),
+                        blocked_source_witness=list(blocked[0]) if blocked else None,
                         outside_witness=list(min(missing)) if missing else None))
     result = dict(evidence='Finite program probe; no geometric or Kempe-transport proof.',
                   configurations_sha256=sha256(raw).hexdigest(),
@@ -150,6 +156,8 @@ def main():
                   geometric_support_checks=geometry,
                   trials=trials, comparisons=len(trials),
                   containments=[t for t in trials if t['missing'] == 0],
+                  existential_attachments=[t for t in trials if t['blocked_source_words'] == 0],
+                  existential_scope='For one fixed port and target orientation, every source word has at least one target-supported star branch.',
                   closest_per_pair=[min((t for t in trials if (t['source'], t['target']) == pair),
                                         key=lambda t:t['missing']) for pair in [(1, 2), (2, 4)]],
                   elapsed_seconds=round(time.monotonic()-start, 3))
