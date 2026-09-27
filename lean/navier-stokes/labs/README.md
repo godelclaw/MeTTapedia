@@ -283,3 +283,17 @@ Angular averaging precedes the absolute value in the second integrand.
 The stronger product bound `∫ √(T-t) ||w||∞ ||∇w||∞ dt < ∞` also suffices.
 Neither assumption has been established for arbitrary data. The note and
 this symbolic calculation are separate from the kernel-checked Lean lane.
+
+For a smooth whole-space flow with a uniform energy bound and canonical
+pressure, the note also derives both histories from the single condition
+
+```text
+∫₀ᵃ τ^(-h/2) √log(e/τ) ||w(-τ)||∞² dτ < ∞,       τ = -t.
+```
+
+Here `0<h<1/2` is the exponent in the separate mean-geometry assumption.
+The proof follows the mean over short viscous intervals and retains the
+nonlocal pressure kernel. A power bound `||w(-τ)||∞ ≤ C τ^(-β)` therefore
+suffices for `β < 1/2-h/4`, without a separate gradient bound. This is an
+analytic smoothing argument, not a result checked by the symbolic script;
+the amplitude condition itself remains unproved for arbitrary data.

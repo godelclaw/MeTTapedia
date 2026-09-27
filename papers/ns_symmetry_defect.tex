@@ -27,6 +27,9 @@ bounds. The remaining assumptions are two time integrals of the angular
 fluctuation. A radial circulation barrier preserves a spatial factor in the
 Reynolds torque, while a divergence representation of the Reynolds stress
 avoids differentiating the fluctuation in the ancient-limit argument.
+For finite-energy whole-space flows, one weighted amplitude integral
+suffices: the exact defect equation supplies the missing gradient history
+on short intervals following the mean flow, with the pressure tail retained.
 The proof adapts the axisymmetric argument of Constantin, Ignatova, and
 Vicol. This is an analytic conditional criterion, not a Lean theorem or
 an arbitrary-data regularity proof.
@@ -89,7 +92,9 @@ $\sigma=1/2$ permits every $\beta<1/2$.
 Indeed $\mathcal T\leq KL$, so a sufficient history condition is
 $\int K^2<\infty$ and $\int\sqrt{-t}\,KL<\infty$.
 These are two separate bounds. No derivative estimate is inferred from
-the amplitude estimate. Another sufficient choice near zero is
+the amplitude estimate in this corollary. Section~\ref{sec:smoothing}
+gives such an implication under additional whole-space hypotheses.
+Another sufficient choice near zero is
 $K\leq C\tau^{-1/2}\log(e/\tau)^{-p}$ and
 $L\leq C\tau^{-1}\log(e/\tau)^{-q}$, where $p>1/2$ and $p+q>1$.
 
@@ -354,11 +359,234 @@ The local criterion of \cite[Theorem~1.1(i)]{GKT}, applied on backward
 cylinders ending at zero, makes $(0,0)$ regular. This finishes the
 proof of Theorem~\ref{thm:main}.
 
+\section{Paying the gradient history from the defect equation}
+\label{sec:smoothing}
+
+We now use the actual evolution of the defect to replace both histories
+by one amplitude integral. The following whole-space assumptions let us
+control the pressure produced by localization.
+
+\begin{theorem}\label{thm:amplitude}
+Suppose the solution in Theorem~\ref{thm:main} is the restriction of a
+smooth solution on $\R^3\times(-1,0)$ with
+$u\in L^\infty((-1,0);L^2(\R^3))$ and canonical pressure.
+Retain the local suitability assumptions and the mean bounds
+\eqref{eq:meanr}--\eqref{eq:meanz}. It suffices to assume, for some
+$0<a<1$,
+\begin{equation}\label{eq:amplitude}
+ \int_0^a \tau^{-h/2}\sqrt{\log(e/\tau)}\,
+               \norm{w(-\tau)}_{L^\infty(B(1))}^2\dd\tau<\infty.
+\end{equation}
+In particular, the amplitude estimate $\norm{w(-\tau)}_\infty
+\leq C\tau^{-\beta}$ suffices if $\beta<1/2-h/4$, without a
+separate derivative estimate. At equality, the additional factor
+$\log(e/\tau)^{-p}$ suffices for $p>3/4$.
+\end{theorem}
+
+The theorem does not assert \eqref{eq:amplitude} from initial data.
+Its proof has a whole-space smoothing estimate and a localization step.
+Write $\mathbb L$ for the Leray projection, to distinguish it from
+angular averaging $\PP$.
+
+\begin{lemma}\label{lem:window}
+Let a smooth divergence-free $U$ on $\R^3\times[0,d]$ satisfy
+\[
+ U_t-\Delta U=-\mathbb L\diver(U\otimes U)+g,
+ \qquad V=\PP U,\quad W=U-V,\quad G=(1-\PP)g.
+\]
+Assume the fields and the spatial derivatives used below are bounded on
+compact time prefixes, and that
+$\norm V_\infty\leq M$, $\norm{\nabla V}_\infty\leq N$,
+$\norm G_\infty\leq G_0$ there, with $M,N>0$.
+Put $K(q)=\norm{W(q)}_\infty$, $L(q)=\norm{\nabla W(q)}_\infty$, and
+\[
+ Z_d=\sup_{0<q\leq d}\{K(q)+\sqrt q L(q)\},
+ \qquad \log_+x=\max(\log x,0).
+\]
+There are universal constants such that
+\begin{equation}\label{eq:window}
+ Z_d\leq C_0(K(0)+dG_0)
+ +C_1Nd\left[1+\log_+\frac{M}{N\sqrt d}\right]Z_d
+ +C_2\sqrt d Z_d^2.
+\end{equation}
+Consequently $Z_d\leq2C_0(K(0)+dG_0)$ if the linear coefficient
+is at most $1/4$ and $\sqrt d(K(0)+dG_0)$ is sufficiently small.
+\end{lemma}
+
+\begin{proof}
+Rotation covariance gives the exact homogeneous-in-$W$ equation
+\begin{equation}\label{eq:defect}
+ W_t-\Delta W=-\mathbb L\diver\big[V\otimes W+W\otimes V
+                          +(1-\PP)(W\otimes W)\big]+G.
+\end{equation}
+In particular the complete defect self-interaction is retained.
+For the heat kernel $H_s$, the kernel of $e^{s\Delta}\mathbb L\diver$ is
+\[
+ (B_s)_{ijk}=\delta_{ij}\partial_k H_s
+                         +\int_s^\infty\partial_{ijk}H_b\dd b.
+\]
+Differentiating the Gaussian and integrating in $b$ gives
+\begin{align*}
+ |B_s(y)|&\leq C(\sqrt s+|y|)^{-4},&
+ |\nabla B_s(y)|&\leq C(\sqrt s+|y|)^{-5},\\
+ \norm{B_s}_1&\leq C s^{-1/2},&
+ \int |y|\,|\nabla B_s(y)|\dd y&\leq C s^{-1/2}.
+\end{align*}
+The first absolute moment of $B_s$ is not integrable at infinity.
+Splitting the radial integral at $\sqrt s$ and $M/N$ instead gives
+\begin{align}
+ \int |B_s(y)|\min(N|y|,2M)\dd y
+ &\leq CN\left[1+\log_+\frac{M}{N\sqrt s}\right],\label{eq:oseenlog}\\
+ \int |\nabla B_s(y)|\min(N|y|,2M)\dd y
+ &\leq CNs^{-1/2}.\label{eq:oseengrad}
+\end{align}
+
+For each endpoint $(x,q)$ follow the backward characteristic
+$z'(s)=V(z(s),s)$, $z(q)=x$, and set $a(s)=V(z(s),s)$.
+Move $a(s)\cdot\nabla W$ to the left side of \eqref{eq:defect};
+its two linear tensors now contain $V-a$ instead of $V$, since
+$\diver W=0$. This identity holds everywhere with this one
+spatially constant $a(s)$. The translated Duhamel kernels at the
+chosen endpoint are centered at $z(s)$, where
+\[
+ |V(y,s)-a(s)|\leq\min(N|y-z(s)|,2M).
+\]
+For the gradient estimate, differentiate that representation with
+$a(s)$ held fixed. No derivative of the selected characteristic is
+introduced: the same representation is valid at every nearby endpoint
+with this fixed $a$. Estimates \eqref{eq:oseenlog}--\eqref{eq:oseengrad}
+bound the linear amplitude and gradient terms.
+
+For the quadratic gradient term move the derivative onto the tensor:
+$\norm{\nabla(1-\PP)(W\otimes W)}_\infty\leq CKL$.
+Angular averaging and its tensor action are contractions in the
+Euclidean sup norms. The time integral
+$\int_0^q(q-s)^{-1/2}s^{-1/2}\dd s=\pi$ then bounds this term
+by $CZ_d^2$, before multiplication by $\sqrt q$.
+The quadratic amplitude term is bounded by $C\sqrt q Z_d^2$.
+The initial term and the divergence-free source use the ordinary
+translated heat kernel. Finally
+\[
+ \int_0^q\left[1+\log_+\frac{M}{N\sqrt s}\right]\dd s
+ \leq Cq\left[1+\log_+\frac{M}{N\sqrt q}\right].
+\]
+This proves \eqref{eq:window}. The estimate holds on every shorter
+prefix, whose linear coefficient is no larger. A continuity bootstrap
+gives the final claim; smoothness supplies the initial continuity.
+If $K(0)+dG_0=0$, use uniqueness or a positive bootstrap bound tending
+to zero.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:amplitude}]
+First suppose a globally bounded defect equation as in
+Lemma~\ref{lem:window} has been obtained, with $G$ uniformly bounded and
+\begin{equation}\label{eq:meanlip}
+ \norm{V(-\tau)}_\infty\leq C_M\tau^{-1/2-h},\qquad
+ \norm{\nabla V(-\tau)}_\infty\leq C_N\tau^{-1-h}.
+\end{equation}
+Let $\ell(\tau)=\log(e/\tau)$ and choose
+\begin{equation}\label{eq:dwindow}
+ d(\tau)=\frac{c\tau^{1+h}}{\ell(\tau)},\qquad 0<c<1.
+\end{equation}
+On $[-\tau-d,-\tau]$, the linear coefficient in
+\eqref{eq:window} is at most $C c(1+|\log c|+h)$: here
+$Nd\leq C_Nc/\ell$ and $M/(N\sqrt d)$ is bounded by a
+constant times $c^{-1/2}\tau^{-h/2}\sqrt\ell$.
+Take $c$ small enough in terms of the mean bounds.
+
+Write $K=\norm W_\infty$, $L=\norm{\nabla W}_\infty$, and
+\[
+ E(\tau)=\int_\tau^{\tau+d(\tau)} K(-s)^2\dd s.
+\]
+Condition \eqref{eq:amplitude}, with the localized global norm,
+implies $K\in L^2_t$ and $E(\tau)\to0$.
+There is a time $s_0\in[-\tau-d,-\tau-d/2]$ at which
+$K(s_0)^2\leq2E(\tau)/d$.
+Applying Lemma~\ref{lem:window} on $[s_0,-\tau]$ is therefore
+legitimate for all sufficiently small $\tau$; its small parameter is
+at most $C\sqrt{E(\tau)}+d^{3/2}G_0\to0$.
+We obtain
+\begin{equation}\label{eq:smoothing}
+ K(-\tau)+\sqrt d L(-\tau)
+ \leq C\big[d^{-1/2}\sqrt{E(\tau)}+dG_0\big].
+\end{equation}
+Consequently
+\begin{equation}\label{eq:product}
+ \sqrt\tau K(-\tau)L(-\tau)
+ \leq C\sqrt\tau d^{-3/2}E(\tau)
+                         +C\sqrt\tau d^{3/2}G_0^2.
+\end{equation}
+The second term is integrable. For the first, Tonelli gives
+\begin{equation}\label{eq:tonelliwindow}
+ \int_0^{a/2}\sqrt\tau d(\tau)^{-3/2}E(\tau)\dd\tau
+ \leq C\int_0^a s^{-h/2}\sqrt{\ell(s)}K(-s)^2\dd s.
+\end{equation}
+Indeed, $\tau\leq s\leq\tau+d(\tau)$ implies
+$s/(1+c)\leq\tau\leq s$. Since $d$ increases, these $\tau$ lie
+in an interval of length at most $d(s)$, while the integrand's
+coefficient is at most $Cs^{-1-3h/2}\ell(s)^{3/2}$.
+This proves \eqref{eq:tonelliwindow}, hence the two histories on a
+final interval, using $\mathcal T\leq KL$.
+
+It remains to construct the localization used above. Choose a radial
+cutoff $\chi$, equal to one on an interior ball and with its transition
+inside a regular annulus of the original solution. Put
+\[
+ \Psi=(-\Delta)^{-1}\curl u,\qquad
+ U=\curl(\chi\Psi)=\chi u+b,\qquad b=\nabla\chi\times\Psi.
+\]
+The $L^2$ hypothesis and incompressibility give $\curl\Psi=u$;
+the potential is well defined by its order-minus-one kernel.
+On the annulus, its separated kernel and every required derivative
+are bounded against $\norm u_2$, while its local part is controlled
+by interior spatial regularity. For canonical pressure, the same
+decomposition for its order-zero transform of $u\otimes u$ bounds
+$p$ and its spatial derivatives on the annulus. Likewise
+\[
+ \Psi_t=-\curl u-(-\Delta)^{-1}\curl\diver(u\otimes u)
+\]
+has bounded spatial derivatives there: its bilinear operator is of
+order zero, with separated kernels controlled by $\norm u_2^2$.
+These statements use only annular regularity and the uniform energy
+bound, not regularity of the interior through time zero.
+
+With pressure $\chi p$, the exact force of $U$ is
+\begin{equation}\label{eq:cutoffforce}
+\begin{split}
+ f_U={}&b_t-2\nabla\chi\cdot\nabla u-(\Delta\chi)u-\Delta b
+                       +p\nabla\chi\\
+      &+(U\cdot\nabla)U-\chi(u\cdot\nabla)u.
+\end{split}
+\end{equation}
+It is supported in the regular annulus and uniformly bounded in
+spatial $C^1$. Its Leray projection is uniformly bounded, as follows
+by subtracting $f_U(x)$ in the local principal value and using its
+$L^1$ norm for the far part. Thus the equation for $U$ has
+$g=\mathbb L f_U$ and bounded $G=(1-\PP)g$, including pressure.
+
+Rotations preserve the interior ball, so $U=u$, $\PP U=v$, and
+$U-\PP U=w$ there. The transition region contributes bounded fields
+and derivatives; outside the cutoff $U=0$. The mean assumptions
+therefore imply \eqref{eq:meanlip} globally. The Cartesian gradient
+terms $v_r/r$ and $v_\theta/r$ are controlled by radial derivatives
+along the segment to the axis. The global weighted amplitude integral
+is bounded by \eqref{eq:amplitude} plus the finite contribution of a
+bounded function. Equations \eqref{eq:smoothing}--\eqref{eq:tonelliwindow}
+now supply the required histories on a smaller cylinder of the
+original flow. Theorem~\ref{thm:main} applies there. The power and
+logarithmic consequences follow by integrating
+$\tau^{-h/2-2\beta}\ell(\tau)^{1/2-2p}$.
+\end{proof}
+
 \section{Scope of the calculation}
 
 The theorem allows an unbounded angular fluctuation, but requires its
 history to satisfy \eqref{eq:history} and separately assumes the mean
 geometry. Neither hypothesis is established here for general data.
+Theorem~\ref{thm:amplitude} removes a separate gradient hypothesis in
+the whole-space setting, but its weighted amplitude condition remains
+unproved for arbitrary data. Its localization constants may depend on
+the solution on a regular annulus; they are not uniform data-only bounds.
 An original force uniformly bounded in spatial $C^2$ can also be
 included: its torque has finite $J_f$, its rescaled vorticity source
 vanishes, and its enstrophy contribution is bounded by $C(Y+1)$.
