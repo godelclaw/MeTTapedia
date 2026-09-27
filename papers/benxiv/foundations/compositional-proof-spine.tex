@@ -18359,3 +18359,52 @@ bridgeless class of an arbitrary ambient rotation system. Nor do they
 supply regular zigzag tubes inside the general linked band. Those geometric
 obligations remain open; the circumference-dependent threshold is not a
 uniform bound on all minimal counterexamples.
+
+\subsection{Oriented face return and Euler contribution of the literal tubes}
+
+The geometric view uses the existing forgetful map from two displayed
+interfaces $L,R$ to the single boundary $L\sqcup R$. Every dart, edge
+mate, vertex and rotation remains the same, and the proper-colouring
+predicate reads the same colouring on those darts.
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleSmallCutTransfer.asOpen_tait_iff}
+
+For the literal ring at every positive circumference $k$, the provisional
+open face permutation $\phi$ fixes boundary darts under the edge
+involution before applying the vertex rotation. Its boundary returns are
+\[
+ \phi^3(\mathrm{in}_i)=\mathrm{in}_{i+1},\qquad
+ \phi^3(\mathrm{out}_i)=\mathrm{out}_{i-1}.
+\]
+Neither of the first two steps meets another port. All darts on each
+side lie on its one face cycle, and no face joins the two sides. Hence the
+open ring has exactly two face cycles and Euler mass
+\[
+             2|V|-|I|+2f=2(2k)-4k+2(2)=4,
+\]
+where $I$ counts internal darts.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.boundary_first_return}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.face_sameCycle_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.openRing_eulerMass}
+
+The existing serial face-transfer theorem applies to these exact
+carriers. Sewing two annular return permutations retains their two outer
+cycles. The consumed seam contributes $k$ two-point return cycles; thus
+the rewired boundary permutation has $k+2$ cycles, while the unsewn one
+has four. Substituting these counts into the exact Euler transfer shows
+that appending a ring leaves the open Euler mass unchanged. This counts
+the faces closed at the seam rather than discarding them with the seam
+ports.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.boundary_transfer}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.rewired_boundary_cycle_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.appendRing_eulerMass}
+
+Induction through the physical constructor proves that every nonempty
+tube has the same oriented return permutation and Euler mass four.
+These are the actual tubes used by the support-shortening theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_face_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_eulerMass}
+
+This establishes the face-return and open-Euler coordinates of the
+replacement. Ambient connectedness and bridge-freedom require their own
+proofs, and regular tube supply in a general linked band remains open.
+Euler equality alone is not asserted to discharge those conditions.

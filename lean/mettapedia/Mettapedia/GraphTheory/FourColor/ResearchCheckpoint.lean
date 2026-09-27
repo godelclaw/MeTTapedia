@@ -5,6 +5,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
 import Mettapedia.GraphTheory.FourColor.ZigzagRingTwoColour
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeCompression
+import Mettapedia.GraphTheory.FourColor.ZigzagRingGeometry
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -60,9 +61,12 @@ classified by multiplicities, and missing-colour words by cyclic rotation.
 Longer literal tubes therefore admit a strict vertex-count decrease and
 colouring reconstruction in both directions. The GSLT replacement retains
 the complete colouring witnesses of both serial exterior pieces. This is
-support preservation, not equality of counting matrices. Embedding-aware
-class preservation and supply of such tubes inside general linked bands
-remain separate geometric obligations.
+support preservation, not equality of counting matrices. The same literal
+tubes have a proved oriented boundary-face return, independent of length,
+and open Euler mass four. The exact face-sewing law counts internal cycles
+created at every seam. Connectedness and bridge-freedom under ambient
+replacement, and supply of such tubes inside general linked bands, remain
+separate geometric obligations.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
