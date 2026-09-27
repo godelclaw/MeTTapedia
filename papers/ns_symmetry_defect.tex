@@ -1549,6 +1549,219 @@ history allowance and a recurrent estimate from one fixed datum
 remain possible. Nor does the example prove that a possible singularity
 must preserve the mean geometry assumed in Theorem~\ref{thm:main}.
 
+\subsection{Positive total work after including the parents}
+
+The preceding receiving-sector calculation does not determine the sign
+of the total work. A single helical parent gives a separate test of that
+sign, with its pressure and the response of the base included.
+Use the envelope $g$, base $V_h$, and parent $W_2$ defined above. Fix
+$\nu>0$ and $0<h\leq1/6$. With a constant $b>0$ to be chosen, put
+\[
+ \delta=\lambda^{-2h},\quad \epsilon=b\lambda^{-h},\quad
+ \mu=\lambda\delta,\quad
+ C_\epsilon=\pi\norm g_2^2(1+3\epsilon^2/4),\quad
+ A=\lambda^{1+2h}/\sqrt{C_\epsilon},
+\]
+and take
+\begin{equation}\label{eq:singleHelicalDatum}
+ u_\lambda(x_h,z)=A g(\mu z)
+       [V_h(\lambda x_h)+\epsilon\operatorname{Re}
+                   (W_2(\lambda x_h)e^{2i\lambda z})].
+\end{equation}
+Here $\epsilon\leq1$ for all sufficiently large $\lambda$.
+
+\begin{proposition}\label{prop:totalHelicalWork}
+One can choose $b$ depending on $\nu$ so that the actual unforced
+evolutions from \eqref{eq:singleHelicalDatum} exist until
+$t_\lambda=s_*/(A\lambda)$ and satisfy
+\begin{equation}\label{eq:totalHelicalGain}
+ \frac12\norm{\nabla u(t_\lambda)}_2^2
+       -\frac12\norm{\nabla u(0)}_2^2\geq c\lambda^{1+4h}.
+\end{equation}
+Their initial squared energies are $\lambda^{-1+6h}\leq1$, their
+relative angular defects tend to zero, and their means obey
+\eqref{eq:meanr}--\eqref{eq:meanz} throughout this interval, with
+$\tau=\lambda^{-2}-t$ and a constant independent of $\lambda$.
+Also $\int_0^{t_\lambda}\norm{u-\PP u}_\infty^2\dd t\leq Cb^2$.
+
+Consequently, for every fixed Fourier cutoff $K<\infty$ and
+$\theta\leq1$, the high-frequency projection $u_{\geq K}$ satisfies
+\begin{equation}\label{eq:totalHelicalTail}
+ \int_0^{t_\lambda}
+ \left[\langle-\Delta u_{\geq K},\mathcal N(u)\rangle
+              -\theta\nu\norm{\Delta u_{\geq K}}_2^2\right]\dd t
+                            \longrightarrow+\infty.
+\end{equation}
+The projection uses the physical convention $e^{ik\cdot x}$ and
+$|k|\geq K$. The constants in this proposition are independent of
+$\lambda$; no constant uniform over full initial Sobolev norms is claimed.
+\end{proposition}
+
+\begin{proof}
+First compute the full signed response at $\delta=\eta=0$, with
+$\eta=\nu\lambda/A$, per unit fast axial phase and with the slow
+envelope temporarily suppressed. More generally let the fast carrier
+be $\kappa>0$. Write
+\begin{gather*}
+ v(R)=2Re^{-R^2},\qquad f(R)=R^2e^{-R^2},\\
+ \Omega=v/R,\quad \zeta=v'+v/R,\quad d=v'-v/R,\quad
+ L_2=\partial_{RR}+R^{-1}\partial_R-4R^{-2}.
+\end{gather*}
+The complex parent has cylindrical components $(2if/R,-f',0)$ and
+phase $e^{2i\phi+i\alpha}$. Its linear pressure amplitude $p$ solves
+\begin{equation}\label{eq:helicalPressureResolvent}
+ (-L_2+\kappa^2)p=F,
+ \qquad F(R)=32R^2(R^2-1)e^{-2R^2}.
+\end{equation}
+This source is twice the trace of the base and parent velocity-gradient
+matrices; the cylindrical basis derivatives are included.
+
+Let $\Pi=\int\omega\cdot(\omega\cdot\nabla)u$ denote the total
+signed enstrophy production, and let $\mathcal F=(\omega\cdot\nabla)u$.
+In an unforced inviscid evolution the material identities give
+\[
+ (\partial_t+u\cdot\nabla)\mathcal F=-(\nabla^2p)\omega,
+ \qquad \Pi'=\int(|\mathcal F|^2-\omega\cdot\nabla^2p\,\omega).
+\]
+Indeed the two products of velocity gradients cancel when
+differentiating $\mathcal F$; transport integrates to zero.
+The coefficient of $\epsilon^2$ in this identity is
+\[
+ c_\kappa=\pi\kappa^2\int_0^\infty
+ R d[4\zeta f^2/R^2-2\Omega(f')^2]\dd R
+       +2\pi\kappa^2\int_0^\infty R p\zeta'f'\dd R.
+\]
+The first integral is exactly zero. In the second, the vertical
+parent vorticity $-L_2f$ cancels the term $\zeta L_2f$ from the
+horizontal pressure pairing. Omitting that component gives an incorrect
+coefficient. The second-order pressure makes no further contribution:
+its pairing with the two base vorticities is an axial second derivative
+whose phase average is zero.
+
+The remaining sign can be proved explicitly. The angular heat kernel is
+\[
+ e^{tL_2}(R^2e^{-\beta R^2})
+    =\frac{R^2}{(1+4\beta t)^3}
+                 e^{-\beta R^2/(1+4\beta t)}.
+\]
+Differentiate in $\beta$ to heat $F$. Gaussian integration gives
+\[
+ J(t):=\int_0^\infty R(e^{tL_2}F)\zeta'f'\dd R
+      =\frac{5-24t-256t^3}{2(1+4t)^6}.
+\]
+Although $J$ changes sign, its primitive is strictly positive:
+\[
+ B(t)=\int_0^tJ(s)\dd s
+      =\frac{t(128t^4+160t^3+112t^2+28t+5)}{2(1+4t)^5}>0
+       \quad(t>0),\qquad B(\infty)=\frac1{16}.
+\]
+The decaying resolvent in \eqref{eq:helicalPressureResolvent} and
+integration by parts therefore yield
+\begin{equation}\label{eq:helicalPositiveCoefficient}
+ c_\kappa=2\pi\kappa^2\int_0^\infty e^{-\kappa^2t}J(t)\dd t
+         =2\pi\kappa^4\int_0^\infty e^{-\kappa^2t}B(t)\dd t>0.
+\end{equation}
+All radial boundary terms vanish by smoothness at the axis and decay.
+The checker verifies the source, both pressure components, the heat
+equation and the displayed primitive. These are exact identities;
+positivity follows from the integral formula, not a numerical sign test.
+
+Return to the actual extended flow with $D_3=\delta\partial_Z+
+2\partial_\alpha$ and initial field $g(Z)[V_h+
+\epsilon\operatorname{Re}(W_2e^{i\alpha})]$.
+The preserved joint rotation--phase symmetry from
+Proposition~\ref{prop:fastseeds} makes every horizontally integrated
+rotation-invariant density independent of $\alpha$. Its physical trace
+and its phase average consequently have the same integral. In particular
+the computation above applies to the actual physical enstrophy, not to
+an ensemble of different solutions.
+
+Let $\mathcal P_{\rm tot}(s)$ be this total normalized production. Initially
+$\mathcal P_{\rm tot}(0)=0$ exactly. For a horizontal solenoidal initial field,
+the integrated production is
+$-\int(\partial_z u_h)\cdot(\nabla_hu_h)(\partial_z u_h)$.
+Here the terms with two envelope derivatives vanish by the planar
+kinetic identity, the terms with two phase derivatives vanish after
+angular averaging, and the remaining terms integrate a multiple of
+$g^2g'$ over $Z$, which is zero.
+
+We justify a time interval uniform in $\epsilon,\delta,\eta$.
+The extended transport estimate and finite parameter derivatives used
+in Proposition~\ref{prop:mixedParents} give uniform Sobolev bounds
+for three time derivatives and two amplitude derivatives, with ample
+derivative margin. Hold $\eta$ independent of $\epsilon$ in these
+estimates. Rotation by $\pi/2$ changes $\epsilon$ to $-\epsilon$,
+so the physically integrated production and its time derivatives are
+even functions of $\epsilon$.
+
+For the zero-amplitude solution, the vertical velocity and its needed
+time derivatives are $O(\delta)$ in Sobolev norms: their equations
+have pressure source $-\delta\partial_Zp$ and zero initial vertical
+velocity. The double-Riesz representation bounds $p$ uniformly.
+Thus the horizontal vorticity and the mixed axial strains are
+$O(\delta)$, while $\partial_z U_z=O(\delta^2)$. The same assertions
+hold after the required time derivatives. Every contribution to
+production at zero amplitude is therefore $O(\delta^2)$.
+Evenness and the amplitude estimates imply
+\begin{equation}\label{eq:helicalTimeRemainder}
+ |\mathcal P_{\rm tot}''(s)|\leq C(\delta^2+\epsilon^2)
+\end{equation}
+on a common normalized interval.
+
+At time zero, the quartic inviscid production derivative has expansion
+\[
+ \mathcal P_{\rm tot}'(0)=O(\delta^2)+\epsilon^2(c_2\norm g_4^4+o(1))
+                    +O(\epsilon^4)+O(\eta\epsilon^2).
+\]
+The $o(1)$ tends to zero with $\delta$: the Leray multipliers converge
+almost everywhere, are uniformly bounded, and act on fixed smooth
+inputs. The purely viscous zero-amplitude term is zero because the
+heat evolution remains purely azimuthal. All constants are uniform
+for the parameters at most one. With $\epsilon^2=b^2\delta$ and
+$\eta=\nu\sqrt{C_\epsilon}\delta$, it follows that
+$\mathcal P_{\rm tot}'(0)\geq c\epsilon^2$ for sufficiently large $\lambda$.
+Equation~\eqref{eq:helicalTimeRemainder} and $\mathcal P_{\rm tot}(0)=0$
+then give, for a fixed small $s_*>0$,
+\[
+ \int_0^{s_*}\mathcal P_{\rm tot}(s)\dd s\geq c\epsilon^2,
+ \qquad
+ \eta\int_0^{s_*}\norm{\Delta_D U(s)}_2^2\dd s\leq C\eta.
+\]
+
+Both enstrophy integrals acquire the physical factor $A^2/\mu$.
+Since $C_\epsilon$ is bounded above and below, choosing $b$ sufficiently
+large compared with $\sqrt\nu$ makes the difference at least
+$c\lambda^{1+4h}$. The exact enstrophy identity proves
+\eqref{eq:totalHelicalGain}. The symmetry, incompressibility, and
+uniform Sobolev estimates prove the persistent mean geometry as in
+Proposition~\ref{prop:fastseeds}. The amplitude derivative gives
+$\norm{U-\PP U}_\infty\leq C\epsilon$, so the history is at most
+$CA\epsilon^2/\lambda\leq Cb^2$. Orthogonality of angular modes
+gives the asserted initial energy.
+
+Finally write $E_{\geq K}=\norm{\nabla u_{\geq K}}_2^2/2$.
+The kinetic energy identity bounds the complementary gradient energy
+by $K^2/2$. Hence its subtraction changes the enstrophy increment by
+at most $K^2/2$. The exact projected identity gives
+\[
+ \int_0^{t_\lambda}(P_{\geq K}-\theta D_{\geq K})\dd t
+ =E_{\geq K}(t_\lambda)-E_{\geq K}(0)
+                   +(1-\theta)\int_0^{t_\lambda}D_{\geq K}\dd t
+ \geq c\lambda^{1+4h}-K^2/2,
+\]
+where $D_{\geq K}=\nu\norm{\Delta u_{\geq K}}_2^2$.
+This proves \eqref{eq:totalHelicalTail}.
+\end{proof}
+
+This example includes the full parent response and preserves the displayed
+mean geometry on its short interval. It excludes a uniform signed-tail
+allowance based only on the bounded quantities just listed, with a fixed
+cutoff. It does not exclude a cutoff or allowance depending on the full
+datum: the initial enstrophy itself is of order $\lambda^{1+6h}$,
+larger than the increase just proved. No sequence of these events within
+one fixed solution, and no failure of the conditional regularity theorem,
+is asserted.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost

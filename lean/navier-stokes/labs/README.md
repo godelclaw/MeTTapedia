@@ -539,6 +539,48 @@ essential to the full high-frequency budget; this example does not refute
 that budget, a data-dependent allowance, or regularity. No infinite sequence
 of such events from one fixed datum is constructed.
 
+### Total signed work with the parent response included
+
+Run `python3 -O labs/helical_total_stretching.py` from the NS workspace.
+This separate test uses one helical quadrupole about the Gaussian swirl
+and includes the full signed enstrophy response. Initially the total
+stretching is zero. Its next response has a positive quadratic coefficient
+in the perturbation amplitude, with all pressure contributions retained.
+
+For a carrier `κ>0`, the linear pressure has radial source
+`32R²(R²-1) exp(-2R²)` and operator `-L₂+κ²`. Its pairing with the
+vorticity reduces to a heat integral. The exact heat integrand changes
+sign, but has the positive primitive
+
+```text
+B(t) = t(128t⁴+160t³+112t²+28t+5) / [2(1+4t)⁵].
+```
+
+The full quadratic coefficient is therefore
+`2πκ⁴ ∫₀∞ exp(-κ²t) B(t) dt > 0`. The checker verifies the radial
+pressure source, the source-square and base-pressure terms, the complete
+linear-pressure pairing, the Gaussian heat equation, and the positive
+primitive. In particular, the vertical perturbation vorticity cancels
+an apparent extra pressure term; omitting it changes the answer.
+
+Proposition 11 of the note proves a uniform time interval for actual
+finite-energy unforced data with relative amplitude `ε=bλ^(-h)`,
+`0<h≤1/6`. For fixed viscosity one can choose a fixed `b` so that the
+**total** enstrophy increases by at least `cλ^(1+4h)` after subtracting
+viscosity. The initial kinetic energy stays at most one, and is one
+for `h=1/6`. The joint helical symmetry preserves the displayed mean
+geometry on this interval, and the fluctuation history stays bounded
+independently of `λ`.
+
+Thus at every fixed Fourier cutoff, the full signed tail work minus
+any fraction at most one of its dissipation is unbounded across this
+family. This excludes an allowance based only on those uniformly bounded
+controls. An allowance or cutoff depending on the full datum is still
+possible: the initial enstrophy grows faster than the proved increment.
+The uniform evolution argument is analytic, not a Lean or symbolic
+certificate. This is a finite event from different data, with no asserted
+recurrent cascade or failure of the conditional regularity theorem.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial
