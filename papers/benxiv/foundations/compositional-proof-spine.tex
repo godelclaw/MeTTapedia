@@ -18302,7 +18302,7 @@ justify a sufficient quotient of them.
 For the literal zigzag ring of circumference $k\geq3$, write $T_k$ for
 its ordered boundary-colouring relation and set
 \[
-                         B(k)=2\cdot4^k+k.
+                         B(k)=2k(k-1).
 \]
 The following exact description holds for every $n\geq B(k)$. A pair
 $(x,y)$ belongs to $T_k^n$ if and only if $x$ is nonzero at every port and:
@@ -18317,16 +18317,29 @@ be too coarse there. Zero entries never occur on an accepted boundary.
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.transfer_iff_stable}
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.transfer_stabilizes}
 
-The explicit bound requires no new finite census. Adjacent-swap programs
-already connect rearrangements of a word. Erasing loops from such a walk
-in the graph of all $4^k$ words gives a program of length less than $4^k$;
-idle moves pad it to every larger length. The two-ring swap construction,
-with its moving boundary origin accounted for, gives every sufficiently
-long even transfer. A first physical ring handles odd lengths. In a
-missing-colour sector each ring either idles or shifts; $k$ rings suffice
-to realize every rotation, with idle padding thereafter.
-\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.moves_after_word_bound}
-\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.full_transfer_after_word_bound}
+The explicit bound requires no finite census. For any alphabet, every
+permutation of a word of length $k$ has a GSLT route of at most $k(k-1)$
+linear adjacent swaps. Swapping the first position with position $j$ costs
+at most $2j$ adjacent swaps; a decomposition of the permutation then
+recurses on the remaining positions. The resulting recurrence gives the
+quadratic bound and retains each individual swap in the route.
+\Sverified{Mettapedia.GraphTheory.AdjacentSwapSorting.swap_zero_route}
+\Sverified{Mettapedia.GraphTheory.AdjacentSwapSorting.permutation_route}
+
+These linear swaps are valid cyclic word moves. Idle moves pad the route
+to every larger length. The two-ring swap construction, with its moving
+boundary origin accounted for, gives every sufficiently long even
+transfer. A first physical ring handles odd lengths. In a missing-colour
+sector each ring either idles or shifts; $k$ rings suffice to realize every
+rotation, with idle padding thereafter. For $k\geq3$ this is below $B(k)$.
+This replaces the earlier sufficient bound $2\cdot4^k+k$, obtained by
+erasing loops in the whole word-state graph, with a constructive quadratic
+bound. At circumference five the threshold is $40$ rings, previously
+$2053$; at circumference fourteen it is $364$ rings. No claim of optimality
+is needed.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.sorting_route_transfer}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.moves_after_quadratic_bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.full_transfer_after_quadratic_bound}
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.missing_transfer_iff_rotation}
 
 Serial composition identifies these paths with colourings of the actual
@@ -18491,7 +18504,7 @@ tube support supplies its hypothesis in both directions.
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.replaceTubeEdgeColoring_exterior}
 
 Thus, for every $k\geq3$, a literal tube with more than
-$B(k)=2\cdot4^k+k$ rings in any fixed closed sewing context can be replaced
+$B(k)=2k(k-1)$ rings in any fixed closed sewing context can be replaced
 by exactly $B(k)$ rings. The new map has strictly fewer vertices, remains
 in the same connected bridgeless spherical cubic class, and is Tait-colourable
 if and only if the original map is. In particular, uncolourability descends

@@ -68,8 +68,11 @@ order, proper colourings and channel connectedness are linked by exact
 transport theorems. Neither a bound on the attachments nor a general escape from
 the rejected pentagon support follows from these results.
 For every circumference at least three, the complete zigzag-ring support
-stabilizes after the explicit bound `2 * 4^k + k`: full-colour words are
-classified by multiplicities, and missing-colour words by cyclic rotation.
+stabilizes after the explicit bound `2 * (k * (k - 1))`: full-colour words
+are classified by multiplicities, and missing-colour words by cyclic rotation.
+The quadratic bound comes from a GSLT program of adjacent swaps over any
+alphabet, realized by two physical rings per move with the boundary shift
+accounted for. It does not require enumerating the finite word state space.
 Longer literal tubes therefore admit a strict vertex-count decrease and
 colouring reconstruction in both directions. The GSLT replacement retains
 the complete colouring witnesses of both serial exterior pieces. This is

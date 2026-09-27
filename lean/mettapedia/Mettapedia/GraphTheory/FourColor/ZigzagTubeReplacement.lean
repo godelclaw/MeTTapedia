@@ -132,7 +132,9 @@ theorem strict_tube_reduction (hk : 3 ≤ k) (n : Nat) (hn : compressionBound k 
       (RotationSystemTaitColorable (outside.composeRotationSystem (asOpen (tube k n).data) m) ↔
         RotationSystemTaitColorable
           (outside.composeRotationSystem (asOpen (tube k (compressionBound k - 1)).data) m)) := by
-  have hb : 0 < compressionBound k := by unfold compressionBound; omega
+  have hb : 0 < compressionBound k := by
+    unfold compressionBound
+    exact Nat.mul_pos (by decide) (Nat.mul_pos (by omega) (by omega))
   refine ⟨?_, tube_replacement_class k (by omega) n _ outside m h,
     tube_replacement_colorable k hk n _ (by omega) (by omega) outside m⟩
   have hs := (strict_tube_shortening k hk n hn).1

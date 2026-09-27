@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.ZigzagRingTwoColour
+import Mettapedia.GraphTheory.FourColor.ZigzagRingSorting
 import Mettapedia.GraphTheory.FourColor.ZigzagRingComposite
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
 import Mathlib.Combinatorics.SimpleGraph.Paths
@@ -170,8 +171,9 @@ theorem missing_transfer_iff_rotation (x y : Fin k → Color) (hx : ∀ i, x i �
     have hi := missing_idle k (n - j.val) (shift_nz k j.val hx) hc (shift_missing k j.val hm)
     simpa only [Nat.add_sub_of_le hj] using hs.comp hi
 
-/-- Explicit sufficient length for every sector, with no fixed width bound. -/
-def compressionBound : Nat := 2 * 4 ^ k + k
+/-- A quadratic sufficient length for every sector at circumference at
+least three, with no fixed width bound. -/
+def compressionBound : Nat := 2 * (k * (k - 1))
 
 /-- The stable relation remembers multiplicities in the full-colour sectors,
 and cyclic order in the missing-colour sectors. Zero boundary entries fail. -/
@@ -201,8 +203,12 @@ theorem transfer_iff_stable (hk : 3 ≤ k) (x y : Fin k → Color)
     (n : Nat) (hn : compressionBound k ≤ n) :
     ExactRelationalTransfer (Step k) n x y ↔ StableRelation k x y := by
   classical
-  have hfullBound : 2 * 4 ^ k ≤ n := (Nat.le_add_right _ _).trans hn
-  have hwidth : k ≤ n := (Nat.le_add_left _ _).trans hn
+  have hfullBound : 2 * (k * (k - 1)) ≤ n := hn
+  have hwidth : k ≤ n := by
+    have hfactor : 1 ≤ k - 1 := by omega
+    have hmul := Nat.mul_le_mul_left k hfactor
+    simp only [Nat.mul_one] at hmul
+    omega
   constructor
   · intro h
     have hx := transfer_input_nz k h (by omega)
@@ -219,7 +225,7 @@ theorem transfer_iff_stable (hk : 3 ≤ k) (x y : Fin k → Color)
       obtain ⟨c, hc, hm⟩ := hm
       exact Or.inr ⟨c, hc, hm, (missing_transfer_iff_rotation k x y hx hc hm n hwidth).mp h⟩
   · rintro ⟨hx, ⟨hf, hc⟩ | ⟨c, hc, hm, hj⟩⟩
-    · exact full_transfer_after_word_bound k hk x y hf hc n hfullBound
+    · exact full_transfer_after_quadratic_bound k hk x y hf hc n hfullBound
     · exact (missing_transfer_iff_rotation k x y hx hc hm n hwidth).mpr hj
 
 /-- Any two sufficiently long tubes have exactly the same ordered support. -/
@@ -342,7 +348,9 @@ theorem strict_tube_shortening (hk : 3 ≤ k) (n : Nat) (hn : compressionBound k
         (colourRelation (tube k n).data)) ∧
       Nonempty (Cell id id (colourRelation (tube k n).data)
         (colourRelation (tube k (compressionBound k - 1)).data)) := by
-  have hb : 0 < compressionBound k := by unfold compressionBound; omega
+  have hb : 0 < compressionBound k := by
+    unfold compressionBound
+    exact Nat.mul_pos (by decide) (Nat.mul_pos (by omega) (by omega))
   refine ⟨?_, ⟨tubeLengthCell k hk (by omega) (by omega)⟩,
     ⟨tubeLengthCell k hk (by omega) (by omega)⟩⟩
   rw [tube_vertex_card, tube_vertex_card]
