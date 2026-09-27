@@ -18353,12 +18353,11 @@ cell, independently of tubes.
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_context_nonempty_iff}
 
 This discharges the colouring and size portions of one explicit annular
-construction family at arbitrary circumference. The formal statements do
-not yet prove that replacing this subobject preserves the spherical
-bridgeless class of an arbitrary ambient rotation system. Nor do they
-supply regular zigzag tubes inside the general linked band. Those geometric
-obligations remain open; the circumference-dependent threshold is not a
-uniform bound on all minimal counterexamples.
+construction family at arbitrary circumference. The geometric results
+below establish preservation of the spherical bridgeless map class.
+Regular zigzag tube supply inside a general linked band remains open;
+the circumference-dependent threshold is not a uniform bound on all
+minimal counterexamples.
 
 \subsection{Oriented face return and Euler contribution of the literal tubes}
 
@@ -18406,9 +18405,9 @@ These are the actual tubes used by the support-shortening theorem.
 
 This establishes the face-return and open-Euler coordinates of the
 replacement. The following cut argument supplies ambient connectedness and
-bridge-freedom independently of Euler equality. Contextual Euler transport,
-cubic and rotation-fibre conditions, and regular tube supply in a general
-linked band remain separate obligations.
+bridge-freedom independently of Euler equality. The subsequent assembly
+transports Euler data and vertex geometry to the closed context. Regular
+tube supply in a general linked band remains a separate obligation.
 
 \subsection{Connectivity and bridges depend only on the small-cut fragment}
 
@@ -18452,3 +18451,55 @@ colouring-reconstruction theorem.
 \Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleInternalReplacement.serial_no_small_cut}
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_connected_bridgeless}
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_replacement_structural}
+
+\subsection{Strict physical tube reduction in the source map class}
+
+Equality of the face return in the actual port coordinates suffices for
+contextual replacement. Match the two return carriers by their port labels
+and retain every exterior dart as an observation. This correspondence
+conjugates both the disjoint return permutation and the actual seam swap.
+The face-sewing correction is therefore identical. The difference of
+twice the two closed Euler characteristics is precisely the difference
+of the open Euler masses of the replaced pieces. All exterior darts also
+retain their pairwise cofaciality, including faces that never meet the seam.
+No equality of records in arbitrarily chosen finite coordinates is required.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTanglePortReplacement.twice_euler_replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTanglePortReplacement.exterior_sameCycle_iff}
+
+Each literal ring vertex has exactly three incident darts in one rotation
+cycle. Serial sewing retains these fibres and rotations, so every tube has
+both properties. Conversely, the unchanged exterior inherits cubicity and
+cyclicity from the original closed map. Combining these facts with the
+Euler and small-cut results proves preservation of the existing
+\texttt{BridgelessSphericalCubicMapData} class, with no additional hypotheses
+on the exterior.
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleVertexGeometry.serial_isCubic}
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleVertexGeometry.serial_rotationCyclic}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_vertex_geometry}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_replacement_class}
+
+The serial boundary relation is identified exactly with the support used
+by the existing physical closed-colouring bridge. Support inclusion then
+replaces the inner colouring witness while retaining the original exterior
+colouring and seam word. Descending to the actual edge orbits preserves
+the colour of every edge represented by an exterior dart, including seam
+edges. This construction applies to general two-sided pieces; the stable
+tube support supplies its hypothesis in both directions.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleClosedBoundary.innerSupport_asOpen_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleClosedBoundary.replaceEdgeColoring_exterior}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.replaceTubeEdgeColoring_isTait}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.replaceTubeEdgeColoring_exterior}
+
+Thus, for every $k\geq3$, a literal tube with more than
+$B(k)=2\cdot4^k+k$ rings in any fixed closed sewing context can be replaced
+by exactly $B(k)$ rings. The new map has strictly fewer vertices, remains
+in the same connected bridgeless spherical cubic class, and is Tait-colourable
+if and only if the original map is. In particular, uncolourability descends
+and every replacement colouring reconstructs through the original tube.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.strict_tube_reduction}
+
+This completes a reduction theorem for the literal tube family at arbitrary
+circumference, without an additional finite census. It does not identify
+general linked bands with these tubes, give a uniform bound on all minimal
+counterexamples, or verify the route's generating base. Those supply and
+base questions remain the global Four-Colour obligations.

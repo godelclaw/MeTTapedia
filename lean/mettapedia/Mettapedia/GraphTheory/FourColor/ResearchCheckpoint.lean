@@ -7,6 +7,7 @@ import Mettapedia.GraphTheory.FourColor.ZigzagRingTwoColour
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeCompression
 import Mettapedia.GraphTheory.FourColor.ZigzagRingGeometry
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeStructural
+import Mettapedia.GraphTheory.FourColor.ZigzagTubeReplacement
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -71,9 +72,16 @@ length by another preserves the conjunction of connectedness and
 bridge-freedom in every fixed closed sewing context. This follows from a
 general replacement criterion: only realized cut states of cost at most one
 affect that conjunction, and nonempty connected bridgeless pieces have the
-same two constant states there. Contextual Euler preservation, cubic and
-rotation-fibre conditions, and supply of such tubes inside general linked
-bands remain separate geometric obligations.
+same two constant states there. The standard-port face return also preserves
+the closed Euler characteristic and all exterior cofaciality. Literal tube
+vertices are cubic and rotation-cyclic; these exterior conditions are
+recovered from the original closed map. Consequently replacing a long tube
+by the explicit shorter tube gives a strict vertex decrease in the actual
+connected bridgeless spherical cubic map class. Tait-colourability is
+equivalent in both closed composites, and explicit colouring reconstruction
+keeps every exterior dart's edge colour. This is a full reduction for the
+literal tube family, not a supply theorem for general linked bands or a
+uniform bound on minimal counterexamples.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
