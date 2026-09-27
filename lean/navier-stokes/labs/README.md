@@ -622,6 +622,87 @@ envelope and a controlled longer nonlinear interval remain to be handled.
 The spectral argument is analytic and the finite certificate is rational
 arithmetic; neither is a new Lean theorem.
 
+### Evolving cubic forcing history
+
+Run `python3 labs/cubic_history.py` from the NS workspace; NumPy and SciPy
+are required. A longer refinement run is
+`python3 labs/cubic_history.py --n 384 --box 14 --time 3 --step .005`.
+
+The first-order parents, both quadratic descendants and the cubic recipient
+all evolve under the full projected linearization and their prescribed
+interactions. These are all ancestry branches for the recipient at cubic
+amplitude order in the continuum. The horizontal square is periodic and
+only approximates rotational symmetry. This is a Fourier Galerkin
+calculation about the fixed inviscid Gaussian column, **not** the full
+nonlinear viscous evolution or a finite-energy whole-space background.
+The reported recipient is unscaled; its contribution to the real datum
+at this order is `ε³ Re(C exp(2iz))/4`.
+
+The rational test from `generated_mode_coupling.py` defines a complex
+observable `q`. Its operator residual is retained in the signed identity
+
+```text
+q' - sqrt(μ) q = test(evolving forcing) + residual(recipient).
+```
+
+RK4 advances both integrals at the same stages as the fields. The output
+includes the independent initial-jet comparison, both signed integrals,
+their ledger error, every field's norm and high-frequency fraction, and
+the divergence defect. These diagnostics do not give a rigorous continuum
+error enclosure.
+
+At normalized time 3:
+
+| Horizontal grid | Side length | Time step | Recipient norm | Real q | Imaginary q |
+| --- | --- | --- | --- | --- | --- |
+| 256 | 14 | .01 | 42.91325951 | -1.21208574 | 3.95253213 |
+| 256 | 14 | .005 | 42.91326024 | -1.21208576 | 3.95253214 |
+| 384 | 14 | .005 | 42.91326093 | -1.21208576 | 3.95253214 |
+| 512 | 20 | .005 | 42.91325937 | -1.21208472 | 3.95253107 |
+
+The real discounted forcing integral changes sign between times 1.8 and
+2.1. Its value at time 3 in the larger box is approximately
+`-0.45855706 + 1.49483206i`; the residual integral is included separately.
+The displayed observables differ by less than `2e-6` across these runs.
+The complete discrete ledger errors are below `4e-11`. This is finite-time
+evidence that the initial real sign does not describe the subsequent
+history. It establishes neither an infinite-time forcing tail nor control
+of an actual nonlinear remainder.
+
+### Simultaneous stretching and mean-circulation gain
+
+Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.
+It compares the real helical streamfunction profiles
+
+```text
+f₀(r) = r² exp(-r²)
+f₁(r) = r² exp(-r²) [1 + (r²-1)³].
+```
+
+They agree through two radial derivatives at radius one. Their initial
+velocities and first spatial derivatives therefore agree on that cylinder.
+The complete pressure response nonetheless makes the original mean peak's
+acceleration negative for the first profile and positive for the second.
+The latter also has strictly positive full signed enstrophy curvature.
+The proof gives the exact lower bounds `105/(128 e³)` and `1053π/128` for
+the respective quadratic coefficients.
+
+The checker retains every pressure and vorticity component. It verifies
+the stress identity, exact resolvent decompositions, heat primitive,
+positive polynomial coefficients in the production integral, and the
+horizontal energy normalization. The integral signs and the local
+evolution are analytic arguments in Propositions 11–13 and Corollary 14
+of the accompanying note; they are not Lean theorems.
+
+Corollary 14 realizes simultaneous net enstrophy gain and mean-peak gain
+on a uniform short normalized interval of unforced viscous whole-space
+flows. The energy and critical defect history stay bounded across that
+family. This excludes automatic drainage of the maximum mean circulation
+as compensation for every stretching event. The peak increase remains
+finite and of the same order as the defect-history allowance; it does not
+establish recurrent growth within one datum or refute a bound depending
+on the full initial datum.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial

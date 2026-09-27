@@ -1921,6 +1921,287 @@ longer nonlinear time interval also remain to be included. The classical
 fixed-column instability and this explicit seed coupling supply none of
 the arbitrary-data physical-time budget required for continuation.
 
+\subsection{A signed numerical history with evolving parents}
+
+The cubic amplitude variation provides a finite test of the preceding
+distinction. Label modes by their angular and axial indices, with physical
+axial wave number twice the latter. Write
+$a=(2,1)$, $b=(-4,-1)$, $d=(4,2)$, $e=(-2,0)$, and $c=(0,1)$.
+If $\mathcal L_j$ is the full inviscid linearization about $V_h$ on
+mode $j$, and $\mathcal B(u,v)=-\mathbb P[(u\cdot\nabla)v]$, the exact
+ancestry of the cubic recipient is
+\begin{align*}
+ a'&=\mathcal L_a a,& b'&=\mathcal L_b b,\\
+ d'&=\mathcal L_d d+\mathcal B(a,a),&
+ e'&=\mathcal L_e e+\mathcal B(a,b)+\mathcal B(b,a),\\
+ c'&=\mathcal L_c c+\mathcal B(a,e)+\mathcal B(e,a)
+                         +\mathcal B(b,d)+\mathcal B(d,b).
+\end{align*}
+Initially $a=W_2$, $b=\overline{W_4}$, and $d=e=c=0$.
+Every intermediate Leray projection is retained.
+In particular $c'(0)=0$ and $c''(0)$ is the full cubic coefficient
+checked in Proposition~\ref{prop:mixedParents}.
+These coefficients are unscaled: the real datum's contribution at this
+order is $\epsilon^3\operatorname{Re}(c(s)e^{2iz})/4$.
+
+Let $f,\mu,R=-\Phi f-\mu Af$ be the rational test and its residual
+from Proposition~\ref{prop:linearSeedCoupling}, and put
+$\gamma=\sqrt\mu$. If $a_c,b_c$ are the radial and azimuthal components
+of the recipient, define the complex scalar
+\[
+ q_c=\gamma\langle Af,a_c\rangle_H+\langle2\Omega f,b_c\rangle_H.
+\]
+Writing $F_c$ for its evolving nonlinear source, the exact axisymmetric
+linear equations give
+\[
+ q_c'-\gamma q_c
+  =\langle R,a_c\rangle_H+
+       \gamma\langle Af,F_{c,r}\rangle_H+
+                         \langle2\Omega f,F_{c,\theta}\rangle_H.
+\]
+Thus the discounted Duhamel integral includes both the forcing and the
+explicit residual. Treating $f$ as an exact eigenfunction would lose
+the first term.
+
+The executable \texttt{labs/cubic\_history.py} uses a horizontal
+Fourier Galerkin approximation on a periodic square, exact axial
+labels, two-thirds dealiasing and fourth-order Runge--Kutta integration.
+The square only approximates rotational symmetry. At normalized time
+$s=3$, representative refinements give
+\[
+\begin{array}{c|c|c|r|r|r}
+ N&\text{side length}&\Delta s&\norm c&\operatorname{Re}q_c&
+                                      \operatorname{Im}q_c\\ \hline
+ 256&14&0.01 &42.91325951&-1.21208574&3.95253213\\
+ 384&14&0.005&42.91326093&-1.21208576&3.95253214\\
+ 512&20&0.005&42.91325937&-1.21208472&3.95253107
+\end{array}
+\]
+Here $\norm c^2=(2\pi)^{-1}\int_{\R^2}|c|^2$, approximated by the
+square integral. The signed forcing integral changes its real sign
+between $s=1.8$ and $s=2.1$, while its imaginary part remains positive.
+At $s=3$ the larger-domain run gives approximately
+$-0.45855706+1.49483206i$. The complete discrete Duhamel ledger closes
+to less than $4\cdot10^{-11}$ in these runs.
+
+These are numerical diagnostics, not validated continuum error bounds.
+The ledger checks an internal identity, not the accuracy of the PDE
+approximation. The calculation is a cubic variation about a stationary
+inviscid column, not the full nonlinear viscous flow or a finite-energy
+whole-space background. It neither determines the infinite-time signed
+integral nor controls a nonlinear remainder on a growing time interval.
+
+\subsection{Stretching need not drain the maximum mean circulation}
+
+For the simplest helical parent, the total enstrophy initially curves
+upward while the mean circulation at its original maximum curves
+downward. This compensation is not forced by the equation. A change
+of the radial profile, even one preserving its first two jets at that
+radius, reverses the second sign.
+
+Put
+\[
+ f_0(r)=r^2e^{-r^2},\qquad
+ f_1(r)=r^2e^{-r^2}\big[1+(r^2-1)^3\big],\qquad
+ W_j=\curl_h\big(f_j(r)e^{2i\phi}e_z\big).
+\]
+Consider local Euler evolutions on $\R^2\times(\R/\pi\mathbb Z)$
+from $V_h+\epsilon\operatorname{Re}(W_j e^{2iz})$.
+Use per-unit-axial-length integrals for the total production $\Pi_j$,
+and write $G_j=r(\PP u_j)_\theta$.
+
+\begin{proposition}\label{prop:helicalMeanFeedback}
+At the initial mean-circulation maximum $r=1$,
+\[
+ G_{j,s}(0)=0,\qquad G_{j,ss}(0)=\epsilon^2 d_j,\qquad
+ d_0<0,\qquad d_1>\frac{105}{128e^3}>0.
+\]
+Both profiles have positive total enstrophy curvature:
+\[
+ \Pi_j(0)=0,\qquad
+ \Pi_j'(0)=\epsilon^2 c_j+O(\epsilon^4),\qquad
+ c_0>0,\qquad c_1>\frac{1053\pi}{128}.
+\]
+The initial velocities and their first spatial derivatives agree on
+the cylinder $r=1$ for the two profiles.
+\end{proposition}
+
+\begin{proof}
+The last assertion follows from $f_1-f_0$ vanishing to order three
+at $r=1$. In particular $f_j(1)=e^{-1}$, $f_j'(1)=0$, and
+$f_j''(1)=-4e^{-1}$. Set $\Omega=2e^{-r^2}$ and
+$\zeta=4(1-r^2)e^{-r^2}$.
+For a real radial profile $f$, the complex parent components are
+$(2if/r,-f',0)$. If $p$ is its linear pressure, the angular mean
+of the time derivative of its radial/azimuthal stress is
+\[
+ T=\frac12\left[2\Omega(f')^2-\frac{4\zeta f^2}{r^2}
+                              +f'p'-\frac{4fp}{r^2}\right].
+\]
+The initial stress itself vanishes. At the peak the derivative of
+the mean-advection term vanishes because the initial mean meridional
+velocity and the mean circulation gradient vanish. The averaged axial
+stress has no axial dependence. Consequently
+\begin{equation}\label{eq:helicalPeakAcceleration}
+ d_j=-\left.\frac1r\partial_r(r^2T)\right|_{r=1}
+                         =\frac4e p_j'(1)-\frac{16}{e^3}.
+\end{equation}
+There are no higher powers of $\epsilon$ in this second derivative:
+the Euler second time derivative is cubic in the datum, and angular
+averaging is even in $\epsilon$.
+
+Let $L_2=\partial_{rr}+r^{-1}\partial_r-4r^{-2}$,
+$\mathcal R=(-L_2+4)^{-1}$ with the smooth decaying radial solution,
+and $q=r^2e^{-2r^2}$. The full cylindrical pressure source is
+$4e^{-r^2}(L_2f-2rf'+8f)$. Direct differentiation gives
+\begin{align*}
+ p_0&=-2q+24\mathcal Rq,\\
+ p_1&=q\left(-2r^6+\frac{15}2r^4-\frac{75}8r^2-\frac{57}{32}\right)
+                                      +\frac{651}8\mathcal Rq.
+\end{align*}
+Thus, with $H=(\mathcal Rq)'(1)$,
+\[
+ p_0'(1)=4e^{-2}+24H,\qquad
+ p_1'(1)=\frac{169}{16}e^{-2}+\frac{651}8H.
+\]
+The angular heat kernel identifies
+\[
+ H=\int_0^\infty e^{-4t}h(t)\dd t,\qquad
+ h(t)=\frac{2(8t-1)}{(1+8t)^4}e^{-2/(1+8t)}.
+\]
+Writing $v=(1+8t)^{-1}$, its primitive is
+\[
+ C(t)=\int_0^t h
+  =\frac14\left[\frac74e^{-2}
+                    -(v^2+v/2+1/4)e^{-2v}\right].
+\]
+It decreases until $t=1/8$ and then increases to
+$(7e^{-2}-1)/16<0$. Hence $C(t)<0$ for every $t>0$, and integration
+by parts gives $H=4\int_0^\infty e^{-4t}C(t)\dd t<0$.
+This proves $d_0=96H/e<0$.
+
+For the opposite sign, discard the positive part of $h$ and use
+$e^{-4t}\leq1$ on its negative part:
+\[
+ H\geq C(1/8)=\frac{7-3e}{16}e^{-2}
+                             >-\frac5{64}e^{-2}.
+\]
+Here the elementary exponential series gives
+$8/3<e<49/18<11/4$. Substitution into
+\eqref{eq:helicalPeakAcceleration} yields
+$d_1>105/(128e^3)$.
+
+It remains to keep the full signed work, including the parent response.
+The calculation of Proposition~\ref{prop:totalHelicalWork} applies
+to every real radial profile. For $f_1$ the non-linearized-pressure
+integral there is $I_0=1053/512$, and the heat-pressure pairing is
+\[
+ J_1(t)=\frac{9M(t)}{256(1+4t)^{12}},
+ \qquad
+ \begin{aligned}
+ M(t)={}&67108864t^9+201326592t^8+127401984t^7\\
+       &+60293120t^6+7004160t^5+3280896t^4\\
+       &+77568t^3+51456t^2+1680t+5.
+ \end{aligned}
+\]
+Every coefficient is positive. Therefore
+\[
+ c_1=4\pi I_0+8\pi\int_0^\infty e^{-4t}J_1(t)\dd t
+                                          >\frac{1053\pi}{128}.
+\]
+The sign of $c_0$ was proved in
+Proposition~\ref{prop:totalHelicalWork}. The checker
+\texttt{labs/helical\_mean\_feedback.py} verifies the complete gradient
+and pressure identities, matching jets, resolvent decompositions, heat
+primitive, and Gaussian integrals with exact symbolic arithmetic.
+\end{proof}
+
+The simultaneous growth also survives on a common short interval of
+actual viscous whole-space solutions.
+
+\begin{corollary}\label{cor:helicalSimultaneous}
+Fix $\nu>0$, $0<h\leq1/6$, and the envelope $g$ used in
+\eqref{eq:mixedDatum}. For a sufficiently large fixed $b$, put
+\[
+ \delta=\lambda^{-2h},\quad \epsilon=b\sqrt\delta,\quad
+ \mu=\lambda\delta,\quad
+ C_\epsilon=\pi\norm g_2^2(1+27\epsilon^2),\quad
+ A=\lambda^{1+2h}/\sqrt{C_\epsilon},
+\]
+and take initial data
+$u_\lambda=A g(\mu z)[V_h(\lambda x_h)+
+ \epsilon\operatorname{Re}(W_1(\lambda x_h)e^{2i\lambda z})]$.
+For all sufficiently large $\lambda$, their unforced viscous
+evolutions exist through $t_\lambda=s_*/(A\lambda)$ and satisfy
+\begin{align*}
+ \tfrac12\norm{\nabla u(t_\lambda)}_2^2
+       -\tfrac12\norm{\nabla u(0)}_2^2
+                              &\geq c\lambda^{1+4h},\\
+ \Gamma(\lambda^{-1},0,t_\lambda)-\sup_{r,z}\Gamma(r,z,0)
+                              &\geq c b^2,
+       \qquad \Gamma=r(\PP u)_\theta .
+\end{align*}
+Their initial squared energies are $\lambda^{-1+6h}\leq1$,
+their relative angular defects tend to zero, their means retain the
+bounds \eqref{eq:meanr}--\eqref{eq:meanz}, and their critical
+fluctuation histories are at most $Cb^2$ on this interval.
+The positive constants are independent of $\lambda$.
+\end{corollary}
+
+\begin{proof}
+The exact horizontal defect energy divided by $\pi$ is $27$.
+The extended local evolution and amplitude estimates used in
+Propositions~\ref{prop:fastseeds} and \ref{prop:totalHelicalWork}
+apply unchanged to this fixed smooth helical profile.
+Its positive total coefficient gives the enstrophy assertion after
+choosing $b$ large enough to pay the viscous loss.
+
+For clarity, the mean-circulation assertion requires a separate
+parameter estimate. Write $\eta=\nu\lambda/A$ and evaluate the
+normalized mean at $(R,Z)=(1,0)$. At zero amplitude its vertical
+velocity is $O(\delta)$ on the common interval. Incompressibility
+and smoothness at the axis then make its radial velocity
+$O(\delta^2)$ on fixed radial compact sets, using
+\[
+ U_r(R,Z)=-\frac{\delta}{R}
+                   \int_0^R \rho\,\partial_Z U_z(\rho,Z)\dd\rho.
+\]
+Its circulation equation
+therefore gives a change $O(\delta^2+\eta)$ at this point.
+No global radial-velocity norm of order $\delta^2$ is required.
+
+The mean is even in $\epsilon$, by the preserved joint rotation--phase
+symmetry. Four amplitude derivatives on the same interval give
+\[
+ G(s_*,\epsilon,\delta,\eta)-G(s_*,0,\delta,\eta)
+       =\epsilon^2 D(s_*,\delta,\eta)+O(\epsilon^4).
+\]
+The coefficient converges as $(\delta,\eta)\to(0,0)$: the extended
+Leray multipliers converge almost everywhere and are uniformly bounded,
+and the differentiated local equations have uniform smooth bounds.
+At the limit, $D(0)=D'(0)=0$ and $D''(0)=d_1>0$ at $Z=0$, since
+$g(0)=1$. Choose a fixed small $s_*>0$ for which $D(s_*,0,0)>0$.
+It follows that
+\[
+ G(s_*)-G(0)\geq c\epsilon^2-C(\delta^2+\eta)-C\epsilon^4.
+\]
+Since $\epsilon^2=b^2\delta$ and
+$\eta=\nu\sqrt{C_\epsilon}\delta$, a fixed large $b$ makes this at
+least $c\epsilon^2$ for large $\lambda$. Multiplication by $A/\lambda$
+gives the asserted $cb^2$ physical increase. Initially the evaluated
+point is a global maximum because $|g|\leq1$ and
+$\max_R 2R^2e^{-R^2}=2/e$.
+The mean geometry and history estimates follow from the same helical
+symmetry and amplitude bounds as in Proposition~\ref{prop:totalHelicalWork}.
+\end{proof}
+
+This excludes compulsory depletion of the maximum mean circulation as
+an explanation of the positive stretching event. It does not show
+unbounded circulation for a single datum: the initial peak itself
+grows like $\lambda^{2h}$, and the finite increase is paid at the same
+order as the critical defect history. A quantitative recurrent estimate
+with the full initial datum remains a separate question.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
