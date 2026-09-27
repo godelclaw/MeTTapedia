@@ -955,6 +955,33 @@ resolution warning, not a continuum error bound. Larger histories require
 comparison across grids and time steps; the short consistency checks
 establish no endpoint-independent budget.
 
+At `ν = .001`, the prefix through `t = .6` has a positive accumulated
+self-stretching excess at cutoff 4. The physical integrals are:
+
+| Full grid | Maximum step | Self-stretching | Half dissipation | Excess | Upper-band palinstrophy fraction |
+| --- | --- | --- | --- | --- | --- |
+| 128³ | .004 | 9.172723 | 6.231699 | 2.941024 | 1.061e-4 |
+| 128³ | .002 | 9.172723 | 6.231699 | 2.941024 | 1.061e-4 |
+| 192³ | .002 | 9.172741 | 6.231703 | 2.941039 | 1.141e-6 |
+
+The time-step change shifts the excess by `1.64e-8`; the spatial change
+shifts it by `1.45e-5` (about `.00049%`). On the finer grid, the excesses
+at cutoffs 8 and 12 are `-2.967180` and `-.870214`, respectively. Most
+cutoff-4 tail growth comes from lower-frequency feeding: its integral is
+`652.749645`, compared with `9.172741` from self-stretching. Reproduce the
+prefix with:
+
+```sh
+python3 -O labs/kida_pelz_history.py --n 128 --backend reflections --time .6 --step .004 --report-every .05
+python3 -O labs/kida_pelz_history.py --n 128 --backend reflections --time .6 --step .002
+python3 -O labs/kida_pelz_history.py --n 192 --backend reflections --time .6 --step .002
+```
+
+This is numerical evidence against **zero-allowance** half absorption at
+this particular cutoff. The regularity target permits a finite allowance
+and a data-dependent cutoff, so this finite positive episode does not
+refute it. The comparisons are not rigorous continuum error bounds.
+
 ### Simultaneous stretching and mean-circulation gain
 
 Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.
