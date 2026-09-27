@@ -19367,6 +19367,58 @@ of minimal-counterexample normal form are not asserted by this geometry
 certificate. Universal compatible construction and the route-native
 generating base remain open.
 
+\subsubsection{Four-contact look-ahead is adjacent-pair restoration}
+
+Let $S\longrightarrow R$ be an actual facial event in a bridgeless
+spherical cubic simple graph. Suppose the event exposes three edges
+and exactly two ambient edges remain outside $R$. Its exposed path is
+$u-v-w-t$, with $u,t$ old and $v,w$ new. Each new internal vertex has
+retained degree two and requires one missing edge. These missing edges
+are distinct: an edge meeting both $v,w$ would be the middle path edge,
+which is already retained. They exhaust the complement, so an ambient
+edge belongs to $S$ exactly when it avoids $v,w$.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapDeletion.missing_edges_exhaust}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapDeletion.retained_iff_avoids_internal}
+
+The matching condition follows from the facial geometry. Fewer than
+three missing edges cannot hide a whole cubic vertex; every vertex is
+touched by a retained face. Such a vertex has at most one absent
+incident edge. The two internal vertices also have no common neighbor,
+so deleting them produces four distinct ports. The ambient vertex
+rotations order those ports and construct the existing adjacent-pair
+data. The event and the two edge counts suffice: the exposed boundary
+arc is obtained from the spherical facial theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapDeletion.small_complement_matching}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapDeletion.no_common_neighbor}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapDeletion.exists_adjacentPair}
+
+For a prescribed proper colouring $a$ of $S$, use the literal edge
+inclusion to colour the induced deletion, and change the palette from
+$\operatorname{Fin}(3)$ to the three nonzero Klein-four colours. Let
+$(q_0,q_1,q_2,q_3)$ be its existing degree-two boundary word, ordered
+with $0,1$ attached to $v$ and $2,3$ attached to $w$. Then
+\[
+ \exists d\;[\,d\text{ properly colours }G\ \wedge\ d|_S=a\,]
+ \quad\Longleftrightarrow\quad
+ \neg(q_0=q_1\ \wedge\ q_2=q_3).
+\]
+The forward direction proves that every restored boundary edge must
+carry the requested colour. The reverse direction consumes the
+established adjacent-pair insertion theorem and returns the colouring
+in the original three-colour representation, retaining every old edge
+value.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapColouring.deletedColouring_tait}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapColouring.request_eq_extension_boundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceMatchingCapColouring.extension_iff}
+
+This removes a separate four-contact transfer obligation: the joint
+path-and-cap choice is precisely the existing restoration problem.
+Generating an old witness outside its blocked sector still requires a
+global argument. The source's special-edge equalisation concerns
+existing joined edges and still requires its own operation-level bridge.
+Neither arbitrary-map supply nor the route-native generating base is
+established by this identification.
+
 \subsubsection{Actual component switches}
 
 The colouring semantics now retains actual Kempe components of the old

@@ -14,6 +14,7 @@ import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample
 import Mettapedia.GraphTheory.FourColor.ThreeTwoFaceRepair
 import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceKempe
 import Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry
+import Mettapedia.GraphTheory.FourColor.FaceMatchingCapColouring
 import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
@@ -251,6 +252,18 @@ GSLT history and full forty-five-edge colouring attain the lower bound.
 This refutes a uniform two-switch repair claim in this geometry. It does
 not supply a bound for all matching caps, a proof of all normal-form cut
 conditions, or a successful colouring history for every source construction.
+The final three-edge facial addition before a two-edge cap now identifies
+the old patch exactly with deletion of its two adjacent internal vertices.
+Cubic facial incidence makes the two missing edges disjoint and the four
+external ports distinct. The actual event and edge counts supply the ordered
+deletion data; no boundary arc or colouring success is an additional supplier.
+The original three-colour assignment transports to the existing four-port
+restoration theory. It extends to the whole ambient graph, preserving every
+old edge colour, exactly when its request word does not have equal colours
+on both same-vertex port pairs. Every restored boundary edge must carry its
+old port's requested colour. Thus looking back one construction step exposes
+the existing adjacent-pair compatibility problem, rather than a new mixing
+mechanism. Universal availability of an accepted old witness remains open.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch
