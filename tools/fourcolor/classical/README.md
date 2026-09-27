@@ -106,8 +106,9 @@ All six reducibility roots use only `propext`, `Classical.choice` and
 no other axioms. The conditional real-plane theorem and the bulk and residual
 checker soundness theorems also passed. This pilot does not reproduce all 633
 configurations, the discharging presentations or the unconditional theorem.
-The largest residual checks are still outside this ladder; extrapolating from
-the diamond alone would understate their cost.
+The largest residual checks are outside this initial ladder; extrapolating from
+the diamond alone would understate their cost. The subsequent reconstruction
+pilot below adds a large residual configuration and a discharging sample.
 
 The generators used were the reference's `tools/cpc.py`, `tools/planes.c`,
 `tools/residual.c`, `scripts/gen_bulk_jobs.py`, `scripts/gen_maskc_jobs.py` and
@@ -131,6 +132,84 @@ and the residual module at `FourColor/Bulk/Cfg/Hyb033.lean`. Module indices are
 zero-based, as in the measured theorem names. These audit files belong to the
 reference checkout's dependency environment, not the main library's import
 graph.
+
+## Reconstruction pilot
+
+The adapter sources in `adapters/` connect the classical semantic argument to
+the existing GSLT library. They belong to the prepared reference environment;
+they are not yet dependencies of the main Mettapedia library. The accompanying
+LICENSE retains the reference's MIT notice and Gonthier/Werner attribution.
+
+| Module | Checked obligation |
+| --- | --- |
+| `CompatibleTraces` | A supplied contract colouring gives matching traces on a configuration and its actual exterior |
+| `PatchWitness` | An explicit glued colour function reads back the two supplied assignments, after a constant colour shift on the disk |
+| `EmbeddedReconstruction` | The matching assignments remain data at the middle interface of a GSLT reconstruction route |
+| `Config4Reconstruction` | The route consumes configuration 4's actual ring-eight certificate and proved decoded-map geometry |
+| `HypermapDictionary` | The two hypermap presentations agree on permutations, components and planarity on the same finite dart type |
+| `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
+
+The operational sequence is:
+
+```text
+supplied contract colouring
+    -> selected disk and exterior assignments with matching traces
+    -> explicit colouring of the ambient map
+```
+
+The middle state contains both colour functions, their colouring proofs, and
+their boundary compatibility. Gluing preserves the selected exterior exactly;
+the disk is shifted by a constant colour to align the boundary. The selected
+exterior can differ from the original contract assignment. Selection uses
+classical choice and the reference's Kempe-closure existence argument. This
+does not extract an executable sequence of Kempe moves.
+
+The reconstruction consumes the reference's embeddability, embedding, planarity,
+plainness, bridgelessness, connectivity, cubicity, Birkhoff-ring and pentagonal
+hypotheses. It does not assume a minimal counterexample or invoke the final
+Four Colour theorem. The configuration consumer supplies its own checked
+reducibility and embeddability; the surrounding map and contract colouring
+remain inputs. Unavoidability and strict reduction supply are separate.
+
+The hypermap dictionary is an equivalence on a fixed finite dart type, not a
+bijection between arbitrary hypermaps and labelled rotation systems. Its
+planarity proof explicitly handles the differing Euler conventions and the
+reference's natural-number genus. The standard finite planar-graph statement
+still needs its representation bridge.
+
+To replay the adapters, prepare the pinned reference with the dependency
+revisions above and build Mettapedia's imported GSLT and hypermap modules.
+The reference artifacts must include `FourColor.Pilot.Cfg003` from the initial
+pilot, `FourColor.Bulk.Cfg.Hyb218`, and `FourColor.Present7Chk85`.
+The following directory names are example input and output locations:
+
+```sh
+python3 tools/fourcolor/classical/replay_adapters.py \
+  --reference reference-4ct --mettapedia lean/mettapedia \
+  --reference-artifacts reference-artifacts --output adapter-build
+```
+
+The script checks the reference revision and common toolchain, makes a
+dependency overlay in its dedicated output directory, compiles the six adapter
+modules without native C emission, and finishes with the axiom audit. It records
+source hashes, exit statuses and wall times. It changes neither input checkout
+and does not generate or check the whole classical catalogue.
+
+The complete adapter replay passed; its final audit covered 14,508 imported
+public declarations and found only `propext`, `Classical.choice` and `Quot.sound`.
+`reconstruction-measurements.json` records the exact source hashes and results.
+The additional kernel measurements were:
+
+| Check | Frontend seconds | Peak RSS (GiB) |
+| --- | ---: | ---: |
+| Configuration 219, ring 14, all nine certificate modules combined | 1,644.56 | 19.97 maximum across modules |
+| Discharging definitions `Present7Defs` | 24.65 | 2.78 |
+| Discharging check module `Present7Chk85` | 244.33 | 7.27 |
+
+The configuration theorem is `FourColor.Bulk.Hyb218.reducible`. The discharging
+sample checks one module of the arity-seven presentation; it is not the whole
+presentation or the unavoidability theorem. The unconditional reference root
+has not yet been reproduced by these measurements.
 
 ## Compression ledger
 

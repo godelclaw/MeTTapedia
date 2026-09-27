@@ -1,0 +1,205 @@
+{
+  "reference": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_version": "4.34.0-rc2",
+  "mathlib_commit": "85e3a25e006c35636f0e53b0e9296caca2685bc0",
+  "certificate_measurements": [
+    {
+      "module": "FourColor.Mask.Cfg218",
+      "source_sha256": "1172d94fd1e7adb38c34030b1ef0b77881a390b073b2fd5639f3a73464f44817",
+      "source_bytes": 2807512,
+      "exit_code": 0,
+      "frontend_wall_seconds": 384.8,
+      "peak_rss_kib": 2646832,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 4056032
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218D",
+      "source_sha256": "71b0245ef0ce916c0ffe082e4150fa554af5c9e9836f6898c64ae849ec1d9a95",
+      "source_bytes": 10881532,
+      "exit_code": 0,
+      "frontend_wall_seconds": 30.9,
+      "peak_rss_kib": 2547320,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 7308440
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218A",
+      "source_sha256": "be615ef95ce0151a459af91b62eb0dbf13f0e4f004878b80b08e6a2455f034b5",
+      "source_bytes": 4276,
+      "exit_code": 0,
+      "frontend_wall_seconds": 13.09,
+      "peak_rss_kib": 4438672,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 64256
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218B",
+      "source_sha256": "8a512f61e636644ef5033462844cd62b3a252a71ecf329aa1db298764159d5c8",
+      "source_bytes": 20408,
+      "exit_code": 0,
+      "frontend_wall_seconds": 336.25,
+      "peak_rss_kib": 20940468,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 513240
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218C",
+      "source_sha256": "c3c0cd492049588a5028813a00590a87da12a09c661e66f0f556c7a707346b85",
+      "source_bytes": 8165,
+      "exit_code": 0,
+      "frontend_wall_seconds": 289.19,
+      "peak_rss_kib": 3846920,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 192488
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218K1",
+      "source_sha256": "da01b1e5a2bbb7e2c69838f7f11ad983ede3694b586d1090e080f374dc792966",
+      "source_bytes": 1430,
+      "exit_code": 0,
+      "frontend_wall_seconds": 211.45,
+      "peak_rss_kib": 14724632,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 21848
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218K2",
+      "source_sha256": "0ba747c4866842ae539ed37980e729a191042dc8d3ecc23983f4e63c80397d19",
+      "source_bytes": 1429,
+      "exit_code": 0,
+      "frontend_wall_seconds": 218.27,
+      "peak_rss_kib": 15325600,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 21512
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218K3",
+      "source_sha256": "b74dadb839c9a760dabc79d02392aca71f2c53ca32d97fb44a6e9d5e75d893af",
+      "source_bytes": 1394,
+      "exit_code": 0,
+      "frontend_wall_seconds": 158.22,
+      "peak_rss_kib": 15100352,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 21408
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Hyb218",
+      "source_sha256": "68b2495a2d619f880d88b8ea32e1426f66244d2559e43ff8517bdfa82db443f9",
+      "source_bytes": 2516,
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.39,
+      "peak_rss_kib": 2464836,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 63592
+    },
+    {
+      "module": "FourColor.Present7Defs",
+      "source_sha256": "2f19ce23037498d295b71c6c11ff3f710abb80f563d7d97f85158ce9f1473896",
+      "source_bytes": 1035477,
+      "exit_code": 0,
+      "frontend_wall_seconds": 24.65,
+      "peak_rss_kib": 2918596,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 23411336
+    },
+    {
+      "module": "FourColor.Present7Chk85",
+      "source_sha256": "9d110cd611294ab2a1027b1b5444aa7ca4e027304742f196129be3f9563f1665",
+      "source_bytes": 36316,
+      "exit_code": 0,
+      "frontend_wall_seconds": 244.33,
+      "peak_rss_kib": 7621776,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 236848
+    }
+  ],
+  "adapter_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "modules": [
+      {
+        "module": "FourColor.Pilot.CompatibleTraces",
+        "source_sha256": "04394bf495147ec5ef7e875d2d82976715b5028cf18635aad90917f90e4660a9",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.063
+      },
+      {
+        "module": "FourColor.Pilot.PatchWitness",
+        "source_sha256": "5c807b6e55f719d6c1a91535110d3a2bfb793e38207587aea2aa44671d122e77",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.178
+      },
+      {
+        "module": "FourColor.Pilot.HypermapDictionary",
+        "source_sha256": "e666e22c9899f5c82140e6df8b0be69c42c84c21756f81740d0524f78822da10",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.073
+      },
+      {
+        "module": "FourColor.Pilot.EmbeddedReconstruction",
+        "source_sha256": "0d83cfcaf5e068c6659c75dabf071093bef6cd359b154af9decf568b4eb3314e",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.679
+      },
+      {
+        "module": "FourColor.Pilot.Config4Reconstruction",
+        "source_sha256": "bb3c0897f6ceaceb1a425a8cb547930d804b3880f283057ed644a0eee2c07c5c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.563
+      },
+      {
+        "module": "FourColor.Pilot.BridgeAudit",
+        "source_sha256": "73a8c8cd5aabcd43995a506a4d2db4b26aea5697da906539c4731cde0af79b0a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.086
+      }
+    ]
+  },
+  "axiom_audit": {
+    "declarations": 14508,
+    "scope": "Imported public FourColor, Mettapedia and Foundation declarations",
+    "allowed": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected": []
+  },
+  "roots": [
+    "FourColor.Config4Reconstruction.repair",
+    "Mettapedia.GraphTheory.Hypermap.Reference.planar_iff",
+    "FourColor.Bulk.Hyb218.reducible",
+    "FourColor.f7_4555"
+  ],
+  "limits": [
+    "One complete large residual configuration, not all 633 certificates",
+    "One discharging-check module, not full unavoidability",
+    "Reconstruction is conditional on the exact geometric hypotheses and a supplied contract colouring",
+    "Classical trace selection does not extract a sequence of Kempe moves",
+    "Adapter sources are checked in the reference environment, not integrated into the main library",
+    "The unconditional root and standard finite planar-graph bridge are not established by this pilot"
+  ],
+  "compression": {
+    "new_configurations_removed": 0,
+    "new_certificate_checks_replaced": 0
+  }
+}

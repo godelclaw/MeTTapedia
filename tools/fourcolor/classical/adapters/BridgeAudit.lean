@@ -1,0 +1,23 @@
+import FourColor.Pilot.HypermapDictionary
+import FourColor.Pilot.Config4Reconstruction
+import FourColor.Present7Chk85
+import FourColor.Bulk.Cfg.Hyb218
+
+#print axioms Mettapedia.GraphTheory.Hypermap.Reference.planar_iff
+#print axioms FourColor.Config4Reconstruction.repair
+#print axioms FourColor.Bulk.Hyb218.reducible
+#print axioms FourColor.f7_4555
+
+open Lean Elab Command in
+run_cmd do
+  let env ← getEnv
+  let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
+  let prefixes : List Name := [`FourColor, `Mettapedia, `Foundation]
+  let mut count : Nat := 0
+  for (name, _) in env.constants.toList do
+    if prefixes.any (·.isPrefixOf name) && !name.isInternal then
+      count := count + 1
+      for axiomName in (← liftCoreM <| collectAxioms name) do
+        unless allowed.contains axiomName do
+          throwError m!"Unexpected axiom in {name}: {axiomName}"
+  logInfo m!"Audited {count} imported public declarations; only the three permitted axioms."
