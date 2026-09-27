@@ -15,8 +15,8 @@ python3 labs/fourier_interactions.py --case chain --generations 12
 
 The program prints JSON after all selected checks pass and raises an error on
 failure. Checks remain enabled with `python3 -O`. There are no input files,
-network requests or generated files. The `matched`, `chain`, `cyclic` and `crossing`
-cases can also be run separately.
+network requests or generated files. The `matched`, `chain`, `cyclic`,
+`crossing` and `remainder` cases can also be run separately.
 
 These are reproducible algebra calculations, **not Lean certificates**.
 The jet calculations identify derivatives of a smooth solution at time zero;
@@ -202,3 +202,41 @@ at the parent frequencies. The mixed terms still conserve total kinetic
 energy. This is one source channel, not net parent-energy growth, a closed
 energy-transfer model, a uniform positive-time bound, or a refutation of a
 data-dependent signed budget.
+
+## Subtracting the complete pair histories does not fix the stretching sign
+
+For `s=±1`, take the cyclic initial velocity `u₀=(c(z),a(x),b(y))`, where
+
+```text
+a(x)=s(sin x+sin 2x),    b(y)=sin y+(sin 2y)/2,
+c(z)=sin 2z+sin 4z.     ||u₀||₂²=21/8.
+```
+
+Write the three separate axis fields as `v₁,v₂,v₃`, and let `U_I(t)` be
+the actual solution with initial value `Σ_(i∈I) v_i`. Each single field
+follows heat flow. Each pair is globally described by a heat-evolved shear
+and a linear passive scalar; for example the pair in `x,y` is
+`(0,a(x,t),θ(x,y,t))` with `θ_t+a θ_y=νΔθ` and `θ(0)=b(y)`.
+
+Subtract those complete pair histories by defining
+
+```text
+Q(t)=U_{123}(t)-U_{12}(t)-U_{23}(t)-U_{31}(t)+U_1(t)+U_2(t)+U_3(t).
+```
+
+This is a difference of actual flows, not a Fourier projection. On the
+smooth interval of the full solution, `Q(0)=Q'(0)=0`. The code computes
+`Q(t)=t²q₂+O(t³)`, where `q₂` has 56 modes and is independent of viscosity:
+
+```text
+||q₂||₂²=845/56,    ||∇q₂||₂²=2331/8,    ||Aq₂||₂²=47115/8,
+Π(Q(t))=-(243/56)s t⁶+O(t⁷),             Π(v)=<Av,N(v)>.
+```
+
+Three distinct exact viscosity samples determine `q₂`, since its degree
+in `ν` is at most two. Reversing `a` reverses `q₂` and its cubic production,
+while preserving the displayed squared norms. Thus a zero initial
+remainder, even after all pair histories are subtracted, does not force
+nonpositive self-stretching. The code certifies the initial coefficients
+by rational calculation; it supplies no uniform time window or bound on
+the later signed integral. A data-dependent allowance remains possible.

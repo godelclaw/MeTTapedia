@@ -375,6 +375,53 @@ def check_crossing():
             "scope": "one source channel; not net parent energy growth"}
 
 
+def remainder_axes(sign: int) -> list[Field]:
+    """Cyclic shears with two harmonics in each one-dimensional profile."""
+    require(sign in (-1, 1), "invalid profile sign")
+    return [add(sine((1, 0, 0), (0, sign, 0)), sine((2, 0, 0), (0, sign, 0))),
+            add(sine((0, 1, 0), (0, 0, 1)), sine((0, 2, 0), (0, 0, F(1, 2)))),
+            add(sine((0, 0, 2), (1, 0, 0)), sine((0, 0, 4), (1, 0, 0)))]
+
+
+def check_remainder():
+    rows = []
+    signed_second = {}
+    for sign in (-1, 1):
+        axes = remainder_axes(sign)
+        reference = None
+        for nu in (F(0), F(1), F(2)):
+            full = jets(add(*axes), nu, order=2)[0]
+            pairs = [jets(add(axes[i], axes[(i + 1) % 3]), nu, order=2)[0]
+                     for i in range(3)]
+            singles = [jets(axis, nu, order=2)[0] for axis in axes]
+            q = [add(full[j], *(scale(-1, p[j]) for p in pairs),
+                     *(p[j] for p in singles)) for j in range(3)]
+            for field in q:
+                validate(field)
+            require(not q[0] and not q[1], "lower remainder coefficients")
+            require(len(q[2]) == 56, "second remainder support")
+            require(pair(full[0], full[0]) == F(21, 8), "cyclic profile energy")
+            require(pair(q[2], q[2]) == F(845, 56), "second remainder energy")
+            aq = A(q[2])
+            require(pair(aq, q[2]) == F(2331, 8), "second remainder gradient")
+            require(pair(aq, aq) == F(47115, 8), "second remainder Laplacian")
+            require(pair_source(aq, q[2], q[2]) == -sign * F(243, 56),
+                    "leading remainder self-production")
+            if reference is not None:
+                require(q[2] == reference, "viscous dependence of second remainder")
+            reference = q[2]
+            rows.append({"profile_sign": sign, "nu": str(nu),
+                         "production_t6_coefficient": str(-sign * F(243, 56))})
+        signed_second[sign] = reference
+    require(signed_second[-1] == scale(-1, signed_second[1]),
+            "profile reversal of second remainder")
+    return {"rows": rows, "velocity_coefficient_viscosity_degree_bound": 2,
+            "distinct_viscosity_samples": 3, "second_remainder_modes": 56,
+            "second_remainder_squared_norm": "845/56",
+            "second_remainder_squared_gradient": "2331/8",
+            "second_remainder_squared_laplacian": "47115/8"}
+
+
 def positive_int(text: str) -> int:
     value = int(text)
     if value <= 0:
@@ -384,7 +431,7 @@ def positive_int(text: str) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case", choices=("all", "matched", "chain", "cyclic", "crossing"),
+    parser.add_argument("--case", choices=("all", "matched", "chain", "cyclic", "crossing", "remainder"),
                         default="all")
     parser.add_argument("--generations", type=positive_int, default=8,
                         help="number of exact chain instances (default: 8)")
@@ -393,7 +440,8 @@ def main() -> None:
                "scope": "finite Fourier algebra and initial time derivatives; no Lean certificate"}
     for name, check in (("matched", check_matched_fields),
                         ("chain", lambda: check_chain(args.generations)),
-                        ("cyclic", check_cyclic), ("crossing", check_crossing)):
+                        ("cyclic", check_cyclic), ("crossing", check_crossing),
+                        ("remainder", check_remainder)):
         if args.case in ("all", name):
             results[name] = check()
     print(json.dumps(results, indent=2))
