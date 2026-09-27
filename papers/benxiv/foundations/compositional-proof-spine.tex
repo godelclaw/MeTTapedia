@@ -18670,6 +18670,85 @@ This supplies a geometric face-construction language for all source maps
 and for the bands already extracted from them. Its states may have
 unbounded boundary width. No theorem here extends every partial colouring,
 chooses a colourable route, recognizes arbitrary bands as literal tubes,
-or supplies a strict reduction. The remaining local geometric task is
-to identify attachment arcs in boundary order and their induced operations;
-the global compatible reduction supply and generating base remain open.
+or supplies a strict reduction. The next result identifies the actual
+ordered boundary replacement. The global compatible reduction supply and
+generating base remain open.
+
+\subsection{A facial event is an exact ordered boundary splice}
+
+The attachment interval is now derived from the source geometry. Let
+$S\to S\cup\{f\}$ be one of the facial construction events, let
+$B(f)$ denote the original edge boundary of $f$, and put
+\[
+ Y=E(S)\cap B(f),\qquad X=B(f)\setminus E(S).
+\]
+Both endpoints of the event have connected selected and complementary
+facial shores. Their literal patches have Euler characteristic one.
+The same holds for the single face $f$. At a cubic vertex common to
+$S$ and $f$, one incident edge is common as well: there are no isolated
+attachment vertices. Subtracting the three Euler equations therefore gives
+\[
+ |V(Y)|=|Y|+1.
+\]
+In particular $Y$ is nonempty and omits some edge of $B(f)$.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentCount.region_euler}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentCount.touched_face_inter}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentCount.attachment_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentCount.attachment_proper}
+
+The order follows from a reusable finite-permutation theorem. If a finite
+set $A$ lies in one orbit of a permutation $p$ and
+$|A\cup p(A)|=|A|+1$, then $A$ is exactly a nonrepeating interval
+$a,p(a),\ldots,p^{r-1}(a)$, with its predecessor and successor outside
+$A$. The count says that there is exactly one outgoing transition.
+Choosing a point whose first-hit distance to that exit is maximal
+constructs the whole interval. No order or interval witness is an input.
+\Sverified{Mettapedia.GraphTheory.FourColor.PermutationSingleExitArc.exists_arc_of_union_card}
+
+Orient $Y$ in the original facial orbit of $f$. The union of those darts
+and their facial successors lists exactly $V(Y)$, without repetitions of
+vertices. The Euler count consequently supplies an actual facial interval.
+Every interior successor agrees with the first-return restriction defining
+the old patch. This gives the same interval, dart by dart, in the actual
+old outer-boundary permutation.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentArc.exists_attachment_arc}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentBoundary.exists_ordered_attachment}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentBoundary.old_attachment_on_outer}
+
+Complementing the two facial shores reverses the event while retaining
+the identity of $f$. Its attachment edge set is exactly $X$, so the same
+Euler argument gives $|V(X)|=|X|+1$. Applied to the new patch's actual
+outer permutation, this yields a single nonempty proper exposed arc.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionComplement.reverseEvent}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionComplement.reverse_attachment_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedBoundary.exists_exposed_arc}
+
+Write $\phi_S,\phi_R$ for the old and new boundary permutations, and
+$i$ for the literal inclusion of old retained darts into the new map.
+Let the removed and exposed arcs start at $a,b$ and have lengths $r,s$.
+The two exact junction equations are
+\[
+ b=\phi_R\bigl(i(\phi_S^{-1}(a))\bigr),\qquad
+ \phi_R^s(b)=i\bigl(\phi_S^r(a)\bigr).
+\]
+Thus the new arc starts immediately after the same surviving predecessor
+and rejoins exactly the old dart following the removed arc. An old outer
+dart survives precisely when it is outside the attachment; the new
+boundary contains exactly those surviving darts and the exposed arc.
+Successor steps between surviving darts agree under $i$.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceBoundarySplice.old_outer_survives_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceBoundarySplice.new_boundary_partition}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceBoundarySplice.surviving_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions.first_junction}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions.last_junction}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions.exists_splice}
+
+This seals the local ordered geometry for every event of the actual
+facial GSLT. The final existence theorem constructs the outer darts,
+both intervals, and their junctions from the source map and event.
+It assumes no supplied attachment interval, boundary word, or colouring.
+The next task is to interpret these exact splices in the existing
+boundary-constraint semantics and preserve the complete compatible
+choices under composition. Existence of successful colouring choices,
+uniform reduction supply, and the route-native generating base remain
+open; the ordered construction theorem alone asserts none of them.

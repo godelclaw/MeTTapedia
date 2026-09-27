@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
 import Mettapedia.GraphTheory.FourColor.FaceRegionCurvature
 import Mettapedia.GraphTheory.FourColor.FaceRegionSweep
+import Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -103,8 +104,14 @@ vertices and edges. Nested distance contours admit the same refinement.
 Each event toggles exactly its face edges in the complete contour. Its
 boundary length changes by face length minus twice the attachment-edge
 count, while its degree imbalance changes by face length minus six. These
-are geometric construction paths, without a colouring-lifting premise or
-conclusion. No bounded width or reduction supply follows from their existence.
+events have nonempty proper attachment arcs in the original face order and
+in the old boundary order, with pointwise agreement under the dart inclusion.
+The new edges form one arc of the actual new boundary. The surviving darts
+exhaust its complement, their successor steps are unchanged away from the
+junctions, and the exact entry and rejoining equations identify the ordered
+splice. These are geometric construction paths, without a colouring-lifting
+premise or conclusion. No bounded width or reduction supply follows from
+their existence.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
