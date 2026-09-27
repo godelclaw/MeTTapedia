@@ -18992,3 +18992,63 @@ form, nor the pentagon-support conjecture. The unconditional repair claim
 for arbitrary prescribed old colourings is removed from the construction
 plan. Existence of compatible choices along a whole source construction,
 or a terminating strict reduction with reconstruction, remains open.
+
+\subsection{A facial rollback escapes the trapped family}
+
+The same spherical witness admits a construction which temporarily
+changes the retained patch. Remove face $1$, freeing exactly the path
+$4,10,8$. The remaining selected faces and their complement are connected,
+and their edge union is the old set minus $\{4,10\}$ and $\{8,10\}$.
+Restrict the specified old colouring to this smaller graph. First switch
+colours $0,1$ on the component with vertex path $6,1,7,0,4$; then switch
+colours $0,2$ on the new component with path $8,0,7,2,5,11,9$.
+Both components are certified by saturated chains. Their composition is
+a proof-relevant GSLT history of exactly two physical switches.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.rollback_geometry}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.first_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.second_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.repairHistory_length}
+
+Restore the two path edges with colours $0,2$, respectively. The previously
+blocked edges $\{3,9\}$ and $\{6,10\}$ can now receive colours $0,1$.
+The existing literal gluing operation constructs a proper colouring on
+all eighteen edges and preserves every final smaller-patch value.
+Restoring face $1$, adding face $5$, then adding face $6$ gives connected
+facial shores throughout; face $4$ remains outside. Five explicitly
+specified old edges keep their colours during both switches and the
+reconstruction.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.assembled_agrees_core}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.completion_on_rotation}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.reconstruction_geometry}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.fixed_preserved}
+
+The first smaller switch admits no return to the old patch: it makes
+both endpoint profiles of the deleted two-edge path omit colour $0$,
+which would force equal colours on adjacent edges. The second switch
+restores reconstructibility. The rollback therefore permits an intermediate
+state absent from the original colouring space.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.intermediate_has_no_return}
+
+There is a general distinction between recovering witnesses and lifting
+their operational histories. If the retained endpoint profiles of an
+exposed path omit unique colours, every proper extension must use those
+colours on its end edges. For a path of one or two edges this determines
+the complete extension on the retained union. This uniqueness theorem
+uses the existing gluing law and the literal ordered path, independently
+of planarity.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.end_colours_of_extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.extension_unique_of_length_le_two}
+
+Apply it to the rolled-back path. The final smaller colouring has a unique
+return to the old edge set. That return extends over the full map, so the
+closed-family obstruction proves that no old Kempe history reaches it.
+More strongly, no such history has \emph{any} endpoint agreeing with the
+final smaller colouring on all its retained edges. Thus the smaller
+history cannot lift even though its endpoint has a unique reconstruction.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.unique_return}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.return_not_reachable}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.history_does_not_lift}
+This proves a successful revised construction for the checked witness.
+It supplies neither universal existence of a successful one-face rollback
+nor a progress argument for arbitrary repeated rollback. Those are
+separate geometric questions, not consequences of witness composition.

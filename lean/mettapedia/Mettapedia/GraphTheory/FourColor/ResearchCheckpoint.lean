@@ -8,6 +8,7 @@ import Mettapedia.GraphTheory.FourColor.FacePathExtension
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
 import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
+import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -156,6 +157,20 @@ compatible construction. The witness contains triangles and squares and
 does not refute a repair theorem restricted to the stronger normal form.
 Construction with earlier choices revised, or strict replacement and
 reconstruction, still needs a geometric progress argument.
+A literal one-face rollback now escapes that same trapped family: two actual
+component switches on the smaller patch permit reconstruction of the full
+map. All rollback and reconstruction regions have connected complementary
+facial shores. Five specified old edges retain their colours throughout.
+The first smaller switch has no proper return to the old patch; the second
+restores reconstructibility. Passing through that extra smaller state is
+permitted by the rollback.
+A generic theorem proves uniqueness of reconstruction across an exposed
+path of at most two edges when each old endpoint profile omits one colour.
+It applies to the rolled-back path. Nevertheless no old Kempe history ends
+at any colouring restricting to the final smaller witness. Thus uniqueness
+of colouring reconstruction does not imply lifting of recolouring histories.
+This certificate supplies one successful revised construction; universal
+availability of a successful rollback and a general bound remain unproved.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
