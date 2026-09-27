@@ -1355,6 +1355,57 @@ residual and are used only to test the heat formulas. The smooth
 construction, viscous comparison and all-prefix bounds in
 `papers/ns_forced_tail_budget.tex` remain analytic, not Lean-certified.
 
+### Instantaneous stretching capacity and its viscous defect
+
+Run `python3 -O labs/instantaneous_stretching.py`, or add `--fft-check`
+for independent physical products and Fourier derivatives. All means
+are normalized on the `2*pi` torus. Write `A=-Delta`,
+`M=curl A^-1 P[(curl u.grad)u]` and
+
+```text
+Q(u) = <M(u), A^-1 M(u)>/(2 nu^2),
+C_grad(u) = sum_j ((partial_j curl u).grad)(partial_j u),
+V(u) = -(2/nu) <A^-1 M(u), curl A^-1 P C_grad(u)>.
+```
+
+The actual unforced balance for this alternative capacity is
+
+```text
+2 G_out' + W = DQ(u)[N(u)] + V(u),   G_out = (Y+Q)/2.
+```
+
+Here `W` is the original positive cost. The extra quartic viscous term
+cannot be omitted. For the globally regular shear datum
+`u_*=(sin y,0,(-1+cos(2y))sin x)`,
+
+```text
+Q(u_*)                      = 67/(16000 nu^2),
+caloric_capacity(u_*)        = 23/(2400 nu^2),
+DQ(u_*)[-nu A u_*]           = 49/(4000 nu) > 0,
+DQ(u_*)[N(u_*)]              = 0,
+V(u_*)                      = 67/(2000 nu).
+```
+
+At `nu=1`, initial data `40*u_*` give `2 G_out'=8160`, `W=77600`
+and `V=85760`, while physical enstrophy initially decreases. This
+excludes pointwise absorption of `V` by any fraction at most one of
+`W`. It does not exclude a signed time-integrated allowance.
+
+The analytic heat-minimality argument in `papers/ns_forced_tail_budget.tex`
+also constrains replacements. Every functional vanishing at infinite
+heat time and paying at least `||M||^2/nu` along heat dominates the
+caloric capacity. Exact payment uniquely determines that capacity.
+Thus a quantity depending only on instantaneous stretching, vanishing
+when that stretching is zero, cannot provide this heat payment on all
+smooth data. A larger initial parent reserve remains possible; the
+velocity fourth moment is an example, with signed pressure work left
+to control along the actual evolution.
+
+The checker retains all Fourier outputs and both differentiated parents.
+Exact rational identities and independent FFT values support the explicit
+example; the analytic heat comparison and local PDE implication are not
+Lean-certified.
+
 ### Kida–Pelz evolution
 
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field

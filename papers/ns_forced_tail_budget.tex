@@ -48,7 +48,9 @@ periodic shear construction has recurrent positive caloric renewal on
 actual globally regular unforced flows. Its signed primitive and positive
 cost have quartic initial-data bounds, while its positive-part integral
 exceeds every fixed quartic allowance. This distinction persists after
-the separated-sector payments.
+the separated-sector payments. An instantaneous stretching capacity
+removes these particular cycles but introduces a signed viscous defect;
+an exact example shows that this defect cannot simply be absorbed.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -1573,6 +1575,142 @@ input cutoff nor refutes the signed remaining budget. It shows that
 cancellation over repeated history can remain necessary inside the
 coupled sector even after all three absolute sector payments.
 
+\section{Heat payment constrains changes of capacity}
+
+The recurrent example suggests measuring the actual instantaneous
+stretching instead of the stretching of heat-smoothed velocities.
+Such a change must also preserve, or explicitly replace, the viscous
+payment used in the positive balance. We continue on the normalized
+$2\pi$ torus with smooth mean-zero solenoidal fields.
+
+\begin{proposition}\label{prop:heatminimality}
+Let $\mathcal B$ be a functional such that
+$s\mapsto\mathcal B(H_su)$ is continuously differentiable and tends to
+zero as $s\to\infty$ for every such $u$. If
+\[
+ -\frac{\dd}{\dd s}\mathcal B(H_su)
+       \geq\frac1\nu\norm{\mathcal M(H_su)}_2^2,
+\]
+then $\mathcal B(u)\geq\mathcal K^\nu(u)$. If the heat derivative
+is exactly the displayed source cost, then
+$\mathcal B=\mathcal K^\nu$.
+In particular no functional depending only on
+$F(u)=(\curl u\cdot\nabla)u$, and vanishing when $F=0$, can have
+this heat payment on the whole smooth class. The same conclusion holds
+with $F$ replaced by $\mathcal M$.
+\end{proposition}
+\begin{proof}
+Integrate the inequality from zero to $S$ and let $S\to\infty$.
+The right side tends to~\eqref{eq:Kdef}. The equality case follows
+by the same argument. For the last assertions use the smooth datum
+$v_0$ of Proposition~\ref{prop:recurrentcaloric}: its actual stretching
+and $\mathcal M$ vanish, whereas
+$\mathcal K^1(v_0)=K_++K_-+2C>0$.
+\end{proof}
+
+This statement concerns a specified heat payment and terminal limit.
+It does not exclude a larger parent reserve, a different positive cost,
+or an explicitly history-dependent functional.
+
+For a concrete instantaneous choice, put
+\[
+ \mathcal Q^\nu(u)=\frac{1}{2\nu^2}
+          \langle\mathcal M(u),A^{-1}\mathcal M(u)\rangle,
+ \qquad \mathcal G_{\rm out}=(Y+\mathcal Q^\nu)/2.
+\]
+The inverse is zero on the constant mode. This nonnegative capacity
+vanishes on the entire cyclic Euler reference above. Define
+\[
+ C_\nabla(u)=\sum_j(\partial_j\omega\cdot\nabla)\partial_j u,
+ \qquad
+ \mathcal V^\nu(u)=-\frac2\nu
+       \langle A^{-1}\mathcal M(u),R C_\nabla(u)\rangle,
+ \qquad
+ \mathcal T_{\rm out}^\nu=D\mathcal Q^\nu(u)[N(u)].
+\]
+The Laplacian product rule gives
+$D\mathcal M(u)[-\nu Au]=-\nu A\mathcal M(u)-2\nu R C_\nabla(u)$.
+Consequently, along the actual unforced equation,
+\begin{equation}\label{eq:outputcapacitybalance}
+ 2\mathcal G_{\rm out}'+\mathcal W^\nu
+       =\mathcal T_{\rm out}^\nu+\mathcal V^\nu.
+\end{equation}
+The source and positive cost $\mathcal W^\nu$ are the original ones;
+$\mathcal V^\nu$ is an additional quartic term of undetermined sign.
+
+\begin{proposition}\label{prop:outputheatgrowth}
+Let
+\[
+ u_*=(\sin y,\,0,\,(-1+\cos(2y))\sin x).
+\]
+For every $\nu>0$,
+\[
+ \mathcal Q^\nu(u_*)=\frac{67}{16000\nu^2},\qquad
+ \mathcal K^\nu(u_*)=\frac{23}{2400\nu^2},\qquad
+ D\mathcal Q^\nu(u_*)[-\nu Au_*]=\frac{49}{4000\nu}>0.
+\]
+Moreover $\Pi(u_*)=\mathcal T_{\rm out}^\nu(u_*)=0$ and
+$\mathcal V^\nu(u_*)=67/(2000\nu)$. For the globally regular
+unforced shear evolution from $\alpha u_*$,
+\[
+ 2\mathcal G_{\rm out}'(0)
+      =-\frac{29}{2}\nu\alpha^2
+           +\frac{49}{4000\nu}\alpha^4.
+\]
+This is positive when $\alpha^2>58000\nu^2/49$, although
+$Y'(0)=-29\nu\alpha^2/2<0$. In particular
+$\mathcal V^\nu\leq\theta\mathcal W^\nu$ cannot hold at every
+smooth state for any $\theta\leq1$.
+\end{proposition}
+\begin{proof}
+Writing $s$ for auxiliary heat time, direct differentiation gives
+\[
+ \mathcal M(H_su_*)=e_z\cos x\left[
+     \left(\tfrac12e^{-2\nu s}-\tfrac14e^{-6\nu s}\right)\sin y
+       -\tfrac3{20}e^{-6\nu s}\sin(3y)\right].
+\]
+Orthogonality gives the two capacities, the displayed heat derivative,
+and $\norm{\mathcal M(u_*)}_2^2=17/800$.
+The nonlinear velocity source is purely vertical and proportional to
+$\cos x$. Its contribution to $D\mathcal M$ is proportional to
+$\sin x$, so its pairing in $D\mathcal Q$ vanishes.
+The same $x$-orthogonality gives $\Pi=0$.
+Finally $Y(u_*)=9/4$ and $D(u_*)=29/4$. The product-rule identity
+gives $\mathcal V^\nu=49/(4000\nu)+17/(800\nu)$.
+Homogeneity and~\eqref{eq:outputcapacitybalance} prove the remaining
+claims. For example, at $\nu=1$, $\alpha=40$ the exact values are
+\[
+ 2\mathcal G_{\rm out}'(0)=8160,\qquad
+ \mathcal W^1(40u_*)=77600,\qquad
+ \mathcal V^1(40u_*)=85760.
+\]
+The triangular shear/passive-scalar equations provide global smoothness.
+Continuity turns the strict initial increase into an increase on a
+nonzero actual time interval; no uniform interval length is claimed.
+\end{proof}
+
+This rules out dropping, or automatically absorbing, the new viscous
+term. It does not rule out a signed physical-time allowance for it.
+A familiar larger parent reserve illustrates the remaining option:
+\[
+ \mathcal B_4(u)=\frac{\norm u_4^4}{2\nu^2},\qquad
+ A_4=\int|u|^2|\nabla u|^2,\qquad
+ B_4=\int\sum_j(u\cdot\partial_j u)^2.
+\]
+Heat differentiation gives
+$D\mathcal B_4[-\nu Au]=-2(A_4+2B_4)/\nu$.
+Since $\norm{\mathcal M(u)}_2^2\leq2A_4$, this reserve has at
+least the required heat payment and hence $\mathcal B_4\geq\mathcal K^\nu$.
+Its Euler derivative is instead
+\[
+ D\mathcal B_4(u)[N(u)]=\frac{2}{\nu^2}P_4(u),\qquad
+ P_4(u)=-\int|u|^2u\cdot\nabla p.
+\]
+Pure transport cancels from this expression. The pressure-free shear
+cycles therefore disappear, but a signed pressure-work history bound
+is still required for arbitrary data. These comparisons identify the
+terms a changed capacity must control; they supply no such bound.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -1638,6 +1776,14 @@ nonzero plateau-equation residual: they test the heat formula, not the
 smooth Euler reference. The flat-plateau construction, logarithmic-time
 viscous comparison and all-prefix bounds are analytic proofs, not Lean
 certificates or numerical PDE time enclosures.
+The checker \texttt{labs/instantaneous\_stretching.py} verifies the
+alternative capacity's complete Laplacian product rule and unforced
+positive balance, the exact shear constants, amplitude and viscosity
+scaling, and cases with a nonzero nonlinear return. It compares derivatives
+from both parent slots with an independent quartic polarization. Physical
+products and Fourier differentiation on two grids independently recover
+the shear values. These finite checks do not certify the heat-minimality
+argument or a general signed history estimate.
 Arbitrary-data unforced regularity remains open.
 
 \begin{thebibliography}{9}
