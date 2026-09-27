@@ -16,6 +16,7 @@ import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceKempe
 import Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry
 import Mettapedia.GraphTheory.FourColor.FaceMatchingCapColouring
 import Mettapedia.GraphTheory.FourColor.AdjacentPairFacialTail
+import Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry
 import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
@@ -274,6 +275,17 @@ uncoloured prefix starts from a single original face. The construction uses
 normal-form face intersections, dual triangles, and disk Euler counts. It
 assumes neither a terminal patch nor a boundary ordering. It supplies no
 accepted old colouring, successful coloured route, or finite generating base.
+An actual adjacent-pair deletion in a thirty-vertex bridgeless cubic sphere
+now has a proper starting colouring from which no finite physical Kempe
+history extends back to the ambient map. Six representatives and palette
+permutations give a switch-closed family. Its two ports at one deleted
+vertex always request the same colour. The same rotation has an explicit
+full colouring, girth five, pentagonal or hexagonal faces, and connected
+facial shores before and after the three-edge terminal addition. Thus
+girth five and this terminal geometry do not make every starting choice
+repairable. The replay tool additionally checks dual connectivity after
+up to four face deletions and small cyclic cuts; those extra checks are
+diagnostics and are not asserted as Lean normal-form theorems here.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch

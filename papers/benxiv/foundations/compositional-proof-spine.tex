@@ -19466,6 +19466,65 @@ route does not prove that its colouring choices can be made compatible.
 Universal coloured progress and the route-native generating base remain
 open; this result supplies no bounded interface or strict reduction.
 
+\subsubsection{A trapped class in the actual adjacent-pair deletion}
+
+The proposed strengthening ``every proper old colouring can be repaired
+by physical Kempe switches'' fails even after opening the four ports.
+In the explicit thirty-vertex bridgeless cubic sphere, delete adjacent
+vertices $0,1$, retaining exactly the forty edges avoiding them. A family
+described by six representatives and palette permutations is closed under
+every actual bichromatic-component switch. Saturated chains certify the
+physical components; colour-renaming transport reuses each chain proof.
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedOrbit.retained_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedOrbit.locked_switch}
+
+Throughout that family, the old neighbours $2,3$ of vertex $0$ request
+the same missing colour. Any restoration would therefore give the two
+edges $02,03$ the same colour at their common endpoint. Induction over
+the GSLT history proves nonextension after arbitrarily many switches,
+and the equivalent existing Kempe closure has the same obstruction.
+Unused edge identifiers remain isolated and their colours are unrestricted.
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedOrbit.locked_no_extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedOrbit.no_history_extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedOrbit.no_closure_extension}
+
+This is the actual sphere rotation already used for the three-switch
+matching-cap example, with a different retained region. All its faces
+are pentagons or hexagons; its primal girth is proved to be exactly five.
+The old region and its complement are connected. Adding one original
+face preserves both connected shores, exposes exactly three edges,
+and leaves two disjoint cap edges. The nonextension theorem is transported
+to the rotation's literal endpoints. A separately displayed assignment
+properly colours the entire ambient graph.
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.connected_sides}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.connected_after}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.retained_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.exposed_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.cap_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.girth_eq_five}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.no_history_extension_on_rotation}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairLockedGeometry.ambient_colourable}
+
+The replay \texttt{tools/fourcolor/v24\_open\_pair\_orbit\_gate.py}
+independently enumerates $288$ labelled old colourings in classes of sizes
+$36,36,216$. Their extendable subsets have sizes $24,0,72$, respectively.
+The full graph has $96$ labelled colourings. An original-vertex component
+search independently reproduces the trapped class. The tool also checks
+dual connectivity after each deletion of at most four faces and all
+short dual cycles: the $30$ triangles isolate one primal vertex, the
+$45$ quadrilaterals isolate two, and the $102$ pentagons have smaller
+shores of size three or five. These additional small-cut checks are
+diagnostics, not formal normal-form theorems of this module.
+
+Hence the earlier smoothing obstruction persists in an actual open
+deletion; the extra ports do not guarantee escape from every class.
+The refuted assertion assumes only geometry and a prescribed proper
+starting colouring. Existence of a well-chosen accepted colouring,
+an argument using minimality to select it, and reconstruction operations
+that can change its Kempe class remain separate possibilities. This
+example neither refutes the Four Colour Theorem nor supplies a universal
+successful construction, strict reduction, or generating base.
+
 \subsubsection{Actual component switches}
 
 The colouring semantics now retains actual Kempe components of the old
