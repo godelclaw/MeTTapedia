@@ -790,6 +790,23 @@ coexists with larger total signed production. The linear term is retained
 to expose angular leakage on the periodic square. This test is not an
 eigenmode identity for the evolving viscous base.
 
+At time 6, with the same amplitude, viscosity and step, the ordering
+changes. The amplitude calculation below uses grid 384. The full runs
+use either grid 256 throughout, or its time-3 state padded with zero
+coefficients to grid 384 and continued there; both use 48 axial points.
+
+| Quantity | Quadratic prediction | Full grid 256 | Refined continuation |
+| --- | --- | --- | --- |
+| Enstrophy | 1.2985301083 | 1.2509926620 | 1.2509870179 |
+| Integrated signed production | .4426154463 | .4102815673 | .4104244787 |
+| Integrated enstrophy dissipation | .2265853380 | .2417889054 | .2419374610 |
+
+Both less production and more dissipation now contribute to the smaller
+full enstrophy. The upper-frequency palinstrophy fraction at the endpoint
+falls from `.03785` to `.0007433`. This refines only the interval from
+time 3 to 6; it is not an independent calculation on grid 384 throughout.
+The full-flow enstrophy ledger error is below `1.2e-10`.
+
 The earlier five-branch `cubic_history.py` uses an inviscid stationary
 column and continuum angular ancestry. Its difference from a viscous full
 flow cannot be attributed solely to nonlinear feedback. Even at zero
@@ -865,6 +882,17 @@ recorded separately. Positive initial stretching or a finite excess does
 not refute a history allowance depending on the complete initial datum.
 Resolution diagnostics and sampled prefix maxima give no continuum
 error enclosure or bound between integration steps.
+
+For the default parameters, at normalized time `.5` on grid 128, the
+cutoff-4 self-production integral is `.24783179` and its dissipation
+integral is `.29316509`. The excess over half the dissipation is therefore
+positive, about `.10124925`. The instantaneous self-production rate at
+this time changes from `30.29994` on grid 96 to `30.59047` on grid 128.
+This tests absorption at a selected cutoff without an initial allowance.
+It does not refute the sufficient budget with a datum-dependent cutoff
+and allowance. At normalized time 1, the upper-frequency palinstrophy
+fractions are `.1054` and `.07522`; the later history still needs spatial
+resolution before its finer-scale behavior can be interpreted.
 
 ### Simultaneous stretching and mean-circulation gain
 
