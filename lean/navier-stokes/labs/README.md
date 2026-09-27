@@ -703,6 +703,73 @@ finite and of the same order as the defect-history allowance; it does not
 establish recurrent growth within one datum or refute a bound depending
 on the full initial datum.
 
+### Persistent mean geometry suppresses one competing phase
+
+Proposition 15 of the note extracts a conditional control result from the
+same exact mixed-parent coefficient. Give the two fixed Gaussian parents
+independent complex amplitudes `a,b`, with `|a|,|b| ≤ 1`, and use the
+scaling with `δ=λ^(-2h)` and initial squared energy at most one.
+Let `Mλ` measure the normalized axial
+second derivative of the actual angular mean at the common short time,
+over one fast axial period near the original peak. Then
+
+```text
+|a|² |b| ≤ C (1+Mλ) δ².
+```
+
+The proof uses exact symmetries of the nonlinear evolution: the fast mean
+vanishes if either parent is absent and is even in the first amplitude.
+Finite mixed amplitude derivatives therefore control its third time
+derivative by `C |a|² |b|`. The nonzero second time derivative from
+`mixed_helical_parent.py` persists on a common short interval. Averaging
+along the actual spatial trace, including its slowly changing envelope,
+then gives the displayed bound.
+
+Deleting the smaller initial parent, without renormalizing the reference,
+produces another actual unforced flow with
+
+```text
+∫ ||u-v_reference||∞² dt ≤ C (1+Mλ)^(2/3) λ^(-2h/3).
+```
+
+Thus bounded mean geometry makes this critical comparison history tend
+to zero. This is an analytic restricted-family result, not a new Lean
+theorem. The reference still has a slow envelope, and the error is not
+the angular fluctuation `u-Pu`. No arbitrary-data decomposition, repeated
+reference selection, or global budget for the retained parent follows.
+
+### Delayed mean production limits that reduction
+
+Proposition 16 uses angular indices `6,8`, both with axial phase index
+one. A product with zero angular index and nonzero axial index needs
+at least seven parent factors: `6a+8b=0` forces `a=4k,b=-3k`.
+The Lean module `MettapediaNS.HelicalPhaseSelection` certifies this
+integer statement, the sharp order-seven witness, and the general
+lower bound `2k+1` for adjacent indices `2k,2(k+1)`. It asserts no
+nonzero interaction coefficient or PDE estimate.
+
+Finite amplitude derivatives of the actual unforced evolution then
+bound its fast angular mean by `C ε⁷`. With `ε=√δ`, that is small
+enough to preserve every prescribed mean derivative through order two.
+Yet deleting either parent has critical comparison history bounded
+above and below by positive constants, uniformly as the initial relative
+angular defect tends to zero. The full angular fluctuation has the
+same property. Thus the vanishing comparison conclusion of Proposition
+15 depends on its particular low-order interaction; it cannot be
+extended to arbitrary pairs of profiles using these mean bounds alone.
+
+Run the exact Gaussian normalization check with:
+
+```sh
+python3 -O labs/helical_phase_delay.py
+```
+
+The script uses rational arithmetic from the Python standard library.
+The PDE construction is analytic and restricted to a common short
+normalized interval. It does not refute the conditional regularity
+criterion, since the histories remain finite, and does not establish
+repeated concentration from one fixed datum.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial

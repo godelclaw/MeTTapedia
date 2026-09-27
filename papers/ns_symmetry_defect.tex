@@ -2202,6 +2202,315 @@ grows like $\lambda^{2h}$, and the finite increase is paid at the same
 order as the critical defect history. A quantitative recurrent estimate
 with the full initial datum remains a separate question.
 
+\subsection{Persistent mean geometry suppresses a competing fast phase}
+
+The generated mean mode also gives a positive conditional estimate.
+Within the fixed two-parent family, a uniform bound on the mean's
+axial curvature forces one parent to be small enough that removing it
+costs vanishing critical velocity history.
+
+Use the profiles $W_2,W_4$ and the envelope $g$ from
+\eqref{eq:mixedDatum}. For complex amplitudes $a,b$ with
+$|a|,|b|\leq1$, set
+\begin{gather*}
+ \delta=\lambda^{-2h},\qquad \mu=\lambda\delta,\qquad
+ C_{a,b}=\pi\norm g_2^2
+             \left(1+\frac34|a|^2+\frac{21}{20}|b|^2\right),
+ \qquad A=\frac{\lambda^{1+2h}}{\sqrt{C_{a,b}}},\\
+ u_\lambda(0,x_h,z)=A g(\mu z)
+   \left[V_h(\lambda x_h)+\operatorname{Re}
+          \big((aW_2+bW_4)(\lambda x_h)e^{2i\lambda z}\big)\right].
+\end{gather*}
+The normalization is uniform over the amplitude disks, and the initial
+squared energy is $\lambda^{-1+6h}$.
+
+\begin{proposition}\label{prop:geometryPhaseReduction}
+Fix $\nu>0$ and $0<h\leq1/6$. There are constants $s_*>0$, $C<\infty$
+and a lower threshold on $\lambda$, uniform over $|a|,|b|\leq1$,
+with the following properties. The actual unforced flow exists through
+$t_\lambda=s_*/(A\lambda)$. Put
+\[
+ \tau_\lambda=\lambda^{-2}-t_\lambda,\qquad
+ M_\lambda=\tau_\lambda^{3/2-h}
+       \sup_{0\leq z\leq\pi/\lambda}
+       \left|\partial_{zz}(\PP u_\lambda)_\theta
+                       (\lambda^{-1},z,t_\lambda)\right|.
+\]
+Then
+\begin{equation}\label{eq:phaseProductBound}
+ |a|^2|b|\leq C(1+M_\lambda)\lambda^{-4h}.
+\end{equation}
+Let $v_\lambda$ be the actual unforced solution obtained by deleting
+the smaller of the two initial amplitudes, while retaining the original
+$A$, $\mu$ and $\nu$. It exists on the same interval and satisfies
+\begin{equation}\label{eq:onePhaseHistory}
+ \int_0^{t_\lambda}\norm{u_\lambda-v_\lambda}_\infty^2\dd t
+       \leq C(1+M_\lambda)^{2/3}\lambda^{-2h/3}.
+\end{equation}
+In particular a bounded $M_\lambda$ makes this critical comparison
+history tend to zero.
+\end{proposition}
+
+\begin{proof}
+Work in the extended variables, with
+$D_3=\delta\partial_Z+2\partial_\alpha$ and
+$\eta=\nu\lambda/A$. Treat $\delta$ and $\eta$ as independent fixed
+parameters when differentiating the amplitudes. The local Sobolev
+estimates used in Proposition~\ref{prop:mixedParents} are uniform
+over the two amplitude disks and $0\leq\delta,\eta\leq1$.
+In particular they bound three time derivatives and three mixed
+amplitude derivatives in enough spatial regularity for the following
+point evaluations. Starting in $H^{30}$ leaves ample margin even when
+each viscous time derivative uses two spatial derivatives.
+
+Write
+\[
+ G(R,Z,\alpha,s)=R(\PP U)_\theta(R,Z,\alpha,s),\qquad
+ G_{\rm f}=G-\frac1{2\pi}\int_0^{2\pi}G\,\dd\alpha .
+\]
+If either parent is absent, its preserved joint rotation--phase
+symmetry makes $G$ independent of $\alpha$, so $G_{\rm f}=0$.
+Rotation through $\pi/2$ changes $a$ to $-a$ and leaves $b$ unchanged;
+angular averaging therefore makes $G_{\rm f}$ even in $a$.
+Fix the two complex phases and vary the real magnitudes through zero.
+Taylor's formula twice in the first magnitude and once in the second
+gives the factored bounds
+\begin{equation}\label{eq:factoredFastMean}
+ \norm{G_{\rm f}}_{C^3}+
+       \norm{\partial_s^3G_{\rm f}}_{C^3}
+                           \leq C|a|^2|b|
+\end{equation}
+on a fixed annulus around $R=1$. These are bounds for the actual
+nonlinear evolution. They do not presume convergence of an infinite
+amplitude expansion. The constants are uniform in the two phases.
+
+Let
+\[
+ F_1(s)=\frac1{2\pi}\int_0^{2\pi}
+              e^{-i\alpha}G(1,0,\alpha,s)\dd\alpha .
+\]
+Exactly $F_1(0)=F_1'(0)=0$. The phase labels show that its only
+cubic ancestry in the second time derivative is $W_2,W_2,\overline{W_4}$.
+The viscous terms there have degree at most two in the datum, and
+cannot reach angular index zero and axial index one. Consequently
+\[
+ F_1''(0)=\frac18a^2\overline b\,\mathcal C_\delta(1,0),
+ \qquad
+ \mathcal C_\delta(1,0)\longrightarrow-\frac{32}{5e^3}
+                            \quad(\delta\to0).
+\]
+The limit is the complete pressure calculation in
+Proposition~\ref{prop:mixedParents}, with $g(0)=1$.
+The convergence follows from the uniformly bounded, strongly
+convergent extended Leray multipliers on these fixed smooth inputs.
+The amplitude factor is exact, so the convergence is uniform even
+when one amplitude tends to zero much faster than the other.
+There is no $\eta$ contribution to this second derivative.
+Equation~\eqref{eq:factoredFastMean} and Taylor's formula in time
+now give a fixed sufficiently small $s_*>0$ and
+\begin{equation}\label{eq:fastMeanLower}
+ |F_1(s_*)|\geq c|a|^2|b|
+\end{equation}
+for all sufficiently small $\delta$ and $0\leq\eta\leq1$.
+
+The physical restriction must be kept in this estimate. At
+$r=\lambda^{-1}$ and $0\leq z\leq\pi/\lambda$ it is
+$Z=\delta\alpha/2$, $\alpha=2\lambda z$, and $G= (\PP U)_\theta$
+because $R=1$. Since $\tau_\lambda$ is comparable to $\lambda^{-2}$,
+the definition of $M_\lambda$ implies
+\[
+ |D_3^2G(1,\delta\alpha/2,\alpha,s_*)|
+                    \leq C M_\lambda\delta^2,
+             \qquad 0\leq\alpha\leq2\pi.
+\]
+Multiply by $e^{-i\alpha}$ and average over this interval.
+The $\alpha$-independent part of $G$ contributes $O(\delta^2)$,
+using its uniform $Z$ derivatives. For $G_{\rm f}$, replacing
+$Z=\delta\alpha/2$ by $Z=0$ in the leading
+$4\partial_{\alpha\alpha}$ term costs
+$O(\delta|a|^2|b|)$ by \eqref{eq:factoredFastMean}.
+The terms $4\delta\partial_{Z\alpha}$ and
+$\delta^2\partial_{ZZ}$ cost the same or less.
+The leading averaged term is $-4F_1(s_*)$. Hence
+\[
+ 4c|a|^2|b|
+    \leq C(1+M_\lambda)\delta^2+C\delta|a|^2|b|.
+\]
+Absorb the last term for small $\delta$. This proves
+\eqref{eq:phaseProductBound} directly on the physical field;
+no persistence of compact slow Fourier support has been assumed.
+
+Finally retain the original $A$ and $\eta$ in the one-parent
+reference. The amplitude derivative estimates give
+$\sup_{0\leq s\leq s_*}\norm{U-U^{\rm ref}}_\infty
+ \leq C\min(|a|,|b|)$.
+Physical rescaling and
+$\min(|a|,|b|)^3\leq|a|^2|b|$ yield
+\[
+ \int_0^{t_\lambda}\norm{u_\lambda-v_\lambda}_\infty^2\dd t
+ \leq C\frac A\lambda\min(|a|,|b|)^2
+ \leq C\delta^{-1}\big((1+M_\lambda)\delta^2\big)^{2/3}.
+\]
+This is \eqref{eq:onePhaseHistory}.
+\end{proof}
+
+This comparison concerns one fixed two-parent family and one short
+normalized interval. The reference preserves a single joint fast
+phase in the extended variables; its slow envelope prevents identifying
+it with an exact globally helical whole-space flow. Moreover
+$u_\lambda-v_\lambda$ is not the angular fluctuation
+$u_\lambda-\PP u_\lambda$. Theorem~\ref{thm:main} therefore cannot
+be applied by substituting this different error. Arbitrary-data
+decomposition, repeated changes of reference, and a uniform long-time
+bound for the reference itself remain open.
+
+\subsection{Delayed mean production limits the phase reduction}
+
+The conclusion of Proposition~\ref{prop:geometryPhaseReduction}
+depends on its two fixed profiles. Higher angular indices can delay
+the first fast mean interaction, while both parents retain a nonvanishing
+critical comparison cost. The following example retains all the mean
+bounds, not only the single observable $M_\lambda$.
+
+With $q=y_1+i y_2$, define
+\[
+ Z_6=\curl_h\big(\tfrac18q^6e^{-|y_h|^2}e_z\big),\qquad
+ Z_8=\curl_h\big(\tfrac1{32}q^8e^{-|y_h|^2}e_z\big).
+\]
+Keep the preceding $g,V_h,\delta,\mu$, but now put
+\[
+ \epsilon=\sqrt\delta=\lambda^{-h},\qquad
+ C_\epsilon=\pi\norm g_2^2
+                \left(1+\frac{5355}{4096}\epsilon^2\right),
+ \qquad A=\lambda^{1+2h}/\sqrt{C_\epsilon}.
+\]
+The initial data are
+\begin{equation}\label{eq:delayedMeanDatum}
+ u_\lambda(0,x_h,z)=A g(\mu z)
+   \left[V_h(\lambda x_h)+\epsilon\operatorname{Re}
+           \big((Z_6+Z_8)(\lambda x_h)e^{2i\lambda z}\big)\right].
+\end{equation}
+Let $v_\lambda^{(j)}$, $j=6,8$, denote the unforced evolution obtained
+by retaining only $Z_j$, with the same $A,\mu,\nu$ as the full datum.
+
+\begin{proposition}\label{prop:delayedMean}
+Fix $\nu>0$ and $0<h\leq1/6$. There are $s_*,c,C>0$ and a lower
+threshold on $\lambda$ such that all three actual unforced flows exist
+on $0\leq t\leq t_\lambda=s_*/(A\lambda)$. The datum
+\eqref{eq:delayedMeanDatum} has squared energy $\lambda^{-1+6h}\leq1$
+and
+\[
+ \frac{\norm{u_\lambda(0)-\PP u_\lambda(0)}_2}
+      {\norm{\PP u_\lambda(0)}_2}
+                =\sqrt{\frac{5355}{4096}}\epsilon\longrightarrow0.
+\]
+Its actual angular mean satisfies all of
+\eqref{eq:meanr}--\eqref{eq:meanz} throughout this interval, with
+$\tau=\lambda^{-2}-t$ and a constant independent of $\lambda$.
+Nevertheless, for both $j=6,8$,
+\begin{equation}\label{eq:delayedMeanHistory}
+ c\leq\int_0^{t_\lambda}
+          \norm{u_\lambda-v_\lambda^{(j)}}_\infty^2\dd t\leq C.
+\end{equation}
+The same upper and lower bounds hold for the angular fluctuation
+$u_\lambda-\PP u_\lambda$.
+\end{proposition}
+
+\begin{proof}
+Use the extended equation with
+$D_3=\delta\partial_Z+2\partial_\alpha$ and $\eta=\nu\lambda/A$,
+as in Proposition~\ref{prop:mixedParents}. The initial datum is
+$g(Z)[V_h+\epsilon\operatorname{Re}((Z_6+Z_8)e^{i\alpha})]$.
+The same uniform local estimates give all three flows on a common
+interval. Holding $\delta,\eta$ fixed, take seven finite amplitude
+derivatives. The differentiated transport estimates give uniform
+$H^{30-2j}$ bounds for $\partial_\epsilon^j U$, $0\leq j\leq7$.
+The remaining $H^{16}$ regularity controls the spatial derivatives
+used below. This requires only finite differentiability in lower
+Sobolev spaces.
+
+At zero amplitude the evolving base has phase label $(0,0)$.
+Its linearization preserves the covariant angular and axial phase
+labels. Quadratic interactions add them. Induction in the differentiated
+equation therefore puts the $j$th amplitude derivative at zero in
+the $j$-fold sumset of
+\[
+ (6,1),\quad(-6,-1),\quad(8,1),\quad(-8,-1).
+\]
+If a product uses signed multiplicities $a,b$, an angular mean
+requires $6a+8b=0$, whence $a=4k$, $b=-3k$. Its axial index is
+$a+b=k$, and it uses at least $|a|+|b|=7|k|$ factors.
+Thus no amplitude derivative of order at most six has an angular
+mean with nonzero axial index. Taylor's theorem gives
+\begin{equation}\label{eq:delayedFastMean}
+ \norm{(\PP U)_{\rm f}}_{C^2}\leq C\epsilon^7
+                                      =C\delta^{7/2},
+\end{equation}
+where the subscript removes the average over $\alpha$.
+No nonzero seventh-order interaction coefficient is asserted or needed.
+
+Write $v^0$ for the $\alpha$ average of $\PP U$.
+Its divergence constraint gives
+\[
+ v^0_r(R,Z,s)=-\frac\delta R
+           \int_0^R\rho\,\partial_Zv^0_z(\rho,Z,s)\dd\rho.
+\]
+For $R\leq1$ the primitive and its differentiated forms give the
+$O(\delta)$ radial bound. For $R\geq1$, Cauchy--Schwarz with radial
+measure $\rho\dd\rho$ and the uniform horizontal $L^2$ slice bounds
+gives the same estimate; the divergence identity then bounds its
+radial derivatives. The needed $Z$ derivatives obey the same estimates.
+Since $v^0$ is independent of $\alpha$, each $D_3$ derivative gives
+an additional factor $\delta$. The other two components have uniform
+spatial bounds. Combining these estimates with
+\eqref{eq:delayedFastMean}, and using $\delta^{7/2}\leq\delta^3$
+for $0<\delta\leq1$, yields, for $a+b\leq2$,
+\[
+ |\partial_R^aD_3^b(\PP U)_r|\leq C\delta^{b+1},\qquad
+ |\partial_R^aD_3^b(\PP U)_\theta|
+       +|\partial_R^aD_3^b(\PP U)_z|\leq C\delta^b.
+\]
+Physical rescaling gives exactly
+\eqref{eq:meanr}--\eqref{eq:meanz}. For large $\lambda$,
+$t_\lambda<\lambda^{-2}/2$, so replacing $\lambda^{-2}$ by
+$\lambda^{-2}-t$ only enlarges their right-hand sides.
+
+The horizontal squared energies of the real $Z_6,Z_8$, divided by
+$\pi$, are respectively $315/512$ and $2835/4096$. Angular
+orthogonality gives the stated normalization and relative defect.
+At $(R,\phi,Z,\alpha)=(1,0,0,0)$ their real velocities are
+$(0,-1/(2e),0)$ and $(0,-3/(16e),0)$.
+Consequently the initial difference from either deletion reference,
+and the initial full angular fluctuation, have magnitude at least
+$c\epsilon$ there. First amplitude and time derivative estimates
+bound the time derivatives of these differences by $C\epsilon$.
+After reducing the common $s_*$, the pointwise lower bounds persist;
+the corresponding supremum upper bounds are also $C\epsilon$.
+The point on the physical trace is $(\lambda^{-1},0,0)$.
+Finally
+\[
+ \frac{A\epsilon^2}{\lambda}=\frac1{\sqrt{C_\epsilon}}
+\]
+is bounded above and below by positive constants. Changing from $s$
+to physical time proves \eqref{eq:delayedMeanHistory} and its
+angular-fluctuation counterpart.
+\end{proof}
+
+The finite phase count is kernel-checked in
+\texttt{MettapediaNS.HelicalPhaseSelection}; the Gaussian normalizations
+are checked by \texttt{helical\_phase\_delay.py} with rational arithmetic.
+The PDE argument above is analytic, not formalized in that module.
+For angular indices $2k,2(k+1)$ the same count requires at least
+$2k+1$ factors for a fast angular mean. This arithmetic statement
+does not give estimates uniform in $k$.
+
+Thus persistent mean geometry does not, for arbitrary pairs of profiles,
+force the comparison history of either deletion reference to vanish.
+This does not exclude every possible reference class. All the histories
+here are finite, so the example is consistent with
+Theorem~\ref{thm:main}; it supplies neither an infinite sequence of
+concentrating events from one datum nor a singularity.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
