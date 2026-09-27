@@ -40,9 +40,10 @@ chosen cutoff. A further positive estimate absorbs stretching pairs whose
 parents are sufficiently far above their output, uniformly over all
 occupied shells. The corresponding modified caloric balance retains the
 complete Navier--Stokes source. A second estimate absorbs sufficiently
-separated parents inside the nonlinear derivative slot. The remaining
-signed history bound is unproved; no arbitrary-data unforced regularity
-estimate is obtained.
+separated parents inside the nonlinear derivative slot. More generally,
+an isolated pair of very high inputs can be absorbed wherever it occurs
+among the five inputs. The remaining signed history bound is unproved;
+no arbitrary-data unforced regularity estimate is obtained.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -1070,6 +1071,24 @@ does not remove all positive renewal or make a sign claim about the
 remaining term. It pays one frequency sector uniformly, leaving a
 smaller physical-time problem.
 
+The change of capacity does not impose a stronger boundedness requirement
+on the solution. Indeed, the triangle inequality in the auxiliary
+$L^2(\dd s/\nu;L^2_x)$ space, the low-output capacity bound, and
+\eqref{eq:separatedpayment} give, when $E\leq M$ and $\eta<1/2$,
+\[
+ \mathcal G_{\rm keep}\leq3\mathcal G+\frac{3c_K^2M^2}{8\nu^2},
+ \qquad
+ \mathcal G\leq3\mathcal G_{\rm keep}+\frac{3c_K^2M^2}{8\nu^2}.
+\]
+For example,
+$\mathcal K_{\rm keep}\leq3\mathcal K+3\mathcal K_{\rm lo}
+ +3\mathcal K_{\rm far}$, with
+$\mathcal K_{\rm lo}\leq c_K^2M^2/(4\nu^2)$ and
+$\mathcal K_{\rm far}\leq\eta^2Y/2$, proves the first inequality;
+the reversed source decomposition proves the second.
+These compare the gradient-controlling functionals, not their
+different positive costs.
+
 \subsection{Separated parents inside the nonlinear direction}
 
 The two parents inside the $N(v)$ slot admit another uniform payment.
@@ -1166,6 +1185,126 @@ The all-prefix bound for $\mathcal T_{\rm rem}$ is still an open
 estimate with full-initial-data quantifiers. It also fails on the
 forced singularity construction, for the same continuation reason.
 
+\subsection{An isolated pair among all five inputs}
+
+The preceding inner-parent estimate distinguishes two particular slots.
+A further payment applies regardless of the position of the two highest
+frequencies. In each ordered term of $\mathcal T_{\rm core}$, list the
+dyadic indices of its five original velocity inputs in decreasing order.
+Let $n$ be the largest and $m$ the third largest. Fix an integer
+$\sigma\geq4$. Among the terms not already assigned to
+$\mathcal T_{\rm inner}$, let $\mathcal T_{\rm pair}$ retain those with
+\[
+ n\geq\lceil3m/2\rceil+\sigma.
+\]
+This order of selection makes the sectors disjoint, including when the
+two highest frequencies both occur inside $N$.
+
+\begin{proposition}\label{prop:isolatedpair}
+With the same whole-space conventions,
+\begin{equation}\label{eq:isolatedpair}
+ |\mathcal T_{\rm pair}(u)|
+ \leq\frac{100\,2^{-3\sigma}}{\nu^2}E^{3/2}D.
+\end{equation}
+The constant is independent of the number of occupied shells, all the
+previous cutoffs, and the positions of the two highest inputs.
+\end{proposition}
+\begin{proof}
+Put $R_m=2^{m+1}$. The three smaller frequencies lie in the ball of
+radius $R_m$. Frequency conservation bounds the difference in the
+magnitudes of the two larger frequencies by $3R_m$.
+Since $n\geq m+4$, both of the latter frequencies belong to
+$B_n=\{2^{n-1}\leq|\xi|<2^{n+1}\}$. As before put
+$E_n=\int_{B_n}|\widehat v|^2$.
+
+There are four differentiated quartic slots and at most
+$\binom52=10$ choices of the two highest positions. Each quartic
+kernel has absolute bound $1/(2\nu^2)$. The divergence-form symbol
+of the inserted $N$ is bounded by its output frequency, hence by
+$2^{n+2}$. For each choice of positions, integrate one high frequency
+using Cauchy--Schwarz against the other, whose value is fixed by the
+three smaller frequencies. This costs at most $E_n$. The three other
+integrals are bounded by their Fourier $L^1$ norms on the ball.
+All three convolution normalizations are included, so the contribution
+at $(m,n)$ is at most
+\begin{align*}
+ \frac{20}{\nu^2}2^{n+2}E_n
+ \left((2\pi)^{-3/2}\int_{|\xi|<R_m}|\widehat v(\xi)|\dd\xi\right)^3
+ &\leq\frac{80c_1^3\,2^{9/2}}{\nu^2}
+                 2^{9m/2+n}E^{3/2}E_n\\
+ &\leq\frac5{\nu^2}2^{9m/2+n}E^{3/2}E_n.
+\end{align*}
+Here $c_1=(6\pi^2)^{-1/2}$ as before, and
+$80c_1^3\,2^{9/2}<5$. This is an absolute majorant; excluding
+$\mathcal T_{\rm inner}$ or retaining any previous mask cannot increase it.
+
+Write $d_m=\lceil3m/2\rceil$ and $e_n=2^{4n}E_n$.
+The increasing integer sequence $d_m$ gives the column bound
+\[
+ \sum_{\{m:\ d_m+\sigma\leq n\}}2^{9m/2-3n}
+ \leq\sum_{\{m:\ d_m+\sigma\leq n\}}2^{3d_m-3n}
+ \leq\frac87\,2^{-3\sigma}.
+\]
+Summing these nonnegative bounds, then using
+$\sum_n e_n\leq17D$, gives constant $680/7<100$ in
+\eqref{eq:isolatedpair}. Finite frequency restrictions followed by
+monotone convergence justify the summation.
+\end{proof}
+
+For $E\leq M$ choose $\sigma$ from
+$100\,2^{-3\sigma}M^{3/2}\leq\chi\nu^3$, where $\chi>0$.
+Then $|\mathcal T_{\rm pair}|\leq\chi\nu D$.
+Define the remaining term
+\[
+ \mathcal T_{\rm coupled}
+  =\mathcal T_{\rm core}-\mathcal T_{\rm inner}-\mathcal T_{\rm pair}.
+\]
+An all-prefix bound for its signed integral by
+$A_0+\theta\int\mathcal W_{\rm keep}$, with
+$\theta<1-2\eta-\zeta-\chi$, suffices for the same
+Gr\"onwall conclusion; take
+$0<\varepsilon<1-2\eta-\zeta-\chi-\theta$.
+Every separation and allowance must still be fixed from the initial
+datum, viscosity and horizon before the shorter endpoints.
+
+Every retained ordered term has
+$n<\lceil3m/2\rceil+\sigma$. If $\lambda_{\max}$ and
+$\lambda_{(3)}$ are the largest and third-largest original input
+magnitudes, then
+\[
+ \lambda_{\max}<2^{\sigma+1/2}\lambda_{(3)}^{3/2}.
+\]
+Thus at least three inputs must exceed a fixed multiple of
+$\lambda_{\max}^{2/3}$. This is a restriction on each remaining
+five-input interaction, not comparability of all its scales or a
+persistence theorem. The positive generated-child coefficient
+\eqref{eq:positivechild} lies wholly in this remaining sector at
+$J=2$, $r=3$, $\rho=\sigma=4$. Its signed physical-time budget
+remains unproved.
+
+A separate pressure-free calibration clarifies what this return measures.
+On the normalized $2\pi$ torus take
+\[
+ u=(\sin y,\,0,\,\sin x+\sin(x+y)).
+\]
+Its actual Euler direction is
+$N(u)=(0,0,-\sin y\,(\cos x+\cos(x+y)))$, with zero pressure.
+At $J=0$, $r=3$, $\rho=\sigma=4$, exact Fourier calculation gives
+\[
+ \mathcal T_{\rm inner}=\mathcal T_{\rm pair}=0,\qquad
+ \mathcal T_{\rm coupled}=\frac{161}{19200\nu^2}>0,\qquad
+ \Pi(u)=-\frac14,\qquad
+ D\!\left(\int|u|^4\right)[N(u)]=0.
+\]
+Replacing $\sin(x+y)$ by its negative reverses the two nonzero signs.
+The actual unforced viscous evolution is a heat-evolved shear and a
+passive scalar:
+$U_t=\nu U_{yy}$ and
+$\Theta_t+U\Theta_x=\nu\Delta\Theta$.
+It remains smooth for all time. Thus positive coupled renewal need not
+mean positive physical enstrophy production or positive pressure work.
+This calibration does not refute a full-datum history allowance.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -1210,6 +1349,16 @@ Its norm inequality uses a conservative periodic constant $10^6$ in
 place of the whole-space $20$. Counting a ball by $(3R_m)^3$ gives
 constant $(272/15)\,6\cdot81\sqrt3\,2^{11/2}<10^6$ in the same argument.
 The general estimate remains the analytic proof above.
+The checker \texttt{labs/paired\_caloric.py} retains both original
+parent-shell labels inside $N$ and tests the disjoint three-part
+partition against the complete derivative. Its inner part also agrees
+with the independently grouped calculation. Sign reversal and rescaling
+the two high amplitudes check the signs and degree of the selected
+terms. Its finite torus norm checks use constant $10^7$ instead of
+the whole-space $100$; the same lattice counting gives
+$80\cdot81\sqrt3\,2^{9/2}(136/7)<10^7$.
+The checker verifies that the earlier positive generated-child
+coefficient remains after all these separations.
 Arbitrary-data unforced regularity remains open.
 
 \begin{thebibliography}{9}

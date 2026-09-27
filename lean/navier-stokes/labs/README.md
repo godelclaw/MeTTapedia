@@ -1245,6 +1245,55 @@ it gives neither comparability of all remaining frequencies nor control
 of their repeated positive renewal. The sufficient signed history
 bound, with full-datum allowances and fixed cutoffs, remains open.
 
+### Paying an isolated pair among all five inputs
+
+Run `python3 -O labs/paired_caloric.py`. In each ordered quintic term,
+let `n` be the largest original input shell and `m` the third largest.
+After removing the inner-parent sector above, select the terms with
+
+```text
+n >= ceil(3m/2)+sigma,     sigma>=4.
+```
+
+The analytic whole-space bound is
+
+```text
+|T_pair| <= 100 * 2^(-3sigma) * E^(3/2) * D / nu^2.
+```
+
+The estimate permits the two high inputs to occupy any of the ten
+possible pairs of positions. Frequency conservation places both in one
+enlarged high band. Cauchy–Schwarz pays them from that band's energy;
+the other three inputs are paid by Fourier `L1` bounds on their smaller
+ball. The parent-column sum is at most `(8/7)*2^(-3sigma)`, followed
+by the same fourth-order overlap bound `17`. A fixed choice of `sigma`
+from energy and viscosity absorbs the result into dissipation.
+
+The selection excludes the already paid inner-parent terms, so the
+three-part decomposition has no overlap. The checker retains both
+parent-shell labels inside `N`, compares the full sum to the capacity
+derivative, and independently checks its inner sector. Sign reversal
+and doubling the high amplitudes test the signs and the number of high
+inputs. Periodic norm checks use the separate constant `10^7`.
+
+Every remaining term has at least three original input frequencies
+above a fixed multiple of the largest frequency to the power `2/3`.
+This does not make all five frequencies comparable. The positive
+generated-child example lies wholly in this remaining sector, and its
+signed physical-time budget remains open. The estimates retain the
+full actual equation and provide no autonomous evolution for a group
+of modes.
+
+The same checker includes the regular pressure-free shear
+`u=(sin y,0,sin x+sin(x+y))`. At `J=0,r=3,rho=sigma=4`, its coupled
+return is `161/(19200nu^2)`, while its physical enstrophy production is
+`-1/4` and the Euler derivative of `integral |u|^4` is zero. Reversing
+the sign of the last sine reverses the two nonzero signs. The actual
+viscous evolution is a heat shear transporting a passive scalar and
+is globally regular. Positive coupled renewal therefore measures more
+than instantaneous amplification or pressure work; the full-datum
+history allowance is still essential.
+
 ### Kida–Pelz evolution
 
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
