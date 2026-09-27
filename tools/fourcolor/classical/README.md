@@ -180,6 +180,58 @@ their axiom sets. From `lean/mettapedia`, reproduce it with:
 lake build Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivisionAudit
 ```
 
+The omitted target colourings matter for reducibility. The exact finite
+Kempe-closure test in `probe_diamond_kempe.py` considers every balanced
+chromogram, all six colour permutations and all proper zero-sum traces at
+rings 6–8. Restricting the seven-port target to the 132 words generated from
+the preceding support leaves 132 contract traces in a disjoint Kempe-closed
+set. Continuing only that branch to ring 8 leaves all 108 contract traces
+uncovered. Saved closed-set witnesses are checked again after serialization;
+nine deliberately corrupted witnesses are rejected. These are abstract closed
+predicates, not claimed to be realizable planar exteriors. The Kempe coclosures
+of the full original supports cover all contract traces in these three examples.
+
+[`BoundaryTriangleAlternatives.lean`](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleAlternatives.lean)
+provides the complete colouring decomposition. A target colouring either
+distinguishes the deleted edge's endpoints, or identifies them. In the latter
+case it comes from the contracted graph and a fresh colour avoiding the merged
+vertex and the opposite triangle vertex. There are exactly two such fresh
+colours. Both branches give an explicit disjoint-sum equivalence, preserving
+any further constraint on the target colouring. For a finite graph, the target
+colouring count is the old count plus twice the contracted count.
+
+The separate program `diamond_coloring_alternatives.py` checks these branches
+on the original embedded diamond instances. It independently enumerates the
+old, contracted and target graphs, and compares the actual colouring sets.
+With one vertex fixed to colour zero, the results are:
+
+| Subdivision | Old colourings | Contracted colourings | Target colourings | Boundary supports: distinct / equal endpoints |
+| --- | ---: | ---: | ---: | ---: |
+| 1 to 2 | 144 | 54 | 252 | 132 / 102 |
+| 2 to 4 | 252 | 150 | 552 | 246 / 240 |
+
+The support unions recover all 234 and 486 target words. This identifies the
+missing alternative without claiming that either branch alone always succeeds.
+The general equivalence and contextual theorem are kernel-checked; the
+catalogue instantiations remain program checks. Neither replaces a reducibility
+check. `diamond-kempe-probe.json` and `triangle-alternatives-measurements.json`
+record the two kinds of evidence separately.
+
+```sh
+python3 tools/fourcolor/classical/probe_diamond_kempe.py \
+  --inputs generated-inputs --output diamond-kempe-results.json \
+  --witnesses diamond-kempe-witnesses.json
+python3 tools/fourcolor/classical/diamond_coloring_alternatives.py \
+  --configurations unavoidable.conf --geometry diamond-subdivision-results.json \
+  --inputs generated-inputs --output diamond-alternatives-results.json
+```
+
+From `lean/mettapedia`, the audit checks four roots and their dependencies:
+
+```sh
+lake build Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternativesAudit
+```
+
 ## What the compositional bridge must preserve
 
 Configuration programs already exist in the reference proof. Encoding their

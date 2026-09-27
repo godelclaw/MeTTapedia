@@ -1,0 +1,124 @@
+{
+  "evidence": "Finite program evidence; no Lean or actual-exterior claim.",
+  "source_hashes": {
+    "1": "cbb90220c26e162c752847c87057b9f59291b2ae21a844b7f3df81ab95354faa",
+    "2": "5964d1abb43cf7fa124df7ee5a459e4c4421294b80eb9eee6626c37b7249d02b",
+    "4": "9ca06cbedcbf91033f18dc118a13e6fd98dbeba31f1931eba21c5a913a5aa19c"
+  },
+  "script_sha256": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d",
+  "witnesses_sha256": "830b72ef59a79dec5722e9f5f65588ba586db59f667fc7a2bf8529c250394a7a",
+  "reports": [
+    {
+      "kind": "original",
+      "ordinal": 1,
+      "ring": 6,
+      "proper": 183,
+      "balanced_chromograms": 96,
+      "good": 96,
+      "fixed_point_sizes": [
+        87,
+        60,
+        48,
+        24,
+        6,
+        0
+      ],
+      "closed_obstruction": 0,
+      "contract": 90,
+      "blocked_contract": 0,
+      "blocked_contract_witness": null
+    },
+    {
+      "kind": "original",
+      "ordinal": 2,
+      "ring": 7,
+      "proper": 546,
+      "balanced_chromograms": 301,
+      "good": 234,
+      "fixed_point_sizes": [
+        312,
+        270,
+        234,
+        180,
+        108,
+        42,
+        0
+      ],
+      "closed_obstruction": 0,
+      "contract": 186,
+      "blocked_contract": 0,
+      "blocked_contract_witness": null
+    },
+    {
+      "kind": "original",
+      "ordinal": 4,
+      "ring": 8,
+      "proper": 1641,
+      "balanced_chromograms": 981,
+      "good": 486,
+      "fixed_point_sizes": [
+        1155,
+        1065,
+        1017,
+        981,
+        939,
+        921
+      ],
+      "closed_obstruction": 921,
+      "contract": 108,
+      "blocked_contract": 0,
+      "blocked_contract_witness": null
+    },
+    {
+      "kind": "chosen_subdivision_chain",
+      "ordinal": 2,
+      "ring": 7,
+      "proper": 546,
+      "balanced_chromograms": 301,
+      "good": 132,
+      "fixed_point_sizes": [
+        414,
+        390,
+        378
+      ],
+      "closed_obstruction": 378,
+      "contract": 186,
+      "blocked_contract": 132,
+      "blocked_contract_witness": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "kind": "chosen_subdivision_chain",
+      "ordinal": 4,
+      "ring": 8,
+      "proper": 1641,
+      "balanced_chromograms": 981,
+      "good": 144,
+      "fixed_point_sizes": [
+        1497
+      ],
+      "closed_obstruction": 1497,
+      "contract": 108,
+      "blocked_contract": 108,
+      "blocked_contract_witness": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2
+      ]
+    }
+  ],
+  "negative_controls_rejected": 9,
+  "elapsed_seconds": 6.383
+}

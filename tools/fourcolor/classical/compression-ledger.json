@@ -55,6 +55,15 @@
       "status": "140 internal templates verified. All-branches star inclusion fails at all 196 alignments; existential branch lifting succeeds at eight. Literal boundary-triangle subdivisions connect configurations 1 to 2 and 2 to 4.",
       "evidence": "Program checks for catalogue matches; a separate kernel-checked generic subdivision theorem transports colouring witnesses. No reducibility checks are replaced.",
       "credited_compression": false
+    },
+    {
+      "name": "complete diamond subdivision colouring alternatives",
+      "record": "triangle-alternatives-measurements.json",
+      "status": "Kernel-checked disjoint-sum colouring equivalence, arbitrary contextual compatibility and exact counts. Separate program checks recover full supports on configurations 1 to 2 and 2 to 4. The one-branch seed fails the contract coclosure test.",
+      "evidence": "Four audited Lean roots; catalogue instances and Kempe-closed obstruction witnesses checked by programs.",
+      "credited_compression": false,
+      "independent_reducibility_checks_replaced": 0,
+      "configurations_removed": 0
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local and conditional-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. Whole-assembly credit waits for the unconditional root.",

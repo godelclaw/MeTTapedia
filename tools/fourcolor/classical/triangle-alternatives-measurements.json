@@ -1,0 +1,142 @@
+{
+  "status": "kernel checked",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "gate": "lake build Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternativesAudit",
+  "working_directory": "lean/mettapedia",
+  "completed_utc": "2026-09-27T23:54:33Z",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleAlternatives.lean",
+      "source_sha256": "7961a1630d14a4307a89a14305903adecce399f0f5726163f83c605d6f8e4aef",
+      "artifact_sha256": "4d0e3d0f100fbeb8649e5f46250e48ee2f99ac28508e6b0c62a53ae2535d9c12",
+      "artifact_bytes": 558096,
+      "reported_module_seconds": 3.4
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternativesAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleAlternativesAudit.lean",
+      "source_sha256": "50942121b7450fbb0b904a74c3c2c2cbbfabd622815cc42fb7e21ee341864781",
+      "artifact_sha256": "f93bb8f9229b570e633955fbd43b3a0cb4cb97ec0c60a29674d19a6343dbdead",
+      "artifact_bytes": 3792,
+      "reported_module_seconds": 3.2
+    }
+  ],
+  "reported_total_module_seconds": 6.6,
+  "timing_scope": "Rounded module durations reported by Lake, including elaboration, kernel checking, serialization and C emission; existing dependencies were reused.",
+  "peak_lean_rss_kib": null,
+  "memory_scope": "No valid Lean RSS sample was captured for this short gate; no peak-memory claim is made.",
+  "audit": {
+    "roots": {
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.equalColoringEquiv": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.alternativesEquiv": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.compatible_iff": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.BoundaryTriangleSubdivision.alternatives_card": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "combined_dependency_closure": 6981,
+    "scope": "Named roots, their required mathematical dependencies and their transitive axiom sets."
+  },
+  "mathematical_scope": [
+    "The equal-endpoint branch is represented by an actual contraction through SimpleGraph.map, with the removed vertex absent from the vertex type.",
+    "An explicit disjoint-sum equivalence covers every target four-colouring once.",
+    "Any additional constraint on target colourings is met exactly when one of the two construction branches meets it.",
+    "For a finite graph with a specified triangle, the target four-colouring count equals the old count plus twice the contracted graph count."
+  ],
+  "not_established": [
+    "Planarity preservation without embedding conditions.",
+    "A Lean equivalence between the pinned configuration decoder and the program-checked catalogue instances.",
+    "D- or C-reducibility preservation or coverage of arbitrary planar graphs."
+  ],
+  "catalogue_program_check": {
+    "evidence": "Finite program checks of the catalogue instances.",
+    "normalization": "The least vertex is fixed to colour zero; full colouring counts are four times these counts.",
+    "source_sha256": "1c92fc280a9b384f736b94077fc59aac75e3d830d441ffd2d18683ee4b524e84",
+    "geometry_sha256": "a5100a9504e00d75bd08bd344d88273c6ebd4e138f95e14b467778e8d19d4c26",
+    "script_sha256": "0075009196d573a65d0516ccba101b6c81528678c4babadda86c00372bdc2970",
+    "reports": [
+      {
+        "source": 1,
+        "target": 2,
+        "triangle": [
+          1,
+          2,
+          7
+        ],
+        "old_colorings": 144,
+        "contracted_colorings": 54,
+        "unequal_colorings": 144,
+        "equal_colorings": 108,
+        "target_colorings": 252,
+        "unequal_support": 132,
+        "equal_support": 102,
+        "target_support": 234,
+        "stored_support_alignments": [
+          {
+            "rotation": 0,
+            "reflection": false
+          },
+          {
+            "rotation": 5,
+            "reflection": true
+          }
+        ],
+        "invalid_fresh_colors_rejected": 198
+      },
+      {
+        "source": 2,
+        "target": 4,
+        "triangle": [
+          5,
+          6,
+          10
+        ],
+        "old_colorings": 252,
+        "contracted_colorings": 150,
+        "unequal_colorings": 252,
+        "equal_colorings": 300,
+        "target_colorings": 552,
+        "unequal_support": 246,
+        "equal_support": 240,
+        "target_support": 486,
+        "stored_support_alignments": [
+          {
+            "rotation": 0,
+            "reflection": false
+          },
+          {
+            "rotation": 2,
+            "reflection": true
+          },
+          {
+            "rotation": 4,
+            "reflection": false
+          },
+          {
+            "rotation": 6,
+            "reflection": true
+          }
+        ],
+        "invalid_fresh_colors_rejected": 402
+      }
+    ],
+    "elapsed_seconds": 0.174
+  },
+  "configurations_removed": 0,
+  "independent_reducibility_checks_replaced": 0
+}
