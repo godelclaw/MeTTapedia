@@ -18503,3 +18503,91 @@ circumference, without an additional finite census. It does not identify
 general linked bands with these tubes, give a uniform bound on all minimal
 counterexamples, or verify the route's generating base. Those supply and
 base questions remain the global Four-Colour obligations.
+
+
+\subsection{Actual contour patches and their compositional curvature}
+
+Let $R$ be a set of quotient faces of a graph-backed bridgeless spherical
+cubic map, with both $R$ and its complement connected in the facial dual.
+Retain every edge incident with a face of $R$, including all cut edges.
+The restricted map uses exactly these edge identifiers and their touched
+vertices; its vertex rotation is the first return of the original rotation.
+The existing connected-shore Euler theorem gives Euler characteristic two
+for this literal carrier. A vertex with one selected face sector has degree
+two, while two or three selected sectors give degree three.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreRotation.euler}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionDegree.retained_degree_formula}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionConnectivity.retained_geometry}
+
+A retained dart whose original face is outside $R$ is an exterior-oriented
+cut dart. At a cubic vertex there is at most one such dart. Membership in
+one exterior facial orbit propagates across every edge of the complete
+primal contour of the facial bond. Consequently all exterior darts form
+one simple outer face, whose vertices are precisely the original mixed
+vertices. Every degree-two vertex lies on this face. Thus the restricted
+map satisfies the geometric plane-patch hypotheses; none of these fields
+is supplied as a disk or boundary-word assumption.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionBoundary.outside_vertex_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionPatch.mem_outerDarts_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionPatch.patch}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionPatch.boundaryVertices_iff_mixed}
+
+Each selected face keeps its entire original dart orbit. The inner faces of
+the restricted map are therefore in bijection with $R$, preserving facial
+lengths and every additive observable of those lengths. This retains
+occurrence counts rather than replacing faces by boundary edge sets.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionFaces.innerFaceEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionFaces.innerFaceEquiv_length}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionFaces.sum_inner_face_lengths}
+
+Write $n_2(R),n_3(R)$ for the numbers of outer boundary vertices of each
+degree in the restricted map. Euler and incidence counting now give the
+identity on the original face region:
+\[
+ K(R):=\sum_{f\in R}(6-|f|)=6-n_2(R)+n_3(R).
+\]
+For pentagon/hexagon patches this is the standard patch identity
+$n_2-n_3=6-p$, where $p$ is the number of pentagons; see Brinkmann and
+Coppens, \emph{MATCH} 62 (2009), 209--220, Lemma~1.\footnote{G.~Brinkmann
+and B.~Coppens, ``An efficient algorithm for the generation of planar
+polycyclic hydrocarbons with a given boundary,''
+\url{https://match.pmf.kg.ac.rs/electronic_versions/Match62/n1/match62n1_209-220.pdf}.}
+The formal result permits arbitrary face lengths and signed curvature.
+\Sverified{Mettapedia.GraphTheory.FourColor.PlanePatchCurvature.Patch.curvature_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionCurvature.boundary_balance}
+
+If successive vertices of the actual outer facial walk alternate between
+degrees two and three, then $n_2=n_3$ and $K(R)=6$. For a
+pentagon/hexagon region, this requires exactly six original pentagons.
+If $K(R)<6$, that same outer walk has consecutive degree-two vertices;
+if $K(R)>6$, it has consecutive degree-three vertices. These are necessary
+conditions; curvature six does not imply alternation.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionCurvature.alternating_requires_six_pentagons}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionCurvature.consecutive_two_of_source_curvature_lt}
+\Sverified{Mettapedia.GraphTheory.FourColor.PlanePatchCurvature.Patch.consecutive_three_of_six_lt_curvature}
+
+For nested connected facial sides $S\subseteq R$ with connected complements,
+\[
+ K(R)-K(S)=\sum_{f\in R\setminus S}(6-|f|).
+\]
+A hexagonal shell consequently preserves $n_2-n_3$ across its two complete
+interfaces. The identity preserves neither the width nor the full cyclic
+degree word. It supplies an exact geometric quantity that composes across
+layers, rather than an assumption that arbitrary contours are regular rings.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionCurvature.nested_curvature_difference}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionCurvature.hexagonal_shell_preserves_imbalance}
+
+Every deep distance component used by the existing contour construction
+has the required two connected facial sides. The patch constructor
+therefore applies directly and identifies its boundary with the complete
+distance frontier, while its curvature is the sum on the original selected
+faces.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionCurvature.exists_deep_patch}
+
+This closes the passage from complete distance contours to literal cap
+patches and their boundary degree codes. It does not supply hexagonal
+shells, prove that the degree codes alternate, identify a general linked
+band with a zigzag tube, or produce a uniform interface bound. The next
+geometric supply argument must accommodate these actual degree codes and
+the signed contributions of nonhexagonal faces. The global compatible
+reduction supply and route-native generating base remain open.

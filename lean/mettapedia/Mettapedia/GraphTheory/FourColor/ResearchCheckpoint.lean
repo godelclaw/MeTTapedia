@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
+import Mettapedia.GraphTheory.FourColor.FaceRegionCurvature
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -82,6 +83,15 @@ equivalent in both closed composites, and explicit colouring reconstruction
 keeps every exterior dart's edge colour. This is a full reduction for the
 literal tube family, not a supply theorem for general linked bands or a
 uniform bound on minimal counterexamples.
+Every connected face region with connected complement now constructs a
+literal plane patch on its retained edges. The outer facial orbit is exactly
+the complete original mixed-vertex contour; its inner faces correspond
+bijectively to the selected original faces, preserving dart lengths. This
+applies directly to the deep distance regions. Their signed curvature is
+`6 - n₂ + n₃` for the actual boundary degree counts. Alternation requires
+curvature six, hence six pentagons when the selected faces have length five
+or six. A shell of hexagonal faces preserves this degree imbalance; neither
+equal boundary lengths nor alternating boundary codes follow from that law.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
