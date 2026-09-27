@@ -11,7 +11,7 @@ audit and reuse them before duplicating their mathematics.
 | Source | Pinned revision | Declared licence | Role |
 | --- | --- | --- | --- |
 | [Rocq fourcolor](https://github.com/rocq-community/fourcolor) | `c1d6b1cd5288bea4b067aac13cdde3c18dffe018` | CeCILL-B | Reference construction programs and complete proof |
-| [Chris Emery's Lean port](https://github.com/corun1024/4ct) | `3db71e0a786a1f19be04c5266fe3d06fed216885` | MIT, including the attribution notice in LICENSE | Primary compatibility and certificate pilot; Lean 4.34.0-rc2 |
+| [Chris Emery's Lean port](https://github.com/corun1024/4ct) | `3db71e0a786a1f19be04c5266fe3d06fed216885` | MIT, including the attribution notice in LICENSE | Pinned dependency of the integration package; Lean 4.34.0-rc2 |
 | [Robert D. Barish's Lean port](https://github.com/RBarish-UTokyo/FourColorTheorem-Lean4) | `20fa34599f5189dd569d96dd22f306c94ab1c446` | Apache-2.0 with NOTICE and upstream CeCILL-B text | Independent comparison; Lean 4.35.0-rc2 |
 
 Both Lean repositories claim complete proofs with only `propext`,
@@ -133,12 +133,14 @@ zero-based, as in the measured theorem names. These audit files belong to the
 reference checkout's dependency environment, not the main library's import
 graph.
 
-## Reconstruction pilot
+## Compositional integration
 
-The adapter sources in `adapters/` connect the classical semantic argument to
-the existing GSLT library. They belong to the prepared reference environment;
-they are not yet dependencies of the main Mettapedia library. The accompanying
-LICENSE retains the reference's MIT notice and Gonthier/Werner attribution.
+The adapter sources now live in the
+[`lean/fourcolor-classical`](../../../lean/fourcolor-classical/README.md)
+integration package, which depends on the pinned reference and the existing
+Mettapedia library. Its default target checks the adapters without generating
+native C code for certificate proofs. The package's LICENSE retains the
+reference's MIT notice and Gonthier/Werner attribution.
 
 | Module | Checked obligation |
 | --- | --- |
@@ -205,8 +207,9 @@ embedding.
 
 To replay the adapters, prepare the pinned reference with the dependency
 revisions above and build Mettapedia's imported GSLT and hypermap modules.
-The reference artifacts must include `FourColor.Pilot.Cfg003` from the initial
-pilot, `FourColor.Bulk.Cfg.Hyb218`, and `FourColor.Present7Chk85`.
+The reference artifacts must include the generated ring-eight group
+`FourColor.Bulk.Cfg.Grp08_00`, `FourColor.Bulk.Cfg.Hyb218`, and
+`FourColor.Present7Chk85`.
 The following directory names are example input and output locations:
 
 ```sh
@@ -215,19 +218,21 @@ python3 tools/fourcolor/classical/replay_adapters.py \
   --reference-artifacts reference-artifacts --output adapter-build
 ```
 
-The script checks the reference revision and common toolchain, makes a
-dependency overlay in its dedicated output directory, compiles the eight adapter
-modules without native C emission, and finishes with the axiom audit. It records
-source hashes, exit statuses and wall times. It changes neither input checkout
-and does not generate or check the whole classical catalogue.
+The script checks the reference revision and common toolchain, compiles the
+eight adapter modules and the package root without native C emission, and runs
+the axiom audit. It records source hashes, exit statuses and wall times. Its
+default output is a dedicated directory; the package target instead writes the
+proof artifacts to the package's ordinary build directory. It does not generate
+or check the whole classical catalogue.
 
-The complete adapter replay passed; its final audit covered 15,453 imported
+The complete adapter replay passed; its audit covered 15,517 imported
 public declarations and found only `propext`, `Classical.choice` and `Quot.sound`.
 `reconstruction-measurements.json` records the exact source hashes and results.
 The additional kernel measurements were:
 
 | Check | Frontend seconds | Peak RSS (GiB) |
 | --- | ---: | ---: |
+| All five ring-eight configurations, reference group | 6.11 | 2.37 |
 | Configuration 219, ring 14, all nine certificate modules combined | 1,644.56 | 19.97 maximum across modules |
 | Discharging definitions `Present7Defs` | 24.65 | 2.78 |
 | Discharging check module `Present7Chk85` | 244.33 | 7.27 |

@@ -1,5 +1,5 @@
-import FourColor.Pilot.EmbeddedReconstruction
-import FourColor.Pilot.Cfg003
+import MettapediaFourColor.EmbeddedReconstruction
+import FourColor.Bulk.Cfg.Grp08_00
 import FourColor.CfQuiz
 
 /-!

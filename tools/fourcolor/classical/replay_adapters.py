@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Check the classical/GSLT adapters against prepared reference dependencies.
 
-The output directory is a dedicated, disposable build directory. This tool
-does not build the reference certificates or change either input checkout.
+The output directory holds replay receipts and copied source. This tool does
+not build the reference certificates or edit the input sources. Proof artifacts
+go to that directory unless a separate library output directory is specified.
 """
 
 import argparse
@@ -38,20 +39,23 @@ def main():
     parser.add_argument("--mettapedia", type=Path, required=True)
     parser.add_argument("--reference-artifacts", type=Path)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--library-output", type=Path)
     parser.add_argument("--lean", default="lean")
     parser.add_argument("--lake", default="lake")
     args = parser.parse_args()
     reference = args.reference.resolve()
     mettapedia = args.mettapedia.resolve()
     output = args.output.resolve()
+    configured_artifacts = os.environ.get("FOURCOLOR_REFERENCE_ARTIFACTS")
     artifacts = (args.reference_artifacts or
+                 (Path(configured_artifacts) if configured_artifacts else None) or
                  reference / ".lake/build/lib/lean").resolve()
     if capture(["git", "rev-parse", "HEAD"], reference) != REFERENCE_REVISION:
         raise SystemExit("Reference revision differs from the audited pin")
     if ((reference / "lean-toolchain").read_text().strip() !=
             (mettapedia / "lean-toolchain").read_text().strip()):
         raise SystemExit("The two inputs must use the same Lean toolchain")
-    required = ["Embed", "Euler", "CfQuiz", "Main", "Pilot/Cfg003",
+    required = ["Embed", "Euler", "CfQuiz", "Main", "Bulk/Cfg/Grp08_00",
                 "Present7Chk85", "Bulk/Cfg/Hyb218"]
     for stem in required:
         if not (artifacts / "FourColor" / (stem + ".olean")).is_file():
@@ -60,37 +64,27 @@ def main():
 
     output.mkdir(parents=True, exist_ok=True)
     source_root = output / "src"
-    library_root = output / "lib"
-    adapter_dir = Path(__file__).resolve().parent / "adapters"
-    owned = {Path("FourColor/Pilot") / (name + suffix)
-             for name in MODULES for suffix in (".olean", ".ilean")}
-    # Lean resolves the top-level prefix first. Give the fresh FourColor
-    # prefix a complete dependency overlay, including the generated checks.
-    for path in sorted((artifacts / "FourColor").rglob("*")):
-        if not path.is_file():
-            continue
-        relative = path.relative_to(artifacts)
-        if relative in owned:
-            continue
-        destination = library_root / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        if not destination.exists():
-            destination.symlink_to(path.resolve())
+    library_root = (args.library_output or output / "lib").resolve()
+    package = (Path(__file__).resolve().parents[3] /
+               "lean/fourcolor-classical")
 
     env = os.environ.copy()
     env["LEAN_PATH"] = os.pathsep.join([
         str(library_root),
+        str(artifacts),
         capture([args.lake, "env", "printenv", "LEAN_PATH"], mettapedia),
         capture([args.lake, "env", "printenv", "LEAN_PATH"], reference),
     ])
     records = []
-    for name in MODULES:
-        module = "FourColor.Pilot." + name
-        source = source_root / "FourColor/Pilot" / (name + ".lean")
+    for name in [*MODULES, "Root"]:
+        module = ("MettapediaFourColor" if name == "Root" else
+                  "MettapediaFourColor." + name)
+        relative = Path(module.replace(".", "/") + ".lean")
+        source = source_root / relative
         source.parent.mkdir(parents=True, exist_ok=True)
-        data = (adapter_dir / (name + ".lean")).read_bytes()
+        data = (package / relative).read_bytes()
         source.write_bytes(data)
-        stem = library_root / "FourColor/Pilot" / name
+        stem = library_root / module.replace(".", "/")
         stem.parent.mkdir(parents=True, exist_ok=True)
         for suffix in (".olean", ".ilean"):
             dest = Path(str(stem) + suffix)

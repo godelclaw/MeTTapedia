@@ -81,6 +81,9 @@ clone_or_sync_repo "externals/lean4lean" "port/lean-4.34" \
   "3885cb8dc3b65d0f1dc4e7c43f0cecffea2b9add" "port/lean-4.34" \
   "https://github.com/zariuq/lean4lean.git" \
   "https://github.com/digama0/lean4lean.git"
+clone_or_sync_repo "externals/fourcolor" "main" \
+  "3db71e0a786a1f19be04c5266fe3d06fed216885" "mettapedia-fourcolor" \
+  "https://github.com/corun1024/4ct.git"
 clone_or_sync_repo "externals/CeTTa" "main" \
   "12da03b4b055bfecff2add505e7e1ad4125bb352" "mettapedia-runtime" \
   "https://github.com/zariuq/CeTTa.git"

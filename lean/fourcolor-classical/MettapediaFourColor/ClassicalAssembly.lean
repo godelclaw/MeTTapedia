@@ -1,4 +1,4 @@
-import FourColor.Pilot.EmbeddedReconstruction
+import MettapediaFourColor.EmbeddedReconstruction
 import FourColor.Main
 
 /-!

@@ -1,7 +1,7 @@
-import FourColor.Pilot.HypermapDictionary
-import FourColor.Pilot.Config4Reconstruction
-import FourColor.Pilot.ClassicalAssembly
-import FourColor.Pilot.GraphColoringBridge
+import MettapediaFourColor.HypermapDictionary
+import MettapediaFourColor.Config4Reconstruction
+import MettapediaFourColor.ClassicalAssembly
+import MettapediaFourColor.GraphColoringBridge
 import FourColor.Present7Chk85
 import FourColor.Bulk.Cfg.Hyb218
 
@@ -16,7 +16,7 @@ open Lean Elab Command in
 run_cmd do
   let env ← getEnv
   let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
-  let prefixes : List Name := [`FourColor, `Mettapedia, `Foundation]
+  let prefixes : List Name := [`FourColor, `MettapediaFourColor, `Mettapedia, `Foundation]
   let mut count : Nat := 0
   for (name, _) in env.constants.toList do
     if prefixes.any (·.isPrefixOf name) && !name.isInternal then

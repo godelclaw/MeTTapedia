@@ -123,6 +123,17 @@
       "memory_method": "GNU time maximum resident set size; one Lean child",
       "native_code_generation": false,
       "olean_bytes": 236848
+    },
+    {
+      "module": "FourColor.Bulk.Cfg.Grp08_00",
+      "source_sha256": "b511501e4777566ba9612e84a4d74193f9807855b8df1b275b0c2065c8ec34e8",
+      "source_bytes": 40803,
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.11,
+      "peak_rss_kib": 2483236,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 270208
     }
   ],
   "adapter_replay": {
@@ -137,58 +148,64 @@
     "native_code_generation": false,
     "modules": [
       {
-        "module": "FourColor.Pilot.CompatibleTraces",
+        "module": "MettapediaFourColor.CompatibleTraces",
         "source_sha256": "04394bf495147ec5ef7e875d2d82976715b5028cf18635aad90917f90e4660a9",
         "exit_code": 0,
-        "frontend_wall_seconds": 2.131
+        "frontend_wall_seconds": 1.799
       },
       {
-        "module": "FourColor.Pilot.PatchWitness",
+        "module": "MettapediaFourColor.PatchWitness",
         "source_sha256": "5c807b6e55f719d6c1a91535110d3a2bfb793e38207587aea2aa44671d122e77",
         "exit_code": 0,
-        "frontend_wall_seconds": 2.179
+        "frontend_wall_seconds": 1.822
       },
       {
-        "module": "FourColor.Pilot.HypermapDictionary",
+        "module": "MettapediaFourColor.HypermapDictionary",
         "source_sha256": "e666e22c9899f5c82140e6df8b0be69c42c84c21756f81740d0524f78822da10",
         "exit_code": 0,
-        "frontend_wall_seconds": 1.842
+        "frontend_wall_seconds": 1.762
       },
       {
-        "module": "FourColor.Pilot.EmbeddedReconstruction",
-        "source_sha256": "0d83cfcaf5e068c6659c75dabf071093bef6cd359b154af9decf568b4eb3314e",
+        "module": "MettapediaFourColor.EmbeddedReconstruction",
+        "source_sha256": "4a414dc0c12f7cbc7a8288e8ad34bd1a21adbc70a010e926e34d54078cc84455",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.53
+        "frontend_wall_seconds": 3.057
       },
       {
-        "module": "FourColor.Pilot.Config4Reconstruction",
-        "source_sha256": "bb3c0897f6ceaceb1a425a8cb547930d804b3880f283057ed644a0eee2c07c5c",
+        "module": "MettapediaFourColor.Config4Reconstruction",
+        "source_sha256": "26276c35742e4258714684de42476992804c2cd712847d80274b76cb4f7876f1",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.107
+        "frontend_wall_seconds": 3.437
       },
       {
-        "module": "FourColor.Pilot.ClassicalAssembly",
-        "source_sha256": "9b8ec702c5289ffd3154ff85451e22fc045f7d6ad2cd69cfb094b8faefce76f2",
+        "module": "MettapediaFourColor.ClassicalAssembly",
+        "source_sha256": "f0da5e30e9405f8ccfd093253ead33a0a81e1a9efc875973c7d1413b7d85427a",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.03
+        "frontend_wall_seconds": 2.881
       },
       {
-        "module": "FourColor.Pilot.GraphColoringBridge",
-        "source_sha256": "7e6e3b9ce0621518b35a4ba43082092cbdfa039bedd85c00a668e1478e5197c7",
+        "module": "MettapediaFourColor.GraphColoringBridge",
+        "source_sha256": "d2eefdcde862f23d5cc349a4ce1ee1f560cd0a38a5dd9a5c62a911770af6763f",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.082
+        "frontend_wall_seconds": 3.072
       },
       {
-        "module": "FourColor.Pilot.BridgeAudit",
-        "source_sha256": "87b67cdf2096be033f83c30e3185b5b25fd0b1ed3bbf9f29d7772b9bf8b4b6b8",
+        "module": "MettapediaFourColor.BridgeAudit",
+        "source_sha256": "3274d687c2e81c8565a39f5ed8e9ee018c99e8d730e12bfc9b0c634a98a3ead3",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.029
+        "frontend_wall_seconds": 3.998
+      },
+      {
+        "module": "MettapediaFourColor",
+        "source_sha256": "c2577060c0a852329231a58e01b58193b8cc321250f0b1991b9ddf8789887cca",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.237
       }
     ]
   },
   "axiom_audit": {
-    "declarations": 15453,
-    "scope": "Imported public FourColor, Mettapedia and Foundation declarations",
+    "declarations": 15517,
+    "scope": "Imported public FourColor, MettapediaFourColor, Mettapedia and Foundation declarations",
     "allowed": [
       "propext",
       "Classical.choice",
@@ -209,8 +226,8 @@
     "One discharging-check module, not full unavoidability",
     "Reconstruction is conditional on the exact geometric hypotheses and a supplied contract colouring",
     "Classical trace selection does not extract a sequence of Kempe moves",
-    "Adapter sources are checked in the reference environment, not integrated into the main library",
-    "The unconditional root and the construction of a planar graph rotation from a topological embedding are not established by this pilot"
+    "The unconditional root and the construction of a planar graph rotation from a topological embedding are not established by this pilot",
+    "The integration package exposes conditional assembly; the full reference replay remains separate"
   ],
   "compression": {
     "new_configurations_removed": 0,

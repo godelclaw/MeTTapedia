@@ -1,5 +1,5 @@
-import FourColor.Pilot.CompatibleTraces
-import FourColor.Pilot.PatchWitness
+import MettapediaFourColor.CompatibleTraces
+import MettapediaFourColor.PatchWitness
 import Mettapedia.GSLT.Core.RelationalRouteSemantics
 
 /-!

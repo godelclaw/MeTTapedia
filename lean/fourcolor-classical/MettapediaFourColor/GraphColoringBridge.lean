@@ -1,5 +1,5 @@
-import FourColor.Pilot.ClassicalAssembly
-import FourColor.Pilot.HypermapDictionary
+import MettapediaFourColor.ClassicalAssembly
+import MettapediaFourColor.HypermapDictionary
 import Mettapedia.GraphTheory.FourColor.SimpleGraphRotationSystem
 import Mathlib.Combinatorics.SimpleGraph.Coloring.Vertex
 
@@ -127,7 +127,7 @@ theorem colorable_of_planarDarts
     (hcycles : ∀ a b : G.Dart, a.fst = b.fst → H.CNode a b)
     (hplanar : H.Planar) : G.Colorable 4 := by
   classical
-  letI := Fintype.ofFinite V
+  let := Fintype.ofFinite V
   have hdual : H.dual.PlanarBridgeless :=
     ⟨(planar_dual H).mpr hplanar,
       (bridgeless_dual H).mpr (loopless_of_dartGraph H hedge hnode)⟩
