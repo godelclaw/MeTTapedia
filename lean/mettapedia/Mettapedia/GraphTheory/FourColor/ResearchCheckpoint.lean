@@ -5,6 +5,8 @@ import Mettapedia.GraphTheory.FourColor.FaceRegionSweep
 import Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions
 import Mettapedia.GraphTheory.FourColor.FaceColourTransfer
 import Mettapedia.GraphTheory.FourColor.FacePathExtension
+import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
+import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -127,6 +129,18 @@ one new edge requires equal missing colours, two require different missing
 colours, and three or more always extend the fixed old colouring. All old
 edge colours are preserved. These local facts leave the short-step conditions
 along whole routes open. No bounded width or general reduction supply follows.
+Physical Kempe switches now act on the same original edge assignments and
+transport each vertex profile exactly. Every failed facial extension supplies
+a colour pair and a component through its first endpoint; the chosen switch
+repairs it exactly when the component avoids its second endpoint. Otherwise
+there is an actual two-colour walk through retained edges joining the ends.
+Switches contacting both ends, or neither, preserve the extension test.
+An explicit rectangular-shore colouring on triangular-prism incidence admits
+no extension after any single component switch, but an explicit two-switch
+sequence does extend. This control is proved in incidence semantics; its
+spherical facial-event adapter is not formalized here. The source-map repair
+criterion is independent of this control. Neither successful arbitrary repair
+sequences nor a global bound on their length have been proved.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/

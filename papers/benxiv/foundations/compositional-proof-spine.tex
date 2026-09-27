@@ -18865,3 +18865,75 @@ two-edge steps. It does not prove that a whole source sweep has compatible
 choices: the missing colours depend on the earlier colouring, and short
 steps can test incompatible choices. Successful construction order,
 recolouring, or strict replacement still requires a geometric argument.
+
+\subsection{Physical component repair and its single-switch limit}
+
+The colouring semantics now retains actual Kempe components of the old
+patch. Its incidence graph has the original edge identifiers as vertices;
+distinct retained edges are adjacent precisely when they share an original
+vertex. Unretained identifiers are isolated and do not affect the old
+profiles. Proper incidence colourings are colourings of this graph, so the
+existing component-switch operation applies without a new properness axiom.
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.colouring}
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.switch_proper}
+
+Fix a colour transposition $\tau$ and one literal bichromatic component
+$K$. Say that $K$ touches $v$ when one of its retained edges is incident
+with $v$. All active old edges at a touched vertex belong to $K$.
+Consequently the switched colouring $a'$ has profile
+\[
+ P_{a'}(v)=
+ \begin{cases}
+ \tau[P_a(v)],&K\text{ touches }v,\\
+ P_a(v),&K\text{ does not touch }v.
+ \end{cases}
+\]
+Its unique missing colour is transformed by the same rule. Applying the
+facial extension classification therefore gives the exact extension test
+after any specified switch. If $K$ touches both attachment vertices, or
+neither, equality and inequality of their missing colours are preserved.
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.profile_switch}
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.missing_switch}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceKempeRepair.switched_extension_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceKempeRepair.same_contact_preserves_extension}
+
+For a failed one-edge addition, let $r\ne t$ be the two missing colours.
+Switching $r,t$ on the component through the first end repairs the failure
+if and only if that component avoids the second end. For a failed two-edge
+addition both ends miss the same colour $r$; switching $r$ with a distinct
+colour has the same success criterion. The required component through the
+first end exists because the other selected colour occurs there.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceKempeRepair.one_edge_switch_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceKempeRepair.two_edge_switch_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.exists_component_touches_of_missing}
+The final theorem constructs the actual facial path, repair pair and
+component for every failed old colouring. If that component reaches the
+other end, it supplies a literal two-colour walk through retained edges.
+It does not assume or prove that the component separates the ends.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceKempeRepair.exists_component_test}
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.exists_walk_of_touches}
+
+\paragraph{A checked local obstruction and a successful sequence.}
+Use triangular-prism edges $01,02,03,12,14,25,34,35,45$. The old rectangle
+$0,1,4,3$ has edge colours $0,1,2,1$ in that cyclic order. Both attachment
+vertices $0,1$ miss colour $2$, so adding the path $0,2,1$ cannot preserve
+that colouring. For every distinct colour pair, each literal component
+touches both attachment vertices or neither. Thus no single component
+switch makes the old colouring extend.
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample.assignment_proper}
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample.same_contact}
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample.no_single_switch}
+Nevertheless two actual component switches work: first switch colours
+$0,2$ on the singleton component $01$, then colours $0,1$ on the now
+singleton component $03$. The resulting missing colours at $0,1$ are
+$1,0$, and the new edges $02,12$ receive those colours. Both component
+identities and the final proper extension are kernel checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample.first_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample.second_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample.two_switches_extend}
+This control uses literal prism incidence; its spherical facial-event
+adapter is not part of the formal result. It refutes a general single-switch
+repair guarantee and demonstrates why sequences carry additional power.
+It proves no bound on successful repair lengths and no universal existence
+of such a sequence. The global compatible-construction and strict-reduction
+supply questions remain open.
