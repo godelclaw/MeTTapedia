@@ -20,10 +20,11 @@
     "discharging_rules_removed": 0,
     "certificate_bytes_saved": 0,
     "kernel_seconds_saved": 0,
-    "local_discharging_computations_replaced": 82,
+    "local_discharging_computations_replaced": 144,
     "whole_assembly_discharging_computations_replaced": 0,
     "arity10_coverage_checker_obligations_replaced": 82,
-    "conditional_assembly_checker_obligations_replaced": 82
+    "conditional_assembly_checker_obligations_replaced": 144,
+    "arity11_coverage_checker_obligations_replaced": 62
   },
   "experiments": [
     {
@@ -36,7 +37,7 @@
     {
       "name": "reflected single-edge charge queries",
       "record": "reflection-candidates.json",
-      "status": "Candidate inventory; all 66 arity-ten reflected identifications have checked consumers.",
+      "status": "All 66 arity-ten and 62 arity-eleven reflected identifications have checked consumers; 322 remaining matches are candidates.",
       "evidence": "program search; checked applications are recorded in local_certificates",
       "credited_compression": false
     },
@@ -48,7 +49,7 @@
       "credited_compression": false
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, arity-ten and conditional-assembly counts describe the same 82 shared checks and must not be added. Whole-assembly credit waits for the unconditional root.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local and conditional-assembly counts describe the same 144 shared checks and must not be added; the arity-specific counts are 82 plus 62. There are 131 separate input-identity or classification checks. Whole-assembly credit waits for the unconditional root.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -193,6 +194,54 @@
       "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
       "measurements": "paired-charge-measurements.json",
       "coverage_measurements": "orbit-presentation-measurements.json"
+    },
+    {
+      "reference_obligations": [
+        "FourColor.f11_76",
+        "FourColor.f11_81",
+        "FourColor.f11_89",
+        "FourColor.f11_98",
+        "FourColor.f11_128",
+        "FourColor.f11_170",
+        "FourColor.f11_193",
+        "FourColor.f11_255",
+        "FourColor.f11_291",
+        "FourColor.f11_298",
+        "FourColor.f11_304",
+        "FourColor.f11_308",
+        "FourColor.f11_317"
+      ],
+      "before": 140,
+      "after": 78,
+      "replaced": 62,
+      "additional_check": "62 full-Part reflection identities, separate from the discharging computations.",
+      "uniform_theorems": [
+        "FourColor.ChargeBound.reflect",
+        "FourColor.Hubcap.successful"
+      ],
+      "consumers": [
+        "FourColor.Orbit11.f11_76",
+        "FourColor.Orbit11.f11_81",
+        "FourColor.Orbit11.f11_89",
+        "FourColor.Orbit11.f11_98",
+        "FourColor.Orbit11.f11_128",
+        "FourColor.Orbit11.f11_170",
+        "FourColor.Orbit11.f11_193",
+        "FourColor.Orbit11.f11_255",
+        "FourColor.Orbit11.f11_291",
+        "FourColor.Orbit11.f11_298",
+        "FourColor.Orbit11.f11_304",
+        "FourColor.Orbit11.f11_308",
+        "FourColor.Orbit11.f11_317"
+      ],
+      "evidence": "kernel checked",
+      "integrated_into_full_unavoidability": false,
+      "integrated_into_arity11_coverage": true,
+      "coverage_consumer": "FourColor.Orbit11.exclude11",
+      "conditional_assembly_consumer": "FourColor.Orbit11Assembly.fourColorTheorem_of_checks",
+      "conditional_graph_consumer": "FourColor.Orbit11Assembly.colorable_of_planeDrawing",
+      "conditional_source_construction_consumer": "FourColor.Orbit11Assembly.supported_source_construction_of_checks",
+      "measurements": "orbit11-presentation-measurements.json"
     }
   ]
 }

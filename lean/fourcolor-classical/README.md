@@ -12,6 +12,8 @@ The additional `OrbitAssembly` endpoint supplies the arity-ten presentation
 using rotation and reflection to share certificates. Reducibility and the
 other six arities remain explicit inputs to that endpoint. The full baseline
 replay must pass before an unconditional integration root is accepted.
+`Orbit11Assembly` also supplies the arity-eleven presentation by semantic
+reflection, leaving reducibility and the five lower arities explicit.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
@@ -75,6 +77,20 @@ the same audit directory.
 The audits verify that its dependency graph includes every semantic replacement
 and the explicit colouring reconstruction, and that all 87 superseded check
 declarations and the original arity-ten theorem are absent.
+
+The next target composes this presentation with shared arity-eleven certificates:
+
+```sh
+lake build kernelOrbit11Presentation
+```
+
+It requires the reference's `Present11Defs` artifact and the shared arity-ten
+package. It reconstructs all nine arity-eleven presentation modules, followed
+by `Orbit11Assembly` and `Orbit11Audit`. Its generated sources and receipts are
+in `.lake/orbit11-audit`. Both the graph-colouring and exact source-construction
+endpoints consume all thirteen new semantic hubcaps. The audit excludes all
+62 replaced arity-eleven checks, the 87 superseded arity-ten declarations and
+both original arity coverage theorems.
 
 ## What is preserved
 
@@ -172,8 +188,16 @@ endpoints.
 The reduction of 82 independent discharging checks is consumed by the
 complete arity-ten coverage proof and the conditional `OrbitAssembly` endpoint.
 Its 2,580 explicit checker obligations become 2,498, with 69 separate finite
-checks of boundary-input identities or classifications. All 633 configurations
-remain. An unconditional assembly with all seven
+checks of boundary-input identities or classifications.
+
+`Orbit11Assembly` composes that result with thirteen arity-eleven hubcaps whose
+140 computations become 78. The entire arity-eleven presentation goes from
+571 to 509 independent checks, with 62 separate full-input reflection identities.
+Across both arities, 3,151 checks become 3,007: 144 independent computations
+are replaced, and 131 identity or classification checks are counted separately.
+Both colouring endpoints consume all replacements.
+
+All 633 configurations remain. An unconditional assembly with all seven
 arities and all reducibility certificates is still pending. Exact counts and
 measurement scope are recorded in the
 [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).

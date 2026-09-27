@@ -39,3 +39,15 @@ target kernelOrbitPresentation pkg : Unit := do
         "--output", ".lake/orbit-audit", "--library-output", ".lake/build/lib/lean"]
       cwd := pkg.dir
       env := env }
+
+/-- Check arity-eleven semantic sharing and its two compositional consumers. -/
+target kernelOrbit11Presentation pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/orbit11_presentation.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--output", ".lake/orbit11-audit", "--library-output", ".lake/build/lib/lean"]
+      cwd := pkg.dir
+      env := env }

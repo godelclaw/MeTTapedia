@@ -164,6 +164,7 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `CompactPlaneMap` | A two-site contact is non-corner map adjacency, and map colours transfer to graph colours |
 | `PlaneDrawing` | Actual noncrossing injective paths construct all the compact-site hypotheses, including isolated vertices |
 | `OrbitAssembly` | The complete arity-ten presentation supplies a coverage input to the reconstruction-based assembly, using the shared periodic certificate |
+| `Orbit11Assembly` | The shared arity-eleven presentation composes with the arity-ten proof, leaving five arities and reducibility explicit in both colouring endpoints |
 | `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
 
 The operational sequence is:
@@ -376,10 +377,33 @@ frontend times and artifact sizes. Compilation uses the ordinary Lean kernel
 and emits no native C code. This integration establishes consumption of the
 shared certificate; it does not establish a runtime or artifact-size saving.
 
+The arity-eleven target reuses the same semantic reflection theorem in thirteen
+hubcaps. Their 140 independent computations become 78, with 62 separately
+checked identities of complete boundary inputs. The whole arity-eleven
+presentation changes from 571 to 509 independent checks. `Orbit11Assembly`
+composes it with the shared arity-ten presentation: together they replace 144
+checks, changing 3,151 to 3,007, plus 131 finite identity/classification checks.
+The audit follows both the finite graph and exact source-construction endpoints,
+requires every selected hubcap, and excludes all replaced check declarations.
+The remaining hypotheses are reducibility and arities five through nine.
+
+With `Present11Defs`, the adapters and the shared arity-ten presentation prepared:
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelOrbit11Presentation
+```
+
+`orbit11-presentation-sources.json` pins the nine reference presentation sources
+and their part definitions. `orbit11-presentation-measurements.json` records
+the checked replacements, generated-source hashes, compiler options, frontend
+times and artifacts. The target retains the original covers and split trees.
+No configuration is removed, and no runtime or artifact-size saving is credited.
+
 `reflection_candidates.py` searches the pinned single-edge queries for pairs
 with equal bounds and reflected full input parts. It finds 450 possible
-additional identifications beyond exact-input equality. All 66 arity-ten
-identifications now have checked consumers; the remaining 384 are candidates.
+additional identifications beyond exact-input equality. All 66 arity-ten and
+62 arity-eleven identifications have checked consumers; the remaining 322 are candidates.
 Only consumed, kernel-checked applications enter the compression ledger.
 Dual-edge reflection is outside this search. Replay it with:
 

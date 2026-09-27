@@ -77,13 +77,15 @@
   ],
   "additional_reflection_savings": 450,
   "replay_tool": "reflection_candidates.py",
-  "limits": "These counts describe the original program search. All 66 additional arity-ten reflection identifications now have kernel-checked consumers recorded in the ledger; the remaining 384 candidates are not credited compression. Dual-edge reflection remains outside this search.",
+  "limits": "These counts describe the original program search. All 66 arity-ten and 62 arity-eleven reflection identifications have kernel-checked consumers recorded in the ledger; the remaining 322 candidates are not credited compression. Dual-edge reflection remains outside this search.",
   "checked_reflection_identifications": {
     "arity10": 66,
-    "remaining_candidates": 384,
+    "remaining_candidates": 322,
     "measurements": [
       "reflected-hubcap-measurements.json",
-      "semantic-hubcap-measurements.json"
-    ]
+      "semantic-hubcap-measurements.json",
+      "orbit11-presentation-measurements.json"
+    ],
+    "arity11": 62
   }
 }
