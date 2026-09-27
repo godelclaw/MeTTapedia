@@ -5,6 +5,7 @@ import Mettapedia.GraphTheory.FourColor.FaceRegionSweep
 import Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions
 import Mettapedia.GraphTheory.FourColor.FaceColourTransfer
 import Mettapedia.GraphTheory.FourColor.FacePathExtension
+import Mettapedia.GraphTheory.FourColor.FaceExposedDegrees
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
 import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
@@ -159,8 +160,19 @@ has exactly two old incident edges and hence a unique missing colour in every
 proper old colouring. The exact extension classification is now proved:
 one new edge requires equal missing colours, two require different missing
 colours, and three or more always extend the fixed old colouring. All old
-edge colours are preserved. These local facts leave the short-step conditions
-along whole routes open. No bounded width or general reduction supply follows.
+edge colours are preserved. The actual attachment degree word is now proved
+to be `2, 3, ..., 3, 2`; the new arc has word `3, 2, ..., 2, 3`. Excluding
+a run of r degree-three vertices bounds attachment length by r. A new face
+of length at least r+3 therefore extends every proper old colouring, and
+the geometric event toward any larger connected facial target is constructed.
+In particular a blocked pentagonal step requires a run of two degree-three
+vertices; a blocked hexagonal step requires three. These are necessary
+conditions, not converses. Every step exposing at least three edges creates
+consecutive degree-two vertices and hence loses alternation. For a hexagonal
+step from an alternating contour, curvature six forces consecutive threes
+as well. Neither alternation nor exclusion of consecutive threes propagates
+through all single-face steps. Compatible groups of steps or control of the
+resulting boundary runs remain open, along with general reduction supply.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch

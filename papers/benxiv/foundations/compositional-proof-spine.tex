@@ -19027,6 +19027,68 @@ choices: the missing colours depend on the earlier colouring, and short
 steps can test incompatible choices. Successful construction order,
 recolouring, or strict replacement still requires a geometric argument.
 
+\subsection{Contour degree words supply colouring progress}
+
+The attachment and exposed arcs have exact degree words on their actual
+old and new boundaries. If $m$ edges of the new face are already retained
+and $n$ are new, the replaced and replacement words, including both ends,
+are respectively
+\[
+ 2\,3^{m-1}\,2\qquad\longmapsto\qquad 3\,2^{n-1}\,3,
+ \qquad m+n=|f|.
+\]
+Here powers denote repetition of a degree, not numerical exponentiation.
+At an internal attachment vertex, two successive retained edges of an
+unselected face force the third edge to be retained. At an attachment
+end, an absent incident edge forces old degree two. Each end gains that
+edge in the new patch. Every internal exposed vertex is new, so its only
+selected face is $f$; facial simplicity makes this exactly one sector,
+giving degree two. These are statements about original graph incidence
+transported to the two literal boundary permutations.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceAttachmentDegrees.degree_word}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedDegrees.degree_word}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceContourExtension.attachment_add_exposed}
+
+If the old contour has no run of $r$ consecutive degree-three vertices,
+then $m\leq r$. Consequently $|f|\geq r+3$ implies $n\geq3$, which
+constructs an extension of every proper old colouring, keeping every old
+edge colour. The run and its order are read from the actual contour;
+no attachment-length or colouring-existence supplier is assumed.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceContourExtension.run_of_long_attachment}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceContourExtension.three_le_exposed_of_no_run}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceContourExtension.extends_of_no_run}
+
+Combining this criterion with the geometric event supplier constructs a
+colour-preserving one-face step from $S$ toward any larger target $T$
+whose intervening faces satisfy the size bound. Both $S$ and $T$ have
+connected complementary facial shores. The new region remains inside
+$T$ and its original face count increases by exactly one.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceContourExtension.exists_coloured_event_between}
+Conversely, a blocked pentagonal step requires a run of two degree-three
+vertices, and a blocked hexagonal step requires three. These are necessary
+conditions for failure, not sufficient ones.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceContourExtension.blocked_forces_run}
+
+The same degree words identify a limitation of an alternating-contour
+induction. Every step with $n\geq3$ creates two consecutive degree-two
+vertices on the new boundary. Thus an alternating contour and faces of
+length at least five supply a coloured successor, but that successor is
+necessarily nonalternating. For a hexagonal step curvature six is
+preserved; equal counts of degrees two and three then force a pair of
+consecutive threes as well. Excluding consecutive threes is therefore
+also not preserved by every such step.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedDegrees.not_alternating_of_three_le_exposed}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedDegrees.hexagon_creates_two_run}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedDegrees.exists_coloured_non_alternating_event_between}
+
+These results supply geometric conditions for real forward colouring
+progress, and locate an obstruction to preserving those conditions at
+every single-face intermediate state. They do not supply a whole
+colourable sweep. Compatible groups of operations, or a proof controlling
+the resulting boundary runs and short-step colour constraints, remain
+necessary. General compatible reduction supply and the route-native
+generating base remain open.
+
 \subsection{Physical component repair and its single-switch limit}
 
 The colouring semantics now retains actual Kempe components of the old
