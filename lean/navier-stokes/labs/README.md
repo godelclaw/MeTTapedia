@@ -804,6 +804,52 @@ These calculations provide neither an amplitude-remainder bound nor a
 continuum error enclosure. They test a finite history and do not establish
 an arbitrary-data stretching budget.
 
+### A three-component positive-stretching seed
+
+`triaxial_history.py` starts the full unforced Galerkin equation from the
+periodized Gaussian curl
+
+```text
+V = curl((0,x*z,2*x*y) exp(-rho)),  rho=x²+y²+z².
+```
+
+For the whole-space field, put `g_j=(π/j)^(3/2)`. The exact checker
+`python3 -O labs/reynolds_stress.py` gives
+
+```text
+E=||V||₂²=13 g₂/8,
+||∇V||₂²=9E,   ||∇²V||₂²=99E,
+∫ curl(V) · strain(V) curl(V) = 32 g₃/27 > 0.
+```
+
+It independently computes the last integral as `-4∫det(strain(V))`.
+More generally the potential `(a*y*z,b*z*x,c*x*y) exp(-rho)` has production
+`-16(a-b)(a-c)(b-c)g₃/27`. These are spatial identities, not a time estimate.
+
+The numerical datum is the Fourier periodization of `A V(κx)` on the
+`π`-periodic cube, with `κ=14/π` and `A=κ^(3/2)/sqrt(E)` by default.
+The initial Fourier moments are checked against the whole-space formulas.
+Energies use physical volume integrals, unlike the axial-average
+normalization of the earlier mixed-parent test. The initial squared
+velocity norm is one to floating-point accuracy. Time arguments use
+`s=Aκt`; the output also gives physical time. Listed cutoffs are in units
+of `κ`, and the viscosity argument is the physical viscosity.
+
+```sh
+python3 labs/triaxial_history.py --n 96 --check-only
+python3 labs/triaxial_history.py --n 128 --time .5 --self-cutoffs 4 6
+```
+
+For selected cutoffs the program integrates the tail's own stretching
+at every RK stage. This filters all three factors. Full tail production
+filters only the recipient, so subtracting self-stretching retains the
+work with at least one lower-frequency input. Both are signed; neither
+is replaced by its absolute value. The full tail energy balances are
+recorded separately. Positive initial stretching or a finite excess does
+not refute a history allowance depending on the complete initial datum.
+Resolution diagnostics and sampled prefix maxima give no continuum
+error enclosure or bound between integration steps.
+
 ### Simultaneous stretching and mean-circulation gain
 
 Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.

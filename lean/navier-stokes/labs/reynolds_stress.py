@@ -458,6 +458,34 @@ window_stress = tau**h*(stress_primitive.subs(tau, window_ratio*tau)
 require_zero(s.simplify(window_stress-(1-window_ratio**(-h))/h),
              'nonvanishing normalized stress on each time interval')
 
+# A separate three-component seed for the full signed-history diagnostic.
+tria_a, tria_b, tria_c = s.symbols('tria_a tria_b tria_c', real=True)
+tria_potential = s.Matrix([tria_a*y*z, tria_b*z*x, tria_c*x*y])
+tria_velocity = s.Matrix([
+    gaussian_derivative(tria_potential[2], 1)-gaussian_derivative(tria_potential[1], 2),
+    gaussian_derivative(tria_potential[0], 2)-gaussian_derivative(tria_potential[2], 0),
+    gaussian_derivative(tria_potential[1], 0)-gaussian_derivative(tria_potential[0], 1)])
+tria_gradient = gaussian_gradient(tria_velocity)
+tria_strain = (tria_gradient+tria_gradient.T)/2
+tria_curl = s.Matrix([tria_gradient[2,1]-tria_gradient[1,2],
+                     tria_gradient[0,2]-tria_gradient[2,0],
+                     tria_gradient[1,0]-tria_gradient[0,1]])
+tria_quadratic = (3*(tria_a**2+tria_b**2+tria_c**2)
+                  -tria_a*tria_b-tria_a*tria_c-tria_b*tria_c)/8
+tria_production = -s.Rational(16,27)*(tria_a-tria_b)*(tria_a-tria_c)*(tria_b-tria_c)
+require_zero(s.trace(tria_gradient), 'three-component Gaussian divergence')
+require_zero(gaussian_integral_factor(tria_velocity.dot(tria_velocity),2)-tria_quadratic,
+             'three-component Gaussian energy')
+require_zero(gaussian_integral_factor(sum(v*v for v in tria_gradient),2)-9*tria_quadratic,
+             'three-component Gaussian gradient energy')
+require_zero(gaussian_integral_factor(sum(gaussian_derivative(tria_gradient[i,j],k)**2
+             for i in range(3) for j in range(3) for k in range(3)),2)-99*tria_quadratic,
+             'three-component Gaussian second-derivative energy')
+require_zero(gaussian_integral_factor(tria_curl.dot(tria_strain*tria_curl),3)-tria_production,
+             'three-component Gaussian vorticity production')
+require_zero(-4*gaussian_integral_factor(tria_strain.det(),3)-tria_production,
+             'three-component Gaussian Betchov production')
+
 print(json.dumps({
     'status': 'all exact residuals zero',
     'scope': 'differential identities, initial energy jets, and a kinematic path; no NS evolution',
@@ -490,6 +518,11 @@ print(json.dumps({
     'scaled_fluctuation_equation': 'mean and defect split checked before Leray projection',
     'actual_flow_energy_power': '-1+6h; 0<h<=1/6',
     'actual_flow_critical_history_power': '2h; finite interval, initial data vary with concentration',
+    'triaxial_energy_over_g2': str(tria_quadratic),
+    'triaxial_derivative_energy_ratios': [9, 99],
+    'triaxial_production_over_g3': str(tria_production),
+    'triaxial_parameters': ['tria_a', 'tria_b', 'tria_c'],
+    'triaxial_history_seed_parameters': [0, 1, 2],
     'kinematic_path_energy_exponent': str(energy_exponent),
     'kinematic_path_balance_divided_by_energy': str(s.simplify(
         path_balance_formula/path_energy)),
