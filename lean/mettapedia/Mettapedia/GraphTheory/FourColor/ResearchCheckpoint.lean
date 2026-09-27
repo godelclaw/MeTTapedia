@@ -19,6 +19,7 @@ import Mettapedia.GraphTheory.FourColor.ZigzagRingGeometry
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeStructural
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeReplacement
 import Mettapedia.GraphTheory.FourColor.InducedCycleLayer
+import Mettapedia.GraphTheory.FourColor.FacialCycleTangle
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -105,6 +106,15 @@ inner colouring and a ring colouring, with both given witnesses retained.
 This is an incidence and colouring theorem, independent of vertex rotation.
 It does not establish that extracted contours are induced and alternating,
 or identify the face permutation of an arbitrary annulus with a literal tube.
+For a chordless cycle oriented along a connected facial region with connected
+complement, alternating retained degrees now derive all attachment conditions
+and the ambient ring rotation. The interior is the original vertices whose
+incident faces are all selected; the interior plus the row is exactly the
+vertices touched by the selected faces. Opening the graph on the row gives
+an equivalence with literal ring darts that conjugates the complete open-face
+permutation. This proves geometric recognition for that boundary pattern;
+occurrence of such a pattern, consecutive-layer compatibility and general
+strict-reduction supply remain open.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond
