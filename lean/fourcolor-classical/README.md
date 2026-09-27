@@ -8,9 +8,10 @@ Werner's formalization. The dependency is pinned to
 upstream attribution.
 
 The current root exposes the checked reconstruction and conditional assembly.
-The real-plane conclusion and the finite graph-rotation conclusion still take
-the catalogue and discharging results as explicit inputs. The full baseline
-replay must pass before an unconditional integration root is accepted.
+The additional `OrbitAssembly` endpoint supplies the arity-ten presentation
+using a shared periodic certificate. Reducibility and the other six arities
+remain explicit inputs to that endpoint. The full baseline replay must pass
+before an unconditional integration root is accepted.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
@@ -48,6 +49,28 @@ source hashes and exit statuses in `.lake/adapter-audit/adapter-results.json`.
 If reference artifacts live elsewhere, set `FOURCOLOR_REFERENCE_ARTIFACTS` to
 that artifact directory.
 
+To check the coverage proof that consumes periodic sharing, also prepare the
+reference modules `Present10Chk1` and `Present10Chk3` through `Present10Chk24`,
+then run:
+
+```sh
+lake build kernelOrbitPresentation
+```
+
+This target reconstructs seven presentation modules from exact, hashed
+reference sources, in the namespace `FourColor.Orbit10`. It removes the ten
+checks for `f10_128`, supplies that theorem from `PeriodicHubcap.fit`, and
+retains every other proof body. Import names and namespaces change so the
+original and modified developments remain distinct. The generated sources,
+including the reference licence and credits, are available in
+`.lake/orbit-audit/src`; compilation receipts are in `orbit-results.json` in
+the same audit directory.
+
+`OrbitAssembly.fourColorTheorem_of_checks` consumes the resulting `exclude10`.
+The audit verifies that its dependency graph includes both periodic sharing
+and the explicit colouring reconstruction, and that the original ten checks
+and original arity-ten theorem are absent.
+
 ## What is preserved
 
 The hypermap dictionary preserves actual dart permutations, components and
@@ -75,11 +98,12 @@ verifies the equalities of the rotated parts; the general lemma transports
 the two certificates to all ten positions. The original ten check theorems
 are not imported by this consumer.
 
-This is a local reduction of eight independent discharging computations. All
-633 configurations remain. The complete unavoidability assembly still uses
-the reference presentations; integrating the replacement throughout that
-assembly is a separate step. Exact counts and measurement scope are recorded
-in the [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).
+The reduction of eight independent discharging checks is consumed by the
+complete arity-ten coverage proof and the conditional `OrbitAssembly` endpoint.
+All 633 configurations remain. An unconditional assembly with all seven
+arities and all reducibility certificates is still pending. Exact counts and
+measurement scope are recorded in the
+[compression ledger](../../tools/fourcolor/classical/compression-ledger.json).
 The small pilot shows no measured runtime or artifact-size improvement after
 including the generic lemma; those savings are recorded as zero.
 

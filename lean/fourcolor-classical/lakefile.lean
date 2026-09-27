@@ -27,3 +27,15 @@ lean_lib MettapediaFourColor
         "--output", ".lake/adapter-audit", "--library-output", ".lake/build/lib/lean"]
       cwd := pkg.dir
       env := env }
+
+/-- Reconstruct the arity-ten presentation with the periodic certificate shared. -/
+target kernelOrbitPresentation pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/orbit_presentation.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--output", ".lake/orbit-audit", "--library-output", ".lake/build/lib/lean"]
+      cwd := pkg.dir
+      env := env }

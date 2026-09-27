@@ -32,10 +32,11 @@
     "baseline": 10,
     "replacement": 2,
     "avoided": 8,
-    "additional_rotation_equality_check": 1
+    "additional_rotation_equality_check": 1,
+    "counting_method": "Independent explicit checker proof obligations; this is not a count of all reductions performed by the kernel during conversion."
   },
   "performance_claim": "No speed or artifact-size saving claimed.",
-  "assembly_scope": "The replacement is consumed by PeriodicHubcap.succeeds for p10_127r. The full unavoidability assembly still uses the original presentation.",
+  "assembly_scope": "Consumed by the complete arity-ten coverage theorem and conditional OrbitAssembly endpoint; the unconditional root remains pending. See orbit-presentation-measurements.json.",
   "replacement_modules": [
     {
       "module": "MettapediaFourColor.HubcapOrbit",

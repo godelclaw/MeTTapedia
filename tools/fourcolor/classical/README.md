@@ -153,6 +153,7 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `GraphColoringBridge` | Colours on actual graph darts descend to Mathlib vertex colourings, using vertexwise cyclicity and preserving every supplied dart colour |
 | `HubcapOrbit` | Equal rotated boundary inputs and equal bounds share a checker certificate |
 | `PeriodicHubcap` | Two representative checks close the same ten-position discharging case as the reference's `f10_128` |
+| `OrbitAssembly` | The complete arity-ten presentation supplies a coverage input to the reconstruction-based assembly, using the shared periodic certificate |
 | `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
 
 The operational sequence is:
@@ -254,18 +255,44 @@ lemma assembles the full hubcap, and `PeriodicHubcap.succeeds` closes the
 actual part using discharging soundness. It does not import the reference's
 ten check theorems.
 
-This saves eight independent checks in that local certificate. The complete
-unavoidability assembly still uses the original presentations, so no saving
-in its full replay is credited yet. All 633 configurations remain. Fewer
-separate checks, fewer distinct arguments, and a smaller unavoidable set are
-different results. Removing a configuration from the unavoidable set also
-requires a new coverage proof.
+The replacement is also consumed by the complete arity-ten presentation and
+the conditional `OrbitAssembly` endpoint. Its 2,580 explicit hubcap checker
+obligations become 2,572, with a separate check of the boundary-rotation
+equalities. These are counts of independent checker proof obligations, not
+all reductions performed by the kernel. All 633 configurations remain.
+An unconditional assembly with every catalogue certificate and all seven
+presentations is still pending, so that full replay is credited no saving yet.
+Fewer separate checks, fewer distinct arguments, and a smaller unavoidable
+set are different results. Removing a configuration from the unavoidable set
+also requires a new coverage proof.
 
 `periodic-hubcap-measurements.json` compares the original ten-check fragment
 with the replacement and records the shared lemma's separate cost. This small
 example does not establish a runtime or artifact-size improvement. The new
 generic proof has overhead; the measured result is the reduction in independent
 discharging computations and its checked local consumer.
+
+`orbit_presentation.py` reconstructs the arity-ten coverage proof from seven
+hashed reference files. It changes import names and namespaces, removes the
+ten declarations `c10_128_1` through `c10_128_10`, and replaces the proof of
+`f10_128` with `PeriodicHubcap.fit`. Every other proof body is retained. The
+generated source includes the reference's licence and attribution. The final
+audit checks the axiom set and follows proof dependencies to both the orbit
+lemma and the explicit colouring reconstruction; it also rejects the original
+ten certificates and the original `exclude10` theorem.
+
+After the adapter gate and the arity-ten reference checker modules are built:
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelOrbitPresentation
+```
+
+The generated source and compilation receipts are in `.lake/orbit-audit`.
+`orbit-presentation-measurements.json` records the corresponding source hashes,
+frontend times and artifact sizes. Compilation uses the ordinary Lean kernel
+and emits no native C code. This integration establishes consumption of the
+shared certificate; it does not establish a runtime or artifact-size saving.
 
 `compression-ledger.json` keeps the baseline and credited changes separate.
 The first bounded experiment tested whether two configurations could share a
