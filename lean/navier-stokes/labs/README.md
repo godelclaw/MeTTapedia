@@ -886,6 +886,35 @@ nor constructs a whole-space cascade.
 the scalar ODE's norm conservation and the Gram inequality. The cylindrical
 PDE interpretation and the viscous convergence argument remain analytic.
 
+### Persistence through a growing number of turnover times
+
+Corollary 20 extends the parent lower bound to actual nonlinear whole-space
+flows. Fix the number `K≥2` of controlled mean derivatives and choose
+`0<σ<1/2`. With `p=2K+3`, `δ=λ^(-2h)` and
+`ε=δ^((K+1+σ)/p)`, the normalized two-parent family remains smooth and
+retains every prescribed mean derivative bound through normalized time
+`a log(1/δ)`. Throughout that interval its angular fluctuation, and its
+difference from either one-parent deletion reference, have velocity
+supremum at least `c A ε`. Each squared velocity history is consequently
+at least `c λ^(2h(1-2σ)/(2K+3)) log λ`.
+
+The proof keeps the evolving nonlinear flow close to its stationary
+extended reference for this logarithmic interval. Finite amplitude
+derivatives grow at most exponentially, and the spare exponent `σ`
+pays this growth in the delayed fast mean. The first derivative is
+compared to the inviscid parent after applying the same Leray projection;
+both sides of the energy comparison are then divergence-free. On the
+nonzero parent axial phases, the existing projector estimate controls
+the comparison by `δ` times one slow axial derivative. No such operator
+estimate is assumed on the zero phase.
+
+This is an analytic nonlinear persistence result, with fixed positive
+physical viscosity and squared initial energy at most one. The time
+window in physical units still shrinks across the family, higher initial
+norms grow, and no infinite recurrence within one datum follows. The
+conclusion concerns velocity history, not the sign of accumulated
+stretching over the longer interval.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial

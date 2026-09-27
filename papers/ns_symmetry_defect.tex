@@ -2917,6 +2917,191 @@ a whole-space background, or recurrent concentration in one solution.
 It excludes a viscosity-uniform parent-history argument based simply on
 decay of the linearized velocity supremum.
 
+\subsection{A longer persistence window for actual whole-space flows}
+
+The conserved component also supplies a lower bound when the whole
+nonlinear flow evolves. A small amount of room in the amplitude exponent
+allows the normalized time interval to grow logarithmically.
+
+\begin{corollary}\label{cor:nonlinearLogPersistence}
+Fix an integer $K\geq2$, $\nu>0$, $0<h\leq1/6$, and
+$0<\sigma<1/2$. Put
+\[
+ m=2K+2,\quad p=2K+3,\quad \delta=\lambda^{-2h},\quad
+ \gamma=\frac{K+1+\sigma}{p},\quad \epsilon=\delta^\gamma,
+\]
+and use the normalized two-parent datum of
+Corollary~\ref{cor:finiteMeanDerivatives}, with this value of
+$\epsilon$, $C_\epsilon=\pi\norm g_2^2(1+2\epsilon^2)$,
+$A=\lambda^{1+2h}/\sqrt{C_\epsilon}$, and $\mu=\lambda\delta$.
+There are $a,c,C>0$ and a lower threshold on $\lambda$ such that the
+actual unforced flow and both one-parent deletion references exist through
+\[
+ T_\lambda=\frac{a\log(1/\delta)}{A\lambda}.
+\]
+The initial squared energy is $\lambda^{-1+6h}\leq1$, and the
+relative initial angular defect is $\sqrt2\epsilon\to0$.
+The full flow's angular mean satisfies
+\eqref{eq:meanr}--\eqref{eq:meanz} for every $a'+b\leq K$
+throughout this interval, with a constant independent of $\lambda$.
+Here $a'$ denotes the radial derivative order and
+$\tau=\lambda^{-2}-t$.
+
+For every $0\leq t\leq T_\lambda$, the angular fluctuation and the
+difference from either deletion reference have velocity supremum at
+least $cA\epsilon$. In particular, each of their squared velocity
+histories satisfies
+\begin{equation}\label{eq:nonlinearLogHistory}
+ \int_0^{T_\lambda}\norm{u_\lambda-\PP u_\lambda}_\infty^2\dd t
+   \geq c\lambda^{2h(1-2\sigma)/(2K+3)}\log\lambda,
+\end{equation}
+with the same lower bound after replacing the angular mean by either
+deletion reference. The references retain the full datum's $A,\mu,\nu$.
+\end{corollary}
+
+\begin{proof}
+Work on the extended space with
+$D_3=\delta\partial_Z+2\partial_\alpha$ and
+$\eta=\nu\lambda/A$, as in Proposition~\ref{prop:mixedParents}.
+Write $B=g(Z)V_h$ and start at a fixed Sobolev order
+$M=2p+K+16$. The field $B$ is $D$-solenoidal for every $\delta$.
+Its projected equation residual is bounded by $C(\delta+\eta)$
+in $H^M$: its inviscid horizontal acceleration is a horizontal
+gradient, and completing that gradient with $D_3$ leaves only
+$\delta$ times a fixed axial pressure derivative. Its diffusion
+has size $O(\eta)$.
+
+For each amplitude $|\theta|\leq2\epsilon$, hold $\delta,\eta$
+fixed and write $R_\theta=U_\theta-B$. The transport estimate, under
+the temporary bound $\norm{R_\theta}_{H^M}\leq1$, gives
+\begin{equation}\label{eq:logBootstrap}
+ \norm{R_\theta(s)}_{H^M}
+        \leq C(|\theta|+\delta+\eta)e^{Cs}.
+\end{equation}
+The highest-order self-transport term cancels because both $R_\theta$
+and $B$ are $D$-solenoidal; the viscous term is nonpositive in this
+energy estimate. Since $\eta=\nu\sqrt{C_\epsilon}\delta$, choosing
+the time coefficient $a>0$ small makes the right side less than
+$1/2$ through $S_\delta=a\log(1/\delta)$, for small $\delta$.
+Continuation closes the temporary bound and constructs the extended
+flows throughout this interval, with uniformly bounded $H^M$ norms.
+The same argument applies to both deletion references.
+
+The finite amplitude derivative equations now give
+\begin{equation}\label{eq:logAmplitudeJets}
+ \norm{\partial_\theta^j U_\theta(s)}_{H^{M-2j}}
+      \leq C_j e^{C_js},\qquad 1\leq j\leq p.
+\end{equation}
+Indeed their leading operator is the linearized projected transport
+about the uniformly bounded $U_\theta$; every additional source is a
+product of lower amplitude derivatives with one spatial derivative.
+Induction and Gr\"onwall give \eqref{eq:logAmplitudeJets}. Difference
+quotients justify these finite derivatives in the indicated lower
+Sobolev spaces. No analytic solution map is required.
+
+The phase count from Corollary~\ref{cor:finiteMeanDerivatives} therefore
+gives
+\[
+ \norm{(\PP U_\epsilon)_{\rm f}}_{C^K}
+        \leq C\epsilon^p e^{C_ps}.
+\]
+Reduce $a$ so that $aC_p<\sigma/2$. Then this is at most
+$C\delta^{K+1+\sigma/2}$ through $S_\delta$.
+The zero-phase mean has uniform Sobolev bounds by
+\eqref{eq:logBootstrap}. Its radial primitive gives the extra
+$\delta$ factor for the radial component, and each slow axial
+derivative gives another $\delta$, exactly as in the proof of
+Proposition~\ref{prop:delayedMean}. These estimates give every stated
+mean derivative bound after restriction and rescaling.
+
+It remains to retain the parent lower bound for this longer interval.
+Let $L_{\delta,\eta}$ be the first amplitude derivative at zero,
+and let $L_0$ be the inviscid linearization about the stationary
+extended field $B$ with $\delta=0$. Both have phase indices $n=\pm1$.
+For these indices, the Leray symbols at frequencies
+$k=(\xi_h,2n)$ and $k_\delta=(\xi_h,2n+\delta\xi_Z)$ satisfy
+\begin{equation}\label{eq:nonzeroPhaseProjector}
+ \norm{P_{k_\delta}-P_k}\leq2\delta|\xi_Z|.
+\end{equation}
+Indeed the normalized rank-one projector estimate gives
+$4|k_\delta-k|/|k|$, and $|k|\geq2$. If $k_\delta=0$,
+the same bound holds directly with $P_0=I$. Thus, on these two
+phase sectors,
+\[
+ \norm{(\mathbb P_{\delta,*}-\mathbb P_{0,*})F}_{H^j}
+                  \leq2\delta\norm{\partial_ZF}_{H^j}.
+\]
+This estimate is not asserted on the zero phase sector.
+
+To compare the linear equations, use
+$L_{\delta,\eta}-\mathbb P_{\delta,*}L_0$, which is
+$D$-solenoidal. Comparing directly with $L_0$ would not preserve
+this constraint. The residual of $\mathbb P_{\delta,*}L_0$
+contains the derivative difference, diffusion, the difference between
+the evolving zero-amplitude base and $B$, and the projected pressure
+correction. The latter uses the exact identity
+\[
+ \mathbb P_{\delta,*}(I-\mathbb P_{0,*})
+  =(\mathbb P_{\delta,*}-\mathbb P_{0,*})(I-\mathbb P_{0,*}).
+\]
+Estimate each term by \eqref{eq:nonzeroPhaseProjector},
+\eqref{eq:logBootstrap} at zero amplitude, and the exponential
+higher Sobolev bounds for $L_0$. Gr\"onwall in $H^{K+6}$, followed
+by the projection correction, gives
+\[
+ \norm{L_{\delta,\eta}(s)-L_0(s)}_{H^{K+6}}
+                   \leq C(\delta+\eta)e^{Cs}.
+\]
+Polynomial factors in $s$ have been absorbed by increasing $C$.
+Together with the second amplitude derivative estimate, this yields
+\begin{equation}\label{eq:logParentRemainder}
+ U_\epsilon-U_0=\epsilon L_0+\mathcal R,\qquad
+ \norm{\mathcal R}_{C^0}
+       \leq C\epsilon(\epsilon+\delta+\eta)e^{Cs}.
+\end{equation}
+All bounds here are on the extended space and hence control the actual
+physical trace. Reduce $a$ again so that the last bound is
+$o(\epsilon)$ uniformly through $S_\delta$.
+
+At $Z=0$, $g(0)=1$, so each angular component of $L_0$ is precisely
+the parent in Proposition~\ref{prop:parentNondecay}. At $R=1$ and
+$\alpha=0$, its covariant angular Fourier coefficient of order $m$
+is one half of the corresponding complex cylindrical velocity.
+Angular Fourier extraction has norm at most the circle supremum.
+The conserved momentum thus gives a positive lower bound for this
+coefficient at every $s$. The order $m+2$ coefficient obeys the same
+argument. They cannot cancel under their separate angular projections.
+Since $U_0$ is angularly symmetric, \eqref{eq:logParentRemainder}
+gives a lower bound $c\epsilon$ for the full angular fluctuation.
+Applying the same amplitude expansion to either deletion reference
+leaves the other parent's coefficient and the same small remainder.
+
+The witnessing circle belongs to the physical trace at $Z=\alpha=0$,
+with physical radius $\lambda^{-1}$. The trace and uniqueness arguments
+from Proposition~\ref{prop:mixedParents} identify these extended flows
+with actual unforced whole-space evolutions. Moreover
+$T_\lambda\lambda^2=S_\delta\sqrt{C_\epsilon}\delta\to0$,
+so $\tau$ stays comparable to $\lambda^{-2}$. Finally
+\[
+ \frac{A\epsilon^2}{\lambda}S_\delta
+   =\frac{a}{\sqrt{C_\epsilon}}
+       \delta^{-(1-2\sigma)/p}\log(1/\delta),
+\]
+which proves \eqref{eq:nonlinearLogHistory}. Initial energy and
+relative defect follow from the same angular orthogonality calculation
+as before.
+\end{proof}
+
+The nonzero-vector rank-one projector estimate used here is already
+kernel-checked in the lane's
+\texttt{PancakeFrequencyProjectorCommutator} module. The growing-time
+Sobolev estimates and the whole-space realization in this corollary are
+analytic. The exponent is smaller than the fixed-window exponent in
+Corollary~\ref{cor:finiteMeanDerivatives}; the new conclusion is persistence
+through a number of normalized turnover times tending to infinity.
+No sign of the accumulated stretching over the longer interval, and no
+renewal of this configuration from one fixed datum, is asserted.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
