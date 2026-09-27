@@ -153,6 +153,7 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `GraphColoringBridge` | Colours on actual graph darts descend to Mathlib vertex colourings, using vertexwise cyclicity and preserving every supplied dart colour |
 | `HubcapOrbit` | Equal rotated boundary inputs and equal bounds share a checker certificate |
 | `PeriodicHubcap` | Two representative checks close the same ten-position discharging case as the reference's `f10_128` |
+| `HalfTurnHubcap` | Five representatives close `f10_242` by the same orbit lemma, using its period-five boundary |
 | `NearestRegions` | Compact sites with connected exclusive cores have connected strict nearest regions in any real normed space |
 | `CompactPlaneMap` | A two-site contact is non-corner map adjacency, and map colours transfer to graph colours |
 | `PlaneDrawing` | Actual noncrossing injective paths construct all the compact-site hypotheses, including isolated vertices |
@@ -270,9 +271,14 @@ lemma assembles the full hubcap, and `PeriodicHubcap.succeeds` closes the
 actual part using discharging soundness. It does not import the reference's
 ten check theorems.
 
-The replacement is also consumed by the complete arity-ten presentation and
+The second case, `f10_242`, has period five. `HalfTurnHubcap.succeeds` uses the
+same generic theorem to replace its ten checks by five representatives, with
+a separate check of the complete rotated inputs. Its measurement record is
+`half-turn-hubcap-measurements.json`.
+
+Both replacements are consumed by the complete arity-ten presentation and
 the conditional `OrbitAssembly` endpoint. Its 2,580 explicit hubcap checker
-obligations become 2,572, with a separate check of the boundary-rotation
+obligations become 2,567, with two separate checks of the boundary-rotation
 equalities. These are counts of independent checker proof obligations, not
 all reductions performed by the kernel. All 633 configurations remain.
 An unconditional assembly with every catalogue certificate and all seven
@@ -287,14 +293,15 @@ example does not establish a runtime or artifact-size improvement. The new
 generic proof has overhead; the measured result is the reduction in independent
 discharging computations and its checked local consumer.
 
-`orbit_presentation.py` reconstructs the arity-ten coverage proof from seven
+`orbit_presentation.py` reconstructs the arity-ten coverage proof from eight
 hashed reference files. It changes import names and namespaces, removes the
-ten declarations `c10_128_1` through `c10_128_10`, and replaces the proof of
-`f10_128` with `PeriodicHubcap.fit`. Every other proof body is retained. The
+twenty declarations `c10_128_1` through `c10_128_10` and `c10_242_1` through
+`c10_242_10`, and replaces the two combining proofs with `PeriodicHubcap.fit`
+and `HalfTurnHubcap.fit`. Every other proof body is retained. The
 generated source includes the reference's licence and attribution. The final
 audit checks the axiom set and follows proof dependencies to both the orbit
 lemma and the explicit colouring reconstruction; it also rejects the original
-ten certificates and the original `exclude10` theorem.
+twenty certificates and the original `exclude10` theorem.
 
 The audit also follows the finite graph endpoint
 `OrbitAssembly.colorable_of_planeDrawing`. Its geometric bridge constructs

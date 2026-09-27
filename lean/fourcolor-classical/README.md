@@ -9,7 +9,7 @@ upstream attribution.
 
 The current root exposes the checked reconstruction and conditional assembly.
 The additional `OrbitAssembly` endpoint supplies the arity-ten presentation
-using a shared periodic certificate. Reducibility and the other six arities
+using two shared periodic certificates. Reducibility and the other six arities
 remain explicit inputs to that endpoint. The full baseline replay must pass
 before an unconditional integration root is accepted.
 
@@ -50,17 +50,19 @@ If reference artifacts live elsewhere, set `FOURCOLOR_REFERENCE_ARTIFACTS` to
 that artifact directory.
 
 To check the coverage proof that consumes periodic sharing, also prepare the
-reference modules `Present10Chk1` and `Present10Chk3` through `Present10Chk24`,
+reference checker modules `Present10Chk1` through `Present10Chk24`, except
+`Present10Chk2` and `Present10Chk4`,
 then run:
 
 ```sh
 lake build kernelOrbitPresentation
 ```
 
-This target reconstructs seven presentation modules from exact, hashed
-reference sources, in the namespace `FourColor.Orbit10`. It removes the ten
-checks for `f10_128`, supplies that theorem from `PeriodicHubcap.fit`, and
-retains every other proof body. Import names and namespaces change so the
+This target reconstructs eight presentation modules from exact, hashed
+reference sources, in the namespace `FourColor.Orbit10`. It removes the twenty
+checks for `f10_128` and `f10_242`, supplies those theorems from
+`PeriodicHubcap.fit` and `HalfTurnHubcap.fit`, and retains every other proof
+body. Import names and namespaces change so the
 original and modified developments remain distinct. The generated sources,
 including the reference licence and credits, are available in
 `.lake/orbit-audit/src`; compilation receipts are in `orbit-results.json` in
@@ -68,7 +70,7 @@ the same audit directory.
 
 `OrbitAssembly.fourColorTheorem_of_checks` consumes the resulting `exclude10`.
 The audit verifies that its dependency graph includes both periodic sharing
-and the explicit colouring reconstruction, and that the original ten checks
+and the explicit colouring reconstruction, and that the original twenty checks
 and original arity-ten theorem are absent.
 
 ## What is preserved
@@ -120,9 +122,12 @@ closes the reference's part `p10_127r` with two representative checker
 computations instead of the ten used for `f10_128`. A finite kernel check also
 verifies the equalities of the rotated parts; the general lemma transports
 the two certificates to all ten positions. The original ten check theorems
-are not imported by this consumer.
+are not imported by this consumer. `HalfTurnHubcap.succeeds` applies the same
+lemma to `p10_241r`: its period-five boundary reduces the ten checks for
+`f10_242` to five representatives, again with a separate finite check of the
+rotated-part equalities.
 
-The reduction of eight independent discharging checks is consumed by the
+The reduction of thirteen independent discharging checks is consumed by the
 complete arity-ten coverage proof and the conditional `OrbitAssembly` endpoint.
 All 633 configurations remain. An unconditional assembly with all seven
 arities and all reducibility certificates is still pending. Exact counts and

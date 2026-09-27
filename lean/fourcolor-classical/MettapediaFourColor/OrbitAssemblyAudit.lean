@@ -11,11 +11,12 @@ open Lean Elab Command in
 run_cmd do
   let env ← getEnv
   for rootName in [`FourColor, `FourColor.Orbit10] do
-    for i in List.range 10 do
-      let name := Name.str rootName s!"c10_128_{i + 1}"
-      if env.contains name then
-        throwError m!"Removed certificate is present: {name}"
-  for name in [`FourColor.f10_128, `FourColor.exclude10] do
+    for case in [128, 242] do
+      for i in List.range 10 do
+        let name := Name.str rootName s!"c10_{case}_{i + 1}"
+        if env.contains name then
+          throwError m!"Removed certificate is present: {name}"
+  for name in [`FourColor.f10_128, `FourColor.f10_242, `FourColor.exclude10] do
     if env.contains name then
       throwError m!"Original presentation theorem is present: {name}"
   let mut seen : NameSet := {}
@@ -28,6 +29,7 @@ run_cmd do
       if let some info := env.find? name then
         todo := info.getUsedConstantsAsSet.toList ++ todo
   for name in [``FourColor.PeriodicHubcap.fit,
+      ``FourColor.HalfTurnHubcap.fit,
       ``FourColor.HubcapOrbit.oneEntries_fit_periodic,
       ``FourColor.ClassicalAssembly.no_embedded_reduction,
       ``FourColor.PlaneDrawing.core_eq_openStar,
@@ -47,4 +49,4 @@ run_cmd do
   logInfo m!"Audited {count} imported public declarations; only the three permitted axioms."
   logInfo "The assembly consumes periodic sharing and explicit colouring reconstruction."
   logInfo "The graph endpoint consumes the constructed sites and nearest-region geometry."
-  logInfo "The ten original checks and the original arity-ten theorem are absent."
+  logInfo "The twenty original checks and the original arity-ten theorem are absent."

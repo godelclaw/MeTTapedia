@@ -1,0 +1,49 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_version": "4.34.0-rc2",
+  "reference_source": "FourColor/Present10Chk4.lean",
+  "reference_source_sha256": "b648a962c1f224bc4a5a34e898c7b7486a2058e6e09f967e65f1cdaae369dd59",
+  "reference_obligation": "FourColor.f10_242",
+  "target_part": "FourColor.p10_241r",
+  "uniform_theorem": "FourColor.HubcapOrbit.oneEntries_fit_periodic",
+  "consumer": "FourColor.HalfTurnHubcap.succeeds",
+  "checker_obligations": {
+    "before": 10,
+    "after": 5,
+    "avoided": 5,
+    "additional_rotation_equality_check": 1,
+    "counting_method": "Independent explicit checker proof obligations; not all kernel reductions during conversion."
+  },
+  "replacement_module": {
+    "module": "MettapediaFourColor.HalfTurnHubcap",
+    "source_sha256": "9869d15cc97b46f9aae4b89d2db48b7190c8aa00b4af24ffca4033bcaa762d6f",
+    "exit_code": 0,
+    "frontend_wall_seconds": 2.438,
+    "olean_bytes": 111896,
+    "olean_sha256": "96067aa528aad63a85365d0547d9d41452e4b6f5a6260539cc05b6f42b838179"
+  },
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "measurement_scope": "Single frontend compilation with prepared dependencies; includes loading, elaboration, kernel checking and serialization. Generic lemma cost is shared with the earlier period-two application.",
+  "performance_claim": "No speed or artifact-size saving claimed.",
+  "axiom_audit": {
+    "imported_public_declarations": 16502,
+    "allowed": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected": [],
+    "original_ten_checks_and_hubcap_imported": false
+  },
+  "assembly_scope": "Consumed by complete arity-ten coverage and the conditional graph-colouring assembly; the unconditional root remains pending.",
+  "coverage_consumer": "FourColor.Orbit10.exclude10",
+  "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+  "coverage_measurements": "orbit-presentation-measurements.json"
+}

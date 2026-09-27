@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Rebuild the arity-ten presentation with its periodic hubcap shared.
+"""Rebuild the arity-ten presentation with two periodic hubcaps shared.
 
-The seven generated modules retain the pinned reference's proof bodies,
-except for the ten removed checks and their combining theorem. A separate
+The eight generated modules retain the pinned reference's proof bodies,
+except for twenty removed checks and their two combining theorems. A separate
 namespace allows comparison with the original presentation. Both versions
 use the same part, rule and configuration definitions.
 """
@@ -21,6 +21,7 @@ from replay_adapters import OPTIONS, REFERENCE_REVISION, capture
 
 MODULES = {
     "Present10Chk2": "Checks",
+    "Present10Chk4": "Checks4",
     "Present10Hub1": "Hub1",
     "Present10Hub2": "Hub2",
     "Present10Step1": "Step1",
@@ -29,26 +30,31 @@ MODULES = {
     "Present10": "Coverage",
 }
 PREFIX = "MettapediaFourColor.Orbit10"
+REPLACEMENTS = {
+    "Present10Chk2": (128, "PeriodicHubcap"),
+    "Present10Chk4": (242, "HalfTurnHubcap"),
+}
 
 
 def transform(name, source):
     """Apply the exact, bounded substitution to one pinned source."""
-    if name == "Present10Chk2":
-        start = source.index("theorem c10_128_1 :")
+    if name in REPLACEMENTS:
+        case, consumer = REPLACEMENTS[name]
+        start = source.index(f"theorem c10_{case}_1 :")
         first = source.rindex("set_option maxRecDepth", 0, start)
-        end = source.index("theorem f10_128 :")
+        end = source.index(f"theorem f10_{case} :")
         last = source.rindex("set_option maxRecDepth", 0, end)
         removed = source[first:last]
         names = re.findall(r"^theorem (\w+)", removed, re.M)
-        if names != [f"c10_128_{i}" for i in range(1, 11)]:
+        if names != [f"c10_{case}_{i}" for i in range(1, 11)]:
             raise ValueError("The selected block is not the original ten checks")
         source = source[:first] + source[last:]
         old = "  simp [hubcapFit, " + ", ".join(names) + "]"
         if source.count(old) != 1:
             raise ValueError("The combining proof differs from the recorded form")
-        source = source.replace(old, "  exact FourColor.PeriodicHubcap.fit")
-        source = "import MettapediaFourColor.PeriodicHubcap\n" + source
-        if re.search(r"\bc10_128_\d+\b", source):
+        source = source.replace(old, f"  exact FourColor.{consumer}.fit")
+        source = f"import MettapediaFourColor.{consumer}\n" + source
+        if re.search(rf"\bc10_{case}_\d+\b", source):
             raise ValueError("A removed certificate remains in the source")
     for old, new in MODULES.items():
         source = re.sub(rf"(?m)^import FourColor\.{old}$",
@@ -110,16 +116,16 @@ def main():
     receipt = output / "orbit-results.json"
     receipt.write_text(json.dumps(report, indent=2) + "\n")
     if args.prepare_only:
-        print("Prepared seven presentation modules and two assembly/audit modules.")
+        print("Prepared eight presentation modules and two assembly/audit modules.")
         return
     artifacts = (args.reference_artifacts or Path(os.environ.get(
         "FOURCOLOR_REFERENCE_ARTIFACTS", str(reference / ".lake/build/lib/lean")))).resolve()
     for n in range(1, 25):
-        if n != 2 and not (artifacts / f"FourColor/Present10Chk{n}.olean").is_file():
+        if n not in (2, 4) and not (artifacts / f"FourColor/Present10Chk{n}.olean").is_file():
             raise SystemExit(f"Missing prepared reference module: FourColor.Present10Chk{n}")
     library = (args.library_output or output / "lib").resolve()
     adapters = package / ".lake/build/lib/lean"
-    for name in ("PeriodicHubcap", "ClassicalAssembly"):
+    for name in ("PeriodicHubcap", "HalfTurnHubcap", "ClassicalAssembly"):
         if not (adapters / f"MettapediaFourColor/{name}.olean").is_file():
             raise SystemExit("Build the adapter package first: " + name)
     # Lean resolves a top-level module prefix from one search directory.

@@ -6,14 +6,14 @@ import MettapediaFourColor.PlaneDrawing
 # Classical assembly consuming the shared arity-ten presentation
 
 The arity-ten coverage theorem is reconstructed from the pinned reference
-presentation with its periodic hubcap certificate shared. Reducibility and
+presentation with two periodic hubcap certificates shared. Reducibility and
 the other six arities remain explicit hypotheses. The reduction argument
 still consumes the GSLT colouring-witness reconstruction.
 -/
 
 namespace FourColor.OrbitAssembly
 
-/-- Arity ten is discharged by the presentation using the periodic certificate. -/
+/-- Arity ten is discharged by the presentation using the two shared certificates. -/
 theorem no_minimalCounterExample_of_checks (hred : Reducibility)
     (e5 : ExcludedArity (RedpartSound theRedpart) 5)
     (e6 : ExcludedArity (RedpartSound theRedpart) 6)

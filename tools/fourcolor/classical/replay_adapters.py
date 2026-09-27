@@ -19,7 +19,7 @@ REFERENCE_REVISION = "3db71e0a786a1f19be04c5266fe3d06fed216885"
 MODULES = [
     "CompatibleTraces", "PatchWitness", "HypermapDictionary",
     "EmbeddedReconstruction", "Config4Reconstruction", "ClassicalAssembly",
-    "GraphColoringBridge", "HubcapOrbit", "PeriodicHubcap",
+    "GraphColoringBridge", "HubcapOrbit", "PeriodicHubcap", "HalfTurnHubcap",
     "NearestRegions", "CompactPlaneMap", "PlaneDrawing", "BridgeAudit",
 ]
 OPTIONS = [
