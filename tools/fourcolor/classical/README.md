@@ -97,6 +97,56 @@ This is source-fidelity evidence. Equivalence of the finite-array mirror with
 the noncomputable Lean decoder is not proved by this program. The comparison
 does not establish reducibility, validate discharging or remove a configuration.
 
+## Internal templates and boundary transport
+
+`classify_internal_templates.py` groups the original free completions by the
+embedded graph induced by their internal vertices. It retains cyclic order
+and permits a single global orientation reversal. The 633 configurations
+have 140 internal templates, of which 90 occur more than once. Each saved
+witness separately records the boundary contacts, full vertex degrees and
+original contraction edges. Those data are not identified by template equality.
+
+The classifier checks its dart bijections after writing and reading them back.
+Five corruptions of each witness are rejected. `verify_internal_templates.py`
+independently enumerates vertex graph isomorphisms with NetworkX, then checks
+the cyclic neighbour orders. Its 633 within-class and 9,730 between-class
+comparisons reproduce the partition without reading the saved dart witnesses.
+
+The smallest repeated template is the four-vertex diamond. Its members are
+configurations 1, 2 and 4, with ring sizes 6, 7 and 8. A bounded transport test
+replaces a boundary colour `c` by adjacent distinct colours `a, b` satisfying
+`a XOR b = c`. This is the local Tait relation at a cubic star. For each of
+the pairs 1 to 2 and 2 to 4, the test tries every source port and every cyclic
+rotation and reflection of the target support.
+
+None of the 196 star images is contained in the target support. Even the closest
+images contain 60 and 222 colourings absent from the target, respectively.
+A separate backtracking search on the original free completions reconstructs all three boundary
+supports, using four vertex colours and their nonzero XOR differences around
+the ring. These agree with the stored supports, up to boundary orientation.
+The three support sizes are 96, 234 and 486.
+
+`internal-template-probe.json` records the source and program hashes, timings,
+controls and scope. These are program checks, not Lean theorems. The template
+count does not count reducibility proofs, and the failed star inclusion does
+not refute a uniform diamond-family theorem or other ways of choosing compatible
+colourings. This experiment removes no configuration or independent proof check.
+
+With the original configuration file and the pinned reference's generated
+`cpc.py` inputs, reproduce the results with Python 3.9 or newer. The independent
+template verifier also requires NetworkX (the recorded run used version 2.4).
+
+```sh
+python3 tools/fourcolor/classical/classify_internal_templates.py \
+  --configurations unavoidable.conf --output internal-templates.json
+python3 tools/fourcolor/classical/verify_internal_templates.py \
+  --configurations unavoidable.conf --classification internal-templates.json \
+  --output internal-templates-check.json
+python3 tools/fourcolor/classical/probe_diamond_star.py \
+  --configurations unavoidable.conf --inputs generated-inputs \
+  --output diamond-star-results.json
+```
+
 ## What the compositional bridge must preserve
 
 Configuration programs already exist in the reference proof. Encoding their

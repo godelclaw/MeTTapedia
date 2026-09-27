@@ -48,6 +48,13 @@
       "status": "All 17 arity-nine and three arity-ten matches have checked consumers; 71 matches at other arities remain candidates.",
       "evidence": "program search; checked applications are recorded in local_certificates",
       "credited_compression": false
+    },
+    {
+      "name": "embedded internal templates and diamond star transport",
+      "record": "internal-template-probe.json",
+      "status": "140 internal templates independently verified; the single-star support-inclusion mechanism failed all 196 tested alignments for configurations 1, 2 and 4 and is stopped.",
+      "evidence": "program checks, including independent vertex-colouring reconstruction of the three supports",
+      "credited_compression": false
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local and conditional-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. Whole-assembly credit waits for the unconditional root.",
