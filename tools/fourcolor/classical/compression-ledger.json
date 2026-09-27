@@ -20,11 +20,12 @@
     "discharging_rules_removed": 0,
     "certificate_bytes_saved": 0,
     "kernel_seconds_saved": 0,
-    "local_discharging_computations_replaced": 144,
+    "local_discharging_computations_replaced": 231,
     "whole_assembly_discharging_computations_replaced": 0,
     "arity10_coverage_checker_obligations_replaced": 82,
-    "conditional_assembly_checker_obligations_replaced": 144,
-    "arity11_coverage_checker_obligations_replaced": 62
+    "conditional_assembly_checker_obligations_replaced": 231,
+    "arity11_coverage_checker_obligations_replaced": 62,
+    "arity9_coverage_checker_obligations_replaced": 87
   },
   "experiments": [
     {
@@ -37,19 +38,19 @@
     {
       "name": "reflected single-edge charge queries",
       "record": "reflection-candidates.json",
-      "status": "All 66 arity-ten and 62 arity-eleven reflected identifications have checked consumers; 322 remaining matches are candidates.",
+      "status": "All 70 arity-nine, 66 arity-ten and 62 arity-eleven reflected identifications have checked consumers; 252 remaining matches are candidates.",
       "evidence": "program search; checked applications are recorded in local_certificates",
       "credited_compression": false
     },
     {
       "name": "paired charge reflection and endpoint exchange",
       "record": "paired-charge-candidates.json",
-      "status": "All three arity-ten matches have checked consumers; 88 matches at other arities remain candidates.",
+      "status": "All 17 arity-nine and three arity-ten matches have checked consumers; 71 matches at other arities remain candidates.",
       "evidence": "program search; checked applications are recorded in local_certificates",
       "credited_compression": false
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local and conditional-assembly counts describe the same 144 shared checks and must not be added; the arity-specific counts are 82 plus 62. There are 131 separate input-identity or classification checks. Whole-assembly credit waits for the unconditional root.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local and conditional-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. Whole-assembly credit waits for the unconditional root.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -242,6 +243,94 @@
       "conditional_graph_consumer": "FourColor.Orbit11Assembly.colorable_of_planeDrawing",
       "conditional_source_construction_consumer": "FourColor.Orbit11Assembly.supported_source_construction_of_checks",
       "measurements": "orbit11-presentation-measurements.json"
+    },
+    {
+      "reference_obligations": [
+        "FourColor.f9_22",
+        "FourColor.f9_125",
+        "FourColor.f9_276",
+        "FourColor.f9_295",
+        "FourColor.f9_359",
+        "FourColor.f9_732",
+        "FourColor.f9_754",
+        "FourColor.f9_758",
+        "FourColor.f9_762",
+        "FourColor.f9_858",
+        "FourColor.f9_862",
+        "FourColor.f9_950",
+        "FourColor.f9_1589",
+        "FourColor.f9_1591",
+        "FourColor.f9_1609",
+        "FourColor.f9_1767",
+        "FourColor.f9_1779",
+        "FourColor.f9_1821",
+        "FourColor.f9_2097",
+        "FourColor.f9_2201",
+        "FourColor.f9_2208",
+        "FourColor.f9_2340",
+        "FourColor.f9_2446",
+        "FourColor.f9_2458",
+        "FourColor.f9_2692",
+        "FourColor.f9_2900",
+        "FourColor.f9_3312",
+        "FourColor.f9_3336",
+        "FourColor.f9_3344",
+        "FourColor.f9_3384",
+        "FourColor.f9_3508",
+        "FourColor.f9_3556"
+      ],
+      "before": 237,
+      "after": 150,
+      "replaced": 87,
+      "additional_check": "87 complete boundary-part identities; paired offsets are also matched by kernel reduction.",
+      "uniform_theorems": [
+        "FourColor.ChargeBound.reflect",
+        "FourColor.PairChargeBound.reflect_swap",
+        "FourColor.PairChargeBound.swap",
+        "FourColor.Hubcap.successful"
+      ],
+      "consumers": [
+        "FourColor.Orbit9.f9_22",
+        "FourColor.Orbit9.f9_125",
+        "FourColor.Orbit9.f9_276",
+        "FourColor.Orbit9.f9_295",
+        "FourColor.Orbit9.f9_359",
+        "FourColor.Orbit9.f9_732",
+        "FourColor.Orbit9.f9_754",
+        "FourColor.Orbit9.f9_758",
+        "FourColor.Orbit9.f9_762",
+        "FourColor.Orbit9.f9_858",
+        "FourColor.Orbit9.f9_862",
+        "FourColor.Orbit9.f9_950",
+        "FourColor.Orbit9.f9_1589",
+        "FourColor.Orbit9.f9_1591",
+        "FourColor.Orbit9.f9_1609",
+        "FourColor.Orbit9.f9_1767",
+        "FourColor.Orbit9.f9_1779",
+        "FourColor.Orbit9.f9_1821",
+        "FourColor.Orbit9.f9_2097",
+        "FourColor.Orbit9.f9_2201",
+        "FourColor.Orbit9.f9_2208",
+        "FourColor.Orbit9.f9_2340",
+        "FourColor.Orbit9.f9_2446",
+        "FourColor.Orbit9.f9_2458",
+        "FourColor.Orbit9.f9_2692",
+        "FourColor.Orbit9.f9_2900",
+        "FourColor.Orbit9.f9_3312",
+        "FourColor.Orbit9.f9_3336",
+        "FourColor.Orbit9.f9_3344",
+        "FourColor.Orbit9.f9_3384",
+        "FourColor.Orbit9.f9_3508",
+        "FourColor.Orbit9.f9_3556"
+      ],
+      "evidence": "kernel checked",
+      "integrated_into_full_unavoidability": false,
+      "integrated_into_arity9_coverage": true,
+      "coverage_consumer": "FourColor.Orbit9.exclude9",
+      "conditional_assembly_consumer": "FourColor.Orbit9Assembly.fourColorTheorem_of_checks",
+      "conditional_graph_consumer": "FourColor.Orbit9Assembly.colorable_of_planeDrawing",
+      "conditional_source_construction_consumer": "FourColor.Orbit9Assembly.supported_source_construction_of_checks",
+      "measurements": "orbit9-presentation-measurements.json"
     }
   ]
 }

@@ -14,6 +14,8 @@ other six arities remain explicit inputs to that endpoint. The full baseline
 replay must pass before an unconditional integration root is accepted.
 `Orbit11Assembly` also supplies the arity-eleven presentation by semantic
 reflection, leaving reducibility and the five lower arities explicit.
+`Orbit9Assembly` additionally supplies arity nine, leaving reducibility and
+arities five through eight explicit.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
@@ -91,6 +93,22 @@ in `.lake/orbit11-audit`. Both the graph-colouring and exact source-construction
 endpoints consume all thirteen new semantic hubcaps. The audit excludes all
 62 replaced arity-eleven checks, the 87 superseded arity-ten declarations and
 both original arity coverage theorems.
+
+Arity nine uses the same semantic transport and weighted-cover theorems:
+
+```sh
+lake build kernelOrbit9Presentation
+```
+
+Prepare the reference arity-nine artifacts and both earlier shared presentations
+first. The target rebuilds 35 affected presentation modules and reuses 57
+unchanged ones. `Orbit9Assembly` and its audit complete the 37-module gate.
+The 32 selected hubcaps use 150 independent checks in place of 237, with
+87 separate boundary-identity checks. Both colouring endpoints consume every
+replacement. Across all three arities, 231 independent checks are replaced;
+the configuration catalogue and discharging rules are unchanged.
+The source pin is `orbit9-presentation-sources.json` in the measurement tools;
+generated sources and receipts are in `.lake/orbit9-audit`.
 
 ## What is preserved
 

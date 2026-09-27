@@ -1,0 +1,987 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "arity": 9,
+  "generated": [
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks1",
+      "original_module": "FourColor.Present9Chk1",
+      "original_sha256": "71bdd59598abf729c1edc8294320ebab35c61eb30ae9558a33e04a526b5cf9e4",
+      "source_sha256": "56e89a4a8503bf1e5733c7e8e439776c13e8a89688cc29830779df8ae01abe30"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks16",
+      "original_module": "FourColor.Present9Chk16",
+      "original_sha256": "6f569676c7b673b721200da7123b1329d183baae50354a82ea672a7d0d24d95b",
+      "source_sha256": "681c47c885bb908f826fa0b155b57084c41a956372a9e43c8f941b2523f662ff"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks18",
+      "original_module": "FourColor.Present9Chk18",
+      "original_sha256": "7cab7efabd7d1814f50e110503f7378fd894f706600b184ff4e522cb39c4386b",
+      "source_sha256": "43f782081a72013f7a603860e372871e68f400e7b6d262a597181ae968adff25"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks20",
+      "original_module": "FourColor.Present9Chk20",
+      "original_sha256": "13104171a75dfec092503610993faf3295c7a43c313412a1c555bbc9992ee9c8",
+      "source_sha256": "152cbb79d3a5c79387481bccf924a199653e041adeb9b7f43837ffddf546d423"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks3",
+      "original_module": "FourColor.Present9Chk3",
+      "original_sha256": "6eadf515c06bd942f8bb8c229c32ec49349731713a7cbb7b59bb6a4abfeed7ce",
+      "source_sha256": "744dd5532f43037b67c230a9a85844c8615a74c78686d4296e50e21f8a2214da"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks33",
+      "original_module": "FourColor.Present9Chk33",
+      "original_sha256": "f411f2033c18f9407e8f6619227593541e6764769cc43f44c11490af36621625",
+      "source_sha256": "effcdc2e2cc4c24c4f8b44b5299ae10684c1aa83c674e9ad4315f321f0c1df15"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks37",
+      "original_module": "FourColor.Present9Chk37",
+      "original_sha256": "d1746d17070784b57a68c32cab3e41592bad05da16907e05e9c90989a34ffa9e",
+      "source_sha256": "f3e4f531cd92dc6ae8a9b208b2639d9e0a043860ee72e23ec3436d05f97cea5f"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks38",
+      "original_module": "FourColor.Present9Chk38",
+      "original_sha256": "dc9b773226df7abff35e6241e143e914a8601f4fa60ebf238efcd9c453b4908e",
+      "source_sha256": "b9cbf1252e78640136592cd7e1b0cdb4912ac9a19559bbbfe1c4fddea816ab84"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks44",
+      "original_module": "FourColor.Present9Chk44",
+      "original_sha256": "9e9a107a44948f4ad4f614f712c02ccfa89a1d5cc38e8b4b1a4a894c0fb72112",
+      "source_sha256": "0af3dced1a186c6b0474336c7a7e049fd31e5278d831d6e1e13de1dff54e5fc9"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks46",
+      "original_module": "FourColor.Present9Chk46",
+      "original_sha256": "464d3d790d9c16dad36942a6f0d63c9c7011607280d3836492d09b9003fdf136",
+      "source_sha256": "f930c8d6dc2f64a24d479dbf8ffcda58eba7966ba1becf25d5602e7aabf24f0d"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks49",
+      "original_module": "FourColor.Present9Chk49",
+      "original_sha256": "245855a069fe30d3598453555396c820549eb80d3f4baa583f59a4cb40f434af",
+      "source_sha256": "debbda99686fd0dfb43bebaa0543562d942a17c66273e09ca886949ed17cd4bb"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks51",
+      "original_module": "FourColor.Present9Chk51",
+      "original_sha256": "462a5fa92c21bb5317498f3cfb078c4f902951ec7ab53345130883f4268aa86e",
+      "source_sha256": "04051dd415ecaff230dbab1097588ad3782ea00c3ca1d97b7c84c1336b73a36e"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks56",
+      "original_module": "FourColor.Present9Chk56",
+      "original_sha256": "623043bf028558f04faf72c9106ff9d0878d1ec2baa45e91dc75ff8b377f2cdf",
+      "source_sha256": "d2b7053b071d4d5c6e59d34f7cbbf4702512ccd5989398c3fdc40a45d474b09d"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks6",
+      "original_module": "FourColor.Present9Chk6",
+      "original_sha256": "5f4b38881ad5711427e5ecf24dc5b43a08a2b85f5cde0f5f8f8ed7a775ed2299",
+      "source_sha256": "128d354937410e98c1bad9d64406aeca4e5733e99fabd2863bb0d9a066776ed4"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks61",
+      "original_module": "FourColor.Present9Chk61",
+      "original_sha256": "258a5b115eea1b2c5dd3cb8f4195e298fc19d0d84ae7b558d8ae2d59c2df3173",
+      "source_sha256": "22105979922e2e5c76559c975e5b82ae61e22bcfe8fa9867ec7683d36edb3cc1"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks70",
+      "original_module": "FourColor.Present9Chk70",
+      "original_sha256": "c17c5f8770d4e734b118ea9345d7ecce2d0a6bea47646f6aac6f785dc3259d15",
+      "source_sha256": "5e8491d4ef97450e7892097ea850dfba92da2e9a87f7a0d03d82c6a66d885e00"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks71",
+      "original_module": "FourColor.Present9Chk71",
+      "original_sha256": "c712004cae25802360b306d89d01fac0393274e2fbda0ee45e1e4c49efe8f6cb",
+      "source_sha256": "8d6f31bff8e5f464563cb4f05302c2d72b160743771e4d631ebeeda2c223c2dc"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks74",
+      "original_module": "FourColor.Present9Chk74",
+      "original_sha256": "6d5c11303370ed377fcdd3c0b89514da21bd46366f10193c9d2f824a14b21512",
+      "source_sha256": "ffda73c872980e6dbf5c1a634cd07b56fbe341aa72833347c670d5e23a0a21e6"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks75",
+      "original_module": "FourColor.Present9Chk75",
+      "original_sha256": "c1161c07e619219bdc4b62ac421ede9e678006da70e5a2b4813994dda088837c",
+      "source_sha256": "cc3f8baa62908017603a3cb81fbfd67c9383b71157f827abfc34c56f8fa57738"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks8",
+      "original_module": "FourColor.Present9Chk8",
+      "original_sha256": "2b0637c896a915386b66d2c618098a2d99212ef664b811b9b29c6b234367e435",
+      "source_sha256": "4f95f7c4bba56d157ab31db305995e47d067a2e47a6ece3240426ba6275d6e38"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub1",
+      "original_module": "FourColor.Present9Hub1",
+      "original_sha256": "ef6b1234bce536b1f688403dac15e1e2b821dcaa2951e366547faa0c0be7a89c",
+      "source_sha256": "c34d96bac818ab77383c7ebd1c6196d18dab248adbc1516a232cba737216777a"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub2",
+      "original_module": "FourColor.Present9Hub2",
+      "original_sha256": "68dad63f63e4285d7ab64353604b09ee278e4493f68fc41fce9c3e166a7bc77f",
+      "source_sha256": "8440a76480636ccb6feea42a2c03e4d8485e33c5be3883db658367302e17c67f"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub3",
+      "original_module": "FourColor.Present9Hub3",
+      "original_sha256": "8eedbbcb9a1df3ec538194397b6cfd8b03ea65fc95da3c39ce5f7023acabf74e",
+      "source_sha256": "a2239d8c744a30227ec087888fe72e7408e9185ad6ea157dee45b2e7ca012743"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub4",
+      "original_module": "FourColor.Present9Hub4",
+      "original_sha256": "37fe0c3f52d2bb18d2b868c6a6943ea5a00e67b244ad2032e0ad914ba469ed3f",
+      "source_sha256": "1d8f426d29a1de6eb6ab714eff96548afb1db2fe8c93b16566ee4fec3ef48756"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub5",
+      "original_module": "FourColor.Present9Hub5",
+      "original_sha256": "10ac031fad2e575003e5567004a75087a92c0a982a31e559ef17d4cd1b2e5633",
+      "source_sha256": "09a92933904a2dda4bb00ef619bb87cbe9d82aeb9e6242d01cc9d3911aa60fa5"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub6",
+      "original_module": "FourColor.Present9Hub6",
+      "original_sha256": "fdacea0b1e733bcc3426088a1725fe0f49afbf76975c48ef6975ecac935418ac",
+      "source_sha256": "35d277605ce2b2a0ab4c1b6e0b3442738416ac70268f6b8000cda4c04b67e04b"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step1",
+      "original_module": "FourColor.Present9Step1",
+      "original_sha256": "932231f082e03859a460ea876071d1769921114cc575c41123f727744cb4e7a9",
+      "source_sha256": "576a24b76a4be70536c45a41765ab2dd43797d0f1097633932900f46313f3b28"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step2",
+      "original_module": "FourColor.Present9Step2",
+      "original_sha256": "e17d7967054c7b0cfa61b04480641066cf1838ea30909a1802da5e27ec5e0ee8",
+      "source_sha256": "85fd65677d3527b47a1f832ffbf4adbf2945cdcc85cd5867452d51571fa74651"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step3",
+      "original_module": "FourColor.Present9Step3",
+      "original_sha256": "636c4eb84bf5ced1872df4b83d6dcbb05524fe614f459f98a8b9d8409db76b47",
+      "source_sha256": "f935595b15610fd1fa471417ecd58411aa27b2055d26eaa45e2b32f1bd5232d0"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step4",
+      "original_module": "FourColor.Present9Step4",
+      "original_sha256": "0bb19e297737c0e2854f9c9893c4ae41636f0d5bb570994a341f9a90e5492757",
+      "source_sha256": "5845f8fa8fbafc77561b535007b64b730cb9228121debdce698265425dc76701"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step5",
+      "original_module": "FourColor.Present9Step5",
+      "original_sha256": "01aef4b355a8575050bbdb504904375f17eb34f65f2c1b6f84ee0428ff4e286b",
+      "source_sha256": "0d1b4ec2b60b19fa1a3f729ae0e39e99af0574ce536e6032f3b6b051eadc1bb2"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step6",
+      "original_module": "FourColor.Present9Step6",
+      "original_sha256": "bb0da49ca67ab4ee18654c085ac9ae87f3c882b39f13f4a6301376fd28728618",
+      "source_sha256": "267dc4359f00188002000fce4466f947f375c953f3e8b64be961a8b3447c5393"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step7",
+      "original_module": "FourColor.Present9Step7",
+      "original_sha256": "1a51e2dfd2d5a8b571ed9b680d9abf772cb48fc99cc43a77b13d49fb48d66052",
+      "source_sha256": "f62946a0e2d81c47b08ca9ef552f3ad1b3b90641d08d58f0e194bae652263fe0"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step8",
+      "original_module": "FourColor.Present9Step8",
+      "original_sha256": "6a5c003043b3e2b65d2cd42a7edba5e99275e02d7ae50dc3fdeb023e692a1220",
+      "source_sha256": "d827eaf878a5d31fbc7d97336e524bb40cc918e01f3237ea7aa4b52e6e8dda2a"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Coverage",
+      "original_module": "FourColor.Present9",
+      "original_sha256": "1e0a1428af07a2b8367c69528bf411550034ddda96ec3a0b21a382c871730b03",
+      "source_sha256": "b849d0e3e4b458fddbdfebfe064591341fc40fa14a7d12898bb32a2f365a3d1b"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9Assembly",
+      "source_sha256": "a88051a8b2b5aeeaf941ef855e394895eac8bacc96e7ce767e7d6e990278cc68"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9Audit",
+      "source_sha256": "8ba65709101ef889f1972c73bd8267b75b31bea57488f049e57ffefa98ef8e68"
+    }
+  ],
+  "completed": true,
+  "reused_reference_modules": [
+    "FourColor.Present9Chk10",
+    "FourColor.Present9Chk11",
+    "FourColor.Present9Chk12",
+    "FourColor.Present9Chk13",
+    "FourColor.Present9Chk14",
+    "FourColor.Present9Chk15",
+    "FourColor.Present9Chk17",
+    "FourColor.Present9Chk19",
+    "FourColor.Present9Chk2",
+    "FourColor.Present9Chk21",
+    "FourColor.Present9Chk22",
+    "FourColor.Present9Chk23",
+    "FourColor.Present9Chk24",
+    "FourColor.Present9Chk25",
+    "FourColor.Present9Chk26",
+    "FourColor.Present9Chk27",
+    "FourColor.Present9Chk28",
+    "FourColor.Present9Chk29",
+    "FourColor.Present9Chk30",
+    "FourColor.Present9Chk31",
+    "FourColor.Present9Chk32",
+    "FourColor.Present9Chk34",
+    "FourColor.Present9Chk35",
+    "FourColor.Present9Chk36",
+    "FourColor.Present9Chk39",
+    "FourColor.Present9Chk4",
+    "FourColor.Present9Chk40",
+    "FourColor.Present9Chk41",
+    "FourColor.Present9Chk42",
+    "FourColor.Present9Chk43",
+    "FourColor.Present9Chk45",
+    "FourColor.Present9Chk47",
+    "FourColor.Present9Chk48",
+    "FourColor.Present9Chk5",
+    "FourColor.Present9Chk50",
+    "FourColor.Present9Chk52",
+    "FourColor.Present9Chk53",
+    "FourColor.Present9Chk54",
+    "FourColor.Present9Chk55",
+    "FourColor.Present9Chk57",
+    "FourColor.Present9Chk58",
+    "FourColor.Present9Chk59",
+    "FourColor.Present9Chk60",
+    "FourColor.Present9Chk62",
+    "FourColor.Present9Chk63",
+    "FourColor.Present9Chk64",
+    "FourColor.Present9Chk65",
+    "FourColor.Present9Chk66",
+    "FourColor.Present9Chk67",
+    "FourColor.Present9Chk68",
+    "FourColor.Present9Chk69",
+    "FourColor.Present9Chk7",
+    "FourColor.Present9Chk72",
+    "FourColor.Present9Chk73",
+    "FourColor.Present9Chk76",
+    "FourColor.Present9Chk77",
+    "FourColor.Present9Chk9"
+  ],
+  "sharing": [
+    {
+      "case": 22,
+      "part": "p9_21r",
+      "before": 6,
+      "after": 4,
+      "removed_checks": [
+        "c9_22_2",
+        "c9_22_6"
+      ]
+    },
+    {
+      "case": 125,
+      "part": "p9_94l",
+      "before": 7,
+      "after": 6,
+      "removed_checks": [
+        "c9_125_5"
+      ]
+    },
+    {
+      "case": 276,
+      "part": "p9_146l",
+      "before": 5,
+      "after": 4,
+      "removed_checks": [
+        "c9_276_5"
+      ]
+    },
+    {
+      "case": 295,
+      "part": "p9_280l",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_295_4",
+        "c9_295_5",
+        "c9_295_7"
+      ]
+    },
+    {
+      "case": 359,
+      "part": "p9_348l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_359_4",
+        "c9_359_5",
+        "c9_359_8",
+        "c9_359_9"
+      ]
+    },
+    {
+      "case": 732,
+      "part": "p9_727l",
+      "before": 5,
+      "after": 4,
+      "removed_checks": [
+        "c9_732_5"
+      ]
+    },
+    {
+      "case": 754,
+      "part": "p9_744l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_754_5",
+        "c9_754_6",
+        "c9_754_7",
+        "c9_754_8"
+      ]
+    },
+    {
+      "case": 758,
+      "part": "p9_740l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_758_4",
+        "c9_758_5",
+        "c9_758_8",
+        "c9_758_9"
+      ]
+    },
+    {
+      "case": 762,
+      "part": "p9_736l",
+      "before": 8,
+      "after": 5,
+      "removed_checks": [
+        "c9_762_5",
+        "c9_762_6",
+        "c9_762_7"
+      ]
+    },
+    {
+      "case": 858,
+      "part": "p9_857r",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_858_3",
+        "c9_858_5",
+        "c9_858_7"
+      ]
+    },
+    {
+      "case": 862,
+      "part": "p9_860l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_862_5",
+        "c9_862_6",
+        "c9_862_7",
+        "c9_862_9"
+      ]
+    },
+    {
+      "case": 950,
+      "part": "p9_936l",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_950_3",
+        "c9_950_5",
+        "c9_950_7"
+      ]
+    },
+    {
+      "case": 1589,
+      "part": "p9_1565l",
+      "before": 8,
+      "after": 5,
+      "removed_checks": [
+        "c9_1589_2",
+        "c9_1589_6",
+        "c9_1589_7"
+      ]
+    },
+    {
+      "case": 1591,
+      "part": "p9_1564l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_1591_3",
+        "c9_1591_4",
+        "c9_1591_8",
+        "c9_1591_9"
+      ]
+    },
+    {
+      "case": 1609,
+      "part": "p9_1608r",
+      "before": 8,
+      "after": 5,
+      "removed_checks": [
+        "c9_1609_2",
+        "c9_1609_6",
+        "c9_1609_7"
+      ]
+    },
+    {
+      "case": 1767,
+      "part": "p9_1765l",
+      "before": 7,
+      "after": 6,
+      "removed_checks": [
+        "c9_1767_3"
+      ]
+    },
+    {
+      "case": 1779,
+      "part": "p9_1778r",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_1779_3",
+        "c9_1779_5",
+        "c9_1779_7"
+      ]
+    },
+    {
+      "case": 1821,
+      "part": "p9_1820r",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_1821_2",
+        "c9_1821_6",
+        "c9_1821_7"
+      ]
+    },
+    {
+      "case": 2097,
+      "part": "p9_2096r",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_2097_3",
+        "c9_2097_4",
+        "c9_2097_8",
+        "c9_2097_9"
+      ]
+    },
+    {
+      "case": 2201,
+      "part": "p9_2164l",
+      "before": 8,
+      "after": 5,
+      "removed_checks": [
+        "c9_2201_5",
+        "c9_2201_6",
+        "c9_2201_7"
+      ]
+    },
+    {
+      "case": 2208,
+      "part": "p9_2205r",
+      "before": 8,
+      "after": 6,
+      "removed_checks": [
+        "c9_2208_6",
+        "c9_2208_7"
+      ]
+    },
+    {
+      "case": 2340,
+      "part": "p9_2335l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_2340_3",
+        "c9_2340_7",
+        "c9_2340_8",
+        "c9_2340_9"
+      ]
+    },
+    {
+      "case": 2446,
+      "part": "p9_2445r",
+      "before": 6,
+      "after": 4,
+      "removed_checks": [
+        "c9_2446_3",
+        "c9_2446_5"
+      ]
+    },
+    {
+      "case": 2458,
+      "part": "p9_2450l",
+      "before": 8,
+      "after": 5,
+      "removed_checks": [
+        "c9_2458_3",
+        "c9_2458_6",
+        "c9_2458_7"
+      ]
+    },
+    {
+      "case": 2692,
+      "part": "p9_2691r",
+      "before": 6,
+      "after": 4,
+      "removed_checks": [
+        "c9_2692_3",
+        "c9_2692_6"
+      ]
+    },
+    {
+      "case": 2900,
+      "part": "p9_2899r",
+      "before": 6,
+      "after": 4,
+      "removed_checks": [
+        "c9_2900_2",
+        "c9_2900_6"
+      ]
+    },
+    {
+      "case": 3312,
+      "part": "p9_3295l",
+      "before": 7,
+      "after": 6,
+      "removed_checks": [
+        "c9_3312_5"
+      ]
+    },
+    {
+      "case": 3336,
+      "part": "p9_3334l",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_3336_4",
+        "c9_3336_5",
+        "c9_3336_7"
+      ]
+    },
+    {
+      "case": 3344,
+      "part": "p9_3342l",
+      "before": 6,
+      "after": 5,
+      "removed_checks": [
+        "c9_3344_2"
+      ]
+    },
+    {
+      "case": 3384,
+      "part": "p9_3383r",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_3384_3",
+        "c9_3384_5",
+        "c9_3384_7"
+      ]
+    },
+    {
+      "case": 3508,
+      "part": "p9_3484l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c9_3508_4",
+        "c9_3508_5",
+        "c9_3508_8",
+        "c9_3508_9"
+      ]
+    },
+    {
+      "case": 3556,
+      "part": "p9_3555r",
+      "before": 7,
+      "after": 4,
+      "removed_checks": [
+        "c9_3556_4",
+        "c9_3556_5",
+        "c9_3556_7"
+      ]
+    }
+  ],
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks1",
+      "source_sha256": "56e89a4a8503bf1e5733c7e8e439776c13e8a89688cc29830779df8ae01abe30",
+      "exit_code": 0,
+      "frontend_wall_seconds": 33.608,
+      "olean_bytes": 248208,
+      "olean_sha256": "7d59af78d5c4db0b90cdaf2d22f99ead5efdcde0aa1d77d61c293168e0ded25f"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks16",
+      "source_sha256": "681c47c885bb908f826fa0b155b57084c41a956372a9e43c8f941b2523f662ff",
+      "exit_code": 0,
+      "frontend_wall_seconds": 26.536,
+      "olean_bytes": 272416,
+      "olean_sha256": "190d0eca69a4320d7a984dbff5ee5bebe8c01583de0f596ac072240182238334"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks18",
+      "source_sha256": "43f782081a72013f7a603860e372871e68f400e7b6d262a597181ae968adff25",
+      "exit_code": 0,
+      "frontend_wall_seconds": 17.012,
+      "olean_bytes": 262240,
+      "olean_sha256": "b6b45eab037bf2e5df751832d91b53ff8fd96cac94983c0f9bf5484d18f1dcb7"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks20",
+      "source_sha256": "152cbb79d3a5c79387481bccf924a199653e041adeb9b7f43837ffddf546d423",
+      "exit_code": 0,
+      "frontend_wall_seconds": 13.562,
+      "olean_bytes": 243664,
+      "olean_sha256": "5fb6424683da67fa3bea6b58877a6368f3e9d9ab4e38a0431b52e12fed510f61"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks3",
+      "source_sha256": "744dd5532f43037b67c230a9a85844c8615a74c78686d4296e50e21f8a2214da",
+      "exit_code": 0,
+      "frontend_wall_seconds": 35.85,
+      "olean_bytes": 250312,
+      "olean_sha256": "1d4c7e1debc51c2665c087c8807ffc2c1055bfc91baff7f8d1ada23664cf54af"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks33",
+      "source_sha256": "effcdc2e2cc4c24c4f8b44b5299ae10684c1aa83c674e9ad4315f321f0c1df15",
+      "exit_code": 0,
+      "frontend_wall_seconds": 20.39,
+      "olean_bytes": 265736,
+      "olean_sha256": "b9e28d82865928cceaf05f347a46f866d77a248c9fb943afd3b78fb71f4cc2d2"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks37",
+      "source_sha256": "f3e4f531cd92dc6ae8a9b208b2639d9e0a043860ee72e23ec3436d05f97cea5f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 39.251,
+      "olean_bytes": 258400,
+      "olean_sha256": "9ed25cfb6bddc9e2210686123c3b5d97b1597e5cd1be7d24313a77064b69ee21"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks38",
+      "source_sha256": "b9cbf1252e78640136592cd7e1b0cdb4912ac9a19559bbbfe1c4fddea816ab84",
+      "exit_code": 0,
+      "frontend_wall_seconds": 32.961,
+      "olean_bytes": 255888,
+      "olean_sha256": "d7a1861bb81c70607c71e5364e8082dfc608fea518c395bee98a69f0074d6d3e"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks44",
+      "source_sha256": "0af3dced1a186c6b0474336c7a7e049fd31e5278d831d6e1e13de1dff54e5fc9",
+      "exit_code": 0,
+      "frontend_wall_seconds": 27.994,
+      "olean_bytes": 254208,
+      "olean_sha256": "5930b05d3f72c72bd38c9e7ccef81114b364aed53bf913d1cb49c77c37f1b022"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks46",
+      "source_sha256": "f930c8d6dc2f64a24d479dbf8ffcda58eba7966ba1becf25d5602e7aabf24f0d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 37.605,
+      "olean_bytes": 247368,
+      "olean_sha256": "5d8a1d84ac097613d627e90b39a871d854c8099bac32b10bcf122f43fecffd3b"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks49",
+      "source_sha256": "debbda99686fd0dfb43bebaa0543562d942a17c66273e09ca886949ed17cd4bb",
+      "exit_code": 0,
+      "frontend_wall_seconds": 23.741,
+      "olean_bytes": 244216,
+      "olean_sha256": "cf8e768058b8314f59f18661462647ba64821daccc21a498a07de9d5dfa10d2b"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks51",
+      "source_sha256": "04051dd415ecaff230dbab1097588ad3782ea00c3ca1d97b7c84c1336b73a36e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 40.707,
+      "olean_bytes": 247112,
+      "olean_sha256": "4e10b2927b8e82b5ee56b7f43b66b9ea70e34849a05b4fc1fa0820c5f1bf08f8"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks56",
+      "source_sha256": "d2b7053b071d4d5c6e59d34f7cbbf4702512ccd5989398c3fdc40a45d474b09d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 79.786,
+      "olean_bytes": 255296,
+      "olean_sha256": "d666dd06c050159ce07494a5b3faacbbbe62612a041f2afce14c9d25bd73b200"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks6",
+      "source_sha256": "128d354937410e98c1bad9d64406aeca4e5733e99fabd2863bb0d9a066776ed4",
+      "exit_code": 0,
+      "frontend_wall_seconds": 17.717,
+      "olean_bytes": 251112,
+      "olean_sha256": "72cd7562e69089e3255de51e521a7ae1dde9f3aa207a28795eb7fe6c6b03df79"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks61",
+      "source_sha256": "22105979922e2e5c76559c975e5b82ae61e22bcfe8fa9867ec7683d36edb3cc1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 59.523,
+      "olean_bytes": 257384,
+      "olean_sha256": "d61db13c77ed38a7d06ef70ec4c8fce5df500d5c94f56db88aeaa5f25eef78c8"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks70",
+      "source_sha256": "5e8491d4ef97450e7892097ea850dfba92da2e9a87f7a0d03d82c6a66d885e00",
+      "exit_code": 0,
+      "frontend_wall_seconds": 37.906,
+      "olean_bytes": 265888,
+      "olean_sha256": "dcae1ca9e3404bccc6cd050fa0f6ffd1f58a9ba241df61fde7751aa26c6c65b1"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks71",
+      "source_sha256": "8d6f31bff8e5f464563cb4f05302c2d72b160743771e4d631ebeeda2c223c2dc",
+      "exit_code": 0,
+      "frontend_wall_seconds": 54.002,
+      "olean_bytes": 252744,
+      "olean_sha256": "cf99a50b84f78d1af985c063eb1fe92020b282027604f377cf7647da667bab9e"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks74",
+      "source_sha256": "ffda73c872980e6dbf5c1a634cd07b56fbe341aa72833347c670d5e23a0a21e6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 24.91,
+      "olean_bytes": 252752,
+      "olean_sha256": "9242fa62e69e6bcb2a1a3d4870e6883fd7630111dec06acae6437fee7715a70a"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks75",
+      "source_sha256": "cc3f8baa62908017603a3cb81fbfd67c9383b71157f827abfc34c56f8fa57738",
+      "exit_code": 0,
+      "frontend_wall_seconds": 27.294,
+      "olean_bytes": 251312,
+      "olean_sha256": "cc3f0338674cc155e5a940b84dd0579c07f4103bd11bc44502f5c5230ada99f0"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Checks8",
+      "source_sha256": "4f95f7c4bba56d157ab31db305995e47d067a2e47a6ece3240426ba6275d6e38",
+      "exit_code": 0,
+      "frontend_wall_seconds": 23.018,
+      "olean_bytes": 255296,
+      "olean_sha256": "c47491f49ec4fa24ab85239766eca1a5619fad13f1d4ebfb3c9526b724f37a84"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub1",
+      "source_sha256": "c34d96bac818ab77383c7ebd1c6196d18dab248adbc1516a232cba737216777a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.142,
+      "olean_bytes": 143656,
+      "olean_sha256": "02611f67d461d187db06d01f203cee4c4d2cd2d07526deef971a42b56b119ff2"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub2",
+      "source_sha256": "8440a76480636ccb6feea42a2c03e4d8485e33c5be3883db658367302e17c67f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.526,
+      "olean_bytes": 132240,
+      "olean_sha256": "95a2a283ea572c85a8574e438ff337f320d5c4f0ce597669daa2649468073b83"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub3",
+      "source_sha256": "a2239d8c744a30227ec087888fe72e7408e9185ad6ea157dee45b2e7ca012743",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.215,
+      "olean_bytes": 134184,
+      "olean_sha256": "c3537e153e9995c3acb0569e4a390346ce4e488773efdeb52eb940e0c3caf9e6"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub4",
+      "source_sha256": "1d8f426d29a1de6eb6ab714eff96548afb1db2fe8c93b16566ee4fec3ef48756",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.553,
+      "olean_bytes": 133992,
+      "olean_sha256": "8598fe8c63b61f9c69a5a3327a5ed2771f8c7c91eb2fc7be0b5a115f0419f9a3"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub5",
+      "source_sha256": "09a92933904a2dda4bb00ef619bb87cbe9d82aeb9e6242d01cc9d3911aa60fa5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.188,
+      "olean_bytes": 133984,
+      "olean_sha256": "129434637da86f7725c6d3d8386bd7bb055e576a62f69004797e0f421e967027"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Hub6",
+      "source_sha256": "35d277605ce2b2a0ab4c1b6e0b3442738416ac70268f6b8000cda4c04b67e04b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.325,
+      "olean_bytes": 82920,
+      "olean_sha256": "e33c43716300abe9505af2816e374b496195095678d9d2885c51f31a2d769c40"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step1",
+      "source_sha256": "576a24b76a4be70536c45a41765ab2dd43797d0f1097633932900f46313f3b28",
+      "exit_code": 0,
+      "frontend_wall_seconds": 9.477,
+      "olean_bytes": 1115024,
+      "olean_sha256": "5c5ad282c2fd34e090c79ec7c88cee528940c869afce777e54c7d811676c9e3f"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step2",
+      "source_sha256": "85fd65677d3527b47a1f832ffbf4adbf2945cdcc85cd5867452d51571fa74651",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.48,
+      "olean_bytes": 761544,
+      "olean_sha256": "1b8f079a041f89d52d4fbf8a02209de2d54a9bff7828315ede62943e6db0a86b"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step3",
+      "source_sha256": "f935595b15610fd1fa471417ecd58411aa27b2055d26eaa45e2b32f1bd5232d0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.136,
+      "olean_bytes": 881656,
+      "olean_sha256": "19ead4c99bdfd646cb44759b147c868dbf6f160fd983c368479119c95dec7d8d"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step4",
+      "source_sha256": "5845f8fa8fbafc77561b535007b64b730cb9228121debdce698265425dc76701",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.702,
+      "olean_bytes": 752456,
+      "olean_sha256": "96ca7084f8bd860db7b27deb8f701a077fa5a30b754201920e963a5a0e4efa14"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step5",
+      "source_sha256": "0d1b4ec2b60b19fa1a3f729ae0e39e99af0574ce536e6032f3b6b051eadc1bb2",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.514,
+      "olean_bytes": 851160,
+      "olean_sha256": "84b61f60ec3ac2e411c1b9e732e876453235ba09111e9010ad677f5e0c26ceeb"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step6",
+      "source_sha256": "267dc4359f00188002000fce4466f947f375c953f3e8b64be961a8b3447c5393",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.916,
+      "olean_bytes": 700112,
+      "olean_sha256": "caafe6ec42a0a180951ca461dfdc20ab683b31f7f653beb840274c7296421a40"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step7",
+      "source_sha256": "f62946a0e2d81c47b08ca9ef552f3ad1b3b90641d08d58f0e194bae652263fe0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.667,
+      "olean_bytes": 724616,
+      "olean_sha256": "0b943b0b71142b93b8fe047276b6da4fc5a095e54a8b4752680f26669447727b"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Step8",
+      "source_sha256": "d827eaf878a5d31fbc7d97336e524bb40cc918e01f3237ea7aa4b52e6e8dda2a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.389,
+      "olean_bytes": 405328,
+      "olean_sha256": "e154b083f0bf0b67e911b9278b87db845eeabae8e035380267bd170a0cef131a"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9.Coverage",
+      "source_sha256": "b849d0e3e4b458fddbdfebfe064591341fc40fa14a7d12898bb32a2f365a3d1b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.106,
+      "olean_bytes": 20520,
+      "olean_sha256": "2677b4fda2dbd140819d47df270a450bf0816439019db9baf68eb9ab4ddf9136"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9Assembly",
+      "source_sha256": "a88051a8b2b5aeeaf941ef855e394895eac8bacc96e7ce767e7d6e990278cc68",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.826,
+      "olean_bytes": 27464,
+      "olean_sha256": "0676f68542673ef38306304abf603bf1f1ee7f6df2f5cd4ee32a9469ef2a5b4e"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit9Audit",
+      "source_sha256": "8ba65709101ef889f1972c73bd8267b75b31bea57488f049e57ffefa98ef8e68",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.563,
+      "olean_bytes": 3448,
+      "olean_sha256": "04a73d3e7a86733de5c5b3d3c5a44b9c22e55942b80f03201d8bf62a1bd22105"
+    }
+  ],
+  "lean_version": "4.34.0-rc2",
+  "scope": "Thirty-five arity-nine presentation modules and two assembly/audit modules; 57 unchanged reference presentation modules are reused. Reference, adapter and shared arity-ten/eleven dependencies were already prepared.",
+  "total_frontend_wall_seconds": 760.098,
+  "sampled_peak_lean_rss_mib": 4134,
+  "memory_sample_interval_seconds": 10,
+  "audited_imported_public_declarations": 34226,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "independent_checker_obligations": {
+    "arity9_before": 8212,
+    "arity9_after": 8125,
+    "arity9_replaced": 87,
+    "selected_hubcaps_before": 237,
+    "selected_hubcaps_after": 150,
+    "selected_single_replacements": 70,
+    "selected_paired_replacements": 17,
+    "combined_arities9_10_11_before": 11363,
+    "combined_arities9_10_11_after": 11132,
+    "combined_replaced": 231
+  },
+  "additional_finite_identity_checks": {
+    "arity9": 87,
+    "combined_arities9_10_11": 218
+  },
+  "claims": {
+    "all_selected_hubcaps_consumed_by_both_endpoints": true,
+    "arity9_replaced_checks_absent": 87,
+    "arity10_superseded_checks_absent": 87,
+    "arity11_replaced_checks_absent": 62,
+    "configurations_removed": 0,
+    "runtime_savings_claimed": false,
+    "artifact_size_savings_claimed": false,
+    "unconditional_assembly_checked": false
+  },
+  "remaining_inputs": [
+    "Reducibility",
+    "ExcludedArity 5",
+    "ExcludedArity 6",
+    "ExcludedArity 7",
+    "ExcludedArity 8"
+  ],
+  "generator_sha256": "2ee88ecca034aa0709a1368d897674c2d6cf5e95ca2460a27d9db03a6a4616a7",
+  "pin_sha256": "4b1ed4eaf360bd9c266fae07e80c8f279d9ad043c9623d45ee3768e5e1cd04fc",
+  "replay_command": "lake build kernelOrbit9Presentation",
+  "measurement_context": "Isolated Lake harness running shared_presentation.py with the same pinned package and sources. Checked artifacts were installed after verifying every source and artifact hash.",
+  "compiler_messages": {
+    "errors": 0,
+    "warnings": 606
+  }
+}

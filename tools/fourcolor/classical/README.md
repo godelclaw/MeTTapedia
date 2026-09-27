@@ -196,6 +196,7 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `PlaneDrawing` | Actual noncrossing injective paths construct all the compact-site hypotheses, including isolated vertices |
 | `OrbitAssembly` | The complete arity-ten presentation supplies a coverage input to the reconstruction-based assembly, using the shared periodic certificate |
 | `Orbit11Assembly` | The shared arity-eleven presentation composes with the arity-ten proof, leaving five arities and reducibility explicit in both colouring endpoints |
+| `Orbit9Assembly` | The shared arity-nine presentation joins the other two, leaving arities five through eight and reducibility explicit in both colouring endpoints |
 | `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
 
 The operational sequence is:
@@ -431,10 +432,40 @@ the checked replacements, generated-source hashes, compiler options, frontend
 times and artifacts. The target retains the original covers and split trees.
 No configuration is removed, and no runtime or artifact-size saving is credited.
 
+The arity-nine target shares 32 further hubcaps. Their 237 independent checks
+become 150: semantic reflection replaces 70 single-charge checks, and reflection
+or exchange of endpoints replaces 17 paired-charge checks. Each replacement
+checks the complete boundary input and, for a pair, its relative offset.
+`Orbit9Assembly` composes all three presentations. Together their 11,363
+independent checker obligations become 11,132, with 218 separate finite
+identity/classification checks. Reducibility and arities five through eight
+remain explicit inputs; all 633 configurations remain.
+
+With the adapters, shared arities ten and eleven, and the reference arity-nine
+artifacts prepared:
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelOrbit9Presentation
+```
+
+`shared_presentation.py` rebuilds the dependency cone of the modified checks:
+35 presentation modules, followed by the assembly and audit. It imports the
+other 57 presentation modules unchanged. The 93 input sources are pinned in
+`orbit9-presentation-sources.json`; generated sources and receipts are written
+to `.lake/orbit9-audit`. The audit requires both colouring endpoints to consume
+every selected hubcap, rejects the original three coverage roots and all 236
+superseded checker declarations, and checks the permitted axioms.
+`orbit9-presentation-measurements.json` records the successful replay of all
+37 modules: 760.098 summed frontend seconds and 4,134 MiB sampled peak
+individual Lean RSS. Source and artifact hashes were verified before installing
+the checked outputs in the package. No runtime or artifact-size saving is claimed.
+
 `reflection_candidates.py` searches the pinned single-edge queries for pairs
 with equal bounds and reflected full input parts. It finds 450 possible
-additional identifications beyond exact-input equality. All 66 arity-ten and
-62 arity-eleven identifications have checked consumers; the remaining 322 are candidates.
+additional identifications beyond exact-input equality. All 70 arity-nine,
+66 arity-ten and 62 arity-eleven identifications have checked consumers;
+the remaining 252 are candidates.
 Only consumed, kernel-checked applications enter the compression ledger.
 Dual-edge reflection is outside this search. Replay it with:
 
@@ -446,7 +477,8 @@ python3 tools/fourcolor/classical/reflection_candidates.py \
 `paired_charge_candidates.py` searches paired queries under reflection and
 exchange of endpoints. It finds 91 additional matches beyond exact-input
 equality, including the three arity-ten replacements consumed above. The
-other 88 remain candidates, including some that cross hubcaps. Equal bounds
+17 arity-nine matches also have checked consumers. The other 71 remain
+candidates, including some that cross hubcaps. Equal bounds
 and complete part data are required. This inventory is a program search;
 each credited application separately checks its identity and semantic proof
 in Lean.

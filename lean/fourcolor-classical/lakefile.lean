@@ -51,3 +51,17 @@ target kernelOrbit11Presentation pkg : Unit := do
         "--output", ".lake/orbit11-audit", "--library-output", ".lake/build/lib/lean"]
       cwd := pkg.dir
       env := env }
+
+/-- Check arity-nine sharing, reusing presentation modules outside its dependency cone. -/
+target kernelOrbit9Presentation pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/shared_presentation.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".",
+        "--pin", "../../tools/fourcolor/classical/orbit9-presentation-sources.json",
+        "--output", ".lake/orbit9-audit", "--library-output", ".lake/build/lib/lean"]
+      cwd := pkg.dir
+      env := env }
