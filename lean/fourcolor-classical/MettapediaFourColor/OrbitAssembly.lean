@@ -1,5 +1,6 @@
 import MettapediaFourColor.ClassicalAssembly
 import MettapediaFourColor.Orbit10.Coverage
+import MettapediaFourColor.PlaneDrawing
 
 /-!
 # Classical assembly consuming the shared arity-ten presentation
@@ -34,5 +35,18 @@ theorem fourColorTheorem_of_checks (hred : Reducibility)
     (e11 : ExcludedArity (RedpartSound theRedpart) 11) : FourColorTheorem :=
   ClassicalAssembly.fourColorTheorem_of_checks hred
     e5 e6 e7 e8 e9 Orbit10.exclude10 e11
+
+/-- The same checked assembly colours finite graphs given by actual noncrossing
+plane drawings. The sites and the plane-map representation are constructed. -/
+theorem colorable_of_planeDrawing (hred : Reducibility)
+    (e5 : ExcludedArity (RedpartSound theRedpart) 5)
+    (e6 : ExcludedArity (RedpartSound theRedpart) 6)
+    (e7 : ExcludedArity (RedpartSound theRedpart) 7)
+    (e8 : ExcludedArity (RedpartSound theRedpart) 8)
+    (e9 : ExcludedArity (RedpartSound theRedpart) 9)
+    (e11 : ExcludedArity (RedpartSound theRedpart) 11)
+    {V : Type*} [Finite V] {G : SimpleGraph V} (drawing : PlaneDrawing G) :
+    G.Colorable 4 :=
+  drawing.colorable (fourColorTheorem_of_checks hred e5 e6 e7 e8 e9 e11)
 
 end FourColor.OrbitAssembly

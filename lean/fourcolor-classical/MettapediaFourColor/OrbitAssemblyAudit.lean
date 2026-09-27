@@ -5,6 +5,7 @@ import Lean.Util.FoldConsts
 
 #print axioms FourColor.Orbit10.exclude10
 #print axioms FourColor.OrbitAssembly.fourColorTheorem_of_checks
+#print axioms FourColor.OrbitAssembly.colorable_of_planeDrawing
 
 open Lean Elab Command in
 run_cmd do
@@ -18,7 +19,7 @@ run_cmd do
     if env.contains name then
       throwError m!"Original presentation theorem is present: {name}"
   let mut seen : NameSet := {}
-  let mut todo := [``FourColor.OrbitAssembly.fourColorTheorem_of_checks]
+  let mut todo := [``FourColor.OrbitAssembly.colorable_of_planeDrawing]
   while !todo.isEmpty do
     let name := todo.head!
     todo := todo.tail!
@@ -28,7 +29,10 @@ run_cmd do
         todo := info.getUsedConstantsAsSet.toList ++ todo
   for name in [``FourColor.PeriodicHubcap.fit,
       ``FourColor.HubcapOrbit.oneEntries_fit_periodic,
-      ``FourColor.ClassicalAssembly.no_embedded_reduction] do
+      ``FourColor.ClassicalAssembly.no_embedded_reduction,
+      ``FourColor.PlaneDrawing.core_eq_openStar,
+      ``FourColor.PlaneDrawing.midpoint_mem_site_iff,
+      ``Mettapedia.Topology.NearestRegions.isConnected_region] do
     unless seen.contains name do
       throwError m!"Required proof dependency is missing: {name}"
   let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
@@ -42,4 +46,5 @@ run_cmd do
           throwError m!"Unexpected axiom in {name}: {axiomName}"
   logInfo m!"Audited {count} imported public declarations; only the three permitted axioms."
   logInfo "The assembly consumes periodic sharing and explicit colouring reconstruction."
+  logInfo "The graph endpoint consumes the constructed sites and nearest-region geometry."
   logInfo "The ten original checks and the original arity-ten theorem are absent."

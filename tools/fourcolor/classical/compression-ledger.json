@@ -51,7 +51,9 @@
       "integrated_into_arity10_coverage": true,
       "coverage_consumer": "FourColor.Orbit10.exclude10",
       "conditional_assembly_consumer": "FourColor.OrbitAssembly.fourColorTheorem_of_checks",
-      "coverage_measurements": "orbit-presentation-measurements.json"
+      "coverage_measurements": "orbit-presentation-measurements.json",
+      "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+      "graph_bridge_measurements": "plane-drawing-measurements.json"
     }
   ]
 }

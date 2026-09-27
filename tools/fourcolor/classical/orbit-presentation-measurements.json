@@ -46,11 +46,11 @@
     },
     {
       "module": "MettapediaFourColor.OrbitAssembly",
-      "source_sha256": "5b2319b6f786fbccd02f8e252165060fc2b7c13a3e14c0cb4048cd4ad20f6785"
+      "source_sha256": "8a92c50359c41d063f92f8a4c120f4997e1d13e4e1c3f1461e1eeeec732e541d"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "1bce2a0189904d9ee93c0df399f070760088b3694bab96f57840ad6a3b4afd1b"
+      "source_sha256": "4234b37a3801107e6ca5d0e6a2eafcc45a0ef35c89d7fe0aa625400c448b3da2"
     }
   ],
   "compiler_options": [
@@ -66,7 +66,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks",
       "source_sha256": "ed145a1ab848868d7d9afa873eb74729883f669ea2fdbcf76b172a4e18ea5199",
       "exit_code": 0,
-      "frontend_wall_seconds": 31.774,
+      "frontend_wall_seconds": 27.849,
       "olean_bytes": 220360,
       "olean_sha256": "174e0adfc130ea4127e49963c06ecd945bb1db7a11c2e091470be98fe5f50d8c"
     },
@@ -74,7 +74,7 @@
       "module": "MettapediaFourColor.Orbit10.Hub1",
       "source_sha256": "1fad6b293d6c7f81a459ef306f87301e02f983e442d63e33d8edd65e6605f3ec",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.616,
+      "frontend_wall_seconds": 2.441,
       "olean_bytes": 136088,
       "olean_sha256": "794058160fac6a980e0b1e8e3a54acbde6a7218a907298d50590644f3b874475"
     },
@@ -82,7 +82,7 @@
       "module": "MettapediaFourColor.Orbit10.Hub2",
       "source_sha256": "1aa63b7954ccc05ed505fdf5f6afeb0825149c68bb046b84075fc9d39561a6fa",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.721,
+      "frontend_wall_seconds": 2.324,
       "olean_bytes": 135680,
       "olean_sha256": "ae70bbaa204f4a7e62548e7fd9b683b88a08a8ff8184cf78db021b5e051aff76"
     },
@@ -90,7 +90,7 @@
       "module": "MettapediaFourColor.Orbit10.Step1",
       "source_sha256": "e911bc924a883605e1cb9b335ab5f3cf2cf1064249612f637aa9179221a495b4",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.36,
+      "frontend_wall_seconds": 5.051,
       "olean_bytes": 492208,
       "olean_sha256": "265368ecb98a1ca89b63fbf2487eacbc2c2ff5cbbf0ee4077858cdf7e5525539"
     },
@@ -98,7 +98,7 @@
       "module": "MettapediaFourColor.Orbit10.Step2",
       "source_sha256": "a5fef6f2137900ed3a14849a99933caa260ea5cb05c6fd1beed6542a75ff0c6f",
       "exit_code": 0,
-      "frontend_wall_seconds": 9.461,
+      "frontend_wall_seconds": 8.483,
       "olean_bytes": 976040,
       "olean_sha256": "35ffa4e722ef6ed318839cd548ab78af93fff10fc32ec7e4432886dcf6d52d5d"
     },
@@ -106,7 +106,7 @@
       "module": "MettapediaFourColor.Orbit10.Step3",
       "source_sha256": "a0d9d3b6509d92f26e50faeb788ca7a8b57c3a3a023e565b8d9c473cd9d1b658",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.951,
+      "frontend_wall_seconds": 5.453,
       "olean_bytes": 552512,
       "olean_sha256": "ed7039a85dc47c34af446ce2fb27d1838b09500bb9895a34a63da1636288651c"
     },
@@ -114,23 +114,23 @@
       "module": "MettapediaFourColor.Orbit10.Coverage",
       "source_sha256": "bf273573d436e77cbab9effbbd05fe27dd124f0f658b7c08990b81cfe814269b",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.932,
+      "frontend_wall_seconds": 1.914,
       "olean_bytes": 22664,
       "olean_sha256": "2fb13e0dd2309622d34f9bdd3de702d52062aaf6d83f7fcf405cb030904e29a5"
     },
     {
       "module": "MettapediaFourColor.OrbitAssembly",
-      "source_sha256": "5b2319b6f786fbccd02f8e252165060fc2b7c13a3e14c0cb4048cd4ad20f6785",
+      "source_sha256": "8a92c50359c41d063f92f8a4c120f4997e1d13e4e1c3f1461e1eeeec732e541d",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.87,
-      "olean_bytes": 13400,
-      "olean_sha256": "786c920ea6a4ea72aa4390eeab5ce4fa286aef6b58b8b01d9568c37c9ad5f525"
+      "frontend_wall_seconds": 3.502,
+      "olean_bytes": 17600,
+      "olean_sha256": "8f33ab3d03ff0963ae8393b3c1ccadb33d5b318b2ebb20b48c51612f271660a5"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "1bce2a0189904d9ee93c0df399f070760088b3694bab96f57840ad6a3b4afd1b",
+      "source_sha256": "4234b37a3801107e6ca5d0e6a2eafcc45a0ef35c89d7fe0aa625400c448b3da2",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.988,
+      "frontend_wall_seconds": 5.492,
       "olean_bytes": 3624,
       "olean_sha256": "7615eabca34ba3ccfe322a0c0f53271c053d8de1849f1a0a34c20c1c939418ea"
     }
@@ -213,10 +213,16 @@
     "reconstruction": "FourColor.ClassicalAssembly.no_embedded_reduction",
     "dependency_audit": "passed",
     "original_ten_checks_present": false,
-    "original_exclude10_present": false
+    "original_exclude10_present": false,
+    "graph_endpoint": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+    "graph_geometry": [
+      "FourColor.PlaneDrawing.core_eq_openStar",
+      "FourColor.PlaneDrawing.midpoint_mem_site_iff",
+      "Mettapedia.Topology.NearestRegions.isConnected_region"
+    ]
   },
   "axiom_audit": {
-    "imported_public_declarations": 11646,
+    "imported_public_declarations": 11728,
     "allowed": [
       "propext",
       "Classical.choice",

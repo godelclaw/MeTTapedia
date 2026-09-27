@@ -1,0 +1,124 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_version": "4.34.0-rc2",
+  "mathlib_revision": "85e3a25e006c35636f0e53b0e9296caca2685bc0",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "statement": {
+    "endpoint": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+    "conclusion": "G.Colorable 4 for a finite SimpleGraph G with a PlaneDrawing G",
+    "drawing_data": [
+      "Injective vertex placement in the real plane",
+      "An injective continuous Path for each oriented edge, with the graph endpoints",
+      "Reversal of oriented edges reverses the paths",
+      "No graph vertex lies in an edge interior",
+      "Interiors intersect only for the same unoriented edge"
+    ],
+    "remaining_assembly_hypotheses": [
+      "Reducibility",
+      "ExcludedArity (RedpartSound theRedpart) 5",
+      "ExcludedArity (RedpartSound theRedpart) 6",
+      "ExcludedArity (RedpartSound theRedpart) 7",
+      "ExcludedArity (RedpartSound theRedpart) 8",
+      "ExcludedArity (RedpartSound theRedpart) 9",
+      "ExcludedArity (RedpartSound theRedpart) 11"
+    ],
+    "constructed_geometry": [
+      "Compact sites consisting of a vertex and its outgoing closed half-edges",
+      "Exclusive cores equal the half-stars with their outer midpoints removed",
+      "Connected cores dense in the compact sites",
+      "Open connected pairwise disjoint strict nearest-site regions",
+      "Every graph edge midpoint belongs to exactly its two endpoint sites",
+      "Each original graph edge yields non-corner adjacency of its regions"
+    ],
+    "representation_direction": "Original graph adjacency implies map adjacency; additional map adjacencies are permitted.",
+    "covers": "Empty, disconnected and isolated-vertex cases are included."
+  },
+  "reusable_theorem": {
+    "name": "Mettapedia.Topology.NearestRegions.isConnected_region",
+    "domain": "Any real normed space",
+    "hypotheses": "Nonempty compact sites; the winning site has a nonempty connected exclusive core.",
+    "conclusion": "Its strict nearest-site region is connected.",
+    "consumer": "FourColor.CompactPlaneMap.Sites.simple"
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.NearestRegions",
+      "source_sha256": "e64f9ba818711b138f175ab8418f1fd581097393fddc877132f763126dc51057",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.97,
+      "olean_bytes": 157624,
+      "olean_sha256": "72d95b0011d79d900925c38579fba11b854e045ce70f7af9ffbf188c454004f7"
+    },
+    {
+      "module": "MettapediaFourColor.CompactPlaneMap",
+      "source_sha256": "aac33072d40d7b203363cdacbbe81ae7f37d42d4d4ff1fd202a5c9a0cf19d5af",
+      "exit_code": 0,
+      "frontend_wall_seconds": 17.084,
+      "olean_bytes": 176496,
+      "olean_sha256": "b856a9f8d7310ede3b569055e486965f6bc96f0d011d0bc10b6843cea36a565d"
+    },
+    {
+      "module": "MettapediaFourColor.PlaneDrawing",
+      "source_sha256": "28d76c832f2a3b360a36d98dda22bed572e09b65db7b8794d87a7926470810f7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.081,
+      "olean_bytes": 481792,
+      "olean_sha256": "df3bc505a4b04fcd02851de7bc66bfdb4a1f7d47cdc7624feb8bf585034d4d9e"
+    },
+    {
+      "module": "MettapediaFourColor.BridgeAudit",
+      "source_sha256": "7eca6908cbc6933ec191a5ace126401171b37fd374c69fbfba4a58e342bc297b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.93,
+      "olean_bytes": 3592,
+      "olean_sha256": "96517d77320513782a40a39d8e1acd9b63242d9867ccdd5da85f77641c701a36"
+    },
+    {
+      "module": "MettapediaFourColor",
+      "source_sha256": "7b68c7fb739abc7676343abab25a06175f7e56d05ba4f78d8e34cc85648bb173",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.878,
+      "olean_bytes": 1960,
+      "olean_sha256": "04ac210097d26513fa0f1c0769e96f4fae46dd9dffc86312ed2d862788e8b64b"
+    }
+  ],
+  "adapter_gate": {
+    "target": "kernelAdapters",
+    "module_count": 14,
+    "frontend_wall_seconds": 57.739,
+    "imported_public_declarations_audited": 16490,
+    "exit_code": 0
+  },
+  "graph_endpoint_gate": {
+    "target": "kernelOrbitPresentation",
+    "module_count": 9,
+    "frontend_wall_seconds": 62.509,
+    "imported_public_declarations_audited": 11728,
+    "exit_code": 0,
+    "dependency_audit": "Passed: geometric construction, periodic certificate sharing and explicit GSLT reconstruction are all consumed.",
+    "removed_original_checks_present": false
+  },
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "unexpected_axioms": [],
+  "compression_credit": {
+    "additional_configurations_removed": 0,
+    "additional_checker_obligations_removed": 0
+  },
+  "measurement_scope": "Frontend times use prepared dependencies and include loading, elaboration, kernel checking and serialization. They exclude lock waits and native C generation. No new performance saving is claimed.",
+  "limits": [
+    "The graph theorem remains conditional on the listed classical assembly inputs.",
+    "The endpoint constructs a plane map, not a planar rotation system.",
+    "This bridge does not remove any configuration from the catalogue."
+  ]
+}

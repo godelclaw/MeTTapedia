@@ -153,6 +153,9 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `GraphColoringBridge` | Colours on actual graph darts descend to Mathlib vertex colourings, using vertexwise cyclicity and preserving every supplied dart colour |
 | `HubcapOrbit` | Equal rotated boundary inputs and equal bounds share a checker certificate |
 | `PeriodicHubcap` | Two representative checks close the same ten-position discharging case as the reference's `f10_128` |
+| `NearestRegions` | Compact sites with connected exclusive cores have connected strict nearest regions in any real normed space |
+| `CompactPlaneMap` | A two-site contact is non-corner map adjacency, and map colours transfer to graph colours |
+| `PlaneDrawing` | Actual noncrossing injective paths construct all the compact-site hypotheses, including isolated vertices |
 | `OrbitAssembly` | The complete arity-ten presentation supplies a coverage input to the reconstruction-based assembly, using the shared periodic certificate |
 | `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
 
@@ -189,8 +192,8 @@ reference's already assembled conditional or unconditional theorem.
 The hypermap dictionary is an equivalence on a fixed finite dart type, not a
 bijection between arbitrary hypermaps and labelled rotation systems. Its
 planarity proof explicitly handles the differing Euler conventions and the
-reference's natural-number genus. The standard finite planar-graph statement
-needs a further connection to topological embeddings.
+reference's natural-number genus. The path-drawing endpoint below supplies a
+separate connection to the standard finite planar-graph statement.
 
 `GraphColoringBridge.colorable_of_checks` gives `G.Colorable 4` for a finite
 simple graph with the existing graph-backed rotation data, vertexwise cyclicity,
@@ -208,6 +211,18 @@ to dart colourings. This is a bridge between colouring representations; it
 does not yet construct a planar rotation from an arbitrary topological graph
 embedding.
 
+`PlaneDrawing.colorable` takes the other route: from actual embedded paths to
+compact half-edge sites, then to a simple plane map, and finally back to colours
+on the original vertices. It assumes the plane-map Four Colour theorem and
+constructs every intermediate geometric object. Its arc conditions express
+distinct vertices, injective paths with the specified endpoints, reversal,
+and the absence of vertex/interior and different-edge/interior crossings.
+`OrbitAssembly.colorable_of_planeDrawing` supplies the plane-map theorem from
+the conditional compositional assembly. The map may have additional
+adjacencies; the proof establishes preservation of all original graph edges.
+`plane-drawing-measurements.json` records the bridge's source hashes, checks,
+axioms and remaining assembly hypotheses.
+
 To replay the adapters, prepare the pinned reference with the dependency
 revisions above and build Mettapedia's imported GSLT and hypermap modules.
 The reference artifacts must include the generated ring-eight group
@@ -223,13 +238,13 @@ python3 tools/fourcolor/classical/replay_adapters.py \
 ```
 
 The script checks the reference revision and common toolchain, compiles the
-ten adapter modules and the package root without native C emission, and runs
+thirteen adapter modules and the package root without native C emission, and runs
 the axiom audit. It records source hashes, exit statuses and wall times. Its
 default output is a dedicated directory; the package target instead writes the
 proof artifacts to the package's ordinary build directory. It does not generate
 or check the whole classical catalogue.
 
-The complete adapter replay passed; its audit covered 16,409 imported
+The earlier adapter replay, before the path-drawing bridge, covered 16,409 imported
 public declarations and found only `propext`, `Classical.choice` and `Quot.sound`.
 `reconstruction-measurements.json` records the exact source hashes and results.
 The additional kernel measurements were:
@@ -280,6 +295,14 @@ generated source includes the reference's licence and attribution. The final
 audit checks the axiom set and follows proof dependencies to both the orbit
 lemma and the explicit colouring reconstruction; it also rejects the original
 ten certificates and the original `exclude10` theorem.
+
+The audit also follows the finite graph endpoint
+`OrbitAssembly.colorable_of_planeDrawing`. Its geometric bridge constructs
+compact half-edge sites and connected nearest-site regions from injective
+noncrossing paths in the real plane. Thus the colouring conclusion concerns
+the original simple graph, with no supplied rotation or colouring hypothesis.
+The plane-drawing measurement record documents this bridge separately from
+compression; it removes a representation obligation, not a catalogue entry.
 
 After the adapter gate and the arity-ten reference checker modules are built:
 

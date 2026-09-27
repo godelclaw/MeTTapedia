@@ -81,8 +81,32 @@ of the original simple graph; isolated vertices receive zero.
 
 The reference's Kempe-closure argument selects compatible assignments using
 classical choice. The adapter does not extract an executable Kempe-move path.
-The passage from a topological graph embedding to the supplied planar rotation
-remains separate.
+
+`PlaneDrawing` gives a second graph endpoint using actual noncrossing paths in
+the real plane. Its data are distinct vertex positions, an injective continuous
+path for each oriented edge, reversal of paths when edges are reversed, no
+vertices in edge interiors, and disjoint interiors for different unoriented
+edges. It has no rotation, Euler characteristic, or colourability field.
+
+The proof cuts every edge at its midpoint. The closed half-edges incident to
+each vertex form a compact site; deleting their outer midpoints gives its
+connected, dense exclusive core. The regions strictly nearest to these sites
+are open, connected and pairwise disjoint. An edge midpoint is a non-corner
+contact of exactly its endpoint regions, so their map colours give different
+vertex colours. Empty graphs, disconnected graphs and isolated vertices need
+no extra assumptions. The region map can have extra adjacencies; the transfer
+uses preservation of every original graph edge, rather than an isomorphism
+of adjacency relations.
+
+`NearestRegions.isConnected_region` proves the metric part in any real normed
+space, without convexity of the sites. `CompactPlaneMap` proves the precise
+contact-to-adjacency and colouring transfer. `PlaneDrawing.colorable` constructs
+all their geometric inputs from the drawing and concludes Mathlib's
+`SimpleGraph.Colorable 4`, assuming the plane-map Four Colour theorem.
+`OrbitAssembly.colorable_of_planeDrawing` supplies that plane-map theorem from
+the GSLT reconstruction and shared arity-ten proof. Its remaining hypotheses
+are reducibility and the other six arity presentations. The dependency audit
+checks that the graph endpoint consumes the geometry and the shared certificate.
 
 ## Compression baseline
 
