@@ -60,7 +60,9 @@
       "conditional_assembly_consumer": "FourColor.OrbitAssembly.fourColorTheorem_of_checks",
       "coverage_measurements": "orbit-presentation-measurements.json",
       "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
-      "graph_bridge_measurements": "plane-drawing-measurements.json"
+      "graph_bridge_measurements": "plane-drawing-measurements.json",
+      "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
+      "source_construction_measurements": "source-tait-measurements.json"
     },
     {
       "reference_obligation": "FourColor.f10_242",
@@ -84,7 +86,9 @@
         "FourColor.ChargeBound.reflect",
         "FourColor.ChargeBound.successful_of_bounds"
       ],
-      "prior_rotation_only_measurements": "half-turn-hubcap-measurements.json"
+      "prior_rotation_only_measurements": "half-turn-hubcap-measurements.json",
+      "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
+      "source_construction_measurements": "source-tait-measurements.json"
     },
     {
       "reference_obligations": [
@@ -148,7 +152,9 @@
       "conditional_assembly_consumer": "FourColor.OrbitAssembly.fourColorTheorem_of_checks",
       "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
       "measurements": "semantic-hubcap-measurements.json",
-      "coverage_measurements": "orbit-presentation-measurements.json"
+      "coverage_measurements": "orbit-presentation-measurements.json",
+      "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
+      "source_construction_measurements": "source-tait-measurements.json"
     }
   ]
 }

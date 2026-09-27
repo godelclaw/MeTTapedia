@@ -83,6 +83,25 @@ GSLT witnesses and glues them into an explicit ambient colouring. The graph
 bridge preserves every supplied dart colour while descending to a colouring
 of the original simple graph; isolated vertices receive zero.
 
+`HypermapTransport` relabels darts through an equivalence, preserving all
+three permutations, components, planarity and face colourings. Relabelling
+through a finite ordinal makes the catalogue theorem available for finite
+dart carriers in any Lean universe.
+
+`SourceTait` connects that theorem to the original spherical cubic map class.
+The source Euler equation and connected cyclic rotations imply reference
+planarity; the existing bridge theorem supplies two-sided faces. Adjacent
+face colours determine nonzero edge differences, which descend through the
+existing dart-colouring adapter to the original literal edges, including
+parallel edges. The exact colour formula is proved at every dart.
+
+`OrbitAssembly.supported_source_construction_of_checks` supplies a closed
+GSLT construction trace, an exact geometric model of the source, and
+compatible colouring witnesses. It consumes the shared arity-ten proof,
+with reducibility and the other six presentations still explicit. The
+dependency audit follows this source-construction endpoint independently
+of the plane-drawing endpoint and requires every semantic hubcap in both.
+
 The reference's Kempe-closure argument selects compatible assignments using
 classical choice. The adapter does not extract an executable Kempe-move path.
 

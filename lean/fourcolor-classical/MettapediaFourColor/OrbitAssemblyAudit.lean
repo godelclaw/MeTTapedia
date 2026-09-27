@@ -6,6 +6,7 @@ import Lean.Util.FoldConsts
 #print axioms FourColor.Orbit10.exclude10
 #print axioms FourColor.OrbitAssembly.fourColorTheorem_of_checks
 #print axioms FourColor.OrbitAssembly.colorable_of_planeDrawing
+#print axioms FourColor.OrbitAssembly.supported_source_construction_of_checks
 
 open Lean Elab Command in
 run_cmd do
@@ -43,6 +44,27 @@ run_cmd do
       ``Mettapedia.Topology.NearestRegions.isConnected_region] do
     unless seen.contains name do
       throwError m!"Required proof dependency is missing: {name}"
+  let mut sourceSeen : NameSet := {}
+  let mut sourceTodo := [``FourColor.OrbitAssembly.supported_source_construction_of_checks]
+  while !sourceTodo.isEmpty do
+    let name := sourceTodo.head!
+    sourceTodo := sourceTodo.tail!
+    if !sourceSeen.contains name then
+      sourceSeen := sourceSeen.insert name
+      if let some info := env.find? name then
+        sourceTodo := info.getUsedConstantsAsSet.toList ++ sourceTodo
+  for name in [``FourColor.SourceConstruction.supported_construction_of_unavoidability,
+      ``FourColor.Hypermap.fourColorable_of_small_unavoidability,
+      ``FourColor.SourceConstruction.sourceMap_planar,
+      ``FourColor.SourceConstruction.sourceMap_bridgeless,
+      ``FourColor.SourceConstruction.taitColoring,
+      ``Mettapedia.GraphTheory.FourColor.GoertzelV24RotationDartColoring.edgeColoringOfDartColor,
+      ``Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT.class_represented,
+      ``FourColor.ClassicalAssembly.no_embedded_reduction,
+      ``FourColor.PeriodicHubcap.fit, ``FourColor.ReflectedHubcap.succeeds,
+      ``FourColor.Hubcap.successful] do
+    unless sourceSeen.contains name do
+      throwError m!"Required source-construction dependency is missing: {name}"
   let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
   let prefixes : List Name := [`FourColor, `MettapediaFourColor, `Mettapedia, `Foundation]
   let mut count : Nat := 0
@@ -55,4 +77,5 @@ run_cmd do
   logInfo m!"Audited {count} imported public declarations; only the three permitted axioms."
   logInfo "The assembly consumes rotation, semantic reflection and colouring reconstruction."
   logInfo "The graph endpoint consumes the constructed sites and nearest-region geometry."
+  logInfo "The source endpoint consumes exact geometry, Tait descent and GSLT route witnesses."
   logInfo "The twenty original checks and the original arity-ten theorem are absent."

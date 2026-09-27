@@ -150,6 +150,8 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `Config4Reconstruction` | The route consumes configuration 4's actual ring-eight certificate and proved decoded-map geometry |
 | `ClassicalAssembly` | The conditional real-plane theorem consumes witness reconstruction for every fitted catalogue entry, with the reference's discharging obligations retained |
 | `HypermapDictionary` | The two hypermap presentations agree on permutations, components and planarity on the same finite dart type |
+| `HypermapTransport` | Exact relabelling preserves the hypermap and its colourings, allowing finite dart carriers in any universe |
+| `SourceTait` | Classical face colours descend to literal Tait edge colours and supply compatible witnesses along exact source construction traces |
 | `GraphColoringBridge` | Colours on actual graph darts descend to Mathlib vertex colourings, using vertexwise cyclicity and preserving every supplied dart colour |
 | `HubcapOrbit` | Equal rotated boundary inputs and equal bounds share a checker certificate |
 | `PeriodicHubcap` | Two representative checks close the same ten-position discharging case as the reference's `f10_128` |
@@ -199,6 +201,24 @@ planarity proof explicitly handles the differing Euler conventions and the
 reference's natural-number genus. The path-drawing endpoint below supplies a
 separate connection to the standard finite planar-graph statement.
 
+`HypermapTransport` preserves components, face cycles, planarity and actual
+colour assignments under an arbitrary dart equivalence. Relabelling through
+`Fin` permits the reference's universe-zero assembly to colour any finite
+dart carrier. `SourceTait` then proves the source spherical map's reference
+hypotheses and converts its face colouring into a Tait colouring on the
+original edge carrier. The exact formula at a dart is the Klein-group sum
+of the colours on its two face sides, followed by a fixed palette embedding.
+The existing dart-colouring adapter handles parallel edges.
+
+The source construction theorem now has a consumer:
+`OrbitAssembly.supported_source_construction_of_checks` supplies an exact
+geometric construction trace and compatible GSLT colouring witnesses for
+every map in the source class. Every complete valid vertex sweep also has
+support. These statements choose compatible assignments; they do not assert
+that an arbitrary partial colouring extends. Their remaining inputs are the
+same reducibility and six presentation obligations as the other assembly
+endpoints. `source-tait-measurements.json` records the bridge and its audits.
+
 `GraphColoringBridge.colorable_of_checks` gives `G.Colorable 4` for a finite
 simple graph with the existing graph-backed rotation data, vertexwise cyclicity,
 and hypermap planarity, conditional on the same catalogue and presentation
@@ -242,7 +262,7 @@ python3 tools/fourcolor/classical/replay_adapters.py \
 ```
 
 The script checks the reference revision and common toolchain, compiles the
-seventeen adapter and audit modules and the package root without native C emission, and runs
+nineteen adapter and audit modules and the package root without native C emission, and runs
 the axiom audit. It records source hashes, exit statuses and wall times. Its
 default output is a dedicated directory; the package target instead writes the
 proof artifacts to the package's ordinary build directory. It does not generate

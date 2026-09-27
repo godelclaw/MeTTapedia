@@ -94,15 +94,15 @@
     },
     {
       "module": "MettapediaFourColor.OrbitAssembly",
-      "source_sha256": "eb3b787640e6f1bb28954d0b7f75f36583c4eef4fcb031cf17ac845db8f7a99d"
+      "source_sha256": "56edea0e392baa76f6c32f412b907e4039d0b9905762ecff796b4a1e1866c925"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "ff43a5edc98c447239178ab10e82a6005b62b01588bdfb5e21acb4d529c91d3d"
+      "source_sha256": "d7aebf55b1f1ce54abfd4b07b61d73ca790bb3938f1f7ad69d613703835199aa"
     },
     {
       "module": "MettapediaFourColor.Orbit10.SemanticSharingAudit",
-      "source_sha256": "ec7b548c913bf0c696d44d812e50596b6dc8eecdcccbc963aaae02eeb088034d"
+      "source_sha256": "b4412d24553e1a9f2528aec1fc8a9cd4cf3ba2c0576e8892eed3422c4acfd557"
     }
   ],
   "compiler_options": [
@@ -118,7 +118,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks1",
       "source_sha256": "4f9941ca3fc666923fe386590d36bd9f73c362ca71ad813a9b7995942816a01a",
       "exit_code": 0,
-      "frontend_wall_seconds": 18.394,
+      "frontend_wall_seconds": 18.282,
       "olean_bytes": 258632,
       "olean_sha256": "370d85d1ecd64efa306704ebe1bacabc125a1f608a139a00d958307652a6c82f"
     },
@@ -126,7 +126,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks",
       "source_sha256": "2008f2009e593aa65ead867ff734f331177418e8b3ec38b2d22c8b4c2b64cf82",
       "exit_code": 0,
-      "frontend_wall_seconds": 28.743,
+      "frontend_wall_seconds": 26.723,
       "olean_bytes": 236360,
       "olean_sha256": "e08ab75740b06747288ff78489425ebfc390873c4ed309e935ae71f58d4ae36b"
     },
@@ -134,7 +134,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks4",
       "source_sha256": "4e27ddf9986d218049b65e84982bbfc4c3828079e55493d3e61504359c2020af",
       "exit_code": 0,
-      "frontend_wall_seconds": 29.553,
+      "frontend_wall_seconds": 25.301,
       "olean_bytes": 242672,
       "olean_sha256": "f2ed8ad48ef20ec4159ae37c8ea0fdd1ddaaec764f7c59bcae3df1e38c455599"
     },
@@ -142,7 +142,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks13",
       "source_sha256": "b4d16940f612c9811708ed3187d7eb43356e0b8598d449e6fad24b95eaef7785",
       "exit_code": 0,
-      "frontend_wall_seconds": 30.963,
+      "frontend_wall_seconds": 32.147,
       "olean_bytes": 246760,
       "olean_sha256": "0d1b7d24f33bc68d1bf9c454978dee4050339e532cb59bcf03ec169d2e17b584"
     },
@@ -150,7 +150,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks18",
       "source_sha256": "2df86542d7e6f90c2cb84e3b704e9f3d6658bfdce5f3b2e5988f683cad83ee60",
       "exit_code": 0,
-      "frontend_wall_seconds": 39.336,
+      "frontend_wall_seconds": 33.458,
       "olean_bytes": 249408,
       "olean_sha256": "590f2b169cbc05b5f8c33a59aba11bf7308feb9185a996ed6ed43327e3d29b1f"
     },
@@ -158,7 +158,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks20",
       "source_sha256": "c5eedc5236e163869b5180ad5ce4952ff44970b5a8750388968b46f55c17d61f",
       "exit_code": 0,
-      "frontend_wall_seconds": 29.101,
+      "frontend_wall_seconds": 25.462,
       "olean_bytes": 265040,
       "olean_sha256": "d22382233492992fa58727ab0c13504459b32256ab95fb4bdcb61526f5e86b70"
     },
@@ -166,7 +166,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks22",
       "source_sha256": "88d72ac5d7d22dc7673e4cbde16cf09712fcd115f69ab7a8eeccf571075d0ce5",
       "exit_code": 0,
-      "frontend_wall_seconds": 36.1,
+      "frontend_wall_seconds": 31.758,
       "olean_bytes": 273064,
       "olean_sha256": "9d8873848d2e21ff72f249e2ddb59f9ced1954016de21c6d8307cbcabbff7fe7"
     },
@@ -174,7 +174,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks23",
       "source_sha256": "12218e9b5122eb21b3e27f5ca7717b7634469e2bd076da2a68ddeeb9d024e8f0",
       "exit_code": 0,
-      "frontend_wall_seconds": 32.822,
+      "frontend_wall_seconds": 31.544,
       "olean_bytes": 245264,
       "olean_sha256": "45bf71f2ec38aabd3b2a8f89e7a206e9f961e15cd43fd3f964656147716de349"
     },
@@ -182,7 +182,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks24",
       "source_sha256": "b85f42bb130768462b7533579dfd4bf48e61cc9c18bd41152ca6a6d1a15f2901",
       "exit_code": 0,
-      "frontend_wall_seconds": 26.97,
+      "frontend_wall_seconds": 27.353,
       "olean_bytes": 208832,
       "olean_sha256": "3eaf1cb0952bb03792431ab14d1702896e1db3cf67367b64dc9534281bebf74d"
     },
@@ -190,7 +190,7 @@
       "module": "MettapediaFourColor.Orbit10.Hub1",
       "source_sha256": "e93c67fb916fc5687e1fd78b163ca115a9fca6ce158ee631c6d7adf96eb88dfc",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.376,
+      "frontend_wall_seconds": 2.311,
       "olean_bytes": 136216,
       "olean_sha256": "7775bd32ba645ff5b2e4e61886ad9eb6ba0cd3494305fd0728253575299d93f9"
     },
@@ -198,7 +198,7 @@
       "module": "MettapediaFourColor.Orbit10.Hub2",
       "source_sha256": "1aa63b7954ccc05ed505fdf5f6afeb0825149c68bb046b84075fc9d39561a6fa",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.356,
+      "frontend_wall_seconds": 2.3,
       "olean_bytes": 135680,
       "olean_sha256": "1966429dccf51a4660295a2743b28aa384dee63d78f953ed762c0b09f5107641"
     },
@@ -206,7 +206,7 @@
       "module": "MettapediaFourColor.Orbit10.Step1",
       "source_sha256": "5162ffc26b46e569ec6c87c68091d9eaf219d0743e11947fd25935f5b17c589a",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.117,
+      "frontend_wall_seconds": 4.835,
       "olean_bytes": 490776,
       "olean_sha256": "278dedd771ddb8f9f6f026251639621629c5857da4cf18a42be7248e9f3fc1aa"
     },
@@ -214,7 +214,7 @@
       "module": "MettapediaFourColor.Orbit10.Step2",
       "source_sha256": "11bbfb807f445f8550aa66f8ca7b39cee978be43771e691d62b7fd76cf898bfe",
       "exit_code": 0,
-      "frontend_wall_seconds": 8.537,
+      "frontend_wall_seconds": 8.104,
       "olean_bytes": 976280,
       "olean_sha256": "895a6338b1e91bd11f544cf4de4e94a504338b96c00273b9ff65fe79e339d141"
     },
@@ -222,7 +222,7 @@
       "module": "MettapediaFourColor.Orbit10.Step3",
       "source_sha256": "2ae58c6f01ee76eb45aa135d9a7822fbca29a647fbe558a51e02ae6a1ca4d633",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.518,
+      "frontend_wall_seconds": 5.232,
       "olean_bytes": 553008,
       "olean_sha256": "9f512489aa06c76add9ac3b62d0637bc486130470be17924fcc33a8c4103c803"
     },
@@ -230,33 +230,33 @@
       "module": "MettapediaFourColor.Orbit10.Coverage",
       "source_sha256": "bf273573d436e77cbab9effbbd05fe27dd124f0f658b7c08990b81cfe814269b",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.031,
+      "frontend_wall_seconds": 1.905,
       "olean_bytes": 22664,
       "olean_sha256": "2fb13e0dd2309622d34f9bdd3de702d52062aaf6d83f7fcf405cb030904e29a5"
     },
     {
       "module": "MettapediaFourColor.OrbitAssembly",
-      "source_sha256": "eb3b787640e6f1bb28954d0b7f75f36583c4eef4fcb031cf17ac845db8f7a99d",
+      "source_sha256": "56edea0e392baa76f6c32f412b907e4039d0b9905762ecff796b4a1e1866c925",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.025,
-      "olean_bytes": 17600,
-      "olean_sha256": "3e54bd39c30b0c4887e98ce0007cb00d78d9a14d054ce535c217a0f9661da76d"
+      "frontend_wall_seconds": 3.647,
+      "olean_bytes": 31160,
+      "olean_sha256": "de3abc2cc879f9d877bc5b167a24413495084bf9c2bc0b936716902ae3764d79"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "ff43a5edc98c447239178ab10e82a6005b62b01588bdfb5e21acb4d529c91d3d",
+      "source_sha256": "d7aebf55b1f1ce54abfd4b07b61d73ca790bb3938f1f7ad69d613703835199aa",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.633,
+      "frontend_wall_seconds": 6.738,
       "olean_bytes": 3624,
       "olean_sha256": "7615eabca34ba3ccfe322a0c0f53271c053d8de1849f1a0a34c20c1c939418ea"
     },
     {
       "module": "MettapediaFourColor.Orbit10.SemanticSharingAudit",
-      "source_sha256": "ec7b548c913bf0c696d44d812e50596b6dc8eecdcccbc963aaae02eeb088034d",
+      "source_sha256": "b4412d24553e1a9f2528aec1fc8a9cd4cf3ba2c0576e8892eed3422c4acfd557",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.561,
-      "olean_bytes": 2568,
-      "olean_sha256": "3292007ea5ed54bd5a4d4334f562ef43c8191c6c4d95709fc2157656f9cef641"
+      "frontend_wall_seconds": 6.634,
+      "olean_bytes": 2672,
+      "olean_sha256": "c324b863da6f188aae4d0896e46f6f6a842175ffdbf0e49a0bd61390a0ac57f0"
     }
   ],
   "original_modules": [
@@ -444,10 +444,25 @@
       "FourColor.Orbit10.f10_1106",
       "FourColor.Orbit10.f10_1110"
     ],
-    "semantic_hubcap_dependency_audit": "All 21 combining theorems are transitive dependencies; all 64 removed checks are absent in both namespaces."
+    "semantic_hubcap_dependency_audit": "All 21 combining theorems are transitive dependencies of each endpoint independently; all 64 removed checks are absent in both namespaces.",
+    "source_construction_endpoint": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
+    "source_construction_dependencies": [
+      "FourColor.SourceConstruction.supported_construction_of_unavoidability",
+      "FourColor.Hypermap.fourColorable_of_small_unavoidability",
+      "FourColor.SourceConstruction.sourceMap_planar",
+      "FourColor.SourceConstruction.sourceMap_bridgeless",
+      "FourColor.SourceConstruction.taitColoring",
+      "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationDartColoring.edgeColoringOfDartColor",
+      "Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT.class_represented",
+      "FourColor.ClassicalAssembly.no_embedded_reduction",
+      "FourColor.PeriodicHubcap.fit",
+      "FourColor.ReflectedHubcap.succeeds",
+      "FourColor.Hubcap.successful"
+    ],
+    "source_construction_measurements": "source-tait-measurements.json"
   },
   "axiom_audit": {
-    "imported_public_declarations": 11678,
+    "imported_public_declarations": 20232,
     "allowed": [
       "propext",
       "Classical.choice",
@@ -697,8 +712,8 @@
   ],
   "replacement_build": {
     "modules": 18,
-    "summed_frontend_wall_seconds": 313.136,
-    "build_monitor_max_lean_rss_mib": 2906,
+    "summed_frontend_wall_seconds": 293.734,
+    "build_monitor_max_lean_rss_mib": 2999,
     "memory_scope": "Largest Lean RSS sampled by the build monitor across this gate, not a per-module maximum."
   }
 }

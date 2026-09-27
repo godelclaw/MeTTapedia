@@ -1,6 +1,7 @@
 import MettapediaFourColor.ClassicalAssembly
 import MettapediaFourColor.Orbit10.Coverage
 import MettapediaFourColor.PlaneDrawing
+import MettapediaFourColor.SourceTait
 
 /-!
 # Classical assembly consuming the shared arity-ten presentation
@@ -48,5 +49,33 @@ theorem colorable_of_planeDrawing (hred : Reducibility)
     {V : Type*} [Finite V] {G : SimpleGraph V} (drawing : PlaneDrawing G) :
     G.Colorable 4 :=
   drawing.colorable (fourColorTheorem_of_checks hred e5 e6 e7 e8 e9 e11)
+
+open Mettapedia.GraphTheory.FourColor
+open GoertzelV24TwoEdgeCutMinimality
+open SourceVertexCodeTrace TubeSlab.VertexTransfer
+
+universe u
+
+/-- The shared classical presentation supplies compatible witnesses for an
+exact construction of every source spherical cubic map. The original vertices,
+edge mates and cyclic orders are retained by the supplied geometric model. -/
+theorem supported_source_construction_of_checks (hred : Reducibility)
+    (e5 : ExcludedArity (RedpartSound theRedpart) 5)
+    (e6 : ExcludedArity (RedpartSound theRedpart) 6)
+    (e7 : ExcludedArity (RedpartSound theRedpart) 7)
+    (e8 : ExcludedArity (RedpartSound theRedpart) 8)
+    (e9 : ExcludedArity (RedpartSound theRedpart) 9)
+    (e11 : ExcludedArity (RedpartSound theRedpart) 11)
+    {V E : Type u} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
+    {RS : RotationSystem.{u, u, u} V E}
+    (hclass : BridgelessSphericalCubicMapData RS) :
+    ∃ trace : VertexCodeTrace.Trace 0,
+      Nonempty (VertexCodeSourceGeometry.Model trace.realize
+        (terminalCoordinates (RS := RS) completeOrder visited_complete)) ∧
+      Fintype.card trace.Vertex = Fintype.card V ∧
+      VertexConstructionGSLT.colouring.Supports (VertexConstructionGSLT.route trace)
+        Fin.elim0 Fin.elim0 :=
+  SourceConstruction.supported_construction_of_unavoidability
+    (no_minimalCounterExample_of_checks hred e5 e6 e7 e8 e9 e11) hclass
 
 end FourColor.OrbitAssembly

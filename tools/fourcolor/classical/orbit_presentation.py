@@ -181,7 +181,8 @@ def main():
             raise SystemExit(f"Missing prepared reference module: FourColor.Present10Chk{n}")
     library = (args.library_output or output / "lib").resolve()
     adapters = package / ".lake/build/lib/lean"
-    for name in ("PeriodicHubcap", "ReflectedHubcap", "HubcapCharges", "ClassicalAssembly"):
+    for name in ("PeriodicHubcap", "ReflectedHubcap", "HubcapCharges", "ClassicalAssembly",
+                 "SourceTait"):
         if not (adapters / f"MettapediaFourColor/{name}.olean").is_file():
             raise SystemExit("Build the adapter package first: " + name)
     # Lean resolves a top-level module prefix from one search directory.

@@ -17,8 +17,8 @@ import time
 
 REFERENCE_REVISION = "3db71e0a786a1f19be04c5266fe3d06fed216885"
 MODULES = [
-    "CompatibleTraces", "PatchWitness", "HypermapDictionary",
-    "EmbeddedReconstruction", "Config4Reconstruction", "ClassicalAssembly",
+    "CompatibleTraces", "PatchWitness", "HypermapDictionary", "HypermapTransport",
+    "EmbeddedReconstruction", "Config4Reconstruction", "ClassicalAssembly", "SourceTait",
     "GraphColoringBridge", "HubcapOrbit", "PeriodicHubcap", "HalfTurnHubcap",
     "ChargeBound", "ReflectedHubcap", "HubcapCharges",
     "NearestRegions", "CompactPlaneMap", "PlaneDrawing", "BridgeAudit",

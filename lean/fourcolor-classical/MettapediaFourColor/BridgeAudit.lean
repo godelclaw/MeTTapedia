@@ -2,6 +2,7 @@ import MettapediaFourColor.HypermapDictionary
 import MettapediaFourColor.Config4Reconstruction
 import MettapediaFourColor.ClassicalAssembly
 import MettapediaFourColor.GraphColoringBridge
+import MettapediaFourColor.SourceTait
 import MettapediaFourColor.PeriodicHubcap
 import MettapediaFourColor.HalfTurnHubcap
 import MettapediaFourColor.ReflectedHubcap
@@ -14,6 +15,9 @@ import FourColor.Bulk.Cfg.Hyb218
 #print axioms FourColor.Config4Reconstruction.repair
 #print axioms FourColor.ClassicalAssembly.fourColorTheorem_of_checks
 #print axioms FourColor.SimpleGraphBridge.colorable_of_checks
+#print axioms FourColor.Hypermap.fourColorable_of_small_unavoidability
+#print axioms FourColor.SourceConstruction.taitColoring_dart
+#print axioms FourColor.SourceConstruction.supported_construction_of_unavoidability
 #print axioms FourColor.Bulk.Hyb218.reducible
 #print axioms FourColor.f7_4555
 #print axioms FourColor.PeriodicHubcap.succeeds

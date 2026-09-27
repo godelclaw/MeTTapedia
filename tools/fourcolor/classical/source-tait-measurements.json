@@ -1,0 +1,109 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_version": "4.34.0-rc2",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.HypermapTransport",
+      "source_sha256": "d81107b8b1d7c6d26e926671ede4c87f1b1a38ea9ccc219813e1f2bf80e8604a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.253,
+      "olean_bytes": 165648,
+      "olean_sha256": "964e99fc9800bac61ba287487087fab15c50c87d7705a5d3fbb779de0c5ed1c5"
+    },
+    {
+      "module": "MettapediaFourColor.SourceTait",
+      "source_sha256": "1e61dd6ae9855b3aa5c5b9beb0d048af1c17822448277c8b8608d83d456ed467",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.58,
+      "olean_bytes": 338272,
+      "olean_sha256": "34e103e6461b06d33e4cb7f7fb6b3cdb42ab08a162f5adef0cd4bc0bdf6c9eef"
+    },
+    {
+      "module": "MettapediaFourColor.OrbitAssembly",
+      "source_sha256": "56edea0e392baa76f6c32f412b907e4039d0b9905762ecff796b4a1e1866c925",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.647,
+      "olean_bytes": 31160,
+      "olean_sha256": "de3abc2cc879f9d877bc5b167a24413495084bf9c2bc0b936716902ae3764d79"
+    },
+    {
+      "module": "MettapediaFourColor.OrbitAssemblyAudit",
+      "source_sha256": "d7aebf55b1f1ce54abfd4b07b61d73ca790bb3938f1f7ad69d613703835199aa",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.738,
+      "olean_bytes": 3624,
+      "olean_sha256": "7615eabca34ba3ccfe322a0c0f53271c053d8de1849f1a0a34c20c1c939418ea"
+    }
+  ],
+  "mathematical_scope": [
+    "Dart relabelling preserves all three hypermap permutations, components, planarity, bridgelessness and actual face colour assignments across universes.",
+    "The spherical cubic source class supplies the reference geometric hypotheses.",
+    "Klein-group face differences give proper nonzero colours on the original edge carrier, including parallel edges. The value at every dart is proved exactly.",
+    "Every complete valid vertex sweep has compatible colouring witnesses, conditional on classical unavoidability.",
+    "The compressed conditional assembly supplies a closed construction trace, an exact source geometric model, the original vertex count and compatible GSLT witnesses."
+  ],
+  "checked_theorems": [
+    "FourColor.Hypermap.coloring_relabel",
+    "FourColor.Hypermap.fourColorable_of_small_unavoidability",
+    "FourColor.SourceConstruction.taitColoring_dart",
+    "FourColor.SourceConstruction.taitColoring_nonzero",
+    "FourColor.SourceConstruction.sourceMap_planar",
+    "FourColor.SourceConstruction.sourceMap_bridgeless",
+    "FourColor.SourceConstruction.supported_sweep_of_unavoidability",
+    "FourColor.SourceConstruction.supported_construction_of_unavoidability",
+    "FourColor.OrbitAssembly.supported_source_construction_of_checks"
+  ],
+  "adapter_gate": {
+    "modules": 20,
+    "summed_frontend_wall_seconds": 70.146,
+    "public_declarations_audited": 24779,
+    "build_monitor_max_lean_rss_mib": 3079
+  },
+  "coverage_gate": {
+    "modules": 18,
+    "summed_frontend_wall_seconds": 293.734,
+    "public_declarations_audited": 20232,
+    "build_monitor_max_lean_rss_mib": 2999,
+    "measurements": "orbit-presentation-measurements.json"
+  },
+  "audit": {
+    "source_endpoint": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
+    "required_transitive_dependencies": [
+      "FourColor.SourceConstruction.supported_construction_of_unavoidability",
+      "FourColor.Hypermap.fourColorable_of_small_unavoidability",
+      "FourColor.SourceConstruction.sourceMap_planar",
+      "FourColor.SourceConstruction.sourceMap_bridgeless",
+      "FourColor.SourceConstruction.taitColoring",
+      "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationDartColoring.edgeColoringOfDartColor",
+      "Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT.class_represented",
+      "FourColor.ClassicalAssembly.no_embedded_reduction",
+      "FourColor.PeriodicHubcap.fit",
+      "FourColor.ReflectedHubcap.succeeds",
+      "FourColor.Hubcap.successful"
+    ],
+    "semantic_hubcaps_consumed_independently_by_both_endpoints": 21,
+    "removed_reference_checks_absent": 84,
+    "original_exclude10_present": false,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected_axioms": []
+  },
+  "limits": [
+    "The endpoint retains reducibility and the six non-ten arity presentations as explicit hypotheses. Their complete local replay and unconditional assembly are separate obligations.",
+    "The source endpoint covers the existing bridgeless spherical cubic map class. The separate plane-drawing endpoint covers finite simple graphs with a plane drawing.",
+    "The existence proof chooses compatible assignments classically; it does not extract an executable sequence of Kempe moves.",
+    "This bridge earns no additional compression credit: 79 previously shared checks remain, and all 633 configurations are retained.",
+    "Timings cover frontend loading, elaboration, kernel checking and serialization with prepared dependencies; memory is the largest Lean RSS sampled across each whole gate."
+  ]
+}

@@ -148,18 +148,20 @@ def audit_source(cases, n=10):
     removed = [q["name"] for data in cases.values() for q in data["queries"]
                if q["name"] != q["representative"]]
     lines = ["import MettapediaFourColor.OrbitAssemblyAudit", "", "open Lean Elab Command in",
-             "run_cmd do", "  let env ← getEnv", "  let mut seen : NameSet := {}",
-             "  let mut todo := [``FourColor.OrbitAssembly.colorable_of_planeDrawing]",
-             "  while !todo.isEmpty do", "    let name := todo.head!", "    todo := todo.tail!",
-             "    if !seen.contains name then", "      seen := seen.insert name",
-             "      if let some info := env.find? name then",
-             "        todo := info.getUsedConstantsAsSet.toList ++ todo"]
+             "run_cmd do", "  let env ← getEnv",
+             "  for rootName in [``FourColor.OrbitAssembly.colorable_of_planeDrawing,",
+             "      ``FourColor.OrbitAssembly.supported_source_construction_of_checks] do",
+             "    let mut seen : NameSet := {}", "    let mut todo := [rootName]",
+             "    while !todo.isEmpty do", "      let name := todo.head!", "      todo := todo.tail!",
+             "      if !seen.contains name then", "        seen := seen.insert name",
+             "        if let some info := env.find? name then",
+             "          todo := info.getUsedConstantsAsSet.toList ++ todo"]
     for case in cases:
-        lines.extend([f"  unless seen.contains ``FourColor.Orbit{n}.f{n}_{case} do",
-                      f'    throwError "Semantic hubcap f{n}_{case} is not consumed"'])
+        lines.extend([f"    unless seen.contains ``FourColor.Orbit{n}.f{n}_{case} do",
+                      f'      throwError m!"Semantic hubcap f{n}_{case} is not consumed by {{rootName}}"'])
     for name in removed:
         for prefix in ("FourColor", f"FourColor.Orbit{n}"):
             lines.extend([f"  if env.contains `{prefix}.{name} then",
                           f'    throwError "Removed check {prefix}.{name} is present"'])
-    lines.append(f'  logInfo "Audited {len(cases)} semantic hubcaps and {len(removed)} removed checks."')
+    lines.append(f'  logInfo "Audited {len(cases)} semantic hubcaps in both endpoints and {len(removed)} removed checks."')
     return "\n".join(lines) + "\n"
