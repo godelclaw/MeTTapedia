@@ -1,0 +1,1731 @@
+{
+  "modules": [
+    {
+      "module": "Foundation.FirstOrder.Basic",
+      "file": "Foundation/FirstOrder/Basic.lean",
+      "sha256": "7f48499ecc46282360bc77ad4df8282ba3aa7c994a088360eb8c818bb65dac1c"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.AesopInit",
+      "file": "Foundation/FirstOrder/Basic/AesopInit.lean",
+      "sha256": "e87694a19bcdc779683287a28e41095a2a469ef9676cf1417fde25d00bdc9c8f"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.BinderNotation",
+      "file": "Foundation/FirstOrder/Basic/BinderNotation.lean",
+      "sha256": "70ee48a20222eec2489c187053b2e8b73f393f817516bfe7cedfff182b69001d"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Calculus",
+      "file": "Foundation/FirstOrder/Basic/Calculus.lean",
+      "sha256": "839ab50d2f29fd730c49db1922dad5b13d3c06993fddffd01153731a5fce87d8"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Calculus2",
+      "file": "Foundation/FirstOrder/Basic/Calculus2.lean",
+      "sha256": "628d914e4da7d217392e04e292675108e7d02d728900a53cd5f73883ad3e3931"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Coding",
+      "file": "Foundation/FirstOrder/Basic/Coding.lean",
+      "sha256": "b32299a4275ab5be5e5bcb06f63b709b04f4eccf8ada3823a6f7ada09a2f544a"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Definability",
+      "file": "Foundation/FirstOrder/Basic/Definability.lean",
+      "sha256": "c88dfdb95b03da3bdd4c4e402b9ae7124be78030f0652b9eb1f60c059ec65379"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Eq",
+      "file": "Foundation/FirstOrder/Basic/Eq.lean",
+      "sha256": "d14bc9782f16410798a2516bdb89b9b46c175b2e972890f663fbf7f8bc00978a"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Model",
+      "file": "Foundation/FirstOrder/Basic/Model.lean",
+      "sha256": "b7ebe04e00d01d8a93d7d728911930c1d122ac18586de0665181292e53d5e324"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Operator",
+      "file": "Foundation/FirstOrder/Basic/Operator.lean",
+      "sha256": "0dbfc57d31fe5521a4f7ddc3b659539d166b2a2a8178c2e3f3d2408c6f5b93e9"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Padding",
+      "file": "Foundation/FirstOrder/Basic/Padding.lean",
+      "sha256": "96fca1f8c48bcefa7630ce57fecb60146de59e5504730b053bf0a1e7bcfc0e4f"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Semantics.Elementary",
+      "file": "Foundation/FirstOrder/Basic/Semantics/Elementary.lean",
+      "sha256": "5be94ae71bca4c6a900580e191edaafac62cb5413e1148161f8400af5fec20f0"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Semantics.Semantics",
+      "file": "Foundation/FirstOrder/Basic/Semantics/Semantics.lean",
+      "sha256": "4b08ad30d6bf72607353930a6660d5cf72562d119a29ef09c325d8a42ec3e86f"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Soundness",
+      "file": "Foundation/FirstOrder/Basic/Soundness.lean",
+      "sha256": "719bfe8d19143d0e251f08bbf6a62b3bee96807de533aeddd8bf3350f2dfc4ae"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Syntax.Formula",
+      "file": "Foundation/FirstOrder/Basic/Syntax/Formula.lean",
+      "sha256": "6cf2d3f700e2d1e566972f8f30bf69b632d54cebdcbacd88fb405746330a522a"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Syntax.Rew",
+      "file": "Foundation/FirstOrder/Basic/Syntax/Rew.lean",
+      "sha256": "d85f788788a120a6ee27bdacc814bfa8ba2849063a8056bfcc5fd8a818ca995f"
+    },
+    {
+      "module": "Foundation.FirstOrder.Basic.Syntax.Theory",
+      "file": "Foundation/FirstOrder/Basic/Syntax/Theory.lean",
+      "sha256": "d6ff138e599e1fc2d831062be31c20ef3d1e1afce82c81516dd94958054f9814"
+    },
+    {
+      "module": "Foundation.FirstOrder.NotationClass",
+      "file": "Foundation/FirstOrder/NotationClass.lean",
+      "sha256": "7daee172dbe3652c1767276940178e891630caedd4946a397dfb482eaec0d9f2"
+    },
+    {
+      "module": "Foundation.FirstOrder.Ultraproduct",
+      "file": "Foundation/FirstOrder/Ultraproduct.lean",
+      "sha256": "7cb61e1e21961e92ac2edb96618c3580864e50bee0b28daabaa353380084c166"
+    },
+    {
+      "module": "Foundation.Logic.Calculus",
+      "file": "Foundation/Logic/Calculus.lean",
+      "sha256": "4a9df1abe4f06bbc1710978a57799a91b71526dc0d04a2124e68442735c553ad"
+    },
+    {
+      "module": "Foundation.Logic.Entailment",
+      "file": "Foundation/Logic/Entailment.lean",
+      "sha256": "f606a0a360f7f200a4bb07eb52c8480495215ad1ab276f0dc29a1933636332df"
+    },
+    {
+      "module": "Foundation.Logic.LogicSymbol",
+      "file": "Foundation/Logic/LogicSymbol.lean",
+      "sha256": "57d0d04224ba2072c549edace599ec5c327459625612fc05666f1f66effef2b7"
+    },
+    {
+      "module": "Foundation.Logic.Predicate.Language",
+      "file": "Foundation/Logic/Predicate/Language.lean",
+      "sha256": "7b588b856e496097b707e0e5aa713201fba2c1ce4b0961f7ce5175aca93b9723"
+    },
+    {
+      "module": "Foundation.Logic.Predicate.Quantifier",
+      "file": "Foundation/Logic/Predicate/Quantifier.lean",
+      "sha256": "77d9a0f6fe9446126c0fa37ac4bfaa23d8cfe6392d189ea7243e513324c288fa"
+    },
+    {
+      "module": "Foundation.Logic.Predicate.Rew",
+      "file": "Foundation/Logic/Predicate/Rew.lean",
+      "sha256": "aee1374aa8f8809b1559228fba719e27b458582cd2880c8c5c7ee337f0040a0b"
+    },
+    {
+      "module": "Foundation.Logic.Predicate.Term",
+      "file": "Foundation/Logic/Predicate/Term.lean",
+      "sha256": "f936aa6cebe03245ff9371461d226a3ef0f29c7491b8ab04d7dacfdda0ecc7d4"
+    },
+    {
+      "module": "Foundation.Logic.Semantics",
+      "file": "Foundation/Logic/Semantics.lean",
+      "sha256": "f081d5353616ce980f5fae08399ca7ab68e08e120860806bb0c11a56254e49d1"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.AxiomDNE",
+      "file": "Foundation/Propositional/Entailment/AxiomDNE.lean",
+      "sha256": "4744440ea1a4695962f41b886ded4462e621b2206bd93323193dc2ca7a387c1f"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.AxiomEFQ",
+      "file": "Foundation/Propositional/Entailment/AxiomEFQ.lean",
+      "sha256": "064c7df8d2421fdb1701a5a6d349db209259649119612eb965ebc6f9fe75edf1"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.AxiomElimContra",
+      "file": "Foundation/Propositional/Entailment/AxiomElimContra.lean",
+      "sha256": "a3ed3c862af1c21780806afa2a943e8eca6bf7f6211f4025dc0474b2a7ae87d4"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.AxiomLEM",
+      "file": "Foundation/Propositional/Entailment/AxiomLEM.lean",
+      "sha256": "d8077e7fe6acf526b64fcbb5578575f14826fb1c99d086980e491ee0d621d685"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.AxiomPeirce",
+      "file": "Foundation/Propositional/Entailment/AxiomPeirce.lean",
+      "sha256": "a27fab9f1fecec7fde8aa667f96d392f1f66c433dc323d3858c2459045ae54aa"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.Cl.Basic",
+      "file": "Foundation/Propositional/Entailment/Cl/Basic.lean",
+      "sha256": "10c3121ec670cc390e69895d530eb1f76c69c8dcaaad3e14b8f2de259e95ca3f"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.Int.Basic",
+      "file": "Foundation/Propositional/Entailment/Int/Basic.lean",
+      "sha256": "2b5abf59259be14984126d1a636a0e0cccf9bfb6459e3c1436d77eab6f6d09e6"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.KC",
+      "file": "Foundation/Propositional/Entailment/KC.lean",
+      "sha256": "972bd274b79bb09bbe7f973f178f43fc7963f71b751f84780c1be8326323541e"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.LC",
+      "file": "Foundation/Propositional/Entailment/LC.lean",
+      "sha256": "61f7818bc93a4fc98f221acc8e513313defaaa4dd1eb017ca51e0af78a83f0c4"
+    },
+    {
+      "module": "Foundation.Propositional.Entailment.Minimal.Basic",
+      "file": "Foundation/Propositional/Entailment/Minimal/Basic.lean",
+      "sha256": "5fa89de9781b4ac4a30324b191f1c9b2c6a673850a5ddaaf66786ff63f4fd832"
+    },
+    {
+      "module": "Foundation.Vorspiel",
+      "file": "Foundation/Vorspiel.lean",
+      "sha256": "ad46fecbb5754904379272e812414759359665a9342664619985677084fb5a13"
+    },
+    {
+      "module": "Foundation.Vorspiel.AdjunctiveSet",
+      "file": "Foundation/Vorspiel/AdjunctiveSet.lean",
+      "sha256": "dd30fad456202391b080187079a88b9f3538099cc32ac208e9465ada5fa9ed42"
+    },
+    {
+      "module": "Foundation.Vorspiel.Empty",
+      "file": "Foundation/Vorspiel/Empty.lean",
+      "sha256": "f3b5429d4ec0c230a633b343a6ac8cdd079d56c1eaa5812994c95dfd487ab985"
+    },
+    {
+      "module": "Foundation.Vorspiel.ExistsUnique",
+      "file": "Foundation/Vorspiel/ExistsUnique.lean",
+      "sha256": "9326800a0ed419feaa0dd7ebfe63de62371d728b0c4ee5b84b3f093d7e7f871e"
+    },
+    {
+      "module": "Foundation.Vorspiel.Fin.Basic",
+      "file": "Foundation/Vorspiel/Fin/Basic.lean",
+      "sha256": "05ca93b4cbf15b4e68a9c172c0fdff6e97820d679a7f3611ed2c9354ef923945"
+    },
+    {
+      "module": "Foundation.Vorspiel.Fin.Matrix",
+      "file": "Foundation/Vorspiel/Fin/Matrix.lean",
+      "sha256": "cb2099f695bc5b30c55859a6ff1a3e3567f8e4239a3b6107aefd930365ce64fa"
+    },
+    {
+      "module": "Foundation.Vorspiel.Finset.Basic",
+      "file": "Foundation/Vorspiel/Finset/Basic.lean",
+      "sha256": "8c103c6c5bb3ab7895f79265267d1cc0d64e48aa2ad64e32fadc4e7accadeda1"
+    },
+    {
+      "module": "Foundation.Vorspiel.Finset.Card",
+      "file": "Foundation/Vorspiel/Finset/Card.lean",
+      "sha256": "303f8767440827a2034a116bba9a57a0b35ff1eadc0e0d127718500d854fe44e"
+    },
+    {
+      "module": "Foundation.Vorspiel.Fintype",
+      "file": "Foundation/Vorspiel/Fintype.lean",
+      "sha256": "c50c031947b5b42107a929ec5544fc33c1a19044540add8337e338c9ab5514c6"
+    },
+    {
+      "module": "Foundation.Vorspiel.Function",
+      "file": "Foundation/Vorspiel/Function.lean",
+      "sha256": "b6eb4a72d46ac6f11b3ff3951b95f4cfe1b03498f290ad46b9bd75cc626ef796"
+    },
+    {
+      "module": "Foundation.Vorspiel.Graph",
+      "file": "Foundation/Vorspiel/Graph.lean",
+      "sha256": "08afec01d21693a69a8fbc62327507f7ed189e82807068736f56e3a81ad3d329"
+    },
+    {
+      "module": "Foundation.Vorspiel.IsEmpty",
+      "file": "Foundation/Vorspiel/IsEmpty.lean",
+      "sha256": "faba8ca33c9a767052b0d553adea03add7bbe8e16d2a616a8a56ffd8b10739b6"
+    },
+    {
+      "module": "Foundation.Vorspiel.List.Basic",
+      "file": "Foundation/Vorspiel/List/Basic.lean",
+      "sha256": "ef35060b67b49121937eaab016d3d163376cf1369a464f8d3a51ee0b0edf958e"
+    },
+    {
+      "module": "Foundation.Vorspiel.List.Chain",
+      "file": "Foundation/Vorspiel/List/Chain.lean",
+      "sha256": "f1f74953db05a914b112fc6770069c44a56d465a2317d37c9406bb11fb6a8ab6"
+    },
+    {
+      "module": "Foundation.Vorspiel.List.ChainI",
+      "file": "Foundation/Vorspiel/List/ChainI.lean",
+      "sha256": "9e1174e90d9798c85088371c36dbb8866532d64f61cf24b09ad48c3e945ec992"
+    },
+    {
+      "module": "Foundation.Vorspiel.Matrix",
+      "file": "Foundation/Vorspiel/Matrix.lean",
+      "sha256": "f78636e88c007a5c92a4c8ffcdbcbfb0d143706b636653e3269beab55667910d"
+    },
+    {
+      "module": "Foundation.Vorspiel.Nat.Basic",
+      "file": "Foundation/Vorspiel/Nat/Basic.lean",
+      "sha256": "f2be958c640d62337eab2216d2c652c095ab7a8acd6bd58c71f2c251579b0581"
+    },
+    {
+      "module": "Foundation.Vorspiel.Nat.Matrix",
+      "file": "Foundation/Vorspiel/Nat/Matrix.lean",
+      "sha256": "9bf2dc4a6519a4f0ca605c299af07c279ddfab789cf63a073a26f2abe581269c"
+    },
+    {
+      "module": "Foundation.Vorspiel.Order",
+      "file": "Foundation/Vorspiel/Order.lean",
+      "sha256": "7eda08f1cb2579315f196846a2c5ec7355d73ccf0198766ab11d52a6c56f6ac3"
+    },
+    {
+      "module": "Foundation.Vorspiel.Quotient",
+      "file": "Foundation/Vorspiel/Quotient.lean",
+      "sha256": "9b9366310cce4cf105e8df4bf4c4b1e492c7e917bcf66e535c078f8a539d27b2"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Basic",
+      "file": "Foundation/Vorspiel/Rel/Basic.lean",
+      "sha256": "1b9e9ccc50c620ea4957ddf341bc2be49f1e4d5dcdcb7f2bea1328a0038ba678"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.CWF",
+      "file": "Foundation/Vorspiel/Rel/CWF.lean",
+      "sha256": "fb7c764088cf2108a5ebaa6e0964304103a46248fbb68baece0697ea8a55aaa0"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Connected",
+      "file": "Foundation/Vorspiel/Rel/Connected.lean",
+      "sha256": "d4da202fe252fdf095b677542b4a8608173d31a061975ccd78f969cda88615a7"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Convergent",
+      "file": "Foundation/Vorspiel/Rel/Convergent.lean",
+      "sha256": "f5ddc7386899e232ed7f9af16ebb85f41149d20842a05ba783adb550e19150d0"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Coreflexive",
+      "file": "Foundation/Vorspiel/Rel/Coreflexive.lean",
+      "sha256": "f10e452387de87587e8b4d5cfb04cd7af1ee7fcc3850c7c843408d7f194948b2"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Equality",
+      "file": "Foundation/Vorspiel/Rel/Equality.lean",
+      "sha256": "e3011fbc47f3c62418e793bbb41a78ac9388dc658261acae2606a829e2ff9e29"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Euclidean",
+      "file": "Foundation/Vorspiel/Rel/Euclidean.lean",
+      "sha256": "64593e1f84952421e570b8f1468b4df8476154ab3f498d6fff8e511b149eea08"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Isolated",
+      "file": "Foundation/Vorspiel/Rel/Isolated.lean",
+      "sha256": "bb3c7e46be603e8ca64eb1db7d0f0bf2b6e91cfb7409d763d5b6e26f0451f6df"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Serial",
+      "file": "Foundation/Vorspiel/Rel/Serial.lean",
+      "sha256": "7966ccac318f82e467d119a6c204ad362baadd1c0c838eb68a8d64f2b6aab6d5"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.Universal",
+      "file": "Foundation/Vorspiel/Rel/Universal.lean",
+      "sha256": "45c99b6db9c114e5397c5b479c5f3af9f0728de207278fce637ee62bb18fd5ea"
+    },
+    {
+      "module": "Foundation.Vorspiel.Rel.WCWF",
+      "file": "Foundation/Vorspiel/Rel/WCWF.lean",
+      "sha256": "6ecd2c410e14bcd14f696a705e5d59383f08d717d20f8223cd6864db6d68ba87"
+    },
+    {
+      "module": "Foundation.Vorspiel.Set.Basic",
+      "file": "Foundation/Vorspiel/Set/Basic.lean",
+      "sha256": "ea38ac9009332612f3605c4fd82676748ce7e1de93afaf98477b17c5326cd113"
+    },
+    {
+      "module": "Foundation.Vorspiel.Set.Cofinite",
+      "file": "Foundation/Vorspiel/Set/Cofinite.lean",
+      "sha256": "62f0b13e85434e7a3ec80e8c7f65d0b9aee4f3e7b8e05cb759fdade18e59f82b"
+    },
+    {
+      "module": "Foundation.Vorspiel.Set.Fin",
+      "file": "Foundation/Vorspiel/Set/Fin.lean",
+      "sha256": "702e36b6dd1ab2ddde5bc5fc98bee25a7b2fe7a538a515b3e0f27b232822d184"
+    },
+    {
+      "module": "Foundation.Vorspiel.Small",
+      "file": "Foundation/Vorspiel/Small.lean",
+      "sha256": "a1979110190c30d757341e7efb8b7280dcb4feebf94f92d92518a766e2bdc477"
+    },
+    {
+      "module": "Foundation.Vorspiel.String",
+      "file": "Foundation/Vorspiel/String.lean",
+      "sha256": "90205c3892e857ac80d352e5cb8dd112788e19df8f700cf4d2b042f11e008c57"
+    },
+    {
+      "module": "Mettapedia.CategoryTheory.LambdaTheory",
+      "file": "Mettapedia/CategoryTheory/LambdaTheory.lean",
+      "sha256": "bf9903daa9ab11eb079fd332ebdda9fff86ebad99cf8e20880008bccf41531ca"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.ClosureCriteria",
+      "file": "Mettapedia/GSLT/Core/ClosureCriteria.lean",
+      "sha256": "07d67bfd6e2f6aa95cdee6aa5467baff234704bd351a4e3eaf2097189781a8d1"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.Composition",
+      "file": "Mettapedia/GSLT/Core/Composition.lean",
+      "sha256": "c0274802f576ec05b2cd89102e3ac14e0c44ed77f9a5e1c650c44a3d37478f51"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.GSLT",
+      "file": "Mettapedia/GSLT/Core/GSLT.lean",
+      "sha256": "87e8eb776452e4c38f5ec2ebc966b8087301949d588b7ad0efa11d8d63a254c2"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.IndexedOperational",
+      "file": "Mettapedia/GSLT/Core/IndexedOperational.lean",
+      "sha256": "0b033f6ea07c8edb138b249368aba69426cfc94f40fc6740347e1c990049fc6b"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.LooseRelationEquipment",
+      "file": "Mettapedia/GSLT/Core/LooseRelationEquipment.lean",
+      "sha256": "cf14974314cb2e516f86c871ce657b26986e7892a5de8293d22e29bb40bdc331"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.NonFactorization",
+      "file": "Mettapedia/GSLT/Core/NonFactorization.lean",
+      "sha256": "4c60bf64ac6b5e93fe0e5371d982c2798ef5cc74f8fc8e4be83dc9e42834b0db"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.OperationalPathFibration",
+      "file": "Mettapedia/GSLT/Core/OperationalPathFibration.lean",
+      "sha256": "361637b30ed3daaad9b6d2ec77a069ea5e1414f1a9e67a73bc5e52e2faf4a843"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.ProofRelevantPresentation",
+      "file": "Mettapedia/GSLT/Core/ProofRelevantPresentation.lean",
+      "sha256": "490d9dd2d2297898feb1dd5146f9237878ed06c6f5afca4b2300c3dffc6a6174"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.RelationalRouteSemantics",
+      "file": "Mettapedia/GSLT/Core/RelationalRouteSemantics.lean",
+      "sha256": "45717d8f6bfe115052352013d48a74fe27686db44d23b96c51739330bfe78dd5"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.Ultrainfinite",
+      "file": "Mettapedia/GSLT/Core/Ultrainfinite.lean",
+      "sha256": "41a01e072f3dfb7457262a670f1d120305a14286a6ee966a60c1380f81e84dc4"
+    },
+    {
+      "module": "Mettapedia.GSLT.Core.UltrainfiniteTransport",
+      "file": "Mettapedia/GSLT/Core/UltrainfiniteTransport.lean",
+      "sha256": "828c1b4c618a2c76905d347f5300b8d0cbbacaa6147f6cc566825c23d365e9fa"
+    },
+    {
+      "module": "Mettapedia.GSLT.Meredith.Bisimulation",
+      "file": "Mettapedia/GSLT/Meredith/Bisimulation.lean",
+      "sha256": "c47646b84aa801fb897f981446f469e54ced5b10877dfad0ab0d74e6a2529266"
+    },
+    {
+      "module": "Mettapedia.GSLT.Meredith.GSLT",
+      "file": "Mettapedia/GSLT/Meredith/GSLT.lean",
+      "sha256": "4fcd1883b4e5766e8faad1e5e65a1ab494bbf414e33291004ad8c9e6c8e80545"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Coloring",
+      "file": "Mettapedia/GraphTheory/Coloring.lean",
+      "sha256": "fae10c5b3e6059599088f06cf9561ca9c29428cdb50b4c6ebc1d5b70c11f2295"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.EdgeColoring",
+      "file": "Mettapedia/GraphTheory/EdgeColoring.lean",
+      "sha256": "8377650c4b212be9f432dc0e85a8efba76cd71ae43b9a1c4791343245cf9a951"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FiniteDegree",
+      "file": "Mettapedia/GraphTheory/FiniteDegree.lean",
+      "sha256": "98a0ef9c943757679c0f83633dd21d2d5515010d2aba7093908d86dd59f90d26"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryChainPeel",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundaryChainPeel.lean",
+      "sha256": "eb6c7bd8322c8933e7862cfcfab77db01be93649043b293ed320d17e81d1a820"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryChains",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundaryChains.lean",
+      "sha256": "21ba05d2c01638cc62562fae634f003fed6dd5161a99aeefe5523f3573be2748"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryComponentCount",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundaryComponentCount.lean",
+      "sha256": "9c73de3569062bfc4528127c8fa4e732cbe07a02ce5e8abe3051acfe15ab3a2d"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryConnectivity",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundaryConnectivity.lean",
+      "sha256": "5d317a06c442f5b1ad22da213cc01aa3215bc1040543814b142f5f8e91a39a84"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryRewireCycles",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundaryRewireCycles.lean",
+      "sha256": "72572b2f4909e9ba8d9af7dcdfa7eeddb170e25d0491ff654fda9dc3b320fa16"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundarySmallCutExecutable.lean",
+      "sha256": "ee14b74a8cffb1d12d869e388f65d12b15398e319ef348ebf9208e2b22dab3d8"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundarySmallCutProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundarySmallCutProfile.lean",
+      "sha256": "3d108246cf0401cbb2e424f6c53c5650d5bd0bfc94615b0e089af887e80f1ef8"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundarySmallCutTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundarySmallCutTransfer.lean",
+      "sha256": "0d1be9b28f9f61bfccebfbf06286f4c997d28c3390de741e7546707f49c671c3"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundarySmallCutViability",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundarySmallCutViability.lean",
+      "sha256": "f4aea9e96722020370aa14b4df642568b035a2a6c480ee6a20e1f7a7ef001f55"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryWordFrontier",
+      "file": "Mettapedia/GraphTheory/FourColor/BoundaryWordFrontier.lean",
+      "sha256": "e8beca2adca6ac970417af357971420ac77cfe8c400ca58214cb1a45f89be14f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ColorAlgebra",
+      "file": "Mettapedia/GraphTheory/FourColor/ColorAlgebra.lean",
+      "sha256": "7866d44ee3a9c93816eec78c2ad21fac94c766f584abe502d1177aaaaaa2fb2c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleCapTangle",
+      "file": "Mettapedia/GraphTheory/FourColor/CycleCapTangle.lean",
+      "sha256": "04591d41e1b5f62528cab69fe5d231563af76b5e7e108620a2fbac8ffec9f989"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CyclicEdgeCut",
+      "file": "Mettapedia/GraphTheory/FourColor/CyclicEdgeCut.lean",
+      "sha256": "49f41f80db93a90eade57e0105dc6fd2da296c2ac86c7a3d13749421c41ea614"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ExecutableJointTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/ExecutableJointTransfer.lean",
+      "sha256": "a2af594f6f68d4d9897fd92ef203623dc04674c4eaefc60c2e063b0a2e84cb06"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ExecutableVertexCode",
+      "file": "Mettapedia/GraphTheory/FourColor/ExecutableVertexCode.lean",
+      "sha256": "d79d1662bc582a49804993ee4e8d4cff4c3cefdc5270c9eb412941c1f82128bd"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FaceIncidence",
+      "file": "Mettapedia/GraphTheory/FourColor/FaceIncidence.lean",
+      "sha256": "54e42e7ca6d49d27bb04f0935a7b26e7edb7aeb867c49d52a82b0147c542e314"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FaceReturnSum",
+      "file": "Mettapedia/GraphTheory/FourColor/FaceReturnSum.lean",
+      "sha256": "a6cb30fca1858b7f11f5f8303699b4387b251fc17c6df1acb3c2a110d410f49f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FiniteFaceReturn",
+      "file": "Mettapedia/GraphTheory/FourColor/FiniteFaceReturn.lean",
+      "sha256": "48455d14683affb9054517fcaaec5d3fe79b933bb2c3b8e0e36db0a5f7e26303"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FrontierVertexCode",
+      "file": "Mettapedia/GraphTheory/FourColor/FrontierVertexCode.lean",
+      "sha256": "5e329a760cadddcb86899b32aea8476c24e34ceb5d23095523c78baa21375ff9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GeneralSlabEmbedding",
+      "file": "Mettapedia/GraphTheory/FourColor/GeneralSlabEmbedding.lean",
+      "sha256": "9d04b6acd553f69904b404afa87f941b2b5918e0d988aec387955a2a57c4b5e4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelDefinition48",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelDefinition48.lean",
+      "sha256": "dc6c42992527972ba369d4c8113bfc127796d32a2e93a962907e04a8d12389b9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryEssentialGluing",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24BoundaryEssentialGluing.lean",
+      "sha256": "52020eceae9dc06a509f8b1f3ada1d3b0da72d468d96c4a638bfb7ad1a5b31ae"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryFaceReturnProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24BoundaryFaceReturnProfile.lean",
+      "sha256": "d28cb08827c4d10c1c22268ba8f5525b34dbbb87ea2ce3aaa0bcbdbac2bec561"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedDegreePath",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24BoundedDegreePath.lean",
+      "sha256": "40e27ef1e8eb5e8387817d5e827e1777a24cbf719e18d82ea7105e83e72723c4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceCountLaw",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24BoundedInterfaceCountLaw.lean",
+      "sha256": "3336f94c52fa8de81344551b26d33c486a3fc2d37a2003170981fdba18260256"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24BridgeTwoSided",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24BridgeTwoSided.lean",
+      "sha256": "0a906f64a243cab42f70a80f387c3f239ee18122756168f81557ab07009d4c47"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24BulkCorridor",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24BulkCorridor.lean",
+      "sha256": "0f7487559f343e741136b9ad7c18f7a850dc96cd197529cf699b928a9d0b24b9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CanonicalHubClosure.lean",
+      "sha256": "3b579b980355fdacc151a224eaf6bf6168eb9353845c6e281ed054ef47aa1c24"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubCyclicity",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CanonicalHubCyclicity.lean",
+      "sha256": "1ce4a3501ec5dcd374d1d9817658f55429917d2ff942f0c29d6df009c57dbe23"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CleanHexCorridor",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CleanHexCorridor.lean",
+      "sha256": "4e7a69cfab9114f44420c435db931ab778590533572a12436ac0aa0aa92f0aed"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedCountReplacement",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24ClosedCountReplacement.lean",
+      "sha256": "2ea275a2377370ff00b6713a617f2ab3ea0bfc77274e2ff01fd57248e1ad0a30"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24ComplementaryRegionBoundaryOrder",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24ComplementaryRegionBoundaryOrder.lean",
+      "sha256": "6bce04d85978d8e08e709d6c126a5e269bb56cc97e1b32b639edf0057c287cfa"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamCubic",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CompositeSeamCubic.lean",
+      "sha256": "586d35a8f6e7340e7a3a8f5d3a77b4bbcc122163719482fb415b454b4cbb05e2"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamMultigraph",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CompositeSeamMultigraph.lean",
+      "sha256": "219b64f7a10ee021b9e89f50524f6cf5fea5f4f8f98b738eef2a4cb9af97daab"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSphericity",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CompositeSphericity.lean",
+      "sha256": "77a81a9afc5e4389bbb7cd56f84b2dabd1c4a0e55a6a54c213397248da8b7f17"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeStructuralData",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CompositeStructuralData.lean",
+      "sha256": "698d14582215c0defd2ea31949091ce8b06997668ff290d73ca3491e5145d8a1"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedMapEulerBound",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24ConnectedMapEulerBound.lean",
+      "sha256": "5aa3037fa0b1a445747203d8e3270c2af7e594726986e01c16281d67652cc3a3"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CorridorProfile.lean",
+      "sha256": "d99dc11a55e49773d0a074e113a037dd078c0b50eff349071a61a91517abf006"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorPumping",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CorridorPumping.lean",
+      "sha256": "4019ee2f4f337fdc791bf195b35296643fe7dcb27bbe299f443f60baa54ea27e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorSpliceObservables",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CorridorSpliceObservables.lean",
+      "sha256": "4c653934218b1e0c0b5a79d227909479923c323dd7e4fcc5b700f6d7c13c28ed"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CubicSmallBoundaryCycle",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CubicSmallBoundaryCycle.lean",
+      "sha256": "e59d95c66d368ed8f72768008407102bfc2d2d39526e63fcb313e4b084491a99"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CubicTwoEdgeCyclicCut",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CubicTwoEdgeCyclicCut.lean",
+      "sha256": "571a61953d2b1f5a3cd19a9e65a9693a08168386b12a7207e64bd65ce1133b69"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CurvatureScope",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CurvatureScope.lean",
+      "sha256": "34dfc9890a36d6b4d78239d826ab36095bfdf4383f962cc0c8dcb3fb8dcfc44d"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicBondBoundary",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CyclicBondBoundary.lean",
+      "sha256": "8c38fd17e1a6f248135199655307d63998b2944fab53a4a6e0d5cf12c002ff3f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicFiveFaceIntersections",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24CyclicFiveFaceIntersections.lean",
+      "sha256": "c050dd05eb18af150228180be5bcf0b01786d79974c701b86e0a53ec49aef22f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24DeletedEdgeTrail.lean",
+      "sha256": "9b789a7cccf14ab446044f8de507dce031dff29a9d7fae10591819a93065323f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedRegionBoundaryOrder",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24DeletedRegionBoundaryOrder.lean",
+      "sha256": "b1bdc61a5d1783006a7191bab5581b110fde4839ccaf750bae1173aecb49955a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedRegionEuler",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24DeletedRegionEuler.lean",
+      "sha256": "cc01b03f9fff7f19f9d74f1a16da6959238c5d755284bc09b5b9a405c9d0b474"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedRegionRotationSplice",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24DeletedRegionRotationSplice.lean",
+      "sha256": "03991d3476c97021c39506c5e920d4ffc267348388ebc12287ebc5734f4b0cd5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24DualMap",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24DualMap.lean",
+      "sha256": "7a9d5d5dc92b0abec5bce0c396f346d2223880e48cfcf62924cf815786620216"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24DualRotationSystem",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24DualRotationSystem.lean",
+      "sha256": "c2b03a32f7f6795d19fe83f32d9ed4f19e74e6d043f100b8ff8e6b329d517766"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24EarlyFalsifiers",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24EarlyFalsifiers.lean",
+      "sha256": "4fefdf84d130219882355030cb12044ace2402469c167545813b9cec79f2c3aa"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24FaceBoundaryLinearAlgebra",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24FaceBoundaryLinearAlgebra.lean",
+      "sha256": "efaea77526be0fea22fd89f421972f5cb84ae0f77595ecadfbe4665aed343a70"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24FaceDualConnectedness",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24FaceDualConnectedness.lean",
+      "sha256": "4cb0c3ee4749142deef1210169ab4c5abd5a7d720e4c0784c225da2723766d66"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitIncidence",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24FaceOrbitIncidence.lean",
+      "sha256": "1a3cc41188fbe06632b6b5b0ef2d0a77b4e3e0ac12ed6a334d8c57b0f7395ca5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitPartitionBridge",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24FaceOrbitPartitionBridge.lean",
+      "sha256": "40e97cf912e80d8fe55e757a303357e061fd2f4d7442a6f9d86c68eb598abfb5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24FramedTrail.lean",
+      "sha256": "53d599146408ec745aa38e7e2344cff18d798db31c0a4d092cd26a21afc36fbe"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24GraphDerivedCorridorCutProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24GraphDerivedCorridorCutProfile.lean",
+      "sha256": "23ec13e2f84ad318acc50e5a7d4186da82ecfc6e1ddce76747cd17027d6b9c25"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorChiralityBarrier",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexCorridorChiralityBarrier.lean",
+      "sha256": "3fdbfe6fe11e0ebf2f23c537f17c01a5edd10045f9842c10911997219e355a6d"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorColorStateWord",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexCorridorColorStateWord.lean",
+      "sha256": "d21256ade5d669968684d88bb06ce96cb8ae4c41fe7bf9d5da57d593378125fa"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorColorTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexCorridorColorTransfer.lean",
+      "sha256": "3a84bba9903cb4d1f44c38cd61d1bbede01265b7800932ed8a7a16491386dd22"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorFiniteColorTransition",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexCorridorFiniteColorTransition.lean",
+      "sha256": "30fca68ef9c8a5bc133b947180d95a14551554f57af29e14f361df03f20c3d6c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorInterfaceMatching",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexCorridorInterfaceMatching.lean",
+      "sha256": "0076d71cc733f53dcaf780a4d271fd23d612fdd1366618b4f09767c8d7616f8b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSkeleton",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexCorridorSkeleton.lean",
+      "sha256": "6a84ddcec3c8d4413fe318a178299369f64d8af2cdee0bab2f856b266be4742f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorSlab",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexCorridorSlab.lean",
+      "sha256": "9b46cefd29d2331cb1f356e375e1c32c21bbe45894fcc032e2d6cbe58eaa9653"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexFaceRungType",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexFaceRungType.lean",
+      "sha256": "b2cb50a5c7925dbeabded6bd5ad9db259d10c74c0fc5a779bd194f42e3b39fd7"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexPathExtraction",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexPathExtraction.lean",
+      "sha256": "deef4a2aad3a16247f2418af60acfbf6b04812034223489436b94b8da565ace0"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexSlabConnectivityProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexSlabConnectivityProfile.lean",
+      "sha256": "e5d4f7d6c5e38eb7d49b55b5bcffdaf6166c05f118f16db8d74beadcefd7b17f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24HexSlabSideAdjacency",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24HexSlabSideAdjacency.lean",
+      "sha256": "1ffcef179051549f535ce17741bd750bd8d9636fb9a2985e62707cb8e0c98510"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24InducedHexCorridorTypes",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24InducedHexCorridorTypes.lean",
+      "sha256": "adf2816391519e617db2b89d5e954b5df2540f2e8b60b58f6f83ffccc650349b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24InvolutionEdgeList",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24InvolutionEdgeList.lean",
+      "sha256": "8e23f6505fd864fa28d28ee281c6f4c2bc5d5ebe11514b9b59333c3d012181ee"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24MapEulerBound",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24MapEulerBound.lean",
+      "sha256": "6c991625f0cf20a8d3337144025193fe2d827b9c29a5f90c974c9c28f194ed5e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24MultigraphTransport",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24MultigraphTransport.lean",
+      "sha256": "3e48424f33c636f24cc80d64a9286ecf13d95065b0a91806736153af7b99f55d"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OpenTangleBoundaryReindex",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OpenTangleBoundaryReindex.lean",
+      "sha256": "c5d58d67b7b3d6e82e7dc483ca694772b7914f81ce193da203cb4b6162eea491"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OpenTangleComposition",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OpenTangleComposition.lean",
+      "sha256": "628b7dcbe7d35ccdaa2722fd8d7b0f7d6df6fe7e297f2671218df81d64a1f3e9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitCountCongr",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrbitCountCongr.lean",
+      "sha256": "34ff6f8cf0ba11a7a71bc2c711a09e1a93675e482d23aa21d032486c07cbb3fa"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitExchange",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrbitExchange.lean",
+      "sha256": "5a08c155bb7cbe24379c88a94060e20fd57906369e0456748d244f909059c31e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCurvatureBulk",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrbitFaceCurvatureBulk.lean",
+      "sha256": "1f944299bc5748579fda11f7a437d3915c93434950cefab51d83ca9f3899bf81"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCycleSpace",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrbitFaceCycleSpace.lean",
+      "sha256": "74658ca368f7647337b57c9a6f84204df238758f10b7f8efc1dc3cbc5c2df7e9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCycleSpaceEquality",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrbitFaceCycleSpaceEquality.lean",
+      "sha256": "0f2d604a60bde8035597d8b06a28a7e0a060343b22cb018599e54a24b2d3be71"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceTwoSided",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrbitFaceTwoSided.lean",
+      "sha256": "1843119088b877e9fbf5b95d7fbd4fcc2cb5af06d3daf8b088f38b5fa8cbec80"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutFaceOrbit",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrderedCutFaceOrbit.lean",
+      "sha256": "65f372ea746f6dd2055a1b0643297f6ad42d7eb0fbcd652174db09d69f6aa55e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutFaceReturnProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrderedCutFaceReturnProfile.lean",
+      "sha256": "ca5b064abd737a003abc65c79dcb076b4f97f7e5ced06a7558f2a868b8c7b7bb"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutMinimumFaceSplice",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrderedCutMinimumFaceSplice.lean",
+      "sha256": "830d124c41ff2a12e8372833b0c1c2715d14aa4479d2847d3df3307e9bbb7a37"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutOldFaceReturn",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrderedCutOldFaceReturn.lean",
+      "sha256": "b7600e1450ed390f24e1b1c782ccc858ed61b203d0dc0ef83394b377fc229dac"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutRotationSplice",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrderedCutRotationSplice.lean",
+      "sha256": "8b00da8113bee2c3125b5366b1b4fe75a6f7176c8e4a1f4488a003b5e6a4c977"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedCutTaitSplice",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrderedCutTaitSplice.lean",
+      "sha256": "df1e66cf658939d46c15570b11871ad65a4dfd607eb8c448e7c8b7294acd9439"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24OrientedHexSlab",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24OrientedHexSlab.lean",
+      "sha256": "94dd3f96ff37f23f25f91fb6fcdda5d6a2e320d9d54691444ddc564386ddce86"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24PermutationOrbitSurgery",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24PermutationOrbitSurgery.lean",
+      "sha256": "d948cbae42d8e8b4f963e9e97457f8e101f25c24bd1c1772648ec2707b9ec46f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalClosedCountBridge",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24PhysicalClosedCountBridge.lean",
+      "sha256": "d7c1ad833b98d8c74a213f6b2ef292d794eabd3cd8681c8706945e4c7561ebaa"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24PlanarBondBoundaryOrder",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24PlanarBondBoundaryOrder.lean",
+      "sha256": "2b8448cec4b46a43dc8d0342af8bd75d3fce9fac7e6ac99adaee0ee604b326b0"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24PlanarBondSpliceEuler",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24PlanarBondSpliceEuler.lean",
+      "sha256": "1f1e454227dbbc0aa62c276dbaab7a42232a4f1e068f5627283ea35cf9c92b2b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleGluing",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24PortTangleGluing.lean",
+      "sha256": "ed06b9d6e09dd22ee5ef0601094d0dbcf660807d2ed9be23382d416693914180"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24PrimalCycleSpace",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24PrimalCycleSpace.lean",
+      "sha256": "447b72e604c1a83a9baebc7f0b5d853bdd1922eb6dad9e5429a80b9130eef231"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RawNooseCountPumping.lean",
+      "sha256": "6b2e298fd16c3e6ad8a89fb7289e96c150b93585a2fe49474e080daedb81f689"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedRegionBoundaryOrder",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedRegionBoundaryOrder.lean",
+      "sha256": "dcbcab5cbfe2687cee67f451baecc112786ee33af9969c5f722223ea65221ef1"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedSpliceAmbientFaceCount",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedSpliceAmbientFaceCount.lean",
+      "sha256": "a6942c6fe19349a2aa738f9960c2e657bc888253d0046d9ec84a8b3e2f20280f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedSpliceEdgeCount",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedSpliceEdgeCount.lean",
+      "sha256": "c9327f24116a5b13392f242b6905e9c0d8c2f9ce68e5619fd32a19d210099d36"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedSpliceEdgeDecomposition",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedSpliceEdgeDecomposition.lean",
+      "sha256": "abadc2c8307ea7ce0d0c27eaa6df141d58a3c7a4dc3c633349783fa28af788ef"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedSpliceEuler",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedSpliceEuler.lean",
+      "sha256": "620bcac21bb9231b21283db3e50d3f2c9afc7c6380caa50b033cb71a8403693e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedSpliceFaceCount",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedSpliceFaceCount.lean",
+      "sha256": "32782dffa4534d1b447d7559b2d23e3cfd5e8ddd780a668ba57c4b1b93c6f3bc"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedSplicePrimalGraph",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedSplicePrimalGraph.lean",
+      "sha256": "b3d7b286f487e764dc81c58fe65df0a6373c320aa23fde907fd57a585211375e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedVertexRotationSplice",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedVertexRotationSplice.lean",
+      "sha256": "bac09d673e67c5f31c56d337c74ae2fe8150de0c97096bd0804fd4abf6d3336f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedVertexTaitSplice",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RetainedVertexTaitSplice.lean",
+      "sha256": "e317e421320e4c712746409325447f33752ac79407f512906dc47871ca00628a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RewiredTaitColoring",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RewiredTaitColoring.lean",
+      "sha256": "d03d9e54e61900ec4825049be5c1dc79dd68b4b7a36670f268de52692a315b57"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationBridgeFace",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotationBridgeFace.lean",
+      "sha256": "f83612a362ce5fa54bb14a1fbb8e42c55993d0b644bbc4f7902c1bd6a9608b01"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationCutDartDecomposition",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotationCutDartDecomposition.lean",
+      "sha256": "04b04c249d1acd887e5d455d02be8432d3215579d9e903ce711865ad80775b39"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationDartColoring",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotationDartColoring.lean",
+      "sha256": "d967e115786afd31093817b7ca940ea17fe8f8aa372587fa310b2992e9da176c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationEdgeBridge",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotationEdgeBridge.lean",
+      "sha256": "6bfac3487a779b5096f10f01d35660ffdd9382d08432b7bf84de4191885ff1ea"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationMultigraphAdapter",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotationMultigraphAdapter.lean",
+      "sha256": "162f6ab12c061ee342f21499e41d27b9254545db7a4a35493d65eab58bcd8afe"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationSpliceConstructor",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotationSpliceConstructor.lean",
+      "sha256": "b4e0d71b23348187bfa8284881017beffc0dda4f3d291077c9229fdfa61c7de5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotationVertexCutProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotationVertexCutProfile.lean",
+      "sha256": "bb8a44a409618c0122cdb15d1709a80830fb0810470ccf054b23e7969067dd0c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24Rotor.lean",
+      "sha256": "0f7351d2d0abe9492d20b899071973635a1c7618f845435bcfdb03f21b9d1cc5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24RotorProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24RotorProfile.lean",
+      "sha256": "66c4dc8192dd1c7b5b7cd6ea9fab1065260ab78614498ef16df5e868ffaf0ece"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SeamArcAmbientFace",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SeamArcAmbientFace.lean",
+      "sha256": "db30285b5dfe9f9bb826a19ce3e4e0e4fe7bae8de831b37d3ae82b624c421410"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SeamExchange",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SeamExchange.lean",
+      "sha256": "47da634062265babf6753aa80f496b2e94dcb4ce458291939b14946d4e6489cd"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SeamFaceArc",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SeamFaceArc.lean",
+      "sha256": "307fc06ebf15f2eccf5bfd45cbad1ca56cd254025130fe12799ee33dbb84768b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SeamFaceArcPartition",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SeamFaceArcPartition.lean",
+      "sha256": "1d305d8d178742161d8a7d931b80b383c9ca5aefcfb737fd43791cd9b994a70f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SerialOpenTangleColoring",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SerialOpenTangleColoring.lean",
+      "sha256": "de2888af2fde8796aef5a40f03359ca0a36f87ad6470d83a400aadc505d36e2a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SerialOpenTangleComposition",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SerialOpenTangleComposition.lean",
+      "sha256": "21e86da4d80ed6b94dbeffcb828867c158c8b01f659a5fa7ddf051f4562ee6be"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SerialOpenTangleCountSupport",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SerialOpenTangleCountSupport.lean",
+      "sha256": "07ea1b57a3dac90500f9fe708a2d184bb0a087c382fc84963970c0065d32146a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SharedFacesTwoEdgeSeparator",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SharedFacesTwoEdgeSeparator.lean",
+      "sha256": "bc13e8d717a9bc619e068f5d280b4ddce0c327f632c58664be4fb4d62addaf2b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphFaceDualConnectedness",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SimpleGraphFaceDualConnectedness.lean",
+      "sha256": "65a89d95e8d8195f10011dc6a537d1d39fe3d0d984836ad8c5a27ff7dd80eb5c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphRotationBridge",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SimpleGraphRotationBridge.lean",
+      "sha256": "f34da3c6419cdd46324e9033feba5db3765b5c1fb4df44ef7dd8e6874f5eb344"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalGraphPresentation",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SphericalGraphPresentation.lean",
+      "sha256": "9e04ba7cb845eab0c1a7f2d4810b09fe1624221e1c177972155c4b3014942973"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24Square",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24Square.lean",
+      "sha256": "efc352046522bed3224f3507e192191d9ac0fdcaf3e77c9058115cd44f753b98"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SquareComposition",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SquareComposition.lean",
+      "sha256": "e0725035976047ad0f412511b5c8ed5dfe86af1f6c7c439be5a3638fa59bed3a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SquareGraphSplit",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SquareGraphSplit.lean",
+      "sha256": "c4880d9ea832b6663ee23aacf7aac5c6ea27a76170ee8961d5e08fff8c6f1100"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SquareKempe",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SquareKempe.lean",
+      "sha256": "d375492f7361fb2e17b1a529c10c988d4c540360603209327795d30fb9ab8645"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SquareLineProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SquareLineProfile.lean",
+      "sha256": "75a700f5de7528ccf402a30d4928f785ccbc73561b05e5bd8c98ae577db45484"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24SquareProfile",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24SquareProfile.lean",
+      "sha256": "c859fc410bf12eecc55b6440f260e82e520034640b32020d5247ea8fe2e2f182"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24StellarDualStructure",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24StellarDualStructure.lean",
+      "sha256": "7650b5aabb53547906104ca1e01072e20a109f53752ea63184880dff934d24b5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24StellarEuler",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24StellarEuler.lean",
+      "sha256": "e18cf2ec49ebdf593a95a8f0151a1a8ea44a8ae08340117083963c72f05a663f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24StellarRotationSystem",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24StellarRotationSystem.lean",
+      "sha256": "d29b2d506b021ce229f21b58f57bb4d3496743209c0239f6e83444efd9dc6461"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24StellarStructure",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24StellarStructure.lean",
+      "sha256": "342eb05db0d3925e26937253db583f20a523246bcbccde74ff0158ebc2201393"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24StellarSubdivision",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24StellarSubdivision.lean",
+      "sha256": "42c629c38287a4abee641f58736026e08e187d1f49a898fcb3c468f8062ebee7"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCut",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24TwoEdgeCut.lean",
+      "sha256": "03a327da48b0404666581db458148873fe016914b35c55531995a246ee24024c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCap",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24TwoEdgeCutCap.lean",
+      "sha256": "4141a8d1c6c028f8dcd20a52f70e58ac2955b5b7856d3643ae0701a38c2d1fc4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCapBridge",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24TwoEdgeCutCapBridge.lean",
+      "sha256": "aa48e39e5f1911a30c1e0f82d9b2546a6b6c30980a9d97d97b492d8949062ec6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCapGeometry",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24TwoEdgeCutCapGeometry.lean",
+      "sha256": "6d282bdf8ab1a356ef14e34215be18f75de629dc0fc06c17d13cfd857b4b7e3b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24TwoEdgeCutMinimality.lean",
+      "sha256": "363a1724b4f1ad0c5aa07df4e5e03dd0d4799e6adc4e2625fcd7fb70b6cab585"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutRouting",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24TwoEdgeCutRouting.lean",
+      "sha256": "87475e0032bac0296802e10adbf236eff181c5566d60454f785e2bc644ef01f6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24VertexSideOpenTangle.lean",
+      "sha256": "d1eb693ff9762d0054bf545f0f0e5d68bf29b0e9072c76f3acd8a44e04a91b7a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24WalkCycleParity",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24WalkCycleParity.lean",
+      "sha256": "a075d042f0d0eaa15469292e92f40010ba9b4b8b5af21d71019514222c69dfb6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24WindingClassification",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24WindingClassification.lean",
+      "sha256": "53dcf10ed953556f56ac31078ed01ac611488b3942f98f3398c5299b502004dd"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GoertzelV24WordReachability",
+      "file": "Mettapedia/GraphTheory/FourColor/GoertzelV24WordReachability.lean",
+      "sha256": "df2708f2cae6587baf43aeb1f7664907b73234a7be788ddd4c8bcd8a6f052f57"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.IncidentEdgeFinset",
+      "file": "Mettapedia/GraphTheory/FourColor/IncidentEdgeFinset.lean",
+      "sha256": "a6755ab78d30915be072f32cf200283e9ffed205052ee245e6c4b68821283aa4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.InvolutionEulerDefect",
+      "file": "Mettapedia/GraphTheory/FourColor/InvolutionEulerDefect.lean",
+      "sha256": "3fa607e69747d0ff362e0583d81ce5bf79084c53f9e858d092021eba419e9ebe"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.InvolutionEulerTransport",
+      "file": "Mettapedia/GraphTheory/FourColor/InvolutionEulerTransport.lean",
+      "sha256": "b61140dfb209f6500bd9d11b91ccf0b0b319dd6f59c5eec9e67670e97180e31f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.InvolutionRestrictionEdgeList",
+      "file": "Mettapedia/GraphTheory/FourColor/InvolutionRestrictionEdgeList.lean",
+      "sha256": "9f9d958173c79dd1491a920995c3c9115b5e7723029f15075994b81e02954f82"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.MapEulerDefect",
+      "file": "Mettapedia/GraphTheory/FourColor/MapEulerDefect.lean",
+      "sha256": "95669e23b1cb85ae7db09fd07f02d7f3a984ead8597fbac36ce0255cae14e2ec"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.MarkedFaceReturnRewire",
+      "file": "Mettapedia/GraphTheory/FourColor/MarkedFaceReturnRewire.lean",
+      "sha256": "1ece6a37933ca947251be5da2d589fa991f3224059a7f3eb9c7f5a77458c299c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.NamedFaceRecord",
+      "file": "Mettapedia/GraphTheory/FourColor/NamedFaceRecord.lean",
+      "sha256": "4c4685fe29e4ee90d09b213c977bc5edeae1c2ca763abdcdfeed7f4dc2f912d3"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.NamedOpenFace",
+      "file": "Mettapedia/GraphTheory/FourColor/NamedOpenFace.lean",
+      "sha256": "9203b8a2f79c03e53ecc5aa6c1d224fa1937903b3c28ba346e1b4d013c05f141"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.NestedSideWireComposition",
+      "file": "Mettapedia/GraphTheory/FourColor/NestedSideWireComposition.lean",
+      "sha256": "a449d9b6d8c4fd03c75a85eef3f17e944b8014c3b0be85ecaab6bfbe5a248a8f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OddCycleCapConstruction",
+      "file": "Mettapedia/GraphTheory/FourColor/OddCycleCapConstruction.lean",
+      "sha256": "b1d0e6be53d6271e780bfc11db7ae4fb9ca97d204a41af2bebd28b7994dfecff"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleBoundaryConnectivity",
+      "file": "Mettapedia/GraphTheory/FourColor/OpenTangleBoundaryConnectivity.lean",
+      "sha256": "6fa3f1b3a06f7f1bf450af9972afd894626b646b54ec92ae9c5eae0b11173206"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleCutDartSum",
+      "file": "Mettapedia/GraphTheory/FourColor/OpenTangleCutDartSum.lean",
+      "sha256": "d5ff3f4f7218d9bf9281808b9682d73ef8ba300ab20539f1047e841e8c541a4e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleEulerPresentation",
+      "file": "Mettapedia/GraphTheory/FourColor/OpenTangleEulerPresentation.lean",
+      "sha256": "772a47beb6c0870e61b38070fb283fc1fcd6bd94df7b53ad3542e1eeb38cf7b7"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleMarkedFace",
+      "file": "Mettapedia/GraphTheory/FourColor/OpenTangleMarkedFace.lean",
+      "sha256": "551b28a4d35b3d3f449474b6817000caa770e7ee3fb69d8a5020a6b04435b738"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleReplacementEuler",
+      "file": "Mettapedia/GraphTheory/FourColor/OpenTangleReplacementEuler.lean",
+      "sha256": "8e3faea8048ec5f7a85704eb94d00fa292c24692b3fa20cf62105f522ff3d88c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleRewireFaces",
+      "file": "Mettapedia/GraphTheory/FourColor/OpenTangleRewireFaces.lean",
+      "sha256": "94e3cf3ce154962d98a2beb10e8ec80f26296bac95fe25bf905ae4d69a933f69"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleSmallCutReplacement",
+      "file": "Mettapedia/GraphTheory/FourColor/OpenTangleSmallCutReplacement.lean",
+      "sha256": "f0520ac0627921ffb3f7361d3e063c6c528ac43f746e5efe6ed5bdced4cc4647"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.Orthogonality",
+      "file": "Mettapedia/GraphTheory/FourColor/Orthogonality.lean",
+      "sha256": "582ea7f3522a32241f92ab8bcf71b91081dc5a61e1dc8cd722bac3e2ef7897ca"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PermutationFirstReturnRestriction",
+      "file": "Mettapedia/GraphTheory/FourColor/PermutationFirstReturnRestriction.lean",
+      "sha256": "7b5f56b2320cf67852ec2ef35f0a2a9e89808d5eae20e5c1a9046b2fd52d7277"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PlanarMapBoundaryRestriction",
+      "file": "Mettapedia/GraphTheory/FourColor/PlanarMapBoundaryRestriction.lean",
+      "sha256": "c7349cab4353be34ac95e2944227c446975b27c0f5603e8a379a0fbcd73068e4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.RotationSystem",
+      "file": "Mettapedia/GraphTheory/FourColor/RotationSystem.lean",
+      "sha256": "41dacedf111f5c5f5d32f9f382ba5992180b8832fe031201db203bf2ba1d4658"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.RotationSystemEdgeColoring",
+      "file": "Mettapedia/GraphTheory/FourColor/RotationSystemEdgeColoring.lean",
+      "sha256": "c8c0ba36a91019fcb49d6c6e00e1351a3336757de9aa3e0c67f377f57ce4ad11"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.RotationSystemTrackedEdgeGraph",
+      "file": "Mettapedia/GraphTheory/FourColor/RotationSystemTrackedEdgeGraph.lean",
+      "sha256": "7f94592ee71d0e86bee041979f9ae13c841f365fc76ac8f6dac1a029bcd349e6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SerialTangleFaceCode",
+      "file": "Mettapedia/GraphTheory/FourColor/SerialTangleFaceCode.lean",
+      "sha256": "66e254dd9f2fdac873aa77ff1c29ba4e84513afc4b83d0c163586dd1db86f715"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/SerialTangleFaceTransfer.lean",
+      "sha256": "537d7a264df8f756169c2408fca2d9e608e454736d4b75deb3bb6041940c81a2"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SerialTangleJointTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/SerialTangleJointTransfer.lean",
+      "sha256": "a2bf1f247002cf4f61c3949420fd73e49f096c87e957c37e0c649d2c141669b0"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SerialTangleSmallCutTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/SerialTangleSmallCutTransfer.lean",
+      "sha256": "c6e81f0c9d5cd6889578a77918d7d1c51e8488bea2c41b3ae78828ff2f7346a7"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SimpleGraphRotationSystem",
+      "file": "Mettapedia/GraphTheory/FourColor/SimpleGraphRotationSystem.lean",
+      "sha256": "9ba1f90cae2b29d0791438857ef294695816c1ac516046642ed53f047d3b93ef"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SmallCutConnectedBridgeless",
+      "file": "Mettapedia/GraphTheory/FourColor/SmallCutConnectedBridgeless.lean",
+      "sha256": "c21e1f9a9458ee817fc201253e3f572275daaaab0a07423f1e9dd50ee7102b37"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT",
+      "file": "Mettapedia/GraphTheory/FourColor/SourceConstructionGSLT.lean",
+      "sha256": "5e8ded42b15cff09d951adea7eb8b75659e1daee46bbb33e8d65bafbfdbaf2b5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SourceVertexCodeBounds",
+      "file": "Mettapedia/GraphTheory/FourColor/SourceVertexCodeBounds.lean",
+      "sha256": "cd7f30476dfdb8386afde91db6b6a5c5b45b3eab63ebb84d037a20364220a22d"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SourceVertexCodePlanar",
+      "file": "Mettapedia/GraphTheory/FourColor/SourceVertexCodePlanar.lean",
+      "sha256": "1e6b5f0ae2cf09da20927001244137a2f9c431dd5a794ca445e8f061dccf6ea5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SourceVertexCodeTerminalAcceptance",
+      "file": "Mettapedia/GraphTheory/FourColor/SourceVertexCodeTerminalAcceptance.lean",
+      "sha256": "792ce6f3e565675eb363df096d196f61efeb3a9481dbeed5b5309cbe4198ec68"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SourceVertexCodeTrace",
+      "file": "Mettapedia/GraphTheory/FourColor/SourceVertexCodeTrace.lean",
+      "sha256": "5b3e98695e293830e783d19752ea3a1fea6d4f5e687b3ba7196b019da376fad2"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SphericalNestedBoundaryOrder",
+      "file": "Mettapedia/GraphTheory/FourColor/SphericalNestedBoundaryOrder.lean",
+      "sha256": "bb95337fb0c90aecfa03e4be69c5361829da6c1c64078fff02cd9dce2bb5dc1f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.StarAttachmentComponents",
+      "file": "Mettapedia/GraphTheory/FourColor/StarAttachmentComponents.lean",
+      "sha256": "53db553e3c3fd0f3361a7004a0daa435f1385ebd58e8cdbf11b54db8bed551dd"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.TubeSlabEmbedding",
+      "file": "Mettapedia/GraphTheory/FourColor/TubeSlabEmbedding.lean",
+      "sha256": "e5c4089924cfea2aa317858624e52fd451749b97a13970f373432caafdbd2e4c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.TwoSidedBoundaryJoint",
+      "file": "Mettapedia/GraphTheory/FourColor/TwoSidedBoundaryJoint.lean",
+      "sha256": "9ea7e7d364c6003f71cefe1ec2f1612280356ea2c6b3c54a684c7ee3fd4cef24"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.TwoSidedBoundaryReindex",
+      "file": "Mettapedia/GraphTheory/FourColor/TwoSidedBoundaryReindex.lean",
+      "sha256": "b09849ed159644f23799b1b3f18557e0000ee25069dbcea83aee30f8cf94d428"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexAttachmentTransfer.lean",
+      "sha256": "7cefb447ba20aed284607ca8e0e517ddd8be7024bb370a150916faec441a4a27"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeChecks",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeChecks.lean",
+      "sha256": "b9a879bf3c07effac738ed3b4c5116532c9dd8bb8295eaa2242e632cae39c2e8"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeCyclicEncoder.lean",
+      "sha256": "fad71d01658d90f4af9130f889b795d9e587df3b33186b7d4f954ce3af42ae6a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeDartGeometry",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeDartGeometry.lean",
+      "sha256": "ed7833bd11c5f111247dfd6350487b3bb491e6f2f4ab2cd3401052a1ce25ab89"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeDefectMonotone",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeDefectMonotone.lean",
+      "sha256": "cc2e0d584b7c14c4fab046cc98d357abd2f94532cebd3bc01a8ca83555e8dac7"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeGeometry",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeGeometry.lean",
+      "sha256": "dada39a72796e84593401f167d4f31f5313deebeb3950bf7eb61a9b0c4305154"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeJoint",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeJoint.lean",
+      "sha256": "e49aab6b65fef6af244b1d7110075225fb4ab29acf84c042eaeb73da0a4871e9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeLosslessPruning",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeLosslessPruning.lean",
+      "sha256": "553054c8b94965c5cfc01f8cf596ac3b47f61c31c424079e54e5d9e88f2fa121"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodePartition",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodePartition.lean",
+      "sha256": "0af4257a459ac81690e3f216839eace419fe168e1fc2a70325789a33f9fe4ecd"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeRealization",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeRealization.lean",
+      "sha256": "b4cd9ce16e3548075ec0cb9b5585349b53484b5d2300583700b9aeca46547ce4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeRotationCyclic.lean",
+      "sha256": "b7a69f0f1517a84db28977696eff99671ae3336987f2eca0f4607ce0b3444f78"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeSourceGeometry",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeSourceGeometry.lean",
+      "sha256": "7917c6598c8906f75ec7f221018df67aaab0d2250b1c9d775899b4dc5f640c36"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeSourceSemantics",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeSourceSemantics.lean",
+      "sha256": "de4148489e58cc67d3364cbae04dda9cb86382d8c6bbb63ff10bf3b39e6cc404"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeTerminalAcceptance.lean",
+      "sha256": "2bd7f44fcfe6d321b18ace93accb4229ba42c2bc0a0aaa659aee5c96d73be862"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeTrace",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeTrace.lean",
+      "sha256": "6427b05180d5a96b40cfaa9ea6fca53ba1ccefc959e09c6d73c7a5aeea19faf8"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeUnboundedMass",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeUnboundedMass.lean",
+      "sha256": "6c5e8d0db192d923a2632ac38c8a850fd6e9391ae5ddfd89ee5cd4ff4f93f76a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeViability",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeViability.lean",
+      "sha256": "701538ad5c0850aa6768f5216952800551c8cae39a77665d70ddc4851890f9bc"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexCodeViablePrefix.lean",
+      "sha256": "46e5914c1d56aa1b22380400dae296285d9dd53739ade9b4dc38a6dceba3d382"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexConstructionGSLT",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexConstructionGSLT.lean",
+      "sha256": "91defb9f4a26572472751767ecee2275530ca40ba0006a4a6d382b73cb9f9766"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexConstructionLiftBoundary",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexConstructionLiftBoundary.lean",
+      "sha256": "d32a286f024d7a5ba513b0d683039e2ed03e77801badf6a783feba0292ef7548"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexSideCappedComponents",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexSideCappedComponents.lean",
+      "sha256": "77d53215b36fb029d4d89e97b44f379fbb6fccdf5cc29118a179631f5fbdfaaa"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexSideEulerMass",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexSideEulerMass.lean",
+      "sha256": "79c3ae9f44f7cdf737b621b9547d5a433270b4b33cca1379d4d1d32a63d425c1"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexTransfer",
+      "file": "Mettapedia/GraphTheory/FourColor/VertexTransfer.lean",
+      "sha256": "d34449dc5448eff02253f7b2d00d3372f985e7b2d9e51fe731fe3c3d35fc4fd6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagRingComposite",
+      "file": "Mettapedia/GraphTheory/FourColor/ZigzagRingComposite.lean",
+      "sha256": "dc12f336744c634dec88f49447e6162110ca3a18a8626f48b67bb2418b151dee"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagRingCursor",
+      "file": "Mettapedia/GraphTheory/FourColor/ZigzagRingCursor.lean",
+      "sha256": "ffe4ef148e7c5981a88d46e11823e93abf95433fefa4f536c137ac9694d60201"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagRingDynamics",
+      "file": "Mettapedia/GraphTheory/FourColor/ZigzagRingDynamics.lean",
+      "sha256": "d07109902e68fa24ec4e4e09eb99f131815c53c4e86f8725c604be4e7a4b958f"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagRingErgodicity",
+      "file": "Mettapedia/GraphTheory/FourColor/ZigzagRingErgodicity.lean",
+      "sha256": "fff420ec93a9a7b305ad2fa8a0599facb32953ba165fd4d1c03abb5f39ff0658"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagRingTable",
+      "file": "Mettapedia/GraphTheory/FourColor/ZigzagRingTable.lean",
+      "sha256": "d5d339d2139ac68a10686f3222b1e8b6138264d6347a0f01f7f3eca51a1b72bb"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagRingTangle",
+      "file": "Mettapedia/GraphTheory/FourColor/ZigzagRingTangle.lean",
+      "sha256": "15ac747a1eca9fdd939664622af7c932f19672d5813467755bdbb5ac0632e370"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Hypermap.Basic",
+      "file": "Mettapedia/GraphTheory/Hypermap/Basic.lean",
+      "sha256": "0eeb187feeaf7ab37699d528890f6d30f98f5f985ed0c6902058b7905e96e751"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Hypermap.Connectivity",
+      "file": "Mettapedia/GraphTheory/Hypermap/Connectivity.lean",
+      "sha256": "8b4043a2cbf5c8ec32391376112f5f5af87cc5bc9f2145b560142e45304b13eb"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Hypermap.Euler",
+      "file": "Mettapedia/GraphTheory/Hypermap/Euler.lean",
+      "sha256": "f92bae17b968d2b791f03a87d3466b81fb5caca58fb7c670fe46f11af6b19d91"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Kempe",
+      "file": "Mettapedia/GraphTheory/Kempe.lean",
+      "sha256": "9fc0d752f3bdddfbc5bbf2670fa693f25b3e0acdf345ac672be17a52ec60ee2d"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.PermCycleExtras",
+      "file": "Mettapedia/GraphTheory/PermCycleExtras.lean",
+      "sha256": "be66d8bca1e9e2ab5f96468c6350a60b1c60d20be532515ef2a7ae8158187527"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.AdjacencyMatrix",
+      "file": "Mettapedia/GraphTheory/Representation/AdjacencyMatrix.lean",
+      "sha256": "2456decbbc7b8ef0da8e8b37571acaffe7738c293efffa16b17902d33437bb64"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.AdjacencyRows",
+      "file": "Mettapedia/GraphTheory/Representation/AdjacencyRows.lean",
+      "sha256": "bf60f0086365cece32248cae74b6dfab9d5c2fe1e38d1c11f81baa79c9a3a2f8"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.Basic",
+      "file": "Mettapedia/GraphTheory/Representation/Basic.lean",
+      "sha256": "ff4ab757b0b3b54451a319c76bdb8a699911e8a9434aa12de24408bb9addbf5e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.CSR",
+      "file": "Mettapedia/GraphTheory/Representation/CSR.lean",
+      "sha256": "8094088aa479bd30399671eb3daa5f1412b99ae5db1324fd407f3f2fc569a074"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.ColoringTransport",
+      "file": "Mettapedia/GraphTheory/Representation/ColoringTransport.lean",
+      "sha256": "fb4ec9d12d65d67242f8ce6f2ab6ed03f0fef789bf1f6fb96e2a46f9cec843bf"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.EdgeList",
+      "file": "Mettapedia/GraphTheory/Representation/EdgeList.lean",
+      "sha256": "6a18886d810e400d4eda170c81b70a8db2fa443c7761f193148baa446a657c02"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.IncidenceMatrix",
+      "file": "Mettapedia/GraphTheory/Representation/IncidenceMatrix.lean",
+      "sha256": "6e12293c375bc243ec959f993863ae85f3c7d874f9678e2fe2a24aa712ce449b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.MatrixBridge",
+      "file": "Mettapedia/GraphTheory/Representation/MatrixBridge.lean",
+      "sha256": "94b1e2e42135c5054811c9672ed7c073320e2e247f0a97bc75299e14d0a8e386"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation",
+      "file": "Mettapedia/GraphTheory/Representation/MatrixOperationalTranslation.lean",
+      "sha256": "b70c66b03d3ea1d54de8de74a388d0df16d25fd28125cbdc2a929cf64e6700cc"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.NeighborFinsets",
+      "file": "Mettapedia/GraphTheory/Representation/NeighborFinsets.lean",
+      "sha256": "1f93f6f7c6c81a44f9b787711450e095ff1de3103a1d0e8d107542330644004c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.RepresentationGSLT",
+      "file": "Mettapedia/GraphTheory/Representation/RepresentationGSLT.lean",
+      "sha256": "80b31620aaa8134a3051a36b381c99c23121b7c5f315cc8f1e7082e87d8ffac9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.Transformations",
+      "file": "Mettapedia/GraphTheory/Representation/Transformations.lean",
+      "sha256": "626fcdd0e5c486fd6b76220e42fd2be5809bbf1625d4358b04011ed0bf0f7aef"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.TubeRingOrbit",
+      "file": "Mettapedia/GraphTheory/TubeRingOrbit.lean",
+      "sha256": "d7d23317561bba02628f101f5be719ef56671d99cc724cefc69e114ce46f1846"
+    },
+    {
+      "module": "Mettapedia.Languages.ProcessCalculi.RhoCalculus.Engine",
+      "file": "Mettapedia/Languages/ProcessCalculi/RhoCalculus/Engine.lean",
+      "sha256": "5261c9ff151df40743b9f7922ed19a8eac5c801a1cd2738b369c3f712c26a037"
+    },
+    {
+      "module": "Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction",
+      "file": "Mettapedia/Languages/ProcessCalculi/RhoCalculus/Reduction.lean",
+      "sha256": "c39e49524968677135b440e1720a9c2321661dc62c0d96c0dcb635ca58f75863"
+    },
+    {
+      "module": "Mettapedia.Languages.ProcessCalculi.RhoCalculus.RhoOpening",
+      "file": "Mettapedia/Languages/ProcessCalculi/RhoCalculus/RhoOpening.lean",
+      "sha256": "11a0c44fa6df09e3fd0d67adc583596fc51a5073b59e16b83591c1399887c3be"
+    },
+    {
+      "module": "Mettapedia.Languages.ProcessCalculi.RhoCalculus.SemanticSubstitution",
+      "file": "Mettapedia/Languages/ProcessCalculi/RhoCalculus/SemanticSubstitution.lean",
+      "sha256": "390462aba3be959987193321b65b616c483f59a077771ee989f18d109472190a"
+    },
+    {
+      "module": "Mettapedia.Languages.ProcessCalculi.RhoCalculus.StructuralCongruence",
+      "file": "Mettapedia/Languages/ProcessCalculi/RhoCalculus/StructuralCongruence.lean",
+      "sha256": "9afe127db7841a9cdee564943182c4c6bdc772e3d904f44f41c61ab91b01e228"
+    },
+    {
+      "module": "Mettapedia.Languages.ProcessCalculi.RhoCalculus.SubjectEquiv",
+      "file": "Mettapedia/Languages/ProcessCalculi/RhoCalculus/SubjectEquiv.lean",
+      "sha256": "4608441bd267d022d4006333e9774436bcb747316f223af8cf35e0830886f278"
+    },
+    {
+      "module": "Mettapedia.Languages.ProcessCalculi.RhoCalculus.Types",
+      "file": "Mettapedia/Languages/ProcessCalculi/RhoCalculus/Types.lean",
+      "sha256": "163b8043c32398ade1f0b95c8a6b22a142e1f5025cf7033c396713cdf8ba8d66"
+    },
+    {
+      "module": "Mettapedia.Logic.GunkyMereology",
+      "file": "Mettapedia/Logic/GunkyMereology.lean",
+      "sha256": "8a1c10ea9e05a2d584333a12deef4fe5c47fa38cb99165280eb5720c0a9772f8"
+    },
+    {
+      "module": "Mettapedia.Logic.Metaphysics.UltrainfinitismCore",
+      "file": "Mettapedia/Logic/Metaphysics/UltrainfinitismCore.lean",
+      "sha256": "2d5d03ee1dc47cd1d5eda68b4f8cb74ac0772a6df51cf39c1361a0c6554605eb"
+    },
+    {
+      "module": "Mettapedia.OSLF.Framework.DerivedModalities",
+      "file": "Mettapedia/OSLF/Framework/DerivedModalities.lean",
+      "sha256": "f0f0cd59bdb8d787d79a53b14c46629565dd369cec8d57f394a183b0d539c766"
+    },
+    {
+      "module": "Mettapedia.OSLF.Framework.GSLTTypeSynthesis",
+      "file": "Mettapedia/OSLF/Framework/GSLTTypeSynthesis.lean",
+      "sha256": "81f089fff26d6eefbda76b7b0d8d7fa8f5a62fd426ba1d01ac3e5d819d0d99bd"
+    },
+    {
+      "module": "Mettapedia.OSLF.Framework.RewriteSystem",
+      "file": "Mettapedia/OSLF/Framework/RewriteSystem.lean",
+      "sha256": "eeaaed1ddb7c09d011233ebe1428a04a2030faec14205e76ee9e27134b0d7eea"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.Engine",
+      "file": "Mettapedia/OSLF/MeTTaIL/Engine.lean",
+      "sha256": "ce74044f5cfbfe31683c04c7afdb80398a2f63f1cbfc1c4b4714abac9ca0d8e4"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.Match",
+      "file": "Mettapedia/OSLF/MeTTaIL/Match.lean",
+      "sha256": "e80d4f17ea936d0043d81db9cab152fcdcec3ca211d3dd1d5614a3956590b631"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.PatternCode",
+      "file": "Mettapedia/OSLF/MeTTaIL/PatternCode.lean",
+      "sha256": "ae7efeae21f89cc32105b889fc2acf428e1e502ed9ff9e9c853cbf3ddbdfdd3c"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.PremiseRouteSemantics",
+      "file": "Mettapedia/OSLF/MeTTaIL/PremiseRouteSemantics.lean",
+      "sha256": "f53b33c5b3ce3dc14b39d40072068e3cf9519905750295dc9ce6900050e36b53"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.ReflectionProfile",
+      "file": "Mettapedia/OSLF/MeTTaIL/ReflectionProfile.lean",
+      "sha256": "88429a1647462e5c31eeaf759136f4c4110e7e0706d9a60d62cfa7d097025f94"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical",
+      "file": "Mettapedia/OSLF/MeTTaIL/ReflectiveCanonical.lean",
+      "sha256": "d278a52aedd87fa7aa69b898618514992e7f7aaabcb5a937756c78daa04c0e39"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution",
+      "file": "Mettapedia/OSLF/MeTTaIL/ReflectiveSubstitution.lean",
+      "sha256": "e8224d081a8cedc0d2195cfd986c581d81b76cc90f649ca9add168a0a0da3d6f"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.Semantics",
+      "file": "Mettapedia/OSLF/MeTTaIL/Semantics.lean",
+      "sha256": "13553adde4d39209b94c911aa4c1f2bd14a5c294d440e3b78b023de465c7833f"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.Substitution",
+      "file": "Mettapedia/OSLF/MeTTaIL/Substitution.lean",
+      "sha256": "66d686656f769807569da98c25063ce1ad86ce26564817910f58f6145304a6e1"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.Syntax",
+      "file": "Mettapedia/OSLF/MeTTaIL/Syntax.lean",
+      "sha256": "deae3c52a8f44131345f390ed8c812095d806c8181ea266bfc461472a41dab33"
+    },
+    {
+      "module": "Mettapedia.Util.LinearHash",
+      "file": "Mettapedia/Util/LinearHash.lean",
+      "sha256": "03ebd0cb40f631080c0c54d9c8f8203eb4f7a9dc5b649d9d98591274b2d25dfa"
+    }
+  ],
+  "foundation_revision": "6769009b4ca6006aefcf4176e0c7297a108a28df",
+  "mathlib_revision": "85e3a25e006c35636f0e53b0e9296caca2685bc0"
+}

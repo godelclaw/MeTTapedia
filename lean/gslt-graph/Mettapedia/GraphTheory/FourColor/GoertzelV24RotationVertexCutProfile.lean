@@ -1,0 +1,542 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorSpliceObservables
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphRotationBridge
+import Mettapedia.GraphTheory.FourColor.CyclicEdgeCut
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace GoertzelV24RotationVertexCutProfile
+
+open GoertzelV24CorridorProfile
+open GoertzelV24FaceOrbitIncidence
+open GoertzelV24GraphDerivedCorridorCutProfile
+
+variable {V E : Type*} [Fintype V] [DecidableEq V]
+  [Fintype E] [DecidableEq E]
+
+noncomputable section
+
+/-- An edge meets a finite vertex side when at least one of its two
+rotation-system endpoints belongs to that side. -/
+def edgeMeetsVertexSet (RS : RotationSystem V E)
+    (inside : Finset V) (edge : E) : Prop :=
+  ∃ vertex ∈ RS.endpoints edge, vertex ∈ inside
+
+/-- An edge crosses a finite vertex side when it has a named endpoint inside
+and a named endpoint outside. This is computed from rotation-system endpoints. -/
+def edgeCrossesVertexSet (RS : RotationSystem V E)
+    (inside : Finset V) (edge : E) : Prop :=
+  ∃ inner ∈ RS.endpoints edge, inner ∈ inside ∧
+    ∃ outer ∈ RS.endpoints edge, outer ∉ inside
+
+/-- The regional edge set induced by a finite vertex side consists of all
+edges that meet the side, including its crossing edges. -/
+def vertexSetRegionEdges (RS : RotationSystem V E)
+    (inside : Finset V) : Finset E := by
+  classical
+  exact Finset.univ.filter (edgeMeetsVertexSet RS inside)
+
+/-- The boundary edge set induced by a finite vertex side, computed by
+filtering all ambient edges through the endpoint-crossing predicate. -/
+def vertexSetCrossingEdges (RS : RotationSystem V E)
+    (inside : Finset V) : Finset E := by
+  classical
+  exact Finset.univ.filter (edgeCrossesVertexSet RS inside)
+
+@[simp]
+theorem mem_vertexSetRegionEdges_iff
+    (RS : RotationSystem V E) (inside : Finset V) (edge : E) :
+    edge ∈ vertexSetRegionEdges RS inside ↔ edgeMeetsVertexSet RS inside edge := by
+  simp [vertexSetRegionEdges]
+
+@[simp]
+theorem mem_vertexSetCrossingEdges_iff
+    (RS : RotationSystem V E) (inside : Finset V) (edge : E) :
+    edge ∈ vertexSetCrossingEdges RS inside ↔
+      edgeCrossesVertexSet RS inside edge := by
+  simp [vertexSetCrossingEdges]
+
+/-- Every computed crossing edge belongs to the computed regional edge set. -/
+theorem vertexSetCrossingEdges_subset_regionEdges
+    (RS : RotationSystem V E) (inside : Finset V) :
+    vertexSetCrossingEdges RS inside ⊆ vertexSetRegionEdges RS inside := by
+  intro edge hedge
+  rw [mem_vertexSetCrossingEdges_iff RS] at hedge
+  rw [mem_vertexSetRegionEdges_iff RS]
+  rcases hedge with ⟨inner, hinnerEndpoint, hinnerInside, _⟩
+  exact ⟨inner, hinnerEndpoint, hinnerInside⟩
+
+/-- A regional edge that is not a crossing edge has both endpoints inside. -/
+theorem endpoints_subset_of_mem_region_not_mem_crossing
+    (RS : RotationSystem V E) (inside : Finset V) {edge : E}
+    (hregion : edge ∈ vertexSetRegionEdges RS inside)
+    (hnotcrossing : edge ∉ vertexSetCrossingEdges RS inside) :
+    RS.endpoints edge ⊆ inside := by
+  rw [mem_vertexSetRegionEdges_iff RS] at hregion
+  rw [mem_vertexSetCrossingEdges_iff RS] at hnotcrossing
+  rcases hregion with ⟨inner, hinnerEndpoint, hinnerInside⟩
+  intro vertex hvertexEndpoint
+  by_contra hvertexOutside
+  exact hnotcrossing
+    ⟨inner, hinnerEndpoint, hinnerInside,
+      vertex, hvertexEndpoint, hvertexOutside⟩
+
+/-- A two-vertex region contains at most one non-crossing edge whenever edge
+labels are determined by their endpoint sets. -/
+theorem edge_eq_of_mem_region_not_mem_crossing_of_card_eq_two
+    (RS : RotationSystem V E) (hinjective : Function.Injective RS.endpoints)
+    (inside : Finset V) (hcard : inside.card = 2)
+    {first second : E}
+    (hfirstRegion : first ∈ vertexSetRegionEdges RS inside)
+    (hfirstNotCrossing : first ∉ vertexSetCrossingEdges RS inside)
+    (hsecondRegion : second ∈ vertexSetRegionEdges RS inside)
+    (hsecondNotCrossing : second ∉ vertexSetCrossingEdges RS inside) :
+    first = second := by
+  apply hinjective
+  have hfirstSubset := endpoints_subset_of_mem_region_not_mem_crossing
+    RS inside hfirstRegion hfirstNotCrossing
+  have hsecondSubset := endpoints_subset_of_mem_region_not_mem_crossing
+    RS inside hsecondRegion hsecondNotCrossing
+  have hfirstEq : RS.endpoints first = inside := by
+    exact Finset.eq_of_subset_of_card_le hfirstSubset (by
+      rw [RS.endpoints_card_two, hcard])
+  have hsecondEq : RS.endpoints second = inside := by
+    exact Finset.eq_of_subset_of_card_le hsecondSubset (by
+      rw [RS.endpoints_card_two, hcard])
+  exact hfirstEq.trans hsecondEq.symm
+
+/-- A connected induced side with exactly two vertices contains an ambient
+edge whose two endpoints stay on that side.  In the rotation-system cut
+vocabulary this is a regional edge which is not a crossing edge. -/
+theorem exists_mem_vertexSetRegionEdges_not_mem_crossing_of_connected_card_eq_two
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (inside : Finset V)
+    (hconnected : (G.induce fun vertex => vertex ∈ inside).Connected)
+    (hcard : inside.card = 2) :
+    ∃ edge : G.edgeSet,
+      edge ∈ vertexSetRegionEdges data.toRotationSystem inside ∧
+        edge ∉ vertexSetCrossingEdges data.toRotationSystem inside := by
+  classical
+  rcases Finset.card_eq_two.mp hcard with
+    ⟨first, second, hfirstSecond, hins⟩
+  have hfirstMem : first ∈ inside := by
+    rw [hins]
+    simp
+  have hsecondMem : second ∈ inside := by
+    rw [hins]
+    simp
+  let support : Set V := fun vertex => vertex ∈ inside
+  have hconnectedSupport : (G.induce support).Connected := by
+    exact hconnected
+  have hsupportCard : support.ncard = 2 := by
+    have hsupportEq : support = (inside : Set V) := by
+      ext vertex
+      rfl
+    rw [hsupportEq, Set.ncard_coe_finset]
+    exact hcard
+  let firstVertex : support := ⟨first, hfirstMem⟩
+  let secondVertex : support := ⟨second, hsecondMem⟩
+  have hverticesNe : firstVertex ≠ secondVertex := by
+    intro heq
+    exact hfirstSecond (congrArg Subtype.val heq)
+  rcases hconnectedSupport.exists_isPath firstVertex secondVertex with
+    ⟨path, hpath⟩
+  have hsubtypeCard : Fintype.card support = 2 := by
+    rw [← Nat.card_eq_fintype_card, Nat.card_coe_set_eq]
+    exact hsupportCard
+  have hlengthLt : path.length < 2 := by
+    simpa [hsubtypeCard] using hpath.length_lt
+  have hlengthPositive : 0 < path.length := by
+    apply Nat.pos_of_ne_zero
+    intro hzero
+    exact hverticesNe (path.eq_of_length_eq_zero hzero)
+  have hlength : path.length = 1 := by omega
+  have hadjInduced :
+      (G.induce support).Adj firstVertex secondVertex :=
+    path.adj_of_length_eq_one hlength
+  have hadj : G.Adj first second := hadjInduced
+  let edge : G.edgeSet := ⟨s(first, second), by
+    rw [SimpleGraph.mem_edgeSet]
+    exact hadj⟩
+  refine ⟨edge, ?_, ?_⟩
+  · rw [mem_vertexSetRegionEdges_iff]
+    refine ⟨first, ?_, hfirstMem⟩
+    rw [mem_simpleGraphRotationSystem_endpoints_iff]
+    simp [edge]
+  · intro hcrossing
+    rw [mem_vertexSetCrossingEdges_iff] at hcrossing
+    rcases hcrossing with
+      ⟨_inner, _hinnerEndpoint, _hinnerInside,
+        outer, houterEndpoint, houterOutside⟩
+    apply houterOutside
+    rw [hins]
+    rw [mem_simpleGraphRotationSystem_endpoints_iff] at houterEndpoint
+    simpa [edge] using houterEndpoint
+
+/-- An edge outside the computed regional edge set has both endpoints outside
+the chosen vertex side. -/
+theorem endpoints_disjoint_of_not_mem_region
+    (RS : RotationSystem V E) (inside : Finset V) {edge : E}
+    (houtside : edge ∉ vertexSetRegionEdges RS inside) :
+    Disjoint (RS.endpoints edge) inside := by
+  rw [mem_vertexSetRegionEdges_iff RS] at houtside
+  rw [Finset.disjoint_left]
+  intro vertex hvertexEndpoint hvertexInside
+  exact houtside ⟨vertex, hvertexEndpoint, hvertexInside⟩
+
+/-- Crossing the chosen side is invariant under replacing it by its finite
+complement. -/
+theorem edgeCrossesVertexSet_compl
+    (RS : RotationSystem V E) (inside : Finset V) (edge : E) :
+    edgeCrossesVertexSet RS insideᶜ edge ↔
+      edgeCrossesVertexSet RS inside edge := by
+  constructor
+  · rintro ⟨outer, houterEndpoint, houterCompl,
+      inner, hinnerEndpoint, hinnerNotCompl⟩
+    refine ⟨inner, hinnerEndpoint, ?_, outer, houterEndpoint, ?_⟩
+    · simpa using hinnerNotCompl
+    · simpa using houterCompl
+  · rintro ⟨inner, hinnerEndpoint, hinnerInside,
+      outer, houterEndpoint, houterOutside⟩
+    refine ⟨outer, houterEndpoint, ?_, inner, hinnerEndpoint, ?_⟩
+    · simpa using houterOutside
+    · simpa using hinnerInside
+
+/-- The concrete crossing-edge carrier of a vertex cut is unchanged when the
+two vertex sides are exchanged.  This is the finite-set form needed when an
+open tangle is read from either side of the same geometric transversal. -/
+theorem vertexSetCrossingEdges_compl
+    (RS : RotationSystem V E) (inside : Finset V) :
+    vertexSetCrossingEdges RS insideᶜ = vertexSetCrossingEdges RS inside := by
+  ext edge
+  rw [mem_vertexSetCrossingEdges_iff, mem_vertexSetCrossingEdges_iff]
+  exact edgeCrossesVertexSet_compl RS inside edge
+
+/-- Because every rotation-system edge has exactly two distinct endpoints,
+crossing a finite vertex side is equivalent to having exactly one endpoint in
+that side. -/
+theorem edgeCrossesVertexSet_iff_card_inter_eq_one
+    (RS : RotationSystem V E) (inside : Finset V) (edge : E) :
+    edgeCrossesVertexSet RS inside edge ↔
+      ((RS.endpoints edge) ∩ inside).card = 1 := by
+  constructor
+  · rintro ⟨inner, hinnerEndpoint, hinnerInside,
+      outer, houterEndpoint, houterOutside⟩
+    have hnonempty : ((RS.endpoints edge) ∩ inside).Nonempty :=
+      ⟨inner, Finset.mem_inter.2 ⟨hinnerEndpoint, hinnerInside⟩⟩
+    have hproper : (RS.endpoints edge ∩ inside) ⊂ RS.endpoints edge := by
+      rw [Finset.ssubset_iff_subset_ne]
+      refine ⟨Finset.inter_subset_left, ?_⟩
+      intro heq
+      have houterInter : outer ∈ RS.endpoints edge ∩ inside := by
+        rw [heq]
+        exact houterEndpoint
+      exact houterOutside (Finset.mem_inter.1 houterInter).2
+    have hpositive : 0 < (RS.endpoints edge ∩ inside).card :=
+      Finset.card_pos.2 hnonempty
+    have hlt := Finset.card_lt_card hproper
+    rw [RS.endpoints_card_two edge] at hlt
+    omega
+  · intro hcard
+    have hpositive : 0 < (RS.endpoints edge ∩ inside).card := by omega
+    rcases Finset.card_pos.1 hpositive with ⟨inner, hinnerInter⟩
+    have hnotSubset : ¬ RS.endpoints edge ⊆ inside := by
+      intro hsubset
+      have hinter : RS.endpoints edge ∩ inside = RS.endpoints edge :=
+        Finset.inter_eq_left.2 hsubset
+      rw [hinter, RS.endpoints_card_two edge] at hcard
+      omega
+    rw [Finset.not_subset] at hnotSubset
+    rcases hnotSubset with ⟨outer, houterEndpoint, houterOutside⟩
+    exact ⟨inner, (Finset.mem_inter.1 hinnerInter).1,
+      (Finset.mem_inter.1 hinnerInter).2,
+      outer, houterEndpoint, houterOutside⟩
+
+/-- The finite type of actual crossing edges of a rotation-system vertex cut. -/
+abbrev VertexSetCrossingEdge
+    (RS : RotationSystem V E) (inside : Finset V) :=
+  ↥(vertexSetCrossingEdges RS inside)
+
+/-- A caller-selected coordinate map for the actual crossing edges of a
+vertex-side cut.  Its `Fin` coordinate is where a geometric transversal
+construction may carry its order; this equivalence itself asserts only full,
+duplicate-free coverage and does not pretend to establish that geometry. -/
+abbrev VertexSetCrossingIndexing
+    (RS : RotationSystem V E) (inside : Finset V) :=
+  Fin (Fintype.card (VertexSetCrossingEdge RS inside)) ≃
+    VertexSetCrossingEdge RS inside
+
+/-- The existing finite-type enumeration, exposed as one particular crossing
+indexing. -/
+def canonicalVertexSetCrossingIndexing
+    (RS : RotationSystem V E) (inside : Finset V) :
+    VertexSetCrossingIndexing RS inside :=
+  (Fintype.equivFin (VertexSetCrossingEdge RS inside)).symm
+
+/-- Read a crossing edge through a caller-supplied coordinate map. -/
+def vertexSetCrossingEdgeAtWithIndexing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) : E :=
+  (indexing index).1
+
+theorem vertexSetCrossingEdgeAtWithIndexing_mem_crossing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) :
+    vertexSetCrossingEdgeAtWithIndexing RS inside indexing index ∈
+      vertexSetCrossingEdges RS inside :=
+  (indexing index).2
+
+theorem vertexSetCrossingEdgeAtWithIndexing_injective
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    Function.Injective (vertexSetCrossingEdgeAtWithIndexing RS inside indexing) := by
+  intro first second heq
+  apply indexing.injective
+  exact Subtype.ext heq
+
+/-- Every actual crossing edge has a unique coordinate under a supplied
+indexing. -/
+theorem exists_vertexSetCrossingEdgeAtWithIndexing_eq
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside)
+    {edge : E} (hedge : edge ∈ vertexSetCrossingEdges RS inside) :
+    ∃ index : Fin (Fintype.card (VertexSetCrossingEdge RS inside)),
+      vertexSetCrossingEdgeAtWithIndexing RS inside indexing index = edge := by
+  let crossing : VertexSetCrossingEdge RS inside := ⟨edge, hedge⟩
+  refine ⟨indexing.symm crossing, ?_⟩
+  exact congrArg Subtype.val (indexing.apply_symm_apply crossing)
+
+/-- Canonical finite enumeration of every actual crossing edge. -/
+def vertexSetCrossingEdgeAt
+    (RS : RotationSystem V E) (inside : Finset V)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) : E :=
+  ((Fintype.equivFin (VertexSetCrossingEdge RS inside)).symm index).1
+
+@[simp]
+theorem vertexSetCrossingEdgeAtWithIndexing_canonical
+    (RS : RotationSystem V E) (inside : Finset V)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) :
+    vertexSetCrossingEdgeAtWithIndexing RS inside
+      (canonicalVertexSetCrossingIndexing RS inside) index =
+      vertexSetCrossingEdgeAt RS inside index :=
+  rfl
+
+theorem vertexSetCrossingEdgeAt_mem_crossing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (index : Fin (Fintype.card (VertexSetCrossingEdge RS inside))) :
+    vertexSetCrossingEdgeAt RS inside index ∈
+      vertexSetCrossingEdges RS inside :=
+  ((Fintype.equivFin (VertexSetCrossingEdge RS inside)).symm index).2
+
+theorem vertexSetCrossingEdgeAt_injective
+    (RS : RotationSystem V E) (inside : Finset V) :
+    Function.Injective (vertexSetCrossingEdgeAt RS inside) := by
+  intro first second heq
+  apply (Fintype.equivFin (VertexSetCrossingEdge RS inside)).symm.injective
+  exact Subtype.ext heq
+
+/-- The canonical enumeration is onto the computed crossing-edge set. -/
+theorem exists_vertexSetCrossingEdgeAt_eq
+    (RS : RotationSystem V E) (inside : Finset V) {edge : E}
+    (hedge : edge ∈ vertexSetCrossingEdges RS inside) :
+    ∃ index : Fin (Fintype.card (VertexSetCrossingEdge RS inside)),
+      vertexSetCrossingEdgeAt RS inside index = edge := by
+  let crossing : VertexSetCrossingEdge RS inside := ⟨edge, hedge⟩
+  refine ⟨Fintype.equivFin (VertexSetCrossingEdge RS inside) crossing, ?_⟩
+  exact congrArg Subtype.val
+    ((Fintype.equivFin (VertexSetCrossingEdge RS inside)).symm_apply_apply
+      crossing)
+
+/-- The canonical crossing-port count is exactly the cardinality of the
+computed crossing-edge finset. -/
+theorem card_vertexSetCrossingEdge
+    (RS : RotationSystem V E) (inside : Finset V) :
+    Fintype.card (VertexSetCrossingEdge RS inside) =
+      (vertexSetCrossingEdges RS inside).card :=
+  Fintype.card_coe _
+
+/-- The graph-derived cut data canonically extracted from a finite vertex
+side. It has one crossing port for every actual crossing edge and no terminal
+or face-fragment ports yet; all edge sets are computed from endpoints. -/
+def vertexSetGraphCutData
+    (RS : RotationSystem V E) (inside : Finset V) :
+    GraphCorridorCutData RS
+      (Fintype.card (VertexSetCrossingEdge RS inside)) 0 0 where
+  regionEdges := vertexSetRegionEdges RS inside
+  crossingEdge := vertexSetCrossingEdgeAt RS inside
+  terminalEdge := fun terminal => Fin.elim0 terminal
+  fragmentFace := fun fragment => Fin.elim0 fragment
+  fragmentEdges := fun fragment => Fin.elim0 fragment
+
+theorem vertexSetGraphCutData_portsInRegion
+    (RS : RotationSystem V E) (inside : Finset V) :
+    (vertexSetGraphCutData RS inside).PortsInRegion := by
+  intro port
+  rcases port with crossing | terminal
+  · exact vertexSetCrossingEdges_subset_regionEdges RS inside
+      (vertexSetCrossingEdgeAt_mem_crossing RS inside crossing)
+  · exact Fin.elim0 terminal
+
+theorem vertexSetGraphCutData_portsInjective
+    (RS : RotationSystem V E) (inside : Finset V) :
+    (vertexSetGraphCutData RS inside).PortsInjective := by
+  intro first second heq
+  rcases first with first | first
+  · rcases second with second | second
+    · congr 1
+      exact vertexSetCrossingEdgeAt_injective RS inside heq
+    · exact Fin.elim0 second
+  · exact Fin.elim0 first
+
+theorem vertexSetGraphCutData_fragmentsOnFaceInRegion
+    (RS : RotationSystem V E) (inside : Finset V) :
+    (vertexSetGraphCutData RS inside).FragmentsOnFaceInRegion := by
+  intro fragment
+  exact Fin.elim0 fragment
+
+/-- The graph-derived cut data with a caller-selected crossing coordinate.
+This is the same finite support as the canonical construction; only the port
+coordinates differ, so a transversal construction can retain its own order. -/
+def vertexSetGraphCutDataWithIndexing
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    GraphCorridorCutData RS
+      (Fintype.card (VertexSetCrossingEdge RS inside)) 0 0 where
+  regionEdges := vertexSetRegionEdges RS inside
+  crossingEdge := vertexSetCrossingEdgeAtWithIndexing RS inside indexing
+  terminalEdge := fun terminal => Fin.elim0 terminal
+  fragmentFace := fun fragment => Fin.elim0 fragment
+  fragmentEdges := fun fragment => Fin.elim0 fragment
+
+theorem vertexSetGraphCutDataWithIndexing_portsInRegion
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetGraphCutDataWithIndexing RS inside indexing).PortsInRegion := by
+  intro port
+  rcases port with crossing | terminal
+  · exact vertexSetCrossingEdges_subset_regionEdges RS inside
+      (vertexSetCrossingEdgeAtWithIndexing_mem_crossing RS inside indexing crossing)
+  · exact Fin.elim0 terminal
+
+theorem vertexSetGraphCutDataWithIndexing_portsInjective
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetGraphCutDataWithIndexing RS inside indexing).PortsInjective := by
+  intro first second heq
+  rcases first with first | first
+  · rcases second with second | second
+    · congr 1
+      exact vertexSetCrossingEdgeAtWithIndexing_injective RS inside indexing heq
+    · exact Fin.elim0 second
+  · exact Fin.elim0 first
+
+theorem vertexSetGraphCutDataWithIndexing_fragmentsOnFaceInRegion
+    (RS : RotationSystem V E) (inside : Finset V)
+    (indexing : VertexSetCrossingIndexing RS inside) :
+    (vertexSetGraphCutDataWithIndexing RS inside indexing).FragmentsOnFaceInRegion := by
+  intro fragment
+  exact Fin.elim0 fragment
+
+/-- Every computed boundary edge occurs as exactly one crossing port of the
+canonically extracted graph cut. -/
+theorem exists_unique_vertexSetGraphCutData_crossingEdge_eq
+    (RS : RotationSystem V E) (inside : Finset V) {edge : E}
+    (hedge : edge ∈ vertexSetCrossingEdges RS inside) :
+    ∃! index : Fin (Fintype.card (VertexSetCrossingEdge RS inside)),
+      (vertexSetGraphCutData RS inside).crossingEdge index = edge := by
+  rcases exists_vertexSetCrossingEdgeAt_eq RS inside hedge with ⟨index, hindex⟩
+  refine ⟨index, hindex, ?_⟩
+  intro other hother
+  exact vertexSetCrossingEdgeAt_injective RS inside (hother.trans hindex.symm)
+
+section SimpleGraphBridge
+
+variable {G : SimpleGraph V} [DecidableRel G.Adj]
+
+/-- The endpoint-derived crossing predicate agrees exactly with the existing
+simple-graph side-cut predicate. -/
+theorem simpleGraph_edgeCrossesVertexSet_iff_edgeCrossesVertexSide
+    (data : SimpleGraphDartRotation.Data G)
+    (inside : Finset V) (edge : G.edgeSet) :
+    edgeCrossesVertexSet data.toRotationSystem inside edge ↔
+      EdgeCrossesVertexSide G (fun vertex => vertex ∈ inside) edge := by
+  constructor
+  · rintro ⟨inner, hinnerEndpoint, hinnerInside,
+      outer, houterEndpoint, houterOutside⟩
+    exact ⟨inner, outer,
+      (mem_simpleGraphRotationSystem_endpoints_iff data edge inner).1
+        hinnerEndpoint,
+      (mem_simpleGraphRotationSystem_endpoints_iff data edge outer).1
+        houterEndpoint,
+      hinnerInside, houterOutside⟩
+  · rintro ⟨inner, outer, hinnerEndpoint, houterEndpoint,
+      hinnerInside, houterOutside⟩
+    exact ⟨inner,
+      (mem_simpleGraphRotationSystem_endpoints_iff data edge inner).2
+        hinnerEndpoint,
+      hinnerInside, outer,
+      (mem_simpleGraphRotationSystem_endpoints_iff data edge outer).2
+        houterEndpoint,
+      houterOutside⟩
+
+/-- The computed rotation-system crossing finset is an exact simple-graph
+edge-cut support, without a separately supplied boundary classification. -/
+theorem mem_simpleGraph_vertexSetCrossingEdges_iff
+    (data : SimpleGraphDartRotation.Data G)
+    (inside : Finset V) (edge : G.edgeSet) :
+    edge ∈ vertexSetCrossingEdges data.toRotationSystem inside ↔
+      EdgeCrossesVertexSide G (fun vertex => vertex ∈ inside) edge := by
+  rw [mem_vertexSetCrossingEdges_iff,
+    simpleGraph_edgeCrossesVertexSet_iff_edgeCrossesVertexSide]
+
+/-- If both vertex sides contain cycles, the exact computed crossing support
+is cyclic-cut realization data. -/
+def simpleGraph_vertexSetCyclicCutRealization
+    (data : SimpleGraphDartRotation.Data G) (inside : Finset V)
+    (hinsideCycle : HasCycleOnSide G (fun vertex => vertex ∈ inside))
+    (houtsideCycle : HasCycleOnSide G (fun vertex => vertex ∉ inside)) :
+    CyclicEdgeCutRealization G
+      (vertexSetCrossingEdges data.toRotationSystem inside) where
+  side := fun vertex => vertex ∈ inside
+  hcut_eq := mem_simpleGraph_vertexSetCrossingEdges_iff data inside
+  hinside_cycle := hinsideCycle
+  houtside_cycle := houtsideCycle
+
+/-- In cyclically five-edge-connected normal form, every finite vertex side
+that contains a cycle on both sides has at least five actual crossing edges. -/
+theorem five_le_card_vertexSetCrossingEdges_of_cycles
+    (data : SimpleGraphDartRotation.Data G) (inside : Finset V)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hinsideCycle : HasCycleOnSide G (fun vertex => vertex ∈ inside))
+    (houtsideCycle : HasCycleOnSide G (fun vertex => vertex ∉ inside)) :
+    5 ≤ (vertexSetCrossingEdges data.toRotationSystem inside).card := by
+  by_contra hnot
+  have hcard :
+      (vertexSetCrossingEdges data.toRotationSystem inside).card ≤ 4 := by
+    omega
+  let realization := simpleGraph_vertexSetCyclicCutRealization data inside
+    hinsideCycle houtsideCycle
+  exact hcyclic.noCyclicEdgeCutOfSizeAtMostFour
+    ⟨realization.toSmallCyclicEdgeCut hcard, hcard⟩
+
+/-- The same normal-form lower bound stated as the crossing-port count of the
+canonically extracted graph profile. -/
+theorem five_le_vertexSetGraphCutData_crossingPortCount_of_cycles
+    (data : SimpleGraphDartRotation.Data G) (inside : Finset V)
+    (hcyclic : CyclicallyFiveEdgeConnected G)
+    (hinsideCycle : HasCycleOnSide G (fun vertex => vertex ∈ inside))
+    (houtsideCycle : HasCycleOnSide G (fun vertex => vertex ∉ inside)) :
+    5 ≤ Fintype.card
+      (VertexSetCrossingEdge data.toRotationSystem inside) := by
+  rw [card_vertexSetCrossingEdge]
+  exact five_le_card_vertexSetCrossingEdges_of_cycles data inside hcyclic
+    hinsideCycle houtsideCycle
+
+end SimpleGraphBridge
+
+end
+
+end GoertzelV24RotationVertexCutProfile
+
+end Mettapedia.GraphTheory.FourColor
