@@ -722,6 +722,28 @@ grid. That observable is not a maximization over radius. Neither this
 finite history nor the earlier cubic calculation establishes recurrence
 or a uniform allowance for arbitrary data.
 
+The option `--tail-cutoffs 0 2 4 8 16 32` also integrates the signed
+production and dissipation above each listed physical wave number. Only
+the receiving modes with `|k|≥K` are selected; their nonlinear source uses
+the complete field. Each tail has its own balance
+`Y_K(t)-Y_K(0)=∫P_K-∫D_K`, with viscosity included in `D_K`.
+The output records `∫(P_K-D_K/2)` and its maximum sampled at integration
+steps. That sampled maximum is not an upper bound over intermediate
+times. A cutoff beyond the finite grid gives a zero tail, so the existence
+of a harmless cutoff in this diagnostic says nothing about a cutoff
+uniform as the resolution increases.
+
+```sh
+python3 labs/full_history.py --n 96 --nz 24 --time .05 --step .0025 \
+  --tail-cutoffs 0 2 4 8 16 32
+```
+
+Enabling these ledgers leaves the computed velocity and the existing
+global integrals unchanged. Direct frequency-mask sums independently check
+the binned tail sums and their instantaneous rate identities. The short
+run above checks their time-integrated balances; this is an implementation
+check, not a bound for the continuum equation.
+
 ### Matching the amplitude expansion to the viscous flow
 
 `amplitude_history.py` evolves the complete Taylor hierarchy through
