@@ -148,6 +148,7 @@ LICENSE retains the reference's MIT notice and Gonthier/Werner attribution.
 | `Config4Reconstruction` | The route consumes configuration 4's actual ring-eight certificate and proved decoded-map geometry |
 | `ClassicalAssembly` | The conditional real-plane theorem consumes witness reconstruction for every fitted catalogue entry, with the reference's discharging obligations retained |
 | `HypermapDictionary` | The two hypermap presentations agree on permutations, components and planarity on the same finite dart type |
+| `GraphColoringBridge` | Colours on actual graph darts descend to Mathlib vertex colourings, using vertexwise cyclicity and preserving every supplied dart colour |
 | `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
 
 The operational sequence is:
@@ -184,7 +185,23 @@ The hypermap dictionary is an equivalence on a fixed finite dart type, not a
 bijection between arbitrary hypermaps and labelled rotation systems. Its
 planarity proof explicitly handles the differing Euler conventions and the
 reference's natural-number genus. The standard finite planar-graph statement
-still needs its representation bridge.
+needs a further connection to topological embeddings.
+
+`GraphColoringBridge.colorable_of_checks` gives `G.Colorable 4` for a finite
+simple graph with the existing graph-backed rotation data, vertexwise cyclicity,
+and hypermap planarity, conditional on the same catalogue and presentation
+checks. The proof colours the dual hypermap and reads back the node colours.
+It uses the original graph's literal darts: edge reversal swaps their endpoints,
+and the node orbits are exactly the nonempty fibers over vertices. Merely
+preserving a vertex label would be too weak; the single-cycle condition is
+proved to supply the missing implication.
+
+The readback keeps the supplied colour at every dart and assigns zero to
+isolated vertices. Its generic form admits an empty dart set and requires no
+connectedness or cubicity hypothesis. A converse pulls vertex colourings back
+to dart colourings. This is a bridge between colouring representations; it
+does not yet construct a planar rotation from an arbitrary topological graph
+embedding.
 
 To replay the adapters, prepare the pinned reference with the dependency
 revisions above and build Mettapedia's imported GSLT and hypermap modules.
@@ -199,12 +216,12 @@ python3 tools/fourcolor/classical/replay_adapters.py \
 ```
 
 The script checks the reference revision and common toolchain, makes a
-dependency overlay in its dedicated output directory, compiles the seven adapter
+dependency overlay in its dedicated output directory, compiles the eight adapter
 modules without native C emission, and finishes with the axiom audit. It records
 source hashes, exit statuses and wall times. It changes neither input checkout
 and does not generate or check the whole classical catalogue.
 
-The complete adapter replay passed; its final audit covered 15,360 imported
+The complete adapter replay passed; its final audit covered 15,453 imported
 public declarations and found only `propext`, `Classical.choice` and `Quot.sound`.
 `reconstruction-measurements.json` records the exact source hashes and results.
 The additional kernel measurements were:

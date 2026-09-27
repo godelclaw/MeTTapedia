@@ -54,6 +54,19 @@ theorem redpart_sound (hred : Reducibility) : RedpartSound theRedpart := by
   exact no_fit_redpart hmin.plainCubicPentagonal
     (no_fitted_configuration hred hmin) hq y
 
+/-- The computational obligations exclude a minimal counterexample through
+the same explicit colouring reconstruction. -/
+theorem no_minimalCounterExample_of_checks (hred : Reducibility)
+    (e5 : ExcludedArity (RedpartSound theRedpart) 5)
+    (e6 : ExcludedArity (RedpartSound theRedpart) 6)
+    (e7 : ExcludedArity (RedpartSound theRedpart) 7)
+    (e8 : ExcludedArity (RedpartSound theRedpart) 8)
+    (e9 : ExcludedArity (RedpartSound theRedpart) 9)
+    (e10 : ExcludedArity (RedpartSound theRedpart) 10)
+    (e11 : ExcludedArity (RedpartSound theRedpart) 11)
+    {D : Type} [Finite D] (G : Hypermap D) : ¬ G.MinimalCounterExample :=
+  not_minimalCounterExample (G := G) (redpart_sound hred) e5 e6 e7 e8 e9 e10 e11
+
 /-- The reference's real-plane theorem, conditional on all the original
 computational obligations, with reducibility consumed through reconstruction. -/
 theorem fourColorTheorem_of_checks (hred : Reducibility)
@@ -64,8 +77,8 @@ theorem fourColorTheorem_of_checks (hred : Reducibility)
     (e9 : ExcludedArity (RedpartSound theRedpart) 9)
     (e10 : ExcludedArity (RedpartSound theRedpart) 10)
     (e11 : ExcludedArity (RedpartSound theRedpart) 11) : FourColorTheorem :=
-  fourColorTheorem_of_unavoidability fun G =>
-    not_minimalCounterExample (G := G) (redpart_sound hred) e5 e6 e7 e8 e9 e10 e11
+  fourColorTheorem_of_unavoidability
+    (no_minimalCounterExample_of_checks hred e5 e6 e7 e8 e9 e10 e11)
 
 #print axioms no_embedded_reduction
 #print axioms fourColorTheorem_of_checks
