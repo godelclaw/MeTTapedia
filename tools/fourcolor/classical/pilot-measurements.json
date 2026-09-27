@@ -1,0 +1,146 @@
+{
+  "reference": {
+    "repository": "https://github.com/corun1024/4ct",
+    "commit": "3db71e0a786a1f19be04c5266fe3d06fed216885"
+  },
+  "lean_version": "4.34.0-rc2",
+  "mathlib_commit": "85e3a25e006c35636f0e53b0e9296caca2685bc0",
+  "compatibility_patch": "FourColor/Finitize.lean: Mathlib.Basic.Denumerable -> Mathlib.Logic.Denumerable",
+  "method": "Fresh Lean elaboration, kernel checking and olean/ilean serialization; dependencies already built. No -c native-code output. GNU time records wall time and maximum RSS.",
+  "build_options": [
+    "pp.unicode.fun=true",
+    "autoImplicit=false",
+    "relaxedAutoImplicit=false",
+    "weak.linter.mathlibStandardSet=true",
+    "maxSynthPendingDepth=3"
+  ],
+  "cases": [
+    {
+      "ordinal": 1,
+      "ring": 6,
+      "module": "FourColor.Pilot.Cfg000",
+      "source_sha256": "cf0c60b78bf355b50e8954b9a23cde1ce0100b2438a8507432cb8255191f0768",
+      "source_bytes": 2939,
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.85,
+      "peak_rss_kib": 2463576,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 74744,
+      "theorem": "FourColor.Bulk.Cfg000.reducible",
+      "result": "FourColor.ReducibleInRange 0 (0 + 1) FourColor.theConfigs"
+    },
+    {
+      "ordinal": 4,
+      "ring": 8,
+      "module": "FourColor.Pilot.Cfg003",
+      "source_sha256": "6671d749b833627bfc41f51b2f32ed242252fa66c79486e2c83fe39f57aca3c3",
+      "source_bytes": 8392,
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.19,
+      "peak_rss_kib": 2466116,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 85208,
+      "theorem": "FourColor.Bulk.Cfg003.reducible",
+      "result": "FourColor.ReducibleInRange 3 (3 + 1) FourColor.theConfigs"
+    },
+    {
+      "ordinal": 9,
+      "ring": 10,
+      "module": "FourColor.Pilot.Cfg008",
+      "source_sha256": "cee457258378e70078a9743d91836f8d5e0f6daa198cf0702d519c03eb947b55",
+      "source_bytes": 57696,
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.36,
+      "peak_rss_kib": 2487860,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 114456,
+      "theorem": "FourColor.Bulk.Cfg008.reducible",
+      "result": "FourColor.ReducibleInRange 8 (8 + 1) FourColor.theConfigs"
+    },
+    {
+      "ordinal": 20,
+      "ring": 12,
+      "module": "FourColor.Pilot.Cfg019",
+      "source_sha256": "44b505449ce5412abe710dc27450e806ceb7f5ac42fb38812211ef88b689b0df",
+      "source_bytes": 490847,
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.4,
+      "peak_rss_kib": 2651512,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 324584,
+      "theorem": "FourColor.Bulk.Cfg019.reducible",
+      "result": "FourColor.ReducibleInRange 19 (19 + 1) FourColor.theConfigs"
+    },
+    {
+      "ordinal": 110,
+      "ring": 14,
+      "module": "FourColor.Pilot.Cfg109",
+      "source_sha256": "2671c6ca419ee6392d9a37a4c404d27cf8dfe1e9333d5a0b977c90458444f93a",
+      "source_bytes": 4391584,
+      "exit_code": 0,
+      "frontend_wall_seconds": 22.49,
+      "peak_rss_kib": 4207148,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 2106280,
+      "theorem": "FourColor.Bulk.Cfg109.reducible",
+      "result": "FourColor.ReducibleInRange 109 (109 + 1) FourColor.theConfigs"
+    },
+    {
+      "ordinal": 34,
+      "ring": 10,
+      "module": "FourColor.Bulk.Cfg.Hyb033",
+      "source_sha256": "8066b2ec35b7f7be4296628195fb2ebad3b194e77084a7c16b41172433e7017f",
+      "source_bytes": 91751,
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.22,
+      "peak_rss_kib": 2509288,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 606096,
+      "theorem": "FourColor.Bulk.Hyb033.reducible",
+      "result": "FourColor.ReducibleInRange 33 (33 + 1) FourColor.theConfigs"
+    },
+    {
+      "ordinal": null,
+      "ring": null,
+      "module": "FourColor.Pilot.CompleteAudit",
+      "source_sha256": "0491f18a99467e632bb459aebf588f6e3bd88b73d2441ad2f826fea3b48d0196",
+      "source_bytes": 1048,
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.07,
+      "peak_rss_kib": 2726456,
+      "memory_method": "GNU time maximum resident set size; one Lean child",
+      "native_code_generation": false,
+      "olean_bytes": 3392
+    }
+  ],
+  "axiom_audit": {
+    "declarations": 8284,
+    "scope": "Imported public declarations with prefix FourColor, including the six fresh certificate modules",
+    "allowed": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected": []
+  },
+  "comparison": {
+    "module": "FourColor.Pilot.Cfg109",
+    "lake_build_with_C_gate_wall_seconds": 527.616,
+    "without_C_frontend_wall_seconds": 22.49,
+    "observation": "The proof artifacts appeared early while the C file was still empty; the completed no-C replay isolates frontend checking from unnecessary C emission."
+  },
+  "scope_limits": [
+    "Six configuration certificates, not all 633",
+    "No complete discharging presentation replay in this pilot",
+    "Conditional theorem assembled; unconditional root not yet locally reproduced",
+    "No GSLT reconstruction adapter proved by these checks",
+    "Largest residual certificate not included in this ladder",
+    "Timings apply to already-built dependencies and this compiler/dependency combination"
+  ]
+}

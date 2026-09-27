@@ -1,0 +1,82 @@
+{
+  "verification": "program-checked source consistency; no Lean reducibility claim",
+  "configurations": 633,
+  "ring_histogram": {
+    "6": 1,
+    "7": 1,
+    "8": 5,
+    "9": 8,
+    "10": 31,
+    "11": 81,
+    "12": 175,
+    "13": 194,
+    "14": 137
+  },
+  "contraction_size_histogram": {
+    "0": 249,
+    "1": 264,
+    "2": 15,
+    "3": 61,
+    "4": 44
+  },
+  "source_zero_residual_count": 249,
+  "source_nonzero_residual_count": 384,
+  "rules": {
+    "published_rules": 32,
+    "machine_entries": 67,
+    "inverse_entries": 32
+  },
+  "rocq_lean_programs_equal": true,
+  "rsst_program_ring_sizes_equal": true,
+  "graph_checks": [
+    "simple symmetric adjacency",
+    "connected free completion",
+    "ordered outer ring",
+    "triangular inner faces",
+    "Euler count 2",
+    "contract edge references"
+  ],
+  "not_checked": [
+    "RSST versus program map isomorphism",
+    "colour counts in headers",
+    "reducibility",
+    "discharging validity",
+    "unavoidability"
+  ],
+  "source_sha256": {
+    "configurations": "1c92fc280a9b384f736b94077fc59aac75e3d830d441ffd2d18683ee4b524e84",
+    "rules": "4a511a1df9392a7af6253bfcf4dab9bf96ea9a080465abd0b12b57788a6c3dee",
+    "rocq_programs": "4842e9bdd94a2f8054e5c8002094eea099393051a984dd2fb755808f29c85fca",
+    "lean_programs": "7a05039e76944dd51616721039edb872ccb2f1a6d90fa8b93ef4834095760966"
+  },
+  "sources": {
+    "rsst": {
+      "url": "https://thomas.math.gatech.edu/FC/ftpinfo.html",
+      "configuration_url": "https://people.math.gatech.edu/~thomas/OLDFTP/four/unavoidable.conf",
+      "rules_url": "https://people.math.gatech.edu/~thomas/OLDFTP/four/rules",
+      "licence": "Original programs grant scholarly-research use. The downloaded data files have no separate explicit redistribution licence; no original source files are vendored here."
+    },
+    "rocq": {
+      "url": "https://github.com/rocq-community/fourcolor",
+      "commit": "c1d6b1cd5288bea4b067aac13cdde3c18dffe018",
+      "licence": "CeCILL-B"
+    },
+    "lean": {
+      "url": "https://github.com/corun1024/4ct",
+      "commit": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+      "licence": "MIT, with the upstream attribution notice preserved in LICENSE"
+    }
+  },
+  "compression_ledger": {
+    "classical_configurations": 633,
+    "published_discharging_rules": 32,
+    "directed_rule_entries": 67,
+    "maximum_ring_size": 14,
+    "new_configurations_removed": 0,
+    "new_catalogue_checks_replaced_by_uniform_lemmas": 0,
+    "distinct_reducibility_arguments": null,
+    "complete_certificate_bytes": null,
+    "complete_kernel_seconds": null,
+    "note": "New compression is measured against the existing classical formalizations, including their generic certificate lemmas. Null entries are unmeasured."
+  }
+}
