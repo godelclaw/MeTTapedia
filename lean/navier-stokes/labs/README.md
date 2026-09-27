@@ -15,7 +15,7 @@ python3 labs/fourier_interactions.py --case chain --generations 12
 
 The program prints JSON after all selected checks pass and raises an error on
 failure. Checks remain enabled with `python3 -O`. There are no input files,
-network requests or generated files. The `matched`, `chain` and `cyclic`
+network requests or generated files. The `matched`, `chain`, `cyclic` and `crossing`
 cases can also be run separately.
 
 These are reproducible algebra calculations, **not Lean certificates**.
@@ -169,3 +169,36 @@ At wavevector `(2,1,1)` its stored imaginary amplitude is
 degree bound at most three, check that this entire part of `u_3` is
 independent of viscosity. Again this is an initial-derivative statement,
 not a quantitative lower bound at a specified positive time.
+
+## Generated modes can return positive work to their parents
+
+The `crossing` case uses three boxes of positive input wavevectors. In box
+`i`, coordinate `k_i` is either `2` or `3`, and the other coordinates belong
+to `{-1,0,1}`. Their stored amplitudes are respectively
+`(-k₂,k₁,0)`, `(0,-k₃,k₂)` and `(k₃,0,-k₁)`; reflection supplies the negative
+wavevectors. The resulting field `u₀` has 108 modes and squared norm `774`.
+These are finite, relatively wide boxes, not an asymptotically narrow-cone
+claim.
+
+Let `P` retain the original frequencies, `p(t)=Pu(t)`, `c(t)=(I-P)u(t)` and
+`g=(I-P)N(u₀)`. The complete initial source has 852 modes, of which 756 lie
+outside `P`. Since the viscous term preserves the original support,
+`c(0)=0` and `c'(0)=g` for every viscosity. Consequently
+
+```text
+<p(t), N(c(t))>  = (7481477195560 / 2909907) t² + O(t³),
+<Ap(t), N(c(t))> = (3185491560402752 / 140645505) t² + O(t³).
+```
+
+Both leading coefficients are positive. Normalizing the initial norm to
+`α` multiplies them by `α⁵/774^(5/2)`. The code evaluates each source pairing
+by summing every input pair that meets the receiver support; transversality
+removes the final Leray projection. It checks this pairing against full
+convolution on smaller fields, and also checks the companion cancellation
+`<g,B(u₀,g)>=0`, `<g,B(g,u₀)>=-<u₀,N(g)>`.
+
+Thus two previously generated inputs can contribute positive signed work
+at the parent frequencies. The mixed terms still conserve total kinetic
+energy. This is one source channel, not net parent-energy growth, a closed
+energy-transfer model, a uniform positive-time bound, or a refutation of a
+data-dependent signed budget.

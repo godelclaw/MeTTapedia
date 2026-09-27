@@ -3,7 +3,8 @@
 
 Run with Python 3 and its standard library. See README.md for conventions,
 formulas and scope. These checks are not Lean certificates or PDE time steps.
-All convolution outputs are retained. Fractions are used for every check.
+Source fields retain every convolution output. Pairings sum all contributing
+input pairs directly. Fractions are used for every check.
 """
 
 from __future__ import annotations
@@ -82,6 +83,22 @@ def B(u: Field, v: Field) -> Field:
                                for x, y in zip(raw.get(k, ZERO), b))
     out = {k: project(k, v) for k, v in raw.items()}
     return {k: v for k, v in out.items() if any(v)}
+
+
+def pair_source(receiver: Field, u: Field, v: Field) -> F:
+    """Pair with B(u,v) without constructing outputs outside the receiver.
+
+    Transversality removes the final Leray projection. Every contributing
+    input pair is included; this is not a projection of either source input.
+    """
+    validate(receiver)
+    result = F(0)
+    for k, w in receiver.items():
+        for p, a in u.items():
+            q = tuple(x - y for x, y in zip(k, p))
+            if q in v:
+                result += dot(a, q) * dot(w, v[q])
+    return result
 
 
 def stretching(u: Field) -> Field:
@@ -308,6 +325,56 @@ def check_cyclic():
             "viscosity_degree_bound": 3, "distinct_viscosity_samples": 4}
 
 
+def crossing_field() -> Field:
+    """Three finite boxes with cyclic, transverse polarizations."""
+    out = {}
+    for axis in range(3):
+        ranges = [range(2, 4) if j == axis else range(-1, 2)
+                  for j in range(3)]
+        for k in itertools.product(*ranges):
+            v = [F(0), F(0), F(0)]
+            v[axis] = -F(k[(axis + 1) % 3])
+            v[(axis + 1) % 3] = F(k[axis])
+            out = add(out, {k: tuple(v),
+                           tuple(-x for x in k): tuple(-x for x in v)})
+    validate(out)
+    return out
+
+
+def check_crossing():
+    # Check the direct pairing against complete source fields on smaller data.
+    for u in matched_fields().values():
+        n = B(u, u)
+        for receiver, left, right in ((u, n, n), (n, u, n),
+                                      (n, n, u), (A(u), n, n)):
+            require(pair_source(receiver, left, right) == pair(receiver, B(left, right)),
+                    "direct source pairing disagrees with full convolution")
+    u = crossing_field()
+    n = B(u, u)
+    generated = {k: v for k, v in n.items() if k not in u}
+    validate(n)
+    validate(generated)
+    require([len(u), len(n), len(generated)] == [108, 852, 756],
+            "crossing support counts")
+    require(pair(u, u) == 774, "crossing squared velocity norm")
+    require(pair(u, n) == 0, "initial kinetic energy cancellation")
+    kinetic = pair_source(u, generated, generated)
+    enstrophy = pair_source(A(u), generated, generated)
+    require(kinetic == F(7481477195560, 2909907), "parent kinetic return")
+    require(enstrophy == F(3185491560402752, 140645505), "parent enstrophy return")
+    require(kinetic > 0 and enstrophy > 0, "return signs")
+    require(pair_source(generated, u, generated) == 0,
+            "transport kinetic cancellation")
+    require(pair_source(generated, generated, u) == -kinetic,
+            "companion mixed kinetic work")
+    return {"parent_modes": len(u), "complete_initial_source_modes": len(n),
+            "generated_source_modes": len(generated), "squared_velocity_norm": "774",
+            "kinetic_return_t2_coefficient": str(kinetic),
+            "enstrophy_return_t2_coefficient": str(enstrophy),
+            "normalization_factor_for_norm_alpha": "alpha^5 / 774^(5/2)",
+            "scope": "one source channel; not net parent energy growth"}
+
+
 def positive_int(text: str) -> int:
     value = int(text)
     if value <= 0:
@@ -317,7 +384,8 @@ def positive_int(text: str) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case", choices=("all", "matched", "chain", "cyclic"), default="all")
+    parser.add_argument("--case", choices=("all", "matched", "chain", "cyclic", "crossing"),
+                        default="all")
     parser.add_argument("--generations", type=positive_int, default=8,
                         help="number of exact chain instances (default: 8)")
     args = parser.parse_args()
@@ -325,7 +393,7 @@ def main() -> None:
                "scope": "finite Fourier algebra and initial time derivatives; no Lean certificate"}
     for name, check in (("matched", check_matched_fields),
                         ("chain", lambda: check_chain(args.generations)),
-                        ("cyclic", check_cyclic)):
+                        ("cyclic", check_cyclic), ("crossing", check_crossing)):
         if args.case in ("all", name):
             results[name] = check()
     print(json.dumps(results, indent=2))
