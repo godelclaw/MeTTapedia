@@ -1080,19 +1080,26 @@ half the accumulated dissipation at all three measured cutoffs. At cutoff 4:
 | 96³ | .001 | 1.053966 | 2.388679 | -1.334713 |
 | 96³ | .0005 | 1.053966 | 2.388679 | -1.334713 |
 | 128³ | .001 | 1.054208 | 2.388687 | -1.334478 |
+| 192³ | .001 | 1.054218 | 2.388687 | -1.334469 |
 
-Time-step refinement changes the excess by `6.18e-8`; spatial refinement
-changes it by `2.35e-4`. On the finer grid, the cutoff-8 and cutoff-12
-excesses are `-.793245` and `-.106209`, and the upper-band palinstrophy
-fraction is `2.99e-5`. The additional time-step check is:
+Time-step refinement changes the excess by `6.18e-8`. Spatial refinement
+from 96 to 128 changes it by `2.35e-4`, and from 128 to 192 by `9.83e-6`.
+On grid 192, the cutoff-8 and cutoff-12 excesses are `-.793243` and
+`-.106208`, and the upper-band palinstrophy fraction is `5.70e-7`.
+The additional checks are:
 
 ```sh
 python3 -O labs/bent_tube_history.py --n 96 --time .1 --step .0005 --report-every .025
+python3 -O labs/bent_tube_history.py --n 192 --time .5 --step .001 --report-every .025
 ```
 
-The 96³ and 128³ longer runs stop at their resolution warnings at
-`t=.175` and `t=.2`, respectively. Their later histories are not resolved
-by these comparisons. Enstrophy remains close to its initial value in
+The 96³, 128³ and 192³ longer runs stop at their resolution warnings at
+`t=.175`, `t=.2` and `t=.25`, respectively. At `t=.225`, the last
+below-warning report on grid 192, the cutoff-4 excess is positive
+(`.716234`), with upper-band palinstrophy fraction `.003904`. Both coarser
+grids have already stopped, so this later sign change lacks a matched
+spatial refinement. The negative shared prefix must not be extrapolated
+to that interval. Enstrophy remains close to its initial value in
 the shared prefix, so this result does not establish control of a strong
 growth episode. Neither this negative prefix nor the positive Kida prefix
 settles the endpoint-independent finite-allowance budget.
