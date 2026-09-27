@@ -1,0 +1,384 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\R}{\mathbb R}
+\newcommand{\PP}{\mathcal P}
+\newcommand{\dd}{\,\mathrm d}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\curl}{\operatorname{curl}}
+\newcommand{\diver}{\operatorname{div}}
+\title{A history criterion for the non-axisymmetric part of a viscous flow}
+\author{}
+\date{September 27, 2026}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+We give a sufficient regularity criterion when the angular mean of a
+three-dimensional Navier--Stokes velocity satisfies prescribed anisotropic
+bounds. The remaining assumptions are two time integrals of the angular
+fluctuation. A radial circulation barrier preserves a spatial factor in the
+Reynolds torque, while a divergence representation of the Reynolds stress
+avoids differentiating the fluctuation in the ancient-limit argument.
+The proof adapts the axisymmetric argument of Constantin, Ignatova, and
+Vicol. This is an analytic conditional criterion, not a Lean theorem or
+an arbitrary-data regularity proof.
+\end{abstract}
+
+\section{Statement}
+
+Let $Q=B(1)\times(-1,0)$ and let $(u,p)$ be a suitable weak solution of
+\[
+ u_t+(u\cdot\nabla)u-\Delta u+\nabla p=0,\qquad \diver u=0,
+\]
+smooth on compact subsets of $Q$. Assume the usual local energy class
+$u\in L^\infty_tL^2_x\cap L^2_tH^1_x$ and $p\in L^{3/2}(Q)$.
+For rotations $Q_\phi$ about the fixed third axis put
+\[
+ \PP u(x)=\frac1{2\pi}\int_0^{2\pi}Q_\phi u(Q_\phi^{-1}x)\dd\phi,
+ \qquad v=\PP u,\qquad w=u-v.
+\]
+The same notation denotes the induced action on tensors. Write $r=|x'|$,
+$z=x_3$, and $\tau=-t$. Unless a smaller ball is specified, suprema are on $B(1)$.
+
+\begin{theorem}\label{thm:main}
+Suppose $0<h<1/2$ and, for every $a+b\leq2$,
+\begin{align}
+ |\partial_r^a\partial_z^b v_r|
+ &\leq C\tau^{-1/2-a/2-(1/2-h)b},\label{eq:meanr}\\
+ |\partial_r^a\partial_z^b v_z|+|\partial_r^a\partial_z^b v_\theta|
+ &\leq C\tau^{-1/2-h-a/2-(1/2-h)b}.\label{eq:meanz}
+\end{align}
+Set $K(t)=\norm{w(t)}_\infty$ and $L(t)=\norm{\nabla w(t)}_\infty$,
+where the derivative is Cartesian. If
+\begin{equation}\label{eq:history}
+ \int_{-1}^0 K(t)^2\dd t<\infty,
+ \qquad
+ \int_{-1}^0\sqrt{-t}\,K(t)L(t)\dd t<\infty,
+\end{equation}
+then $(0,0)$ is a regular point of $u$.
+\end{theorem}
+
+The mean bounds are those used in \cite{CIV}. Their validity and
+\eqref{eq:history} are hypotheses, not consequences of the energy inequality.
+The axis and the ball are fixed; the theorem makes no assertion about
+propagating approximate symmetry from a shrinking core.
+
+\begin{corollary}\label{cor:powers}
+In Theorem~\ref{thm:main}, a sufficient replacement for
+\eqref{eq:history} is
+\[
+ K(t)\leq C\tau^{-\beta},\qquad
+ L(t)\leq C\tau^{-\beta-\sigma},\qquad
+ \beta<\tfrac12,\quad 2\beta+\sigma<\tfrac32,
+\]
+with $\beta,\sigma\geq0$. In particular, the derivative cost
+$\sigma=1/2$ permits every $\beta<1/2$.
+\end{corollary}
+
+These are two separate bounds. No derivative estimate is inferred from
+the amplitude estimate. Another sufficient choice near zero is
+$K\leq C\tau^{-1/2}\log(e/\tau)^{-p}$ and
+$L\leq C\tau^{-1}\log(e/\tau)^{-q}$, where $p>1/2$ and $p+q>1$.
+
+\section{Two scalar history estimates}
+
+\begin{lemma}\label{lem:hardy}
+Let $f\geq0$ be continuous on compact subsets of $(0,a]$, with
+$J_f=\int_0^a\sqrt{s}f(s)\dd s<\infty$, and define
+$B(\tau)=\int_\tau^a f(s)\dd s$. Then
+\begin{equation}\label{eq:scalar}
+ \sqrt\tau B(\tau)\longrightarrow0,
+ \qquad \int_0^a s^{-1/2}B(s)\dd s=2J_f.
+\end{equation}
+For $0\leq\eta<1/2$,
+\begin{equation}\label{eq:hardy}
+ \norm{\tau^{-\eta}\int_\tau^a s^\eta f(s)\dd s}_{L^2(0,a)}
+ \leq\frac{J_f}{\sqrt{1-2\eta}}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+For the limit, apply dominated convergence to
+$\mathbf1_{s\geq\tau}\sqrt{\tau/s}\,\sqrt{s}f(s)$.
+The equality is Tonelli's theorem. Minkowski's integral inequality gives
+\[
+ \norm{\int_0^a\mathbf1_{\tau<s}\tau^{-\eta}s^\eta f(s)\dd s}_2
+ \leq\int_0^a s^\eta f(s)
+       \left(\int_0^s\tau^{-2\eta}\dd\tau\right)^{1/2}\dd s,
+\]
+which is \eqref{eq:hardy}. Truncation justifies the calculation before
+passing to the possibly singular endpoint.
+\end{proof}
+
+\begin{lemma}\label{lem:barrier}
+Suppose an axisymmetric circulation $\Gamma=r v_\theta$ satisfies
+\[
+ \Gamma_t+v_r\Gamma_r+v_z\Gamma_z
+   =(\partial_{rr}-r^{-1}\partial_r+\partial_{zz})\Gamma+rF_\theta,
+\]
+on a ball for $-a<t<0$, with bounded initial and lateral values,
+$\Gamma=0$ on the axis, $|v_r|\leq C_r(-t)^{-1/2}$, and
+$|F_\theta|\leq f(-t)$ as in Lemma~\ref{lem:hardy}. Then
+\begin{equation}\label{eq:barrier}
+ |\Gamma(r,z,t)|\leq A(-t)+rB(-t),\quad
+ A(\tau)=C_0+C_r\int_\tau^a s^{-1/2}B(s)\dd s,
+\end{equation}
+where $C_0$ bounds the initial and lateral values. In particular $A$
+is bounded, and $\sqrt\tau B(\tau)\to0$.
+\end{lemma}
+\begin{proof}
+For $r>0$, applying the circulation operator to
+$\Phi(r,t)=A(-t)+rB(-t)$ gives
+\[
+ C_r(-t)^{-1/2}B+r f+v_rB+B/r\geq r f.
+\]
+Thus $\Phi$ dominates both $\Gamma$ and $-\Gamma$ by the maximum
+principle on each compact time prefix. A positive maximum of their
+difference cannot occur on the axis, where $\Gamma=0$ and $\Phi\geq0$;
+no differentiability of $r$ at the axis is required. The bounds follow
+from Lemma~\ref{lem:hardy}.
+\end{proof}
+
+\section{The mean equation and its rescaled stress}
+
+Rotation covariance and $\PP w=0$ give the exact equation
+\begin{equation}\label{eq:mean}
+ v_t+(v\cdot\nabla)v-\Delta v+\nabla\PP p=F,
+ \qquad F=-\PP[(w\cdot\nabla)w]=-\diver\PP(w\otimes w).
+\end{equation}
+In particular $\norm{F(t)}_\infty\leq K(t)L(t)$, using the Euclidean
+operator norm for $\nabla w$. Other tensor norm conventions change only
+a fixed constant.
+
+The original solution has a regular spherical annulus inside any
+prescribed interval of radii. Indeed, partial regularity makes the
+top-slice singular set have zero $\mathcal H^1$ measure. Its image under
+$x\mapsto|x|$ has measure zero, so some intervening sphere is regular.
+Compactness and interior estimates give an annulus on which $u$,
+$\nabla u$, and $\nabla^2u$ are bounded through the endpoint, as in the
+first part of \cite[Lemma~3.2]{CIV}. Its rotational invariance gives the
+same bounds for $v$ and $w$. This argument uses suitability of $u$;
+it does not require a partial-regularity theorem for \eqref{eq:mean}.
+
+Choose a sphere in this annulus, and take $f(\tau)$ to be the supremum
+of $|F(-\tau)|$ on its enclosed closed ball. This is continuous on
+compact time prefixes and satisfies $J_f<\infty$ by
+\eqref{eq:history}. Lemma~\ref{lem:barrier} applies to the mean.
+
+Write the meridional entries of $\PP(w\otimes w)$ in the cylindrical
+frame as $a=R_{rr}$, $b=R_{\theta\theta}$, $c=R_{zz}$, and $d=R_{rz}$.
+Their absolute values are at most $K^2$. Direct differentiation yields
+\begin{align}
+ F_r&=-a_r-(a-b)/r-d_z,& F_z&=-d_r-d/r-c_z,\label{eq:force}\\
+ \frac{(\curl F)_\theta}{r}
+ &=\left(\partial_{rr}+\frac3r\partial_r-\partial_{zz}\right)\frac d r
+   +\frac1r\partial_{rz}(c-a)-\frac1{r^2}\partial_z(a-b).
+ \label{eq:lift}
+\end{align}
+The quantities here are smooth at the axis in the appropriate lifted
+variables. For a distributional estimate it suffices that $d=O(r)$.
+
+Consider the rescaling used in \cite[Section~4]{CIV}: for $t_n\uparrow0$,
+\[
+ \tau_n=-t_n,\quad \lambda_n=\tau_n^{1/2},\quad
+ \delta_n=\tau_n^h,\quad \mu_n=\lambda_n/\delta_n,\quad
+ r=\lambda_n R,\quad z=z_n+\mu_n Z,\quad t=\tau_n s.
+\]
+The mean components are normalized as
+$V_n=\lambda_n v_r$, $W_n=\lambda_n\delta_n v_z$,
+$S_n=\lambda_n\delta_n v_\theta$, and the potential vorticity as
+$\Omega_n=\lambda_n^3\delta_n(\curl v)_\theta/r$.
+For a stress component $a$, let $a_n$ denote its composition with this
+change of variables, without an amplitude normalization.
+
+Lift $R=|X|$ to four radial dimensions. Since
+\[
+ \frac1R\partial_R H
+   =\diver_X\left(\frac{XH}{R^2}\right)-\frac{2H}{R^2},
+\]
+the rescaled forcing in the potential-vorticity equation is
+\begin{equation}\label{eq:scaled}
+\begin{split}
+ G_n=\lambda_n^2\delta_n\bigg[&
+ (\Delta_X-\delta_n^2\partial_{ZZ})(d_n/R)\\
+ &+\delta_n\partial_Z\left\{
+  \diver_X\frac{X(c_n-a_n)}{R^2}
+  -\frac{2(c_n-a_n)+(a_n-b_n)}{R^2}\right\}\bigg].
+\end{split}
+\end{equation}
+Both $R^{-1}$ and $R^{-2}$ are locally integrable in $\R^4$.
+The divergence identity has no axis-supported mass: the flux through
+$R=\epsilon$ is $O(\epsilon^2)$ for bounded $H$.
+Move all derivatives in \eqref{eq:scaled} onto a compactly supported
+smooth test function with time support $J\Subset(-\infty,0)$.
+The resulting absolute value is bounded by
+\begin{equation}\label{eq:weaksmall}
+ C_J\lambda_n^2\delta_n\int_J K(\tau_n s)^2\dd s
+ =C_J\delta_n\int_{\tau_nJ}K(t)^2\dd t\longrightarrow0.
+\end{equation}
+Thus no derivative of the fluctuation is needed in this part of the
+limiting argument. In a recentered zoom with $r=\lambda_n(A_n+R)$ and
+$A_n\to\infty$, the azimuthal-vorticity force has the same prefactor
+$\lambda_n^2\delta_n$ multiplying at most two derivatives of the stress;
+its additional coefficients $(A_n+R)^{-1}$ and $(A_n+R)^{-2}$ are
+uniformly bounded on compact sets. Estimate~\eqref{eq:weaksmall}
+therefore applies there too.
+
+\section{Meridional smallness}
+
+Define, on a smaller ball,
+\[
+ G_v(t)=\norm{|\partial_r v_r|+|v_r/r|
+                    +|\partial_z v_z|+|\partial_z v_r|}_\infty.
+\]
+We verify the two changes needed in the proof of
+\cite[Proposition~1.5]{CIV} to conclude
+\begin{equation}\label{eq:Gsmall}
+ (-t)G_v(t)\longrightarrow0.
+\end{equation}
+First, the circulation barrier gives, in the finite-axis case,
+\[
+ |R S_n|\leq\delta_n A(\tau_n|s|)
+             +\delta_n\lambda_n R B(\tau_n|s|)\longrightarrow0
+\]
+uniformly on compact rescaled time slabs and bounded $R$. The mean
+bounds also give $|S_n/R|\leq C$ on those slabs, including the axis.
+Splitting at $R=\epsilon$ shows that $S_n^2/R^2$ tends to zero locally
+in $L^1$ in the lifted space. In the receding-axis case use instead
+\[
+ |S_n|\leq\frac{\delta_n A(\tau_n|s|)}{A_n+R}
+                +\delta_n\lambda_n B(\tau_n|s|).
+\]
+
+Second, the force is small in a negative Sobolev norm integrated in
+time, rather than uniformly small as a function. Away from the axis,
+\eqref{eq:scaled} and \eqref{eq:weaksmall} give
+\[
+ \norm{G_n}_{L^1(J;W^{-2,p}(D))}\longrightarrow0
+\]
+for a fixed rectangle $D$ and any finite $p$. The analogous assertion
+holds in the receding-axis case. The other terms in the rescaled
+vorticity equation are uniformly bounded in this negative norm.
+Together with the uniform spatial Lipschitz bound supplied by
+\eqref{eq:meanr}--\eqref{eq:meanz}, this gives an increment bound
+$C|s-s'|+\epsilon_n$ with $\epsilon_n\to0$. Interpolation gives
+asymptotic uniform time equicontinuity, also at the selected upper
+time. Finitely many initial members are smooth, so Arzel\`a--Ascoli
+still applies. Boundedness and the small volume of $R<\epsilon$ give
+convergence across the axis.
+
+The remaining ancient-limit argument is unchanged: the force and swirl
+source vanish, and the mean bounds supply the backward decay and
+bounded Lipschitz drift required by \cite[Lemma~3.3]{CIV}. The limiting
+vorticity vanishes. At the selected time, incompressibility and
+boundedness of the limiting meridional velocity then contradict a
+nonzero selected derivative, in either axis case. This proves
+\eqref{eq:Gsmall}. No bound on $\partial_r v_z$ is asserted.
+
+\section{Full-velocity enstrophy}
+
+Choose a radial cutoff $\chi$ whose derivative is supported in a regular
+annulus, and write
+\[
+ Y=\norm{\chi\curl u}_2^2,\quad
+ M=\norm{\chi\nabla\curl u}_2^2,\quad
+ V_\theta=\norm{v_\theta}_\infty.
+\]
+Here $V_\theta$ is taken on a ball containing the support of $\chi$,
+with its boundary in the regular annulus; $K$ is still taken on $B(1)$.
+All cutoff errors are uniformly bounded. Weighted $L^2$ contraction
+of angular averaging, including its tensor action on gradients, gives
+$Y_v\leq Y$ and $M_v\leq M$. Local div--curl estimates consequently
+bound the first derivatives of $u,v$ by $C(Y+1)^{1/2}$ and their second
+derivatives by $C(M+1)^{1/2}$ in these weighted norms.
+
+For $\Pi_\chi(q)=\int\chi^2(\curl q\cdot\nabla)q\cdot\curl q$, put
+$\omega_q=\curl q$. There is an exact telescoping identity
+\begin{equation}\label{eq:telescope}
+\begin{split}
+ \Pi_\chi(u)-\Pi_\chi(v)=\int\chi^2\big[&
+ (\omega_w\cdot\nabla)u\cdot\omega_u
+ +(\omega_v\cdot\nabla)w\cdot\omega_u\\
+ &+(\omega_v\cdot\nabla)v\cdot\omega_w\big].
+\end{split}
+\end{equation}
+Integrate the derivative on $w$ off that factor in each term. The
+remaining factors have derivative orders one and two, apart from
+bounded cutoff errors. Hence, for every $\epsilon>0$,
+\begin{align*}
+ |\Pi_\chi(u)-\Pi_\chi(v)|
+ &\leq CK(Y+1)^{1/2}(M+1)^{1/2}+C\\
+ &\leq\epsilon M+C_\epsilon(K^2+1)(Y+1).
+\end{align*}
+For the mean's stretching, the cylindrical calculation in
+\cite[Section~5]{CIV} gives
+\[
+ \Pi_\chi(v)\leq\epsilon M+C_\epsilon(G_v+V_\theta^2+1)(Y+1).
+\]
+In particular its large $\partial_r v_z$ term is integrated by parts
+using $(\omega_v)_r=-\partial_z v_\theta$, with $v_\theta$ left
+undifferentiated. Testing the original unforced vorticity equation
+and absorbing both small dissipation terms gives
+\begin{equation}\label{eq:energy}
+ Y'+cM\leq C_*[G_v+V_\theta^2+K^2+1](Y+1).
+\end{equation}
+
+Fix $0<\eta<1/2$ and shorten the final interval so that
+$|v_r/r|\leq\eta/\tau$, using \eqref{eq:Gsmall}. The equation for
+$\tau^\eta v_\theta$ has nonnegative zeroth-order coefficient.
+Its maximum principle therefore yields
+\[
+ V_\theta(-\tau)\leq C_\eta\tau^{-\eta}
+                  +\tau^{-\eta}\int_\tau^a s^\eta f(s)\dd s.
+\]
+Lemma~\ref{lem:hardy} proves $V_\theta\in L^2_t$. Since $K\in L^2_t$
+as well, Gronwall in \eqref{eq:energy} gives
+\[
+ Y(t)+1\leq C_\eta(-t)^{-C_*\eta}.
+\]
+Here $C_*$ was fixed before $\eta$. Choose $\eta$ with $2C_*\eta<1$.
+Local Sobolev now places $u$ in $L^4_tL^6_x$ on a smaller cylinder.
+The local criterion of \cite[Theorem~1.1(i)]{GKT}, applied on backward
+cylinders ending at zero, makes $(0,0)$ regular. This finishes the
+proof of Theorem~\ref{thm:main}.
+
+\section{Scope of the calculation}
+
+The theorem allows an unbounded angular fluctuation, but requires its
+history to satisfy \eqref{eq:history} and separately assumes the mean
+geometry. Neither hypothesis is established here for general data.
+An original force uniformly bounded in spatial $C^2$ can also be
+included: its torque has finite $J_f$, its rescaled vorticity source
+vanishes, and its enstrophy contribution is bounded by $C(Y+1)$.
+Thus a distinction between forced and unforced flows must enter a
+proof of the hypotheses, not be inferred from this criterion.
+
+The accompanying symbolic calculation checks the mean equation,
+cylindrical stress divergence, lifted force identity, and the
+stretching integration by parts on explicit polynomial fields with
+all six stress components nonzero. It also checks the Hardy constant
+on a symbolic power profile. Such calculations check algebra only;
+the fields are not finite-energy Navier--Stokes solutions, and the
+program does not certify the analytic proof. No statement in this
+note has been added as an axiom or a theorem to the Lean library.
+
+\begin{thebibliography}{9}
+\bibitem{CIV}
+P. Constantin, M. Ignatova, and V. Vicol,
+\emph{Regularity of asymptotically axisymmetric solutions to the 3D
+Navier--Stokes equations with analytic forcing},
+\href{https://arxiv.org/abs/2609.20803}{arXiv:2609.20803v1}, 2026.
+\bibitem{GKT}
+S. Gustafson, K. Kang, and T.-P. Tsai,
+\emph{Interior regularity criteria for suitable weak solutions of the
+Navier--Stokes equations}, Comm. Math. Phys. \textbf{273} (2007), 161--176,
+\href{https://arxiv.org/abs/math/0607114}{arXiv:math/0607114}.
+\end{thebibliography}
+\end{document}

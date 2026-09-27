@@ -1,4 +1,4 @@
-# Exact Fourier interaction lab
+# Navier–Stokes interaction labs
 
 `fourier_interactions.py` checks explicit trigonometric examples against the
 complete unforced Navier–Stokes quadratic source. It uses Python's standard
@@ -240,3 +240,44 @@ remainder, even after all pair histories are subtracted, does not force
 nonpositive self-stretching. The code certifies the initial coefficients
 by rational calculation; it supplies no uniform time window or bound on
 the later signed integral. A data-dependent allowance remains possible.
+
+## Angular mean and Reynolds stress
+
+`reynolds_stress.py` uses Sympy to check the differential algebra behind
+[the symmetry-defect criterion](../../../papers/ns_symmetry_defect.pdf)
+([TeX source](../../../papers/ns_symmetry_defect.tex)). Run it from this
+package directory with:
+
+```sh
+python3 labs/reynolds_stress.py
+```
+
+For the rotation-equivariant angular average `P`, set `v=P u` and `w=u-v`.
+The program constructs an explicit divergence-free polynomial velocity,
+computes its continuous angular average by exact circle moments, and checks
+
+```text
+P[(u·∇)u] = (v·∇)v + P[(w·∇)w],
+F = -P[(w·∇)w] = -div P(w⊗w).
+```
+
+All six cylindrical stress entries are nonzero in the example. The
+cylindrical divergence formula and its lifted potential-vorticity source
+are checked against the Cartesian calculation. A second calculation
+verifies the lifted identity for arbitrary symbolic stress components.
+The program also checks the stretching difference as an exact divergence
+plus terms with an undifferentiated `w`, and checks the weighted Hardy
+constant on a symbolic power profile. Errors raise exceptions even under
+`python3 -O`.
+
+The polynomial fields test local identities; they are not finite-energy
+whole-space data or Navier–Stokes solutions. The script does not certify
+the analytic proof in the note. That proof assumes prescribed anisotropic
+bounds on the angular mean and the two finite history integrals
+
+```text
+∫ ||w(t)||∞² dt,        ∫ √(T-t) ||w(t)||∞ ||∇w(t)||∞ dt.
+```
+
+Neither assumption has been established for arbitrary data. The note and
+this symbolic calculation are separate from the kernel-checked Lean lane.
