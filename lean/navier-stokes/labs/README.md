@@ -2227,3 +2227,80 @@ its strict energy loss violates the equality for an unforced smooth flow,
 and a force would be needed to cancel its nonzero mean Reynolds torque.
 It shows only that energy inequality, finite dissipation and mean geometry
 alone cannot pay the required stress history.
+
+### Hidden forcing in a heat/HJB observation
+
+`heat_observation.py` checks an explicit positive heat solution on an auxiliary
+circle and the fluid equation satisfied by its observed derivative. It requires
+SymPy and runs with:
+
+```sh
+python3 -O labs/heat_observation.py
+```
+
+For `nu > 0`, `t >= 0` and `|a|+|b| < 1`, set
+
+```text
+Phi(t,theta) = 1 + a exp(-nu t) sin(theta) + b exp(-4 nu t) sin(2 theta),
+W = -2 nu log(Phi),
+v(t) = -W_theta(t,0) = 2 nu (a exp(-nu t) + 2b exp(-4 nu t)).
+```
+
+The heat equation for `Phi` and viscous HJB equation for `W` hold exactly.
+The mean-zero periodic velocity `u = v(t) sin(y) e_x` is incompressible, with
+zero convection, but its Navier--Stokes residual is
+
+```text
+u_t + (u . grad)u - nu Delta u = f(t) sin(y) e_x,
+f(t) = v'(t) + nu v(t) = -12 nu^2 b exp(-4 nu t).
+```
+
+The residual's curl has third component `-f(t) cos(y)`, so pressure cannot
+remove a nonzero residual. Taking `a=epsilon`, `b=-epsilon/2`, with
+`0 < epsilon < 2/3`, gives `u(0)=0` and `v'(0)=6 nu^2 epsilon > 0`.
+This is a forced fluid path obtained from an unforced auxiliary heat equation;
+it is not an unforced Navier--Stokes counterexample.
+
+Retaining the second mode restores the exact history: `f'=-4 nu f`, or,
+after eliminating it, `v''+5 nu v'+4 nu^2 v=0`. The sector `b=0` is invariant
+and does give genuine unforced shear solutions. With
+`c=a exp(-nu t)`, `d=b exp(-4 nu t)`, the full-state reserve satisfies
+
+```text
+Q = c^2+d^2 >= 0,
+Q' = -2 nu c^2 - 8 nu d^2 <= 0,
+20 nu^2 Q - v^2 = 4 nu^2 (2c-d)^2 >= 0.
+```
+
+This reserve includes hidden initial data. It is positive even when the
+counterexample's entire physical initial velocity is zero. A physical
+initial-data allowance therefore requires a compatible lift, not just a
+bound on arbitrary auxiliary heat data.
+
+There is also an analytic obstruction to any fixed finite time-jet summary
+of unrestricted heat potentials. For every integer `m >= 0`, heat-evolve
+`Phi(0,theta)=1+epsilon sin(theta)^(2m+3)`, with `0 < epsilon < 1`.
+Oddness gives `Phi(t,0)=1`, and differentiation of the heat equation gives
+
+```text
+v^(r)(0) = 0                 for 0 <= r <= m,
+v^(m+1)(0) = 2 epsilon nu^(m+2) (2m+3)! > 0.
+```
+
+These identities follow for all `m` from the order of vanishing of the odd
+power. The program independently checks its finite Fourier expansion,
+positivity margin and derivative moments for `m=0,...,12`. Thus the observed
+finite jet can agree with the constant solution while its next derivative
+differs. This excludes evolution laws based only on that jet for the full
+unrestricted class; it does not exclude summaries retaining hidden modes or
+an invariant compatible class of lifts.
+
+Finally, a cubic perturbation of a potential leaves its first two derivatives
+at the observation point unchanged but can change the observed HJB velocity
+derivative. The script checks this with a nonconstant, noncommuting frame,
+both at zero potential and at a nonzero seed. It also checks that a normalized
+chart change `theta -> theta+epsilon theta^3` preserves the initial observation
+of a chart-linear potential while changing its predicted acceleration.
+These are exact finite-dimensional differential identities. An application
+to an infinite-dimensional stochastic flow additionally needs generator
+domains, convergence, and solution regularity; none is asserted by this lab.
