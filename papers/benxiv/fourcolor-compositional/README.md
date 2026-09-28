@@ -20,6 +20,11 @@ and the [compression ledger][ledger]. This guide connects them to the original
 plan. The [long companion][companion] preserves the detailed development and
 earlier attempts; its older sections are historical snapshots.
 
+For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
+semantic bounds, a general reflection theorem, and an audited replacement in
+the finished proof. It illustrates discharging compression; the next
+configuration-family reducibility milestone remains separate.
+
 ## The nearest completed version of the plan
 
 The July *Compositional Proof Note* organizes the argument into three levels.
