@@ -1406,6 +1406,55 @@ Exact rational identities and independent FFT values support the explicit
 example; the analytic heat comparison and local PDE implication are not
 Lean-certified.
 
+### All-frequency renewal in a polarized belt
+
+Run `python3 -O labs/belt_caloric.py`. Proposition 17 of
+`papers/ns_forced_tail_budget.tex` bounds the full quintic caloric renewal
+when all original inputs above `K≥1` satisfy, for one real unit axis `n`,
+
+```text
+|k·n| ≤ β sqrt(|k|),
+|v_hat(k)·n| ≤ β |v_hat(k)| / sqrt(|k|).
+```
+
+With `E=||v||₂²` and `D=||Δv||₂²`, the analytic estimate is
+
+```text
+|T^ν(v)| ≤ C* β² (β+1)^(3/2) K^(-1/4) E^(3/2) D / ν²,
+C* = 30,000,000,000.
+```
+
+It holds on the normalized `2π` torus and on `R³`, uniformly over the
+number of shells and the axis. Increasing a fixed cutoff therefore
+absorbs this class into any prescribed positive fraction of `νD`, for
+fixed energy, viscosity and `β`. The constant is conservative.
+
+Both parent orders are paired before estimating. The full generated
+velocity, including pressure-generated axial components, is retained.
+The nonlinear slot is heat-evolved at its output frequency. Neither
+nearly cancelling outputs nor highly separated inner parents are omitted.
+Scalar masks imposed after pairing permit the earlier high-output and
+separated-sector restrictions.
+
+The exact checker compares the five-input expansion with the existing
+derivative and independent quartic polarization. Its 18 finite cases
+include initially planar and approximately planar velocities, unequal
+frequencies, cancelling outputs and both signs. In one case, full
+renewal is approximately `0.131857`, but projecting the generated direction
+onto its planar polarization gives `-0.840536`. Incorrectly heat-evolving
+its two parents gives `-0.077101`. Thus either shortcut can reverse the
+sign. Constant checks and the fixture norm inequalities use rational
+arithmetic; a separate intermediate kernel diagnostic uses floating point.
+
+For an actual high field split as `v=w+d`, the estimate pays the quintic
+term with all five original inputs from a coherent Fourier selection
+`w`. Its generated `N(w)` is still complete. All terms containing an
+original defect input `d` remain. This algebraic partition does not
+differentiate the selection, so the common axis may change with time.
+There is no claim that support or polarization persists, that all
+scales may use different axes, or that the remaining signed history
+is bounded. The infinite-shell proof is analytic, not Lean-certified.
+
 ### Kida–Pelz evolution
 
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
