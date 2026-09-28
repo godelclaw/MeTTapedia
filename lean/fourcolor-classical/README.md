@@ -7,15 +7,28 @@ Werner's formalization. The dependency is pinned to
 `3db71e0a786a1f19be04c5266fe3d06fed216885`; `LICENSE` retains its MIT notice and
 upstream attribution.
 
-The current root exposes the checked reconstruction and conditional assembly.
-The additional `OrbitAssembly` endpoint supplies the arity-ten presentation
-using rotation and reflection to share certificates. Reducibility and the
-other six arities remain explicit inputs to that endpoint. The full baseline
-replay must pass before an unconditional integration root is accepted.
-`Orbit11Assembly` also supplies the arity-eleven presentation by semantic
-reflection, leaving reducibility and the five lower arities explicit.
-`Orbit9Assembly` additionally supplies arity nine, leaving reducibility and
-arities five through eight explicit.
+`MettapediaFourColor.Complete` proves the finite planar-graph theorem and
+supplies compatible colouring witnesses along exact source constructions.
+It consumes all 633 reducibility certificates and all seven discharging
+presentations, including the shared proofs for arities nine, ten and eleven.
+These endpoints have no unproved reducibility or coverage inputs:
+
+| Endpoint in `FourColor.CompositionalComplete` | Conclusion |
+| --- | --- |
+| `fourColorTheorem` | The reference's real-plane map theorem |
+| `colorable_of_planeDrawing` | `G.Colorable 4` for any finite simple graph with an actual noncrossing path drawing |
+| `supported_source_construction` | An exact closed construction of each bridgeless spherical cubic source map, with compatible GSLT colouring choices |
+| `supported_source_sweep` | Compatible choices for any complete valid source vertex sweep |
+
+Empty graphs, disconnected graphs and isolated vertices are included in the
+plane-drawing theorem. The source-map endpoints retain literal vertices,
+edges and cyclic order, including parallel edges. Compatible choices are
+existential; an arbitrary partial colouring need not extend.
+
+The lightweight `MettapediaFourColor` facade retains the reusable conditional
+adapters. Import `MettapediaFourColor.Complete` explicitly for the complete
+assembly. `OrbitAssembly`, `Orbit11Assembly` and `Orbit9Assembly` remain
+available as the intermediate conditional results.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
@@ -49,7 +62,10 @@ lake env lean MettapediaFourColor.lean
 The target checks the pinned revision, compiles the adapter sources into this
 package's ordinary Lean artifact directory, and audits the imported public
 declarations against `propext`, `Classical.choice` and `Quot.sound`. It records
-source hashes and exit statuses in `.lake/adapter-audit/adapter-results.json`.
+source and artifact hashes and exit statuses in
+`.lake/adapter-audit/adapter-results.json`. The
+[dependency replay measurements](../../tools/fourcolor/classical/dependency-artifact-measurements.json)
+record the receipt upgrade for the adapters and the arity-ten presentation.
 If reference artifacts live elsewhere, set `FOURCOLOR_REFERENCE_ARTIFACTS` to
 that artifact directory.
 
@@ -110,6 +126,33 @@ the configuration catalogue and discharging rules are unchanged.
 The source pin is `orbit9-presentation-sources.json` in the measurement tools;
 generated sources and receipts are in `.lake/orbit9-audit`.
 
+## Complete assembly
+
+After the reference and all four adapter/presentation targets above succeed:
+
+```sh
+lake build kernelComplete
+```
+
+The target first audits the uncompressed reference in a separate Lean process.
+It then checks `Complete` and `CompleteAudit`. The compositional theorem does
+not import the original unconditional theorem or the superseded arity-nine,
+arity-ten and arity-eleven presentations. Its audit follows the dependencies
+of the graph, construction and sweep endpoints, requiring all 633 configuration
+certificates, all seven arity proofs, the 66 named shared hubcaps, the
+periodic and reflected hubcap lemmas, and the actual geometric reconstruction.
+It rejects the 236 superseded checker declarations and checks imported public
+declarations against `propext`,
+`Classical.choice` and `Quot.sound`.
+
+The driver validates the source and artifact hashes of the 87 prepared adapter
+and presentation modules. Final source hashes, artifact hashes, exit statuses
+and frontend times are recorded in `.lake/complete-audit/complete-results.json`.
+The public measurement record is
+[`complete-assembly-measurements.json`](../../tools/fourcolor/classical/complete-assembly-measurements.json).
+The reference replay, shared-presentation builds and final adapter audit are
+distinct measurements; imported dependencies are reused by the final gate.
+
 ## What is preserved
 
 The hypermap dictionary preserves actual dart permutations, components and
@@ -130,12 +173,11 @@ face colours determine nonzero edge differences, which descend through the
 existing dart-colouring adapter to the original literal edges, including
 parallel edges. The exact colour formula is proved at every dart.
 
-`OrbitAssembly.supported_source_construction_of_checks` supplies a closed
+`CompositionalComplete.supported_source_construction` supplies a closed
 GSLT construction trace, an exact geometric model of the source, and
-compatible colouring witnesses. It consumes the shared arity-ten proof,
-with reducibility and the other six presentations still explicit. The
-dependency audit follows this source-construction endpoint independently
-of the plane-drawing endpoint and requires every semantic hubcap in both.
+compatible colouring witnesses. All reducibility and presentation obligations
+are supplied by the complete assembly. The dependency audit follows this
+source-construction endpoint independently of the plane-drawing endpoint.
 
 The reference's Kempe-closure argument selects compatible assignments using
 classical choice. The adapter does not extract an executable Kempe-move path.
@@ -161,10 +203,10 @@ space, without convexity of the sites. `CompactPlaneMap` proves the precise
 contact-to-adjacency and colouring transfer. `PlaneDrawing.colorable` constructs
 all their geometric inputs from the drawing and concludes Mathlib's
 `SimpleGraph.Colorable 4`, assuming the plane-map Four Colour theorem.
-`OrbitAssembly.colorable_of_planeDrawing` supplies that plane-map theorem from
-the GSLT reconstruction and shared arity-ten proof. Its remaining hypotheses
-are reducibility and the other six arity presentations. The dependency audit
-checks that the graph endpoint consumes the geometry and the shared certificate.
+`CompositionalComplete.colorable_of_planeDrawing` supplies that plane-map
+theorem from the complete GSLT reconstruction and coverage proof. The dependency
+audit checks that the graph endpoint consumes both the geometry and the shared
+certificates. Its only graph-specific hypothesis is the supplied drawing.
 
 ## Compression baseline
 
@@ -215,9 +257,14 @@ Across both arities, 3,151 checks become 3,007: 144 independent computations
 are replaced, and 131 identity or classification checks are counted separately.
 Both colouring endpoints consume all replacements.
 
-All 633 configurations remain. An unconditional assembly with all seven
-arities and all reducibility certificates is still pending. Exact counts and
-measurement scope are recorded in the
+The complete assembly additionally consumes the arity-nine sharing, where
+8,212 independent checks become 8,125. Across arities nine through eleven,
+11,363 checks become 11,132, with 218 separate finite identity or classification
+checks. The unconditional endpoints consume all 231 replacements.
+
+All 633 configurations and all 32 discharging-rule labels remain. No new
+uniform configuration-family reducibility theorem is claimed. Exact counts
+and measurement scope are recorded in the
 [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).
 The small pilot shows no measured runtime or artifact-size improvement after
 including the generic lemma; those savings are recorded as zero.

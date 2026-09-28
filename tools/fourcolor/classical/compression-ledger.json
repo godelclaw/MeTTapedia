@@ -10,9 +10,10 @@
     "measurement_sources": [
       "inventory.json",
       "pilot-measurements.json",
-      "reconstruction-measurements.json"
+      "reconstruction-measurements.json",
+      "complete-assembly-measurements.json"
     ],
-    "full_kernel_replay": "in progress"
+    "full_kernel_replay": "complete; source and artifact hashes in complete-assembly-measurements.json"
   },
   "credited_compression": {
     "catalogue_entries_removed": 0,
@@ -21,7 +22,7 @@
     "certificate_bytes_saved": 0,
     "kernel_seconds_saved": 0,
     "local_discharging_computations_replaced": 231,
-    "whole_assembly_discharging_computations_replaced": 0,
+    "whole_assembly_discharging_computations_replaced": 231,
     "arity10_coverage_checker_obligations_replaced": 82,
     "conditional_assembly_checker_obligations_replaced": 231,
     "arity11_coverage_checker_obligations_replaced": 62,
@@ -66,7 +67,7 @@
       "configurations_removed": 0
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local and conditional-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. Whole-assembly credit waits for the unconditional root.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 configuration certificates remain. Runtime and artifact-size savings are unclaimed.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -78,7 +79,7 @@
       "uniform_theorem": "FourColor.HubcapOrbit.oneEntries_fit_periodic",
       "consumer": "FourColor.PeriodicHubcap.succeeds",
       "evidence": "kernel checked",
-      "integrated_into_full_unavoidability": false,
+      "integrated_into_full_unavoidability": true,
       "measurements": "periodic-hubcap-measurements.json",
       "integrated_into_arity10_coverage": true,
       "coverage_consumer": "FourColor.Orbit10.exclude10",
@@ -87,7 +88,14 @@
       "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
       "graph_bridge_measurements": "plane-drawing-measurements.json",
       "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
-      "source_construction_measurements": "source-tait-measurements.json"
+      "source_construction_measurements": "source-tait-measurements.json",
+      "complete_consumers": {
+        "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+        "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+        "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+        "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+      },
+      "complete_measurements": "complete-assembly-measurements.json"
     },
     {
       "reference_obligation": "FourColor.f10_242",
@@ -98,7 +106,7 @@
       "additional_check": "One finite classification of full boundary inputs and bounds into three reflection orbits",
       "consumer": "FourColor.ReflectedHubcap.succeeds",
       "evidence": "kernel checked",
-      "integrated_into_full_unavoidability": false,
+      "integrated_into_full_unavoidability": true,
       "measurements": "reflected-hubcap-measurements.json",
       "integrated_into_arity10_coverage": true,
       "coverage_consumer": "FourColor.Orbit10.exclude10",
@@ -113,7 +121,14 @@
       ],
       "prior_rotation_only_measurements": "half-turn-hubcap-measurements.json",
       "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
-      "source_construction_measurements": "source-tait-measurements.json"
+      "source_construction_measurements": "source-tait-measurements.json",
+      "complete_consumers": {
+        "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+        "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+        "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+        "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+      },
+      "complete_measurements": "complete-assembly-measurements.json"
     },
     {
       "reference_obligations": [
@@ -171,7 +186,7 @@
         "FourColor.Orbit10.f10_1110"
       ],
       "evidence": "kernel checked",
-      "integrated_into_full_unavoidability": false,
+      "integrated_into_full_unavoidability": true,
       "integrated_into_arity10_coverage": true,
       "coverage_consumer": "FourColor.Orbit10.exclude10",
       "conditional_assembly_consumer": "FourColor.OrbitAssembly.fourColorTheorem_of_checks",
@@ -179,7 +194,14 @@
       "measurements": "semantic-hubcap-measurements.json",
       "coverage_measurements": "orbit-presentation-measurements.json",
       "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
-      "source_construction_measurements": "source-tait-measurements.json"
+      "source_construction_measurements": "source-tait-measurements.json",
+      "complete_consumers": {
+        "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+        "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+        "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+        "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+      },
+      "complete_measurements": "complete-assembly-measurements.json"
     },
     {
       "reference_obligations": [
@@ -203,14 +225,21 @@
         "FourColor.Orbit10.f10_998"
       ],
       "evidence": "kernel checked",
-      "integrated_into_full_unavoidability": false,
+      "integrated_into_full_unavoidability": true,
       "integrated_into_arity10_coverage": true,
       "coverage_consumer": "FourColor.Orbit10.exclude10",
       "conditional_assembly_consumer": "FourColor.OrbitAssembly.fourColorTheorem_of_checks",
       "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
       "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
       "measurements": "paired-charge-measurements.json",
-      "coverage_measurements": "orbit-presentation-measurements.json"
+      "coverage_measurements": "orbit-presentation-measurements.json",
+      "complete_consumers": {
+        "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+        "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+        "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+        "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+      },
+      "complete_measurements": "complete-assembly-measurements.json"
     },
     {
       "reference_obligations": [
@@ -252,13 +281,20 @@
         "FourColor.Orbit11.f11_317"
       ],
       "evidence": "kernel checked",
-      "integrated_into_full_unavoidability": false,
+      "integrated_into_full_unavoidability": true,
       "integrated_into_arity11_coverage": true,
       "coverage_consumer": "FourColor.Orbit11.exclude11",
       "conditional_assembly_consumer": "FourColor.Orbit11Assembly.fourColorTheorem_of_checks",
       "conditional_graph_consumer": "FourColor.Orbit11Assembly.colorable_of_planeDrawing",
       "conditional_source_construction_consumer": "FourColor.Orbit11Assembly.supported_source_construction_of_checks",
-      "measurements": "orbit11-presentation-measurements.json"
+      "measurements": "orbit11-presentation-measurements.json",
+      "complete_consumers": {
+        "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+        "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+        "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+        "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+      },
+      "complete_measurements": "complete-assembly-measurements.json"
     },
     {
       "reference_obligations": [
@@ -340,13 +376,43 @@
         "FourColor.Orbit9.f9_3556"
       ],
       "evidence": "kernel checked",
-      "integrated_into_full_unavoidability": false,
+      "integrated_into_full_unavoidability": true,
       "integrated_into_arity9_coverage": true,
       "coverage_consumer": "FourColor.Orbit9.exclude9",
       "conditional_assembly_consumer": "FourColor.Orbit9Assembly.fourColorTheorem_of_checks",
       "conditional_graph_consumer": "FourColor.Orbit9Assembly.colorable_of_planeDrawing",
       "conditional_source_construction_consumer": "FourColor.Orbit9Assembly.supported_source_construction_of_checks",
-      "measurements": "orbit9-presentation-measurements.json"
+      "measurements": "orbit9-presentation-measurements.json",
+      "complete_consumers": {
+        "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+        "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+        "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+        "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+      },
+      "complete_measurements": "complete-assembly-measurements.json"
     }
-  ]
+  ],
+  "complete_assembly": {
+    "consumers": {
+      "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+      "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+      "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+      "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+    },
+    "measurement": "complete-assembly-measurements.json",
+    "configurations_consumed": 633,
+    "arity_proofs_consumed": 7,
+    "named_shared_hubcaps_consumed": 66,
+    "additional_shared_lemmas": [
+      "FourColor.PeriodicHubcap.fit",
+      "FourColor.ReflectedHubcap.succeeds"
+    ],
+    "superseded_checker_declarations_absent": 236,
+    "original_unconditional_theorem_imported": false,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
 }

@@ -65,3 +65,16 @@ target kernelOrbit9Presentation pkg : Unit := do
         "--output", ".lake/orbit9-audit", "--library-output", ".lake/build/lib/lean"]
       cwd := pkg.dir
       env := env }
+
+/-- Check the full reference baseline and the complete compositional endpoints. -/
+target kernelComplete pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_complete.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/complete-audit",
+        "--library-output", ".lake/build/lib/lean"]
+      cwd := pkg.dir
+      env := env }

@@ -5,8 +5,10 @@ Neil Robertson, Daniel Sanders, Paul Seymour and Robin Thomas, *The four-colour
 theorem*, Journal of Combinatorial Theory B 70 (1997), 2–44. Georges Gonthier and
 Benjamin Werner's Coq/Rocq development is the formal reference.
 
-The source survey also found existing Lean ports. A new development should
-audit and reuse them before duplicating their mathematics.
+The source survey found existing Lean ports. This integration reuses Emery's
+port, replays its complete reference theorem, and checks a separate
+compositional assembly with shared discharging proofs. The complete endpoints
+and their measurement scope are described below.
 
 | Source | Pinned revision | Declared licence | Role |
 | --- | --- | --- | --- |
@@ -15,11 +17,11 @@ audit and reuse them before duplicating their mathematics.
 | [Robert D. Barish's Lean port](https://github.com/RBarish-UTokyo/FourColorTheorem-Lean4) | `20fa34599f5189dd569d96dd22f306c94ab1c446` | Apache-2.0 with NOTICE and upstream CeCILL-B text | Independent comparison; Lean 4.35.0-rc2 |
 
 Both Lean repositories claim complete proofs with only `propext`,
-`Classical.choice` and `Quot.sound`. A source claim is distinct from a reproduced
-build. The local pilot first checks statement fidelity, checker soundness and
-representative certificates; full reproduction and the GSLT adapters are
-separate obligations. The ports' existing uniform certificate techniques are
-part of the baseline, not new compression attributable to this development.
+`Classical.choice` and `Quot.sound`. Emery's pinned reference has been replayed
+and independently audited here; Barish's port was a source comparison.
+The original pilot, complete reference replay and compositional adapter gates
+are recorded separately. The ports' existing uniform certificate techniques
+are part of the baseline, not new compression attributable to this development.
 
 Other surveyed projects include
 [tangentproofs/fourcolor-lean](https://github.com/tangentproofs/fourcolor-lean)
@@ -28,6 +30,39 @@ Other surveyed projects include
 (`c36f6d8120024ddf91e4ea4033bfa2842bcecbb8`, an unfinished top-level theorem), and
 [TonalidadeHidrica/FourColorTheorem](https://github.com/TonalidadeHidrica/FourColorTheorem)
 (`1c0cb61da4f953b29097b12ed1737b09890c7080`, preliminary structures).
+
+## Complete endpoints
+
+`FourColor.CompositionalComplete.colorable_of_planeDrawing` proves
+`SimpleGraph.Colorable 4` for every finite simple graph with an actual
+noncrossing path drawing in the plane. The drawing supplies distinct vertex
+positions and noncrossing injective edge paths; it contains no colouring or
+coverage assumption. Empty and disconnected graphs and isolated vertices
+are included.
+
+For the original bridgeless spherical cubic source class,
+`CompositionalComplete.supported_source_construction` supplies an exact
+construction trace and compatible GSLT colouring witnesses. The companion
+`supported_source_sweep` covers any complete valid vertex order. Witnesses
+retain literal source vertices, edges and cyclic order. These conclusions
+assert successful choices along the whole route.
+
+The complete assembly consumes every catalogue certificate and all seven
+arity proofs, with 231 independent discharging computations replaced through
+semantic transport. Its audit checks each endpoint's dependencies and rejects
+the original unconditional theorem and the 236 superseded declarations.
+The reference theorem is audited separately. Only `propext`, `Classical.choice`
+and `Quot.sound` occur in the audited declarations.
+
+The [dependency receipt replays](dependency-artifact-measurements.json) record
+source and compiled-artifact hashes for the adapters and arity-ten presentation.
+Those replays reproduce the same proof artifacts; they add no compression credit.
+
+Build instructions are in the
+[integration package](../../../lean/fourcolor-classical/README.md).
+`complete-assembly-measurements.json` records the source and artifact hashes,
+reference replay scope, final gate times and audit results. All 633 configurations
+remain. Runtime and artifact-size savings remain unclaimed.
 
 ## Data inventory
 
@@ -493,8 +528,9 @@ and the conditional `OrbitAssembly` endpoint. Its 2,580 explicit hubcap checker
 obligations become 2,498, with 69 separate finite checks classifying or
 identifying boundary inputs. These are counts of independent checker proof obligations, not
 all reductions performed by the kernel. All 633 configurations remain.
-An unconditional assembly with every catalogue certificate and all seven
-presentations is still pending, so that full replay is credited no saving yet.
+The complete `CompositionalComplete` endpoints consume this result and the
+additional arity-nine and arity-eleven sharing: 231 independent computations
+are replaced in total, with 218 finite input identities counted separately.
 Fewer separate checks, fewer distinct arguments, and a smaller unavoidable
 set are different results. Removing a configuration from the unavoidable set
 also requires a new coverage proof.
