@@ -167,7 +167,7 @@ def main():
                                     if q["name"] != q["representative"]])
                for case, data in cases.items()]
     report = dict(reference_revision=REFERENCE_REVISION, generated=generated,
-                  semantic_sharing=sharing,
+                  semantic_sharing=sharing, completed=False,
                   compiler_options=OPTIONS, native_code_generation=False, modules=[])
     receipt = output / "orbit-results.json"
     receipt.write_text(json.dumps(report, indent=2) + "\n")
@@ -224,7 +224,9 @@ def main():
                       exit_code=result.returncode,
                       frontend_wall_seconds=round(time.monotonic() - started, 3))
         if not result.returncode:
-            record["olean_bytes"] = Path(str(stem) + ".olean").stat().st_size
+            compiled = Path(str(stem) + ".olean")
+            record.update(olean_bytes=compiled.stat().st_size,
+                          olean_sha256=hashlib.sha256(compiled.read_bytes()).hexdigest())
         report["modules"].append(record)
         receipt.write_text(json.dumps(report, indent=2) + "\n")
         print(json.dumps(record), flush=True)

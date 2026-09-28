@@ -77,7 +77,10 @@ def main():
         capture([args.lake, "env", "printenv", "LEAN_PATH"], mettapedia),
         capture([args.lake, "env", "printenv", "LEAN_PATH"], reference),
     ])
-    records = []
+    report = dict(reference_revision=REFERENCE_REVISION, compiler_options=OPTIONS,
+                  native_code_generation=False, completed=False, modules=[])
+    receipt_path = output / "adapter-results.json"
+    receipt_path.write_text(json.dumps(report, indent=2) + "\n")
     for name in [*MODULES, "Root"]:
         module = ("MettapediaFourColor" if name == "Root" else
                   "MettapediaFourColor." + name)
@@ -101,14 +104,17 @@ def main():
         record = dict(module=module, source_sha256=hashlib.sha256(data).hexdigest(),
                       exit_code=result.returncode,
                       frontend_wall_seconds=round(time.monotonic() - start, 3))
-        records.append(record)
-        (output / "adapter-results.json").write_text(json.dumps(dict(
-            reference_revision=REFERENCE_REVISION,
-            compiler_options=OPTIONS, native_code_generation=False,
-            modules=records), indent=2) + "\n")
+        if not result.returncode:
+            compiled = Path(str(stem) + ".olean")
+            record.update(olean_bytes=compiled.stat().st_size,
+                          olean_sha256=hashlib.sha256(compiled.read_bytes()).hexdigest())
+        report["modules"].append(record)
+        receipt_path.write_text(json.dumps(report, indent=2) + "\n")
         print(json.dumps(record), flush=True)
         if result.returncode:
             raise SystemExit(result.returncode)
+    report["completed"] = True
+    receipt_path.write_text(json.dumps(report, indent=2) + "\n")
 
 
 if __name__ == "__main__":
