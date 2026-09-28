@@ -2,10 +2,29 @@
 
 This is the canonical modern Lean home for the godelclaw Four Color work.
 
-## Goertzel/Fable checkpoint — 22 September 2026
+## Current proof plan — 28 September 2026
 
-The active proof branch is `goertzel/proofs`. The Four-Color Theorem is **not
-proved by this route**. The following distinctions matter when resuming work:
+Start with the [compositional proof-plan guide](../../../../../papers/benxiv/fourcolor-compositional/README.md).
+It connects Goertzel and Fable's original three-level argument to the current
+Lean results and identifies where the completed repair changes the proof.
+
+The [classical integration package](../../../../fourcolor-classical/README.md)
+now proves four-colourability for finite simple graphs with noncrossing plane
+drawings and supplies compatible GSLT colouring witnesses for exact
+constructions of every bridgeless spherical cubic source map. The checked
+root is [MettapediaFourColor.Complete](../../../../fourcolor-classical/MettapediaFourColor/Complete.lean).
+All 633 classical configuration certificates remain; 231 independent
+discharging computations are replaced by shared proofs.
+
+This completes the classical reconstruction. The original uniform
+corridor/finite-base mechanism and the first uniform replacement of a family
+of configuration checks remain research questions. The GSLT, graph and
+MeTTa results have their own verified consumers, listed in the guide.
+
+## Independent corridor route — checkpoint of 22 September 2026
+
+The following table describes the earlier direct Count proposal. Its open
+premises are not dependencies of the completed classical assembly:
 
 | Part | Checked result | Still needed |
 | --- | --- | --- |
@@ -30,14 +49,15 @@ Read the exact statements in
 [GoertzelV24MeshBondCarrierSeparation.lean](GoertzelV24MeshBondCarrierSeparation.lean),
 [GoertzelV24BondDepthObligation.lean](GoertzelV24BondDepthObligation.lean), and
 [GoertzelV24DecomposableFiniteBase.lean](GoertzelV24DecomposableFiniteBase.lean).
-The living explanatory documents are `papers/benxiv/goertzel_4cp.tex` and
+The detailed explanatory documents are `papers/benxiv/goertzel_4cp.tex` and
 `papers/benxiv/foundations/compositional-proof-spine.tex`, relative to the
-repository root. They are status documents, not substitutes for the primary
-Goertzel/Fable manuscripts.
+repository root. The companion now opens with the completed repair; the
+older corridor tables and chronological sections retain their route-specific
+scope. These are companions to the primary Goertzel/Fable manuscripts.
 
 ### Fresh checkout
 
-Use a separate checkout or worktree for each active lane. For a new destination:
+To reproduce the development on a new destination:
 
 ```sh
 git clone --branch goertzel/proofs https://github.com/godelclaw/MeTTapedia.git MeTTapedia-4cp
@@ -52,12 +72,14 @@ cd ../..
 python3 papers/benxiv/tools/gen_citation_ledger.py --check
 ```
 
-Use the checked-in `lean-toolchain` (Lean 4.31.0 at this checkpoint) and pinned
+Use the checked-in `lean-toolchain` (currently Lean 4.34.0-rc2) and pinned
 dependencies; do not upgrade them as part of a move. Where both Lake files
 exist, `lakefile.lean` is selected, not `lakefile.toml`. The bootstrap preserves
 an existing dependency checkout and reports a pin mismatch instead of resetting
 it. A source-host build is not evidence of a successful fresh-machine build;
-run the gates on the destination too.
+run the gates on the destination too. The complete classical assembly has
+additional dependency preparation and its own `kernelComplete` target; follow
+the [integration build instructions](../../../../fourcolor-classical/README.md#kernel-build).
 
 `ResearchCheckpoint` separately checks preserved supplemental results. Its
 minimal-counterexample selection and abstract reflection modules refer to a
@@ -72,14 +94,11 @@ private research reports separately, with appropriate permissions. Session
 archives are optional historical context, not build dependencies; do not commit
 them, authentication stores, or unrelated unfinished edits to the proof branch.
 
-### Other proof lanes
+### Historical branches
 
-`ns/lane` and `4cp/knuth-gate-lab` are separate lanes; do not merge them merely
-to move machines. Historical local Millennium branch tips are preserved under
-`archive/goertzel-20260922/` on the remote, without rewriting their divergent
-existing branch names. These archive refs preserve history, not newly verified
-proof releases. In particular, an archived branch is not permission to restore
-superseded or forbidden proof architectures into this lane.
+Historical proof branch tips are preserved under `archive/goertzel-20260922/`
+on the remote. These archive references preserve earlier research states;
+the current development and build instructions are on `goertzel/proofs`.
 
 ## Background module guide
 

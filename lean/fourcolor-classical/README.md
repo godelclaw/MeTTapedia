@@ -1,5 +1,9 @@
 # Classical Four Colour and compositional reconstruction
 
+For the connection to Goertzel and Fable's original plan, the reusable results,
+and the remaining compression work, see the
+[compositional proof-plan guide](../../papers/benxiv/fourcolor-compositional/README.md).
+
 This package combines [Chris Emery's Lean port](https://github.com/corun1024/4ct)
 with MeTTapedia's GSLT colouring-witness semantics. It reuses the classical
 mathematics of Robertson, Sanders, Seymour and Thomas, following Gonthier and

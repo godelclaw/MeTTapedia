@@ -1,0 +1,89 @@
+\section{Current proof plan: a completed classical reconstruction}
+\label{sec:complete-compositional-plan}
+
+\textbf{Status: 28 September 2026.}
+The complete assembly is kernel-checked in commit \texttt{b99eaf006}.
+Its central theorem for graphs is
+\path{FourColor.CompositionalComplete.colorable_of_planeDrawing}:
+every finite simple graph supplied with a noncrossing path drawing in the
+real plane admits a proper four-colouring. Empty and disconnected graphs
+and isolated vertices are included. The drawing contains geometric data,
+not a colouring assumption.
+
+The same assembly proves
+\path{FourColor.CompositionalComplete.supported_source_construction}
+and \path{FourColor.CompositionalComplete.supported_source_sweep}.
+Every bridgeless spherical cubic source map has an exact construction trace
+with compatible colouring witnesses, and every complete valid source vertex
+sweep admits such choices. The construction preserves the source's actual
+vertices, edges and cyclic order, including parallel edges.
+
+\paragraph{Relation to the compositional note.}
+The note's three levels remain the organizing principle. At Level~0,
+minimality supplies a colouring of a smaller contracted map; reconstruction
+then colours the original. At Level~1, literal graph constructors and exact
+source coverage give operational histories. At Level~2, a colouring of a
+composite is equivalent to a compatible pair of colourings of its pieces:
+\[
+ W(P;Q;x,z)\ \simeq\ \coprod_y W(P;x,y)\times W(Q;y,z).
+\]
+Nonemptiness yields relational composition, and finite cardinality yields
+the boundary-matrix multiplication law. These statements retain the actual
+witnesses, so they support replacement inside a surrounding context.
+
+\paragraph{The repaired global argument.}
+The changed premise is coverage. The complete proof obtains it from the
+classical unavoidable configurations and discharging argument, using the
+mathematics of Robertson, Sanders, Seymour and Thomas through the
+Gonthier--Werner formalization and Chris Emery's Lean port. It does not derive
+universal corridor supply or a globally finite image of exact Count from
+bounded defect. Its implication chain is
+\[
+\begin{gathered}
+\text{checked reducibility + a fitted configuration + minimality}\\
+\Longrightarrow\text{compatible disk and exterior witnesses}\\
+\Longrightarrow\text{an actual colouring of the alleged obstruction},
+\end{gathered}
+\]
+while discharging forces such a fitted configuration in every minimal
+counterexample. The two arguments exclude minimal counterexamples and give
+the graph and source-construction endpoints above.
+
+In \path{EmbeddedReconstruction}, the select-and-glue GSLT route has an
+explicit witness and its output is the reconstructed colouring consumed by
+\path{ClassicalAssembly.no_embedded_reduction}. Selection uses classical
+choice. No executable Kempe-move sequence is claimed, and no theorem requires
+every partial colouring to survive every next operation.
+
+\paragraph{What the complete proof consumes.}
+All 633 configuration certificates remain. Semantic rotation, reflection
+and paired-charge transport replace 231 independent discharging checks at
+arities nine through eleven: 11,363 become 11,132, with 218 finite input
+identities or classifications counted separately. All 32 discharging-rule
+labels remain. No configuration-family reducibility saving, smaller
+unavoidable catalogue, runtime improvement or artifact-size saving is claimed.
+\path{MettapediaFourColor.CompleteAudit} follows the graph, construction and
+sweep endpoints, checks their geometric and shared-proof dependencies, and
+rejects the original unconditional theorem and 236 superseded checker
+declarations. The audited axiom set is
+\(\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}\).
+
+\paragraph{Where the original programme continues.}
+The tube, facial-sweep, Kempe-recomposition and support theorems are available
+as uniform candidates for further compression. Literal zigzag tubes now have
+the sufficient support-stabilization bound \(2k(k-1)\) at circumference
+\(k\geq3\), hence 40 rings at circumference five. This does not prove that
+every target contains such a tube. The current boundary-triangle subdivision
+theorem decomposes all four-colourings into an old-colouring branch and a
+contracted-colouring branch with two fresh-colour choices. To remove a family
+of configuration checks, its catalogue realizations and the reducibility
+transport through both branches must still be proved and consumed by the
+complete assembly.
+
+The independent corridor/finite-base proposal remains recorded in
+Section~\ref{sec:compositional-proof-spine}; proving the classical repair
+does not establish its distinctive premises. The concise
+\href{fourcolor-compositional/README.md}{proof-plan guide} maps the original
+levels and playbook phases to the current Lean modules, records the reusable
+graph-representation and MeTTa results, and links the measured compression
+ledger. It is the entry point for the current development.

@@ -1,5 +1,9 @@
 # Classical Four Colour sources and compression baseline
 
+The [proof-plan guide](../../../papers/benxiv/fourcolor-compositional/README.md)
+connects these source and measurement records to the compositional argument
+and its current research questions.
+
 The classical baseline is the 633 configurations and discharging argument of
 Neil Robertson, Daniel Sanders, Paul Seymour and Robin Thomas, *The four-colour
 theorem*, Journal of Combinatorial Theory B 70 (1997), 2–44. Georges Gonthier and

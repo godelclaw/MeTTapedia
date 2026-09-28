@@ -1,6 +1,14 @@
 # Ben Goertzel proof-attempt formalization index
 
-Last synchronized: 2026-07-14.
+Four Colour entry updated: 2026-09-28. Other entries retain their own earlier
+status and are not reassessed by this update.
+
+For the current Four Colour work, start with the
+[compositional proof-plan guide](fourcolor-compositional/README.md).
+It maps Goertzel and Fable's three-level plan to the completed classical
+reconstruction, reusable GSLT results and remaining compression questions.
+The [companion source](goertzel_4cp.tex) opens with the same repaired plan;
+its existing PDF is an earlier historical snapshot.
 
 This is the living index for MeTTapedia's formal review of Ben Goertzel's proof
 attempts concerning the Four-Color Theorem, P versus NP, three-dimensional
@@ -17,12 +25,21 @@ stored in structure fields or passed as named premises.
 
 | Route | Original proof idea | Current formal verdict | Companion |
 |---|---|---|---|
-| Four Color, v23 | Annular difference spanning; CAP5-free radius-one locality; execution of mixed Kempe switches through Penrose–Kauffman operators and local reachability on a canonical three-cell collar | Encoded local audits and substantial composition machinery are checked. Graph-fidelity and global assembly obligations remain open; an encoded-model seam failure refutes the collar-to-ambient reinterpretation as written in that model. This does not challenge the already-established Four-Color Theorem. | [source](goertzel_4cp.tex), [PDF](goertzel_4cp.pdf) |
+| Four Colour, compositional programme | Open pieces, compatible colouring histories, boundary counting and strict reconstruction; originally a corridor/finite-base proposal | Complete classical reconstruction checked for finite noncrossing plane drawings and exact source GSLT constructions. All 633 configurations remain; 231 independent discharging checks are replaced. The original uniform corridor supply and first configuration-family compression remain separate research questions. | [current proof plan](fourcolor-compositional/README.md), [companion source](goertzel_4cp.tex), [historical PDF](goertzel_4cp.pdf) |
 | P versus NP, v13 | An upper–lower clash in polytime-capped conditional description length on a gauge-buffered locked SAT ensemble; CD evidence normalization, an Atomic Evidence Budget, boundary mixing, and fixed-clock incompressibility oppose the self-reduction upper bound under `P = NP` | The adaptive gauge-product law and substantial mechanical scaffolding are checked. The exact faithful M4 target is nevertheless machine-checked uninhabited: D.8 message rigidity, D.31 public-syntax neutrality, D.48 opposite-phase coupling, Definition 7.4 support-wide pair neutrality, and full public observability are jointly inconsistent on a nonempty target. The route requires revision; no separation is proved. | [source](goertzel_pnp.tex), [PDF](goertzel_pnp.pdf) |
 | Navier–Stokes, v7 | Lift Navier–Stokes to heat flow on `SDiff(T³)`, apply a Cole–Hopf transform, push the gradient down at the identity, and control Beale–Kato–Majda through identity carré-du-champ energy | The original local adjoint hypothesis H1 is refuted in a normalized Fourier shear model. A stochastic-Lagrangian repair has a checked conditional BKM skeleton, but its pancake closure requires the still-open pointwise scale-local strain budget `ScaleLocalPancakeStrainBudget`. | [source](goertzel_ns.tex), [PDF](goertzel_ns.pdf) |
 | Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | The natural finite Wilson-polynomial extraction has norm one, but v14's range-only `P_ext` data cannot transfer that bound. The advertised recursion constant is not derived; its two ledgers disagree and several factor inferences fail as written. OUR hypercubic boundary-cochain repair continues the same Wilson/RG/KP/OS proof programme and defines the coordinate-free joint invariant relation space. Its covariant-commutator rows needed the Leibniz rule: the earlier joint space contains a vector with nonzero background value, while every corrected relation vanishes on every gauge background and the corrected space has certified rank at least `11558`. It is not yet a complete census, conditioning certificate, RG bound, or continuum construction. Numerical evidence indicates that the stopping-scale step cannot be instantiated in the weak-coupling regime the bootstrap provides; on the hierarchical lattice, where the flow is exact, four-dimensional U(1) confines as well, so that lattice cannot model the missing crossing. The missing crossing input is stated in Lean, proved sufficient for exponential clustering uniformly in the volume, and shown to fail at β = ∞ for four-dimensional U(1) and five-dimensional gauge fields; proving it for four-dimensional SU(2) is open; at strong coupling it is proved for Wilson-type measures uniformly in the volume. A necessary condition testable at finite coupling is proved: a twist-compatible crossing family has vanishing twist free energy on large tori. Monte Carlo finds it vanishing for four-dimensional SU(2) and not for four-dimensional U(1) or five-dimensional SU(2), where the centre twist is classically costly (U(1)) or weak coupling persists (SU(2), whose twist eaters make it classically free). | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
 
 ## Four-Color route
+
+The [current guide](fourcolor-compositional/README.md) follows the later
+Goertzel/Fable compositional note and explains the completed repair. Its
+classical coverage argument reuses Robertson–Sanders–Seymour–Thomas through
+Gonthier–Werner and Emery. The complete theorem consumes actual colouring
+reconstruction and the shared discharging proofs; it does not prove the
+manuscript's distinct bounded-width or generating-base assertions.
+
+The earlier v23 stage remains useful background:
 
 Ben's v23 argument recasts a plane triangulation as a bridgeless planar cubic
 dual and encodes its three edge colors by the nonzero elements of
