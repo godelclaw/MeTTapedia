@@ -37,3 +37,41 @@ history from the actual infinite Fourier coefficient solution. It does not
 yet instantiate an inverse history operator in this block system. The
 two layers distinguish exact elimination from dynamical realizability;
 neither bounds arbitrary-data nonlinear regeneration.
+
+## Signed costs and Bellman verification
+
+`BoundaryBellman.lean` equips the existing `Core.LooseRelationEquipment`
+witnesses with real signed costs. Composing two witnesses retains their common
+intermediate state and adds their costs. For a reserve `R`, the local condition
+
+```text
+cost(h : x -> y) + R(y) <= R(x)
+```
+
+composes through every finite compatible history. If the terminal reserve is
+nonnegative, the initial reserve pays the total cost. `upper_comp_iff` gives
+the backward Bellman budget law without assuming a finite state space,
+discounting, a finite supremum, or an optimizer. `Bounds.of_domination` and
+`Domination.comp` preserve upper bounds under witness transport with a proved
+cost inequality.
+
+`StateErasureExample` preserves each individual event cost while forgetting
+whether the source is charged or spent. The forgotten relation permits a
+positive loop and has no state-only reserve; the retained relation has a
+nonnegative reserve controlling every finite prefix. Thus preservation of
+individual costs does not justify forgetting the states that constrain their
+composition.
+
+This distinction complements the history and erasure analysis in
+[F1R3FLY's history note](https://github.com/F1R3FLY-io/publications/blob/4504c70f04e3b5595c27f3a21a057bc403b0f97c/history-functor/history-endofunctor.pdf)
+and the ledger formalization in
+[`CostExactness.lean`](https://github.com/zariuq/MeTTapedia/blob/1d882c9f03383d58ad7afbcfaf43abbc88291ece/lean/mettapedia/Mettapedia/GSLT/Dynamics/CostExactness.lean).
+A conserved expression `remaining + spent = initial` alone supplies neither
+nonnegativity of `remaining` nor identification with physical energy.
+
+`MettapediaNS.WholeSpaceHistoryBridge` is an actual fluid consumer. Its edges
+are smooth unforced whole-space NS evolutions, and its costs are integrals of
+the physical order-energy production. It proves the kinetic-energy case and
+states the stronger order-one reserve as a sufficient continuation hypothesis.
+Constructing that reserve, or identifying a transported-frame/stochastic
+observable with a suitable cost and nonnegative reserve, remains open.

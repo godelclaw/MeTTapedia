@@ -11,7 +11,8 @@ toolchains. Compatibility of an existing module with this package must be
 checked explicitly; adding the source root does not certify its migration.
 The shared library also includes the existing Markov-category kernel interface
 imported by the Navier–Stokes semigroup module, and the GSLT linear boundary
-reduction and compatibility theorems in `Mettapedia.GSLT.Dynamics`.
+reduction and compatibility theorems in `Mettapedia.GSLT.Dynamics`. Its costed
+history interface uses the existing `GSLT.Core.LooseRelationEquipment`.
 
 ## Pinned dependencies
 
@@ -96,6 +97,43 @@ in `papers/ns_forced_tail_budget.tex` must be read together: coherent depletion
 is controlled for the stated class; a full-datum bound on signed regeneration
 through the complement is still required. Boundary elimination must preserve
 the stretching observable and its resource accounting, not only velocity.
+
+## Bellman certificates on actual fluid histories
+
+`MettapediaNS.WholeSpaceHistoryBridge` instantiates
+`GSLT.Dynamics.BoundaryBellman` with actual smooth, unforced `NSEvolution`
+segments on `ℝ³`. Each segment retains its full initial and final velocities,
+positive physical duration, and viscosity. Compatible segments concatenate
+to another actual evolution. The window state also retains elapsed time.
+
+For each derivative order `n`, `production_integral` identifies the signed
+cost with the literal PDE energy production:
+
+```text
+cost_n(segment) = integral_segment production_n dt = E_n(end) - E_n(start).
+cost_n(segment) + R(end) <= R(start).
+```
+
+The second line is the certificate obligation. Composition cancels the
+intermediate reserves, without granting a new initial allowance at each seam.
+The kinetic case `n = 0` has the proved certificate `R = 0`, by the unforced
+energy inequality (`kinetic_bounds`, `kinetic_history_cost_nonpos`).
+
+For `n = 1`, `orderEnergy_le_of_reserve` derives a gradient-energy bound at
+every time from a nonnegative reserve certificate for all admissible segments
+in the finite window. `hasNSEvolution_of_bellman` then applies the existing
+whole-space continuation theorem. Its hypothesis requires such a real-valued
+reserve for each horizon, over all full velocity states. The initial value
+depends on the full datum. Existence of this stronger certificate is open;
+it is not established by the composition theorem or the kinetic-energy case.
+A more restricted certificate may instead use a proved reachable-state space.
+
+This cost is ordinary signed order-energy production including full viscous
+dissipation. It is not identified with the auxiliary caloric renewal or the
+transported-frame energy. Those observables need their own production and
+comparison theorems. Likewise, no identification with a Schrödinger bridge
+optimizer is asserted. The framework permits such a later consumer while
+keeping its fluid realization and analytic bound as explicit obligations.
 
 ## Checked applications and semantic interfaces
 

@@ -41,6 +41,7 @@ import MettapediaNS.WholeSpaceBetchov
 import MettapediaNS.OpenAISolutionPancake
 import MettapediaNS.ForcedSignedBudget
 import MettapediaNS.FilteredHistory
+import MettapediaNS.WholeSpaceHistoryBridge
 import Mettapedia.GSLT.Dynamics.ConstrainedBoundaryReduction
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchIdentity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchSchur
@@ -82,6 +83,22 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.exp_weighted_history
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.mode_history
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.hidden_mode_history
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.CostedRelation.upper_comp_iff
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.CostedRelation.Bounds.comp
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.CostedRelation.Bounds.iterate
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.CostedRelation.Bounds.of_domination
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.CostedRelation.Domination.comp
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.StateErasureExample.retained_all_prefixes
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.StateErasureExample.forget_preserves_single_cost
+#print axioms Mettapedia.GSLT.Dynamics.BoundaryBellman.StateErasureExample.forgotten_no_reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.production_integral
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.Segment.comp
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.Segment.cost_comp
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.WindowStep.comp
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.kinetic_bounds
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.kinetic_history_cost_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.orderEnergy_le_of_reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.hasNSEvolution_of_bellman
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCoherentPairEstimate.sigmaSq_coherent_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_two_four
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_adjacent
