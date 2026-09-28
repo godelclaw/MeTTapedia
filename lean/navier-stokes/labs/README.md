@@ -1,5 +1,17 @@
 # Navier–Stokes interaction labs
 
+The current geometric question is whether repeated interactions among
+coherent vorticity structures admit a signed history bound determined by
+the full initial datum. Two recent results delimit that question:
+[a common polarized belt](#all-frequency-renewal-in-a-polarized-belt)
+admits an all-frequency caloric renewal estimate, whereas
+[different axes in adjacent shells](#different-axes-in-adjacent-shells)
+can produce mixed renewal that defeats an energy-only extension.
+The latter is an actual short unforced burst, not an indefinitely repeated
+cascade. Both whole-space arguments are analytic; the accompanying programs
+check finite algebra. The distinction between the auxiliary caloric renewal
+and the physical cubic stretching is essential throughout these labs.
+
 `fourier_interactions.py` checks explicit trigonometric examples against the
 complete unforced Navier–Stokes quadratic source. It uses Python's standard
 library and exact rational arithmetic. All generated convolution modes are
@@ -1455,6 +1467,63 @@ There is no claim that support or polarization persists, that all
 scales may use different axes, or that the remaining signed history
 is bounded. The infinite-shell proof is analytic, not Lean-certified.
 
+### Different axes in adjacent shells
+
+Run `python3 -O labs/crossed_belt_caloric.py`. The quantity here is the
+quintic caloric renewal. Its two parent families have imaginary Fourier
+coefficients `i*(-k_y,k_x,0)` at
+
+```text
+(3,1,0), (2,1,0), (1,2,0),
+```
+
+and `i*(k_z,0,-k_x)` at
+
+```text
+(5,0,4), (-1,0,-4),
+```
+
+including their reality partners. The first family occupies shell `(2,4)`
+and the second `(4,8)`. Each has exact planar polarization and zero
+stretching on its own, while their combined renewal is
+
+```text
+T_(2,2)^1(s*A+t*B) = s^3 t^2 * 5469265097437563/230433883895600.
+```
+
+The coefficient is positive and survives both high-output masks. The
+checker expands every original input by its plane, compares with the
+complete derivative and an independent quartic polarization, and retains
+all generated modes. Finite normal and common-coordinate envelopes check
+the associated resonant moments, with envelope derivatives included.
+
+Proposition 18 in `papers/ns_forced_tail_budget.tex` localizes these two
+plane profiles and concentrates them on `R³`. The resulting Schwartz data
+have squared velocity norm one. Initially, every occupied dyadic shell has
+one exactly planar belt satisfying the preceding square-root-width
+condition, with different axes in the two shells. On an actual short
+unforced interval at fixed physical viscosity,
+
+```text
+integrated fully high renewal >= c lambda^(1/2) / nu^2,
+integrated full cost          <= C (nu + 1/nu) lambda^(1/4),
+physical interval length      ~ lambda^(-15/4).
+```
+
+This excludes a uniform energy-only allowance for these data and prescribed
+cutoffs. It also excludes an instantaneous extension of the common-axis
+payment to independently oriented shells, even without a decaying cutoff
+factor. The whole-space localization and actual time window are analytic
+proofs; the executable checks finite Fourier algebra and scaling identities.
+No new Lean declarations or axioms are used.
+
+The spectral geometry is an initial property; its preservation is not
+asserted. The cutoff varies with the data, and their initial gradient
+energy grows as `lambda²`. A full-datum allowance, a different chosen
+cutoff, and the signed history of repeated interactions remain open.
+This family is proved smooth on the constructed interval; its global
+smoothness or a finite-time singularity is not established.
+
 ### Kida–Pelz evolution
 
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
@@ -1530,6 +1599,31 @@ This is numerical evidence against **zero-allowance** half absorption at
 this particular cutoff. The regularity target permits a finite allowance
 and a data-dependent cutoff, so this finite positive episode does not
 refute it. The comparisons are not rigorous continuum error bounds.
+
+The larger reflection runs both reached their requested endpoint `t = 1.5`
+at `ν = .001`, with maximum step `.004`. At cutoff 4 they give:
+
+| Full grid | Steps | Self-stretching | Half dissipation | Excess | Upper-band palinstrophy fraction |
+| --- | --- | --- | --- | --- | --- |
+| 384³ | 930 | 1393.376317 | 567.953505 | 825.422811 | 2.294e-3 |
+| 512³ | 1239 | 1393.383182 | 567.957063 | 825.426119 | 1.002e-4 |
+
+The accumulated excess changes by `.0033073`, about `.000401%` of the
+512³ value. At that resolution the cutoff-8 and cutoff-12 excesses are
+`-377.905298` and `-370.914789`. Cutoff-4 lower-frequency feeding is
+`3537.286275`; it remains larger than the self-stretching integral.
+The 512³ final enstrophy-balance residual is `7.59e-8` in absolute value,
+and the largest tail-balance residual is `8.76e-8`.
+
+```sh
+python3 -O labs/kida_pelz_history.py --n 384 --backend reflections --time 1.5 --step .004
+python3 -O labs/kida_pelz_history.py --n 512 --backend reflections --time 1.5 --step .004
+```
+
+Neither run triggered the resolution stop. This is a matched spatial
+comparison of a finite episode; the endpoint has no separate time-step
+refinement or rigorous continuum enclosure. It supplies no uniform
+all-prefix allowance and no claim about later evolution.
 
 `kida_pelz_birth.py` checks the first self-interactions in these initially
 empty tails with exact rational Fourier arithmetic. It expands the actual
