@@ -40,6 +40,8 @@ import MettapediaNS.WholeSpaceEnstrophyContinuation
 import MettapediaNS.WholeSpaceBetchov
 import MettapediaNS.OpenAISolutionPancake
 import MettapediaNS.ForcedSignedBudget
+import MettapediaNS.FilteredHistory
+import Mettapedia.GSLT.Dynamics.ConstrainedBoundaryReduction
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchIdentity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchSchur
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSingleConeStretch
@@ -68,6 +70,18 @@ unforced Navier–Stokes solutions.
 #print axioms NavierStokesR3.Comparison.cancelledTimeKernel_integral_swap
 #print axioms NavierStokes.ViscousPropagator.high_harmonic_propagator_estimate
 #print axioms NavierStokes.PeriodicViscosityUniqueness.classical_uniqueness_on_Icc
+#print axioms Mettapedia.GSLT.Dynamics.LinearBoundaryReduction.System.fullRelation_iff
+#print axioms Mettapedia.GSLT.Dynamics.LinearBoundaryReduction.System.contextual_elimination
+#print axioms Mettapedia.GSLT.Dynamics.LinearBoundaryReduction.System.constrained_elimination
+#print axioms Mettapedia.GSLT.Dynamics.LinearBoundaryReduction.System.feedback_elimination
+#print axioms Mettapedia.GSLT.Dynamics.LinearBoundaryReduction.System.same_response_iff
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.hiddenVelocity_apply
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.hasDerivAt_hidden_coefficients
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.forcing_eq_subgrid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.reconstructs_unforced_coefficient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.exp_weighted_history
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.mode_history
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FilteredHistory.hidden_mode_history
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCoherentPairEstimate.sigmaSq_coherent_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_two_four
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_adjacent

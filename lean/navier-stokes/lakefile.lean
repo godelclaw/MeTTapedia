@@ -22,6 +22,6 @@ require mathlib from git
 lean_lib MettapediaFluid where
   srcDir := "../mettapedia"
   roots := #[`Mettapedia.Analysis, `Mettapedia.FluidDynamics.NavierStokes,
-    `Mettapedia.ProbabilityTheory.MarkovCategory]
+    `Mettapedia.ProbabilityTheory.MarkovCategory, `Mettapedia.GSLT.Dynamics]
 
 @[default_target] lean_lib MettapediaNS

@@ -10,7 +10,8 @@ The existing MeTTapedia sources are available through `MettapediaFluid` with
 toolchains. Compatibility of an existing module with this package must be
 checked explicitly; adding the source root does not certify its migration.
 The shared library also includes the existing Markov-category kernel interface
-imported by the Navier–Stokes semigroup module.
+imported by the Navier–Stokes semigroup module, and the GSLT linear boundary
+reduction and compatibility theorems in `Mettapedia.GSLT.Dynamics`.
 
 ## Pinned dependencies
 
@@ -31,6 +32,70 @@ periodic uniqueness theorems and prints their axioms. It also imports the
 existing coherent-pair estimate from the canonical MeTTapedia source tree.
 It does not replace their analytic hypotheses with assumptions about the
 desired global regularity conclusion.
+
+## Boundary reduction and hidden histories
+
+The imported [linear Schur reduction](../mettapedia/Mettapedia/GSLT/Dynamics/README.md)
+retains the affine contribution of internal forcing. Its constrained extension
+also retains the equation generating that forcing from the reconstructed
+interior. It provides no nonlinear Navier–Stokes inverse or stability bound.
+
+`MettapediaNS.FilteredHistory` uses `InfiniteFilteredEquation` and
+`FourierRelaxation` to derive the following identities from the existing
+`LocalInfiniteVelocitySolution`. For a static bounded Fourier multiplier `P`,
+write `v = P u`, `w = u-v`, and let `R` be the full viscous coefficient RHS:
+
+```text
+v' = R(v) + F_P(u)      F_P is the actual pressure-corrected subgrid force
+w' = (I-P) R(u)         the hidden modes obey the same unforced evolution
+```
+
+`forcing_eq_subgrid` proves that any claimed force in the first equation
+equals `F_P(u)`. `reconstructs_unforced_coefficient` proves the converse
+coefficient equation when that equality, `P(v+w)=v`, absolute convergence of
+the convolution, and the hidden evolution hold. It asserts no existence of
+such hidden modes, spatial smoothness, or whole-space realization.
+
+`hidden_mode_history` additionally retains the complete signed history:
+
+```text
+exp(d_q t) w_q(t)
+  = w_q(0) + (1-P_q) integral_0^t exp(d_q s) N_q(u(s)) ds,
+d_q = 4 pi^2 nu |q|^2.
+```
+
+Here `N` uses every nonlinear parent and the Leray projection. Time is
+physical time. The complex phases, the original hidden datum, and the
+coupling to the full field remain. Moving filters would add their time
+derivative. Constructing a Schur inverse on a suitable space of these
+histories and bounding repeated regeneration remain open.
+
+This distinguishes three embedding questions. Reproducing an exact velocity
+on an open region requires matching its differential equation, up to a
+pressure gradient; reproducing an angular mean or Fourier observation permits
+an effective Reynolds/subgrid force; reproducing an approximate singular
+mechanism needs quantitative control of the approximation and its history.
+These are different claims.
+
+There is an analytic obstruction to exact local reproduction of the specific
+OpenAI construction by an unforced flow: its axial component is zero on an
+open annular region and nonzero on the axis inside the same fixed ball at
+sufficiently late times. Spatial analyticity of a smooth unforced viscous
+solution and the identity theorem exclude such agreement on that ball,
+regardless of changes outside it. This inference uses Theorem 2.1,
+Remark 2.6 and Claim A.3 of
+[Constantin–Ignatova–Vicol](https://arxiv.org/pdf/2609.20803v1).
+It is not a Lean theorem here, and does not exclude approximate reproduction
+or reproduction of selected observations. Their Theorem 1.1 separately
+excludes singularity for an exact shrinking axisymmetric core with its stated
+anisotropic mean bounds and analytic forcing, including zero forcing.
+
+The geometric route continues to target the interaction between a coherent
+part and its complement. The common-axis estimate and mixed-axis obstruction
+in `papers/ns_forced_tail_budget.tex` must be read together: coherent depletion
+is controlled for the stated class; a full-datum bound on signed regeneration
+through the complement is still required. Boundary elimination must preserve
+the stretching observable and its resource accounting, not only velocity.
 
 ## Checked applications and semantic interfaces
 
