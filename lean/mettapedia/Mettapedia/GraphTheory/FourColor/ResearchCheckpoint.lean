@@ -31,6 +31,7 @@ import Mettapedia.GraphTheory.FourColor.ZigzagTubeCompression
 import Mettapedia.GraphTheory.FourColor.ZigzagRingGeometry
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeStructural
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeReplacement
+import Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryAudit
 import Mettapedia.GraphTheory.FourColor.InducedCycleLayer
 import Mettapedia.GraphTheory.FourColor.FacialCycleTangle
 import Mettapedia.GraphTheory.FourColor.FacialCycleChord
@@ -65,7 +66,8 @@ decomposition of arbitrary maps into that family.
 The relational GSLT interpretation retains compatible colouring witnesses,
 and literal serial gluing gives an equivalence of colouring fibres. The raw
 vertex-code language represents every map in the source class exactly;
-existence of compatible witnesses on those source routes remains unproved.
+the separate classical assembly supplies compatible witnesses on those
+source routes. Uniform corridor coverage remains a separate research question.
 An explicit admissible word refutes unrestricted lifting through every merge.
 Simple-graph layout conversions transport existing vertex-colouring witnesses
 and boundary counts exactly. This transport does not create an initial
@@ -111,6 +113,15 @@ equivalent in both closed composites, and explicit colouring reconstruction
 keeps every exterior dart's edge colour. This is a full reduction for the
 literal tube family, not a supply theorem for general linked bands or a
 uniform bound on minimal counterexamples.
+For circumference five, the earlier kernel-checked finite certificate now
+improves the literal normal form from forty rings to four. The equality of
+four- and five-ring support propagates to every longer tube. Reduction keeps
+the same physical source class and reconstructs every exterior edge colour.
+The GSLT boundary-certificate theorem composes these local replacements along
+arbitrary finite routes; nonempty chains have literal serial realizations
+whose colouring witnesses are equivalent to the route witnesses. Arbitrary
+tests of the outer boundary are preserved. This independent family theorem
+does not remove a certificate from the classical unavoidable catalogue.
 An induced cyclic row in an actual cubic graph now constructs the complete
 zigzag-slab dart embedding from its adjacency and cut attachment conditions.
 Cubicity supplies the unique unused edge at each row vertex; chordlessness

@@ -1,0 +1,144 @@
+{
+  "status": "kernel checked",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+  "working_directory": "lean/mettapedia",
+  "completed_utc": "2026-09-28T10:15:09Z",
+  "modules": [
+    {
+      "module": "Mettapedia.GSLT.Core.BoundaryCertificateComposition",
+      "source": "lean/mettapedia/Mettapedia/GSLT/Core/BoundaryCertificateComposition.lean",
+      "source_sha256": "0139d8f71df12b112b2e91b28f5560b186ba40a3f29ce579a5a833c4f2dad0be",
+      "source_bytes": 3625,
+      "artifact_sha256": "f85aa612cec5d639b23712fbc3b540fc51c2bee22f6fe62ac9464c3bdabd1de6",
+      "artifact_bytes": 192184,
+      "reported_module_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTubeFiniteNormalization",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeFiniteNormalization.lean",
+      "source_sha256": "1298f52bf55b71d43df9d3e1449566bcb7c039fa723cd29fbe7ceebfe83047c9",
+      "source_bytes": 12770,
+      "artifact_sha256": "3eff1545aa58f81cf47c398db979032de7e2d71abed9a754f85e9375baff298a",
+      "artifact_bytes": 469144,
+      "reported_module_seconds": 3.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryGSLT",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeBoundaryGSLT.lean",
+      "source_sha256": "efdcd966132d19d8c3f37d11c8816a236c79be0696a7e14e0383943b5fcec34d",
+      "source_bytes": 6579,
+      "artifact_sha256": "a8ab5447f951320dd16890d4349d0503800c343c7f36c32fe099a9c233ed7b63",
+      "artifact_bytes": 319368,
+      "reported_module_seconds": 2.6
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeBoundaryAudit.lean",
+      "source_sha256": "ce27c82adbc89da870e13af01ad4e3985b00ff0362ddf6cdf5f53567bea03b49",
+      "source_bytes": 3087,
+      "artifact_sha256": "80d4da62107083153163db1eb9d22a7c5fa47c83c505b356e974080742870208",
+      "artifact_bytes": 3928,
+      "reported_module_seconds": 3.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "d6270f77cfb73b3ded3ae224dca74947aa39caacf8faecd5b35814410f9918b5",
+      "source_bytes": 26111,
+      "artifact_sha256": "166c576f2b7dce723fd19028046b4ba8c6d7db374b93b8fe258adb6573344bf1",
+      "artifact_bytes": 31264,
+      "reported_module_seconds": 4.9
+    }
+  ],
+  "timing_scope": "Rounded successful module durations reported by Lake, including elaboration, kernel checking, serialization and code generation. Dependencies were reused. The generic module compiled successfully earlier; its duration was not retained. Timings are not a fresh replay of the finite certificate and are not comparative runtime savings.",
+  "preexisting_certificate": {
+    "declaration": "Mettapedia.GraphTheory.FourColor.GoertzelV24FiveTubeExclusion.five_ring_stabilizes",
+    "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/GoertzelV24FiveTubeExclusion.lean",
+    "source_sha256": "900fa3e84765a49793ae0f9ddf1285335264bc5e6b2c2ae3f19875f4913ab0a6",
+    "proof_method": "decide +kernel",
+    "replayed_fresh_in_this_gate": false,
+    "nonzero_boundary_words_per_end": 243,
+    "relation_equality": "R^5 = R^4"
+  },
+  "audit": {
+    "roots": {
+      "Mettapedia.GraphTheory.FourColor.ZigzagRing.five_tube_normalize": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.ZigzagRing.strict_five_tube_reduction": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.ZigzagRing.reconstructFiveTube_isTait": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.ZigzagRing.reconstructFiveTube_exterior": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryGSLT.presentation": [
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryGSLT.route_context_iff": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryGSLT.Chain.witnessEquiv": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryGSLT.Chain.normalize_boundary_iff": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "combined_dependency_closure": 12276,
+    "required_dependencies": "The finite ring certificate, literal table decoder, exact-length transfer, physical geometry, colouring reconstruction and route-to-graph witness equivalence are checked as dependencies of the indicated roots.",
+    "excluded_namespace": "FourColor",
+    "scope": "Eight named roots, required dependency contracts and their complete transitive axiom sets. This is not an audit of every imported declaration."
+  },
+  "family": {
+    "boundary": "Five ordered ports at each end of the literal zigzag tube; ten boundary ports in total.",
+    "lengths": "All positive ring counts; arbitrary finite serial chains with marked tubes and other open pieces.",
+    "normal_form_ring_counts": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "normal_form": "tube 5 n -> tube 5 (min n 3), where n counts rings after the first.",
+    "previous_uniform_sufficient_normal_form_rings": 40,
+    "new_sufficient_normal_form_rings": 4,
+    "previous_uniform_sufficient_normal_form_vertices": 400,
+    "new_sufficient_normal_form_vertices": 40,
+    "strict_reduction": "Every tube with more than four rings shortens; each removed ring has ten vertices.",
+    "preserves": [
+      "Ordered boundary-colouring support.",
+      "Actual reconstructed Tait colourings and all exterior edge colours.",
+      "Connected bridgeless spherical cubic map class with cyclic vertex rotations.",
+      "Arbitrary outer-boundary predicates of literal chains and surrounding GSLT route compatibility."
+    ]
+  },
+  "not_established": [
+    "Optimality of the four-ring threshold.",
+    "Equality of colouring counts or a bijection between normalized and original interior colouring fibres.",
+    "Universal geometric supply of such tubes in all large relevant maps.",
+    "Finiteness of interface behaviour when widths are unbounded.",
+    "Removal of a classical configuration or its reducibility certificate.",
+    "A nonlinear dynamical reduction theorem or a Navier-Stokes estimate."
+  ],
+  "configurations_removed": 0,
+  "independent_reducibility_checks_replaced": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "memory_scope": "No new isolated peak-memory measurement is claimed."
+}

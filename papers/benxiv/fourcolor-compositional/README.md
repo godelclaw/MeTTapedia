@@ -25,6 +25,13 @@ semantic bounds, a general reflection theorem, and an audited replacement in
 the finished proof. It illustrates discharging compression; the next
 configuration-family reducibility milestone remains separate.
 
+For a complete example from the corridor idea, see
+[one boundary certificate for an infinite tube family](tube-example/README.md).
+Every literal five-port tube of at least four rings has the four-ring boundary
+relation. Strict physical shortening and GSLT composition preserve that
+relation in arbitrary surrounding contexts. This reuses the earlier finite
+certificate and does not depend on the classical Four Colour theorem.
+
 ## The nearest completed version of the plan
 
 The July *Compositional Proof Note* organizes the argument into three levels.
@@ -134,7 +141,7 @@ of that baseline, with every replacement measured.
 | [Exact source constructions][source] | Structural source coverage and equivalence between route support and literal Tait colourability. Consumed by the complete construction endpoint. |
 | [Hypermap transport][transport] and [source Tait bridge][tait] | Preserve the required permutations and colouring data across the classical and source representations. Consumed by the completed endpoints. |
 | [Graph representation GSLTs][representations] | Six layouts share simple-graph meaning; conversion paths preserve actual vertex colourings, boundary constraints and counts. Query implementations can have different primitive step counts. These adapters do not retain multiedge identity or an embedding unless separately supplied. |
-| [Zigzag tube compression][tubes] and [physical replacement][tube-geometry] | For circumference `k ≥ 3`, support stabilizes by `2k(k−1)` rings: 40 at circumference five. Longer literal tubes can be shortened in arbitrary permitted exteriors, retaining the source map class and reconstructing colourings. This is a family theorem, not coverage of all source maps or a removed classical configuration. |
+| [Zigzag tube compression][tubes] and [physical replacement][tube-geometry] | For circumference `k ≥ 3`, support stabilizes by `2k(k−1)` rings. At circumference five, the [finite-certificate integration](tube-example/README.md) sharpens the physical normal form from forty rings to four. GSLT chains compose the replacements in arbitrary contexts. This is a family theorem, not coverage of all source maps or a removed classical configuration. |
 | [Facial sweeps][sweeps] and [boundary changes][face-boundary] | Construct actual face-addition histories and prove exact contour updates. Adding a face of length `l` changes boundary degree imbalance by `l−6`. These results support geometric research; the complete assembly currently reuses the reference discharging proof. |
 | [Kempe channel recomposition][kempe] | Computes the changed channels by composing connectivity through retained internal attachments. External boundary mates alone are insufficient. |
 | [Finite physical fork code][fork] | Exact finite reflection for supplied decompositions. Its usefulness for a new independent proof still requires an adequate width supply and the corresponding base audit. |
@@ -200,10 +207,11 @@ The next three obligations are:
    and rerun its audit. Record configuration-check savings separately from
    any change to the unavoidable catalogue, which also needs coverage.
 
-Tube shortening and support-richness offer other candidate family lemmas.
-Their acceptance criterion is the same: a precisely scoped theorem consumed
-by the completed assembly. General results remain useful even before that
-connection is proved.
+The tube example already gives a complete physical reduction and compositional
+normalization for its own infinite family. To count as a classical
+configuration-check saving, it must additionally replace a dependency of the
+completed assembly. That connection remains open; the independent family
+result is recorded separately in the ledger.
 
 ## Verification and attribution
 
