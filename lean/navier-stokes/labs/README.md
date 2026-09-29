@@ -4096,3 +4096,195 @@ full-datum allowance nor arbitrary-data regularity.
 ```sh
 python3 -O labs/strain_cycle_diffusion.py
 ```
+
+## A coercive pressure/core envelope with a fixed-radius payment
+
+`pressure_core_envelope.py` checks a positive replacement for the quartic
+candidate above. Write `D=partial_t+u.grad-nu Delta`, `S=sym grad u`,
+`P=Hess p`, and use the actual moments
+
+```text
+Q=tr(S^2),  W=|omega|^2,  V=omega.Somega,
+Z=|Somega|^2,  N=omega.Pomega.
+```
+
+Fix `eta>0` and `delta>0`. These are fixed regularizers; no limit to zero
+is needed for the continuation implication. Define
+
+```text
+T_eta = V^2/(W+eta),
+P_eta = 5 T_eta+(63/95)W^2-2N,
+C_eta = 5 T_eta+(4/7)Z+(10/21)QW+(44/95)W^2,
+g = P_eta-C_eta = -2(N-corePressurePair),
+h_delta(g) = (g+sqrt(g^2+delta^2))/2,
+Y = 1+C_eta+h_delta(g).
+```
+
+Here `P_eta` is a scalar pressure branch, not the tensor `P`. The switch
+gap is independent of `eta`. The reserve is smooth at `omega=0`, and
+
+```text
+Y >= 1+C_eta >= 1+(44/95)W^2.
+```
+
+There is no directional-pressure sign hypothesis. The inequalities
+`V^2<=WZ`, `Z<=QW`, and `-N<=p W`, where `p` bounds the pressure Hessian
+operator norm, also give
+
+```text
+Y <= 1+delta/2+(127/21)QW+(63/95)W^2+2p W.
+```
+
+Consequently its spatial initial supremum is finite for the admissible
+smooth periodic or rapidly decaying data, using the canonical initial
+pressure. This says nothing about the future values of these moments.
+`PressureCoreEnvelope` certifies the scalar lower and upper bounds with
+the moment hypotheses explicit, together with both switch derivatives.
+The matrix inequalities and fluid identification are analytic here.
+
+### Actual production, including the branch that restores positivity
+
+Let `A,C,Gamma,Xi` have their actual spatial definitions from the preceding
+section. Introduce
+
+```text
+K_S=sum_j ||partial_j S||_F^2,
+Zcross=sum_j (Somega).(partial_j S)(partial_j omega),
+Zgrad=sum_j |(partial_j S)omega+S(partial_j omega)|^2,
+r=V/(W+eta).
+```
+
+The complete unforced identities, valid also at vorticity zeros, are
+
+```text
+DW = 2V-2nu A,
+DV = Z-N-nu C,
+DQ = -2 tr(S^3)-V/2-2 tr(SP)-2nu K_S,
+DZ = -2(Somega).Pomega-4nu Zcross-2nu Zgrad,
+DN = Xi-2nu Gamma,
+D T_eta = 2r DV-r^2 DW-2nu/(W+eta)|grad V-r grad W|^2,
+D(W^2) = 2W DW-2nu|grad W|^2,
+D(QW) = Q DW+W DQ-2nu grad Q.grad W,
+D P_eta = 5D T_eta+(63/95)D(W^2)-2DN,
+D C_eta = 5D T_eta+(4/7)DZ+(10/21)D(QW)+(44/95)D(W^2).
+```
+
+For example `D(Somega)=-Pomega-2nu sum_j (partial_j S)(partial_j omega)`:
+the stretching terms cancel, and the antisymmetric square annihilates
+`omega`. Squaring this identity gives `DZ`. The trace of the strain law
+gives `DQ`; the directional pressure-history cancellation gives `DN`.
+None of these replaces the pressure Hessian by a free control.
+
+The smooth envelope satisfies the exact chain rule
+
+```text
+theta=h_delta'(g)=(1+g/sqrt(g^2+delta^2))/2,  0<=theta<=1,
+h_delta''(g)=delta^2/[2(g^2+delta^2)^(3/2)] >=0,
+DY=theta D P_eta+(1-theta)D C_eta-nu h_delta''(g)|grad g|^2.
+```
+
+Thus switching adds a nonpositive diffusion term. The production of
+`C_eta` remains part of the equation: positivity is not obtained by
+dropping its physical cost. The checker independently differentiates
+both branches using the full unforced Fourier tangent and the actual
+pressure-time Poisson solution. It also checks the scalar chain rule
+using arbitrary time, gradient and Laplacian jets.
+
+### A complete payment for one physical channel
+
+The positive offset gives the useful elementary bound
+`2W<=(3/2)Y`. Hence the actual separated viscous pressure-Hessian source
+`Fnu,R` from `WholeSpacePressureHistory` satisfies, for every fixed `R>0`,
+
+```text
+|theta 2W Fnu,R| <= c_R (2nu ||grad u||_2^2)Y,
+c_R=9/(pi R^5).
+```
+
+The direction is `omega/|omega|` where `omega` is nonzero. At a zero the
+weighted term vanishes, so any unit direction gives the same zero work.
+There is no scale condition involving `W` and no moving-cutoff derivative
+in this fixed-radius payment. The source and coercivity conversion are
+Lean-certified in `coercive_viscous_source_le` and
+`reserve_viscous_source_le`. This particular kernel payment is on the
+whole space; it is not a periodic kernel estimate.
+
+Retaining the actual terminal kinetic energy `E(t)=||u(t)||_2^2`, define
+`X=exp(c_R E(t))Y`. The exact unforced identity
+`E'=-2nu||grad u||_2^2` absorbs this source with one initial allowance,
+not a new allowance after each renewal. More explicitly, put
+
+```text
+Remainder=theta[D P_eta+2W Fnu,R]+(1-theta)D C_eta
+          -nu h_delta''(g)|grad g|^2.
+```
+
+Then `DY=Remainder-2theta W Fnu,R`, so `DX<=exp(c_R E)Remainder`.
+The whole pressure tensor is still present in the branch equations.
+Near pressure, pressure transport and reaction, and the signed
+strain/vorticity gradient terms are not paid by the separated estimate.
+
+For `L=log X`, this gives the physical scalar HJB inequality
+
+```text
+D L-nu|grad L|^2 <= Remainder/Y.
+```
+
+For `nu>0`, the quadratic term is precisely
+`sup_b [b.grad L-|b|^2/(4nu)]`. In a reverse-time stochastic verification,
+`b` is an auxiliary drift added to the sampling drift `-u`; it is not a
+body force applied to the fluid. This identifies the scalar control
+equation along a given smooth NS evolution. It does not prove that the
+fluid itself solves an independent Schrödinger-bridge optimization.
+
+The missing estimate is a bound on this signed potential over compatible
+histories, uniformly over every smooth prefix up to a prescribed horizon,
+using only the full initial datum, viscosity and that horizon. Defining
+its value as a supremum over the unknown future is not such a bound.
+If an initial-data bound `L<=B` were obtained on every such prefix, then
+`|omega|<=(95/44)^(1/4)exp(B/4)` would supply the existing continuation
+criterion. Coercivity and this one paid channel do not supply `B`.
+
+### Adversarial and positive checks
+
+In the parameterized packet from the preceding section, and in its
+rotated version, `W=16` and `grad g=0`. Their exact branch rates are
+
+```text
+original: D P_eta=-16 M^2 nu(1939eta+107024)/[95(eta+16)],
+rotated:  D P_eta=-16 M^2 nu(2547eta+116752)/[95(eta+16)],
+both:     D C_eta=-256 M^2 nu(139eta+6974)/[95(eta+16)].
+```
+
+They are nonpositive for `nu>=0`, `eta>0`, and every real `M`.
+The reserve stays positive in the rotated family that defeated `F4`.
+For `u=(sin y,sin x,cos x-1)` at the origin, vorticity vanishes;
+with `delta=1`, `Y=3/2` and `DY=-74nu/21`, for every `eta>0`.
+
+The general three-dimensional Fourier fixture has strictly **positive**
+`DY` at `eta=delta=1`, `nu=1/100`. Its certificate is rational:
+both branch rates exceed the switching subtraction, bounded using
+`sqrt(g^2+1)>=|g|`. Thus a universal heat-subsolution claim is false.
+This finite smooth example does not refute a full-datum history bound.
+
+There is also an all-time validation class. For the exact unforced shear
+`u=(U(y,t),0,V(y,t))`, both profiles solve the one-dimensional heat
+equation and the pressure is zero. Its moments satisfy `Q=W/2`,
+`V_moment=Z=N=0`. The reserve is a function of `r=W^2`:
+
+```text
+Y(r)=1+(1399/1995)r+h_delta(-(4/105)r),
+Y'(r)>=63/95,  Y''(r)>=0,
+Dr=-4nu W sum_j |partial_j omega|^2-2nu|grad W|^2<=0.
+```
+
+Therefore `DY<=0` on the entire smooth shear history, including changing
+vorticity direction and zeros. The heat maximum principle bounds it by
+its initial supremum in the periodic class. This is a validation with
+no vortex stretching; it does not settle arbitrary three-dimensional
+histories. The full PDE statements in this subsection are analytic,
+with exact coefficient checks, rather than Lean-certified evolutions.
+
+```sh
+python3 -O labs/pressure_core_envelope.py
+```

@@ -1,6 +1,7 @@
 import MettapediaNS.WholeSpaceHistoryBridge
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureBoundaryResponse
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.AlignedPressureReserve
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureCoreEnvelope
 
 /-!
 # An energy-paid part of the pressure history
@@ -282,5 +283,40 @@ theorem quartic_viscous_source_le (hν : 0 ≤ ν) (A : SmoothL2Field Space)
     _ ≤ ((95 / (22 * Λ)) * ((6 / Real.pi) * (2 * ν * orderEnergy 1 A))) * J :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb (by positivity)) hJn
     _ = _ := by ring
+
+/-- A positive offset and quartic coercivity pay the weighted source at
+a fixed radius, including at zero vorticity. No scale condition involving
+`W` is needed. This is only the separated viscous pressure channel. -/
+theorem coercive_viscous_source_le (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (e x : Space) (θ W Y R : ℝ) (he : ‖e‖ = 1)
+    (hθ : 0 ≤ θ) (hθ1 : θ ≤ 1) (hW : 0 ≤ W)
+    (hY : 1 + (44/95) * W ^ 2 ≤ Y) (hR : 0 < R) :
+    |θ * (2 * W * viscousSource ν A e x R)| ≤
+      ((9 / (Real.pi * R ^ 5)) * (2 * ν * orderEnergy 1 A)) * Y := by
+  have hb := abs_viscousSource_le hν A e x R hR he
+  have hYn : 0 ≤ Y := by nlinarith [sq_nonneg W]
+  calc
+    _ ≤ (3/2) * |viscousSource ν A e x R| * Y :=
+      PressureCoreEnvelope.weighted_source_le θ W Y _ hθ hθ1 hW hY
+    _ ≤ (3/2) * ((6 / (Real.pi * R ^ 5)) * (2 * ν * orderEnergy 1 A)) * Y :=
+      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb (by norm_num)) hYn
+    _ = _ := by ring
+
+/-- Instantiation for the smooth pressure/core reserve and its actual
+pressure-branch weight. The moment identification with a smooth fluid
+and the remaining production equation are stated in the analytic lab. -/
+theorem reserve_viscous_source_le (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (e x : Space) (η δ Q W V Z N R : ℝ) (he : ‖e‖ = 1)
+    (hη : 0 < η) (hδ : 0 < δ) (hQ : 0 ≤ Q) (hW : 0 ≤ W) (hZ : 0 ≤ Z)
+    (hR : 0 < R) :
+    |PressureCoreEnvelope.weight δ
+        (PressureCoreEnvelope.pressure η W V N - PressureCoreEnvelope.core η Q W V Z) *
+      (2 * W * viscousSource ν A e x R)| ≤
+      ((9 / (Real.pi * R ^ 5)) * (2 * ν * orderEnergy 1 A)) *
+        PressureCoreEnvelope.reserve η δ Q W V Z N := by
+  have hw := PressureCoreEnvelope.weight_mem δ
+    (PressureCoreEnvelope.pressure η W V N - PressureCoreEnvelope.core η Q W V Z) hδ
+  exact coercive_viscous_source_le hν A e x _ W _ R he hw.1 hw.2 hW
+    (PressureCoreEnvelope.reserve_coercive η δ Q W V Z N hη hQ hW hZ) hR
 
 end Mettapedia.FluidDynamics.NavierStokes.WholeSpacePressureHistory

@@ -323,6 +323,24 @@ Under its stated coercivity and separation-scale hypotheses,
 existing kinetic-loss payment to this corrected quantity, with the same
 coefficient `1995/(77 pi Lambda)`. The other physical defects remain open.
 
+`StochasticLagrangian.PressureCoreEnvelope` removes that pressure-sign
+condition by smoothly taking the maximum of the regularized pressure
+expression and its nonnegative core, with a positive offset. The resulting
+`Y` satisfies `Y >= 1+(44/95)|omega|^4` without a pressure hypothesis and
+has an explicit upper bound from the initial strain, vorticity and pressure
+Hessian. Fixed positive regularizers make it smooth at vorticity zeros.
+The smooth-switch derivatives are Lean-certified; its parabolic switching
+term is favorable. The complete branch equations remain analytic, with
+independent exact Fourier checks in `labs/pressure_core_envelope.py`.
+The earlier packet tests now have positive reserve and nonpositive
+production, while a general unforced datum still has positive production.
+`WholeSpacePressureHistory.reserve_viscous_source_le` pays the separated
+viscous pressure channel at any fixed radius `R>0`, including zero
+vorticity, with coefficient `9/(pi R^5)` times actual kinetic-energy loss.
+The correction `Y exp(9 E(t)/(pi R^5))` absorbs this channel over the full
+history. The remaining normalized signed production, not positivity,
+is the open Bellman-history estimate for this candidate.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
