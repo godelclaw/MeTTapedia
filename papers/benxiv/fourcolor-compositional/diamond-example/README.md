@@ -59,6 +59,33 @@ of configuration 4 exactly once. The equivalence preserves arbitrary predicates
 on the resulting colouring, so a surrounding boundary constraint can be imposed
 without losing information.
 
+## The specified contractions
+
+[DiamondContract][contracts] also identifies the actual classical contracts,
+using the same zero-based graph coordinates:
+
+| Configuration | Selected edges |
+| --- | --- |
+| 1 | `6–7` |
+| 2 | `10–7` |
+| 4 | `4–10–6` and `0–8–2` (four edges in two paths) |
+
+For configuration 4 these are exactly the two old triangle sides `a–c` and
+`c–b` at each insertion. The theorem `referenceContract_insertions` proves
+this correspondence through the actual insertion maps. Contract colourings
+identify all three old triangle corners on each path. This differs from the
+ordinary equal-endpoint branch above, where `a` and `b` agree and `c` differs.
+
+The executable decoder now retains the ordered kernel edges for every
+construction program in its fragment and proves equality with the reference
+enumeration. The selected darts are then checked in the finite coordinates.
+The general [contract transport theorem][contract-transport] preserves actual
+colouring witnesses: selected edges have equal endpoint colours, every other
+edge has different endpoint colours, and the colouring remains constant on
+each face. For all three configurations, `contractTrace001`,
+`contractTrace002` and `contractTrace004` identify precisely the boundary
+traces consumed by classical reducibility.
+
 ## Compatible histories
 
 [DiamondInsertionGSLT][routes] interprets this reconstruction as a GSLT route.
@@ -79,18 +106,20 @@ colouring produced at its end.
 
 ## What remains
 
-The missing implication is reducibility transport. The two-branch language must
-meet the appropriate exterior Kempe-closure obligation, with the specified
-contraction retained for configuration 4. Geometry and complete colouring
-semantics now have a proved connection to that exact reference problem.
-Configuration 4's classical certificate specifies its own contract, whose
-edge correspondence must also be proved.
+The missing implication is reducibility transport: every contract boundary
+trace must lie in the Kempe coclosure of the ordinary boundary traces. The
+ordinary traces include both colouring branches. The geometry, specified
+contracts and both kinds of trace now have a proved connection to that exact
+reference obligation. The family proof must establish this Kempe implication
+before it can replace any existing reducibility certificate.
 
 No reducibility certificate has been removed, and the complete Four Colour
 assembly still uses all 633 catalogue entries. The
-[audit][audit] checks 28 roots and excludes classical certificate and complete
-theorem dependencies. The [measurement record][measurements] records source
-hashes, artifact hashes and kernel/frontend costs. Run
+[geometry audit][audit] checks 28 roots; the [contract audit][contract-audit]
+checks another 13. Both exclude classical certificate and complete theorem
+dependencies. The [geometry record][measurements] and
+[contract record][contract-measurements] retain source hashes, artifact hashes
+and kernel/frontend costs. Run
 `lake build kernelConfigurationFamilies` in the classical package after
 preparing its dependencies as described in the [package guide][package].
 
@@ -100,5 +129,9 @@ preparing its dependencies as described in the [package guide][package].
 [insertions]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondInsertion.lean
 [routes]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionGSLT.lean
 [audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionAudit.lean
+[contracts]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondContract.lean
+[contract-transport]: ../../../../lean/fourcolor-classical/MettapediaFourColor/ConfigurationContract.lean
+[contract-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondContractAudit.lean
+[contract-measurements]: ../../../../tools/fourcolor/classical/diamond-contract-measurements.json
 [measurements]: ../../../../tools/fourcolor/classical/diamond-geometry-measurements.json
 [package]: ../../../../lean/fourcolor-classical/README.md

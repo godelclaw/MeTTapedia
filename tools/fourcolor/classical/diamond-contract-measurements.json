@@ -1,0 +1,220 @@
+{
+  "status": "kernel checked",
+  "completed_utc": "2026-09-29T09:41:15.937826+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "gate": "lake build kernelConfigurationFamilies",
+  "working_directory": "lean/fourcolor-classical",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ExecutableConfiguration",
+      "source_sha256": "54a033b54d91595a92616c2caaf5066b90300430008fb9ed03e329f016e295f5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.003,
+      "olean_bytes": 424736,
+      "olean_sha256": "1ef0d8651050737c89cea7ed268386778bb1a889d1e00ebab77f139333e89336",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ExecutableConfiguration.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ConfigurationTable",
+      "source_sha256": "f9c600cb84f24398c1efdec09bf1e7aec4041ea351482f6343d0dd24bbae1e6b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.854,
+      "olean_bytes": 98216,
+      "olean_sha256": "8b802051d707f350255e0bcca09e449375787e41b4e88f8b7e844da0ffc8ffee",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationTable.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ConfigurationRealization",
+      "source_sha256": "d3aa8700e218844b917fc8d2d362a4fc50995d1e77a906e86fa3a76fc0b9fabe",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.918,
+      "olean_bytes": 216728,
+      "olean_sha256": "5e29c5ec2221e907e1f4ebcf90a6e7e31e3a6223e8374ffed575a7b52ca1ab2b",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationRealization.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ConfigurationFaceGraph",
+      "source_sha256": "15b434756af441024b26a84c2d4b209ba05331b82c65e87cd69bcbf87f715a9b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.995,
+      "olean_bytes": 361192,
+      "olean_sha256": "77c505955a69f5a1238042d0042f818a7fd7fbd81bf0609a932021b3fdc73900",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationFaceGraph.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondConfigurations",
+      "source_sha256": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 13.901,
+      "olean_bytes": 453368,
+      "olean_sha256": "78fbceb436c0c47b4099b10f2ebd708c76f6abae93cbbe4416c073215f8c6202",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondInsertion",
+      "source_sha256": "5964a866e2d22aac1afbd87df4e325f747da821f7aafb1f4b9da43211eb0a994",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.612,
+      "olean_bytes": 235256,
+      "olean_sha256": "3e4cf040fc18487a12f4c8e7b1d81097dd7e8f5a3722714cfdf4556a29a35f55",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertion.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondInsertionGSLT",
+      "source_sha256": "f893bf9378f61d1776e8ab40fa974dca879231cc5c5aece758816c2386da0355",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.651,
+      "olean_bytes": 173256,
+      "olean_sha256": "74bdb223608e4e8fc9d5a50f18afc190cea0dcb2dc69d060ca63eb0cf1ca8608",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionGSLT.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondInsertionAudit",
+      "source_sha256": "0079bcbd61637e44414f3c28f82356018ac1c48e13c3e99d4afac17e5ebd1ccf",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.435,
+      "olean_bytes": 3800,
+      "olean_sha256": "b36c49ddc661781dcae7fb983831249e64969e7429dcd069e97359ac083e14bd",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionAudit.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ExecutableContract",
+      "source_sha256": "e414f18034e3c0cf30ec7e1bfb97196e1c9c66d219e8f40587c572503cfcc063",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.028,
+      "olean_bytes": 276816,
+      "olean_sha256": "06bfa48cbf20c318d3ee2f707edeaecd38d7260828efbbe9753654237a52c160",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ExecutableContract.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ConfigurationContract",
+      "source_sha256": "97ee86efd728e2b5f5f76b82ed162db78115a1f30f202257166be5d8b96f6213",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.962,
+      "olean_bytes": 181256,
+      "olean_sha256": "1cce58e38cd87d9e5c24344586e0de3a1d5d2c2a0b4ba56a55285b4f9ba5ab29",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationContract.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondContract",
+      "source_sha256": "29b15217a5f97fd87695b075af4b99919f415230199b25010fe8176de9c84e6b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.011,
+      "olean_bytes": 133848,
+      "olean_sha256": "98bf3175e2339c91f962b13f8909747b4b8422d5360ccd17b3c18e1467f20958",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondContract.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondContractAudit",
+      "source_sha256": "c338dc1a4377a69494ad6e5a01de3fb32ee820b66bc2bd62ee5cfc5545a2b0d9",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.504,
+      "olean_bytes": 3640,
+      "olean_sha256": "c9c1218b30aa65b4c5b4deb90d81b852df8e079147e8fe1721fafc5f435493fc",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondContractAudit.lean"
+    }
+  ],
+  "total_frontend_wall_seconds": 52.874,
+  "contract_extension_frontend_wall_seconds": 12.505,
+  "timing_scope": "Fresh elaboration, kernel checking and serialization of all twelve family modules; the last four implement contract transport. Prepared reference, Mathlib and Mettapedia dependencies were reused.",
+  "memory": {
+    "sampled_max_lean_rss_mib": 3441,
+    "scope": "Maximum sampled single Lean process RSS reported by the build monitor; not an aggregate process-tree peak."
+  },
+  "audit": {
+    "roots": 13,
+    "combined_dependency_closure": 6859,
+    "permitted_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "forbidden_dependency_prefixes": [
+      "FourColor.Bulk",
+      "FourColor.Reduce",
+      "FourColor.CompositionalComplete",
+      "FourColor.ClassicalAssembly",
+      "FourColor.fourColorTheorem",
+      "FourColor.reducibility",
+      "FourColor.reducible_all"
+    ]
+  },
+  "prior_geometry_audit": "diamond-geometry-measurements.json",
+  "mathematical_scope": [
+    "The executable decoder retains the exact reference kernel-edge transversal for every program in the R/U/Y/H fragment.",
+    "Relabelling darts and naming faces preserve all contract-colouring witnesses and ordered contract traces in both directions.",
+    "The actual reference contracts of configurations 1, 2 and 4 have the stated dart and graph-edge coordinates.",
+    "Configuration 4 selects precisely the two old triangle sides at each of the two insertions.",
+    "Contract boundary traces are identified in exactly the orientation consumed by classical C-reducibility."
+  ],
+  "contracts": [
+    {
+      "configuration": 1,
+      "numbered_darts": [
+        41
+      ],
+      "vertex_edges": [
+        [
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "configuration": 2,
+      "numbered_darts": [
+        45
+      ],
+      "vertex_edges": [
+        [
+          10,
+          7
+        ]
+      ]
+    },
+    {
+      "configuration": 4,
+      "numbered_darts": [
+        12,
+        25,
+        32,
+        39
+      ],
+      "vertex_edges": [
+        [
+          4,
+          10
+        ],
+        [
+          10,
+          6
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          8,
+          2
+        ]
+      ]
+    }
+  ],
+  "independent_reducibility_checks_replaced": 0,
+  "catalogue_entries_removed": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "remaining_obligations": [
+    "Prove the required Kempe coclosure implication through both ordinary-colouring alternatives, with valid contractions for the declared family.",
+    "Replace actual reducibility dependencies in the complete assembly and rerun its audit.",
+    "Prove additional geometric supply and descent needed for a more uniform coverage argument."
+  ]
+}

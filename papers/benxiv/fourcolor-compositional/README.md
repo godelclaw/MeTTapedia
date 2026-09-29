@@ -34,7 +34,8 @@ certificate and does not depend on the classical Four Colour theorem.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
-ordered rings and both colouring branches are now proved in Lean. A GSLT
+ordered rings, specified contracts and both colouring branches are now proved
+in Lean. A GSLT
 reconstruction route covers every colouring of configuration 4; transport of
 reducibility remains the next step.
 
@@ -208,7 +209,9 @@ to the actual diamond configurations. The integration obligations are:
    their actual cyclic orders and ring coordinates. The composed equivalence
    and GSLT route cover every configuration-4 colouring. See the
    [diamond example](diamond-example/README.md).
-2. Transport reducibility through **both** colouring branches, retaining the
+2. The specified contracts and their boundary traces are now identified in
+   the same graph coordinates. Transport reducibility through **both** colouring
+   branches, retaining the
    required Kempe and planar-exterior hypotheses. A proof restricted to one
    branch is insufficient.
 3. Replace the corresponding checker dependencies in the complete assembly
