@@ -71,6 +71,14 @@ a 30-vertex fullerene with no simple complete orbit. This replaces the proposed
 universal simple-orbit step with a concrete task: derive a colouring and
 reduction contract that includes the marked closing transition.
 
+The [marked cycle contraction law](tube-example/README.md#the-information-a-cycle-contraction-must-retain)
+now proves its cycle-colouring component. At every length, merging adjacent
+ports commutes with taking the boundary colours; reconstruction is exact
+when the retained seam colour passes one explicit guard. Forgetting that
+guard fails on a kernel-checked four-cycle. This develops the boundary-algebra
+part of the plan. An embedded lobe adapter and an exterior operation giving
+strict map reduction remain to be supplied.
+
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved
@@ -262,7 +270,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
 | Geometric corridor reduction | Actual hexagonal row chains assemble as literal tubes; five-port strips reduce to four rows, preserving the map class and exterior colours |
 | Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within three extensions at width five in a minimal counterexample |
-| Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; a contract for its unrestricted closing transition remains open |
+| Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; its embedded closing operation remains open |
+| Cycle boundary contraction | One marked-seam law reconstructs literal cycle colourings at every length; forgetting the seam guard fails on a kernel-checked four-cycle |
 | Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |

@@ -299,6 +299,43 @@ The [measurement record][lobe-measurements] separates the general Lean
 extraction and separation theorems from the finite replay. No additional
 classical certificate dependency or catalogue entry is removed.
 
+## The information a cycle contraction must retain
+
+The [marked cycle theorem][cycle-seam] supplies one part of the missing
+contract. For a cycle boundary word `w`, let `C(w, s)` mean that an actual
+Tait colouring exists with colour `s` on the incoming edge at vertex zero.
+If all ports are nonzero and `w₀ ≠ w₁`, then
+
+```text
+C((w₀,w₁,w₂,...), s)  ↔  s ≠ w₀ ∧ C((w₀+w₁,w₂,...), s).
+```
+
+Addition is in the Klein colour group. Contracting the two ports erases the
+edge between them. Its reconstructed colour is forced to be `s+w₀`, which
+explains the guard `s ≠ w₀`. This is a single theorem for every cycle length
+at least three, using literal `CycleCap` tangles and actual colouring
+witnesses. `spokes_collapse` proves that taking boundary colours commutes
+with the contraction; `marked_contract_iff` supplies the exact validity
+conditions and inverse witness construction. Any additional predicate on
+the retained seam can be composed with the same law.
+
+The guard cannot be discarded. The word `(red,blue,red,blue)` is not accepted
+by the four-cycle. Its contracted word `(purple,red,blue)` is accepted by the
+triangle, with the forbidden seam colour `red`. Both claims are proved in
+Lean. Thus retaining an answer about separate support is too weak for this
+reconstruction; the seam and boundary choice must remain related.
+
+The [independent replay][cycle-seam-probe] checks all 6,534 marked cases for
+nonzero words of lengths three through seven whose first two ports differ.
+It also restricts the recorded actual C30 colouring to its eleven-edge lobe
+and checks all five rotations where the first two port colours differ.
+Those lobe checks are program evidence. The literal cap theorem does not
+establish an embedding equivalence: the lobe's ports occur on both sides,
+whereas the cap uses its specified rotation. A formal adapter retaining
+this placement, an operation on the exterior, and strict reduction within
+the target map class remain required. No catalogue certificate is removed.
+The [measurement record][cycle-seam-measurements] records the proof audit.
+
 ## Scope and verification
 
 This establishes an infinite family reduction from the corridor idea,
@@ -357,5 +394,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [alternating-probe]: ../../../../tools/fourcolor/classical/alternating-cycle-probe.json
 [alternating-measurements]: ../../../../tools/fourcolor/classical/alternating-cycle-measurements.json
 [lobes]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AlternatingWalkLobes.lean
+[cycle-seam]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleSeamTransfer.lean
+[cycle-seam-probe]: ../../../../tools/fourcolor/classical/cycle-seam-probe.json
+[cycle-seam-measurements]: ../../../../tools/fourcolor/classical/cycle-seam-measurements.json
 [lobe-probe]: ../../../../tools/fourcolor/classical/alternating-lobe-probe.json
 [lobe-measurements]: ../../../../tools/fourcolor/classical/alternating-lobe-measurements.json

@@ -3,6 +3,7 @@ import Mettapedia.GraphTheory.FourColor.HexagonalTubeReduction
 import Mettapedia.GraphTheory.FourColor.HexagonalCollarProgress
 import Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition
 import Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes
+import Mettapedia.GraphTheory.FourColor.CycleSeamTransfer
 import Lean.Util.FoldConsts
 
 /-!
@@ -129,6 +130,23 @@ run_cmd do
     (``AlternatingWalkLobes.exists_separating_lobe, [``AlternatingWalkLobes.exists_simple_lobe,
       ``GoertzelV24PrimalCycleFacialBond.exists_faceSet_bond_of_isCycle,
       ``GoertzelV24BridgelessFaceTwoSided.BridgelessSphericalCubicMapData.orbitFacesTwoSided])]
+  let contracts := contracts ++ [
+    (``CycleSeamTransfer.marked_iff, [``CycleSeamTransfer.edges_valid,
+      ``CycleSeamTransfer.spokes_edges, ``CycleCap.coloringOf_isTait]),
+    (``CycleSeamTransfer.spokes_collapse, [``CycleSeamTransfer.skip_next]),
+    (``CycleSeamTransfer.reconstruct_spokes, [``CycleSeamTransfer.spokes_insert,
+      ``BoundaryWordFrontier.expand_contract]),
+    (``CycleSeamTransfer.marked_contract_iff, [``CycleSeamTransfer.marked_iff,
+      ``CycleSeamTransfer.collapse_valid, ``CycleSeamTransfer.reconstruct_valid,
+      ``CycleSeamTransfer.reconstruct_spokes]),
+    (``CycleSeamTransfer.marked_contract_in_context,
+      [``CycleSeamTransfer.marked_contract_iff]),
+    (``CycleSeamTransfer.accepts_contract_iff,
+      [``CycleSeamTransfer.marked_contract_iff, ``CycleSeamTransfer.accepts_iff_marked]),
+    (``CycleSeamTransfer.blockedWord_not_accepted,
+      [``CycleSeamTransfer.blockedWord_no_edges, ``CycleSeamTransfer.marked_iff]),
+    (``CycleSeamTransfer.blockedWord_contraction_accepted,
+      [``CycleSeamTransfer.marked_iff, ``CycleCap.coloringOf_isTait])]
   let mut inspected : NameSet := {}
   for (root, required) in contracts do
     let mut seen : NameSet := {}

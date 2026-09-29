@@ -37,7 +37,12 @@ alternating; the closing transition is unrestricted. An independently checked
 30-vertex fullerene has no simple complete alternating orbit, so that closing
 transition needs its own contract. Reductions for these segments and for
 pentagonal stops, width control and a broader core-family reduction remain
-open. The GSLT, graph and MeTTa
+open. [CycleSeamTransfer](CycleSeamTransfer.lean) now proves the exact colouring
+law for contracting two adjacent ports of a literal cycle, at every length:
+the retained seam colour must differ from the first old port colour. It
+reconstructs actual witnesses and proves that forgetting this guard fails
+already on a four-cycle. The embedded exterior operation remains separate.
+The GSLT, graph and MeTTa
 results have their own verified consumers, listed in the guide.
 
 ## Independent corridor route — checkpoint of 22 September 2026

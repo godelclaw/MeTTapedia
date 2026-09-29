@@ -211,6 +211,17 @@ or a reducible patch. Independent replay of 137 fullerene rotations finds
 lengths 68, 22, 68, 22 and no cyclic edge cut of size at most four; an explicit
 Tait colouring is retained. The next geometric contract must account for
 the closing transition rather than assume a simple complete orbit exists.
+CycleSeamTransfer proves the colouring part for literal cycle tangles of
+every length at least three. Contracting distinct nonzero first ports adds
+their Klein colours and erases one internal edge. Retaining the incoming
+seam colour s makes reconstruction exact: s must differ from the first
+old port colour. Actual tangle witnesses are extracted and rebuilt, and
+any predicate on this marked seam can be retained. A four-cycle with
+alternating red/blue ports has no colouring although its contracted triangle
+does, so unmarked contraction alone is insufficient. Both assertions are
+kernel checked. The C30 lobe's colouring restriction is an independent program
+consumer. A formal adapter preserving that lobe's two-sided port placement,
+an exterior operation, strict map reduction and coverage remain open.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond

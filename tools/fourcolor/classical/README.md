@@ -1012,3 +1012,27 @@ Lean extraction and facial-separation results have a separate dependency
 audit in `alternating-lobe-measurements.json`. A reducible contract for the
 closing transition remains open; no catalogue or original-certificate savings
 are credited to this result.
+
+## Cycle contraction with a retained seam colour
+
+`CycleSeamTransfer.lean` proves an exact contraction/reconstruction law for
+literal cycle tangles at every length at least three. Merging distinct
+adjacent nonzero ports adds their Klein colours. A smaller colouring lifts
+exactly when its retained seam colour differs from the first old port.
+The proof reconstructs actual tangle witnesses and preserves any additional
+predicate on that seam. A kernel-checked four-cycle example shows why the
+guard cannot be dropped.
+
+```sh
+python3 tools/fourcolor/classical/cycle_seam_probe.py \
+  --output cycle-seam-probe.json
+```
+
+The independent replay checks 6,534 marked cases of lengths three through
+seven, including exact deletion and reinsertion of the internal edge
+colours. It also verifies the actual C30 colouring and its eleven-edge lobe,
+then checks the five rotations having distinct first port colours. These
+are program checks, not a Lean embedding adapter. The two-sided port
+placement, an exterior operation and strict map reduction remain separate
+obligations. `cycle-seam-measurements.json` records the theorem audit; no
+additional classical certificate or catalogue savings are claimed.
