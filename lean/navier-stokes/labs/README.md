@@ -4852,3 +4852,274 @@ parent pressure, geometry and spatial gradients.
 ```sh
 python3 -O labs/near_pressure_reaction.py
 ```
+
+## Viscous parent memory and the local heat defect
+
+`viscous_parent_memory.py` tests whether the complete pressure/core
+envelope automatically dissipates under viscosity. It finds an explicit
+failure due to pressure at the parents and checks a physical memory
+correction for precisely that source.
+
+### A fixed-energy two-wave family
+
+On the torus of period `2pi`, for an integer `n>=1`, take
+
+```text
+u_n=(sin(n(x+y)),
+     2sin(nx)-sin(n(x+y)),
+     sin(nx)-sin(n(x+y))).
+```
+
+The datum is divergence-free, and its mean squared speed is four,
+independently of `n`. It depends on two coordinates and is not a
+singularity candidate. Its canonical zero-mean pressure is
+
+```text
+p=(2/5)cos(n(2x+y))+2cos(ny).
+```
+
+At the origin its strain, vorticity and pressure Hessian are
+
+```text
+S=n [[1,1,0],[1,-1,-1/2],[0,-1/2,0]],   omega=(-n,0,0),
+P=n^2 [[-8/5,-4/5,0],[-4/5,-12/5,0],[0,0,0]].
+W=n^2, Q=(9/2)n^2, V=n^3, Z=2n^4, N=-(8/5)n^4.
+```
+
+All first spatial derivatives of these three fields vanish there.
+Set the envelope regularizers to `eta=delta=1`. Its branch gap is
+`g=(4/35)n^4>0`, so `theta=h_1'(g)>1/2`.
+
+The *parabolic viscosity contribution* is the following differential
+of the actual scalar observable, including the dependence of its
+canonical pressure on the velocity:
+
+```text
+H_Y = derivative_of_Y[u](nu Delta u) - nu Delta_x Y[u].
+```
+
+This differs from its temporal derivative under the heat equation.
+The strain/vorticity moment heat defects and the switch-gradient term
+vanish at this receiver, but the complete pressure contributes
+
+```text
+P_t^heat-nu Delta P
+  =nu n^4 [[-16/5,-8/5,0],[-8/5,16/5,0],[0,0,0]],
+H_Y=(32/5)nu theta n^6.
+```
+
+Thus `H_Y>0` when `nu>0`, although all receiver first-gradient damping
+terms vanish. Also `Y<=11n^4`, giving
+
+```text
+H_Y/Y >= (16/55)nu n^2,    n>=1.
+```
+
+`PressureViscousMemory` certifies the scalar family gap, weight, upper
+bound, normalized lower bound, and its unboundedness over natural
+frequencies. The Fourier realization and differential identification
+are analytic and independently checked at `n=1,2,3` with the full
+unforced NS tangent. The family formula follows from the displayed
+pressure and the heat rates of its two parent modes.
+
+This rules out automatic scalar heat dissipation, or a universal
+energy-only instantaneous coefficient paid solely by receiver first
+gradients. It is not a time-integral obstruction or a failure of a
+full-datum allowance. Indeed both branch *temporal* heat derivatives
+are negative in the three exact tests. At `n=1`, per unit viscosity,
+they are `-3753/95` and `-81397/1995`. Positive `H_Y` cannot be read as
+viscosity increasing the actual reserve value under heat evolution.
+
+### An actual retained matrix history
+
+Let `u,p` be an existing smooth unforced NS evolution on a compact
+time prefix, with `nu>0`, and put
+
+```text
+D=partial_t+u.grad-nu Delta,
+T=u tensor u,
+G=sum_j partial_j u tensor partial_j u.
+```
+
+For the periodic case use normalized volume. For the whole-space case
+assume the lane's smooth finite-energy class, with all spatial jets
+in `L^2` continuously on the prefix. The corresponding bounded smooth
+coefficients and integrable source give the componentwise linear problem
+
+```text
+D C=2nu G,    C(0)=0.
+```
+
+Its analytic identification with actual stochastic histories is explicit.
+For each terminal `(t,x)`, use the backward characteristic
+
+```text
+dX_s=-u(t-s,X_s)ds+sqrt(2nu)dB_s,   X_0=x,   0<=s<=t.
+C(t,x)=E integral_0^t 2nu G(t-s,X_s)ds.
+```
+
+Every integrand is positive semidefinite, so `C>=0`. Along that same
+path, the sampled velocity has the Itô differential
+
+```text
+d[u(t-s,X_s)]
+  =grad p(t-s,X_s)ds+sqrt(2nu)grad u(t-s,X_s)dB_s.
+```
+
+Consequently `C` is the expected accumulated matrix quadratic variation
+of this sampled velocity. The pressure drift remains. In general `C`
+is **not** the covariance of the terminal velocity. For the separate
+pure heat equation with zero spatial drift it is the familiar covariance
+`heat_t(u0 tensor u0)-heat_t(u0) tensor heat_t(u0)`.
+
+Driving all initial labels by the same Brownian displacement produces
+a volume-preserving map: its spatial Jacobian evolves with the
+divergence-free drift, and the noise is a common translation. Tonelli's
+theorem and the actual kinetic energy equality therefore give
+
+```text
+integral tr C(t) = 2nu integral_0^t integral |grad u|^2
+                = E0-E(t),
+A=T+C >=0,                 integral tr A(t)=E0,
+D A=-(grad p tensor u+u tensor grad p).
+```
+
+These identities hold on every available smooth prefix. Their mass
+bound is independent of its endpoint and uses no future regularity
+bound. The signed pressure work has not disappeared; the trace equation
+still contains its local divergence `-2 div(pu)`.
+
+If `U_u(t,s)` is the actual scalar advection-diffusion propagator,
+composition retains already accumulated memory:
+
+```text
+C(t)=U_u(t,s) C(s)+2nu integral_s^t U_u(t,r) G(r)dr.
+```
+
+The state passed across a history boundary includes `C(s)` and the
+full fluid state. Resetting `C` to zero would erase physical information
+and restart the same kinetic-loss allowance. No auxiliary stochastic
+control is applied as a body force in this construction. Changing the
+sampling drift would require retaining its additional generator terms.
+
+### Pressure of the augmented stress
+
+Let `K` denote the full translation-invariant pressure-Hessian operator:
+`P=K*T`. On the torus it uses the canonical zero-mean pressure. On
+whole space it is the fourth derivative of the Newtonian distribution,
+including the local terms at zero. Define
+
+```text
+P_star=K*A=P+K*C.
+D P_star
+  =K*[-grad p tensor u-u tensor grad p]+[u.grad,K*]A.
+```
+
+The Laplacian commutes with `K`, so the explicit viscous source
+`-2nu K*G` cancels. The actual pressure `p` at every parent and the
+transport commutator both remain. Retaining this memory is a change
+of observable, not a replacement of the NS pressure equation.
+
+Replace `N` in the same coercive envelope by
+`N_star=omega.P_star omega`, keeping the physical `S,omega`.
+Initially `C=0`, so this candidate has exactly the previous finite
+full-datum initial reserve and still controls `|omega|^4`.
+At the two-wave receiver, `C_t=2nu G` and the tensor `K*C_t` cancels
+the displayed pressure heat defect coefficient by coefficient. The
+corrected initial viscosity contribution is zero.
+
+At later times the actual strain still sees `P=P_star-K*C`.
+The direct reaction of this difference has the bound from the preceding
+section, `(9/4)||K*C||_F` after normalization. For any fixed whole-space
+separation radius `R>0`, positivity and the trace mass extend the
+separated kernel estimate from rank-one velocity tensors to `C`:
+
+```text
+||K_R*C||_F <=12 [E0-E(t)]/(pi R^5),
+integral_0^tau |separated direct reaction|/Y_star
+  <=27 E0 H/(pi R^5),    tau<=H.
+```
+
+This is an analytic consequence of the previously certified scalar
+reaction bound and separated kernel estimate. It does **not** pay
+the nearby singular action `K_near*C`. A finite total trace permits
+concentration; it is not a bound on the pressure Hessian. Nearby memory
+pressure, signed pressure work, the commutator, and the correlated
+receiver gradients remain the physical history obligations. No general
+heat-subsolution claim is made for the corrected envelope.
+
+The earlier logarithmic observation bound gives a sharper organization
+at a fixed whole-space radius. Since `A>=0` and its trace mass is `E0`,
+the same pressure-slot sensitivity bounds the cost of removing `K_R*A`
+from `Y_star` by `9E0/(pi R^5)`. Write `K_n=K-K_R` and set
+
+```text
+P_hat=K_n*A,    N_hat=omega.P_hat omega,
+Y_hat=reserve(S,omega,N_hat),
+P=P_hat+F,     F=K_R*T-K_n*C,
+D P_hat=K_n*[-grad p tensor u-u tensor grad p]+[u.grad,K_n*]A.
+```
+
+This leaves the direct distant reaction of `K_R*T`, already paid by
+`27E0 H/(pi R^5)`, and the direct reaction of `-K_n*C`, still unpaid.
+The complete reserve production is the earlier `R_n+R_F` formula with
+`P_n` replaced by `P_hat` and the displayed parent equation used for
+`D N_hat`. Linearity splits `R_F` into those two direct reactions.
+All its receiver-gradient and changing-weight terms remain. This exact
+reorganization avoids treating the stored memory as an independent
+force, or paying its same distant contribution twice.
+
+For a forced fluid, `D A` additionally contains `f tensor u+u tensor f`,
+and its total trace is `E0+2 integral_0^t integral u.f` in the squared-speed
+convention used here. Finite force work is compatible with the imported
+forced examples. Thus fixed trace mass alone cannot distinguish the
+target unforced mechanism; the complete coupled parent equations must
+supply that distinction.
+
+### The remaining controlled-history estimate
+
+The same organization gives a precise sufficient target. Put
+`B_near=(R_hat+R_{-K_n*C})/Y_hat`, where `R_hat` is the preceding complete
+nearby production with its corrected parent equation, and set
+`kappa=27E0/(pi R^5)`. Then
+
+```text
+L=log Y_hat-kappa t,
+D L-nu|grad L|^2 <= B_near.
+```
+
+For the auxiliary sampling process
+`dX_s=[-u(t-s,X_s)+b_s]ds+sqrt(2nu)dB_s`, the sufficient missing bound is
+
+```text
+sup_b E integral_0^t [B_near(t-s,X_s)-|b_s|^2/(4nu)]ds
+  <= A(u0,nu,H,R),    t<=H,
+```
+
+uniformly in receivers and all available smooth prefixes. The supremum
+may be taken over bounded adapted controls on each prefix. Completing
+the square in Itô's formula, with `b=2nu grad L`, would give
+`sup_x log Y_hat(t,x)<=sup_x log Y_hat(0,x)+kappa H+A`.
+Coercivity would then give a finite-horizon vorticity bound and the
+existing continuation criterion. This is an analytic sufficient
+inequality, not a bound established here. Defining `A` by the unknown
+future supremum would not prove its finiteness from the datum. Every
+sampled field, including the retained matrix, must remain the same
+actual unforced solution; the control only changes the observation path.
+
+### Certification boundary
+
+The six scalar family statements are Lean-certified. The matrix-memory
+construction, stochastic identification, composition and all-time mass
+identity above are analytic. Besides the two-wave tests, the exact
+checker differentiates a nonsymmetric three-dimensional NS datum twice
+in time from `C(0)=0`. It retains every convolution mode, checks the
+augmented stress equation and its time derivative, the actual corrected
+pressure commutator, and zero first and second rates of total trace.
+Its initial memory mass rate is `4087576/444675` at `nu=1/5`, exactly
+the lost kinetic energy rate. These are time-jet checks, not numerical
+evolutions or certification of an arbitrary-history continuation bound.
+
+```sh
+python3 -O labs/viscous_parent_memory.py
+```

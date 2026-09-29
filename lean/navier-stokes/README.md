@@ -386,6 +386,29 @@ terms. Its Fourier splits check the identity, not a spatial cutoff.
 The corrected reserve still has positive production on smooth unforced
 data. Nearby parent histories and shrinking scales remain unpaid.
 
+`MettapediaNS.PressureViscousMemory` isolates why receiver diffusion alone
+cannot pay every pressure source. A smooth two-wave periodic family has
+mean squared speed four and zero receiver first gradients, but a positive
+parabolic viscosity contribution to `Y`, with normalized rate at least
+`(16/55) nu n^2`. This is an instantaneous obstruction; the temporal heat
+derivative is a different quantity. The scalar family bounds are
+Lean-certified, and its full Fourier realization is exact-symbolically
+checked in `labs/viscous_parent_memory.py`.
+
+The same lab develops an analytic correction on actual smooth prefixes:
+retain the positive matrix `C` solving `D C=2nu sum_j partial_j u tensor
+partial_j u`, `C(0)=0`. Its trace mass is exactly `E0-E(t)`. The augmented
+stress `u tensor u+C` has fixed trace mass and retains the full signed
+pressure work while its explicit viscous source cancels. The backward
+stochastic representation identifies `C` as expected accumulated velocity
+quadratic variation, generally not terminal velocity covariance. This
+state composes through the actual advection-diffusion propagator without
+restarting its resource. Its pressure correction cancels the identified
+initial defect. The construction and identification are analytic; full
+NS time jets check the equations and trace conservation through two time
+derivatives. Nearby memory pressure, the transport commutator, and the
+remaining geometric gradients still require a signed history bound.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

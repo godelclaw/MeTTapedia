@@ -14,6 +14,7 @@ import MettapediaNS.WholeSpacePressureFlux
 import MettapediaNS.WholeSpaceCubicHistory
 import MettapediaNS.WholeSpacePressureObserver
 import MettapediaNS.PressureCoreReaction
+import MettapediaNS.PressureViscousMemory
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
 import MettapediaNS.PressureHessianLocalization
@@ -238,6 +239,12 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureCoreReaction.reaction_abs_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureCoreReaction.normalized_reaction_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureCoreReaction.separated_coefficient_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.family_gap
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.family_weight_ge_half
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.family_reserve_upper
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.heat_defect_lower
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.normalized_heat_lower
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.normalized_heat_unbounded
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCoherentPairEstimate.sigmaSq_coherent_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_two_four
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_adjacent
