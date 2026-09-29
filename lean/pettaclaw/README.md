@@ -123,6 +123,13 @@ are derived from the models, deployed, and re-observed live.
   irreflexivity, transitivity, totality, and injected-over-never precedence.
 - `StiFloorDecay.lean` — the concrete fixed-point floor-division decay model
   and its contraction and loss bounds.
+- `TelegramCommandPlane.lean` — operator commands answered by the channel
+  service, a process separate from the agent. For every agent behaviour, each
+  command gets exactly one reply by its deadline: the agent's own answer, or
+  the service's fallback, later edited with the agent's answer. Every reply
+  and edit traces to the agent's answer to that very command, and a stop is
+  enforced where sends are dispatched. A contrast theorem shows that when only
+  the agent can answer, a silent agent leaves the command unanswered forever.
 
 Most models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -156,6 +163,7 @@ LEAN_PATH=. lean RestEnergy.lean
 LEAN_PATH=. lean StiMass.lean
 LEAN_PATH=. lean StiFloor.lean
 LEAN_PATH=. lean StiFloorDecay.lean
+lean TelegramCommandPlane.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
