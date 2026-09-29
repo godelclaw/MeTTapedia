@@ -210,10 +210,11 @@ to the actual diamond configurations. The integration obligations are:
    and GSLT route cover every configuration-4 colouring. See the
    [diamond example](diamond-example/README.md).
 2. The specified contracts and their boundary traces are now identified in
-   the same graph coordinates. Transport reducibility through **both** colouring
-   branches, retaining the
-   required Kempe and planar-exterior hypotheses. A proof restricted to one
-   branch is insufficient.
+   the same graph coordinates. The joint contraction now has an exact
+   six-colour boundary formula with reconstruction. Either insertion's
+   side-edge contraction alone fails the Kempe obligation, proved in Lean.
+   Transport reducibility through **both** colouring branches while retaining
+   the coupling between the insertions and the required exterior hypotheses.
 3. Replace the corresponding checker dependencies in the complete assembly
    and rerun its audit. Record configuration-check savings separately from
    any change to the unavoidable catalogue, which also needs coverage.

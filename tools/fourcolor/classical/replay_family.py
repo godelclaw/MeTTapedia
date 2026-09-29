@@ -14,7 +14,8 @@ from replay_adapters import OPTIONS, REFERENCE_REVISION, capture
 MODULES = ["ExecutableConfiguration", "ConfigurationTable", "ConfigurationRealization",
            "ConfigurationFaceGraph", "DiamondConfigurations", "DiamondInsertion",
            "DiamondInsertionGSLT", "DiamondInsertionAudit", "ExecutableContract",
-           "ConfigurationContract", "DiamondContract", "DiamondContractAudit"]
+           "ConfigurationContract", "DiamondContract", "DiamondContractAudit",
+           "DiamondJointContract", "DiamondKempeBoundary", "DiamondKempeBoundaryAudit"]
 
 
 def main():

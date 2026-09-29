@@ -86,6 +86,54 @@ each face. For all three configurations, `contractTrace001`,
 `contractTrace002` and `contractTrace004` identify precisely the boundary
 traces consumed by classical reducibility.
 
+## The joint boundary condition
+
+[DiamondJointContract][joint] eliminates the contracted interior exactly. In
+the forward boundary order, every contract colouring has the form
+
+\[
+[A,X,A,Y,B,Z,B,W],
+\]
+
+where `A ≠ B`, `X ≠ A`, `Z ≠ B`, and each of `Y,W` differs from both `A,B`.
+Conversely, every such assignment reconstructs an actual contract colouring.
+The two remaining interior colours are `A + B + W` and `A + B + Y`, with
+addition in the Klein four-group. The boundary theorem is an equivalence of
+existence statements with explicit reconstruction in the return direction.
+
+The inequality `A ≠ B` comes from the edge joining the two insertion
+triangles' contracted corners. It retains a relation between the pieces when
+their interiors are eliminated. This is a concrete constraint analogue of
+preserving a boundary response under elimination.
+
+[DiamondKempeBoundary][obstruction] proves that either side-edge contraction
+alone fails the Kempe trace-repair obligation. Each admits an actual contract
+colouring with the eight-edge trace `[1,1,1,1,1,1,1,1]`. That trace is outside
+the Kempe coclosure of the complete ordinary colouring relation, including
+both insertion branches. The proof uses the reference's verified specification
+of the converged Kempe checker and a kernel computation on this small ring.
+The joint contract excludes that trace. These statements concern abstract
+Kempe-closed predicates; they do not assert a realizable planar exterior
+blocking an actual colouring.
+
+An independent [finite probe][joint-probe] finds 243 traces for either single
+contract, of which 75 fail the coclosure test; all 108 joint-contract traces
+pass. The joint formula has 432 boundary assignments and 18 edge-trace classes
+under permutation of the three nonzero colours. These counts and the positive
+joint repair test are program evidence, separate from the Lean elimination
+and obstruction theorems.
+
+The probe also tests repeated insertions on the same two original triangles.
+The rule that keeps contracting their original side edges fails at two
+insertions on one side, and at two on one side plus one on the other. This
+rules out iterating that specified rule without additional hypotheses or a
+different contract. It does not rule out a different reduction for those
+graphs. At configuration 2 the tested two-side contract differs from the
+catalogue's specified one-edge contract. The next family argument must retain
+the coupling between insertions and establish the joint Kempe implication.
+The existing classical certificate already proves configuration 4 reducible;
+the open task is to replace that certificate with the family argument.
+
 ## Compatible histories
 
 [DiamondInsertionGSLT][routes] interprets this reconstruction as a GSLT route.
@@ -117,9 +165,11 @@ No reducibility certificate has been removed, and the complete Four Colour
 assembly still uses all 633 catalogue entries. The
 [geometry audit][audit] checks 28 roots; the [contract audit][contract-audit]
 checks another 13. Both exclude classical certificate and complete theorem
-dependencies. The [geometry record][measurements] and
-[contract record][contract-measurements] retain source hashes, artifact hashes
-and kernel/frontend costs. Run
+dependencies. The [joint boundary audit][joint-audit] adds nine roots for the
+elimination and obstruction results, with the same exclusions.
+The [geometry record][measurements], [contract record][contract-measurements]
+and [joint boundary record][joint-measurements] retain source hashes, artifact
+hashes and kernel/frontend costs. Run
 `lake build kernelConfigurationFamilies` in the classical package after
 preparing its dependencies as described in the [package guide][package].
 
@@ -131,6 +181,11 @@ preparing its dependencies as described in the [package guide][package].
 [audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionAudit.lean
 [contracts]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondContract.lean
 [contract-transport]: ../../../../lean/fourcolor-classical/MettapediaFourColor/ConfigurationContract.lean
+[joint]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondJointContract.lean
+[obstruction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondKempeBoundary.lean
+[joint-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondKempeBoundaryAudit.lean
+[joint-probe]: ../../../../tools/fourcolor/classical/diamond-joint-repair-probe.json
+[joint-measurements]: ../../../../tools/fourcolor/classical/diamond-joint-boundary-measurements.json
 [contract-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondContractAudit.lean
 [contract-measurements]: ../../../../tools/fourcolor/classical/diamond-contract-measurements.json
 [measurements]: ../../../../tools/fourcolor/classical/diamond-geometry-measurements.json

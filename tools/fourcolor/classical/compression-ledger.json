@@ -104,6 +104,19 @@
       "configurations_removed": 0,
       "integrated_into_complete_four_color_assembly": false,
       "next_obligation": "Every contract trace must lie in the Kempe coclosure of the full ordinary boundary relation, including both insertion branches."
+    },
+    {
+      "name": "joint diamond boundary elimination and separate-repair obstruction",
+      "record": "diamond-joint-boundary-measurements.json",
+      "status": "Kernel-checked exact six-colour boundary relation with reconstruction. Either insertion's side-edge contraction alone fails the ordinary Kempe coclosure obligation; the joint contract excludes the exhibited trace.",
+      "evidence": "Nine audited roots. The negative result consumes the verified converged-checker specification and a kernel computation, without existing configuration certificates or complete theorem dependencies.",
+      "program_probe": "diamond-joint-repair-probe.json",
+      "program_scope": "All 108 joint traces pass the finite coclosure test. Repeating the insertion with the same original side-edge contract fails; other contracts and actual planar exteriors are not excluded.",
+      "credited_compression": false,
+      "independent_reducibility_checks_replaced": 0,
+      "configurations_removed": 0,
+      "integrated_into_complete_four_color_assembly": false,
+      "next_obligation": "Prove a joint repair theorem for the coupled boundary relation and consume it in the complete assembly. Freeze the unrestricted repeated-insertion rule with the tested side-edge contract."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 configuration certificates remain. Runtime and artifact-size savings are unclaimed.",

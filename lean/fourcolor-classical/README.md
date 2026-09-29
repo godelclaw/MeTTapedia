@@ -165,7 +165,7 @@ The separate configuration-family gate is:
 lake build kernelConfigurationFamilies
 ```
 
-It reuses prepared reference artifacts and checks twelve modules without native
+It reuses prepared reference artifacts and checks fifteen modules without native
 code generation. `ExecutableConfiguration` proves its executable decoder equal
 to the reference pointed map; `DiamondConfigurations` supplies exact finite
 presentations of configurations 1, 2 and 4. `DiamondInsertion` proves both
@@ -178,6 +178,11 @@ in its fragment. `ConfigurationContract` preserves exact contract-colouring
 witnesses; `DiamondContract` identifies the specified contract edges and their
 boundary traces for all three configurations. `DiamondContractAudit` checks
 this transport independently of the existing reducibility certificates.
+`DiamondJointContract` eliminates the jointly contracted interior to an exact
+six-colour boundary relation and reconstructs its witnesses.
+`DiamondKempeBoundary` proves that either insertion's side-edge contraction
+alone fails the required Kempe trace implication. Its nine-root audit excludes
+existing configuration certificates and complete theorem endpoints.
 The [worked example](../../papers/benxiv/fourcolor-compositional/diamond-example/README.md)
 explains the remaining reducibility obligation. No catalogue check is removed
 by this geometry and semantics milestone. Receipts are saved in

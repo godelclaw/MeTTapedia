@@ -1,0 +1,476 @@
+{
+  "evidence": "Finite program evidence, separate from the Lean boundary obstruction.",
+  "source_hashes": {
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+    "tools/fourcolor/classical/probe_diamond_joint_repair.py": "2969b597a97e6a562cf844aeb2bf402583fb3d401ad6beb74bfe1f678139257c",
+    "tools/fourcolor/classical/probe_diamond_kempe.py": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d",
+    "tools/fourcolor/classical/diamond_coloring_alternatives.py": "0075009196d573a65d0516ccba101b6c81528678c4babadda86c00372bdc2970"
+  },
+  "catalogue_correspondences_checked": 2,
+  "concrete_configuration_4": {
+    "ring": 8,
+    "ordinary_traces": 486,
+    "closed_obstruction": 921,
+    "closure_stages": [
+      1155,
+      1065,
+      1017,
+      981,
+      939,
+      921
+    ],
+    "contracts": [
+      {
+        "name": "left",
+        "edges": [
+          [
+            4,
+            10
+          ],
+          [
+            10,
+            6
+          ]
+        ],
+        "traces": 243,
+        "blocked": 75,
+        "example": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "right",
+        "edges": [
+          [
+            0,
+            8
+          ],
+          [
+            8,
+            2
+          ]
+        ],
+        "traces": 243,
+        "blocked": 75,
+        "example": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "joint",
+        "edges": [
+          [
+            4,
+            10
+          ],
+          [
+            10,
+            6
+          ],
+          [
+            0,
+            8
+          ],
+          [
+            8,
+            2
+          ]
+        ],
+        "traces": 108,
+        "blocked": 0,
+        "example": null
+      }
+    ]
+  },
+  "joint_boundary_formula": {
+    "admissible_boundary_assignments": 432,
+    "edge_traces": 108,
+    "edge_colour_permutation_orbits": 18
+  },
+  "families": [
+    {
+      "ring": 6,
+      "ordinary_traces": 96,
+      "closed_obstruction": 0,
+      "closure_stages": [
+        87,
+        60,
+        48,
+        24,
+        6,
+        0
+      ],
+      "contracts": [],
+      "left_insertions": 0,
+      "right_insertions": 0
+    },
+    {
+      "ring": 7,
+      "ordinary_traces": 234,
+      "closed_obstruction": 0,
+      "closure_stages": [
+        312,
+        270,
+        234,
+        180,
+        108,
+        42,
+        0
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ]
+          ],
+          "traces": 126,
+          "blocked": 0,
+          "example": null
+        }
+      ],
+      "left_insertions": 1,
+      "right_insertions": 0
+    },
+    {
+      "ring": 8,
+      "ordinary_traces": 486,
+      "closed_obstruction": 921,
+      "closure_stages": [
+        1155,
+        1065,
+        1017,
+        981,
+        939,
+        921
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              3,
+              8
+            ],
+            [
+              8,
+              4
+            ]
+          ],
+          "traces": 108,
+          "blocked": 0,
+          "example": null
+        }
+      ],
+      "left_insertions": 1,
+      "right_insertions": 1
+    },
+    {
+      "ring": 8,
+      "ordinary_traces": 468,
+      "closed_obstruction": 882,
+      "closure_stages": [
+        1173,
+        972,
+        930,
+        906,
+        888,
+        882
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ]
+          ],
+          "traces": 252,
+          "blocked": 144,
+          "example": [
+            1,
+            1,
+            1,
+            2,
+            3,
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "left_insertions": 2,
+      "right_insertions": 0
+    },
+    {
+      "ring": 9,
+      "ordinary_traces": 1008,
+      "closed_obstruction": 3870,
+      "closure_stages": [
+        3912,
+        3882,
+        3870
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              3,
+              8
+            ],
+            [
+              8,
+              4
+            ]
+          ],
+          "traces": 216,
+          "blocked": 132,
+          "example": [
+            1,
+            2,
+            1,
+            2,
+            3,
+            1,
+            2,
+            1,
+            1
+          ]
+        }
+      ],
+      "left_insertions": 2,
+      "right_insertions": 1
+    },
+    {
+      "ring": 9,
+      "ordinary_traces": 978,
+      "closed_obstruction": 3576,
+      "closure_stages": [
+        3942,
+        3708,
+        3624,
+        3612,
+        3600,
+        3576
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ]
+          ],
+          "traces": 504,
+          "blocked": 372,
+          "example": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            2,
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "left_insertions": 3,
+      "right_insertions": 0
+    },
+    {
+      "ring": 10,
+      "ordinary_traces": 2040,
+      "closed_obstruction": 12447,
+      "closure_stages": [
+        12723,
+        12459,
+        12447
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              3,
+              8
+            ],
+            [
+              8,
+              4
+            ]
+          ],
+          "traces": 432,
+          "blocked": 336,
+          "example": [
+            1,
+            2,
+            1,
+            2,
+            3,
+            1,
+            2,
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "left_insertions": 2,
+      "right_insertions": 2
+    },
+    {
+      "ring": 10,
+      "ordinary_traces": 2034,
+      "closed_obstruction": 12561,
+      "closure_stages": [
+        12729,
+        12609,
+        12585,
+        12567,
+        12561
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              3,
+              8
+            ],
+            [
+              8,
+              4
+            ]
+          ],
+          "traces": 432,
+          "blocked": 348,
+          "example": [
+            1,
+            2,
+            1,
+            2,
+            1,
+            2,
+            1,
+            2,
+            1,
+            1
+          ]
+        }
+      ],
+      "left_insertions": 3,
+      "right_insertions": 1
+    },
+    {
+      "ring": 10,
+      "ordinary_traces": 1956,
+      "closed_obstruction": 12135,
+      "closure_stages": [
+        12807,
+        12303,
+        12171,
+        12147,
+        12135
+      ],
+      "contracts": [
+        {
+          "name": "inserted_sides",
+          "edges": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              1
+            ]
+          ],
+          "traces": 1008,
+          "blocked": 900,
+          "example": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            3,
+            1,
+            2,
+            3
+          ]
+        }
+      ],
+      "left_insertions": 4,
+      "right_insertions": 0
+    }
+  ],
+  "matching_checks": "Exhaustive generator/matcher equivalence through ring eight; every generated match checked at rings nine and ten.",
+  "scope": "The specified side-edge contraction fails beyond the two-insertion example. No claim about other contracts, actual planar exteriors, or universal reducibility.",
+  "elapsed_seconds": 5.037
+}
