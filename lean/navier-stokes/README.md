@@ -499,6 +499,24 @@ which separate term of the new reserve carries the forced divergence.
 The signed excess bound and the stronger controlled-history bound remain
 open; neither is supplied by the normalization alone.
 
+For pressure estimates, `ViscousMemorySoftExcess` supplies the differentiable
+alternative `F=(X-b h)_+^2/X`. It obeys `X<=2b h+F`, so its time-integrated
+mass also supplies the actual continuation hypothesis. Its convex
+perspective Hessian pays the gradient of its continuous threshold weight.
+The lab identifies why this matters on a complete unforced mixing family:
+a sharp region selector gives an infinite derivative-based pressure norm
+even when actual memory-pressure work is zero. The differentiable weight
+removes that interface defect. This does not control the remaining tensor
+derivatives or the nonlocal weighted receiver cost.
+
+The same family has genuine vortex stretching and an explicit stochastic
+parent-history bound, yielding a finite all-time excess allowance. The
+horizontal parent decays by the heat equation and drives a passive vertical
+component. The PDE and full-history estimate are analytic; exact algebra
+checks the reduction and the limiting interface. Extending the payment to
+mutually amplifying NS parents remains open. These periodic examples are
+not finite-energy whole-space fields or arbitrary-flow estimates.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

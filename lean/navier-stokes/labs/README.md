@@ -5959,3 +5959,284 @@ reserve pairings is not established here. Their history
 must be checked before attributing divergence solely to B_near. For the
 unforced target these explicit force terms vanish; the interacting
 parents and pressure still evolve and remain the open comparison.
+
+## Differentiable excess and a complete unforced mixing history
+
+`memory_soft_excess.py` tests the receiver needed by the preceding spatial
+pressure estimate. A differentiable perspective avoids a singularity of
+the sharp region selector while preserving the continuation implication.
+An actual unforced mixing class both exposes that singularity and admits
+an explicit full-history payment. The latter uses a decaying parent and
+does not close arbitrary mutually interacting NS histories.
+
+### A perspective with a paid weight derivative
+
+Retain the same positive X, memory h, and fixed datum threshold b>0. Set
+
+```text
+z=X/h,
+F_b(X,h)=(X-b h)_+^2/X=h phi_b(z),
+phi_b(z)=(z-b)_+^2/z.
+```
+
+For X>0, this is C1 and locally C1,1, including at the threshold. It is
+not asserted to be C2 there. Its value and first derivatives vanish on
+the inactive side. Pointwise,
+
+```text
+0<=F_b<=(X-b h)_+,
+X<=2b h+F_b,
+(X-2b h)_+<=F_b.
+```
+
+Thus replacing the linear excess changes the datum-fixed threshold by at
+most a factor of two. In particular a uniform integral of F_b supplies
+`MassEnvelope` with
+
+```text
+M=2b/k_H,
+B(t)=E0/(3eta)+(integral F_b(t,x)dx)/(2b).
+```
+
+`ViscousMemorySoftExcess.massEnvelope_of_soft_excess` proves the spatial
+implication for the literal vorticity. The previous actual whole-space
+capacity theorem then applies. The imported forced obstruction also
+persists: a finite soft-excess allowance would imply the excluded capacity.
+
+On z>b, put
+
+```text
+a_b=1-b^2/z^2,       c_b=2b(1-b/z),
+phi_b''=2b^2/z^3.
+```
+
+Set a_b=c_b=0 on z<=b. Both coefficients are continuous and locally
+Lipschitz. The active perspective Hessian is the nonnegative square
+
+```text
+Hess F_b[(dX,dh),(dX,dh)]
+  =(2b^2/X^3)(h dX-X dh)^2.
+```
+
+The exact weak chain rule, with the earlier actual equations for X,h, gives
+
+```text
+D F_b <= a_b X B_near-c_b h Q_geom-J_b,
+J_b=nu h phi_b'' |grad z|^2 on z>b, and zero on z<=b.
+```
+
+The chain rule follows by convex approximation or the C1,1 chain rule.
+There is no jump of the first derivative to create a level-surface measure.
+In particular the derivative of the pressure weight is paid:
+
+```text
+(nu b h/2)|grad a_b|^2 <= J_b,
+```
+
+because `a_b'=phi_b''<=2/b` on the active side. This controls precisely
+the derivative introduced by selecting the excess region. For the actual
+strain-slot tensor `T=exp(-kappa t) partial_S Y_hat`, the previous sensitivity
+bound is `||T||_F<=K X`, K=9/4. The scalar inequality also yields
+
+```text
+(nu/(2K^2 b h)) ||T||_F^2 |grad a_b|^2 <= J_b.
+```
+
+The direct memory-pressure receiver is now `M=a_b T`, with no value jump.
+Its derivative still includes `a_b grad T`. Moreover the weak pressure
+norm uses `tr(eta I+C)` and the matrix `eta I+C`, not simply the scalar
+weight `1/h` displayed here. Neither the remaining derivative nor the
+nonlocal weighted norm is paid by this calculation. The unforced signed
+production bound remains the task; the cutoff defect is one identified
+part of its receiver cost.
+
+If `E_soft(t)=integral F_b`, the new sufficient signed target is an upper
+bound, uniform on available prefixes, for
+
+```text
+integral_0^tau (H-t) integral
+  [a_b X B_near-c_b h Q_geom-J_b] dx dt.
+```
+
+It controls `integral_0^tau E_soft+(H-tau)E_soft(tau)`, since E_soft(0)=0.
+The subtracted geometric part is at most `2b H E0/(3eta)`. The sign,
+complete parents, pressure and diffusion must be retained in the comparison.
+
+### Actual NS with a bounded stochastic parent history
+
+On the period-2pi torus, with normalized volume, fix A,B>=0 and nu>0.
+Consider the actual unforced velocity and canonical pressure
+
+```text
+u=(A exp(-nu t) sin y, 0, v(x,y,t)),    p=0,
+v_t+A exp(-nu t) sin(y) v_x=nu(v_xx+v_yy),
+v(0,x,y)=B sin x.
+```
+
+The horizontal component solves heat flow independently. The third
+component solves a linear, smooth parabolic equation globally; it does
+not feed back because every field is independent of z. These are actual
+global NS solutions, not velocities with a residual force omitted.
+
+Set q=exp(-nu t) and write `v=B q Im(exp(ix) phi(t,y))`. Then
+
+```text
+phi_t=nu phi_yy-i A exp(-nu t) sin(y) phi,    phi(0,y)=1.
+```
+
+The physical stochastic-characteristic formula reduces exactly to
+
+```text
+phi(t,y)=E exp[-i A integral_0^t
+  exp(-nu(t-s)) sin(y+sqrt(2nu) B_s) ds],
+```
+
+where B_s here denotes a one-dimensional Brownian motion, not the initial
+vertical amplitude B. The independent x Brownian motion supplies the
+factor q. This identifies the stochastic representation of this NS
+subsystem; it is not an additional force or an independently chosen
+Schroedinger-bridge optimizer.
+
+The phase has modulus one. Differentiation in y is justified by the
+deterministic bound on its derivative. Therefore
+
+```text
+|phi|<=1,
+|phi_y|<=A integral_0^t exp(-nu(t-s))ds=A(1-q)/nu,
+|v_x|<=Bq,       |v_y|<=AB q(1-q)/nu.
+```
+
+This bounds the complete parent history using only the datum and viscosity.
+It permits real stretching: with `a=partial_y u_1`, `d=v_x`, `e=v_y`,
+
+```text
+omega=(e,-d,-a),
+W=a^2+d^2+e^2,    Q=W/2,
+V=-a d e,        Z=a^2 d^2.
+```
+
+V is generally nonzero. The memory is also the actual evolving C. Its
+second row and column vanish, and C_11 depends only on y,t. The equation
+DC=2nu G preserves these properties from C(0)=0. Thus `div div C=0` and
+the canonical memory pressure is zero for the entire history. In this
+periodic full-pressure observation, `P_hat=0` exactly.
+
+For any positive envelope regularizer and switch regularizer delta, its
+gap and upper bound simplify to
+
+```text
+gap=-(4/7)Z-(4/105)W^2<=0,
+Y_hat<=1+delta/2+(39/7)Z+(1399/1995)W^2.
+```
+
+Here `V^2/(W+eta_envelope)<=Z`. Put
+
+```text
+L^2=A^2+B^2+(AB/nu)^2,
+K=(39/7)A^2 B^2+(1399/1995)L^4.
+```
+
+The stochastic derivative bounds imply W<=L^2 q^2 and Z<=A^2 B^2 q^4.
+Since h>=1, for every fixed b>1+delta/2,
+
+```text
+F_b(Y_hat,h) <= (Y_hat-b h)_+ <= K exp(-4nu t),
+integral_0^infinity integral F_b <= K/(4nu).
+```
+
+Choosing b also above the initial envelope gives the same zero-initial-excess
+setting as the general target. This is an analytic complete-history
+bound, not merely an initial-time test. It is uniform in the final horizon
+for this class. The payment uses the integrable decay of an autonomous
+parent. Arbitrary NS parents mutually stretch and need not obey this
+decay estimate; extending that step is the unproved physical bridge.
+These z-independent periodic fields are not finite-energy whole-space data.
+
+### Why the sharp receiver fails on this same physical class
+
+The raw weak norm of the previous section requires a square-integrable
+gradient of q_M, where `-Delta q_M=div div M`. For the sharp receiver
+
+```text
+M=1_{X>b h} exp(-kappa t) partial_S Y_hat,
+```
+
+a regular interface with nonzero normal-normal tensor jump produces a
+delta-prime term in `div div M`. The potential q_M has a nonzero jump;
+it cannot belong to H1. Since `eta I+C>=eta I`, its weighted receiver
+norm is infinite. This is failure of that derivative-based estimate,
+not divergent physical pressure work.
+
+Such an interface occurs in the actual unforced family above with
+A=B=1 and sufficiently small positive nu. To locate it rigorously, use
+the fixed-time inviscid comparison
+
+```text
+u_E=(sin y,0,sin(x-t sin y)).
+```
+
+At t=1,y=0 let r=cos(x)^2. With envelope regularizers both one,
+
+```text
+W=1+2r, V=r, Z=r, Q=W/2,
+core=5r^2/(2+2r)+(4/7)r+(1399/1995)(1+2r)^2.
+```
+
+Choose the fixed threshold
+
+```text
+b=sqrt(13)/6+20051/3192,
+sup_x Y_hat(0,x)<=19457/3990 < b.
+```
+
+At x=pi/6,y=0,t=1 the limiting Y equals b. The interface is regular;
+the derivative with respect to r is at least 15483/1862>0. Its normal
+is parallel to n=(-1,1,0). The exact strain-slot tensor T_E satisfies
+
+```text
+n.T_E n=-(25/21)(1+2/sqrt(13)) !=0.
+```
+
+Its trace-free part also has a nonzero normal-normal contraction. These
+are exact algebraic certificates, not floating-point sign tests.
+
+For completeness, this is a positive-viscosity argument, not a substitution
+of Euler for NS. On any fixed finite interval the horizontal heat parent
+differs from sin y by O(nu) in every fixed spatial derivative norm. The
+difference w=v_nu-v_E obeys the linear equation
+
+```text
+w_t+a_nu w_x-nu Delta w
+  =nu Delta v_E+(sin y-a_nu) partial_x v_E,    w(0)=0.
+```
+
+The source is O(nu). Differentiated energy estimates and Gronwall give
+w=O(nu) in every fixed C^m norm on that interval, with constants bounded
+as nu tends to zero. The same estimates for DC=2nu G give C=O(nu).
+The implicit-function theorem therefore preserves the regular level and
+its nonzero tensor contraction for all sufficiently small positive nu,
+and over an open time interval around one. The threshold stays the same
+and remains strictly above the full initial envelope. Hence the sharp
+receiver's time-integrated norm really is infinite on these regular
+unforced histories, although their actual memory-pressure work is zero.
+
+Keeping only the sharp-limit level diffusion does not pay that norm with
+a fixed coefficient. For a cubic transition `sigma(s)=3s^2-2s^3` of width
+epsilon, `integral sigma'=1` whereas the squared derivative cost is
+`6/(5 epsilon)`. The differentiable perspective weight a_b removes this
+interface divergence. It does not by itself bound the remaining physical
+receiver norm uniformly over arbitrary solution prefixes.
+
+### Certification boundary
+
+Twelve Lean statements certify the excess comparisons, active derivatives,
+perspective Hessian identity, receiver-weight payments and actual-vorticity
+mass-envelope implication. The weak PDE chain rule, stochastic formula,
+full-history comparison and positive-viscosity interface persistence are
+analytic. The exact checker verifies the algebra, complete NS reduction,
+memory structure and interface certificates. It does not numerically evolve
+an arbitrary flow or certify the missing universal signed production bound.
+
+```sh
+python3 -O labs/memory_soft_excess.py
+```

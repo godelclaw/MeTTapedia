@@ -20,6 +20,7 @@ import MettapediaNS.ViscousMemoryPressure
 import MettapediaNS.ViscousMemoryNormalization
 import MettapediaNS.WholeSpaceMemoryEnvelope
 import MettapediaNS.WholeSpaceMemoryExcess
+import MettapediaNS.ViscousMemorySoftExcess
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
 import MettapediaNS.PressureHessianLocalization
@@ -292,6 +293,18 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedPathEnergy.ForcedPath.orderEnergy_one_le_memory_capacity
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.no_uniform_memory_capacity
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.openAI_solution_no_uniform_memory_capacity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.excess_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.excess_le_linear
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.threshold_coercivity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.active_hasDerivAt
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.weight_hasDerivAt
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.perspective_hessian
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.curvature_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.curvature_scale
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.curvature_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.weight_gradient_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.receiver_weight_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemorySoftExcess.massEnvelope_of_soft_excess
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCoherentPairEstimate.sigmaSq_coherent_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_two_four
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_adjacent
