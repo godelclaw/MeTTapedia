@@ -389,13 +389,45 @@ Taking the six boundary colours commutes exactly with taking the disk trace.
 ports simultaneously; `sewn_colorable` uses the existing sewing theorem to
 colour the resulting closed rotation system.
 
-This consumer assumes that the exterior's actual boundary relation is
-Kempe-closed and contains a proper zero-sum trace. Deriving those premises
-from a smaller embedded map remains a geometric obligation, as does recognizing
-this literal piece in an arbitrary source. The replay checks every literal
-dart and rotation against the extracted C30 patch. It does not replace that
-general recognition proof. The [tangle audit][patch-tangle-audit] checks this
-reconstruction separately from the finite boundary repair.
+The [tangle audit][patch-tangle-audit] checks this reconstruction separately
+from the finite boundary repair. The replay checks every literal dart and
+rotation against the extracted C30 patch; general recognition remains open.
+
+The [physical boundary bridge][physical-boundary] now discharges the closure
+hypothesis from physical noncrossing. A proper exterior colouring determines
+one matching of its active boundary ports. The translation retains that
+matching and both endpoint colours. Every chromogram answer reconstructs as
+a simultaneous switch of whole components of the same exterior. The
+trace-difference lemma works at every length; the matching-to-chromogram codec
+is verified at six ports. This transfers a common mathematical argument
+between the physical and reference representations, with explicit witnesses.
+
+The embedded consumer derives reference closure for a spherical six-port
+cyclic bond boundary with connected opposite shore, under the existing map
+hypotheses. Cubic incidence supplies the zero-sum equation. The resulting
+[physical repair theorem][physical-repair] has the form:
+
+```text
+one proper exterior colouring + cubicity + physical noncrossing
+  → a genuine colouring of the sewn sixteen-vertex patch and exterior.
+```
+
+The exterior colouring may change; existence and actual reconstruction are
+proved, while counting and executable-history equivalences are unclaimed.
+The [seven-root audit][physical-audit] checks 21,333 dependency declarations,
+only the three standard axioms, and no catalogue certificate or complete
+Four Colour theorem.
+
+The [tree replay][tree-probe] tests a smaller-map operation: remove all sixteen
+patch vertices and insert an ordered cubic tree with six ports and four
+internal vertices. All fourteen tree shapes succeed geometrically on all
+29 supplied patches, giving 406 simple, connected, bridgeless spherical cubic
+maps with twelve fewer vertices. All tested exteriors have Kempe-closed
+supports. On C30, every smaller tree replacement has genuine colourings whose
+boundary words lie in that same exterior support. These are finite program
+checks. A general proof of the smaller-map operation, embedded recognition
+and geometric coverage remain necessary. No certificate savings are credited;
+the [physical measurement record][physical-measurements] separates the stages.
 
 ## Scope and verification
 
@@ -467,3 +499,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [patch-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-patch-measurements.json
 [patch-tangle]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangle.lean
 [patch-tangle-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangleAudit.lean
+[physical-boundary]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PhysicalKempeBoundary.lean
+[physical-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePhysicalRepair.lean
+[physical-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePhysicalRepairAudit.lean
+[tree-probe]: ../../../../tools/fourcolor/classical/pentagonal-lobe-tree-probe.json
+[physical-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-physical-measurements.json

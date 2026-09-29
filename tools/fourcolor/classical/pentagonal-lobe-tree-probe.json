@@ -1,0 +1,9714 @@
+{
+  "status": "Independent finite program checks; general embedded reduction remains open.",
+  "sources": [
+    {
+      "path": "tools/fourcolor/classical/pentagonal_lobe_tree_probe.py",
+      "sha256": "c66d958711808696a57f491d0a342a5314d4435e0d0f5cfcf889f6da8523bbf1"
+    },
+    {
+      "path": "tools/fourcolor/classical/alternating-lobe-fixtures.json",
+      "sha256": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3"
+    },
+    {
+      "path": "tools/fourcolor/classical/pentagonal_lobe_patch_probe.py",
+      "sha256": "8060135209aec6ba39ba3aa2b508970c731aa1ae9a1a3438766628f5ff7f80b3"
+    },
+    {
+      "path": "tools/fourcolor/classical/probe_diamond_kempe.py",
+      "sha256": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d"
+    },
+    {
+      "path": "tools/fourcolor/classical/alternating_lobe_probe.py",
+      "sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+    },
+    {
+      "path": "tools/fourcolor/classical/alternating_cycle_probe.py",
+      "sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+    },
+    {
+      "path": "tools/fourcolor/v24_deletion_orbit_gate.py",
+      "sha256": "8b563f242b749f9b3485c35629ae08871427d39df67889e59b9d69140003ea2a"
+    }
+  ],
+  "maps": 29,
+  "replacements": 406,
+  "removed_patch_vertices": 16,
+  "introduced_tree_vertices": 4,
+  "whole_map_decrease": 12,
+  "outside_support_distribution": {
+    "75": 1,
+    "84": 1,
+    "96": 1,
+    "111": 2,
+    "132": 3,
+    "135": 2,
+    "147": 1,
+    "150": 1,
+    "153": 1,
+    "162": 4,
+    "165": 2,
+    "168": 3,
+    "171": 1,
+    "174": 2,
+    "177": 1,
+    "183": 3
+  },
+  "examples": [
+    {
+      "id": "C24-plantri-0",
+      "outside_vertices": 8,
+      "outside_connected": true,
+      "outside_colourings": 78,
+      "outside_words": 75,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C26-plantri-0",
+      "outside_vertices": 10,
+      "outside_connected": true,
+      "outside_colourings": 108,
+      "outside_words": 84,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 14,
+          "edges": 21,
+          "faces": 9,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C28-plantri-1",
+      "outside_vertices": 12,
+      "outside_connected": true,
+      "outside_colourings": 144,
+      "outside_words": 96,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 16,
+          "edges": 24,
+          "faces": 10,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C30-plantri-1",
+      "outside_vertices": 14,
+      "outside_connected": true,
+      "outside_colourings": 186,
+      "outside_words": 111,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 36,
+          "words": 24
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 78,
+          "words": 42
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 12,
+          "words": 6
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 48,
+          "words": 30
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 36,
+          "words": 18
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 78,
+          "words": 42
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 78,
+          "words": 42
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 36,
+          "words": 18
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 48,
+          "words": 30
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 48,
+          "words": 36
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 48,
+          "words": 24
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 48,
+          "words": 30
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 48,
+          "words": 24
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 18,
+          "edges": 27,
+          "faces": 11,
+          "euler": 2,
+          "connected": true,
+          "bridges": [],
+          "colourings": 48,
+          "words": 36
+        }
+      ]
+    },
+    {
+      "id": "C32-plantri-7",
+      "outside_vertices": 16,
+      "outside_connected": true,
+      "outside_colourings": 252,
+      "outside_words": 132,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C32-plantri-8",
+      "outside_vertices": 16,
+      "outside_connected": true,
+      "outside_colourings": 252,
+      "outside_words": 132,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C32-plantri-9",
+      "outside_vertices": 16,
+      "outside_connected": true,
+      "outside_colourings": 252,
+      "outside_words": 132,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 20,
+          "edges": 30,
+          "faces": 12,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C34-plantri-1",
+      "outside_vertices": 18,
+      "outside_connected": true,
+      "outside_colourings": 318,
+      "outside_words": 147,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C34-plantri-8",
+      "outside_vertices": 18,
+      "outside_connected": true,
+      "outside_colourings": 300,
+      "outside_words": 111,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 22,
+          "edges": 33,
+          "faces": 13,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C36-plantri-8",
+      "outside_vertices": 20,
+      "outside_connected": true,
+      "outside_colourings": 396,
+      "outside_words": 135,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C36-plantri-10",
+      "outside_vertices": 20,
+      "outside_connected": true,
+      "outside_colourings": 396,
+      "outside_words": 165,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C36-plantri-32",
+      "outside_vertices": 20,
+      "outside_connected": true,
+      "outside_colourings": 396,
+      "outside_words": 135,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C36-plantri-46",
+      "outside_vertices": 20,
+      "outside_connected": true,
+      "outside_colourings": 456,
+      "outside_words": 153,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C38-plantri-72",
+      "outside_vertices": 22,
+      "outside_connected": true,
+      "outside_colourings": 360,
+      "outside_words": 150,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C38-plantri-109",
+      "outside_vertices": 22,
+      "outside_connected": true,
+      "outside_colourings": 600,
+      "outside_words": 162,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C38-plantri-112",
+      "outside_vertices": 22,
+      "outside_connected": true,
+      "outside_colourings": 504,
+      "outside_words": 174,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C38-plantri-140",
+      "outside_vertices": 22,
+      "outside_connected": true,
+      "outside_colourings": 456,
+      "outside_words": 162,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 26,
+          "edges": 39,
+          "faces": 15,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C40-plantri-75",
+      "outside_vertices": 24,
+      "outside_connected": true,
+      "outside_colourings": 528,
+      "outside_words": 168,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C40-plantri-318",
+      "outside_vertices": 24,
+      "outside_connected": true,
+      "outside_colourings": 894,
+      "outside_words": 165,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C40-plantri-327",
+      "outside_vertices": 24,
+      "outside_connected": true,
+      "outside_colourings": 576,
+      "outside_words": 162,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C40-plantri-330",
+      "outside_vertices": 24,
+      "outside_connected": true,
+      "outside_colourings": 528,
+      "outside_words": 168,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C40-plantri-370",
+      "outside_vertices": 24,
+      "outside_connected": true,
+      "outside_colourings": 696,
+      "outside_words": 162,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C40-plantri-394",
+      "outside_vertices": 24,
+      "outside_connected": true,
+      "outside_colourings": 528,
+      "outside_words": 168,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C40-plantri-612",
+      "outside_vertices": 24,
+      "outside_connected": true,
+      "outside_colourings": 630,
+      "outside_words": 183,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 28,
+          "edges": 42,
+          "faces": 16,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C42-plantri-203",
+      "outside_vertices": 26,
+      "outside_connected": true,
+      "outside_colourings": 762,
+      "outside_words": 183,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C42-plantri-840",
+      "outside_vertices": 26,
+      "outside_connected": true,
+      "outside_colourings": 852,
+      "outside_words": 183,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": 1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C42-plantri-975",
+      "outside_vertices": 26,
+      "outside_connected": true,
+      "outside_colourings": 720,
+      "outside_words": 174,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C42-plantri-1035",
+      "outside_vertices": 26,
+      "outside_connected": true,
+      "outside_colourings": 882,
+      "outside_words": 171,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    },
+    {
+      "id": "C42-plantri-1234",
+      "outside_vertices": 26,
+      "outside_connected": true,
+      "outside_colourings": 1074,
+      "outside_words": 177,
+      "outside_closed": true,
+      "replacements": [
+        {
+          "index": 0,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                3,
+                [
+                  4,
+                  5
+                ]
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 1,
+          "tree": [
+            1,
+            [
+              2,
+              [
+                [
+                  3,
+                  4
+                ],
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 2,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 3,
+          "tree": [
+            1,
+            [
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 4,
+          "tree": [
+            1,
+            [
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 5,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              [
+                4,
+                5
+              ]
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 6,
+          "tree": [
+            [
+              1,
+              2
+            ],
+            [
+              [
+                3,
+                4
+              ],
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 7,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                3
+              ]
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 8,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              3
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 9,
+          "tree": [
+            [
+              1,
+              [
+                2,
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 10,
+          "tree": [
+            [
+              1,
+              [
+                [
+                  2,
+                  3
+                ],
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 11,
+          "tree": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 12,
+          "tree": [
+            [
+              [
+                1,
+                [
+                  2,
+                  3
+                ]
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        },
+        {
+          "index": 13,
+          "tree": [
+            [
+              [
+                [
+                  1,
+                  2
+                ],
+                3
+              ],
+              4
+            ],
+            5
+          ],
+          "orientation": -1,
+          "vertices": 30,
+          "edges": 45,
+          "faces": 17,
+          "euler": 2,
+          "connected": true,
+          "bridges": []
+        }
+      ]
+    }
+  ]
+}

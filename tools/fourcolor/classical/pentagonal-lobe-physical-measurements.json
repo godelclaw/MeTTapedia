@@ -1,0 +1,125 @@
+{
+  "status": "Kernel-checked physical boundary transport and literal patch reconstruction; general embedded strict reduction remains open.",
+  "completed_utc": "2026-09-29T21:24:05+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "7b30dd604",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.KempeMatchingChromogram",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeMatchingChromogram.lean",
+      "source_sha256": "9fb20dd18e844e684a1365c50047482181273e8cc38f345b8dfa8e3faf575a8d",
+      "olean_sha256": "ee380f21982f558602f32c21bda991c7a16f14c7ac865538240a8cac975b30a3",
+      "olean_bytes": 1344960,
+      "reported_build_seconds": 59.0
+    },
+    {
+      "module": "MettapediaFourColor.KempeMatchingReconstruction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeMatchingReconstruction.lean",
+      "source_sha256": "4e7b625c173cb6140fd6ce99caa451787bdc1b1409b5131ea8f38ed42a920534",
+      "olean_sha256": "e3608778f4974a2c72044cd1e49e42ce1db3db35774b4a733d605d4a3400bcde",
+      "olean_bytes": 204608,
+      "reported_build_seconds": 1.5
+    },
+    {
+      "module": "MettapediaFourColor.PhysicalKempeBoundary",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PhysicalKempeBoundary.lean",
+      "source_sha256": "b73c52d80b3304b27f5fa2d214293a378144ccfb4f165ac1a27b3e2f55b3629f",
+      "olean_sha256": "9842a4033ff2c49cf8250366a7861351f242bd2f296c5c517688f51b541cac36",
+      "olean_bytes": 315296,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobePhysicalRepair",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePhysicalRepair.lean",
+      "source_sha256": "9e8b6932cc04cf873945ed1ad11046d7606a4d635184d5283bee8ca381d0387b",
+      "olean_sha256": "2d74d7e7d26e95d9d0e85c2789d942d0bb5be2b6c9d1953cd64f82a5c1c877be",
+      "olean_bytes": 186944,
+      "reported_build_seconds": 2.6
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobePhysicalRepairAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePhysicalRepairAudit.lean",
+      "source_sha256": "23edbec13a84d41b8c498f1cb1bf9ae5c31154924db866e91adb9d42070d3818",
+      "olean_sha256": "5ce1dd89f3bf2bd09f5be0069477a41b459027ce26be45c6665ee7e9291196ad",
+      "olean_bytes": 3256,
+      "reported_build_seconds": 4.7
+    }
+  ],
+  "audit": {
+    "roots": [
+      "FourColor.KempeMatchingChromogram.reconstruct",
+      "FourColor.PhysicalKempeBoundary.closed",
+      "FourColor.PhysicalKempeBoundary.ordered_closed",
+      "FourColor.PhysicalKempeBoundary.vertexSide_closed",
+      "FourColor.PhysicalKempeBoundary.trace_valid",
+      "FourColor.PentagonalLobePatch.Tangle.physicalTrace_iff",
+      "FourColor.PentagonalLobePatch.Tangle.sewn_colorable_of_physical_noncrossing"
+    ],
+    "combined_dependency_closure": 21333,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Named roots and full proof dependency closures; not all imported declarations.",
+    "excluded_dependencies": "Configuration certificates, complete Four Colour endpoints and diamond configuration/family reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobePhysicalRepair",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3367,
+      "exit_code": 0
+    },
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobePhysicalRepairAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3368,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "generic_trace_difference": "At any width, two traces matching a common chromogram differ by a mask paired at chord endpoints.",
+    "finite_codec": "One kernel-checked translation for all noncrossing involutions on six ports and all Boolean masks, including fixed ports.",
+    "physical_support_transport": "Global colour relabelling and simultaneous physical component switches imply reference KempeClosed through an exact observation map; every chromogram answer reconstructs through the original matching.",
+    "embedded_consumer": "A six-port cyclic bond boundary in the existing spherical simple cubic map presentation, with connected opposite shore and the stated two-sided-face, dual-connectivity and rotation hypotheses.",
+    "input_equation": "A genuine proper exterior colouring gives a nonzero six-port word; actual cubic incidence proves its zero sum.",
+    "patch_consumer": "One proper exterior colouring, cubicity and physical noncrossing imply colourability after sewing the literal sixteen-vertex pentagonal lobe patch. The exterior may be recoloured.",
+    "existence_and_actual_witness_transport": true,
+    "count_equivalence_proved": false,
+    "executable_history_transport_proved": false,
+    "arbitrary_ambient_lobe_recognition_proved": false,
+    "general_smaller_map_validity_proved": false,
+    "strict_reduction_proved": false,
+    "coverage_proved": false
+  },
+  "program_evidence": {
+    "command": "python3 tools/fourcolor/classical/pentagonal_lobe_tree_probe.py",
+    "record": "tools/fourcolor/classical/pentagonal-lobe-tree-probe.json",
+    "sha256": "fa652b825897ae502650f9a6a6ff6e66318ce32a13b955b1587fc56e6752d5c1",
+    "maps": 29,
+    "replacements": 406,
+    "all_replacements": "Simple, connected, bridgeless spherical cubic maps, deleting sixteen patch vertices and introducing four tree vertices.",
+    "whole_map_vertex_decrease": 12,
+    "exterior_supports_checked_for_reference_closure": 29,
+    "c30_all_fourteen_replacements_coloured": true,
+    "scope": "Finite supplied rotations; independent program evidence rather than a general Lean geometry theorem."
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_added": 1
+  },
+  "cost_scope": "Reported Lake module build times include elaboration and kernel checking; no isolated kernel-time or whole-proof speedup claim.",
+  "next_obligations": [
+    "Recognize the literal patch and its cyclic six-port exterior in an independently specified embedded family.",
+    "Prove a chosen four-vertex tree replacement preserves the intended smaller-map class, including every introduced vertex.",
+    "Restrict a colouring of that smaller map to the same exterior, then consume the physical repair theorem.",
+    "Establish the family recognition/coverage needed to replace actual complete-proof obligations."
+  ]
+}

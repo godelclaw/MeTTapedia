@@ -264,16 +264,28 @@ certificates and complete theorem endpoints. It is checked with:
 ```sh
 lake build MettapediaFourColor.PentagonalLobePatchAudit
 lake build MettapediaFourColor.PentagonalLobeTangleAudit
+lake build MettapediaFourColor.PentagonalLobePhysicalRepairAudit
 ```
 
 The [worked lobe example](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
 separates these kernel theorems from the independent embedded-patch recognition
 and seam tests. `PentagonalLobeTangle` maps every disk colouring to an actual
 sixteen-vertex cubic open tangle, preserving the six ordered boundary colours.
-It glues compatible witnesses into a closed rotation-system colouring. The
-exterior's Kempe closure and admissible input remain hypotheses; deriving them
-from smaller-map geometry, recognition and strict reduction remain open.
-The complete assembly is unchanged by this boundary theorem.
+It glues compatible witnesses into a closed rotation-system colouring.
+`PhysicalKempeBoundary` now transports actual component switching to reference
+Kempe closure, preserving the common noncrossing matching and reconstructing
+every chromogram answer. Its embedded consumer uses the existing spherical
+six-port cyclic-bond theorem. Cubic incidence supplies the proper zero-sum input.
+`PentagonalLobePhysicalRepair` therefore needs one proper exterior colouring,
+cubicity and physical noncrossing to colour the sewn map. Its seven-root audit
+checks 21,333 dependency declarations and excludes catalogue certificates and
+complete theorem endpoints.
+
+Independent tests replace the sixteen-vertex patch by each of fourteen
+four-vertex trees in 29 supplied maps: all 406 replacements preserve spherical,
+simple, connected, bridgeless cubic geometry and decrease the whole map by
+twelve vertices. Formal recognition and validity of the general smaller-map
+operation remain open. The complete assembly and credited savings are unchanged.
 
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as

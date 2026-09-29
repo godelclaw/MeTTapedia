@@ -1078,7 +1078,28 @@ the standard axioms and excludes catalogue certificates and the complete
 theorem. `PentagonalLobeTangle.lean` reconstructs actual cubic-tangle colourings,
 preserves the entire ordered boundary and glues compatible exterior witnesses.
 The program compares the exact Lean adjacency, witness data, all forty-eight
-darts and every cyclic order against the extracted patch. General embedded
-recognition, exterior closure from geometry, a strict closed-map replacement
-and coverage remain unproved. There is no new
-catalogue or certificate saving; see `pentagonal-lobe-patch-measurements.json`.
+darts and every cyclic order against the extracted patch. The original witness
+and tangle receipts remain in `pentagonal-lobe-patch-measurements.json`.
+
+`PhysicalKempeBoundary.lean` now proves exact transport from physical
+noncrossing component closure to the reference chromogram language. It
+reconstructs every answer using a union of the same original components and
+has a consumer on embedded spherical six-port cyclic bond boundaries.
+`PentagonalLobePhysicalRepair.lean` uses this transport, cubic cut parity and
+exact support correspondence to glue the patch starting from any proper
+exterior colouring. The seven-root audit checks 21,333 dependencies, only the
+standard axioms, and no catalogue certificate or complete theorem.
+
+```sh
+python3 tools/fourcolor/classical/pentagonal_lobe_tree_probe.py
+```
+
+The new replay tests all fourteen ordered four-vertex trees on each of the
+29 extracted sixteen-vertex patches. All 406 replacements are simple,
+connected, bridgeless spherical cubic maps with twelve fewer total vertices.
+All 29 exhaustively computed exterior supports are reference Kempe-closed.
+For C30, all fourteen smaller maps are colourable and their boundary words
+belong to the same literal exterior support. These are independent finite
+checks. General embedded recognition, smaller-map validity and coverage remain
+unproved. There is no new catalogue or certificate saving; the new receipt is
+`pentagonal-lobe-physical-measurements.json`.

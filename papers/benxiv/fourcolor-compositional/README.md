@@ -88,9 +88,17 @@ an independent program recognizes the same pentagon-plus-eleven-cycle patch
 in 29 supplied maps. The boundary proof retains nine finite answer-cover
 checks and 22 terminal witnesses. A literal sixteen-vertex cubic tangle now
 receives these colouring witnesses with the exact six-port order, then glues
-to any exterior satisfying the closure and nonempty-trace hypotheses.
-Deriving those hypotheses from a smaller map, embedded recognition and strict
-replacement remain open; no further certificate is removed.
+to compatible exteriors. The new physical boundary bridge transports one
+common noncrossing Kempe-component matching into Gonthier's chromograms and
+reconstructs every permitted answer through that same matching. Cubic cut
+parity supplies the required input equation. The patch now glues starting
+from any proper exterior colouring under physical noncrossing, with an
+embedded spherical-map closure theorem available for cyclic six-port cuts.
+This gives the operational and reference representations an exact common
+consumer. Independent tests of fourteen four-vertex trees on each of the
+29 patches all give valid maps twelve vertices smaller. General recognition,
+validity of that smaller-map operation and coverage remain open; no further
+certificate is removed.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
