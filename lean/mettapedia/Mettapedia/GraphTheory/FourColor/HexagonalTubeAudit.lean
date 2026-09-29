@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.HexagonalTubeExclusion
 import Mettapedia.GraphTheory.FourColor.HexagonalTubeReduction
 import Mettapedia.GraphTheory.FourColor.HexagonalCollarProgress
 import Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition
+import Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes
 import Lean.Util.FoldConsts
 
 /-!
@@ -116,6 +117,18 @@ run_cmd do
     (``AlternatingCycleRecognition.recognized_pentagonWithin_three,
       [``AlternatingCycleRecognition.row, ``ZigzagSlab.pentagonWithin_three,
       ``SlabOf.five_reduction])]
+  let contracts := contracts ++ [
+    (``AlternatingWalkLobes.exists_simple_segment,
+      [``Finite.exists_ne_map_eq_of_infinite, ``SimpleGraph.Walk.ofDarts]),
+    (``AlternatingWalkLobes.trajectory_phase, [``AlternatingWalkLobes.step]),
+    (``AlternatingWalkLobes.internal_transition, [``AlternatingWalkLobes.trajectory_succ]),
+    (``AlternatingWalkLobes.step_nonbacktracking,
+      [``PhysicalForkCodeFaces.Cubic3.cube, ``PhysicalForkCodeFaces.Cubic3.moves]),
+    (``AlternatingWalkLobes.exists_simple_lobe, [``AlternatingWalkLobes.exists_simple_segment,
+      ``AlternatingWalkLobes.step_nonbacktracking]),
+    (``AlternatingWalkLobes.exists_separating_lobe, [``AlternatingWalkLobes.exists_simple_lobe,
+      ``GoertzelV24PrimalCycleFacialBond.exists_faceSet_bond_of_isCycle,
+      ``GoertzelV24BridgelessFaceTwoSided.BridgelessSphericalCubicMapData.orbitFacesTwoSided])]
   let mut inspected : NameSet := {}
   for (root, required) in contracts do
     let mut seen : NameSet := {}

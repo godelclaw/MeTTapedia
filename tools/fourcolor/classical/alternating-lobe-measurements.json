@@ -1,0 +1,195 @@
+{
+  "status": "Kernel-checked simple-cycle extraction and connected facial separation from every alternating trajectory; finite simple-orbit obstruction replayed independently.",
+  "completed_utc": "2026-09-29T19:32:57+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/AlternatingWalkLobes.lean",
+      "source_sha256": "a715b4518e3c835f0edc6bb0272776bce3cfc9763df09e263bfc4aa8d02eebd1",
+      "olean_sha256": "85605307b2da567ebc3db698856d895ccd3a84c4b676a20dc1fe47c28855b846",
+      "olean_bytes": 496424,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTubeAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeAudit.lean",
+      "source_sha256": "61644fbf815c0807863142dfd1eed7255c8c98e0517658b2207fbd0ed70a9d2f",
+      "olean_sha256": "4870853b16b57187396852aff8174958bd243007cd2d8fda2990f4855f3d37eb",
+      "olean_bytes": 4352,
+      "reported_build_seconds": 18.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "93820be586ba7a61260c058083158906ca13b4cdd653625bc9331c99d8bf71b2",
+      "olean_sha256": "90e786ef4d0811da0e2f5a0ee916adb901e31e9afafddef909409764e4509210",
+      "olean_bytes": 36288,
+      "reported_build_seconds": 4.7
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.CyclicPortSeam.translation_of_six_steps",
+      "Mettapedia.GraphTheory.FourColor.CyclicPortSeam.six_steps_of_successor",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.seam_eq_add",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.two_row_support",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.Hexagonal.cyclicCoherent",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.sideSet_aligned",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.sideSet_aligned_stable",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.le_of_tube_nodes",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.hexagonal_five_length_bound",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.toSlab_rotationCompatible",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.prepend_hexagonal",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.chain_length_bound",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.assemble_rotationCompatible",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.literalSlab",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.reassembled_colorable_iff",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.reassembled_class",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleClosedWitness.replace",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.five_vertex_loss",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.five_reduction",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.five_reconstruct",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.hexagonal_five_length_le_four",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.chain_length_le_four",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collar_three_steps",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.nextRow",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.nextRow_inEquiv",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarVertex_eq_successor",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.exists_nextRow_iff",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.nextRow_support",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.tube_of_not_stops",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.stopsWithin_three",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarMiddle_outside",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarReflection_impossible",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarVertex_injective",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.hexagonalNextRow",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.hexagonalNextRow_support",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarObstruction_iff_pentagonalSeam",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.pentagonWithin_card",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.pentagonWithin_three",
+      "Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Frame.exists_cycle",
+      "Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition.exists_facial_sides",
+      "Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition.alternating_degrees",
+      "Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition.row",
+      "Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition.row_support",
+      "Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition.recognized_pentagonWithin",
+      "Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition.recognized_pentagonWithin_three",
+      "Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes.exists_simple_segment",
+      "Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes.trajectory_phase",
+      "Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes.internal_transition",
+      "Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes.step_nonbacktracking",
+      "Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes.exists_simple_lobe",
+      "Mettapedia.GraphTheory.FourColor.AlternatingWalkLobes.exists_separating_lobe"
+    ],
+    "combined_dependency_closure": 24670,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excluded_namespace": "FourColor",
+    "required_dependencies": "Finite return, actual closed walk, retained internal alternating operations, cubic nonbacktracking and spherical facial separation.",
+    "scope": "The 51 named roots and their complete dependency closures, not every imported declaration."
+  },
+  "main_gate": {
+    "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "working_directory": "lean/mettapedia",
+    "completed_utc": "2026-09-29T19:32:57+00:00",
+    "jobs": 11026,
+    "incremental_wall_seconds": 30.0
+  },
+  "mathematics": {
+    "general_extraction": "Any nonbacktracking infinite dart walk in a finite simple graph contains a contiguous simple closed walk of length three through the ambient vertex count.",
+    "alternating_consumer": "Each starting dart and phase in a cubic rotation gives such a walk, retaining all internal operations and phases.",
+    "facial_consumer": "In a bridgeless spherical cubic graph, its actual edge set separates two connected facial shores.",
+    "unrestricted_transition": "The last dart back to the first.",
+    "closed_orbit_simplicity_assumed": false,
+    "uniform_width_bound_proved": false,
+    "closing_transition_reducibility_proved": false,
+    "colouring_reconstruction_for_lobes_proved": false
+  },
+  "independent_program_checks": {
+    "command": "python3 tools/fourcolor/classical/alternating_lobe_probe.py --output tools/fourcolor/classical/alternating-lobe-probe.json",
+    "record": "alternating-lobe-probe.json",
+    "record_sha256": "566b2d2e49fdd6edff2a14b50a1f37132cb2ba49725a8676e07fb834ab6aa2cf",
+    "script_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8",
+    "fixtures": "alternating-lobe-fixtures.json",
+    "fixtures_sha256": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3",
+    "maps": 137,
+    "maps_without_simple_orbits": 30,
+    "first_return_segments_checked": 31728,
+    "shortest_lobes_with_turn_and_facial_checks": 137,
+    "first_no_simple_orbit_vertices": 30,
+    "first_no_simple_orbit_lengths": [
+      68,
+      22,
+      68,
+      22
+    ],
+    "edge_subsets_checked_for_cyclic_cuts": 164220,
+    "cyclic_cuts_of_size_at_most_four": 0,
+    "tait_witness_retained": true,
+    "byte_identical_replay": true,
+    "scope": "All phase orbits of the 137 supplied rotations. Every first-return segment is checked for simplicity and closure; a shortest segment per map also has turn and exact facial-shore checks. Generator completeness, witness minimality and the turn/curvature identity are not Lean-certified."
+  },
+  "complete_baseline_recheck": {
+    "status": "Fresh complete-endpoint replay passed",
+    "gate": "lake build kernelComplete",
+    "working_directory": "lean/fourcolor-classical",
+    "completed_utc": "2026-09-29T19:32:02+00:00",
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "prepared_dependency_records": 126,
+    "imported_public_declarations_audited": 125082,
+    "fresh_modules": [
+      {
+        "module": "MettapediaFourColor.ReferenceBaselineAudit",
+        "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.573,
+        "olean_bytes": 3320,
+        "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e"
+      },
+      {
+        "module": "MettapediaFourColor.DiamondFamilyReducibility",
+        "source_sha256": "71fb0a5407ace3d65ad85c53b4733d03ea4f382675ee1e2fab7ca14425b26824",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.565,
+        "olean_bytes": 37328,
+        "olean_sha256": "2e8e476bff5beda5c8eeb7e7b30761099c2226848f9425a74ead204147630377"
+      },
+      {
+        "module": "MettapediaFourColor.Complete",
+        "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.871,
+        "olean_bytes": 39288,
+        "olean_sha256": "fce0dd591168e2d7bf9463281c20f1fad4ff9bb96a9e4f106248346d79971ccf"
+      },
+      {
+        "module": "MettapediaFourColor.CompleteAudit",
+        "source_sha256": "2469479845e74a1e68271b7a79cb05eaaaf973e086b2780576f75f1cff04d6ff",
+        "exit_code": 0,
+        "frontend_wall_seconds": 19.224,
+        "olean_bytes": 6776,
+        "olean_sha256": "470427286cb17f0d48ffac4b175a2d0568b1300c807a11bfeda796200ed29f8f"
+      }
+    ],
+    "summed_frontend_wall_seconds": 30.233,
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "superseded_checker_declarations_excluded": 236,
+    "new_lobe_theorems_used_by_complete_endpoints": false,
+    "scope": "Four endpoint/audit modules freshly replayed after checking prepared dependency records; not a clean reference rebuild."
+  },
+  "remaining_obligations": [
+    "Derive an exact joint boundary contract retaining the closing transition.",
+    "Prove a valid strict reduction with genuine colouring reconstruction for a geometrically recognized lobe family.",
+    "Supply effective width control, pentagonal-stop reductions and broader coverage, and integrate successful family reductions into the complete assembly."
+  ],
+  "new_finite_certificates": 0,
+  "configurations_removed": 0,
+  "original_configuration_certificates_replaced": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "cost_scope": "Incremental main gate and Lake-reported module times, not isolated kernel costs. No runtime or artifact-size improvement is claimed."
+}

@@ -260,6 +260,45 @@ claimed. The [measurement record][alternating-measurements] records the
 recognition audit and its physical consumer. Catalogue and certificate
 savings from this step are zero.
 
+## When the alternating walk crosses itself
+
+The [simple-lobe theorem][lobes] starts from any dart and either turn phase.
+Finiteness supplies a returning segment; choosing a shortest positive return
+prevents an internal vertex repetition. Nonbacktracking excludes lengths one
+and two. The result is an actual simple closed walk of length between three
+and the ambient vertex count. Its darts are a contiguous part of the original
+trajectory, and `internal_transition` preserves every internal operation and
+its phase. The closing transition is unrestricted.
+
+`exists_separating_lobe` applies spherical separation to this actual walk.
+It constructs two connected facial shores and proves that precisely the
+walk's edges separate them. It assumes no supplied simple orbit, facial side
+or cut. It does not yet give the alternating degree pattern or complete row
+contract used by the four-ring reduction.
+
+This distinction matters in small examples. The [finite replay][lobe-probe]
+checks 137 explicit fullerene rotations on 20 through 42 vertices; 30 have
+no simple complete alternating orbit. One 30-vertex example has four directed
+dart/phase orbits, of lengths 68, 22, 68 and 22, each with an explicit repeated
+vertex. Its 164,220 edge subsets of sizes one through four contain no cyclic
+cut. A Tait colouring is recorded as well: this is an obstruction to the
+simple-orbit supply assertion, not a counterexample to colourability or to
+a stronger minimal-counterexample hypothesis.
+
+That example contains an eleven-edge simple lobe. Its internal turns
+alternate and its facial shores contain five and seven pentagons. The
+associated turn/curvature calculation is a program check here, not a new
+Lean curvature theorem. Zigzag self-intersections and the curvature of
+patches bounded by zigzag arcs are studied by
+[Deza and Dutour](https://arxiv.org/abs/math/0212352). The next task is to
+derive an exact joint boundary contract for the marked closing transition,
+then prove a reduction with genuine colouring reconstruction. A lobe alone
+does not discharge that task or bound its width uniformly.
+
+The [measurement record][lobe-measurements] separates the general Lean
+extraction and separation theorems from the finite replay. No additional
+classical certificate dependency or catalogue entry is removed.
+
 ## Scope and verification
 
 This establishes an infinite family reduction from the corridor idea,
@@ -317,3 +356,6 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [alternating-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AlternatingCycleRecognition.lean
 [alternating-probe]: ../../../../tools/fourcolor/classical/alternating-cycle-probe.json
 [alternating-measurements]: ../../../../tools/fourcolor/classical/alternating-cycle-measurements.json
+[lobes]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AlternatingWalkLobes.lean
+[lobe-probe]: ../../../../tools/fourcolor/classical/alternating-lobe-probe.json
+[lobe-measurements]: ../../../../tools/fourcolor/classical/alternating-lobe-measurements.json

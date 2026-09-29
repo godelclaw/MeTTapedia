@@ -200,6 +200,17 @@ simple alternating cycle still has to be supplied. Independent dart/phase
 orbit tests find wider rows in the formerly empty five-port Goldberg examples,
 but also nonsimple orbits in capped strips. Neither universal simplicity nor
 universal row supply is inferred from those finite tests.
+AlternatingWalkLobes now supplies a simple contiguous cycle from every
+alternating dart/phase trajectory in a finite cubic graph. Its length lies
+between three and the ambient vertex count; its actual darts and every
+internal transition are retained. In a bridgeless spherical cubic graph,
+the cycle constructs exact facial separation with both shores connected.
+Only its closing transition is unrestricted. This is not yet a tube row
+or a reducible patch. Independent replay of 137 fullerene rotations finds
+30 with no simple complete alternating orbit. A 30-vertex witness has orbit
+lengths 68, 22, 68, 22 and no cyclic edge cut of size at most four; an explicit
+Tait colouring is retained. The next geometric contract must account for
+the closing transition rather than assume a simple complete orbit exists.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond

@@ -31,8 +31,13 @@ minimal counterexample reaches that seam within three extensions of a supplied
 five-port row. A simple cycle with alternating local turns now constructs that
 row's facial sides and complete ordered interfaces at every width at least two;
 see [AlternatingCycleRecognition](AlternatingCycleRecognition.lean).
-Supply of suitable simple cycles, reductions at pentagonal stops, width control
-and a broader core-family reduction remain open. The GSLT, graph and MeTTa
+Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
+with exact facial separation and connected shores. Its internal steps stay
+alternating; the closing transition is unrestricted. An independently checked
+30-vertex fullerene has no simple complete alternating orbit, so that closing
+transition needs its own contract. Reductions for these segments and for
+pentagonal stops, width control and a broader core-family reduction remain
+open. The GSLT, graph and MeTTa
 results have their own verified consumers, listed in the guide.
 
 ## Independent corridor route — checkpoint of 22 September 2026

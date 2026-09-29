@@ -978,3 +978,37 @@ rows. This finite pattern neither proves universal simplicity nor supplies
 a wider-row reduction. `alternating-cycle-measurements.json` records the
 separate Lean audit. No original certificate dependency or configuration is
 removed by this recognition step.
+
+## Simple lobes when a full orbit is not simple
+
+`AlternatingWalkLobes.lean` proves that any nonbacktracking infinite dart walk
+in a finite simple graph contains a contiguous simple cycle segment of length
+three through the ambient vertex count. Applied to alternating trajectories,
+it preserves every internal step and supplies exact connected facial shores
+in bridgeless spherical cubic graphs. Its closing transition is unrestricted;
+no tube contract or reduction for that transition is asserted.
+
+```sh
+python3 tools/fourcolor/classical/alternating_lobe_probe.py \
+  --output alternating-lobe-probe.json
+```
+
+The probe replays 137 explicit rotations from `alternating-lobe-fixtures.json`,
+without requiring the generator. It inspects all dart/phase orbits and 31,728
+first-return segments. Every segment is checked for simplicity and closure;
+the shortest in each map is additionally checked for alternating internal
+turns, exact facial separation and its pentagon counts. Thirty maps have no
+simple complete orbit. The first displayed witness has 30 vertices and orbit
+lengths 68, 22, 68, 22. All 164,220 edge subsets of sizes one through four
+are checked for cyclic cuts, finding none. An explicit Tait colouring is
+verified and retained. Its eleven-edge lobe separates five from seven
+pentagons.
+
+The fixtures were generated with plantri 5.5; the source hash and command
+are recorded. Generation completeness, minimality of the witness and the
+turn/curvature relation are not Lean-certified. This is finite evidence
+against universal simple-orbit supply, not against colourability. The general
+Lean extraction and facial-separation results have a separate dependency
+audit in `alternating-lobe-measurements.json`. A reducible contract for the
+closing transition remains open; no catalogue or original-certificate savings
+are credited to this result.
