@@ -280,6 +280,29 @@ identities and compact local-flow argument are analytic, checked by
 exact angular integration and complete Fourier tangents; no new Lean
 certification or arbitrary-data bound is asserted for this extension.
 
+`StochasticLagrangian.StrainCycleReserve` supplies a nonnegative
+sixth-order polynomial of strain and vorticity that is conserved by
+the complete compact-core comparison, including turning and anisotropy.
+Its eigenframe certificate and signed moment-defect production are
+Lean-certified. It is not itself coercive in vorticity. An analytic
+quantitative estimate uses it to bound the intrinsic compression/turning
+cost whenever the strain spectral diameter satisfies
+`diam(S)^2 <= (63/190)|omega|^2`. The resulting comparison-history
+allowance is `(684/7)(1+J6_initial) times elapsed time`, with no restart
+after individual episodes. The normalized scalar payment is also
+Lean-certified; the spectral estimate and physical moment identification
+remain analytic.
+
+The accompanying `labs/strain_cycle_reserve.py` retains actual pressure
+and viscosity in the invariant's evolution. A positive-viscosity Fourier
+datum increases it, so its comparison conservation cannot be used for
+unforced NS without paying those defects. A compact actual unforced
+family makes a short compression-and-return cycle strictly inside the
+spectral regime. This is a finite-cycle construction, not repeated
+unbounded renewal. The remaining obligations are the invariant's signed
+physical production, the other transverse-resource defects and entry
+or exit through the complementary strain-dominated regime.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

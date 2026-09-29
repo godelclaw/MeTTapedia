@@ -3618,3 +3618,273 @@ while preserving signed cancellations, remains open.
 ```sh
 python3 -O labs/transverse_strain_history.py
 ```
+
+## A sixth-order resource for complete strain cycles
+
+`strain_cycle_reserve.py` and `StochasticLagrangian.StrainCycleReserve`
+continue the transverse-history calculation. A nonnegative polynomial
+is conserved by the full matrix comparison, with no eigenalignment
+assumption. A quantitative geometric estimate then bounds the intrinsic
+turning cost across an entire history in a stated spectral regime.
+Actual pressure and viscosity produce explicit signed defects; bounding
+those for arbitrary flows remains open.
+
+### The polynomial and its physical moments
+
+Use the preceding notation `S=sym grad u`, `omega=curl u`, and define
+
+```text
+Q=tr(S^2),      R=tr(S^3),      W=|omega|^2,
+V=omega·S omega,                Z=omega·S^2 omega,
+c=63/190.
+
+J6 = Q^3-6R^2-2c Q^2 W+c^2 QW^2+6c QZ
+     -6c RV+(c^2/2)V^2-2c^2 WZ.
+```
+
+In the compact-core comparison `E=f=0`, the exact moment equations are
+
+```text
+L Q = -(10/7)R-(3/10)V,
+L R = -(5/14)Q^2-(9/20)Z+(3/20)WQ,
+L W = 2V,
+L V = (9/7)Z+(5/21)QW-W^2/10,
+L Z = (16/21)QV+(4/21)RW-WV/5.
+```
+
+These follow from the actual matrix comparison and the trace-free
+three-dimensional Cayley--Hamilton identity
+`S^3=(Q/2)S+(R/3)I`. The rotation commutator cancels from all five
+moment equations. Substitution gives `L J6=0`. The checker also verifies
+the more general coefficients
+`L S=-a dev(S^2)-b dev(omega omega^T)+k(SA-AS)`:
+the same polynomial is conserved with `c=6b/(a+2)` when `a+2!=0`.
+The Lean module certifies the fixed physical-comparison coefficients,
+the derivative of the composed polynomial, and its signed defect law.
+
+### Nonnegativity with the direction retained
+
+Order the eigenvalues of `S` and let their successive gaps be `a,b>=0`.
+They are `(2a+b)/3`, `(b-a)/3`, and `-(a+2b)/3`. In this frame put
+`x=c omega_1^2`, `y=c omega_2^2`, `z=c omega_3^2`, and `h=a+b`.
+The polynomial has the exact representation
+
+```text
+J6 = (h^2/2)(2ab-y)^2
+     + h(bx+az)(2ab+y) + (bx-az)^2/2 >= 0.
+```
+
+`eigen_identity`, `eigenCertificate_nonneg` and `scale_identity` certify
+this algebra. Its identification through the spectral theorem with the
+physical matrix is analytic here. The certificate retains the actual
+vorticity components relative to the strain directions.
+
+Nonnegativity does not give vorticity coercivity. For example, every state
+`S=diag(-sigma/2,-sigma/2,sigma)`, `omega=Omega e3` has `J6=0`, for arbitrary
+`sigma,Omega`. `aligned_degeneracy` checks this exact limitation. The
+resource is used to pay a turning cost alongside the previous amplitude
+and strain quantities; it is not a replacement for their continuation
+comparison.
+
+### A quantitative payment for intrinsic compression and turning
+
+Let `Omega>0`, `xi=omega/Omega`, `sigma=xi·Sxi`,
+`G=|Sxi-sigma xi|^2`, and `Wbar=c Omega^2`. Suppose
+
+```text
+h^2 <= Wbar,                     h=maximum eigenvalue - minimum eigenvalue.
+```
+
+Then the following useful estimate holds:
+
+```text
+Wbar G^2 <= 16 J6.
+```
+
+Here is an elementary proof, including the constant. The case `h=0`
+has `S=0`, so assume `h>0`. Normalize the preceding eigenframe masses by
+`Wbar` and write them as `x,y,z`, now with `x+y+z=1`. Put
+
+```text
+r=a/h,  s=b/h,  t=h^2/Wbar,       r+s=1,  0<t<=1,
+u=x+z,  ell=sx-rz,  m=sx+rz,     d=2trs,
+H=(d-y)^2+ell^2+2m(d+y),
+B=r^2 xy+s^2 yz+xz.
+```
+
+The eigenframe identities give `J6=(h^2 Wbar^2/2)H` and `G=h^2 B`.
+Also `m-rsu=s^2 x+r^2 z>=0` and
+`xz=rsu^2+(s-r)u ell-ell^2`. Split `B=B1+B2`, where
+`B1=y(r^2x+s^2z)` and `B2=xz`.
+
+For `n=r^2x+s^2z`, use `0<=n<=u<=1`, `y=(y-d)+d`, and
+`r^2s^2 n^2 <= rs m`. The elementary squared-sum bound gives
+
+```text
+t B1^2 <= 2(y-d)^2+8trs m <= 2H.
+```
+
+For the second part,
+`0<=xz<=rsu^2+u|ell|` and `r^2s^2u^2<=rs m` give
+
+```text
+t B2^2 <= 2ell^2+2trs m <= 2H.
+```
+
+Consequently `t B^2<=8H`, which is exactly the claimed inequality after
+restoring the scales. This quantitative order argument is analytic;
+the checker verifies its algebraic identities. It is not asserted to
+have been kernel-checked by the eigenframe identity alone.
+
+Since `|sigma|<=h`, `G<=h^2`, and `0<c<1`, the absolute turning numerator
+`A=|sigma|G` satisfies both
+
+```text
+A <= Omega^3,                   A^2 <= 16 J6.
+```
+
+Set `w=Omega^(1/7)`. If `w<=1`, the first bound gives
+`A/w^10<=w^11<=1`. If `w>=1`, the second gives
+`A/w^10<=4 sqrt(J6)<=4(1+J6)`. Thus
+
+```text
+|(171/7)sigma G Omega^(-10/7)| <= (684/7)(1+J6).
+```
+
+`normalized_turning_numerator_le` and `normalized_turning_rate_le`
+certify this scalar payment from the two displayed controls, without
+fractional-power automation. For `kappa=K Omega^(-10/7)`, the conditional
+comparison therefore obeys, throughout any one history that stays in
+the spectral regime,
+
+```text
+|kappa(t)-kappa(a)| <= (684/7)(1+J6(a)) |t-a|.
+```
+
+More strongly, the integral of `|L kappa|` over that comparison history
+has the same elapsed-time bound.
+
+This pays intrinsic compression and turning through successive episodes
+using one incoming state and the prescribed elapsed time. There is no
+new allowance at each change of sign of `sigma`. The two-scale argument
+also bounds this intrinsic cost as `Omega` approaches zero; its apparent
+inverse-power singularity alone is not used as an obstruction. Physical
+defects and transitions outside the regime still need their own bounds.
+
+The spectral hypothesis is substantive. In the ordered-eigenframe
+variables take `a=1`, `b=beta>0`, `x=y=2beta`, `z=0`. Then
+`J6=8beta^3+10beta^4`, `sigma=(1+2beta)/6`, and `G=1/4`, while
+`Wbar=4beta`. As `beta` tends to zero, `J6` vanishes but the turning
+numerator tends to `1/24`. Neither the numerator-squared estimate nor
+the normalized payment by a fixed multiple of `1+J6` extends to this
+weak-vorticity family. This is a limitation of this auxiliary resource,
+not a singularity or a failure of a full-datum regularity bound.
+Reversing the whole velocity preserves `J6,G,Omega` and reverses `sigma`,
+so the same limitation also applies to the positive compression cost.
+
+### How actual pressure and viscosity change the resource
+
+Retain the actual material defects from the preceding calculation:
+`E=P_core-P+nu Delta S`, `f=nu Delta omega`. The five moment defects are
+
+```text
+eQ=2 tr(SE),          eR=3 tr(S^2 E),           eW=2 omega·f,
+eV=omega·E omega+2f·S omega,
+eZ=omega·(SE+ES)omega+2f·S^2 omega.
+
+L J6 = (partial_Q J6)eQ+(partial_R J6)eR+(partial_W J6)eW
+       +(partial_V J6)eV+(partial_Z J6)eZ.
+```
+
+The polynomial production identity and ordinary scalar derivative are
+Lean-certified. Their identification with the physical matrix moments
+is analytic, independently checked on full periodic NS tangents. At
+`nu=1/100`, a datum and its velocity reversal have the same initial `J6`
+and opposite signs of `L J6`. Hence the comparison conservation cannot
+be applied unchanged even to unforced positive-viscosity flows.
+
+For the parabolic operator `D=L-nu Delta`, the same statement can be
+written using the polynomial as a function of `(S,omega)`:
+
+```text
+D J6 = partial_S J6 : (P_core-P)
+       -nu sum_j Hess_(S,omega) J6[(partial_j S,partial_j omega),
+                                  (partial_j S,partial_j omega)].
+```
+
+All spatial chain terms remain. Nonnegativity of `J6` does not imply
+convexity or a favorable sign for this Hessian. An actual finite initial
+allowance for these terms has not been supplied.
+
+For a solenoidal external fluid force `F`, the material defects additionally
+contain `sym grad F` and `curl F`. Those contributions are different from
+an auxiliary stochastic control on sampled paths. Nor does a bounded
+instantaneous kinetic work identify an effective subgrid force as realizable
+by unforced parents; their coupled histories still have to satisfy the
+full fluid equation.
+
+The actual transverse law becomes a payment for its intrinsic part plus
+the still-signed remainder
+`Omega^(-10/7)[F_K-(10/7)epsilon K]`. Using the new resource for arbitrary
+flows requires control of its physical production and that remainder,
+as well as entries into the complementary strain-dominated region.
+The previous separated viscous pressure-history bound remains available;
+it does not already pay these new terms.
+
+### An actual unforced compression-and-return cycle inside the regime
+
+Use the smooth compact construction from `transverse_strain_history.py`
+with fixed nested radial profiles and
+
+```text
+S_sigma = [ -sigma/2     0       1   ],      omega=(0,0,4).
+          [     0    -sigma/2    0   ]
+          [     1       0     sigma ]
+```
+
+All time derivatives here follow the material path starting at the origin.
+Initially the pressure is exactly `P_core`, and all
+local spatial derivatives of `S,omega` vanish. The vorticity RHS is
+spatially constant in that initial ball, so the initial material
+derivative of `nu Delta omega` also vanishes. Therefore the actual
+second material vorticity derivative is `-P_core omega`. It follows that
+
+```text
+Omega(0)=4,           Omega'(0)=4 sigma,
+Omega''(0)=4[(9/14)sigma^2+17/105].
+```
+
+At `sigma=0`, the strain eigenvalues are `1,0,-1`, so
+`h^2=4 < c Omega^2=504/95`; `J6=2776/95`. The spectral hypothesis holds
+strictly and the magnitude has positive second derivative `68/105`.
+
+Now choose `sigma=-epsilon`, with `epsilon>0` small. For each fixed
+`nu>0`, this compact parameter family has uniformly bounded initial
+Sobolev norms of every required order. Smooth local NS estimates give
+a common positive lifespan and uniform third time-derivative bounds
+on a smaller interval. The resulting Taylor expansion, uniform in small
+`epsilon`, is
+
+```text
+Omega_epsilon(t)-4 = -4epsilon t +(34/105)t^2
+                    +O(epsilon^2 t^2+t^3).
+```
+
+At `t=(105/17)epsilon` the leading difference is negative; at
+`t=(315/17)epsilon` it is positive. Continuity gives a return to the
+initial magnitude, and the positive second derivative on this small
+interval makes the compression-to-extension turn unique. Its return
+time is `(210/17)epsilon+O(epsilon^2)`. Continuity of the extreme strain
+eigenvalues and the strict initial margin keep the cycle inside the
+spectral regime for sufficiently small `epsilon`.
+
+This is an analytic short-cycle construction for actual unforced flows,
+not a maintained pressure closure. It gives no repeated unbounded
+renewal, no sign claim for the net physical `kappa` change over the cycle,
+and no singularity. The exact checker certifies the initial time jets;
+the uniform local-existence and return-time argument is not yet Lean
+formalized.
+
+```sh
+python3 -O labs/strain_cycle_reserve.py
+```
