@@ -2963,3 +2963,223 @@ not a proof or a time evolution. SymPy and NumPy are required.
 ```sh
 python3 -O labs/swirl_pressure_history.py
 ```
+
+## Changing-scale pressure feedback and a joint reserve
+
+[`compressed_parent.py`](compressed_parent.py) checks an initial pressure
+transfer calculation with a compact straining background and a candidate
+reserve for its aligned feedback. `AlignedPressureReserve.lean` proves
+the scalar certificate and its interval balance. `LocalDirectionalPressure.lean`
+connects the strain slot to the constructed unforced periodic solution.
+The whole-space compact construction and pressure calculation below are
+analytic; their NS realization is not yet a Lean theorem.
+
+**Compact physical construction.** In cylindrical coordinates let
+`r=sqrt(rho^2+z^2)` and take a smooth decreasing radial cutoff `chi_B`,
+equal to one for `r<=RB` and zero for `r>=2RB`. The vector potential
+`A_theta=-a z rho chi_B(r)` gives the solenoidal meridional velocity
+
+```text
+v_r=a rho(chi_B+z^2 chi_B'/r),
+v_z=-a z(2chi_B+rho^2 chi_B'/r).
+```
+
+It equals `a diag(1,1,-2)x` in the inner ball. Add two counter-rotating
+radial swirls at `+/-L e_z`, of the same radial profile and support
+radius `rho0<L`, entirely inside that ball. An aligned radial core
+swirl with angular velocity `b>0` on a plateau may also be added,
+disjoint from the remote swirls. These are smooth compact solenoidal
+initial data. Axisymmetric meridional and azimuthal velocities have no
+cross term in the pressure source `tr((grad u)^2)`.
+
+For each remote radial profile set
+
+```text
+I=integral r^4 chi^2 dr,       K=integral r^6 chi^2 dr,
+kappa=K/(I L^2),              gamma=2nu integral r^4 chi'^2 dr/I.
+```
+
+Here `0<kappa<rho0^2/L^2`. The pressure excess `H(t)` compares the full
+actual unforced solution with the actual background-plus-core solution
+without the remotes. Both pressures are evaluated at the origin; their
+initial rates agree with material rates there because the initial
+velocity vanishes there. Only the initial excess is a sum of packet
+responses.
+
+**Retaining the surrounding-fluid reaction.** A packet's exterior
+pressure and its decaying Newtonian potential are
+
+```text
+p=-(2/3)I r^-3 P2,
+q=(-Delta)^-1 p=-2I/(9r)+[-I/(9r)+K/(15r^3)]P2.
+```
+
+The monopole in `q` comes from the interior of `p`; replacing the entire
+pressure by its exterior quadrupole loses that term. On the packet axis
+at distance `L`, `Hzz=-8I/L^5`, `Hxx=4I/L^5`, and
+`q_zzzz=Hzz(1-3kappa)`.
+
+For the affine comparison write `A=-a rho partial_rho+2a z partial_z`
+and `W=u_theta`. Its swirl rate is `W_t=AW-aW`, giving pressure-source
+rate `A s_w-4a s_w` for `s_w=-(1/rho)partial_rho(W^2)`. The Newtonian
+dilation commutator gives pressure rate `Ap-2ap+6a q_zz`. The induced
+meridional velocity interacts with the existing background and supplies
+another `6a q_zz`. Thus the carried axial coefficient is `a(8-18kappa)`
+and the full coefficient is `a(14-36kappa)`.
+
+The compact-background correction is exact:
+
+```text
+delta_B=(80/7)L^7 integral_RB^(2RB) (-chi_B') r^-7 dr,
+0<delta_B<=(80/7)(L/RB)^7,
+Hzz'(0)=[a(14-36kappa+delta_B)-gamma]Hzz(0),
+Hxx'(0)=[a(20-36kappa+delta_B)-gamma]Hxx(0).
+```
+
+To obtain it, outside `RB` the source correction is
+`-2 tr[(grad v_B-S) Hess p_remote]`, `S=a diag(1,1,-2)`. For exterior
+harmonic degrees two and four its angular coefficients are respectively
+`32(4d-e)/35` and `32(d-e)/7`, with `d=r chi_B'`, `e=r^2 chi_B''`.
+Higher degrees vanish by spherical-harmonic orthogonality: the Hessian
+of an exterior degree-`l` harmonic has spherical degree `l+2`, whereas
+the background-gradient/kernel multiplier has angular degree at most
+six. The degree-two radial integral is a total derivative with zero
+boundary values. Integrating the degree-four term by parts yields the
+displayed correction. The heat term follows from the radial energy
+identity used in the previous swirl test.
+
+The background itself has central pressure Hessian
+`-a^2 diag(12/7,12/7,18/7)`, independent of the cutoff shape. Indeed its
+degree-two pressure-source integral is
+`(8/105)(18cd+3ce+2d^2-de)`, now with `c=chi_B`. Radial integration by
+parts cancels all cutoff-derivative squared terms. Including the local
+Newtonian-Hessian contribution `-2a^2` leaves the axial value `-18a^2/7`.
+
+**The joint certificate.** At the plateau core initially put
+`Omega=2b>0`, `sigma=-2a`, `h=-Hzz>0`, and `w=Omega^(1/7)`. The actual
+initial rates are
+
+```text
+w'=sigma w/7,
+sigma'=-(5/14)sigma^2-w^14/10+h,
+h'=-7sigma h-gamma h+(18kappa-delta_B/2)sigma h.
+```
+
+The core pressure supplies `w^14/10`. Aligned core rotation commutes
+with the remote tensor. No assertion is made that the compact radial
+or affine geometry persists after this initial time.
+
+For arbitrary differentiable scalar histories with rate defects
+`f_w,f_sigma,f_h`, the leading equations have the exact reserve
+
+```text
+R=w^5(2090sigma^2+154w^14+665h),
+R>=154w^19=154Omega^(19/7)                 when w,h>=0,
+
+R'=-665gamma w^5h
+   +(10450w^4sigma^2+2926w^18+3325w^4h)f_w
+   +4180w^5sigma f_sigma+665w^5 f_h.
+```
+
+Lean proves this derivative and its integrated equality, retaining the
+terminal reserve and the signed defect work. A finite bound on that
+work gives a physical-vorticity bound. In the compact initial compression
+test, the width/cutoff defect is favorable if `delta_B<=36kappa`.
+The earlier mixed-axis, unequal-width example instead has `sigma=0`,
+`h=7/4`, `h'=23gamma`, and zero initial vorticity rate. Its joint reserve
+grows at rate `15295gamma w^5`. This is a finite burst requiring the
+distinct parent histories, not a counterexample to a full-datum budget.
+
+**Actual strain and the pressure-summary obligation.** Along the
+constructed local unforced material flow, let
+
+```text
+sigma=<omega,S omega>/|omega|^2,
+p_dir=<omega,(Hess p)omega>/|omega|^2,
+G=|S omega-sigma omega|^2/|omega|^2.
+```
+
+`LocalDirectionalPressure.hasDerivAt_strain` proves, under the existing
+common third Fourier-moment majorant and away from vorticity zeros,
+`sigma'=-sigma^2-p_dir+G+V`, where
+
+```text
+V=[<nu Delta omega,S omega>
+   +<omega,(nu Delta S)omega+S(nu Delta omega)>
+   -2sigma<omega,nu Delta omega>]/|omega|^2.
+```
+
+This is the actual material derivative, not the parabolic operator.
+The nonalignment square has nonpositive reserve work during compression.
+For `w^14=|omega|^2`, define the instantaneous expression
+`h_inst=-p_dir-(9/14)sigma^2+w^14/10`. The theorem
+`hasDerivAt_strain_with_summary` permits any retained summary `h`, with
+the precise defect `f_sigma=G+V+h_inst-h`. Thus an initial match between
+`h_inst` and remote pressure does not remove their subsequent mismatch.
+
+Even their first derivatives differ. In the compact test let `p_ref'`
+be the initial axial pressure derivative of the actual reference flow.
+Then
+
+```text
+h_inst'-h'=-p_ref'+(45/98)sigma^3+(23/70)sigma w^14-(9/7)sigma h.
+```
+
+The reference term is finite and independent of remote packet amplitude.
+At fixed core and background, the reserve using `h_inst` has initial
+derivative affine in the remote strength `h`, with coefficient
+
+```text
+665w^5[(18/7)a-gamma-36a kappa+a delta_B].
+```
+
+For sufficiently narrow packets and sufficiently strong compression this
+coefficient is positive. Increasing their amplitude therefore gives
+actual compact unforced data with positive initial reserve production,
+even though the retained-excess version has nonpositive production under
+the preceding cutoff condition. This rules out monotonicity of that
+instantaneous replacement; it does not rule out a signed history bound.
+
+**Spatial diffusion is also a cost.** For
+`D=partial_t+u.grad-nu Delta`, `xi=omega/|omega|`,
+
+```text
+D w=sigma w/7+6nu|grad w|^2/w-(nu/7)w|grad xi|^2.
+```
+
+The Hessian chain rule for `R` adds the gradient work
+
+```text
+nu[(20900w^3sigma^2-35112w^17+6650w^3h)|grad w|^2
+   -41800w^4sigma grad w.grad sigma
+   -6650w^4 grad w.grad h-4180w^5|grad sigma|^2]
+-(nu/7)w R_w |grad xi|^2.
+```
+
+The final term is favorable for `w,h>=0`. The other terms are not
+automatically dissipative. At `w=h=1`, `sigma=0`, spatial jets
+`w_x=1`, `sigma_x=0`, `h_x=-6251/665` give `R_x=0` but gradient work
+`34048nu`. This is a scalar-jet check, not an asserted NS realization.
+Actual planar flows correlate the variables: `sigma=p_dir=0`,
+`h=w^14/10`, and `D h=-nu|grad Omega|^2/5`. Those correlations give
+`R=(441/2)Omega^(19/7)` and total diffusion work
+`-50274nu w^17|grad w|^2`, as required by convex-power vorticity decay.
+The identities are checked where `Omega>0`; the planar composite power
+is twice continuously differentiable across zero.
+
+The remaining arbitrary-data task is to control the signed pressure,
+summary-mismatch and spatial defects throughout compatible histories,
+with a nonnegative reserve or a proved correction. The present results
+do not provide that bound or an invariant geometric class.
+
+The checker independently integrates the carried pressure-source rate,
+the viscous rate and the finite-background response. At radial/angular
+Gauss order 64, the first two relative errors are below `9e-13`, and the
+cutoff responses at `RB/L=4,8,16` agree to relative error below `1.1e-11`.
+The background pressure coefficient agrees to absolute error below
+`1.2e-13`. These quadratures support the analytic identities; they are
+neither NS time simulations nor error-certified PDE bounds.
+
+```sh
+python3 -O labs/compressed_parent.py
+```

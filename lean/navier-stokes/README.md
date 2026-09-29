@@ -204,6 +204,33 @@ cross-checks its pressure-source integral numerically.
 These fixed-distance tests specify necessary history information; they
 do not supply the open estimate for nearby parents at changing scales.
 
+`StochasticLagrangian.AlignedPressureReserve` supplies a candidate that
+jointly retains directional strain, vorticity and incoming pressure.
+The analytic test in `labs/compressed_parent.py` places remote swirl
+packets inside a compact axial straining flow. Their initial pressure
+rate includes changing separation, deformation, reaction of the
+surrounding fluid and the exact finite-background correction. The
+resulting aligned feedback has a positive polynomial reserve controlling
+physical vorticity. Lean proves its signed defect identity and interval
+balance, including the terminal reserve. The geometry is not invariant,
+and no arbitrary-flow defect allowance is proved.
+
+`StochasticLagrangian.LocalDirectionalPressure` identifies the strain
+slot with the actual local unforced periodic solution along material
+paths, away from vorticity zeros. The rate keeps the nonalignment square,
+the actual directional pressure Hessian and both viscous Laplacians.
+The physical pressure expression and a retained pressure summary may
+differ; their difference enters the strain defect explicitly. Initial
+agreement with a remote excess does not identify their later histories.
+
+The lab checks that spatial diffusion requires additional cross-gradient
+terms, and that actual planar-flow correlations make those terms
+dissipative. The earlier mixed-parent flow already makes the observed
+joint reserve increase initially. A separate compact compression test
+shows why replacing the retained pressure history by an instantaneous
+pressure expression can also cause initial growth. These facts leave
+the signed full-datum history budget open; they are not singular flows.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
