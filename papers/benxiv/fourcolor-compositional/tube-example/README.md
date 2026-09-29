@@ -110,8 +110,10 @@ The [audit][audit] checks eight roots and their required dependencies, with
 12,276 declarations in the combined closure. Only `propext`,
 `Classical.choice` and `Quot.sound` occur; no classical `FourColor` namespace
 dependency is permitted. The [measurement record][measurements] records
-source and artifact hashes and the successful build. All 633 classical
-configuration certificates remain in the complete proof.
+source and artifact hashes and the successful build. The tube theorem itself
+removes no classical configuration certificate. The [current proof ledger](../README.md#compression-achieved-and-the-next-proof-obligation)
+records the complete assembly's certificate dependencies, including subsequent
+diamond-family replacements.
 
 From `lean/mettapedia`, the gate is:
 
