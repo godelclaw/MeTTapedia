@@ -1,8 +1,9 @@
 # Compositional Four Colour: proof plan and current results
 
 Updated 29 September 2026. Original complete assembly: `b99eaf006`.
-The current assembly additionally consumes joint diamond repair and a general
-boundary-split law transferring repair from configuration 2 to configuration 1.
+The current assembly additionally consumes a shared joint-profile certificate
+for the diamond cores and a general boundary-split law transferring repair from
+configuration 2 to configuration 1.
 
 The open-piece idea in Goertzel and Fable's compositional note now has a
 kernel-checked realization: graph constructions carry actual colouring
@@ -25,7 +26,8 @@ earlier attempts; its older sections are historical snapshots.
 For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
 semantic bounds, a general reflection theorem, and an audited replacement in
 the finished proof. It illustrates discharging compression; the diamond example
-below now also shares one base repair between two configuration obligations.
+below now supplies three configuration obligations from a shared finite profile
+certificate and a general split transfer.
 
 For a complete example from the corridor idea, see
 [one boundary certificate for an infinite tube family](tube-example/README.md).
@@ -39,10 +41,12 @@ insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved
 in Lean. A GSLT
 reconstruction route covers every colouring of configuration 4. The joint
-boundary law now proves that configuration reducible and replaces its original
-certificate dependency in the complete proof. A general split law now transfers
-configuration 2's existing repair to configuration 1, removing the latter's
-separate certificate dependency. One rule covering all three remains open.
+profile law now provides a common finite descent for all three cores. The
+complete proof consumes the new configuration-2 and configuration-4 repairs,
+and transfers the former to configuration 1. All three original certificate
+dependencies are absent. The shared rank uses joint available-colour sets and
+boundary length; its 236 trace representatives still have finite cover checks.
+A broader core-family theorem and geometric coverage remain open.
 
 A bounded [replacement experiment](diamond-example/README.md#testing-a-different-strict-replacement)
 now sharpens that task: 90,651 generated smaller disks that retain the eight
@@ -75,10 +79,10 @@ The complete dependency chain is:
 
 ```mermaid
 flowchart TD
-  C[631 reference reducibility certificates] --> R[Select compatible disk and exterior colourings]
-  C --> B[Boundary split transfers configuration 2 repair to configuration 1]
+  C[630 reference reducibility certificates] --> R[Select compatible disk and exterior colourings]
+  J[Shared finite profile repair for diamond cores] --> B[Boundary split transfers configuration 2 repair to configuration 1]
   B --> R
-  J[Joint diamond boundary repair for configuration 4] --> R
+  J --> R
   R --> G[Glue an actual ambient colouring]
   G --> M[No reducible configuration in a minimal counterexample]
   D[Discharging coverage with shared charge proofs] --> N[No minimal counterexample]
@@ -206,26 +210,29 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Independent discharging checks at arities 9–11 | 11,363 → 11,132: 231 replaced |
 | Separate finite input identities or classifications | 218, counted separately |
 | Discharging-rule labels retained | 32 |
-| Reference configuration certificate dependencies retained / replaced | 631 / 2 |
+| Reference configuration certificate dependencies retained / replaced | 630 / 3 |
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
-| Common core repair for configurations 1, 2 and 4 or longer fans | Open |
+| Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 266 answers |
+| Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 
 The 231 replacements use periodicity, reflection, exchange of paired
 endpoints and shared charge bounds. Their complete consumers are checked in
 [`CompleteAudit`][audit]; they are not merely lemmas beside an unchanged proof.
 The audit also rejects the original unconditional theorem and 236 superseded
-checker declarations. It now requires the joint diamond boundary law and the split transfer, and
-excludes the original configuration-1 and configuration-4 certificates from
-the complete endpoint dependencies. Shared reference modules still load those
+checker declarations. It now requires the joint-profile law and the split transfer, and
+excludes the original configuration-1, configuration-2 and configuration-4
+certificates from the complete endpoint dependencies. Shared reference modules still load those
 old declarations;
 runtime and artifact-size savings are not claimed. Declaration counts and
 independent-computation savings are different metrics.
 
-The split transfer establishes a first pair sharing one base repair. The next
-research milestone is a common structural rule covering all three diamonds,
-then a justified larger family, while preserving the completed theorem. The
+The split transfer establishes a first pair sharing one base repair. The
+joint-profile certificate now gives a common finite core explanation including
+the coupled configuration-4 case. The next milestone is a structural law that
+replaces further finite cover obligations and applies to a justified broader
+core family, while preserving the completed theorem. The
 current triangle-subdivision work connects exact two-branch colouring semantics
 to the actual configurations. The integration obligations are:
 
@@ -240,19 +247,17 @@ to the actual configurations. The integration obligations are:
    the same graph coordinates. The joint contraction now has an exact
    six-colour boundary formula with reconstruction. Either insertion's
    side-edge contraction alone fails the Kempe obligation, proved in Lean.
-   Ten small repair steps now prove the joint implication, using twenty-three
-   actual terminal colourings and retaining both ordinary colouring branches.
-   Those terminal witnesses are now reconstructed through the common
-   boundary-summary law, which the complete endpoint audit requires.
-3. **Integrated:** the complete assembly replaces configuration 4's original
-   certificate with the joint law. Configuration 1 now inherits repair from
-   configuration 2 via boundary splitting, with actual witness reconstruction
-   and a validated strict-reduction contract. The audit excludes both original
-   certificate dependencies and requires the retained configuration-2 base.
-   This transfer uses the distinct-endpoint branch with a proved Kempe-closed
-   lift; it does not discard the equal-endpoint branch without justification.
-   The next task is a common law also covering the coupled configuration-4
-   contract, then a larger family with proved geometric supply.
+   The earlier ten-step proof established the joint repair. A shared profile
+   certificate now covers all three cores, choosing both centres jointly and
+   constructing the tips against that same choice. Its cover and input checks
+   retain every required exterior alternative.
+3. **Integrated:** the complete assembly uses the shared profile proof for
+   configurations 2 and 4. Configuration 1 inherits repair from 2 via the
+   general split law, with actual witness reconstruction and the validated
+   contract. The audit excludes all three original certificate dependencies.
+   The profile still includes boundary length and finite chromogram answers;
+   this is not a proof for arbitrarily long insertion fans. The next task is
+   further structural descent and a larger family with proved geometric supply.
 
 The tube example already gives a complete physical reduction and compositional
 normalization for its own infinite family. To count as a classical
@@ -268,7 +273,9 @@ the intermediate GSLT colouring witnesses, and proves strict size decrease
 when the ears are erased. This establishes stability of a repair under a
 specified construction family. It adds no new core repair, catalogue saving,
 embedded-map recognition or coverage theorem. The failed longer-fan
-contraction and the common core argument remain the next research obligations.
+contraction, further uniform core descent and geometric coverage remain
+research obligations. These ear consumers retain the earlier core proofs;
+the new profile proof is integrated into the complete endpoint separately.
 
 ## Verification and attribution
 
@@ -289,6 +296,8 @@ The [joint repair record](../../../tools/fourcolor/classical/diamond-joint-repai
 records the later family and complete-assembly checks.
 The [summary record](../../../tools/fourcolor/classical/diamond-summary-measurements.json)
 records the subsequent shared elimination law and its consumed reconstruction.
+The [profile record](../../../tools/fourcolor/classical/diamond-profile-measurements.json)
+records the shared finite core certificate and its complete endpoint audit.
 The [reusable-semantics audit][reuse-audit] separately checks the graph and MeTTa
 consumers. Build instructions are in the [package guide][package].
 

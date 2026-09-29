@@ -4,7 +4,7 @@ import Lean.Util.FoldConsts
 /-!
 # Audit of the complete compositional endpoints
 
-The endpoint closures must consume the catalogue, the joint diamond repair,
+The endpoint closures must consume the catalogue, the joint-profile diamond repair,
 the boundary-split repair transfer, all seven arity proofs,
 the shared charge certificates and the geometric reconstruction. The
 original unconditional theorem and the superseded arity-nine, arity-ten and arity-eleven
@@ -28,11 +28,16 @@ run_cmd do
     ``FourColor.CompositionalComplete.supported_source_construction,
     ``FourColor.CompositionalComplete.supported_source_sweep]
   let common := [``FourColor.DiamondFamilyReducibility.reducible_all,
-    ``FourColor.DiamondSplitRepair.reducible, ``FourColor.DiamondSplitRepair.base_repair,
+    ``FourColor.DiamondProfileReducibility.reducible001,
+    ``FourColor.DiamondProfileReducibility.reducible002,
+    ``FourColor.DiamondProfileReducibility.reducible004,
+    ``FourColor.DiamondProfileReducibility.transferred001,
     ``FourColor.KempeBoundarySplit.repairs_collapse,
     ``FourColor.DiamondSplitRepair.reconstruct,
-    ``FourColor.DiamondJointRepair.reducible, ``FourColor.DiamondBoundaryRepair.repair,
-    ``FourColor.DiamondBoundarySummary.reference004,
+    ``FourColor.DiamondProfileCertificate.repair,
+    ``FourColor.DiamondProfile.good_supports,
+    ``FourColor.DiamondProfileReducibility.supports_graph,
+    ``FourColor.DiamondBoundarySummary.reference002,
     ``Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.reconstruct,
     ``FourColor.CompositionalComplete.reducibility,
     ``FourColor.exclude5, ``FourColor.exclude6, ``FourColor.exclude7,
@@ -60,16 +65,23 @@ run_cmd do
       let bulk := Name.str (Name.str `FourColor.Bulk ("Cfg" ++ suffix)) "reducible"
       let hybrid := Name.str (Name.str `FourColor.Bulk ("Hyb" ++ suffix)) "reducible"
       if i == 0 then
-        unless seen.contains ``FourColor.DiamondSplitRepair.reducible do
+        unless seen.contains ``FourColor.DiamondProfileReducibility.reducible001 do
           throwError m!"Configuration 1's transferred repair is not consumed by {rootName}"
+      else if i == 1 then
+        unless seen.contains ``FourColor.DiamondProfileReducibility.reducible002 do
+          throwError m!"Configuration 2's profile repair is not consumed by {rootName}"
       else if i == 3 then
-        unless seen.contains ``FourColor.DiamondJointRepair.reducible do
-          throwError m!"Configuration 4's joint repair is not consumed by {rootName}"
+        unless seen.contains ``FourColor.DiamondProfileReducibility.reducible004 do
+          throwError m!"Configuration 4's profile repair is not consumed by {rootName}"
       else
         unless seen.contains bulk || seen.contains hybrid do
           throwError m!"Configuration {i} is not consumed by {rootName}"
     for name in seen.toList do
-      if (`FourColor.Bulk.Cfg000).isPrefixOf name || (`FourColor.Bulk.Cfg003).isPrefixOf name ||
+      if (`FourColor.Bulk.Cfg000).isPrefixOf name || (`FourColor.Bulk.Cfg001).isPrefixOf name ||
+          (`FourColor.Bulk.Cfg003).isPrefixOf name ||
+          name == ``FourColor.DiamondSplitRepair.base_repair ||
+          name == ``FourColor.DiamondBoundaryRepair.repair ||
+          name == ``FourColor.DiamondJointRepair.contract_repair ||
           name == ``FourColor.reducible_all || name == ``FourColor.reducible_block_0 then
         throwError m!"Superseded diamond certificate dependency in {rootName}: {name}"
     for i in [22, 125, 276, 295, 359, 732, 754, 758, 762, 858, 862, 950, 1589, 1591, 1609, 1767, 1779, 1821, 2097, 2201, 2208, 2340, 2446, 2458, 2692, 2900, 3312, 3336, 3344, 3384, 3508, 3556] do
@@ -244,8 +256,8 @@ run_cmd do
         unless allowed.contains axiomName do
           throwError m!"Unexpected axiom in {name}: {axiomName}"
   logInfo m!"Complete assembly: audited {count} imported public declarations."
-  logInfo "All three endpoint closures consume 632 reference certificates, joint diamond repair, \
-    and seven arity proofs."
-  logInfo "The original configuration-4 certificate is absent from all three endpoint closures."
+  logInfo "All three endpoint closures consume 630 reference certificates, joint-profile repair, \
+    boundary-split transfer, and seven arity proofs."
+  logInfo "Original certificates for configurations 1, 2 and 4 are absent from all endpoint closures."
   logInfo "All three endpoint closures consume the shared charge proofs and geometric reconstruction."
   logInfo "All 236 superseded checker declarations and the original unconditional theorem are absent."

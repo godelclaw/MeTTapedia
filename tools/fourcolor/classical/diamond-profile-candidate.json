@@ -1,0 +1,55 @@
+{
+  "evidence": "Finite candidate generation and program validation; Lean checks are separate.",
+  "geometry_sha256": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+  "generator_sha256": "bb454e822222755d2e127a9c19bb4d1ee80b20e3468df869356ad34ccd24643a",
+  "data_sha256": "27bb47bbb9ebc78f964840afcfa84ab03d9d3bd497ce608e526060a31d419d2d",
+  "profile": "boundary length plus joint available-colour sets, modulo colour names and centre/tip exchanges",
+  "profiles": 126,
+  "ranked_profiles": 92,
+  "terminal_profiles": 51,
+  "nonterminal_profiles": 41,
+  "stages": [
+    51,
+    62,
+    68,
+    75,
+    83,
+    89,
+    92
+  ],
+  "maximum_descent_stages": 6,
+  "maximum_answers": 4,
+  "states": 236,
+  "answers": 266,
+  "cores": [
+    {
+      "configuration": 1,
+      "ring": 6,
+      "proper_traces": 183,
+      "ordinary_traces": 96,
+      "certified_traces": 183,
+      "state_orbits": 31,
+      "terminal_states": 16
+    },
+    {
+      "configuration": 2,
+      "ring": 7,
+      "proper_traces": 546,
+      "ordinary_traces": 234,
+      "certified_traces": 546,
+      "state_orbits": 91,
+      "terminal_states": 39
+    },
+    {
+      "configuration": 4,
+      "ring": 8,
+      "proper_traces": 1641,
+      "ordinary_traces": 486,
+      "certified_traces": 684,
+      "state_orbits": 114,
+      "terminal_states": 81
+    }
+  ],
+  "scope": "Three finite core shapes. No longer-fan repair, geometric coverage or executable exterior recolouring is asserted.",
+  "elapsed_seconds": 2.477
+}

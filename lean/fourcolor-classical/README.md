@@ -13,7 +13,7 @@ upstream attribution.
 
 `MettapediaFourColor.Complete` proves the finite planar-graph theorem and
 supplies compatible colouring witnesses along exact source constructions.
-It consumes all 633 reducibility certificates and all seven discharging
+It supplies all 633 reducibility obligations and consumes all seven discharging
 presentations, including the shared proofs for arities nine, ten and eleven.
 These endpoints have no unproved reducibility or coverage inputs:
 
@@ -144,18 +144,18 @@ It then checks `DiamondFamilyReducibility`, `Complete` and `CompleteAudit`.
 The compositional theorem does
 not import the original unconditional theorem or the superseded arity-nine,
 arity-ten and arity-eleven presentations. Its audit follows the dependencies
-of the graph, construction and sweep endpoints, requiring 631 reference
-configuration certificates, split repair from configuration 2 to configuration 1,
-the joint configuration-4 repair, all seven arity proofs,
+of the graph, construction and sweep endpoints, requiring 630 reference
+configuration certificates, the shared diamond profile repair, split transfer
+from configuration 2 to configuration 1, all seven arity proofs,
 the 66 named shared hubcaps, the
 periodic and reflected hubcap lemmas, and the actual geometric reconstruction.
-It rejects the original configuration-1 and configuration-4 certificates from each endpoint's
-dependency closure, rejects the 236 superseded checker declarations, and checks imported public
+It rejects the original configuration-1, configuration-2 and configuration-4
+certificates and the earlier diamond repair bodies from each endpoint's dependency closure, rejects the 236 superseded checker declarations, and checks imported public
 declarations against `propext`,
 `Classical.choice` and `Quot.sound`.
 
 The driver validates the source and artifact hashes of the 87 prepared adapter
-and presentation modules and the 29 configuration-family modules.
+and presentation modules and the 36 configuration-family modules.
 Final source hashes, artifact hashes, exit statuses
 and frontend times are recorded in `.lake/complete-audit/complete-results.json`.
 The original assembly measurement record is
@@ -177,7 +177,7 @@ The separate configuration-family gate is:
 lake build kernelConfigurationFamilies
 ```
 
-It reuses prepared reference artifacts and checks twenty-four modules without native
+It reuses prepared reference artifacts and checks thirty-six modules without native
 code generation. `ExecutableConfiguration` proves its executable decoder equal
 to the reference pointed map; `DiamondConfigurations` supplies exact finite
 presentations of configurations 1, 2 and 4. `DiamondInsertion` proves both
@@ -191,7 +191,8 @@ allows arbitrary lengths and colour alphabets; reducibility is a separate
 property. The eleven-root summary audit checks the generic law, graph
 correspondences, boundary semantics and reconstruction into the existing GSLT
 history. `DiamondJointRepair` uses this same summary to construct its terminal
-colourings, and the complete endpoint audit requires that dependency.
+colourings. The newer shared profile solver also reconstructs through this
+summary, and the complete endpoint audit requires its actual graph witnesses.
 `ExecutableContract` retains the reference kernel-edge order for every program
 in its fragment. `ConfigurationContract` preserves exact contract-colouring
 witnesses; `DiamondContract` identifies the specified contract edges and their
@@ -216,8 +217,18 @@ nonzero colours preserves Kempe closure of the joint boundary relation.
 D-repair to configuration 1, reconstructing actual graph colourings and
 validating the specified contract. Its eight-root audit excludes configuration
 1's certificate and the complete theorem, and requires the retained base.
-The complete assembly replaces two reference certificate dependencies: one by
-this transfer and one by the coupled repair.
+The current complete assembly retains this split-transfer law with a new base.
+`DiamondProfile` solves both tips against the same centre pair.
+`DiamondProfileCertificate` checks 236 trace representatives using a shared
+rank on 92 joint availability profiles, including boundary length; 266 answer
+references establish at most six strict descent stages. The terminal solver
+constructs real interior witnesses. `DiamondProfileFamilyRepair` supplies the
+required inputs, and `DiamondProfileReducibility` connects the law to all three
+actual configurations. Its eleven-root audit excludes the original three
+certificates and the earlier repair bodies. The complete assembly therefore
+replaces three original certificate dependencies. This remains a finite core
+certificate; no uniform repair for longer fans or new geometric coverage is
+asserted. See [profile measurements](../../tools/fourcolor/classical/diamond-profile-measurements.json).
 Shared reference modules still load the old declarations; this is not a claimed
 build-time or artifact-size saving. Receipts are saved in
 `.lake/family-audit/family-results.json`.
@@ -329,11 +340,12 @@ The complete assembly additionally consumes the arity-nine sharing, where
 11,363 checks become 11,132, with 218 separate finite identity or classification
 checks. The unconditional endpoints consume all 231 replacements.
 
-All 633 configurations and all 32 discharging-rule labels remain. Configuration
-2's base certificate now supplies both its own obligation and configuration
-1's through the split law. Configuration 4 uses the coupled boundary repair;
-631 reference certificate dependencies remain. A single core rule covering all
-three diamonds or arbitrary longer fans remains open.
+All 633 configurations and all 32 discharging-rule labels remain. The shared
+joint-profile certificate supplies configuration 2 and configuration 4;
+configuration 1 inherits repair from 2 through the general split law.
+There are 630 original reference certificate dependencies. The common finite
+profile explanation retains cover data. A uniform broader core reduction and
+new geometric coverage remain open.
 
 `KempeBoundaryMerge`, `BoundaryEarRepair`, `BoundaryEarGSLT` and
 `DiamondEarFamily` establish a common contextual family theorem. Adding a new

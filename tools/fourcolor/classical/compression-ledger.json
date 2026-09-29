@@ -27,11 +27,14 @@
     "conditional_assembly_checker_obligations_replaced": 231,
     "arity11_coverage_checker_obligations_replaced": 62,
     "arity9_coverage_checker_obligations_replaced": 87,
-    "configuration_certificate_dependencies_replaced_by_boundary_repair": 1,
+    "configuration_certificate_dependencies_replaced_by_boundary_repair": 2,
     "configuration_certificate_dependencies_replaced_by_family_transfer": 1,
-    "configuration_certificate_dependencies_replaced_total": 2,
+    "configuration_certificate_dependencies_replaced_total": 3,
     "uniform_boundary_split_transfer_schemes": 1,
-    "uniform_schemes_replacing_multiple_target_certificates": 0
+    "uniform_schemes_replacing_multiple_target_certificates": 0,
+    "finite_joint_profile_certificate_schemes": 1,
+    "finite_joint_profile_trace_representatives": 236,
+    "finite_joint_profile_answer_references": 266
   },
   "experiments": [
     {
@@ -213,21 +216,69 @@
       "name": "strict disk replacement with unchanged boundary vertices",
       "record": "diamond-disk-replacement-probe.json",
       "status": "Bounded negative program search, with independently checked candidate colourings and flip closure.",
-      "targets": ["configuration 4", "diamond fan with two insertions on one side"],
+      "targets": [
+        "configuration 4",
+        "diamond fan with two insertions on one side"
+      ],
       "boundary_vertices": 8,
-      "replacement_interior_sizes": [0, 1, 2, 3],
-      "candidate_counts": [132, 1287, 10296, 78936],
+      "replacement_interior_sizes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "candidate_counts": [
+        132,
+        1287,
+        10296,
+        78936
+      ],
       "total_candidates_per_target": 90651,
-      "shared_obstruction_sizes": [921, 882],
+      "shared_obstruction_sizes": [
+        921,
+        882
+      ],
       "negative_controls_rejected": 12,
       "credited_compression": false,
       "independent_reducibility_checks_replaced": 0,
       "configurations_removed": 0,
       "scope": "Each target has one disjoint Kempe-closed predicate meeting every tested replacement support. The enumeration is a whole diagonal-flip component at each size, modulo interior labels; completeness for all embedded disks is not proved. No realizable exterior or failure of the existing joint contraction is asserted.",
       "next_obligation": "Retain joint boundary choices or justify additional geometric information in the common core repair. Direct collapse from configuration 4 covers only 240 of 546 proper seven-port traces; further repair steps remain possible."
+    },
+    {
+      "name": "shared diamond joint-profile descent",
+      "record": "diamond-profile-measurements.json",
+      "status": "Kernel-checked finite profile ranks, terminal witnesses, input coverage and graph reductions; consumed by the complete endpoints.",
+      "configurations": [
+        1,
+        2,
+        4
+      ],
+      "ranked_profiles": 92,
+      "terminal_profiles": 51,
+      "nonterminal_profiles": 41,
+      "trace_representatives": 236,
+      "answer_references": 266,
+      "maximum_descent_stages": 6,
+      "proper_trace_inputs": [
+        183,
+        546
+      ],
+      "joint_contract_trace_inputs": 108,
+      "certificate_trace_coverage": [
+        183,
+        546,
+        684
+      ],
+      "additional_original_certificate_dependencies_replaced": 1,
+      "original_certificate_dependencies_replaced_total": 3,
+      "catalogue_entries_removed": 0,
+      "case_free_broader_core_family_theorems": 0,
+      "credited_compression": true,
+      "scope": "One bounded profile explanation and finite cover certificate, retaining boundary length; configuration 1 also inherits repair through the general split law. The reference ranked-answer principle and checker are reused. No ring-independent law, unrestricted fan repair, new coverage, byte saving or runtime saving is asserted."
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 631 reference configuration certificates, one coupled boundary repair, and one boundary-split transfer. Configuration 2's existing certificate supplies its own obligation and configuration 1's through the general transfer law. The uniform-lemma check counter counts the one transferred target, not its retained base again. No uniform scheme has yet replaced multiple target certificates; a common law including the coupled configuration-4 case remains open. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The new common rank retains boundary length and finite answer covers; it is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -575,24 +626,34 @@
       "Quot.sound"
     ],
     "joint_diamond_repair_measurement": "diamond-joint-repair-measurements.json",
-    "reference_configuration_certificate_dependencies": 631,
-    "configuration_boundary_repair_dependencies": 1,
+    "reference_configuration_certificate_dependencies": 630,
+    "configuration_boundary_repair_dependencies": 2,
     "superseded_configuration_certificate_dependencies_absent": [
       "FourColor.Bulk.Cfg000",
+      "FourColor.Bulk.Cfg001",
       "FourColor.Bulk.Cfg003"
     ],
     "diamond_boundary_summary_measurement": "diamond-summary-measurements.json",
     "required_summary_dependencies": [
-      "FourColor.DiamondBoundarySummary.reference004",
+      "FourColor.DiamondBoundarySummary.reference002",
+      "FourColor.DiamondProfile.good_supports",
       "Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.reconstruct"
     ],
     "configuration_family_transfer_dependencies": 1,
     "diamond_split_repair_measurement": "diamond-split-measurements.json",
     "required_split_dependencies": [
       "FourColor.KempeBoundarySplit.repairs_collapse",
-      "FourColor.DiamondSplitRepair.base_repair",
+      "FourColor.DiamondProfileReducibility.transferred001",
+      "FourColor.DiamondProfileReducibility.repair002",
       "FourColor.DiamondSplitRepair.reconstruct",
-      "FourColor.DiamondSplitRepair.reducible"
+      "FourColor.DiamondProfileReducibility.reducible001"
+    ],
+    "diamond_profile_measurement": "diamond-profile-measurements.json",
+    "required_profile_dependencies": [
+      "FourColor.KempeProfileCertificate.sound",
+      "FourColor.DiamondProfileCertificate.repair",
+      "FourColor.DiamondProfileReducibility.reducible002",
+      "FourColor.DiamondProfileReducibility.reducible004"
     ]
   }
 }

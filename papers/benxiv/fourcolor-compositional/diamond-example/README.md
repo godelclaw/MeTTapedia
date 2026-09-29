@@ -9,12 +9,12 @@ configuration 2  ── insert in a boundary triangle ──▶  configuration 4
 ```
 
 These correspondences, their boundary orders and their complete colouring
-semantics are now kernel-checked. The coupled boundary law now proves
-configuration 4 reducible and replaces its original certificate dependency
-in the complete proof. A general boundary-split law also transfers
-configuration 2's repair to configuration 1. Their two obligations now share
-one base certificate. A common rule also covering configuration 4, and a
-justified broader family, remain the next steps.
+semantics are kernel-checked. A shared joint-profile certificate now supplies
+repair for all three cores. The complete proof uses its configuration-2 and
+configuration-4 repairs and retains the general split transfer from 2 to 1.
+The three original certificate dependencies are absent. The common profile
+explanation still has finite cover obligations; a uniform extension to a
+broader class of cores and its geometric coverage remain open.
 
 ## The local law
 
@@ -184,9 +184,8 @@ obligation. The closed predicate is not asserted to be an actual planar
 exterior. Within the tested model, merely changing the contract, or asking
 the exterior to meet every tested contract language, leaves that same abstract
 obstruction available. An unrestricted fan extension therefore needs stronger
-exterior information or a different reduction principle. The next positive
-target remains a common structural law for zero or one insertion on each side,
-which includes configurations 1, 2 and 4.
+exterior information or a different reduction principle. The shared profile certificate below now covers zero or one insertion on each
+side, including configurations 1, 2 and 4. It does not repair this longer fan.
 
 ## Testing a different strict replacement
 
@@ -243,6 +242,54 @@ steps remain possible. The next common core argument must therefore add a
 repair mechanism beyond this collapse, while retaining the coupling that made
 configuration 4 work.
 
+## Joint-profile descent across the three cores
+
+For a fixed boundary colouring, write `L₀, L₁, L₂, L₃` for the colours
+available at the four interior vertices. The centres must receive distinct
+colours `a ∈ L₀` and `b ∈ L₂`; each tip must receive a colour in its own list
+outside `{a,b}`. The same pair `(a,b)` constrains both tips. This is the joint
+relation retained by [DiamondProfile][profile], and its terminal solver
+constructs an actual interior witness through the general summary.
+
+The [shared certificate][profile-certificate] ranks the four lists jointly,
+forgetting colour names and allowing exchanges of the centres or of the tips.
+It also retains boundary length: dropping that information did not support
+the candidate descent. The generated finite data contain 92 ranked profile
+types, including 51 terminal types and 41 nonterminal types. There are 236
+trace representatives and 266 answer references, with at most six strict
+rank decreases before a terminal. This measures proof descent, not physical
+Kempe-chain swaps.
+
+| Core | Proper boundary traces | Traces covered by the profile certificate | Required input |
+| --- | ---: | ---: | --- |
+| Configuration 1 | 183 | 183 | Every proper zero-sum six-port trace |
+| Configuration 2 | 546 | 546 | Every proper zero-sum seven-port trace |
+| Configuration 4 | 1,641 | 684 | All 108 traces permitted by the joint contract |
+
+For each nonterminal representative the kernel checks an answer for **every**
+matching exterior chromogram, with strict descent in the shared profile rank.
+[Input coverage][profile-inputs] verifies the actual required domains. The
+[graph consumers][profile-reduction] then reconstruct literal graph colourings,
+transport the ordered rings, and validate the reference contracts. The complete
+proof supplies strict reduction and classical geometric coverage.
+
+This is a bounded profile explanation of three core shapes. The Kempe cover
+checker and ranked-certificate principle are reused from the reference proof;
+the finite cover table is still present. Sharing that checker alone would not
+be a new uniform theorem. The concrete result is that repair for these inputs
+can descend using this particular joint observable and can reconstruct genuine
+colourings. Boundary length separates the three shapes, so the rank table does
+not by itself prove a law independent of ring size. It also does not assert
+that these are all repairable eight-port traces.
+
+The [eleven-root audit][profile-audit] excludes the original configuration 1,
+2 and 4 certificates, the former diamond repair bodies, global Kempe fixed-point
+computations and the complete theorem from the new local proofs. The complete
+endpoint audit requires the replacement proofs. All 633 configurations remain;
+630 original certificate dependencies are retained. No reduction in certificate
+bytes or kernel time is claimed. [Measurements][profile-measurements] record
+those costs separately from the dependency replacement.
+
 ## A base repair shared through boundary splitting
 
 For a Kempe-closed exterior relation `Q`, define its split relation by
@@ -264,10 +311,12 @@ Kempe-closed exterior. This is a uniform implication with explicit hypotheses;
 it neither assumes all target colourings lie in the old-graph branch nor
 claims that arbitrary insertion preserves reducibility in the forward direction.
 
-[DiamondSplitRepair][split-repair] supplies the concrete consumer:
+[DiamondSplitRepair][split-repair] established the original consumer using
+configuration 2's reference certificate. The current
+[profile consumer][profile-reduction] retains its reconstruction argument:
 
-1. Configuration 2's existing rank planes cover all 546 proper seven-port
-   traces. Its verified checker supplies the base repair.
+1. Configuration 2's joint-profile certificate covers all 546 proper
+   seven-port traces and supplies the base repair.
 2. In an actual configuration-2 colouring, the first two edge colours are
    `a = k(0)+k(1)` and `b = k(1)+k(2)`. The split relation enforces `a ≠ b`,
    hence `k(0) ≠ k(2)`. Deleting vertex 1 and restoring the old boundary edge
@@ -279,11 +328,11 @@ claims that arbitrary insertion preserves reducibility in the forward direction.
    contraction and reconstruction theorem, without its old `Bulk.Cfg000` proof.
 
 The direction matters: graph construction is `1 → 2`, while this repair proof
-transfers `2 → 1`. Configuration 2 remains the retained base. Configuration 4's
+transfers `2 → 1`. Configuration 2 remains the base, now supplied by the shared profile law. Configuration 4's
 joint contract can identify the old endpoints, giving two equal edge colours;
 that is outside the split relation above. Its coupled repair remains necessary.
 
-## From the coupled boundary law to reducibility
+## The earlier coupled boundary repair
 
 [DiamondBoundaryRepair][boundary-repair] proves a law for any predicate on
 eight-edge traces that contains twenty-three specified terminal patterns.
@@ -318,13 +367,12 @@ this repair implication with the proved geometric contract conditions.
 `compatible_history` also supplies the chosen colouring's GSLT history through
 the two insertion alternatives.
 
-[DiamondFamilyReducibility][family-range] inserts this result into the full
-633-case range. The [complete endpoint audit][complete-audit] requires the new
-law and the split transfer, and rejects every dependency on the original
-`Bulk.Cfg000` and `Bulk.Cfg003` certificates. The other 631 reference
-certificate dependencies remain. Shared reference modules still load the
-old declarations; runtime and artifact-size savings
-are not claimed.
+This was the first configuration-4 replacement. The current
+[complete range][family-range] instead consumes the shared profile repair and
+split transfer described above. The earlier theorem remains available as a
+smaller, independently checked explanation of the joint contract's 18 input
+types. Shared reference modules still load old declarations; runtime and
+artifact-size savings are not claimed.
 
 ## One repair through an unbounded family of ear contexts
 
@@ -360,7 +408,9 @@ does not establish embedded-map recognition, a new valid contraction for longer
 fans, or geometric coverage. The formal operation constructs simple graphs
 with ordered boundaries; using it as a specific embedded disk operation needs
 the corresponding embedding bridge. The completed theorem retains 633 catalogue
-entries and 631 reference certificate dependencies.
+entries and 630 original certificate dependencies. The ear-family consumers
+still use the earlier core proofs; connecting them to the new profile proofs
+is separate from the complete endpoint integration.
 
 The [12-root audit][ear-audit] checks the generic law's independence from the
 catalogue, the actual graph consumers, compatible histories, and strict size
@@ -388,12 +438,14 @@ colouring produced at its end.
 
 ## Scope and remaining work
 
-Two reference certificate dependencies are replaced, while all 633 catalogue
-entries remain. Configuration 2 supplies its own obligation and configuration
-1's through a uniform transfer; configuration 4 uses the coupled law.
-This does not yet give one rule replacing the checks for all three configurations,
-or a valid contraction rule for arbitrarily long insertion fans. Those are
-separate family and geometric coverage tasks.
+Three original reference certificate dependencies are replaced, while all 633
+catalogue entries remain. The shared finite profile certificate supplies
+configuration 2 and configuration 4; configuration 1 inherits repair through
+the general split law. The profile certificate also proves configuration 1's
+repair directly. A structural theorem that removes further finite cover
+obligations, a valid broader core reduction and geometric coverage remain the
+research tasks. The negative longer-fan and disk-replacement results continue
+to constrain any proposed extension.
 
 The
 [geometry audit][audit] checks 28 roots; the [contract audit][contract-audit]
@@ -459,3 +511,10 @@ excludes configuration 1's original certificate.
 [ear-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondEarFamilyAudit.lean
 [ear-measurements]: ../../../../tools/fourcolor/classical/diamond-ear-measurements.json
 [ear-probe]: ../../../../tools/fourcolor/classical/diamond-ear-probe.json
+
+[profile]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfile.lean
+[profile-certificate]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfileCertificate.lean
+[profile-inputs]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfileFamilyRepair.lean
+[profile-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfileReducibility.lean
+[profile-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfileAudit.lean
+[profile-measurements]: ../../../../tools/fourcolor/classical/diamond-profile-measurements.json

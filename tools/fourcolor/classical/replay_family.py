@@ -20,7 +20,10 @@ MODULES = ["ExecutableConfiguration", "ConfigurationTable", "ConfigurationRealiz
            "KempeAnswerComposition", "DiamondBoundaryRepair", "DiamondJointRepair",
            "DiamondJointRepairAudit", "KempeBoundarySplit", "DiamondSplitRepair",
            "DiamondSplitRepairAudit", "KempeBoundaryMerge", "BoundaryEarRepair",
-           "BoundaryEarGSLT", "DiamondEarFamily", "DiamondEarFamilyAudit"]
+           "BoundaryEarGSLT", "DiamondEarFamily", "DiamondEarFamilyAudit",
+           "DiamondProfile", "KempeProfileCertificate", "DiamondProfileData",
+           "DiamondProfileCertificate", "DiamondProfileFamilyRepair",
+           "DiamondProfileReducibility", "DiamondProfileAudit"]
 
 
 def main():

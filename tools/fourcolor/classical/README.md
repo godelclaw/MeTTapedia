@@ -779,3 +779,34 @@ lake build \
   Mettapedia.OSLF.MeTTaIL.PremiseRouteSemantics
 lake env lean ../../tools/fourcolor/classical/audit/ReusableSemanticsAudit.lean
 ```
+
+## Shared diamond joint-profile certificate
+
+`generate_diamond_profile_certificate.py` reconstructs the literal configuration
+1, 2 and 4 graphs, independently enumerates their ordinary colourings, and
+searches for Kempe descent ranked by joint available-colour sets and boundary
+length. It generates short flat string records for a separate Lean check:
+
+```sh
+python3 tools/fourcolor/classical/generate_diamond_profile_certificate.py \
+  --lean-output lean/fourcolor-classical/MettapediaFourColor/DiamondProfileData.lean \
+  --report tools/fourcolor/classical/diamond-profile-candidate.json
+```
+
+The program report is candidate evidence. The kernel-checked consumer and its
+integration receipts are recorded in `diamond-profile-measurements.json`.
+There are 92 ranked profile types, 236 trace representatives and 266 answer
+references. All 183 proper six-port traces, all 546 proper seven-port traces,
+and all 108 inputs of the eight-port joint contract are covered. The eight-port
+certificate covers 684 traces in total; it does not claim to cover every
+repairable trace.
+
+The ranked-answer principle and chromogram-cover checker are reused from the
+reference development. Actual terminal graph witnesses use the shared diamond
+summary. Ordered-ring transport and the reference contract decoder connect
+the result to strict reduction in the complete proof. The complete endpoint
+audit excludes the original configuration 1, 2 and 4 certificates; 630 original
+certificates and all 633 configurations remain. Short records avoid repeatedly
+decoding the whole data stream during kernel evaluation. This encoding change
+is separate from mathematical compression, and no byte or runtime saving over
+the reference is claimed.

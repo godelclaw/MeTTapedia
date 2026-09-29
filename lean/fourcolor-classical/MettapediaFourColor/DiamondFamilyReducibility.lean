@@ -1,13 +1,12 @@
-import MettapediaFourColor.DiamondJointRepair
-import MettapediaFourColor.DiamondSplitRepair
+import MettapediaFourColor.DiamondProfileReducibility
 import FourColor.Reduce.All
 
 /-!
-# The complete reducibility range with diamond repair and transfer
+# The complete reducibility range with shared diamond profile repair
 
-The coupled boundary law replaces the original certificate for configuration
-4 (zero-based index 3). Boundary-split transfer from configuration 2 replaces
-configuration 1's certificate. The other 631 reference certificates are retained.
+The joint-profile certificate supplies configurations 2 and 4. Boundary-split
+transfer from configuration 2 supplies configuration 1. The original certificates
+for these three configurations are absent; the other 630 are retained.
 The range below is rebuilt from individual inputs, so the final proof does
 not depend on the original first block or its superseded certificate.
 
@@ -17,13 +16,17 @@ Gonthier and Werner; the Lean realization by Chris Emery.
 
 namespace FourColor.DiamondFamilyReducibility
 
-/-- Configuration 1 inherits repair from the retained configuration 2 base. -/
+/-- Configuration 1 inherits repair from the shared profile's configuration 2 base. -/
 theorem configuration1 : ReducibleInRange 0 1 theConfigs :=
-  reducible_range_one (cfs := theConfigs) (i := 0) DiamondSplitRepair.reducible
+  reducible_range_one (cfs := theConfigs) (i := 0) DiamondProfileReducibility.reducible001
+
+/-- Configuration 2 is supplied by the joint-profile law. -/
+theorem configuration2 : ReducibleInRange 1 2 theConfigs :=
+  reducible_range_one (cfs := theConfigs) (i := 1) DiamondProfileReducibility.reducible002
 
 /-- Configuration 4 is supplied by the coupled insertion boundary law. -/
 theorem configuration4 : ReducibleInRange 3 4 theConfigs :=
-  reducible_range_one (cfs := theConfigs) (i := 3) DiamondJointRepair.reducible
+  reducible_range_one (cfs := theConfigs) (i := 3) DiamondProfileReducibility.reducible004
 
 /-- The first forty cases, using transfer in slot one and joint repair in slot four. -/
 theorem first_block : ReducibleInRange 0 40 theConfigs :=
@@ -33,7 +36,7 @@ theorem first_block : ReducibleInRange 0 40 theConfigs :=
         (cat_reducible_range
           (cat_reducible_range
             configuration1
-            Bulk.Cfg001.reducible)
+            configuration2)
           (cat_reducible_range
             Bulk.Cfg002.reducible
             (cat_reducible_range
@@ -107,7 +110,7 @@ theorem first_block : ReducibleInRange 0 40 theConfigs :=
               Bulk.Cfg038.reducible
               Bulk.Cfg039.reducible))))))
 
-/-- All configurations, with two certificate dependencies replaced. -/
+/-- All configurations, with three original certificate dependencies replaced. -/
 theorem reducible_all : ReducibleInRange 0 633 theConfigs :=
   (cat_reducible_range
     (cat_reducible_range
