@@ -356,6 +356,22 @@ terms. The remaining geometry question is the cost of tracking a small,
 rotating, possibly shrinking dangerous region. Fixed-scale signed bounds
 do not supply the required uniform allowance for such histories.
 
+`MettapediaNS.WholeSpacePressureObserver` bounds a smooth separated
+pressure observation with the reserve's actual normalized weight by
+`9 E(t)/(pi R^5)`. Its complete signed generator can consequently be
+paid by endpoints. The same certified bound controls the change in the
+logarithmic reserve when that separated pressure is removed from its
+observation; the nearby dynamics still retain all physical pressure.
+The analytic identification uses a receiver and its
+parents driven by the same backward Brownian displacement: the kernel
+sees only their relative fluid velocity, while the shared diffusion
+retains mixed gradients of the fields. The exact lab
+`synchronous_pressure_history.py` recovers the actual pressure evolution
+after parent integration and includes the evolving reserve weight.
+The stochastic identification and endpoint expectation are analytic;
+the spatial primitive bound is Lean-certified. Mixed gradients can have
+either sign, and the individual weight and near-field costs remain open.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

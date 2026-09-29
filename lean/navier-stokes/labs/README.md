@@ -4497,3 +4497,214 @@ boundary and observer terms, whose history must still be controlled.
 ```sh
 python3 -O labs/pressure_stress_transport.py
 ```
+
+## Shared stochastic displacement and the actual pressure observation
+
+`synchronous_pressure_history.py` identifies the receiver and parent
+terms in a two-point pressure history. Both points sample the same actual
+unforced fluid and use the same Brownian motion. This cancels direct
+diffusion of their separation kernel, but retains the mixed gradients
+of their velocity, vorticity and observation weight. Integrating out the
+parent gives the original pressure evolution, with no new source of
+fluid forcing.
+
+### A coupling with an exact physical marginal
+
+Fix a smooth solution prefix and write `D=partial_t+u.grad-nu Delta`.
+In backward time `s`, with physical time `tau=t-s`, consider
+
+```text
+dX_s=(-u(tau,X_s)+b_s)ds+sqrt(2nu)dB_s,
+dY_s=(-u(tau,Y_s)+b_s)ds+sqrt(2nu)dB_s.
+```
+
+Here `b_s` is a bounded adapted auxiliary sampling drift, common to all
+parent labels for the chosen receiver. It does not enter the fluid PDE.
+For each Brownian/control history, the parent flow preserves volume:
+subtracting the common translation gives an ordinary flow whose spatial
+drift has zero divergence. Thus integrating over all parent labels still
+reconstructs the fluid's pressure observation at the receiver. This
+statement is on a given smooth prefix; it supplies no bound on how long
+that prefix lasts.
+
+The joint generator, acting on functions of physical time and both
+positions, is
+
+```text
+L_b=-partial_t-u(x).grad_x-u(y).grad_y
+    +nu sum_j (partial_xj+partial_yj)^2
+    +b.(grad_x+grad_y).
+```
+
+For any fixed kernel `K(x-y)`, including a smooth separation cutoff,
+`(grad_x+grad_y)K=0`. Its generator is exactly
+`[u(y)-u(x)].grad K`. The Brownian motion and the common auxiliary drift
+do not directly change the separation. Independent Brownian motions
+would have a different joint generator and would lose this cancellation.
+
+### The actual tensor and normalized-weight terms
+
+Put `J=omega(x) tensor omega(x)`, `T=u(y) tensor u(y)`, and
+
+```text
+K_abij(z)=chi(z) partial_abij [1/(4pi|z|)],
+F(t,x,y)=J_ab(t,x) K_abij(x-y) T_ij(t,y).
+```
+
+Repeated tensor indices are summed. For `b=0`, the exact joint identity is
+
+```text
+L_0 F=-(D J):K:T - J:K:(D T)
+      +J:([u(y)-u(x)].grad K):T
+      +2nu sum_j (partial_j J):K:(partial_j T).
+```
+
+There are no omitted kernel diffusion terms. The actual unforced field
+equations supply, with `B=grad u`,
+
+```text
+D J=(B omega) tensor omega+omega tensor (B omega)
+    -2nu sum_j partial_j omega tensor partial_j omega,
+D T=-grad p tensor u-u tensor grad p
+    -2nu sum_j partial_j u tensor partial_j u.
+```
+
+All receiver strain, parent pressure and mixed gradient terms remain.
+The pressure/core reserve determines its own weight,
+`c=2theta/Y`, with `theta=h_delta'(Peta-Ceta)`. It satisfies
+`0<=c|omega|^2<=3/2`. This is a bound on the weight's value, not its rate.
+The complete weighted equation is
+
+```text
+L_b(cF)=c L_0 F-(D c)F
+        +2nu grad c.(grad_x+grad_y)F
+        +b.(grad_x+grad_y)(cF).
+```
+
+The lab computes `c`, its time derivative, gradient and Laplacian from
+the actual velocity, canonical pressure and pressure-time solution.
+The generic product identity is checked independently. Its printed
+decimal evaluations illustrate the weight costs; they are not used as
+sign certificates. In particular, the pressure-time contribution in
+`D c` is not replaced by an independently chosen control.
+
+### Parent integration and a finite signed endpoint payment
+
+Let `N_R=integral F(t,x,y)dy`, and `H_R=c N_R`, where the fixed smooth
+cutoff has `|chi|<=1` and vanishes for `|z|<R`, `R>0`. Parent transport
+integrates to zero by incompressibility; its divergence and cross
+derivatives integrate to zero by decay or periodicity. Consequently
+
+```text
+integral L_b(cF)dy=(-D+b.grad)H_R,
+|H_R(t,x)|<=[9/(pi R^5)] E(t),       E(t)=||u(t)||_2^2.
+```
+
+The second statement is Lean-certified in `WholeSpacePressureObserver`
+for the actual whole-space smooth field, including the reserve-weight
+instantiation and the uniform initial-energy application. The cutoff
+bound is formulated for measurable cutoffs; smoothness and bounded
+derivatives are additionally used in the analytic generator identity.
+At vorticity zeros the weighted response vanishes, with no direction
+singularity. No condition on the pressure's favorable sign is required.
+
+For a smooth prefix on which Itô/Dynkin applies, the preceding physical
+identity gives the analytic signed allowance
+
+```text
+|E_expectation integral_0^s (-D+b.grad)H_R(t-r,X_r)dr|
+  <=[9/(pi R^5)] (E0+E(t)).
+```
+
+The same endpoint argument holds after localization at stopping times
+with zero-mean stopped martingale. It controls the signed expected total
+generator, not expected absolute variation or each separate source.
+The stochastic construction and expectation theorem are not newly
+Lean-certified here. Their constant is uniform over smooth prefixes
+and bounded auxiliary controls, without restarting resources at a seam.
+
+For the continuation candidate, the relevant separated contribution is
+`-c D N_R`. The exact accounting is
+
+```text
+-c D N_R=(-D+b.grad)H_R
+          +N_R D c-2nu grad c.grad N_R-b.grad H_R.
+```
+
+Thus the bounded primitive pays one complete signed combination. It
+does not pay the weight terms on the right individually. A correction
+to a Bellman value must retain them and the corresponding control and
+quadratic-gradient terms. The remaining near field and a changing
+cutoff scale are also not bounded by this fixed-R result.
+
+There is a stronger comparison at the level of the observable. Keep all
+moments fixed except the pressure pairing, and interpolate from `N` to
+`N-N_R`. The exact derivative of the logarithmic reserve along this path
+is `c_lambda N_R`. Each intermediate reserve has the same unconditional
+coercivity, so the same primitive bound holds at every interpolation
+parameter. The mean value theorem gives
+
+```text
+|log Y(N-N_R)-log Y(N)| <= [9/(pi R^5)] E(t).
+```
+
+This pressure-path derivative and comparison are also Lean-certified.
+For an actual unforced evolution, `E(t)<=E0` makes the correction uniformly
+finite. The interpolation changes an observation of the same fluid;
+it does not prescribe a new pressure or a force. It permits a focus on
+the nearby pressure in this observable, without any assumption on the
+rate of the far pressure. The actual evolution of the nearby fluid still
+contains the full pressure, and all derivatives of a corrected Bellman
+quantity must be retained. The nearby singular kernel and the remaining
+signed history estimate are not bounded by this comparison.
+
+The spatial comparison uses field energy and can also apply to a forced
+prefix with the same energy bound. It is not the mechanism that excludes
+forced behavior. That distinction remains in the actual evolution and
+compatible parent history, including the explicit body-force terms.
+
+### Exact adversarial checks and scope
+
+The periodic checker uses a finite observation kernel with modes
+containing every nonzero initial pressure and pressure-time coefficient.
+All velocity products and the actual NS tangent are retained; the mode
+set truncates the observation, not the fluid evolution. Parent integration
+then agrees coefficient by coefficient with the full initial pressure
+pairing and its parabolic derivative. A fixed finite observation set is
+not asserted to contain the full pressure at later times.
+
+The two observation points are `x=0` and `y=(0,0,pi/2)`. Relative transport
+and the mixed gradient are both active. At `nu=0` and `nu=2/7`, all exact
+identities pass. An auxiliary common drift cancels from the kernel;
+the physical diagnostic force `f=curl u` instead produces nonzero
+receiver-vorticity and parent-velocity source terms. This diagnostic is
+not the imported forced singularity and proves no internal realization.
+
+Shared diffusion has no automatic favorable sign. For the actual
+unforced pressure-free heat shears
+
+```text
+u=(U(y,t),0,V(y,t)),
+U=exp(-nu t)(cos y+sin y),
+V=exp(-nu t)(sin y +/- cos y),
+```
+
+the joint reverse generator of the local component
+`omega_1(x)^2 u_1(y)^2` at zero has rates `-4nu` and `12nu`, respectively.
+These are exact all-parameter evaluations in globally regular flows
+with no vortex stretching. They refute only a universal favorable sign
+for that component. In projected scalar notation, the mixed diffusion
+has the exact decomposition
+
+```text
+2nu (v^2 a^2+w^2 b^2+4wvab)
+  =3nu (va+wb)^2-nu (va-wb)^2,
+```
+
+where `w,v` are receiver/parent amplitudes and `a,b` their derivatives
+in the common noise direction. Both squares must be retained before
+using geometry. The full pressure kernel also has signed tensor weights.
+
+```sh
+python3 -O labs/synchronous_pressure_history.py
+```
