@@ -892,6 +892,32 @@ These finite program checks are separate from the Lean theorem.
 four-ring normal form. A graph-backed vertex-minimal counterexample has at
 most four rows in such a five-port strip; no connected-shore premise is added.
 The row supply and width hypotheses remain to be justified more broadly.
-`hexagonal-strip-measurements.json` records the current audit and costs.
+`hexagonal-strip-measurements.json` records that checkpoint's audit and costs.
 No additional classical configuration certificate or catalogue entry is
 removed, and no counting equality or executable Kempe procedure is asserted.
+
+## Whole-collar successor construction
+
+`nextRow` in `HexagonalCollar.lean` constructs the next complete row from actual face
+traversal around a recognized row. Hexagonal seam faces, distinct candidate
+vertices and short output-port faces suffice. The converse identifies the
+candidate vertices in every oriented successor, giving an exact criterion.
+The joint colouring relation and its interior witnesses compose through the
+constructed row. `stopsWithin_three` in `HexagonalCollarProgress.lean` consumes the
+four-ring physical reduction: in the pentagon/hexagon class, a minimal
+counterexample meets a pentagonal seam face or an actual vertex collision
+within three successful extensions of a supplied five-port row.
+
+```sh
+python3 tools/fourcolor/classical/hexagonal_collar_probe.py \
+  --output hexagonal-collar-probe.json
+```
+
+The independent probe tests all 574 simple ten-cycles in seven explicit maps,
+in both orientations. It finds 48 alternating rows, 28 constructed hexagonal
+successors and 20 pentagonal stops. No collision appears in this sample.
+Two Goldberg examples, of 80 and 180 vertices, have no alternating ten-cycle;
+these zero-coverage results are included explicitly. `hexagonal-collar-measurements.json`
+records the separate Lean audit, exact hypotheses and remaining obligations.
+Initial-row supply, collision geometry, other widths and other face sizes
+remain open. No additional catalogue or certificate saving is credited.

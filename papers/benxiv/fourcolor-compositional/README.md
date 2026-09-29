@@ -47,6 +47,17 @@ from the earlier coarse 446,403 to four rows; extra connected-shore hypotheses
 are unnecessary. Suitable alternating-row supply and width control remain
 explicit geometric tasks. No further catalogue certificate is removed.
 
+The next-row question now has an exact [collar criterion](tube-example/README.md#constructing-a-row-from-its-surrounding-faces).
+Starting from one recognized row, edge reversal and rotation read candidate
+vertices from the surrounding hexagons. If the candidate vertices are distinct
+and the new port faces have length five or six, they construct the complete
+next row; conversely every oriented successor uses those vertices. Compatible
+colourings compose through the resulting row. In the pentagon/hexagon class,
+a least counterexample must meet a pentagonal seam face or a candidate-vertex
+collision within three successful extensions of a five-port row. This
+localizes a coverage obligation; neither stopping alternative is yet supplied
+with a uniform reduction, and an initial suitable row is still required.
+
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved
@@ -237,6 +248,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
 | Geometric corridor reduction | Actual hexagonal row chains assemble as literal tubes; five-port strips reduce to four rows, preserving the map class and exterior colours |
+| Geometric successor supply | Hexagonal face traversal constructs the next row exactly when its candidate vertices are distinct, under short output-face hypotheses; a minimal counterexample encounters a pentagon or collision within three extensions of a supplied five-port row |
 | Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |

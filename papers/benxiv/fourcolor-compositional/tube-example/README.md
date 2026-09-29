@@ -164,10 +164,54 @@ These are independent finite program checks, not Lean certificates.
 
 The expanded [geometric audit][hex-audit] requires both the actual
 facial-recognition and four-ring reduction consumers, and rejects classical
-`FourColor` dependencies. The [current measurement record][strip-measurements]
+`FourColor` dependencies. The [strip measurement record][strip-measurements]
 separates these proofs from the reused finite five-port stabilization
 certificate and the earlier [seam checkpoint][hex-measurements]. No
 configuration or certificate is removed by this geometric result.
+
+## Constructing a row from its surrounding faces
+
+The [collar theorem][collar] starts with one recognized row, rather than an
+assumed sequence of rows. Let `pᵢ` be its actual output darts. The ambient
+edge reversal `α` and vertex rotation `ρ` determine the candidate new vertices:
+
+```
+xᵢ = α(pᵢ)          incoming dart at the first new vertex
+yᵢ = α(ρ(xᵢ))      dart at the next vertex of the exterior face
+```
+
+Hexagonal face closure forces the second new edge to end at the next
+`x`-vertex. If these `2k` candidate vertices are distinct and the new output
+port faces have length five or six, `nextRow` constructs a complete oriented
+zigzag slab. It proves that all new vertices are outside the old side, that
+the row has no chords, and that both boundary maps are complete. Its input
+labels are the old output labels. `nextRow_support` gives the exact joint
+boundary relation with genuine interior colouring witnesses.
+
+The converse is also proved: every oriented successor row uses precisely
+these candidate vertices, up to its actual boundary-coordinate bijection.
+Thus `exists_nextRow_iff` is an exact local criterion under the stated face
+hypotheses. A collision cannot be repaired merely by choosing a different
+origin for the same kind of next row.
+
+The [bounded progression theorem][collar-progress] consumes this construction
+and the four-ring physical reduction. In a map with only pentagonal and
+hexagonal faces, a supplied five-port row of a least counterexample must
+encounter a pentagonal seam face or a candidate-vertex collision after at most
+three successful extensions. Otherwise the constructed five-row tube strictly
+reduces. Neither stopping alternative is claimed reducible. Supplying the
+initial row, handling collisions, changing width and covering other face sizes
+remain geometric tasks.
+
+The [independent collar probe][collar-probe] examines all 574 simple ten-cycles,
+in both orientations, across seven explicit spherical cubic maps. It finds
+48 oriented alternating rows: 28 have hexagonal collars and yield complete
+successor rows; 20 meet pentagonal faces. No collision occurs in this sample.
+The 80- and 180-vertex Goldberg examples contain no alternating ten-cycle;
+they are retained in the report to expose this width-five mechanism's limited
+coverage. These are finite program checks, not kernel certificates or a
+general noncollision theorem. The [collar measurement record][collar-measurements]
+records the expanded 30-root audit and its 24,107 dependency declarations.
 
 ## Scope and verification
 
@@ -214,3 +258,7 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [hex-reduction]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeReduction.lean
 [strip-probe]: ../../../../tools/fourcolor/classical/hexagonal-strip-probe.json
 [strip-measurements]: ../../../../tools/fourcolor/classical/hexagonal-strip-measurements.json
+[collar]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalCollar.lean
+[collar-progress]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalCollarProgress.lean
+[collar-probe]: ../../../../tools/fourcolor/classical/hexagonal-collar-probe.json
+[collar-measurements]: ../../../../tools/fourcolor/classical/hexagonal-collar-measurements.json

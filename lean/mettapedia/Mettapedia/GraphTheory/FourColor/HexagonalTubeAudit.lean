@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.HexagonalTubeExclusion
 import Mettapedia.GraphTheory.FourColor.HexagonalTubeReduction
+import Mettapedia.GraphTheory.FourColor.HexagonalCollarProgress
 import Lean.Util.FoldConsts
 
 /-!
@@ -63,6 +64,23 @@ run_cmd do
     (``FacialCycleChord.chain_length_le_four, [``FacialCycleChord.prepend_hexagonal,
       ``FacialCycleChord.toSlab, ``FacialCycleChord.toCycle,
       ``Tube.hexagonal_five_length_le_four])]
+  let contracts := contracts ++ [
+    (``ZigzagSlab.collar_three_steps, [``ZigzagSlab.output_three_steps,
+      ``ZigzagSlab.seam_six_steps]),
+    (``ZigzagSlab.nextRow, [``ZigzagSlab.collar_second_edge,
+      ``ZigzagSlab.collarDart_injective, ``ZigzagSlab.collarVertex_outside,
+      ``ZigzagSlab.collar_output_no_chord, ``CyclicPortChordExclusion.Arcs.no_chord,
+      ``ZigzagSlab.outPort_surjective]),
+    (``ZigzagSlab.nextRow_inEquiv, [``ZigzagSlab.nextRow]),
+    (``ZigzagSlab.collarVertex_eq_successor, [``ZigzagSlab.seam_mate]),
+    (``ZigzagSlab.exists_nextRow_iff, [``ZigzagSlab.nextRow,
+      ``ZigzagSlab.collarVertex_injective_of_successor]),
+    (``ZigzagSlab.nextRow_support, [``ZigzagSlab.nextRow_inEquiv,
+      ``ZigzagSlab.mem_sideSupport_inner'_iff]),
+    (``ZigzagSlab.tube_of_not_stops, [``ZigzagSlab.nextRow,
+      ``ZigzagSlab.clean_of_no_obstruction]),
+    (``ZigzagSlab.stopsWithin_three, [``ZigzagSlab.tube_of_not_stops,
+      ``Tube.hexagonal_five_length_le_four, ``SlabOf.five_reduction])]
   let mut inspected : NameSet := {}
   for (root, required) in contracts do
     let mut seen : NameSet := {}

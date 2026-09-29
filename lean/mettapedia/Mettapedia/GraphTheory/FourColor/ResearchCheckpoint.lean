@@ -172,6 +172,20 @@ bound improves from the coarse 446403 to four rows, without extra connected-
 shore hypotheses. Optimality of four is not asserted. The facial-row adapter
 consumes this bound directly. Alternation, supply of consecutive recognized
 rows, interface-width control and general strict-reduction coverage remain open.
+One successor row can now be constructed from the original hexagonal collar.
+Edge reversal and rotation determine its candidate vertices and darts. If the
+candidate vertices are distinct and the new output-port faces have length five
+or six, the construction derives the complete new slab, its orientation and
+its exact two-ended colouring semantics. Conversely, any oriented successor
+has those candidate vertices up to its actual seam bijection. Distinctness is
+therefore the exact successor criterion under the stated face hypotheses.
+For pentagon/hexagon maps, failure is localized to a pentagonal seam face or
+an equality between distinct candidate vertices. A least counterexample must
+encounter one of these within three successful extensions of a supplied
+five-port row: otherwise the construction supplies a reducible five-row tube.
+Neither stopping alternative is claimed reducible. Initial alternating-row
+supply, collision geometry, changing widths and non-fullerene maps remain
+coverage obligations.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond
