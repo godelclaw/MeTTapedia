@@ -148,6 +148,19 @@ equation and pressure. A bound on the changing metric in the actual
 vorticity direction remains open, so this observable is not yet a reserve
 for the ordinary order-one production.
 
+`StochasticLagrangian.TransportedFrameDirection` checks the scalar quotient
+and HJB algebra needed for that comparison. The metric diffusion loss enters
+the physical-to-metric ratio with a positive sign. A logarithmic scalar
+renormalization cancels this term from both sides of the corresponding HJB
+barrier, leaving the ordinary physical stretching obligation. The exact lab
+`transported_frame_direction.py` supplies smooth periodic unforced initial
+data with positive stretching and pressure-driven stretching production at
+a point where the metric diffusion cost is zero. This excludes a proposed
+local payment by that cost alone; full-datum reserves and joint tensor,
+pressure and history corrections remain open. The existing
+`LocalMaterialStretching.hasDerivAt_stretchingAlong` supplies an actual
+material-evolution identity for this retained stretching variable.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

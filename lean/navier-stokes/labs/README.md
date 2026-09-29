@@ -2399,3 +2399,138 @@ The checker requires SymPy:
 ```sh
 python3 -O labs/transported_frame_metric.py
 ```
+
+### Directional conversion and the pressure history it must retain
+
+`transported_frame_direction.py` checks the next comparison explicitly.
+Write `s=|omega|^2`, `q=omega^T M^(-1) omega`, `G=|grad omega|^2`, and
+`stretch=omega . (grad u) omega`. Where `q>0`, put `kappa=s/q`. Then
+
+```text
+(D - 2 nu grad(log q) . grad) kappa
+  = (2 stretch - 2 nu G)/q + 2 nu s F/q^2.
+```
+
+Using `(s+eta)/(q+eta)` with one fixed `eta>0` makes the quotient positive
+and smooth even at vorticity zeros. Replace `s` and `q` by `s+eta` and
+`q+eta` in the identity; their parabolic rates are unchanged. If this
+quotient is bounded by `K` and `q<=C`, then `s<=K(C+eta)`. Thus a bound
+for one fixed regularizer suffices, without a zero-regularizer limit.
+The Lean module proves this scalar comparison. The direct
+rational-jet check retains arbitrary prescribed spatial Hessians of the
+vector and tensor. The diffusion loss `F` increases this quotient; it
+cannot simply be counted as damping. At the initial frame `M=I`, both
+scalar fields and their gradients agree and `F=G`, giving the initial
+directional rate `2 stretch/s` independently of viscosity.
+For the regularized quotient it is `2 stretch/(s+eta)` instead.
+
+There is an analytic control representation on each fixed smooth periodic
+interval. Write `S=s+eta`, `Q=q+eta`, `k=S/Q`, and
+
+```text
+w = u - 2 nu grad(log Q),
+V = (2 stretch - 2 nu G)/S + 2 nu F/Q.
+```
+
+Then `(partial_t+w.grad-nu Delta)k=Vk` and `k(0)=1`. For paths starting
+at `Y_0=x` with drift `-w(t-r,Y_r)+beta_r` and diffusion `sqrt(2nu)`,
+
+```text
+log k(t,x) = sup_beta E integral_0^t [V(t-r,Y_r)-|beta_r|^2/(4nu)] dr.
+```
+
+Ito's formula and completion of the square prove the inequality and its
+attainment at `beta=2nu grad(log k)(t-r,Y_r)`. All coefficients and this
+feedback are smooth and bounded on the fixed compact interval. The Lean
+module checks the Hamiltonian square, its upper bound and maximizing
+control; the stochastic verification remains analytic. This is the usual
+logarithmic control representation, with the coefficients here derived
+from the actual fluid; see also
+[Lehec, Section 2.4](https://arxiv.org/abs/1006.3028).
+
+The optimal total sampling drift simplifies to
+`-u+2nu grad(log S)`: the scalar frame normalization cancels. The sampling
+drift is generally compressible and is not a freely chosen physical fluid
+velocity. Neither the value representation nor smooth-prefix boundedness
+gives a bound uniform up to a possible singular time. Such a bound still
+requires the coupled geometric and pressure history.
+
+The full-time aligned-shear test gives a nonconstant example of this value
+formula with an explicit bound. For `u=A exp(-nu t) sin(y)e_x` and the
+initial tensor `omega0 omega0^T+delta I`, put
+`m=delta+(A^2/2)(1+exp(-4nu t)cos(2y))`. Then `q=s/m`, and
+`k=(q*m+eta)/(q+eta)` is a convex combination of `m` and `1`. Consequently
+`log k<=log(max(1,delta+A^2))` for all time. The checker verifies the full
+parabolic quotient equation with its actual geometric cost. This is a
+restricted positive case, not an arbitrary-data bound. Here `k(0)` need
+not equal one, so its control representation retains the initial reward
+`log k(0,Y_t)` in addition to the displayed running integral.
+
+There is a precise limitation of one scalar HJB correction. For
+`Lq=D-2 nu grad(log q).grad` and `R=Psi-log q`,
+
+```text
+Lq R - nu |grad R|^2
+  = D Psi - nu |grad Psi|^2 + 2 nu F/q.
+```
+
+Hence the barrier requiring the left side to dominate
+`(2 stretch-2 nu G)/s + 2 nu F/q` is exactly the ordinary log-vorticity
+barrier for `Psi`. This change of scalar normalization alone supplies no
+new bound. `StochasticLagrangian.TransportedFrameDirection` proves these
+identities on supplied scalar rates and gradient pairings; constructing
+the fields and applying PDE comparison are separate obligations.
+
+The physical test uses the smooth `2pi`-periodic initial field
+
+```text
+u0 = (-a sin(x) cos(z) - b sin(y), b sin(x), a cos(x) sin(z)),
+p0 = (a^2/4)(cos(2x)+cos(2z)) - b^2 cos(x) cos(y),
+omega0 = (0, 2a sin(x) sin(z), b(cos(x)+cos(y))).
+```
+
+The checker verifies incompressibility, the exact initial pressure Poisson
+equation, the solenoidal unforced velocity RHS, and its curl. These data
+have a smooth local unforced evolution. The checker computes its actual
+initial tangent; it does not provide a closed-form solution at later times.
+At the origin, for `a,b>0`,
+
+```text
+u0=0,  grad omega0=0,  F0=0,
+Dq(0,0)=0,  partial_t kappa(0,0)=2a>0,
+partial_t |omega|^2(0,0)=8b^2(a-nu).
+```
+
+Both the initial trace and log-determinant rates of `M` vanish. Thus a
+smooth local correction using only `q`, trace and determinant cannot
+supply a negative parabolic rate there to pay for the positive ratio
+production. This statement concerns that local payment without a separate
+initial/time-dependent reserve, not every history certificate.
+
+The example is not devoid of an internal stretching source. With
+`w=(grad u)omega` and `P=Hess p`, the checker verifies
+
+```text
+D w = -P omega - 2 nu sum_j (partial_j grad u)(partial_j omega).
+```
+
+At the origin the cross-gradient term vanishes and `D w=(0,0,2a^2 b)`.
+The pressure is generated by the same unforced velocity. The existing
+`LocalMaterialStretching.hasDerivAt_stretchingAlong` proves the material
+version of this evolution for actual solutions, including its viscous
+terms. A geometric reserve must retain or bound the relevant directional
+pressure history; incompressibility does not set it to zero.
+The initial ordinary time derivative of directional strain is `-2nu a`
+in this example. Positive stretching-vector production therefore does
+not establish repeated regeneration or sustained growth of the strain.
+
+Replacing `a` by `-a` preserves the entire initial `q` and `F` fields,
+while reversing the directional growth at the origin. Their ordinary
+scalar time derivatives agree at that stationary point. Away from it,
+their velocity drifts differ, so agreement of ordinary time derivatives
+is not asserted. The example refutes neither global regularity nor a
+full-state, full-datum history allowance.
+
+```sh
+python3 -O labs/transported_frame_direction.py
+```
