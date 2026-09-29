@@ -3,16 +3,18 @@ import MettapediaFourColor.DiamondProfileData
 import MettapediaFourColor.KempeProfileCertificate
 import MettapediaFourColor.KempeChordExchange
 import MettapediaFourColor.KempeChordMasks
+import MettapediaFourColor.KempeAnchorProjection
 
 /-! # One joint-profile certificate for the three diamond cores
 
 The 236 trace representatives use a single rank on 92 joint profile types.
 Fifty-one profile types have actual interior colourings; the other 41 descend
 through checked Kempe answers. A single-chord theorem handles 71 nonterminal
-representatives; a coupled two-ear law handles another 24. Five retain
-individual finite chromogram covers. The rank, partner targets and 216 local
-ear-pair classifications remain finite data. No original configuration certificate or
-global Kempe fixed point is used.
+representatives; a coupled two-ear law handles another 24. Joint anchor
+projections handle the remaining five. The rank, partner targets, 216 local
+ear-pair classifications and 44 joint-anchor classifications remain finite data.
+No original configuration certificate, colour-decorated finite-cover checker
+or global Kempe fixed point is used by this certificate.
 -/
 
 namespace FourColor.DiamondProfileCertificate
@@ -53,17 +55,27 @@ def answers (s : Shape) (i : State s) : List (State s × EdgePerm) :=
       Nat.mod_lt _ (count_pos s)⟩,
       readPerm (digit data (3 + 3 * j)))
 
-/-- Zero means a finite cover; 1--8 select a chord anchor, 9 selects coupled ears. -/
+/-- Zero is terminal; 1--8 select a chord anchor, 9 ears, and 10--12 joint anchors. -/
 def strategy (s : Shape) (i : State s) : ℕ :=
   digit (DiamondProfileData.wordCodes (offset s + i.val)) 8
+
+/-- Three shared patterns, in active-port coordinates. -/
+def anchorPattern : ℕ → List ℕ
+  | 10 => [0, 1]
+  | 11 => [0, 4]
+  | 12 => [0, 1, 2]
+  | _ => []
 
 def coverCheck (s : Shape) (i : State s) : Bool :=
   let et := word s i
   let ans := answers s i
   if strategy s i = 0 then
-    coversRec et (ans.map fun a => ([], KempeProfileCertificate.answerWord (word s) a)) []
+    false
   else if strategy s i = 9 then
     KempeChordMasks.coverCheck et (ans.map (KempeProfileCertificate.answerWord (word s)))
+  else if 10 ≤ strategy s i then
+    KempeAnchorProjection.coverCheck et (anchorPattern (strategy s i))
+      (ans.map (KempeProfileCertificate.answerWord (word s)))
   else
     let anchor := strategy s i - 1
     decide (anchor ≤ et.length ∧ ((et.rotate anchor).headD 0).hi = true) &&
@@ -76,20 +88,22 @@ theorem coverCheck_sound (s : Shape) (i : State s) (h : coverCheck s i = true)
       matchg [] (KempeProfileCertificate.answerWord (word s) a) gram := by
   unfold coverCheck at h
   split at h
-  · obtain ⟨_, hmem, hmatch⟩ := coversRec_sound _ _ [] h gram hm
-    obtain ⟨a, hamem, rfl⟩ := List.mem_map.mp hmem
-    exact ⟨a, hamem, hmatch⟩
+  · simp at h
   · split at h
     · obtain ⟨t, ht, hmatch⟩ := KempeChordMasks.coverCheck_sound _ _ h gram hm
       obtain ⟨a, ha, rfl⟩ := List.mem_map.mp ht
       exact ⟨a, ha, hmatch⟩
-    · rw [Bool.and_eq_true] at h
-      obtain ⟨guard, allAnswers⟩ := h
-      obtain ⟨bound, high⟩ := of_decide_eq_true guard
-      obtain ⟨t, ht, hmatch⟩ := KempeChordExchange.answer_exists _ _ gram bound high hm
-      obtain ⟨a, ha, heq⟩ := List.any_eq_true.mp (List.all_eq_true.mp allAnswers t ht)
-      refine ⟨a, ha, ?_⟩
-      simpa only [of_decide_eq_true heq] using hmatch
+    · split at h
+      · obtain ⟨t, ht, hmatch⟩ := KempeAnchorProjection.coverCheck_sound _ _ _ h gram hm
+        obtain ⟨a, ha, rfl⟩ := List.mem_map.mp ht
+        exact ⟨a, ha, hmatch⟩
+      · rw [Bool.and_eq_true] at h
+        obtain ⟨guard, allAnswers⟩ := h
+        obtain ⟨bound, high⟩ := of_decide_eq_true guard
+        obtain ⟨t, ht, hmatch⟩ := KempeChordExchange.answer_exists _ _ gram bound high hm
+        obtain ⟨a, ha, heq⟩ := List.any_eq_true.mp (List.all_eq_true.mp allAnswers t ht)
+        refine ⟨a, ha, ?_⟩
+        simpa only [of_decide_eq_true heq] using hmatch
 
 /-- The rank depends on boundary length and the joint availability profile. -/
 def rank (s : Shape) (et : List Color) : ℕ :=
@@ -154,7 +168,7 @@ theorem structural_checked (s : Shape) (i : State s) (hs : strategy s i ≠ 0) :
 /-- The structural rule has actual consumers in each of the three cores. -/
 theorem structural_counts :
     ([0, 1, 2] : List Shape).map (fun s =>
-      ((List.finRange (count s)).filter fun i => strategy s i != 0).length) = [15, 52, 28] := by
+      ((List.finRange (count s)).filter fun i => strategy s i != 0).length) = [15, 52, 33] := by
   decide +kernel
 
 /-- The coupled rule has consumers in all three cores, retaining nine cases each. -/
@@ -163,6 +177,27 @@ theorem coupled_counts :
       ((List.finRange (count s)).filter fun i => strategy s i == 9).length) = [4, 7, 13] ∧
     (KempeChordMasks.earPairs 6).length = 9 := by
   decide +kernel
+
+/-- Five consumers retain 44 joint classifications from three shared signature sets. -/
+theorem anchor_counts :
+    ([0, 1, 2] : List Shape).map (fun s =>
+      ((List.finRange (count s)).filter fun i => decide (10 ≤ strategy s i)).length) =
+        [0, 0, 5] ∧
+    ([10, 11, 12] : List ℕ).map (fun p =>
+      (KempeAnchorProjection.signatures 8 (anchorPattern p)).length) = [7, 10, 10] ∧
+    ((List.finRange (count 2)).map fun i =>
+      if 10 ≤ strategy 2 i then
+        (KempeAnchorProjection.signatures
+          (KempeChordMasks.active (word 2 i)).length (anchorPattern (strategy 2 i))).length
+      else 0).sum = 44 := by
+  decide +kernel
+
+/-- Zero strategy is used only for genuine terminal witnesses, never a residual cover. -/
+theorem zero_terminal (s : Shape) (i : State s) (hs : strategy s i = 0) :
+    rank s (word s i) = 1 := by
+  by_contra hr
+  have h := checked s i
+  simp [check, hr, coverCheck, hs] at h
 
 /-- A concrete configuration-4 boundary on which the coupled exchange matters. -/
 def exampleInput : List Color := [c2, c2, c2, c3, c1, c1, c2, c3]

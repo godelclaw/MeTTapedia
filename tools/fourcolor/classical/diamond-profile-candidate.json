@@ -1,8 +1,8 @@
 {
   "evidence": "Finite candidate generation and program validation; Lean checks are separate.",
   "geometry_sha256": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
-  "generator_sha256": "fb75c73c399bac94bb669c97854c13f7da14f7471cdbb87563af0ba9ab08fbfe",
-  "data_sha256": "28d36b25681868d0456ccf12e5fcc9b29468d34dbb6d2055605f4e7e657c340d",
+  "generator_sha256": "83ce8f395a7be7491c84a18150fc1d92faa2ca6cf00913488a3d6d6ea3b7526f",
+  "data_sha256": "1fc7e5b374a345951db895cd36e3c2a88632686a2b079f710aa11bb47844ae8b",
   "profile": "boundary length plus joint available-colour sets, modulo colour names and centre/tip exchanges",
   "profiles": 126,
   "ranked_profiles": 92,
@@ -18,9 +18,9 @@
     92
   ],
   "maximum_descent_stages": 6,
-  "maximum_answers": 4,
+  "maximum_answers": 5,
   "states": 236,
-  "answers": 289,
+  "answers": 291,
   "cores": [
     {
       "configuration": 1,
@@ -32,6 +32,8 @@
       "terminal_states": 16,
       "uniform_chord_states": 11,
       "uniform_two_ear_states": 4,
+      "joint_anchor_states": 0,
+      "joint_anchor_classifications": 0,
       "residual_finite_cover_states": 0
     },
     {
@@ -44,6 +46,8 @@
       "terminal_states": 39,
       "uniform_chord_states": 45,
       "uniform_two_ear_states": 7,
+      "joint_anchor_states": 0,
+      "joint_anchor_classifications": 0,
       "residual_finite_cover_states": 0
     },
     {
@@ -56,13 +60,32 @@
       "terminal_states": 81,
       "uniform_chord_states": 15,
       "uniform_two_ear_states": 13,
-      "residual_finite_cover_states": 5
+      "joint_anchor_states": 5,
+      "joint_anchor_classifications": 44,
+      "residual_finite_cover_states": 0
     }
   ],
   "uniform_chord_states": 71,
   "uniform_two_ear_states": 24,
   "two_ear_pair_classifications": 216,
-  "residual_finite_cover_states": 5,
+  "joint_anchor_states": 5,
+  "joint_anchor_classifications": 44,
+  "joint_anchor_patterns": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      1,
+      2
+    ]
+  ],
+  "residual_finite_cover_states": 0,
   "scope": "Three finite core shapes. No longer-fan repair, geometric coverage or executable exterior recolouring is asserted.",
-  "elapsed_seconds": 3.134
+  "elapsed_seconds": 2.343
 }

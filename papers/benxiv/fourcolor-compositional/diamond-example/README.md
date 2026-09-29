@@ -256,7 +256,7 @@ forgetting colour names and allowing exchanges of the centres or of the tips.
 It also retains boundary length: dropping that information did not support
 the candidate descent. The generated finite data contain 92 ranked profile
 types, including 51 terminal types and 41 nonterminal types. There are 236
-trace representatives and 289 answer references, with at most six strict
+trace representatives and 291 answer references, with at most six strict
 rank decreases before a terminal. This measures proof descent, not physical
 Kempe-chain swaps.
 
@@ -300,20 +300,41 @@ ports**; this certificate makes no claim for an arbitrary active-port count.
 Each application retains nine disjoint-ear pair classifications, 216 in total.
 These are separate from the finite ranks and answer references.
 
-| Core | Nonterminal representatives | Single-chord law | Coupled two-ear law | Residual finite covers |
-| --- | ---: | ---: | ---: | ---: |
-| Configuration 1 | 15 | 11 | 4 | 0 |
-| Configuration 2 | 52 | 45 | 7 | 0 |
-| Configuration 4 | 33 | 15 | 13 | 5 |
+The [joint-anchor projection][anchor-projection] handles the last five cases:
 
-The consumer counts are kernel checked in `structural_counts` and
-`coupled_counts`. Original chromogram-cover obligations fall from 100 to five,
-while the retained local classifications are counted explicitly. This removes
-no additional whole configuration certificate. The answer-reference count
-increases from 265 to 289; no size or runtime saving is claimed.
-The longer-fan obstruction remains unaffected.
-The shared decreasing rank composes the structural and residual steps; the
-remaining finite covers still contribute to the complete core repair.
+1. Give both ends of each exterior chord the same label. An anchor observes
+   the complete mask of its chord. Retain those masks jointly, including when
+   two anchors observe the same chord; discard all other chord identities.
+2. Two exteriors with the same projected signature offer the same exchanges
+   of one selected chord or the union of two. A general induction proves that
+   every such mask preserves the original exterior. The proof works at any
+   active-port count, with fixed-colour ports reinserted by mask transport.
+3. Classify the joint signatures of the chosen anchors. In the five concrete
+   eight-active-port cases, each class has an accepted answer whose joint
+   profile is terminal. The interior solver reconstructs the actual colouring.
+
+With ports numbered from one, anchors `(1,2)` have seven signatures, `(1,5)`
+have ten, and `(1,2,3)` have ten. The five consumers use respectively two, two,
+and one instances of those patterns: **44 finite classifications remain**.
+The classifier generates balanced unsigned skeletons and identifies equal
+projections; enumeration has not disappeared. The 14 eight-port skeletons
+are reduced to the seven or ten distinctions observed by each anchor pattern.
+
+| Core | Nonterminal representatives | Single chord | Coupled ears | Joint anchors | Original covers remaining |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Configuration 1 | 15 | 11 | 4 | 0 | 0 |
+| Configuration 2 | 52 | 45 | 7 | 0 | 0 |
+| Configuration 4 | 33 | 15 | 13 | 5 | 0 |
+
+The consumer counts are kernel checked in `structural_counts`, `coupled_counts`
+and `anchor_counts`. `zero_terminal` verifies that zero strategy is used only
+for genuine terminal witnesses. The local repair no longer calls the original
+`coversRec` checker or its soundness theorem. Finite ranks, partner targets,
+216 ear-pair classifications and 44 joint-anchor classifications remain.
+This removes no additional whole configuration certificate. Answer references
+increase from 289 to 291, with at most five per representative; no size,
+runtime or net primitive-check reduction is claimed. The longer-fan obstruction
+remains unaffected. All three kinds of step compose through the shared rank.
 
 There is a concrete coupled example in `coupled_example`. On the boundary
 trace `22231123`, take the disjoint cyclic ears at ports 2–3 and 8–1, with ports
@@ -336,18 +357,19 @@ evaluated together.
 transport the ordered rings, and validate the reference contracts. The complete
 proof supplies strict reduction and classical geometric coverage.
 
-This is a bounded profile explanation of three core shapes, now using an
-unbounded single-chord law and a six-active-port coupled rule. The residual Kempe cover
-checker and ranked-certificate principle are reused from the reference proof;
-the remaining finite cover table is explicit. Repair for these inputs can
+This is a bounded profile explanation of three core shapes, using a general
+single-chord law, a six-active-port coupled rule and general joint-anchor
+projection. The ranked-certificate principle is reused from the reference
+proof; the projected classification and rank data remain finite. Repair for these inputs can
 descend using this particular joint observable and can reconstruct genuine
 colourings. Boundary length separates the three shapes, so the rank table does
 not by itself prove a law independent of ring size. It also does not assert
 that these are all repairable eight-port traces.
 
-The [nineteen-root audit][profile-audit] excludes the original configuration 1,
+The [twenty-five-root audit][profile-audit] excludes the original configuration 1,
 2 and 4 certificates, the former diamond repair bodies, global Kempe fixed-point
-computations and the complete theorem from the new local proofs. The complete
+computations, `coversRec` and its soundness theorem, and the complete theorem
+from the new local proofs. The complete
 endpoint audit requires the replacement proofs. All 633 configurations remain;
 630 original certificate dependencies are retained. No reduction in certificate
 bytes or kernel time is claimed. [Measurements][profile-measurements] record
@@ -583,3 +605,4 @@ excludes configuration 1's original certificate.
 [profile-measurements]: ../../../../tools/fourcolor/classical/diamond-profile-measurements.json
 [chord]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeChordExchange.lean
 [chord-masks]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeChordMasks.lean
+[anchor-projection]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeAnchorProjection.lean

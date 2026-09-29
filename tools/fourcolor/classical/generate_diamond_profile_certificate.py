@@ -6,15 +6,16 @@ boundary length and the four joint available-colour sets, modulo colour
 renaming and exchanges within the two centres or the two tips. The output
 contains finite proof data; theorem validity requires the separate Lean check.
 Where possible, a single-chord exchange supplies a uniform chromogram cover;
-a coupled two-ear law handles six-active-port cases. Only residual states
-retain individual finite-cover obligations. Both rules keep explicit partner
-or ear-pair classifications and finite rank checks.
+a coupled two-ear law handles six-active-port cases. Joint anchor projections
+handle the remaining states. All three rules retain finite partner/signature
+classifications and rank checks; no case-free core theorem is asserted.
 """
 
 import argparse
 from collections import defaultdict
+from functools import lru_cache
 from hashlib import sha256
-from itertools import product
+from itertools import combinations, product
 import json
 from pathlib import Path
 import time
@@ -114,6 +115,44 @@ def two_ear_cases(word):
                 choices.append(tuple(answer))
             result.append(choices)
     assert len(result) == 9
+    return result
+
+
+ANCHOR_PATTERNS = ((0, 1), (0, 4), (0, 1, 2))
+
+
+@lru_cache(None)
+def noncrossing_pairings(size, start=0):
+    """Catalan decomposition, independent of Lean's stack-labelled enumeration."""
+    if size == 0:
+        return ((),)
+    return tuple(((start, start + j),) + inside + outside
+                 for j in range(1, size, 2)
+                 for inside in noncrossing_pairings(j - 1, start + 1)
+                 for outside in noncrossing_pairings(size - j - 1, start + j + 1))
+
+
+def anchor_cases(word, anchors):
+    """Keep the complete-chord mask of each anchor, including shared chords."""
+    slots = [i for i, c in enumerate(word) if c != 1]
+    assert all(a < len(slots) for a in anchors)
+    signatures, result = set(), []
+    for pairs in noncrossing_pairings(len(slots)):
+        signature = tuple(tuple(j in next(e for e in pairs if a in e)
+                                for j in range(len(slots))) for a in anchors)
+        if signature in signatures:
+            continue
+        signatures.add(signature)
+        masks = signature + tuple(tuple(a or b for a, b in zip(m1, m2))
+                                  for m1, m2 in combinations(signature, 2))
+        choices = []
+        for mask in masks:
+            answer = list(word)
+            for i, bit in zip(slots, mask):
+                if bit:
+                    answer[i] ^= 1
+            choices.append(tuple(answer))
+        result.append(choices)
     return result
 
 
@@ -243,28 +282,21 @@ def main():
                 max_answers = max(max_answers, len(answers))
                 continue
             options = []
-            for perm in PERMS:
-                oriented = apply_perm(w, perm)
-                grams = by_word[oriented]
-                covered = defaultdict(set)
-                for g, words in enumerate(grams):
-                    for answer in words:
-                        if 0 < ranks.get(keys[answer], 0) < r:
-                            covered[answer].add(g)
-                pending, selected = set(range(len(grams))), []
-                while pending:
-                    answer = min(covered, key=lambda a: (
-                        -len(covered[a] & pending), ranks[keys[a]], a), default=None)
-                    if answer is None or not covered[answer] & pending:
-                        break
-                    selected.append(answer)
-                    pending -= covered[answer]
-                if not pending:
-                    options.append((len(selected), perm, oriented, selected))
+            for pattern, anchors in enumerate(ANCHOR_PATTERNS):
+                for perm in PERMS:
+                    oriented = apply_perm(w, perm)
+                    if max(anchors) >= sum(c != 1 for c in oriented):
+                        continue
+                    cases = anchor_cases(oriented, anchors)
+                    selected = greedy_cover(cases, lambda a: 0 < ranks.get(keys[a], 0) < r)
+                    if selected:
+                        options.append((len(selected), len(cases), pattern,
+                                        perm, oriented, selected))
             assert options
-            _, _, oriented, answers = min(options)
+            _, _, pattern, _, oriented, answers = min(options)
             assert keys[oriented] == keys[w]
-            steps.append((oriented, answers, 0))
+            assert all(any(a in words for a in answers) for words in by_word[oriented])
+            steps.append((oriented, answers, 10 + pattern))
             max_answers = max(max_answers, len(answers))
         encoded = []
         for oriented, answers, strategy in steps:
@@ -294,12 +326,18 @@ def main():
                             state_orbits=len(encoded), terminal_states=sum(not a for _, a, _ in encoded),
                             uniform_chord_states=sum(0 < s < 9 for _, _, s in encoded),
                             uniform_two_ear_states=sum(s == 9 for _, _, s in encoded),
+                            joint_anchor_states=sum(s >= 10 for _, _, s in encoded),
+                            joint_anchor_classifications=sum(
+                                len(anchor_cases(w, ANCHOR_PATTERNS[s - 10]))
+                                for w, _, s in encoded if s >= 10),
                             residual_finite_cover_states=sum(bool(a) and not s for _, a, s in encoded)))
         records.extend(encoded)
     assert [r['uniform_chord_states'] for r in reports] == [11, 45, 15]
     assert [r['uniform_two_ear_states'] for r in reports] == [4, 7, 13]
-    assert [r['residual_finite_cover_states'] for r in reports] == [0, 0, 5]
-    words = [''.join(map(str, w)).ljust(8, '0') + str(s) for w, _, s in records]
+    assert [r['joint_anchor_states'] for r in reports] == [0, 0, 5]
+    assert [r['joint_anchor_classifications'] for r in reports] == [0, 0, 44]
+    assert [r['residual_finite_cover_states'] for r in reports] == [0, 0, 0]
+    words = [''.join(map(str, w)).ljust(8, '0') + base36(s, 1) for w, _, s in records]
     answers = [str(len(ans)) + ''.join(base36(i, 2) + str(p) for i, p in ans).ljust(3 * max_answers, '0')
                for _, ans, _ in records]
     rank_words = [base36(p, 4) + str(ranks[p]) for p in sorted(ranks)]
@@ -307,10 +345,11 @@ def main():
 # Shared diamond profile certificate data
 
 Generated by `generate_diamond_profile_certificate.py`. The first eight word
-digits use colours 0--3, padded with zeros. The ninth digit is zero for a finite
-cover, 1--8 for one plus a chord anchor, or 9 for the coupled two-ear law. Answer indices and profile keys use
-base 36. These are untrusted data until the profile, graph witnesses, structural
-chord/ear answers and residual finite covers have been checked in Lean.
+digits use colours 0--3, padded with zeros. The ninth base-36 digit is zero for a
+terminal, 1--8 for one plus a chord anchor, 9 for coupled ears, or A--C for joint
+anchor patterns. Answer indices and profile keys also use base 36. These are
+untrusted data until the profile, actual graph witnesses, structural answer
+classifications and rank descent have been checked in Lean.
 -/
 
 namespace FourColor.DiamondProfileData
@@ -334,6 +373,9 @@ namespace FourColor.DiamondProfileData
                   uniform_chord_states=sum(0 < s < 9 for _, _, s in records),
                   uniform_two_ear_states=sum(s == 9 for _, _, s in records),
                   two_ear_pair_classifications=9 * sum(s == 9 for _, _, s in records),
+                  joint_anchor_states=sum(s >= 10 for _, _, s in records),
+                  joint_anchor_classifications=sum(r['joint_anchor_classifications'] for r in reports),
+                  joint_anchor_patterns=ANCHOR_PATTERNS,
                   residual_finite_cover_states=sum(bool(a) and not s for _, a, s in records),
                   scope='Three finite core shapes. No longer-fan repair, geometric coverage or executable exterior recolouring is asserted.',
                   elapsed_seconds=round(time.monotonic() - start, 3))

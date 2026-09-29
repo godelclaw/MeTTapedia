@@ -34,15 +34,20 @@
     "uniform_schemes_replacing_multiple_target_certificates": 0,
     "finite_joint_profile_certificate_schemes": 1,
     "finite_joint_profile_trace_representatives": 236,
-    "finite_joint_profile_answer_references": 289,
+    "finite_joint_profile_answer_references": 291,
     "uniform_chord_exchange_schemes": 1,
     "finite_chromogram_cover_obligations_before_chord_law": 100,
-    "finite_chromogram_cover_obligations_remaining": 5,
+    "finite_chromogram_cover_obligations_remaining": 0,
     "finite_chromogram_cover_obligations_replaced_by_chord_law": 71,
     "coupled_active_mask_exchange_schemes": 1,
     "shared_six_active_port_planar_facts": 1,
     "finite_chromogram_cover_obligations_replaced_by_two_ear_law": 24,
-    "two_ear_pair_classifications_retained": 216
+    "two_ear_pair_classifications_retained": 216,
+    "joint_anchor_projection_schemes": 1,
+    "finite_chromogram_cover_obligations_replaced_by_anchor_projection": 5,
+    "joint_anchor_classifications_retained": 44,
+    "distinct_joint_anchor_signature_sets": 3,
+    "local_profile_original_cover_checker_dependencies": 0
   },
   "experiments": [
     {
@@ -266,7 +271,7 @@
       "terminal_profiles": 51,
       "nonterminal_profiles": 41,
       "trace_representatives": 236,
-      "answer_references": 289,
+      "answer_references": 291,
       "maximum_descent_stages": 6,
       "proper_trace_inputs": [
         183,
@@ -283,7 +288,7 @@
       "catalogue_entries_removed": 0,
       "case_free_broader_core_family_theorems": 0,
       "credited_compression": true,
-      "scope": "One bounded profile explanation retaining boundary length; configuration 1 also inherits repair through the general split law. The reference ranked-answer principle is reused, and a uniform chord exchange handles 71 covers and a coupled six-active-port rule handles 24 more. Finite profile ranks, partner targets, 216 ear-pair classifications and five residual covers remain. No unrestricted fan repair, new coverage, byte saving or runtime saving is asserted."
+      "scope": "One bounded profile explanation retaining boundary length; configuration 1 also inherits repair through the general split law. The reference ranked-answer principle is reused. Single chords handle 71 covers, coupled ears 24, and joint anchor projection five. Finite ranks, partner targets, 216 ear-pair classifications and 44 joint-anchor classifications remain. No unrestricted fan repair, new coverage, byte saving or runtime saving is asserted."
     },
     {
       "name": "single-chord exchange across arbitrary boundary lengths",
@@ -339,9 +344,57 @@
       "certificate_bytes_saved": 0,
       "kernel_seconds_saved": 0,
       "scope": "Masks retain equal exchange bits at both ends of each chord and reconstruct a trace for the same exterior, at arbitrary boundary length. The two-ear consumer has exactly six active ports and arbitrary intervening fixed ports. Its planar lemma is checked once for all six-step Boolean skeletons; applications retain nine disjoint-ear pair classifications each. This shares a classical planar principle; it is not a case-free core theorem or an additional geometric coverage result."
+    },
+    {
+      "name": "joint anchor projection with same-exterior reconstruction",
+      "record": "diamond-profile-measurements.json",
+      "status": "Generic projection soundness, actual terminal consumers and absence of the original local cover checker are kernel checked.",
+      "configurations": [
+        4
+      ],
+      "joint_anchor_states": 5,
+      "anchor_patterns": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "distinct_signatures_by_pattern": [
+        7,
+        10,
+        10
+      ],
+      "pattern_uses": [
+        2,
+        2,
+        1
+      ],
+      "joint_signature_classifications_retained": 44,
+      "finite_chromogram_cover_obligations_before": 5,
+      "finite_chromogram_cover_obligations_after": 0,
+      "original_local_checker_dependencies_absent": [
+        "FourColor.coversRec",
+        "FourColor.coversRec_sound"
+      ],
+      "answer_references_before": 289,
+      "answer_references_after": 291,
+      "additional_reference_certificate_dependencies_replaced": 0,
+      "catalogue_entries_removed": 0,
+      "certificate_bytes_saved": 0,
+      "kernel_seconds_saved": 0,
+      "scope": "At arbitrary boundary length, projected masks at selected anchors preserve their joint chord membership and reconstruct one- or two-chord exchanges through the SAME exterior. The five consumers have eight active ports and finite signature/target classifications. Balanced unsigned skeleton enumeration remains in the classifier; no net primitive-check reduction, case-free broader core theorem or geometric coverage is claimed."
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, leaving five original covers and retaining 216 ear-pair classifications plus one shared finite planar fact; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -721,7 +774,12 @@
       "FourColor.DiamondProfileCertificate.coverCheck_sound",
       "FourColor.KempeChordMasks.recolor_matches",
       "FourColor.KempeChordMasks.six_checked",
-      "FourColor.KempeChordMasks.coverCheck_sound"
+      "FourColor.KempeChordMasks.coverCheck_sound",
+      "FourColor.KempeAnchorProjection.coverCheck_sound"
+    ],
+    "local_profile_dependencies_absent": [
+      "FourColor.coversRec",
+      "FourColor.coversRec_sound"
     ]
   }
 }

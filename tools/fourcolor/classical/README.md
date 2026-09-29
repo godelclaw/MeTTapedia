@@ -795,7 +795,7 @@ python3 tools/fourcolor/classical/generate_diamond_profile_certificate.py \
 
 The program report is candidate evidence. The kernel-checked consumer and its
 integration receipts are recorded in `diamond-profile-measurements.json`.
-There are 92 ranked profile types, 236 trace representatives and 289 answer
+There are 92 ranked profile types, 236 trace representatives and 291 answer
 references. All 183 proper six-port traces, all 546 proper seven-port traces,
 and all 108 inputs of the eight-port joint contract are covered. The eight-port
 certificate covers 684 traces in total; it does not claim to cover every
@@ -812,17 +812,27 @@ ports. The separate finite `six_checked` theorem supplies two disjoint cyclic
 ears for every balanced six-active-port skeleton. Either ear or both may be
 exchanged, so their joint choice is retained. There are nine local ear-pair
 classifications per consumer, 216 in total; finite ranks and target references
-also remain. The remaining five original chromogram covers belong to
-configuration 4. No byte or runtime saving is claimed.
+also remain. Joint anchor projection handles the last five states in
+configuration 4. It retains only the complete masks seen at two or three
+selected anchors, including shared chords, then permits one mask or the union
+of two. Generic `KempeAnchorProjection.labels_paired` and `paired_or` prove
+reconstruction through the same exterior at arbitrary boundary length.
+The three concrete patterns have 7, 10 and 10 distinct signatures at eight
+active ports; their five uses retain 44 local classifications. The classifier
+still generates balanced unsigned skeletons and identifies equal projections.
+No byte, runtime or net primitive-check reduction is claimed.
 
 The generator independently checks each chosen structural step against every
-matching chromogram. The ninth word-record digit is 1--8 for a chord anchor
-plus one, 9 for the coupled rule, or zero for the residual checker or terminal.
-`structural_counts` and `coupled_counts` kernel-check the consumer counts.
+matching chromogram. The ninth base-36 word-record digit is 1--8 for a chord
+anchor plus one, 9 for coupled ears, A--C for joint anchor patterns, or zero for
+a terminal. `structural_counts`, `coupled_counts` and `anchor_counts` check the
+consumer counts. `zero_terminal` excludes a residual finite-cover branch.
 No additional whole configuration certificate or catalogue entry is removed.
 
-The ranked-answer principle and chromogram-cover checker are reused from the
-reference development. Actual terminal graph witnesses use the shared diamond
+The ranked-answer principle is reused from the reference development. The
+local proof no longer depends on the original `coversRec` checker or its
+soundness theorem; projected classifications, target references and ranks
+remain explicit finite data. Actual terminal graph witnesses use the shared diamond
 summary. Ordered-ring transport and the reference contract decoder connect
 the result to strict reduction in the complete proof. The complete endpoint
 audit excludes the original configuration 1, 2 and 4 certificates; 630 original

@@ -220,7 +220,7 @@ validating the specified contract. Its eight-root audit excludes configuration
 The current complete assembly retains this split-transfer law with a new base.
 `DiamondProfile` solves both tips against the same centre pair.
 `DiamondProfileCertificate` checks 236 trace representatives using a shared
-rank on 92 joint availability profiles, including boundary length; 289 answer
+rank on 92 joint availability profiles, including boundary length; 291 answer
 references establish at most six strict descent stages. The terminal solver
 constructs real interior witnesses. `KempeChordExchange.answer_exists` proves
 that exchanging a chosen chord's two ends preserves an arbitrary matching
@@ -229,16 +229,22 @@ boundary-length-independent law handles 71 of the 100 nonterminal
 representatives. `KempeChordMasks` reconstructs simultaneous exchanges through
 the same exterior after eliminating fixed-colour ports. Its shared finite
 two-ear fact for six active ports handles another 24 representatives, with
-arbitrarily many intervening fixed ports. Five finite chromogram covers remain.
+arbitrarily many intervening fixed ports. `KempeAnchorProjection` handles the
+last five cases by retaining the joint masks observed by selected anchors.
+Its reconstruction proof is independent of boundary length; the five consumers
+retain 44 finite joint-signature classifications. There are no remaining calls
+to the old `coversRec` checker in the local profile proof.
 Partner ranks, target references and 216 local ear-pair classifications remain
 checked finite data; `structural_counts` and `coupled_counts` verify the actual
-consumers. The finite planar fact is checked once for all six-step Boolean
+consumers; `anchor_counts` checks the joint signatures and their uses.
+The finite planar fact is checked once for all six-step Boolean
 bracket words, independently of colours and configurations. No theorem for an
 arbitrary number of active ports is claimed for this two-ear certificate.
 `DiamondProfileFamilyRepair` supplies the
 required inputs, and `DiamondProfileReducibility` connects the law to all three
-actual configurations. Its nineteen-root audit excludes the original three
-certificates and the earlier repair bodies. The complete assembly therefore
+actual configurations. Its twenty-five-root audit excludes the original three
+certificates, the earlier repair bodies and `coversRec` with its soundness
+theorem. The complete assembly therefore
 replaces three original certificate dependencies. This remains a finite core
 certificate; no uniform repair for longer fans or new geometric coverage is
 asserted. See [profile measurements](../../tools/fourcolor/classical/diamond-profile-measurements.json).

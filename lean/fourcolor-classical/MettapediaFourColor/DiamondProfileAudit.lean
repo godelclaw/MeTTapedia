@@ -9,8 +9,10 @@ witnesses and the proved reference contraction decoder. The three original
 configuration certificates and the earlier diamond repair bodies are excluded.
 The single-chord law is independent of the catalogue and finite-cover checker;
 the coupled active-mask law retains the same exterior. Their consumer counts
-and 216 local ear-pair classifications are kernel checked. Five residual finite
-covers remain explicit. The six-active-port skeleton fact is a shared finite
+and 216 local ear-pair classifications are kernel checked. Joint anchor projection
+handles the last five states with 44 retained classifications. The local proof
+no longer depends on `coversRec` or its soundness theorem. The six-active-port
+skeleton fact is a shared finite
 combinatorial lemma, separate from its unrestricted mask-transport theorem.
 -/
 
@@ -31,9 +33,21 @@ run_cmd do
       ``KempeChordMasks.earPairs, ``KempeChordMasks.jointMasks]),
     (``KempeChordMasks.coverCheck_sound, [``KempeChordMasks.recolor_matches,
       ``KempeChordMasks.matched_skeleton, ``KempeChordMasks.six_checked]),
+    (``KempeAnchorProjection.labels_paired, [``KempeAnchorProjection.labels,
+      ``KempeChordMasks.paired]),
+    (``KempeAnchorProjection.paired_or, [``KempeChordMasks.paired]),
+    (``KempeAnchorProjection.signature_mem, [``KempeAnchorProjection.mem_words,
+      ``KempeAnchorProjection.project]),
+    (``KempeAnchorProjection.coverCheck_sound, [``KempeAnchorProjection.labels_paired,
+      ``KempeAnchorProjection.paired_or, ``KempeAnchorProjection.signature_mem,
+      ``KempeChordMasks.recolor_matches]),
     (``DiamondProfileCertificate.structural_counts, [``DiamondProfileCertificate.strategy]),
     (``DiamondProfileCertificate.coupled_counts, [``DiamondProfileCertificate.strategy,
       ``KempeChordMasks.earPairs]),
+    (``DiamondProfileCertificate.anchor_counts, [``DiamondProfileCertificate.anchorPattern,
+      ``KempeAnchorProjection.signatures]),
+    (``DiamondProfileCertificate.zero_terminal, [``DiamondProfileCertificate.checked,
+      ``DiamondProfileCertificate.coverCheck]),
     (``DiamondProfileCertificate.coupled_example, [``DiamondProfileCertificate.example_checked,
       ``KempeChordMasks.recolor_matches, ``DiamondProfile.good_supports]),
     (``DiamondProfileCertificate.structural_checked, [``DiamondProfileCertificate.checked0,
@@ -42,6 +56,7 @@ run_cmd do
       ``Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.Summary]),
     (``DiamondProfileCertificate.repair, [``KempeProfileCertificate.sound_of_cover,
       ``KempeChordExchange.answer_exists, ``KempeChordMasks.coverCheck_sound,
+      ``KempeAnchorProjection.coverCheck_sound,
       ``DiamondProfileCertificate.coverCheck_sound,
       ``DiamondProfileCertificate.checked0, ``DiamondProfileCertificate.checked1,
       ``DiamondProfileCertificate.checked2, ``DiamondProfile.good_supports,
@@ -71,7 +86,8 @@ run_cmd do
     `FourColor.kempeTreeDepth, `FourColor.CompositionalComplete, `FourColor.ClassicalAssembly,
     `FourColor.fourColorTheorem, `FourColor.reducibility, `FourColor.reducible_all,
     `FourColor.DiamondSplitRepair.base_repair, `FourColor.DiamondBoundaryRepair.repair,
-    `FourColor.DiamondJointRepair.contract_repair]
+    `FourColor.DiamondJointRepair.contract_repair,
+    `FourColor.coversRec, `FourColor.coversRec_sound]
   let mut inspected : NameSet := {}
   for (root, required) in roots do
     let mut seen : NameSet := {}
@@ -94,7 +110,8 @@ run_cmd do
           root == ``KempeChordExchange.answer_exists ||
           root == ``KempeChordMasks.recolor_matches ||
           root == ``KempeChordMasks.six_checked ||
-          root == ``KempeChordMasks.coverCheck_sound) &&
+          root == ``KempeChordMasks.coverCheck_sound ||
+          (`FourColor.KempeAnchorProjection).isPrefixOf root) &&
           ([`FourColor.Bulk, `FourColor.DiamondConfigurations,
             `FourColor.DiamondContract].any (·.isPrefixOf name) || name == ``cfmap ||
               name == ``coversRec || name == ``coversRec_sound) then

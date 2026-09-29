@@ -47,12 +47,17 @@ and transfers the former to configuration 1. All three original certificate
 dependencies are absent. The shared rank uses joint available-colour sets and
 boundary length. A structural single-chord exchange theorem now answers every
 exterior for 71 of its 100 nonterminal representatives. A shared two-ear law
-handles another 24, leaving five individual finite chromogram covers. It
-retains simultaneous exchanges through the same exterior: six active ports
-can have arbitrarily many fixed-colour ports between them. The mask-transport
+handles another 24. Joint anchor projection handles the final five, so the
+local proof no longer uses the original chromogram-cover checker. The two-ear
+rule retains simultaneous exchanges through the same exterior: its six active
+ports can have arbitrarily many fixed-colour ports between them. The mask-transport
 theorem has no width bound; the two-ear fact is checked once for the finite
 six-active-port skeletons. Joint-profile ranks, partner targets and 216 local
-ear-pair classifications remain finite data.
+ear-pair classifications remain finite data, as do 44 projected joint-anchor
+classifications. The projection keeps the complete chord masks at selected
+anchors, including their aliases, and forgets unobserved chords. Its general
+reconstruction law retains the same exterior. This is a finite core proof
+using shared boundary laws; no case-free broader core theorem is asserted.
 A broader core-family theorem and geometric coverage remain open.
 
 A bounded [replacement experiment](diamond-example/README.md#testing-a-different-strict-replacement)
@@ -220,9 +225,10 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Reference configuration certificate dependencies retained / replaced | 630 / 3 |
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
-| Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 289 answers |
-| Original chromogram-cover obligations | 100 → 5: the chord law handles 71 representatives and the coupled two-ear law handles 24 |
+| Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
+| Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |
+| Retained joint-anchor classifications | 44, using three shared signature sets of sizes 7, 10 and 10 |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 
@@ -239,9 +245,10 @@ independent-computation savings are different metrics.
 
 The split transfer establishes a first pair sharing one base repair. The
 joint-profile certificate now gives a common finite core explanation including
-the coupled configuration-4 case. The next milestone is a structural law that
-replaces further finite cover obligations and applies to a justified broader
-core family, while preserving the completed theorem. The
+the coupled configuration-4 case. Three shared boundary laws now supply all
+its exterior-cover premises, with finite profile ranks and local classifications
+still explicit. The next milestone is a justified broader core family and its
+recognition or geometric supply, while preserving the completed theorem. The
 current triangle-subdivision work connects exact two-branch colouring semantics
 to the actual configurations. The integration obligations are:
 
@@ -260,16 +267,17 @@ to the actual configurations. The integration obligations are:
    certificate now covers all three cores, choosing both centres jointly and
    constructing the tips against that same choice. A general chord-exchange
    rule handles 71 nonterminal representatives; coupled two-ear exchanges
-   handle 24 more, retaining 216 local pair classifications and five residual
-   finite covers. The latter rule has six active ports, with arbitrary fixed
-   ports reinserted by the general mask-transport theorem.
+   handle 24 more, retaining 216 local pair classifications. Joint anchor
+   projection handles the final five, retaining 44 classifications. The two-ear
+   fact has six active ports; the general mask and anchor-projection proofs
+   allow arbitrary width and reinsert the fixed ports.
    Its cover and input checks retain every required exterior alternative.
 3. **Integrated:** the complete assembly uses the shared profile proof for
    configurations 2 and 4. Configuration 1 inherits repair from 2 via the
    general split law, with actual witness reconstruction and the validated
    contract. The audit excludes all three original certificate dependencies.
    The profile still includes boundary length, finite partner targets and
-   residual chromogram answers;
+   projected signature classifications;
    this is not a proof for arbitrarily long insertion fans. The next task is
    further structural descent and a larger family with proved geometric supply.
 

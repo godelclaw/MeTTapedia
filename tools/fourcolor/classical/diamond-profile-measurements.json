@@ -1,6 +1,6 @@
 {
   "status": "kernel checked and consumed by complete endpoints",
-  "completed_utc": "2026-09-29T15:25:35.477654+00:00",
+  "completed_utc": "2026-09-29T15:59:45.473534+00:00",
   "toolchain": "leanprover/lean4:v4.34.0-rc2",
   "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
   "classical_gates": [
@@ -32,8 +32,8 @@
   "nonterminal_profiles": 41,
   "trace_representatives": 236,
   "terminal_representatives": 136,
-  "answer_references": 289,
-  "maximum_answers_per_state": 4,
+  "answer_references": 291,
+  "maximum_answers_per_state": 5,
   "maximum_strict_rank_descents": 6,
   "input_traces": [
     183,
@@ -61,14 +61,15 @@
     ],
     "kernel_nonterminal_and_cover_theorem": "FourColor.DiamondProfileCertificate.structural_checked",
     "finite_partner_targets_and_rank_checks_retained": true,
-    "frontend_seconds": 3.219,
+    "frontend_seconds": 3.198,
     "olean_bytes": 619336,
     "residual_finite_covers_after_single_chord_stage": 29,
     "kernel_count_theorems": [
       "FourColor.DiamondProfileCertificate.structural_counts",
-      "FourColor.DiamondProfileCertificate.coupled_counts"
+      "FourColor.DiamondProfileCertificate.coupled_counts",
+      "FourColor.DiamondProfileCertificate.anchor_counts"
     ],
-    "kernel_count_derivation": "Subtract coupled counts [4, 7, 13] from all structural counts [15, 52, 28] to obtain single-chord counts [11, 45, 15].",
+    "kernel_count_derivation": "Subtract coupled counts [4, 7, 13] and anchor counts [0, 0, 5] from all structural counts [15, 52, 33] to obtain single-chord counts [11, 45, 15].",
     "residual_covers_by_core_after_single_chord_stage": [
       4,
       7,
@@ -76,8 +77,8 @@
     ]
   },
   "profile_audit": {
-    "roots": 19,
-    "combined_dependency_declarations": 13749,
+    "roots": 25,
+    "combined_dependency_declarations": 13791,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -94,7 +95,11 @@
       "FourColor.DiamondJointRepair.contract_repair"
     ],
     "global_kempe_fixed_point_absent": true,
-    "complete_theorem_absent": true
+    "complete_theorem_absent": true,
+    "original_local_cover_checker_absent": [
+      "FourColor.coversRec",
+      "FourColor.coversRec_sound"
+    ]
   },
   "integration": {
     "catalogue_entries": 633,
@@ -107,42 +112,42 @@
     "configuration_catalogue_entries_removed": 0,
     "certificate_bytes_saved_claimed": 0,
     "kernel_seconds_saved_claimed": 0,
-    "prepared_dependency_hashes": 125,
-    "imported_public_declarations_audited": 125047
+    "prepared_dependency_hashes": 126,
+    "imported_public_declarations_audited": 125082
   },
-  "comparison_checkpoint": "2d215b0b7d4282f29089728e891f2ce5ab030c48",
+  "comparison_checkpoint": "de2262a7df85940ad0f25ba1b28fa1bee97c6f11",
   "comparison": {
-    "finite_chromogram_cover_obligations_before": 29,
-    "finite_chromogram_cover_obligations_after": 5,
-    "answer_references_before": 265,
-    "answer_references_after": 289,
-    "configuration_counts_unchanged": true,
-    "additional_ear_pair_classifications_retained": 216,
-    "shared_finite_planar_facts_added": 1
+    "finite_chromogram_cover_obligations_before": 5,
+    "finite_chromogram_cover_obligations_after": 0,
+    "answer_references_before": 289,
+    "answer_references_after": 291,
+    "additional_joint_anchor_classifications_retained": 44,
+    "distinct_joint_anchor_signature_sets": 3,
+    "configuration_counts_unchanged": true
   },
-  "family_gate_frontend_seconds": 418.763,
-  "profile_modules_frontend_seconds": 152.824,
-  "complete_gate_frontend_seconds": 29.529,
+  "family_gate_frontend_seconds": 420.497,
+  "profile_modules_frontend_seconds": 156.564,
+  "complete_gate_frontend_seconds": 30.296,
   "family_gate_maximum_sampled_single_lean_rss_mib": 10772,
-  "complete_gate_maximum_sampled_single_lean_rss_mib": 4617,
+  "complete_gate_maximum_sampled_single_lean_rss_mib": 4578,
   "memory_measurement_scope": "Maximum sampled individual Lean RSS, not aggregate memory.",
-  "data_source_bytes": 13933,
+  "data_source_bytes": 14673,
   "sources": [
     {
       "source": "tools/fourcolor/classical/generate_diamond_profile_certificate.py",
-      "source_sha256": "fb75c73c399bac94bb669c97854c13f7da14f7471cdbb87563af0ba9ab08fbfe"
+      "source_sha256": "83ce8f395a7be7491c84a18150fc1d92faa2ca6cf00913488a3d6d6ea3b7526f"
     },
     {
       "source": "tools/fourcolor/classical/diamond-profile-candidate.json",
-      "source_sha256": "64884996c9828c8d8f4467eb90ba1174ed669f8c11420981988d2eb3673e12a6"
+      "source_sha256": "7e54b22eb4ae6ae8f6520fa691b37537f5c480788c5a04950417a7bebb33d520"
     },
     {
       "source": "tools/fourcolor/classical/replay_family.py",
-      "source_sha256": "4136207d03b7c8d04480919f31195fb1651754ff48fbf57c0a6c506e89bd24ea"
+      "source_sha256": "9f68f7be88247f7a145042b1a954afbd4d822966ba37e0719d5be5bd9ea23cfe"
     },
     {
       "source": "tools/fourcolor/classical/replay_complete.py",
-      "source_sha256": "1362926c04637cdac737452eaa7ebefe7ea23e66e2e5fdd46e1fa6a7da40b1d1"
+      "source_sha256": "69bd82c7b20e4ad7716ed282001d4631d7f6de3d16590ff5d12871bfd46e732d"
     }
   ],
   "family_modules": [
@@ -150,7 +155,7 @@
       "module": "MettapediaFourColor.ExecutableConfiguration",
       "source_sha256": "54a033b54d91595a92616c2caaf5066b90300430008fb9ed03e329f016e295f5",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.063,
+      "frontend_wall_seconds": 2.036,
       "olean_bytes": 424736,
       "olean_sha256": "1ef0d8651050737c89cea7ed268386778bb1a889d1e00ebab77f139333e89336",
       "source": "lean/fourcolor-classical/MettapediaFourColor/ExecutableConfiguration.lean"
@@ -159,7 +164,7 @@
       "module": "MettapediaFourColor.ConfigurationTable",
       "source_sha256": "f9c600cb84f24398c1efdec09bf1e7aec4041ea351482f6343d0dd24bbae1e6b",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.872,
+      "frontend_wall_seconds": 1.854,
       "olean_bytes": 98216,
       "olean_sha256": "8b802051d707f350255e0bcca09e449375787e41b4e88f8b7e844da0ffc8ffee",
       "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationTable.lean"
@@ -168,7 +173,7 @@
       "module": "MettapediaFourColor.ConfigurationRealization",
       "source_sha256": "d3aa8700e218844b917fc8d2d362a4fc50995d1e77a906e86fa3a76fc0b9fabe",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.949,
+      "frontend_wall_seconds": 1.906,
       "olean_bytes": 216728,
       "olean_sha256": "5e29c5ec2221e907e1f4ebcf90a6e7e31e3a6223e8374ffed575a7b52ca1ab2b",
       "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationRealization.lean"
@@ -177,7 +182,7 @@
       "module": "MettapediaFourColor.ConfigurationFaceGraph",
       "source_sha256": "15b434756af441024b26a84c2d4b209ba05331b82c65e87cd69bcbf87f715a9b",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.006,
+      "frontend_wall_seconds": 1.986,
       "olean_bytes": 361192,
       "olean_sha256": "77c505955a69f5a1238042d0042f818a7fd7fbd81bf0609a932021b3fdc73900",
       "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationFaceGraph.lean"
@@ -186,7 +191,7 @@
       "module": "MettapediaFourColor.DiamondConfigurations",
       "source_sha256": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
       "exit_code": 0,
-      "frontend_wall_seconds": 13.917,
+      "frontend_wall_seconds": 13.865,
       "olean_bytes": 453368,
       "olean_sha256": "78fbceb436c0c47b4099b10f2ebd708c76f6abae93cbbe4416c073215f8c6202",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean"
@@ -195,7 +200,7 @@
       "module": "MettapediaFourColor.DiamondInsertion",
       "source_sha256": "5964a866e2d22aac1afbd87df4e325f747da821f7aafb1f4b9da43211eb0a994",
       "exit_code": 0,
-      "frontend_wall_seconds": 8.936,
+      "frontend_wall_seconds": 8.537,
       "olean_bytes": 235256,
       "olean_sha256": "3e4cf040fc18487a12f4c8e7b1d81097dd7e8f5a3722714cfdf4556a29a35f55",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertion.lean"
@@ -204,7 +209,7 @@
       "module": "MettapediaFourColor.DiamondInsertionGSLT",
       "source_sha256": "f893bf9378f61d1776e8ab40fa974dca879231cc5c5aece758816c2386da0355",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.759,
+      "frontend_wall_seconds": 3.67,
       "olean_bytes": 173256,
       "olean_sha256": "74bdb223608e4e8fc9d5a50f18afc190cea0dcb2dc69d060ca63eb0cf1ca8608",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionGSLT.lean"
@@ -213,7 +218,7 @@
       "module": "MettapediaFourColor.DiamondInsertionAudit",
       "source_sha256": "0079bcbd61637e44414f3c28f82356018ac1c48e13c3e99d4afac17e5ebd1ccf",
       "exit_code": 0,
-      "frontend_wall_seconds": 6.474,
+      "frontend_wall_seconds": 6.362,
       "olean_bytes": 3800,
       "olean_sha256": "b36c49ddc661781dcae7fb983831249e64969e7429dcd069e97359ac083e14bd",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionAudit.lean"
@@ -222,7 +227,7 @@
       "module": "MettapediaFourColor.DiamondBoundarySummary",
       "source_sha256": "69f0c9a93b205c0d6a396ac82a0752b5791a387e46b1ad64169e3ea432d1261d",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.703,
+      "frontend_wall_seconds": 5.619,
       "olean_bytes": 297472,
       "olean_sha256": "be1888701dee18a037d0862cf5dd05f3f1302fbae68e39f6768d285d7c3fb1c8",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondBoundarySummary.lean"
@@ -231,7 +236,7 @@
       "module": "MettapediaFourColor.DiamondBoundarySummaryAudit",
       "source_sha256": "2692bbc546660998f3b52f7bb4951bf35bbb254ee30e22c86999952b066a6169",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.293,
+      "frontend_wall_seconds": 4.297,
       "olean_bytes": 3632,
       "olean_sha256": "209bfb4c007303b2864f1411493e12ebfd8000a0ba39a5457664e1ae6c99331e",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondBoundarySummaryAudit.lean"
@@ -240,7 +245,7 @@
       "module": "MettapediaFourColor.ExecutableContract",
       "source_sha256": "e414f18034e3c0cf30ec7e1bfb97196e1c9c66d219e8f40587c572503cfcc063",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.088,
+      "frontend_wall_seconds": 2.021,
       "olean_bytes": 276816,
       "olean_sha256": "06bfa48cbf20c318d3ee2f707edeaecd38d7260828efbbe9753654237a52c160",
       "source": "lean/fourcolor-classical/MettapediaFourColor/ExecutableContract.lean"
@@ -249,7 +254,7 @@
       "module": "MettapediaFourColor.ConfigurationContract",
       "source_sha256": "97ee86efd728e2b5f5f76b82ed162db78115a1f30f202257166be5d8b96f6213",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.951,
+      "frontend_wall_seconds": 1.942,
       "olean_bytes": 181256,
       "olean_sha256": "1cce58e38cd87d9e5c24344586e0de3a1d5d2c2a0b4ba56a55285b4f9ba5ab29",
       "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationContract.lean"
@@ -258,7 +263,7 @@
       "module": "MettapediaFourColor.DiamondContract",
       "source_sha256": "29b15217a5f97fd87695b075af4b99919f415230199b25010fe8176de9c84e6b",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.04,
+      "frontend_wall_seconds": 4.005,
       "olean_bytes": 133848,
       "olean_sha256": "98bf3175e2339c91f962b13f8909747b4b8422d5360ccd17b3c18e1467f20958",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondContract.lean"
@@ -276,7 +281,7 @@
       "module": "MettapediaFourColor.DiamondJointContract",
       "source_sha256": "bd36a18e087301501f3c09e76d9ae33295c3675d1f48030b4345ff4f7419329d",
       "exit_code": 0,
-      "frontend_wall_seconds": 13.596,
+      "frontend_wall_seconds": 13.216,
       "olean_bytes": 159280,
       "olean_sha256": "c07a3a3def8663a677636aa89139e8ccb8d0e17f37ab99f927e2bd97b027c7f5",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondJointContract.lean"
@@ -285,7 +290,7 @@
       "module": "MettapediaFourColor.DiamondKempeBoundary",
       "source_sha256": "0c4250c01dee98134b35a67d783e6f96ab632ea6a8ab16f6af5903748a51c03b",
       "exit_code": 0,
-      "frontend_wall_seconds": 8.431,
+      "frontend_wall_seconds": 8.277,
       "olean_bytes": 104440,
       "olean_sha256": "8b8c2752746c57c1e500701e954ec747dc23b0ef21c2fc7c78c3ca3874b358d2",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondKempeBoundary.lean"
@@ -294,7 +299,7 @@
       "module": "MettapediaFourColor.DiamondKempeBoundaryAudit",
       "source_sha256": "ccb654beda3e9105b2217e58abe780e22e091204d93352ff6a6bcce710224d38",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.113,
+      "frontend_wall_seconds": 4.959,
       "olean_bytes": 3720,
       "olean_sha256": "e0100669cfe906d06c6f4b2311cbbb295136b4bbaa003b770e7cd0874c861b53",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondKempeBoundaryAudit.lean"
@@ -303,7 +308,7 @@
       "module": "MettapediaFourColor.KempeAnswerComposition",
       "source_sha256": "7cbec1a9068a9a352932377beecf0768affaa5930df23681ea423054a30e0b96",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.666,
+      "frontend_wall_seconds": 1.658,
       "olean_bytes": 26456,
       "olean_sha256": "177395a22606a9019732bae119cb4d48cc6e83f0cfaf06971be338b106c02a71",
       "source": "lean/fourcolor-classical/MettapediaFourColor/KempeAnswerComposition.lean"
@@ -312,7 +317,7 @@
       "module": "MettapediaFourColor.DiamondBoundaryRepair",
       "source_sha256": "854308276d2668370b7cd61977e0ee0d73b7b9252e83ff1d3d3e96e2f113e34f",
       "exit_code": 0,
-      "frontend_wall_seconds": 104.29,
+      "frontend_wall_seconds": 105.058,
       "olean_bytes": 281480,
       "olean_sha256": "e3f5e6c1758deb07df93a01c92fb3facf0b29274dd11e397d17e2a728016c96a",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondBoundaryRepair.lean"
@@ -321,7 +326,7 @@
       "module": "MettapediaFourColor.DiamondJointRepair",
       "source_sha256": "dbb30adc3c22eab86f8577d1bce94dfc89f9a6bac6e70980d7fefb5d9121eb9e",
       "exit_code": 0,
-      "frontend_wall_seconds": 26.589,
+      "frontend_wall_seconds": 25.505,
       "olean_bytes": 142496,
       "olean_sha256": "c2ad4f57754eb97896072a153b889a8c75cc78fa35ac8ff4ceed08d368cb5839",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepair.lean"
@@ -330,7 +335,7 @@
       "module": "MettapediaFourColor.DiamondJointRepairAudit",
       "source_sha256": "0438eb3cbd50078f477c6217d9661f809b565a1a5bc16639595e0fba3919832f",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.54,
+      "frontend_wall_seconds": 4.547,
       "olean_bytes": 3696,
       "olean_sha256": "d6e2a1bd60d59d5c2fca04fcc69f98b916979456600401757a08b6a6337969a8",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepairAudit.lean"
@@ -339,7 +344,7 @@
       "module": "MettapediaFourColor.KempeBoundarySplit",
       "source_sha256": "c099c4a245d5704ca55970e6ccf740d2f7fa03ca08498403011ff799213b306b",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.059,
+      "frontend_wall_seconds": 4.079,
       "olean_bytes": 1224752,
       "olean_sha256": "3482eb699280e92c184b3b068a2a361d28d1d17f61d7e56a35ac352e57c90e6a",
       "source": "lean/fourcolor-classical/MettapediaFourColor/KempeBoundarySplit.lean"
@@ -348,7 +353,7 @@
       "module": "MettapediaFourColor.DiamondSplitRepair",
       "source_sha256": "c62eb36dd4904ed687c4db03d57610acca083c9c81227ddd2a6b3ba394bbe759",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.742,
+      "frontend_wall_seconds": 4.671,
       "olean_bytes": 204696,
       "olean_sha256": "92f266a921dd9c483c564845054de5d591e148d19c753b768624d600900e2b9f",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondSplitRepair.lean"
@@ -357,7 +362,7 @@
       "module": "MettapediaFourColor.DiamondSplitRepairAudit",
       "source_sha256": "6b8c3530f3e6516ab927607a97fddf0fe9c77e732b31bf9bdc00a1df646e3554",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.572,
+      "frontend_wall_seconds": 5.574,
       "olean_bytes": 3720,
       "olean_sha256": "0080463a99fa1138b1ba5c853982b5a384a9de2000fd1efa81f502cc24611551",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondSplitRepairAudit.lean"
@@ -366,7 +371,7 @@
       "module": "MettapediaFourColor.KempeBoundaryMerge",
       "source_sha256": "7a7bd85300af6eac4c15c81418670dcd4160fd9004c0819ffdf9e5892a35e2f7",
       "exit_code": 0,
-      "frontend_wall_seconds": 9.512,
+      "frontend_wall_seconds": 9.54,
       "olean_bytes": 1741552,
       "olean_sha256": "a0a377f1dbe6734dba9dd2877f18e54aa04e118e6b1d5497034b1fb650d19260",
       "source": "lean/fourcolor-classical/MettapediaFourColor/KempeBoundaryMerge.lean"
@@ -375,7 +380,7 @@
       "module": "MettapediaFourColor.BoundaryEarRepair",
       "source_sha256": "106ad45139819e3d8a8d96e954facc951dcec316deca85ec92cdccabad909fa6",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.914,
+      "frontend_wall_seconds": 1.935,
       "olean_bytes": 218368,
       "olean_sha256": "8e36d7b2e5684c3654e44d5599a2fff7dfb8d038de69b354bf2cb56f5c1723e2",
       "source": "lean/fourcolor-classical/MettapediaFourColor/BoundaryEarRepair.lean"
@@ -384,7 +389,7 @@
       "module": "MettapediaFourColor.BoundaryEarGSLT",
       "source_sha256": "43dbd5dcafca68d6be24ae90a0eae5234b8b64b1d4d6cbf1c304934e544ad7f6",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.051,
+      "frontend_wall_seconds": 3.075,
       "olean_bytes": 359824,
       "olean_sha256": "c446dae60b2bc5e5bc756f38d7e3f2a8642672c1ae46ad1e2e0fcc03b54c964f",
       "source": "lean/fourcolor-classical/MettapediaFourColor/BoundaryEarGSLT.lean"
@@ -393,7 +398,7 @@
       "module": "MettapediaFourColor.DiamondEarFamily",
       "source_sha256": "24f04eae938b24db696db7193c28ad91192b266281ea229bbbfbb20a1dd8b38e",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.643,
+      "frontend_wall_seconds": 3.632,
       "olean_bytes": 197824,
       "olean_sha256": "0795a95eeeadc2138c9111f96fd0d195094a7b0c6bfd71eed779179bc3bdecf0",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondEarFamily.lean"
@@ -402,7 +407,7 @@
       "module": "MettapediaFourColor.DiamondEarFamilyAudit",
       "source_sha256": "414351321247e0f4a268e8efc12065da40186ee8ff384de2b6d8e767ab2f8d72",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.714,
+      "frontend_wall_seconds": 5.651,
       "olean_bytes": 3672,
       "olean_sha256": "2a876049d0b295f97ffc59f5ba2befabd6dea94aeb6d1258ebc62188198a6bd1",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondEarFamilyAudit.lean"
@@ -411,7 +416,7 @@
       "module": "MettapediaFourColor.DiamondProfile",
       "source_sha256": "ee708ada6286f4df4877d3b8ff1315102a6e9ba714b3932bf375bbadc3bced10",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.002,
+      "frontend_wall_seconds": 3.056,
       "olean_bytes": 398648,
       "olean_sha256": "ca798b009d166f3c6cfe8ee6ff8ac348e8ed1517f1c33d6c9dd4df168aa79438",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondProfile.lean"
@@ -420,7 +425,7 @@
       "module": "MettapediaFourColor.KempeProfileCertificate",
       "source_sha256": "ac936c02ab1beb2b78e411bd1b94a5f4ba4c63c983b82021f8cfd95e0adaed10",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.696,
+      "frontend_wall_seconds": 1.697,
       "olean_bytes": 79952,
       "olean_sha256": "e09c339e28f6f12b2b99df9274cc12dc16fba3b1dbe295640afc2c61329360d6",
       "source": "lean/fourcolor-classical/MettapediaFourColor/KempeProfileCertificate.lean"
@@ -429,7 +434,7 @@
       "module": "MettapediaFourColor.KempeChordExchange",
       "source_sha256": "6ff165ee0d5dc9103fedbfee6b627f2b56a4d351bfda7fab042c9ea3d50a221a",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.219,
+      "frontend_wall_seconds": 3.198,
       "olean_bytes": 619336,
       "olean_sha256": "e64cb6c37ef3ebaa43f17c55d159ccec9d2798c9fb38e7e8d468028a242a2e0e",
       "source": "lean/fourcolor-classical/MettapediaFourColor/KempeChordExchange.lean"
@@ -438,54 +443,63 @@
       "module": "MettapediaFourColor.KempeChordMasks",
       "source_sha256": "2aaa8953ada2736ae6ca2ac49647dc50a96d1a0db7da4c2a0aed14e92c524df8",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.552,
+      "frontend_wall_seconds": 2.577,
       "olean_bytes": 804064,
       "olean_sha256": "95952525c013c38736ab29b6e712223c42b2d4dd2a4e9e04d20bc23d8f2882b4",
       "source": "lean/fourcolor-classical/MettapediaFourColor/KempeChordMasks.lean"
     },
     {
-      "module": "MettapediaFourColor.DiamondProfileData",
-      "source_sha256": "28d36b25681868d0456ccf12e5fcc9b29468d34dbb6d2055605f4e7e657c340d",
+      "module": "MettapediaFourColor.KempeAnchorProjection",
+      "source_sha256": "1fc7606fed90bbf68e511af8d2667ab54b12951f590adcaf17bd209e9372a930",
       "exit_code": 0,
-      "frontend_wall_seconds": 0.851,
-      "olean_bytes": 1322424,
-      "olean_sha256": "4fdb5b849e366948f97cb9518daf9d98b96a5e8e103d6589ec30d6a2a2343aae",
+      "frontend_wall_seconds": 1.848,
+      "olean_bytes": 420128,
+      "olean_sha256": "ee40ca94e96c998a56475479db0715324033afa1f3a39b4c45b41ba8143d7a19",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeAnchorProjection.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondProfileData",
+      "source_sha256": "1fc7e5b374a345951db895cd36e3c2a88632686a2b079f710aa11bb47844ae8b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 0.85,
+      "olean_bytes": 1323248,
+      "olean_sha256": "03b84c121b9b16392dbd2295de5add37aa2a32fac7564f29fa1ac2b85de6f1e4",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondProfileData.lean"
     },
     {
       "module": "MettapediaFourColor.DiamondProfileCertificate",
-      "source_sha256": "670c4b7422f83fec8ac2db1be429be89244ae7f0d301a6340044be245631ffe2",
+      "source_sha256": "bc42b48a7af6d82d0c92a1f7bf3d43a39ccfa09f466d5343cbc971c9ff44ecf7",
       "exit_code": 0,
-      "frontend_wall_seconds": 83.233,
-      "olean_bytes": 389960,
-      "olean_sha256": "201afa6cd46ea802a573fde1769ca6f3fa6fe70aff52c5a501108baa0a3a39b3",
+      "frontend_wall_seconds": 83.95,
+      "olean_bytes": 427088,
+      "olean_sha256": "a93f4bbdcd036aafb19b1208d2ba8ad21d6199d1fbdf759274c895f1d5274815",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondProfileCertificate.lean"
     },
     {
       "module": "MettapediaFourColor.DiamondProfileFamilyRepair",
       "source_sha256": "c1f201f4c06198ffae098c45bfd027561e6bcf8a94ab4679dc3e917e8624d6fa",
       "exit_code": 0,
-      "frontend_wall_seconds": 48.695,
+      "frontend_wall_seconds": 49.213,
       "olean_bytes": 74576,
-      "olean_sha256": "33fc6a425efaefa7abbdd3e3a3bbf79579179dc17c19e296642c6bd8b23611c9",
+      "olean_sha256": "e4a63ad285684b89f69e239e1228a56f0d130f210384a0c41f5e12187935e679",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondProfileFamilyRepair.lean"
     },
     {
       "module": "MettapediaFourColor.DiamondProfileReducibility",
       "source_sha256": "0432abe73e139f07c539273d49b6c7bc9e01886ac30f574e4f79158a45acd674",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.604,
+      "frontend_wall_seconds": 3.936,
       "olean_bytes": 201944,
       "olean_sha256": "a8bc7e72739cb838c5b08cebe1d1a3f9fa75cb603fa68ee9dddeb17de5eded98",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondProfileReducibility.lean"
     },
     {
       "module": "MettapediaFourColor.DiamondProfileAudit",
-      "source_sha256": "fdb13c45b851592681048703a4d60767e8a2b2978e275bff021b8692c9516357",
+      "source_sha256": "21f042aedf880337d78870fe481b8524a99e094e9830275ad3df0f69a398e0b4",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.972,
-      "olean_bytes": 4072,
-      "olean_sha256": "94d9d35c6f537448721f7a0771d88d75bfb437fedd24b37ee01582a133aa5fbc",
+      "frontend_wall_seconds": 6.239,
+      "olean_bytes": 4192,
+      "olean_sha256": "98c9fd8b1752d071f8dce74d0dce0390fe1350cd4d4d55734264c5483cb93bf4",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondProfileAudit.lean"
     }
   ],
@@ -494,7 +508,7 @@
       "module": "MettapediaFourColor.ReferenceBaselineAudit",
       "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.571,
+      "frontend_wall_seconds": 3.565,
       "olean_bytes": 3320,
       "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e",
       "source": "lean/fourcolor-classical/MettapediaFourColor/ReferenceBaselineAudit.lean"
@@ -503,7 +517,7 @@
       "module": "MettapediaFourColor.DiamondFamilyReducibility",
       "source_sha256": "71fb0a5407ace3d65ad85c53b4733d03ea4f382675ee1e2fab7ca14425b26824",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.464,
+      "frontend_wall_seconds": 3.511,
       "olean_bytes": 37328,
       "olean_sha256": "2e8e476bff5beda5c8eeb7e7b30761099c2226848f9425a74ead204147630377",
       "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondFamilyReducibility.lean"
@@ -512,22 +526,22 @@
       "module": "MettapediaFourColor.Complete",
       "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.773,
+      "frontend_wall_seconds": 3.813,
       "olean_bytes": 39288,
       "olean_sha256": "fce0dd591168e2d7bf9463281c20f1fad4ff9bb96a9e4f106248346d79971ccf",
       "source": "lean/fourcolor-classical/MettapediaFourColor/Complete.lean"
     },
     {
       "module": "MettapediaFourColor.CompleteAudit",
-      "source_sha256": "fb04447312a2e3667625e449c18a87b1dd3a45c0d38839705e4f1c097d107400",
+      "source_sha256": "2469479845e74a1e68271b7a79cb05eaaaf973e086b2780576f75f1cff04d6ff",
       "exit_code": 0,
-      "frontend_wall_seconds": 18.721,
+      "frontend_wall_seconds": 19.407,
       "olean_bytes": 6776,
-      "olean_sha256": "884199c4138eb35db6aa974db10d52cf1b0114e020af8f8cf9e45a7da5b57848",
+      "olean_sha256": "470427286cb17f0d48ffac4b175a2d0568b1300c807a11bfeda796200ed29f8f",
       "source": "lean/fourcolor-classical/MettapediaFourColor/CompleteAudit.lean"
     }
   ],
-  "limits": "The chord theorem holds at arbitrary boundary length and is an explicit classical Kempe principle. The diamond consumers still use finite profile ranks, partner targets, 216 two-ear pair classifications, one shared finite planar fact for six active ports, and five residual finite chromogram covers. No unrestricted new core-family repair, longer-fan repair, new embedded recognition or geometric coverage, count preservation, executable physical Kempe recolouring, runtime saving or artifact-size saving is asserted. The complete proof still uses the classical coverage theorem. Historical ear consumers remain on their earlier core proofs. The six-active-port planar fact is a finite shared certificate, not a theorem here for arbitrary active-port count. No net reduction in total primitive finite checks is asserted.",
+  "limits": "The classical Kempe exchange action is reconstructed through the same exterior by structural laws. The core proof retains finite profile ranks, partner targets, 216 ear-pair classifications, one finite six-active-port planar fact, and 44 joint-anchor classifications. The latter classifier enumerates balanced unsigned skeletons and identifies equal projected signatures. The original coversRec and coversRec_sound are absent from local profile proof dependencies, but no net reduction in total primitive finite checks is claimed. No unrestricted new core-family repair, longer-fan repair, new embedded recognition or geometric coverage, count preservation, executable physical Kempe recolouring, runtime saving or artifact-size saving is asserted. The complete proof still uses classical coverage. Historical ear consumers remain on their earlier core proofs.",
   "coupled_two_ear_rule": {
     "transport_theorem": "FourColor.KempeChordMasks.recolor_matches",
     "consumer_theorem": "FourColor.KempeChordMasks.coverCheck_sound",
@@ -541,19 +555,62 @@
       7,
       13
     ],
-    "residual_original_covers_by_core": [
-      0,
-      0,
-      5
-    ],
-    "residual_original_covers": 5,
     "ear_pair_classifications_per_consumer": 9,
     "ear_pair_classifications_retained": 216,
     "rank_and_target_data_retained": true,
     "whole_configuration_certificate_savings": 0,
     "kernel_counts": "FourColor.DiamondProfileCertificate.coupled_counts",
     "worked_example": "FourColor.DiamondProfileCertificate.coupled_example",
-    "frontend_seconds": 2.552,
-    "olean_bytes": 804064
+    "frontend_seconds": 2.577,
+    "olean_bytes": 804064,
+    "residual_original_covers_by_core_after_two_ear_stage": [
+      0,
+      0,
+      5
+    ],
+    "residual_original_covers_after_two_ear_stage": 5
+  },
+  "joint_anchor_projection": {
+    "theorem": "FourColor.KempeAnchorProjection.coverCheck_sound",
+    "label_transport": "FourColor.KempeAnchorProjection.labels_paired",
+    "mask_union": "FourColor.KempeAnchorProjection.paired_or",
+    "classification_coverage": "FourColor.KempeAnchorProjection.signature_mem",
+    "scope": "Arbitrary boundary length and active-port count. Complete chord masks at selected anchors retain aliasing and joint partners. Exchanging one mask or the union of two reconstructs a trace for the SAME exterior.",
+    "concrete_consumers": 5,
+    "concrete_active_port_count": 8,
+    "anchor_patterns": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        1,
+        2
+      ]
+    ],
+    "signature_counts": [
+      7,
+      10,
+      10
+    ],
+    "pattern_uses": [
+      2,
+      2,
+      1
+    ],
+    "finite_joint_signature_classifications_retained": 44,
+    "balanced_skeleton_enumeration_retained": true,
+    "original_finite_chromogram_covers_remaining": 0,
+    "rank_and_target_data_retained": true,
+    "kernel_counts": "FourColor.DiamondProfileCertificate.anchor_counts",
+    "no_residual_branch": "FourColor.DiamondProfileCertificate.zero_terminal",
+    "whole_configuration_certificate_savings": 0,
+    "frontend_seconds": 1.848,
+    "olean_bytes": 420128
   }
 }

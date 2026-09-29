@@ -37,6 +37,7 @@ run_cmd do
     ``FourColor.DiamondProfileCertificate.repair,
     ``FourColor.KempeChordExchange.answer_exists,
       ``FourColor.KempeChordMasks.coverCheck_sound,
+      ``FourColor.KempeAnchorProjection.coverCheck_sound,
     ``FourColor.DiamondProfileCertificate.coverCheck_sound,
     ``FourColor.DiamondProfile.good_supports,
     ``FourColor.DiamondProfileReducibility.supports_graph,
