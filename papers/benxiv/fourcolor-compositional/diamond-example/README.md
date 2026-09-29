@@ -256,7 +256,7 @@ forgetting colour names and allowing exchanges of the centres or of the tips.
 It also retains boundary length: dropping that information did not support
 the candidate descent. The generated finite data contain 92 ranked profile
 types, including 51 terminal types and 41 nonterminal types. There are 236
-trace representatives and 265 answer references, with at most six strict
+trace representatives and 289 answer references, with at most six strict
 rank decreases before a terminal. This measures proof descent, not physical
 Kempe-chain swaps.
 
@@ -283,18 +283,53 @@ This theorem holds at arbitrary boundary length and uses no finite chromogram
 checker or configuration data. The concrete consumers still check the ranks
 and target references of all possible partners.
 
-| Core | Nonterminal representatives | Covered by the chord law | Residual finite covers |
-| --- | ---: | ---: | ---: |
-| Configuration 1 | 15 | 11 | 4 |
-| Configuration 2 | 52 | 45 | 7 |
-| Configuration 4 | 33 | 15 | 18 |
+The [coupled mask law][chord-masks] handles another 24 representatives:
 
-The consumer counts are kernel checked in `structural_counts`. Thus individual
-finite chromogram-cover obligations fall from 100 to 29. This measures a
-shared structural proof step; it removes no additional whole configuration
-certificate. The longer-fan obstruction remains unaffected.
+1. Eliminate the ports carrying the fixed third colour, retaining the cyclic
+   order of the six active ports. A mask records which endpoints to exchange.
+2. A single finite planar lemma supplies two disjoint chords between cyclically
+   consecutive active ports. For each possible ear pair, the application must
+   offer an accepted exchange of either chord or both together.
+3. The general mask-transport theorem preserves the **same** exterior
+   chromogram and reinserts all fixed ports. The accepted joint answer has a
+   lower profile rank and eventually reconstructs an actual interior colouring.
+
+The transport theorem has no boundary-length bound. The two-ear fact used here
+is kernel checked once for all balanced Boolean bracket words on **six active
+ports**; this certificate makes no claim for an arbitrary active-port count.
+Each application retains nine disjoint-ear pair classifications, 216 in total.
+These are separate from the finite ranks and answer references.
+
+| Core | Nonterminal representatives | Single-chord law | Coupled two-ear law | Residual finite covers |
+| --- | ---: | ---: | ---: | ---: |
+| Configuration 1 | 15 | 11 | 4 | 0 |
+| Configuration 2 | 52 | 45 | 7 | 0 |
+| Configuration 4 | 33 | 15 | 13 | 5 |
+
+The consumer counts are kernel checked in `structural_counts` and
+`coupled_counts`. Original chromogram-cover obligations fall from 100 to five,
+while the retained local classifications are counted explicitly. This removes
+no additional whole configuration certificate. The answer-reference count
+increases from 265 to 289; no size or runtime saving is claimed.
+The longer-fan obstruction remains unaffected.
 The shared decreasing rank composes the structural and residual steps; the
 remaining finite covers still contribute to the complete core repair.
+
+There is a concrete coupled example in `coupled_example`. On the boundary
+trace `22231123`, take the disjoint cyclic ears at ports 2–3 and 8–1, with ports
+numbered from one. The checked chromogram pairs those ears and ports 4–7:
+
+| Exchange | Resulting trace | Shared profile rank |
+| --- | --- | ---: |
+| Neither | `22231123` | 2 |
+| Ports 2–3 | `23331123` | 0 |
+| Ports 8–1 | `32231122` | 0 |
+| Both | `33331122` | 1, with a genuine interior-colouring witness |
+
+Rank zero means the trace is outside this ranked certificate, not that no
+colouring or other repair exists. The combined exchange retains the original
+chromogram and reaches a terminal interior witness. Its two choices must be
+evaluated together.
 
 [Input coverage][profile-inputs] verifies the actual required domains. The
 [graph consumers][profile-reduction] then reconstruct literal graph colourings,
@@ -302,7 +337,7 @@ transport the ordered rings, and validate the reference contracts. The complete
 proof supplies strict reduction and classical geometric coverage.
 
 This is a bounded profile explanation of three core shapes, now using an
-unbounded single-chord law for most local steps. The residual Kempe cover
+unbounded single-chord law and a six-active-port coupled rule. The residual Kempe cover
 checker and ranked-certificate principle are reused from the reference proof;
 the remaining finite cover table is explicit. Repair for these inputs can
 descend using this particular joint observable and can reconstruct genuine
@@ -310,7 +345,7 @@ colourings. Boundary length separates the three shapes, so the rank table does
 not by itself prove a law independent of ring size. It also does not assert
 that these are all repairable eight-port traces.
 
-The [fourteen-root audit][profile-audit] excludes the original configuration 1,
+The [nineteen-root audit][profile-audit] excludes the original configuration 1,
 2 and 4 certificates, the former diamond repair bodies, global Kempe fixed-point
 computations and the complete theorem from the new local proofs. The complete
 endpoint audit requires the replacement proofs. All 633 configurations remain;
@@ -547,3 +582,4 @@ excludes configuration 1's original certificate.
 [profile-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfileAudit.lean
 [profile-measurements]: ../../../../tools/fourcolor/classical/diamond-profile-measurements.json
 [chord]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeChordExchange.lean
+[chord-masks]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeChordMasks.lean

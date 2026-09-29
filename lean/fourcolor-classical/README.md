@@ -220,17 +220,24 @@ validating the specified contract. Its eight-root audit excludes configuration
 The current complete assembly retains this split-transfer law with a new base.
 `DiamondProfile` solves both tips against the same centre pair.
 `DiamondProfileCertificate` checks 236 trace representatives using a shared
-rank on 92 joint availability profiles, including boundary length; 265 answer
+rank on 92 joint availability profiles, including boundary length; 289 answer
 references establish at most six strict descent stages. The terminal solver
 constructs real interior witnesses. `KempeChordExchange.answer_exists` proves
 that exchanging a chosen chord's two ends preserves an arbitrary matching
 exterior, with its partner drawn from the opposite-parity active ports. This
 boundary-length-independent law handles 71 of the 100 nonterminal
-representatives; 29 retain finite chromogram covers. Partner ranks and target
-references remain checked finite data, and `structural_counts` verifies the
-11/45/15 consumers across the cores. `DiamondProfileFamilyRepair` supplies the
+representatives. `KempeChordMasks` reconstructs simultaneous exchanges through
+the same exterior after eliminating fixed-colour ports. Its shared finite
+two-ear fact for six active ports handles another 24 representatives, with
+arbitrarily many intervening fixed ports. Five finite chromogram covers remain.
+Partner ranks, target references and 216 local ear-pair classifications remain
+checked finite data; `structural_counts` and `coupled_counts` verify the actual
+consumers. The finite planar fact is checked once for all six-step Boolean
+bracket words, independently of colours and configurations. No theorem for an
+arbitrary number of active ports is claimed for this two-ear certificate.
+`DiamondProfileFamilyRepair` supplies the
 required inputs, and `DiamondProfileReducibility` connects the law to all three
-actual configurations. Its fourteen-root audit excludes the original three
+actual configurations. Its nineteen-root audit excludes the original three
 certificates and the earlier repair bodies. The complete assembly therefore
 replaces three original certificate dependencies. This remains a finite core
 certificate; no uniform repair for longer fans or new geometric coverage is

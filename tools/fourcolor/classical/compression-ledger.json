@@ -34,11 +34,15 @@
     "uniform_schemes_replacing_multiple_target_certificates": 0,
     "finite_joint_profile_certificate_schemes": 1,
     "finite_joint_profile_trace_representatives": 236,
-    "finite_joint_profile_answer_references": 265,
+    "finite_joint_profile_answer_references": 289,
     "uniform_chord_exchange_schemes": 1,
     "finite_chromogram_cover_obligations_before_chord_law": 100,
-    "finite_chromogram_cover_obligations_remaining": 29,
-    "finite_chromogram_cover_obligations_replaced_by_chord_law": 71
+    "finite_chromogram_cover_obligations_remaining": 5,
+    "finite_chromogram_cover_obligations_replaced_by_chord_law": 71,
+    "coupled_active_mask_exchange_schemes": 1,
+    "shared_six_active_port_planar_facts": 1,
+    "finite_chromogram_cover_obligations_replaced_by_two_ear_law": 24,
+    "two_ear_pair_classifications_retained": 216
   },
   "experiments": [
     {
@@ -262,7 +266,7 @@
       "terminal_profiles": 51,
       "nonterminal_profiles": 41,
       "trace_representatives": 236,
-      "answer_references": 265,
+      "answer_references": 289,
       "maximum_descent_stages": 6,
       "proper_trace_inputs": [
         183,
@@ -279,7 +283,7 @@
       "catalogue_entries_removed": 0,
       "case_free_broader_core_family_theorems": 0,
       "credited_compression": true,
-      "scope": "One bounded profile explanation retaining boundary length; configuration 1 also inherits repair through the general split law. The reference ranked-answer principle is reused, and a uniform chord exchange now handles most covers. Finite profile ranks, partner targets and 29 residual covers remain. No unrestricted fan repair, new coverage, byte saving or runtime saving is asserted."
+      "scope": "One bounded profile explanation retaining boundary length; configuration 1 also inherits repair through the general split law. The reference ranked-answer principle is reused, and a uniform chord exchange handles 71 covers and a coupled six-active-port rule handles 24 more. Finite profile ranks, partner targets, 216 ear-pair classifications and five residual covers remain. No unrestricted fan repair, new coverage, byte saving or runtime saving is asserted."
     },
     {
       "name": "single-chord exchange across arbitrary boundary lengths",
@@ -308,9 +312,36 @@
       "catalogue_entries_removed": 0,
       "credited_compression": true,
       "scope": "For every boundary length and every matching exterior chromogram, a chosen active port has an opposite-parity partner whose two-end exchange preserves that chromogram. All candidate partners descend for the 71 selected representatives. This is an explicit classical Kempe-chord principle, with no claim of a new unrestricted core-family repair or geometric coverage."
+    },
+    {
+      "name": "coupled two-ear exchanges through an exact active boundary",
+      "record": "diamond-profile-measurements.json",
+      "status": "Kernel-checked unrestricted mask transport and a shared finite planar fact for six active ports, consumed by all three cores and the complete endpoints.",
+      "configurations": [
+        1,
+        2,
+        4
+      ],
+      "uniform_two_ear_states": [
+        4,
+        7,
+        13
+      ],
+      "finite_chromogram_cover_obligations_before": 29,
+      "finite_chromogram_cover_obligations_after": 5,
+      "finite_chromogram_cover_obligations_replaced": 24,
+      "local_ear_pair_classifications": 216,
+      "shared_six_active_port_planar_facts": 1,
+      "answer_references_before": 265,
+      "answer_references_after": 289,
+      "additional_reference_certificate_dependencies_replaced": 0,
+      "catalogue_entries_removed": 0,
+      "certificate_bytes_saved": 0,
+      "kernel_seconds_saved": 0,
+      "scope": "Masks retain equal exchange bits at both ends of each chord and reconstruct a trace for the same exterior, at arbitrary boundary length. The two-ear consumer has exactly six active ports and arbitrary intervening fixed ports. Its planar lemma is checked once for all six-step Boolean skeletons; applications retain nine disjoint-ear pair classifications each. This shares a classical planar principle; it is not a case-free core theorem or an additional geometric coverage result."
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local finite-cover obligations, leaving 29 residual covers; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, leaving five original covers and retaining 216 ear-pair classifications plus one shared finite planar fact; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -687,7 +718,10 @@
       "FourColor.DiamondProfileReducibility.reducible002",
       "FourColor.DiamondProfileReducibility.reducible004",
       "FourColor.KempeChordExchange.answer_exists",
-      "FourColor.DiamondProfileCertificate.coverCheck_sound"
+      "FourColor.DiamondProfileCertificate.coverCheck_sound",
+      "FourColor.KempeChordMasks.recolor_matches",
+      "FourColor.KempeChordMasks.six_checked",
+      "FourColor.KempeChordMasks.coverCheck_sound"
     ]
   }
 }

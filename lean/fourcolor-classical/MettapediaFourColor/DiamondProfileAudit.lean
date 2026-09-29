@@ -8,7 +8,10 @@ The complete graph reductions must consume profile descent, actual interior
 witnesses and the proved reference contraction decoder. The three original
 configuration certificates and the earlier diamond repair bodies are excluded.
 The single-chord law is independent of the catalogue and finite-cover checker;
-its consumer count is kernel checked. Residual finite covers remain explicit.
+the coupled active-mask law retains the same exterior. Their consumer counts
+and 216 local ear-pair classifications are kernel checked. Five residual finite
+covers remain explicit. The six-active-port skeleton fact is a shared finite
+combinatorial lemma, separate from its unrestricted mask-transport theorem.
 -/
 
 open FourColor
@@ -22,13 +25,24 @@ run_cmd do
       ``KempeProfileCertificate.answerWord_map]),
     (``KempeChordExchange.answer_exists, [``KempeChordExchange.exchange_first,
       ``matchg_gramRot]),
+    (``KempeChordMasks.recolor_matches, [``KempeChordMasks.paired,
+      ``KempeChordMasks.recolor, ``matchStep]),
+    (``KempeChordMasks.six_checked, [``KempeChordMasks.balanced,
+      ``KempeChordMasks.earPairs, ``KempeChordMasks.jointMasks]),
+    (``KempeChordMasks.coverCheck_sound, [``KempeChordMasks.recolor_matches,
+      ``KempeChordMasks.matched_skeleton, ``KempeChordMasks.six_checked]),
     (``DiamondProfileCertificate.structural_counts, [``DiamondProfileCertificate.strategy]),
+    (``DiamondProfileCertificate.coupled_counts, [``DiamondProfileCertificate.strategy,
+      ``KempeChordMasks.earPairs]),
+    (``DiamondProfileCertificate.coupled_example, [``DiamondProfileCertificate.example_checked,
+      ``KempeChordMasks.recolor_matches, ``DiamondProfile.good_supports]),
     (``DiamondProfileCertificate.structural_checked, [``DiamondProfileCertificate.checked0,
       ``DiamondProfileCertificate.checked1, ``DiamondProfileCertificate.checked2]),
     (``DiamondProfile.good_supports, [``DiamondProfile.solve,
       ``Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.Summary]),
     (``DiamondProfileCertificate.repair, [``KempeProfileCertificate.sound_of_cover,
-      ``KempeChordExchange.answer_exists, ``DiamondProfileCertificate.coverCheck_sound,
+      ``KempeChordExchange.answer_exists, ``KempeChordMasks.coverCheck_sound,
+      ``DiamondProfileCertificate.coverCheck_sound,
       ``DiamondProfileCertificate.checked0, ``DiamondProfileCertificate.checked1,
       ``DiamondProfileCertificate.checked2, ``DiamondProfile.good_supports,
       ``DiamondProfile.key]),
@@ -77,7 +91,10 @@ run_cmd do
       if forbidden.any (·.isPrefixOf name) then
         throwError m!"Superseded certificate or complete theorem in {root}: {name}"
       if (root == ``KempeProfileCertificate.sound_of_cover ||
-          root == ``KempeChordExchange.answer_exists) &&
+          root == ``KempeChordExchange.answer_exists ||
+          root == ``KempeChordMasks.recolor_matches ||
+          root == ``KempeChordMasks.six_checked ||
+          root == ``KempeChordMasks.coverCheck_sound) &&
           ([`FourColor.Bulk, `FourColor.DiamondConfigurations,
             `FourColor.DiamondContract].any (·.isPrefixOf name) || name == ``cfmap ||
               name == ``coversRec || name == ``coversRec_sound) then

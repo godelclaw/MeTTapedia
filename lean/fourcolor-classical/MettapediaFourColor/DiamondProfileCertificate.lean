@@ -2,14 +2,16 @@ import MettapediaFourColor.DiamondProfile
 import MettapediaFourColor.DiamondProfileData
 import MettapediaFourColor.KempeProfileCertificate
 import MettapediaFourColor.KempeChordExchange
+import MettapediaFourColor.KempeChordMasks
 
 /-! # One joint-profile certificate for the three diamond cores
 
 The 236 trace representatives use a single rank on 92 joint profile types.
 Fifty-one profile types have actual interior colourings; the other 41 descend
 through checked Kempe answers. A single-chord theorem handles 71 nonterminal
-representatives; 29 retain individual finite chromogram covers. The rank and
-partner targets remain finite data. No original configuration certificate or
+representatives; a coupled two-ear law handles another 24. Five retain
+individual finite chromogram covers. The rank, partner targets and 216 local
+ear-pair classifications remain finite data. No original configuration certificate or
 global Kempe fixed point is used.
 -/
 
@@ -51,7 +53,7 @@ def answers (s : Shape) (i : State s) : List (State s × EdgePerm) :=
       Nat.mod_lt _ (count_pos s)⟩,
       readPerm (digit data (3 + 3 * j)))
 
-/-- Zero means a finite cover; a positive code selects a chord anchor plus one. -/
+/-- Zero means a finite cover; 1--8 select a chord anchor, 9 selects coupled ears. -/
 def strategy (s : Shape) (i : State s) : ℕ :=
   digit (DiamondProfileData.wordCodes (offset s + i.val)) 8
 
@@ -60,6 +62,8 @@ def coverCheck (s : Shape) (i : State s) : Bool :=
   let ans := answers s i
   if strategy s i = 0 then
     coversRec et (ans.map fun a => ([], KempeProfileCertificate.answerWord (word s) a)) []
+  else if strategy s i = 9 then
+    KempeChordMasks.coverCheck et (ans.map (KempeProfileCertificate.answerWord (word s)))
   else
     let anchor := strategy s i - 1
     decide (anchor ≤ et.length ∧ ((et.rotate anchor).headD 0).hi = true) &&
@@ -75,13 +79,17 @@ theorem coverCheck_sound (s : Shape) (i : State s) (h : coverCheck s i = true)
   · obtain ⟨_, hmem, hmatch⟩ := coversRec_sound _ _ [] h gram hm
     obtain ⟨a, hamem, rfl⟩ := List.mem_map.mp hmem
     exact ⟨a, hamem, hmatch⟩
-  · rw [Bool.and_eq_true] at h
-    obtain ⟨guard, allAnswers⟩ := h
-    obtain ⟨bound, high⟩ := of_decide_eq_true guard
-    obtain ⟨t, ht, hmatch⟩ := KempeChordExchange.answer_exists _ _ gram bound high hm
-    obtain ⟨a, ha, heq⟩ := List.any_eq_true.mp (List.all_eq_true.mp allAnswers t ht)
-    refine ⟨a, ha, ?_⟩
-    simpa only [of_decide_eq_true heq] using hmatch
+  · split at h
+    · obtain ⟨t, ht, hmatch⟩ := KempeChordMasks.coverCheck_sound _ _ h gram hm
+      obtain ⟨a, ha, rfl⟩ := List.mem_map.mp ht
+      exact ⟨a, ha, hmatch⟩
+    · rw [Bool.and_eq_true] at h
+      obtain ⟨guard, allAnswers⟩ := h
+      obtain ⟨bound, high⟩ := of_decide_eq_true guard
+      obtain ⟨t, ht, hmatch⟩ := KempeChordExchange.answer_exists _ _ gram bound high hm
+      obtain ⟨a, ha, heq⟩ := List.any_eq_true.mp (List.all_eq_true.mp allAnswers t ht)
+      refine ⟨a, ha, ?_⟩
+      simpa only [of_decide_eq_true heq] using hmatch
 
 /-- The rank depends on boundary length and the joint availability profile. -/
 def rank (s : Shape) (et : List Color) : ℕ :=
@@ -146,8 +154,42 @@ theorem structural_checked (s : Shape) (i : State s) (hs : strategy s i ≠ 0) :
 /-- The structural rule has actual consumers in each of the three cores. -/
 theorem structural_counts :
     ([0, 1, 2] : List Shape).map (fun s =>
-      ((List.finRange (count s)).filter fun i => strategy s i != 0).length) = [11, 45, 15] := by
+      ((List.finRange (count s)).filter fun i => strategy s i != 0).length) = [15, 52, 28] := by
   decide +kernel
+
+/-- The coupled rule has consumers in all three cores, retaining nine cases each. -/
+theorem coupled_counts :
+    ([0, 1, 2] : List Shape).map (fun s =>
+      ((List.finRange (count s)).filter fun i => strategy s i == 9).length) = [4, 7, 13] ∧
+    (KempeChordMasks.earPairs 6).length = 9 := by
+  decide +kernel
+
+/-- A concrete configuration-4 boundary on which the coupled exchange matters. -/
+def exampleInput : List Color := [c2, c2, c2, c3, c1, c1, c2, c3]
+
+def exampleGram : Chromogram := [.push, .push, .pop0, .push, .skip, .skip, .pop1, .pop1]
+
+def exampleJointMask : List Bool :=
+  List.zipWith xor (KempeChordMasks.ear 6 1) (KempeChordMasks.ear 6 5)
+
+/-- Each separate exchange leaves the ranked set; their joint exchange is terminal. -/
+theorem example_checked :
+    matchg [] exampleInput exampleGram = true ∧
+    KempeChordMasks.paired [] exampleJointMask (KempeChordMasks.skeleton exampleGram) = true ∧
+    rank 2 exampleInput = 2 ∧
+    rank 2 (KempeChordMasks.recolor (KempeChordMasks.ear 6 1) exampleInput) = 0 ∧
+    rank 2 (KempeChordMasks.recolor (KempeChordMasks.ear 6 5) exampleInput) = 0 ∧
+    KempeChordMasks.recolor exampleJointMask exampleInput =
+      [c3, c3, c3, c3, c1, c1, c2, c2] ∧
+    good 2 (KempeChordMasks.recolor exampleJointMask exampleInput) = true := by
+  decide +kernel
+
+/-- The shared exterior and the genuine interior witness are simultaneously retained. -/
+theorem coupled_example :
+    Supports 2 (KempeChordMasks.recolor exampleJointMask exampleInput) ∧
+    matchg [] (KempeChordMasks.recolor exampleJointMask exampleInput) exampleGram := by
+  exact ⟨good_supports 2 _ example_checked.2.2.2.2.2.2,
+    KempeChordMasks.recolor_matches _ _ _ [] [] example_checked.1 example_checked.2.1⟩
 
 /-- The same ranked-answer theorem reconstructs compatible choices for each core. -/
 theorem repair (s : Shape) (i : State s) : KempeCoclosure (Supports s) (word s i) :=

@@ -1,8 +1,8 @@
 {
   "evidence": "Finite candidate generation and program validation; Lean checks are separate.",
   "geometry_sha256": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
-  "generator_sha256": "d59d5161f9b11e1c66c1d227afe15cebbeeaf1bb0c92590b9385db51ddca61ae",
-  "data_sha256": "62b7396238f712b6699955b8beb501ec598b90d120e0c67b9dbea97dd0f22d58",
+  "generator_sha256": "fb75c73c399bac94bb669c97854c13f7da14f7471cdbb87563af0ba9ab08fbfe",
+  "data_sha256": "28d36b25681868d0456ccf12e5fcc9b29468d34dbb6d2055605f4e7e657c340d",
   "profile": "boundary length plus joint available-colour sets, modulo colour names and centre/tip exchanges",
   "profiles": 126,
   "ranked_profiles": 92,
@@ -20,7 +20,7 @@
   "maximum_descent_stages": 6,
   "maximum_answers": 4,
   "states": 236,
-  "answers": 265,
+  "answers": 289,
   "cores": [
     {
       "configuration": 1,
@@ -31,7 +31,8 @@
       "state_orbits": 31,
       "terminal_states": 16,
       "uniform_chord_states": 11,
-      "residual_finite_cover_states": 4
+      "uniform_two_ear_states": 4,
+      "residual_finite_cover_states": 0
     },
     {
       "configuration": 2,
@@ -42,7 +43,8 @@
       "state_orbits": 91,
       "terminal_states": 39,
       "uniform_chord_states": 45,
-      "residual_finite_cover_states": 7
+      "uniform_two_ear_states": 7,
+      "residual_finite_cover_states": 0
     },
     {
       "configuration": 4,
@@ -53,11 +55,14 @@
       "state_orbits": 114,
       "terminal_states": 81,
       "uniform_chord_states": 15,
-      "residual_finite_cover_states": 18
+      "uniform_two_ear_states": 13,
+      "residual_finite_cover_states": 5
     }
   ],
   "uniform_chord_states": 71,
-  "residual_finite_cover_states": 29,
+  "uniform_two_ear_states": 24,
+  "two_ear_pair_classifications": 216,
+  "residual_finite_cover_states": 5,
   "scope": "Three finite core shapes. No longer-fan repair, geometric coverage or executable exterior recolouring is asserted.",
-  "elapsed_seconds": 2.469
+  "elapsed_seconds": 3.134
 }

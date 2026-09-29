@@ -46,9 +46,13 @@ complete proof consumes the new configuration-2 and configuration-4 repairs,
 and transfers the former to configuration 1. All three original certificate
 dependencies are absent. The shared rank uses joint available-colour sets and
 boundary length. A structural single-chord exchange theorem now answers every
-exterior for 71 of its 100 nonterminal representatives; 29 individual finite
-chromogram covers remain. The chord theorem has no boundary-length bound,
-while the joint-profile ranks and partner targets remain finite data.
+exterior for 71 of its 100 nonterminal representatives. A shared two-ear law
+handles another 24, leaving five individual finite chromogram covers. It
+retains simultaneous exchanges through the same exterior: six active ports
+can have arbitrarily many fixed-colour ports between them. The mask-transport
+theorem has no width bound; the two-ear fact is checked once for the finite
+six-active-port skeletons. Joint-profile ranks, partner targets and 216 local
+ear-pair classifications remain finite data.
 A broader core-family theorem and geometric coverage remain open.
 
 A bounded [replacement experiment](diamond-example/README.md#testing-a-different-strict-replacement)
@@ -216,8 +220,9 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Reference configuration certificate dependencies retained / replaced | 630 / 3 |
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
-| Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 265 answers |
-| Finite chromogram-cover obligations | 100 → 29: one arbitrary-length chord law handles 71 representatives across the three cores |
+| Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 289 answers |
+| Original chromogram-cover obligations | 100 → 5: the chord law handles 71 representatives and the coupled two-ear law handles 24 |
+| Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 
@@ -254,7 +259,10 @@ to the actual configurations. The integration obligations are:
    The earlier ten-step proof established the joint repair. A shared profile
    certificate now covers all three cores, choosing both centres jointly and
    constructing the tips against that same choice. A general chord-exchange
-   rule handles 71 nonterminal representatives, with 29 residual finite covers.
+   rule handles 71 nonterminal representatives; coupled two-ear exchanges
+   handle 24 more, retaining 216 local pair classifications and five residual
+   finite covers. The latter rule has six active ports, with arbitrary fixed
+   ports reinserted by the general mask-transport theorem.
    Its cover and input checks retain every required exterior alternative.
 3. **Integrated:** the complete assembly uses the shared profile proof for
    configurations 2 and 4. Configuration 1 inherits repair from 2 via the

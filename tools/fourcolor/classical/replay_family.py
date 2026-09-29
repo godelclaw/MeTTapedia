@@ -21,7 +21,8 @@ MODULES = ["ExecutableConfiguration", "ConfigurationTable", "ConfigurationRealiz
            "DiamondJointRepairAudit", "KempeBoundarySplit", "DiamondSplitRepair",
            "DiamondSplitRepairAudit", "KempeBoundaryMerge", "BoundaryEarRepair",
            "BoundaryEarGSLT", "DiamondEarFamily", "DiamondEarFamilyAudit",
-           "DiamondProfile", "KempeProfileCertificate", "KempeChordExchange", "DiamondProfileData",
+           "DiamondProfile", "KempeProfileCertificate", "KempeChordExchange", "KempeChordMasks",
+           "DiamondProfileData",
            "DiamondProfileCertificate", "DiamondProfileFamilyRepair",
            "DiamondProfileReducibility", "DiamondProfileAudit"]
 

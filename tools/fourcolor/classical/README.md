@@ -795,7 +795,7 @@ python3 tools/fourcolor/classical/generate_diamond_profile_certificate.py \
 
 The program report is candidate evidence. The kernel-checked consumer and its
 integration receipts are recorded in `diamond-profile-measurements.json`.
-There are 92 ranked profile types, 236 trace representatives and 265 answer
+There are 92 ranked profile types, 236 trace representatives and 289 answer
 references. All 183 proper six-port traces, all 546 proper seven-port traces,
 and all 108 inputs of the eight-port joint contract are covered. The eight-port
 certificate covers 684 traces in total; it does not claim to cover every
@@ -805,12 +805,21 @@ The generator first tests a uniform single-chord exchange: after choosing the
 fixed colour and anchor, every opposite-parity active partner must give a
 lower-ranked profile. The Lean theorem `KempeChordExchange.answer_exists`
 proves coverage for arbitrary boundary length. It handles 11, 45 and 15
-nonterminal representatives in the three cores; 4, 7 and 18 retain finite
-chromogram covers. The generator independently checks each chosen structural
-step against all matching chromograms. The ninth word-record digit selects
-the anchor plus one, or zero for the residual cover checker. `structural_counts`
-kernel-checks the consumer counts. This replaces 71 local cover obligations,
-with no additional whole configuration certificate or catalogue entry removed.
+nonterminal representatives in the three cores. The coupled two-ear rule then
+handles 4, 7 and 13 more. `KempeChordMasks.recolor_matches` transports any
+compatible active mask through the same exterior, reinserting fixed-colour
+ports. The separate finite `six_checked` theorem supplies two disjoint cyclic
+ears for every balanced six-active-port skeleton. Either ear or both may be
+exchanged, so their joint choice is retained. There are nine local ear-pair
+classifications per consumer, 216 in total; finite ranks and target references
+also remain. The remaining five original chromogram covers belong to
+configuration 4. No byte or runtime saving is claimed.
+
+The generator independently checks each chosen structural step against every
+matching chromogram. The ninth word-record digit is 1--8 for a chord anchor
+plus one, 9 for the coupled rule, or zero for the residual checker or terminal.
+`structural_counts` and `coupled_counts` kernel-check the consumer counts.
+No additional whole configuration certificate or catalogue entry is removed.
 
 The ranked-answer principle and chromogram-cover checker are reused from the
 reference development. Actual terminal graph witnesses use the shared diamond
