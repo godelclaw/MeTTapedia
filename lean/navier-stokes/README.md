@@ -454,6 +454,29 @@ the unsmoothed point-receiver limit even with zero memory. It therefore
 cannot be inserted directly into the Bellman target; physical pressure
 cancellations and concentration control remain necessary.
 
+`MettapediaNS.ViscousMemoryNormalization` supplies a more direct candidate:
+divide the joint envelope by `h=det(I+C/eta)^(1/3)`. Analytically,
+`1<=h<=1+tr C/(3eta)`, and the actual memory equation gives
+`D h=h Q_geom`, with `Q_geom` a nonnegative source-plus-shape cost.
+The nonnegative resource
+`integral [|u|^2+tr C-3eta(h-1)]` pays `3eta integral h Q_geom`.
+The normalized logarithm has auxiliary sampling drift
+`-u+2nu grad(log h)` and remaining source `B_near-Q_geom`.
+A Doob density identifies this law with a reweighting of actual viscous
+paths; it does not change the fluid equation. Memory is retained at seams.
+
+A uniform full-datum bound on `Y_hat/h` would suffice for continuation
+in both settings: it bounds `|omega|^4` by a constant times `1+tr C`.
+Splitting low and high vorticity avoids integrating the constant over
+whole space; the energy and memory-mass bounds then control the
+space-time fourth moment. The analytic enstrophy inequality and Gronwall
+give a uniform gradient-energy bound. Six scalar/integral/matrix
+statements certify parts of this implication. The determinant/PDE,
+stochastic identification and actual NS application remain analytic.
+Exact matrix jets and complete shear histories check the formulas.
+The controlled-history bound for `B_near-Q_geom` remains open; neither
+the normalization nor the paid global cost supplies it automatically.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

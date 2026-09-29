@@ -5544,3 +5544,213 @@ controlled-history bound.
 ```sh
 python3 -O labs/viscous_memory_pressure.py
 ```
+
+## Geometric-mean normalization and a conditional continuation bound
+
+The point-receiver obstruction motivates using the memory equation
+locally before estimating a spatial pressure pairing. The candidate
+in `viscous_memory_normalization.py` keeps the complete envelope and
+divides it by a scalar constructed from actual retained memory.
+
+Fix the memory regularizer `eta>0`, independently of the envelope's
+positive regularizers. On every available smooth unforced prefix set
+
+```text
+H=eta I+C,
+h=det(I+C/eta)^(1/3),    psi=log h,
+A_j=H^(-1/2)(partial_j C)H^(-1/2),
+F_shape=sum_j [||A_j||_F^2-(tr A_j)^2/3].
+```
+
+Arithmetic--geometric mean and `C>=0` give
+`1<=h<=1+tr C/(3eta)`. The shape cost is nonnegative: each summand
+is `||A_j-(tr A_j)I/3||_F^2`. It retains all orientation changes and
+changes in relative eigenvalues, while subtracting isotropic expansion.
+There is no spectral-gap assumption, and repeated eigenvalues are
+harmless. The earlier Taylor--Green example has a fixed eigenframe;
+its relative eigenvalues can still vary.
+
+### The actual geometric payment and sampling law
+
+Using `D C=2nu G` in the full determinant chain rule gives
+
+```text
+Q_geom=(2nu/3) tr(H^(-1)G)+(nu/3)F_shape >=0,
+D h = h Q_geom,
+D psi-nu|grad psi|^2=Q_geom.
+```
+
+In particular, define the nonnegative local and global reserves
+
+```text
+r_vol=|u|^2+tr C-3eta(h-1) >=0,
+R_vol(t)=integral r_vol(t,x) dx.
+```
+
+Their actual unforced balances are
+
+```text
+D r_vol=-2 div(pu)-3eta h Q_geom,
+R_vol(t)+3eta integral_0^t integral h Q_geom=E0.
+```
+
+The whole-space cutoff argument is justified by
+`0<=r_vol<=|u|^2+tr C` and `0<=h-1<=tr C/(3eta)`, as in the preceding
+entropy identity. Nonnegative costs are integrated by monotone
+convergence. No uniform future norm is used in the resulting allowance.
+This is a genuine resource for the displayed costs; it does not itself
+control their distribution along a concentrated receiver.
+
+The corresponding stochastic law is also explicit. Along the actual
+backward viscous characteristic
+`dX_s=-u(t-s,X_s)ds+sqrt(2nu)dB_s`, the density
+
+```text
+Z_s = h(t-s,X_s)/h(t,x)
+      * exp(integral_0^s Q_geom(t-r,X_r)dr)
+```
+
+has stochastic differential
+`dZ_s=Z_s sqrt(2nu) grad psi(t-s,X_s).dB_s`. On each compact smooth
+prefix its bounded coefficients justify the martingale and change of
+measure. The reweighted path has drift `-u+2nu grad psi`. It is an
+auxiliary sampling process; all physical fields remain the same actual
+unforced solution. The density ratios telescope at intermediate times
+and its integral costs add, provided the actual memory at the seam is
+retained. This identifies a concrete Doob transform, not an independently
+chosen endpoint-constrained Schrödinger-bridge optimizer.
+
+### The normalized Bellman target
+
+Retain the earlier nearby observation `Y_hat`, its complete signed
+source `B_near`, and its paid distant coefficient
+`kappa=27E0/(pi R^5)` for fixed whole-space separation `R>0`. In the
+periodic full-pressure formulation use its complete source and no
+separated term. Put
+
+```text
+Z=Y_hat/h,      L=log Z-kappa t,
+D_tilde=partial_t+(u-2nu grad psi).grad-nu Delta.
+```
+
+The change of observable and drift gives exactly
+
+```text
+D_tilde L-nu|grad L|^2 <= B_near-Q_geom.
+```
+
+Thus the missing sufficient bound can be sought on these particular
+compatible histories:
+
+```text
+sup_b E integral_0^t
+  [B_near(t-s,X_s)-Q_geom(t-s,X_s)-|b_s|^2/(4nu)]ds
+  <= A(u0,nu,H,R,eta),     t<=H,
+dX_s=[-u+2nu grad psi+b_s](t-s,X_s)ds+sqrt(2nu)dB_s.
+```
+
+The bound must be uniform in receivers and all available smooth
+prefixes. The control `b` changes sampling only. Since `h(0)=1`, Itô's
+formula and square completion would give
+
+```text
+sup_x Z(t,x) <= exp[sup_x log Y_hat(0,x)+kappa H+A].
+```
+
+This reward bound is **not proved here**. It retains the full nearby
+pressure, parent commutator, memory reaction and receiver-gradient
+terms in `B_near`. The explicit nonnegative subtraction changes the
+candidate estimate; the finite global payment alone does not bound
+its expectation under arbitrary controlled sampling.
+
+### Why the normalization still suffices for continuation
+
+Here is an analytic implication in both settings, for `nu>0`. Suppose
+`Z<=B` uniformly on all prefixes up to a prescribed horizon, with `B`
+fixed from the datum and parameters. Coercivity of the envelope gives
+`Y_hat>=(44/95)|omega|^4`. Set `M=(95/44)B` and `c=tr C`. Then
+
+```text
+|omega|^4 <= M[1+c/(3eta)].
+```
+
+On whole space the constant on the right cannot be integrated. Instead,
+split at `|omega|^4=2M`. The low part is paid by enstrophy, and the high
+part by memory:
+
+```text
+|omega|^4 <= sqrt(2M)|omega|^2+(2M/(3eta))c.
+```
+
+Write `W(t)=integral |omega|^2`, `F4(t)=integral |omega|^4`. The actual
+energy equality and memory mass give
+
+```text
+integral_0^t W <= E0/(2nu),    integral c(t)<=E0,
+integral_0^t F4 <= K4,
+K4=sqrt(2M)E0/(2nu)+2M E0 H/(3eta),    t<=H.
+```
+
+The same argument works with normalized periodic volume. All these
+constants are independent of the endpoint of the available prefix.
+`ViscousMemoryNormalization.integrable_quartic_of_memory` formally proves
+the spatial splitting and integral bound on an arbitrary measure space.
+It does not assume integrability of the fourth power in its hypotheses.
+
+For completeness, let `D_omega=integral |grad omega|^2`. The actual
+unforced enstrophy identity, the `L^4` strain bound and Sobolev
+interpolation give, with a fixed domain constant `C_*`,
+
+```text
+W'/2+nu D_omega
+  <= C_* F4^(1/4) W^(5/8) D_omega^(3/8),
+W' <= K_* nu^(-3/5) F4^(2/5) W,
+K_*=(5/4)(3/4)^(3/5) C_*^(8/5).
+```
+
+On the torus the vorticity has mean zero, so Poincaré supplies the
+homogeneous Sobolev estimate used here. On whole space use the canonical
+strain singular integral and homogeneous Sobolev inequality. Young's
+inequality absorbs half the dissipation. Since `x^(2/5)<=1+x` for
+`x>=0`, Gronwall yields the explicit horizon bound
+
+```text
+W(t) <= W(0) exp[K_* nu^(-3/5)(H+K4)].
+```
+
+Solenoidality identifies `W` with gradient energy. This supplies the
+quantity required by `WholeSpaceEnstrophyContinuation`'s
+`hasNSEvolution_of_orderOne_bound` and contradicts the periodic
+`FourierLerayRate.one_le_lerayRate` on a finite maximal lifespan, with
+the usual zero-mean/Galilean reduction in the Fourier interface.
+The actual PDE, singular-integral/interpolation and continuation
+application in this paragraph are analytic; they are not yet instantiated
+as a new Lean theorem on arbitrary NS evolutions.
+
+### Checks and scope
+
+Six formal statements certify normalized scalar coercivity, the
+low/high-amplitude split, its measure-theoretic integrability consequence,
+the matrix shape identity and positivity, and the exact change of drift.
+The determinant calculus, nonnegative physical reserve, Doob density and
+NS continuation application remain analytic. Generic noncommuting
+matrix jets check the full determinant formula independently. Six exact
+positive-time and initial shear samples check its physical realization,
+including repeated eigenvalues; their complete normalized envelope is
+a parabolic subsolution for the derived auxiliary drift. These shears
+have no vortex stretching and do not establish the general reward bound.
+A full nonsymmetric three-dimensional NS initial tangent, with `C(0)=0`
+and viscosity `1/1000`, has strictly positive normalized parabolic
+production even after the memory correction and geometric subtraction.
+A rational lower certificate is included. This refutes automatic
+subsolution behavior, not temporal growth, regularity, or a full-datum
+history allowance. The remaining signed estimate is still necessary.
+
+All continuation claims above concern unforced NS. A body force adds
+terms to the physical energy, vorticity and envelope equations. No claim
+that an imported forced candidate violates this particular normalized
+bound is made without checking those hypotheses and terms.
+
+```sh
+python3 -O labs/viscous_memory_normalization.py
+```
