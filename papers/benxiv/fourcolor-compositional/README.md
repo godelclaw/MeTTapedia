@@ -45,7 +45,10 @@ profile law now provides a common finite descent for all three cores. The
 complete proof consumes the new configuration-2 and configuration-4 repairs,
 and transfers the former to configuration 1. All three original certificate
 dependencies are absent. The shared rank uses joint available-colour sets and
-boundary length; its 236 trace representatives still have finite cover checks.
+boundary length. A structural single-chord exchange theorem now answers every
+exterior for 71 of its 100 nonterminal representatives; 29 individual finite
+chromogram covers remain. The chord theorem has no boundary-length bound,
+while the joint-profile ranks and partner targets remain finite data.
 A broader core-family theorem and geometric coverage remain open.
 
 A bounded [replacement experiment](diamond-example/README.md#testing-a-different-strict-replacement)
@@ -213,7 +216,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Reference configuration certificate dependencies retained / replaced | 630 / 3 |
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
-| Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 266 answers |
+| Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 265 answers |
+| Finite chromogram-cover obligations | 100 → 29: one arbitrary-length chord law handles 71 representatives across the three cores |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 
@@ -249,13 +253,15 @@ to the actual configurations. The integration obligations are:
    side-edge contraction alone fails the Kempe obligation, proved in Lean.
    The earlier ten-step proof established the joint repair. A shared profile
    certificate now covers all three cores, choosing both centres jointly and
-   constructing the tips against that same choice. Its cover and input checks
-   retain every required exterior alternative.
+   constructing the tips against that same choice. A general chord-exchange
+   rule handles 71 nonterminal representatives, with 29 residual finite covers.
+   Its cover and input checks retain every required exterior alternative.
 3. **Integrated:** the complete assembly uses the shared profile proof for
    configurations 2 and 4. Configuration 1 inherits repair from 2 via the
    general split law, with actual witness reconstruction and the validated
    contract. The audit excludes all three original certificate dependencies.
-   The profile still includes boundary length and finite chromogram answers;
+   The profile still includes boundary length, finite partner targets and
+   residual chromogram answers;
    this is not a proof for arbitrarily long insertion fans. The next task is
    further structural descent and a larger family with proved geometric supply.
 

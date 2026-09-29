@@ -1,13 +1,16 @@
 import MettapediaFourColor.DiamondProfile
 import MettapediaFourColor.DiamondProfileData
 import MettapediaFourColor.KempeProfileCertificate
+import MettapediaFourColor.KempeChordExchange
 
 /-! # One joint-profile certificate for the three diamond cores
 
 The 236 trace representatives use a single rank on 92 joint profile types.
 Fifty-one profile types have actual interior colourings; the other 41 descend
-through checked Kempe answers. These remain finite certificate obligations.
-No original configuration certificate or global Kempe fixed point is used.
+through checked Kempe answers. A single-chord theorem handles 71 nonterminal
+representatives; 29 retain individual finite chromogram covers. The rank and
+partner targets remain finite data. No original configuration certificate or
+global Kempe fixed point is used.
 -/
 
 namespace FourColor.DiamondProfileCertificate
@@ -48,6 +51,38 @@ def answers (s : Shape) (i : State s) : List (State s × EdgePerm) :=
       Nat.mod_lt _ (count_pos s)⟩,
       readPerm (digit data (3 + 3 * j)))
 
+/-- Zero means a finite cover; a positive code selects a chord anchor plus one. -/
+def strategy (s : Shape) (i : State s) : ℕ :=
+  digit (DiamondProfileData.wordCodes (offset s + i.val)) 8
+
+def coverCheck (s : Shape) (i : State s) : Bool :=
+  let et := word s i
+  let ans := answers s i
+  if strategy s i = 0 then
+    coversRec et (ans.map fun a => ([], KempeProfileCertificate.answerWord (word s) a)) []
+  else
+    let anchor := strategy s i - 1
+    decide (anchor ≤ et.length ∧ ((et.rotate anchor).headD 0).hi = true) &&
+      (KempeChordExchange.answers et anchor).all fun t => ans.any fun a =>
+        decide (KempeProfileCertificate.answerWord (word s) a = t)
+
+theorem coverCheck_sound (s : Shape) (i : State s) (h : coverCheck s i = true)
+    (gram : Chromogram) (hm : matchg [] (word s i) gram) :
+    ∃ a ∈ answers s i,
+      matchg [] (KempeProfileCertificate.answerWord (word s) a) gram := by
+  unfold coverCheck at h
+  split at h
+  · obtain ⟨_, hmem, hmatch⟩ := coversRec_sound _ _ [] h gram hm
+    obtain ⟨a, hamem, rfl⟩ := List.mem_map.mp hmem
+    exact ⟨a, hamem, hmatch⟩
+  · rw [Bool.and_eq_true] at h
+    obtain ⟨guard, allAnswers⟩ := h
+    obtain ⟨bound, high⟩ := of_decide_eq_true guard
+    obtain ⟨t, ht, hmatch⟩ := KempeChordExchange.answer_exists _ _ gram bound high hm
+    obtain ⟨a, ha, heq⟩ := List.any_eq_true.mp (List.all_eq_true.mp allAnswers t ht)
+    refine ⟨a, ha, ?_⟩
+    simpa only [of_decide_eq_true heq] using hmatch
+
 /-- The rank depends on boundary length and the joint availability profile. -/
 def rank (s : Shape) (et : List Color) : ℕ :=
   let profile := key s et
@@ -57,22 +92,24 @@ def rank (s : Shape) (et : List Color) : ℕ :=
   | some i => digit (DiamondProfileData.rankCodes i) 4
 
 def check (s : Shape) (i : State s) : Bool :=
-  if rank s (word s i) = 1 then good s (word s i)
-  else coversRec (word s i)
-      ((answers s i).map fun a => ([], KempeProfileCertificate.answerWord (word s) a)) [] &&
+  if rank s (word s i) = 1 then good s (word s i) && decide (strategy s i = 0)
+  else coverCheck s i &&
     (answers s i).all fun a => decide (rank s (word s a.1) < rank s (word s i))
 
 theorem check_sound (s : Shape) (i : State s) (h : check s i = true) :
     Supports s (word s i) ∨
-      (coversRec (word s i)
-        ((answers s i).map fun a => ([], KempeProfileCertificate.answerWord (word s) a)) [] = true ∧
+      ((∀ gram, matchg [] (word s i) gram →
+          ∃ a ∈ answers s i,
+            matchg [] (KempeProfileCertificate.answerWord (word s) a) gram) ∧
         ∀ a ∈ answers s i, rank s (word s a.1) < rank s (word s i)) := by
   unfold check at h
   split at h
-  · exact Or.inl (good_supports s _ h)
+  · rw [Bool.and_eq_true] at h
+    exact Or.inl (good_supports s _ h.1)
   · rw [Bool.and_eq_true] at h
     obtain ⟨hc, ha⟩ := h
-    exact Or.inr ⟨hc, fun a hm => of_decide_eq_true ((List.all_eq_true.mp ha) a hm)⟩
+    exact Or.inr ⟨coverCheck_sound s i hc,
+      fun a hm => of_decide_eq_true ((List.all_eq_true.mp ha) a hm)⟩
 
 set_option maxRecDepth 32768 in
 set_option maxHeartbeats 2000000 in
@@ -95,9 +132,26 @@ theorem checked (s : Shape) : ∀ i : State s, check s i = true := by
   · exact checked1
   · exact checked2
 
+/-- Every selected structural consumer is nonterminal and checks its full partner cover. -/
+theorem structural_checked (s : Shape) (i : State s) (hs : strategy s i ≠ 0) :
+    rank s (word s i) ≠ 1 ∧ coverCheck s i = true := by
+  have h := checked s i
+  unfold check at h
+  split at h
+  · rw [Bool.and_eq_true] at h
+    exact (hs (of_decide_eq_true h.2)).elim
+  · rw [Bool.and_eq_true] at h
+    exact ⟨by assumption, h.1⟩
+
+/-- The structural rule has actual consumers in each of the three cores. -/
+theorem structural_counts :
+    ([0, 1, 2] : List Shape).map (fun s =>
+      ((List.finRange (count s)).filter fun i => strategy s i != 0).length) = [11, 45, 15] := by
+  decide +kernel
+
 /-- The same ranked-answer theorem reconstructs compatible choices for each core. -/
 theorem repair (s : Shape) (i : State s) : KempeCoclosure (Supports s) (word s i) :=
-  KempeProfileCertificate.sound (word s) (rank s) (answers s)
+  KempeProfileCertificate.sound_of_cover (word s) (rank s) (answers s)
     (fun j => check_sound s j (checked s j)) i
 
 def covered (s : Shape) (et : List Color) : Bool :=

@@ -256,7 +256,7 @@ forgetting colour names and allowing exchanges of the centres or of the tips.
 It also retains boundary length: dropping that information did not support
 the candidate descent. The generated finite data contain 92 ranked profile
 types, including 51 terminal types and 41 nonterminal types. There are 236
-trace representatives and 266 answer references, with at most six strict
+trace representatives and 265 answer references, with at most six strict
 rank decreases before a terminal. This measures proof descent, not physical
 Kempe-chain swaps.
 
@@ -268,21 +268,49 @@ Kempe-chain swaps.
 
 For each nonterminal representative the kernel checks an answer for **every**
 matching exterior chromogram, with strict descent in the shared profile rank.
+The [single-chord exchange law][chord] now supplies that coverage for 71 of the
+100 nonterminal representatives:
+
+1. Choose a boundary edge and a pair of colours to exchange. Ignore the ports
+   carrying the fixed third edge colour.
+2. Its exterior chord must end at a port of the opposite parity in the remaining
+   cyclic order: the active ports between its two ends are paired internally.
+3. Exchanging the two ends preserves that same exterior chromogram. If every
+   possible partner gives a lower-ranked joint profile, one structural argument
+   supplies the repair step for every exterior.
+
+This theorem holds at arbitrary boundary length and uses no finite chromogram
+checker or configuration data. The concrete consumers still check the ranks
+and target references of all possible partners.
+
+| Core | Nonterminal representatives | Covered by the chord law | Residual finite covers |
+| --- | ---: | ---: | ---: |
+| Configuration 1 | 15 | 11 | 4 |
+| Configuration 2 | 52 | 45 | 7 |
+| Configuration 4 | 33 | 15 | 18 |
+
+The consumer counts are kernel checked in `structural_counts`. Thus individual
+finite chromogram-cover obligations fall from 100 to 29. This measures a
+shared structural proof step; it removes no additional whole configuration
+certificate. The longer-fan obstruction remains unaffected.
+The shared decreasing rank composes the structural and residual steps; the
+remaining finite covers still contribute to the complete core repair.
+
 [Input coverage][profile-inputs] verifies the actual required domains. The
 [graph consumers][profile-reduction] then reconstruct literal graph colourings,
 transport the ordered rings, and validate the reference contracts. The complete
 proof supplies strict reduction and classical geometric coverage.
 
-This is a bounded profile explanation of three core shapes. The Kempe cover
+This is a bounded profile explanation of three core shapes, now using an
+unbounded single-chord law for most local steps. The residual Kempe cover
 checker and ranked-certificate principle are reused from the reference proof;
-the finite cover table is still present. Sharing that checker alone would not
-be a new uniform theorem. The concrete result is that repair for these inputs
-can descend using this particular joint observable and can reconstruct genuine
+the remaining finite cover table is explicit. Repair for these inputs can
+descend using this particular joint observable and can reconstruct genuine
 colourings. Boundary length separates the three shapes, so the rank table does
 not by itself prove a law independent of ring size. It also does not assert
 that these are all repairable eight-port traces.
 
-The [eleven-root audit][profile-audit] excludes the original configuration 1,
+The [fourteen-root audit][profile-audit] excludes the original configuration 1,
 2 and 4 certificates, the former diamond repair bodies, global Kempe fixed-point
 computations and the complete theorem from the new local proofs. The complete
 endpoint audit requires the replacement proofs. All 633 configurations remain;
@@ -518,3 +546,4 @@ excludes configuration 1's original certificate.
 [profile-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfileReducibility.lean
 [profile-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondProfileAudit.lean
 [profile-measurements]: ../../../../tools/fourcolor/classical/diamond-profile-measurements.json
+[chord]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeChordExchange.lean

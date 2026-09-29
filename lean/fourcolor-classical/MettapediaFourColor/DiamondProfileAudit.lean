@@ -7,7 +7,8 @@ import Lean.Util.FoldConsts
 The complete graph reductions must consume profile descent, actual interior
 witnesses and the proved reference contraction decoder. The three original
 configuration certificates and the earlier diamond repair bodies are excluded.
-The finite cover data remain explicit proof obligations.
+The single-chord law is independent of the catalogue and finite-cover checker;
+its consumer count is kernel checked. Residual finite covers remain explicit.
 -/
 
 open FourColor
@@ -17,11 +18,17 @@ run_cmd do
   let env ← getEnv
   let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
   let roots : List (Name × List Name) := [
-    (``KempeProfileCertificate.sound, [``kempeCoclosure_of_rank, ``coversRec_sound,
+    (``KempeProfileCertificate.sound_of_cover, [``kempeCoclosure_of_rank,
       ``KempeProfileCertificate.answerWord_map]),
+    (``KempeChordExchange.answer_exists, [``KempeChordExchange.exchange_first,
+      ``matchg_gramRot]),
+    (``DiamondProfileCertificate.structural_counts, [``DiamondProfileCertificate.strategy]),
+    (``DiamondProfileCertificate.structural_checked, [``DiamondProfileCertificate.checked0,
+      ``DiamondProfileCertificate.checked1, ``DiamondProfileCertificate.checked2]),
     (``DiamondProfile.good_supports, [``DiamondProfile.solve,
       ``Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.Summary]),
-    (``DiamondProfileCertificate.repair, [``KempeProfileCertificate.sound,
+    (``DiamondProfileCertificate.repair, [``KempeProfileCertificate.sound_of_cover,
+      ``KempeChordExchange.answer_exists, ``DiamondProfileCertificate.coverCheck_sound,
       ``DiamondProfileCertificate.checked0, ``DiamondProfileCertificate.checked1,
       ``DiamondProfileCertificate.checked2, ``DiamondProfile.good_supports,
       ``DiamondProfile.key]),
@@ -69,10 +76,12 @@ run_cmd do
     for name in seen.toList do
       if forbidden.any (·.isPrefixOf name) then
         throwError m!"Superseded certificate or complete theorem in {root}: {name}"
-      if root == ``KempeProfileCertificate.sound &&
+      if (root == ``KempeProfileCertificate.sound_of_cover ||
+          root == ``KempeChordExchange.answer_exists) &&
           ([`FourColor.Bulk, `FourColor.DiamondConfigurations,
-            `FourColor.DiamondContract].any (·.isPrefixOf name) || name == ``cfmap) then
-        throwError m!"The ranked-answer law depends on a catalogue instance: {name}"
+            `FourColor.DiamondContract].any (·.isPrefixOf name) || name == ``cfmap ||
+              name == ``coversRec || name == ``coversRec_sound) then
+        throwError m!"A structural answer law depends on a catalogue or finite cover: {name}"
     let axioms ← liftCoreM <| collectAxioms root
     for name in axioms do
       unless allowed.contains name do

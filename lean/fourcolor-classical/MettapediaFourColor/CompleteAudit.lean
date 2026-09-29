@@ -35,6 +35,8 @@ run_cmd do
     ``FourColor.KempeBoundarySplit.repairs_collapse,
     ``FourColor.DiamondSplitRepair.reconstruct,
     ``FourColor.DiamondProfileCertificate.repair,
+    ``FourColor.KempeChordExchange.answer_exists,
+    ``FourColor.DiamondProfileCertificate.coverCheck_sound,
     ``FourColor.DiamondProfile.good_supports,
     ``FourColor.DiamondProfileReducibility.supports_graph,
     ``FourColor.DiamondBoundarySummary.reference002,
