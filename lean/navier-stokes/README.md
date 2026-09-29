@@ -372,6 +372,20 @@ The stochastic identification and endpoint expectation are analytic;
 the spatial primitive bound is Lean-certified. Mixed gradients can have
 either sign, and the individual weight and near-field costs remain open.
 
+`MettapediaNS.PressureCoreReaction` pays the direct distant-pressure
+reaction that remains in the strain after changing that observation.
+Its normalized size is at most `(9/4) ||P_far||_F`, uniformly in strain,
+vorticity, nearby pressure and the positive regularizers. The analytic
+separated-kernel bound gives the actual fixed-radius history allowance
+`27 E0 H/(pi R^5)`, along any receiver history on a horizon `H`.
+The scalar sensitivity and its conversion are Lean-certified; the
+actual tensor/PDE identification is analytic. The exact companion lab
+`near_pressure_reaction.py` keeps the full pressure in the nearby parent
+equation and retains its singular-kernel commutator and all gradient
+terms. Its Fourier splits check the identity, not a spatial cutoff.
+The corrected reserve still has positive production on smooth unforced
+data. Nearby parent histories and shrinking scales remain unpaid.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

@@ -4708,3 +4708,147 @@ using geometry. The full pressure kernel also has signed tensor weights.
 ```sh
 python3 -O labs/synchronous_pressure_history.py
 ```
+
+## Direct pressure reaction after changing the observation
+
+`near_pressure_reaction.py` checks the complete pressure/core production
+after a fixed pressure split. This isolates a further term with a finite
+allowance: distant pressure still reacts on the local strain, even after
+its pairing has been removed from the reserve's measurement.
+
+Write `P=P_n+F`, with `F=K_R*(u tensor u)` the separated tensor from the
+preceding section, and `P_n` the retained nearby tensor. For a spatial
+cutoff that is one outside `2R`, its kernel is
+`K_n=(1-chi_R) partial_abij[1/(4pi|z|)]`, as a distribution. The local
+distributional terms at zero are included. No ordinary convergent
+near-field integral is assumed.
+
+### The complete nearby production
+
+Put `N_n=omega.P_n omega`, `r=V/(W+eta)`,
+`g_n=pressure_eta(N_n)-core_eta`, `theta=h_delta'(g_n)` and
+`Y_n=1+core_eta+h_delta(g_n)`. Both regularizers stay strictly positive.
+Use the actual unforced fields and `D=partial_t+u.grad-nu Delta`.
+The gradient contractions are
+
+```text
+A=sum_j |partial_j omega|^2,
+C=sum_j [4 partial_j omega.(partial_j S)omega
+         +2 partial_j omega.S(partial_j omega)],
+K_S=sum_j ||partial_j S||_F^2,
+Z_cross=sum_j (S omega).(partial_j S)(partial_j omega),
+Z_grad=sum_j |(partial_j S)omega+S(partial_j omega)|^2,
+Gamma_n=sum_j [partial_j omega.P_n(partial_j omega)
+              +2 partial_j omega.(partial_j P_n)omega].
+```
+
+The actual equations give `D W=2V-2nu A`. Define the parts of the other
+moment rates left after isolating the direct `F` reaction:
+
+```text
+v_n=Z-N_n-nu C,
+q_n=-2 tr(S^3)-V/2-2 tr(S P_n)-2nu K_S,
+z_n=-2(S omega).P_n omega-4nu Z_cross-2nu Z_grad.
+```
+
+Thus `D V=v_n-omega.F omega`, `D Q=q_n-2tr(SF)` and
+`D Z=z_n-2(S omega).F omega`. The pressure slot itself retains
+
+```text
+D N_n=2(S omega).P_n omega+omega.(D P_n)omega-2nu Gamma_n,
+D P_n=K_n*[-grad p tensor u-u tensor grad p
+            -2nu sum_j partial_j u tensor partial_j u]
+      +[u.grad,K_n*](u tensor u).
+```
+
+The commutator means `u.grad(K_n*T)-K_n*(u.grad T)`. This distributional
+definition keeps every local term. The pressure `p` at the parents is
+the complete actual pressure, not a nearby substitute. Consequently the
+split does not close the nearby fluid into an autonomous subsystem.
+
+The full candidate has the exact identity
+
+```text
+D Y_n=R_n+R_F,
+R_F=-10r (omega.F omega)
+    -(1-theta)[(8/7)(S omega).F omega+(20/21)W tr(SF)],
+
+R_n=10r v_n-5r^2 D W
+    -10nu/(W+eta)|grad V-r grad W|^2
+    +(1-theta)[(4/7)z_n+(10/21)(Q D W+W q_n-2nu grad Q.grad W)]
+    +(44/95+theta/5)(2W D W-2nu|grad W|^2)
+    -2theta D N_n-nu h_delta''(g_n)|grad g_n|^2.
+```
+
+These are parts of one actual evolution. In particular, `v_n,q_n,z_n`
+are not asserted to be moment rates of a second fluid. All pressure,
+switch and correlated-gradient costs remain in `R_n`.
+
+### A uniform payment for the direct reaction
+
+The scalar reserve has a bounded logarithmic sensitivity to strain:
+
+```text
+|R_F|/Y_n <= (9/4) ||F||_F.
+```
+
+This holds for every instantaneous geometry and nearby pressure value,
+including vorticity zeros. It assumes no sign for `R_F`. To see the
+uniform constant, put `s=||S||_F`, `w=|omega|`, `z=|S omega|`, `k=9/4`.
+Matrix Cauchy--Schwarz bounds the three tensor contractions, while Young's
+inequality bounds the remaining slope by
+
+```text
+10|V|w^2/(w^2+eta)+(8/7)zw+(20/21)w^2 s
+ <= k[5V^2/(w^2+eta)+(4/7)z^2+(10/21)s^2w^2]
+      +(508/189)w^2
+ <= k Y_n.
+```
+
+The last step uses `w^2 <= (3/4)[1+(44/95)w^4]` and
+`127/63<9/4`. `PressureCoreReaction` formally proves the strain-slot
+derivative, these scalar bounds and the normalized conversion. Its
+contraction hypotheses are explicit; the actual matrix/PDE identification
+is analytic and independently checked on full NS Fourier tangents.
+
+The symmetric separated tensor satisfies
+`||F||_F <= sqrt(3)||F||_op <=12 E(t)/(pi R^5)` by the previous directional
+kernel bound. On an actual unforced smooth prefix, `E(t)<=E0`. Therefore
+
+```text
+integral_0^tau |R_F/Y_n|(t,x(t))dt <= 27 E0 tau/(pi R^5)
+                                   <= 27 E0 H/(pi R^5),   tau<=H,
+L_n=log Y_n-[27 E0/(pi R^5)]t,
+D L_n-nu|grad L_n|^2 <= R_n/Y_n.
+```
+
+The first assertion holds over any available smooth prefix and any
+measurable receiver history; its constant uses the prescribed horizon.
+No future strain bound or fresh allowance at an intermediate seam is
+used. The tensor identification, finite-horizon application and HJB
+conversion here are analytic; the scalar coefficient conversion is
+Lean-certified. The coefficient is not uniform as `R` shrinks. This
+payment alone does not distinguish unforced fluid from forced fluid with
+the same separated-tensor bound. The unforced condition remains essential
+in the full moment and parent equations above.
+
+### Checks and the remaining obligation
+
+The exact checker keeps all generated fluid and pressure-time modes.
+It tests retaining all pressure, removing all pressure from the observed
+slot, and a smooth Fourier multiplier split. These test the algebraic
+identity; the multiplier split is not a spatial separation cutoff, and
+the fixed-radius estimate is not inferred from those examples.
+
+At viscosity `1/100`, the complete corrected production is strictly
+positive in all three cases. Each sign has a rational lower certificate;
+printed decimal rates only illustrate size. The omitted pressure remains
+in the actual NS tangent, and its strain reaction agrees with the formula
+above. These are initial-time tests on smooth data, not singularities or
+refutations of a full-datum history allowance. The unresolved target is
+a uniform signed history bound for `R_n/Y_n`, retaining the actual nearby
+parent pressure, geometry and spatial gradients.
+
+```sh
+python3 -O labs/near_pressure_reaction.py
+```
