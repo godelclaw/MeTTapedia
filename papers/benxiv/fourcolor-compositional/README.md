@@ -56,6 +56,13 @@ terminate at an actual pentagonal seam. In a least counterexample, a supplied
 five-port row reaches one within three extensions. Initial row supply,
 reductions at those pentagonal stops and changing widths remain coverage tasks.
 
+The [alternating-cycle recognition theorem](tube-example/README.md#recognizing-the-initial-row)
+now derives the initial row's interior and complete interfaces from a simple
+cycle and its alternating local turns. It works at every width at least two.
+Independent tests find width-10 and width-15 rows in the two Goldberg examples
+that had no five-port row. This advances geometric recognition; existence of
+a suitable cycle and a reduction effective at its width remain open.
+
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved

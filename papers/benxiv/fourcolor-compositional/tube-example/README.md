@@ -141,9 +141,10 @@ The four-ring threshold is sufficient; its optimality is not claimed.
 
 The facial adapter derives row orientation from the original face incidences
 and alternating retained degrees, then consumes this reduction directly in
-`FacialCycleChord.chain_length_le_four`. Suitable alternating-row supply,
-complete interfaces, and control of width remain geometric tasks. An unmarked
-band or a large hexagonal patch alone does not provide them.
+`FacialCycleChord.chain_length_le_four`. The initial-row recognition below now
+constructs the interfaces from a simple alternating cycle. Supply of such
+cycles and control of width remain geometric tasks. An unmarked band or a
+large hexagonal patch alone does not provide them.
 
 An [independent dart-permutation probe][seam-probe] checks all 5,912 seam
 permutations at widths two through seven. Exactly the cyclic translations
@@ -224,6 +225,41 @@ The [current measurement record][noncollision-measurements] separates
 noncollision, finite termination, physical reduction and remaining coverage.
 The [earlier collar record][collar-measurements] retains its checkpoint data.
 
+## Recognizing the initial row
+
+The [recognition theorem][alternating-recognition] takes a simple cyclic vertex
+order of length `2k`, with `k ≥ 2`, in an actual bridgeless spherical cubic
+graph. Its turns alternate in the original rotation system. These local
+conditions determine a facial side: [the cycle-walk bridge][cycle-walk]
+constructs the actual simple closed walk and its exact edge set, and spherical
+separation supplies both connected facial shores. The alternating retained
+degrees are then proved from the local turns. If the faces at the unused
+ports have size five or six, the existing geometric argument excludes chords
+and constructs both complete ordered interfaces.
+
+No shore, chordlessness assertion or boundary bijection is supplied separately.
+The resulting row has the original vertices and darts. `row_support` gives
+the exact joint colouring relation with genuine interior witnesses. In the
+all-face-5/6 class, `recognized_pentagonWithin` feeds the earlier finite growth
+theorem; at width five, `recognized_pentagonWithin_three` consumes physical
+four-ring reduction under the minimal-counterexample hypothesis.
+
+The [independent orbit probe][alternating-probe] enumerates every state of the
+dart/turn-phase permutation in twelve explicit maps, with no cycle-length
+cutoff. It finds 468 simple oriented rows and checks 1,082 successful collar
+extensions; all 468 histories reach pentagonal seams. For Goldberg `GP(n,0)`,
+tested at `n = 1,...,8`, there are `12n` simple oriented rows of width `5n`.
+Thus the earlier examples without alternating ten-cycles do have wider rows:
+width ten for `GP(2,0)` and width fifteen for `GP(3,0)`.
+
+Eight other orbits in the capped-strip examples repeat a vertex. Finite
+permutation closure therefore does not itself establish simplicity. The
+Goldberg pattern is finite program evidence, not an all-frequency Lean
+theorem. No universal supply theorem or effective wider-row reduction is
+claimed. The [measurement record][alternating-measurements] records the
+recognition audit and its physical consumer. Catalogue and certificate
+savings from this step are zero.
+
 ## Scope and verification
 
 This establishes an infinite family reduction from the corridor idea,
@@ -277,3 +313,7 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [collar-noncollision]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalCollarNoncollision.lean
 [collar-growth]: ../../../../tools/fourcolor/classical/hexagonal-collar-growth-probe.json
 [noncollision-measurements]: ../../../../tools/fourcolor/classical/hexagonal-collar-noncollision-measurements.json
+[cycle-walk]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleFrameWalk.lean
+[alternating-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AlternatingCycleRecognition.lean
+[alternating-probe]: ../../../../tools/fourcolor/classical/alternating-cycle-probe.json
+[alternating-measurements]: ../../../../tools/fourcolor/classical/alternating-cycle-measurements.json

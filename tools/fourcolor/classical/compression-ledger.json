@@ -458,6 +458,34 @@
       "original_configuration_certificates_replaced": 0,
       "integrated_into_complete_four_color_assembly": false,
       "next_obligation": "Supply starting rows or broader constructions, reduce pentagonal stopping cases, and handle changing widths and other face sizes."
+    },
+    {
+      "name": "simple alternating cycles supply complete oriented rows",
+      "record": "alternating-cycle-measurements.json",
+      "status": "Kernel-checked cyclic-walk and facial-shore construction, exact colouring semantics and physical-reduction consumer.",
+      "family": "Simple cycles of length 2k, k at least two, with alternating original rotation turns in bridgeless spherical cubic graphs; unused-port faces have length five or six.",
+      "geometric_hypotheses_discharged": [
+        "Separately supplied interior facial region",
+        "Connectedness of both facial shores",
+        "Alternating retained degrees",
+        "Chordlessness",
+        "Both complete ordered boundary interfaces"
+      ],
+      "retained_hypothesis": "A simple cycle with the specified local alternating turns is supplied.",
+      "consumers": [
+        "AlternatingCycleRecognition.row_support",
+        "AlternatingCycleRecognition.recognized_pentagonWithin",
+        "AlternatingCycleRecognition.recognized_pentagonWithin_three"
+      ],
+      "independent_program_record": "alternating-cycle-probe.json",
+      "simple_oriented_rows_tested": 468,
+      "successful_extensions_tested": 1082,
+      "nonsimple_orbit_controls": 8,
+      "goldberg_observation": "For n=1,...,8, GP(n,0) has 12n simple oriented rows of width 5n; this is finite program evidence only.",
+      "new_classical_certificate_savings": 0,
+      "configurations_removed": 0,
+      "integrated_into_complete_four_color_assembly": false,
+      "next_obligation": "Supply suitable simple alternating cycles more broadly, prove a reduction effective at the encountered width, or reduce the pentagonal stopping geometry."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",

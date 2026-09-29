@@ -28,7 +28,10 @@ construct a successor row under short output-face hypotheses: distinctness of
 its candidate vertices is proved from the geometry. In finite maps with only
 pentagonal/hexagonal faces, this growth terminates at a pentagonal seam. A
 minimal counterexample reaches that seam within three extensions of a supplied
-five-port row. Initial row supply, reductions at pentagonal stops, width control
+five-port row. A simple cycle with alternating local turns now constructs that
+row's facial sides and complete ordered interfaces at every width at least two;
+see [AlternatingCycleRecognition](AlternatingCycleRecognition.lean).
+Supply of suitable simple cycles, reductions at pentagonal stops, width control
 and a broader core-family reduction remain open. The GSLT, graph and MeTTa
 results have their own verified consumers, listed in the guide.
 

@@ -189,6 +189,17 @@ A least counterexample reaches one within three extensions of a supplied
 five-port row; otherwise the construction supplies a reducible five-row tube.
 No reduction at the pentagonal stop is asserted. Initial alternating-row
 supply, changing widths and non-fullerene maps remain coverage obligations.
+AlternatingCycleRecognition now constructs a complete oriented row from a
+simple cycle with alternating local turns, at every width k ≥ 2. Spherical
+separation supplies both connected facial shores; short port faces exclude
+chords. The interior, retained degree pattern and both complete ordered
+interfaces are derived. Exact joint colouring support and the original darts
+are preserved. This recognition feeds finite pentagonal termination and, at
+width five, the three-extension bound from physical reduction. A suitable
+simple alternating cycle still has to be supplied. Independent dart/phase
+orbit tests find wider rows in the formerly empty five-port Goldberg examples,
+but also nonsimple orbits in capped strips. Neither universal simplicity nor
+universal row supply is inferred from those finite tests.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond

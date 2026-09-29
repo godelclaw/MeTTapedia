@@ -952,3 +952,29 @@ examples have no starting alternating ten-cycle. The kernel audit, exact
 hypotheses and costs are recorded in
 `hexagonal-collar-noncollision-measurements.json`. No additional classical
 certificate or configuration is removed by this geometric result.
+
+## Simple alternating cycles and complete rows
+
+`CycleFrameWalk.lean` constructs the actual simple closed walk of a cyclic
+frame. `AlternatingCycleRecognition.lean` then derives connected facial sides,
+alternating retained degrees, chordlessness and complete ordered interfaces
+from a simple cycle with alternating local turns. The ambient graph is
+bridgeless spherical cubic; width is at least two and unused-port faces have
+size five or six. Exact joint colouring support is preserved. The constructed
+row feeds pentagonal termination and, at width five in a minimal
+counterexample, the physical four-ring reduction.
+
+```sh
+python3 tools/fourcolor/classical/alternating_cycle_probe.py \
+  --output alternating-cycle-probe.json
+```
+
+The independent probe inspects every dart/phase orbit of twelve explicit
+rotations. It checks 468 simple oriented rows, 1,082 successful extensions
+and 468 pentagonal endpoints, retaining eight nonsimple orbits as controls.
+Goldberg `GP(n,0)` for `n = 1,...,8` has `12n` simple oriented rows of width
+`5n` in these tests. The width-five zero-start examples thus have broader
+rows. This finite pattern neither proves universal simplicity nor supplies
+a wider-row reduction. `alternating-cycle-measurements.json` records the
+separate Lean audit. No original certificate dependency or configuration is
+removed by this recognition step.

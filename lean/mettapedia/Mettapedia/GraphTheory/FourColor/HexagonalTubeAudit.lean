@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.HexagonalTubeExclusion
 import Mettapedia.GraphTheory.FourColor.HexagonalTubeReduction
 import Mettapedia.GraphTheory.FourColor.HexagonalCollarProgress
+import Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition
 import Lean.Util.FoldConsts
 
 /-!
@@ -97,6 +98,24 @@ run_cmd do
       ``ZigzagSlab.tube_of_not_stops, ``Tube.literalSlab]),
     (``ZigzagSlab.pentagonWithin_three, [``ZigzagSlab.collarVertex_injective,
       ``ZigzagSlab.stopsWithin_three, ``SlabOf.five_reduction])]
+  let contracts := contracts ++ [
+    (``InducedCycleLayer.Frame.exists_cycle, [``InducedCycleLayer.rowIndex_injective,
+      ``InducedCycleLayer.rowIndex_next]),
+    (``AlternatingCycleRecognition.exists_facial_sides,
+      [``InducedCycleLayer.Frame.exists_cycle,
+      ``GoertzelV24PrimalCycleFacialBond.exists_faceSet_bond_of_isCycle,
+      ``GoertzelV24PrimalCycleFacialBond.face_sides_connected_of_isCycle]),
+    (``AlternatingCycleRecognition.alternating_degrees,
+      [``FacialCycleLayer.BoundsFaces.rotation_at]),
+    (``AlternatingCycleRecognition.row, [``AlternatingCycleRecognition.exists_facial_sides,
+      ``AlternatingCycleRecognition.alternating_degrees, ``FacialCycleChord.toSlab]),
+    (``AlternatingCycleRecognition.row_support, [``AlternatingCycleRecognition.row,
+      ``ZigzagSlab.mem_sideSupport_inner'_iff]),
+    (``AlternatingCycleRecognition.recognized_pentagonWithin,
+      [``AlternatingCycleRecognition.row, ``ZigzagSlab.pentagonWithin_card]),
+    (``AlternatingCycleRecognition.recognized_pentagonWithin_three,
+      [``AlternatingCycleRecognition.row, ``ZigzagSlab.pentagonWithin_three,
+      ``SlabOf.five_reduction])]
   let mut inspected : NameSet := {}
   for (root, required) in contracts do
     let mut seen : NameSet := {}
