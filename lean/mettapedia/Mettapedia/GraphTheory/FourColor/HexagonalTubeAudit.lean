@@ -1,11 +1,12 @@
 import Mettapedia.GraphTheory.FourColor.HexagonalTubeExclusion
+import Mettapedia.GraphTheory.FourColor.HexagonalTubeReduction
 import Lean.Util.FoldConsts
 
 /-!
-# Dependency audit of geometric seam recognition
+# Dependency audit of geometric recognition and physical tube reduction
 
 The checked endpoints must consume actual face geometry, colouring-witness
-composition and the strict shore splice. None may use the classical Four
+composition, exact exterior sewing and physical strict reduction. None may use the classical Four
 Colour theorem or its configuration catalogue.
 -/
 
@@ -41,6 +42,27 @@ run_cmd do
       ``FacialCycleChord.toSlab, ``FacialCycleChord.toCycle,
       ``Tube.le_of_hexagonal, ``CyclicPortSeam.translation_of_six_steps,
       ``GoertzelV24MajorityShoreStateDescent.cardPhasedState_ne_of_ssubset])]
+  let contracts := contracts ++ [
+    (``SlabOf.assemble_rotationCompatible, [``SlabOf.matching_mate]),
+    (``Tube.literalSlab, [``Tube.assembleRings, ``SlabOf.assembleWith,
+      ``SlabOf.shiftRing, ``ZigzagSlab.seam_eq_add]),
+    (``SlabOf.reassembled_colorable_iff, [``SlabOf.outsidePort_surjective,
+      ``SlabOf.reassemblyDartEquiv_alpha, ``SlabOf.reassemblyDartEquiv_vert]),
+    (``SlabOf.reassembled_class, [``SlabOf.reassemblyDartEquiv_rho,
+      ``RotationSystemExactTransport.mapClass]),
+    (``OpenTangleClosedWitness.replace, [``OpenTangleClosedWitness.restrict,
+      ``OpenTangleClosedWitness.glue]),
+    (``SlabOf.five_vertex_loss, [``SlabOf.exteriorVertexEquiv, ``ZigzagRing.tube_vertex_card]),
+    (``SlabOf.five_reduction, [``SlabOf.reassembled_class,
+      ``ZigzagRing.tube_replacement_class, ``OpenTangleClosedWitness.colorable_iff,
+      ``ZigzagRing.five_tube_support, ``GoertzelV24FiveTubeExclusion.five_ring_stabilizes]),
+    (``SlabOf.five_reconstruct, [``OpenTangleClosedWitness.replace,
+      ``GoertzelV24VertexSideReassembly.exists_taitColoring_of_dartEquiv]),
+    (``Tube.hexagonal_five_length_le_four, [``Tube.literalSlab, ``SlabOf.five_reduction,
+      ``GoertzelV24TwoEdgeCutMinimality.GraphBackedVertexMinimalTaitCounterexample.smallerColorable]),
+    (``FacialCycleChord.chain_length_le_four, [``FacialCycleChord.prepend_hexagonal,
+      ``FacialCycleChord.toSlab, ``FacialCycleChord.toCycle,
+      ``Tube.hexagonal_five_length_le_four])]
   let mut inspected : NameSet := {}
   for (root, required) in contracts do
     let mut seen : NameSet := {}
@@ -64,6 +86,6 @@ run_cmd do
       unless allowed.contains name do
         throwError m!"Unexpected axiom in {root}: {name}"
     logInfo m!"Audited {root}: {axioms.toList}"
-  logInfo m!"Hexagonal seam recognition: {contracts.length} roots; \
+  logInfo m!"Hexagonal recognition and reduction: {contracts.length} roots; \
     {inspected.toList.length} declarations in their combined dependency closure; \
     no classical FourColor dependencies."

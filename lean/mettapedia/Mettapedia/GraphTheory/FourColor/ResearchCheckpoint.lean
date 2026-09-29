@@ -161,11 +161,17 @@ these translations aligns an arbitrarily long chain and gives the exact
 iterated ring support, with genuine side-colouring witnesses. The existing
 strict shore splice therefore excludes excessively long such chains in a
 graph-backed minimal counterexample without an assumed common port labelling.
-The five-port bound remains 446403 rows; no numerical improvement is claimed.
-The facial-row adapter derives orientation from the original retained degrees
-and face incidences. Alternation, supply of consecutive recognized rows and
-general strict-reduction coverage remain open. This does not yet identify an
-entire recognized strip with the literal tube needed for four-ring shortening.
+The newer whole-strip assembly identifies every recognized nonempty chain
+with the literal tube, preserving all original vertices, darts, edge mates,
+vertex rotations and ordered end ports. Cutting out those exact vertices and
+sewing the tube into its actual exterior is an exact relabelling. Consequently
+a five-port strip with at least five rows reduces to four, removing ten
+vertices per deleted row inside the same bridgeless spherical cubic class.
+Reconstruction retains every exterior edge colour. The minimal-counterexample
+bound improves from the coarse 446403 to four rows, without extra connected-
+shore hypotheses. Optimality of four is not asserted. The facial-row adapter
+consumes this bound directly. Alternation, supply of consecutive recognized
+rows, interface-width control and general strict-reduction coverage remain open.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond

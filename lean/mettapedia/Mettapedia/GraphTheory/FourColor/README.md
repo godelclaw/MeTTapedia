@@ -13,16 +13,19 @@ now proves four-colourability for finite simple graphs with noncrossing plane
 drawings and supplies compatible GSLT colouring witnesses for exact
 constructions of every bridgeless spherical cubic source map. The checked
 root is [MettapediaFourColor.Complete](../../../../fourcolor-classical/MettapediaFourColor/Complete.lean).
-All 633 catalogue entries remain. The complete proof retains 631 reference
-configuration certificate dependencies: configuration 1 now inherits repair
-from configuration 2 through a general boundary-split law, and configuration 4
-uses the coupled diamond repair. Shared proofs also replace 231 independent
-discharging computations.
+All 633 catalogue entries remain. The complete proof retains 630 reference
+configuration certificate dependencies. A shared finite joint-profile repair
+supplies configurations 2 and 4, and a general boundary-split law transfers
+repair from configuration 2 to configuration 1. Shared proofs also replace
+231 independent discharging computations.
 
-This completes the classical reconstruction. The original uniform
-corridor/finite-base mechanism and uniform repair covering all three diamonds
-or broader families remain research questions. The GSLT, graph and
-MeTTa results have their own verified consumers, listed in the guide.
+This completes the classical reconstruction. The diamond cores now share
+boundary laws for all their local cover obligations, retaining finite profile
+and classification data. A recognized oriented five-port hexagonal strip now
+reduces to four rows in its actual exterior, with the original geometric class
+and all exterior colours preserved. Universal geometric supply, width control
+and a broader core-family reduction remain open. The GSLT, graph and MeTTa
+results have their own verified consumers, listed in the guide.
 
 ## Independent corridor route — checkpoint of 22 September 2026
 

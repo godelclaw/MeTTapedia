@@ -125,7 +125,7 @@ theorem tube_connected_bridgeless (hk : 2 ≤ k) (n : Nat) :
 
 open GoertzelV24FaceDualConnectedness GoertzelV24RotationEdgeBridge
 
-variable {V I B : Type} [Fintype V] [DecidableEq V] [Fintype I] [DecidableEq I]
+variable {V I B : Type*} [Fintype V] [DecidableEq V] [Fintype I] [DecidableEq I]
   [Fintype B] [DecidableEq B]
 
 /-- In any fixed exterior, exchanging two nonempty tubes preserves the

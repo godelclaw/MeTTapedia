@@ -864,9 +864,34 @@ The general result constructs aligned coordinates along arbitrary chains of
 recognized oriented rows from their actual hexagonal seam faces. Exact
 side-colouring support composition then supplies the existing strict
 shore-splice argument, without an assumed common port labelling. The
-five-port bound remains 446,403 rows; the new result is geometric alignment,
-not a smaller cutoff or another catalogue replacement. The facial adapter
+five-port bound at that checkpoint was 446,403 rows; that step established
+geometric alignment. The physical strip reduction below now improves the
+bound to four. The facial adapter
 derives rotation compatibility from face incidences and alternating retained
 degrees. The complete proof still retains 633 configurations and 630 original
 configuration certificates. See the [tube guide](../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 for the exact hypotheses and remaining recognition/coverage obligations.
+
+
+## Recognized strips and four-ring physical reduction
+
+`hexagonal_strip_probe.py` checks selected complete capped strips with three,
+five and seven rows. Nonzero seam shifts accumulate into a literal dart
+relabelling preserving both edge reversal and vertex rotation. Five- and
+seven-row examples shorten to four, and a colouring is reconstructed with
+all 20 exterior edge colours fixed. The report contains explicit witnesses.
+
+```sh
+python3 tools/fourcolor/classical/hexagonal_strip_probe.py \
+  --output hexagonal-strip-probe.json
+```
+
+These finite program checks are separate from the Lean theorem.
+`HexagonalTubeAssembly`, `SlabExterior`, `RotationSystemExactTransport` and
+`HexagonalTubeReduction` now connect actual recognized strips to the physical
+four-ring normal form. A graph-backed vertex-minimal counterexample has at
+most four rows in such a five-port strip; no connected-shore premise is added.
+The row supply and width hypotheses remain to be justified more broadly.
+`hexagonal-strip-measurements.json` records the current audit and costs.
+No additional classical configuration certificate or catalogue entry is
+removed, and no counting equality or executable Kempe procedure is asserted.

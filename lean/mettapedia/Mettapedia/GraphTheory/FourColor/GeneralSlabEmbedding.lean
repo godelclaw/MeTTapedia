@@ -26,13 +26,13 @@ variable (RS : RotationSystem.{u, u, u} V E) {k : Nat} [NeZero k]
 /-! ## A slab of arbitrary shape attached to a side -/
 
 /-- the darts of an abstract two-sided tangle with `Fin k` ports on both sides -/
-abbrev SlabDart {Vt It : Type u} (T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)) : Type u :=
+abbrev SlabDart {Vt It : Type*} (T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)) :=
   It ⊕ (Fin k ⊕ Fin k)
 
 /-- a copy of the abstract tangle `T` sitting in the rotation system next to the side
 `inner`: an injection of its darts with its incidences, in-ports attached to exactly the
 boundary darts of `inner`, out-ports leaving the union -/
-structure SlabOf {Vt It : Type u} (T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k))
+structure SlabOf {Vt It : Type*} (T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k))
     (inner : V → Prop) where
   ι : SlabDart T → RS.D
   vtx : Vt → V
@@ -49,7 +49,7 @@ structure SlabOf {Vt It : Type u} (T : TwoSidedOpenTangleData Vt It (Fin k) (Fin
 
 namespace SlabOf
 
-variable {RS} {Vt It : Type u} {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)}
+variable {RS} {Vt It : Type*} {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)}
   {inner : V → Prop} (S : SlabOf RS T inner)
 
 /-- the enlarged side -/

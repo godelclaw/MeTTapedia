@@ -30,7 +30,8 @@ variable (k : Nat) [NeZero k]
 theorem tube_returnCode (n : Nat) : returnCode (asOpen (tube k n).data) = boundaryPerm k :=
   (returnCode_asOpen _).trans (tube_face_code k n)
 
-variable {V I B : Type} [Fintype V] [DecidableEq V] [Fintype I] [DecidableEq I]
+section Geometry
+variable {V I B : Type*} [Fintype V] [DecidableEq V] [Fintype I] [DecidableEq I]
   [Fintype B] [DecidableEq B]
 
 /-- Equal Euler characteristics of the actual closed rotation systems,
@@ -79,6 +80,11 @@ theorem tube_replacement_class (hk : 2 ≤ k) (r s : Nat) (outside : OpenTangleD
     (tube_rotationCyclic k s)
   edgeBridgeFree := ((tube_replacement_structural k hk r s outside m).mp
     ⟨h.primalConnected, h.edgeBridgeFree⟩).2
+
+end Geometry
+
+variable {V I B : Type} [Fintype V] [DecidableEq V] [Fintype I] [DecidableEq I]
+  [Fintype B] [DecidableEq B]
 
 /-- The stable ordered support gives equivalence of actual Tait-colourability
 in every fixed closed exterior, with no restrictions on its topology. -/

@@ -117,19 +117,33 @@ permutations. Reindexing by this one offset gives exactly the usual two-ring
 colouring relation, including reconstruction of actual side colourings.
 
 The [chain theorem][hex-chain] accumulates these offsets through any number of
-rows. In the resulting coordinates, accepted words are exactly the iterated
-ring relation. The [physical consumer][hex-exclusion] combines this fact with
-the existing strict shore splice: for five-port rows, a graph-backed
-vertex-minimal counterexample cannot have more than **446,403** such rows,
-under the stated good-inner-side and connected-shore hypotheses. The bound is
-unchanged; the improvement is that seam alignment follows from face geometry.
-The facial adapter constructs the row's rotation compatibility from its
-original face incidences and alternating retained degrees.
+rows. The [whole-strip assembly][hex-assembly] now proves that the recognized
+chain is the literal serial tube: every original strip vertex and dart is
+accounted for, with internal edge mates, vertex rotations and both ordered
+interfaces preserved.
 
-This does not yet recognize an entire strip as the literal sewn tube used in
-the four-ring replacement above. Supplying the alternating rows, their
-complete interfaces and the end-shore conditions remains a geometric task.
-An unmarked band or a large hexagonal patch alone does not provide them.
+The [exterior-sewing theorem][exterior] cuts out precisely those vertices.
+Its complete port bijection and dart/vertex equivalences identify the sewn
+map with the original one. [Exact structural transport][transport] preserves
+cubicity, connectedness, bridgelessness and the quotient-face Euler equation.
+The exterior may be disconnected; no separate connected-shore premise is
+needed. The [closed-witness bridge][closed-witness] reconstructs actual edge
+colourings while retaining every exterior edge colour.
+
+Consequently, [physical reduction of the recognized strip][hex-reduction]
+consumes the earlier four-ring certificate. For a strip with `l ≥ 5` rows it
+removes exactly `10(l−4)` vertices, stays in the original bridgeless spherical
+cubic map class, and restores a genuine colouring of the original graph from
+one of the smaller graph. `hexagonal_five_length_le_four` excludes such a
+strip from a graph-backed vertex-minimal counterexample. This improves the
+previous [coarse shore-splice bound][hex-exclusion] from 446,403 to four rows.
+The four-ring threshold is sufficient; its optimality is not claimed.
+
+The facial adapter derives row orientation from the original face incidences
+and alternating retained degrees, then consumes this reduction directly in
+`FacialCycleChord.chain_length_le_four`. Suitable alternating-row supply,
+complete interfaces, and control of width remain geometric tasks. An unmarked
+band or a large hexagonal patch alone does not provide them.
 
 An [independent dart-permutation probe][seam-probe] checks all 5,912 seam
 permutations at widths two through seven. Exactly the cyclic translations
@@ -141,12 +155,19 @@ Euler characteristic zero; it is a toroidal example, not a planar
 counterexample. These examples are program checks, separate from the general
 Lean proofs.
 
-The [geometric audit][hex-audit] checks twelve roots and 23,144 dependency
-declarations, requires the actual facial-recognition, support and strict-splice
-consumers, and rejects classical `FourColor` dependencies. The [measurement
-record][hex-measurements] separates the new proof costs from the reused finite
-five-port stabilization certificate. No configuration or certificate is
-removed by this geometric result.
+A second [strip probe][strip-probe] checks exact dart and rotation relabelling
+for selected three-, five- and seven-row capped strips, including nonzero
+accumulated seam shifts. It reconstructs colourings of the five- and seven-row
+maps from a four-row map while fixing all 20 exterior edge colours. The maps
+have respectively 60 and 80 vertices before replacement and 50 afterwards.
+These are independent finite program checks, not Lean certificates.
+
+The expanded [geometric audit][hex-audit] requires both the actual
+facial-recognition and four-ring reduction consumers, and rejects classical
+`FourColor` dependencies. The [current measurement record][strip-measurements]
+separates these proofs from the reused finite five-port stabilization
+certificate and the earlier [seam checkpoint][hex-measurements]. No
+configuration or certificate is removed by this geometric result.
 
 ## Scope and verification
 
@@ -186,3 +207,10 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [hex-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeAudit.lean
 [hex-measurements]: ../../../../tools/fourcolor/classical/hexagonal-seam-measurements.json
 [seam-probe]: ../../../../tools/fourcolor/classical/hexagonal-seam-probe.json
+[hex-assembly]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeAssembly.lean
+[exterior]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SlabExterior.lean
+[transport]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/RotationSystemExactTransport.lean
+[closed-witness]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleClosedWitness.lean
+[hex-reduction]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeReduction.lean
+[strip-probe]: ../../../../tools/fourcolor/classical/hexagonal-strip-probe.json
+[strip-measurements]: ../../../../tools/fourcolor/classical/hexagonal-strip-measurements.json
