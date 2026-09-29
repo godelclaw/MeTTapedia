@@ -3373,3 +3373,248 @@ whole-space exterior kernel constants are not claimed for the torus.
 ```sh
 python3 -O labs/pressure_history_source.py
 ```
+
+## Transverse strain and compression-to-extension histories
+
+`transverse_strain_history.py` extends the compact-core pressure calculation
+to an arbitrary symmetric trace-free strain and an arbitrary vorticity
+direction. It derives an exact transverse-resource law with the actual
+pressure and viscosity retained. The comparison law bounds one stretching
+episode, but compression can replenish its normalized resource in a smooth
+unforced flow. This identifies a cost that an arbitrary-flow history
+argument must retain. The physical construction and interval arguments
+below are analytic; the checker certifies finite algebra and spherical
+moments with SymPy, not the Lean kernel.
+
+### A compact datum that realizes the complete pressure comparison
+
+Fix a symmetric trace-free matrix `S`, a vector `omega`, and the
+antisymmetric matrix `A x=(omega cross x)/2`. Choose smooth radial
+cutoffs `chi,psi`, equal to one near the origin and compactly supported.
+The entire support of `psi` is contained in a ball where `chi=1`. Set
+
+```text
+u_B = curl[-(chi(r)/3) x cross Sx]
+    = (chi+r chi'/3) Sx - (chi'/(3r)) x (x·Sx),
+u_C = psi(r) A x,                  u0 = u_B+u_C.
+```
+
+These are smooth compactly supported divergence-free fields. In a ball
+about the origin, `u0=(S+A)x`; all local Laplacians of the strain and
+vorticity therefore vanish there. Smooth local unforced NS evolution
+exists for every positive viscosity. The pressure is canonical Newtonian
+pressure, determined by the entire compact datum, not prescribed as an
+independent forcing.
+
+Its exact Hessian at the origin is
+
+```text
+P_core(S,omega) = -(2/7) S^2 -(5/21) tr(S^2) I
+                 + (|omega|^2/5) I - omega omega^T/10
+                 - (2/5)(SA-AS).
+```
+
+Here the three parts are the background, swirl, and cross pressure.
+To compute them, write `q=tr((grad u)^2)`. The distributional Hessian
+of the Newtonian kernel gives
+
+```text
+Hess p(0) = -q(0) I/3
+            + integral_0^infinity average_S2[(3nn^T-I) q(rn)] dr/r.
+```
+
+The contact term is necessary. For the background, put `c=chi`,
+`d=r chi'`, `e=r^2 chi''`. Its full gradient at `x=rn` is
+
+```text
+(c+d/3)S + ((4d+e)/3)(Sn)n^T
+ - (d/3)(n·Sn)I - ((e-d)/3)(n·Sn)nn^T - (2d/3)n(Sn)^T.
+```
+
+The angular calculation uses
+`average(n1^(2a) n2^(2b) n3^(2c)) =
+ (2a-1)!!(2b-1)!!(2c-1)!!/(2a+2b+2c+1)!!`;
+an odd exponent gives zero. After angular integration the radial moments
+are only
+
+```text
+integral cd dr/r = -1/2,
+integral ce dr/r = 1/2-J,
+integral d^2 dr/r = J,
+integral de dr/r = -J,               J=integral r (chi')^2 dr.
+```
+
+Integration by parts proves these identities, and every `J` term cancels.
+For the swirl, `grad u_C=psi A+(r psi')(An)n^T`; the remaining moment is
+`integral psi psi' dr=-1/2`. The cross source is
+`2r psi' n·SA n`, with `integral psi' dr=-1`. This gives the displayed
+pressure matrix, independently of the two cutoff profiles under the
+nested-support hypotheses. The checker differentiates the background
+vector potential and checks all matrix entries of these angular integrals.
+Diagonalizing `S` is legitimate by orthogonal covariance; the rotation
+axis remains arbitrary. The result is an initial pressure identity, not
+an invariant class of NS solutions.
+
+### Actual moving-direction law
+
+For any smooth unforced flow, in either whole space or the periodic
+setting, write `L=partial_t+u·grad`, `S=sym grad u`, `P=Hess p`, and
+`Omega=|omega|>0`. Define `dev M=M-tr(M)I/3`. The actual material laws are
+exactly
+
+```text
+L S = -(5/7) dev(S^2) -(3/20) dev(omega omega^T)
+      +(2/5)(SA-AS)+E,
+L omega = S omega+f,
+E = P_core(S,omega)-P+nu Delta S,       f=nu Delta omega.
+```
+
+Thus `E` is a symmetric trace-free physical defect, not a free control.
+The formula follows from `L S=-S^2-A^2-P+nu Delta S`.
+Away from vorticity zeros, let
+
+```text
+xi=omega/Omega,         sigma=xi·Sxi,
+z=Sxi-sigma xi,         G=|z|^2,
+Q=I-xi xi^T,           U=QSQ+(sigma/2)Q,
+delta^2=tr(U^2)/2,     K=delta^2+(19/4)G.
+```
+
+`U` is the trace-free transverse strain. Both terms in `K` are
+nonnegative, with no alignment hypothesis. Equivalently,
+`K=tr(S^2)/2-(3/4)sigma^2+(15/4)G`. In a frame with `xi=e3`,
+
+```text
+S = [ -sigma/2+d       e          z1 ]
+    [     e       -sigma/2-d     z2 ]
+    [     z1          z2        sigma ],
+delta^2=d^2+e^2,             z·Uz=d(z1^2-z2^2)+2e z1 z2.
+```
+
+First set `E=f=0` to examine the comparison dynamics. Differentiating
+the direction as well as the matrix gives
+
+```text
+L G       = -(26/7)sigma G +(4/7) z·Uz,
+L delta^2 =  (10/7)sigma delta^2 -(19/7) z·Uz,
+L K       =  (10/7)sigma K -(171/7)sigma G,
+L sigma   = -(5/14)sigma^2 +(10/21)K -G/2 -Omega^2/10.
+```
+
+The transverse transfer cancels in `K`; the rotation commutator also
+has zero work in these invariants. Holding the direction fixed would
+give different equations.
+
+For the actual flow, put `epsilon=xi·f/Omega` and `eta=Qf/Omega`.
+The complete defects are
+
+```text
+F_sigma = xi·E xi + 2 eta·z,
+F_K = tr(SE) -(3/2)sigma xi·E xi +(15/2)z·E xi
+      +(15/2)eta·Sz -(21/2)sigma eta·z.
+
+L Omega / Omega = sigma+epsilon,
+L sigma = -(5/14)sigma^2 +(10/21)K -G/2 -Omega^2/10 + F_sigma,
+L K = (10/7)sigma K -(171/7)sigma G + F_K.
+```
+
+In particular the normalized resource `kappa=K Omega^(-10/7)` obeys
+
+```text
+L kappa = Omega^(-10/7)
+            [-(171/7)sigma G + F_K -(10/7)epsilon K].
+```
+
+These are material equations: both viscous Laplacians are retained in
+`E,f`. Changing to a parabolic or stochastic equation also requires
+the spatial chain-rule terms of these nonlinear observables. The
+identities do not give those terms a favorable sign automatically.
+The checker verifies the general frame algebra and separately evaluates
+the full periodic NS RHS, including every generated Fourier mode, at
+`nu=0` and `nu=2/7`. The latter tests do not impose `E=f=0`.
+
+### A bound within one extension episode
+
+In the comparison dynamics `E=f=0`, consider an interval starting at
+`a` on which `Omega>0` and `sigma>=0`. Then `kappa` does not increase.
+Retain its starting value `kappa_* = K(a) Omega(a)^(-10/7)` and put
+`w=Omega^(1/7)`. The scalar
+
+```text
+F = 2090 w^5 sigma^2 +154 w^19 -(8360/9) kappa_* w^15
+```
+
+satisfies
+
+```text
+L F = (41800/21)sigma w^5 (K-kappa_* w^10)
+      -2090 sigma w^5 G <= 0.
+```
+
+Although `F` contains a negative term, an explicit initial shift makes
+it coercive. Let `B=8360/9`, `M=1+B kappa_*/77`, and
+`A_*=B kappa_* M^4`. For `w>=0`, splitting at `w^4=M` gives
+`B kappa_* w^15 <= 77 w^19+A_*`. Hence
+
+```text
+77 Omega(t)^(19/7) <= F(t)+A_* <= F(a)+A_*.
+```
+
+This bounds the complete extension episode from its incoming state,
+including arbitrary transverse anisotropy and nonalignment, in the
+comparison model. In the actual material equation, the exact additional
+work is `4180 w^5 sigma F_sigma + (epsilon w/7) partial_w F`.
+One must also establish the required upper bound on `kappa` from its
+actual history law. These are explicit remaining physical costs, not
+assumptions verified by the episode calculation.
+
+### Compression can replenish the resource in an actual unforced flow
+
+Use the compact construction with
+
+```text
+S = [ 1/2   0    1 ],       omega=(0,0,1),
+    [  0   1/2   0 ]
+    [  1    0   -1 ]
+
+P(0) = [ -104/105      0        1/7    ]
+       [     0     -74/105      1/5    ]
+       [    1/7       1/5    -137/105  ].
+```
+
+At the origin initially, `E=f=0` for every viscosity. The actual NS
+material tangent, computed from `L grad u=-(grad u)^2-P`, gives
+
+```text
+sigma=-1,  Omega=1,  G=1,  delta^2=0,  K=19/4,
+L omega=(1,0,-1),       L Omega=-1,
+L sigma=137/105,        L K=247/14,
+L kappa=171/7 > 0.
+```
+
+The vorticity direction turns while the magnitude decreases. Smooth
+local existence and continuity therefore give a genuine positive-time
+increase of `kappa` along the material path. This does not assume the
+pressure comparison persists: its agreement at the initial time is
+sufficient to compute the derivative and its strict sign.
+
+The example rules out monotonicity of `kappa` for all unforced flows,
+and a pointwise renewal payment that vanishes whenever `E=f=0`.
+It does not rule out a full-datum allowance, an estimate including the
+intrinsic compression term, or global regularity. In particular it is
+not a construction of repeated cycles or finite-time blowup.
+
+The surviving history obligation includes the signed work
+`Omega^(-10/7)[-(171/7)sigma G+F_K-(10/7)epsilon K]`.
+Compression contributes positively through `(-sigma)G` even before
+the pressure and viscous defects enter. Successive extension episodes
+cannot be given independent fresh starting allowances: their incoming
+`kappa` values belong to one actual evolving fluid. Its singular
+normalization near `Omega=0` also prevents an immediate spatially
+uniform bound; a threshold or regularized observable needs a proved
+entry and reentry cost. Paying these costs from the full initial datum,
+while preserving signed cancellations, remains open.
+
+```sh
+python3 -O labs/transverse_strain_history.py
+```

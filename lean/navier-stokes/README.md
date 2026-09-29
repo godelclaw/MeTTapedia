@@ -260,6 +260,26 @@ nearby interactions, and a nonnegative physical reserve remain the main
 unpaid obligations. The whole-space kernel estimate is not asserted for
 the periodic Green function.
 
+The analytic calculation in `labs/transverse_strain_history.py` now
+retains arbitrary transverse strain and changing vorticity direction.
+A compact smooth whole-space datum realizes the complete pressure
+comparison at its initial core. For `Omega=|omega|>0`, the nonnegative
+transverse quantity `K=delta^2+(19/4)|Sxi-(xi·Sxi)xi|^2` has an exact
+actual-flow evolution with the physical pressure and both viscous
+Laplacians retained. In the comparison dynamics its normalization
+`kappa=K Omega^(-10/7)` decreases during extension, giving an explicit
+vorticity bound for one such episode from its incoming state.
+
+Compression with a turning direction can replenish this resource:
+the compact unforced test has `L kappa=171/7>0` while its initial
+pressure and viscous defects vanish. This rules out global monotonicity
+of that candidate, not a full-datum history allowance. The next physical
+obligation includes compression-to-extension cycles, their pressure
+defects and the cost of crossing low-vorticity regions. The general
+identities and compact local-flow argument are analytic, checked by
+exact angular integration and complete Fourier tangents; no new Lean
+certification or arbitrary-data bound is asserted for this extension.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
