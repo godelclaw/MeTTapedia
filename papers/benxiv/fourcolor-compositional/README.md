@@ -216,12 +216,17 @@ to the actual diamond configurations. The integration obligations are:
    their actual cyclic orders and ring coordinates. The composed equivalence
    and GSLT route cover every configuration-4 colouring. See the
    [diamond example](diamond-example/README.md).
+   One interior-elimination law now describes all three actual configuration
+   boundaries and reconstructs their full colouring witnesses. Its fan model
+   has arbitrary lengths; extending reducibility to those lengths is separate.
 2. **Proved:** the specified contracts and their boundary traces are identified in
    the same graph coordinates. The joint contraction now has an exact
    six-colour boundary formula with reconstruction. Either insertion's
    side-edge contraction alone fails the Kempe obligation, proved in Lean.
    Ten small repair steps now prove the joint implication, using twenty-three
    actual terminal colourings and retaining both ordinary colouring branches.
+   Those terminal witnesses are now reconstructed through the common
+   boundary-summary law, which the complete endpoint audit requires.
 3. **Integrated:** configuration 4's original certificate dependency is replaced
    in the complete assembly, and its endpoint audit verifies the replacement.
    The next task is to generalize this coupled law to additional family members
@@ -251,6 +256,8 @@ frontend seconds and audited 124,340 imported public declarations. Only
 `propext`, `Classical.choice` and `Quot.sound` occur in the audited roots.
 The [joint repair record](../../../tools/fourcolor/classical/diamond-joint-repair-measurements.json)
 records the later family and complete-assembly checks.
+The [summary record](../../../tools/fourcolor/classical/diamond-summary-measurements.json)
+records the subsequent shared elimination law and its consumed reconstruction.
 The [reusable-semantics audit][reuse-audit] separately checks the graph and MeTTa
 consumers. Build instructions are in the [package guide][package].
 

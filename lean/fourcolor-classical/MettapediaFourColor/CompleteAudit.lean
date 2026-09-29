@@ -28,6 +28,8 @@ run_cmd do
     ``FourColor.CompositionalComplete.supported_source_sweep]
   let common := [``FourColor.DiamondFamilyReducibility.reducible_all,
     ``FourColor.DiamondJointRepair.reducible, ``FourColor.DiamondBoundaryRepair.repair,
+    ``FourColor.DiamondBoundarySummary.reference004,
+    ``Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.reconstruct,
     ``FourColor.CompositionalComplete.reducibility,
     ``FourColor.exclude5, ``FourColor.exclude6, ``FourColor.exclude7,
     ``FourColor.exclude8, ``FourColor.Orbit9.exclude9, ``FourColor.Orbit10.exclude10,

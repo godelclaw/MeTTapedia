@@ -154,13 +154,15 @@ declarations against `propext`,
 `Classical.choice` and `Quot.sound`.
 
 The driver validates the source and artifact hashes of the 87 prepared adapter
-and presentation modules and the 19 configuration-family modules.
+and presentation modules and the 21 configuration-family modules.
 Final source hashes, artifact hashes, exit statuses
 and frontend times are recorded in `.lake/complete-audit/complete-results.json`.
 The original assembly measurement record is
 [`complete-assembly-measurements.json`](../../tools/fourcolor/classical/complete-assembly-measurements.json).
 The [joint repair record](../../tools/fourcolor/classical/diamond-joint-repair-measurements.json)
 records the later family and complete-assembly checks.
+The [summary record](../../tools/fourcolor/classical/diamond-summary-measurements.json)
+records the subsequent common elimination law and its integrated reconstruction.
 The reference replay, shared-presentation builds and final adapter audit are
 distinct measurements; imported dependencies are reused by the final gate.
 
@@ -172,7 +174,7 @@ The separate configuration-family gate is:
 lake build kernelConfigurationFamilies
 ```
 
-It reuses prepared reference artifacts and checks nineteen modules without native
+It reuses prepared reference artifacts and checks twenty-one modules without native
 code generation. `ExecutableConfiguration` proves its executable decoder equal
 to the reference pointed map; `DiamondConfigurations` supplies exact finite
 presentations of configurations 1, 2 and 4. `DiamondInsertion` proves both
@@ -180,6 +182,13 @@ boundary-triangle insertions, including cyclic order, ring order and all
 colouring alternatives. `DiamondInsertionGSLT` composes those alternatives into
 actual reference colourings. `DiamondInsertionAudit` checks their dependency
 closures and excludes classical certificates and complete theorem endpoints.
+`DiamondBoundarySummary` applies one witness-level interior-elimination law to
+all three literal configuration graphs and their ordered rings. Its fan model
+allows arbitrary lengths and colour alphabets; reducibility is a separate
+property. The eleven-root summary audit checks the generic law, graph
+correspondences, boundary semantics and reconstruction into the existing GSLT
+history. `DiamondJointRepair` uses this same summary to construct its terminal
+colourings, and the complete endpoint audit requires that dependency.
 `ExecutableContract` retains the reference kernel-edge order for every program
 in its fragment. `ConfigurationContract` preserves exact contract-colouring
 witnesses; `DiamondContract` identifies the specified contract edges and their

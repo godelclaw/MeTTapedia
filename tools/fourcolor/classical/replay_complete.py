@@ -55,7 +55,7 @@ def main():
     adapters = package / ".lake/build/lib/lean"
     prepared = []
     for kind, expected_count in (("adapter", 21), ("orbit", 18), ("orbit11", 11),
-                                 ("orbit9", 37), ("family", 19)):
+                                 ("orbit9", 37), ("family", 21)):
         receipt = json.loads((package / f".lake/{kind}-audit/{kind}-results.json").read_text())
         if receipt["reference_revision"] != REFERENCE_REVISION:
             raise SystemExit("Prepared dependency uses another reference revision")

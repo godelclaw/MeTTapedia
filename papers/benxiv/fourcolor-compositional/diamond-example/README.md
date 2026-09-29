@@ -60,6 +60,39 @@ of configuration 4 exactly once. The equivalence preserves arbitrary predicates
 on the resulting colouring, so a surrounding boundary constraint can be imposed
 without losing information.
 
+## One interior-elimination law
+
+[DiamondBoundaryElimination][elimination] proves a single equivalence for a
+diamond attached to any boundary graph, over any colour alphabet. A summary
+contains a proper boundary colouring, two distinct centre colours, and a colour
+for each tip that avoids both centres and all its boundary neighbours. It
+reconstructs an actual full colouring; eliminating that colouring returns the
+same summary. Every predicate on the joint boundary assignment is preserved.
+
+This is the relevant boundary-elimination principle: retain the shared centre
+choice before solving the two tip constraints. Independent tests that forget
+which centre pair was used cannot substitute for this joint witness.
+
+[DiamondBoundarySummary][summary] gives an arbitrary-length fan model and
+checks its literal instances:
+
+| Configuration | Insertions at the two centres | Boundary length |
+| --- | --- | --- |
+| 1 | `(0,0)` | 6 |
+| 2 | `(1,0)` | 7 |
+| 4 | `(1,1)` | 8 |
+
+The graph isomorphisms and ordered ring identities connect the same summary
+to each reference reducibility boundary. Reconstruction for configuration 4
+also supplies a compatible GSLT insertion history. The joint repair below now
+constructs all its terminal witnesses through this common law; the complete
+endpoint audit requires that dependency.
+
+The uniform result here is exact colouring semantics. It applies to the fan
+graphs at every length, but does not prove them reducible. The remaining family
+claim must show that justified contract traces meet the ordinary summary
+relation under every permitted exterior constraint.
+
 ## The specified contractions
 
 [DiamondContract][contracts] also identifies the actual classical contracts,
@@ -179,8 +212,10 @@ permutation. [KempeAnswerComposition][answers] composes these answers using
 the reference's proved matching-cover specification. The five levels measure
 proof dependency depth, not a bound on the number of physical Kempe-chain swaps.
 
-[DiamondJointRepair][joint-repair] supplies a literal twelve-vertex colouring
-for each terminal pattern and checks every actual edge. Exact contract
+[DiamondJointRepair][joint-repair] checks the boundary and four-vertex interior
+conditions for each terminal pattern, then reconstructs a literal twelve-vertex
+colouring through the common summary. The resulting colouring separates the
+endpoints of every actual map edge. Exact contract
 elimination supplies the input condition. The theorem `reducible` combines
 this repair implication with the proved geometric contract conditions.
 `compatible_history` also supplies the chosen colouring's GSLT history through
@@ -226,14 +261,22 @@ dependencies. The [joint boundary audit][joint-audit] adds nine roots for the
 elimination and obstruction results, with the same exclusions. The new
 [repair audit][repair-audit] checks eight roots, excluding both existing
 configuration certificates and global Kempe fixed-point computations.
+The [summary audit][summary-audit] checks eleven roots linking the generic
+witness equivalence to all three reference rings and the GSLT history.
 The [geometry record][measurements], [contract record][contract-measurements]
 and [joint boundary record][joint-measurements] retain source hashes, artifact
 hashes and kernel/frontend costs. The [repair measurements][repair-measurements]
 record the integrated replacement. Run
 `lake build kernelConfigurationFamilies` in the classical package after
 preparing its dependencies as described in the [package guide][package].
+The [summary measurements][summary-measurements] record the subsequent common-law
+integration. No additional configuration-certificate replacement is credited.
 
 [alternatives]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleAlternatives.lean
+[elimination]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DiamondBoundaryElimination.lean
+[summary]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondBoundarySummary.lean
+[summary-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondBoundarySummaryAudit.lean
+[summary-measurements]: ../../../../tools/fourcolor/classical/diamond-summary-measurements.json
 [boundary-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondBoundaryRepair.lean
 [answers]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeAnswerComposition.lean
 [joint-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepair.lean

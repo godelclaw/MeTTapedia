@@ -48,9 +48,17 @@ import Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeMateDependenc
 import Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempePlaneWitness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalCounterexampleSelection
 import Mettapedia.GraphTheory.FourColor.GoertzelV24IrreducibleBaseBurden
+import Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination
 
 /-!
 # Supplemental research checkpoint
+
+Diamond-interior elimination gives an equivalence of actual colouring
+witnesses for an arbitrary boundary graph and attachment relation. Both tips
+retain their choices conditioned on the same distinct pair of centre colours;
+every predicate on the joint boundary assignment is preserved. The classical
+package instantiates this law on configurations 1, 2 and 4 and uses it to
+reconstruct the terminal witnesses of the configuration-4 boundary repair.
 
 An explicit build root for preserved results outside the active headline.
 The minimal-counterexample selection module imports the historical

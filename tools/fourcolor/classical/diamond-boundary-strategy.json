@@ -4,7 +4,7 @@
     "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
     "lean/fourcolor-classical/MettapediaFourColor/KempeAnswerComposition.lean": "7cbec1a9068a9a352932377beecf0768affaa5930df23681ea423054a30e0b96",
     "lean/fourcolor-classical/MettapediaFourColor/DiamondBoundaryRepair.lean": "854308276d2668370b7cd61977e0ee0d73b7b9252e83ff1d3d3e96e2f113e34f",
-    "lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepair.lean": "c36e7e21508b09fb4ddbd0bae6b40c40f89656dc8aadb5e16bdc0217759938d6",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepair.lean": "dbb30adc3c22eab86f8577d1bce94dfc89f9a6bac6e70980d7fefb5d9121eb9e",
     "tools/fourcolor/classical/audit_diamond_boundary_strategy.py": "80a290f7149f1ad7267325035ea5af1a2b9fdeab604c61f92b03832f65062457",
     "tools/fourcolor/classical/probe_diamond_kempe.py": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d",
     "tools/fourcolor/classical/probe_diamond_joint_repair.py": "2969b597a97e6a562cf844aeb2bf402583fb3d401ad6beb74bfe1f678139257c",
