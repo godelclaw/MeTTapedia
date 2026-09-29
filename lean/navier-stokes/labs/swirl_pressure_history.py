@@ -122,6 +122,8 @@ zero(2*omega0.dot(omega3)-(omega0.T*M3*omega0)[0],
      'metric vorticity third derivative still cancels')
 zero(2*omega0.dot(omega3)-184*b*b*gamma,
      'physical vorticity squared third derivative from disappearing cancellation')
+zero((2*omega0.dot(omega2)).subs(b,1)-s.Rational(54,5),
+     'at unit core amplitude the second derivative is positive as well')
 
 
 def cross_matrix(axis):

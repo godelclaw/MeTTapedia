@@ -2912,10 +2912,12 @@ the remote excess has `P'_zz=-23gamma`. The initial plateau makes
 there. The corresponding spatial Laplacians in these time jets vanish.
 Differentiating the full vorticity and frame equations therefore gives
 the displayed values. The script checks their matrix/vector jet algebra;
-the physical and parabolic identifications remain analytic. This
-positive third derivative records a finite initial amplification from
-changing parent cancellation. It supplies no assertion of later or
-recurrent growth.
+the physical and parabolic identifications remain analytic. The positive
+third derivative is a contribution from changing parent cancellation;
+by itself it does not determine the sign of the earlier time derivatives.
+For `b=1` there is actual initial increase as well:
+`k''(0)=54/(5(4+eta))>0`. These statements supply no assertion of later
+or recurrent growth.
 
 **An interval reserve with the missing cost explicit.** For any symmetric
 matrix history satisfying, on an interval,
