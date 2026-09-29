@@ -432,6 +432,28 @@ and orientation coefficients are Lean-certified; the actual matrix/PDE
 history theorem is analytic. Its remaining consumer is the signed
 nearby-pressure/vorticity estimate, with receiver concentration retained.
 
+`MettapediaNS.ViscousMemoryPressure` now bounds the action of the memory
+stress divergence using that paid matrix metric. Analytically, for a
+smooth receiver tensor `M` with pressure `q_M`, the signed memory-pressure
+pairing is bounded by `alpha E0` plus
+`integral tr(H) grad(q_M).H grad(q_M)/(4 alpha nu eta)`, where
+`H=eta I+C` and `alpha>0`. The second term is an explicit unpaid receiver
+cost. Six finite-dimensional statements certify the weighted divergence,
+pairing and rank-one defect bounds. The pressure integration and actual
+history application remain analytic.
+
+The exact `viscous_memory_pressure.py` test also shows why directions alone
+do not close this estimate. Complete unforced Taylor--Green histories
+retain a constant memory eigenframe, yet transport generates memory
+pressure at second order in time and a positive direct contribution to
+the current reserve over a short interval. This refutes a turning-only
+payment with no further allowance, not a full-datum history budget.
+The full entropy metric still charges amplitude changes. A whole-space
+heat-kernel check shows that the displayed receiver norm diverges in
+the unsmoothed point-receiver limit even with zero memory. It therefore
+cannot be inserted directly into the Bellman target; physical pressure
+cancellations and concentration control remain necessary.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

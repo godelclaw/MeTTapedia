@@ -5328,3 +5328,219 @@ actual unforced parent equations, including the signed pressure terms.
 ```sh
 python3 -O labs/viscous_memory_entropy.py
 ```
+
+## Memory pressure, spatial rearrangement and the receiver cost
+
+`viscous_memory_pressure.py` connects the paid matrix metric to an actual
+pressure pairing. It also checks an unforced history where pressure is
+generated without turning the memory eigenframe. Both results concern
+the nearby-memory term in the preceding pressure/core reserve.
+
+### A weighted pressure estimate on actual memory histories
+
+Retain `H=eta I+C`, fixed `eta>0`, and the paid metric
+`F=sum_j tr(H^(-1) C_j H^(-1) C_j)`. Put `m=tr H` and `h=div C`.
+At a point, diagonalize `H` in an orthonormal basis frozen there, with
+eigenvalues `a_i>0`. The entries `d_jik` are full tensor derivatives;
+they include orientation changes, not just eigenvalue derivatives.
+Weighted Cauchy--Schwarz gives
+
+```text
+h.H^(-1)h <= m F,
+|h.v|^2 <= F [m v.H v].
+```
+
+For example, apply it to `h_i=sum_j d_jij` with weights `a_j`, divide
+by `a_i`, and sum over `i`. The resulting sum uses only a subset of
+the nonnegative terms in `F`. A second weighted Cauchy--Schwarz gives
+the receiver bound. `ViscousMemoryPressure` proves these finite-tensor
+inequalities and their Young-inequality form, with no commutation or
+alignment assumption on `C_j`.
+
+For a smooth test tensor `M`, let `q_M` solve
+`-Delta q_M=div div M`, with the canonical periodic or whole-space
+normalization. Write `P_C=Hess q_C`. Spatial integration by parts gives
+
+```text
+integral M:P_C = -integral h.grad q_M.
+```
+
+The sign is consistent with
+`integral C:P_C=integral |grad q_C|^2>=0`. On any available smooth
+unforced prefix, define the receiver cost
+
+```text
+T(M)=integral_0^t integral m (grad q_M).H(grad q_M).
+```
+
+For smooth periodic tests, or suitable decaying whole-space tests with
+the displayed integrals finite, the preceding entropy identity yields
+
+```text
+|integral_0^t integral M:P_C| <= sqrt[E0 T(M)/(nu eta)],
+|integral_0^t integral M:P_C|
+  <= alpha E0 + T(M)/(4 alpha nu eta),   alpha>0.
+```
+
+The first factor is paid from the initial datum. **No uniform bound on
+`T(M)` is asserted.** The pressure integration and space-time application
+are analytic; the finite-tensor and scalar inequalities are Lean-certified.
+
+The named consumer is the direct memory-pressure contribution in
+`B_near`: after smoothing the receiver, take
+`M=rho (partial_S Y_hat)/Y_hat`, holding the observed pressure slot fixed
+in this strain derivative. The full pressure operator is used in the
+pairing identity. Replacing it by `K_near` adds the already controlled
+fixed-radius far-memory correction. This does not remove the other
+parent-pressure, commutator or receiver-gradient terms from `B_near`.
+Controlling this particular `T(M)`, together with the cancellations of
+the complete source, remains a physical estimate, not a new definition
+of a supposedly finite reserve.
+
+### Coherent rank-one stress and the missing transversality
+
+Locally write a rank-one stress as `C=b^2 a tensor a`, with `b>0` and
+`|a|=1`. Let `c=b^2` and `delta=div(b a)`. Direct differentiation gives
+
+```text
+div C = c[(a.grad)a-(div a)a] + 2b delta a,
+F = |grad c|^2/(eta+c)^2
+    +2c^2 |grad a|^2/[eta(eta+c)].
+```
+
+Denote the second term by `F_angle`. Since `a` is unit, curvature is
+orthogonal to `a`, and
+`|(a.grad)a|^2+(div a)^2<=2|grad a|^2`. Consequently
+
+```text
+delta=0  implies  nu |div C|^2/(eta+c) <= nu eta F_angle,
+nu |div C|^2/(eta+c) <= 2nu eta F_angle+8nu delta^2.
+```
+
+Thus genuine solenoidality of the rank-one factor makes geometry pay
+for its stress divergence. A fixed direction with transverse amplitude
+has zero stress divergence and zero pressure. The extra `delta` is an
+explicit defect when that transversality fails. The two local algebraic
+bounds are Lean-certified; no rank-one assumption is made for arbitrary
+NS memory, and no averaging over hidden parents is claimed to preserve
+this sharper cost.
+
+Each source vector `partial_j u` is solenoidal at birth. Componentwise
+passive transport need not preserve this property, even though the
+fluid itself remains incompressible. For a vector carried by the common
+Brownian translation, its Stratonovich divergence equation contains
+
+```text
+d delta+u.grad delta dt+sqrt(2nu) grad delta . circ dB
+  =-sum_(i,j) (partial_i u_j)(partial_j v_i) dt.
+```
+
+This is a defect of the transported vector, not compressibility of
+the fluid. At the retained tensor level, the exact deterministic law is
+
+```text
+D h_i=2nu (div G)_i
+       -sum_(j,k) (partial_j u_k)(partial_k C_ij).
+```
+
+Any use of transported transverse parents must account for this term.
+The entropy controls `h` in the weighted sense above, but neither this
+equation nor incompressibility alone bounds the receiver cost.
+
+### Actual unforced histories with a fixed memory eigenframe
+
+On the period-`2pi` torus take, for `n>=1`,
+
+```text
+u(t)=q(t) (sin(nx)cos(ny), -cos(nx)sin(ny), beta sin(nx)sin(ny)),
+q(t)=exp(-2nu n^2 t),
+p(t)=q(t)^2 [cos(2nx)+cos(2ny)]/4.
+```
+
+These are complete smooth unforced NS solutions. The third component
+is a multiple of the horizontal streamfunction; its advection is zero.
+Their mean squared speed initially is `1/2+beta^2/4`. Use actual memory
+`D C=2nu G`, `C(0)=0`. Direct calculation gives `div G=0` for this
+entire family. Nevertheless,
+
+```text
+q_C(0)=partial_t q_C(0)=0,
+partial_t^2 q_C(0)
+  =(2nu n^3/5)[cos(3nx)cos(ny)-cos(nx)cos(3ny)].
+```
+
+The source and Laplacian terms have zero pressure. The displayed term
+is precisely the pressure of `-2nu u.grad G`, so it records internal
+transport of the memory source.
+
+For `beta=0`, every source matrix has the form
+`[[g,d,0],[d,g,0],[0,0,0]]`. Uniqueness of the componentwise linear
+parabolic problems preserves that form for `C` at every time. Hence
+one constant orthonormal frame diagonalizes every memory matrix; its
+orientation part of `F` vanishes. Pressure is still generated. This
+is not a failure of the full entropy budget, which includes amplitude
+variation and the source cost `J`.
+
+The generated pressure also enters the existing reserve with a positive
+sign at a concrete receiver. Set `n=1`, `nu=1/5`, `beta=0`, and choose
+`x=y` with `cos x=3/5`, `sin x=4/5`. With the envelope regularizers equal
+to one, and using the full canonical pressure observation `Y_star`
+(no separated cutoff in this periodic test), its initial switch gap
+and the second time derivative of the
+direct memory reaction are
+
+```text
+g_0=4575232/13671875,
+partial_t^2 R_memory(0)=(1-theta_0) 138018816/341796875 > 0,
+theta_0=(1+g_0/sqrt(g_0^2+1))/2.
+```
+
+Here `R_memory=(partial_S Y_star):P_C`; `P_C` and its first time
+derivative vanish initially, so no changing-weight terms are missing
+from this second derivative. The same conclusion holds for the
+normalized reaction after division by the positive initial reserve.
+Smoothness gives a positive short-time interval for each fixed datum;
+no uniform Taylor window over frequencies is claimed.
+
+This refutes paying this entire direct memory contribution solely by
+turning of the memory eigenframe, with no additional allowance. It
+does not refute a full-datum budget, the full entropy cost, or regularity.
+For `beta=1` there is also a nonzero direct vorticity-pressure pairing;
+the checker does not claim a constant full memory eigenframe in that case.
+These remain regular periodic examples, not finite-energy whole-space
+flows or singularity candidates.
+
+### The unsmoothed point-receiver limit still fails
+
+The weighted weak estimate cannot be inserted directly into the Bellman
+target. This is visible even with `C=0`. On whole space let
+`rho_s=(4pi nu s)^(-3/2) exp(-|x|^2/(4nu s))` and `M=rho_s I`.
+Then `q_M=-rho_s`, `H=eta I`, and
+
+```text
+integral |grad rho_s|^2 = [3/(4nu s)](8pi nu s)^(-3/2),
+T(M)=3eta^2 integral_0^t integral |grad rho_s|^2 = infinity.
+```
+
+The endpoint divergence is `s^(-5/2)`, although actual memory pressure
+work in this zero-memory example is zero. This is a limitation of the
+unsubtracted dual norm, not divergent fluid dynamics. For any nonzero
+constant symmetric coefficient `A`, replacing `M` by `rho_s A` multiplies
+the gradient norm by `[(tr A)^2+2tr(A^2)]/15>0`, so the same endpoint
+problem remains. These are tests of the dual norm, not an identification
+of an arbitrary coefficient with the actual reserve receiver. Smooth receivers
+with positive initial width give finite costs. Passing to a point
+requires additional pressure cancellations or a stronger joint estimate;
+finite total entropy alone does not justify that limit.
+
+The exact checker verifies the full symbolic-in-time NS equations,
+memory time derivatives at `n=1,2`, `beta=0,1`, and `nu=1/5`, the
+pressure pairing sign, weighted matrix inequalities, rank-one
+sum-of-squares decompositions, the passive-parent divergence defect,
+and the Gaussian endpoint integral. The six formal statements concern
+finite-dimensional inequalities. None claims the missing arbitrary-data
+controlled-history bound.
+
+```sh
+python3 -O labs/viscous_memory_pressure.py
+```
