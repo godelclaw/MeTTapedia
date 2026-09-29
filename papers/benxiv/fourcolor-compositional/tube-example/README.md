@@ -425,9 +425,49 @@ internal vertices. All fourteen tree shapes succeed geometrically on all
 maps with twelve fewer vertices. All tested exteriors have Kempe-closed
 supports. On C30, every smaller tree replacement has genuine colourings whose
 boundary words lie in that same exterior support. These are finite program
-checks. A general proof of the smaller-map operation, embedded recognition
-and geometric coverage remain necessary. No certificate savings are credited;
-the [physical measurement record][physical-measurements] separates the stages.
+checks, retained separately in the [physical measurement record][physical-measurements].
+
+The [tree geometry theorem][tree-geometry] now proves one of these replacements
+in every connected exterior. The chosen tree is the path `0--1--2--3`, with
+six boundary ports distributed as `2,1,1,2`. Its first-return permutation is
+exactly the patch's cyclic successor. The patch has seven open face cycles;
+the tree has one. Their common open Euler contribution is four. Thus six
+whole-map faces disappear while exterior cofaciality is preserved.
+
+Bridge-freedom has a reusable reason. In a bridgeless source, both sides of
+any exterior bridge reach a boundary port. The replacement is connected and
+has a port at every vertex, so the exterior and tree reconnect each other's
+potential cuts. Together with the inherited cubic rotations and exact Euler
+calculation, this preserves the entire connected bridgeless spherical cubic
+class. The theorem permits parallel edges; simplicity was checked only in the
+finite examples.
+
+The [strict reduction theorem][tree-reduction] joins geometry and colouring:
+
+```text
+source = sixteen-vertex patch sewn to a connected exterior
+  → replace the patch by the four-vertex tree: twelve fewer total vertices
+  → a colouring of the smaller map restricts to a genuine exterior colouring
+  → physical noncrossing enables joint repair
+  → a genuine colouring of the source map.
+```
+
+`colorable_of_smallerColorable` consumes vertex minimality to supply the smaller
+colouring. This is one argument for arbitrary compatible exteriors, with the
+physical noncrossing hypothesis stated explicitly. It preserves colouring
+existence and reconstructs actual witnesses; no equality of colouring counts
+or executable-history equivalence is claimed. The [dependency audit][tree-audit]
+requires both the geometric and reconstruction chains and excludes complete
+Four Colour endpoints and catalogue reducibility certificates.
+
+This advances the reduction part of the lobe mechanism. The next missing
+geometric theorem must recognize this literal patch and its ordered exterior
+inside an independently specified family of alternating lobes, and derive
+physical noncrossing through the existing cyclic-bond boundary theorem.
+Coverage of the relevant stopping configurations remains open. The
+[tree measurement record][tree-measurements] credits no additional original
+configuration-certificate savings; the 22 terminal witnesses and nine
+answer-cover checks remain.
 
 ## Scope and verification
 
@@ -504,3 +544,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [physical-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePhysicalRepairAudit.lean
 [tree-probe]: ../../../../tools/fourcolor/classical/pentagonal-lobe-tree-probe.json
 [physical-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-physical-measurements.json
+
+[tree-geometry]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeGeometry.lean
+[tree-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeReduction.lean
+[tree-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeReductionAudit.lean
+[tree-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-tree-measurements.json

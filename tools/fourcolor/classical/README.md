@@ -1100,6 +1100,26 @@ connected, bridgeless spherical cubic maps with twelve fewer total vertices.
 All 29 exhaustively computed exterior supports are reference Kempe-closed.
 For C30, all fourteen smaller maps are colourable and their boundary words
 belong to the same literal exterior support. These are independent finite
-checks. General embedded recognition, smaller-map validity and coverage remain
-unproved. There is no new catalogue or certificate saving; the new receipt is
-`pentagonal-lobe-physical-measurements.json`.
+checks; the receipt is `pentagonal-lobe-physical-measurements.json`.
+
+`PentagonalLobeTreeGeometry.lean` now proves the specified path-shaped tree's
+geometry in every connected exterior. It has the same ordered face return
+and Euler mass as the literal patch. The actual sewn map loses twelve vertices
+and six faces, preserves exterior cofaciality, and remains connected,
+bridgeless, spherical and cubic. A general boundary-essential replacement
+lemma handles the tree's internal bridges. The theorem permits multigraphs.
+
+`PentagonalLobeTreeReduction.lean` restricts a smaller-map colouring and
+consumes the physical repair to reconstruct a source colouring, with physical
+noncrossing explicit and cubicity inherited from the source. Its minimality
+consumer has no dependency on the complete Four Colour theorem or original
+catalogue certificates. The new gate is:
+
+```sh
+lake build MettapediaFourColor.PentagonalLobeTreeReductionAudit
+```
+
+`pentagonal-lobe-tree-measurements.json` records the geometric and colouring
+roots, dependency audit, source hashes and build costs. Embedded recognition,
+deriving noncrossing for the recognized ordered boundary, and coverage remain
+open. No new catalogue or original-certificate saving is credited.

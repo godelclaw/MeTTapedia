@@ -95,10 +95,17 @@ parity supplies the required input equation. The patch now glues starting
 from any proper exterior colouring under physical noncrossing, with an
 embedded spherical-map closure theorem available for cyclic six-port cuts.
 This gives the operational and reference representations an exact common
-consumer. Independent tests of fourteen four-vertex trees on each of the
-29 patches all give valid maps twelve vertices smaller. General recognition,
-validity of that smaller-map operation and coverage remain open; no further
-certificate is removed.
+consumer. A chosen four-vertex tree now supplies a kernel-checked strict
+replacement. In every connected exterior, it preserves the source's connected
+bridgeless spherical cubic class, removes twelve vertices and preserves
+exterior cofaciality. Under physical noncrossing, a colouring of the smaller
+map reconstructs to a colouring of the original. Vertex minimality supplies
+that smaller colouring. The proof retains the exterior's coupled choices and
+uses no complete Four Colour theorem or catalogue reducibility certificate.
+The remaining steps are embedded recognition, deriving the ordered
+noncrossing hypothesis from that geometry, and coverage. No further original
+certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
+separates this theorem from the 406 independent tests of fourteen tree shapes.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,

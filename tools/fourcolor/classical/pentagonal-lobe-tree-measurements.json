@@ -1,0 +1,145 @@
+{
+  "status": "Kernel-checked contextual strict reduction by a six-port tree. Connected exterior and physical noncrossing are explicit hypotheses; ambient recognition and coverage remain open.",
+  "completed_utc": "2026-09-29T21:50:12+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "5b9207b0b2c7a3249e41d1404ae4180045d91f79",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleConnectedReplacement",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleConnectedReplacement.lean",
+      "source_sha256": "784a472d367fe51259a813cb0dfae025a34fb59de512fee870ed8200a3e268d2",
+      "olean_sha256": "88f7e1ff2ed0e3e8fddc0418ea8642bd24c5a5ab80646d8ca78ddefd01d39f7a",
+      "olean_bytes": 161544,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleCompositionSwap",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleCompositionSwap.lean",
+      "source_sha256": "3936daf0540b5d3e59fe812837cc0b759a8f71cda6e61b26dac81366822148c6",
+      "olean_sha256": "f46211d5e4453d21c0b7de354f0595cf98b8050be6e46a5c54649044e402794e",
+      "olean_bytes": 179616,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeTreeGeometry",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeGeometry.lean",
+      "source_sha256": "b215fdfa9804aea993eb9110591de573b9e2065f6016c3992c9eb4f775a786d3",
+      "olean_sha256": "ae805e6b118a5c69604d4fbd1870e4d27e09936fde11598dd06e5b4c72eaec16",
+      "olean_bytes": 432520,
+      "reported_build_seconds": 6.0
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeTreeReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeReduction.lean",
+      "source_sha256": "6ddba0469c18bf38abea58285e22a4c468d1dbc4b4f202612ad062e9b0602aed",
+      "olean_sha256": "32f18adf942a803a298172a1eded1af32661cfe615b19ab042560e38e582874a",
+      "olean_bytes": 289920,
+      "reported_build_seconds": 2.0
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeTreeReductionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeReductionAudit.lean",
+      "source_sha256": "7173d29dc72db29e45c86c1e87f8f857362e877cd38aa30ceaa4ef20872db7b1",
+      "olean_sha256": "b3f01c2547a20df45ca0964eb744d5c75d1c7449245af7160fd444cf58b0352f",
+      "olean_bytes": 3248,
+      "reported_build_seconds": 5.2
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.OpenTangleConnectedReplacement.replacement_structural",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleCompositionSwap.mapClass",
+      "FourColor.PentagonalLobePatch.Tangle.Tree.connected",
+      "FourColor.PentagonalLobePatch.Tangle.piece_returnCode",
+      "FourColor.PentagonalLobePatch.Tangle.tree_returnCode",
+      "FourColor.PentagonalLobePatch.Tangle.tree_replacement_euler",
+      "FourColor.PentagonalLobePatch.Tangle.tree_replacement_face_count",
+      "FourColor.PentagonalLobePatch.Tangle.tree_replacement_exterior_faces",
+      "FourColor.PentagonalLobePatch.Tangle.sewn_tree_class",
+      "FourColor.PentagonalLobePatch.Tangle.reconstruct_from_tree",
+      "FourColor.PentagonalLobePatch.Tangle.strict_tree_reduction",
+      "FourColor.PentagonalLobePatch.Tangle.colorable_of_smallerColorable"
+    ],
+    "combined_dependency_closure": 13273,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Named roots and full proof dependency closures; not all imported declarations.",
+    "excluded_dependencies": "Original configuration certificates, complete Four Colour endpoints and diamond configuration/family reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeTreeReductionAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3385,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "replacement": "The literal sixteen-vertex pentagonal lobe patch is replaced by the four-vertex path 0--1--2--3, with six ordered boundary ports distributed 2,1,1,2.",
+    "generic_bridge_argument": "Bridge-freedom of the source sewing implies boundary-essentiality of its exterior. With at least two seam edges, any connected boundary-essential replacement sewn to a connected exterior preserves connectedness and bridge-freedom.",
+    "port_return": "Both pieces induce the same cyclic successor on Fin 6.",
+    "original_return_lengths": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      2
+    ],
+    "replacement_return_lengths": [
+      1,
+      2,
+      2,
+      2,
+      1,
+      4
+    ],
+    "original_open_faces": 7,
+    "replacement_open_faces": 1,
+    "common_open_euler_mass": 4,
+    "source_class_preserved": "Connected bridgeless spherical cubic rotation systems; parallel edges are permitted. Exterior connectedness is required.",
+    "vertex_decrease": 12,
+    "face_decrease": 6,
+    "exterior_cofaciality_preserved": true,
+    "source_to_replacement_display_transport": "An exact dart and vertex equivalence exchanges the two displayed sides and inverts the seam. Alpha and rho commute with this equivalence. Outer marks may differ.",
+    "reconstruction": "Restrict any actual smaller-map colouring to the same exterior, then apply joint repair under physical noncrossing. The repaired exterior assignment may differ.",
+    "minimality_consumer": "A hypothesis colouring all strictly smaller maps in the same class supplies the actual smaller colouring. The complete Four Colour theorem is not invoked.",
+    "cubicity_derived_from_source": true,
+    "actual_witness_reconstruction_proved": true,
+    "strict_reduction_proved": true,
+    "noncrossing_derived_for_recognized_lobe": false,
+    "arbitrary_ambient_lobe_recognition_proved": false,
+    "count_equivalence_proved": false,
+    "executable_history_transport_proved": false,
+    "coverage_proved": false
+  },
+  "program_evidence": {
+    "record": "tools/fourcolor/classical/pentagonal-lobe-tree-probe.json",
+    "sha256": "fa652b825897ae502650f9a6a6ff6e66318ce32a13b955b1587fc56e6752d5c1",
+    "maps": 29,
+    "replacements": 406,
+    "scope": "Earlier independent finite geometry checks of fourteen tree shapes. The current theorem proves the specified path-shaped tree in arbitrary connected exteriors under its stated hypotheses."
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "geometric_replacement_schemes": 1,
+    "tree_shapes_formalized": 1,
+    "interface_ports": 6
+  },
+  "cost_scope": "Reported Lake module build times include elaboration and kernel checking. No isolated kernel-time, full-build speedup or counting compression claim.",
+  "next_obligations": [
+    "Recognize the literal patch, exact port order and connected exterior in an independently specified alternating-lobe family.",
+    "Derive physical noncrossing for that ordered exterior through the existing cyclic-bond boundary theorem.",
+    "Prove broader geometric supply and coverage, and integrate applicable reductions into the complete assembly before crediting any removed certificate dependency."
+  ]
+}

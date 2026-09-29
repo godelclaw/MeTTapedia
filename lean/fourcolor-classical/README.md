@@ -265,6 +265,7 @@ certificates and complete theorem endpoints. It is checked with:
 lake build MettapediaFourColor.PentagonalLobePatchAudit
 lake build MettapediaFourColor.PentagonalLobeTangleAudit
 lake build MettapediaFourColor.PentagonalLobePhysicalRepairAudit
+lake build MettapediaFourColor.PentagonalLobeTreeReductionAudit
 ```
 
 The [worked lobe example](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
@@ -281,11 +282,28 @@ cubicity and physical noncrossing to colour the sewn map. Its seven-root audit
 checks 21,333 dependency declarations and excludes catalogue certificates and
 complete theorem endpoints.
 
-Independent tests replace the sixteen-vertex patch by each of fourteen
-four-vertex trees in 29 supplied maps: all 406 replacements preserve spherical,
-simple, connected, bridgeless cubic geometry and decrease the whole map by
-twelve vertices. Formal recognition and validity of the general smaller-map
-operation remain open. The complete assembly and credited savings are unchanged.
+`PentagonalLobeTreeGeometry` proves a contextual geometric replacement:
+a particular four-vertex path-shaped cubic tree has the same ordered six-port
+return and Euler contribution as the sixteen-vertex patch. In any connected
+exterior where the original sewing is a connected bridgeless spherical cubic
+map, the replacement stays in that class. Six faces disappear and all exterior
+dart cofaciality is preserved. The whole map loses twelve vertices, with all
+four introduced vertices included in the count.
+
+`PentagonalLobeTreeReduction` connects this geometry to joint repair. Under
+physical noncrossing, every colouring of the smaller map reconstructs to a
+colouring of the original. Cubicity is inherited from the source; vertex
+minimality can supply the smaller colouring. The audit excludes complete
+Four Colour endpoints and catalogue reducibility certificates. The new
+[measurement record](../../tools/fourcolor/classical/pentagonal-lobe-tree-measurements.json)
+records these statements and their exact scope.
+
+Independent tests cover all fourteen four-vertex trees in 29 supplied maps:
+all 406 replacements preserve simple, connected, bridgeless spherical cubic
+geometry. The theorem covers the specified path-shaped tree and permits
+multigraph exteriors. Embedded recognition, deriving the ordered noncrossing
+hypothesis from the recognized geometry, and coverage remain open. The
+complete assembly and credited certificate savings are unchanged.
 
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as
