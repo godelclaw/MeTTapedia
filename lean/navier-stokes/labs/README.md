@@ -2731,3 +2731,233 @@ The checker requires SymPy and NumPy:
 ```sh
 python3 -O labs/pressure_boundary_response.py
 ```
+
+### Swirl pressure histories: rotation, dissipation and geometry defects
+
+`swirl_pressure_history.py` continues the compact-swirl calculation above
+from an instantaneous boundary response to its first physical time
+derivative. The viscosity is positive and the energy convention remains
+`E=||u||_2^2`. The initial data are smooth, compactly supported and
+divergence-free, and therefore start actual local unforced whole-space
+solutions. The physical calculation below is analytic. The Lean module
+`StochasticLagrangian.SwirlPressureHistory` certifies the finite matrix
+algebra and a conditional time-integrated reserve.
+
+**The initial pressure response cone.** Put a counter-rotating pair at
+`+L n` and `-L n`, with axes `n` and `-n` and equal packet energies. If
+the pair's total energy is `E`, its exact Hessian at the origin is
+
+```text
+H_pair = c E (I-3 n n^T),                 c=3/(2pi L^5).
+```
+
+Use three orthogonal axes `n_i`, a common compact radial profile and
+sufficiently small support radii to keep all packets disjoint. For a
+trace-free symmetric target with eigenvalues `lambda_i`, choose
+`a>=max_i lambda_i` and pair energies
+
+```text
+E_i=(a-lambda_i)/(3c) >= 0,               sum_i E_i=a/c.
+```
+
+The resulting Hessian is the target. At a prescribed total energy `S`,
+this family realizes precisely the trace-free symmetric tensors with
+`lambda_max<=c S`. This describes this packet family; it is not a claim
+of energy optimality among all fluid fields. The Lean theorem
+`pressure_cone_certificate` proves the nonnegative allocation and exact
+diagonal response in the eigenvector frame. Orthogonal diagonalization
+and realization by the actual velocity packets are analytic here.
+
+**The first compatible history step.** Add a central radial swirl
+`u_c(x)=chi_c(r)(e_z cross x)` with `chi_c(0)=b`. Its support is disjoint
+from every remote packet. All remote packets use the same radial shape
+and radius, with their amplitudes set by the chosen energies. Let
+`p_full(t)` be the pressure of the actual solution from the combined
+datum, and `p_core(t)` that of the separate solution from `u_c` alone.
+Define
+
+```text
+H(t) = Hess p_full(t,0) - Hess p_core(t,0),
+R x = e_z cross x,
+gamma = 2nu (integral_0^infinity r^4 chi_r'(r)^2 dr)
+             / (integral_0^infinity r^4 chi_r(r)^2 dr) > 0.
+```
+
+The remote profile `chi_r` may have any nonzero amplitude, which cancels
+in `gamma`. At the initial time the exact pressure-excess law is
+
+```text
+H'(0) = -gamma H(0) + (2b/5)(H(0) R - R H(0)),
+(d/dt)|H(t)|_F^2 at t=0 = -2gamma |H(0)|_F^2.
+```
+
+Thus the initial nonlinear feedback rotates this pressure tensor without
+changing its squared Frobenius norm, while viscosity decreases that norm.
+For a nonzero response it cannot be stationary to first order. The
+definition uses the difference of two actual pressure histories. At
+positive time it is not identified with the pressure of an independently
+evolving tagged remote velocity.
+
+Here is the analytic derivation, including the couplings retained in the
+calculation. Write `B=grad u`. Since `-Delta p=tr(B^2)`, differentiating
+along the unforced equation gives the pressure-source derivative
+`2tr(B grad u_t)`. On an initial packet support,
+
+```text
+B = chi R_n + (chi'/r)(R_n x) x^T,
+(u.grad)u = chi^2 R_n^2 x,                R_n x=n cross x.
+```
+
+Both `tr(B grad((u.grad)u))` and `tr(B Hess p_self)` vanish pointwise.
+The second equality uses the axisymmetry of that packet's exact pressure.
+Consequently its nonlinear source derivative is exactly
+`-2(chi'/r) x^T (Hess p_other) R_n x`. Initial disjointness removes the
+local cross-advection terms; the nonlocal pressures of all other packets
+remain.
+
+The total remote velocity is even under `x -> -x`, so its gradient is
+odd. The complete initial pressure is even. The sum of the remote
+nonlinear source derivatives is therefore odd, and its Hessian response
+at zero vanishes. On the core support the external pressure `phi` is
+harmonic. For a homogeneous harmonic component `phi_l`,
+
+```text
+tr(B_c Hess phi_l) = (chi_c'/r)(l-1) (R x).grad phi_l.
+```
+
+The radial operator and the rotation preserve spherical harmonic degree.
+Only degree two contributes to the pressure Hessian at the centre. For
+`phi_2=x^T H(0)x/2`, let `Lphi_2=(R x).grad phi_2`. Its response is
+`f(r)Lphi_2`, where
+
+```text
+f''+(6/r)f'=2chi_c'/r,
+f(r)=2r^(-5) integral_0^r s^4 chi_c(s) ds,
+f(0)=2b/5,                              Hess Lphi_2=H(0)R-RH(0).
+```
+
+This solution is regular at zero and decays at infinity. The heat part
+of each remote pressure response is its fixed quadrupole multiplied by
+the initial energy derivative. The radial heat operator is
+`nu(chi_r''+4chi_r'/r)`, and integration by parts gives
+`E'=-2nu (8pi/3) integral r^4 chi_r'^2`. Thus it contributes `-gamma H(0)`.
+The core heat contribution cancels against the isolated-core comparison.
+
+**The geometry changes.** If the central profile is constant `b` near
+zero, the isolated core's initial nonlinear velocity derivative there is
+
+```text
+(b^2/5)(x,y,-2z).
+```
+
+It immediately generates meridional motion. Thus radial swirl packets
+are not an invariant family for the full NS equation. An external
+Hessian `H(0)=(b^2/5)diag(1,1,-2)` can cancel the initial velocity-gradient
+rate at the centre, but it commutes with `R` and still satisfies
+`H'(0)=-gamma H(0)`. Cancellation at one instant does not supply a
+stationary pressure driver.
+
+**Unequal widths: disappearing cancellation.** The common remote decay
+rate is essential. If the remote profiles have different radii, the
+same derivation instead gives
+
+```text
+H'(0)=-sum_i gamma_i H_i + (2b/5)(H(0)R-RH(0)),
+H(0)=sum_i H_i.
+```
+
+Each pair is still counter-rotating, so its nonlinear source derivative
+has zero Hessian response at the centre by parity. The core term is still
+the displayed commutator. For two orthogonal pairs, take
+
+```text
+H_1=diag(-2,1,1),       H_2=(1/4)diag(1,-2,1),
+gamma_1=gamma,          gamma_2=100gamma.
+```
+
+These rates are physically realized with the same radial shape at radii
+in ratio ten to one; amplitudes independently set the two pair energies
+to `1/c` and `1/(4c)`. The widths may both be small enough to keep every
+support disjoint. Exact calculation gives
+
+```text
+|H_1+H_2|_F^2=39/8,
+2(H_1+H_2) : (-gamma H_1-100gamma H_2)=129gamma/2 > 0.
+```
+
+The rotation term contributes zero. Thus the actual initial norm of the
+combined pressure excess increases, even though each parent's viscous
+response decreases. This is a finite initial-time amplification, not a
+recurrent-growth or singularity result. It requires a boundary history
+to retain the parent-dependent decay and cancellation, or pay for their
+loss through a defect. `unequal_decay_production` and
+`unequal_decay_production_pos` certify the finite calculation in Lean;
+the physical realization and pressure-rate identity are analytic.
+
+The same test reaches the transported-frame observable directly. Rotate
+the parents to `H_1=diag(1,1,-2)` and `H_2=diag(-2,1,1)/4`, so the
+dangerous direction is the plateau core's vorticity axis. With `M(0)=I`,
+`q=omega^T M^(-1)omega` and `k=(|omega|^2+eta)/(q+eta)`, `eta>0`, the
+actual initial jets at the origin give
+
+```text
+q'(0)=q''(0)=q'''(0)=0,
+(|omega|^2)'''(0)=184 b^2 gamma,
+k'''(0)=184 b^2 gamma/(4b^2+eta)>0             if b!=0.
+```
+
+Here the core's own initial pressure-Hessian derivative vanishes, while
+the remote excess has `P'_zz=-23gamma`. The initial plateau makes
+`omega'=M'=0` throughout the core, and the external pressure is harmonic
+there. The corresponding spatial Laplacians in these time jets vanish.
+Differentiating the full vorticity and frame equations therefore gives
+the displayed values. The script checks their matrix/vector jet algebra;
+the physical and parabolic identifications remain analytic. This
+positive third derivative records a finite initial amplification from
+changing parent cancellation. It supplies no assertion of later or
+recurrent growth.
+
+**An interval reserve with the missing cost explicit.** For any symmetric
+matrix history satisfying, on an interval,
+
+```text
+H'=-gamma H + beta(t)(H B(t)-B(t)H) + D(t),       gamma>0,
+```
+
+the commutator has zero quadratic work. In the physical rotation case
+`B(t)` is skew; the cancellation at a symmetric `H` holds even without
+that restriction. Young's inequality gives
+
+```text
+(d/dt)|H|_F^2 + gamma |H|_F^2 <= |D|_F^2/gamma,
+|H(b)|_F^2 + gamma integral_a^b |H|_F^2 dt
+  <= |H(a)|_F^2 + (1/gamma) integral_a^b |D|_F^2 dt.
+```
+
+The Lean theorems `hasDerivAt_energy`, `interval_reserve` and
+`interval_cost_le` prove this for componentwise differentiable histories
+and the stated integrability hypotheses. Keeping the endpoint term
+allows adjacent intervals to share the same reserve. The common-profile
+first-time-step calculation has `D(0)=0`; it does not establish `D=0`
+later. A full-datum bound on the actual defect history, including changes
+in geometry and parent interactions, is still missing. This pressure
+certificate also needs a comparison to the directional-vorticity
+observable before it can supply the continuation target.
+At fixed separation these packets are already covered by the preceding
+far-pressure energy bound. The new tests concern the information needed
+in a dynamical boundary summary; control of nearby parents at changing
+scales remains open.
+
+The checker verifies the radial ODE, exact source contractions, heat
+integration-by-parts identity, cone reconstruction, commutator work, and
+nonzero meridional tangent symbolically. Independently, it integrates
+the actual nonlinear pressure-source derivative for a core and six
+remote packets with axes rotated relative to the core, and repeats the
+nonlinear check with unequal remote widths. Gauss resolutions
+24 and 40 give relative errors about `2.64e-6` and `2.13e-9` against the
+commutator formula. This quadrature is numerical supporting evidence,
+not a proof or a time evolution. SymPy and NumPy are required.
+
+```sh
+python3 -O labs/swirl_pressure_history.py
+```

@@ -180,6 +180,30 @@ energy but opposite pressure-driven second directional growth. These are
 analytic local unforced-flow tests, not recurrent-growth or singularity
 results. Their derivation and formal scope are in the labs README.
 
+`StochasticLagrangian.SwirlPressureHistory` continues this test to the
+first pressure-response derivative. The analytic calculation uses actual
+local unforced evolutions of a radial core and counter-rotating remote
+swirl pairs. Their initial pressure-excess tensor can point in any
+trace-free symmetric direction. With a common remote radial profile and
+radius, its initial rate consists of viscous decay plus a rotation
+commutator with zero quadratic work. Different widths can instead cause
+the combined pressure norm to grow as cancellation between individually
+decaying parents is lost; the module certifies an explicit example.
+The radial geometry immediately develops meridional motion, so this is
+an initial law, not an invariant class of solutions.
+
+The Lean module proves the nonnegative energy allocation in an eigenvector
+frame and an interval certificate for symmetric matrix histories with an
+explicit geometry defect: the final squared pressure norm plus the
+integrated damping cost is at most the initial squared norm plus the
+integrated defect cost. Bounding that defect for arbitrary physical
+histories, and connecting this pressure reserve to directional vorticity,
+remain open. The physical first derivative is analytic; the companion
+`labs/swirl_pressure_history.py` checks its algebra and independently
+cross-checks its pressure-source integral numerically.
+These fixed-distance tests specify necessary history information; they
+do not supply the open estimate for nearby parents at changing scales.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
