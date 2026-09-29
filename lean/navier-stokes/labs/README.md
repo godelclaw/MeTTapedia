@@ -3183,3 +3183,193 @@ neither NS time simulations nor error-certified PDE bounds.
 ```sh
 python3 -O labs/compressed_parent.py
 ```
+
+## Actual pressure history and a dissipation-paid source
+
+`pressure_history_source.py` checks complete Fourier identities for smooth,
+genuinely three-dimensional initial data on the torus of period `2*pi`.
+It uses Gaussian rational coefficients, retains every generated mode,
+and compares independently constructed pressure derivatives. The tests
+are actual unforced initial tangents, not a closed finite-mode evolution.
+The calculations below apply to smooth solutions on every regular time
+interval, with the indicated pressure normalization and integrability.
+
+Write `L=∂t+u·∇`, `D=L-νΔ`, `B=grad u`, `P=Hess p`, and
+`G=(-Δ)^(-1)`. Pressure is the canonical Newtonian/Riesz pressure on
+whole space or the zero-mean pressure on the torus. The exact source law is
+
+```text
+s = tr(B^2),       p = G s,
+D B = -B^2-P,
+D s = -2 tr(B^3) - 2 tr(BP) - 2ν Σk tr((∂k B)^2),
+D p = G(D s) + [u·∇, G] s.
+```
+
+These follow by the matrix product rule and commutation of the constant
+coefficient heat operator with `G`. The last gradient trace is not a sum
+of positive squares: `B` is not symmetric. Taking its sign for granted
+would discard part of the physical pressure history.
+
+There is a second, useful form. Define the scalar stress operator
+`Q(A)=G Σij ∂i∂j Aij` and the matrix operator `T(A)=Hess Q(A)`. Then
+`p=Q(u⊗u)` and `P=T(u⊗u)`. The exact matrix equation is
+
+```text
+D P = [u·∇, T](u⊗u)
+      - T(grad p⊗u + u⊗grad p)
+      - 2ν T(Σk ∂k u⊗∂k u).
+```
+
+The three terms retain transport of the parents, their actual pressure
+reaction, and the viscous product-rule source. The checker verifies the
+equivalent scalar equation coefficient by coefficient and separately
+checks transport of the Hessian. These are analytic PDE identities;
+the finite checker is not a general PDE formalization.
+
+### Directional cancellation and the full instantaneous defect
+
+Let `Ω=|omega|>0`, `xi=omega/Ω`, `sigma=xi·B xi`, and `pi=xi·P xi`.
+Differentiating both the direction and the Hessian gives
+
+```text
+L pi = -2 sigma pi + J + ν Vpi,
+J = xi·Hess(D p) xi - Σk (∂k p) xi·Hess(u_k) xi,
+Vpi = xi·ΔP xi + 2 (Δomega/Ω)·P xi
+      - 2 pi (omega·Δomega)/Ω^2.
+```
+
+Indeed, `D P=Hess(Dp)-B^T P-PB-Σk (∂k p) Hess(u_k)`.
+The first two matrix products cancel the corresponding directional
+stretching when the unnormalized quadratic `omega·P omega` is
+differentiated. Normalization leaves `-2 sigma pi`. The velocity-curvature
+term in `J` remains; differentiating pressure as an independently supplied
+scalar history would miss it.
+
+For the instantaneous expression
+`h=-pi-(9/14)sigma^2+Ω^2/10`, let `N=|B omega-sigma omega|^2/Ω^2` and let
+`Vsigma` be the full material viscous strain rate from
+`LocalDirectionalPressure`. Direct substitution gives
+
+```text
+L h = -(23/7) sigma h -(81/98) sigma^3 +(37/70) sigma Ω^2
+      -(9/7) sigma (N+Vsigma) - J - ν Vpi
+      +(ν/5) omega·Δomega.
+```
+
+Thus its defect relative to `L h=-7 sigma h-gamma h+fh` includes
+`(26/7)sigma h+gamma h`, as well as the remaining displayed terms.
+For `w=Ω^(1/7)`, the material amplitude defect is
+`fw=(ν w/7)(omega·Δomega)/Ω^2`.
+These laws specify physical inputs to the joint reserve. They prove
+neither positivity of this instantaneous `h` nor an allowance for its
+complete signed defect. A retained parent summary has its own history;
+the previously proved strain-summary mismatch must still be included.
+
+### One pressure-history channel has a finite initial resource
+
+On `R^3`, separate the fourth Newtonian kernel at a radius `R>0` and
+write `T_R` for its exterior convolution. For a unit direction `e`, let
+
+```text
+Fν,R(t,x,e) = -2ν Σk integral_{|x-y|>=R}
+                   pressureKernel(e,x-y,∂k u(t,y)) dy.
+```
+
+This is the exterior part of the final source in the matrix equation.
+The kernel bound from `PressureBoundaryResponse` gives
+
+```text
+|Fν,R(t,x,e)| <= [6/(pi R^5)] d(t),
+d(t) = 2ν ||grad u(t)||_2^2,
+E(t) + integral_0^t d(s) ds = E(0),       E(t)=||u(t)||_2^2.
+```
+
+The second identity follows from the actual unforced NS equation: the
+transport and pressure work vanish, and viscosity dissipates. It is
+proved in `WholeSpacePressureHistory.kinetic_balance`. Consequently,
+for arbitrary moving receivers, unit directions and positive radii,
+
+```text
+integral_0^t R(s)^5 |Fν,R(s)(s,x(s),e(s))| ds
+    + (6/pi) E(t) <= (6/pi) E(0).
+```
+
+`scaled_history_with_remaining` proves this with the actual derivative
+fields of `NSEvolution`. No common lower bound on the sampled radius
+and no bound on future velocity gradients enter the allowance.
+The sampled integrand is required to be interval integrable. The
+initial and terminal energies are retained, so compatible time segments
+share the same remaining resource. For fixed radius, the unweighted
+source integral is at most `6 E(0)/(pi R^5)`.
+
+The relation to the candidate reserve is explicit. Write
+`Rsv=w^5(2090 sigma^2+154 w^14+665 h)`, with `w,h>=0` and `w^14=Ω^2`.
+Choose a positive resource scale `Λ` and a sampling radius satisfying
+`R^5 Ω^2 >= Λ`. The coercivity `Rsv>=154 w^19` gives
+
+```text
+|665 w^5 Fν,R| <= c d(t) Rsv,       c=1995/(77 pi Λ).
+```
+
+This is the theorem `viscous_reserve_source_le`. Its sign is unrestricted.
+In a material or parabolic reserve inequality
+`D Rsv <= c d(t) Rsv + remainingWork`, multiplication by the explicit
+time-only factor `exp(c E(t))` cancels this coefficient:
+
+```text
+D [exp(c E(t)) Rsv] <= exp(c E(t)) remainingWork.
+```
+
+The correction is finite initially and uses the actual remaining energy.
+At `Ω>0` one can choose `R=(Λ/Ω^2)^(1/5)`; taking `Λ=E(0)>0` makes
+the total exponential allowance `exp(1995/(77 pi))`. This is a payment
+for one separated source only. It does not pay the near field or imply
+global regularity, and positivity of a physical `Rsv` is still open.
+The source estimates and scalar reserve comparison are Lean-certified;
+the general pressure equation and this differential comparison are
+analytic identifications.
+
+### Boundaries that still retain costs
+
+For a fixed radius, `T_R` is a translation-invariant exterior operator,
+so its pressure-history law has the same transport commutator and
+pressure-velocity reaction, with `T` replaced by `T_R`. Those terms
+remain unpaid. For a spatially and temporally varying radius `R(t,x)`,
+the composite field `P_R(t,x)` additionally has the chain-rule terms
+
+```text
+(∂R P_R) D R - ν (∂RR P_R) |grad R|^2
+             - 2ν Σk (∂xk∂R P_R) ∂k R,
+```
+
+where derivatives of the operator family are taken before substituting
+`R(t,x)`. These terms, moving directions, the interior kernel and all
+other viscous reserve terms must remain in the signed defect. The
+shrinking-radius estimate is not permission to omit them. In particular
+this does not close a scale-independent local renewal budget.
+
+For a solenoidal external force `f`, the pressure-Hessian equation also
+contains `T(f⊗u+u⊗f)`, and the energy balance gains the actual work
+`2 integral <u,f>`. The finite checker uses the diagnostic force
+`f=curl u` on its datum: its instantaneous integrated kinetic work is
+zero but its pressure-history contribution has 16 nonzero modes.
+This shows why a bound on energy input alone does not identify an
+effective force as realizable by unforced hidden parents. It is an
+initial forcing diagnostic, not a forced singularity or an internal
+realization theorem. The separated viscous estimate can also hold for
+forced flows with finite work, so this channel alone does not distinguish
+the unforced problem from forced constructions.
+
+At `ν=2/7`, the same unforced datum has viscous source component
+`Fν,zz(0)=-15376/24255` and `Fν,zz(pi,0,0)=15376/24255` for the full
+periodic operator. Both signs are exact. The two source representations,
+the directional law, the complete instantaneous `h` defect, kinetic
+production and Galilean covariance all pass exact coefficient checks
+at `ν=0` and `ν=2/7`. The data have eight velocity modes; the actual
+pressure-time derivative has 32 and 48 modes respectively. These are
+checks of the stated identities, not repeated-renewal dynamics. The
+whole-space exterior kernel constants are not claimed for the torus.
+
+```sh
+python3 -O labs/pressure_history_source.py
+```

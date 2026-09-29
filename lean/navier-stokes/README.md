@@ -231,6 +231,35 @@ shows why replacing the retained pressure history by an instantaneous
 pressure expression can also cause initial growth. These facts leave
 the signed full-datum history budget open; they are not singular flows.
 
+`MettapediaNS.WholeSpacePressureHistory` pays one actual pressure-history
+source from the kinetic energy that viscosity consumes. For a smooth
+unforced whole-space evolution, let `Fν,R` be the separated fourth
+Newtonian kernel applied to `-2ν Σj ∂j u ⊗ ∂j u`, sampled at any moving
+receiver and unit direction. The checked estimate retains the terminal
+energy:
+
+```text
+integral_0^t R(s)^5 |Fν,R(s)(s)| ds + (6/pi) E(t) <= (6/pi) E(0).
+```
+
+Here `E=||u||_2^2` and every sampled radius is positive; it may shrink.
+In a nonnegative regime of the joint reserve, choosing
+`R^5 |omega|^2 >= Λ > 0` bounds this pressure-slot work by
+`[1995/(77 pi Λ)] (2ν ||grad u||_2^2) reserve`. This supplies the concrete
+correction `reserve * exp([1995/(77 pi Λ)] E(t))` for this channel.
+The radius choice does not remove the near field, moving-cutoff terms,
+or the other geometric and viscous defects.
+
+The accompanying exact Fourier checker `labs/pressure_history_source.py`
+retains the full generated source and verifies two forms of the actual
+pressure evolution, directional cancellation and the instantaneous
+pressure-input defect. The general PDE identification of the kernel
+source is analytic; the source bound and its actual energy payment are
+Lean-certified. Nonlinear transport and pressure-velocity reaction,
+nearby interactions, and a nonnegative physical reserve remain the main
+unpaid obligations. The whole-space kernel estimate is not asserted for
+the periodic Green function.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
