@@ -5697,35 +5697,31 @@ constants are independent of the endpoint of the available prefix.
 the spatial splitting and integral bound on an arbitrary measure space.
 It does not assume integrability of the fourth power in its hypotheses.
 
-For completeness, let `D_omega=integral |grad omega|^2`. The actual
-unforced enstrophy identity, the `L^4` strain bound and Sobolev
-interpolation give, with a fixed domain constant `C_*`,
+There is a shorter continuation argument that is now formalized in
+`WholeSpaceMemoryEnvelope`. For a velocity-gradient matrix `A`,
 
 ```text
-W'/2+nu D_omega
-  <= C_* F4^(1/4) W^(5/8) D_omega^(3/8),
-W' <= K_* nu^(-3/5) F4^(2/5) W,
-K_*=(5/4)(3/4)^(3/5) C_*^(8/5).
+2 omega.A omega <= |A|_F^2+|omega|^4,
 ```
 
-On the torus the vorticity has mean zero, so Poincaré supplies the
-homogeneous Sobolev estimate used here. On whole space use the canonical
-strain singular integral and homogeneous Sobolev inequality. Young's
-inequality absorbs half the dissipation. Since `x^(2/5)<=1+x` for
-`x>=0`, Gronwall yields the explicit horizon bound
+because the difference is `sum_ij (A_ij-omega_i omega_j)^2`.
+Betchov's identity identifies the integral of this stretching with the
+literal order-one NS production. Consequently, on an actual unforced
+whole-space evolution,
 
 ```text
-W(t) <= W(0) exp[K_* nu^(-3/5)(H+K4)].
+W' <= W+F4 <= (1+sqrt(2M))W+(2M/(3eta))E0.
 ```
 
-Solenoidality identifies `W` with gradient energy. This supplies the
-quantity required by `WholeSpaceEnstrophyContinuation`'s
-`hasNSEvolution_of_orderOne_bound` and contradicts the periodic
-`FourierLerayRate.one_le_lerayRate` on a finite maximal lifespan, with
-the usual zero-mean/Galilean reduction in the Fourier interface.
-The actual PDE, singular-integral/interpolation and continuation
-application in this paragraph are analytic; they are not yet instantiated
-as a new Lean theorem on arbitrary NS evolutions.
+This linear differential inequality gives a horizon bound directly.
+`hasNSEvolution_of_mass_envelope` and
+`wholeSpaceStatementA_of_mass_envelope` certify the actual continuation
+implication. The hypothesis requires common constants from the datum
+and horizon for every available smooth prefix. Neither the physical
+construction of C nor a bound on the normalized envelope is assumed to
+have been proved. The determinant and stochastic identifications above
+remain analytic; the corresponding periodic application is analytic.
+The following section gives a weaker, spatially integrated target.
 
 ### Checks and scope
 
@@ -5754,3 +5750,212 @@ bound is made without checking those hypotheses and terms.
 ```sh
 python3 -O labs/viscous_memory_normalization.py
 ```
+
+## Space-time excess, actual continuation and the forced comparison
+
+`WholeSpaceMemoryEnvelope` and `WholeSpaceMemoryExcess` connect the
+geometric observable to actual smooth NS evolutions on whole space.
+They also test both sufficient criteria on the imported forced solution.
+The open input is now allowed to be a space-time excess bound, rather
+than a uniform pointwise bound on the normalized observable.
+
+### The formal physical estimate
+
+For the literal curl of a smooth solenoidal velocity, define the spatial
+property `MassEnvelope u M B` by
+
+```text
+there exists c>=0, integrable on R3, with integral c<=B,
+|omega|^4 <= M(1+c).
+```
+
+The majorant may encode the entire retained history. Its existence with
+common constants is an estimate to prove, not a definition that assumes
+regularity. For `M>=0`, the low/high-amplitude split gives
+
+```text
+integral |omega|^4 <= sqrt(2M) W+2MB,
+W=integral |omega|^2=integral |grad u|^2.
+```
+
+The proof derives fourth-power integrability; it does not assume it.
+The actual unforced production obeys `W'<=W+integral |omega|^4`, by the
+sum-of-squares and Betchov argument above. If `B=B(t)>=0` is a continuous
+capacity path, the kernel-checked bound is
+
+```text
+1+W(t) <= (1+W(0)) exp[(1+sqrt(2M))t+2M integral_0^t B(s)ds].
+```
+
+Thus the capacity may have large peaks. Its time integral alone must
+have a bound fixed from the full datum, viscosity and prescribed horizon,
+uniformly over all available smooth prefixes. The theorems
+`hasNSEvolution_of_memory_capacity` and
+`wholeSpaceStatementA_of_memory_capacity` prove the actual whole-space
+continuation and official-statement implications with those quantifiers.
+They do not establish the capacity bound.
+
+### A weaker target for the geometric reserve
+
+Fix a horizon `H>0`, memory regularizer `eta>0`, and whole-space separation
+`R>0`. Retain the earlier complete nearby source `B_near` and set
+
+```text
+k=44/95, kappa=27E0/(pi R^5), k_H=k exp(-kappa H)>0,
+X=exp(-kappa t) Y_hat,    h=det(I+C/eta)^(1/3),
+e_b=(X-b h)_+,           E_b(t)=integral e_b(t,x) dx.
+```
+
+Production remains signed; the positive part specifies the excess
+observable, not the absolute value of the nonlinear residual.
+
+Choose one fixed `b` strictly above both `sup_x Y_hat(0,x)` and the
+far-field offset `1+delta/2`. The datum gives this finite threshold;
+it is not readjusted after a burst. Initially `C=0`, `h=1`, and `e_b=0`.
+The exponential pays the already controlled distant strain reaction.
+For full periodic pressure use `kappa=0` and the complete periodic source.
+
+Suppose the following uniform bound were proved:
+
+```text
+integral_0^tau E_b(t)dt <= A(u0,nu,H,R,eta,b),  tau<=H.
+```
+
+Coercivity and the determinant mass bound give
+
+```text
+|omega|^4 <= (b/k_H)[1+trC/(3eta)] + e_b/k_H.
+```
+
+The formal lemma `massEnvelope_of_excess` absorbs the last term into
+`c=trC/(3eta)+e_b/b`. The capacity path can therefore be
+
+```text
+M=b/k_H,
+B(t)=E0/(3eta)+E_b(t)/b,
+integral_0^tau B <= E0 H/(3eta)+A/b.
+```
+
+It follows that
+
+```text
+1+W(t) <= (1+W(0)) exp[
+  (1+sqrt(2M)+2M E0/(3eta))H+2A/k_H].
+```
+
+This is finite if the proposed full-datum allowance A is finite. The
+new sufficient target permits unbounded pointwise `Y_hat/h` and requires
+no worst-receiver stochastic estimate. Its connection to the actual
+normalized memory field is analytic; the spatial absorption, actual
+whole-space energy estimate and continuation implications are formal.
+The same analytic energy argument works on the torus. No periodic formal
+criterion is added in these two modules.
+
+### The remaining signed pressure/parent estimate
+
+There is a direct physical equation for this excess. The complete
+unforced equations give
+
+```text
+D X <= X B_near,        D h=h Q_geom,
+D=partial_t+u.grad-nu Delta.
+```
+
+Convex approximation of the positive part yields the distributional
+inequality
+
+```text
+D e_b <= 1_{X>b h} [X B_near-b h Q_geom].
+```
+
+The nonpositive diffusion contribution at the level boundary is retained
+in the derivation and may be dropped for this upper bound. On a compact
+smooth prefix, the positive part has bounded spatial support: X tends
+to its smaller far-field offset while `h>=1`. Smooth convex approximants
+vanishing for negative arguments avoid an infinite-volume offset.
+The existing all-jet regularity justifies integration and continuity
+of the spatial excess. Incompressibility removes the transport integral.
+Define the signed quantity
+
+```text
+P_b(t)=integral_{X>b h} [X B_near-b h Q_geom] dx.
+```
+
+Then `E_b'<=P_b` in distributions. Since `E_b(0)=0`, integration with
+the fixed horizon weight gives
+
+```text
+integral_0^tau E_b(t)dt+(H-tau)E_b(tau)
+  <= integral_0^tau (H-t) P_b(t)dt,    tau<=H.
+```
+
+A uniform upper bound on the signed right-hand side is therefore a
+precise remaining sufficient physical estimate. The threshold region,
+near pressure, parent commutator, memory reaction and receiver gradients
+are all part of this same actual evolution. The global geometric
+identity bounds the subtracted payment by `b H E0/(3eta)`; it does not
+bound the positive pressure/parent contribution. This is an open history
+estimate, not a closed reserve obtained from its definition. The weak
+pressure-pairing estimate may now be investigated on these spatial
+receivers without substituting a singular point heat kernel, but its
+receiver norm is still not automatically controlled.
+
+### An actual forced obstruction to both criteria
+
+`CandidateProperties` in the imported whole-space construction requires
+positive viscosity, smooth velocity and pressure before time one with
+common compact spatial support, bounded kinetic energy, globally smooth
+compact spacetime forcing, and unbounded speed near time one. In
+particular the force's first and second derivative L2 norms remain
+bounded across that time. The formal forced-path estimate retains the
+first derivative force bound F:
+
+```text
+1+W(t) <= (1+W(0)) exp[(1+sqrt(2M)+F)t+2M integral_0^t B].
+```
+
+A uniform capacity would thus bound gradient energy. The existing
+`no_uniform_gradient_energy` theorem excludes this for the actual
+candidate, using its bounded second-order force norm and the H2
+embedding. `no_uniform_mass_envelope` and
+`no_uniform_memory_capacity` prove both obstructions, and their
+`openAI_solution_...` versions apply them to `NavierStokesR3.theorem_1_1`
+for every positive viscosity. No velocity surrogate is substituted.
+
+For the actual memory interpretation, fix a starting time `a=1/2` and
+construct C consistently from `C(a)=0` on all later slabs. Let Ebar bound
+`||u(t)||2^2`, let F0 bound `||f(t)||2`, and put `H0=1/2`. The forced
+energy equation gives the analytic bounds
+
+```text
+integral trC(t) <= D_C=||u(a)||2^2+2H0 sqrt(Ebar) F0,
+R_vol(t)+3eta integral_a^t integral h Q_geom
+  =||u(a)||2^2+2 integral_a^t integral u.f <= D_C.
+```
+
+All constants are finite. Earlier retained memory may instead be carried
+through a; its finite mass is then included once in D_C. Thus the
+geometric resource remains finite in this forced test. Nevertheless,
+for every fixed admissible b and finite kappa the space-time excess of
+the same coercive envelope cannot have a uniform finite bound. Otherwise
+`massEnvelope_of_excess` would supply the capacity just excluded.
+The memory construction and this last excess interpretation are analytic;
+the physical forced-path obstruction itself is kernel-checked.
+
+This distinguishes a finite geometric payment from the missing unforced
+comparison. It does not determine which separated term of the new
+scalar reserve carries the forced divergence. In particular, after
+Helmholtz projection write the force as g and the canonical advective
+pressure as p_u. The augmented-stress equation becomes
+
+```text
+D(u tensor u+C)=-sym(u tensor grad p_u)+sym(u tensor g).
+```
+
+The full reserve production also contains the strain and vorticity
+terms from `sym grad g` and `curl g`, and the observed parent-pressure
+term `K_near*sym(u tensor g)`. A uniform bound on all their logarithmic
+reserve pairings is not established here. Their history
+must be checked before attributing divergence solely to B_near. For the
+unforced target these explicit force terms vanish; the interacting
+parents and pressure still evolve and remain the open comparison.

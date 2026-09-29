@@ -468,14 +468,36 @@ paths; it does not change the fluid equation. Memory is retained at seams.
 A uniform full-datum bound on `Y_hat/h` would suffice for continuation
 in both settings: it bounds `|omega|^4` by a constant times `1+tr C`.
 Splitting low and high vorticity avoids integrating the constant over
-whole space; the energy and memory-mass bounds then control the
-space-time fourth moment. The analytic enstrophy inequality and Gronwall
-give a uniform gradient-energy bound. Six scalar/integral/matrix
-statements certify parts of this implication. The determinant/PDE,
-stochastic identification and actual NS application remain analytic.
-Exact matrix jets and complete shear histories check the formulas.
-The controlled-history bound for `B_near-Q_geom` remains open; neither
-the normalization nor the paid global cost supplies it automatically.
+whole space. `WholeSpaceMemoryEnvelope` now certifies the connection to
+the actual unforced PDE and the official whole-space continuation theorem:
+the literal production obeys `W'<=W+integral |omega|^4`, and a finite-mass
+majorant turns this into a linear inequality for `W=integral |omega|^2`.
+The proof uses Betchov's identity and a finite sum of squares; it requires
+no pressure singular-integral estimate or interpolation inequality.
+The determinant/PDE memory construction and stochastic identification
+remain analytic. Exact matrix jets and complete shear histories check
+those formulas. The periodic continuation application remains analytic.
+
+`WholeSpaceMemoryExcess` further permits the spatial mass bound to vary
+in time, requiring only a uniform bound on its time integral. Consequently
+it suffices analytically to bound the space-time excess
+`integral integral (exp(-kappa t)Y_hat-b h)_+`, for a fixed initial-data
+threshold `b`. Here `kappa` pays the already controlled separated reaction.
+This allows pointwise peaks and places the remaining estimate in the same
+spatially integrated setting as the paid geometric cost. The lab derives
+its exact signed pressure/parent-production target, retaining changing
+geometry, all nearby terms and accumulated memory.
+
+Both modules also certify failure of their respective mass criteria for
+the actual imported forced singularity. They retain its smooth compact
+forcing and bounded derivative norms; no hypothetical surrogate is used.
+Analytically, its accumulated memory and geometric payment still have
+finite spatial budgets, but its space-time envelope excess is unbounded.
+This excludes a proof based only on those finite budgets. It does not
+refute an estimate using the exact unforced parent equations, nor identify
+which separate term of the new reserve carries the forced divergence.
+The signed excess bound and the stronger controlled-history bound remain
+open; neither is supplied by the normalization alone.
 
 ## Checked applications and semantic interfaces
 
