@@ -132,28 +132,35 @@ generated sources and receipts are in `.lake/orbit9-audit`.
 
 ## Complete assembly
 
-After the reference and all four adapter/presentation targets above succeed:
+After the reference, all four adapter/presentation targets above, and the
+configuration-family target below succeed:
 
 ```sh
 lake build kernelComplete
 ```
 
 The target first audits the uncompressed reference in a separate Lean process.
-It then checks `Complete` and `CompleteAudit`. The compositional theorem does
+It then checks `DiamondFamilyReducibility`, `Complete` and `CompleteAudit`.
+The compositional theorem does
 not import the original unconditional theorem or the superseded arity-nine,
 arity-ten and arity-eleven presentations. Its audit follows the dependencies
-of the graph, construction and sweep endpoints, requiring all 633 configuration
-certificates, all seven arity proofs, the 66 named shared hubcaps, the
+of the graph, construction and sweep endpoints, requiring 632 reference
+configuration certificates, the new joint diamond repair, all seven arity proofs,
+the 66 named shared hubcaps, the
 periodic and reflected hubcap lemmas, and the actual geometric reconstruction.
-It rejects the 236 superseded checker declarations and checks imported public
+It rejects the original configuration-4 certificate from each endpoint's
+dependency closure, rejects the 236 superseded checker declarations, and checks imported public
 declarations against `propext`,
 `Classical.choice` and `Quot.sound`.
 
 The driver validates the source and artifact hashes of the 87 prepared adapter
-and presentation modules. Final source hashes, artifact hashes, exit statuses
+and presentation modules and the 19 configuration-family modules.
+Final source hashes, artifact hashes, exit statuses
 and frontend times are recorded in `.lake/complete-audit/complete-results.json`.
-The public measurement record is
+The original assembly measurement record is
 [`complete-assembly-measurements.json`](../../tools/fourcolor/classical/complete-assembly-measurements.json).
+The [joint repair record](../../tools/fourcolor/classical/diamond-joint-repair-measurements.json)
+records the later family and complete-assembly checks.
 The reference replay, shared-presentation builds and final adapter audit are
 distinct measurements; imported dependencies are reused by the final gate.
 
@@ -165,7 +172,7 @@ The separate configuration-family gate is:
 lake build kernelConfigurationFamilies
 ```
 
-It reuses prepared reference artifacts and checks fifteen modules without native
+It reuses prepared reference artifacts and checks nineteen modules without native
 code generation. `ExecutableConfiguration` proves its executable decoder equal
 to the reference pointed map; `DiamondConfigurations` supplies exact finite
 presentations of configurations 1, 2 and 4. `DiamondInsertion` proves both
@@ -183,9 +190,17 @@ six-colour boundary relation and reconstructs its witnesses.
 `DiamondKempeBoundary` proves that either insertion's side-edge contraction
 alone fails the required Kempe trace implication. Its nine-root audit excludes
 existing configuration certificates and complete theorem endpoints.
+`KempeAnswerComposition` composes finite chromogram answers using the reference's
+proved cover specification. `DiamondBoundaryRepair` proves the coupled
+eight-port law in ten steps, without any configuration dependency.
+`DiamondJointRepair` supplies twenty-three actual terminal colourings and
+combines the law with exact contract elimination. Its eight-root audit excludes
+existing configuration certificates and global Kempe fixed-point computations.
 The [worked example](../../papers/benxiv/fourcolor-compositional/diamond-example/README.md)
-explains the remaining reducibility obligation. No catalogue check is removed
-by this geometry and semantics milestone. Receipts are saved in
+explains the repair and its remaining family-extension obligations.
+The complete assembly replaces one reference certificate dependency with it.
+Shared reference modules still load the old declaration; this is not a claimed
+build-time or artifact-size saving. Receipts are saved in
 `.lake/family-audit/family-results.json`.
 
 The hypermap dictionary preserves actual dart permutations, components and
@@ -296,7 +311,9 @@ The complete assembly additionally consumes the arity-nine sharing, where
 checks. The unconditional endpoints consume all 231 replacements.
 
 All 633 configurations and all 32 discharging-rule labels remain. No new
-uniform configuration-family reducibility theorem is claimed. Exact counts
+rule replacing a whole catalogue family is claimed. Configuration 4 now uses
+the coupled boundary repair; the other 632 reference certificates remain.
+Exact counts
 and measurement scope are recorded in the
 [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).
 The small pilot shows no measured runtime or artifact-size improvement after

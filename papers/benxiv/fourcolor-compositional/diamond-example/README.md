@@ -9,9 +9,10 @@ configuration 2  ── insert in a boundary triangle ──▶  configuration 4
 ```
 
 These correspondences, their boundary orders and their complete colouring
-semantics are now kernel-checked. This realizes one of the local insertion
-ideas in the compositional programme. The remaining task is to use the family
-semantics to prove reducibility and replace independent catalogue checks.
+semantics are now kernel-checked. The coupled boundary law now proves
+configuration 4 reducible and replaces its original certificate dependency
+in the complete proof. Extending that law to a broader family remains the
+next step in the compositional programme.
 
 ## The local law
 
@@ -119,9 +120,9 @@ blocking an actual colouring.
 An independent [finite probe][joint-probe] finds 243 traces for either single
 contract, of which 75 fail the coclosure test; all 108 joint-contract traces
 pass. The joint formula has 432 boundary assignments and 18 edge-trace classes
-under permutation of the three nonzero colours. These counts and the positive
-joint repair test are program evidence, separate from the Lean elimination
-and obstruction theorems.
+under permutation of the three nonzero colours. These counts are independently
+replayed program evidence. The positive joint repair implication is now also
+proved in Lean, as described below.
 
 The probe also tests repeated insertions on the same two original triangles.
 The rule that keeps contracting their original side edges fails at two
@@ -129,10 +130,48 @@ insertions on one side, and at two on one side plus one on the other. This
 rules out iterating that specified rule without additional hypotheses or a
 different contract. It does not rule out a different reduction for those
 graphs. At configuration 2 the tested two-side contract differs from the
-catalogue's specified one-edge contract. The next family argument must retain
-the coupling between insertions and establish the joint Kempe implication.
-The existing classical certificate already proves configuration 4 reducible;
-the open task is to replace that certificate with the family argument.
+catalogue's specified one-edge contract. Any extension must retain the coupling
+between insertions and prove its new contract conditions.
+
+## From the boundary law to reducibility
+
+[DiamondBoundaryRepair][boundary-repair] proves a law for any predicate on
+eight-edge traces that contains twenty-three specified terminal patterns.
+Every admissible joint trace is in its Kempe coclosure: every Kempe-closed
+exterior predicate containing that trace meets the terminal predicate.
+The law imports no configuration or configuration certificate.
+
+First translate and permute three distinct vertex colours to `0,1,2`.
+The remaining choices give eighteen normalized trace types. Twelve already
+have ordinary colourings. Ten repair states handle the remaining six types
+and their intermediate answers:
+
+| Proof level | Input words | Answer levels |
+| --- | --- | --- |
+| 1 | `11123312`, `11213321`, `11232223`, `11233323` | Ordinary colourings |
+| 2 | `11213123`, `11231213` | Ordinary colourings or level 1 |
+| 3 | `11213132`, `11231312` | Ordinary colourings or level 2 |
+| 4 | `11231132` | Ordinary colourings or level 3 |
+| 5 | `11231123` | Ordinary colourings or level 4 |
+
+Each state answers **every** matching chromogram, after an allowed colour
+permutation. [KempeAnswerComposition][answers] composes these answers using
+the reference's proved matching-cover specification. The five levels measure
+proof dependency depth, not a bound on the number of physical Kempe-chain swaps.
+
+[DiamondJointRepair][joint-repair] supplies a literal twelve-vertex colouring
+for each terminal pattern and checks every actual edge. Exact contract
+elimination supplies the input condition. The theorem `reducible` combines
+this repair implication with the proved geometric contract conditions.
+`compatible_history` also supplies the chosen colouring's GSLT history through
+the two insertion alternatives.
+
+[DiamondFamilyReducibility][family-range] inserts this result into the full
+633-case range. The [complete endpoint audit][complete-audit] requires the new
+law and rejects every dependency on the original `Bulk.Cfg003` certificate.
+The other 632 reference certificate dependencies remain. Shared reference
+modules still load the old declaration; runtime and artifact-size savings
+are not claimed.
 
 ## Compatible histories
 
@@ -152,28 +191,36 @@ an old configuration-1 colouring alone.
 kernel-checked configuration-1 colouring, including the actual reference-map
 colouring produced at its end.
 
-## What remains
+## Scope and remaining work
 
-The missing implication is reducibility transport: every contract boundary
-trace must lie in the Kempe coclosure of the ordinary boundary traces. The
-ordinary traces include both colouring branches. The geometry, specified
-contracts and both kinds of trace now have a proved connection to that exact
-reference obligation. The family proof must establish this Kempe implication
-before it can replace any existing reducibility certificate.
+One reference certificate dependency is replaced, while all 633 catalogue
+entries remain. The result closes the coupled configuration-4 obligation.
+It does not yet give one rule replacing the checks for all three configurations,
+or a valid contraction rule for arbitrarily long insertion fans. Those are
+separate family and geometric coverage tasks.
 
-No reducibility certificate has been removed, and the complete Four Colour
-assembly still uses all 633 catalogue entries. The
+The
 [geometry audit][audit] checks 28 roots; the [contract audit][contract-audit]
 checks another 13. Both exclude classical certificate and complete theorem
 dependencies. The [joint boundary audit][joint-audit] adds nine roots for the
-elimination and obstruction results, with the same exclusions.
+elimination and obstruction results, with the same exclusions. The new
+[repair audit][repair-audit] checks eight roots, excluding both existing
+configuration certificates and global Kempe fixed-point computations.
 The [geometry record][measurements], [contract record][contract-measurements]
 and [joint boundary record][joint-measurements] retain source hashes, artifact
-hashes and kernel/frontend costs. Run
+hashes and kernel/frontend costs. The [repair measurements][repair-measurements]
+record the integrated replacement. Run
 `lake build kernelConfigurationFamilies` in the classical package after
 preparing its dependencies as described in the [package guide][package].
 
 [alternatives]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleAlternatives.lean
+[boundary-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondBoundaryRepair.lean
+[answers]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeAnswerComposition.lean
+[joint-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepair.lean
+[family-range]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondFamilyReducibility.lean
+[complete-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/CompleteAudit.lean
+[repair-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepairAudit.lean
+[repair-measurements]: ../../../../tools/fourcolor/classical/diamond-joint-repair-measurements.json
 [executable]: ../../../../lean/fourcolor-classical/MettapediaFourColor/ExecutableConfiguration.lean
 [configurations]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean
 [insertions]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondInsertion.lean

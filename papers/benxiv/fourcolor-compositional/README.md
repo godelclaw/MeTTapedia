@@ -1,6 +1,7 @@
 # Compositional Four Colour: proof plan and current results
 
-Updated 29 September 2026. Complete assembly: `b99eaf006`.
+Updated 29 September 2026. Original complete assembly: `b99eaf006`.
+The current assembly additionally consumes the joint diamond boundary repair.
 
 The open-piece idea in Goertzel and Fable's compositional note now has a
 kernel-checked realization: graph constructions carry actual colouring
@@ -36,8 +37,9 @@ The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved
 in Lean. A GSLT
-reconstruction route covers every colouring of configuration 4; transport of
-reducibility remains the next step.
+reconstruction route covers every colouring of configuration 4. The joint
+boundary law now proves that configuration reducible and replaces its original
+certificate dependency in the complete proof. A broader family rule remains open.
 
 ## The nearest completed version of the plan
 
@@ -62,7 +64,8 @@ The complete dependency chain is:
 
 ```mermaid
 flowchart TD
-  C[633 checked reducibility certificates] --> R[Select compatible disk and exterior colourings]
+  C[632 reference reducibility certificates] --> R[Select compatible disk and exterior colourings]
+  J[Joint diamond boundary repair] --> R
   R --> G[Glue an actual ambient colouring]
   G --> M[No reducible configuration in a minimal counterexample]
   D[Discharging coverage with shared charge proofs] --> N[No minimal counterexample]
@@ -152,7 +155,7 @@ of that baseline, with every replacement measured.
 | [Facial sweeps][sweeps] and [boundary changes][face-boundary] | Construct actual face-addition histories and prove exact contour updates. Adding a face of length `l` changes boundary degree imbalance by `l−6`. These results support geometric research; the complete assembly currently reuses the reference discharging proof. |
 | [Kempe channel recomposition][kempe] | Computes the changed channels by composing connectivity through retained internal attachments. External boundary mates alone are insufficient. |
 | [Finite physical fork code][fork] | Exact finite reflection for supplied decompositions. Its usefulness for a new independent proof still requires an adequate width supply and the corresponding base audit. |
-| [Boundary-triangle alternatives][alternatives] | Four-colourings split exactly into old-graph and contracted-graph branches. The [diamond instances](diamond-example/README.md) now retain the actual reference graphs, cyclic orders and rings, and reconstruct every target colouring through a GSLT route. Reducibility transport remains open. |
+| [Boundary-triangle alternatives][alternatives] | Four-colourings split exactly into old-graph and contracted-graph branches. The [diamond instances](diamond-example/README.md) retain actual graphs, cyclic orders and rings, and reconstruct every target colouring through GSLT. The coupled boundary repair replaces configuration 4’s certificate; broader family transport remains open. |
 | [MeTTa premise routes][metta] | A verified consumer outside Four Colour: `deduplicate_freshness_iff` transports compatible premise answers through surrounding routes. A shared-binding counterexample records why separate satisfiability is insufficient. |
 
 Adjacency matrices in the representation library encode graph incidence.
@@ -190,6 +193,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Independent discharging checks at arities 9–11 | 11,363 → 11,132: 231 replaced |
 | Separate finite input identities or classifications | 218, counted separately |
 | Discharging-rule labels retained | 32 |
+| Reference configuration certificate dependencies retained / replaced | 632 / 1 |
 | Uniform configuration-family reducibility replacing catalogue checks | None yet |
 | Runtime or artifact-size saving | Not claimed |
 
@@ -197,8 +201,11 @@ The 231 replacements use periodicity, reflection, exchange of paired
 endpoints and shared charge bounds. Their complete consumers are checked in
 [`CompleteAudit`][audit]; they are not merely lemmas beside an unchanged proof.
 The audit also rejects the original unconditional theorem and 236 superseded
-checker declarations. Declaration counts and independent-computation savings
-are different metrics.
+checker declarations. It now requires the joint diamond boundary law and
+excludes the original configuration-4 certificate from the complete endpoint
+dependencies. Shared reference modules still load that old declaration;
+runtime and artifact-size savings are not claimed. Declaration counts and
+independent-computation savings are different metrics.
 
 The next research milestone is a uniform lemma replacing a family of
 configuration checks while preserving the completed theorem. The current
@@ -209,15 +216,17 @@ to the actual diamond configurations. The integration obligations are:
    their actual cyclic orders and ring coordinates. The composed equivalence
    and GSLT route cover every configuration-4 colouring. See the
    [diamond example](diamond-example/README.md).
-2. The specified contracts and their boundary traces are now identified in
+2. **Proved:** the specified contracts and their boundary traces are identified in
    the same graph coordinates. The joint contraction now has an exact
    six-colour boundary formula with reconstruction. Either insertion's
    side-edge contraction alone fails the Kempe obligation, proved in Lean.
-   Transport reducibility through **both** colouring branches while retaining
-   the coupling between the insertions and the required exterior hypotheses.
-3. Replace the corresponding checker dependencies in the complete assembly
-   and rerun its audit. Record configuration-check savings separately from
-   any change to the unavoidable catalogue, which also needs coverage.
+   Ten small repair steps now prove the joint implication, using twenty-three
+   actual terminal colourings and retaining both ordinary colouring branches.
+3. **Integrated:** configuration 4's original certificate dependency is replaced
+   in the complete assembly, and its endpoint audit verifies the replacement.
+   The next task is to generalize this coupled law to additional family members
+   with justified contracts, then prove the required geometric supply.
+   Configurations 1 and 2 still use their reference certificates.
 
 The tube example already gives a complete physical reduction and compositional
 normalization for its own infinite family. To count as a classical
@@ -237,9 +246,11 @@ reusable witness theory, family results, and measured certificate sharing.
 The [complete replay record][measurements] contains source and artifact hashes
 for 818 reference modules. Their recorded frontend times total 28,891.49
 seconds, including earlier pilot runs; imported Mathlib and Mettapedia builds
-are outside that total. The separate final integration gate took 27.174
+are outside that total. The original final integration gate took 27.174
 frontend seconds and audited 124,340 imported public declarations. Only
 `propext`, `Classical.choice` and `Quot.sound` occur in the audited roots.
+The [joint repair record](../../../tools/fourcolor/classical/diamond-joint-repair-measurements.json)
+records the later family and complete-assembly checks.
 The [reusable-semantics audit][reuse-audit] separately checks the graph and MeTTa
 consumers. Build instructions are in the [package guide][package].
 

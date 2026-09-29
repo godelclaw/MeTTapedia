@@ -1,0 +1,176 @@
+{
+  "evidence": "Independent program replay; theorem validity is checked separately by Lean.",
+  "source_sha256": {
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+    "lean/fourcolor-classical/MettapediaFourColor/KempeAnswerComposition.lean": "7cbec1a9068a9a352932377beecf0768affaa5930df23681ea423054a30e0b96",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondBoundaryRepair.lean": "854308276d2668370b7cd61977e0ee0d73b7b9252e83ff1d3d3e96e2f113e34f",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondJointRepair.lean": "c36e7e21508b09fb4ddbd0bae6b40c40f89656dc8aadb5e16bdc0217759938d6",
+    "tools/fourcolor/classical/audit_diamond_boundary_strategy.py": "80a290f7149f1ad7267325035ea5af1a2b9fdeab604c61f92b03832f65062457",
+    "tools/fourcolor/classical/probe_diamond_kempe.py": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d",
+    "tools/fourcolor/classical/probe_diamond_joint_repair.py": "2969b597a97e6a562cf844aeb2bf402583fb3d401ad6beb74bfe1f678139257c",
+    "tools/fourcolor/classical/diamond_coloring_alternatives.py": "0075009196d573a65d0516ccba101b6c81528678c4babadda86c00372bdc2970"
+  },
+  "terminal_graph_witnesses": 23,
+  "normalized_joint_starts": 18,
+  "joint_traces": 108,
+  "directly_realized_start_types": 12,
+  "repair_steps": 10,
+  "longest_dependency_chain": 5,
+  "strategy": [
+    {
+      "trace": "11123312",
+      "permutation": "231",
+      "chromograms": 5,
+      "depth": 1,
+      "answers": [
+        "22221133",
+        "22231132",
+        "22321123"
+      ],
+      "targets": [
+        "11112233",
+        "11123321",
+        "11213312"
+      ]
+    },
+    {
+      "trace": "11213321",
+      "permutation": "231",
+      "chromograms": 5,
+      "depth": 1,
+      "answers": [
+        "22231132",
+        "22321123",
+        "22331122"
+      ],
+      "targets": [
+        "11123321",
+        "11213312",
+        "11223311"
+      ]
+    },
+    {
+      "trace": "11232223",
+      "permutation": "123",
+      "chromograms": 5,
+      "depth": 1,
+      "answers": [
+        "11223333",
+        "11232232",
+        "11233332"
+      ],
+      "targets": [
+        "11223333",
+        "11232232",
+        "11233332"
+      ]
+    },
+    {
+      "trace": "11233323",
+      "permutation": "123",
+      "chromograms": 5,
+      "depth": 1,
+      "answers": [
+        "11222233",
+        "11232232",
+        "11233332"
+      ],
+      "targets": [
+        "11222233",
+        "11232232",
+        "11233332"
+      ]
+    },
+    {
+      "trace": "11213123",
+      "permutation": "213",
+      "chromograms": 5,
+      "depth": 2,
+      "answers": [
+        "22122313",
+        "23132313",
+        "22123312"
+      ],
+      "targets": [
+        "11211323",
+        "12321232",
+        "11213321"
+      ]
+    },
+    {
+      "trace": "11231213",
+      "permutation": "231",
+      "chromograms": 5,
+      "depth": 2,
+      "answers": [
+        "22313221",
+        "23212321",
+        "22213321"
+      ],
+      "targets": [
+        "11232113",
+        "12131213",
+        "11123312"
+      ]
+    },
+    {
+      "trace": "11213132",
+      "permutation": "123",
+      "chromograms": 2,
+      "depth": 3,
+      "answers": [
+        "11212122",
+        "11213123"
+      ],
+      "targets": [
+        "11212122",
+        "11213123"
+      ]
+    },
+    {
+      "trace": "11231312",
+      "permutation": "123",
+      "chromograms": 2,
+      "depth": 3,
+      "answers": [
+        "11221212",
+        "11231213"
+      ],
+      "targets": [
+        "11221212",
+        "11231213"
+      ]
+    },
+    {
+      "trace": "11231132",
+      "permutation": "213",
+      "chromograms": 5,
+      "depth": 4,
+      "answers": [
+        "22133331",
+        "22123231",
+        "22132321"
+      ],
+      "targets": [
+        "11233332",
+        "11213132",
+        "11231312"
+      ]
+    },
+    {
+      "trace": "11231123",
+      "permutation": "123",
+      "chromograms": 2,
+      "depth": 5,
+      "answers": [
+        "11221133",
+        "11231132"
+      ],
+      "targets": [
+        "11221133",
+        "11231132"
+      ]
+    }
+  ],
+  "scope": "One coupled eight-port boundary law; no claim that longer fans obey the same contract."
+}

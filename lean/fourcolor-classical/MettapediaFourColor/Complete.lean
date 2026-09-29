@@ -3,13 +3,14 @@ import FourColor.Present5
 import FourColor.Present6
 import FourColor.Present7
 import FourColor.Present8
-import FourColor.Reduce.All
+import MettapediaFourColor.DiamondFamilyReducibility
 
 /-!
 # The classical Four Colour theorem with compositional reconstruction
 
-The reference supplies the reducibility certificates and four discharging
-presentations. Three presentations consume the shared charge bounds.
+The reference supplies 632 reducibility certificates and four discharging
+presentations. A joint boundary repair law supplies configuration 4.
+Three presentations consume the shared charge bounds.
 The minimal-counterexample argument rebuilds an actual colouring through
 the GSLT witness relation. The resulting theorem colours finite plane
 drawings and supplies compatible choices for exact source constructions.
@@ -24,11 +25,11 @@ namespace FourColor.CompositionalComplete
 /-- Match the complete certificate range to the decoded configuration list. -/
 theorem theConfigs_length : theConfigs.length = 633 := by decide +kernel
 
-/-- The pinned catalogue supplies every reducibility input. -/
+/-- The catalogue range includes the independently proved joint diamond repair. -/
 theorem reducibility : Reducibility := by
   unfold Reducibility
   rw [theConfigs_length]
-  exact reducible_all
+  exact DiamondFamilyReducibility.reducible_all
 
 theorem no_minimalCounterExample {D : Type} [Finite D] (G : Hypermap D) :
     ¬ G.MinimalCounterExample :=
