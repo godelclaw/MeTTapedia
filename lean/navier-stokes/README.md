@@ -135,6 +135,19 @@ comparison theorems. Likewise, no identification with a Schrödinger bridge
 optimizer is asserted. The framework permits such a later consumer while
 keeping its fluid realization and analytic bound as explicit obligations.
 
+The next concrete geometric observable is recorded in
+[`labs/transported_frame_metric.py`](labs/transported_frame_metric.py) and
+`StochasticLagrangian.TransportedFrameMetric`. A transported vector and its
+positive frame tensor have an inverse-metric quadratic form whose explicit
+strain terms cancel, leaving a nonpositive diffusion square and the exact
+forcing term. Its regularized negative logarithm satisfies a drifted HJB
+identity with a nonnegative geometric source. The Lean module proves the
+finite matrix algebra; the stochastic realization and parabolic comparison
+are analytic. Exact unforced shear and Beltrami tests retain the physical
+equation and pressure. A bound on the changing metric in the actual
+vorticity direction remains open, so this observable is not yet a reserve
+for the ordinary order-one production.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

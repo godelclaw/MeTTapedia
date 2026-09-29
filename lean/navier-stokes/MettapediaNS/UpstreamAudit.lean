@@ -42,6 +42,7 @@ import MettapediaNS.OpenAISolutionPancake
 import MettapediaNS.ForcedSignedBudget
 import MettapediaNS.FilteredHistory
 import MettapediaNS.WholeSpaceHistoryBridge
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.TransportedFrameMetric
 import Mettapedia.GSLT.Dynamics.ConstrainedBoundaryReduction
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchIdentity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchSchur
@@ -99,6 +100,9 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.kinetic_history_cost_nonpos
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.orderEnergy_le_of_reserve
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceHistoryBridge.hasNSEvolution_of_bellman
+#print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameMetric.production_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameMetric.frame_gradient_compatible
+#print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameMetric.production_nonpos
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCoherentPairEstimate.sigmaSq_coherent_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_two_four
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_adjacent

@@ -2304,3 +2304,98 @@ of a chart-linear potential while changing its predicted acceleration.
 These are exact finite-dimensional differential identities. An application
 to an infinite-dimensional stochastic flow additionally needs generator
 domains, convergence, and solution regularity; none is asserted by this lab.
+
+### A transported-frame metric and its fluid-derived HJB equation
+
+`transported_frame_metric.py` checks a different construction based on
+actual vector transport. For `D = partial_t + u . grad - nu Delta`, let
+
+```text
+D v = B v + f,
+D M = B M + M B^T,
+Q = M^(-1),
+q = v^T Q v,
+r_j = partial_j v - (partial_j M) Q v.
+```
+
+For a symmetric positive definite tensor `M`, the exact identity is
+
+```text
+D q = 2 v^T Q f - 2 nu F,
+F = sum_j r_j^T Q r_j >= 0.
+```
+
+For smooth unforced Navier--Stokes, use its actual vorticity `v=omega`,
+its actual gradient `B=grad u`, and `f=0`. The tensor is the uncentered
+second moment of transported frame vectors, rather than their centered
+covariance. With a common spatially constant Brownian translation, the
+quadratic-variation terms give precisely the Laplacian of this second
+moment. These statements concern each smooth existence interval; they
+do not construct an evolution beyond a candidate singular time.
+
+`StochasticLagrangian.TransportedFrameMetric` kernel-checks the matrix
+algebra and the nonpositive sign of the unforced production. Its rates
+and gradients are explicit inputs. The construction of the random frame,
+differentiation of its expectation, inverse-matrix differentiation and
+parabolic comparison remain analytic here.
+
+The identity also gives a concrete HJB observable. For a fixed `eta>0`,
+put `Psi=-2 nu log(q+eta)`. Then
+
+```text
+D Psi + |grad Psi|^2/2 = 4 nu^2 F/(q+eta) >= 0.
+```
+
+The drift and geometric source are supplied by the same fluid and frame.
+This is a PDE identity, not an assertion that arbitrary fluid data solve
+an independently prescribed minimum-action bridge problem. A control in
+the scalar HJB representation changes auxiliary sampling paths; it is not
+automatically an admissible change of the physical fluid velocity.
+
+The remaining comparison is essential. Define the directional factor
+`kappa=|omega|^2/q` wherever `omega!=0`, and set it to zero at zeros.
+For `M(0)=I`, comparison gives `q<=||omega(0)||_infinity^2`; hence a bound
+on the time integral of `sup_x sqrt(kappa)` would bound the vorticity
+integral. No arbitrary-data bound on this factor is proved here.
+Controlling `q` alone does not control Euclidean vorticity: the matrices
+`M=diag(lambda^2,lambda^(-2),1)` and vectors `v=lambda e_1` have
+`det M=1` and `v^T M^(-1)v=1`, while `|v|^2=lambda^2`. This is a matrix
+example, not a fluid trajectory.
+
+The checker retains two exact physical tests:
+
+* For the periodic unforced shear `u=A exp(-nu t) sin(y) e_x`, the frame
+  starting at `I` is `[[1+c,b,0],[b,1,0],[0,0,1]]`, where
+  `b=A t exp(-nu t) cos(y)` and
+
+  ```text
+  c=A^2(I0+I2 cos(2y)),
+  I0=(1-(1+2 nu t)exp(-2 nu t))/(4 nu^2),
+  I2=((2 nu t-1)exp(-2 nu t)+exp(-4 nu t))/(4 nu^2).
+  ```
+
+  Its determinant excess `c-b^2` has nonnegative heat source
+  `2 nu |partial_y b|^2`. Also `I2>=0` and
+  `I0+I2=(1-exp(-2 nu t))^2/(4 nu^2)`, giving the uniform trace bound
+  `3+A^2/(4 nu^2)`. Actual vorticity lies in the unchanged third direction,
+  so `kappa=1` wherever it is nonzero. A tensor initialized instead at
+  `omega(0) omega(0)^T+delta I` has directional factor at most
+  `delta+A^2`; its third component is the heat evolution of the initial
+  squared vorticity plus `delta`.
+* For the exact unforced Beltrami flow
+  `u=A exp(-nu t)(sin(z)+cos(y), sin(x)+cos(z), sin(y)+cos(x))`, the
+  checker verifies the pressure `p=-|u|^2/2`, the curl, and the initial
+  frame production. At the origin, initial physical stretching is
+  `omega . (grad u) omega=3A^3`. For the frame initialized at `I`,
+  `partial_t kappa(0,0)=2A`, positive for `A>0`. Thus the directional
+  factor need not decrease even on an actual globally regular flow.
+
+The second test uses the tensor's initial derivative, not a computed
+positive-time tensor solution. The general identity is also checked by
+directly differentiating rational matrix expressions with arbitrary
+specified first and second spatial jets, including a nonzero forcing.
+The checker requires SymPy:
+
+```sh
+python3 -O labs/transported_frame_metric.py
+```
