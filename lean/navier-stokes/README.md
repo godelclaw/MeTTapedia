@@ -161,6 +161,25 @@ pressure and history corrections remain open. The existing
 `LocalMaterialStretching.hasDerivAt_stretchingAlong` supplies an actual
 material-evolution identity for this retained stretching variable.
 
+`StochasticLagrangian.PressureBoundaryResponse` gives an energy-paid part
+of that pressure history. It proves sharp bounds for the explicit fourth
+Newtonian angular kernel, its spatial integral away from a fixed radius,
+and the time-integrated response under a common energy bound. Directions
+and integration regions may change with time. Analytic identification
+with the actual whole-space far-pressure Hessian gives
+`||P_far|| <= 6 ||u0||_2^2/(pi R^5)`. The identification with the physical
+pressure and its operator norm is not yet a Lean theorem in this module.
+
+For the joint quantity `|omega|^2+tau^2|(grad u)omega|^2`, a bounded
+far-pressure contribution is absorbed with coefficient `1/tau+tau K`.
+The signed near-pressure work and viscous cross-gradient term remain
+uncontrolled. The companion `labs/pressure_boundary_response.py` derives
+the exact exterior pressure of a compact radial swirl and checks two
+whole-space initial-data constructions with the same local core and
+energy but opposite pressure-driven second directional growth. These are
+analytic local unforced-flow tests, not recurrent-growth or singularity
+results. Their derivation and formal scope are in the labs README.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

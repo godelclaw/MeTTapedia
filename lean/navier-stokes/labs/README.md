@@ -2534,3 +2534,200 @@ full-state, full-datum history allowance.
 ```sh
 python3 -O labs/transported_frame_direction.py
 ```
+
+### Separated pressure, exact swirl response and a joint history target
+
+`pressure_boundary_response.py` checks a positive separated-pressure
+estimate and an initial-data test of the information a boundary must
+retain. The whole-space calculations below use `N(x)=1/(4 pi |x|)` and
+energy `E=||u||_2^2`, without the factor one half. They concern actual
+unforced initial data and the pressure they generate. They do not
+establish recurrent amplification.
+
+**The energy-paid separated contribution.** Away from zero, the fourth
+derivative of `N` paired with an observation direction `e` twice and a
+source velocity `v` twice has angular numerator
+
+```text
+K(n,e,v) = 105 (e.n)^2 (v.n)^2
+  -15 (|e|^2 (v.n)^2 + (e.n)^2 |v|^2 +4(e.n)(e.v)(v.n))
+  +3 (|e|^2 |v|^2 +2(e.v)^2),              |n|=1.
+```
+
+The derivative is `K/(4 pi r^5)`. Two exact sum-of-squares identities
+give the sharp interval `-12 |e|^2|v|^2 <= K <= 24 |e|^2|v|^2`.
+The Lean proof uses the components of `e` and `v` perpendicular to `n`
+and their nonnegative Gram determinant. Thus the result does not select
+a preferred axis. The checker independently differentiates `1/|x|`
+in an adapted coordinate system and verifies attainment of both constants.
+
+For a smooth finite-energy whole-space solution, define the far part
+of the Hessian by integrating this fourth kernel against `u_i u_j`
+over `|x-y|>=R`, with a fixed `R>0`. There is no singular integral in
+this far part. The canonical pressure representation and the bound above
+give, for every unit observation direction,
+
+```text
+|e . P_far(t,x) e| <= 6 ||u(t)||_2^2/(pi R^5).
+```
+
+The Hessian is symmetric, so the same bound holds for its operator norm.
+The unforced energy inequality consequently gives
+
+```text
+||P_far(t,x)|| <= K_R := 6 ||u0||_2^2/(pi R^5),
+integral_0^H ||P_far(t,X(t))|| dt <= H K_R.
+```
+
+This permits arbitrary observation positions and orientations; it assumes
+no persistent packet shape. The Lean module `PressureBoundaryResponse`
+proves the angular certificates, the explicit kernel integral bound, and
+its physical-time integral under a common energy bound and the stated
+measurability/integrability hypotheses. The integration measure may vary
+with time, allowing restriction to the exterior of a moving observation
+ball. Identification of that kernel integral with the actual pressure
+Hessian, the operator-norm passage, and the physical energy application
+are analytic here. `P_near=P-P_far` retains all singular/local terms.
+No derivative of this decomposition is used. A shrinking `R(t)` would
+instead require controlling its potentially divergent `R(t)^(-5)` cost;
+the fixed-radius theorem does not supply that control.
+
+**An exact boundary response of a compact swirl.** Let `chi` be a smooth
+compactly supported radial profile, smooth as a function on space at
+the origin, and let `n` be a unit vector. Set
+
+```text
+u(x)=chi(|x|) (n cross x),
+I(r)=integral_0^r s^4 chi(s)^2 ds,
+T(r)=integral_r^infinity s chi(s)^2 ds.
+```
+
+This field is divergence-free and has zero helicity density. For the
+axis `n=e_z`, write `mu=z/r`. Its pressure is
+
+```text
+p(r,mu) = -(2/3) T(r) -(2/3) I(r) r^(-3) P_2(mu),
+P_2(mu)=(3mu^2-1)/2.
+```
+
+Indeed `tr((grad u)^2)=-2chi^2-2chi chi' (x^2+y^2)/r`.
+Splitting `Delta p=-tr((grad u)^2)` into its spherical degrees zero and
+two gives the two radial ODEs checked by the script. The displayed
+solution is regular at the origin and decays at infinity, identifying
+the canonical pressure. Its energy is `E=(8pi/3) I(infinity)`.
+Outside the support the pressure is therefore exactly
+
+```text
+p(x) = -E [3(n.x)^2-|x|^2]/(8pi |x|^5)
+     = -(E/2) partial_nn N(x).
+```
+
+This is an exact quadrupole, without a small-packet approximation. Energy,
+axis and centre suffice to describe this packet's instantaneous exterior
+pressure. They are not asserted to be a closed dynamical state: the
+subsequent coupled NS evolution need not preserve the radial packet.
+Independent quadrature integrates the velocity stress against the fourth
+Newtonian kernel at two resolutions; this is a numerical cross-check of
+the analytic formula, not its proof.
+
+**Same core and energy, opposite next directional growth.** Take a
+central compact radial swirl whose profile is the constant `b>0` on a
+ball around zero. There
+
+```text
+u0=b(-y,x,0),    omega0=2b e_z,    (grad u0)omega0=0,
+p_core=constant+b^2(2x^2+2y^2+z^2)/5.
+```
+
+Place two further compact radial swirls at `+L e_z` and `-L e_z`, with
+supports disjoint from each other and from the core. Give them total
+energy `E`, half each, and axes `n` and `-n`. Disjoint supports make the
+velocity stress, and hence the initial pressure, the sum of the three
+contributions exactly. The remote pair's pressure is even about zero,
+so its pressure gradient vanishes there. Counter-rotation also cancels
+its total initial angular momentum. No persistent velocity parity is
+assumed.
+
+For these centres the exact remote axial Hessian is
+
+```text
+(P_remote)_zz(0) = 3E(1-3n_z^2)/(2pi L^5).
+```
+
+Choose `E=pi b^2 L^5`. Parallel axes `n=e_z` give total
+`P_zz=-13b^2/5`; transverse axes `n=e_x` give `P_zz=19b^2/10`.
+The two full initial data agree throughout the core ball. They have the
+same total energy and every integer isotropic Sobolev norm: radial packet
+rotation preserves each such derivative norm and the disjoint supports
+remove the cross terms. Both have zero initial helicity, zero total
+initial momentum, and the same initial angular momentum. These equalities
+do not refute norm-dependent upper bounds; they show that these scalar
+data do not determine the sign of the core response.
+
+Each datum is smooth, compactly supported and divergence-free, so it
+starts an actual local unforced whole-space NS evolution for every
+`nu>0`. Consider the compatible frame with `M(0)=I`. In the initial
+core ball, `omega_t=0` and `M_t=0`. At its centre, if `B0=grad u0`,
+
+```text
+B_t=-B0^2-P,    omega_tt=-P omega0,    M_tt=-2B0^2-2P,
+q_t=q_tt=0,     q=omega^T M^(-1)omega.
+```
+
+The viscous derivatives vanish in these initial plateau jets. For the
+fixed regularized directional ratio `k=(|omega|^2+eta)/(q+eta)`, `eta>0`,
+
+```text
+k(0,0)=1,    k_t(0,0)=0,
+k_tt(0,0)=-8b^2 P_zz/(4b^2+eta).
+```
+
+It follows that the parallel-parent configuration initially increases
+`k` at second order, while the transverse one decreases it. The checker
+independently differentiates the matrix/vector Taylor expressions.
+The actual local-solution and frame realization is analytic, not
+Lean-certified by this script. The construction supplies neither
+recurrent amplification nor an obstruction to a full-datum history bound.
+
+**The joint quantity and the remaining geometric obligation.** Put
+`D=partial_t+u.grad-nu Delta`, `B=grad u`, `zeta=B omega`, and
+`C=sum_j (partial_j B)(partial_j omega)`. The full unforced laws are
+
+```text
+D omega=zeta,          D zeta=-P omega-2nu C.
+```
+
+For one fixed `tau>0`, set `J=|omega|^2+tau^2|zeta|^2`. The exact law is
+
+```text
+D J +2nu (|grad omega|^2+tau^2|grad zeta|^2)
+  = 2omega.zeta -2tau^2 zeta.P omega -4nu tau^2 zeta.C.
+```
+
+The checker verifies both laws directly on a genuinely three-dimensional
+periodic initial field, using its actual pressure and unforced tangent,
+including nonzero spatial gradients. This check is separate from the
+whole-space separated-kernel argument. With `P=P_far+P_near`, Young's
+inequality and `||P_far||<=K_R` give
+
+```text
+D J +2nu (|grad omega|^2+tau^2|grad zeta|^2)
+  <= (1/tau+tau K_R) J
+       -2tau^2 zeta.P_near omega -4nu tau^2 zeta.C.
+```
+
+The Lean theorem `joint_production_le` checks this estimate on the
+supplied values. The far contribution is paid uniformly over time and
+orientation. The near-pressure work and viscous cross term are still
+signed, uncontrolled terms; the cross term cannot be discarded as
+damping. A finite-history estimate for their combined production,
+retaining geometric coherence and actual regeneration, remains open.
+Since `J>=|omega|^2`, a uniform spatial bound for `J` would supply the
+vorticity continuation criterion. None of the results above proves that
+bound for arbitrary data.
+
+The checker requires SymPy and NumPy:
+
+```sh
+python3 -O labs/pressure_boundary_response.py
+```
