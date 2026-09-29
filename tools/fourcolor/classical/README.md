@@ -1120,6 +1120,21 @@ lake build MettapediaFourColor.PentagonalLobeTreeReductionAudit
 ```
 
 `pentagonal-lobe-tree-measurements.json` records the geometric and colouring
-roots, dependency audit, source hashes and build costs. Embedded recognition,
-deriving noncrossing for the recognized ordered boundary, and coverage remain
-open. No new catalogue or original-certificate saving is credited.
+roots, dependency audit, source hashes and build costs.
+
+`PentagonalLobeEmbeddedReduction.lean` now derives physical noncrossing from
+an exact recognition isomorphism and the spherical embedding. The source
+has two-sided faces and connected exterior. Patch connectedness, the opposite
+exterior boundary order and dual connectedness are proved; exact reassembly
+reconstructs the original graph's colouring. The recognition fields are local
+incidence and rotation data, without colouring hypotheses. The new gate is:
+
+```sh
+lake build MettapediaFourColor.PentagonalLobeEmbeddedReductionAudit
+```
+
+`pentagonal-lobe-embedded-measurements.json` records this scoped geometric
+consumer. Deriving the recognition data and exterior connectedness from the
+alternating lobe, and proving coverage, remain open. The unchanged 406-case
+replay remains independent program evidence. No new catalogue or
+original-certificate saving is credited.

@@ -1,0 +1,161 @@
+{
+  "status": "Kernel-checked strict reduction for an exact recognized vertex-shore occurrence. Physical noncrossing is derived from the spherical embedding; recognition from alternating-lobe geometry and coverage remain open.",
+  "completed_utc": "2026-09-29T22:20:52+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "0fb60e51a381847e262c59a9d34c136d536f3a88",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleClosedWitness",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleClosedWitness.lean",
+      "source_sha256": "87e60e704037dcb39a32f2c7d419375ea402b6a1db0e66069442153375accd18",
+      "olean_sha256": "39edded172802fd379f66cd326fbfee2fe02d17d478eedb650e379ae0fd09b89",
+      "olean_bytes": 882616,
+      "reported_build_seconds": 3.2
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphism",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleIsomorphism.lean",
+      "source_sha256": "48cf912018c1cf2b357908c4aecad465bcb3633ca8420c776399762ecf9cf36b",
+      "olean_sha256": "5d50a890ef8ce5e5798844f588229c7de679b1b1adf7a3b525e6e00c538376a8",
+      "olean_bytes": 590840,
+      "reported_build_seconds": 3.5
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleVertexSideReturn",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleVertexSideReturn.lean",
+      "source_sha256": "f4402fca13ea33cbc6aceba603d93df7bf5071ba64881324ef8d49cf42c658a9",
+      "olean_sha256": "702c9bba59b710cc8a80acef9e2422238139b6d2ec021b49177edd44bd046e5c",
+      "olean_bytes": 137368,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.VertexSideExactReassembly",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/VertexSideExactReassembly.lean",
+      "source_sha256": "59ddfb9342dde160226e13adbb3b14877361b09ec7dae58102fc77c203b059ed",
+      "olean_sha256": "fd8a07fec1e66a9213fded1dff11227fd0f1a151f3c154a07523777e6541caa2",
+      "olean_bytes": 167128,
+      "reported_build_seconds": 3.3
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SixPortBoundaryReflection",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/SixPortBoundaryReflection.lean",
+      "source_sha256": "802d036109af451e12a1f9eac7aea261e32d63ba9c9b50e21d620ac68c2bf574",
+      "olean_sha256": "d42fcf240d9782d663fe6b19dddda41676b10c0f43342316125a7cd6458cfb73",
+      "olean_bytes": 8977408,
+      "reported_build_seconds": 13.0
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeOpenRepair",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeOpenRepair.lean",
+      "source_sha256": "ac8db9e3f955164ff06297ab913b17d2d187c10315de77d6afd01a171aa5bb26",
+      "olean_sha256": "fd987a885bc3c7e76ccef05e97c74e93c2ecac1d1b5d73bf6fd6c87e73e8b6c5",
+      "olean_bytes": 346576,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeEmbeddedReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeEmbeddedReduction.lean",
+      "source_sha256": "2b3319e1300e8f910bfb52fb6f6ec76bdb9eaccc346226056a95a2c79ecba753",
+      "olean_sha256": "4106ebcb98a4213bd5e300a9569b831f4f44ac9366d6f6700869bf3884efc52e",
+      "olean_bytes": 433032,
+      "reported_build_seconds": 3.3
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeEmbeddedReductionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeEmbeddedReductionAudit.lean",
+      "source_sha256": "860b6b9e1b56b24fc50dde17c81075de6b956917dcf5aefe72ae2a3bf6012573",
+      "olean_sha256": "f64a25de21fec08c4a92958d86fdd4d7c77dcd4569b43b68c764870679e89524",
+      "olean_bytes": 3248,
+      "reported_build_seconds": 8.4
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.OpenTangleClosedWitness.restrictOpen",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleClosedWitness.glueOpen",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphism.Iso.returnCode",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphism.Iso.sewn_class",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleVertexSideReturn.returnCode_eq",
+      "Mettapedia.GraphTheory.FourColor.VertexSideExactReassembly.mapClass",
+      "Mettapedia.GraphTheory.FourColor.SixPortBoundaryReflection.orderedPhysicalMate_isNoncrossing_inverse",
+      "FourColor.PentagonalLobePatch.Tangle.piece_connected",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.inside_connected",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.exterior_order",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.exterior_noncrossing",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.strict_reduction",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.not_in_minimal_counterexample"
+    ],
+    "combined_dependency_closure": 22509,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Named roots and complete proof dependency closures, including the physical separator, actual reconstruction and strict geometry; not all imported declarations.",
+    "excluded_dependencies": "Original configuration certificates, complete Four Colour endpoints and diamond configuration/family reducibility.",
+    "previous_tree_audit_rechecked": {
+      "roots": 12,
+      "combined_dependency_closure": 13277
+    }
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeEmbeddedReductionAudit MettapediaFourColor.PentagonalLobeTreeReductionAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3394,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "source_class": "Finite simple-graph rotation system in BridgelessSphericalCubicMapData, with OrbitFacesTwoSided.",
+    "recognition": "An exact OpenTangleIsomorphism.Iso from the literal sixteen-vertex patch to the deleted vertex shore. Vertex, internal-dart and boundary bijections preserve alpha, vertex incidence and rho. No colouring or repair field.",
+    "exterior_hypothesis": "The induced graph on the complementary vertices is connected.",
+    "derived_hypotheses": [
+      "Patch connectedness from its literal internal edges",
+      "Exact ambient shore return from the recognized open-tangle return code",
+      "Opposite cyclic order on the complementary shore from planar bond geometry",
+      "Reflection invariance of six-port chord crossing",
+      "Ambient dual connectedness from cubicity, primal connectedness and cyclic vertex rotations",
+      "Physical noncrossing of each common bichromatic component matching"
+    ],
+    "sewing_transport": "Exact vertex and dart equivalences commute with alpha and rho. Both map class and colourability transport through sewing; outer marks need not agree.",
+    "replacement": "Four-vertex path with six ports distributed 2,1,1,2; the smaller rotation system permits parallel edges.",
+    "whole_map_vertex_decrease": 12,
+    "reconstruction": "A smaller-map colouring restricts to the actual exterior. Joint Kempe repair and genuine internal witnesses reconstruct the original ambient colouring; the exterior assignment may change.",
+    "minimality_consumer": "Embedded.not_in_minimal_counterexample excludes every recognized occurrence satisfying these geometric hypotheses.",
+    "explicit_colouring_or_noncrossing_premise": false,
+    "recognition_transport_proved": true,
+    "recognition_from_alternating_lobe_geometry_proved": false,
+    "exterior_connectedness_from_lobe_geometry_proved": false,
+    "count_equivalence_proved": false,
+    "executable_history_transport_proved": false,
+    "coverage_proved": false
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "geometric_replacement_schemes": 1,
+    "scheme_scope_extended_to_actual_recognized_shores": true,
+    "interface_ports": 6
+  },
+  "program_evidence": {
+    "record": "tools/fourcolor/classical/pentagonal-lobe-tree-probe.json",
+    "sha256": "fa652b825897ae502650f9a6a6ff6e66318ce32a13b955b1587fc56e6752d5c1",
+    "maps": 29,
+    "replacements": 406,
+    "rerun_for_this_checkpoint": false,
+    "scope": "Unchanged earlier independent finite checks. They do not establish general recognition from lobe geometry."
+  },
+  "cost_scope": "Reported Lake module build times include elaboration and kernel checking; null means no retained separate module time in this receipt. No isolated kernel or whole-build speedup claim.",
+  "next_obligations": [
+    "Construct the recognition isomorphism from an independently specified alternating eleven-lobe and enclosed five-cycle, with all local incidence and rotation conditions explicit.",
+    "Derive exterior connectedness under independently justified geometric or minimal-counterexample hypotheses.",
+    "Prove broader supply and coverage; integrate applicable replacements into the complete assembly and audit actual certificate dependencies before crediting further compression."
+  ]
+}

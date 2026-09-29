@@ -50,65 +50,77 @@ private theorem physical_proper {X Y : Type*} [Fintype X] [DecidableEq X]
   · exact T.mem_endpoints_iff.mpr ⟨a, T.mem_dartsOn.mpr rfl, rfl⟩
   · exact T.mem_endpoints_iff.mpr ⟨b, T.mem_dartsOn.mpr rfl, hv.symm⟩
 
+section Open
+variable {C : Type*} [Fintype C] [DecidableEq C]
+  (Q : OpenTangleData W J C) (s : B ≃ C)
+
+/-- Closed sewing of two ordinary open tangles. -/
+abbrev sewnOpen := O.composeRotationSystem Q s
+
+theorem sewnOpen_vert (x : (I ⊕ B) ⊕ (J ⊕ C)) :
+    (sewnOpen O Q s).vertOf (composeDartEquiv x) =
+      Sum.elim (Sum.inl ∘ O.vertOf) (Sum.inr ∘ Q.vertOf) x := by
+  rcases x with (i | b) | (j | p) <;> rfl
+
 /-- Restrict a genuine physical colouring to both pieces, retaining the joint
 boundary equation. -/
-theorem restrict (c : (sewn O P m).EdgeColoring Color)
-    (hc : (sewn O P m).IsTaitEdgeColoring c) :
-    ∃ l r, IsColor O l ∧ P.IsTaitColoring r ∧
-      (∀ b, l (.inr b) = r (.inr (m b))) ∧
-      (∀ d, l d = c ((sewn O P m).edgeOf (composeDartEquiv (.inl d)))) := by
-  let l := fun d => c ((sewn O P m).edgeOf (composeDartEquiv (.inl d)))
-  let r := fun d => c ((sewn O P m).edgeOf (composeDartEquiv (.inr d)))
+theorem restrictOpen (c : (sewnOpen O Q s).EdgeColoring Color)
+    (hc : (sewnOpen O Q s).IsTaitEdgeColoring c) :
+    ∃ l r, IsColor O l ∧ IsColor Q r ∧
+      (∀ b, l (.inr b) = r (.inr (s b))) ∧
+      (∀ d, l d = c ((sewnOpen O Q s).edgeOf (composeDartEquiv (.inl d)))) := by
+  let l := fun d => c ((sewnOpen O Q s).edgeOf (composeDartEquiv (.inl d)))
+  let r := fun d => c ((sewnOpen O Q s).edgeOf (composeDartEquiv (.inr d)))
   refine ⟨l, r, ⟨?_, ?_, fun _ => hc _⟩, ⟨?_, ?_, fun _ => hc _⟩, ?_, fun _ => rfl⟩
   · intro i
-    exact congrArg c ((sewn O P m).edge_alpha (.inl (.inl i)))
+    exact congrArg c ((sewnOpen O Q s).edge_alpha (.inl (.inl i)))
   · intro a b hv hne
-    apply physical_proper (sewn O P m) c
-    · simp only [sewn_vert, Sum.elim_inl, Function.comp_apply, hv]
+    apply physical_proper (sewnOpen O Q s) c
+    · simp only [sewnOpen_vert, Sum.elim_inl, Function.comp_apply, hv]
     · exact fun h => hne (Sum.inl.inj (composeDartEquiv.injective h))
   · intro j
-    exact congrArg c ((sewn O P m).edge_alpha (.inl (.inr j)))
+    exact congrArg c ((sewnOpen O Q s).edge_alpha (.inl (.inr j)))
   · intro a b hv hne
-    apply physical_proper (sewn O P m) c
-    · simp only [sewn_vert, Sum.elim_inr, Function.comp_apply, asOpen_vertOf, hv]
+    apply physical_proper (sewnOpen O Q s) c
+    · simp only [sewnOpen_vert, Sum.elim_inr, Function.comp_apply, hv]
     · exact fun h => hne (Sum.inr.inj (composeDartEquiv.injective h))
   · intro b
-    exact (congrArg c ((sewn O P m).edge_alpha (.inr (.inl b)))).symm
+    exact (congrArg c ((sewnOpen O Q s).edge_alpha (.inr (.inl b)))).symm
 
 /-- Compatible witnesses reconstruct a physical colouring. Every exterior
 dart reads back its original colour, including darts meeting the seam. -/
-theorem glue (l : I ⊕ B → Color) (r : P.Coloring)
-    (hl : IsColor O l) (hr : P.IsTaitColoring r)
-    (hm : ∀ b, l (.inr b) = r (.inr (m b))) :
-    ∃ c : (sewn O P m).EdgeColoring Color,
-      (sewn O P m).IsTaitEdgeColoring c ∧
-      ∀ d, c ((sewn O P m).edgeOf (composeDartEquiv (.inl d))) = l d := by
-  let f : (sewn O P m).D → Color := Sum.elim l r ∘ composeDartEquiv.symm
+theorem glueOpen (l : I ⊕ B → Color) (r : J ⊕ C → Color)
+    (hl : IsColor O l) (hr : IsColor Q r)
+    (hm : ∀ b, l (.inr b) = r (.inr (s b))) :
+    ∃ c : (sewnOpen O Q s).EdgeColoring Color,
+      (sewnOpen O Q s).IsTaitEdgeColoring c ∧
+      ∀ d, c ((sewnOpen O Q s).edgeOf (composeDartEquiv (.inl d))) = l d := by
+  let f : (sewnOpen O Q s).D → Color := Sum.elim l r ∘ composeDartEquiv.symm
   have hf (x) : f (composeDartEquiv x) = Sum.elim l r x :=
     congrArg (Sum.elim l r) (composeDartEquiv.symm_apply_apply x)
-  have ha : ∀ d, f ((sewn O P m).alpha d) = f d := by
+  have ha : ∀ d, f ((sewnOpen O Q s).alpha d) = f d := by
     rintro ((i | j) | (b | p))
     · exact hl.1 i
     · exact hr.1 j
     · exact (hm b).symm
-    · change l (.inr (m.symm p)) = r (.inr p)
-      simpa only [Equiv.apply_symm_apply] using hm (m.symm p)
-  have hp : ∀ {a b}, (sewn O P m).vertOf a = (sewn O P m).vertOf b →
+    · change l (.inr (s.symm p)) = r (.inr p)
+      simpa only [Equiv.apply_symm_apply] using hm (s.symm p)
+  have hp : ∀ {a b}, (sewnOpen O Q s).vertOf a = (sewnOpen O Q s).vertOf b →
       a ≠ b → f a ≠ f b := by
     intro a b hv hne
     obtain ⟨x, rfl⟩ := composeDartEquiv.surjective a
     obtain ⟨y, rfl⟩ := composeDartEquiv.surjective b
-    rw [sewn_vert, sewn_vert] at hv
+    rw [sewnOpen_vert, sewnOpen_vert] at hv
     rw [hf, hf]
     rcases x with x | x <;> rcases y with y | y
     · exact hl.2.1 (Sum.inl.inj hv) (fun h => hne (congrArg _ (congrArg Sum.inl h)))
     · exact (Sum.inl_ne_inr hv).elim
     · exact (Sum.inr_ne_inl hv).elim
     · apply hr.2.1
-      · simpa only [asOpen_vertOf] using Sum.inr.inj hv
+      · exact Sum.inr.inj hv
       · exact fun h => hne (congrArg _ (congrArg Sum.inr h))
-  refine ⟨edgeColoringOfDartColor (sewn O P m) f ha hp,
-    edgeColoringOfDartColor_isTait (sewn O P m) f ha hp ?_, ?_⟩
+  refine ⟨edgeColoringOfDartColor (sewnOpen O Q s) f ha hp,
+    edgeColoringOfDartColor_isTait (sewnOpen O Q s) f ha hp ?_, ?_⟩
   · intro d
     obtain ⟨x | x, rfl⟩ := composeDartEquiv.surjective d
     · rw [hf]
@@ -118,6 +130,27 @@ theorem glue (l : I ⊕ B → Color) (r : P.Coloring)
   · intro d
     rw [edgeColoringOfDartColor_edgeOf]
     exact hf (.inl d)
+
+end Open
+
+/-- The serial view consumes the ordinary open-tangle restriction without
+changing any colouring witness. -/
+theorem restrict (c : (sewn O P m).EdgeColoring Color)
+    (hc : (sewn O P m).IsTaitEdgeColoring c) :
+    ∃ l r, IsColor O l ∧ P.IsTaitColoring r ∧
+      (∀ b, l (.inr b) = r (.inr (m b))) ∧
+      (∀ d, l d = c ((sewn O P m).edgeOf (composeDartEquiv (.inl d)))) := by
+  obtain ⟨l, r, hl, hr, hm, he⟩ := restrictOpen O (asOpen P) m c hc
+  exact ⟨l, r, hl, (asOpen_tait_iff P r).mp hr, hm, he⟩
+
+/-- The serial view consumes ordinary open-tangle reconstruction. -/
+theorem glue (l : I ⊕ B → Color) (r : P.Coloring)
+    (hl : IsColor O l) (hr : P.IsTaitColoring r)
+    (hm : ∀ b, l (.inr b) = r (.inr (m b))) :
+    ∃ c : (sewn O P m).EdgeColoring Color,
+      (sewn O P m).IsTaitEdgeColoring c ∧
+      ∀ d, c ((sewn O P m).edgeOf (composeDartEquiv (.inl d))) = l d :=
+  glueOpen O (asOpen P) m l r hl ((asOpen_tait_iff P r).mpr hr) hm
 
 variable {W' J' : Type*} [Fintype W'] [DecidableEq W'] [Fintype J'] [DecidableEq J']
 

@@ -266,6 +266,7 @@ lake build MettapediaFourColor.PentagonalLobePatchAudit
 lake build MettapediaFourColor.PentagonalLobeTangleAudit
 lake build MettapediaFourColor.PentagonalLobePhysicalRepairAudit
 lake build MettapediaFourColor.PentagonalLobeTreeReductionAudit
+lake build MettapediaFourColor.PentagonalLobeEmbeddedReductionAudit
 ```
 
 The [worked lobe example](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
@@ -301,9 +302,21 @@ records these statements and their exact scope.
 Independent tests cover all fourteen four-vertex trees in 29 supplied maps:
 all 406 replacements preserve simple, connected, bridgeless spherical cubic
 geometry. The theorem covers the specified path-shaped tree and permits
-multigraph exteriors. Embedded recognition, deriving the ordered noncrossing
-hypothesis from the recognized geometry, and coverage remain open. The
-complete assembly and credited certificate savings are unchanged.
+multigraph exteriors.
+
+`PentagonalLobeEmbeddedReduction` applies it to an actual recognized vertex
+shore of a spherical cubic simple graph. The recognition isomorphism preserves
+vertices, internal darts, ports, edge pairing and rotation. With two-sided
+faces and connected exterior, the theorem derives the exterior's opposite
+cyclic order, physical noncrossing and dual connectedness. It proves the
+patch connected and transports the repaired colouring to the original ambient
+map. `Embedded.not_in_minimal_counterexample` excludes such an occurrence
+without invoking the complete theorem. The
+[embedded receipt](../../tools/fourcolor/classical/pentagonal-lobe-embedded-measurements.json)
+records its dependency audit and exact hypotheses. Deriving the recognition
+isomorphism and exterior connectedness from alternating-lobe geometry, and
+proving coverage, remain open. The complete assembly and credited certificate
+savings are unchanged.
 
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as

@@ -460,14 +460,43 @@ or executable-history equivalence is claimed. The [dependency audit][tree-audit]
 requires both the geometric and reconstruction chains and excludes complete
 Four Colour endpoints and catalogue reducibility certificates.
 
-This advances the reduction part of the lobe mechanism. The next missing
-geometric theorem must recognize this literal patch and its ordered exterior
-inside an independently specified family of alternating lobes, and derive
-physical noncrossing through the existing cyclic-bond boundary theorem.
+The [embedded reduction][embedded-reduction] now removes the explicit
+noncrossing premise for an actual recognized occurrence. Recognition consists
+of bijections of the sixteen vertices, forty-two internal darts and six ports
+with a literal vertex shore, together with the exact edge and rotation laws.
+It contains no colouring or repair assertion. The source is a connected
+bridgeless spherical cubic simple graph with two-sided faces and a connected
+exterior.
+
+The patch's internal connectedness is proved from its actual edges. Its
+computed return order transports through the recognition isomorphism. The
+planar bond theorem gives the opposite cyclic order on the actual exterior;
+reflection preserves the six-port crossing predicate. The physical separator
+theorem therefore supplies noncrossing. Dual connectedness is also derived
+from the source. Exact reassembly then identifies the repaired colouring
+with a colouring of the original graph:
+
+```text
+local dart/vertex/port recognition + connected exterior
+  → opposite boundary order, derived from spherical geometry
+  → physical Kempe compatibility, derived from the common component matching
+  → twelve-vertex reduction and reconstruction of the original graph.
+```
+
+`Embedded.not_in_minimal_counterexample` consumes this chain. It applies one
+argument to every recognized occurrence satisfying the geometric hypotheses.
+The [audit][embedded-audit] checks that the reconstruction, geometric
+transport and physical separator really occur in the dependency closure,
+without complete Four Colour endpoints or catalogue certificates.
+
+The next missing theorem must derive this recognition data and exterior
+connectedness from independently specified alternating-lobe geometry. The
+29 program-recognized examples do not prove that general implication.
 Coverage of the relevant stopping configurations remains open. The
-[tree measurement record][tree-measurements] credits no additional original
-configuration-certificate savings; the 22 terminal witnesses and nine
-answer-cover checks remain.
+[embedded measurement record][embedded-measurements] credits no additional
+original configuration-certificate savings; the 22 terminal witnesses and
+nine answer-cover checks remain. Counts and executable recolouring histories
+are not asserted to be preserved by this reduction.
 
 ## Scope and verification
 
@@ -549,3 +578,7 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [tree-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeReduction.lean
 [tree-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTreeReductionAudit.lean
 [tree-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-tree-measurements.json
+
+[embedded-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeEmbeddedReduction.lean
+[embedded-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeEmbeddedReductionAudit.lean
+[embedded-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-embedded-measurements.json
