@@ -303,6 +303,26 @@ unbounded renewal. The remaining obligations are the invariant's signed
 physical production, the other transverse-resource defects and entry
 or exit through the complementary strain-dominated regime.
 
+`StochasticLagrangian.StrainCycleDiffusion` and the accompanying exact
+lab test the stochastic extension on compatible incompressible spatial
+jets. A complete periodic unforced family has positive parabolic
+production of `J6` at zero spatial gradient, including its actual
+pressure contribution. The old instantaneous pressure-strain weight
+also has an unfavorable quartic diffusion term. Changing its vorticity
+weight to `|omega|^2` cancels that term in the family and pays the initial
+`J6` diffusion source. The resulting quartic expression is
+`5(omega.Somega)^2/|omega|^2 +(63/95)|omega|^4 -2 omega.Pomega`.
+Its positive core is explicit; the directional pressure mismatch can
+destroy positivity. A rotated parent packet does so, and a separate
+positive-viscosity datum has positive parabolic production. The Lean
+certificates cover the jet expansion and rate comparisons; the full
+physical equation and Fourier realizations remain analytic. None of
+these initial-time tests establishes an arbitrary-history allowance.
+Under its stated coercivity and separation-scale hypotheses,
+`WholeSpacePressureHistory.quartic_viscous_source_le` transfers the
+existing kinetic-loss payment to this corrected quantity, with the same
+coefficient `1995/(77 pi Lambda)`. The other physical defects remain open.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

@@ -3888,3 +3888,211 @@ formalized.
 ```sh
 python3 -O labs/strain_cycle_reserve.py
 ```
+
+## Compatible diffusion and a quartic pressure correction
+
+`strain_cycle_diffusion.py` tests the preceding resource on actual
+incompressible spatial jets. It retains the complete Fourier pressure
+and unforced NS tangent. Its coefficients belong to `QQ(i)[M,nu]`, so
+the parameter identities below are symbolic, not fits to sampled runs.
+`StochasticLagrangian.StrainCycleDiffusion` certifies the local polynomial
+expansion and the resulting scalar rate comparisons. The identification
+with the physical PDE remains analytic.
+
+### An actual family at zero spatial resource gradient
+
+On the torus of period `2pi`, set
+
+```text
+u_M = (-2 sin(y)+sin(z),
+       2 sin(x)-2M(1-cos(y))cos(z),
+       sin(x)+2M sin(y)sin(z)).
+```
+
+This is smooth, real, mean zero and divergence free for every real `M`.
+Its normalized kinetic energy `average |u_M|^2` is `5+4M^2`. All
+calculations are at the initial origin of its local unforced evolution.
+There `u_M=0`, and the strain and vorticity are independent of `M`:
+
+```text
+S = [0 0 1; 0 0 0; 1 0 0],       omega=(0,0,4).
+```
+
+Thus the strict spectral margin `diam(S)^2=4<(63/190)|omega|^2=504/95`
+holds. The actual pressure Hessian obtained from the full Poisson source is
+
+```text
+P = diag(3, 4+(4/5)M^2, -1-(4/5)M^2).
+```
+
+Write `L=partial_t+u.grad` and `D=L-nu Delta`. The exact resource rates are
+
+```text
+J6=2776/95,                    grad J6=0,
+L J6=-(16656/95)nu,
+D J6=(686256/1805)nu M^2.
+```
+
+The pressure contribution to `L J6` cancels at this receiver. The positive
+parabolic source therefore survives after the actual pressure is included.
+It is not an increase of material `J6` in this example: the displayed
+material rate is negative. It rules out simply applying a heat subsolution
+comparison to `J6`. At the same point any increasing scalar reparametrization
+has `D Phi(J6)=Phi'(J6)D J6`; gradient-squared HJB terms vanish. This concerns
+that local scalar repair, not a reserve retaining additional history.
+
+The quadratic velocity jet responsible for the curvature is
+`(-2y+z,2x-My^2,x+2Myz)`, whose divergence is identically zero. Its resource
+has quadratic part
+
+```text
+-(24M^2/9025)(103757 y^2+45108 yz-32272 z^2).
+```
+
+Its quadratic trace is `-(686256/1805)M^2`.
+`localJet_expansion` checks the full polynomial, including its higher
+terms, and `quadraticTrace_eq` checks this trace. These are compatible
+velocity derivatives, rather than freely prescribed independent strain
+and vorticity derivatives.
+
+### What the pressure-coupled weight changes
+
+Let `Omega=|omega|`, `sigma=omega.Somega/Omega^2`, and
+`pi=omega.Pomega/Omega^2`. For an exponent `p`, consider the instantaneous
+physical-pressure expression
+
+```text
+R_p=Omega^p [(3325/2)sigma^2+(441/2)Omega^2-665pi].
+```
+
+The prior instantaneous pressure replacement has `p=5/7`. At the same
+receiver, the bracket is `4193+532M^2`; its spatial gradient and that of
+`Omega` both vanish. The full parameterized rate is
+
+```text
+D R_p / 4^p = nu M^2[(266-133p)M^2-21315-(4193/4)p].
+```
+
+For `p=5/7`, the quartic coefficient is `171`; the rate is positive at
+`M=12` for every `nu>0`. For `p=2`, the quartic term cancels exactly:
+
+```text
+D R_2 / 16 = -(46823/2)nu M^2.
+```
+
+More generally, the displayed rate is nonpositive for `p>=2` and `nu>=0`.
+The cancellation uses the actual directional-pressure rate
+`D pi=(2/5)nu M^2(11-M^2)`, including its spatial chain terms.
+The Lean module certifies this exponent comparison from those physical
+slots; it does not assume that viscosity always has a favorable sign.
+
+Rescale `R_2` to the fourth-degree expression
+
+```text
+F4 = 5(omega.Somega)^2/|omega|^2
+     +(63/95)|omega|^4 -2 omega.Pomega.
+```
+
+For this family the resulting values and rates are
+
+```text
+F4 = (32/95)(599+76M^2),
+D F4 = -(107024/95)nu M^2,
+D(J6+F4) = -(269440/361)nu M^2.
+```
+
+This is a concrete pressure-coupled payment for the preceding diffusion
+failure at the initial receiver. The different homogeneous degrees mean
+the last sum is not asserted to be a universal scale-invariant reserve.
+No positive-time persistence is assumed.
+
+### The actual equation and the pressure defect that remains
+
+The quartic expression has a useful physical meaning beyond that family.
+For an arbitrary smooth unforced evolution, wherever `W=|omega|^2>0`, put
+
+```text
+V=omega.Somega,  N=omega.Pomega,  sigma=V/W,
+G=|Somega|^2/W-sigma^2,
+A=sum_j |partial_j omega|^2,
+C=sum_j [4(partial_j omega).(partial_j S)omega
+         +2(partial_j omega).S(partial_j omega)],
+Gamma=sum_j [(partial_j omega).P(partial_j omega)
+             +2(partial_j omega).(partial_j P)omega],
+H_ij=sum_k (partial_i partial_j u_k)(partial_k p),
+Xi=omega.[Hess(Dp)-H]omega.
+```
+
+The full physical parabolic identity is
+
+```text
+D F4 = 10 sigma(WG-N)+(252/95)WV-2Xi
+       +nu[-10sigma C+10sigma^2 A-10W|grad sigma|^2
+           -(252/95)WA-(126/95)|grad W|^2+4Gamma].
+```
+
+To derive it, use
+`D W=2V-2nu A`, `D V=|Somega|^2-N-nu C`, and
+`D N=Xi-2nu Gamma`. The gradient transport terms in `D N` cancel because
+the same velocity transports both vorticity and the pressure Hessian.
+Finally apply the exact perspective identity
+
+```text
+D(V^2/W)=2sigma DV-sigma^2 DW-2nu W|grad sigma|^2.
+```
+
+The checker compares this equation independently with the direct full
+NS tangent and spatial derivatives, both in the parameterized families
+and in the earlier genuinely three-dimensional Fourier fixture. No pressure
+source is supplied as an independent control. The pressure-history term
+`Dp` includes transport, nonlinear pressure reaction and the viscous source
+identified previously; none is discarded by this change of weight.
+
+The compact-core pressure gives a positive reference. With transverse
+anisotropy `delta^2` as in the preceding section,
+
+```text
+F4 = W[(44/7)sigma^2+(20/21)delta^2+(32/21)G]
+     +(44/95)W^2 -2 omega.[P-P_core]omega.
+```
+
+This identity is checked symbolically. It isolates a directional pressure
+defect whose control would make the quartic quantity coercive in physical
+vorticity. Such a control, and a finite initial allowance for the full
+signed production above, remain unproved.
+
+The separated viscous pressure source already has a concrete payment.
+Whenever `F4 >= (44/95)W^2` and `Lambda <= R^5 W`, the existing whole-space
+source estimate gives
+
+```text
+|2W Fnu,R| <= [1995/(77 pi Lambda)] (2nu ||grad u||_2^2) F4.
+```
+
+`WholeSpacePressureHistory.quartic_source_work_le` and
+`quartic_viscous_source_le` certify this transfer to the new quantity.
+`StrainCycleDiffusion.quartic_coercive_of_pressure_le` supplies its
+coercivity when `omega.[P-P_core]omega <= 0`. Neither hypothesis is
+claimed for arbitrary flows. The coefficient is the same as in the
+earlier pressure-history reserve, so the kinetic-energy correction
+`F4 exp(c E(t))`, `c=1995/(77 pi Lambda)`, still absorbs this one channel.
+This does not pay the nonlinear pressure source, nearby contributions,
+moving cutoffs, or the other signed gradient terms in the full equation.
+
+Two adversarial checks prevent a premature positivity or monotonicity
+claim. Swap the y and z axes of just the quadratic packet, leaving the
+base velocity fixed. On this packet, which has no x dependence or component,
+the swap equals the proper rotation `(x,y,z) -> (-x,z,y)`.
+This remains an actual divergence-free periodic datum
+with the same central `S,omega,J6`. Its corrected value is now
+`(32/95)(599-76M^2)`, negative at `M=3`, although its parabolic rate remains
+negative in this particular test. Separately, the general Fourier fixture
+has `F4>0` and `D F4>0` at `nu=1/100`. Thus neither unconditional positivity
+nor a universal subsolution inequality follows from the successful
+cancellation. A history correction must retain the parents' pressure
+contribution and geometry. These finite smooth data refute neither a
+full-datum allowance nor arbitrary-data regularity.
+
+```sh
+python3 -O labs/strain_cycle_diffusion.py
+```

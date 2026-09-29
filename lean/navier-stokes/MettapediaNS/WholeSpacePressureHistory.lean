@@ -245,4 +245,42 @@ theorem viscous_reserve_source_le (hν : 0 ≤ ν) (A : SmoothL2Field Space)
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb (by positivity)) hr
     _ = _ := by ring
 
+/-- A quartic pressure-vorticity reserve with the displayed coercivity
+pays the same separated source after the scale choice `Λ ≤ R⁵W`.
+For the physical candidate `W=|ω|²`, its directional pressure work is
+`2W F`. Coercivity must come from the actual pressure/history estimate. -/
+theorem quartic_source_work_le (W J R Λ F : ℝ)
+    (hW : 0 ≤ W) (hJ : (44/95) * W ^ 2 ≤ J)
+    (hR : 0 < R) (hΛ : 0 < Λ) (hscale : Λ ≤ R ^ 5 * W) :
+    |2 * W * F| ≤ ((95 / (22 * Λ)) * (R ^ 5 * |F|)) * J := by
+  have hs := mul_le_mul_of_nonneg_left hscale (show 0 ≤ 44 * W by positivity)
+  have hc := mul_le_mul_of_nonneg_left hJ (show 0 ≤ R ^ 5 by positivity)
+  have hmain : 44 * Λ * W ≤ 95 * R ^ 5 * J := by nlinarith only [hs, hc]
+  have hm := mul_le_mul_of_nonneg_right hmain (abs_nonneg F)
+  have hd : 2 * W * |F| ≤ (95 * R ^ 5 * |F| * J) / (22 * Λ) := by
+    apply (le_div_iff₀ (show 0 < 22 * Λ by positivity)).mpr
+    convert hm using 1 <;> ring
+  calc
+    _ = 2 * W * |F| := by
+      rw [abs_mul, abs_of_nonneg (show 0 ≤ 2 * W by positivity)]
+    _ ≤ _ := hd
+    _ = _ := by ring
+
+/-- The actual kinetic-loss coefficient is unchanged by the quartic
+reweighting. This pays only the separated viscous pressure source. -/
+theorem quartic_viscous_source_le (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (e x : Space) (W J R Λ : ℝ) (he : ‖e‖ = 1)
+    (hW : 0 ≤ W) (hJ : (44/95) * W ^ 2 ≤ J)
+    (hR : 0 < R) (hΛ : 0 < Λ) (hscale : Λ ≤ R ^ 5 * W) :
+    |2 * W * viscousSource ν A e x R| ≤
+      ((1995 / (77 * Real.pi * Λ)) * (2 * ν * orderEnergy 1 A)) * J := by
+  have hb := scaled_viscousSource_le hν A e x R hR he
+  have hJn : 0 ≤ J := le_trans (by positivity) hJ
+  calc
+    _ ≤ ((95 / (22 * Λ)) * (R ^ 5 * |viscousSource ν A e x R|)) * J :=
+      quartic_source_work_le W J R Λ _ hW hJ hR hΛ hscale
+    _ ≤ ((95 / (22 * Λ)) * ((6 / Real.pi) * (2 * ν * orderEnergy 1 A))) * J :=
+      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb (by positivity)) hJn
+    _ = _ := by ring
+
 end Mettapedia.FluidDynamics.NavierStokes.WholeSpacePressureHistory
