@@ -489,11 +489,27 @@ The [audit][embedded-audit] checks that the reconstruction, geometric
 transport and physical separator really occur in the dependency closure,
 without complete Four Colour endpoints or catalogue certificates.
 
-The next missing theorem must derive this recognition data and exterior
-connectedness from independently specified alternating-lobe geometry. The
+The [distinct-attachment consumer][attachments] replaces the connected-exterior
+premise with six distinct vertices at the exterior ends of the cut edges,
+under cyclic edge-connectivity at least four. Minimality already supplies
+that cut bound. The argument is a general finite graph law: with at most one
+outgoing edge per vertex, a cubic component cannot be a tree. Two exterior
+components would therefore contain cycles and consume at least four disjoint
+boundary edges each. Six ports cannot supply them. The resulting theorem
+feeds directly into the same twelve-vertex reduction and reconstruction.
+
+The [independent test][attachments-probe] checks distinct attachments in all
+29 extracted patches. It also checks two limits of the general graph law:
+eight distinct ports can support two components, and six ports can fail if
+attachment vertices repeat. These are finite program checks; the general
+connectivity theorem and its reduction consumer have a separate
+[kernel audit][attachments-audit].
+
+The next missing theorem must derive the recognition data and distinct
+attachments from independently specified alternating-lobe geometry. The
 29 program-recognized examples do not prove that general implication.
 Coverage of the relevant stopping configurations remains open. The
-[embedded measurement record][embedded-measurements] credits no additional
+[attachment measurement record][attachments-measurements] credits no additional
 original configuration-certificate savings; the 22 terminal witnesses and
 nine answer-cover checks remain. Counts and executable recolouring histories
 are not asserted to be preserved by this reduction.
@@ -582,3 +598,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [embedded-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeEmbeddedReduction.lean
 [embedded-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeEmbeddedReductionAudit.lean
 [embedded-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-embedded-measurements.json
+
+[attachments]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeDistinctAttachments.lean
+[attachments-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeDistinctAttachmentsAudit.lean
+[attachments-probe]: ../../../../tools/fourcolor/classical/matching-boundary-connectivity-probe.json
+[attachments-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-attachments-measurements.json

@@ -106,9 +106,11 @@ The embedded consumer now derives noncrossing from spherical geometry for
 an exact recognized occurrence with connected exterior. It transports the
 patch's return order, accounts for the opposite exterior orientation and
 reconstructs the original ambient map. Recognition consists only of local
-vertex, dart, port and rotation correspondences. Deriving those
-correspondences and exterior connectedness from alternating-lobe geometry,
-and proving coverage, remain open. No further original certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
+vertex, dart, port and rotation correspondences. In a minimal counterexample,
+the six distinct exterior attachment vertices now imply exterior connectedness:
+each component contains a cycle and would require at least four boundary
+edges. Deriving the recognition and distinct attachments from alternating-lobe
+geometry, and proving coverage, remain open. No further original certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
 separates this theorem from the 406 independent tests of fourteen tree shapes.
 
 The [diamond insertion example](diamond-example/README.md) connects the local

@@ -1,0 +1,105 @@
+{
+  "status": "Kernel-checked exterior connectivity from a local distinct-attachment condition, consumed by actual strict pentagonal-lobe reduction. Recognition and attachment distinctness from alternating-lobe geometry remain open.",
+  "completed_utc": "2026-09-29T22:40:56+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "be482c0a6f8edd312d2e7d13b5d50cf86592cc80",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.MatchingBoundaryConnectivity",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/MatchingBoundaryConnectivity.lean",
+      "source_sha256": "286e54b59a0f9ada17e9ad3ab1f1c99a24d7c82904a01dc1cad68445bd8aed6c",
+      "olean_sha256": "e44f7982bc1b7c83cbf394b74ba3400482dc68169a61a2ceb1bfc8e627b88cd8",
+      "olean_bytes": 285544,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeDistinctAttachments",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeDistinctAttachments.lean",
+      "source_sha256": "fa65f38a24916dcb096346f7c2641c94bed77d1bdbfc2596e3b8995cd6083ef4",
+      "olean_sha256": "e6d09b5b08baec63052ea016130effa135b987e61a6b0944a9f4a17db5f55cb8",
+      "olean_bytes": 172952,
+      "reported_build_seconds": 2.8
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeDistinctAttachmentsAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeDistinctAttachmentsAudit.lean",
+      "source_sha256": "c1ee882ed8aef76adf5582986bf67d384964e67be94332386f45de85eb510d32",
+      "olean_sha256": "33468de6195c79037f427acf65f4a28f38ff0bf5ceafe23241cd116858f9c14c",
+      "olean_bytes": 3264,
+      "reported_build_seconds": 6.2
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.MatchingBoundaryConnectivity.hasCycle_of_injective_boundary",
+      "Mettapedia.GraphTheory.FourColor.MatchingBoundaryConnectivity.component_hasCycle",
+      "Mettapedia.GraphTheory.FourColor.MatchingBoundaryConnectivity.mem_componentEdges",
+      "Mettapedia.GraphTheory.FourColor.MatchingBoundaryConnectivity.four_le_componentPorts",
+      "Mettapedia.GraphTheory.FourColor.MatchingBoundaryConnectivity.connected_of_boundary_card_lt_eight",
+      "Mettapedia.GraphTheory.FourColor.MatchingBoundaryConnectivity.crossingBoundaryEquiv",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.exterior_connected_of_distinct_attachments",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.strict_reduction_of_distinct_attachments",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.not_in_minimal_counterexample_of_distinct_attachments"
+    ],
+    "combined_dependency_closure": 24209,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Named roots and complete proof dependency closures, including cubic/tree counting, the minimality-derived cyclic cut bound and actual geometric reduction/reconstruction.",
+    "excluded_dependencies": "Original configuration certificates, complete Four Colour endpoints and diamond configuration/family reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeDistinctAttachmentsAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3394,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "general_theorem": "A nonempty side in a finite cubic simple graph with cyclic edge-connectivity at least four is connected if it has fewer than eight outgoing darts with distinct initial vertices.",
+    "general_proof": "Every component inherits the distinct-endpoint property and contains a cycle by the cubic/tree dart count. Two components would have disjoint boundary subsets of at least four edges each.",
+    "general_theorem_requires_planarity": false,
+    "general_theorem_requires_colouring": false,
+    "actual_patch": "Exact OpenTangleIsomorphism.Iso from the literal sixteen-vertex six-port patch to an actual vertex shore; no colouring field.",
+    "local_attachment_hypothesis": "The six actual exterior vertices at the other ends of the patch ports are pairwise distinct.",
+    "geometric_source": "BridgelessSphericalCubicMapData on a finite simple graph, with two-sided faces and cyclic edge-connectivity at least four.",
+    "minimality_consumer": "Graph-backed vertex minimality supplies the cut bound, the smaller colouring and ambient geometry. No independently assumed connected exterior remains.",
+    "whole_map_vertex_decrease": 12,
+    "actual_ambient_reconstruction": true,
+    "exterior_connectedness_derived": true,
+    "recognition_from_alternating_lobe_geometry_proved": false,
+    "attachment_distinctness_from_alternating_lobe_geometry_proved": false,
+    "count_equivalence_proved": false,
+    "executable_history_transport_proved": false,
+    "coverage_proved": false
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "geometric_replacement_schemes": 1,
+    "scheme_hypothesis_replaced": "Connected exterior derived from local attachment distinctness and a cut bound already supplied by minimality.",
+    "interface_ports": 6
+  },
+  "program_evidence": {
+    "record": "tools/fourcolor/classical/matching-boundary-connectivity-probe.json",
+    "sha256": "2bbce1380079ff2f5350b84552c6d0243255107e3358e3154d7f242a79b3bd97",
+    "maps": 29,
+    "boundary_examples": 2,
+    "scope": "All extracted exteriors have six distinct attachments and are connected. Exhaustive vertex-cut enumeration checks the cyclic-four bound in both circular-ladder boundary examples. This does not derive general patch recognition or attachment distinctness."
+  },
+  "cost_scope": "Reported Lake module build times include elaboration and kernel checking. No isolated kernel benchmark or whole-build speedup claim.",
+  "next_obligations": [
+    "Construct recognition and prove the distinct-attachment condition from an independently specified alternating eleven-lobe and enclosed five-cycle.",
+    "Investigate repeated-attachment cases using actual geometry or a different reduction when distinctness cannot be justified.",
+    "Prove broader supply and coverage; integrate applicable replacements and audit actual certificate dependencies before crediting further compression."
+  ]
+}

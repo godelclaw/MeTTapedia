@@ -267,6 +267,7 @@ lake build MettapediaFourColor.PentagonalLobeTangleAudit
 lake build MettapediaFourColor.PentagonalLobePhysicalRepairAudit
 lake build MettapediaFourColor.PentagonalLobeTreeReductionAudit
 lake build MettapediaFourColor.PentagonalLobeEmbeddedReductionAudit
+lake build MettapediaFourColor.PentagonalLobeDistinctAttachmentsAudit
 ```
 
 The [worked lobe example](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
@@ -313,10 +314,20 @@ patch connected and transports the repaired colouring to the original ambient
 map. `Embedded.not_in_minimal_counterexample` excludes such an occurrence
 without invoking the complete theorem. The
 [embedded receipt](../../tools/fourcolor/classical/pentagonal-lobe-embedded-measurements.json)
-records its dependency audit and exact hypotheses. Deriving the recognition
-isomorphism and exterior connectedness from alternating-lobe geometry, and
-proving coverage, remain open. The complete assembly and credited certificate
-savings are unchanged.
+records its dependency audit and exact hypotheses.
+
+`PentagonalLobeDistinctAttachments` derives exterior connectedness from the
+six distinct exterior attachment vertices and cyclic edge-connectivity at
+least four. Minimality supplies the cut bound. The reusable
+`MatchingBoundaryConnectivity` theorem covers every nonempty side of a finite
+cubic graph under that cut bound, with fewer than eight outgoing darts and
+distinct initial vertices: two components would each contain a cycle and
+require at least four disjoint boundary edges. Its
+[receipt](../../tools/fourcolor/classical/pentagonal-lobe-attachments-measurements.json)
+records the actual strict-reduction consumer. Deriving the recognition
+isomorphism and distinct attachment vertices from alternating-lobe geometry,
+and proving coverage, remain open. The complete assembly and credited
+certificate savings are unchanged.
 
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as

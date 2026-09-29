@@ -1134,7 +1134,22 @@ lake build MettapediaFourColor.PentagonalLobeEmbeddedReductionAudit
 ```
 
 `pentagonal-lobe-embedded-measurements.json` records this scoped geometric
-consumer. Deriving the recognition data and exterior connectedness from the
-alternating lobe, and proving coverage, remain open. The unchanged 406-case
-replay remains independent program evidence. No new catalogue or
-original-certificate saving is credited.
+consumer. `PentagonalLobeDistinctAttachments.lean` further derives exterior
+connectedness from six distinct exterior attachment vertices and the
+minimality-derived cyclic four-edge cut bound. The underlying graph theorem
+applies to any nonempty side of a cubic graph with fewer than eight ports,
+distinct selected-side attachment vertices and that cyclic cut bound.
+
+```sh
+lake build MettapediaFourColor.PentagonalLobeDistinctAttachmentsAudit
+python3 tools/fourcolor/classical/matching_boundary_connectivity_probe.py --output tools/fourcolor/classical/matching-boundary-connectivity-probe.json
+```
+
+The first command runs in `lean/fourcolor-classical`; the second runs from the
+repository root. `pentagonal-lobe-attachments-measurements.json` records the
+proof and actual reduction consumer. The program checks all 29 extracted
+exteriors and two circular-ladder examples showing why the port bound and
+distinctness matter. Deriving the recognition data and distinct attachments
+from alternating-lobe geometry, and proving coverage, remain open. The
+unchanged 406-case replacement replay remains independent program evidence.
+No new catalogue or original-certificate saving is credited.

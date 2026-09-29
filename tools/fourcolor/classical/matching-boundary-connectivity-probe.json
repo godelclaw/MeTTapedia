@@ -1,0 +1,244 @@
+{
+  "evidence": "Independent finite program evidence, not Lean certification.",
+  "fixtures_sha256": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3",
+  "patches_sha256": "ed9bdbf7e1158372c8e13b1e000a08922021409ab8d77b837b62e7df88406184",
+  "program_sha256": "878f252ba8a391b6cb2faa03ef292b7e26633d846dc5370ffbf43cae45d5feb4",
+  "fixtures": [
+    {
+      "id": "C24-plantri-0",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 8,
+      "connected": true
+    },
+    {
+      "id": "C26-plantri-0",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 10,
+      "connected": true
+    },
+    {
+      "id": "C28-plantri-1",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 12,
+      "connected": true
+    },
+    {
+      "id": "C30-plantri-1",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 14,
+      "connected": true
+    },
+    {
+      "id": "C32-plantri-7",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 16,
+      "connected": true
+    },
+    {
+      "id": "C32-plantri-8",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 16,
+      "connected": true
+    },
+    {
+      "id": "C32-plantri-9",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 16,
+      "connected": true
+    },
+    {
+      "id": "C34-plantri-1",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 18,
+      "connected": true
+    },
+    {
+      "id": "C34-plantri-8",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 18,
+      "connected": true
+    },
+    {
+      "id": "C36-plantri-8",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 20,
+      "connected": true
+    },
+    {
+      "id": "C36-plantri-10",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 20,
+      "connected": true
+    },
+    {
+      "id": "C36-plantri-32",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 20,
+      "connected": true
+    },
+    {
+      "id": "C36-plantri-46",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 20,
+      "connected": true
+    },
+    {
+      "id": "C38-plantri-72",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 22,
+      "connected": true
+    },
+    {
+      "id": "C38-plantri-109",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 22,
+      "connected": true
+    },
+    {
+      "id": "C38-plantri-112",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 22,
+      "connected": true
+    },
+    {
+      "id": "C38-plantri-140",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 22,
+      "connected": true
+    },
+    {
+      "id": "C40-plantri-75",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 24,
+      "connected": true
+    },
+    {
+      "id": "C40-plantri-318",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 24,
+      "connected": true
+    },
+    {
+      "id": "C40-plantri-327",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 24,
+      "connected": true
+    },
+    {
+      "id": "C40-plantri-330",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 24,
+      "connected": true
+    },
+    {
+      "id": "C40-plantri-370",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 24,
+      "connected": true
+    },
+    {
+      "id": "C40-plantri-394",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 24,
+      "connected": true
+    },
+    {
+      "id": "C40-plantri-612",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 24,
+      "connected": true
+    },
+    {
+      "id": "C42-plantri-203",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 26,
+      "connected": true
+    },
+    {
+      "id": "C42-plantri-840",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 26,
+      "connected": true
+    },
+    {
+      "id": "C42-plantri-975",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 26,
+      "connected": true
+    },
+    {
+      "id": "C42-plantri-1035",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 26,
+      "connected": true
+    },
+    {
+      "id": "C42-plantri-1234",
+      "ports": 6,
+      "distinct_endpoints": 6,
+      "exterior_vertices": 26,
+      "connected": true
+    }
+  ],
+  "eight_port_example": {
+    "graph": "circular_ladder_graph(8)",
+    "side": [
+      0,
+      1,
+      4,
+      5,
+      8,
+      9,
+      12,
+      13
+    ],
+    "cyclic_edge_connectivity": 4,
+    "ports": 8,
+    "distinct_endpoints": 8,
+    "components": 2
+  },
+  "repeated_endpoint_example": {
+    "graph": "circular_ladder_graph(6)",
+    "side": [
+      0,
+      3
+    ],
+    "cyclic_edge_connectivity": 4,
+    "ports": 6,
+    "distinct_endpoints": 2,
+    "components": 2
+  },
+  "limits": [
+    "Local attachment distinctness is tested, not derived from general lobe geometry.",
+    "The boundary examples have exhaustive program cut checks, not Lean certificates.",
+    "No universal patch supply or additional catalogue compression is established."
+  ]
+}
