@@ -1169,3 +1169,35 @@ audit, source/artifact hashes and exact scope. Deriving recognition from
 alternating-lobe geometry and proving coverage remain open. The unchanged
 406-case replacement replay remains independent program evidence. No new
 catalogue or original-certificate saving is credited.
+
+## Cycle orientation and pentagon spoke order
+
+```sh
+python3 tools/fourcolor/classical/lobe_spoke_order_probe.py --output tools/fourcolor/classical/lobe-spoke-order-probe.json
+```
+
+This exhaustive local experiment fixes the literal eleven-lobe's outer
+incidence and rotations. It varies all 120 pentagon spoke assignments and
+32 inner rotation choices. The open face-count histogram is 2,880 cases
+with three faces, 950 with five, and ten with seven. The ten cases meeting
+the connected spherical-shore Euler count all coincide with the literal
+patch after relabelling by their spokes. The script checks every edge
+reversal and rotation permutation. It does not certify general lobe supply
+or the geometric recognition implication.
+
+The formal result follows a uniform route, at arbitrary cycle length:
+`CubicCycleIncidence.Frame.uniform_geometry` reconstructs incidence from
+actual graph vertices and neighbours. Spherical geometry and a connected
+complement force uniform local rotations and determine the exact port
+return with the same global orientation choice. No local rotation or
+isomorphism is a field of the graph input. The inner pentagon's attachment
+to the outer lobe remains a separate obligation.
+
+```sh
+lake build Mettapedia.GraphTheory.FourColor.CycleBoundaryRecognitionAudit
+```
+
+Run this in `lean/mettapedia`. The nine-root audit checks 20,865 dependency
+declarations and excludes the complete Four Colour theorem and catalogue
+certificates. `cycle-boundary-recognition-measurements.json` records exact
+scope, source/artifact fingerprints and unchanged compression counts.

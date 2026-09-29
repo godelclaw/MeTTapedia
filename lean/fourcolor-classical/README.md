@@ -340,6 +340,15 @@ colouring reconstruction. Deriving recognition from alternating-lobe geometry
 and proving coverage remain open. The complete assembly and credited
 certificate savings are unchanged.
 
+The [cycle-recognition component](../mettapedia/Mettapedia/GraphTheory/FourColor/CubicCycleIncidence.lean)
+now derives all local rotations and exact port return from cycle vertices,
+cycle edges and outward spokes in a spherical cubic source with connected
+complement. It works at every length and retains one shared orientation
+choice. The [audit receipt](../../tools/fourcolor/classical/cycle-boundary-recognition-measurements.json)
+separates this uniform geometric law from the independent 3,840-case
+pentagon-spoke experiment. The complete eleven-lobe attachment recognition,
+coverage and further certificate replacement remain open.
+
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as
 GSLT witnesses and glues them into an explicit ambient colouring. The graph

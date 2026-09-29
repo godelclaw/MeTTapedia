@@ -53,6 +53,18 @@ excludes the recognized occurrence. Deriving recognition from the lobe's
 geometry and proving coverage remain open. The GSLT, graph and MeTTa
 results have their own verified consumers, listed in the guide.
 
+[CubicCycleIncidence](CubicCycleIncidence.lean) now derives a cycle shore's
+complete incidence coordinates from its actual graph vertices, cycle edges
+and outward spokes. [CycleBoundaryOrientation](CycleBoundaryOrientation.lean)
+proves that cofacial ports force one uniform local orientation, at every
+cycle length. A connected complement in a spherical map supplies that
+cofaciality. The source-facing theorem returns both actual vertex rotations
+and exact predecessor/successor port return with the same orientation choice.
+The [audit](CycleBoundaryRecognitionAudit.lean) excludes the complete theorem
+and catalogue certificates. The inner-pentagon rotation is thus governed by
+a uniform law; the full pentagon/eleven-lobe attachment recognition and
+coverage are still open. Catalogue counts are unchanged.
+
 ## Independent corridor route — checkpoint of 22 September 2026
 
 The following table describes the earlier direct Count proposal. Its open

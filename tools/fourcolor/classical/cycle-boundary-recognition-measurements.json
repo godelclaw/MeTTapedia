@@ -1,0 +1,142 @@
+{
+  "status": "Kernel-checked cycle recognition from actual cubic-graph incidence, spherical embedding and a connected complement. Full pentagon/eleven-lobe attachment recognition and coverage remain open.",
+  "completed_utc": "2026-09-29T23:38:00+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "86364e00efd2ee9d782e651b5b723b008e3a21cb",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleBoundaryOrientation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleBoundaryOrientation.lean",
+      "source_sha256": "0a91892e0dea2bd6818a1b159179f13665be2b3da3ed7b644863016544be99bb",
+      "olean_sha256": "1f62e14ce7f69c36bb7ae27d71a08c5a3186f18feb3a0c1f91025268ae6643c1",
+      "olean_bytes": 646056,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleVertexSideReturn",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleVertexSideReturn.lean",
+      "source_sha256": "1dc933ecde682b268878660cc79b261ef5cfef1059a1026bb3c9d3158f6364eb",
+      "olean_sha256": "218c11c58bc74602993d47567088e562d8d53060d6cfbea7555f4148891d2ba7",
+      "olean_bytes": 228360,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PlanarCycleBoundaryRecognition",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PlanarCycleBoundaryRecognition.lean",
+      "source_sha256": "1d41569cb58680fce154be47b5ca87326ded9344a08329042566d0a793aad6c0",
+      "olean_sha256": "99bbeca604ba078b7be3d3a9b14b7520825869074dd806f8e545192877bc889a",
+      "olean_bytes": 87160,
+      "reported_build_seconds": 2.5
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CubicCycleIncidence",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicCycleIncidence.lean",
+      "source_sha256": "37f3e29c62f0a443a07f323f5ac28eede5f63e2b3b5dbb8b9644dba716a22d97",
+      "olean_sha256": "b354a183e450fa1bd108d9c92422435fd0a05de144ce06506a7ec6fadaadb287",
+      "olean_bytes": 1000136,
+      "reported_build_seconds": 3.5
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleBoundaryRecognitionAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleBoundaryRecognitionAudit.lean",
+      "source_sha256": "72b84360974d13e5cd9832c80c7ee37c3b24fc8e9bb2882c9f471bf1f61de7dd",
+      "olean_sha256": "49af8518932fa02c6f25c06a0c886993620b0388f66ffad5b241a8e560edb119",
+      "olean_bytes": 3400,
+      "reported_build_seconds": 5.4
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.CycleBoundaryOrientation.side_face",
+      "Mettapedia.GraphTheory.FourColor.CycleBoundaryOrientation.constant_of_cofacial_ports",
+      "Mettapedia.GraphTheory.FourColor.CycleBoundaryOrientation.exists_turn",
+      "Mettapedia.GraphTheory.FourColor.CycleBoundaryOrientation.Incidence.uniform_rotation",
+      "Mettapedia.GraphTheory.FourColor.CycleBoundaryOrientation.Incidence.returnCode_of_uniform_rotation",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleVertexSideReturn.ports_cofacial_of_planarBond",
+      "Mettapedia.GraphTheory.FourColor.PlanarCycleBoundaryRecognition.uniform_geometry_of_planarBond",
+      "Mettapedia.GraphTheory.FourColor.CubicCycleIncidence.Frame.incidence",
+      "Mettapedia.GraphTheory.FourColor.CubicCycleIncidence.Frame.uniform_geometry"
+    ],
+    "combined_dependency_closure": 20865,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Graph-neighbour incidence construction, complete dart and port correspondence, side-invariant rotation recognition, actual planar-bond cofaciality and exact first return with one shared orientation choice.",
+    "excluded_dependencies": "Original configuration certificates, complete Four Colour endpoints and diamond reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build Mettapedia.GraphTheory.FourColor.CycleBoundaryRecognitionAudit",
+      "working_directory": "lean/mettapedia",
+      "jobs": 3256,
+      "exit_code": 0
+    },
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeMinimalExteriorAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3620,
+      "exit_code": 0,
+      "scope": "Affected existing strict-reduction consumer, eleven roots and 26029 dependency declarations."
+    }
+  ],
+  "mathematics": {
+    "minimum_cycle_length": 3,
+    "maximum_cycle_length": null,
+    "input": "Distinct cyclically adjacent graph vertices with one adjacent outside vertex at each position; a spherical cubic simple-graph source, cyclic vertex rotations, two-sided faces, connected ambient graph and connected complement.",
+    "incidence_exhaustiveness_derived": true,
+    "shore_connectedness_derived": true,
+    "cofacial_ports_derived": true,
+    "rotations_assumed": false,
+    "tangle_isomorphism_assumed": false,
+    "exterior_attachment_vertices_must_be_distinct": false,
+    "local_orientation": "All vertex turns share one Boolean reversal choice.",
+    "port_return": "The exact first-return permutation is cyclic predecessor or successor under the same choice.",
+    "shared_orientation_bits": 1,
+    "source_graph_consumer": "Mettapedia.GraphTheory.FourColor.CubicCycleIncidence.Frame.uniform_geometry",
+    "full_lobe_recognition_proved": false,
+    "strict_reduction_changed": false,
+    "colour_count_equivalence_proved": false,
+    "executable_history_transport_proved": false,
+    "coverage_proved": false
+  },
+  "program_evidence": {
+    "script": "tools/fourcolor/classical/lobe_spoke_order_probe.py",
+    "script_sha256": "94da3877bfe0854da46dc481dad17e9532f1319bbfd5dd0157880756220746a2",
+    "record": "tools/fourcolor/classical/lobe-spoke-order-probe.json",
+    "record_sha256": "674953949800953a966c6e4f9d69f502a5a387bf1f752c69696d9ef2b45b7c23",
+    "cases": 3840,
+    "spoke_assignments": 120,
+    "inner_rotation_choices": 32,
+    "open_face_count_histogram": {
+      "3": 2880,
+      "5": 950,
+      "7": 10
+    },
+    "cases_with_required_seven_faces": 10,
+    "all_ten_recover_literal_rotation_after_spoke_relabelling": true,
+    "kernel_certification_of_enumeration": false,
+    "fixed_hypotheses": "Outer eleven-lobe incidence, alternating five inner/six outer port positions and outer rotation are fixed."
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "uniform_cycle_recognition_schemes_added": 1,
+    "pentagon_local_turn_assignments_before_geometric_constraint": 32,
+    "pentagon_global_turn_choices_after_geometric_constraint": 2,
+    "finite_check_count_or_runtime_savings_claimed": false,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1
+  },
+  "cost_scope": "Reported Lake module times include elaboration and kernel checking. Source/artifact fingerprints refer to the checked final files. No isolated kernel benchmark or complete baseline replay is claimed.",
+  "next_obligations": [
+    "Derive the eleven-lobe inward/outward attachment pattern, including the marked closing transition and chord exclusions.",
+    "Use the recognized inner-cycle port order and opposite shore order to derive the spoke matching and construct the full patch isomorphism.",
+    "Consume the existing twelve-vertex strict reduction for that geometric family, then prove broader supply/coverage and audit any replaced certificate dependencies."
+  ]
+}

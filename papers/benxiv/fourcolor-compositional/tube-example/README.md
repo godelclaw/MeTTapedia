@@ -542,6 +542,51 @@ additional original configuration-certificate savings; the 22 terminal
 witnesses, nine answer-cover checks and one shared matching codec remain.
 Counts and executable recolouring histories are not asserted equivalent.
 
+## Recognizing a cycle from its graph incidence
+
+The [cycle-incidence construction][cycle-incidence] now starts with ordinary
+graph data: a cyclic list of distinct vertices, its cycle edges, and one
+adjacent outside vertex at each position. Outside vertices need not be
+distinct. Cubicity proves that these are all the neighbours, constructs
+the complete retained dart carrier and ordered ports, and proves every
+internal edge reversal. The cycle itself supplies shore connectedness.
+No local rotation or tangle-isomorphism field is an input.
+
+The [orientation law][cycle-orientation] has a short uniform proof. Give
+each directed cycle edge its side mark, and give each port the mark selected
+by its local three-dart rotation. Face traversal preserves this mark.
+All ports on one open face must therefore have the same local orientation.
+This works at every cycle length. A connected complement in a spherical map
+supplies cofaciality through the existing planar-bond Euler theorem.
+
+`CubicCycleIncidence.Frame.uniform_geometry` combines these results. One
+global reversal choice determines both the actual source rotations and the
+exact port return: predecessor in one orientation, successor in the other.
+The first return is proved through the actual two-step face path, including
+the absence of an intervening boundary hit. This is a precise instance of
+transporting graph incidence into an operational boundary summary while
+retaining the choice on which both representations depend.
+
+For the inner pentagon, this replaces a potential enumeration of 32 local
+rotation assignments with the uniform law. It does not yet determine how
+that pentagon attaches to the eleven-lobe. The [bounded experiment][spoke-order-probe]
+fixes the outer lobe and tests all 120 spoke assignments and 32 inner rotation
+choices. Of 3,840 combinations, ten have the seven open faces required of
+this connected spherical shore. All ten become the literal patch after
+relabelling the inner vertices by their spokes. These are program checks;
+the general attachment-recognition implication is still open.
+
+The [kernel audit][cycle-recognition-audit] checks nine roots and 20,865
+dependency declarations, allowing only `propext`, `Classical.choice` and
+`Quot.sound`. It requires both the graph-incidence construction and the
+planar-bond/first-return chain, and excludes complete Four Colour endpoints
+and catalogue certificates. The [receipt][cycle-recognition-measurements]
+records source and artifact fingerprints. This is one uniform recognition
+law, with no additional original certificate removed and no assertion of
+colour-count or executable-history equivalence. The next geometric task is
+to derive the pentagon/lobe attachment order and consume the existing
+twelve-vertex strict reduction.
+
 ## Scope and verification
 
 This establishes an infinite family reduction from the corridor idea,
@@ -634,6 +679,11 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 
 [minimal-exterior]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExterior.lean
 [minimal-exterior-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExteriorAudit.lean
+[cycle-incidence]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicCycleIncidence.lean
+[cycle-orientation]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleBoundaryOrientation.lean
+[cycle-recognition-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleBoundaryRecognitionAudit.lean
+[cycle-recognition-measurements]: ../../../../tools/fourcolor/classical/cycle-boundary-recognition-measurements.json
+[spoke-order-probe]: ../../../../tools/fourcolor/classical/lobe-spoke-order-probe.json
 [minimal-exterior-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-minimal-exterior-measurements.json
 [six-port-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SixPortBoundaryConnectivity.lean
 [vertex-lower-bound]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SphericalVertexLowerBound.lean

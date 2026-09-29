@@ -116,6 +116,17 @@ alternating-lobe geometry, and proving coverage, remain open. No further
 original certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
 separates this theorem from the 406 independent tests of fourteen tree shapes.
 
+One part of recognition now has a uniform geometric explanation, valid at
+every cycle length. [Cycle incidence and boundary orientation](tube-example/README.md#recognizing-a-cycle-from-its-graph-incidence)
+start from distinct cyclically adjacent graph vertices and an outward spoke
+at each vertex. Cubicity reconstructs the complete local dart carrier.
+In a spherical map with connected complement, a face-side invariant forces
+all local turns to agree, and computes the exact cyclic port return. Rotation
+and return order retain the same global orientation choice. This derives
+geometry needed for the inner pentagon without enumerating its 32 rotation
+assignments. The eleven-lobe attachment pattern and full patch recognition
+remain open; no further catalogue certificate has been removed.
+
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved

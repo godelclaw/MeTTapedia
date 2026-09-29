@@ -1,0 +1,291 @@
+{
+  "status": "Independent exhaustive program check on a fixed local incidence family; not kernel certification.",
+  "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangle.lean",
+  "source_sha256": "53e1c8abdb3a49f5a572adbdbc21560fce60a4523a2011f71547011ebd0862f1",
+  "vertices": 16,
+  "internal_edges": 21,
+  "boundary_ports": 6,
+  "spoke_assignments": 120,
+  "inner_rotation_choices": 32,
+  "cases": 3840,
+  "open_face_count_histogram": {
+    "3": 2880,
+    "5": 950,
+    "7": 10
+  },
+  "connected_spherical_shore_required_open_faces": 7,
+  "cases_meeting_face_count": [
+    {
+      "spoke_assignment": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "inner_turns": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        0,
+        4,
+        3,
+        2,
+        1
+      ],
+      "inner_turns": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        1,
+        0,
+        4,
+        3,
+        2
+      ],
+      "inner_turns": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        1,
+        2,
+        3,
+        4,
+        0
+      ],
+      "inner_turns": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        2,
+        1,
+        0,
+        4,
+        3
+      ],
+      "inner_turns": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        2,
+        3,
+        4,
+        0,
+        1
+      ],
+      "inner_turns": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        3,
+        2,
+        1,
+        0,
+        4
+      ],
+      "inner_turns": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        3,
+        4,
+        0,
+        1,
+        2
+      ],
+      "inner_turns": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        4,
+        0,
+        1,
+        2,
+        3
+      ],
+      "inner_turns": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    },
+    {
+      "spoke_assignment": [
+        4,
+        3,
+        2,
+        1,
+        0
+      ],
+      "inner_turns": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "open_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        17
+      ],
+      "boundary_faces": 1,
+      "spoke_relabelling_recovers_literal_rotation": true
+    }
+  ],
+  "scope": "Outer eleven-cycle incidence, its alternating five inner and six outer ports, and its rotations are fixed. The ten cases meeting the connected spherical-shore Euler count coincide after relabelling by their inner spokes.",
+  "formal_bridge": "CycleBoundaryRecognitionAudit checks an arbitrary-length cycle law deriving uniform local orientation and exact port return from graph incidence and a connected complement. It does not certify this 3840-case classification or full eleven-lobe recognition."
+}

@@ -16,6 +16,10 @@ open GoertzelV24OrderedCutFaceReturnProfile OpenTangleMarkedFace
 open OpenTanglePortReplacement SerialTangleFaceTransfer SerialTangleFaceCode
 open GoertzelV24CompositeSeamMultigraph GoertzelV24CanonicalHubCyclicity
 open GoertzelV24FaceDualConnectedness
+open GoertzelV24CanonicalHubClosure GoertzelV24CompositeSeamCubic
+open GoertzelV24OrbitFaceCurvatureBulk GoertzelV24OrbitFaceTwoSided
+open GoertzelV24DeletedRegionRotationSplice
+open GoertzelV24VertexSideOpenTangle
 
 noncomputable section
 variable {V E : Type*} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
@@ -81,6 +85,56 @@ theorem induce_connected
         ⟨i.1.1, congrArg Subtype.val hi, congrArg Subtype.val hj⟩
     exact ih.trans (SimpleGraph.Adj.reachable
       (G := (rotationPrimalGraph RS).induce {v | keep v}) ha)
+
+section GraphBacked
+
+variable {G : SimpleGraph V} [DecidableRel G.Adj]
+
+local instance sideReturnEdgeFintype : Fintype G.edgeSet := SimpleGraph.fintypeEdgeSet G
+local instance sideReturnEdgeDecidableEq : DecidableEq G.edgeSet := Subtype.instDecidableEq
+
+/-- A connected shore with connected complement in a spherical map exposes
+all its ports on one open face. The conclusion uses the actual retained darts. -/
+theorem ports_cofacial_of_planarBond
+    (rotation : SimpleGraphDartRotation.Data G) (deleted : Finset V)
+    (root : RetainedDart rotation.toRotationSystem (deletedRegionKeep deleted))
+    (hsphere : OrbitSphericalCubicMapData rotation.toRotationSystem)
+    (htwo : OrbitFacesTwoSided rotation.toRotationSystem)
+    (hconnected : G.Connected)
+    (hrotation : VertexRotationCyclic rotation.toRotationSystem)
+    (hretained : (G.induce {v | deletedRegionKeep deleted v}).Connected)
+    (hdeleted : (G.induce {v | ¬ deletedRegionKeep deleted v}).Connected)
+    (b c : BoundaryDart rotation.toRotationSystem (deletedRegionKeep deleted)) :
+    (openPhi (ofVertexSide rotation.toRotationSystem (deletedRegionKeep deleted) root)).SameCycle
+      (.inr b) (.inr c) := by
+  let RS := rotation.toRotationSystem
+  let side := deletedRegionKeep deleted
+  let T := ofVertexSide RS side root
+  have hretained' : ((rotationPrimalGraph RS).induce {v | side v}).Connected := by
+    simpa [RS, side,
+      GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq]
+      using hretained
+  have hside : (sideMultigraph T).Connected :=
+    sideMultigraph_connected_of_induce_connected RS side root hretained'
+  have hr : OpenRotationCyclic T := openRotationCyclic_ofVertexSide RS side root hrotation
+  have hc : OpenIsCubic T := openIsCubic_ofVertexSide RS side root hsphere.cubic
+  have hclosed := closedSideSpherical_canonical_of_planarBond rotation deleted root
+    hsphere htwo hconnected hrotation hretained hdeleted
+  have hcount := orbitCount_hubRotation_eq_one_of_closedSideSpherical T
+    (canonicalHubRotation RS side) hside hr hc b hclosed
+  have hhub := sameCycle_all_of_orbitCount_eq_one _ hcount b c
+  have hsuccessor : (retainedRegionBoundarySuccessor RS side).SameCycle b c :=
+    hhub.of_inv
+  rw [← returnCode_eq RS side root] at hsuccessor
+  let first : {d // Boundary (I := InternalDart RS side) d} := ⟨.inr b, trivial⟩
+  let last : {d // Boundary (I := InternalDart RS side) d} := ⟨.inr c, trivial⟩
+  have hnext : (nextHitPerm (openPhi T) Boundary).SameCycle first last :=
+    (permCongr_sameCycle_iff
+      (boundaryCoordinate (InternalDart RS side) (BoundaryDart RS side))
+      (nextHitPerm (openPhi T) Boundary) first last).1 hsuccessor
+  exact (nextHitPerm_sameCycle_iff (openPhi T) Boundary first last).1 hnext
+
+end GraphBacked
 
 end
 end Mettapedia.GraphTheory.FourColor.OpenTangleVertexSideReturn
