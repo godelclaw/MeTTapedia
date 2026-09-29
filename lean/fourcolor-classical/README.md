@@ -263,11 +263,16 @@ certificates and complete theorem endpoints. It is checked with:
 
 ```sh
 lake build MettapediaFourColor.PentagonalLobePatchAudit
+lake build MettapediaFourColor.PentagonalLobeTangleAudit
 ```
 
 The [worked lobe example](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
-separates this kernel theorem from the independent embedded-patch recognition
-and seam tests. Formal geometric recognition and strict reduction remain open.
+separates these kernel theorems from the independent embedded-patch recognition
+and seam tests. `PentagonalLobeTangle` maps every disk colouring to an actual
+sixteen-vertex cubic open tangle, preserving the six ordered boundary colours.
+It glues compatible witnesses into a closed rotation-system colouring. The
+exterior's Kempe closure and admissible input remain hypotheses; deriving them
+from smaller-map geometry, recognition and strict reduction remain open.
 The complete assembly is unchanged by this boundary theorem.
 
 The hypermap dictionary preserves actual dart permutations, components and

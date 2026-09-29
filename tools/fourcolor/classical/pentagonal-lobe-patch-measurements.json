@@ -1,6 +1,6 @@
 {
-  "status": "Kernel-checked boundary repair with actual colourings of the literal dual disk; embedded recognition and physical seam tests remain independent program evidence.",
-  "completed_utc": "2026-09-29T20:39:28+00:00",
+  "status": "Kernel-checked joint boundary repair, literal cubic-tangle reconstruction and conditional closed sewing; ambient recognition and physical seam tests remain independent program evidence.",
+  "completed_utc": "2026-09-29T20:54:23+00:00",
   "toolchain": "leanprover/lean4:v4.34.0-rc2",
   "modules": [
     {
@@ -18,6 +18,22 @@
       "olean_sha256": "ed035617985faa697e5a37b73cacc1ceaa3a7f0f3cbab7df5c72553ec39e7888",
       "olean_bytes": 3696,
       "reported_build_seconds": 1.9
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeTangle",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangle.lean",
+      "source_sha256": "53e1c8abdb3a49f5a572adbdbc21560fce60a4523a2011f71547011ebd0862f1",
+      "olean_sha256": "d238c22d4488d2d18ab1963ea40d54c195e39691db1eee8373704c30d0f8038c",
+      "olean_bytes": 358216,
+      "reported_build_seconds": 7.7
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeTangleAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangleAudit.lean",
+      "source_sha256": "37005559fd26e84bc0cec147245a1b62d2367bb9993ec56d0ce12bba00a12e64",
+      "olean_sha256": "d16471d0e66d307efff9e6fa39070c525a51c8b5e66df35d3f3377dd41c4ee2b",
+      "olean_bytes": 3688,
+      "reported_build_seconds": 3.2
     }
   ],
   "audit": {
@@ -54,6 +70,18 @@
       "working_directory": "lean/fourcolor-classical",
       "jobs": 1338,
       "exit_code": 0
+    },
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeTangle",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3276,
+      "exit_code": 0
+    },
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeTangleAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3277,
+      "exit_code": 0
     }
   ],
   "mathematics": {
@@ -66,7 +94,16 @@
     "support_and_witnesses_proved": true,
     "counts_or_executable_history_transport_proved": false,
     "embedded_lobe_adapter_proved": false,
-    "closed_map_strict_reduction_proved": false
+    "closed_map_strict_reduction_proved": false,
+    "literal_cubic_tangle_reconstruction_proved": true,
+    "conditional_closed_sewing_proved": true,
+    "conditional_sewing_hypotheses": "The actual exterior boundary relation is Kempe-closed and contains a proper zero-sum six-port input; both remain to be derived from smaller-map geometry for this consumer.",
+    "literal_tangle": {
+      "vertices": 16,
+      "internal_edges": 21,
+      "boundary_half_edges": 6,
+      "darts": 48
+    }
   },
   "independent_program_checks": [
     {
@@ -94,8 +131,8 @@
     {
       "command": "python3 tools/fourcolor/classical/pentagonal_lobe_patch_probe.py --output tools/fourcolor/classical/pentagonal-lobe-patch-probe.json",
       "record": "pentagonal-lobe-patch-probe.json",
-      "record_sha256": "b4a97e094f42feba46cecba4f94904eda10a8822afb7f27500ff4822f15d461a",
-      "script_sha256": "24107db9547d7117efa6b0ce0e19dc64310db3ec9aa85a41e0b22e77f7dc6d23",
+      "record_sha256": "ed9bdbf7e1158372c8e13b1e000a08922021409ab8d77b837b62e7df88406184",
+      "script_sha256": "8060135209aec6ba39ba3aa2b508970c731aa1ae9a1a3438766628f5ff7f80b3",
       "metrics": {
         "primal_colourings": 252,
         "normalized_dual_colourings": 252,
@@ -108,7 +145,9 @@
           6,
           0
         ],
-        "recognized_instances": 29
+        "recognized_instances": 29,
+        "literal_darts_compared": 48,
+        "every_rotation_compared": true
       }
     }
   ],
@@ -123,10 +162,33 @@
   "original_configuration_certificates_replaced": 0,
   "integrated_into_complete_four_color_assembly": false,
   "remaining_obligations": [
-    "Prove the ordered embedded correspondence between an extracted pentagonal lobe patch and the literal disk.",
-    "Produce a smaller embedded replacement in the target map class, and justify a nonempty Kempe-closed exterior relation.",
-    "Reconstruct an ambient colouring through that shared relation and prove the complete operation strictly decreases the graph.",
+    "Recognize the literal piece inside actual source maps, retaining its six-port order and embedding.",
+    "Produce a smaller replacement in the target map class and derive a nonempty Kempe-closed exterior relation from its colouring and geometry.",
+    "Prove the whole operation strictly decreases the graph, including any newly introduced exterior vertices.",
     "Prove a broader family law and its geometric recognition or coverage."
   ],
-  "cost_scope": "Lake-reported module times, not isolated kernel costs. No runtime or artifact-size saving claimed."
+  "cost_scope": "Lake-reported module times, not isolated kernel costs. No runtime or artifact-size saving claimed.",
+  "literal_tangle_audit": {
+    "roots": [
+      "FourColor.PentagonalLobePatch.Tangle.cubic",
+      "FourColor.PentagonalLobePatch.Tangle.colouring_valid",
+      "FourColor.PentagonalLobePatch.Tangle.boundary_colouring",
+      "FourColor.PentagonalLobePatch.Tangle.compatible_darts",
+      "FourColor.PentagonalLobePatch.Tangle.sewn_colorable"
+    ],
+    "combined_dependency_closure": 6620,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Named roots and their full dependency closures, not every imported declaration.",
+    "required_dependencies": [
+      "FourColor.PentagonalLobePatch.compatible_colouring",
+      "FourColor.PentagonalLobePatch.Tangle.boundary_colouring",
+      "FourColor.PentagonalLobePatch.Tangle.colouring_valid",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleClosedWitness.glue"
+    ],
+    "excluded_dependencies": "Configuration certificates, complete Four Colour endpoints, and the diamond configuration/family reducibility proofs."
+  }
 }

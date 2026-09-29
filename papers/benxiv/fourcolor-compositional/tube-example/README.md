@@ -380,6 +380,23 @@ Kempe-closed exteriors. Formal embedded recognition, strict replacement and
 geometric coverage remain open. It adds no catalogue or certificate savings.
 The [measurement record][patch-measurements] separates these claims.
 
+The [literal tangle adapter][patch-tangle] now proves the next reconstruction
+step. It retains sixteen cubic vertices, twenty-one internal edges, six
+boundary half-edges and the cyclic order at every vertex. Differences of
+adjacent face colours produce proper nonzero colours on the actual darts.
+Taking the six boundary colours commutes exactly with taking the disk trace.
+`compatible_darts` retains a genuine exterior colouring and matches all six
+ports simultaneously; `sewn_colorable` uses the existing sewing theorem to
+colour the resulting closed rotation system.
+
+This consumer assumes that the exterior's actual boundary relation is
+Kempe-closed and contains a proper zero-sum trace. Deriving those premises
+from a smaller embedded map remains a geometric obligation, as does recognizing
+this literal piece in an arbitrary source. The replay checks every literal
+dart and rotation against the extracted C30 patch. It does not replace that
+general recognition proof. The [tangle audit][patch-tangle-audit] checks this
+reconstruction separately from the finite boundary repair.
+
 ## Scope and verification
 
 This establishes an infinite family reduction from the corridor idea,
@@ -448,3 +465,5 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [patch-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePatchAudit.lean
 [patch-probe]: ../../../../tools/fourcolor/classical/pentagonal-lobe-patch-probe.json
 [patch-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-patch-measurements.json
+[patch-tangle]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangle.lean
+[patch-tangle-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangleAudit.lean

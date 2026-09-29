@@ -1075,7 +1075,10 @@ every Kempe-closed exterior predicate, with actual colouring witnesses.
 It retains 22 terminal representatives and nine finite cover checks.
 `PentagonalLobePatchAudit.lean` audits four roots / 3,347 dependencies against
 the standard axioms and excludes catalogue certificates and the complete
-theorem. The program compares the exact Lean adjacency and witness data
-against its independently extracted graph. The embedded adapter, a strict
-closed-map replacement and coverage remain unproved. There is no new
+theorem. `PentagonalLobeTangle.lean` reconstructs actual cubic-tangle colourings,
+preserves the entire ordered boundary and glues compatible exterior witnesses.
+The program compares the exact Lean adjacency, witness data, all forty-eight
+darts and every cyclic order against the extracted patch. General embedded
+recognition, exterior closure from geometry, a strict closed-map replacement
+and coverage remain unproved. There is no new
 catalogue or certificate saving; see `pentagonal-lobe-patch-measurements.json`.

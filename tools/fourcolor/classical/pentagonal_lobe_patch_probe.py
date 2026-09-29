@@ -4,7 +4,9 @@
 This program checks geometry, primal/dual colouring correspondence and the
 finite boundary calculation independently of Lean. PentagonalLobePatch.lean
 proves repair for the literal dual graph and every Kempe-closed predicate.
-The recognition of extracted embedded lobes remains program evidence.
+PentagonalLobeTangle.lean reconstructs actual open-tangle colourings and glues
+them into compatible exteriors. Recognition of extracted embedded lobes and
+deriving exterior closure from geometry remain separate obligations.
 """
 
 import argparse
@@ -103,7 +105,39 @@ def correspondence(source, target):
     raise AssertionError('Extracted patch differs from the literal disk, including its ordered ring.')
 
 
-def run(fixtures, lean_source):
+def read_string(text, name):
+    match = re.search(r'def ' + name + r' : String :=\s*("(?:[^"\\]|\\.)*")', text)
+    assert match, name
+    return json.loads(match[1])
+
+
+def check_tangle(raw, patch, source):
+    """Compare every literal half-edge and rotation with the extracted piece."""
+    _, _, rho, faces = data(raw['rotation'])
+    vertices = patch['patch_vertices']
+    inside = set(vertices)
+    internal = [tuple(e) for e in patch['primal_edges'] if set(e) <= inside]
+    darts = [d for e in internal for d in (e, e[::-1])] + list(map(tuple, patch['ports']))
+    assert len(internal) == 21 and len(darts) == 48
+    face_of = {d: i for i, face in enumerate(faces) for d in face}
+    face_index = {f: i for i, f in enumerate(patch['dual_face_indices'])}
+    tables = dict(
+        vertexCodes=[vertices.index(u) for u, _ in darts],
+        rotationCodes=[darts.index(rho[d]) for d in darts],
+        leftCodes=[face_index[face_of[d]] for d in darts],
+        rightCodes=[face_index[face_of[d[::-1]]] for d in darts],
+        alphaCodes=[i ^ 1 for i in range(42)])
+    tables['inverseCodes'] = [tables['rotationCodes'].index(i) for i in range(48)]
+    text = source.read_text()
+    for name, values in tables.items():
+        assert read_string(text, name) == ''.join(chr(65 + v) for v in values), name
+    assert tables['leftCodes'][42:] == list(range(6))
+    assert tables['rightCodes'][42:] == [1, 2, 3, 4, 5, 0]
+    return dict(vertices=16, internal_edges=21, boundary_half_edges=6,
+                darts=48, all_tables_match_extracted_rotation=True)
+
+
+def run(fixtures, lean_source, tangle_source):
     maps = json.loads(fixtures.read_text())['maps']
     extracted = [result for raw in maps if (result := extract(raw)) is not None]
     patch, adjacency, dual_of = next(r for r in extracted if r[0]['id'] == 'C30-plantri-1')
@@ -138,7 +172,7 @@ def run(fixtures, lean_source):
     terminals = sorted({canon(w) for w in good})
     reps = sorted({canon(w) for w in universe})
     text = lean_source.read_text()
-    read = lambda name: re.search(r'def ' + name + r' : String :=\s*"([^"]+)"', text)[1]
+    read = lambda name: read_string(text, name)
     assert read('adjacency') == ''.join('1' if j in adjacency[i] else '0' for i in range(12) for j in range(12))
     code = lambda w: ''.join(map(str, w))
     assert read('terminalCodes').split() == list(map(code, terminals))
@@ -150,10 +184,13 @@ def run(fixtures, lean_source):
     tree_results = [dict(tree=tree, unsupported_words=len(tree_support(tree) - good))
                     for tree in trees(tuple(range(1, 6)))]
     assert len(tree_results) == 14 and all(r['unsupported_words'] > 0 for r in tree_results)
+    literal = check_tangle(next(r for r in maps if r['id'] == patch['id']), patch, tangle_source)
     return dict(
         evidence='Independent program checks. The literal boundary repair has a separate Lean proof.',
         fixtures_sha256=hashlib.sha256(fixtures.read_bytes()).hexdigest(),
         lean_source_sha256=hashlib.sha256(lean_source.read_bytes()).hexdigest(),
+        tangle_source_sha256=hashlib.sha256(tangle_source.read_bytes()).hexdigest(),
+        literal_tangle=literal,
         patch=patch, primal_colourings=len(states), normalized_dual_colourings=len(colours),
         supported_words=len(good), admissible_words=len(universe),
         terminal_colour_permutation_classes=len(terminals), input_classes=len(reps),
@@ -161,7 +198,8 @@ def run(fixtures, lean_source):
         disk_replacements=tree_results,
         recognized_instances=[dict(id=r['id'], lobe=r['lobe'], pentagon=r['pentagon'],
                                    **correspondence(r, patch)) for r, _, _ in extracted],
-        limits=['Recognition and primal/dual embedding transport remain program evidence.',
+        limits=['Ambient recognition remains program evidence; literal graph-to-tangle reconstruction has a separate Lean theorem.',
+                'Deriving the exterior Kempe-closure hypothesis from embedding geometry remains open for this consumer.',
                 'No strict closed-map replacement, universal coverage or catalogue savings are established.',
                 'The boundary proof retains finite terminal witnesses and nine finite answer-cover checks.'])
 
@@ -174,9 +212,13 @@ if __name__ == '__main__':
                         default=Path(__file__).resolve().parents[3] /
                         'lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePatch.lean')
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--tangle-source', type=Path,
+                        default=Path(__file__).resolve().parents[3] /
+                        'lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeTangle.lean')
     args = parser.parse_args()
-    if args.output.resolve() in {args.fixtures.resolve(), args.lean_source.resolve(), Path(__file__).resolve()}:
+    if args.output.resolve() in {args.fixtures.resolve(), args.lean_source.resolve(),
+                                args.tangle_source.resolve(), Path(__file__).resolve()}:
         parser.error('The output must not overwrite an input.')
-    result = run(args.fixtures, args.lean_source)
+    result = run(args.fixtures, args.lean_source, args.tangle_source)
     args.output.write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps({k: result[k] for k in ('supported_words', 'admissible_words', 'obstruction_rounds')}))

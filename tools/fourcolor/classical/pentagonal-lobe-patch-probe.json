@@ -2,6 +2,14 @@
   "evidence": "Independent program checks. The literal boundary repair has a separate Lean proof.",
   "fixtures_sha256": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3",
   "lean_source_sha256": "5c6add689b0e36f54fbb254621a0afa1a437068bc1fbd2f94aefdd722443caa1",
+  "tangle_source_sha256": "53e1c8abdb3a49f5a572adbdbc21560fce60a4523a2011f71547011ebd0862f1",
+  "literal_tangle": {
+    "vertices": 16,
+    "internal_edges": 21,
+    "boundary_half_edges": 6,
+    "darts": 48,
+    "all_tables_match_extracted_rotation": true
+  },
   "patch": {
     "id": "C30-plantri-1",
     "lobe": [
@@ -1727,7 +1735,8 @@
     }
   ],
   "limits": [
-    "Recognition and primal/dual embedding transport remain program evidence.",
+    "Ambient recognition remains program evidence; literal graph-to-tangle reconstruction has a separate Lean theorem.",
+    "Deriving the exterior Kempe-closure hypothesis from embedding geometry remains open for this consumer.",
     "No strict closed-map replacement, universal coverage or catalogue savings are established.",
     "The boundary proof retains finite terminal witnesses and nine finite answer-cover checks."
   ]

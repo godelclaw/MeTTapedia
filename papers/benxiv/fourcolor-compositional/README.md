@@ -86,8 +86,11 @@ every Kempe-closed exterior with a proper zero-sum six-port trace has a trace
 realized by an actual colouring of this disk. This follows the lobe geometry:
 an independent program recognizes the same pentagon-plus-eleven-cycle patch
 in 29 supplied maps. The boundary proof retains nine finite answer-cover
-checks and 22 terminal witnesses. The embedded recognition and strict
-replacement are still to be formalized; no further certificate is removed.
+checks and 22 terminal witnesses. A literal sixteen-vertex cubic tangle now
+receives these colouring witnesses with the exact six-port order, then glues
+to any exterior satisfying the closure and nonempty-trace hypotheses.
+Deriving those hypotheses from a smaller map, embedded recognition and strict
+replacement remain open; no further certificate is removed.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
