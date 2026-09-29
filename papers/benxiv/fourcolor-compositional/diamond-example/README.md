@@ -133,6 +133,26 @@ graphs. At configuration 2 the tested two-side contract differs from the
 catalogue's specified one-edge contract. Any extension must retain the coupling
 between insertions and prove its new contract conditions.
 
+A subsequent [contract-family probe][contract-family-probe] tests every
+off-ring contract of one to four edges on the first longer fan: two insertions
+on one side and none on the other. It retains the oriented faces during each
+insertion. There are 997 node-simple edge sets; two four-edge sets fail the
+model's triad condition. Each of the remaining 995 has an explicit contract
+colouring whose boundary trace belongs to one shared, 882-word Kempe-closed
+predicate disjoint from all 468 ordinary traces. The saved witnesses are
+rechecked on the original graph, and corrupted witnesses, missing contracts,
+chromograms and face data are rejected.
+
+These are independently replayed program certificates. The identification of
+the general contract-shape model with Lean's `ValidContract` is still a formal
+obligation. The closed predicate is not asserted to be an actual planar
+exterior. Within the tested model, merely changing the contract, or asking
+the exterior to meet every tested contract language, leaves that same abstract
+obstruction available. An unrestricted fan extension therefore needs stronger
+exterior information or a different reduction principle. The next positive
+target remains a common structural law for zero or one insertion on each side,
+which includes configurations 1, 2 and 4.
+
 ## From the boundary law to reducibility
 
 [DiamondBoundaryRepair][boundary-repair] proves a law for any predicate on
@@ -232,6 +252,7 @@ preparing its dependencies as described in the [package guide][package].
 [obstruction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondKempeBoundary.lean
 [joint-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondKempeBoundaryAudit.lean
 [joint-probe]: ../../../../tools/fourcolor/classical/diamond-joint-repair-probe.json
+[contract-family-probe]: ../../../../tools/fourcolor/classical/diamond-contract-family-probe.json
 [joint-measurements]: ../../../../tools/fourcolor/classical/diamond-joint-boundary-measurements.json
 [contract-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondContractAudit.lean
 [contract-measurements]: ../../../../tools/fourcolor/classical/diamond-contract-measurements.json
