@@ -181,37 +181,48 @@ yᵢ = α(ρ(xᵢ))      dart at the next vertex of the exterior face
 ```
 
 Hexagonal face closure forces the second new edge to end at the next
-`x`-vertex. If these `2k` candidate vertices are distinct and the new output
-port faces have length five or six, `nextRow` constructs a complete oriented
-zigzag slab. It proves that all new vertices are outside the old side, that
-the row has no chords, and that both boundary maps are complete. Its input
-labels are the old output labels. `nextRow_support` gives the exact joint
-boundary relation with genuine interior colouring witnesses.
+`x`-vertex. The [noncollision theorem][collar-noncollision] proves that all
+`2k` candidate vertices are distinct. Its argument has three parts:
 
-The converse is also proved: every oriented successor row uses precisely
-these candidate vertices, up to its actual boundary-coordinate bijection.
-Thus `exists_nextRow_iff` is an exact local criterion under the stated face
-hypotheses. A collision cannot be repaired merely by choosing a different
-origin for the same kind of next row.
+1. The old complete boundary prevents candidate vertices from returning into
+   the old side.
+2. The cubic star excludes identifications between two `x`-vertices or between
+   two `y`-vertices.
+3. An identification between an `x`- and a `y`-vertex propagates in opposite
+   directions around their cyclic indices. Decreasing the index gap reaches
+   equal or adjacent positions, forcing an edge to equal its own reverse.
 
-The [bounded progression theorem][collar-progress] consumes this construction
-and the four-ring physical reduction. In a map with only pentagonal and
-hexagonal faces, a supplied five-port row of a least counterexample must
-encounter a pentagonal seam face or a candidate-vertex collision after at most
-three successful extensions. Otherwise the constructed five-row tube strictly
-reduces. Neither stopping alternative is claimed reducible. Supplying the
-initial row, handling collisions, changing width and covering other face sizes
-remain geometric tasks.
+This works for every positive width. It uses the given oriented row and
+hexagonal seam faces; no additional planarity or connectivity hypothesis is
+needed for noncollision. With new output-port faces of length five or six,
+`hexagonalNextRow` constructs the complete oriented slab. It derives
+chordlessness and both boundary maps; input labels agree with the previous
+output labels. `hexagonalNextRow_support` composes the exact joint relation
+with genuine interior colouring witnesses. The earlier exact successor
+criterion remains available, with its injectivity condition now discharged.
+
+The [progression theorem][collar-progress] connects this geometric construction
+to termination and the four-ring physical reduction. In any finite cubic map
+with pentagonal/hexagonal faces, successive rows reach an actual pentagonal
+seam; the vertex count gives a coarse upper bound on extensions. In a least
+counterexample, a supplied five-port row reaches such a seam within three
+successful extensions. A fourth extension would construct a reducible five-row
+tube. A reduction at the pentagonal stop is still required, as are initial-row
+supply, changing-width mechanisms and coverage of other face sizes.
 
 The [independent collar probe][collar-probe] examines all 574 simple ten-cycles,
 in both orientations, across seven explicit spherical cubic maps. It finds
 48 oriented alternating rows: 28 have hexagonal collars and yield complete
-successor rows; 20 meet pentagonal faces. No collision occurs in this sample.
-The 80- and 180-vertex Goldberg examples contain no alternating ten-cycle;
-they are retained in the report to expose this width-five mechanism's limited
-coverage. These are finite program checks, not kernel certificates or a
-general noncollision theorem. The [collar measurement record][collar-measurements]
-records the expanded 30-root audit and its 24,107 dependency declarations.
+successor rows; 20 meet pentagonal faces immediately. The [growth probe][collar-growth]
+follows all 48 recognized starts to actual pentagonal seams, checking both
+complete boundaries, orientation and ten fresh vertices at every extension.
+The longest history has six extensions. This finite-map check does not assume
+minimal-counterexample status, which is required for the sharper bound of
+three. The 80- and 180-vertex Goldberg examples have no alternating ten-cycle.
+These are finite program checks, separate from the general Lean theorems.
+The [current measurement record][noncollision-measurements] separates
+noncollision, finite termination, physical reduction and remaining coverage.
+The [earlier collar record][collar-measurements] retains its checkpoint data.
 
 ## Scope and verification
 
@@ -262,3 +273,7 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [collar-progress]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalCollarProgress.lean
 [collar-probe]: ../../../../tools/fourcolor/classical/hexagonal-collar-probe.json
 [collar-measurements]: ../../../../tools/fourcolor/classical/hexagonal-collar-measurements.json
+
+[collar-noncollision]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalCollarNoncollision.lean
+[collar-growth]: ../../../../tools/fourcolor/classical/hexagonal-collar-growth-probe.json
+[noncollision-measurements]: ../../../../tools/fourcolor/classical/hexagonal-collar-noncollision-measurements.json

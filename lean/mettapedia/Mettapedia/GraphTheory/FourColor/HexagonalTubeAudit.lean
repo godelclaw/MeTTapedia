@@ -81,6 +81,22 @@ run_cmd do
       ``ZigzagSlab.clean_of_no_obstruction]),
     (``ZigzagSlab.stopsWithin_three, [``ZigzagSlab.tube_of_not_stops,
       ``Tube.hexagonal_five_length_le_four, ``SlabOf.five_reduction])]
+  let contracts := contracts ++ [
+    (``ZigzagSlab.collarMiddle_outside, [``ZigzagSlab.collar_second_edge,
+      ``ZigzagSlab.outPort_surjective]),
+    (``ZigzagSlab.collarReflection_impossible, [``ZigzagSlab.collarReflection_step,
+      ``ZigzagSlab.collar_second_edge]),
+    (``ZigzagSlab.collarVertex_injective, [``ZigzagSlab.collarReflection_impossible,
+      ``ZigzagSlab.collarInput_vertex_injective, ``ZigzagSlab.collarMiddle_vertex_injective]),
+    (``ZigzagSlab.hexagonalNextRow, [``ZigzagSlab.collarVertex_injective,
+      ``ZigzagSlab.nextRow]),
+    (``ZigzagSlab.hexagonalNextRow_support, [``ZigzagSlab.collarVertex_injective,
+      ``ZigzagSlab.nextRow_support]),
+    (``ZigzagSlab.collarObstruction_iff_pentagonalSeam, [``ZigzagSlab.collarVertex_injective]),
+    (``ZigzagSlab.pentagonWithin_card, [``ZigzagSlab.stopsWithin_iff_pentagonWithin,
+      ``ZigzagSlab.tube_of_not_stops, ``Tube.literalSlab]),
+    (``ZigzagSlab.pentagonWithin_three, [``ZigzagSlab.collarVertex_injective,
+      ``ZigzagSlab.stopsWithin_three, ``SlabOf.five_reduction])]
   let mut inspected : NameSet := {}
   for (root, required) in contracts do
     let mut seen : NameSet := {}

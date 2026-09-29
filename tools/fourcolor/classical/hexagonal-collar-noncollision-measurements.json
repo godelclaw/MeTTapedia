@@ -1,0 +1,191 @@
+{
+  "status": "kernel-checked hexagonal collar noncollision, face-driven successor construction and pentagonal termination",
+  "completed_utc": "2026-09-29T18:27:18+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+  "working_directory": "lean/mettapedia",
+  "gate_jobs": 11023,
+  "incremental_gate_wall_seconds": 10.0,
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalCollarNoncollision",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalCollarNoncollision.lean",
+      "source_sha256": "8e4a01a7665519af55625f1e59b0acb44f633022f52630150826faeba6262e29",
+      "olean_sha256": "8d6dc3118dc573fb4db76fbfc5eca8afec772c7c63b01e72ba31ba23f9754e72",
+      "olean_bytes": 238704,
+      "reported_build_seconds": 2.8
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalCollarProgress",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalCollarProgress.lean",
+      "source_sha256": "eea9f97b92ad0d83d15b28539741a0282c976b8077db10d307477a4d16ca33fa",
+      "olean_sha256": "c6bb8193f4da987044a75862d3e84ee6306e588e6c610604bb3a2b537ef777e7",
+      "olean_bytes": 389344,
+      "reported_build_seconds": 2.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTubeAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeAudit.lean",
+      "source_sha256": "3ee3374dc123e93942891581f5fc788ff43f8056698639b5e336cea4b945f547",
+      "olean_sha256": "7d726b9606be99be28a8bbd0d02f40e143e4cf56fd9d162915acc8755dfa7e40",
+      "olean_bytes": 4104,
+      "reported_build_seconds": 13.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "ecd2f602468a74936d116f0da1628cd19c455c7ab30f156572c7bce7aeb245b0",
+      "olean_sha256": "5218bd1e5db1c75d5ce6e15148ba742501ee2daad5070d6ed02a5bd9b5a9d0f6",
+      "olean_bytes": 34664,
+      "reported_build_seconds": 5.2
+    }
+  ],
+  "audit": {
+    "completed_utc": "2026-09-29T18:25:28+00:00",
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.CyclicPortSeam.translation_of_six_steps",
+      "Mettapedia.GraphTheory.FourColor.CyclicPortSeam.six_steps_of_successor",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.seam_eq_add",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.two_row_support",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.Hexagonal.cyclicCoherent",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.sideSet_aligned",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.sideSet_aligned_stable",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.le_of_tube_nodes",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.hexagonal_five_length_bound",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.toSlab_rotationCompatible",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.prepend_hexagonal",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.chain_length_bound",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.assemble_rotationCompatible",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.literalSlab",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.reassembled_colorable_iff",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.reassembled_class",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleClosedWitness.replace",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.five_vertex_loss",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.five_reduction",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.SlabOf.five_reconstruct",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.hexagonal_five_length_le_four",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.chain_length_le_four",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collar_three_steps",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.nextRow",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.nextRow_inEquiv",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarVertex_eq_successor",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.exists_nextRow_iff",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.nextRow_support",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.tube_of_not_stops",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.stopsWithin_three",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarMiddle_outside",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarReflection_impossible",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarVertex_injective",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.hexagonalNextRow",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.hexagonalNextRow_support",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.collarObstruction_iff_pentagonalSeam",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.pentagonWithin_card",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.pentagonWithin_three"
+    ],
+    "combined_dependency_closure": 24141,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excluded_namespace": "FourColor",
+    "required_dependencies": "Actual face closure, complete boundary reconstruction, cubic stars, cyclic reflection descent, exact joint colouring witnesses, generated tube embedding and physical four-ring reduction.",
+    "scope": "The thirty-eight named roots and their complete dependency closures, not every imported declaration."
+  },
+  "mathematics": {
+    "noncollision_domain": "Every positive width in a cubic cyclic rotation system, given an actual oriented zigzag slab and hexagonal seam faces.",
+    "removed_hypothesis": "Injectivity of the face-derived candidate-vertex map is proved from the stated geometry.",
+    "proof_mechanism": "Same-type collisions violate cubic-star incidence. A mixed collision propagates by reflection of cyclic indices to an equal or adjacent pair and a forbidden fixed point of edge reversal.",
+    "successor_conditions": "The given row, cubic cyclic stars, hexagonal seam faces and new output-port faces of size five or six.",
+    "additional_planarity_or_connectivity_premise_for_noncollision": false,
+    "semantics": "The complete constructed boundaries carry the exact compatible colouring relation, with genuine interior witnesses.",
+    "finite_termination": "For a supplied row in a finite cubic map with all faces five or six, canonical growth reaches an actual pentagonal seam within at most the ambient vertex count in successful extensions.",
+    "minimal_counterexample_consumer": "For a graph-backed vertex-minimal Tait counterexample in the pentagon/hexagon class, a supplied oriented five-port row reaches a pentagonal seam within three successful extensions.",
+    "pentagonal_stop_asserted_reducible": false
+  },
+  "independent_program_checks": {
+    "command": "python3 tools/fourcolor/classical/hexagonal_collar_growth_probe.py --output tools/fourcolor/classical/hexagonal-collar-growth-probe.json",
+    "record": "hexagonal-collar-growth-probe.json",
+    "record_sha256": "0074955c7365d460e8d051b74e146d9bdfbd3b96fff69e2e0c19563b81405928",
+    "script_sha256": "b2fed8a2e226a60bde5e617f0f9aeb1618a354cbb7297c93c30877aa0914f19e",
+    "maps": 7,
+    "recognized_oriented_starts": 48,
+    "pentagonal_endpoints": 48,
+    "successful_extension_histogram": {
+      "0": 20,
+      "1": 8,
+      "2": 8,
+      "3": 4,
+      "4": 4,
+      "5": 2,
+      "6": 2
+    },
+    "total_successful_extension_steps": 74,
+    "longest_history_extensions": 6,
+    "zero_starting_row_examples": [
+      "Goldberg GP(2,0), 80 vertices.",
+      "Goldberg GP(3,0), 180 vertices."
+    ],
+    "scope": "All recognized oriented five-port rows among the simple ten-cycles of these seven rotations. Both complete boundaries, orientation, fresh vertices and the terminal pentagonal face are checked. These are finite program checks without a minimal-counterexample assumption."
+  },
+  "complete_baseline_recheck": {
+    "status": "fresh complete-endpoint replay passed",
+    "gate": "lake build kernelComplete",
+    "working_directory": "lean/fourcolor-classical",
+    "completed_utc": "2026-09-29T18:28:38+00:00",
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "prepared_dependency_records": 126,
+    "imported_public_declarations_audited": 125082,
+    "fresh_modules": [
+      {
+        "module": "MettapediaFourColor.ReferenceBaselineAudit",
+        "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.649,
+        "olean_bytes": 3320,
+        "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e"
+      },
+      {
+        "module": "MettapediaFourColor.DiamondFamilyReducibility",
+        "source_sha256": "71fb0a5407ace3d65ad85c53b4733d03ea4f382675ee1e2fab7ca14425b26824",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.486,
+        "olean_bytes": 37328,
+        "olean_sha256": "2e8e476bff5beda5c8eeb7e7b30761099c2226848f9425a74ead204147630377"
+      },
+      {
+        "module": "MettapediaFourColor.Complete",
+        "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.846,
+        "olean_bytes": 39288,
+        "olean_sha256": "fce0dd591168e2d7bf9463281c20f1fad4ff9bb96a9e4f106248346d79971ccf"
+      },
+      {
+        "module": "MettapediaFourColor.CompleteAudit",
+        "source_sha256": "2469479845e74a1e68271b7a79cb05eaaaf973e086b2780576f75f1cff04d6ff",
+        "exit_code": 0,
+        "frontend_wall_seconds": 19.03,
+        "olean_bytes": 6776,
+        "olean_sha256": "470427286cb17f0d48ffac4b175a2d0568b1300c807a11bfeda796200ed29f8f"
+      }
+    ],
+    "summed_frontend_wall_seconds": 30.011,
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "original_configuration_certificate_dependencies_replaced_total": 3,
+    "new_noncollision_theorems_used_by_complete_endpoints": false,
+    "scope": "Four endpoint/audit modules freshly replayed after checking prepared dependency records; not a clean reference rebuild."
+  },
+  "remaining_obligations": [
+    "Supply suitable initial rows or broader constructions.",
+    "Prove reductions at pentagonal stopping cases.",
+    "Handle changing widths and face sizes outside the pentagon/hexagon class.",
+    "Integrate successful geometric coverage into the complete proof and audit removed dependencies."
+  ],
+  "new_finite_certificates": 0,
+  "configurations_removed": 0,
+  "original_configuration_certificates_replaced": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "cost_scope": "Main gate costs are incremental. Per-module times are Lake-reported builds, not isolated kernel timings. No runtime or artifact-size improvement is claimed."
+}

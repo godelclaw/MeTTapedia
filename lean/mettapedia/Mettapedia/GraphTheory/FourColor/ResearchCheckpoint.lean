@@ -179,13 +179,16 @@ or six, the construction derives the complete new slab, its orientation and
 its exact two-ended colouring semantics. Conversely, any oriented successor
 has those candidate vertices up to its actual seam bijection. Distinctness is
 therefore the exact successor criterion under the stated face hypotheses.
-For pentagon/hexagon maps, failure is localized to a pentagonal seam face or
-an equality between distinct candidate vertices. A least counterexample must
-encounter one of these within three successful extensions of a supplied
-five-port row: otherwise the construction supplies a reducible five-row tube.
-Neither stopping alternative is claimed reducible. Initial alternating-row
-supply, collision geometry, changing widths and non-fullerene maps remain
-coverage obligations.
+Candidate distinctness is now derived from cubic rotation and the original
+hexagonal seam faces. Complete old boundaries exclude candidate returns;
+mixed identifications propagate by cyclic reflection to an impossible fixed
+point of edge reversal. Thus hexagonal collars cannot stop by identifying
+vertices, at any positive width. In finite pentagon/hexagon maps, growth reaches
+an actual pentagonal seam within the coarse bound given by the vertex count.
+A least counterexample reaches one within three extensions of a supplied
+five-port row; otherwise the construction supplies a reducible five-row tube.
+No reduction at the pentagonal stop is asserted. Initial alternating-row
+supply, changing widths and non-fullerene maps remain coverage obligations.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond

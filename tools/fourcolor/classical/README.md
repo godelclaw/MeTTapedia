@@ -919,5 +919,36 @@ successors and 20 pentagonal stops. No collision appears in this sample.
 Two Goldberg examples, of 80 and 180 vertices, have no alternating ten-cycle;
 these zero-coverage results are included explicitly. `hexagonal-collar-measurements.json`
 records the separate Lean audit, exact hypotheses and remaining obligations.
-Initial-row supply, collision geometry, other widths and other face sizes
-remain open. No additional catalogue or certificate saving is credited.
+That checkpoint left collision geometry open. The following theorem now
+discharges it for hexagonal collars; initial-row supply, pentagonal stops,
+other widths and other face sizes remain coverage tasks.
+
+
+## Hexagonal collar noncollision and finite growth
+
+`HexagonalCollarNoncollision.lean` derives candidate-vertex injectivity from
+the existing oriented row, cubic cyclic stars and actual hexagonal seam
+faces. A mixed collision would propagate by reflection of the cyclic indices
+until edge reversal had a fixed point. `hexagonalNextRow` consequently needs
+only the face conditions, and its support theorem reconstructs genuine
+compatible colouring witnesses.
+
+`pentagonWithin_card` proves that growth from a recognized row reaches a
+pentagonal seam in every finite cubic map with faces of size five or six.
+`pentagonWithin_three` consumes physical four-ring reduction to sharpen this
+to three extensions at width five in a minimal counterexample. Neither theorem
+supplies a reduction at the terminal pentagon or an initial suitable row.
+
+```sh
+python3 tools/fourcolor/classical/hexagonal_collar_growth_probe.py \
+  --output hexagonal-collar-growth-probe.json
+```
+
+The probe follows all 48 recognized oriented starts in seven explicit maps,
+checking actual complete boundaries and fresh vertices throughout. Every
+history reaches a pentagon; the longest has six extensions. The sharper
+three-extension theorem assumes minimal-counterexample status. Two Goldberg
+examples have no starting alternating ten-cycle. The kernel audit, exact
+hypotheses and costs are recorded in
+`hexagonal-collar-noncollision-measurements.json`. No additional classical
+certificate or configuration is removed by this geometric result.

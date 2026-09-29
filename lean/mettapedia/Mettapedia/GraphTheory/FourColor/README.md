@@ -23,14 +23,13 @@ This completes the classical reconstruction. The diamond cores now share
 boundary laws for all their local cover obligations, retaining finite profile
 and classification data. A recognized oriented five-port hexagonal strip now
 reduces to four rows in its actual exterior, with the original geometric class
-and all exterior colours preserved. A successor row can now be constructed
-from the actual surrounding hexagons: under short output-face hypotheses,
-distinct face-derived candidate vertices are its exact existence criterion.
-In the pentagon/hexagon class, a minimal counterexample meets a pentagon or
-a candidate-vertex collision within three successful extensions of a supplied
-five-port row.
-Initial row supply, collision reductions, width control and a broader
-core-family reduction remain open. The GSLT, graph and MeTTa
+and all exterior colours preserved. Surrounding hexagonal seam faces now
+construct a successor row under short output-face hypotheses: distinctness of
+its candidate vertices is proved from the geometry. In finite maps with only
+pentagonal/hexagonal faces, this growth terminates at a pentagonal seam. A
+minimal counterexample reaches that seam within three extensions of a supplied
+five-port row. Initial row supply, reductions at pentagonal stops, width control
+and a broader core-family reduction remain open. The GSLT, graph and MeTTa
 results have their own verified consumers, listed in the guide.
 
 ## Independent corridor route — checkpoint of 22 September 2026
