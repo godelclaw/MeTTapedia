@@ -15,6 +15,7 @@ import MettapediaNS.WholeSpaceCubicHistory
 import MettapediaNS.WholeSpacePressureObserver
 import MettapediaNS.PressureCoreReaction
 import MettapediaNS.PressureViscousMemory
+import MettapediaNS.ViscousMemoryEntropy
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
 import MettapediaNS.PressureHessianLocalization
@@ -245,6 +246,14 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.heat_defect_lower
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.normalized_heat_lower
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureViscousMemory.normalized_heat_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.entropy_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.entropy_bounds
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.entropy_hasDerivAt
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.slope_hasDerivAt
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.eigen_entropy_bounds
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.source_balance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.spatial_turning_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ViscousMemoryEntropy.source_turning_paid
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCoherentPairEstimate.sigmaSq_coherent_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_two_four
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.minimum_order_adjacent

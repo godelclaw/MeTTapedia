@@ -5123,3 +5123,208 @@ evolutions or certification of an arbitrary-history continuation bound.
 ```sh
 python3 -O labs/viscous_parent_memory.py
 ```
+
+## A nonnegative reserve for memory geometry
+
+`viscous_memory_entropy.py` develops a payment for actual spatial
+variation and stochastic turning of the retained memory. It starts
+from the preceding physical equation `D C=2nu G`, with `C(0)=0`,
+`C>=0`, and `G=sum_j partial_j u tensor partial_j u`. Fix `eta>0` and
+write
+
+```text
+H=eta I+C,
+Phi_eta(C)=tr C-eta log det(I+C/eta),
+r_eta=|u|^2+Phi_eta(C),
+R_eta(t)=integral r_eta(t,x) dx.
+```
+
+For each eigenvalue `c>=0`,
+
+```text
+phi_eta(c)=c-eta log(1+c/eta),
+0<=phi_eta(c)<=c,
+phi_eta'(c)=c/(eta+c),   phi_eta''(c)=eta/(eta+c)^2.
+```
+
+Consequently `R_eta>=0` and its initial value is exactly `E0`. No
+initial derivative bound is needed for this particular global resource.
+The regularizer remains fixed; changing it in space or time would
+introduce additional terms.
+
+### The actual local and global balance
+
+Matrix differentiation, valid through eigenvalue coincidences because
+`H` is positive definite, gives
+
+```text
+D log det H = tr(H^(-1) D C)+nu F,
+F=sum_j tr(H^(-1)(partial_j C) H^(-1)(partial_j C)) >=0,
+J=2nu eta tr(H^(-1)G) >=0,
+D r_eta=-2 div(pu)-J-nu eta F.
+```
+
+Here `F` is a sum of squared Frobenius norms of the symmetric matrices
+`H^(-1/2)(partial_j C)H^(-1/2)`. Positivity of `G` makes `J`
+nonnegative even when `G` and `C` do not commute. The actual full
+pressure flux is retained in the local identity.
+
+For every available smooth unforced prefix,
+
+```text
+R_eta(t)+integral_0^t integral [J+nu eta F] dx ds=E0.
+```
+
+On the torus this follows by integration with normalized volume.
+On whole space use smooth cutoffs tending to one. Since
+`0<=r_eta<=|u|^2+tr C`, its spatial integral is at most `E0` by the
+previous mass identity. The transport and diffusion boundary errors
+vanish using bounded velocity on each compact smooth prefix and this
+`L^1` bound. The pressure boundary error vanishes using `pu in L^1`
+on that prefix; the canonical pressure is in `L^2` and the velocity
+is in `L^2`. Monotone convergence for the nonnegative costs then gives
+both their integrability and the identity above. No future uniform
+gradient bound is used in the resulting constant `E0`.
+
+This is a nonnegative resource for the **displayed weighted source and
+matrix-gradient costs**. It does not yet control vorticity or the
+pointwise pressure Hessian. Compatible segments retain `C` and the
+terminal `R_eta`; applying the same identity on the next segment gives
+its remaining allowance, not a fresh copy of `E0`.
+
+### What the matrix gradient cost pays
+
+In an orthonormal eigenframe write `a_i=eta+c_i>0`. The invariant
+expression for `F` has the pointwise decomposition
+
+```text
+F=sum_j [sum_i |partial_j c_i|^2/a_i^2
+         +2 sum_(i<k) (a_i-a_k)^2/(a_i a_k)
+                       |e_i.partial_j e_k|^2].
+```
+
+The frame formula applies where the required eigenvectors are smooth;
+the matrix formula for `F` requires no spectral gap. Rotation within
+an exactly repeated eigenspace has no observable cost. If
+`a_i>=2a_k`, then
+
+```text
+2 (a_i-a_k)^2/(a_i a_k) >=1.
+```
+
+Thus changes of a separated memory direction consume the resource.
+The coefficient grows with anisotropy; it is not an unweighted penalty
+imposed on every choice of basis.
+
+The positive source itself contributes to frame turning. In the same
+basis its `i,k` angular rate is `2nu G_ik/(c_i-c_k)`. Put
+`x=G_ii/a_i`, `y=G_kk/a_k`, `z=G_ik/sqrt(a_i a_k)`.
+Positive semidefiniteness gives `z^2<=xy`, and for `a_i>=2a_k`,
+
+```text
+|2nu G_ik/(c_i-c_k)| <=2nu(x+y) <=J/eta.
+```
+
+This source rate alone is not the complete material or stochastic
+frame derivative. The diffusion terms must also be retained.
+
+### The complete stochastic principal-direction projector
+
+Let `a_1>=a_2>=a_3` and restrict the observation to
+`Omega={a_1>=2a_2}`. The principal projector `Pi=e_1 tensor e_1`
+is smooth on the larger open set where the top eigenvalue is simple;
+it is independent of the sign of `e_1`. Its actual parabolic law is
+
+```text
+D Pi=D_C Pi[2nu G]-nu sum_j D_C^2 Pi[partial_j C,partial_j C].
+```
+
+For a symmetric matrix increment `E`, let `d=c_1-c_2>=a_1/2`.
+Elementary eigenvector differentiation gives
+
+```text
+||D_C Pi[E]||_F <=sqrt(2)||E||_op/d,
+||D_C^2 Pi[E,E]||_F <=12||E||_op^2/d^2.
+```
+
+For the second bound, in an eigenbasis put
+`v_b=E_b1/(c_1-c_b)`, `v_1=0`. The second normalized eigenvector
+derivative satisfies
+`w_1=-|v|^2` and
+`w_b=2[(Ev)_b-E_11 v_b]/(c_1-c_b)` for `b!=1`.
+Then `Pi''=w tensor e_1+e_1 tensor w+2v tensor v`;
+`|v|<=||E||_op/d` and `|w_perp|<=4||E||_op^2/d^2` give the
+displayed constant. This only uses the gap from the top eigenspace;
+the two lower eigenvalues may coincide.
+
+Since `G>=0`, `||G||_op<=tr G` and
+`tr(H^(-1)G)>=tr G/a_1`. For the gradient increments,
+`||partial_j C||_op<=a_1||H^(-1/2)(partial_j C)H^(-1/2)||_F`.
+The preceding estimates therefore imply, on `Omega`,
+
+```text
+||D Pi||_F <=3 J/eta+48nu F,
+sum_j ||partial_j Pi||_F^2 <=2F.
+```
+
+The second inequality also follows directly from the frame decomposition.
+The entropy identity pays the complete geometric drift and noise:
+
+```text
+eta integral_0^t integral_Omega ||D Pi||_F <=48E0,
+eta integral_0^t integral_Omega 2nu sum_j ||partial_j Pi||_F^2 <=4E0.
+```
+
+Along the actual backward characteristic, Itô's formula has drift
+`-D Pi` and noise coefficient `sqrt(2nu)grad Pi`, up to an exit from
+the simple-eigenvalue region. The last two estimates therefore control
+its stochastic drift and quadratic variation **after integration over
+receiver positions**. The common-noise flow preserves volume. These
+are not bounds for a worst receiver or a controlled sampling density,
+and no free endpoint bound is asserted across arbitrary spectral-gap
+exits and re-entries.
+
+### Scope, checks and the next physical estimate
+
+`ViscousMemoryEntropy` certifies eight scalar statements: the initial
+entropy, its bounds and first two derivatives, the eigenvalue-sum bounds,
+the exact source balance, and the two orientation coefficients. The
+matrix calculus, complete projector estimates and actual NS
+space-time identities above are analytic. In particular, the formal
+module does not yet construct the stochastic matrix process.
+
+The exact checker uses the complete unforced shear histories starting
+from `u0=(3(sin y+alpha cos y),0,cos(2y))`, `alpha=0,1`. Here
+`q=exp(-nu t)`, the velocity evolves by the heat equation, and
+`C=heat_t(u0 tensor u0)-u(t) tensor u(t)` exactly. Fluid and memory
+pressure are zero throughout this class. The checks keep every Fourier
+mode and differentiate the determinant polynomial independently of
+the inverse-matrix formula. At `q=1/2,3/4`, `nu=1/5`, `eta=1`,
+they verify the local reserve balance, total energy-plus-memory mass,
+matrix positivity, spatial and source turning payments, and the full
+projector drift/noise bounds. At `alpha=0` the memory gradient cost at
+the receiver is entirely due to orientation. For `alpha=1` the
+source-induced turning is also nonzero. The initial case `q=1` checks
+the entropy identity through the completely repeated memory eigenvalue;
+no principal direction is assigned there. The independent symbolic
+three-dimensional projector derivatives satisfy the differentiated
+commutation, idempotency and trace identities through second order.
+
+The memory's principal direction is not identified with the vorticity
+direction. Turning of this memory is only one part of the geometry
+that must enter the signed nearby-pressure estimate. Spatially
+integrated cost can concentrate, so the above budget does not provide
+the controlled-history bound for `B_near` in the preceding section.
+Both the pressure/vorticity comparison and receiver concentration
+remain obligations; they may need to be controlled jointly.
+
+For forced fluid the same calculation adds `2u.f` to the local balance
+and cumulative force work to the global allowance. Finite-work forced
+examples can therefore obey this geometric budget. It is not, by
+itself, an obstruction to their realization or an unforced regularity
+argument. Any continuation application must use the rest of the
+actual unforced parent equations, including the signed pressure terms.
+
+```sh
+python3 -O labs/viscous_memory_entropy.py
+```

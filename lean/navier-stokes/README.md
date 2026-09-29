@@ -409,6 +409,29 @@ NS time jets check the equations and trace conservation through two time
 derivatives. Nearby memory pressure, the transport commutator, and the
 remaining geometric gradients still require a signed history bound.
 
+`MettapediaNS.ViscousMemoryEntropy` supplies scalar certificates for a
+nonnegative reserve on those actual memory histories. For fixed `eta>0`,
+add `integral [tr C-eta log det(I+C/eta)]` to kinetic energy. The analytic
+PDE balance shows that its decrease pays both
+`2nu eta tr((eta I+C)^(-1) G)` and the nonnegative matrix gradient cost
+`nu eta sum_j ||(eta I+C)^(-1/2) (partial_j C) (eta I+C)^(-1/2)||_F^2`.
+The total payment plus the terminal reserve is exactly the initial
+kinetic energy, so this resource is not reset at history boundaries.
+
+Where the largest regularized memory eigenvalue is at least twice the
+second, the same cost controls the principal-direction projector's
+spatial gradients and complete backward stochastic drift, including
+diffusion. The corresponding analytic spacetime bounds have constants
+`4E0/eta` for its noise quadratic variation and `48E0/eta` for its
+parabolic drift. These are integrated over space; they do not bound
+arbitrary individual or controlled receivers. The memory direction is
+also not identified with the vorticity direction. The exact lab
+`viscous_memory_entropy.py` checks the entropy balance, pressure and
+projector formulas on complete unforced shear histories. Scalar entropy
+and orientation coefficients are Lean-certified; the actual matrix/PDE
+history theorem is analytic. Its remaining consumer is the signed
+nearby-pressure/vorticity estimate, with receiver concentration retained.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
