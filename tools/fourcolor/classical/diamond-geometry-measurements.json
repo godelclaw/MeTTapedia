@@ -1,0 +1,150 @@
+{
+  "status": "kernel checked",
+  "completed_utc": "2026-09-29T09:18:50.997508+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "gate": "lake build kernelConfigurationFamilies",
+  "working_directory": "lean/fourcolor-classical",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ExecutableConfiguration",
+      "source_sha256": "54a033b54d91595a92616c2caaf5066b90300430008fb9ed03e329f016e295f5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.015,
+      "olean_bytes": 424736,
+      "olean_sha256": "1ef0d8651050737c89cea7ed268386778bb1a889d1e00ebab77f139333e89336",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ExecutableConfiguration.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ConfigurationTable",
+      "source_sha256": "f9c600cb84f24398c1efdec09bf1e7aec4041ea351482f6343d0dd24bbae1e6b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.84,
+      "olean_bytes": 98216,
+      "olean_sha256": "8b802051d707f350255e0bcca09e449375787e41b4e88f8b7e844da0ffc8ffee",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationTable.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ConfigurationRealization",
+      "source_sha256": "d3aa8700e218844b917fc8d2d362a4fc50995d1e77a906e86fa3a76fc0b9fabe",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.919,
+      "olean_bytes": 216728,
+      "olean_sha256": "5e29c5ec2221e907e1f4ebcf90a6e7e31e3a6223e8374ffed575a7b52ca1ab2b",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationRealization.lean"
+    },
+    {
+      "module": "MettapediaFourColor.ConfigurationFaceGraph",
+      "source_sha256": "15b434756af441024b26a84c2d4b209ba05331b82c65e87cd69bcbf87f715a9b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.008,
+      "olean_bytes": 361192,
+      "olean_sha256": "77c505955a69f5a1238042d0042f818a7fd7fbd81bf0609a932021b3fdc73900",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ConfigurationFaceGraph.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondConfigurations",
+      "source_sha256": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 13.853,
+      "olean_bytes": 453368,
+      "olean_sha256": "78fbceb436c0c47b4099b10f2ebd708c76f6abae93cbbe4416c073215f8c6202",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondInsertion",
+      "source_sha256": "5964a866e2d22aac1afbd87df4e325f747da821f7aafb1f4b9da43211eb0a994",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.964,
+      "olean_bytes": 235256,
+      "olean_sha256": "3e4cf040fc18487a12f4c8e7b1d81097dd7e8f5a3722714cfdf4556a29a35f55",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertion.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondInsertionGSLT",
+      "source_sha256": "f893bf9378f61d1776e8ab40fa974dca879231cc5c5aece758816c2386da0355",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.737,
+      "olean_bytes": 173256,
+      "olean_sha256": "74bdb223608e4e8fc9d5a50f18afc190cea0dcb2dc69d060ca63eb0cf1ca8608",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionGSLT.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondInsertionAudit",
+      "source_sha256": "0079bcbd61637e44414f3c28f82356018ac1c48e13c3e99d4afac17e5ebd1ccf",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.32,
+      "olean_bytes": 3800,
+      "olean_sha256": "b36c49ddc661781dcae7fb983831249e64969e7429dcd069e97359ac083e14bd",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondInsertionAudit.lean"
+    }
+  ],
+  "total_frontend_wall_seconds": 40.656,
+  "timing_scope": "Fresh elaboration, kernel checking and serialization of the eight listed modules; prepared reference, Mathlib and Mettapedia dependencies were reused.",
+  "audit": {
+    "roots": 28,
+    "combined_dependency_closure": 7651,
+    "permitted_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "forbidden_dependency_prefixes": [
+      "FourColor.Bulk",
+      "FourColor.Reduce",
+      "FourColor.CompositionalComplete",
+      "FourColor.ClassicalAssembly",
+      "FourColor.fourColorTheorem",
+      "FourColor.reducibility",
+      "FourColor.reducible_all"
+    ]
+  },
+  "mathematical_scope": [
+    "An executable R/U/Y/H decoder equals the actual reference pointed hypermap, including the reference dart.",
+    "Exact numbered hypermaps, face graphs, cyclic neighbour lists and both ring orientations for configurations 1, 2 and 4.",
+    "In each configuration, the four vertices outside the ring induce the same explicitly named diamond graph.",
+    "Graph isomorphisms and complete cyclic-star and outer-ring updates for the boundary-triangle insertions 1 to 2 and 2 to 4.",
+    "Both colouring branches are equivalent to all actual target reference colourings; their composition covers configuration 4 exactly.",
+    "A GSLT reconstruction route retains the full alternative tree and is exact under any terminal predicate.",
+    "A concrete checked starting colouring has a complete successful reconstruction history and an actual reference-map output."
+  ],
+  "geometric_configurations": [
+    1,
+    2,
+    4
+  ],
+  "boundary_insertions": [
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      4
+    ]
+  ],
+  "independent_reducibility_checks_replaced": 0,
+  "catalogue_entries_removed": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "remaining_obligations": [
+    "Transport the required Kempe coclosure and contraction obligations through the full colouring alternatives.",
+    "Replace actual reducibility dependencies in the complete assembly and rerun its audit.",
+    "Prove any additional coverage or strict-descent theorem required for a smaller unavoidable catalogue."
+  ],
+  "regression_gate": {
+    "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "working_directory": "lean/mettapedia",
+    "exit_code": 0,
+    "completed_utc": "2026-09-29T09:02:35Z",
+    "reported_jobs": 11005,
+    "scope": "Existing Mettapedia lane and checkpoint; no source changes in that package."
+  }
+}

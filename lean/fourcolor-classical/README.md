@@ -159,6 +159,25 @@ distinct measurements; imported dependencies are reused by the final gate.
 
 ## What is preserved
 
+The separate configuration-family gate is:
+
+```sh
+lake build kernelConfigurationFamilies
+```
+
+It reuses prepared reference artifacts and checks eight modules without native
+code generation. `ExecutableConfiguration` proves its executable decoder equal
+to the reference pointed map; `DiamondConfigurations` supplies exact finite
+presentations of configurations 1, 2 and 4. `DiamondInsertion` proves both
+boundary-triangle insertions, including cyclic order, ring order and all
+colouring alternatives. `DiamondInsertionGSLT` composes those alternatives into
+actual reference colourings. `DiamondInsertionAudit` checks their dependency
+closures and excludes classical certificates and complete theorem endpoints.
+The [worked example](../../papers/benxiv/fourcolor-compositional/diamond-example/README.md)
+explains the remaining reducibility obligation. No catalogue check is removed
+by this geometry and semantics milestone. Receipts are saved in
+`.lake/family-audit/family-results.json`.
+
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as
 GSLT witnesses and glues them into an explicit ambient colouring. The graph

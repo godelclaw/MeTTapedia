@@ -1,6 +1,6 @@
 # Compositional Four Colour: proof plan and current results
 
-Updated 28 September 2026. Complete assembly: `b99eaf006`.
+Updated 29 September 2026. Complete assembly: `b99eaf006`.
 
 The open-piece idea in Goertzel and Fable's compositional note now has a
 kernel-checked realization: graph constructions carry actual colouring
@@ -31,6 +31,12 @@ Every literal five-port tube of at least four rings has the four-ring boundary
 relation. Strict physical shortening and GSLT composition preserve that
 relation in arbitrary surrounding contexts. This reuses the earlier finite
 certificate and does not depend on the classical Four Colour theorem.
+
+The [diamond insertion example](diamond-example/README.md) connects the local
+insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
+ordered rings and both colouring branches are now proved in Lean. A GSLT
+reconstruction route covers every colouring of configuration 4; transport of
+reducibility remains the next step.
 
 ## The nearest completed version of the plan
 
@@ -145,7 +151,7 @@ of that baseline, with every replacement measured.
 | [Facial sweeps][sweeps] and [boundary changes][face-boundary] | Construct actual face-addition histories and prove exact contour updates. Adding a face of length `l` changes boundary degree imbalance by `l−6`. These results support geometric research; the complete assembly currently reuses the reference discharging proof. |
 | [Kempe channel recomposition][kempe] | Computes the changed channels by composing connectivity through retained internal attachments. External boundary mates alone are insufficient. |
 | [Finite physical fork code][fork] | Exact finite reflection for supplied decompositions. Its usefulness for a new independent proof still requires an adequate width supply and the corresponding base audit. |
-| [Boundary-triangle alternatives][alternatives] | Four-colourings of a subdivided triangle edge split exactly into an old-colouring branch and a contracted-colouring branch with two fresh-colour choices. The theorem works under arbitrary extra constraints; planar reducibility transport to catalogue entries remains to be proved. |
+| [Boundary-triangle alternatives][alternatives] | Four-colourings split exactly into old-graph and contracted-graph branches. The [diamond instances](diamond-example/README.md) now retain the actual reference graphs, cyclic orders and rings, and reconstruct every target colouring through a GSLT route. Reducibility transport remains open. |
 | [MeTTa premise routes][metta] | A verified consumer outside Four Colour: `deduplicate_freshness_iff` transports compatible premise answers through surrounding routes. A shared-binding counterexample records why separate satisfiability is insufficient. |
 
 Adjacency matrices in the representation library encode graph incidence.
@@ -195,11 +201,13 @@ are different metrics.
 
 The next research milestone is a uniform lemma replacing a family of
 configuration checks while preserving the completed theorem. The current
-triangle-subdivision work supplies the exact two-branch colouring semantics.
-The next three obligations are:
+triangle-subdivision work now connects the exact two-branch colouring semantics
+to the actual diamond configurations. The integration obligations are:
 
-1. Prove the chosen catalogue instances realize that graph operation with
-   their actual ring coordinates. Existing comparisons are program evidence.
+1. **Proved:** configurations 1, 2 and 4 realize the two graph operations with
+   their actual cyclic orders and ring coordinates. The composed equivalence
+   and GSLT route cover every configuration-4 colouring. See the
+   [diamond example](diamond-example/README.md).
 2. Transport reducibility through **both** colouring branches, retaining the
    required Kempe and planar-exterior hypotheses. A proof restricted to one
    branch is insufficient.

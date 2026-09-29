@@ -16,6 +16,19 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check exact graph semantics for families of reference configurations. -/
+target kernelConfigurationFamilies pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/family-audit",
+        "--library-output", ".lake/build/lib/lean"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check the adapters and their axiom audit without emitting native C code. -/
 @[default_target] target kernelAdapters pkg : Unit := do
   let env ← getAugmentedEnv
