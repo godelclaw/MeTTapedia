@@ -96,8 +96,8 @@ def extend (coloring : G.Coloring (Fin 4)) : (subdivide G a b c).Coloring (Fin 4
 @[simp] theorem extend_none (coloring : G.Coloring (Fin 4)) :
     extend G a b c coloring none = fourth (coloring a) (coloring b) (coloring c) := rfl
 
-def restrict (coloring : (subdivide G a b c).Coloring (Fin 4))
-    (distinct : coloring (some a) ≠ coloring (some b)) : G.Coloring (Fin 4) :=
+def restrict {C : Type*} (coloring : (subdivide G a b c).Coloring C)
+    (distinct : coloring (some a) ≠ coloring (some b)) : G.Coloring C :=
   .mk (fun v => coloring (some v)) (by
     intro x y adjacent
     by_cases h : removed a b x y

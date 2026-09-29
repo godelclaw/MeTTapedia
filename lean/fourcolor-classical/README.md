@@ -144,17 +144,18 @@ It then checks `DiamondFamilyReducibility`, `Complete` and `CompleteAudit`.
 The compositional theorem does
 not import the original unconditional theorem or the superseded arity-nine,
 arity-ten and arity-eleven presentations. Its audit follows the dependencies
-of the graph, construction and sweep endpoints, requiring 632 reference
-configuration certificates, the new joint diamond repair, all seven arity proofs,
+of the graph, construction and sweep endpoints, requiring 631 reference
+configuration certificates, split repair from configuration 2 to configuration 1,
+the joint configuration-4 repair, all seven arity proofs,
 the 66 named shared hubcaps, the
 periodic and reflected hubcap lemmas, and the actual geometric reconstruction.
-It rejects the original configuration-4 certificate from each endpoint's
+It rejects the original configuration-1 and configuration-4 certificates from each endpoint's
 dependency closure, rejects the 236 superseded checker declarations, and checks imported public
 declarations against `propext`,
 `Classical.choice` and `Quot.sound`.
 
 The driver validates the source and artifact hashes of the 87 prepared adapter
-and presentation modules and the 21 configuration-family modules.
+and presentation modules and the 24 configuration-family modules.
 Final source hashes, artifact hashes, exit statuses
 and frontend times are recorded in `.lake/complete-audit/complete-results.json`.
 The original assembly measurement record is
@@ -162,7 +163,9 @@ The original assembly measurement record is
 The [joint repair record](../../tools/fourcolor/classical/diamond-joint-repair-measurements.json)
 records the later family and complete-assembly checks.
 The [summary record](../../tools/fourcolor/classical/diamond-summary-measurements.json)
-records the subsequent common elimination law and its integrated reconstruction.
+records the common elimination law and its integrated reconstruction.
+The [split repair record](../../tools/fourcolor/classical/diamond-split-measurements.json)
+records the subsequent configuration-2-to-1 transfer and dependency replacement.
 The reference replay, shared-presentation builds and final adapter audit are
 distinct measurements; imported dependencies are reused by the final gate.
 
@@ -174,7 +177,7 @@ The separate configuration-family gate is:
 lake build kernelConfigurationFamilies
 ```
 
-It reuses prepared reference artifacts and checks twenty-one modules without native
+It reuses prepared reference artifacts and checks twenty-four modules without native
 code generation. `ExecutableConfiguration` proves its executable decoder equal
 to the reference pointed map; `DiamondConfigurations` supplies exact finite
 presentations of configurations 1, 2 and 4. `DiamondInsertion` proves both
@@ -207,8 +210,15 @@ combines the law with exact contract elimination. Its eight-root audit excludes
 existing configuration certificates and global Kempe fixed-point computations.
 The [worked example](../../papers/benxiv/fourcolor-compositional/diamond-example/README.md)
 explains the repair and its remaining family-extension obligations.
-The complete assembly replaces one reference certificate dependency with it.
-Shared reference modules still load the old declaration; this is not a claimed
+`KempeBoundarySplit` proves that splitting an edge colour into two distinct
+nonzero colours preserves Kempe closure of the joint boundary relation.
+`DiamondSplitRepair` uses that law to transfer configuration 2's existing
+D-repair to configuration 1, reconstructing actual graph colourings and
+validating the specified contract. Its eight-root audit excludes configuration
+1's certificate and the complete theorem, and requires the retained base.
+The complete assembly replaces two reference certificate dependencies: one by
+this transfer and one by the coupled repair.
+Shared reference modules still load the old declarations; this is not a claimed
 build-time or artifact-size saving. Receipts are saved in
 `.lake/family-audit/family-results.json`.
 
@@ -319,9 +329,11 @@ The complete assembly additionally consumes the arity-nine sharing, where
 11,363 checks become 11,132, with 218 separate finite identity or classification
 checks. The unconditional endpoints consume all 231 replacements.
 
-All 633 configurations and all 32 discharging-rule labels remain. No new
-rule replacing a whole catalogue family is claimed. Configuration 4 now uses
-the coupled boundary repair; the other 632 reference certificates remain.
+All 633 configurations and all 32 discharging-rule labels remain. Configuration
+2's base certificate now supplies both its own obligation and configuration
+1's through the split law. Configuration 4 uses the coupled boundary repair;
+631 reference certificate dependencies remain. A single rule covering all three
+diamonds or arbitrary longer fans remains open.
 Exact counts
 and measurement scope are recorded in the
 [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).

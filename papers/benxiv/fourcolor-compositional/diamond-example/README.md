@@ -11,8 +11,10 @@ configuration 2  ── insert in a boundary triangle ──▶  configuration 4
 These correspondences, their boundary orders and their complete colouring
 semantics are now kernel-checked. The coupled boundary law now proves
 configuration 4 reducible and replaces its original certificate dependency
-in the complete proof. Extending that law to a broader family remains the
-next step in the compositional programme.
+in the complete proof. A general boundary-split law also transfers
+configuration 2's repair to configuration 1. Their two obligations now share
+one base certificate. A common rule also covering configuration 4, and a
+justified broader family, remain the next steps.
 
 ## The local law
 
@@ -186,7 +188,47 @@ exterior information or a different reduction principle. The next positive
 target remains a common structural law for zero or one insertion on each side,
 which includes configurations 1, 2 and 4.
 
-## From the boundary law to reducibility
+## A base repair shared through boundary splitting
+
+For a Kempe-closed exterior relation `Q`, define its split relation by
+
+```
+Split(Q) = { a :: b :: t | a ≠ 0, b ≠ 0, a ≠ b, Q((a+b) :: t) }.
+```
+
+Addition is the Klein four-group operation. [KempeBoundarySplit][split-law]
+proves that `Split(Q)` is Kempe-closed at every boundary length. Its chromogram
+transformation lifts the original matching constraint, and every resulting
+answer collapses to a valid original answer. Keeping the two colours together
+is essential: their sum is the colour seen by the old exterior.
+
+Suppose a larger piece repairs every proper zero-sum trace, and each successful
+split colouring reconstructs in the smaller piece. The theorem
+`repairs_collapse` then transfers repair to the smaller piece for every
+Kempe-closed exterior. This is a uniform implication with explicit hypotheses;
+it neither assumes all target colourings lie in the old-graph branch nor
+claims that arbitrary insertion preserves reducibility in the forward direction.
+
+[DiamondSplitRepair][split-repair] supplies the concrete consumer:
+
+1. Configuration 2's existing rank planes cover all 546 proper seven-port
+   traces. Its verified checker supplies the base repair.
+2. In an actual configuration-2 colouring, the first two edge colours are
+   `a = k(0)+k(1)` and `b = k(1)+k(2)`. The split relation enforces `a ≠ b`,
+   hence `k(0) ≠ k(2)`. Deleting vertex 1 and restoring the old boundary edge
+   therefore gives a genuine configuration-1 colouring. Its trace begins
+   with `a+b`; the other ports and their order are retained exactly.
+3. The reference contract of configuration 1 is valid and every contract trace
+   is proper. The transferred repair therefore establishes its reducibility.
+   The complete assembly consumes this result through the existing embedded
+   contraction and reconstruction theorem, without its old `Bulk.Cfg000` proof.
+
+The direction matters: graph construction is `1 → 2`, while this repair proof
+transfers `2 → 1`. Configuration 2 remains the retained base. Configuration 4's
+joint contract can identify the old endpoints, giving two equal edge colours;
+that is outside the split relation above. Its coupled repair remains necessary.
+
+## From the coupled boundary law to reducibility
 
 [DiamondBoundaryRepair][boundary-repair] proves a law for any predicate on
 eight-edge traces that contains twenty-three specified terminal patterns.
@@ -223,9 +265,10 @@ the two insertion alternatives.
 
 [DiamondFamilyReducibility][family-range] inserts this result into the full
 633-case range. The [complete endpoint audit][complete-audit] requires the new
-law and rejects every dependency on the original `Bulk.Cfg003` certificate.
-The other 632 reference certificate dependencies remain. Shared reference
-modules still load the old declaration; runtime and artifact-size savings
+law and the split transfer, and rejects every dependency on the original
+`Bulk.Cfg000` and `Bulk.Cfg003` certificates. The other 631 reference
+certificate dependencies remain. Shared reference modules still load the
+old declarations; runtime and artifact-size savings
 are not claimed.
 
 ## Compatible histories
@@ -248,9 +291,10 @@ colouring produced at its end.
 
 ## Scope and remaining work
 
-One reference certificate dependency is replaced, while all 633 catalogue
-entries remain. The result closes the coupled configuration-4 obligation.
-It does not yet give one rule replacing the checks for all three configurations,
+Two reference certificate dependencies are replaced, while all 633 catalogue
+entries remain. Configuration 2 supplies its own obligation and configuration
+1's through a uniform transfer; configuration 4 uses the coupled law.
+This does not yet give one rule replacing the checks for all three configurations,
 or a valid contraction rule for arbitrarily long insertion fans. Those are
 separate family and geometric coverage tasks.
 
@@ -270,7 +314,11 @@ record the integrated replacement. Run
 `lake build kernelConfigurationFamilies` in the classical package after
 preparing its dependencies as described in the [package guide][package].
 The [summary measurements][summary-measurements] record the subsequent common-law
-integration. No additional configuration-certificate replacement is credited.
+integration, which itself replaced no additional certificate. The
+[split measurements][split-measurements] record the later transfer and the
+additional dependency it replaces. The eight-root [split audit][split-audit]
+requires configuration 2's base proof, verifies witness reconstruction and
+excludes configuration 1's original certificate.
 
 [alternatives]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryTriangleAlternatives.lean
 [elimination]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DiamondBoundaryElimination.lean
@@ -301,3 +349,7 @@ integration. No additional configuration-certificate replacement is credited.
 [contract-measurements]: ../../../../tools/fourcolor/classical/diamond-contract-measurements.json
 [measurements]: ../../../../tools/fourcolor/classical/diamond-geometry-measurements.json
 [package]: ../../../../lean/fourcolor-classical/README.md
+[split-law]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeBoundarySplit.lean
+[split-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondSplitRepair.lean
+[split-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondSplitRepairAudit.lean
+[split-measurements]: ../../../../tools/fourcolor/classical/diamond-split-measurements.json

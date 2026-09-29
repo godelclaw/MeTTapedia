@@ -1,7 +1,8 @@
 # Compositional Four Colour: proof plan and current results
 
 Updated 29 September 2026. Original complete assembly: `b99eaf006`.
-The current assembly additionally consumes the joint diamond boundary repair.
+The current assembly additionally consumes joint diamond repair and a general
+boundary-split law transferring repair from configuration 2 to configuration 1.
 
 The open-piece idea in Goertzel and Fable's compositional note now has a
 kernel-checked realization: graph constructions carry actual colouring
@@ -23,8 +24,8 @@ earlier attempts; its older sections are historical snapshots.
 
 For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
 semantic bounds, a general reflection theorem, and an audited replacement in
-the finished proof. It illustrates discharging compression; the next
-configuration-family reducibility milestone remains separate.
+the finished proof. It illustrates discharging compression; the diamond example
+below now also shares one base repair between two configuration obligations.
 
 For a complete example from the corridor idea, see
 [one boundary certificate for an infinite tube family](tube-example/README.md).
@@ -39,7 +40,9 @@ ordered rings, specified contracts and both colouring branches are now proved
 in Lean. A GSLT
 reconstruction route covers every colouring of configuration 4. The joint
 boundary law now proves that configuration reducible and replaces its original
-certificate dependency in the complete proof. A broader family rule remains open.
+certificate dependency in the complete proof. A general split law now transfers
+configuration 2's existing repair to configuration 1, removing the latter's
+separate certificate dependency. One rule covering all three remains open.
 
 ## The nearest completed version of the plan
 
@@ -64,8 +67,10 @@ The complete dependency chain is:
 
 ```mermaid
 flowchart TD
-  C[632 reference reducibility certificates] --> R[Select compatible disk and exterior colourings]
-  J[Joint diamond boundary repair] --> R
+  C[631 reference reducibility certificates] --> R[Select compatible disk and exterior colourings]
+  C --> B[Boundary split transfers configuration 2 repair to configuration 1]
+  B --> R
+  J[Joint diamond boundary repair for configuration 4] --> R
   R --> G[Glue an actual ambient colouring]
   G --> M[No reducible configuration in a minimal counterexample]
   D[Discharging coverage with shared charge proofs] --> N[No minimal counterexample]
@@ -155,7 +160,7 @@ of that baseline, with every replacement measured.
 | [Facial sweeps][sweeps] and [boundary changes][face-boundary] | Construct actual face-addition histories and prove exact contour updates. Adding a face of length `l` changes boundary degree imbalance by `l−6`. These results support geometric research; the complete assembly currently reuses the reference discharging proof. |
 | [Kempe channel recomposition][kempe] | Computes the changed channels by composing connectivity through retained internal attachments. External boundary mates alone are insufficient. |
 | [Finite physical fork code][fork] | Exact finite reflection for supplied decompositions. Its usefulness for a new independent proof still requires an adequate width supply and the corresponding base audit. |
-| [Boundary-triangle alternatives][alternatives] | Four-colourings split exactly into old-graph and contracted-graph branches. The [diamond instances](diamond-example/README.md) retain actual graphs, cyclic orders and rings, and reconstruct every target colouring through GSLT. The coupled boundary repair replaces configuration 4’s certificate; broader family transport remains open. |
+| [Boundary-triangle alternatives][alternatives] | Four-colourings split exactly into old-graph and contracted-graph branches. The [diamond instances](diamond-example/README.md) retain actual graphs, cyclic orders and rings, and reconstruct every target colouring through GSLT. The coupled boundary repair replaces configuration 4’s certificate. A general split law transfers repair from configuration 2 to configuration 1; wider family transport remains open. |
 | [MeTTa premise routes][metta] | A verified consumer outside Four Colour: `deduplicate_freshness_iff` transports compatible premise answers through surrounding routes. A shared-binding counterexample records why separate satisfiability is insufficient. |
 
 Adjacency matrices in the representation library encode graph incidence.
@@ -193,24 +198,27 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Independent discharging checks at arities 9–11 | 11,363 → 11,132: 231 replaced |
 | Separate finite input identities or classifications | 218, counted separately |
 | Discharging-rule labels retained | 32 |
-| Reference configuration certificate dependencies retained / replaced | 632 / 1 |
-| Uniform configuration-family reducibility replacing catalogue checks | None yet |
+| Reference configuration certificate dependencies retained / replaced | 631 / 2 |
+| Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
+| Common law for configurations 1, 2 and 4 or longer fans | Open |
 | Runtime or artifact-size saving | Not claimed |
 
 The 231 replacements use periodicity, reflection, exchange of paired
 endpoints and shared charge bounds. Their complete consumers are checked in
 [`CompleteAudit`][audit]; they are not merely lemmas beside an unchanged proof.
 The audit also rejects the original unconditional theorem and 236 superseded
-checker declarations. It now requires the joint diamond boundary law and
-excludes the original configuration-4 certificate from the complete endpoint
-dependencies. Shared reference modules still load that old declaration;
+checker declarations. It now requires the joint diamond boundary law and the split transfer, and
+excludes the original configuration-1 and configuration-4 certificates from
+the complete endpoint dependencies. Shared reference modules still load those
+old declarations;
 runtime and artifact-size savings are not claimed. Declaration counts and
 independent-computation savings are different metrics.
 
-The next research milestone is a uniform lemma replacing a family of
-configuration checks while preserving the completed theorem. The current
-triangle-subdivision work now connects the exact two-branch colouring semantics
-to the actual diamond configurations. The integration obligations are:
+The split transfer establishes a first pair sharing one base repair. The next
+research milestone is a common structural rule covering all three diamonds,
+then a justified larger family, while preserving the completed theorem. The
+current triangle-subdivision work connects exact two-branch colouring semantics
+to the actual configurations. The integration obligations are:
 
 1. **Proved:** configurations 1, 2 and 4 realize the two graph operations with
    their actual cyclic orders and ring coordinates. The composed equivalence
@@ -227,11 +235,15 @@ to the actual diamond configurations. The integration obligations are:
    actual terminal colourings and retaining both ordinary colouring branches.
    Those terminal witnesses are now reconstructed through the common
    boundary-summary law, which the complete endpoint audit requires.
-3. **Integrated:** configuration 4's original certificate dependency is replaced
-   in the complete assembly, and its endpoint audit verifies the replacement.
-   The next task is to generalize this coupled law to additional family members
-   with justified contracts, then prove the required geometric supply.
-   Configurations 1 and 2 still use their reference certificates.
+3. **Integrated:** the complete assembly replaces configuration 4's original
+   certificate with the joint law. Configuration 1 now inherits repair from
+   configuration 2 via boundary splitting, with actual witness reconstruction
+   and a validated strict-reduction contract. The audit excludes both original
+   certificate dependencies and requires the retained configuration-2 base.
+   This transfer uses the distinct-endpoint branch with a proved Kempe-closed
+   lift; it does not discard the equal-endpoint branch without justification.
+   The next task is a common law also covering the coupled configuration-4
+   contract, then a larger family with proved geometric supply.
 
 The tube example already gives a complete physical reduction and compositional
 normalization for its own infinite family. To count as a classical

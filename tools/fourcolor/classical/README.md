@@ -195,6 +195,16 @@ count does not count reducibility proofs, and the failed star inclusion does
 not refute a uniform diamond-family theorem or other ways of choosing compatible
 colourings. This experiment removes no configuration or independent proof check.
 
+The later [boundary-split result](../../../papers/benxiv/fourcolor-compositional/diamond-example/README.md)
+uses a different direction. Splitting a Kempe-closed exterior relation remains
+Kempe-closed, and repair descends when successful graph colourings reconstruct
+after collapse. Configuration 2's retained rank certificate now supplies both
+its own repair and configuration 1's through that law. Together with the
+separate configuration-4 joint repair, this leaves 631 reference certificate
+dependencies in the complete proof. All 633 catalogue entries remain.
+`diamond-split-measurements.json` records the source hashes, gates, dependency
+audit and costs; a common repair rule covering all three diamonds remains open.
+
 With the original configuration file and the pinned reference's generated
 `cpc.py` inputs, reproduce the results with Python 3.9 or newer. The independent
 template verifier also requires NetworkX (the recorded run used version 2.4).

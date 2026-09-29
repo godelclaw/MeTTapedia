@@ -18,7 +18,8 @@ MODULES = ["ExecutableConfiguration", "ConfigurationTable", "ConfigurationRealiz
            "ConfigurationContract", "DiamondContract", "DiamondContractAudit",
            "DiamondJointContract", "DiamondKempeBoundary", "DiamondKempeBoundaryAudit",
            "KempeAnswerComposition", "DiamondBoundaryRepair", "DiamondJointRepair",
-           "DiamondJointRepairAudit"]
+           "DiamondJointRepairAudit", "KempeBoundarySplit", "DiamondSplitRepair",
+           "DiamondSplitRepairAudit"]
 
 
 def main():

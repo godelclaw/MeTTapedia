@@ -2,7 +2,7 @@
 
 This is the canonical modern Lean home for the godelclaw Four Color work.
 
-## Current proof plan — 28 September 2026
+## Current proof plan — 29 September 2026
 
 Start with the [compositional proof-plan guide](../../../../../papers/benxiv/fourcolor-compositional/README.md).
 It connects Goertzel and Fable's original three-level argument to the current
@@ -13,12 +13,15 @@ now proves four-colourability for finite simple graphs with noncrossing plane
 drawings and supplies compatible GSLT colouring witnesses for exact
 constructions of every bridgeless spherical cubic source map. The checked
 root is [MettapediaFourColor.Complete](../../../../fourcolor-classical/MettapediaFourColor/Complete.lean).
-All 633 classical configuration certificates remain; 231 independent
-discharging computations are replaced by shared proofs.
+All 633 catalogue entries remain. The complete proof retains 631 reference
+configuration certificate dependencies: configuration 1 now inherits repair
+from configuration 2 through a general boundary-split law, and configuration 4
+uses the coupled diamond repair. Shared proofs also replace 231 independent
+discharging computations.
 
 This completes the classical reconstruction. The original uniform
-corridor/finite-base mechanism and the first uniform replacement of a family
-of configuration checks remain research questions. The GSLT, graph and
+corridor/finite-base mechanism and uniform repair covering all three diamonds
+or broader families remain research questions. The GSLT, graph and
 MeTTa results have their own verified consumers, listed in the guide.
 
 ## Independent corridor route — checkpoint of 22 September 2026
