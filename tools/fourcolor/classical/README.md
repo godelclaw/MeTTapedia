@@ -1036,3 +1036,46 @@ are program checks, not a Lean embedding adapter. The two-sided port
 placement, an exterior operation and strict map reduction remain separate
 obligations. `cycle-seam-measurements.json` records the theorem audit; no
 additional classical certificate or catalogue savings are claimed.
+
+## Physical lobe seams and a joint pentagonal patch
+
+The equal-port seam operation deletes two adjacent lobe vertices and joins
+the two cycle ends and the two exterior ends in the inherited rotation.
+Its reconstruction guard requires different colours on the two new edges.
+`lobe_seam_repair_probe.py` checks actual geometry, two independent colouring
+enumerators, two physical Kempe-switch implementations, and reconstruction.
+
+```sh
+python3 tools/fourcolor/classical/lobe_seam_repair_probe.py \
+  --output lobe-seam-repair-probe.json
+python3 tools/fourcolor/classical/pentagonal_lobe_patch_probe.py \
+  --output pentagonal-lobe-patch-probe.json
+```
+
+Of 137 supplied rotations, 103 have an odd shortest lobe. All 103 tested
+smoothings preserve spherical connected bridgeless geometry and remove two
+vertices. Among 59,376 smaller colourings, 348 are trapped away from the
+reconstruction guard: 83 maps admit repair from every smaller colouring,
+and 20 do not at the chosen seam. C30-plantri-1 has 228 smaller colourings,
+96 immediate reconstructions and one Kempe class, with maximum repair
+distance two. The first failure, C36-plantri-35, has 18 trapped colourings;
+six of its sixteen distinct odd first-return lobes instead admit full repair.
+These are finite program results, not a uniform seam theorem.
+
+The larger pentagon-plus-eleven-cycle patch has sixteen cubic internal
+vertices and six ports. The second replay extracts its dual disk, verifies
+the primal/dual colouring bijection, and recognizes the same ordered disk
+in all 29 sampled eleven-lobe cases. It checks 252 colourings and 132 supported
+words among 183 proper zero-sum words. Chromogram closure removes unsupported
+words in two rounds, 51 → 6 → 0. All fourteen ordered six-leaf tree
+replacements fail direct support inclusion.
+
+`PentagonalLobePatch.lean` proves the literal disk's boundary repair for
+every Kempe-closed exterior predicate, with actual colouring witnesses.
+It retains 22 terminal representatives and nine finite cover checks.
+`PentagonalLobePatchAudit.lean` audits four roots / 3,347 dependencies against
+the standard axioms and excludes catalogue certificates and the complete
+theorem. The program compares the exact Lean adjacency and witness data
+against its independently extracted graph. The embedded adapter, a strict
+closed-map replacement and coverage remain unproved. There is no new
+catalogue or certificate saving; see `pentagonal-lobe-patch-measurements.json`.

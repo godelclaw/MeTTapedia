@@ -336,6 +336,50 @@ this placement, an operation on the exterior, and strict reduction within
 the target map class remain required. No catalogue certificate is removed.
 The [measurement record][cycle-seam-measurements] records the proof audit.
 
+## From one seam to a joint patch repair
+
+The equal-port branch suggests deleting the two vertices at an odd lobe's
+exceptional seam. Joining their two cycle ends and their two exterior ends
+decreases the whole map by two vertices. Reconstruction requires different
+colours on the two new edges. The [seam replay][seam-repair-probe] checks this
+operation with two independent colouring and physical-switch implementations.
+Of 103 tested odd seams, 83 admit repair from every smaller colouring and
+20 have trapped classes. For the displayed C30 lobe, the smaller graph has
+228 colourings in one Kempe class; 96 reconstruct directly, and every other
+one reaches those in at most two switches. The first failure has successful
+alternative lobes. These are finite program results, and they refute arbitrary
+seam repair rather than the existence of a successful decomposition.
+
+A larger joint interface gives a positive theorem. Combine the eleven-edge
+lobe with the pentagon on its five-port shore. The resulting cubic patch
+has sixteen internal vertices and six external ports. Its dual disk has
+twelve vertices, six on the boundary. An independent [patch replay][patch-probe]
+checks the primal/dual colouring correspondence and recognizes this same disk,
+including its ordered ring and triangles, in all 29 sampled eleven-lobe cases.
+
+For the literal dual graph, [PentagonalLobePatch][patch] proves:
+
+```text
+Q is Kempe-closed, and contains a proper zero-sum six-port word
+  → some genuine colouring of the disk has its boundary trace in Q.
+```
+
+The successful trace is one shared choice for the disk and exterior. The
+proof has 22 explicit terminal colourings and nine finite answer-cover checks,
+composed through the reference's proved chromogram rule. Independent enumeration
+finds 132 supported words among 183 admissible words; the unsupported set
+shrinks as 51 → 6 → 0. These two closure rounds are not a bound of two physical
+Kempe switches. All fourteen ordered six-leaf tree replacements fail direct
+support inclusion, which explains the need to permit exterior recolouring.
+
+The [four-root audit][patch-audit] checks 3,347 dependency declarations,
+requires actual graph witnesses and cover soundness, and excludes configuration
+certificates and the complete theorem. Only the three standard axioms occur.
+This is a boundary repair theorem for one concrete patch, with arbitrary
+Kempe-closed exteriors. Formal embedded recognition, strict replacement and
+geometric coverage remain open. It adds no catalogue or certificate savings.
+The [measurement record][patch-measurements] separates these claims.
+
 ## Scope and verification
 
 This establishes an infinite family reduction from the corridor idea,
@@ -399,3 +443,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [cycle-seam-measurements]: ../../../../tools/fourcolor/classical/cycle-seam-measurements.json
 [lobe-probe]: ../../../../tools/fourcolor/classical/alternating-lobe-probe.json
 [lobe-measurements]: ../../../../tools/fourcolor/classical/alternating-lobe-measurements.json
+[seam-repair-probe]: ../../../../tools/fourcolor/classical/lobe-seam-repair-probe.json
+[patch]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePatch.lean
+[patch-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePatchAudit.lean
+[patch-probe]: ../../../../tools/fourcolor/classical/pentagonal-lobe-patch-probe.json
+[patch-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-patch-measurements.json

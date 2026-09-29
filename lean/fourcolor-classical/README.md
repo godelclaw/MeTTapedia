@@ -252,6 +252,24 @@ Shared reference modules still load the old declarations; this is not a claimed
 build-time or artifact-size saving. Receipts are saved in
 `.lake/family-audit/family-results.json`.
 
+`PentagonalLobePatch` supplies a separate boundary repair for the literal
+twelve-vertex dual disk of a pentagon surrounded by an eleven-edge lobe.
+Its six-port trace can be made compatible with any Kempe-closed exterior
+containing a proper zero-sum input. The proof produces an actual graph
+colouring, using 22 terminal witnesses and nine finite answer-cover checks.
+`PentagonalLobePatchAudit` checks four roots and 3,347 dependency declarations,
+requires witness construction and cover soundness, and excludes configuration
+certificates and complete theorem endpoints. It is checked with:
+
+```sh
+lake build MettapediaFourColor.PentagonalLobePatchAudit
+```
+
+The [worked lobe example](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
+separates this kernel theorem from the independent embedded-patch recognition
+and seam tests. Formal geometric recognition and strict reduction remain open.
+The complete assembly is unchanged by this boundary theorem.
+
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as
 GSLT witnesses and glues them into an explicit ambient colouring. The graph

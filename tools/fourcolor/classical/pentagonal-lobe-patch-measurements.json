@@ -1,0 +1,132 @@
+{
+  "status": "Kernel-checked boundary repair with actual colourings of the literal dual disk; embedded recognition and physical seam tests remain independent program evidence.",
+  "completed_utc": "2026-09-29T20:39:28+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.PentagonalLobePatch",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePatch.lean",
+      "source_sha256": "5c6add689b0e36f54fbb254621a0afa1a437068bc1fbd2f94aefdd722443caa1",
+      "olean_sha256": "d1bad85dabc734a679b6a03d486f1915e623010d64612ff9f880fb40bec1c60e",
+      "olean_bytes": 372640,
+      "reported_build_seconds": 29.0
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobePatchAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobePatchAudit.lean",
+      "source_sha256": "61dfb8f7798036c36933001c002037136031bdad68aa2025d9c4c30ebb90f066",
+      "olean_sha256": "ed035617985faa697e5a37b73cacc1ceaa3a7f0f3cbab7df5c72553ec39e7888",
+      "olean_bytes": 3696,
+      "reported_build_seconds": 1.9
+    }
+  ],
+  "audit": {
+    "roots": [
+      "FourColor.PentagonalLobePatch.boundary_repair",
+      "FourColor.PentagonalLobePatch.terminal_supported",
+      "FourColor.PentagonalLobePatch.repair",
+      "FourColor.PentagonalLobePatch.compatible_colouring"
+    ],
+    "combined_dependency_closure": 3347,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Named roots and their full dependency closures, not every imported declaration.",
+    "required_dependencies": [
+      "FourColor.KempeAnswerComposition.of_answers",
+      "FourColor.coversRec_sound",
+      "FourColor.PentagonalLobePatch.colouring",
+      "FourColor.PentagonalLobePatch.graph"
+    ],
+    "excluded_dependencies": "Configuration certificates, complete Four Colour endpoints, and the diamond configuration/family reducibility proofs."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobePatch",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 1337,
+      "exit_code": 0
+    },
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobePatchAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 1338,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "domain": "Literal twelve-vertex disk with six ordered boundary vertices; all Kempe-closed predicates on its full boundary trace.",
+    "conclusion": "Every proper zero-sum six-port input in the exterior predicate admits an actual disk colouring whose trace remains in that same predicate.",
+    "terminal_witnesses": 22,
+    "finite_answer_cover_checks": 9,
+    "colour_permutation_input_classes": 31,
+    "maximum_composed_cover_depth": 2,
+    "support_and_witnesses_proved": true,
+    "counts_or_executable_history_transport_proved": false,
+    "embedded_lobe_adapter_proved": false,
+    "closed_map_strict_reduction_proved": false
+  },
+  "independent_program_checks": [
+    {
+      "command": "python3 tools/fourcolor/classical/lobe_seam_repair_probe.py --output tools/fourcolor/classical/lobe-seam-repair-probe.json",
+      "record": "lobe-seam-repair-probe.json",
+      "record_sha256": "b305105c0e6fdba73ab91393d79c5cc1b7ac2a29b0bf19288d457142faa5e38c",
+      "script_sha256": "e5eccae937d188104c7991b011ae06c203cec6d736bd2e546a75ff99f3b37064",
+      "metrics": {
+        "maps_checked": 137,
+        "statuses": {
+          "even_lobe": 34,
+          "repairable": 83,
+          "trapped_class": 20
+        },
+        "smaller_colourings_checked": 59376,
+        "trapped_colourings": 348,
+        "maximum_successful_repair_length": 4,
+        "first_trap": "C36-plantri-35",
+        "first_trap_alternative_statuses": {
+          "repairable": 6,
+          "trapped_class": 10
+        }
+      }
+    },
+    {
+      "command": "python3 tools/fourcolor/classical/pentagonal_lobe_patch_probe.py --output tools/fourcolor/classical/pentagonal-lobe-patch-probe.json",
+      "record": "pentagonal-lobe-patch-probe.json",
+      "record_sha256": "b4a97e094f42feba46cecba4f94904eda10a8822afb7f27500ff4822f15d461a",
+      "script_sha256": "24107db9547d7117efa6b0ce0e19dc64310db3ec9aa85a41e0b22e77f7dc6d23",
+      "metrics": {
+        "primal_colourings": 252,
+        "normalized_dual_colourings": 252,
+        "supported_words": 132,
+        "admissible_words": 183,
+        "terminal_colour_permutation_classes": 22,
+        "input_classes": 31,
+        "obstruction_rounds": [
+          51,
+          6,
+          0
+        ],
+        "recognized_instances": 29
+      }
+    }
+  ],
+  "classical_baseline": {
+    "changed": false,
+    "last_endpoint_replay_record": "alternating-lobe-measurements.json",
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "new_module_used_by_complete_endpoints": false
+  },
+  "configurations_removed": 0,
+  "original_configuration_certificates_replaced": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "remaining_obligations": [
+    "Prove the ordered embedded correspondence between an extracted pentagonal lobe patch and the literal disk.",
+    "Produce a smaller embedded replacement in the target map class, and justify a nonempty Kempe-closed exterior relation.",
+    "Reconstruct an ambient colouring through that shared relation and prove the complete operation strictly decreases the graph.",
+    "Prove a broader family law and its geometric recognition or coverage."
+  ],
+  "cost_scope": "Lake-reported module times, not isolated kernel costs. No runtime or artifact-size saving claimed."
+}
