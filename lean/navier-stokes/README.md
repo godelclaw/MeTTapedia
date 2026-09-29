@@ -341,6 +341,21 @@ The correction `Y exp(9 E(t)/(pi R^5))` absorbs this channel over the full
 history. The remaining normalized signed production, not positivity,
 is the open Bellman-history estimate for this candidate.
 
+`MettapediaNS.WholeSpaceCubicHistory` pays a further physical channel over
+entire unforced histories: cubic stress transport at fixed separation.
+The common flux envelope `B=||u||_2 ||u||_4^2` is at most actual kinetic
+loss plus `a=27 S^6 E0^3/(32 nu^3)`, where `S` is the imported Sobolev
+constant. Its history allowance retains terminal kinetic energy.
+The full stress identity also gives an analytic signed bound `E0` on
+pressure transfer into any fixed global unit direction. A moving or
+spatially weighted observer adds explicit transport, rotation, diffusion
+and pressure boundary work; the corresponding endpoint certificate is
+Lean-checked, while its actual-fluid identification is analytic.
+The exact lab `pressure_stress_transport.py` retains every one of those
+terms. The remaining geometry question is the cost of tracking a small,
+rotating, possibly shrinking dangerous region. Fixed-scale signed bounds
+do not supply the required uniform allowance for such histories.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

@@ -4288,3 +4288,212 @@ with exact coefficient checks, rather than Lean-certified evolutions.
 ```sh
 python3 -O labs/pressure_core_envelope.py
 ```
+
+## Signed pressure redistribution and the cost of following a region
+
+`pressure_stress_transport.py` identifies two different pressure-history
+mechanisms from the actual unforced equation. Cubic stress is transported
+between regions, while pressure redistributes stress between directions.
+Keeping the latter signed gives a full-history bound for a fixed global
+direction. A localized or rotating observation retains additional costs.
+
+Write `T=u tensor u`, `S=sym grad u`, `G_ij=sum_k partial_k u_i partial_k u_j`,
+and let `p` be the canonical pressure. The exact tensor equation is
+
+```text
+partial_t T_ij + partial_k(u_k T_ij)
+  + partial_i(p u_j)+partial_j(p u_i)
+  = 2p S_ij + nu Delta T_ij -2nu G_ij.
+```
+
+Repeated `k` is summed. The pressure redistribution `2pS` has zero trace
+because the fluid is incompressible; its directional entries need not
+vanish. The complete Fourier checker verifies the tensor equation at
+`nu=0` and `nu=2/7`, with all product modes retained. Its eight-mode
+velocity generates 58 modes in `2pS`. Reversing the velocity preserves
+pressure and energy while reversing that signed redistribution. This
+parity check alone is not a dynamical obstruction or a history bound.
+
+### A finite allowance for transported cubic stress
+
+Set `E=||u||_2^2`, `D1=||grad u||_2^2`, and
+`B=||u||_2 ||u||_4^2`. Cauchy--Schwarz, interpolation and the imported
+Sobolev inequality `||u||_6^2<=3 S^2 D1` give
+
+```text
+integral |u|^3 <= B,
+B^4 <= 27 S^6 E^3 D1^3.
+```
+
+For positive viscosity, the elementary fourth-power absorption yields
+
+```text
+B(t) <= 2nu D1(t)+a,       a=27 S^6 E0^3/(32 nu^3).
+```
+
+Here only `E(t)<=E0` has been used. The actual unforced kinetic balance
+therefore gives, for every smooth prefix,
+
+```text
+integral_0^t B(s) ds + E(t) <= E0+a t.
+```
+
+The same allowance bounds the cubic velocity moment. In
+`WholeSpaceCubicHistory`, the formal `transportSize` uses the existing
+order-zero quartic-energy and kinetic-energy expressions for this
+envelope. Its fourth-power estimate, absorption and the sampled-response
+history estimate are Lean-certified. The time-integrability assumptions
+are on each smooth prefix; no bound on their size is assumed. The final
+constant is uniform over those prefixes and depends only on `E0,nu,t`.
+
+This also has an analytic pressure-flux application. For the canonical
+decaying pressure, the Fourier symbol of the map `u tensor u -> p` has
+Frobenius norm one. Plancherel gives `||p||_2<=||u||_4^2`, hence
+`integral |p||u|<=B`. This pressure-multiplier identification is not newly
+Lean-certified here. A scalar pressure with an arbitrary additive constant
+must first be put in this canonical gauge when using that norm estimate.
+
+For a concrete contribution to the pressure Hessian, choose a smooth
+radial cutoff `chi`, zero on `[0,1]`, one on `[2,infinity)`, with
+`0<=chi<=1` and `|chi'|<=2`. Let
+
+```text
+K^R_e,ij(z)=chi(|z|/R) partial_ee partial_ij [1/(4pi|z|)],
+Fadv,R(x,e)=- integral K^R_e,ij(x-y) partial_k(u_k u_i u_j)(y) dy.
+```
+
+The cutoff is smooth: replacing it by a hard indicator would add a
+surface term to this integration by parts. For fixed `R>0` and unit `e`,
+the full spatial integration by parts gives
+
+```text
+|Fadv,R(x,e)| <= [567/(pi R^6)] integral |u|^3.
+```
+
+The checker differentiates the fifth Newtonian derivative independently.
+Writing `n=z/|z|`, its angular numerator for `partial_ee partial_vvv` is
+
+```text
+-945(e.n)^2(v.n)^3
++105[|e|^2(v.n)^3+6(e.n)(e.v)(v.n)^2+3(e.n)^2|v|^2(v.n)]
+-15[6(e.v)|v|^2(e.n)+3|e|^2|v|^2(v.n)+6(e.v)^2(v.n)].
+```
+
+Cauchy--Schwarz bounds its absolute value by `2220|e|^2|v|^3`.
+After the Newtonian factor this is `555/(pi R^6)`. The differentiated
+cutoff contributes at most another `12/(pi R^6)` by the earlier fourth
+kernel bound. These constants are conservative. The kernel identification
+and this vector estimate are analytic; the scalar cubic allowance and
+conditional integral-response conversion are Lean-certified.
+
+The resulting **absolute** history allowance for this particular channel
+is valid for arbitrary moving receivers and unit directions at fixed `R`:
+
+```text
+integral_0^t |Fadv,R| ds + [567/(pi R^6)] E(t)
+  <= [567/(pi R^6)] (E0+a t).
+```
+
+It is the cubic source contribution, not the whole material pressure
+commutator. Receiver transport, moving directions and pressure stress
+redistribution have not been removed from that commutator. If the
+coercive reserve is multiplied by this source with weight `2theta W`,
+the previous `2theta W<=(3/2)Y` converts it to an integrable growth
+coefficient. On a prescribed horizon `H`, the nonnegative resource
+`E(t)+a(H-t)` pays it without restarting the allowance at a new episode.
+Its coefficient diverges as `R` shrinks; there is no all-scale sum here.
+
+### Global signed pressure transfer is already energy-paid
+
+Fix a spatially constant unit direction `e`. Define
+
+```text
+a_e(t)=integral (u.e)^2,
+d_e(t)=2nu integral_0^t integral |grad(u.e)|^2,
+W_e(t)=integral_0^t integral 2p (e.S e).
+```
+
+Integrating the tensor equation gives the exact identity
+`W_e=a_e(t)-a_e(0)+d_e(t)`. The fluxes have zero spatial integral.
+On the whole space this follows by cutoff removal using their
+integrability; on the torus it follows by periodic integration by parts.
+Since `0<=a_e(t)<=E(t)` and `0<=d_e(t)<=E0-E(t)`,
+
+```text
+-a_e(0) <= W_e(t) <= E0-a_e(0),     |W_e(t)|<=E0.
+```
+
+This controls the **signed space-time integral**, not the time integral
+of its absolute value and not the value on an individual trajectory.
+It retains cancellation across any number of renewals. The actual-fluid
+identity and passage to arbitrary unit directions are analytic here;
+`fixed_direction_signed_abs` certifies the endpoint argument with all
+component-energy and dissipation hypotheses explicit.
+
+### The exact extra cost of a moving, localized observer
+
+For a smooth symmetric matrix field `M(t,x)`, put `a_M=integral u.Mu`.
+Testing the same stress identity gives
+
+```text
+integral 2p S:M = a_M'
+  +2nu integral sum_k (partial_k u).M(partial_k u)
+  -integral (u tensor u):(partial_t M+u.grad M+nu Delta M)
+  -2 integral p u.div M.
+```
+
+For `0<=M<=I`, the component energy and dissipation are dominated by the
+full kinetic quantities. Let `C_M` be the time integral of the last two
+displayed integrands with their **positive** signs, before subtraction.
+The exact signed endpoint allowance is then
+
+```text
+-a_M(0) <= W_M+C_M <= E0-a_M(0).
+```
+
+`signed_redistribution_bounds` certifies this algebraic implication.
+It assumes the actual weighted-stress balance, not a bound on `C_M`.
+The lab checks the physical identity for a positive spatial observer
+`M=chi e(t)e(t)^T`, where
+`chi=(3+cos(2z)+cos(2x+2z))/5` and `e(t)=(sin t,0,cos t)`.
+Rotation, transport, diffusion and pressure boundary terms are retained;
+the positive-viscosity test has nonzero diffusion and pressure boundary
+work. Omitting either gives the wrong balance.
+
+There is a useful fixed-window consequence. Suppose a time-independent
+`M` has operator bounds `m0` on `M`, `m1` on its directional gradient,
+`m2` on `Delta M`, and `md` on `div M`. Using the cubic and pressure-flux
+envelope above yields analytically
+
+```text
+|W_M(t)| <= 2m0 E0+(m1+2md)(E0+a t)+nu m2 E0 t.
+```
+
+This holds without requiring `M` positive: the endpoint and dissipation
+terms use its operator norm. Estimating the time derivative absolutely
+would add `integral E(t)||partial_t M(t)||_infinity dt`. Keep that term
+signed first: charging all rotation by its total variation can discard
+cancellation. For a translated, rotating or shrinking window, the
+derivative contains the actual translation, orientation and scale rates.
+The fixed-window theorem does not pay these rates, and successive
+episodes must share one allowance.
+
+This is the remaining geometric question in a concrete form: control
+the signed cost of following the dangerous region across scales and
+renewals. The global cancellation and fixed-scale payments cannot be
+substituted for that estimate. In particular, the pressure-Hessian
+kernel has an indefinite tensor weight and becomes singular at zero
+separation; neither fact is eliminated by the global directional bound.
+The scalar HJB reserve still needs its full normalized signed remainder.
+
+For a forced fluid the stress law gains `u tensor f+f tensor u`, and the
+observer balance gains `2 integral (M u).f`. That term may be nonzero even
+when the force's total kinetic work vanishes. The exact diagnostic
+`f=curl u` on this fixture has zero total work and nonzero localized
+directional work. It is not a forced singularity or an internal realization
+of one. An unforced surrounding region enters through the compatible
+boundary and observer terms, whose history must still be controlled.
+
+```sh
+python3 -O labs/pressure_stress_transport.py
+```
