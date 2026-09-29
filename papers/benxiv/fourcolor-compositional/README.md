@@ -44,6 +44,14 @@ certificate dependency in the complete proof. A general split law now transfers
 configuration 2's existing repair to configuration 1, removing the latter's
 separate certificate dependency. One rule covering all three remains open.
 
+A bounded [replacement experiment](diamond-example/README.md#testing-a-different-strict-replacement)
+now sharpens that task: 90,651 generated smaller disks that retain the eight
+boundary vertices each meet the same abstract Kempe obstruction for configuration
+4. The first longer fan has the same outcome with its own obstruction. This is
+checked program evidence with an explicit enumeration limit. It directs the
+next common core argument toward the joint choices retained by the successful
+contraction, beyond separate support tests for smaller interiors.
+
 ## The nearest completed version of the plan
 
 The July *Compositional Proof Note* organizes the argument into three levels.

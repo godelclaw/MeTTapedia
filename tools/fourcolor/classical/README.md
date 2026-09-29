@@ -728,6 +728,27 @@ python3 tools/fourcolor/classical/probe_common_support.py \
 The default rings reproduce the measured search. The output includes every
 trial and all input hashes; configuration indices in the JSON are zero-based.
 
+## Bounded disk replacement search
+
+The bounded diamond disk-replacement search is reproduced with:
+
+```sh
+python3 tools/fourcolor/classical/probe_diamond_disk_replacements.py \
+  --output diamond-disk-replacement-results.json
+```
+
+`diamond-disk-replacement-probe.json` records 90,651 generated triangulated
+disks with the same eight boundary vertices and zero through three interior
+vertices. For configuration 4 and the first longer fan, each candidate has an
+actual colouring in the target's fixed Kempe-closed obstruction. Every witness
+is checked on the candidate graph. The program independently checks disk
+incidences, vertex links and closure under flips; twelve negative controls
+reject corrupted evidence. Candidate and witness streams have deterministic
+digests. The complete flip component of each seed is enumerated, but a theorem
+identifying those components with all embedded disks is outside the result.
+This is program evidence, earns no compression credit, and leaves boundary
+identifications and joint relations between replacement choices untested.
+
 ## Reusable semantics audit
 
 `audit/ReusableSemanticsAudit.lean` follows thirteen roots through 11,486

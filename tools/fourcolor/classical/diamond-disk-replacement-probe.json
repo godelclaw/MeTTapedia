@@ -1,0 +1,171 @@
+{
+  "evidence": "Independently checked finite program witnesses; no new Lean theorem.",
+  "source_sha256": {
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+    "tools/fourcolor/classical/probe_diamond_disk_replacements.py": "af43ffd935d35fa29b616177266875abdc0fa4d0efc63e19fd3c3c03a53cb5a1",
+    "tools/fourcolor/classical/diamond_coloring_alternatives.py": "0075009196d573a65d0516ccba101b6c81528678c4babadda86c00372bdc2970",
+    "tools/fourcolor/classical/probe_diamond_contract_family.py": "1e07e3e7ca0936093aaac76d0701362d94ff33182d25bccddbac42d9a01b3f72",
+    "tools/fourcolor/classical/probe_diamond_joint_repair.py": "2969b597a97e6a562cf844aeb2bf402583fb3d401ad6beb74bfe1f678139257c",
+    "tools/fourcolor/classical/probe_diamond_kempe.py": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d"
+  },
+  "boundary_vertices": 8,
+  "original_interior_vertices": 4,
+  "operation": "Triangulated-disk replacement, retaining every boundary vertex and its cyclic order.",
+  "enumeration": "Full flip component of a stacked seed at each interior size; only interior labels are quotiented.",
+  "completeness_limit": "No identification with the class of all embedded disks is proved here.",
+  "obstructions": [
+    {
+      "insertions": [
+        1,
+        1
+      ],
+      "ordinary_traces": 486,
+      "closed_traces": 921,
+      "closure_stages": [
+        1155,
+        1065,
+        1017,
+        981,
+        939,
+        921
+      ],
+      "closed_witness_sha256": "b29a1514beb81bf58ef1704533863149f37080d55e3f119b71bc0ed0629e7d0f"
+    },
+    {
+      "insertions": [
+        2,
+        0
+      ],
+      "ordinary_traces": 468,
+      "closed_traces": 882,
+      "closure_stages": [
+        1173,
+        972,
+        930,
+        906,
+        888,
+        882
+      ],
+      "closed_witness_sha256": "a78cd363fe5bb9857b3332c5f6f57893767ecd447529deaa69dad386b5f2ed51"
+    }
+  ],
+  "classes": [
+    {
+      "interior_vertices": 0,
+      "candidates": 132,
+      "directed_flips_rechecked": 660,
+      "canonical_face_sets_sha256": "72c548f14709ad4404c225f7320fdaaaf4fab04dc5415012a2b543846dfa1c94",
+      "targets": [
+        {
+          "insertions": [
+            1,
+            1
+          ],
+          "witnessed_candidates": 132,
+          "distinct_witness_traces": 40,
+          "witness_stream_sha256": "5690c7955888f5b3ed6ecca405d47e866bec2e02d5a354c3b10e54640ad83a0e"
+        },
+        {
+          "insertions": [
+            2,
+            0
+          ],
+          "witnessed_candidates": 132,
+          "distinct_witness_traces": 35,
+          "witness_stream_sha256": "2d5544fc9277b15e040089678330ac044a2fd73ba8c1cbfb4cf765942d949a7d"
+        }
+      ]
+    },
+    {
+      "interior_vertices": 1,
+      "candidates": 1287,
+      "directed_flips_rechecked": 7920,
+      "canonical_face_sets_sha256": "41b8fbb285421fdc4664db7307c01f75965d0b9ab36347945d9a290146bd6e56",
+      "targets": [
+        {
+          "insertions": [
+            1,
+            1
+          ],
+          "witnessed_candidates": 1287,
+          "distinct_witness_traces": 172,
+          "witness_stream_sha256": "c36b4132ef39265b5552ab8efc38f6eb435964762c3ba8d3b855eb869272c9d3"
+        },
+        {
+          "insertions": [
+            2,
+            0
+          ],
+          "witnessed_candidates": 1287,
+          "distinct_witness_traces": 165,
+          "witness_stream_sha256": "0512d437ac936781e84ee3b07a2030c84cd05c4071f6d5b9a9d3c314c0b65767"
+        }
+      ]
+    },
+    {
+      "interior_vertices": 2,
+      "candidates": 10296,
+      "directed_flips_rechecked": 79992,
+      "canonical_face_sets_sha256": "2a4bf6667ecd6c269b0af70d41c7a90e46aba3feec2ba6226fe26c682dbb5c91",
+      "targets": [
+        {
+          "insertions": [
+            1,
+            1
+          ],
+          "witnessed_candidates": 10296,
+          "distinct_witness_traces": 470,
+          "witness_stream_sha256": "2f745b845f4ba5c16eada5c35c484cadac78e1bed62a38853cbcdc543062d63f"
+        },
+        {
+          "insertions": [
+            2,
+            0
+          ],
+          "witnessed_candidates": 10296,
+          "distinct_witness_traces": 444,
+          "witness_stream_sha256": "c5550af814f4142b3e54bb1c814a76a6caf5a632b5bf486904953b1994657385"
+        }
+      ]
+    },
+    {
+      "interior_vertices": 3,
+      "candidates": 78936,
+      "directed_flips_rechecked": 758208,
+      "canonical_face_sets_sha256": "7b4a6b624711b193f242468b6921a757337d27e9c3151b462fe3c358970ce172",
+      "targets": [
+        {
+          "insertions": [
+            1,
+            1
+          ],
+          "witnessed_candidates": 78936,
+          "distinct_witness_traces": 758,
+          "witness_stream_sha256": "bd25ef329fba82701b8996992a31640e724d133ade3fd0d74281c7cf515c6529"
+        },
+        {
+          "insertions": [
+            2,
+            0
+          ],
+          "witnessed_candidates": 78936,
+          "distinct_witness_traces": 739,
+          "witness_stream_sha256": "0aa9e96a02623ffc81292444fbb950bae2e8d69459252a7fcc0e5b35259fd307"
+        }
+      ]
+    }
+  ],
+  "total_candidates": 90651,
+  "negative_controls_rejected": 12,
+  "positive_controls": "Both original four-interior-vertex disks have no colouring in their own closed obstruction.",
+  "direct_collapse": {
+    "source": "configuration 4, first two ports in its reference trace order",
+    "ordinary_image": 234,
+    "repaired_image": 240,
+    "proper_seven_port_traces": 546,
+    "scope": "Direct split collapse only; additional seven-port Kempe steps are not excluded."
+  },
+  "consequence": "For each target, the same disjoint Kempe-closed predicate meets every tested replacement support. Meeting all those supports separately therefore does not establish repair.",
+  "scope": "No realizable exterior, impossibility of a coupled reduction, or failure of the existing joint contraction is asserted. Boundary identifications, joint relations between distinct replacements and additional geometric hypotheses remain outside this test.",
+  "elapsed_seconds": 23.855
+}
