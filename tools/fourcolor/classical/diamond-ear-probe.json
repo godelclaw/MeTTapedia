@@ -1,0 +1,86 @@
+{
+  "evidence": "Independent finite program checks; general theorems are in Lean.",
+  "merge_chromograms": 4652,
+  "graph_cases": [
+    {
+      "core": 1,
+      "ears": 1,
+      "vertices": 11,
+      "boundary": 7,
+      "normalized_colourings": 288,
+      "boundary_traces": 192
+    },
+    {
+      "core": 1,
+      "ears": 2,
+      "vertices": 12,
+      "boundary": 8,
+      "normalized_colourings": 576,
+      "boundary_traces": 384
+    },
+    {
+      "core": 1,
+      "ears": 3,
+      "vertices": 13,
+      "boundary": 9,
+      "normalized_colourings": 1152,
+      "boundary_traces": 768
+    },
+    {
+      "core": 2,
+      "ears": 1,
+      "vertices": 12,
+      "boundary": 8,
+      "normalized_colourings": 504,
+      "boundary_traces": 468
+    },
+    {
+      "core": 2,
+      "ears": 2,
+      "vertices": 13,
+      "boundary": 9,
+      "normalized_colourings": 1008,
+      "boundary_traces": 936
+    },
+    {
+      "core": 2,
+      "ears": 3,
+      "vertices": 14,
+      "boundary": 10,
+      "normalized_colourings": 2016,
+      "boundary_traces": 1872
+    },
+    {
+      "core": 4,
+      "ears": 1,
+      "vertices": 13,
+      "boundary": 9,
+      "normalized_colourings": 1104,
+      "boundary_traces": 972
+    },
+    {
+      "core": 4,
+      "ears": 2,
+      "vertices": 14,
+      "boundary": 10,
+      "normalized_colourings": 2208,
+      "boundary_traces": 1944
+    },
+    {
+      "core": 4,
+      "ears": 3,
+      "vertices": 15,
+      "boundary": 11,
+      "normalized_colourings": 4416,
+      "boundary_traces": 3888
+    }
+  ],
+  "source_sha256": {
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+    "tools/fourcolor/classical/audit_diamond_ear_family.py": "ffc96f597e319f2e6be1910c2625198e3e6a370d9a9aa88fada8885453f0861d",
+    "tools/fourcolor/classical/diamond_coloring_alternatives.py": "0075009196d573a65d0516ccba101b6c81528678c4babadda86c00372bdc2970",
+    "tools/fourcolor/classical/probe_diamond_joint_repair.py": "2969b597a97e6a562cf844aeb2bf402583fb3d401ad6beb74bfe1f678139257c",
+    "tools/fourcolor/classical/probe_diamond_kempe.py": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d"
+  },
+  "scope": "Retained-edge ears, not boundary-triangle subdivisions or longer diamond fans."
+}

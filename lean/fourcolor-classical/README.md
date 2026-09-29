@@ -155,7 +155,7 @@ declarations against `propext`,
 `Classical.choice` and `Quot.sound`.
 
 The driver validates the source and artifact hashes of the 87 prepared adapter
-and presentation modules and the 24 configuration-family modules.
+and presentation modules and the 29 configuration-family modules.
 Final source hashes, artifact hashes, exit statuses
 and frontend times are recorded in `.lake/complete-audit/complete-results.json`.
 The original assembly measurement record is
@@ -332,8 +332,19 @@ checks. The unconditional endpoints consume all 231 replacements.
 All 633 configurations and all 32 discharging-rule labels remain. Configuration
 2's base certificate now supplies both its own obligation and configuration
 1's through the split law. Configuration 4 uses the coupled boundary repair;
-631 reference certificate dependencies remain. A single rule covering all three
-diamonds or arbitrary longer fans remains open.
+631 reference certificate dependencies remain. A single core rule covering all
+three diamonds or arbitrary longer fans remains open.
+
+`KempeBoundaryMerge`, `BoundaryEarRepair`, `BoundaryEarGSLT` and
+`DiamondEarFamily` establish a common contextual family theorem. Adding a new
+vertex to the ends of a retained boundary edge has the exact joint split
+semantics. Repair survives arbitrary repetitions at the first boundary edge,
+with genuine intermediate colouring witnesses and one extra vertex per step.
+All three diamond cores consume the same law; configuration 4 retains its
+coupled input. `DiamondEarFamilyAudit` checks twelve roots and excludes complete
+theorem dependencies and additional configuration certificates. This result
+removes no additional certificate and supplies no embedded-map recognition or
+coverage theorem. See the [ear measurements](../../tools/fourcolor/classical/diamond-ear-measurements.json).
 Exact counts
 and measurement scope are recorded in the
 [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).

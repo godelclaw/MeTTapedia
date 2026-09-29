@@ -1,0 +1,165 @@
+{
+  "status": "kernel-checked contextual family; complete baseline revalidated",
+  "completed_utc": "2026-09-29T12:48:17.189794+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "main_gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+  "main_working_directory": "lean/mettapedia",
+  "main_gate_jobs": 11008,
+  "classical_gates": [
+    "lake build kernelConfigurationFamilies",
+    "lake build kernelComplete"
+  ],
+  "classical_working_directory": "lean/fourcolor-classical",
+  "family_modules_replayed": 29,
+  "new_modules": [
+    {
+      "module": "MettapediaFourColor.KempeBoundaryMerge",
+      "source_sha256": "7a7bd85300af6eac4c15c81418670dcd4160fd9004c0819ffdf9e5892a35e2f7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 9.488,
+      "olean_bytes": 1741552,
+      "olean_sha256": "a0a377f1dbe6734dba9dd2877f18e54aa04e118e6b1d5497034b1fb650d19260",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeBoundaryMerge.lean"
+    },
+    {
+      "module": "MettapediaFourColor.BoundaryEarRepair",
+      "source_sha256": "106ad45139819e3d8a8d96e954facc951dcec316deca85ec92cdccabad909fa6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.953,
+      "olean_bytes": 218368,
+      "olean_sha256": "8e36d7b2e5684c3654e44d5599a2fff7dfb8d038de69b354bf2cb56f5c1723e2",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/BoundaryEarRepair.lean"
+    },
+    {
+      "module": "MettapediaFourColor.BoundaryEarGSLT",
+      "source_sha256": "43dbd5dcafca68d6be24ae90a0eae5234b8b64b1d4d6cbf1c304934e544ad7f6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.1,
+      "olean_bytes": 359824,
+      "olean_sha256": "c446dae60b2bc5e5bc756f38d7e3f2a8642672c1ae46ad1e2e0fcc03b54c964f",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/BoundaryEarGSLT.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondEarFamily",
+      "source_sha256": "24f04eae938b24db696db7193c28ad91192b266281ea229bbbfbb20a1dd8b38e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.756,
+      "olean_bytes": 197824,
+      "olean_sha256": "0795a95eeeadc2138c9111f96fd0d195094a7b0c6bfd71eed779179bc3bdecf0",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondEarFamily.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondEarFamilyAudit",
+      "source_sha256": "414351321247e0f4a268e8efc12065da40186ee8ff384de2b6d8e767ab2f8d72",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.703,
+      "olean_bytes": 3672,
+      "olean_sha256": "2a876049d0b295f97ffc59f5ba2befabd6dea94aeb6d1258ebc62188198a6bd1",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondEarFamilyAudit.lean"
+    }
+  ],
+  "complete_modules": [
+    {
+      "module": "MettapediaFourColor.ReferenceBaselineAudit",
+      "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.702,
+      "olean_bytes": 3320,
+      "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/ReferenceBaselineAudit.lean"
+    },
+    {
+      "module": "MettapediaFourColor.DiamondFamilyReducibility",
+      "source_sha256": "73701b979078c4996c81cb4d347e5acba46638311af6a73dddc71fd225aae495",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.317,
+      "olean_bytes": 36552,
+      "olean_sha256": "dea2328310e2860a9436be63c70e745b565b986bb6f6e2bdb2ce6c4ac4168428",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondFamilyReducibility.lean"
+    },
+    {
+      "module": "MettapediaFourColor.Complete",
+      "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.927,
+      "olean_bytes": 39160,
+      "olean_sha256": "aee3e439a463964a98783c44911f46f2825c91cd159ecb1e9cf7239c705f2816",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/Complete.lean"
+    },
+    {
+      "module": "MettapediaFourColor.CompleteAudit",
+      "source_sha256": "47a7c20a658cc9c84b808a124dafdfaaac52fecad47eb3b4148ef3ae138f2ef6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 18.77,
+      "olean_bytes": 6576,
+      "olean_sha256": "656e6a0258af307cc3b45000906fe237559d09e59e5de12f7ea7c4e8eb4936ba",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/CompleteAudit.lean"
+    }
+  ],
+  "family_frontend_seconds": 278.301,
+  "new_modules_frontend_seconds": 24.0,
+  "complete_frontend_seconds": 30.716,
+  "prepared_dependencies_verified": 116,
+  "resource_measurements": {
+    "metric": "Sampled maximum RSS of a single Lean process, not aggregate memory.",
+    "family_max_single_lean_rss_mib": 4571,
+    "complete_max_single_lean_rss_mib": 4614
+  },
+  "proof_audit": {
+    "roots": 12,
+    "dependency_declarations": 14769,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "generic_merge_law": "FourColor.KempeBoundaryMerge.closed",
+    "exact_graph_semantics": "FourColor.BoundaryEarRepair.trace_exact",
+    "route_law": "FourColor.BoundaryEarGSLT.repair_with_history",
+    "strict_descent": "FourColor.BoundaryEarGSLT.strict",
+    "consumers": [
+      1,
+      2,
+      4
+    ],
+    "nonempty_input": "FourColor.DiamondEarFamily.input_inhabited",
+    "arbitrary_size": "FourColor.DiamondEarFamily.arbitrary_size",
+    "additional_configuration_certificate_dependencies": 0
+  },
+  "independent_probe": {
+    "record": "diamond-ear-probe.json",
+    "sha256": "8c7ed2a28a87a1b71aeefe4634161b9b2b4865dac516ea2446234ba146f51ed8",
+    "chromograms": 4652,
+    "actual_graph_instances": 9
+  },
+  "complete_audit": {
+    "imported_public_declarations": 124901,
+    "endpoint_closures_checked": 3,
+    "reference_certificate_dependencies": 631,
+    "catalogue_entries": 633,
+    "new_family_consumed_by_complete_endpoints": false
+  },
+  "credited": {
+    "new_reference_certificate_dependencies_replaced": 0,
+    "total_reference_certificate_dependencies_replaced": 2,
+    "catalogue_entries_removed": 0,
+    "new_coverage_theorems": 0,
+    "kernel_seconds_saved": 0,
+    "artifact_bytes_saved": 0,
+    "contextual_laws": 1,
+    "diamond_core_consumers": 3,
+    "family_size": "unbounded"
+  },
+  "scope": "Retain the first ordered boundary edge, add one new vertex adjacent to its ends, and repeat. The exact joint split semantics preserves compatible Kempe repair, reconstructs actual graph colourings and GSLT histories, and grows vertex count by exactly one per step. All three diamond cores have nonempty input relations at every length.",
+  "limits": "The three existing core repair arguments remain distinct. This is not the triangle subdivision used by longer diamond fans. No embedded-map recognition, new geometric coverage, counting equivalence, executable Kempe-swap sequence or additional certificate saving is claimed. The family is checked separately and is not an added dependency of the complete theorem.",
+  "remaining": "A common core repair law for configurations 1, 2 and 4, then a justified broader family and geometric recognition/coverage."
+}

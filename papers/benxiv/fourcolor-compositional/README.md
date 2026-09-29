@@ -200,7 +200,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Discharging-rule labels retained | 32 |
 | Reference configuration certificate dependencies retained / replaced | 631 / 2 |
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
-| Common law for configurations 1, 2 and 4 or longer fans | Open |
+| Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
+| Common core repair for configurations 1, 2 and 4 or longer fans | Open |
 | Runtime or artifact-size saving | Not claimed |
 
 The 231 replacements use periodicity, reflection, exchange of paired
@@ -250,6 +251,16 @@ normalization for its own infinite family. To count as a classical
 configuration-check saving, it must additionally replace a dependency of the
 completed assembly. That connection remains open; the independent family
 result is recorded separately in the ledger.
+
+The [diamond example](diamond-example/README.md#one-repair-through-an-unbounded-family-of-ear-contexts)
+now also gives an unbounded contextual family: a triangular ear retains an old
+boundary edge and adds a vertex adjacent to its ends. One theorem transfers
+each diamond core's repair through any number of these operations, recovers
+the intermediate GSLT colouring witnesses, and proves strict size decrease
+when the ears are erased. This establishes stability of a repair under a
+specified construction family. It adds no new core repair, catalogue saving,
+embedded-map recognition or coverage theorem. The failed longer-fan
+contraction and the common core argument remain the next research obligations.
 
 ## Verification and attribution
 

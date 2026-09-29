@@ -203,7 +203,22 @@ its own repair and configuration 1's through that law. Together with the
 separate configuration-4 joint repair, this leaves 631 reference certificate
 dependencies in the complete proof. All 633 catalogue entries remain.
 `diamond-split-measurements.json` records the source hashes, gates, dependency
-audit and costs; a common repair rule covering all three diamonds remains open.
+audit and costs; a common core repair rule covering all three diamonds remains open.
+
+`audit_diamond_ear_family.py` checks a different operation: attach a fresh
+vertex to the ends of a retained boundary edge. It independently checks 4,652
+chromogram merges and enumerates complete colourings for the first three ears
+on each diamond core. `diamond-ear-probe.json` records these nine graph cases.
+The general Lean result covers arbitrary finite repetitions at the first
+boundary edge, retaining the joint relation and reconstructing actual GSLT
+colouring histories. `diamond-ear-measurements.json` records its twelve-root
+audit and kernel costs. This is a contextual family theorem; it introduces no
+new core repair, removes no further certificate and proves no coverage claim.
+
+```sh
+python3 tools/fourcolor/classical/audit_diamond_ear_family.py \
+  --output diamond-ear-probe.json
+```
 
 With the original configuration file and the pinned reference's generated
 `cpc.py` inputs, reproduce the results with Python 3.9 or newer. The independent

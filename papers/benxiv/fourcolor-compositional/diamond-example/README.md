@@ -271,6 +271,48 @@ certificate dependencies remain. Shared reference modules still load the
 old declarations; runtime and artifact-size savings
 are not claimed.
 
+## One repair through an unbounded family of ear contexts
+
+[DiamondEarFamily][ear-family] supplies a further compositional result for all
+three cores. A triangular ear adds a fresh vertex adjacent to the first two
+boundary vertices **while retaining their edge**. Repeating this operation at
+the first boundary edge produces a precisely defined family of any length.
+It is a different operation from the triangle subdivision studied above.
+
+1. **Actual graphs and exact semantics.** [BoundaryEarRepair][ear-graph]
+   proves that the new boundary relation is exactly the joint split: two
+   distinct nonzero edge colours replace their sum. Both directions construct
+   genuine graph colourings, preserving every old vertex colour.
+2. **Repair through the context.** [KempeBoundaryMerge][ear-merge] proves that
+   existentially joining the two ports preserves Kempe-closed exterior
+   relations. Its chord surgery retains their correlation. This lets the
+   core's repair work against every compatible exterior after an ear is added.
+3. **Arbitrary repetition and reconstruction.** [BoundaryEarGSLT][ear-gslt]
+   composes the law along any finite route of these ear operations. The result
+   supplies a matching colouring and every intermediate colouring witness.
+   An `n`-ear member has exactly `n` additional vertices, so erasing a nonempty
+   ear sequence strictly decreases size. Admissible starting relations are
+   proved nonempty at every length.
+
+This is a common **context law**, with the three existing core repairs as
+consumers. It adds no per-ear repair certificate. The configuration-4 input
+retains its full coupled contract relation. Support and actual colouring
+witnesses are proved; equal colouring counts and an executable sequence of
+physical Kempe swaps are not asserted.
+
+The theorem does not replace the three cores by one core argument. It also
+does not establish embedded-map recognition, a new valid contraction for longer
+fans, or geometric coverage. The formal operation constructs simple graphs
+with ordered boundaries; using it as a specific embedded disk operation needs
+the corresponding embedding bridge. The completed theorem retains 633 catalogue
+entries and 631 reference certificate dependencies.
+
+The [12-root audit][ear-audit] checks the generic law's independence from the
+catalogue, the actual graph consumers, compatible histories, and strict size
+decrease. [Measurements][ear-measurements] distinguish this family result from
+certificate compression. An [independent finite replay][ear-probe] checks
+4,652 chromograms and the first three ears on each literal diamond graph.
+
 ## Compatible histories
 
 [DiamondInsertionGSLT][routes] interprets this reconstruction as a GSLT route.
@@ -353,3 +395,10 @@ excludes configuration 1's original certificate.
 [split-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondSplitRepair.lean
 [split-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondSplitRepairAudit.lean
 [split-measurements]: ../../../../tools/fourcolor/classical/diamond-split-measurements.json
+[ear-family]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondEarFamily.lean
+[ear-graph]: ../../../../lean/fourcolor-classical/MettapediaFourColor/BoundaryEarRepair.lean
+[ear-merge]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeBoundaryMerge.lean
+[ear-gslt]: ../../../../lean/fourcolor-classical/MettapediaFourColor/BoundaryEarGSLT.lean
+[ear-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondEarFamilyAudit.lean
+[ear-measurements]: ../../../../tools/fourcolor/classical/diamond-ear-measurements.json
+[ear-probe]: ../../../../tools/fourcolor/classical/diamond-ear-probe.json
