@@ -97,6 +97,57 @@ and retains its forcing contribution. The colouring theorem instead retains
 a relation and reconstructible witnesses; it uses no matrix inverse and
 does not import the linear module.
 
+## Recognizing compatible seams in actual graphs
+
+The [geometric seam theorem][seam] removes a coordinate assumption from the
+embedded-row argument. Suppose two consecutive zigzag rows have their actual
+ambient vertex rotations, and every face crossing their common seam is a
+hexagon. Their complete boundary maps construct a permutation `s` pairing the
+first row's output ports with the next row's input ports. The theorem proves
+
+\[
+s(i+1)=s(i)+1, \qquad s(i)=i+s(0).
+\]
+
+Each row supplies a three-step arc of the ambient face permutation. Combining
+the two arcs with the six-step return around the intervening hexagon forces
+the successor equation. Induction around the cyclic index set gives the
+translation. This proof works at every positive width and does not enumerate
+permutations. Reindexing by this one offset gives exactly the usual two-ring
+colouring relation, including reconstruction of actual side colourings.
+
+The [chain theorem][hex-chain] accumulates these offsets through any number of
+rows. In the resulting coordinates, accepted words are exactly the iterated
+ring relation. The [physical consumer][hex-exclusion] combines this fact with
+the existing strict shore splice: for five-port rows, a graph-backed
+vertex-minimal counterexample cannot have more than **446,403** such rows,
+under the stated good-inner-side and connected-shore hypotheses. The bound is
+unchanged; the improvement is that seam alignment follows from face geometry.
+The facial adapter constructs the row's rotation compatibility from its
+original face incidences and alternating retained degrees.
+
+This does not yet recognize an entire strip as the literal sewn tube used in
+the four-ring replacement above. Supplying the alternating rows, their
+complete interfaces and the end-shore conditions remains a geometric task.
+An unmarked band or a large hexagonal patch alone does not provide them.
+
+An [independent dart-permutation probe][seam-probe] checks all 5,912 seam
+permutations at widths two through seven. Exactly the cyclic translations
+give hexagonal seam faces throughout. Its closed five-port example has two
+rows capped by pentagons: 30 vertices, 45 edges, twelve pentagonal faces and
+five hexagonal faces. A shift by two ports retains these counts and a checked
+Tait colouring. A noncyclic control instead has an 18-sided seam face and
+Euler characteristic zero; it is a toroidal example, not a planar
+counterexample. These examples are program checks, separate from the general
+Lean proofs.
+
+The [geometric audit][hex-audit] checks twelve roots and 23,144 dependency
+declarations, requires the actual facial-recognition, support and strict-splice
+consumers, and rejects classical `FourColor` dependencies. The [measurement
+record][hex-measurements] separates the new proof costs from the reused finite
+five-port stabilization certificate. No configuration or certificate is
+removed by this geometric result.
+
 ## Scope and verification
 
 This establishes an infinite family reduction from the corridor idea,
@@ -129,3 +180,9 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [kron]: https://github.com/zariuq/MeTTapedia/blob/main/lean/mettapedia/Mettapedia/GSLT/Dynamics/LinearBoundaryReduction.lean
 [audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeBoundaryAudit.lean
 [measurements]: ../../../../tools/fourcolor/classical/five-tube-normalization-measurements.json
+[seam]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalSlabSeam.lean
+[hex-chain]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeChain.lean
+[hex-exclusion]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeExclusion.lean
+[hex-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeAudit.lean
+[hex-measurements]: ../../../../tools/fourcolor/classical/hexagonal-seam-measurements.json
+[seam-probe]: ../../../../tools/fourcolor/classical/hexagonal-seam-probe.json

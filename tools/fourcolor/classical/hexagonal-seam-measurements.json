@@ -1,0 +1,284 @@
+{
+  "status": "kernel checked",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+  "working_directory": "lean/mettapedia",
+  "completed_utc": "2026-09-29T16:31:57Z",
+  "gate_jobs": 11013,
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CyclicPortSeam",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicPortSeam.lean",
+      "source_sha256": "060be72cd6ab992c09961cbb58301734c886805d8eb3e3e93d2226b927fdb335",
+      "source_bytes": 3012,
+      "artifact_sha256": "0d51b3f383c5415b0176c8751578ea355d8867ec9f25ef0d34bce4c511bfb53d",
+      "artifact_bytes": 95608,
+      "reported_module_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalSlabSeam",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalSlabSeam.lean",
+      "source_sha256": "7e376fc5cf9eddad0b445de7e5162625407dbdda2c9f380815ffd453d8b1f985",
+      "source_bytes": 6462,
+      "artifact_sha256": "029a9aa990d0f669aed8324b495f968e30f64adb0255d45a3b4de968e86719c9",
+      "artifact_bytes": 235336,
+      "reported_module_seconds": 2.8
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTubeChain",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeChain.lean",
+      "source_sha256": "c23aa46101bf93120690b7dccabff04575459fb20321f5708b59c8b091df5760",
+      "source_bytes": 7373,
+      "artifact_sha256": "93afb6bda222ea241599b26a58e21abbbd90a870f2f7d2979880111e16888c61",
+      "artifact_bytes": 625936,
+      "reported_module_seconds": 2.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.TubeCorridorExclusion",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TubeCorridorExclusion.lean",
+      "source_sha256": "72eafddb5d72317cdba9520893669bc8f2d0475fd021f95e33dcb0ef127b581d",
+      "source_bytes": 11119,
+      "artifact_sha256": "9caa102d3d490d1d04a6bbced248a6ff3847af31435bba0fcd1e8b32cdeef729",
+      "artifact_bytes": 530536,
+      "reported_module_seconds": 5.2
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTubeExclusion",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeExclusion.lean",
+      "source_sha256": "e8098806f85afd4ce1227b404ab5f1fd5b39c11fcf5a6fc2652744fc2cd04587",
+      "source_bytes": 6012,
+      "artifact_sha256": "ad25bbe2fd99d53987839fc439c67e42cbb04fcb95e7ceffc5cb03a6ba7845c2",
+      "artifact_bytes": 356136,
+      "reported_module_seconds": 3.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTubeAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeAudit.lean",
+      "source_sha256": "19d18baa179d5df0c17479ed65034910f245469eb9d4ddd253c5a29d656a56ee",
+      "source_bytes": 3445,
+      "artifact_sha256": "fcc99327fd210936d1704b110ed308c4fa9a36c04934063ce8f912fffaa8a518",
+      "artifact_bytes": 3816,
+      "reported_module_seconds": 7.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "a157dc33c0c421c44d7f935b36553253d28f19da7917bcb6f9eb8a5de8f6e7bf",
+      "source_bytes": 27580,
+      "artifact_sha256": "652736608a8c6a614b02e17694b2918dc8786a333c95c06291e3b5ffa837f13c",
+      "artifact_bytes": 32912,
+      "reported_module_seconds": 27.0
+    }
+  ],
+  "timing_scope": "Rounded successful module durations reported by Lake across the incremental proof builds, including elaboration, kernel checking, serialization and code generation. Dependencies were reused. The generic seam module compiled earlier; its duration is not recorded here. These are not isolated kernel costs or comparative runtime savings.",
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.CyclicPortSeam.translation_of_six_steps",
+      "Mettapedia.GraphTheory.FourColor.CyclicPortSeam.six_steps_of_successor",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.seam_eq_add",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.two_row_support",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.Hexagonal.cyclicCoherent",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.sideSet_aligned",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.sideSet_aligned_stable",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.le_of_tube_nodes",
+      "Mettapedia.GraphTheory.FourColor.TubeSlab.Tube.hexagonal_five_length_bound",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.toSlab_rotationCompatible",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.prepend_hexagonal",
+      "Mettapedia.GraphTheory.FourColor.FacialCycleChord.chain_length_bound"
+    ],
+    "combined_dependency_closure": 23144,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_dependencies": "The geometric roots consume the actual seam matching, ambient facial periods and three-step arcs. The support and exclusion roots consume side-colouring reconstruction, ring stabilization, facial-row recognition and the strict shore splice. The preserved original coherent-tube consumer is also checked.",
+    "excluded_namespace": "FourColor",
+    "scope": "Twelve named roots, explicit required dependency contracts and their full transitive axiom sets; not every declaration imported by the lane."
+  },
+  "preexisting_certificate": {
+    "declaration": "Mettapedia.GraphTheory.FourColor.GoertzelV24FiveTubeExclusion.five_ring_stabilizes",
+    "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/GoertzelV24FiveTubeExclusion.lean",
+    "source_sha256": "900fa3e84765a49793ae0f9ddf1285335264bc5e6b2c2ae3f19875f4913ab0a6",
+    "proof_method": "decide +kernel",
+    "relation_equality": "R^5 = R^4",
+    "prior_measurement_record": "five-tube-normalization-measurements.json",
+    "new_finite_certificate": false
+  },
+  "family": {
+    "widths": "Every positive width for seam alignment and support composition; the strict shore-splice consumer assumes width at least two and a proved stabilization certificate.",
+    "lengths": "Arbitrary finite chains of consecutive actual zigzag slab embeddings with complete boundary bijections.",
+    "geometric_hypotheses": [
+      "Every row retains the ambient vertex rotation.",
+      "The actual ambient faces crossing each internal seam are hexagons.",
+      "The terminal boundary coordinates use the last row output map."
+    ],
+    "alignment": "The actual seam permutation satisfies s(i+1)=s(i)+1, hence s(i)=i+s(0). Accumulating the offsets constructs the aligned boundary maps.",
+    "semantics": "In the constructed coordinates, actual side-colouring support is exactly the iterated ring relation. The existential intermediate choices retain genuine compatible side and ring witnesses.",
+    "facial_adapter": "Existing facial cycle recognition derives the row and its rotation compatibility from the original rotation system, face incidences, alternating retained degrees, short port faces and the stated connected face-region hypotheses.",
+    "strict_reduction_consumer": "The existing strict shore-splice contradiction for a graph-backed vertex-minimal Tait counterexample now consumes geometric alignment; it still assumes a good inner side and connected inner and outer shores.",
+    "five_port_maximum_rows_in_minimal_counterexample": 446403,
+    "numerical_bound_improved": false,
+    "original_coherent_tube_interface_preserved": true
+  },
+  "independent_program_checks": {
+    "script": "tools/fourcolor/classical/hexagonal_seam_probe.py",
+    "script_sha256": "ca16ec566f36ac57e6f0be9c77eebf65620f7a95034eb73420e2c44b3081b9b6",
+    "report": "tools/fourcolor/classical/hexagonal-seam-probe.json",
+    "report_sha256": "d8fa5655282959407f202958581ed370ab428849945ddca9cae73bb928ac81e2",
+    "evidence": "Finite program checks, not Lean certificates and not assumptions of the general proof.",
+    "report_replay": "Byte-identical replay of the recorded report.",
+    "widths": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "seam_permutations_checked": 5912,
+    "hexagonal_seams": 27,
+    "closed_examples": [
+      {
+        "seam": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "vertices": 30,
+        "edges": 45,
+        "faces": 17,
+        "euler_characteristic": 2,
+        "face_length_counts": {
+          "5": 12,
+          "6": 5
+        },
+        "seam_face_lengths": [
+          6,
+          6,
+          6,
+          6,
+          6
+        ],
+        "connected_simple_cubic_bridgeless": true
+      },
+      {
+        "seam": [
+          2,
+          3,
+          4,
+          0,
+          1
+        ],
+        "vertices": 30,
+        "edges": 45,
+        "faces": 17,
+        "euler_characteristic": 2,
+        "face_length_counts": {
+          "5": 12,
+          "6": 5
+        },
+        "seam_face_lengths": [
+          6,
+          6,
+          6,
+          6,
+          6
+        ],
+        "connected_simple_cubic_bridgeless": true
+      },
+      {
+        "seam": [
+          0,
+          1,
+          2,
+          4,
+          3
+        ],
+        "vertices": 30,
+        "edges": 45,
+        "faces": 15,
+        "euler_characteristic": 0,
+        "face_length_counts": {
+          "5": 12,
+          "6": 2,
+          "18": 1
+        },
+        "seam_face_lengths": [
+          6,
+          6,
+          18,
+          18,
+          18
+        ],
+        "connected_simple_cubic_bridgeless": true
+      }
+    ],
+    "witnesses": "The report includes edge endpoints and checked three-edge-colouring witnesses for each closed example. Colour labels 0, 1, 2 are ordinary labels, not the Lean Klein-group zero.",
+    "control_scope": "The noncyclic control has Euler characteristic zero and is a toroidal rotation system, not a planar counterexample."
+  },
+  "complete_baseline_recheck": {
+    "status": "fresh complete-endpoint replay passed",
+    "gate": "lake build kernelComplete",
+    "working_directory": "lean/fourcolor-classical",
+    "completed_utc": "2026-09-29T16:33:46Z",
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "prepared_dependency_records": 126,
+    "imported_public_declarations_audited": 125082,
+    "fresh_modules": [
+      {
+        "module": "MettapediaFourColor.ReferenceBaselineAudit",
+        "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.561,
+        "olean_bytes": 3320,
+        "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e"
+      },
+      {
+        "module": "MettapediaFourColor.DiamondFamilyReducibility",
+        "source_sha256": "71fb0a5407ace3d65ad85c53b4733d03ea4f382675ee1e2fab7ca14425b26824",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.577,
+        "olean_bytes": 37328,
+        "olean_sha256": "2e8e476bff5beda5c8eeb7e7b30761099c2226848f9425a74ead204147630377"
+      },
+      {
+        "module": "MettapediaFourColor.Complete",
+        "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.799,
+        "olean_bytes": 39288,
+        "olean_sha256": "fce0dd591168e2d7bf9463281c20f1fad4ff9bb96a9e4f106248346d79971ccf"
+      },
+      {
+        "module": "MettapediaFourColor.CompleteAudit",
+        "source_sha256": "2469479845e74a1e68271b7a79cb05eaaaf973e086b2780576f75f1cff04d6ff",
+        "exit_code": 0,
+        "frontend_wall_seconds": 18.75,
+        "olean_bytes": 6776,
+        "olean_sha256": "470427286cb17f0d48ffac4b175a2d0568b1300c807a11bfeda796200ed29f8f"
+      }
+    ],
+    "summed_frontend_wall_seconds": 29.687,
+    "timing_scope": "Four complete-assembly modules replayed with prepared reference and family dependencies. This is not a fresh replay of the entire classical development or of the unchanged local family certificates.",
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "original_configuration_certificate_dependencies_replaced_total": 3,
+    "new_geometry_used_by_complete_endpoints": false
+  },
+  "not_established": [
+    "Supply of the alternating recognized rows and suitable end shores in every relevant large map.",
+    "Identification of the entire recognized strip, with its exterior sewing, as the literal tube required for the four-ring shortening theorem.",
+    "An improved five-port length bound for the geometry-derived chain consumer.",
+    "A width bound from an unmarked band or a large hexagonal region.",
+    "Equality of colouring counts or an executable physical Kempe-recolouring procedure.",
+    "Any additional catalogue deletion or whole configuration-certificate replacement."
+  ],
+  "configurations_removed": 0,
+  "independent_reducibility_checks_replaced": 0,
+  "original_configuration_certificates_replaced": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "memory_scope": "No new isolated peak-memory or comparative memory saving is claimed."
+}

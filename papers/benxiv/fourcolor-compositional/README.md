@@ -36,6 +36,15 @@ relation. Strict physical shortening and GSLT composition preserve that
 relation in arbitrary surrounding contexts. This reuses the earlier finite
 certificate and does not depend on the classical Four Colour theorem.
 
+The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
+now derives compatibility between consecutive recognized rows. Their actual
+hexagonal seam faces force the port matching to be a cyclic translation.
+Accumulating those offsets gives exact colouring-support composition for
+arbitrary chain lengths and feeds the existing strict shore splice. The
+five-port minimal-counterexample length bound remains 446,403. Supplying the
+alternating rows and end-shore conditions, and connecting an entire recognized
+strip to the sharper literal four-ring replacement, remain explicit tasks.
+
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved
@@ -225,6 +234,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Reference configuration certificate dependencies retained / replaced | 630 / 3 |
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
+| Geometric corridor compatibility | Hexagonal seam faces determine cyclic alignment along arbitrary recognized row chains; strict shore-splice consumer checked |
 | Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |

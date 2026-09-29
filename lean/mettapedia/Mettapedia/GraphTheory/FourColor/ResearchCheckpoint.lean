@@ -36,6 +36,7 @@ import Mettapedia.GraphTheory.FourColor.ZigzagTubeBoundaryAudit
 import Mettapedia.GraphTheory.FourColor.InducedCycleLayer
 import Mettapedia.GraphTheory.FourColor.FacialCycleTangle
 import Mettapedia.GraphTheory.FourColor.FacialCycleChord
+import Mettapedia.GraphTheory.FourColor.HexagonalTubeAudit
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -152,8 +153,19 @@ face has length five or six. Three-step facial arcs propagate any hypothetical
 chord to a shorter cyclic gap, ending at a fixed edge reversal or a three-step
 face. This constructs the induced cycle and consumes the same physical slab
 and open-face transport results. More generally, when port faces have length
-at least five, a chord forces a port face of length at least seven. Alternation,
-consecutive-layer compatibility and general strict-reduction supply remain open.
+at least five, a chord forces a port face of length at least seven.
+For consecutive oriented slabs, the actual boundary bijections construct the
+seam permutation. Three-step facial arcs on its two sides show that hexagonal
+seam faces force that permutation to be a cyclic translation. Accumulating
+these translations aligns an arbitrarily long chain and gives the exact
+iterated ring support, with genuine side-colouring witnesses. The existing
+strict shore splice therefore excludes excessively long such chains in a
+graph-backed minimal counterexample without an assumed common port labelling.
+The five-port bound remains 446403 rows; no numerical improvement is claimed.
+The facial-row adapter derives orientation from the original retained degrees
+and face incidences. Alternation, supply of consecutive recognized rows and
+general strict-reduction coverage remain open. This does not yet identify an
+entire recognized strip with the literal tube needed for four-ring shortening.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond

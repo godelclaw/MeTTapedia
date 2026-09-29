@@ -840,3 +840,33 @@ certificates and all 633 configurations remain. Short records avoid repeatedly
 decoding the whole data stream during kernel evaluation. This encoding change
 is separate from mathematical compression, and no byte or runtime saving over
 the reference is claimed.
+
+## Hexagonal seam recognition
+
+`hexagonal_seam_probe.py` constructs the dart involution and vertex rotation
+of two literal zigzag rows, reads their face cycles, and checks every seam
+permutation at widths two through seven. The recorded 5,912 cases agree with
+the general Lean theorem: all seam faces are hexagons exactly for cyclic
+translations. The script also constructs closed five-port examples with
+pentagonal caps, verifies simple cubic incidence, connectedness and absence
+of bridges, and checks explicit Tait colourings. The shifted example has
+30 vertices and Euler characteristic two; the noncyclic control has Euler
+characteristic zero and an 18-sided face. The control is not a planar
+counterexample. These are finite program checks, not Lean certificates.
+
+```sh
+python3 tools/fourcolor/classical/hexagonal_seam_probe.py \
+  --output hexagonal-seam-probe.json
+```
+
+`hexagonal-seam-measurements.json` records the separate Lean proof and audit.
+The general result constructs aligned coordinates along arbitrary chains of
+recognized oriented rows from their actual hexagonal seam faces. Exact
+side-colouring support composition then supplies the existing strict
+shore-splice argument, without an assumed common port labelling. The
+five-port bound remains 446,403 rows; the new result is geometric alignment,
+not a smaller cutoff or another catalogue replacement. The facial adapter
+derives rotation compatibility from face incidences and alternating retained
+degrees. The complete proof still retains 633 configurations and 630 original
+configuration certificates. See the [tube guide](../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
+for the exact hypotheses and remaining recognition/coverage obligations.

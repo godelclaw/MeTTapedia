@@ -156,16 +156,19 @@ theorem State.ext' {s s' : State.{u} k} (h1 : s.hubRotation = s'.hubRotation)
 
 variable {rotation}
 
-/-- **No long zigzag tube in a least counterexample.**  Literal shore nodes whose
-vertex sides form a coherent chain of `n` zigzag slabs number at most
-`k - 1 + k!·k!·(6w+1)`. -/
-theorem le_of_tube_nodes
+/-- Stationary supports in any supplied boundary coordinates give equal
+phased states at two nested literal shores once the finite carrier is
+exhausted. The geometric splice then contradicts minimality. -/
+theorem le_of_stationary_nodes
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
-    {w : Nat} (hk : stabilizes k = true) {inner : V → Prop} {n : Nat}
-    (t : Tube rotation.toRotationSystem k inner n) (hc : t.Coherent)
+    {w n : Nat} (side : Nat → V → Prop)
+    (coordinate : ∀ r, Fin k ≃ BoundaryDart rotation.toRotationSystem (side r))
     (nodes : Fin (n + 1) → LiteralShoreNode rotation k w)
-    (hkeep : ∀ r : Fin (n + 1), majorityRetainedKeep G (nodes r).shore = t.side r)
-    (hnested : ∀ r r' : Fin (n + 1), r < r' → (nodes r).shore ⊂ (nodes r').shore) :
+    (hkeep : ∀ r : Fin (n + 1), majorityRetainedKeep G (nodes r).shore = side r)
+    (hnested : ∀ r r' : Fin (n + 1), r < r' → (nodes r).shore ⊂ (nodes r').shore)
+    (hstable : ∀ j, k - 1 + j ≤ n →
+      sideSet (side (k - 1 + j)) (coordinate (k - 1 + j)) =
+        sideSet (side (k - 1)) (coordinate (k - 1))) :
     n + 2 - k ≤ Nat.factorial k * (Nat.factorial k * (6 * w + 1)) := by
   have hkpos : 0 < k := NeZero.pos k
   by_contra hlt
@@ -173,9 +176,9 @@ theorem le_of_tube_nodes
   -- the nodes past ring `k-1`
   let idx : Fin (n + 2 - k) → Fin (n + 1) := fun j => ⟨k - 1 + j, by omega⟩
   have hw : ∀ r : Fin (n + 1), boundaryWidth rotation (nodes r).shore = k := fun r =>
-    boundaryWidth_eq_of_equiv rotation _ ((t.sideEquiv r).trans (castBoundary (hkeep r).symm))
+    boundaryWidth_eq_of_equiv rotation _ ((coordinate r).trans (castBoundary (hkeep r).symm))
   let f : Fin (n + 2 - k) → Carrier.{u} k w := fun j =>
-    (sigma rotation (nodes (idx j)).shore (hw _) (hkeep (idx j)) (t.sideEquiv (idx j)),
+    (sigma rotation (nodes (idx j)).shore (hw _) (hkeep (idx j)) (coordinate (idx j)),
       (normalizedState rotation (nodes (idx j)).shore (nodes (idx j)).innerOuter k (hw _)).hubRotation,
       shoreCardPhase w (nodes (idx j)).shore)
   have hcard : Fintype.card (Carrier.{u} k w) < Fintype.card (Fin (n + 2 - k)) := by
@@ -194,20 +197,33 @@ theorem le_of_tube_nodes
     apply State.ext' hhub
     ext word
     rw [mem_support_iff_sideSet rotation _ (nodes (idx a)).innerOuter (hw _) (hkeep (idx a))
-        (t.sideEquiv (idx a)),
+        (coordinate (idx a)),
       mem_support_iff_sideSet rotation _ (nodes (idx b)).innerOuter (hw _) (hkeep (idx b))
-        (t.sideEquiv (idx b)), hσ]
-    have hside : sideSet (t.side (idx a)) (t.sideEquiv (idx a)) =
-        sideSet (t.side (idx b)) (t.sideEquiv (idx b)) := by
-      show sideSet (t.side (k - 1 + a)) (t.sideEquiv (k - 1 + a)) =
-        sideSet (t.side (k - 1 + b)) (t.sideEquiv (k - 1 + b))
-      rw [Tube.sideSet_eq_of_le hk t hc a (by omega), Tube.sideSet_eq_of_le hk t hc b (by omega)]
+        (coordinate (idx b)), hσ]
+    have hside : sideSet (side (idx a)) (coordinate (idx a)) =
+        sideSet (side (idx b)) (coordinate (idx b)) := by
+      show sideSet (side (k - 1 + a)) (coordinate (k - 1 + a)) =
+        sideSet (side (k - 1 + b)) (coordinate (k - 1 + b))
+      rw [hstable a (by omega), hstable b (by omega)]
     rw [hside]
   rcases lt_or_gt_of_ne hne with hjj | hjj
   · exact cardPhasedState_ne_of_ssubset rotation minimal (nodes (idx j')) (nodes (idx j))
       (hnested _ _ (by simp only [idx, Fin.mk_lt_mk]; omega)) (hstate j' j hf.symm)
   · exact cardPhasedState_ne_of_ssubset rotation minimal (nodes (idx j)) (nodes (idx j'))
       (hnested _ _ (by simp only [idx, Fin.mk_lt_mk]; omega)) (hstate j j' hf)
+
+/-- **No long zigzag tube in a least counterexample.** Literal shore nodes
+whose vertex sides form a coherent chain satisfy the stationary-node bound. -/
+theorem le_of_tube_nodes
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {w : Nat} (hk : stabilizes k = true) {inner : V → Prop} {n : Nat}
+    (t : Tube rotation.toRotationSystem k inner n) (hc : t.Coherent)
+    (nodes : Fin (n + 1) → LiteralShoreNode rotation k w)
+    (hkeep : ∀ r : Fin (n + 1), majorityRetainedKeep G (nodes r).shore = t.side r)
+    (hnested : ∀ r r' : Fin (n + 1), r < r' → (nodes r).shore ⊂ (nodes r').shore) :
+    n + 2 - k ≤ Nat.factorial k * (Nat.factorial k * (6 * w + 1)) :=
+  le_of_stationary_nodes minimal t.side t.sideEquiv nodes hkeep hnested
+    (fun j hj => t.sideSet_eq_of_le hk hc j hj)
 
 end Nodes
 
