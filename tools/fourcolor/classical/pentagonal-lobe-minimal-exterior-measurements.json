@@ -1,0 +1,106 @@
+{
+  "status": "Kernel-checked exterior connectivity from minimality and exact local recognition, with no distinct-attachment, connected-exterior or exterior-root premise. Alternating-lobe recognition and coverage remain open.",
+  "completed_utc": "2026-09-29T23:00:13+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "fc7081c1b7b737ed068114511a68ecd45313f0ed",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SixPortBoundaryConnectivity",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/SixPortBoundaryConnectivity.lean",
+      "source_sha256": "1df2e6fcd6d9cfed0e1af264596495c1ed1db0cedfb5a53f3be0b8ccfd8b232e",
+      "olean_sha256": "933f7b73e141c7461d4ebd48ff08672cf6903dcb817f3d8bb73ab5410995f389",
+      "olean_bytes": 284416,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SphericalVertexLowerBound",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/SphericalVertexLowerBound.lean",
+      "source_sha256": "1d9cff1ad7b337f7dae1c939e8d5eebb62bbd3508a42555f27990de1d7623430",
+      "olean_sha256": "67629c2de8090f8f7234415edfebf278061b3a82d900922b445a4c9e58f0b080",
+      "olean_bytes": 89048,
+      "reported_build_seconds": 2.6
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeMinimalExterior",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExterior.lean",
+      "source_sha256": "a8089cc5fb7cb8466507e978d1c19ec0c616bfbbabbb41c6e252afbd23337792",
+      "olean_sha256": "a72eb65b5b2687cf44780f49dfc501db9da0f037779d3b03b6452d1d1454b021",
+      "olean_bytes": 156616,
+      "reported_build_seconds": 2.8
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeMinimalExteriorAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExteriorAudit.lean",
+      "source_sha256": "d989b14dd05e7a06e2853e345ed12e249c1c56d52821f17fe2e3b47d10624d4a",
+      "olean_sha256": "93f8f2ff60c54c7c868379753f8c77f109c53d4873c21e07ce313e17d75d6ee6",
+      "olean_bytes": 3264,
+      "reported_build_seconds": 7.8
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.SixPortBoundaryConnectivity.hasCycle_of_boundary_card_lt_card_add_two",
+      "Mettapedia.GraphTheory.FourColor.SixPortBoundaryConnectivity.three_le_componentPorts",
+      "Mettapedia.GraphTheory.FourColor.SixPortBoundaryConnectivity.four_le_componentPorts_of_adj",
+      "Mettapedia.GraphTheory.FourColor.SixPortBoundaryConnectivity.connected_of_internal_edge_of_boundary_card_le_six",
+      "Mettapedia.GraphTheory.FourColor.SixPortBoundaryConnectivity.connected_of_two_lt_card_of_boundary_card_le_six",
+      "Mettapedia.GraphTheory.FourColor.SphericalVertexLowerBound.twenty_le_card_vertices",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.inside_hasCycle",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.exterior_connected_of_minimum_face_size",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.strict_reduction_of_minimum_face_size",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.exterior_connected_of_minimality",
+      "FourColor.PentagonalLobePatch.Tangle.Embedded.not_in_minimal_counterexample_of_recognition"
+    ],
+    "combined_dependency_closure": 26029,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "scope": "Named roots and complete proof dependency closures, including actual component cut counts, quotient-face Euler counting, minimality-derived geometry, strict reduction and genuine original-map reconstruction.",
+    "excluded_dependencies": "Original configuration certificates, complete Four Colour endpoints and diamond configuration/family reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeMinimalExteriorAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3620,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "general_connectivity": "In a finite cubic simple graph with cyclic edge-connectivity at least four, a vertex side with at most six outgoing darts, more than two vertices, and a cycle in its complement is connected. No distinct endpoints, embedding or colouring premise.",
+    "component_count": "A nonempty component opposite a cycle has at least three outgoing edges. If it contains an edge, it has at least four. Cubic incidence forces an internal edge on a side of more than two vertices behind at most six ports.",
+    "spherical_bound": "Every spherical cubic rotation map with at least five distinct edges on every actual quotient face has at least twenty vertices. Repeated facial edge visits are allowed.",
+    "actual_patch": "Exact OpenTangleIsomorphism.Iso from the literal sixteen-vertex six-port patch to an actual vertex shore; no colouring field.",
+    "patch_cycle": "Derived from connectedness and the cubic/tree count; sixteen vertices with six ports cannot be a tree.",
+    "exterior_size_lower_bound": 4,
+    "minimality_consumer": "Graph-backed vertex minimality supplies minimum face size and cyclic-four connectivity, exterior connectedness, the smaller colouring and ambient geometry. The six ports supply an exterior root.",
+    "whole_map_vertex_decrease": 12,
+    "actual_ambient_reconstruction": true,
+    "exterior_connectedness_derived": true,
+    "distinct_exterior_attachments_required": false,
+    "recognition_from_alternating_lobe_geometry_proved": false,
+    "count_equivalence_proved": false,
+    "executable_history_transport_proved": false,
+    "coverage_proved": false
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "geometric_replacement_schemes": 1,
+    "scheme_hypotheses_removed": "Exterior connectedness and attachment distinctness need not be supplied for a recognized occurrence in a vertex-minimal counterexample. This extends the existing scheme, not a new independent scheme.",
+    "interface_ports": 6
+  },
+  "cost_scope": "Reported Lake module times include elaboration and kernel checking. Null means no retained timing for the exact final source. No isolated kernel benchmark, full baseline replay or unchanged finite-fixture rerun was required.",
+  "next_obligations": [
+    "Construct exact recognition from an independently specified alternating eleven-lobe and enclosed five-cycle, preserving rotations and cyclic port order.",
+    "Prove broader supply and coverage; integrate applicable replacements and audit actual certificate dependencies before crediting further compression."
+  ]
+}

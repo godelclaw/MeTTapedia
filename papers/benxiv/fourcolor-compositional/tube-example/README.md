@@ -505,14 +505,42 @@ attachment vertices repeat. These are finite program checks; the general
 connectivity theorem and its reduction consumer have a separate
 [kernel audit][attachments-audit].
 
-The next missing theorem must derive the recognition data and distinct
-attachments from independently specified alternating-lobe geometry. The
-29 program-recognized examples do not prove that general implication.
-Coverage of the relevant stopping configurations remains open. The
-[attachment measurement record][attachments-measurements] credits no additional
-original configuration-certificate savings; the 22 terminal witnesses and
-nine answer-cover checks remain. Counts and executable recolouring histories
-are not asserted to be preserved by this reduction.
+The [minimal-exterior theorem][minimal-exterior] removes the distinctness
+premise for the intended minimal-counterexample argument. Its stronger
+six-port count uses the cycle inside the removed patch. Every exterior
+component needs at least three outgoing edges. A component containing an
+edge needs at least four, because a connected cubic side behind at most
+three edges is either cyclic or a single vertex. Two such components would
+need at least seven ports. Cubic incidence supplies an internal edge as soon
+as the exterior has more than two vertices.
+
+Euler and minimum face size give at least twenty ambient vertices, so at
+least four remain outside this sixteen-vertex patch. Minimality supplies the
+face-size and cyclic-cut bounds. Thus exact local recognition now suffices:
+
+```text
+recognized sixteen-vertex patch in a vertex-minimal counterexample
+  → at least four exterior vertices and a cycle inside the patch
+  → connected exterior, with repeated attachment endpoints allowed
+  → strict twelve-vertex reduction and genuine colouring reconstruction
+  → contradiction to minimality.
+```
+
+`Embedded.not_in_minimal_counterexample_of_recognition` consumes this entire
+chain, with no exterior root, connectedness or endpoint injection supplied
+separately. The [audit][minimal-exterior-audit] checks eleven roots and excludes
+complete Four Colour endpoints and catalogue certificates. The reusable
+[six-port theorem][six-port-connectivity] needs no embedding or colouring;
+the [twenty-vertex bound][vertex-lower-bound] counts actual quotient faces.
+
+The next missing theorem must derive exact recognition from independently
+specified alternating-lobe geometry, including the inner pentagon's incidence,
+rotation and port order. The 29 program-recognized examples do not prove that
+general implication. Coverage of the relevant stopping configurations remains
+open. The [measurement record][minimal-exterior-measurements] credits no
+additional original configuration-certificate savings; the 22 terminal
+witnesses, nine answer-cover checks and one shared matching codec remain.
+Counts and executable recolouring histories are not asserted equivalent.
 
 ## Scope and verification
 
@@ -603,3 +631,9 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [attachments-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeDistinctAttachmentsAudit.lean
 [attachments-probe]: ../../../../tools/fourcolor/classical/matching-boundary-connectivity-probe.json
 [attachments-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-attachments-measurements.json
+
+[minimal-exterior]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExterior.lean
+[minimal-exterior-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExteriorAudit.lean
+[minimal-exterior-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-minimal-exterior-measurements.json
+[six-port-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SixPortBoundaryConnectivity.lean
+[vertex-lower-bound]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SphericalVertexLowerBound.lean

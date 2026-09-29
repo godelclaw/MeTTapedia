@@ -107,10 +107,13 @@ an exact recognized occurrence with connected exterior. It transports the
 patch's return order, accounts for the opposite exterior orientation and
 reconstructs the original ambient map. Recognition consists only of local
 vertex, dart, port and rotation correspondences. In a minimal counterexample,
-the six distinct exterior attachment vertices now imply exterior connectedness:
-each component contains a cycle and would require at least four boundary
-edges. Deriving the recognition and distinct attachments from alternating-lobe
-geometry, and proving coverage, remain open. No further original certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
+exterior connectedness now follows without distinct attachment vertices.
+The patch contains a cycle; a disconnected exterior with six ports could
+only have two isolated vertices. Euler and minimum face size leave at least
+four exterior vertices. Exact local recognition therefore suffices for the
+strict reduction and contradiction. Deriving that recognition from
+alternating-lobe geometry, and proving coverage, remain open. No further
+original certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
 separates this theorem from the 406 independent tests of fourteen tree shapes.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
@@ -306,7 +309,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within three extensions at width five in a minimal counterexample |
 | Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; its embedded closing operation remains open |
 | Cycle boundary contraction | One marked-seam law reconstructs literal cycle colourings at every length; forgetting the seam guard fails on a kernel-checked four-cycle |
-| Pentagonal lobe boundary repair | A literal six-port disk has compatible colouring witnesses for every Kempe-closed exterior; nine finite answer checks remain, with geometric integration open |
+| Pentagonal lobe reduction | Exact recognized occurrences admit twelve-vertex reduction and reconstruction; minimality supplies all exterior conditions. Recognition from alternating-lobe geometry and coverage remain open; nine finite answer checks remain |
 | Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |

@@ -42,7 +42,15 @@ law for contracting two adjacent ports of a literal cycle, at every length:
 the retained seam colour must differ from the first old port colour. It
 reconstructs actual witnesses and proves that forgetting this guard fails
 already on a four-cycle. The embedded exterior operation remains separate.
-The GSLT, graph and MeTTa
+The larger pentagon-plus-eleven-lobe patch now admits a twelve-vertex tree
+reduction and genuine colouring reconstruction for every exact recognized
+occurrence under the documented spherical and exterior hypotheses. In a minimal counterexample,
+[SixPortBoundaryConnectivity](SixPortBoundaryConnectivity.lean) and
+[SphericalVertexLowerBound](SphericalVertexLowerBound.lean) supply exterior
+connectedness without distinct attachment vertices; the
+[actual consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExterior.lean)
+excludes the recognized occurrence. Deriving recognition from the lobe's
+geometry and proving coverage remain open. The GSLT, graph and MeTTa
 results have their own verified consumers, listed in the guide.
 
 ## Independent corridor route — checkpoint of 22 September 2026

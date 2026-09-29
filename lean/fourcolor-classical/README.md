@@ -324,9 +324,20 @@ cubic graph under that cut bound, with fewer than eight outgoing darts and
 distinct initial vertices: two components would each contain a cycle and
 require at least four disjoint boundary edges. Its
 [receipt](../../tools/fourcolor/classical/pentagonal-lobe-attachments-measurements.json)
-records the actual strict-reduction consumer. Deriving the recognition
-isomorphism and distinct attachment vertices from alternating-lobe geometry,
-and proving coverage, remain open. The complete assembly and credited
+records the actual strict-reduction consumer.
+
+`PentagonalLobeMinimalExterior` now removes the distinct-attachment condition
+for the minimal-counterexample application. A side with at most six ports,
+more than two vertices, and a complementary cycle is connected in a cubic
+graph with cyclic cuts of size at least four. Euler and minimum face size
+leave at least four exterior vertices, and the patch's cycle follows from
+cubic incidence. Minimality supplies both geometric bounds. The theorem
+`Embedded.not_in_minimal_counterexample_of_recognition` therefore needs only
+the exact local occurrence and minimality; an exterior root is also derived.
+The [receipt](../../tools/fourcolor/classical/pentagonal-lobe-minimal-exterior-measurements.json)
+records eleven audited roots, including the strict whole-map reduction and
+colouring reconstruction. Deriving recognition from alternating-lobe geometry
+and proving coverage remain open. The complete assembly and credited
 certificate savings are unchanged.
 
 The hypermap dictionary preserves actual dart permutations, components and

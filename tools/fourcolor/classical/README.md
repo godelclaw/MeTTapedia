@@ -1149,7 +1149,23 @@ The first command runs in `lean/fourcolor-classical`; the second runs from the
 repository root. `pentagonal-lobe-attachments-measurements.json` records the
 proof and actual reduction consumer. The program checks all 29 extracted
 exteriors and two circular-ladder examples showing why the port bound and
-distinctness matter. Deriving the recognition data and distinct attachments
-from alternating-lobe geometry, and proving coverage, remain open. The
-unchanged 406-case replacement replay remains independent program evidence.
-No new catalogue or original-certificate saving is credited.
+distinctness matter for that theorem's general graph class.
+
+`PentagonalLobeMinimalExterior.lean` now derives connectedness without distinct
+attachments in the intended minimal source. The patch contains a cycle; a
+side with at most six ports and more than two vertices is connected under the
+cyclic-four bound. Euler and minimum face size leave at least four exterior
+vertices. The strict-reduction consumer and minimal-counterexample exclusion
+retain exact local recognition, but require no separately supplied exterior
+condition or root.
+
+```sh
+lake build MettapediaFourColor.PentagonalLobeMinimalExteriorAudit
+```
+
+Run this in `lean/fourcolor-classical`.
+`pentagonal-lobe-minimal-exterior-measurements.json` records the eleven-root
+audit, source/artifact hashes and exact scope. Deriving recognition from
+alternating-lobe geometry and proving coverage remain open. The unchanged
+406-case replacement replay remains independent program evidence. No new
+catalogue or original-certificate saving is credited.
