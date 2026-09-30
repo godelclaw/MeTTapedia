@@ -1,4 +1,16 @@
-# One boundary certificate for an infinite tube family
+# Compositional reductions for tube families
+
+The strongest current reduction allows a cyclic change of seam matching.
+At every circumference `k ≥ 2`, any recognized tube with at least three rows
+can lose two rows: exactly `4k` vertices disappear. The smaller map remains
+connected, bridgeless, spherical and cubic, and each of its colourings
+reconstructs while fixing all exterior edge colours. See the
+[two-row deletion](#two-row-deletion-with-a-cyclic-seam-shift) below.
+This theorem uses the complementary-ring algebra, with no finite colouring
+certificate. The earlier exact-support normalization remains useful when
+the original seam matching and both directions of transport are required.
+
+## Exact support with the original seam
 
 For the literal zigzag tube with five ordered ports at **each** end, every
 tube of at least four rings has exactly the boundary-colouring relation of
@@ -1590,3 +1602,86 @@ history equivalence is inferred.
 [diamond-supply-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondGeometricSupplyAudit.lean
 [diamond-supply-probe]: ../../../../tools/fourcolor/classical/diamond-supply-probe.json
 [diamond-supply-measurements]: ../../../../tools/fourcolor/classical/diamond-supply-measurements.json
+
+
+## Two-row deletion with a cyclic seam shift
+
+The [new reduction][twist-reduction] uses a freedom that the exact-support
+normalization did not: change the port matching when building the smaller
+map. It is a uniform law for every circumference `k ≥ 2` and every tube of
+at least three rows. Delete two rows and move the right attachment by one
+cyclic port. Every colouring of that smaller graph reconstructs a colouring
+of the original. No finite ring-stabilization certificate is used.
+
+The colouring argument is short. Write `R(x,y)` for a genuine ring colouring,
+and `s` for the cyclic shift of a boundary word. The existing complementary
+cursor and rotation laws give
+
+```text
+R(x,y)  →  R(y,s(x))  →  R(s(x),s(y)).
+```
+
+These three witnesses compose because their middle words agree. Thus a
+single ring can be reconstructed as three, with output `s(y)`. For a longer
+tube the same operation acts on its final ring. The shorter tube's new port
+`i` denotes its original port `i+1`, so the word observed by the fixed exterior
+is exactly the word reconstructed by the longer tube. This is a directed
+support inclusion. An equivalence of supports, preservation of colouring
+counts, or an executable Kempe history is not claimed.
+
+The geometric proof uses the same joint observations as the colour proof.
+A tube's face return advances the left boundary and retreats the right
+boundary. The cyclic reattachment commutes with these permutations. Boundary
+reindexing also retains the open Euler mass, the interior edge graph and all
+vertex rotations. Consequently the existing replacement theorems preserve
+Euler characteristic, connectedness, bridge-freedom and cubicity in every
+fixed exterior, including disconnected exteriors. No vertices are introduced
+outside the tube. Removing two rows decreases the total vertex count by
+exactly `4k`.
+
+The [embedded consumer][twist-embedded] starts with actual recognized rows.
+Their hexagonal seam faces supply the coordinate offsets; whole-strip
+assembly and the exact exterior identify the physical operation. It proves
+`Tube.hexagonal_length_le_two`: a graph-backed vertex-minimal Tait
+counterexample contains at most two rows in any such tube, at any width
+`k ≥ 2`. This improves the earlier width-five bound of four rows. It does
+not assert a smaller threshold for exact support with the original matching.
+
+Combining the reduction with the already proved collar construction gives
+`ZigzagSlab.pentagonWithin_one`. In an all-five/six minimal counterexample,
+any supplied oriented row meets a pentagonal seam immediately or after one
+successful hexagonal extension. Arbitrarily large width therefore does not permit a
+long constant-width corridor at this stage. Supplying a suitable row and
+repairing the pentagonal transition are still necessary.
+
+The [GSLT consumer][twist-gslt] uses the existing event language and directed
+replacement cells. Genuine colouring witnesses lift through arbitrary
+prefix and suffix routes while retaining both shared boundary assignments.
+Every predicate on the outer observations survives this reconstruction.
+The cell uses existential witness selection; it adds no claim about runtime
+or the number of colourings.
+
+The [independent replay][twist-probe] checks all 87,390 ring colourings at
+widths two through eight. It also physically performs the operation in two
+sparse Goldberg controls which contain none of the three recognized diamond
+cores. GP(3,0) has a three-row width-15 tube: 180 vertices become 120.
+GP(4,0) has a four-row width-20 tube: 320 become 240. Both reduced rotations
+are spherical, connected, cubic and bridgeless; explicit smaller colourings
+reconstruct with all exterior edge colours fixed. GP(2,0) reaches its
+pentagonal stop after only two rows, so it remains outside this reduction.
+These are finite examples, separate from the general theorem.
+
+The [audit][twist-audit] checks thirteen roots and 12,297 dependency
+declarations, with only the three standard axioms. It excludes the classical
+Four Colour theorem, finite tube stabilization certificates and long-length
+mixing bounds. The [measurement receipt][twist-measurements] records the
+checks and scope. The complete classical assembly remains at 633 catalogue
+entries and 630 original configuration certificate dependencies. This new
+geometric reduction has not replaced another certificate in those endpoints.
+
+[twist-reduction]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeTwistReduction.lean
+[twist-embedded]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeTwistReduction.lean
+[twist-gslt]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeTwistGSLT.lean
+[twist-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeTwistAudit.lean
+[twist-probe]: ../../../../tools/fourcolor/classical/twisted-tube-probe.json
+[twist-measurements]: ../../../../tools/fourcolor/classical/twisted-tube-measurements.json

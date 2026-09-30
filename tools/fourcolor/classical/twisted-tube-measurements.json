@@ -1,0 +1,238 @@
+{
+  "status": "Kernel-checked uniform two-row tube reduction with a cyclic seam shift; actual embedded and GSLT consumers audited.",
+  "completed_utc": "2026-09-30T09:06:41.084207+00:00",
+  "build_base_revision": "07cda6b21c9f61d4c5647e99ed01f180166386e0",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.TwoSidedBoundaryVertex",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoSidedBoundaryVertex.lean",
+      "source_sha256": "88a45345ce49afc1bc347310b53a681eec4fb372b5a6cb206a1d15957e11a2c9",
+      "source_bytes": 2285,
+      "olean_sha256": "e64703f58077b1970daa55f859ac647956cbbed4c7e127a0ea5b11d0affa6cc0",
+      "olean_bytes": 81648,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTubeTwistReduction",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeTwistReduction.lean",
+      "source_sha256": "3e7ec3ce0547f5930b2ce04467fc0e6d3723b24a2c60d1497273ac9ed19bccd0",
+      "source_bytes": 8244,
+      "olean_sha256": "e1428997d389d88aa7f1600d3dcc6f92898f1fed5f45e8484be10f27b8534f05",
+      "olean_bytes": 453072,
+      "reported_build_seconds": 3.3
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTubeTwistReduction",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTubeTwistReduction.lean",
+      "source_sha256": "6a9d6648178dd8b004004852f8ed5c07744a857a9f4fe6044e927073fc9df2c9",
+      "source_bytes": 5452,
+      "olean_sha256": "71e426891ba27f1a4971e41abfa426c599dd5d361c915ca59ca16a662a8fbf61",
+      "olean_bytes": 610528,
+      "reported_build_seconds": 3.1
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTubeTwistGSLT",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeTwistGSLT.lean",
+      "source_sha256": "ae8277f40164d8ff03ece6907ab91c111e8b2943c2cdb90a2583f44d2039962c",
+      "source_bytes": 2983,
+      "olean_sha256": "192462896e48517b9ea4f81be02ced0728928ecea9b6b31370f43b807e852e49",
+      "olean_bytes": 50400,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTubeTwistAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeTwistAudit.lean",
+      "source_sha256": "d2669d8f091a35e2ad19f27d949ad630a6d7542fa487425fc369aa4b59137983",
+      "source_bytes": 4034,
+      "olean_sha256": "1814c2c859c19503a762f5121693257a8b4d785e729b39d853c6aa9f669250ac",
+      "olean_bytes": 3656,
+      "reported_build_seconds": 6.2
+    }
+  ],
+  "audit": {
+    "root_count": 13,
+    "combined_dependency_closure": 12297,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "complementary-ring and cyclic-rotation laws",
+      "exact boundary reindexing and genuine colouring reconstruction",
+      "boundary face return, open Euler mass and actual vertex geometry",
+      "whole-map reconstruction fixing all exterior edge colours",
+      "actual tube recognition, exterior reassembly and smaller-map minimality",
+      "GSLT replacement in arbitrary prefix and suffix routes"
+    ],
+    "excluded": [
+      "classical FourColor namespace",
+      "finite five-tube stabilization certificate",
+      "exact tube-support stabilization theorem",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gates": [
+      {
+        "command": "lake build Mettapedia.GraphTheory.FourColor.ZigzagTubeTwistAudit",
+        "jobs": 3703,
+        "exit_code": 0
+      },
+      {
+        "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+        "jobs": 11028,
+        "exit_code": 0
+      }
+    ],
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel module times from the final incremental builds; the generic boundary module was already cached. No isolated kernel timing or speedup is claimed.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "width": "Every k >= 2.",
+    "length": "Every original tube with n+3 rings; the replacement has n+1 rings, for every natural n.",
+    "operation": "Delete two rows and reindex the right boundary by i -> i+1.",
+    "vertices_removed": "4*k, counted across the complete map; no new exterior vertices.",
+    "class_preserved": [
+      "connected",
+      "bridgeless",
+      "spherical",
+      "cubic",
+      "cyclic vertex rotations"
+    ],
+    "exterior": "Any fixed sewn exterior, including disconnected exteriors, provided the original sewn map has the stated class.",
+    "colouring": "Every replacement colouring has a genuine original colouring with every exterior edge colour fixed.",
+    "direction": "Support inclusion from the reindexed shorter tube to the longer tube. No equality at fixed matching or colouring-count preservation.",
+    "gslt": "Directed witness reconstruction composes with arbitrary prefix and suffix routes and preserves arbitrary outer predicates.",
+    "witness_selection": "The GSLT cell uses classical witness selection; executable recolouring histories and running time are not asserted.",
+    "minimality": "A graph-backed vertex-minimal Tait counterexample contains at most two rows in any recognized hexagonal tube at width k >= 2.",
+    "all_five_six_stop": "A supplied rotation-compatible oriented row in an all-five/six minimal counterexample meets a pentagonal seam immediately or after one successful extension."
+  },
+  "programme": {
+    "new_uniform_geometric_reduction_schemes": 1,
+    "width_bounded": false,
+    "length_bounded": false,
+    "new_finite_colouring_certificates": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "additional_original_certificates_replaced": 0,
+    "catalogue_entries_removed": 0,
+    "integrated_into_complete_assembly": false,
+    "global_coverage_proved": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/twisted_tube_probe.py",
+    "script_sha256": "cd011330f51c62d86634305e460e486ec6a62087cac335bff6fb0f9c538470bc",
+    "record": "tools/fourcolor/classical/twisted-tube-probe.json",
+    "record_sha256": "21cb4735c77bd51e7fb910c94bb0e7ff592c0a0dd96548a460fd5f3e3aad75a2",
+    "input_record": "tools/fourcolor/classical/diamond-supply-probe.json",
+    "input_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171",
+    "program_dependencies": [
+      {
+        "source": "tools/fourcolor/classical/alternating_cycle_probe.py",
+        "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+      },
+      {
+        "source": "tools/fourcolor/classical/alternating_lobe_probe.py",
+        "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+      }
+    ],
+    "evidence": "Independent finite program replay, not a Lean certificate or a proof of the general theorem.",
+    "algebra": [
+      {
+        "width": 2,
+        "ring_colourings": 18,
+        "all_reconstructions_valid": true
+      },
+      {
+        "width": 3,
+        "ring_colourings": 66,
+        "all_reconstructions_valid": true
+      },
+      {
+        "width": 4,
+        "ring_colourings": 258,
+        "all_reconstructions_valid": true
+      },
+      {
+        "width": 5,
+        "ring_colourings": 1026,
+        "all_reconstructions_valid": true
+      },
+      {
+        "width": 6,
+        "ring_colourings": 4098,
+        "all_reconstructions_valid": true
+      },
+      {
+        "width": 7,
+        "ring_colourings": 16386,
+        "all_reconstructions_valid": true
+      },
+      {
+        "width": 8,
+        "ring_colourings": 65538,
+        "all_reconstructions_valid": true
+      }
+    ],
+    "total_ring_colourings": 87390,
+    "physical": [
+      {
+        "map": "Goldberg-GP(2,0)",
+        "vertices": 80,
+        "rows": 2,
+        "width": 10,
+        "eligible": false
+      },
+      {
+        "map": "Goldberg-GP(3,0)",
+        "vertices": 180,
+        "rows": 3,
+        "width": 15,
+        "eligible": true,
+        "shortened_vertices": 120,
+        "retained_rows": 1,
+        "vertices_removed": 60,
+        "small_face_lengths": {
+          "5": 12,
+          "6": 50
+        },
+        "exterior_darts_preserved": 270,
+        "euler": 2,
+        "connected_cubic_bridgeless": true,
+        "rotation_sha256": "58f6557c005ead0063dec6dcbe778bf8c2834e5089aac24885acf5dc7fc21c05"
+      },
+      {
+        "map": "Goldberg-GP(4,0)",
+        "vertices": 320,
+        "rows": 4,
+        "width": 20,
+        "eligible": true,
+        "shortened_vertices": 240,
+        "retained_rows": 2,
+        "vertices_removed": 80,
+        "small_face_lengths": {
+          "5": 12,
+          "6": 110
+        },
+        "exterior_darts_preserved": 480,
+        "euler": 2,
+        "connected_cubic_bridgeless": true,
+        "rotation_sha256": "00dd97e33f6f18716782e9a8760f8766000055bd2c7b5de73cc98aca35c34274"
+      }
+    ]
+  },
+  "remaining": [
+    "Recognize and repair the joint pentagonal stopping transition, including the two-row GP(2,0) control.",
+    "Supply suitable alternating rows or a successful alternative at defective lobe closures.",
+    "Prove coverage for wider face classes and integrate the reductions with global termination and reconstruction."
+  ]
+}

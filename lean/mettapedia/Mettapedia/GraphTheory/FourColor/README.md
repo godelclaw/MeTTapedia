@@ -2,7 +2,7 @@
 
 This is the canonical modern Lean home for the godelclaw Four Color work.
 
-## Current proof plan — 29 September 2026
+## Current proof plan — 30 September 2026
 
 Start with the [compositional proof-plan guide](../../../../../papers/benxiv/fourcolor-compositional/README.md).
 It connects Goertzel and Fable's original three-level argument to the current
@@ -21,14 +21,17 @@ repair from configuration 2 to configuration 1. Shared proofs also replace
 
 This completes the classical reconstruction. The diamond cores now share
 boundary laws for all their local cover obligations, retaining finite profile
-and classification data. A recognized oriented five-port hexagonal strip now
-reduces to four rows in its actual exterior, with the original geometric class
-and all exterior colours preserved. Surrounding hexagonal seam faces now
-construct a successor row under short output-face hypotheses: distinctness of
-its candidate vertices is proved from the geometry. In finite maps with only
-pentagonal/hexagonal faces, this growth terminates at a pentagonal seam. A
-minimal counterexample reaches that seam within three extensions of a supplied
-five-port row. A simple cycle with alternating local turns now constructs that
+and classification data. The new
+[cyclic seam reduction](HexagonalTubeTwistReduction.lean) deletes two rows
+from any recognized hexagonal tube of at least three rows at width `k ≥ 2`.
+Rotating the attachment at one end by one port preserves the map class
+and reconstructs every smaller colouring, fixing all exterior edge colours.
+The total decrease is exactly `4k` vertices. No finite colouring certificate
+is used. [GSLT route reconstruction](ZigzagTubeTwistGSLT.lean) composes this
+directed witness map in arbitrary contexts. In the all-five/six face class,
+a supplied row in a minimal counterexample now reaches a pentagonal seam
+within one successful extension, at every width at least two.
+A simple cycle with alternating local turns now constructs that
 row's facial sides and complete ordered interfaces at every width at least two;
 see [AlternatingCycleRecognition](AlternatingCycleRecognition.lean).
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)

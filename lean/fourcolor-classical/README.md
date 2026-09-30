@@ -47,6 +47,14 @@ and [audit receipt](../../tools/fourcolor/classical/diamond-supply-measurements.
 separate this geometric coverage from the unchanged 633 configurations and
 630 original certificate dependencies of the complete assembly.
 
+A separate [uniform corridor reduction](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#two-row-deletion-with-a-cyclic-seam-shift)
+now removes two rows from any recognized hexagonal tube with at least three
+rows, at every width `k ≥ 2`, using a cyclic seam shift. It reconstructs
+colourings and preserves the source class with exactly `4k` fewer vertices.
+Its audit excludes this classical package and finite tube-stabilization
+certificates. This geometric family theorem is not yet consumed by the
+complete endpoints; their catalogue and certificate counts are unchanged.
+
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
 Mathlib as Mettapedia. The compatibility preparation changes the obsolete

@@ -30,11 +30,14 @@ below now supplies three configuration obligations from a shared finite profile
 certificate and a general split transfer.
 
 For a complete example from the corridor idea, see
-[one boundary certificate for an infinite tube family](tube-example/README.md).
-Every literal five-port tube of at least four rings has the four-ring boundary
-relation. Strict physical shortening and GSLT composition preserve that
-relation in arbitrary surrounding contexts. This reuses the earlier finite
-certificate and does not depend on the classical Four Colour theorem.
+[compositional reductions for tube families](tube-example/README.md).
+The latest [cyclic seam reduction](tube-example/README.md#two-row-deletion-with-a-cyclic-seam-shift)
+removes two rows from any recognized tube of at least three rows, at every
+width `k ≥ 2`. Rotating the attachment at one end by one port permits genuine colouring
+reconstruction and preserves the source map class; exactly `4k` vertices
+are removed. The complementary-ring law supplies this result without a new
+finite colouring certificate. The earlier width-five exact-support theorem
+remains available when preserving the original seam matching in both directions.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
@@ -111,12 +114,12 @@ The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-
 now derives compatibility between consecutive recognized rows. Their actual
 hexagonal seam faces force the port matching to be a cyclic translation.
 Accumulating those offsets now assembles the entire recognized strip as a
-literal tube, with exact exterior sewing. A five-port strip of five or more
-rows reduces to four inside the original map's class, preserving all exterior
-edge colours during reconstruction. The minimal-counterexample bound improves
-from the earlier coarse 446,403 to four rows; extra connected-shore hypotheses
-are unnecessary. Suitable alternating-row supply and width control remain
-explicit geometric tasks. No further catalogue certificate is removed.
+literal tube, with exact exterior sewing. The cyclic seam reduction now
+bounds every such strip in a minimal counterexample by two rows, at every
+width at least two. It preserves the map class and every exterior edge colour
+during reconstruction; extra connected-shore hypotheses are unnecessary.
+Suitable alternating-row supply and pentagonal stopping transitions remain
+geometric tasks. No further catalogue certificate is removed.
 
 The next row is now supplied by the [hexagonal collar theorem](tube-example/README.md#constructing-a-row-from-its-surrounding-faces).
 From one recognized row, edge reversal and rotation derive the next vertices;
@@ -124,7 +127,7 @@ hexagonal seam geometry proves they are distinct. Short output-port faces
 then give the complete next row and compatible colouring reconstruction.
 In any finite map with only pentagonal/hexagonal faces, these extensions
 terminate at an actual pentagonal seam. In a least counterexample, a supplied
-five-port row reaches one within three extensions. Initial row supply,
+row of any width at least two reaches one within one successful extension. Initial row supply,
 reductions at those pentagonal stops and changing widths remain coverage tasks.
 
 The [alternating-cycle recognition theorem](tube-example/README.md#recognizing-the-initial-row)
@@ -132,7 +135,7 @@ now derives the initial row's interior and complete interfaces from a simple
 cycle and its alternating local turns. It works at every width at least two.
 Independent tests find width-10 and width-15 rows in the two Goldberg examples
 that had no five-port row. This advances geometric recognition; existence of
-a suitable cycle and a reduction effective at its width remain open.
+a suitable cycle and a reduction at its pentagonal stop remain open.
 
 The [alternating-walk lobe theorem](tube-example/README.md#when-the-alternating-walk-crosses-itself)
 now supplies a simple cycle segment even when the full orbit crosses itself.
@@ -420,8 +423,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Reference configuration certificate dependencies retained / replaced | 630 / 3 |
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's; one arbitrary-width matching codec reconstructs all chromogram answers through the same physical components |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
-| Geometric corridor reduction | Actual hexagonal row chains assemble as literal tubes; five-port strips reduce to four rows, preserving the map class and exterior colours |
-| Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within three extensions at width five in a minimal counterexample |
+| Geometric corridor reduction | Any recognized tube with at least three rows and width `k ≥ 2` loses two rows with a cyclic seam shift: net `4k` vertices, map class preserved, all smaller colourings reconstruct with fixed exterior colours |
+| Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within one extension at every width at least two in a minimal counterexample |
 | Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; its embedded closing operation remains open |
 | Cycle boundary contraction | One marked-seam law reconstructs literal cycle colourings at every length; forgetting the seam guard fails on a kernel-checked four-cycle |
 | Pentagonal lobe reduction | A pentagon with neighbours of lengths 5,5,5,5,6 supplies the complete local recognition and a twelve-vertex reduction. Noncollision, chord exclusion and exterior conditions are derived; broader supply and coverage remain open. Nine finite answer checks remain |
