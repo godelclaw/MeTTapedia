@@ -1468,3 +1468,36 @@ controls. Every sewing preserves Euler characteristic, connectedness and
 bridge-freedom and removes eight vertices. Named edges are deleted
 separately during bridge checks. This is bounded geometric evidence;
 arbitrary-context reconstruction and strict reduction come from Lean.
+
+## Coupled eight-port wiring
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.DiamondCoupledWiringAudit
+```
+
+The two-vertex wiring, including its two free boundary wires, realizes the
+joint contract required by configuration 4. The actual graph construction
+has exact witness restriction and reconstruction in every exterior with
+distinct endpoints for each free wire. Against a Kempe-closed exterior,
+the existing shared repair reconstructs the original fourteen-vertex piece.
+The vertex-count difference is twelve. Recognition and preservation of the
+ambient spherical class remain unproved for this operation.
+
+`coupled-wiring-measurements.json` records the fifteen audit roots and their
+dependencies. No new colouring certificate, complete-theorem dependency,
+or additional catalogue compression is claimed.
+
+```sh
+python3 tools/fourcolor/classical/coupled_wiring_probe.py
+```
+
+The replay extracts the reference four-edge contract and checks the exact
+108-word boundary support of both its six-vertex network and the two-vertex
+wiring. Forgetting the common central edge admits 216 spurious words.
+Thirty-two geometric samples test both orientations and connected or
+disconnected exteriors. Eight connected planar samples preserve the sphere
+and bridge-freedom. Four planar disconnected-exterior samples introduce a
+bridge; all four original maps have triangular faces. These are bounded
+controls for the next geometric theorem, not a refutation of the intended
+normal-form domain or a coverage theorem.

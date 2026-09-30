@@ -1229,3 +1229,79 @@ or provide a sound replacement for the lobes they do not cover.
 [mixed-reduction-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceReductionAudit.lean
 [mixed-reduction-probe]: ../../../../tools/fourcolor/classical/mixed-diamond-reduction-probe.json
 [mixed-reduction-measurements]: ../../../../tools/fourcolor/classical/mixed-diamond-reduction-measurements.json
+
+## The coupled eight-port wiring
+
+Configuration 4 exposes why the boundary contract matters. Its proved repair
+starts with a **joint contraction colouring**. A smaller piece must supply
+that contract; an arbitrary proper eight-port word is insufficient.
+
+Eliminating the contracted interior gives this wiring:
+
+```text
+0 ── 1                          4 ── 5
+
+2 ─┐                            ┌─ 6
+   ●────── shared colour ────────●
+3 ─┘                            └─ 7
+```
+
+There are two vertices and seven edges, including the two free wires.
+Writing the eight boundary colours as `c₀,…,c₇`, the joint relation says
+that all are nonzero and
+
+```text
+c₀ = c₁,     c₄ = c₅,     c₂ + c₃ = c₆ + c₇ ≠ 0.
+```
+
+Addition is in the Klein four-group. The last common value is the central
+edge colour. Each insertion alone only requires its own sum to be nonzero;
+the joint law requires the sums to agree. The kernel-checked example
+`[1,1,1,2,1,1,1,3]` passes the two separate tests and fails the joint one.
+Independent enumeration gives 108 valid joint words and 216 additional
+spurious words after forgetting the coupling.
+
+This is exact boundary elimination with reconstruction. Given the wiring
+colours, choose one face colour as zero and recover the other face colours
+by addition. Conversely a joint contract colouring supplies every wiring
+edge colour. [DiamondCoupledWiring][coupled-wiring] proves both directions
+and feeds the result to the already integrated shared diamond repair.
+
+[DiamondCoupledWiringRotation][coupled-rotation] constructs the actual graph
+in an arbitrary exterior, retaining all exterior darts and vertex rotations.
+It requires the endpoints of each free wire to be distinct. The
+[witness theorem][coupled-witness] restricts a genuine graph colouring to
+the complete exterior assignment and all wiring edges, and glues matching
+witnesses back. Its GSLT consumer retains a compatible history through both
+insertions. Existence and genuine reconstruction are proved; equality of
+colouring counts or executable recolouring histories is not asserted.
+
+[JointDiamondTangle][joint-tangle] identifies the original fourteen-vertex
+piece with the reference darts, internal edge flips, cyclic rotations and
+adjacent face labels. The theorem `colorable_of_wiring` reconstructs that
+piece from a colouring of the smaller wired graph, assuming the exterior's
+Kempe closure. The whole-map count includes both introduced vertices:
+`(|exterior| + 2) + 12 = |exterior| + 14`.
+
+The remaining theorem is geometric: recognize the piece in the intended
+source class, derive wire separation and physical exterior closure, and
+prove that this replacement stays in the class on which minimality supplies
+a colouring. Planarity and bridge-freedom alone do not suffice. The
+[independent replay][coupled-probe] finds planar bridgeless originals whose
+disconnected exterior acquires a bridge after replacement. Those originals
+have triangular faces, excluded by the intended minimal-counterexample
+normal form. The next argument must use that stronger geometry explicitly.
+
+The [audit and measurements][coupled-measurements] cover the actual witness
+chain and exclude the former configuration-specific repair certificate.
+This advances the geometric implementation of the existing shared proof;
+the complete baseline still retains 633 configurations and 630 original
+configuration certificates. No additional certificate saving or global
+coverage is credited.
+
+[coupled-wiring]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiring.lean
+[coupled-rotation]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean
+[coupled-witness]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringWitness.lean
+[joint-tangle]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondTangle.lean
+[coupled-probe]: ../../../../tools/fourcolor/classical/coupled-wiring-probe.json
+[coupled-measurements]: ../../../../tools/fourcolor/classical/coupled-wiring-measurements.json

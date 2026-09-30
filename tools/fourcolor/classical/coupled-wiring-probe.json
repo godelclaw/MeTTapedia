@@ -1,0 +1,944 @@
+{
+  "status": "independent finite evidence; Lean proves the witness equivalence separately",
+  "network": {
+    "reference_vertices": 14,
+    "selected_contract_darts": [
+      12,
+      25,
+      32,
+      39
+    ],
+    "suppressed_vertices": 8,
+    "remaining_vertices": 6,
+    "free_wires": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    "ordered_reference_ports": [
+      4,
+      1,
+      20,
+      17,
+      30,
+      27,
+      10,
+      7
+    ]
+  },
+  "support_words": 108,
+  "independent_insertions_words": 324,
+  "spurious_words_without_coupling": 216,
+  "first_spurious_word": [
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    3
+  ],
+  "new_vertices": 2,
+  "whole_map_vertex_difference": 12,
+  "planar_bridge_failure_controls": 4,
+  "failed_assertion": "Planarity and bridge-freedom of the original alone imply bridge-freedom of the wired replacement.",
+  "failure_scope": "Four planar disconnected-exterior samples have triangular faces; no refutation of the intended normal-form domain is claimed.",
+  "geometric_samples": [
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 0,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 1,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 2,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 3,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 4,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 5,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 6,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": 1,
+      "shift": 7,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 5
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 0,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 1,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 2,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 3,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 4,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 5,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 6,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        8
+      ],
+      "orientation": -1,
+      "shift": 7,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 4
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 0,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 1,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 2,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 3,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 4,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 5,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 6,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": 1,
+      "shift": 7,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 7,
+        "euler": -4,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 5,
+        "euler": 0,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 0,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 1,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 2,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 3,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 4,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 5,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 6,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    },
+    {
+      "exterior_cycles": [
+        5,
+        3
+      ],
+      "orientation": -1,
+      "shift": 7,
+      "original": {
+        "vertices": 22,
+        "edges": 33,
+        "faces": 13,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 0,
+        "minimum_face_length": 3
+      },
+      "wired": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "components": 1,
+        "self_loops": 0,
+        "bridges": 1,
+        "minimum_face_length": 2
+      }
+    }
+  ],
+  "source_sha256": {
+    "tools/fourcolor/classical/coupled_wiring_probe.py": "7c257638ae6f2fdc7be2bbf30c6d7f1d09f908819ee289fb4d93831847a85107",
+    "tools/fourcolor/classical/mixed_diamond_reduction_probe.py": "cc0363374bc14bc60d8921b2ad2e72fa2cee1f01b90c7ead843aaafa2a4a4752",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondConfigurations.lean": "25566f331b8ef7c2eefaf24942523970fdd934e169fc4c647ea3cf194bb4412e",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondContract.lean": "29b15217a5f97fd87695b075af4b99919f415230199b25010fe8176de9c84e6b",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondJointContract.lean": "bd36a18e087301501f3c09e76d9ae33295c3675d1f48030b4345ff4f7419329d",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiring.lean": "0f8750c77e65ba6457812629181cb7eebbc36f63090b6ddf51bc967b3728638b",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean": "14f6912265cc817d090cacdc62067b87512ca576e626333b322bdf93d6bbfe56",
+    "lean/fourcolor-classical/MettapediaFourColor/JointDiamondTangle.lean": "b264d6558f142c6e4733e0c8c870ade729eec4270ab4d50802a721d0c651b4a5"
+  }
+}

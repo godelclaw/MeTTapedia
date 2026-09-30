@@ -1,0 +1,176 @@
+{
+  "status": "Kernel-checked actual coupled-wiring semantics and original-piece colouring reconstruction; ambient class preservation and geometric recognition remain open.",
+  "completed_utc": "2026-09-30T05:30:57.479147+00:00",
+  "build_base_revision": "83182c831ec44d3221dcb7e78b38de5eacc06dc9",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.DiamondCoupledWiring",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiring.lean",
+      "source_sha256": "0f8750c77e65ba6457812629181cb7eebbc36f63090b6ddf51bc967b3728638b",
+      "olean_sha256": "654ec686b75a1d2ed32da74e4acfb55b965db09fbf5fd7e271ed6fb5f9df22ad",
+      "olean_bytes": 377440,
+      "reported_build_seconds": 3.8
+    },
+    {
+      "module": "MettapediaFourColor.DiamondCoupledWiringRotation",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean",
+      "source_sha256": "14f6912265cc817d090cacdc62067b87512ca576e626333b322bdf93d6bbfe56",
+      "olean_sha256": "bb455ae5b4334c7548b55df32d3c8577bb0a3193cfde6416664a8fd4cf24dc25",
+      "olean_bytes": 709096,
+      "reported_build_seconds": 4.9
+    },
+    {
+      "module": "MettapediaFourColor.DiamondCoupledWiringWitness",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringWitness.lean",
+      "source_sha256": "46caaba1628111d866fbc790c5bfe30b9efe3605ad6ee3b32fb8dda2a4e7dd97",
+      "olean_sha256": "ddf122a15dcbf793bdeb2c4532028f829d16b3698745299a91dcbbd8e1dfd8a2",
+      "olean_bytes": 1082832,
+      "reported_build_seconds": 8.4
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondTangle",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondTangle.lean",
+      "source_sha256": "b264d6558f142c6e4733e0c8c870ade729eec4270ab4d50802a721d0c651b4a5",
+      "olean_sha256": "5387d5a9cd5d120b7ede2961acd825eb5d8f8712a9ab47b4bbb21dc39d2aff85",
+      "olean_bytes": 388080,
+      "reported_build_seconds": 9.7
+    },
+    {
+      "module": "MettapediaFourColor.DiamondCoupledWiringAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringAudit.lean",
+      "source_sha256": "2b0d2eb1e0f73fb97b750b6ae9a89ade2771c820e57854873735165a8b26eeb5",
+      "olean_sha256": "c6856419bdfc0fcb2c62821ed1927350598e9efa274a93c467afe17365e61270",
+      "olean_bytes": 3384,
+      "reported_build_seconds": 5.5
+    }
+  ],
+  "audit": {
+    "roots": [
+      "FourColor.DiamondCoupledWiring.contractTrace_iff",
+      "FourColor.DiamondCoupledWiring.repair",
+      "FourColor.DiamondCoupledWiring.forgetting_seam_fails",
+      "FourColor.DiamondCoupledWiring.Rotation.data",
+      "FourColor.DiamondCoupledWiring.Rotation.vertex_count",
+      "FourColor.DiamondCoupledWiring.Rotation.restrict",
+      "FourColor.DiamondCoupledWiring.Rotation.glue",
+      "FourColor.DiamondCoupledWiring.Rotation.colorable_iff",
+      "FourColor.DiamondCoupledWiring.Rotation.compatible_history",
+      "FourColor.JointDiamondPatch.Tangle.cubic",
+      "FourColor.JointDiamondPatch.Tangle.reference_geometry",
+      "FourColor.JointDiamondPatch.Tangle.colouring_valid",
+      "FourColor.JointDiamondPatch.Tangle.boundary_colouring",
+      "FourColor.JointDiamondPatch.Tangle.vertex_decrease",
+      "FourColor.JointDiamondPatch.Tangle.colorable_of_wiring"
+    ],
+    "combined_dependency_closure": 9631,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "exact reference joint contract in both directions",
+      "actual loop-free rewired rotation system with two new vertices",
+      "whole-exterior witness restriction and reconstruction",
+      "shared repair004 and compatible GSLT insertion histories",
+      "literal reference geometry of the fourteen-vertex piece",
+      "actual original whole-graph colouring reconstruction"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "original catalogue configuration certificates",
+      "superseded independent diamond repairs"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.DiamondCoupledWiringAudit",
+      "MettapediaFourColor.MixedDiamondFaceReductionAudit"
+    ],
+    "build_jobs": 3954,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "regression_audit": {
+      "name": "mixed diamond strict reduction",
+      "roots": 14,
+      "dependency_declarations": 28102
+    },
+    "timing_scope": "Reported frontend-plus-kernel module seconds for the final sources. No isolated kernel or whole-baseline speedup is claimed.",
+    "classical_baseline": {
+      "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "reference_configuration": 4,
+    "original_piece_vertices": 14,
+    "new_vertices": 2,
+    "free_wires": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    "interface_ports": 8,
+    "whole_map_vertex_difference": 12,
+    "joint_equation": "c2 + c3 = c6 + c7 != 0, with c0 = c1 and c4 = c5; all boundary colours nonzero",
+    "construction_hypotheses": [
+      "distinct exterior endpoints for ports 0 and 1",
+      "distinct exterior endpoints for ports 4 and 5"
+    ],
+    "colouring_reconstruction_additional_hypotheses": [
+      "the exterior boundary language is Kempe-closed",
+      "the actual wired graph is Tait-colourable"
+    ],
+    "exterior_size_bounded": false,
+    "exterior_connectedness_assumed_by_semantic_theorem": false,
+    "existence_and_genuine_reconstruction_proved": true,
+    "compatible_GSLT_insertion_history_proved": true,
+    "count_equivalence_claimed": false,
+    "executable_Kempe_history_equivalence_claimed": false,
+    "ambient_class_preservation_proved": false,
+    "geometric_occurrence_recognition_proved": false,
+    "universal_coverage_proved": false
+  },
+  "compression": {
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies": 630,
+    "additional_original_certificates_replaced": 0,
+    "new_colour_certificates": 0,
+    "shared_repair": "FourColor.DiamondProfileReducibility.repair004",
+    "actual_reconstruction_consumer": "FourColor.JointDiamondPatch.Tangle.colorable_of_wiring",
+    "integrated_into_complete_assembly": false,
+    "unbounded_distinct_local_core_family_proved": false,
+    "certificate_bytes_saved_claimed": 0,
+    "kernel_seconds_saved_claimed": 0
+  },
+  "independent_replay": {
+    "script": "coupled_wiring_probe.py",
+    "script_sha256": "7c257638ae6f2fdc7be2bbf30c6d7f1d09f908819ee289fb4d93831847a85107",
+    "report": "coupled-wiring-probe.json",
+    "report_sha256": "7d197613b2696429b7e4734cf4a8002f7bf3c691784e4eed94128559ce786536",
+    "equal_joint_support_words": 108,
+    "spurious_words_after_forgetting_coupling": 216,
+    "geometric_samples": 32,
+    "connected_planar_positive_samples": 8,
+    "planar_bridge_failure_controls": 4,
+    "failed_assertion": "Planarity and bridge-freedom of the original alone imply bridge-freedom of the wired replacement.",
+    "failure_scope": "Four planar disconnected-exterior samples have triangular faces; no refutation of the intended normal-form domain is claimed.",
+    "evidence_kind": "Independent finite program checks; arbitrary-context witness correctness is supplied by Lean."
+  },
+  "remaining": [
+    "derive wire separation from the actual occurrence and normal form",
+    "prove ambient-class preservation, retaining exterior components",
+    "recognize configuration 4 from an embedded face pattern and derive physical exterior closure",
+    "integrate the resulting strict reduction and audit its applications",
+    "broader-family supply and global geometric coverage"
+  ]
+}

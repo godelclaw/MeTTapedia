@@ -67,6 +67,16 @@ Six- and seven-port reductions now consume the same map-preservation law.
 No fresh colouring certificate is introduced; broader geometric supply
 remains the next obligation.
 
+Configuration 4 now has an [actual coupled-wiring reconstruction](tube-example/README.md#the-coupled-eight-port-wiring).
+Its repair needs a joint contraction trace. Two free wires and two cubic
+vertices joined by an edge realize exactly that contract. The central edge
+retains the shared choice that separate insertion summaries lose. Colouring
+this smaller graph reconstructs the original fourteen-vertex piece against
+a Kempe-closed exterior; the full vertex difference is twelve. Recognition,
+ambient-class preservation and the actual exterior's closure are still open
+for this member. Finite planar examples with triangular faces show why
+bridge-freedom cannot be inferred from planarity alone.
+
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
 hexagonal seam faces force the port matching to be a cyclic translation.
@@ -393,6 +403,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Finite matching translations replaced | Six-port matching enumeration replaced by a proof for all finite widths; five-port cyclic-arc enumeration replaced by uniform cyclic arithmetic |
 | Mixed-diamond strict reduction | The actual thirteen-vertex core is replaced by a five-vertex tree: net decrease eight, ambient class preserved, and genuine colouring reconstructed using the shared repair |
 | Shared replacement geometry | One theorem for arbitrary finite interfaces preserves the map class from equal ordered returns and Euler mass, connectedness and boundary-essentiality; six- and seven-port consumers are checked |
+| Coupled eight-port reconstruction | An exact two-vertex wiring realizes configuration 4's joint contract and reconstructs its fourteen-vertex piece against a Kempe-closed exterior; count difference twelve. Strict ambient-class reduction remains open |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 

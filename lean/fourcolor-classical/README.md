@@ -455,6 +455,34 @@ by the six-port reductions. Its [receipt](../../tools/fourcolor/classical/mixed-
 records the exact assumptions, artifact hashes and bounded geometry replay.
 Broader-family coverage and the 633/630 catalogue counts are unchanged.
 
+[DiamondCoupledWiring](MettapediaFourColor/DiamondCoupledWiring.lean) now gives
+configuration 4's required joint contract an exact operational realization:
+two free boundary wires and two cubic vertices sharing a central edge.
+[DiamondCoupledWiringRotation](MettapediaFourColor/DiamondCoupledWiringRotation.lean)
+constructs the actual closed graph, retaining the exterior's vertices and
+rotations. [DiamondCoupledWiringWitness](MettapediaFourColor/DiamondCoupledWiringWitness.lean)
+proves restriction and reconstruction of genuine colourings in every exterior
+whose wire endpoints are distinct. The shared central colour is essential;
+`forgetting_seam_fails` gives a kernel-checked incompatible pair of individually
+valid insertion choices.
+
+[JointDiamondTangle](MettapediaFourColor/JointDiamondTangle.lean) retains the
+reference configuration's literal darts, edges, rotations and face labels.
+Its `colorable_of_wiring` uses the existing shared `repair004` to reconstruct
+the original fourteen-vertex piece, assuming the exterior's Kempe closure.
+The two new vertices give a whole-map count difference of twelve. Geometric
+recognition, derivation of the exterior hypotheses and ambient-class
+preservation remain separate obligations: this is not yet a strict reduction
+in the spherical map class. In particular, disconnected exterior samples
+can introduce a bridge; the observed counterexamples have triangular faces.
+
+The [audit](MettapediaFourColor/DiamondCoupledWiringAudit.lean) checks fifteen
+roots and excludes original configuration certificates, superseded repairs
+and complete Four Colour endpoints. The [receipt](../../tools/fourcolor/classical/coupled-wiring-measurements.json)
+records its exact scope, hashes and timings. The independent replay finds
+108 joint boundary words, with 216 additional spurious words if the central
+choice is forgotten. No additional catalogue dependency is replaced.
+
 The [recognition audit](MettapediaFourColor/MixedDiamondFaceRecognitionAudit.lean)
 checks 21 roots and 27,512 dependency declarations using only the standard
 three axioms. The [receipt](../../tools/fourcolor/classical/mixed-diamond-measurements.json)
