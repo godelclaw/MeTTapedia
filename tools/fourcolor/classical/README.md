@@ -97,11 +97,27 @@ certificates of the universal cut or minimality hypotheses.
 The [two-row colouring receipt](two-row-wiring-measurements.json) records
 the independent Lean component: at every width `k ≥ 3`, two rings accept
 every nonzero word and its one-port shift, and compatible exterior witnesses
-glue into an actual closed colouring. It supplies no general free-wire
-replacement geometry and removes no catalogue or certificate dependency.
+glue into an actual closed colouring. The
+[new geometry receipt](two-row-free-wire-measurements.json) records the
+strict reduction at every width `k ≥ 3`: two internally connected exterior
+shores and an opposite boundary first return suffice to remove both rows,
+with exactly `4k` fewer vertices and no new exterior vertices. The actual
+replacement stays connected, bridgeless, spherical and cubic. Every smaller
+colouring reconstructs with all exterior dart colours retained. The
+embedded-slab consumer excludes these rows in a minimal counterexample.
+The audit checks eleven roots independently of complete Four Colour
+endpoints and finite tube stabilization.
+
+The [domain replay](two-row-free-wire-domain.json) verifies these precise
+conditions against the stored 240-vertex residual: all 216 row-rotation
+steps, two 84-vertex shores and all 36 first returns. It reuses the saved
+colourings and occurrence record; it does not repeat the census. Deriving
+the exterior conditions from broader recognized patterns and global coverage
+remain open. No additional catalogue or certificate dependency is removed.
 
 ```sh
 python3 tools/fourcolor/classical/residual_coverage_probe.py
+python3 tools/fourcolor/classical/two_row_free_wire_domain.py
 ```
 
 ## Complete endpoints

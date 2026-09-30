@@ -2060,15 +2060,54 @@ six-sided faces. A genuine colouring of its 252 edges reconstructs all
 360 original edges, retaining every exterior dart colour. The operation
 removes exactly `4·18 = 72` vertices and introduces none.
 
-This example guides the next general theorem: characterize when the
-shifted free-wire replacement preserves the actual map class, then consume
-the proved colour reconstruction and derive strict reduction. Its geometric
-proof must account for the exterior's components and cuts; the existing
-theorem for nonempty replacement tubes cannot simply be applied to an
-empty interior. Global coverage and catalogue replacement remain open.
+The [free-wire geometry][two-row-geometry] and
+[face calculation][two-row-faces] now prove that reduction at every width
+`k ≥ 3`, on an explicit geometric domain. The exterior consists of two
+internally connected shores, with the complete left and right port blocks
+on their respective shores. Its boundary first-return permutation is the
+inverse of the tube's return. These are observations about the original
+exterior, rather than assumptions that the replacement already works.
+
+The new rotation keeps exactly the exterior vertices and darts. Re-pairing
+its ports adds no auxiliary wire vertices. A zero- or one-edge cut of the
+replacement would lift to such a cut of the original map. A symbolic
+boundary-orbit calculation preserves the whole Euler characteristic,
+including faces which never meet the boundary. Thus the replacement remains
+connected, bridgeless, spherical and cubic, and loses exactly `4k` vertices.
+The [embedded-slab adapter][two-row-slab] transports this statement to actual
+rows in an ambient map and reconstructs every smaller colouring while
+fixing all exterior dart colours. A minimal-counterexample consumer excludes
+every slab satisfying the stated conditions.
+
+In this example the compositional law has an understandable direction:
+
+```text
+colouring of the shifted wires
+    → shared middle boundary word and two ring witnesses
+    → colouring of the original graph, with the exterior fixed.
+```
+
+The boundary contract retains the equation `right(i) = left(i+1)`, rather
+than just separate sets of allowed port colours. The reconstruction need
+not be unique. No equivalence of colouring counts or executable histories
+is inferred.
+
+The [new audit and receipt][two-row-geometry-receipt] check eleven roots,
+excluding the complete classical theorem and finite tube-stabilization
+certificates. The [domain replay][two-row-domain] independently verifies
+all 216 literal row-rotation steps, the two 84-vertex shores and all 36
+boundary returns in the saved residual map. This is finite program evidence
+that the domain is inhabited, not a kernel-certified occurrence theorem.
+Deriving these exterior conditions from broader recognized face patterns,
+global coverage and catalogue replacement remain open.
 The ledger still has 633 coverage configurations and 630 original
 configuration-certificate dependencies.
 
 [residual-probe]: ../../../../tools/fourcolor/classical/residual-coverage-probe.json
 [two-row-colours]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiring.lean
 [two-row-receipt]: ../../../../tools/fourcolor/classical/two-row-wiring-measurements.json
+[two-row-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiringGeometry.lean
+[two-row-faces]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiringFaces.lean
+[two-row-slab]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowWiringReduction.lean
+[two-row-geometry-receipt]: ../../../../tools/fourcolor/classical/two-row-free-wire-measurements.json
+[two-row-domain]: ../../../../tools/fourcolor/classical/two-row-free-wire-domain.json

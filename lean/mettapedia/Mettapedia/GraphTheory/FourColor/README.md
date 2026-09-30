@@ -74,8 +74,21 @@ reconstruction retains every exterior dart colour. The
 finds a 240-vertex fullerene outside the current diamond, cap and three-row
 tube patterns, and independently checks a 240→168 shifted free-wire
 replacement with complete colouring reconstruction. The
-[audit](ZigzagTwoRowWiringAudit.lean) checks the uniform colouring component;
-general free-wire replacement geometry and global coverage remain separate.
+[audit](ZigzagTwoRowWiringAudit.lean) checks the uniform colouring component.
+The [free-wire geometry](ZigzagTwoRowWiringGeometry.lean) and
+[face calculation](ZigzagTwoRowWiringFaces.lean) now prove a strict reduction
+at every width `k ≥ 3`, provided the exterior has two internally connected
+shores and the opposite boundary first return. Exactly `4k` vertices vanish,
+with no auxiliary wire vertices. Connectedness, bridgelessness, cubic
+rotation and spherical Euler characteristic are preserved. The
+[embedded-slab adapter](HexagonalTwoRowWiringReduction.lean) transports the
+reduction and exterior colour retention to an actual ambient map and gives
+a minimal-counterexample exclusion. Its [dependency audit](ZigzagTwoRowWiringGeometryAudit.lean)
+checks eleven roots independently of complete Four Colour endpoints and
+finite tube stabilization. Broader derivation of the exterior conditions
+and global coverage remain open. The
+[domain replay](../../../../../tools/fourcolor/classical/two-row-free-wire-domain.json)
+independently verifies those conditions in the saved 240→168 example.
 Independent replay includes an all-five/six 96→60 example and the earlier
 guarded GP(2,0) 80→50 example. No further catalogue dependency is removed.
 See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).

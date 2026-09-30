@@ -1,0 +1,149 @@
+{
+  "status": "Kernel-checked all-width two-row free-wire strict reduction on the stated geometric domain, with an actual embedded-slab consumer. Broader recognition and coverage remain open.",
+  "completed_utc": "2026-09-30T16:49:00.340553+00:00",
+  "build_base_revision": "a491f47d8cc00247e6c8dbab189b71de8c26efe8",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiringGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiringGeometry.lean",
+      "source_sha256": "7f4c79ad9a48a2bcb05b8939e1d47d7cc5acc15c2188d405fa66c13a8dafbf11",
+      "source_bytes": 12107,
+      "olean_sha256": "e08a97241d44d35f730239846556e21f03b85cc86fca57a8cb4a8745650face2",
+      "olean_bytes": 628416,
+      "final_gate_reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiringFaces",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiringFaces.lean",
+      "source_sha256": "07767509723fa692c97a013faaa3a99e5fe47f84169c331f75bfe1c661df1f1c",
+      "source_bytes": 9394,
+      "olean_sha256": "346abc05cdda02de3e4ceae35967998d499d6c587be6c68120f1da34b9676a91",
+      "olean_bytes": 610584,
+      "final_gate_reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTwoRowWiringReduction",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowWiringReduction.lean",
+      "source_sha256": "74825ef7a7959ecb19b141346c6de5ea58f4f298efbe147f4bd77fa343f0c622",
+      "source_bytes": 7333,
+      "olean_sha256": "dda07cdf5c7d94f4d01d15c5062cd638c7dca7280e7c20f3d98bacdccc4dba14",
+      "olean_bytes": 648920,
+      "final_gate_reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiringGeometryAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiringGeometryAudit.lean",
+      "source_sha256": "27a076694749943f0825d3a9194efc9cbacfb81e773cc49b5779b9fabc2a0015",
+      "source_bytes": 4023,
+      "olean_sha256": "5eb0c3242d7083d730461cb094bf3cee8d27d562c3833244a1022e49c887b8ad",
+      "olean_bytes": 3616,
+      "final_gate_reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "83588f6ec2456a31936284c15c5baf0979646f2d3ed564ec10b23dc2e06fa01d",
+      "source_bytes": 33224,
+      "olean_sha256": "456eec6034ae7b4f3a0134bb56b6e6261b46a6bfc7814883a7ca022cc8ff4ada",
+      "olean_bytes": 38968,
+      "final_gate_reported_build_seconds": 6.5
+    }
+  ],
+  "audit": {
+    "root_count": 11,
+    "combined_dependency_closure": 11890,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual edge constructor laws and retained vertex fibres",
+      "zero/one cut lifting to the original map",
+      "whole face count, including unmarked faces",
+      "opposite return and symbolic tube Euler mass",
+      "every smaller colouring restricts to the shared shifted seam equation",
+      "whole-map vertex decrease with no auxiliary exterior vertices",
+      "exact ambient reassembly and minimality consumer"
+    ],
+    "excluded": [
+      "complete classical FourColor namespace",
+      "classical integration MettapediaFourColor namespace",
+      "finite tube-stabilization certificates",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11093,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel times in the final gate; cached targets have null timing. No isolated kernel timing or speedup claim.",
+    "replay": "python3 tools/fourcolor/classical/two_row_free_wire_domain.py",
+    "optimized_assertion_bypass_rejected": true
+  },
+  "mathematical_scope": {
+    "widths": "Every integer k >= 3.",
+    "source": "A finite connected bridgeless spherical cubic rotation, containing the two literal zigzag rows.",
+    "exterior_components": "Two internally connected shores; all left ports on one, all right ports on the other, with every interior edge staying on its shore.",
+    "exterior_face_return": "The boundary first-return permutation is inverse to the literal tube boundary return.",
+    "replacement": "Retain the entire exterior rotation and its vertices and darts; pair left i+1 with right i.",
+    "whole_vertex_loss": "Exactly 4*k vertices; no auxiliary wire or exterior vertices introduced.",
+    "class_preserved": [
+      "connected",
+      "bridgeless",
+      "spherical",
+      "cubic",
+      "cyclic vertex rotation"
+    ],
+    "reconstruction": "Every genuine smaller colouring reconstructs a colouring of the actual original ambient map.",
+    "exterior_colour_retention": "Pointwise at every exterior dart, including the seam.",
+    "strict_reduction_proved": true,
+    "actual_embedded_slab_consumer": true,
+    "minimal_counterexample_exclusion": true,
+    "exterior_conditions_derived_from_general_row_recognition": false,
+    "global_occurrence_coverage_proved": false,
+    "colouring_counts_preserved": false,
+    "executable_history_equivalence_proved": false
+  },
+  "independent_domain_replay": {
+    "record": "two-row-free-wire-domain.json",
+    "record_sha256": "694a3542e0f085f952f0d36aff3568c343eb0f8f044a39c8d41e94ad082979b4",
+    "program": "two_row_free_wire_domain.py",
+    "program_sha256": "4b44112cba04b9ed11174ebb4118d1219598b0b26532489a0c9a23e53ce6f49c",
+    "input_record": "residual-coverage-probe.json",
+    "input_record_sha256": "5741d8a6beb0f9d209772a8612a789453e4e532cac195476e808528d3b667f1d",
+    "input_record_unchanged": true,
+    "source_map": "dual-truncate-Goldberg-GP(2,0)",
+    "width": 18,
+    "original_vertices": 240,
+    "smaller_vertices": 168,
+    "vertices_removed": 72,
+    "literal_row_rotation_steps_checked": 216,
+    "connected_shore_sizes": [
+      84,
+      84
+    ],
+    "boundary_first_returns_checked": 36,
+    "geometric_domain_holds": true,
+    "kernel_occurrence_certificate": false,
+    "occurrence_census_repeated": false
+  },
+  "compression": {
+    "new_uniform_strict_reductions": 1,
+    "new_colouring_certificates": 0,
+    "original_configuration_certificates_replaced": 0,
+    "configurations_removed": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "discharging_computations_replaced": 231,
+    "integrated_into_complete_assembly": false
+  },
+  "remaining": [
+    "Derive the two-shore and opposite-return conditions from suitable recognized ambient face patterns.",
+    "Prove the contribution of these two-row stopping cases to residual geometric coverage.",
+    "Integrate any actual catalogue replacements and audit which original dependencies disappear."
+  ]
+}
