@@ -140,6 +140,26 @@ separates these checked consumers from universal source-colouring existence
 and geometric recognition, which remain open. This changes the constraint
 type; it is not an unconditional Tait-to-Tait reduction or a new coverage theorem.
 
+The [structural supplier](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateStructuralColoring.lean)
+now closes the source-colouring step on a stated graph domain. Two nonadjacent
+neighbours of a closing vertex receive the same colour. Connectivity after
+their deletion supplies the remaining insertion order; each earlier insertion
+has a later neighbour, while the closing vertex sees the joint pair as one
+choice. A connected noncomplete source whose every two-vertex deletion stays
+connected supplies such a pair itself. This finite Brooks argument is consumed
+by the literal Klein reconstruction and every complete GSLT sweep; it requires
+no saved source colour word.
+
+The [cube example](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCoupledExample.lean)
+supplies actual retained paths and reconstructs a 24-vertex map. The
+[receipt](../../../tools/fourcolor/classical/coupled-source-colouring-measurements.json)
+separates the kernel theorem and cube from the independent tests of all five
+larger residuals. Those tests regenerate the choices and check 14,564 connected
+two-vertex deletions, but do not kernel-certify that domain for the five sources.
+The next geometric bridge is to derive the source hypotheses from recognized
+target structure. No catalogue entry or original certificate dependency is
+removed by this supplier.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

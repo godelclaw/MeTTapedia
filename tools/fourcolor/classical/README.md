@@ -1743,3 +1743,39 @@ It checks all 1,024 binary seam assignments, their eight zero-cut assignments,
 the four old-core extensions and the complete face corrections. The receipt
 keeps these finite geometric checks separate from the Lean theorem for
 arbitrary qualifying exteriors. No new colouring certificate is introduced.
+
+## Structural source choices for dual-and-truncate maps
+
+```sh
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.DualTruncateStructuralAudit
+```
+
+`CoupledThreeColouring` proves a finite Brooks argument: in a graph of maximum
+degree at most three, two nonadjacent neighbours of a closing vertex may share
+a colour when their deletion leaves a connected graph. Connectivity supplies
+a reverse-distance order, including a later neighbour at every earlier
+insertion. The closing insertion retains the joint initial choice. A connected
+noncomplete graph whose every two-vertex deletion is connected supplies the
+pair from an actual shortest path.
+
+`DualTruncateStructuralColoring` translates these source choices to nonzero
+Klein colours and consumes them in the literal reconstruction and every
+complete GSLT sweep. `DualTruncateCoupledExample` proves actual paths in the
+cube's retained graph and reconstructs its 24-vertex target. The audit checks
+19 roots, excludes source colour-word certificates and complete Four Colour
+endpoints, and uses only the standard axioms.
+
+```sh
+python3 tools/fourcolor/classical/coupled_source_colouring_probe.py --check
+```
+
+The replay reads no source colour words. It derives fresh shared choices,
+checks every target dart through the independent literal adapter, and checks
+all 14,564 two-vertex deletions across the five residual sources. Every deletion
+is connected. These five structural-domain checks remain program evidence;
+the general theorem and cube consumer are kernel checked. The receipt
+`coupled-source-colouring-measurements.json` records this scope, fingerprints
+and kernel cost. The source-domain bridge for recognized inverse targets,
+spherical geometry and coverage remain open. No additional catalogue entry
+or original configuration certificate is removed.

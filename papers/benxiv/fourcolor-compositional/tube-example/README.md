@@ -2254,3 +2254,45 @@ original configuration certificate is removed.
 [dual-truncate-inputs]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateResidualCertificates.lean
 [dual-truncate-input-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateResidualAudit.lean
 [dual-truncate-input-receipt]: ../../../../tools/fourcolor/classical/dual-truncate-input-measurements.json
+
+## Deriving the shared source choices
+
+The [coupled ordering theorem][coupled-order] removes the colouring-word
+hypothesis on an explicit structural domain. Let the source graph have maximum
+degree at most three. Choose distinct, nonadjacent neighbours `a,b` of a
+closing vertex `r`, and suppose deleting `a,b` leaves a connected graph. Assign them the
+same colour. Order the retained vertices by decreasing distance from `r`,
+breaking ties with a finite enumeration. Every vertex before `r` has a later
+neighbour, so at most two previous neighbour colours forbid its choice.
+At `r`, the two retained initial choices are equal, so again at most two
+colours are forbidden. The proof constructs a genuine proper colouring.
+
+This is a finite Brooks argument, with its hypotheses preserved explicitly.
+It does not use a claim that arbitrary nonadjacent vertices can be recoloured
+alike. If the source is connected and noncomplete and every two-vertex
+deletion leaves a connected graph, an actual shortest path supplies the
+initial nonadjacent pair. The [structural transport][coupled-transport]
+interprets the colouring as nonzero Klein colours and consumes it in the
+literal target reconstruction and faithful GSLT routes.
+
+The [cube example][coupled-cube] proves the retained paths after deleting
+vertices 1 and 3, neighbours of vertex 0. It supplies the shared source choice
+and colours the 24-vertex target without a saved source colour word. The
+complete four-vertex source is separately proved not three-colourable,
+so cubicity by itself is not the asserted source domain.
+
+The [independent replay][coupled-replay] derives fresh choices on the five
+saved residual sources and checks their literal target rotations. All 14,564
+two-vertex deletions are connected. These finite domain checks are program
+evidence; the [audit][coupled-audit] checks the general theorem and cube
+consumer in Lean. The [receipt][coupled-receipt] retains this distinction.
+Deriving the domain for recognized inverse sources, preserving their geometry,
+and proving global supply remain separate tasks. Coverage and certificate
+counts remain 633 and 630.
+
+[coupled-order]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/CoupledThreeColouring.lean
+[coupled-transport]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateStructuralColoring.lean
+[coupled-cube]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCoupledExample.lean
+[coupled-replay]: ../../../../tools/fourcolor/classical/coupled-source-colouring-probe.json
+[coupled-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateStructuralAudit.lean
+[coupled-receipt]: ../../../../tools/fourcolor/classical/coupled-source-colouring-measurements.json

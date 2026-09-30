@@ -1,0 +1,125 @@
+{
+  "global_coverage_proved": false,
+  "input_sha256": {
+    "tools/fourcolor/classical/alternating_cycle_probe.py": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e",
+    "tools/fourcolor/classical/alternating_lobe_probe.py": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8",
+    "tools/fourcolor/classical/coupled_source_colouring_probe.py": "7e36cea2ca4e0230ad6cf46098e730d8221d61fe9dbf0bd289905dcc8ac76fa1",
+    "tools/fourcolor/classical/dual_truncate_colouring.py": "a71454820077c042af532b1eb4c3ff335f2bd38c643de73f3ccd8044968100e3",
+    "tools/fourcolor/classical/family-supply-fixtures.json": "791169d2f8d8d63d24fc410615eb811fc487cd46a3a483c013f239e99f796dd2",
+    "tools/fourcolor/classical/family-supply-probe.json": "2cea4a13790c91a824c5f4373c4da66072302c0ca76bea87c2362ef0455678de"
+  },
+  "kernel_input_rotations_previously_certified": true,
+  "kernel_structural_domain_certificates": false,
+  "maps": [
+    {
+      "closing_vertex": 0,
+      "disconnected_pair_deletions": [],
+      "generated_source_colour_sha256": "3a74d2b33f0f2cc09ad33158882245ba9478cb7c99e901c873c51a0d925300dc",
+      "initial_pair": [
+        1,
+        17
+      ],
+      "kernel_structural_domain_certificate": false,
+      "literal_target_darts_checked": 702,
+      "maximum_prior_colours": 2,
+      "pair_deletions_checked": 3003,
+      "rooted_order_sha256": "652527b387f15fbceeb46af0134b5497e3ff57c5e75e03d5f665cdc5af6b3d76",
+      "source": "IPR-C78-fullgen-0000",
+      "source_colour_word_supplied": false,
+      "source_rotation_sha256": "bcbc5010c0309a4d8712900b98f6579ed1b8ce708161a46171b94f1a9d5f2647",
+      "source_vertices": 78,
+      "target": "dual-truncate-IPR-C78-fullgen-0000",
+      "target_rotation_sha256": "6dd3e35e8bf934441bae4a8e44824824342222cf1a3e72bd3a6453aed76e42fd",
+      "target_vertices": 234
+    },
+    {
+      "closing_vertex": 0,
+      "disconnected_pair_deletions": [],
+      "generated_source_colour_sha256": "ae2f6cb07c74a7b7eb17cb50db23c42122c5570f3db67b4dea1a5fcd1fb81e45",
+      "initial_pair": [
+        1,
+        19
+      ],
+      "kernel_structural_domain_certificate": false,
+      "literal_target_darts_checked": 666,
+      "maximum_prior_colours": 2,
+      "pair_deletions_checked": 2701,
+      "rooted_order_sha256": "818a5758381a2b8f44d6537b64614257408d72675d57fe5529a2f94cba41f473",
+      "source": "IPR-C74-fullgen-0000",
+      "source_colour_word_supplied": false,
+      "source_rotation_sha256": "65c3d5a0ef3a99e0a6ddb621f730a77cd9c745429c22a64a0b703575ab3cd114",
+      "source_vertices": 74,
+      "target": "dual-truncate-IPR-C74-fullgen-0000",
+      "target_rotation_sha256": "00ed3bebcacaa47790b4e80e7dba996b0b63e1fed5cb5bbc7852b43866c0f93b",
+      "target_vertices": 222
+    },
+    {
+      "closing_vertex": 0,
+      "disconnected_pair_deletions": [],
+      "generated_source_colour_sha256": "b54191b5245f3c2aaf23abb02fd0a42850d674262352ce2ce7f230566581b95c",
+      "initial_pair": [
+        1,
+        19
+      ],
+      "kernel_structural_domain_certificate": false,
+      "literal_target_darts_checked": 684,
+      "maximum_prior_colours": 2,
+      "pair_deletions_checked": 2850,
+      "rooted_order_sha256": "14e35da13262bd076e54e360f608318b6cd355b90d168df23e73ff9cc409d81b",
+      "source": "IPR-C76-fullgen-0000",
+      "source_colour_word_supplied": false,
+      "source_rotation_sha256": "33aa36b0b7c46704249b822e84fd7699fd3bc697be7ba810d733e772c83bbb0b",
+      "source_vertices": 76,
+      "target": "dual-truncate-IPR-C76-fullgen-0000",
+      "target_rotation_sha256": "aaa73ea3b99ffa4a7000428709caca493befd506e9092bab844788bf6277e76a",
+      "target_vertices": 228
+    },
+    {
+      "closing_vertex": 0,
+      "disconnected_pair_deletions": [],
+      "generated_source_colour_sha256": "33c131c1c3162e7047c1b7432b36697197c94395d8ce213cb59f7e42913a2d11",
+      "initial_pair": [
+        1,
+        19
+      ],
+      "kernel_structural_domain_certificate": false,
+      "literal_target_darts_checked": 684,
+      "maximum_prior_colours": 2,
+      "pair_deletions_checked": 2850,
+      "rooted_order_sha256": "14ec782a32546df1cf4a085b5c4065cc7bbf7f11775b13713d6ef9d2d79b277f",
+      "source": "IPR-C76-fullgen-0001",
+      "source_colour_word_supplied": false,
+      "source_rotation_sha256": "5f0be1eddc3919488e2f9ebcb5f2f1c50713fdcd72da6fa15794d4d9bdd2f77a",
+      "source_vertices": 76,
+      "target": "dual-truncate-IPR-C76-fullgen-0001",
+      "target_rotation_sha256": "e1ee4e253aec46ef4f0130cd9c6a18aeea619bcd2b4f293802b68953284dd871",
+      "target_vertices": 228
+    },
+    {
+      "closing_vertex": 0,
+      "disconnected_pair_deletions": [],
+      "generated_source_colour_sha256": "65267b314cb5249248c8fd5b94610f182a5c30114d909d5456d92e4a41f13e77",
+      "initial_pair": [
+        1,
+        19
+      ],
+      "kernel_structural_domain_certificate": false,
+      "literal_target_darts_checked": 720,
+      "maximum_prior_colours": 2,
+      "pair_deletions_checked": 3160,
+      "rooted_order_sha256": "df685180076d67e7198fc9d6696d4c0f400da82b20fc3f047744c15972b2d785",
+      "source": "IPR-C80-fullgen-0002",
+      "source_colour_word_supplied": false,
+      "source_rotation_sha256": "0199a4f7ceb1070028c18b99b71719c59813509a6dce23a1f54dbb9bab0b3d05",
+      "source_vertices": 80,
+      "target": "dual-truncate-IPR-C80-fullgen-0002",
+      "target_rotation_sha256": "35d1ad2d8734ccba72ea889d1bc13acba4852501a85d9ce0ca389230b91c3d00",
+      "target_vertices": 240
+    }
+  ],
+  "new_catalogue_replacements": 0,
+  "scope": "All five saved residual sources meet the tested structural domain; this is not a kernel certificate of their connectivity.",
+  "source_colour_words_read": 0,
+  "status": "independent program replay",
+  "total_pair_deletions_checked": 14564
+}

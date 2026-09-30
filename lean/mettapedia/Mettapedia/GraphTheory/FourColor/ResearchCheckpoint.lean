@@ -9,6 +9,7 @@ import Mettapedia.GraphTheory.FourColor.HexagonalTwoRowWiringRecognitionAudit
 import Mettapedia.GraphTheory.FourColor.HexagonalTwoRowGrowthReductionAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateColoringAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateResidualAudit
+import Mettapedia.GraphTheory.FourColor.DualTruncateStructuralAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand

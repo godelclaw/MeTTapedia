@@ -145,6 +145,27 @@ law, without a target-colouring table. The
 endpoints. These are concrete family consumers; source-colouring existence
 throughout the intended family and geometric recognition remain separate.
 No coverage configuration is removed.
+A [structural source supplier](DualTruncateStructuralColoring.lean) now derives
+the three vertex colours under explicit graph hypotheses. Two nonadjacent
+neighbours of a closing vertex share a colour; connectivity after deleting
+them supplies a reverse rooted order. Earlier insertions retain an uncoloured
+neighbour, and the closing insertion sees the shared colour twice. The
+[general graph theorem](../CoupledThreeColouring.lean) proves this finite
+Brooks argument without a source colour word or ordering certificate. A
+connected noncomplete graph whose every two-vertex deletion is connected
+supplies the required pair automatically.
+The [cube consumer](DualTruncateCoupledExample.lean) proves actual retained
+paths and reconstructs a 24-vertex target, including every complete GSLT sweep.
+Its [audit](DualTruncateStructuralAudit.lean) excludes source colour-word
+certificates, unfinished Brooks developments and complete Four Colour endpoints.
+The [new replay](../../../../../tools/fourcolor/classical/coupled-source-colouring-probe.json)
+derives fresh choices on all five residuals and finds all 14,564 two-vertex
+deletions connected. Those five domain checks remain program evidence;
+the structural theorem and cube domain are kernel checked. The intended
+source-domain bridge, inverse geometric recognition and global coverage remain
+open, and the complete assembly retains 633 configurations and 630 original
+configuration certificates.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

@@ -1,0 +1,114 @@
+{
+  "status": "kernel checked structural supplier and cube consumer; independent larger-source domain replay",
+  "checked_utc": "2026-09-30T21:18:19.505265+00:00",
+  "audit_roots": 19,
+  "dependency_closure": 9634,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "forbidden_dependencies": [
+    "complete classical Four Colour endpoints",
+    "source colour-word certificate predicates and suppliers",
+    "unfinished AutoBooks Brooks development",
+    "sorryAx",
+    "Lean.ofReduceBool"
+  ],
+  "general_domain": {
+    "maximum_simple_degree": 3,
+    "pair": "two distinct nonadjacent neighbours of a closing vertex",
+    "required_geometry": "the actual induced graph after deleting the pair is connected",
+    "pair_derived_on_broader_domain": "source connected and noncomplete, with every two-vertex deletion connected",
+    "source_colour_word_supplied": false,
+    "insertion_order_supplied": false,
+    "joint_pair_colour_retained": true
+  },
+  "kernel_consumer": {
+    "source": "eight-vertex cube rotation",
+    "source_vertices": 8,
+    "source_edges": 12,
+    "initial_pair": [
+      1,
+      3
+    ],
+    "closing_vertex": 0,
+    "retained_paths_proved": true,
+    "target_vertices": 24,
+    "target_edges": 36,
+    "proper_source_colouring_derived": true,
+    "genuine_target_tait_colouring_proved": true,
+    "every_complete_GSLT_sweep_supported": true,
+    "source_colour_word_supplied": false
+  },
+  "exception_control": "K4 is proved not three-vertex-colourable; cubicity alone is not the theorem domain.",
+  "proof_modules": {
+    "CoupledThreeColouring": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/CoupledThreeColouring.lean",
+      "source_sha256": "e6e0629df5a74f219913421bc5bec8d65ab18dbfebe44c0f1290e0319b3fe892",
+      "source_bytes": 14563,
+      "olean_sha256": "5f71fdce39381a19288ddb43f24fc6f852b222684807385a76d704615ede3110",
+      "olean_bytes": 823088
+    },
+    "DualTruncateStructuralColoring": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateStructuralColoring.lean",
+      "source_sha256": "1a8fe60d63df60361fce22d6a3630cdc40ec1d67a015a27b3b1987ea00ce962d",
+      "source_bytes": 7185,
+      "olean_sha256": "e64112ad154f7fb74dbe21f518be523d8f2afa6b9b68fb632cd0dab33924d995",
+      "olean_bytes": 275992
+    },
+    "DualTruncateCoupledExample": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCoupledExample.lean",
+      "source_sha256": "580a732e010f002d1d20cbbc939f70cd1894fecd420ea94b1ee81696f2172637",
+      "source_bytes": 5279,
+      "olean_sha256": "ed76014dbf51f6ff8f86872f34b42f08eebd72f5ebf5ea0607bfc368ab184452",
+      "olean_bytes": 391232
+    },
+    "DualTruncateStructuralAudit": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateStructuralAudit.lean",
+      "source_sha256": "65f88ebffe7d234f882c14506d979712a995eaa11d326e023d06c4d12b356060",
+      "source_bytes": 4818,
+      "olean_sha256": "d583c80ab82abecfb084731a87f810a5054867f79931bc66e9b1b282a0396f60",
+      "olean_bytes": 3624
+    }
+  },
+  "measured_frontend_seconds": {
+    "DualTruncateStructuralColoring": 3.1,
+    "DualTruncateCoupledExample": 3.9,
+    "DualTruncateStructuralAudit": 5.0,
+    "ResearchCheckpoint_gate": 5.3
+  },
+  "maximum_sampled_lean_rss_mib": 3442,
+  "gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "jobs": 11117,
+    "exit": 0
+  },
+  "independent_replay": {
+    "record": "coupled-source-colouring-probe.json",
+    "sha256": "5c532241589ca759432ea98b8be0df41cfed70012025394c1f9a6d92765550c2",
+    "maps": 5,
+    "source_vertices": 384,
+    "target_vertices": 1152,
+    "literal_target_darts_checked": 3456,
+    "pair_deletions_checked": 14564,
+    "disconnected_pair_deletions": 0,
+    "source_colour_words_read": 0,
+    "kernel_structural_domain_certificates": false
+  },
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "new_catalogue_replacements": 0,
+  "kernel_saved_residual_rotations_previously_certified": true,
+  "saved_residual_source_words_still_in_previous_kernel_consumers": true,
+  "source_domain_proved_for_saved_residuals": false,
+  "universal_simple_cubic_source_colourability_proved": false,
+  "inverse_geometric_recognition_proved": false,
+  "unconditional_tait_to_tait_reduction": false,
+  "global_coverage_proved": false,
+  "next_obligation": "Derive the connected-deletion source condition from the intended geometric source class and recognized inverse target structure; prove inverse recognition and the geometry bridge before crediting coverage."
+}
