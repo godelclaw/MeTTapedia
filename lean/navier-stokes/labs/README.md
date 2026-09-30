@@ -7459,3 +7459,75 @@ parent pair retains its opposite nonlinear signs.
 ```sh
 python3 -O labs/pressure_source_production.py
 ```
+
+## Complete selected pressure cotangent and its native payment
+
+[`pressure_selected_cotangent.py`](pressure_selected_cotangent.py) tests
+the complete canonical pressure-square first variation with a spatially
+varying selector on the normalized `2*pi` torus. All outputs have exact
+Gaussian rational coefficients. Both signs of the resonant 3D datum and
+both phases of the interacting-parent datum are retained. The tangents
+include every nonlinear output and viscosity; no Galerkin closure is used.
+
+Let `B=grad u`, `s=tr(B²)`, `-Delta p=s` and `P=Hess p`. At the current
+state, for a fixed selector coefficient `a`, define
+
+```text
+chi=(-Delta)^-1 divdiv(aP),
+N=2aP, V=-Pi_gradient div N=2grad chi,
+ell=-2B^T V.
+```
+
+The checker verifies the literal negative Helmholtz projection at every
+Fourier output and the full selected pressure first variation along the
+actual solenoidal NS tangent. The stress cotangent and its local
+representative obey
+
+```text
+4Hess(chi)u-ell=4grad(u.grad chi),
+integral 2aP:partial_t P=integral ell.partial_t u.
+```
+
+The discarded term is a genuine gradient whose work on the compatible
+tangent vanishes. The nonlocal selector response remains in `chi`.
+Replacing `chi` by `a*s` gives erroneous work, including `-6253/34650`
+and `-1163/3850` in the two resonant fixtures. This refutes that shortcut,
+not a finite allowance or the regularity goal.
+
+The continuous positive test selectors range from `1/4` to `3/4`; they
+are not identified with the candidate reserve's actual ratio. A constant
+drift changes the fixed Eulerian selected derivative by `-75203/23100`
+or `-36997/23100` in the resonant fixtures. The advective work changes
+by the opposite amount. The checker additionally keeps the selector's
+own derivative as a separate leg of a full weighted-mass chain rule, for
+an auxiliary advected-diffused selector. That auxiliary law is not claimed
+for the physical reserve selector.
+
+The exact pointwise sum-of-squares witness is
+
+```text
+4|B|²|V|²-|ell|²
+  =4sum_j sum_(i<k)(B_ij V_k-B_kj V_i)².
+```
+
+The kernel module `MettapediaNS.SelectedPressureCotangent` proves the
+resulting normalized cost bound, its genuine whole-space integrability,
+and its literal canonical-receiver consumer:
+
+```text
+nu integral |ell|²/(1+|B|²)<=192 Q_native,
+Q_native=sum_k(2nu integral a|partial_k P|²+integral J_k).
+```
+
+It also constructs the canonical pressure-gradient variation, proves its
+exact finite increment, and uses the solenoidal Lie bracket to identify the
+divergence-form work. Pressure-gradient and Hessian-entry time derivatives
+and that work identity hold on the actual complete smooth NS evolution.
+The weak integration-by-parts interpretation of the Lipschitz selector
+as selected Hessian work is analytic. The complete material transport,
+joint strain/pressure/memory production and recurrent-parent allowance
+remain obligations; a paid receiver norm does not pay its time work.
+
+```sh
+python3 -O labs/pressure_selected_cotangent.py
+```

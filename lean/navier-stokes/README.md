@@ -780,6 +780,51 @@ fixtures. The selected canonical pressure square cannot be replaced by the
 local source square without it. The cubic, pressure, flux and fresh-memory
 history payments remain open.
 
+### Selected pressure cotangent on actual evolving parents
+
+`SelectedPressureCotangent` reconstructs the first variation of the
+canonical pressure from both velocity parents. Its finite increment is
+the actual pressure gradient of `u+c v`, with the linear cross interaction and
+quadratic `c²` remainder retained. Along an actual whole-space NS
+evolution, every pressure-Hessian entry has this time derivative with
+the complete viscous right-hand side.
+
+For the receiver `N=2aP`, let `V=-Pi_gradient div N`. Incompressibility
+makes `(u.grad)v-(v.grad)u` solenoidal. The complete divergence-form
+pressure work therefore equals the work of the local velocity cotangent
+
+```text
+ell=-2(grad u)^T V,
+integral ell.v=-<div N, pressureVariation(u,v)>.
+```
+
+The identity is kernel-certified for compatible smooth velocity directions
+and for the actual NS time derivative. The receiver is the constructed
+negative Helmholtz projection, including its selector derivative. The
+weak integration-by-parts identification with `integral 2aP:partial_t P`
+remains a separate analytic obligation for the Lipschitz selector.
+
+No bound on the future strain is needed for the kernel-certified spatial
+comparison and its integrability:
+
+```text
+|ell|²/(1+|grad u|²)<=4|V|²,
+nu integral |ell|²/(1+|grad u|²)<=192 Q_native,
+Q_native=sum_k(2nu integral a|partial_k P|²+integral J_k).
+```
+
+The literal receiver consumer retains the existing positivity, Lipschitz,
+pressure/ratio and selection-diffusion integrability hypotheses. This is
+a component norm payment, not a bound on its nonlinear time work or on
+the remaining joint strain/pressure/memory cotangents.
+
+The [exact selected-pressure checker](labs/pressure_selected_cotangent.py)
+retains all Fourier outputs on interacting 3D states and their complete
+NS tangents. Replacing `chi=(-Delta)^-1 divdiv(aP)` by `a tr((grad u)²)`
+gives nonzero erroneous work. Constant drift changes a fixed Eulerian
+selected derivative, with exact compensation by transport. The selector's
+own time derivative is kept separately from its pressure-variation leg.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
