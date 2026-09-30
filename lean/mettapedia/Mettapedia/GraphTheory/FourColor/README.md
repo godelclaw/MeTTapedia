@@ -182,10 +182,29 @@ target. Its [audit](DualTruncateCyclicSourceAudit.lean) checks 18 roots and
 excludes source colour-word certificates and complete classical endpoints.
 The [receipt](../../../../../tools/fourcolor/classical/cyclic-source-connectivity-measurements.json)
 records the kernel checks and an independent cubic separator diagnostic.
-The connected-deletion bridge is proved on this cut domain. Recognizing
-inverse sources with that domain, spherical geometry and global coverage
-remain open. The complete assembly retains 633 configurations and 630
-original configuration certificates.
+The connected-deletion bridge is proved on this cut domain. The
+[actual face law](DualTruncateFaceGeometry.lean) now gives an exact bijection
+between target faces and the disjoint union of source vertices and source
+faces. Every cubic source vertex produces a hexagon, and every source face
+keeps its length. The complete joint face label supplies the Euler calculation
+and separates the two facial sides of every target edge.
+The [geometry consumer](DualTruncateMapGeometry.lean) lifts source walks and
+establishes the target's connected, bridgeless spherical cubic map class for
+a connected cubic spherical source with cyclic vertex rotations; source
+bridge-freeness is unnecessary. It also combines this geometry with the
+cut-based colouring and GSLT suppliers on their stated domain.
+
+The [geometry example](DualTruncateGeometryExample.lean) derives the cube's
+24-vertex, 36-edge target with six square faces and eight hexagonal faces.
+Its [audit](DualTruncateGeometryAudit.lean) checks 19 roots, excluding complete
+classical endpoints and source colour-word certificates. The
+[receipt](../../../../../tools/fourcolor/classical/dual-truncate-geometry-measurements.json)
+separates the uniform theorem and kernel cube from an independent replay of
+the five larger residual sources and exact target adapters. Their source
+geometry and cut domains are not yet kernel-certified. Recognizing inverse
+sources with the required domains and proving occurrence coverage remain
+open. The complete assembly retains 633 configurations and 630 original
+configuration certificates.
 
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay

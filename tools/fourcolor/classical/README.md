@@ -1776,9 +1776,10 @@ all 14,564 two-vertex deletions across the five residual sources. Every deletion
 is connected. These five structural-domain checks remain program evidence;
 the general theorem and cube consumer are kernel checked. The receipt
 `coupled-source-colouring-measurements.json` records this scope, fingerprints
-and kernel cost. The source-domain bridge for recognized inverse targets,
-spherical geometry and coverage remain open. No additional catalogue entry
-or original configuration certificate is removed.
+and kernel cost. The source-domain bridge for recognized inverse targets
+and occurrence coverage remain open; the forward spherical geometry is
+established below. No additional catalogue entry or original configuration
+certificate is removed.
 
 ## Source connectivity from cyclic cuts
 
@@ -1816,5 +1817,53 @@ cuts and pair deletions, and derives fresh coupled source choices. A
 ten-vertex cubic separator diagnostic violates the cut domain and has a
 disconnected pair deletion. The measurement receipt records this program
 evidence separately from the kernel theorem, source domain and consumers.
-Recognized inverse sources, spherical geometry and global coverage remain
-open. Catalogue and original-certificate counts remain 633 and 630.
+Recognized inverse sources and global coverage remain open. Forward spherical
+geometry is established below. Catalogue and original-certificate counts
+remain 633 and 630.
+
+## Dual-and-truncate face geometry
+
+```sh
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.DualTruncateGeometryAudit
+```
+
+`DualTruncateFaceGeometry` classifies the actual target faces by a complete
+joint tag: a source vertex or a source quotient face. Cyclic source vertex
+rotations make this classification exact. A cubic source vertex produces a
+hexagon, and a source face keeps its length. The face bijection proves Euler
+preservation and separates the facial sides of every target edge. Source
+pentagonal and hexagonal facial boundaries persist when the source boundary
+simplicity hypothesis is supplied.
+
+`DualTruncateMapGeometry` lifts actual source walks and derives target
+bridge-freeness from distinct facial sides. It establishes every field of the
+existing connected, bridgeless spherical cubic map class from a connected
+cubic spherical source with cyclic vertex rotations. Source bridge-freeness
+is not required. The colouring consumers combine these results with the
+cyclic-cut source supplier and every complete faithful GSLT sweep.
+
+`DualTruncateGeometryExample` derives the cube source geometry and its
+24-vertex, 36-edge target with six square faces and eight hexagons. The audit
+checks 19 roots and excludes complete classical endpoints and source
+colour-word certificates.
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/classical/dual_truncate_geometry_probe.py --check
+```
+
+The replay checks actual face identities and lengths, Euler, connectivity,
+bridge-freeness and the exact saved target adapters for five residual pairs,
+in addition to the kernel cube. It reads no source colour words. A diagnostic
+with split source vertex rotations refutes the face-count formula when the
+cyclicity condition is dropped. `dual-truncate-geometry-measurements.json`
+records fingerprints, kernel costs and the distinction between the uniform
+theorem, the kernel cube and the larger program checks. The five larger
+source geometry and cut domains are not yet kernel-certified.
+
+The forward geometric theorem is proved. Inverse recognition and occurrence
+coverage remain open. This changes source vertex colouring to target edge
+colouring; it does not establish an unconditional Tait-to-Tait reduction.
+Catalogue and original-certificate counts remain 633 and 630.

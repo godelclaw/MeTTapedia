@@ -170,9 +170,24 @@ interprets one finite cut check, then derives all 28 pair deletions and the
 excludes source colour words and complete classical endpoints.
 
 This closes the connected-deletion bridge on the stated cut domain. The
-remaining geometric task is to recognize inverse sources, establish that
-domain and spherical geometry, and prove occurrence coverage. No catalogue
-entry or original certificate dependency is removed by this supplier.
+[actual face correspondence](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateFaceGeometry.lean)
+now derives the target faces from source vertices and source faces, with
+identity and uniqueness preserved. Source cubic vertices become hexagons;
+source faces keep their lengths. The resulting face count proves Euler
+preservation. Source walks lift, and every target edge has distinct facial
+sides, giving the existing connected, bridgeless spherical cubic map class
+under explicit source geometry hypotheses.
+
+The [geometry consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateMapGeometry.lean)
+combines this with the cut-based colouring and GSLT suppliers. A kernel-checked
+cube instance has 24 target vertices, 36 edges, six squares and eight hexagons.
+The [geometry receipt](../../../tools/fourcolor/classical/dual-truncate-geometry-measurements.json)
+records the 19-root audit and separates the cube from the five larger
+source-domain replays. The next geometric task is inverse recognition with
+these source domains and occurrence coverage. This is a forward construction
+and a change of colouring constraint; it does not yet give an unconditional
+Tait-to-Tait strict reduction. No additional catalogue entry or original
+certificate dependency is removed.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

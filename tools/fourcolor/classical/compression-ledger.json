@@ -1514,7 +1514,7 @@
       "configurations_removed": 0,
       "integrated_into_complete_assembly": false,
       "global_coverage_proved": false,
-      "next_obligation": "Recognize actual inverse sources with the proved cut domain and establish spherical geometry; then prove occurrence coverage before crediting catalogue replacement.",
+      "next_obligation": "Recognize actual inverse sources with the proved source geometry and cut domains, then establish occurrence coverage before crediting catalogue replacement. Forward target spherical geometry is now proved on the stated source domain.",
       "kernel_residual_maps_coloured": 5,
       "kernel_input_measurements": "dual-truncate-input-measurements.json",
       "structural_source_supplier_proved": true,
@@ -1524,7 +1524,9 @@
       "structural_supplier_measurements": "coupled-source-colouring-measurements.json",
       "saved_residual_structural_domain_kernel_certified": false,
       "geometric_connected_deletion_domain_proved": true,
-      "geometric_domain_measurements": "cyclic-source-connectivity-measurements.json"
+      "geometric_domain_measurements": "cyclic-source-connectivity-measurements.json",
+      "target_spherical_geometry_proved": true,
+      "target_geometry_measurements": "dual-truncate-geometry-measurements.json"
     },
     {
       "name": "structural coupled source choices for dual-and-truncate maps",
@@ -1545,9 +1547,11 @@
       "configurations_removed": 0,
       "integrated_into_complete_assembly": false,
       "global_coverage_proved": false,
-      "next_obligation": "Recognize actual inverse sources with the proved cut domain and establish spherical geometry; then prove occurrence coverage before crediting catalogue replacement.",
+      "next_obligation": "Recognize actual inverse sources with the proved source geometry and cut domains, then establish occurrence coverage before crediting catalogue replacement. Forward target spherical geometry is now proved on the stated source domain.",
       "geometric_connected_deletion_domain_proved": true,
-      "geometric_domain_measurements": "cyclic-source-connectivity-measurements.json"
+      "geometric_domain_measurements": "cyclic-source-connectivity-measurements.json",
+      "target_spherical_geometry_proved": true,
+      "target_geometry_measurements": "dual-truncate-geometry-measurements.json"
     },
     {
       "name": "cyclic-cut geometry supplies coupled source deletion connectivity",
@@ -1570,7 +1574,42 @@
       "configurations_removed": 0,
       "integrated_into_complete_assembly": false,
       "global_coverage_proved": false,
-      "next_obligation": "Recognize actual inverse sources with the proved cut domain and establish spherical geometry; then prove occurrence coverage before crediting catalogue replacement."
+      "next_obligation": "Recognize actual inverse sources with the proved source geometry and cut domains, then establish occurrence coverage before crediting catalogue replacement. Forward target spherical geometry is now proved on the stated source domain.",
+      "target_spherical_geometry_proved": true,
+      "target_geometry_measurements": "dual-truncate-geometry-measurements.json"
+    },
+    {
+      "name": "actual face correspondence preserves dual-and-truncate spherical geometry",
+      "record": "dual-truncate-geometry-measurements.json",
+      "status": "kernel checked actual facial correspondence, spherical geometry and cube colouring consumer; independent geometry replay",
+      "kernel_uniform_face_correspondence_proved": true,
+      "joint_source_identity_and_face_kind_retained": true,
+      "source_vertex_face_length": 6,
+      "source_face_lengths_preserved": true,
+      "actual_quotient_face_euler_preserved": true,
+      "source_connectivity_lifted": true,
+      "target_two_sided_faces_and_bridge_freeness_proved": true,
+      "source_bridge_freeness_required": false,
+      "source_geometry_domain_explicit": true,
+      "target_spherical_geometry_proved": true,
+      "kernel_actual_target_and_colouring_GSLT_consumers_proved": true,
+      "cube_source_geometry_domain_kernel_certified": true,
+      "cube_target_vertices": 24,
+      "cube_target_edges": 36,
+      "cube_target_faces": 14,
+      "saved_residual_source_geometry_domains_kernel_certified": false,
+      "saved_residual_cyclic_source_domain_kernel_certified": false,
+      "independent_maps_checked": 6,
+      "independent_actual_target_adapter_darts_checked": 3456,
+      "audit_roots": 19,
+      "dependency_closure": 13067,
+      "new_uniform_colouring_schemes": 0,
+      "new_uniform_tait_to_tait_reductions": 0,
+      "original_configuration_certificates_replaced": 0,
+      "configurations_removed": 0,
+      "integrated_into_complete_assembly": false,
+      "global_coverage_proved": false,
+      "next_obligation": "Recognize actual inverse sources with the proved source geometry and cut domains, then establish occurrence coverage before crediting catalogue replacement. Forward target spherical geometry is now proved on the stated source domain."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",

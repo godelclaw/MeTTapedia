@@ -1,0 +1,134 @@
+{
+  "status": "kernel checked actual facial correspondence, spherical geometry and cube colouring consumer; independent geometry replay",
+  "checked_utc": "2026-09-30T22:49:26.686019+00:00",
+  "audit_roots": 19,
+  "dependency_closure": 13067,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "forbidden_dependencies": [
+    "complete classical Four Colour endpoints",
+    "source colour-word certificate predicates and suppliers",
+    "unfinished AutoBooks Brooks development",
+    "sorryAx",
+    "Lean.ofReduceBool"
+  ],
+  "general_geometry_domain": {
+    "source": "finite connected cubic spherical rotation system with one cyclic vertex rotation per vertex",
+    "face_correspondence": "actual target quotient faces are in bijection with source vertices disjointly united with actual source quotient faces",
+    "source_vertex_face_length": "twice source valence; six for cubic sources",
+    "source_face_lengths_preserved": true,
+    "actual_quotient_face_euler_preserved": true,
+    "actual_target_primal_connectivity_proved": true,
+    "actual_target_facial_sides_distinct": true,
+    "actual_target_bridge_freeness_proved": true,
+    "source_bridge_freeness_required": false,
+    "target_map_class": "BridgelessSphericalCubicMapData",
+    "fullerene_face_restriction_domain": "source cubicity, cyclic vertex rotations, simple source facial boundaries and pentagonal or hexagonal source boundary lengths",
+    "bridge_lemma_euler_hypothesis_required": false
+  },
+  "colouring_consumer_domain": "source map geometry together with simple primal degree three, cyclic edge-connectivity at least four and noncompleteness; the existing joint source choice supplies actual target Tait colouring and every complete GSLT sweep",
+  "reused_mathematics": [
+    "DualTruncateColoring.rotation",
+    "GoertzelV24BridgeTwoSided.sameCycle_of_bridge",
+    "DualTruncateCyclicSource.tait",
+    "DualTruncateCyclicSource.every_complete_sweep",
+    "GoertzelV24FaceOrbitPartitionBridge.card_permOrbit_eq_card_partition_parts"
+  ],
+  "kernel_consumer": {
+    "source": "eight-vertex cube rotation",
+    "source_vertices": 8,
+    "source_edges": 12,
+    "source_faces": 6,
+    "source_face_length": 4,
+    "source_euler": 2,
+    "target_vertices": 24,
+    "target_edges": 36,
+    "target_faces": 14,
+    "target_square_faces": 6,
+    "target_hexagonal_faces": 8,
+    "target_euler": 2,
+    "actual_spherical_map_class_proved": true,
+    "genuine_target_tait_colouring_proved": true,
+    "source_colour_word_supplied": false
+  },
+  "proof_modules": {
+    "DualTruncateFaceGeometry": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateFaceGeometry.lean",
+      "source_sha256": "7f6f14d406ed7fc48e7e180c2685e597faabaf2c2faefe40905859ee85b8fd33",
+      "source_bytes": 12547,
+      "olean_sha256": "c00dcde7a5a7e14ed13ef4b2f83c9079e7f1f660987a59b48cf378e3c0f20b49",
+      "olean_bytes": 1040344
+    },
+    "DualTruncateMapGeometry": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateMapGeometry.lean",
+      "source_sha256": "704d9b9d238a3b9ba4b2dfc81c7fcc7ddd12802f35d8ff656805fb129bf11c7d",
+      "source_bytes": 7253,
+      "olean_sha256": "5ab143329065f12b724aabb6c3f5cae545e5e43a652e99373b835ed1134ce3a1",
+      "olean_bytes": 159696
+    },
+    "DualTruncateGeometryExample": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateGeometryExample.lean",
+      "source_sha256": "77aa6c3be2a3cbf181a27e8807db5362e63df07f7dd90ecc99c483003a208504",
+      "source_bytes": 3020,
+      "olean_sha256": "f9c019d7d2ec1bb987667aaa318a267671fcbee467c73ed54fc1fb6e9e59f2ac",
+      "olean_bytes": 403816
+    },
+    "DualTruncateGeometryAudit": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateGeometryAudit.lean",
+      "source_sha256": "3a79deca96672c885ba67d6c81e588520733b34c9c8288f82a5c488495f7de19",
+      "source_bytes": 4257,
+      "olean_sha256": "408c0f6263fa3c67e357c28744e40ff1a25f0e8630de0a0614b0349dc5d4fbe5",
+      "olean_bytes": 3560
+    }
+  },
+  "measured_frontend_seconds": {
+    "DualTruncateFaceGeometry": 3.0,
+    "DualTruncateMapGeometry": 3.3,
+    "DualTruncateGeometryExample": 7.0,
+    "DualTruncateGeometryAudit": 6.8,
+    "ResearchCheckpoint_gate": 5.6
+  },
+  "maximum_sampled_lean_rss_mib": 3580,
+  "gate_maximum_sampled_lean_rss_mib": 3580,
+  "gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "jobs": 11126,
+    "exit": 0
+  },
+  "independent_replay": {
+    "record": "dual-truncate-geometry-probe.json",
+    "sha256": "4c7000f3e83e46648bb0de54aa111b9be8bc59eb64e9c2f91cb1ae742dfbc87e",
+    "maps_checked": 6,
+    "joint_face_labels_checked": 3528,
+    "actual_target_adapter_darts_checked": 3456,
+    "source_colour_words_read": 0,
+    "split_rotation_diagnostic": {
+      "invalid_vertex_plus_source_face_count": 20,
+      "source_faces": 12,
+      "source_vertices": 8,
+      "target_faces": 36
+    },
+    "cube_geometry_kernel_certified": true,
+    "five_saved_source_geometry_domains_kernel_certified": false
+  },
+  "new_uniform_colouring_schemes": 0,
+  "existing_coupled_colouring_scheme_geometric_target_consumer_proved": true,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "discharging_computations_replaced": 231,
+  "new_catalogue_replacements": 0,
+  "target_spherical_geometry_proved": true,
+  "saved_residual_source_geometry_kernel_certified": false,
+  "saved_residual_cyclic_source_domain_kernel_certified": false,
+  "inverse_geometric_recognition_proved": false,
+  "unconditional_tait_to_tait_reduction": false,
+  "global_coverage_proved": false,
+  "next_obligation": "Recognize actual inverse sources with the proved geometry and cut domains and establish occurrence coverage. Forward construction and source vertex colouring do not themselves give a Tait-to-Tait strict reduction."
+}

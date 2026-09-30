@@ -2286,9 +2286,9 @@ saved residual sources and checks their literal target rotations. All 14,564
 two-vertex deletions are connected. These finite domain checks are program
 evidence; the [audit][coupled-audit] checks the general theorem and cube
 consumer in Lean. The [receipt][coupled-receipt] retains this distinction.
-Deriving the domain for recognized inverse sources, preserving their geometry,
-and proving global supply remain separate tasks. Coverage and certificate
-counts remain 633 and 630.
+Deriving the domain for recognized inverse sources and proving global supply
+remain separate tasks. The forward spherical geometry is established below.
+Coverage and certificate counts remain 633 and 630.
 
 [coupled-order]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/CoupledThreeColouring.lean
 [coupled-transport]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateStructuralColoring.lean
@@ -2331,12 +2331,67 @@ The [receipt][cyclic-source-receipt] separates these kernel results from an
 independent separator diagnostic: a ten-vertex cubic graph has a bridge,
 and deleting its endpoints disconnects the remainder. Cubicity alone does
 not discharge the source-domain hypothesis. Recognizing inverse sources
-with the required cut condition, spherical geometry and global coverage
-remain open. The coverage catalogue remains 633 and the original
-configuration-certificate count remains 630.
+with the required cut condition and global coverage remain open; the forward
+spherical geometry is established below. The coverage catalogue remains 633
+and the original configuration-certificate count remains 630.
 
 [cyclic-source-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicPairDeletionConnectivity.lean
 [cyclic-source-supplier]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSource.lean
 [cyclic-source-cube]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceExample.lean
 [cyclic-source-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceAudit.lean
 [cyclic-source-receipt]: ../../../../tools/fourcolor/classical/cyclic-source-connectivity-measurements.json
+
+## Actual faces and spherical geometry
+
+The [face law][dual-truncate-faces] proves a complete joint invariant of the
+literal target's facial cycles. Slots zero and one interleave along a source
+vertex rotation; slot two follows a source face in reverse. The tag records
+both the kind and the identity of the source object. With one cyclic rotation
+at each source vertex, equal tags mean exactly the same actual target face.
+
+The induced face bijection is
+
+```text
+target faces  ≃  source vertices ⊔ source faces
+```
+
+Each vertex face has twice the source valence, hence length six for a cubic
+source. Every source face keeps its length. Counting these actual quotient
+faces proves Euler preservation. The joint tag also separates the two facial
+sides of every target edge. A general bridge-return argument derives
+bridge-freeness from this separation without an Euler hypothesis.
+
+The [geometry package][dual-truncate-map-geometry] lifts actual source walks
+through vertex rotations and edge crossings. A connected cubic spherical
+source with cyclic vertex rotations therefore supplies the target's complete
+connected, bridgeless spherical cubic map class. Source bridge-freeness is not
+required. On the earlier colouring domain, the same target also has a genuine
+Tait colouring and compatible witnesses for every complete faithful GSLT sweep.
+For a source with simple pentagonal and hexagonal facial boundaries, the
+target retains that restriction.
+
+The [cube consumer][dual-truncate-geometry-cube] derives the six actual source
+square faces and then the 24-vertex, 36-edge target with six squares and eight
+hexagons. The [audit][dual-truncate-geometry-audit] checks 19 roots and 13,067
+declarations in their combined closure, using only the standard axioms. It
+excludes source colour-word certificates and complete Four Colour endpoints.
+The [receipt][dual-truncate-geometry-receipt] records the proof fingerprints
+and independent replay on the cube and five saved residual pairs. The latter
+checks 3,456 darts through exact adapters; their source geometry and cyclic-cut
+domains remain program evidence. A split-rotation diagnostic demonstrates
+why merely preserving a vertex fibre does not suffice for the face bijection.
+
+Dual-and-truncate is the classical leapfrog construction, described for
+fullerenes by [Kardoš and Mockovčiaková](https://arxiv.org/abs/1910.03992).
+These Lean results establish its literal rotation geometry and connect it to
+the existing colouring and GSLT consumers. Inverse recognition and coverage
+remain separate obligations. Source vertex colours and target edge colours
+are different constraints; this forward theorem alone is not a Tait-to-Tait
+strict reduction. No additional configuration or original certificate
+dependency is removed: the counts remain 633 and 630.
+
+[dual-truncate-faces]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateFaceGeometry.lean
+[dual-truncate-map-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateMapGeometry.lean
+[dual-truncate-geometry-cube]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateGeometryExample.lean
+[dual-truncate-geometry-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateGeometryAudit.lean
+[dual-truncate-geometry-receipt]: ../../../../tools/fourcolor/classical/dual-truncate-geometry-measurements.json
