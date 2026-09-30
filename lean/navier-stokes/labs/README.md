@@ -6503,3 +6503,221 @@ not evolve arbitrary flows or certify a recurrent-history bound.
 ```sh
 python3 -O labs/pressure_diffusion_completion.py
 ```
+
+## Actual pressure diffusion and the joint memory receiver
+
+The convex completion introduced two distinct obligations: spatial costs
+of its retained pressure, and signed nonlinear production. The following
+comparison pays one of the spatial costs. It keeps the nonlinear history
+obligation separate.
+
+Write `B=grad u`, `r=||B||_F^2`, and let `P=Hess p` be the actual canonical
+fluid pressure, so `-Delta p=tr(B^2)`. For arbitrary smooth solenoidal
+whole-space velocity with all derivatives in L2,
+
+```text
+integral ||P||_F^2 = integral tr(B^2)^2 <= integral r^2,
+integral ||partial_k P||_F^2
+  = integral partial_k(tr(B^2))^2
+  <= 4 integral r ||partial_k B||_F^2.
+```
+
+These identities require the actual Poisson source and gradient character
+of the pressure. They do not treat pressure as a free symmetric matrix.
+They are spatial identities at every smooth prefix, without a uniform
+future bound. In `WholeSpacePressureDiffusion`, the pressure is the
+upstream Helmholtz construction, not an independently supplied potential.
+
+The elementary integrated identity underlying the calculation is
+
+```text
+integral sum_ij partial_j v_i partial_i v_j
+  = integral (div v)^2.
+```
+
+Two integrations by parts exchange the crossed derivatives. If v is a
+gradient, its gradient matrix is symmetric, so the left side is its
+squared Frobenius norm. This applies even if the scalar potential itself
+is not in L2. For v=grad p, solenoidality gives the pressure source. For
+v=partial_k grad p, it gives the differentiated source. Finally
+`partial_k tr(B^2)=2 sum_ij B_ji partial_k B_ij` and matrix
+Cauchy--Schwarz supplies the constant four. Products of upstream smooth
+L2 fields certify integrability throughout.
+
+### A strict payment for the derivative of memory pressure
+
+For the actual retained stress memory, write `P_hat=P+P_C` and
+`P_C=Hess q_C`, with `-Delta q_C=div div C`. The completed observable's
+analytic lower bound gives
+
+```text
+D_Psi >= nu sum_k [8Q ||partial_k B||_F^2
+                    +(56/5)||partial_k P_hat||_F^2],  Q>=r.
+```
+
+The weighted square
+
+```text
+(33/5)a^2+(33/28)b^2-(a-b)^2 = (28a+5b)^2/140
+```
+
+retains the coefficients needed to combine this with actual pressure:
+
+```text
+integral ||partial_k P_C||_F^2
+  <= (33/5) integral ||partial_k P_hat||_F^2
+     +(33/28) integral ||partial_k P||_F^2
+  <= (33/5) integral ||partial_k P_hat||_F^2
+     +(33/7) integral r ||partial_k B||_F^2,
+
+nu integral ||grad P_C||_F^2 <= (33/56) integral D_Psi.
+```
+
+The pressure identities, bounds and final conditional diffusion adapter
+are Lean-certified. The adapter accepts a smooth observed gradient and
+the displayed physical Hessian lower bound. It does not construct the
+evolving memory or identify that Hessian with a matrix derivative; those
+applications remain analytic. Its coefficient is strictly below one.
+
+### Fixed low frequencies plus full diffusion
+
+Positive memory has finite mass `M(t)=integral tr C(t)<=E0`. For the
+whole-space Fourier convention
+`C_hat(k)=integral exp(-i k.x) C(x) dx`, positivity gives
+
+```text
+||P_C_hat(k)||_F = |k^T C_hat(k) k| <= |k|^2 M(t).
+```
+
+For positive viscosity and any cutoff Lambda>0, fixed before all solution prefixes,
+
+```text
+integral ||P_C||_F^2
+  <= Lambda^7 E0^2/(14 pi^2)
+     +Lambda^(-2) integral ||grad P_C||_F^2,
+
+integral_0^tau integral ||P_C||_F^2
+  <= H Lambda^7 E0^2/(14 pi^2)
+     +(33/(56 nu Lambda^2)) integral_0^tau integral D_Psi, tau<=H.
+```
+
+Plancherel splits the disjoint low and high frequencies. The low constant
+is `(2pi)^(-3) integral_{|k|<=Lambda}|k|^4 dk=Lambda^7/(14pi^2)`.
+The high part uses `1<=|k|^2/Lambda^2`. Thus any fixed coefficient times
+this pressure square can be paid by an arbitrarily small multiple of
+the **full** diffusion plus an explicit finite datum/viscosity/horizon
+allowance. On normalized 2pi-periodic volume the analogous low cost is
+`E0^2 sum_{0<|k|<=Lambda}|k|^4`; the same high-frequency payment holds.
+This charges the stronger completed diffusion; it does not restore an
+energy-only allowance for the earlier, different renewal functional.
+
+This frequency split and its time integration are analytic, not new
+whole-space Fourier declarations. The exact checker verifies the
+periodic version on the actual generated initial memory source
+`G=C_t/(2nu)=BB^T`, including a separated parent with a different phase.
+It does not assert that C=G at a finite time or evolve a closed cascade.
+
+The distinction between full and selected diffusion is essential.
+The soft excess pays `a_b D_Psi`, where a_b vanishes in the inactive
+region. The preceding estimate cannot be transferred by inserting a_b
+into an unweighted pressure identity. Even for a smooth scalar weight a,
+integration by parts for a gradient vector v gives the extra terms
+
+```text
+integral a ||grad v||_F^2
+ = integral a (div v)^2
+   + integral [(grad a.v) div v
+               -sum_ij (partial_j a) v_i partial_i v_j].
+```
+
+Taking `v=partial_k grad p` identifies the specific localization defect.
+Symmetry of the third pressure derivatives combines the three directions:
+
+```text
+integral a ||grad P||_F^2
+ = integral a ||grad Delta p||^2
+   + integral grad a.[P grad Delta p-(1/2)grad ||P||_F^2].
+```
+
+Thus the pressure-source bound with weight a has a signed pressure-flux
+correction. It is not obtained by simply weighting the unweighted identity.
+The checker verifies the pointwise divergence formula and a nonzero
+integrated correction on actual fluid pressure with a smooth strictly
+positive trigonometric test weight. That test weight is not the actual
+excess selector, so it refutes only the uncorrected weighted identity.
+The continuous excess weight already has a paid derivative, but the
+remaining v and grad v factors have not been absorbed. Approximation to
+the actual continuous, piecewise smooth excess weight is also required.
+Neither this weighted comparison nor the nonlinear production budget is
+proved here. A full spatial entropy could supply full diffusion, at the
+price of retaining its added nonlinear reactions; it is not an equivalent
+replacement for the weaker excess target.
+
+### Retain both receivers and the transport commutator
+
+Let `K T=Hess(-Delta)^(-1) div div T`. For
+`D=partial_t+u.grad-nu Delta`, the actual unforced stress history obeys
+
+```text
+D(u tensor u+C)=-u tensor grad p-grad p tensor u,
+D P_hat=K[-u tensor grad p-grad p tensor u]
+         +[u.grad,K](u tensor u+C).
+```
+
+For the complete soft-excess receiver define two symmetric tensors,
+`M=a_b partial_S Psi` and `N=a_b partial_P Psi`. Splitting
+`p=p_hat-q_C` gives the joint memory contribution
+
+```text
+I_C = integral M:P_C
+      + integral N:K[u tensor grad q_C+grad q_C tensor u]
+    = integral [-div M+2(KN)u].grad q_C
+    = integral C:Hess q_eff
+    = -integral div C.grad q_eff,
+
+q_eff=(-Delta)^(-1)[div div M-2div((KN)u)].
+```
+
+The pressure-slot receiver changes the effective test. Controlling the
+old strain receiver alone would omit it. The tensor products above are
+explicit sums, avoiding a convention-dependent factor in `sym`.
+
+The isolated I_C is also sensitive to a constant-velocity shift U:
+
+```text
+I_C(u+U)-I_C(u)=2U.integral (KN) grad q_C.
+```
+
+The full physical production remains invariant. Solenoidality gives
+`K[U tensor u+u tensor U]=0`; the actual pressure equation gives
+
+```text
+[u.grad,K](U tensor u+u tensor U)
+  =K[U tensor grad p+grad p tensor U].
+```
+
+This exactly compensates the changed pressure-source term. A test of the
+isolated memory contribution must therefore retain the coupled pressure
+reaction and commutator. On the torus the conserved mean velocity permits
+a mean-free moving frame. A uniform boost of a nonzero whole-space field
+is not finite-energy data, so the periodic test is not transferred to the
+whole-space datum class as a counterexample.
+
+The exact checker uses a genuinely 3D finite Fourier velocity and its
+generated initial memory source. For the leading cubic strain and
+quadratic pressure receivers of the completed observable, the isolated
+pairing is zero in the original frame, while its boost coefficients are
+`(-256/33,256/33,0)`. Every output mode verifies exact compensation in
+the full pressure production. These unselected leading coefficients
+are not the initially inactive datum-fixed soft excess, and the result
+does not refute a finite history allowance.
+
+```sh
+python3 -O labs/pressure_memory_diffusion.py
+```
+
+The remaining physical target is the signed joint production over
+compatible, retained-memory NS histories. The strict unweighted derivative
+payment and fixed-cutoff pressure-square estimate discharge specific
+spatial costs; they do not yet prevent repeated parent amplification or
+establish arbitrary-data continuation.

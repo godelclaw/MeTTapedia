@@ -541,6 +541,32 @@ history obligation. Its local weighted gradient payment does not bound the
 anisotropic nonlocal memory-pressure norm. Neither arbitrary-data continuation
 nor the repeated renewal estimate is established by this repair.
 
+`WholeSpacePressureDiffusion` now ties a new pressure cost to the actual
+constructed Helmholtz pressure of arbitrary smooth solenoidal whole-space
+velocity. Two integrations by parts give
+`integral |P|^2 = integral tr((grad u)^2)^2` and
+`integral |grad P|^2 <= 4 integral |grad u|^2 |grad^2 u|^2`.
+These are spatial identities and estimates for actual fluid pressure,
+without a prescribed pressure matrix or future-solution bound.
+
+Consequently the difference `P_C=P_hat-P` obeys
+`nu integral |grad P_C|^2 <= (33/56) integral D_Psi`, provided the
+completed diffusion supplies its displayed physical Hessian lower bound.
+The strict coefficient follows from a weighted square, not an assumption
+that memory pressure has a favorable sign. The pressure identities and
+this conditional diffusion adapter are Lean-certified; construction of
+the evolving memory and the full matrix Hessian remain analytic.
+
+Analytically, fixed low frequencies of `P_C` are bounded by the finite
+positive memory mass, and high frequencies by this derivative payment.
+This yields a full-horizon unweighted pressure-square allowance plus an
+arbitrarily small multiple of the full diffusion. The soft excess pays
+`a_b D_Psi`, so transferring the estimate to its varying active weight
+is a separate open obligation. The joint strain/pressure memory reaction
+also retains the pressure transport commutator: the lab verifies its
+exact compensation under a constant-velocity shift. A sign change of
+an isolated boost-dependent fragment is not a physical history obstruction.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
