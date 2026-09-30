@@ -35,6 +35,15 @@ Other surveyed projects include
 [TonalidadeHidrica/FourColorTheorem](https://github.com/TonalidadeHidrica/FourColorTheorem)
 (`1c0cb61da4f953b29097b12ed1737b09890c7080`, preliminary structures).
 
+The [padded-cap receipt](padded-cap-measurements.json) records a separate
+uniform reconstruction component: every nonconstant `2m`-cycle boundary
+colouring lifts to the literal `8m`-vertex cap, with fixed-exterior and GSLT
+consumers. Its [finite replay](padded-cap-probe.json) checks the actual
+GP(2,0) replacement and the monochromatic failures of unguarded inclusion.
+No additional classical certificate dependency is removed. General
+geometric replacement and the exterior repair of the exceptional words
+remain open.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

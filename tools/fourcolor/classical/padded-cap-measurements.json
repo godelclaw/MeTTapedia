@@ -1,0 +1,271 @@
+{
+  "status": "Kernel-checked uniform cap colouring reconstruction with an explicit nonconstant boundary guard; actual exterior and GSLT consumers. General geometric reduction remains open.",
+  "completed_utc": "2026-09-30T09:46:58.992239+00:00",
+  "build_base_revision": "add25531d82138005c03061d8668f2f85ecec11f",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CyclicColourAvoidance",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicColourAvoidance.lean",
+      "source_sha256": "427927de3a8289065074ad738c8cea1bc33ebbfd004b3e2d011dd1741a46e9e6",
+      "source_bytes": 4200,
+      "olean_sha256": "cdf96699a6ffc8d721a4198f5f88999744941b8e0297e4ffd19d778225c486d9",
+      "olean_bytes": 214600,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapTangle",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapTangle.lean",
+      "source_sha256": "30dd6e20d321d8dc471f207f88d3edf81a6d45329ad51e01f094b7540d2fca8d",
+      "source_bytes": 4795,
+      "olean_sha256": "5a2cb724bd9fb9437d734e42c4ea678c93d2612118dbcc67f02a0650b20ec588",
+      "olean_bytes": 1582592,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapColouring",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapColouring.lean",
+      "source_sha256": "cdf2d6ea461bbf3fb86bf212734a310ab229bbcff373b80df19692459f431f27",
+      "source_bytes": 4856,
+      "olean_sha256": "32e74e68dfaf40ebfb5a20f4e22e03ffe2a80d8baa7bf14b7f2e2be295894b42",
+      "olean_bytes": 1084344,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapSource",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapSource.lean",
+      "source_sha256": "b579815098b787f15046d8c49125f5a941c12bfd2d7b719c9d800596de57a1f0",
+      "source_bytes": 4899,
+      "olean_sha256": "ec141c7f08d81ac77d6b59b8b9f01920eb0cd41fb4b2ffca14be9f150780bffd",
+      "olean_bytes": 355208,
+      "reported_build_seconds": 2.8
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapContext",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapContext.lean",
+      "source_sha256": "21464c9ba6e4b25306ad49a0e01edf6470f55b612529bc26b06b0bd6718d7bd0",
+      "source_bytes": 4553,
+      "olean_sha256": "67614442ccc8600b8e2fa823fbb9e4944959b448ee4582d9e085263f62b8dc23",
+      "olean_bytes": 578144,
+      "reported_build_seconds": 3.2
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapAudit.lean",
+      "source_sha256": "5dded6419c6640d6b8fc5107245d1d6a942009375953471ccff0b9c34201fedf",
+      "source_bytes": 3312,
+      "olean_sha256": "eb934520b34ed51b295eb9dd9e2ce168baab76382cfbe7951e2b33846b9fa78f",
+      "olean_bytes": 3528,
+      "reported_build_seconds": 4.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "5bbc6860fb6fff7ef89d9c1818d0882a0868c45969a53b29b619f5fe357bc1b3",
+      "source_bytes": 31821,
+      "olean_sha256": "0bd7506d9e05e37c743e153e058945cc870e9ac408d8708dcc16ca0049795eb8",
+      "olean_bytes": 37216,
+      "reported_build_seconds": 5.2
+    }
+  ],
+  "audit": {
+    "root_count": 11,
+    "combined_dependency_closure": 7088,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "cyclic avoidance and all eight literal sector stars",
+      "actual smaller cycle and its boundary coordinate equivalence",
+      "fixed-exterior colouring restriction and reconstruction",
+      "GSLT horizontal composition preserving shared words and exterior witnesses"
+    ],
+    "excluded": [
+      "complete classical FourColor namespace",
+      "finite tube stabilization certificates",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11034,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel module times from the final incremental builds. Null means already cached in those builds. No isolated kernel timing or speedup claimed.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "sectors": "Every m >= 2",
+    "source": "Actual cycle with 2*m vertices and 2*m ordered ports",
+    "target": "Actual padded cap with 8*m vertices, 11*m internal edges and 2*m ordered outer ports",
+    "guard": "The source cycle boundary word is nonconstant.",
+    "mechanism": "Choose equal inner/middle radial colours q_i, nonzero, different from q_(i-1) and the first boundary letter a_i. One cyclic list-choice argument closes the choices.",
+    "boundary_transport": "Consecutive cycle indices correspond exactly to pairs (sector, Bool).",
+    "exterior": "Given a smaller closed-map colouring with nonconstant interface, reconstruct the larger cap while fixing every exterior dart colour.",
+    "gslt": "The guarded source relation maps to genuine target colouring witnesses; horizontal composition retains both shared words and exterior witnesses.",
+    "whole_map_vertex_difference": "6*m, with no exterior vertices introduced.",
+    "direction": "Guarded support inclusion. Neither support equality nor witness-count preservation is asserted.",
+    "witness_selection": "Classical witness selection in Lean; no certified executable recolouring algorithm or history bound.",
+    "geometric_class_preservation": "Not yet proved in general."
+  },
+  "programme": {
+    "new_uniform_colour_reconstruction_schemes": 1,
+    "new_completed_geometric_reduction_schemes": 0,
+    "new_family_colouring_certificates": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "additional_original_certificates_replaced": 0,
+    "catalogue_entries_removed": 0,
+    "integrated_into_complete_assembly": false,
+    "global_coverage_proved": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/padded_cap_probe.py",
+    "script_sha256": "fac75b758a9e148c45883c042fb2427b5e264a10aa44aec4dc8624a5616a4322",
+    "record": "tools/fourcolor/classical/padded-cap-probe.json",
+    "record_sha256": "69860d793af4249b848eaad39811b875d43d4153d31d2975a5340f92cfac25f6",
+    "input": "tools/fourcolor/classical/diamond-supply-probe.json",
+    "input_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171",
+    "program_dependencies": [
+      {
+        "source": "tools/fourcolor/classical/alternating_lobe_probe.py",
+        "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+      },
+      {
+        "source": "tools/fourcolor/classical/alternating_cycle_probe.py",
+        "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+      },
+      {
+        "source": "tools/fourcolor/classical/hexagonal_collar_probe.py",
+        "source_sha256": "ed7ac5133c962f6da27e3f86b0baff39986ec2214f3e86b1655b784ba4700d23"
+      }
+    ],
+    "nonconstant_source_colourings_checked": 87348,
+    "sector_counts": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "support_census": [
+      {
+        "sectors": 3,
+        "inner_cap_support": 84,
+        "padded_cap_support": 150,
+        "cycle_support": 63,
+        "rejected_cycle_words": [
+          [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ]
+        ]
+      },
+      {
+        "sectors": 4,
+        "inner_cap_support": 531,
+        "padded_cap_support": 1515,
+        "cycle_support": 255,
+        "rejected_cycle_words": []
+      },
+      {
+        "sectors": 5,
+        "inner_cap_support": 3180,
+        "padded_cap_support": 12840,
+        "cycle_support": 1023,
+        "rejected_cycle_words": [
+          [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ]
+        ]
+      }
+    ],
+    "physical": {
+      "map": "Goldberg-GP(2,0)",
+      "whole_map_vertices": [
+        80,
+        50
+      ],
+      "hemisphere_vertices": [
+        40,
+        10
+      ],
+      "vertex_loss": 30,
+      "exterior_darts_preserved": 120,
+      "actual_cyclic_stars_matched": true,
+      "smaller_map_connected_cubic_bridgeless_spherical": true,
+      "colouring_reconstructed": true,
+      "minimality_certified": false
+    },
+    "evidence": "Independent finite program checks, not Lean certificates of the general geometric reduction."
+  },
+  "remaining": [
+    "Prove spherical, connected, bridgeless cubic preservation for the embedded replacement.",
+    "Handle monochromatic smaller-cycle interfaces by a justified exterior Kempe repair or another compatible operation.",
+    "Prove geometric recognition and broader residual coverage.",
+    "Integrate successful reductions into the complete proof and audit certificate dependencies."
+  ]
+}

@@ -31,6 +31,16 @@ is used. [GSLT route reconstruction](ZigzagTubeTwistGSLT.lean) composes this
 directed witness map in arbitrary contexts. In the all-five/six face class,
 a supplied row in a minimal counterexample now reaches a pentagonal seam
 within one successful extension, at every width at least two.
+The new [padded-cap law](PaddedCycleCapSource.lean) reconstructs a literal
+`8m`-vertex cap from every nonconstant boundary colouring of a `2m`-cycle,
+for all `m ≥ 2`. One cyclic choice argument handles the family. Its
+[fixed-exterior and GSLT consumers](PaddedCycleCapContext.lean) preserve
+the complete exterior colouring and shared words; the proposed operation
+has exactly `6m` fewer vertices. General geometric replacement and the
+monochromatic escape remain open. The saved GP(2,0) replay checks an
+actual 80→50 replacement and reconstruction as finite program evidence.
+See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).
+
 A simple cycle with alternating local turns now constructs that
 row's facial sides and complete ordered interfaces at every width at least two;
 see [AlternatingCycleRecognition](AlternatingCycleRecognition.lean).

@@ -1685,3 +1685,84 @@ geometric reduction has not replaced another certificate in those endpoints.
 [twist-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeTwistAudit.lean
 [twist-probe]: ../../../../tools/fourcolor/classical/twisted-tube-probe.json
 [twist-measurements]: ../../../../tools/fourcolor/classical/twisted-tube-measurements.json
+
+
+## A joint colouring law for padded cycle caps
+
+The two-row tube reduction leaves a concrete short control: the 80-vertex
+Goldberg GP(2,0) map. A pentagon and its surrounding layers form a
+40-vertex hemisphere. Its colouring problem belongs to an unbounded family:
+three concentric cycles of lengths `m`, `3m` and `4m`, with two outward
+ports per sector. There are `8m` vertices and `2m` boundary ports.
+[`PaddedCycleCapTangle`](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapTangle.lean)
+retains every internal edge, cyclic vertex star and outer port.
+
+The proposed smaller piece is the cycle with `2m` vertices. The new
+[kernel-checked reconstruction](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapSource.lean)
+proves: for every `m ≥ 2`, every **nonconstant** boundary word admitted by
+that smaller cycle is admitted by the padded cap. The source is an actual
+cycle colouring. The target is an actual colouring of all `8m` vertices.
+The result is directed support inclusion on the stated domain; colouring
+counts and executable recolouring histories are separate questions.
+
+The proof keeps three radial seam colours together. If `s_i` is the
+smaller cycle's incoming edge colour and `a_i,b_i` its two consecutive
+boundary letters, the shared choices `q_i` need satisfy only
+
+```text
+q_i ≠ 0,       q_i ≠ q_(i-1),       q_i ≠ a_i.
+```
+
+Set the inner and middle radial colours both equal to `q_i`. The
+[sector formula](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapColouring.lean)
+then reconstructs all eight vertex constraints using addition in the Klein
+four group. A nonconstant source boundary forces the forbidden letters
+`a_i` to vary. The [cyclic avoidance law](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicColourAvoidance.lean)
+cuts at two different forbidden letters, makes successive compatible
+choices, and proves that the final edge closes. This one argument covers
+all sector counts. Only elementary arithmetic on the four-element colour
+group uses finite decision; no list of cap configurations or boundary words
+supplies the family theorem.
+
+The [context theorem](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapContext.lean)
+reconstructs inside any fixed sewn exterior when the supplied smaller
+colouring has a nonconstant interface. Every exterior dart retains its
+colour. The GSLT cell carries the guard explicitly, and horizontal composition
+retains both seam words and the actual exterior witnesses. Boundary
+reindexing connects the sector coordinates to the smaller cycle's ordered
+ports. This is a concrete instance of transporting one argument between
+representations without forgetting the joint choices needed for gluing.
+The whole-map vertex count differs by exactly `6m`; no outside vertices
+are added by this proposed operation.
+
+The [independent replay](../../../../tools/fourcolor/classical/padded-cap-probe.json)
+checks 87,348 nonconstant source colourings at sector counts 2 through 8.
+For GP(2,0), it checks an orientation-preserving correspondence of the
+literal cap with the actual hemisphere. Replacing that hemisphere by a
+10-cycle takes 80 vertices to 50. The smaller rotation is connected,
+bridgeless, spherical and cubic; one genuine smaller colouring reconstructs
+while fixing all 120 exterior darts. The saved rotations, correspondence
+and colourings are replayable with
+[`padded_cap_probe.py`](../../../../tools/fourcolor/classical/padded_cap_probe.py).
+These are finite program checks, separate from the general Lean theorem.
+
+The guard cannot simply be dropped. Exhaustive support checks at `m=3`
+and `m=5` find exactly three smaller-cycle words missing from the padded
+cap: the three monochromatic words. At `m=4` the checked inclusion has no
+exceptions. These finite obstructions identify the next repair obligation:
+change a constant interface through a justified exterior Kempe operation,
+or use another compatible smaller construction. A candidate is a component
+switch joining opposite-parity ports of the smaller cycle; its geometric
+existence and preservation obligations remain to prove.
+
+The family reduction is therefore not yet complete. The current Lean result
+supplies boundary reconstruction and the whole-map size calculation. General
+preservation of the spherical bridgeless cubic class, recognition in the
+residual maps, and the monochromatic escape remain open. The finite GP(2,0)
+example does not establish those universal statements or certify minimality.
+The [audit receipt](../../../../tools/fourcolor/classical/padded-cap-measurements.json)
+records eleven checked dependency roots, standard axioms only, and the
+absence of the complete classical theorem and finite tube-stabilization
+certificates. All 633 catalogue entries and 630 original configuration
+certificate dependencies remain; this checkpoint replaces no further
+certificate in the complete assembly.

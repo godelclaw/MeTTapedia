@@ -39,6 +39,16 @@ are removed. The complementary-ring law supplies this result without a new
 finite colouring certificate. The earlier width-five exact-support theorem
 remains available when preserving the original seam matching in both directions.
 
+The short GP(2,0) control now has a [joint padded-cap colouring law](tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).
+For every `m ≥ 2`, a nonconstant boundary colouring of a `2m`-cycle
+reconstructs a literal `8m`-vertex cap by one shared cyclic choice argument.
+The theorem composes in a fixed exterior and in GSLT relations, retaining
+the joint word and exterior witnesses. Independent replay realizes the
+proposed 80→50 replacement on GP(2,0). General map-class preservation and
+the exterior repair of monochromatic boundaries remain open; this is a
+family reconstruction component, with no additional classical certificate
+removed.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two
