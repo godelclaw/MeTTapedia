@@ -29,6 +29,7 @@ import MettapediaNS.WholeSpacePressureReceiver
 import MettapediaNS.MemoryAgePressure
 import MettapediaNS.WholeSpacePressureProduction
 import MettapediaNS.SelectedPressureCotangent
+import MettapediaNS.JointReceiverDiffusion
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -984,3 +985,17 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SelectedPressureCotangent.NSEvolution.pressureGradient_hasDerivAt
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SelectedPressureCotangent.NSEvolution.pressureHessian_hasDerivAt
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SelectedPressureCotangent.NSEvolution.pressure_cotangent_work
+
+/-! Complete local receiver coefficients and actual joint signed work. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.radial_full_B_upper
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.radial_full_pressure_upper
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.full_B_selector_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.pressure_selector_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.full_B_receiver_gradient_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.pressure_receiver_gradient_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.joint_pressure_gradient_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.jointVelocityCotangent
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.joint_velocity_norm_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.joint_velocity_work_integrable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.integral_joint_velocity_work
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.NSEvolution.joint_velocity_work

@@ -7531,3 +7531,255 @@ remain obligations; a paid receiver norm does not pay its time work.
 ```sh
 python3 -O labs/pressure_selected_cotangent.py
 ```
+
+## Complete joint receiver payments and an actual-parent obstruction
+
+[`joint_receiver_diffusion.py`](joint_receiver_diffusion.py) retains the
+full geometric gradient and pressure slots. Its default checks use exact
+rational Fourier fields and independently differentiated matrix fixtures.
+The estimates and the asymptotic argument below are analytic; the kernel
+module `MettapediaNS.JointReceiverDiffusion` certifies the scalar radial
+and product-rule coefficients and an actual-NS signed work identity.
+
+### The full gradient and pressure blocks
+
+Use the completed `Psi` defined above, with any fixed positive envelope
+regularizers. Put `r=|B|²`, `q=sqrt(sigma²+|P_hat|²)` and `Q=r+q`.
+Let `E` vary the FULL `B`, `H=sym E`, `v=curl E`, and `e=|E|²`.
+The identities `r=|S|²+|omega|²/2` and `e=|H|²+|v|²/2` imply
+
+```text
+|S||omega||H||v|<=r e/2,
+|S|²|v|²<=2r e,        |omega|²|H|²<=2r e.
+```
+
+The complete first and absolute second directional derivative bounds are
+
+| Term | First derivative divided by `r^(3/2)sqrt(e)` | Second derivative divided by `r e` |
+| --- | ---: | ---: |
+| `V²/(W+eta)` | 16 | 152 |
+| `W²` | 16 | 48 |
+| `Z=|S omega|²` | 8 | 18 |
+| `Q_s W` | 8 | 12 |
+
+For the perspective, divide its positive Hessian square by `W+eta` before
+bounding. The resulting upper bound is
+`70|S|²|v|²+4W|H|²+8|S||omega||H||v|<=152r e`.
+This avoids any inverse-vorticity singularity and is uniform in `eta>0`.
+The pressure term has first `B` derivative at most `8q sqrt(r e)`
+and pure `B` curvature at most `8q e` in magnitude. The completion adds
+first derivative at most `192Q^(3/2)sqrt(e)` and second at most `576Q e`.
+Thus both completed branches have full `B` sensitivities at most
+`300Q^(3/2)` and pure `B` upper blocks at most `1400Q`.
+
+Their pressure gradients have norms at most `100Q` and `96Q`. Their pure
+pressure blocks are at most `96Q/q`: the original pressure branch is
+linear in this slot, and `D²_PP(Q²)<=2Q/q`.
+The radial Hessian and `rho>=48Q²` therefore give
+
+```text
+Hess_BB Psi<=6600Q I,       |Psi_B|²<=180000Q³,
+Hess_PP Psi<=600(Q/q) I,    |Psi_Phat|²<=20000Q².
+```
+
+Indeed the upper radial coefficients are `2800+180000/48=6550<6600`
+and `192+19216/48=1777/3<600`. The previously derived FULL Hessian is
+positive, so its Cauchy--Schwarz inequality controls mixed slot changes:
+
+```text
+|d(Psi_B)[E,L]|²<=6600Q Hess Psi[(E,L),(E,L)],
+|d(Psi_Phat)[E,L]|²<=600(Q/q) Hess Psi[(E,L),(E,L)].
+```
+
+No vorticity derivative, axis change or pressure increment is frozen.
+These uniform matrix identifications remain analytic, with exact fixture
+and coefficient checks; their scalar radial combinations are Lean-certified.
+
+### Payments for both actual local slots
+
+Let `Phi=Psi+|P|²`, `z=Phi/h`, `h>0`, and fix `b>0`. Set
+
+```text
+a=(1-b²/z²)_+,       J=nu h phi_b''(z)|grad z|²,
+M=a Psi_B,          N=a Psi_Phat+2aP,
+D_Phi=nu sum_j Hess Psi[(B_j,P_hat_j),(...)]+2nu|grad P|².
+```
+
+On the active set, `Phi=hz`, `z phi_b''(z)<=2` and `Phi>=48Q²`.
+The squared product rule gives
+
+```text
+nu |Psi_B|²|grad a|²/Q<=7500J,
+nu (q/Q)|Psi_Phat|²|grad a|²<=(2500/3)J.
+```
+
+With `a²<=a`, the mixed derivative estimates yield
+
+```text
+nu |grad M|²/Q<=15000(J+a D_Phi),
+nu (q/Q)|grad(a Psi_Phat)|²<=1700(J+a D_Phi).
+```
+
+The existing canonical component has
+`nu|grad(2aP)|²<=16J+8nu a|grad P|²`.
+Since `0<q/Q<=1`, addition pays the complete pressure receiver:
+
+```text
+nu (q/Q)|grad N|²<=3500(J+a D_Phi).
+```
+
+The identities hold almost everywhere across the threshold for the
+continuous Lipschitz selector. Its weak product identification remains an
+application obligation. The pressure receiver's weight is essential;
+weighted Helmholtz contraction is not asserted.
+
+For `V=-Pi_gradient div N`, the full divergence-form velocity cotangent is
+
+```text
+Lambda_u=-div M-2B^T V,
+Lambda_C=K(a Psi_Phat)-beta hH^-1/3.
+```
+
+Lean proves the signed velocity work on compatible solenoidal directions
+and on the actual NS tangent, with ordinary `L²` receiver divergences.
+The entire pressure projection is retained. It also proves
+
+```text
+|Lambda_u|²/Q<=2|div M|²/Q+8|V|².
+```
+
+The last term is UNWEIGHTED. The local `q/Q` payment does not supply it,
+and the complete norm comparison below actually fails. Identifying the
+weak receivers with `Psi` and paying their physical time work remain open.
+
+### An explicit actual NS family
+
+On the normalized `2pi` torus, let `n` be a positive integer and take
+
+```text
+u_n=(n sin y,n^-2 sin(n x),0),     C_0=0,
+p_n=2 cos y cos(n x)/(n²+1),      eta=sigma=b=1.
+```
+
+Both velocity parents are kept. The data are smooth and divergence-free,
+and `p_n` is their actual canonical pressure. The complete initial NS
+tangent, including viscosity, is used. The exact checker additionally
+retains both signs of the small parent. Initial squared energy is
+`(n²+n^-4)/2`; this family does not have uniformly bounded full data.
+The physical memory source is `C_t=2nu BB^T>=0`. Its pressure observation
+is zero AT THIS STATE: its two nonzero diagonal entries vary transversely
+to their tensor indices. No zero-memory-pressure history is inferred.
+
+The fixed test threshold `b=1` is below the initial envelope. It tests a
+uniform spatial consumer, not the route's above-initial-supremum
+initialization. That latter choice would make the initial excess inactive.
+Neither a finite initialized reserve nor its repeated-renewal allowance
+is refuted by this calculation.
+
+### Analytic norm obstruction, retaining the entire cotangent
+
+Write `phi=nx`, `c=cos y`, and
+
+```text
+alpha=48+63/95,       beta0=48+1399/1995,
+gamma=sqrt(alpha²+beta0²),       kappa=(alpha+beta0)/gamma,
+q_inf=sqrt(1+4c²cos²(phi)).
+```
+
+Outside the measure-zero set `c=0`, `Q/n²` tends to `c²` and
+`Psi/n^4` tends to `gamma c^4`. The pressure receiver's leading `xx` entry is
+
+```text
+N_xx/n² -> -192 kappa c³cos(phi)/q_inf.
+```
+
+Its `zz` entry has no divergence, and its other divergence entries are
+lower order. In the phase variables the physical gradient projection
+has symbol `(n k_phi,k_y,0)`. For nonzero `k_phi` it converges to the `x`
+projection. The scaled divergence has zero phase mean and converges in
+`L²` to `192 kappa c³sin(phi)/q_inf³` in the `x` direction. Consequently
+
+```text
+V/n³ -> -192 kappa c³sin(phi)/q_inf³ e_x.
+```
+
+These are strong `L²` limits: the pressure and its phase derivatives are
+uniformly bounded, the local pressure-gradient sensitivity is `O(Q)`,
+and its mixed `B` sensitivity is `O(sqrt(Q))`. Thus phase derivatives of
+`N/n²` are uniformly bounded, its `y` divergence divided by `n³` vanishes,
+and dominated Fourier convergence applies to the bounded projection.
+The mixed sensitivity follows by differentiating
+`Psi_Phat=96(A+B0)Q P_hat/(rho q)-2A omega tensor omega/rho`,
+using the branch gradients above. No weighted projection estimate is used.
+
+The operator `B^T/sqrt(Q)` is uniformly bounded and converges almost
+everywhere to `sign(c)` times the map from `x` to `y`. The full `div M`
+term has cost `O(n^4)` by its local payment, so it vanishes after the
+`n^6` normalization. Therefore the COMPLETE normalized velocity cost has
+strictly positive finite limit
+
+```text
+(nu/n^6) integral |Lambda_u|²/Q
+  -> nu (384 kappa)² integral c^6 sin²(phi)/q_inf^6 = L>0.
+```
+
+Direct differentiation of the restricted observable gives
+
+```text
+(1/n^4) integral (J+a D_Phi)
+  -> nu integral [12 gamma c²(1-c²)
+                   +384 kappa c^4 sin²(phi)/q_inf³] = D>0.
+```
+
+The block upper bounds dominate the scaled diffusion uniformly, so this
+limit also follows by dominated convergence. The selector-gradient cost
+and the added canonical pressure diffusion are lower order. Thus the
+ratio of full normalized receiver cost to native payment grows as
+`(L/D)n²`. No universal constant pays that norm from this diffusion on
+all actual states. The asymptotic proof is analytic, not Lean-certified.
+
+### The actual signed work cancels
+
+In contrast, the full nonlinear WORK has zero mean at the initial state.
+The observable and soft selector are even under `phi -> -phi`. Its
+complete `B` gradient has only the `xy/yx` entries, and their actual
+nonlinear tangents are odd. Diagonal pressure entries are even and their
+nonlinear tangents odd; the `xy/yx` pressure entries are odd and their
+tangents even. Their pairings are all odd. This includes both parents and
+both pressure slots. The memory-pressure source vanishes as checked above;
+the remaining capacity source is favorable. Incompressible transport has
+zero integrated divergence. Hence the complete initial excess mass obeys
+
+```text
+d/dt integral F |_0
+  = -integral(J+a D_Phi)-(2nu/3)integral beta |B|² <=0.
+```
+
+This is an analytic actual-state statement, not persistence of the parity
+or of favorable production at later times. It demonstrates why a large
+receiver norm is not itself evidence for dangerous recurrent stretching.
+A signed reserve must use the actual compatible parent evolution.
+
+### Reproducible checks and precise remaining scope
+
+```sh
+python3 -O labs/joint_receiver_diffusion.py
+python3 -O labs/joint_receiver_diffusion.py --quadrature
+```
+
+The optional companion [phase quadrature](joint_receiver_quadrature.py)
+retains physical derivatives and the Helmholtz symbol on independent
+128 and 256 phase grids. At `nu=1/10`, the analytic-limit quadrature gives
+`L=1769.68263`, `D=16.002274`, and `L/D=110.58945`. For `n=64` the measured
+complete cost/payment ratio is about `453503`; its local `q/Q` pressure
+payment ratio is about `37.7`. The complete velocity/memory chain rule and
+signed parabolic balance are checked at the physical work scale, rather
+than at the much larger unpaid norm scale.
+
+These quadratures are spatial continuum-PDE diagnostics. They are neither
+Galerkin trajectories nor continuum enclosures. The exact checker retains
+all polynomial Fourier outputs; the analytic limits supply the uniform
+obstruction. The full matrix identification, weak receiver calculus,
+nonlinear reaction and finite full-datum compatible-history allowance
+remain open. The initialized threshold and growing initial resources must
+remain explicit when this test is used in a continuation argument.

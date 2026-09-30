@@ -825,6 +825,52 @@ gives nonzero erroneous work. Constant drift changes a fixed Eulerian
 selected derivative, with exact compensation by transport. The selector's
 own time derivative is kept separately from its pressure-variation leg.
 
+### Complete joint receiver: local payments and signed work
+
+The completed observable uses the full velocity gradient `B`, including
+its antisymmetric part. Write `q=sqrt(sigma²+|P_hat|²)`, `Q=|B|²+q`,
+`Phi=Psi(B,P_hat)+|P|²`, and `R_native=J+a D_Phi`. Uniform analytic
+matrix estimates and kernel-certified scalar combinations give
+
+```text
+nu |grad(a Psi_B)|²/Q <=15000 R_native,
+nu (q/Q) |grad(a Psi_Phat+2aP)|² <=3500 R_native.
+```
+
+Both spatial slots vary together. The second payment retains `q/Q`;
+the existing unweighted canonical `2aP` estimate does not pay the full
+pressure receiver. Matrix differentiation and weak receiver construction
+are analytic application obligations, stated in the
+[complete derivation](labs/README.md#complete-joint-receiver-payments-and-an-actual-parent-obstruction).
+
+`JointReceiverDiffusion` also proves the signed divergence-form velocity
+work on the actual whole-space NS tangent, with both `L²` receiver
+divergences retained. It identifies the pressure derivative from that
+evolution. The interpretation of those divergences as the completed
+matrix observable remains an explicit weak-calculus obligation.
+
+An analytic actual-state family shows why a uniform instantaneous payment
+of the full projected receiver norm cannot replace its signed work:
+
+```text
+u_n=(n sin y, n^-2 sin(n x),0), C_0=0,
+p_n=2 cos y cos(n x)/(n²+1).
+```
+
+For the test threshold `b=1`, the complete normalized velocity-cotangent
+cost grows as `n^6`, while native diffusion grows as `n^4`. The full
+nonlinear work has zero spatial mean at this state, and diffusion and the
+capacity source make the initial excess mass decrease. Pressure, both
+parents and actual positive memory generation are retained. These are
+smooth divergence-free planar data embedded in three dimensions.
+
+The threshold is not the route's above-initial-supremum choice. The result
+refutes the specified uniform spatial norm comparison, not a finite
+full-datum history allowance or arbitrary-data regularity. The asymptotic
+argument is analytic; the exact checker verifies the canonical fields,
+full tangents and phase parity. Optional independent quadratures are
+spatial diagnostics, not time evolutions or continuum enclosures.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
