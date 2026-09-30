@@ -46,11 +46,15 @@ def star (p : Position m) : Dart m :=
 
 theorem position_star (p : Position m) : position m (star m p) = p := by
   rcases p with ⟨i, v, s⟩
-  fin_cases v <;> fin_cases s <;> simp [star, position]
+  fin_cases v <;> fin_cases s <;> first
+    | rfl
+    | (change (i-1+1, _) = (i, _); rw [sub_add_cancel]; rfl)
 
 theorem star_position (d : Dart m) : star m (position m d) = d := by
   rcases d with ⟨i,e,b⟩ | (e | ⟨i,b⟩)
-  · fin_cases e <;> cases b <;> simp [position, star]
+  · fin_cases e <;> cases b <;> first
+      | rfl
+      | (change Sum.inl (i+1-1, _) = Sum.inl (i, _); rw [add_sub_cancel_right]; rfl)
   · exact nomatch e
   · cases b <;> rfl
 

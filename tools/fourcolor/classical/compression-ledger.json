@@ -1031,16 +1031,16 @@
       "next_obligation": "A joint pentagonal-stop reduction or another successful lobe operation, then geometric coverage."
     },
     {
-      "name": "joint padded-cycle-cap reconstruction with a nonconstant boundary",
+      "name": "joint padded-cycle-cap strict reduction at every even width",
       "record": "padded-cap-measurements.json",
-      "status": "Kernel-checked uniform colouring reconstruction on literal caps, with fixed-exterior and GSLT consumers; the complete geometric reduction remains open.",
+      "status": "Kernel-checked strict padded-cap reduction for every even m >= 2; geometric replacement for every m >= 2; odd-width colouring reconstruction retains a nonconstant boundary guard.",
       "uniform_colour_reconstruction_schemes": 1,
       "sectors": "Every m >= 2",
       "source_piece_vertices": "2*m",
       "reconstructed_piece_vertices": "8*m",
       "boundary_ports": "2*m",
       "whole_map_vertex_difference": "6*m; no new exterior vertices",
-      "domain_guard": "The supplied source-cycle boundary word is nonconstant.",
+      "domain_guard": "Even m >= 2: no colouring guard. Every m >= 2: nonconstant boundary words reconstruct.",
       "joint_information": "The source cycle seam colours and cyclic choices of equal inner/middle radial colours.",
       "finite_replay": {
         "source_colourings": 87348,
@@ -1058,15 +1058,84 @@
           80,
           50
         ],
-        "exterior_darts_fixed": 120
+        "exterior_darts_fixed": 120,
+        "constant_even_source_colourings": 24,
+        "geometry_sector_counts": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "additional_all_five_six_example": {
+          "sectors": 6,
+          "original_vertices": 96,
+          "smaller_vertices": 60,
+          "old_face_lengths": {
+            "5": 12,
+            "6": 38
+          },
+          "boundary_word": [
+            1,
+            2,
+            2,
+            2,
+            3,
+            3,
+            2,
+            1,
+            3,
+            2,
+            2,
+            3
+          ],
+          "source_seams": [
+            2,
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "shared_radial_choices": [
+            2,
+            1,
+            2,
+            1,
+            2,
+            1
+          ],
+          "original_all_faces_five_or_six": true,
+          "exterior_darts_preserved": 144,
+          "reconstructed_proper_colouring": true,
+          "recognition_evidence": "Explicit literal sewing; no general coverage claim."
+        }
       },
       "new_family_colouring_certificates": 0,
       "original_configuration_certificates_replaced": 0,
       "configurations_removed": 0,
       "integrated_into_complete_assembly": false,
-      "general_geometric_reduction_proved": false,
+      "general_geometric_reduction_proved": true,
       "global_coverage_proved": false,
-      "next_obligation": "Prove the embedded smaller-map class and a compatible monochromatic escape, then recognize and cover broader residual maps."
+      "next_obligation": "Odd-width monochromatic exterior repair, geometric recognition and broader residual coverage.",
+      "uniform_geometric_reduction_schemes": 1,
+      "complete_reduction_domain": "Every even m >= 2, in any fixed exterior.",
+      "exact_representation_and_minimality_consumers": true,
+      "face_pattern_recognition_proved": false
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",

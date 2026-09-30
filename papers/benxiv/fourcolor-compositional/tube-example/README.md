@@ -1697,7 +1697,7 @@ ports per sector. There are `8m` vertices and `2m` boundary ports.
 [`PaddedCycleCapTangle`](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapTangle.lean)
 retains every internal edge, cyclic vertex star and outer port.
 
-The proposed smaller piece is the cycle with `2m` vertices. The new
+The smaller piece is the cycle with `2m` vertices. The
 [kernel-checked reconstruction](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapSource.lean)
 proves: for every `m ≥ 2`, every **nonconstant** boundary word admitted by
 that smaller cycle is admitted by the padded cap. The source is an actual
@@ -1733,10 +1733,42 @@ reindexing connects the sector coordinates to the smaller cycle's ordered
 ports. This is a concrete instance of transporting one argument between
 representations without forgetting the joint choices needed for gluing.
 The whole-map vertex count differs by exactly `6m`; no outside vertices
-are added by this proposed operation.
+are added by the operation.
+
+The geometric part is now proved uniformly. The literal cap has `3m+2`
+open faces: one central face, two hexagons and one pentagon per sector,
+and one outer face. The smaller cycle has two open faces. Both have open
+Euler contribution four and the same return to the preceding boundary
+port. Their interiors are connected and bridgeless. For the cap, a cut of
+size at most one must be constant around each of its three cycles; at
+least two radial edges between consecutive cycles force those constants
+to agree. The existing joint-boundary replacement theorems then prove
+[map-class preservation](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapReplacement.lean)
+in every exterior, including disconnected ones.
+
+For **every even `m ≥ 2`**, the colouring guard can now be removed as well.
+When all forbidden letters agree, alternate the other two colours around
+the inner cycle. Evenness closes that final edge. When they vary, use the
+same earlier cyclic avoidance law. Thus
+[`strict_even_reduction`](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapEven.lean)
+is a complete strict reduction scheme for an unbounded family: all smaller
+colourings reconstruct, the spherical cubic connected bridgeless class is
+preserved, and exactly `6m` vertices disappear. The GSLT cell acts on the
+entire smaller colouring relation and preserves its shared interface words
+under horizontal composition. It does not assert equality of colouring
+counts or a certified executable recolouring history.
+
+[Exact representation transport](../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapTransport.lean)
+requires dart and vertex equivalences preserving edge mates, incidence and
+rotation. It transfers the strict reduction to the represented ambient
+graph and excludes such an even cap from a vertex-minimal counterexample.
+This is the relevant TransWeave obligation in explicit form: the geometric
+operations and reconstruction use the same representation change. Supplying
+these equivalences from a broader face pattern remains a recognition problem.
 
 The [independent replay](../../../../tools/fourcolor/classical/padded-cap-probe.json)
-checks 87,348 nonconstant source colourings at sector counts 2 through 8.
+checks 87,348 nonconstant source colourings at sector counts 2 through 8,
+plus all 24 constant source colourings at the four tested even widths.
 For GP(2,0), it checks an orientation-preserving correspondence of the
 literal cap with the actual hemisphere. Replacing that hemisphere by a
 10-cycle takes 80 vertices to 50. The smaller rotation is connected,
@@ -1746,7 +1778,15 @@ and colourings are replayable with
 [`padded_cap_probe.py`](../../../../tools/fourcolor/classical/padded_cap_probe.py).
 These are finite program checks, separate from the general Lean theorem.
 
-The guard cannot simply be dropped. Exhaustive support checks at `m=3`
+The [geometry replay](../../../../tools/fourcolor/classical/padded-cap-geometry-probe.json)
+checks literal sewing at sector counts 2 through 20, retaining parallel
+edge identities at width two. Its even-width example is a 96-vertex map
+with twelve pentagons and 38 hexagons. Replacing one 48-vertex cap by its
+12-cycle gives 60 vertices. A genuine colouring reconstructs while fixing
+all 144 exterior darts. This gives a concrete member in the all-five/six
+setting; the replay is program evidence, not a general recognition theorem.
+
+At odd widths, the guard cannot simply be dropped. Exhaustive support checks at `m=3`
 and `m=5` find exactly three smaller-cycle words missing from the padded
 cap: the three monochromatic words. At `m=4` the checked inclusion has no
 exceptions. These finite obstructions identify the next repair obligation:
@@ -1755,13 +1795,16 @@ or use another compatible smaller construction. A candidate is a component
 switch joining opposite-parity ports of the smaller cycle; its geometric
 existence and preservation obligations remain to prove.
 
-The family reduction is therefore not yet complete. The current Lean result
-supplies boundary reconstruction and the whole-map size calculation. General
-preservation of the spherical bridgeless cubic class, recognition in the
-residual maps, and the monochromatic escape remain open. The finite GP(2,0)
-example does not establish those universal statements or certify minimality.
+The even family reduction is complete on its stated domain. Its relation
+to Ben's proposed uniform explanation is concrete: one law replaces all
+width-specific colouring checks for this family, and joint interface data
+lets the law act in arbitrary contexts. The next boundary is the odd family,
+including the pentagonal GP(2,0) cap. Its monochromatic escape, geometric
+recognition in broader residual maps and eventual coverage remain open.
+The finite GP(2,0) example does not certify those universal statements or
+establish minimality.
 The [audit receipt](../../../../tools/fourcolor/classical/padded-cap-measurements.json)
-records eleven checked dependency roots, standard axioms only, and the
+records 26 checked dependency roots spanning 12,182 declarations, standard axioms only, and the
 absence of the complete classical theorem and finite tube-stabilization
 certificates. All 633 catalogue entries and 630 original configuration
 certificate dependencies remain; this checkpoint replaces no further

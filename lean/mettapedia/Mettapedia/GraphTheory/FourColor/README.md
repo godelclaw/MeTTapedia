@@ -31,14 +31,19 @@ is used. [GSLT route reconstruction](ZigzagTubeTwistGSLT.lean) composes this
 directed witness map in arbitrary contexts. In the all-five/six face class,
 a supplied row in a minimal counterexample now reaches a pentagonal seam
 within one successful extension, at every width at least two.
-The new [padded-cap law](PaddedCycleCapSource.lean) reconstructs a literal
-`8m`-vertex cap from every nonconstant boundary colouring of a `2m`-cycle,
-for all `m ≥ 2`. One cyclic choice argument handles the family. Its
-[fixed-exterior and GSLT consumers](PaddedCycleCapContext.lean) preserve
-the complete exterior colouring and shared words; the proposed operation
-has exactly `6m` fewer vertices. General geometric replacement and the
-monochromatic escape remain open. The saved GP(2,0) replay checks an
-actual 80→50 replacement and reconstruction as finite program evidence.
+The [padded-cap family](PaddedCycleCapEven.lean) now has a strict reduction
+for every even `m ≥ 2`: replace its `8m` vertices by a `2m`-cycle and
+reconstruct every smaller colouring while fixing the exterior. One cyclic
+choice law handles all widths; evenness also closes constant boundary words.
+The [geometric replacement](PaddedCycleCapReplacement.lean) preserves the
+spherical cubic connected bridgeless class at every `m ≥ 2`, including odd
+widths. [Exact representation transport](PaddedCycleCapTransport.lean) excludes
+recognized even caps from a vertex-minimal counterexample. GSLT horizontal
+composition preserves shared words and actual witnesses. The entire map
+loses exactly `6m` vertices. Odd widths still require the nonconstant guard
+or an additional exterior repair; broader recognition and coverage remain
+open. Independent replay includes an all-five/six 96→60 example and the
+earlier guarded GP(2,0) 80→50 example. No further catalogue dependency is removed.
 See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).
 
 A simple cycle with alternating local turns now constructs that

@@ -1,43 +1,52 @@
 {
-  "status": "Kernel-checked uniform cap colouring reconstruction with an explicit nonconstant boundary guard; actual exterior and GSLT consumers. General geometric reduction remains open.",
-  "completed_utc": "2026-09-30T09:46:58.992239+00:00",
-  "build_base_revision": "add25531d82138005c03061d8668f2f85ecec11f",
+  "status": "Kernel-checked strict padded-cap reduction for every even m >= 2; geometric replacement for every m >= 2; odd-width colouring reconstruction retains a nonconstant boundary guard.",
+  "completed_utc": "2026-09-30T10:19:29.223185+00:00",
+  "build_base_revision": "9d81f5b5f52212b81caf38783a69e698a3fa4aa2",
   "toolchain": "leanprover/lean4:v4.34.0-rc2",
   "modules": [
     {
       "module": "Mettapedia.GraphTheory.FourColor.CyclicColourAvoidance",
       "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicColourAvoidance.lean",
-      "source_sha256": "427927de3a8289065074ad738c8cea1bc33ebbfd004b3e2d011dd1741a46e9e6",
-      "source_bytes": 4200,
-      "olean_sha256": "cdf96699a6ffc8d721a4198f5f88999744941b8e0297e4ffd19d778225c486d9",
-      "olean_bytes": 214600,
+      "source_sha256": "fa0c01cd63db7bde76e2e7a740ee8dd7aa864620376447f030e8180c281563f2",
+      "source_bytes": 5565,
+      "olean_sha256": "9f72dc1599020efdef22fc7989afa77c8ed5d509b27dc8d528d3fd9fc8238668",
+      "olean_bytes": 337088,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleCapGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleCapGeometry.lean",
+      "source_sha256": "c6d8a3fb3720bf7a3bb72aee6de91f70fcdd9c79c905b9295dfd2715fccfea2c",
+      "source_bytes": 7753,
+      "olean_sha256": "2c165d2eb73214e6d7d0f833dca1c3f9a8cc8ae73260b1918c1bbb27927bf503",
+      "olean_bytes": 507288,
       "reported_build_seconds": null
     },
     {
       "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapTangle",
       "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapTangle.lean",
-      "source_sha256": "30dd6e20d321d8dc471f207f88d3edf81a6d45329ad51e01f094b7540d2fca8d",
-      "source_bytes": 4795,
-      "olean_sha256": "5a2cb724bd9fb9437d734e42c4ea678c93d2612118dbcc67f02a0650b20ec588",
-      "olean_bytes": 1582592,
-      "reported_build_seconds": null
+      "source_sha256": "6088d02a3779817fbab5fa1bc71bc34451c94f53a65bbe8eee2329d84329091a",
+      "source_bytes": 4931,
+      "olean_sha256": "a31fd899ea5037449668c3658747e5360487900909bbd7072f2feb362b83655f",
+      "olean_bytes": 1220720,
+      "reported_build_seconds": 2.3
     },
     {
       "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapColouring",
       "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapColouring.lean",
       "source_sha256": "cdf2d6ea461bbf3fb86bf212734a310ab229bbcff373b80df19692459f431f27",
       "source_bytes": 4856,
-      "olean_sha256": "32e74e68dfaf40ebfb5a20f4e22e03ffe2a80d8baa7bf14b7f2e2be295894b42",
-      "olean_bytes": 1084344,
-      "reported_build_seconds": null
+      "olean_sha256": "e74e0713dbc80b57d024e7ea95a046021c1e1206a222b333d9dc2bcea52ae746",
+      "olean_bytes": 1090856,
+      "reported_build_seconds": 4.2
     },
     {
       "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapSource",
       "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapSource.lean",
       "source_sha256": "b579815098b787f15046d8c49125f5a941c12bfd2d7b719c9d800596de57a1f0",
       "source_bytes": 4899,
-      "olean_sha256": "ec141c7f08d81ac77d6b59b8b9f01920eb0cd41fb4b2ffca14be9f150780bffd",
-      "olean_bytes": 355208,
+      "olean_sha256": "d313e092c4b26a282d3cfd0a15b8854a189de503c4b46ce1b0a467d5c4344421",
+      "olean_bytes": 355272,
       "reported_build_seconds": 2.8
     },
     {
@@ -47,16 +56,61 @@
       "source_bytes": 4553,
       "olean_sha256": "67614442ccc8600b8e2fa823fbb9e4944959b448ee4582d9e085263f62b8dc23",
       "olean_bytes": 578144,
-      "reported_build_seconds": 3.2
+      "reported_build_seconds": 3.3
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapGeometry.lean",
+      "source_sha256": "39cc1f5576516348f575e42c536933c7c838efe4280a8bb95cbcadacc4ff9663",
+      "source_bytes": 8567,
+      "olean_sha256": "56867e40ed76b01a2f51e1cb2d587c1331714e2d56a852613c36dd60ef475844",
+      "olean_bytes": 2724168,
+      "reported_build_seconds": 9.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapStructural",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapStructural.lean",
+      "source_sha256": "3f1d9c2755c1ed46f955075bd9faecd823724f4ec049c6ef24a3c1c6ec972e53",
+      "source_bytes": 5799,
+      "olean_sha256": "e7290bf225b0cd8630da8efbc078461a3940730b169e5998240fd1af0e5c3eac",
+      "olean_bytes": 1111056,
+      "reported_build_seconds": 4.6
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapReplacement",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapReplacement.lean",
+      "source_sha256": "2d166f491ad704a84e7ea196f5f6ff84fddbfab46e4d92523542e14fcfc6b78a",
+      "source_bytes": 4675,
+      "olean_sha256": "cefe25df09b740329e5ab59e41e0044d243ec206d2cbc30774cf0ad111afe923",
+      "olean_bytes": 214568,
+      "reported_build_seconds": 2.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapEven",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapEven.lean",
+      "source_sha256": "13d75ae20539eea999cf68220135d387307c008fde7c3859332f3aaf5ba7ac57",
+      "source_bytes": 4882,
+      "olean_sha256": "57cf6d4d23df3d00607b87b8c67e22edb4b86daf33853034e299c26289cfe56d",
+      "olean_bytes": 287216,
+      "reported_build_seconds": 3.1
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapTransport",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapTransport.lean",
+      "source_sha256": "4537672993c20ed28f0c790ddf04ea2818a7c48d59862947e5e33786e1a4cb74",
+      "source_bytes": 3908,
+      "olean_sha256": "59446018ced8b832f1e7e1cb6ac31474ed2b255b3f4a619afa02c2e9b08d4e9f",
+      "olean_bytes": 312576,
+      "reported_build_seconds": 3.0
     },
     {
       "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapAudit",
       "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapAudit.lean",
-      "source_sha256": "5dded6419c6640d6b8fc5107245d1d6a942009375953471ccff0b9c34201fedf",
-      "source_bytes": 3312,
-      "olean_sha256": "eb934520b34ed51b295eb9dd9e2ce168baab76382cfbe7951e2b33846b9fa78f",
-      "olean_bytes": 3528,
-      "reported_build_seconds": 4.0
+      "source_sha256": "14c32a5fbe78b252bf7e8bfa3d10ab710a47e55ab0d0d2211357d5661ce32874",
+      "source_bytes": 5357,
+      "olean_sha256": "d410b7094bfdaec1ba8a4c478e29162a46997059a617f9c81bb90745698417d7",
+      "olean_bytes": 3600,
+      "reported_build_seconds": 7.4
     },
     {
       "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
@@ -65,22 +119,24 @@
       "source_bytes": 31821,
       "olean_sha256": "0bd7506d9e05e37c743e153e058945cc870e9ac408d8708dcc16ca0049795eb8",
       "olean_bytes": 37216,
-      "reported_build_seconds": 5.2
+      "reported_build_seconds": 5.5
     }
   ],
   "audit": {
-    "root_count": 11,
-    "combined_dependency_closure": 7088,
+    "root_count": 26,
+    "combined_dependency_closure": 12182,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
       "Quot.sound"
     ],
     "required_chains": [
-      "cyclic avoidance and all eight literal sector stars",
-      "actual smaller cycle and its boundary coordinate equivalence",
-      "fixed-exterior colouring restriction and reconstruction",
-      "GSLT horizontal composition preserving shared words and exterior witnesses"
+      "cyclic avoidance, including constant lists on even cycles, and all literal sector stars",
+      "actual smaller cycle and exact ordered boundary coordinate equivalence",
+      "face orbit classification, boundary return, Euler mass and actual internal cut profiles",
+      "strict reduction preserving the closed map class and fixing every exterior colour",
+      "GSLT horizontal composition preserving shared words and exterior witnesses",
+      "exact dart/vertex representation transport and least-counterexample exclusion"
     ],
     "excluded": [
       "complete classical FourColor namespace",
@@ -91,7 +147,7 @@
   "validation": {
     "working_directory": "lean/mettapedia",
     "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
-    "jobs": 11034,
+    "jobs": 11040,
     "exit_code": 0,
     "new_module_warnings": 0,
     "timing_scope": "Lake-reported frontend-plus-kernel module times from the final incremental builds. Null means already cached in those builds. No isolated kernel timing or speedup claimed.",
@@ -106,32 +162,39 @@
     "sectors": "Every m >= 2",
     "source": "Actual cycle with 2*m vertices and 2*m ordered ports",
     "target": "Actual padded cap with 8*m vertices, 11*m internal edges and 2*m ordered outer ports",
-    "guard": "The source cycle boundary word is nonconstant.",
-    "mechanism": "Choose equal inner/middle radial colours q_i, nonzero, different from q_(i-1) and the first boundary letter a_i. One cyclic list-choice argument closes the choices.",
+    "guard": "Even m >= 2: no colouring guard. Every m >= 2: nonconstant boundary words reconstruct.",
+    "mechanism": "Equal inner/middle radial colours q_i avoid the first boundary letter and adjacent q. Varying lists close by a cut-and-greedy argument; constant lists close by alternation when m is even.",
     "boundary_transport": "Consecutive cycle indices correspond exactly to pairs (sector, Bool).",
-    "exterior": "Given a smaller closed-map colouring with nonconstant interface, reconstruct the larger cap while fixing every exterior dart colour.",
-    "gslt": "The guarded source relation maps to genuine target colouring witnesses; horizontal composition retains both shared words and exterior witnesses.",
+    "exterior": "At even widths every smaller closed-map colouring reconstructs the larger cap while fixing every exterior dart colour. At odd widths the interface must be nonconstant.",
+    "gslt": "The full smaller colour relation maps to actual target witnesses at even widths. Horizontal composition retains shared words and exterior witnesses; odd widths retain the guarded cell.",
     "whole_map_vertex_difference": "6*m, with no exterior vertices introduced.",
-    "direction": "Guarded support inclusion. Neither support equality nor witness-count preservation is asserted.",
+    "direction": "Directed support inclusion on the stated domain. Neither support equality nor witness-count preservation is asserted.",
     "witness_selection": "Classical witness selection in Lean; no certified executable recolouring algorithm or history bound.",
-    "geometric_class_preservation": "Not yet proved in general."
+    "geometric_class_preservation": "Proved for all m >= 2, in arbitrary exteriors including disconnected ones.",
+    "open_cap_face_count": "3*m+2: one central face, two hexagons and one pentagon per sector, and one outer face.",
+    "common_boundary_return": "One preceding port in consecutive 2*m coordinates.",
+    "common_euler_mass": 4,
+    "structural_argument": "Every cut of size at most one is constant around each concentric cycle; at least two radial edges force the three constants to agree.",
+    "representation": "Exact dart and vertex equivalences preserve edge mates, incidences and rotations. Under these explicit recognition witnesses, the even reduction transports and excludes a least-counterexample occurrence."
   },
   "programme": {
     "new_uniform_colour_reconstruction_schemes": 1,
-    "new_completed_geometric_reduction_schemes": 0,
+    "new_completed_geometric_reduction_schemes": 1,
     "new_family_colouring_certificates": 0,
     "configurations_retained": 633,
     "original_configuration_certificates_retained": 630,
     "additional_original_certificates_replaced": 0,
     "catalogue_entries_removed": 0,
     "integrated_into_complete_assembly": false,
-    "global_coverage_proved": false
+    "global_coverage_proved": false,
+    "complete_family_domain": "Every even m >= 2, given a literal sewing or exact equivalent ambient representation.",
+    "geometric_recognition_from_face_patterns": false
   },
   "independent_replay": {
     "script": "tools/fourcolor/classical/padded_cap_probe.py",
-    "script_sha256": "fac75b758a9e148c45883c042fb2427b5e264a10aa44aec4dc8624a5616a4322",
+    "script_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba",
     "record": "tools/fourcolor/classical/padded-cap-probe.json",
-    "record_sha256": "69860d793af4249b848eaad39811b875d43d4153d31d2975a5340f92cfac25f6",
+    "record_sha256": "d51778eb4c27d9fa6c53d78720d28420d25872057355a521561ab93a3cbef6b7",
     "input": "tools/fourcolor/classical/diamond-supply-probe.json",
     "input_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171",
     "program_dependencies": [
@@ -260,12 +323,89 @@
       "colouring_reconstructed": true,
       "minimality_certified": false
     },
-    "evidence": "Independent finite program checks, not Lean certificates of the general geometric reduction."
+    "evidence": "Independent finite program checks, separate from the general Lean family theorems.",
+    "constant_even_source_colourings_checked": 24,
+    "geometry": {
+      "script": "tools/fourcolor/classical/padded_cap_geometry_probe.py",
+      "script_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a",
+      "record": "tools/fourcolor/classical/padded-cap-geometry-probe.json",
+      "record_sha256": "4c1b9168f92f99ea22e2effc8d86af350a79cf88c552efe904afd595bfe97b16",
+      "sector_counts": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "checks": [
+        "literal dart and edge identities, including parallel edges at m=2",
+        "ordered boundary returns and face counts",
+        "whole-map strict decrease",
+        "connectedness, cubicity, bridge-freedom and Euler characteristic"
+      ],
+      "example": {
+        "sectors": 6,
+        "original_vertices": 96,
+        "smaller_vertices": 60,
+        "old_face_lengths": {
+          "5": 12,
+          "6": 38
+        },
+        "boundary_word": [
+          1,
+          2,
+          2,
+          2,
+          3,
+          3,
+          2,
+          1,
+          3,
+          2,
+          2,
+          3
+        ],
+        "source_seams": [
+          2,
+          1,
+          1,
+          1,
+          2,
+          3
+        ],
+        "shared_radial_choices": [
+          2,
+          1,
+          2,
+          1,
+          2,
+          1
+        ],
+        "original_all_faces_five_or_six": true,
+        "exterior_darts_preserved": 144,
+        "reconstructed_proper_colouring": true,
+        "recognition_evidence": "Explicit literal sewing; no general coverage claim."
+      }
+    }
   },
   "remaining": [
-    "Prove spherical, connected, bridgeless cubic preservation for the embedded replacement.",
-    "Handle monochromatic smaller-cycle interfaces by a justified exterior Kempe repair or another compatible operation.",
-    "Prove geometric recognition and broader residual coverage.",
-    "Integrate successful reductions into the complete proof and audit certificate dependencies."
+    "Handle odd-width monochromatic smaller-cycle interfaces by a justified exterior Kempe repair or another compatible operation.",
+    "Derive the exact representation witnesses from broader geometric face patterns.",
+    "Prove supply and coverage in the residual source class.",
+    "Integrate successful reductions into the complete proof and audit which additional catalogue dependencies disappear."
   ]
 }

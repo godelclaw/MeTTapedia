@@ -1,0 +1,424 @@
+{
+  "evidence": "Independent finite program checks, not Lean certificates.",
+  "program_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a",
+  "geometry": [
+    {
+      "sectors": 2,
+      "old_vertices": 32,
+      "smaller_vertices": 20,
+      "vertex_loss": 12,
+      "open_cap_faces": 8,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "2": 2,
+        "5": 4,
+        "6": 12
+      },
+      "smaller_face_lengths": {
+        "2": 1,
+        "4": 1,
+        "5": 6,
+        "6": 4
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 3,
+      "old_vertices": 48,
+      "smaller_vertices": 30,
+      "vertex_loss": 18,
+      "open_cap_faces": 11,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "3": 2,
+        "5": 6,
+        "6": 18
+      },
+      "smaller_face_lengths": {
+        "3": 1,
+        "5": 9,
+        "6": 7
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 4,
+      "old_vertices": 64,
+      "smaller_vertices": 40,
+      "vertex_loss": 24,
+      "open_cap_faces": 14,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "4": 2,
+        "5": 8,
+        "6": 24
+      },
+      "smaller_face_lengths": {
+        "4": 1,
+        "5": 12,
+        "6": 8,
+        "8": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 5,
+      "old_vertices": 80,
+      "smaller_vertices": 50,
+      "vertex_loss": 30,
+      "open_cap_faces": 17,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 12,
+        "6": 30
+      },
+      "smaller_face_lengths": {
+        "5": 16,
+        "6": 10,
+        "10": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 6,
+      "old_vertices": 96,
+      "smaller_vertices": 60,
+      "vertex_loss": 36,
+      "open_cap_faces": 20,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 12,
+        "6": 38
+      },
+      "smaller_face_lengths": {
+        "5": 18,
+        "6": 13,
+        "12": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 7,
+      "old_vertices": 112,
+      "smaller_vertices": 70,
+      "vertex_loss": 42,
+      "open_cap_faces": 23,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 14,
+        "6": 42,
+        "7": 2
+      },
+      "smaller_face_lengths": {
+        "5": 21,
+        "6": 14,
+        "7": 1,
+        "14": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 8,
+      "old_vertices": 128,
+      "smaller_vertices": 80,
+      "vertex_loss": 48,
+      "open_cap_faces": 26,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 16,
+        "6": 48,
+        "8": 2
+      },
+      "smaller_face_lengths": {
+        "5": 24,
+        "6": 16,
+        "8": 1,
+        "16": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 9,
+      "old_vertices": 144,
+      "smaller_vertices": 90,
+      "vertex_loss": 54,
+      "open_cap_faces": 29,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 18,
+        "6": 54,
+        "9": 2
+      },
+      "smaller_face_lengths": {
+        "5": 27,
+        "6": 18,
+        "9": 1,
+        "18": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 10,
+      "old_vertices": 160,
+      "smaller_vertices": 100,
+      "vertex_loss": 60,
+      "open_cap_faces": 32,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 20,
+        "6": 60,
+        "10": 2
+      },
+      "smaller_face_lengths": {
+        "5": 30,
+        "6": 20,
+        "10": 1,
+        "20": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 11,
+      "old_vertices": 176,
+      "smaller_vertices": 110,
+      "vertex_loss": 66,
+      "open_cap_faces": 35,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 22,
+        "6": 66,
+        "11": 2
+      },
+      "smaller_face_lengths": {
+        "5": 33,
+        "6": 22,
+        "11": 1,
+        "22": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 12,
+      "old_vertices": 192,
+      "smaller_vertices": 120,
+      "vertex_loss": 72,
+      "open_cap_faces": 38,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 24,
+        "6": 72,
+        "12": 2
+      },
+      "smaller_face_lengths": {
+        "5": 36,
+        "6": 24,
+        "12": 1,
+        "24": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 13,
+      "old_vertices": 208,
+      "smaller_vertices": 130,
+      "vertex_loss": 78,
+      "open_cap_faces": 41,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 26,
+        "6": 78,
+        "13": 2
+      },
+      "smaller_face_lengths": {
+        "5": 39,
+        "6": 26,
+        "13": 1,
+        "26": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 14,
+      "old_vertices": 224,
+      "smaller_vertices": 140,
+      "vertex_loss": 84,
+      "open_cap_faces": 44,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 28,
+        "6": 84,
+        "14": 2
+      },
+      "smaller_face_lengths": {
+        "5": 42,
+        "6": 28,
+        "14": 1,
+        "28": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 15,
+      "old_vertices": 240,
+      "smaller_vertices": 150,
+      "vertex_loss": 90,
+      "open_cap_faces": 47,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 30,
+        "6": 90,
+        "15": 2
+      },
+      "smaller_face_lengths": {
+        "5": 45,
+        "6": 30,
+        "15": 1,
+        "30": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 16,
+      "old_vertices": 256,
+      "smaller_vertices": 160,
+      "vertex_loss": 96,
+      "open_cap_faces": 50,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 32,
+        "6": 96,
+        "16": 2
+      },
+      "smaller_face_lengths": {
+        "5": 48,
+        "6": 32,
+        "16": 1,
+        "32": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 17,
+      "old_vertices": 272,
+      "smaller_vertices": 170,
+      "vertex_loss": 102,
+      "open_cap_faces": 53,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 34,
+        "6": 102,
+        "17": 2
+      },
+      "smaller_face_lengths": {
+        "5": 51,
+        "6": 34,
+        "17": 1,
+        "34": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 18,
+      "old_vertices": 288,
+      "smaller_vertices": 180,
+      "vertex_loss": 108,
+      "open_cap_faces": 56,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 36,
+        "6": 108,
+        "18": 2
+      },
+      "smaller_face_lengths": {
+        "5": 54,
+        "6": 36,
+        "18": 1,
+        "36": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 19,
+      "old_vertices": 304,
+      "smaller_vertices": 190,
+      "vertex_loss": 114,
+      "open_cap_faces": 59,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 38,
+        "6": 114,
+        "19": 2
+      },
+      "smaller_face_lengths": {
+        "5": 57,
+        "6": 38,
+        "19": 1,
+        "38": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    },
+    {
+      "sectors": 20,
+      "old_vertices": 320,
+      "smaller_vertices": 200,
+      "vertex_loss": 120,
+      "open_cap_faces": 62,
+      "open_cycle_faces": 2,
+      "old_face_lengths": {
+        "5": 40,
+        "6": 120,
+        "20": 2
+      },
+      "smaller_face_lengths": {
+        "5": 60,
+        "6": 40,
+        "20": 1,
+        "40": 1
+      },
+      "spherical_cubic_connected_bridgeless": true
+    }
+  ],
+  "example": {
+    "sectors": 6,
+    "original_vertices": 96,
+    "smaller_vertices": 60,
+    "old_face_lengths": {
+      "5": 12,
+      "6": 38
+    },
+    "boundary_word": [
+      1,
+      2,
+      2,
+      2,
+      3,
+      3,
+      2,
+      1,
+      3,
+      2,
+      2,
+      3
+    ],
+    "source_seams": [
+      2,
+      1,
+      1,
+      1,
+      2,
+      3
+    ],
+    "shared_radial_choices": [
+      2,
+      1,
+      2,
+      1,
+      2,
+      1
+    ],
+    "original_all_faces_five_or_six": true,
+    "exterior_darts_preserved": 144,
+    "reconstructed_proper_colouring": true,
+    "recognition_evidence": "Explicit literal sewing; no general coverage claim."
+  }
+}

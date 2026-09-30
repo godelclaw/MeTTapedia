@@ -2,8 +2,8 @@
 """Replay uniform padded-cap colourings and an actual GP(2,0) replacement.
 
 Independent finite program evidence. The Lean family theorem reconstructs
-nonconstant cycle boundary words; the complete geometric reduction is not
-asserted by that theorem. The support census also retains failing words.
+nonconstant cycle boundary words, and all words for even sector counts.
+The support census also retains the odd-width monochromatic failures.
 """
 from __future__ import annotations
 
@@ -92,18 +92,22 @@ def cap_geometry(m):
 
 def reconstruct(word, seams):
     m = len(seams)
-    assert len(word) == 2*m and len(set(word)) > 1
+    assert len(word) == 2*m and (len(set(word)) > 1 or m % 2 == 0)
     assert all(seams[i] in COLOURS and seams[i] != word[2*i] and
                seams[(i+1) % m] == seams[i] ^ word[2*i] ^ word[2*i+1]
                for i in range(m))
     forbidden = word[::2]
-    assert len(set(forbidden)) > 1
-    cut = next(i for i in range(m) if forbidden[i] != forbidden[(i-1) % m])
     q = [0]*m
-    q[cut] = forbidden[(cut-1) % m]
-    for offset in range(1, m):
-        i = (cut+offset) % m
-        q[i] = next(c for c in COLOURS if c not in (q[(i-1) % m], forbidden[i]))
+    if len(set(forbidden)) == 1:
+        assert m % 2 == 0
+        a, b = (c for c in COLOURS if c != forbidden[0])
+        q = [a if i % 2 == 0 else b for i in range(m)]
+    else:
+        cut = next(i for i in range(m) if forbidden[i] != forbidden[(i-1) % m])
+        q[cut] = forbidden[(cut-1) % m]
+        for offset in range(1, m):
+            i = (cut+offset) % m
+            q[i] = next(c for c in COLOURS if c not in (q[(i-1) % m], forbidden[i]))
     assert all(q[i] in COLOURS and q[i] != q[(i-1) % m] and q[i] != forbidden[i]
                for i in range(m))
     edges = {}
@@ -128,12 +132,16 @@ def exhaustive(m):
         word = tuple(edges[i] ^ edges[(i+1) % (2*m)] for i in range(2*m))
         if len(set(word)) == 1:
             constant += 1
+            if m % 2 == 0:
+                reconstruct(word, edges[::2])
         else:
             reconstruct(word, edges[::2])
             checked += 1
     assert checked + constant == 2**(2*m) + 2 and constant == 6
     return {"sectors": m, "source_cycle_colourings": checked + constant,
-            "nonconstant_reconstructions": checked, "outside_guard": constant}
+            "nonconstant_reconstructions": checked,
+            "constant_reconstructions": constant if m % 2 == 0 else 0,
+            "outside_guard": constant if m % 2 else 0}
 
 
 def physical(raw):
@@ -222,6 +230,8 @@ def main():
     args.output.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({"formula_reconstructions": sum(r["nonconstant_reconstructions"]
                                                    for r in report["uniform_formula"]),
+                      "constant_reconstructions": sum(r["constant_reconstructions"]
+                                                       for r in report["uniform_formula"]),
                       "physical_vertex_loss": report["physical"]["vertex_loss"],
                       "exterior_darts_preserved": report["physical"]["exterior_darts_preserved"],
                       "rejected_cycle_words": [len(r["rejected_cycle_words"])

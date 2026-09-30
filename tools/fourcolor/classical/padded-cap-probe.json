@@ -1,6 +1,6 @@
 {
   "evidence": "Independent finite program replay, not a Lean certificate.",
-  "program_sha256": "fac75b758a9e148c45883c042fb2427b5e264a10aa44aec4dc8624a5616a4322",
+  "program_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba",
   "input_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171",
   "boundary_census": [
     {
@@ -92,43 +92,50 @@
       "sectors": 2,
       "source_cycle_colourings": 18,
       "nonconstant_reconstructions": 12,
-      "outside_guard": 6
+      "constant_reconstructions": 6,
+      "outside_guard": 0
     },
     {
       "sectors": 3,
       "source_cycle_colourings": 66,
       "nonconstant_reconstructions": 60,
+      "constant_reconstructions": 0,
       "outside_guard": 6
     },
     {
       "sectors": 4,
       "source_cycle_colourings": 258,
       "nonconstant_reconstructions": 252,
-      "outside_guard": 6
+      "constant_reconstructions": 6,
+      "outside_guard": 0
     },
     {
       "sectors": 5,
       "source_cycle_colourings": 1026,
       "nonconstant_reconstructions": 1020,
+      "constant_reconstructions": 0,
       "outside_guard": 6
     },
     {
       "sectors": 6,
       "source_cycle_colourings": 4098,
       "nonconstant_reconstructions": 4092,
-      "outside_guard": 6
+      "constant_reconstructions": 6,
+      "outside_guard": 0
     },
     {
       "sectors": 7,
       "source_cycle_colourings": 16386,
       "nonconstant_reconstructions": 16380,
+      "constant_reconstructions": 0,
       "outside_guard": 6
     },
     {
       "sectors": 8,
       "source_cycle_colourings": 65538,
       "nonconstant_reconstructions": 65532,
-      "outside_guard": 6
+      "constant_reconstructions": 6,
+      "outside_guard": 0
     }
   ],
   "physical": {

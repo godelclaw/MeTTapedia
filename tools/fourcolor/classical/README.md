@@ -35,14 +35,18 @@ Other surveyed projects include
 [TonalidadeHidrica/FourColorTheorem](https://github.com/TonalidadeHidrica/FourColorTheorem)
 (`1c0cb61da4f953b29097b12ed1737b09890c7080`, preliminary structures).
 
-The [padded-cap receipt](padded-cap-measurements.json) records a separate
-uniform reconstruction component: every nonconstant `2m`-cycle boundary
-colouring lifts to the literal `8m`-vertex cap, with fixed-exterior and GSLT
-consumers. Its [finite replay](padded-cap-probe.json) checks the actual
-GP(2,0) replacement and the monochromatic failures of unguarded inclusion.
-No additional classical certificate dependency is removed. General
-geometric replacement and the exterior repair of the exceptional words
-remain open.
+The [padded-cap receipt](padded-cap-measurements.json) records a uniform strict
+reduction for every even `m ≥ 2`: the `8m`-vertex cap is replaced by a
+`2m`-cycle, preserving the map class and reconstructing every smaller
+colouring with the exterior fixed. The geometric replacement is proved
+at odd widths too; their colouring lift still has a nonconstant guard.
+GSLT and exact graph-representation consumers are audited. The
+[colour replay](padded-cap-probe.json) checks 87,348 nonconstant colourings
+and 24 constant even-width colourings. The
+[geometry replay](padded-cap-geometry-probe.json) checks widths 2 through 20
+and an all-five/six 96→60 reconstruction. GP(2,0)'s guarded 80→50 example
+remains available. No additional classical certificate dependency is removed;
+odd-width exterior repair and broader recognition and coverage remain open.
 
 ## Complete endpoints
 

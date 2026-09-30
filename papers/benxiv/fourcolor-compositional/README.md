@@ -39,15 +39,19 @@ are removed. The complementary-ring law supplies this result without a new
 finite colouring certificate. The earlier width-five exact-support theorem
 remains available when preserving the original seam matching in both directions.
 
-The short GP(2,0) control now has a [joint padded-cap colouring law](tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).
-For every `m ≥ 2`, a nonconstant boundary colouring of a `2m`-cycle
-reconstructs a literal `8m`-vertex cap by one shared cyclic choice argument.
-The theorem composes in a fixed exterior and in GSLT relations, retaining
-the joint word and exterior witnesses. Independent replay realizes the
-proposed 80→50 replacement on GP(2,0). General map-class preservation and
-the exterior repair of monochromatic boundaries remain open; this is a
-family reconstruction component, with no additional classical certificate
-removed.
+The [joint padded-cap law](tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps)
+now yields a second uniform strict reduction: for every even `m ≥ 2`,
+replace a literal `8m`-vertex cap by a `2m`-cycle. The smaller map remains
+spherical, cubic, connected and bridgeless; every smaller colouring
+reconstructs with the entire exterior fixed. A shared cyclic choice law
+closes both varying and constant boundary words at even widths. Exact
+representation transport excludes recognized members from a least
+counterexample, and GSLT composition retains the joint boundary choices.
+An independent all-five/six example reduces 96 vertices to 60. For odd `m`,
+the geometric replacement is proved but colouring reconstruction retains
+the nonconstant guard. The guarded GP(2,0) replay gives 80→50. Exterior repair
+at odd widths, broader geometric recognition and coverage remain open;
+the complete classical certificate counts are unchanged.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

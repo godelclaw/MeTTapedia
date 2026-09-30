@@ -102,4 +102,42 @@ theorem exists_cycle {k : ℕ} [NeZero k] (f : Fin k → Color)
   · intro i
     simpa [F] using havoid (i - r)
 
+/-- On an even cycle, the constant-list case also closes by alternating
+the two permitted colours. This removes the nonconstancy hypothesis. -/
+theorem exists_cycle_of_even {k : ℕ} [NeZero k] (he : Even k)
+    (f : Fin k → Color) (hf : ∀ i, f i ≠ 0) :
+    ∃ q : Fin k → Color, CycleCap.Valid k q ∧ ∀ i, q i ≠ f i := by
+  classical
+  by_cases hn : ∃ i j, f i ≠ f j
+  · exact exists_cycle f hf hn
+  push Not at hn
+  let c := f 0
+  let a := other c 0
+  let b := other c a
+  have ha : a ≠ 0 ∧ a ≠ c := ⟨(other_spec _ _).1,(other_spec _ _).2.1⟩
+  have hb : b ≠ 0 ∧ b ≠ c ∧ b ≠ a := other_spec _ _
+  have hk : 2 ≤ k := by
+    obtain ⟨r,hr⟩ := he
+    have := NeZero.pos k
+    omega
+  have hp (i : Fin k) : i.val % 2 ≠ (i+1).val % 2 := by
+    have hv : (i+1).val % 2 = (i.val+1) % 2 := by
+      rw [Fin.val_add, Fin.val_one', Nat.mod_eq_of_lt (show 1 < k by omega)]
+      exact Nat.mod_mod_of_dvd _ he.two_dvd
+    rw [hv]
+    omega
+  let q : Fin k → Color := fun i => if i.val % 2 = 0 then a else b
+  refine ⟨q, ⟨?_, ?_⟩, ?_⟩
+  · intro i
+    dsimp [q]
+    split_ifs <;> first | exact ha.1 | exact hb.1
+  · intro i
+    have h := hp i
+    dsimp [q]
+    split_ifs <;> first | omega | exact hb.2.2 | exact hb.2.2.symm
+  · intro i
+    rw [hn i 0]
+    dsimp [q]
+    split_ifs <;> first | exact ha.2 | exact hb.2.1
+
 end Mettapedia.GraphTheory.FourColor.CyclicColourAvoidance

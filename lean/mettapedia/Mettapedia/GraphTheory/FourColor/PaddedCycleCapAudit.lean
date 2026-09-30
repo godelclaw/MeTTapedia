@@ -1,9 +1,10 @@
-import Mettapedia.GraphTheory.FourColor.PaddedCycleCapContext
+import Mettapedia.GraphTheory.FourColor.PaddedCycleCapTransport
 import Lean.Util.CollectAxioms
 
-/-! Audit the unbounded cap colouring law and its actual exterior and GSLT
-consumers. The nonconstant boundary guard is retained. This audit does not
-claim the geometric replacement or the missing monochromatic escape. -/
+/-! Audit the uniform cap colouring law, geometric replacement, strict even
+family reduction, exact representation transport and actual GSLT consumers.
+Odd widths retain the nonconstant boundary guard; their general monochromatic
+escape and broader geometric coverage are not claimed. -/
 
 open Lean Elab Command
 open Mettapedia.GraphTheory.FourColor
@@ -30,7 +31,36 @@ run_cmd do
     (``PaddedCycleCap.reconstruct_closed,
       [``PaddedCycleCap.reconstruct_indexed, ``OpenTangleClosedWitness.restrict,
        ``OpenTangleClosedWitness.glue]),
-    (``PaddedCycleCap.closed_vertex_loss, [])]
+    (``PaddedCycleCap.closed_vertex_loss, []),
+    (``CyclicColourAvoidance.exists_cycle_of_even, [``CyclicColourAvoidance.exists_cycle]),
+    (``PaddedCycleCap.face_count, [``PaddedCycleCap.face_sameCycle_iff]),
+    (``PaddedCycleCap.encode_cap, [``PaddedCycleCap.boundary_first_return]),
+    (``PaddedCycleCap.cap_connected_bridgeless,
+      [``PaddedCycleCap.cap_cut_decomposition, ``SmallCutReplacementCore.permutation_small_cut]),
+    (``CycleCap.face_count, [``CycleCap.face_sameCycle_iff]),
+    (``CycleCap.encode_cap, [``CycleCap.boundary_first_return]),
+    (``CycleCap.cap_connected_bridgeless, [``SmallCutReplacementCore.permutation_small_cut]),
+    (``PaddedCycleCap.indexed_returnCode,
+      [``PaddedCycleCap.encode_cap, ``TwoSidedBoundaryJoint.face_reindex]),
+    (``PaddedCycleCap.replacement_class,
+      [``OpenTangleInternalReplacement.replacement_structural,
+       ``OpenTanglePortReplacement.euler_eq_iff_mass, ``PaddedCycleCap.indexed_returnCode,
+       ``PaddedCycleCap.cap_connected_bridgeless, ``CycleCap.cap_connected_bridgeless,
+       ``CycleCap.cap_isCubic, ``CycleCap.cap_rotationCyclic]),
+    (``PaddedCycleCap.reconstruct_even,
+      [``CyclicColourAvoidance.exists_cycle_of_even, ``PaddedCycleCap.colouringOf_isTait]),
+    (``PaddedCycleCap.evenInContext_exterior,
+      [``PaddedCycleCap.evenCell, ``Mettapedia.GSLT.LooseRelationEquipment.Cell.hcomp]),
+    (``PaddedCycleCap.even_closed_reconstruct,
+      [``PaddedCycleCap.reconstruct_even, ``OpenTangleClosedWitness.replace]),
+    (``PaddedCycleCap.strict_even_reduction,
+      [``PaddedCycleCap.replacement_class, ``PaddedCycleCap.even_closed_reconstruct,
+       ``PaddedCycleCap.closed_vertex_loss]),
+    (``PaddedCycleCap.exact_reduction,
+      [``PaddedCycleCap.strict_even_reduction, ``RotationSystemExactTransport.mapClass]),
+    (``PaddedCycleCap.no_even_cap,
+      [``PaddedCycleCap.exact_reduction,
+       ``GoertzelV24TwoEdgeCutMinimality.GraphBackedVertexMinimalTaitCounterexample.smallerColorable])]
   let forbidden : List Name := [
     `FourColor, `Mettapedia.GraphTheory.FourColor.GoertzelV24FiveTubeExclusion,
     `Mettapedia.GraphTheory.FourColor.ZigzagRing.five_tube_normalize, `Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_support_eq,
@@ -58,6 +88,6 @@ run_cmd do
       unless allowed.contains name do
         throwError m!"Unexpected axiom in {root}: {name}"
     logInfo m!"Audited {root}: {axioms.toList}"
-  logInfo m!"Guarded padded-cap reconstruction: {roots.length} roots; \
+  logInfo m!"Padded-cap reconstruction and strict even-family reduction: {roots.length} roots; \
     {inspected.toList.length} declarations in the combined dependency closure; \
     finite stabilization certificates and complete classical theorem absent."

@@ -55,6 +55,15 @@ Its audit excludes this classical package and finite tube-stabilization
 certificates. This geometric family theorem is not yet consumed by the
 complete endpoints; their catalogue and certificate counts are unchanged.
 
+A second [uniform family reduction](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps)
+replaces an `8m`-vertex padded cap by a `2m`-cycle for every even `m ≥ 2`.
+The surrounding map keeps its class, and every smaller colouring reconstructs
+with the exterior fixed. Exact graph-representation and GSLT consumers use
+the same joint choices. The dependency audit excludes this classical package.
+Odd widths retain a nonconstant boundary guard; broader geometric recognition
+and coverage are still open. This result adds no certificate replacement to
+the complete endpoints.
+
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
 Mathlib as Mettapedia. The compatibility preparation changes the obsolete
