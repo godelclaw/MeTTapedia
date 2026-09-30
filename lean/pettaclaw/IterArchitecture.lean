@@ -5,7 +5,7 @@ import PresentMoment
 # IterArchitecture — the current reference loop and the PettaClaw hosting gap
 
 An executable model of the architectural core in `patham9/iter` at upstream
-commit `bdf4578c45228efb310c13ed243518dfed8a55f0` (2026-08-21), compared
+commit `f4064d97849ecaccac7939315a3f1a68de15c3ef`, compared
 with the deployed PettaClaw model in `ClawArchitectures.lean` and the
 restart invariant in `PresentMoment.lean`.
 
@@ -27,8 +27,10 @@ encoding.  It records what the reference loop actually does:
 The final feature record is only a necessary compatibility check.  Passing it
 would not by itself prove that an adapted Iter implements PettaClaw.
 
-Trusted boundary: correspondence between these definitions and `iter.py` is
-maintained by hand, as is the existing PettaClaw model-to-code boundary.
+Host assumptions: opaque messages, schemas, filesystem operations, tool bodies
+and provider outcomes are supplied by the host. Correspondence to `iter.py`
+is checked on the fixed offline matrix at the modeled boundary; this does not
+prove arbitrary Python or MeTTa execution correct.
 The pinned revision also changes request compaction and reasoning retention;
 those are context-policy details rather than transformation semantics.  This
 file models only the distinctions used by the hosting and preservation results.
@@ -114,7 +116,7 @@ request budget. -/
 def memoryListing (artifacts : List MemoryArtifact) : List Nat :=
   artifacts.map MemoryArtifact.name
 
-def maxMemoryChars : Nat := 1000
+def maxMemoryChars : Nat := 3000
 
 def memoryChars : List MemoryArtifact → Nat
   | [] => 0
@@ -257,14 +259,90 @@ def beginCycle (pace : Pace) : Option Origin → Pace × PromptKind
       else if pace.postTaskMode then (pace, .autonomous)
       else (pace, .continueTask)
 
-/-- End one valid tool-calling model turn.  The reference loop tests only the last tool
-name for `nop`; `lastWasNop` records that exact rule. -/
-def finishCycle (pace : Pace) (hadEvent lastWasNop : Bool) :
+/-- iter.py:318-324: any nop in the response ends a burst. Budget exhaustion
+only resets the fast counter and waits; it does not declare a new task. -/
+def finishCycle (pace : Pace) (hadEvent calledNop : Bool) :
     Pace × WaitKind :=
   let used := if hadEvent then 0 else pace.autonomousSteps + 1
-  if lastWasNop || decide (maxFastSteps ≤ used) then
+  if calledNop then
     ({ pace with autonomousSteps := 0, newBurst := true }, .slow)
+  else if maxFastSteps ≤ used then
+    ({ pace with autonomousSteps := 0 }, .slow)
   else ({ pace with autonomousSteps := used }, .fast)
+
+/-- The source's `any(call.function.name == "nop" ...)`, not a last-call test. -/
+def calledNop : List String → Bool
+  | [] => false
+  | head :: tail => (head == "nop") || calledNop tail
+
+def finishResponse (pace : Pace) (hadEvent : Bool) (calls : List String) :=
+  finishCycle pace hadEvent (calledNop calls)
+
+private theorem calledNop_append (left right : List String) :
+    calledNop (left ++ right) = (calledNop left || calledNop right) := by
+  induction left with
+  | nil => simp [calledNop]
+  | cons head tail ih => simp [calledNop, ih, Bool.or_assoc]
+
+/-- Selected property 1: a nop at any position has the same burst effect. -/
+theorem nop_anywhere_in_batch (pace : Pace) (hadEvent : Bool)
+    (before after : List String) :
+    finishResponse pace hadEvent (before ++ "nop" :: after) =
+      ({ pace with autonomousSteps := 0, newBurst := true }, .slow) := by
+  simp [finishResponse, calledNop_append, calledNop, finishCycle]
+
+/-- Selected property 2: using the fast budget preserves the unfinished task. -/
+theorem budget_exhaustion_continues_current_task (pace : Pace)
+    (noNew : pace.newBurst = false) (notPost : pace.postTaskMode = false)
+    (used : maxFastSteps ≤ pace.autonomousSteps + 1) :
+    (finishCycle pace false false).2 = .slow ∧
+      (beginCycle (finishCycle pace false false).1 none).2 = .continueTask := by
+  simp [finishCycle, used, beginCycle, noNew, notPost]
+
+/-- iter.py:246 and 327: the checkpoint advances after input persistence;
+provider failure rolls back to that checkpoint, preserving fresh user input. -/
+def rollback (history : List Nat) (checkpoint : Nat) := history.take checkpoint
+
+/-- Observed actions at the provider/dispatch and pacing boundary. Dispatch
+selects the loaded snapshot; command bodies and their results remain opaque. -/
+inductive ObservableAction
+  | request (kind : PromptKind)
+  | dispatch (name : String)
+  | save
+  | slowWait
+  | recover
+deriving Repr, DecidableEq
+
+inductive ProviderOutcome
+  | calls (names : List String)
+  | failure
+deriving Repr, DecidableEq
+
+structure ObservedCycle where
+  pace : Pace
+  actions : List ObservableAction
+deriving Repr, DecidableEq
+
+/-- iter.py:230–335. Text/length retries precede this observed outcome.
+The ten-call prefix is selected before dispatch. On failure the begun control
+survives; experience rollback is the separately modeled checkpoint prefix. -/
+def observedCycle (pace : Pace) (event : Option Origin)
+    (outcome : ProviderOutcome) : ObservedCycle :=
+  let (begun, prompt) := beginCycle pace event
+  match outcome with
+  | .failure => ⟨begun, [.request prompt, .recover]⟩
+  | .calls names =>
+    let bounded := names.take 10
+    let (finished, wait) := finishResponse begun event.isSome bounded
+    ⟨finished, [.request prompt] ++ bounded.map ObservableAction.dispatch ++
+      [.save] ++ (if wait = .slow then [.slowWait] else [])⟩
+
+/-- Selected property 3: a post-input checkpoint cannot erase its prefix. -/
+theorem rollback_preserves_checkpoint (committed suffix : List Nat) :
+    rollback (committed ++ suffix) committed.length = committed := by
+  induction committed with
+  | nil => rfl
+  | cons head tail ih => simpa [rollback, List.take] using congrArg (head :: ·) ih
 
 /-- Human, sibling-agent, and service events are observationally identical to
 the pacing core. -/
@@ -394,3 +472,7 @@ end IterArchitecture
 #print axioms IterArchitecture.pettaclaw_healthy_restart_preserves_present_moment
 #print axioms IterArchitecture.iter_reference_is_not_drop_in_pettaclaw_host
 #print axioms IterArchitecture.adapted_target_passes_necessary_check
+
+#print axioms IterArchitecture.nop_anywhere_in_batch
+#print axioms IterArchitecture.budget_exhaustion_continues_current_task
+#print axioms IterArchitecture.rollback_preserves_checkpoint
