@@ -1271,21 +1271,29 @@ or coverage proof.
 From `lean/fourcolor-classical`:
 
 ```sh
-lake build MettapediaFourColor.PentagonalCoronaChordExclusionAudit
+lake build MettapediaFourColor.PentagonalCoronaFaceReductionAudit
 ```
 
 The Lean theorem constructs both cycles and all outer turns from actual face
-lengths. Distinctness of the sixteen traced vertices remains explicit.
-Outer inducedness now follows from minimality: a chord would consume two of
+lengths. A generic separation theorem transports equalities by simultaneous
+dart rotation and edge reversal. The finite diagram passes every one of the
+720 ordered collision/phase checks at depth six; the actual face-derived
+darts satisfy the realization laws before global vertex injectivity is known.
+Triangle-freeness therefore implies distinctness of the sixteen traced
+vertices. The ambient hypotheses, or minimality, supply triangle-freeness.
+Outer inducedness also follows: a chord would consume two of
 six possible outward darts and create a forbidden cyclic cut of at most four
 edges. The general boundary theorem uses cubic forest counting and allows a
 disconnected exterior. The joint repair then gives the strict twelve-vertex
-ambient reduction with genuine colouring reconstruction. The ten-root audit
-checks 26,634 dependencies using the standard three axioms and excludes
+ambient reduction with genuine colouring reconstruction. Neither local
+geometric premise is now assumed. The twelve-root audit
+checks 26,708 dependencies using the standard three axioms and excludes
 complete Four Colour endpoints, catalogue certificates and diamond reducibility.
-`pentagonal-corona-chord-measurements.json` records the scope, source/artifact
-pairs and module costs. The earlier `pentagonal-corona-measurements.json`
-remains the historical receipt for the version assuming outer inducedness.
+`pentagonal-corona-noncollision-measurements.json` records the scope,
+source/artifact pairs and module costs. The 720 geometric separation cases
+and the partial flip-involution check are separate from colouring checks.
+The earlier `pentagonal-corona-measurements.json` and
+`pentagonal-corona-chord-measurements.json` retain their historical scopes.
 No additional colouring enumeration or complete-proof certificate saving is claimed.
 
 A separate local count can be replayed from the repository root:
@@ -1298,3 +1306,20 @@ The six outward positions have fifteen unordered pairs. One pair is already
 a perimeter edge; the other fourteen possible chords each leave four outward
 darts. `pentagonal-corona-chord-probe.json` retains this bounded test. It does
 not construct an exterior or prove minimality; those are separate Lean arguments.
+
+The separation search is independently replayable:
+
+```sh
+python3 tools/fourcolor/classical/pentagonal_corona_separation_probe.py
+```
+
+The report `pentagonal-corona-separation-probe.json` records the diagram,
+all-case statistics and a digest of deterministic replayed witnesses. Short
+terminal paths of lengths at most one, two and three separate respectively
+652, 712 and 720 ordered cases. All cases at the final threshold use at most
+six shared operations. The Lean `by decide` check independently verifies
+the bounded predicate; a proved soundness theorem gives it meaning in every
+actual triangle-free realization. The finite check took 25 seconds and the
+audit 7 seconds, including elaboration and kernel checking. The source class,
+whole-map size and colouring reconstruction are proved separately and consumed
+by the face-pattern endpoint. Broader local cores and global coverage remain open.

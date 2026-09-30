@@ -143,16 +143,22 @@ catalogue certificate has been removed.
 The [six-face construction](tube-example/README.md#constructing-the-lobe-from-its-neighbouring-faces)
 now supplies that two-cycle arrangement. Start at a pentagon adjacent to
 four pentagons and one hexagon. Actual face traversal determines both
-cycles, all outer turns and the shared spoke matching. If the sixteen
-traced vertices are distinct, the existing reduction removes twelve vertices
-from the complete map. Cyclic connectivity now rules out all extra outer
-chords: each would consume two of the six available ports, producing a
-forbidden small cyclic cut. Minimality supplies the ambient conditions.
-Distinctness remains the local geometric condition to derive. A finite replay
-finds 76 occurrences in the same 29 maps as the earlier selected lobes; it
-supplies examples, not universal noncollision or coverage. The next geometric
-task is to establish distinctness or classify its failure, then extend the
-joint repair to broader patterns.
+cycles, all outer turns and the shared spoke matching. Distinctness of the
+sixteen traced vertices is now proved: the same rotation or edge reversal
+transports a hypothetical collision to a local contradiction. One general
+soundness theorem interprets the finite check in any triangle-free target
+graph. Cyclic connectivity also rules out every extra outer chord, since
+each would consume two of the six available ports. Minimality supplies the
+ambient conditions. The actual face pattern therefore gives a twelve-vertex
+strict reduction with genuine colouring reconstruction; neither distinctness
+nor inducedness is supplied as an extra local premise.
+
+This completes recognition and reduction for the pattern in arbitrary
+qualifying exteriors. The 720 ordered collision/phase checks are recorded
+separately from the retained colouring checks. A finite replay finds 76
+occurrences in the same 29 maps as the earlier selected lobes; it supplies
+examples, not global coverage. The next task is to extend the joint repair
+to broader patterns and integrate replacements into the complete proof.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
@@ -347,7 +353,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within three extensions at width five in a minimal counterexample |
 | Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; its embedded closing operation remains open |
 | Cycle boundary contraction | One marked-seam law reconstructs literal cycle colourings at every length; forgetting the seam guard fails on a kernel-checked four-cycle |
-| Pentagonal lobe reduction | A pentagon with neighbours of lengths 5,5,5,5,6 constructs the two-cycle arrangement and a twelve-vertex reduction, assuming distinct traced vertices. Minimality now excludes outer chords and supplies exterior conditions. Broader supply and coverage remain open; nine finite answer checks remain |
+| Pentagonal lobe reduction | A pentagon with neighbours of lengths 5,5,5,5,6 supplies the complete local recognition and a twelve-vertex reduction. Noncollision, chord exclusion and exterior conditions are derived; broader supply and coverage remain open. Nine finite answer checks remain |
+| Corona geometric separation | One operation-preservation theorem interprets 720 ordered collision/phase checks in every triangle-free realization; at most six simultaneous operations per case. These are additional geometric checks, with no colouring-certificate saving claimed |
 | Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |

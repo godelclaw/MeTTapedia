@@ -89,18 +89,27 @@ arc from each neighbouring face: period `n + 3` supplies `n` outer steps.
 [PentagonalCoronaGeometry](PentagonalCoronaGeometry.lean) and
 [PentagonalCoronaIncidence](PentagonalCoronaIncidence.lean) apply this to a
 pentagon with neighbours of lengths 5,5,5,5,6. They derive both cycles, all
-outer turns and the attachment matching. Distinctness of the sixteen traced
-vertices remains explicit. [PentagonalCoronaBoundary](PentagonalCoronaBoundary.lean)
+outer turns and the attachment matching. [PartialCubicDartSeparation](PartialCubicDartSeparation.lean)
+proves a general soundness theorem for transporting proposed dart equalities
+through shared rotations and internal edge reversals. The
+[finite check](PentagonalCoronaSeparationCheck.lean) covers all 720 ordered
+collision/phase cases in at most six operations. [PentagonalCoronaImmersion](PentagonalCoronaImmersion.lean)
+interprets these operations in the actual graph before assuming vertex
+distinctness; [PentagonalCoronaNoncollision](PentagonalCoronaNoncollision.lean)
+then derives distinctness from triangle-freeness supplied by the ambient
+hypotheses. [PentagonalCoronaBoundary](PentagonalCoronaBoundary.lean)
 confines the cut to six potential outward darts; an extra chord consumes two.
 [CyclicFiveBoundary](CyclicFiveBoundary.lean) combines the forest edge bound
 with cyclic connectivity, and [PentagonalCoronaChordExclusion](PentagonalCoronaChordExclusion.lean)
 therefore derives outer inducedness from minimality. No exterior connectedness
 or distinct attachment endpoints are needed for this chord argument. The
-[strengthened consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalCoronaMinimalReduction.lean)
-performs the twelve-vertex reduction. Its ten-root audit checks 26,634
-declarations with standard axioms only. Derivation of traced-vertex
-distinctness, broader family repair and coverage remain open. No additional
-original certificate is removed.
+[face-pattern consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalCoronaFaceReduction.lean)
+performs the twelve-vertex reduction without either local geometric premise.
+Its [twelve-root audit](../../../../fourcolor-classical/MettapediaFourColor/PentagonalCoronaFaceReductionAudit.lean)
+checks 26,708 declarations with standard axioms only. Broader family repair,
+coverage and further catalogue integration remain open. The new finite
+geometric checks are counted separately; no additional original colouring
+certificate is removed.
 
 ## Independent corridor route — checkpoint of 22 September 2026
 

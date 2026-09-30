@@ -722,10 +722,29 @@ six-face pattern, the [incidence construction][corona-incidence] derives
 both cycles, their spoke matching and all alternating outer turns. The
 input supplies no outer cycle frame, rotation equations or patch isomorphism.
 
-The remaining local hypothesis is that the sixteen traced vertices are
-**distinct**. [Chord exclusion][corona-chord] derives the absence of extra
-outer edges from the ambient normal form. The [actual consumer][corona-reduction]
-then performs the strict reduction with genuine colouring reconstruction.
+The sixteen traced vertices are now proved **distinct**.
+[Exact dart transport][corona-immersion] interprets a partial sixteen-vertex
+diagram in the original graph, preserving each local slot, vertex rotation
+and internal edge reversal. This construction assumes no global vertex
+injectivity. If two vertices coincided, their incident darts would agree in
+one of three relative phases. Applying the same operations to both darts
+preserves that agreement. The [general separation theorem][dart-separation]
+shows that reaching distinct local slots, a loop, duplicate incident darts
+or a triangle contradicts the actual graph's local laws and triangle-freeness.
+
+The [finite check][corona-separation] covers all `16 × 15 × 3 = 720` ordered
+collision/phase cases in at most six simultaneous operations. Its soundness
+applies uniformly to every actual realization, independently of the exterior's
+size. [Noncollision][corona-noncollision] supplies triangle-freeness from
+cyclic-five connectivity and more than four vertices, or directly from
+minimality. This is exact transport of operations and their joint state;
+independently projecting the two darts would lose the equality being tested.
+The 720 cases are geometric checks, with the partial edge-involution law
+checked separately. They are counted apart from colouring certificates.
+
+[Chord exclusion][corona-chord] also derives the absence of extra outer edges.
+The [actual consumer][corona-reduction] therefore performs the strict reduction
+from the six face lengths, with genuine colouring reconstruction.
 Its ambient source is a bridgeless spherical cubic simple graph with cyclic
 rotations and two-sided faces, minimum face size five and cyclic-five edge
 connectivity. The minimal-counterexample consumer derives these ambient
@@ -751,8 +770,8 @@ certificate and claims no new catalogue saving.
 ```text
 central pentagon + four pentagonal neighbours + one hexagonal neighbour
   → actual facial arcs of lengths 2,2,2,2,3
+  → exact dart transport + separation prove sixteen distinct vertices
   → two cycles and their joint rotation/attachment data
-      [sixteen distinct traced vertices]
   → cubic port count + cyclic connectivity exclude outer chords
   → exact six-port semantics and compatible colouring repair
   → four-vertex replacement; twelve fewer vertices in the whole map.
@@ -762,33 +781,42 @@ The [independent replay][corona-probe] checks all 1,644 pentagons in the 137
 recorded maps. It finds 76 matching faces across 29 maps; every traced patch
 has the required distinct vertices and induced boundary. All 29 previously
 selected lobe instances are recovered. This finds additional occurrences
-in the same maps, not additional map coverage. The census remains program
-evidence, with no claimed universal noncollision theorem.
+in the same maps, not additional map coverage. The census remains independent
+program evidence. The general noncollision theorem is established separately
+by the Lean realization and separation argument.
 
-The [ten-root audit][corona-audit] checks 26,634 dependency declarations,
+The [twelve-root audit][corona-audit] checks 26,708 dependency declarations,
 using only `propext`, `Classical.choice` and `Quot.sound`. It requires the
-actual dart count, forest bound, cyclic-connectivity theorem, derived
-inducedness, strict whole-map decrease and colouring reconstruction.
+finite separation check, its soundness and actual dart realization, derived
+noncollision, chord exclusion, strict whole-map decrease and colouring
+reconstruction.
 Complete Four Colour endpoints, original catalogue certificates and diamond
 reducibility are excluded. The [receipt][corona-measurements] records source
-and artifact hashes. The strengthened reduction module took 2.7 seconds and
-its audit 7.7 seconds, including elaboration and kernel checking. From
+and artifact hashes. The separation check took 25 seconds, the strengthened
+reduction 2.8 seconds and its audit 7 seconds, including elaboration and kernel checking. From
 `lean/fourcolor-classical`:
 
 ```sh
-lake build MettapediaFourColor.PentagonalCoronaChordExclusionAudit
+lake build MettapediaFourColor.PentagonalCoronaFaceReductionAudit
 ```
 
 The [local chord replay][corona-chord-probe] checks fourteen possible extra
 chords in the literal patch, confirming four remaining outward darts in
 each case. The exterior and minimality argument is a separate Lean proof.
+The [pair-transport replay][corona-separation-probe] independently checks all
+720 collision/phase cases and records deterministic witness statistics.
+Allowing terminal paths of length one separates 652 cases; length two
+separates 712; triangle-freeness handles the remaining eight. These figures
+describe this search, not a proof that every alternative argument needs
+triangle-freeness.
 
 No additional colouring enumeration is introduced. The 22 terminal witnesses,
 nine answer-cover checks, one six-port matching codec, 633 catalogue
-configurations and 630 original configuration certificates remain. Next:
-derive traced-vertex distinctness where justified, then extend the joint
-repair to other face patterns or longer lobes. Face traversal alone does
-not supply their colouring repair or prove global coverage.
+configurations and 630 original configuration certificates remain. The local
+recognition chain is complete for this pattern in arbitrary qualifying
+exteriors. Next: extend the joint repair to other face patterns or longer
+lobes, and integrate further certificate replacements. Face traversal alone
+does not supply their colouring repair or prove global coverage.
 
 ## Scope and verification
 
@@ -818,10 +846,10 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [corona-traversal]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FacialCoronaTraversal.lean
 [corona-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaGeometry.lean
 [corona-incidence]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaIncidence.lean
-[corona-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaMinimalReduction.lean
-[corona-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaChordExclusionAudit.lean
+[corona-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaFaceReduction.lean
+[corona-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaFaceReductionAudit.lean
 [corona-probe]: ../../../../tools/fourcolor/classical/pentagonal-corona-probe.json
-[corona-measurements]: ../../../../tools/fourcolor/classical/pentagonal-corona-chord-measurements.json
+[corona-measurements]: ../../../../tools/fourcolor/classical/pentagonal-corona-noncollision-measurements.json
 [decoder]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagRingTable.lean
 [normalization]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeFiniteNormalization.lean
 [generic]: ../../../../lean/mettapedia/Mettapedia/GSLT/Core/BoundaryCertificateComposition.lean
@@ -913,3 +941,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [corona-chord]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaChordExclusion.lean
 [cyclic-five-boundary]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicFiveBoundary.lean
 [corona-chord-probe]: ../../../../tools/fourcolor/classical/pentagonal_corona_chord_probe.py
+[dart-separation]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartSeparation.lean
+[corona-immersion]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaImmersion.lean
+[corona-separation]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaSeparationCheck.lean
+[corona-noncollision]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaNoncollision.lean
+[corona-separation-probe]: ../../../../tools/fourcolor/classical/pentagonal_corona_separation_probe.py

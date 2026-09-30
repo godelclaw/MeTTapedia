@@ -1,0 +1,161 @@
+{
+  "status": "Kernel-checked strict reduction from the actual six face lengths. Vertex noncollision and outer inducedness are derived from the stated ambient hypotheses.",
+  "completed_utc": "2026-09-30T01:50:27+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "9b476f62de2162833e0e4f253391183962b76719",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartSeparation.lean",
+      "source_sha256": "a9d1d6c82781e49df04c4e87793e1619169fb4e6acd724b960a7354f9d1f030d",
+      "olean_sha256": "b99c7eace4a8d91e8369d75752f41d25bffdca99dbe4f4b210dc9a6d67808d41",
+      "olean_bytes": 482968,
+      "reported_build_seconds": 2.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalCoronaSeparationCheck",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaSeparationCheck.lean",
+      "source_sha256": "2e8b50fbc6de3ce6b691b915e1ec868808cffe21c03b9044f361ae5a979d3106",
+      "olean_sha256": "7a43489efd7f5f7adf25b380163aa15ecdd5194cfd7f30f3769bfc11b2c8b1f4",
+      "olean_bytes": 172440,
+      "reported_build_seconds": 25.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalCoronaImmersion",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaImmersion.lean",
+      "source_sha256": "16161d7a302e87fc4710c9b5d343ad9eb853181cd85eb633e918989f0b0cd385",
+      "olean_sha256": "80100b63f781dd1ff2e2ab33c8a7e617ef0f96b1edbdd430046b00f2ad2ee94d",
+      "olean_bytes": 715408,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalCoronaNoncollision",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaNoncollision.lean",
+      "source_sha256": "87dd4058e750e7e0cec227f848605fc2188fd85afb8734a9c23c1f6d665c04fb",
+      "olean_sha256": "fe1c7f8ef73c45f02ff759afac57f85f1a84e37eb871c67f3050eb257ee4323d",
+      "olean_bytes": 75640,
+      "reported_build_seconds": 2.6
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalCoronaFaceReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaFaceReduction.lean",
+      "source_sha256": "c5d35cb1ca922e4680d711c5317b86a5199ea579bd761ff55d152e8593304889",
+      "olean_sha256": "a4ae5296f0f0a308a320df06a57fb24aef7e766d38a8bcef3571b24d4c42fe52",
+      "olean_bytes": 158496,
+      "reported_build_seconds": 2.8
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalCoronaFaceReductionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaFaceReductionAudit.lean",
+      "source_sha256": "2c22e696dcec06f64336effaf309bdf62c9111b2079203c624464a790336e516",
+      "olean_sha256": "3cfe3137442923808fc10139d6619fe7ac16af7df761a187b1951fc687f38a14",
+      "olean_bytes": 3248,
+      "reported_build_seconds": 7.0
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation.Diagram.pathCheck_sound",
+      "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation.Realization.separates_sound",
+      "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation.Realization.vertex_injective",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaSeparation.separates_all",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.diagramDart_flip",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.coronaRealization",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.tracedVertex_injective_of_triangleFree",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.triangleFree_of_cyclicallyFive_of_four_lt_card",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.tracedVertex_injective_of_cyclicallyFive",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.tracedVertex_injective_of_minimality",
+      "FourColor.PentagonalLobePatch.Tangle.Corona.strict_reduction_of_face_pattern",
+      "FourColor.PentagonalLobePatch.Tangle.Corona.not_in_minimal_counterexample_of_face_pattern"
+    ],
+    "combined_dependency_closure": 26708,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "generic path-check soundness and local slot injectivity",
+      "equality preserved by simultaneous actual rotation and internal reversal",
+      "triangle-free soundness of the terminal path tests",
+      "all 720 finite collision/phase checks",
+      "actual face-derived dart realization before vertex injectivity",
+      "triangle-freeness from cyclic connectivity and size or from minimality",
+      "derived noncollision and chord exclusion",
+      "strict whole-map decrease and genuine colouring reconstruction"
+    ],
+    "excluded_dependencies": "Complete Four Colour endpoints, original catalogue certificates and diamond reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalCoronaFaceReductionAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3680,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "input_faces": "A rooted central pentagon with neighbouring face lengths 6,5,5,5,5, the hexagon across the root edge.",
+    "distinct_traced_vertices_required": false,
+    "outer_inducedness_required": false,
+    "distinct_traced_vertices_derived": true,
+    "outer_inducedness_derived": true,
+    "generic_separation_law": "A successful finite separation check makes the vertex map injective in every triangle-free simple-graph realization preserving the local darts, rotation and internal edge reversal.",
+    "noncollision_local_hypotheses": "Cubic rotation laws, central face period five, neighbouring periods six/five/five/five/five, and triangle-freeness of the actual simple graph.",
+    "noncollision_requires_spherical_embedding": false,
+    "geometric_separation_cases": 720,
+    "maximum_simultaneous_operations": 6,
+    "maximum_terminal_path_length": 3,
+    "flip_involution_checked_separately": true,
+    "internal_darts": 42,
+    "patch_vertices": 16,
+    "replacement_vertices": 4,
+    "whole_map_vertex_decrease": 12,
+    "strict_reduction_endpoint": "FourColor.PentagonalLobePatch.Tangle.Corona.strict_reduction_of_face_pattern",
+    "minimality_endpoint": "FourColor.PentagonalLobePatch.Tangle.Corona.not_in_minimal_counterexample_of_face_pattern",
+    "strict_reduction_ambient_conditions": "Bridgeless spherical cubic simple graph with cyclic vertex rotations, two-sided faces, minimum face size five and cyclic-five edge connectivity.",
+    "minimality_supplies_ambient_conditions": true,
+    "all_introduced_vertices_counted": true,
+    "exterior_recolouring_allowed": true,
+    "distinct_exterior_endpoints_required": false,
+    "geometric_coverage_proved": false,
+    "unbounded_distinct_local_core_family_proved": false,
+    "new_colour_count_preservation_claim": false,
+    "new_executable_history_transport_claim": false
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "new_independent_colour_repair_schemes": 0,
+    "local_recognition_hypotheses_removed": [
+      "traced-vertex injectivity"
+    ],
+    "terminal_colourings_retained": 22,
+    "finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "new_finite_colouring_enumeration": false,
+    "new_finite_geometry_case_check": true,
+    "case_count_scope": "720 ordered vertex-pair/relative-phase separation cases, plus the partial flip-involution law. These are geometric checks, not colouring certificates."
+  },
+  "program_replay": {
+    "command": "python3 tools/fourcolor/classical/pentagonal_corona_separation_probe.py",
+    "report": "pentagonal-corona-separation-probe.json",
+    "ordered_vertex_pair_phase_cases": 720,
+    "maximum_transport_length": 6,
+    "scope": "Independent pair-path search with replayed witnesses in the literal diagram. The Lean check and its actual-graph realization are separate.",
+    "kernel_certification_of_program_output": false
+  },
+  "cost_scope": "Lake module times include elaboration and kernel checking. The generic theorem and finite check were built in the preceding separation gate; the immersion was built in an earlier invocation and replayed in the successful final gate. No isolated kernel timing is claimed.",
+  "baseline_replay": {
+    "rerun": false,
+    "reason": "Complete assembly, earlier colouring certificates, face census and their inputs are unchanged. The strengthened geometric consumer and its dependency audit were built."
+  },
+  "next_obligations": [
+    "Extend the joint repair to additional justified face patterns or longer lobes.",
+    "Identify an actual complete-proof certificate dependency that the family theorem can replace, and audit the integration.",
+    "Prove supply, coverage and reconstructible termination for the intended class."
+  ]
+}
