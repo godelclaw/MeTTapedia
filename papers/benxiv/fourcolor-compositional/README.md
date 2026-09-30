@@ -89,8 +89,12 @@ opposite boundary face return. It removes exactly `4k` vertices, preserves
 the map class and fixes every exterior dart colour during reconstruction.
 The embedded-slab consumer excludes such rows in a minimal counterexample.
 An independent replay verifies these geometric conditions in the saved
-240-vertex example. Deriving them from broader recognized patterns and
-proving coverage remain open; no catalogue entry is removed.
+240-vertex example. The [short-face recognition theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowWiringRecognition.lean)
+now derives both conditions from an actual embedded two-row slab and
+five- or six-dart end faces. No separate exterior connectivity or return
+hypothesis is retained. An eight-root dependency audit connects these
+facts to the actual strict reduction and minimal-counterexample exclusion.
+Broader geometric supply and coverage remain open; no catalogue entry is removed.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
@@ -477,7 +481,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's; one arbitrary-width matching codec reconstructs all chromogram answers through the same physical components |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
 | Geometric corridor reduction | Any recognized tube with at least three rows and width `k ≥ 2` loses two rows with a cyclic seam shift: net `4k` vertices, map class preserved, all smaller colourings reconstruct with fixed exterior colours |
-| Two-row free-wire reduction | At every width `k ≥ 3`, a rotation-compatible two-row slab with two connected exterior shores and opposite boundary return disappears entirely: net `4k` vertices, map class preserved, every smaller colouring reconstructs with the exterior fixed; broader recognition and coverage remain open |
+| Two-row free-wire reduction | At every width `k ≥ 3`, a rotation-compatible two-row slab with five- or six-dart end faces disappears entirely: net `4k` vertices, map class preserved, every smaller colouring reconstructs with the exterior fixed. Connected shores and opposite return are derived; broader geometric supply and coverage remain open |
 | Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within one extension at every width at least two in a minimal counterexample |
 | Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; its embedded closing operation remains open |
 | Cycle boundary contraction | One marked-seam law reconstructs literal cycle colourings at every length; forgetting the seam guard fails on a kernel-checked four-cycle |

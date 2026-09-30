@@ -2098,10 +2098,30 @@ certificates. The [domain replay][two-row-domain] independently verifies
 all 216 literal row-rotation steps, the two 84-vertex shores and all 36
 boundary returns in the saved residual map. This is finite program evidence
 that the domain is inhabited, not a kernel-certified occurrence theorem.
-Deriving these exterior conditions from broader recognized face patterns,
-global coverage and catalogue replacement remain open.
-The ledger still has 633 coverage configurations and 630 original
-configuration-certificate dependencies.
+The [short-face recognition theorem][two-row-recognition] now derives both
+exterior conditions from the actual embedded slab and five- or six-dart
+faces at its end ports. Each such face uses three fixed tube steps; its
+remaining two or three steps give the opposite first return, without an
+earlier exterior port. Facial return paths connect all ports on each end.
+The slab's actual inner predicate separates these ends, and ambient
+connectedness makes every exterior component meet a port. Thus both
+connected shores are proved, rather than supplied.
+
+This recognized family consumes the same strict reduction and colouring
+reconstruction, losing exactly `4k` vertices and fixing every exterior
+dart colour. Its minimal-counterexample consumer uses no separate return
+or exterior-connectivity hypothesis. The [recognition receipt][two-row-recognition-receipt]
+records eight audited roots. A [new finite replay][two-row-short-faces]
+checks all twenty two-row starts in the stored residual: 720 end-face
+paths, of which 120 are pentagonal and 600 hexagonal, with no earlier
+exterior boundary hit. This remains independent program evidence, not a
+kernel occurrence certificate.
+
+The next obligation is to connect the two-row slab input to the existing
+row-growth recognizer and establish its contribution to residual supply.
+Global coverage and catalogue replacement remain open. The ledger still
+has 633 coverage configurations and 630 original configuration-certificate
+dependencies.
 
 [residual-probe]: ../../../../tools/fourcolor/classical/residual-coverage-probe.json
 [two-row-colours]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiring.lean
@@ -2111,3 +2131,7 @@ configuration-certificate dependencies.
 [two-row-slab]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowWiringReduction.lean
 [two-row-geometry-receipt]: ../../../../tools/fourcolor/classical/two-row-free-wire-measurements.json
 [two-row-domain]: ../../../../tools/fourcolor/classical/two-row-free-wire-domain.json
+
+[two-row-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowWiringRecognition.lean
+[two-row-recognition-receipt]: ../../../../tools/fourcolor/classical/two-row-recognition-measurements.json
+[two-row-short-faces]: ../../../../tools/fourcolor/classical/two-row-short-faces.json

@@ -85,8 +85,12 @@ rotation and spherical Euler characteristic are preserved. The
 reduction and exterior colour retention to an actual ambient map and gives
 a minimal-counterexample exclusion. Its [dependency audit](ZigzagTwoRowWiringGeometryAudit.lean)
 checks eleven roots independently of complete Four Colour endpoints and
-finite tube stabilization. Broader derivation of the exterior conditions
-and global coverage remain open. The
+finite tube stabilization. The [short-face recognition theorem](HexagonalTwoRowWiringRecognition.lean)
+now derives both exterior conditions from the actual slab and five- or
+six-dart ambient end faces. Its [audit](HexagonalTwoRowWiringRecognitionAudit.lean)
+checks eight roots, including the strict reduction and minimality consumers.
+No shore-connectivity or return-order premise is supplied to this theorem.
+Broader geometric supply and global coverage remain open. The
 [domain replay](../../../../../tools/fourcolor/classical/two-row-free-wire-domain.json)
 independently verifies those conditions in the saved 240→168 example.
 Independent replay includes an all-five/six 96→60 example and the earlier

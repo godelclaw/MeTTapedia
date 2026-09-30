@@ -97,6 +97,19 @@ include ha hr in
 theorem phi_commute (x : S.D) : d (S.phi x) = T.phi (d x) := by
   simp only [RotationSystem.phi_apply, hr, ha]
 
+include ha hr in
+/-- Exact dart transport preserves each actual face length. -/
+theorem faceOrbit_card (x : S.D) : (S.faceOrbit x).card = (T.faceOrbit (d x)).card := by
+  have hc : (d.symm.trans S.phi).trans d = T.phi := by
+    apply Equiv.ext
+    intro y
+    exact (phi_commute S T d ha hr (d.symm y)).trans
+      (congrArg T.phi (d.apply_symm_apply y))
+  let e : {y // y ∈ S.faceOrbit x} ≃ {y // y ∈ T.faceOrbit (d x)} :=
+    d.subtypeEquiv (fun y => by
+      rw [S.mem_faceOrbit, T.mem_faceOrbit, ← hc, sameCycle_conjEquiv_iff])
+  simpa only [Fintype.card_coe] using Fintype.card_congr e
+
 def faceEquiv : OrbitFace S ≃ OrbitFace T := by
   have hc : (d.symm.trans S.phi).trans d = T.phi := by
     apply Equiv.ext

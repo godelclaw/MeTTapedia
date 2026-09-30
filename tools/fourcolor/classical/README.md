@@ -111,13 +111,22 @@ endpoints and finite tube stabilization.
 The [domain replay](two-row-free-wire-domain.json) verifies these precise
 conditions against the stored 240-vertex residual: all 216 row-rotation
 steps, two 84-vertex shores and all 36 first returns. It reuses the saved
-colourings and occurrence record; it does not repeat the census. Deriving
-the exterior conditions from broader recognized patterns and global coverage
+colourings and occurrence record; it does not repeat the census. The
+[short-face recognition receipt](two-row-recognition-measurements.json)
+records the next kernel-checked bridge: an actual two-row slab with five-
+or six-dart end faces derives the two connected shores and opposite
+boundary return. The strict reduction and minimality consumers retain
+neither of those as separate hypotheses.
+
+The [short-face replay](two-row-short-faces.json) checks the implication
+at all twenty two-row starts in the stored residual: 720 end-face paths,
+no earlier boundary hit. Broader geometric supply and global coverage
 remain open. No additional catalogue or certificate dependency is removed.
 
 ```sh
 python3 tools/fourcolor/classical/residual_coverage_probe.py
 python3 tools/fourcolor/classical/two_row_free_wire_domain.py
+python3 tools/fourcolor/classical/two_row_short_faces.py
 ```
 
 ## Complete endpoints
