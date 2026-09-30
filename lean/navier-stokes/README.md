@@ -517,6 +517,30 @@ checks the reduction and the limiting interface. Extending the payment to
 mutually amplifying NS parents remains open. These periodic examples are
 not finite-energy whole-space fields or arbitrary-flow estimates.
 
+`PressureDiffusionCompletion` supplies scalar certificates for a repair of
+the remaining tensor derivative. The exact lab first exhibits genuinely
+three-dimensional unforced data whose canonical pressure and retained-memory
+correction leave a positive quadratic viscosity contribution to the preceding
+envelope. This excludes an automatic nonnegative-diffusion comparison, not a
+finite history allowance. Its datum-fixed excess is initially inactive.
+
+The analytic repair keeps both pressure and core branches and completes them
+by `48 (||grad u||_F^2+sqrt(sigma^2+||P_hat||_F^2))^2`, for fixed positive
+`sigma`. Taking the Euclidean norm of these two positive completed branches
+gives a smooth convex observable `Psi>=12|omega|^4`. Its diffusion pays the
+entire strain-receiver derivative, with the explicit local weight `1/Q`,
+where `Q=||grad u||_F^2+sqrt(sigma^2+||P_hat||_F^2)`. The existing soft-excess
+continuation bridge can consume its coercivity; the already controlled
+stochastic mixing family also retains a finite all-time allowance.
+
+Nine Lean statements certify scalar curvature, branch and receiver-payment
+steps. The uniform matrix differentiation and physical PDE application are
+analytic, with exact algebra checks in `labs/pressure_diffusion_completion.py`.
+The completion adds genuine reaction terms, which remain in the signed
+history obligation. Its local weighted gradient payment does not bound the
+anisotropic nonlocal memory-pressure norm. Neither arbitrary-data continuation
+nor the repeated renewal estimate is established by this repair.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

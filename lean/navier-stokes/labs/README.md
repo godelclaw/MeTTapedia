@@ -6240,3 +6240,266 @@ an arbitrary flow or certify the missing universal signed production bound.
 ```sh
 python3 -O labs/memory_soft_excess.py
 ```
+
+## Full strain-receiver diffusion: obstruction and a joint completion
+
+`pressure_diffusion_completion.py` addresses the remaining derivative of
+the strain-sensitivity tensor. The preceding perspective pays its selection
+weight derivative. Paying the tensor derivative additionally requires the
+complete coupled strain, vorticity and pressure diffusion, rather than only
+the positive Hessian in a strain slot with other variables fixed.
+
+### An actual unforced diffusion obstruction
+
+On the period-2pi torus, set
+
+```text
+u1 = 3 sin(x+z) + 3 alpha (cos z-1),
+u2 = 4 sin x + 4 sin(y+z) - 2 sin z - 3 alpha (cos z-1),
+u3 = -3 sin(x+z) - 4 sin(y+z) + 6 sin x + 5 sin y.
+```
+
+This is a smooth divergence-free, genuinely three-dimensional datum.
+At the origin its velocity is zero, and its gradient and canonical
+pressure Hessian, independently of alpha, are
+
+```text
+B = [ 3  0  3 ]          P = [ -112/5     4     -56/5 ]
+    [ 4  4  2 ]              [    4    -118/5   -76/5 ]
+    [ 3  1 -7 ]              [ -56/5   -76/5     -50  ].
+```
+
+The perturbation changes a spatial gradient of B in the solenoidal
+rank-one direction `E=(3,-3,0) tensor (0,0,1)`. With the preceding envelope
+regularizers equal to one, its core curvature in that direction is
+`-1124556302/53865`. The complete calculation additionally differentiates
+the canonical pressure and uses the actual unforced NS tangent. At C=0,
+it includes `C_t=2nu sum_j partial_j u tensor partial_j u` in the observed
+pressure. The coefficient of `nu alpha^2` in `D Y_hat` is strictly larger
+than 20000, with an exact rational-plus-radical certificate in the checker.
+The geometric-mean normalization leaves this coefficient unchanged.
+
+An independent differentiation of the complete coupled spatial Hessian
+recovers the same coefficient. Thus automatic nonnegative diffusion of
+this envelope fails on actual data. The test does not assert that its
+datum-fixed excess is initially active: b is above the initial supremum.
+It also does not refute an integrated signed history allowance, temporal
+regularity, or a payment using other retained resources.
+
+### A completion retaining both pressure and core branches
+
+Write `S=sym B`, `omega=curl B`, `W=|omega|^2`, `Q_s=tr(S^2)`,
+`V=omega.S omega`, and `Z=|S omega|^2`. For fixed eta>0 use the original
+two branches
+
+```text
+p0 = 5 V^2/(W+eta) + (63/95)W^2 - 2 omega.P_hat omega,
+c0 = 5 V^2/(W+eta) + (4/7)Z + (10/21)Q_s W + (44/95)W^2.
+```
+
+P_hat is the retained-pressure observer from the actual stress
+`u tensor u+C`. For a fixed sigma>0, define
+
+```text
+r = ||B||_F^2,       q = sqrt(sigma^2+||P_hat||_F^2),
+Q = r+q,            R = Q^2,
+A = p0+48R,         B0 = c0+48R,
+Psi = 1+sqrt(A^2+B0^2).
+```
+
+Here Q differs from the strain invariant Q_s. This is a candidate
+completion of the joint observable, not a claim that the new production
+is already payable. The positive additions retain actual pressure and
+geometry while making their entire diffusion convex.
+
+The identities `r=||S||_F^2+W/2`, `V^2/(W+eta)<=||S||_F^2 W`, and
+`Z<=||S||_F^2 W` give
+
+```text
+0<=c0<=5r^2,          -Q^2<=p0<=6Q^2,
+47Q^2<=A<=54Q^2,      48Q^2<=B0<=53Q^2,
+Psi>=1+48Q^2>=1+12|omega|^4.
+```
+
+Both completed branches are strictly positive. The radial combination
+is smooth, including at vorticity zeros and strain eigenvalue collisions.
+Coercivity supplies the same existing soft-excess continuation interface
+with `k=12` when X=Psi. With `X=exp(-kappa t)Psi`, use the fixed
+`k=12exp(-kappa H)` on the prescribed horizon. Integrability and a uniform
+full-datum allowance for the excess remain physical obligations.
+
+### Uniform full Hessian estimates
+
+Let E and L vary B and the symmetric P_hat simultaneously. Put
+`H=sym E`, `v=curl E`, `e=||E||_F^2`, `g=||L||_F^2`, `d=B:E`, and
+`ell=(P_hat:L)/q`. Matrix Cauchy--Schwarz gives `d^2<=r e` and `ell^2<=g`.
+Direct differentiation yields
+
+```text
+D2 R = 8d^2+4Q e+8d ell+2g+(2r/q)(g-ell^2),
+D2 R - 2Q e - (2/5)g
+  = (2/5)(5d+2ell)^2 + 2(r e-d^2) + 2q e
+    + (8/5)(g-ell^2) + (2r/q)(g-ell^2) >=0.
+```
+
+This calculation allows noncommuting pressure variations. For the
+perspective T=V^2/(W+eta), its exact second derivative is
+
+```text
+D2 T = 2/(W+eta) (D V - (V/(W+eta))D W)^2
+       + 2(V/(W+eta))D2 V - (V/(W+eta))^2 D2 W,
+D2 V = 2v.S v+4v.H omega,       D2 W=2|v|^2.
+```
+
+Consequently `D2 T>=-6||S||^2|v|^2-8||S||||omega||||H||||v||`.
+The remaining core cross terms are retained: `D2 Z` has possible
+negative part `-4||S||||omega||||H||||v||`, and `D2(Q_s W)` has possible
+negative part `-8||S||||omega||||H||||v||`.
+The equalities for r and e give
+`||S||||omega||||H||||v||<=r e/2` and `||S||^2|v|^2<=2r e`.
+These imply the universal analytic lower bounds
+
+```text
+D2 c0 >= -(1744/21)r e,
+D2 p0 >= -(88r+8q)e-8g.
+```
+
+The second retains `-4v.P_hat v-8v.L omega`. In obtaining its bound,
+`4||P_hat|||v|^2<=8q e` and
+`8||v||||L||||omega||<=16sqrt(r e g)<=8r e+8g`.
+Combining with the completion gives, for either branch,
+
+```text
+D2 A, D2 B0 >= 8Q e+(56/5)g.
+```
+
+For `rho=sqrt(A^2+B0^2)`, its full Hessian is
+
+```text
+D2 rho = (A D2 A+B0 D2 B0)/rho
+          +(B0 D A-A D B0)^2/rho^3.
+```
+
+The second term is nonnegative and `(A+B0)/rho>=1`. Thus
+
+```text
+D2 Psi[(E,L),(E,L)] >= 8Q||E||_F^2+(56/5)||L||_F^2.
+```
+
+This is a uniform analytic matrix estimate. Nine Lean statements certify
+the scalar decomposition and combination steps, with the matrix norm and
+derivative bounds supplied as explicit hypotheses. The uniform matrix
+identification itself is not yet a Lean theorem.
+
+### Diffusion pays the full strain-receiver gradient
+
+For a pure strain increment H, with omega and P_hat fixed, the original
+branch Hessians are at most `20r||H||^2` and `(508/21)r||H||^2`.
+The completion contributes at most `576Q||H||^2`. Their strain gradients
+have norms at most `212Q^(3/2)` and `217Q^(3/2)`. Since rho>=48Q^2,
+the radial Hessian formula gives
+
+```text
+D2_SS Psi[H,H] <=3200Q||H||_F^2,
+||partial_S Psi||_F^2<=93000Q^3.
+```
+
+For `T=partial_S Psi`, positive-Hessian Cauchy--Schwarz therefore gives
+
+```text
+||d T[(E,L)]||_F^2<=3200Q D2 Psi[(E,L),(E,L)].
+```
+
+This controls the derivative with pressure and vorticity varying together.
+It is not restricted to an aligned model or a frozen direction.
+Define the actual local diffusion loss
+
+```text
+D_Psi=nu sum_j D2 Psi[(partial_j B,partial_j P_hat),(...)]>=0.
+```
+
+For the existing differentiable excess, z=Psi/h, put
+`a=(1-b^2/z^2)_+`, `M=a T`, and
+`J=nu h (2b^2/z^3)|grad z|^2` on z>b, zero otherwise.
+The squared product rule and `z phi_b''(z)<=2` yield
+
+```text
+(nu/Q)||T||^2|grad a|^2 <=3875 J,
+(nu/Q)a^2||grad T||^2 <=3200 a D_Psi,
+(nu/(8000Q))||grad M||_F^2 <= J+a D_Psi.
+```
+
+At the threshold the first derivative of the excess is continuous, so
+there is no interface value jump. For kappa>=0 the same constants work
+with T multiplied by exp(-kappa t) and D_Psi by exp(-kappa t).
+`PressureDiffusionCompletion.full_receiver_gradient_paid` certifies the
+last scalar combination, retaining the explicit hypotheses. The spatial
+matrix and weak-PDE application are analytic.
+
+The actual pressure observation satisfies
+`D P_hat=K[-u tensor grad p-grad p tensor u]+[u.grad,K](u tensor u+C)` for the
+fixed convolution observer K. Its explicit heat source cancels with
+the retained C equation. Thus the chain-rule diffusion above is the
+complete explicit local viscosity loss of Psi. Reaction and transport
+commutators are still part of its physical production.
+
+### What this pays, and the remaining history question
+
+This local norm has weight 1/Q. The earlier nonlocal memory-pressure norm
+uses `tr(H) grad(q_M).H grad(q_M)`, with `H=eta_mem I+C` and
+`-Delta q_M=div div M`. No comparison of that anisotropic pressure norm
+with the new local payment has been proved. Finite trace mass of C does
+not by itself supply such a comparison.
+
+The positive completion also adds pure-gradient and observed-pressure
+reaction. These may be expensive: observed pressure includes memory
+pressure, whose derivatives are not bounded by trace mass alone. They
+must remain in the full signed production; the completion does not pay
+them or prove equivalence with the earlier history target. That target
+remains available independently.
+
+For the completed variant, let P_X be the actual chain-rule production
+of X=exp(-kappa t)Psi before subtracting its positive local diffusion
+D_X=exp(-kappa t)D_Psi. The named sufficient OPEN estimate is a
+datum-fixed bound on
+
+```text
+integral_0^tau (H-t) integral
+  [a P_X-c_b h Q_geom-a D_X-J] <= A(u0,nu,H,...),  tau<=H.
+```
+
+It would bound the integrated excess and its terminal remainder. The
+new lemma supplies a concrete local payment inside this expression.
+It does not establish its uniform signed bound over actual smooth
+prefixes or prevent indefinite regeneration by mutually amplifying parents.
+
+The previously controlled stochastic mixing history remains a consumer.
+Its actual fluid and memory pressure vanish, `r=|omega|^2`, and
+`r<=L^2exp(-2nu t)` with `L^2=A^2+B^2+(AB/nu)^2`. The far-field
+offset is `Psi_inf=1+48sqrt(2)sigma^2`. The norm's Lipschitz inequality
+and the branch bounds give
+
+```text
+Psi-Psi_inf<=192sigma r+107r^2,
+integral_0^infinity integral F_b
+  <=96sigma L^2/nu+107L^4/(4nu),
+```
+
+for b fixed above the initial envelope and offset, on normalized periodic
+volume. This is an analytic full-history consequence of the already
+identified stochastic parent bound A/nu. Its triangular autonomy still
+does not model mutual parent amplification.
+
+The forced filter also persists: coercivity and a finite completed excess
+would supply the actual capacity criterion that the imported forced
+singularity violates. This does not identify which individual new
+production term diverges on that construction.
+
+The checker retains every Fourier output and independently checks the
+initial PDE tangent, memory correction, coupled Hessian, completion
+derivative, scalar coefficients and preserved mixing allowance. It does
+not evolve arbitrary flows or certify a recurrent-history bound.
+
+```sh
+python3 -O labs/pressure_diffusion_completion.py
+```
