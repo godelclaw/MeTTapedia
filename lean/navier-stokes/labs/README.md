@@ -7062,6 +7062,59 @@ enclosure. This stronger candidate leaves payment of arbitrary signed
 production histories open; it does not assert equivalence with the weaker
 unaugmented excess criterion.
 
+### Full canonical receiver derivative and nonlocal projection
+
+The same diagnostic now retains both terms of the added canonical receiver
+`N=2aP`, with `a=(1-b^2/z^2)_+`, `z=Phi/h`, and `c=2b^2/z^3` on the active
+branch and zero otherwise:
+
+```text
+partial_j N=2a partial_j P+2P c partial_j z,
+nu |partial_j N|^2 <=8nu a|partial_j P|^2+16J_j,
+J_j=nu h c|partial_j z|^2.
+```
+
+This pointwise payment uses `|P|²<=Phi=hz` and `zc<=2`. It makes no division
+by `a`. The diagnostic checks every sampled point and forms the literal
+receiver divergence from this whole jet. It then applies the full discrete
+orthogonal gradient projection without a Galerkin mask; Parseval supplies
+the projection norm. The Helmholtz pressure component has the negative
+sign corresponding to `-Delta q_N=div div N`. Its norm satisfies
+
+```text
+nu ||grad q_N||_2^2 <=nu ||div N||_2^2
+                  <=24nu integral a|grad P|^2+48 integral J.
+```
+
+`WholeSpacePressureReceiver` certifies the actual whole-space product rule
+almost everywhere, local Lipschitz regularity of the receiver, its `L²`
+membership, derivative integrability and this **unweighted** projection
+payment. The ratio's Lipschitz modulus establishes differentiability and
+does not occur in the cost. The selector is Lipschitz, not generally `C¹`;
+the minimum at zero handles the cutoff level without a null-level-set
+assumption. The weak Poisson interpretation additionally uses integration
+by parts for the Lipschitz receiver, an analytic identification here. This
+does not pay the anisotropic memory-weighted norm or signed histories.
+
+On the saved `96^3` state at `t=1.5`, independent quadrature gives:
+
+| Quantity | `192^3` | `208^3` |
+| --- | ---: | ---: |
+| Literal receiver derivative cost | 0.20090249 | 0.20030063 |
+| Native diffusion majorant | 6654.71160 | 6676.18654 |
+| Receiver divergence cost | 0.13021713 | 0.12954801 |
+| Projected pressure-gradient cost | 0.08997961 | 0.08982153 |
+| Normalized weak-test residual | 0.00920544 | 0.00165355 |
+
+The weak test chooses a nonzero low Fourier moment of the actual receiver,
+among frequencies with components at most four, and aligns its phase. Both
+grids choose `(3,-1,2)`. At `208^3`, the two entry-`00` moments are
+`-0.01712019` and `+0.01729181`; the discrepancy is quadrature error across
+the cutoff. A first arbitrary test vanished by symmetry and was replaced.
+This meaningful test supports the derivative implementation; it is neither
+a rigorous weak-PDE verification nor a continuum enclosure. No new
+evolution or time-integrated history estimate is supplied by this diagnostic.
+
 For the saved `96^3` prefix at `t=1.5`, the `192^3` and `208^3` diagnostic
 grids give:
 

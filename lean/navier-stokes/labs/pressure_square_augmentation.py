@@ -125,6 +125,28 @@ def diagnose(flow, state, t, diagnostic_n):
     memory_grad2 = np.zeros_like(r)
     base_diffusion = np.zeros_like(r)
     selection_diffusion = np.zeros_like(r)
+    receiver_gradient_cost = np.zeros_like(r)
+    receiver_payment = np.zeros_like(r)
+    receiver_divergence = np.zeros_like(u)
+    # A low Fourier test probes the weak product rule across the active
+    # boundary. The receiver is continuous; its derivative need not be.
+    # Use a nonzero retained low moment of the actual receiver. An
+    # arbitrarily chosen moment can vanish by symmetry and prove nothing.
+    receiver00_hat = flow.fft(2*weight*P[..., 0, 0])/flow.n**3
+    candidate = np.all(abs(flow.K) <= 4, axis=-1) & (flow.K[..., 0] > 0)
+    strongest = np.unravel_index(np.argmax(np.where(candidate, abs(receiver00_hat), 0)),
+                                receiver00_hat.shape)
+    qtest = flow.K[strongest].copy()
+    weak_phase = float(np.angle(receiver00_hat[strongest]))
+    weak_amplitude = float(abs(receiver00_hat[strongest]))
+    del receiver00_hat, candidate
+    grid = np.arange(flow.n)*2*np.pi/flow.n
+    test_phase = sum(qtest[j]*grid.reshape(tuple(flow.n if k == j else 1
+                                               for k in range(3)))
+                     for j in range(3))
+    test_phase += weak_phase
+    test_sin, test_cos = np.sin(test_phase), np.cos(test_phase)
+    weak_moments, weak_scales, weak_left, weak_right = [], [], [], []
     for j in range(3):
         E, L = flow.derivative(B, j), flow.derivative(Ph, j)
         PP, CP = flow.derivative(P, j), flow.derivative(PC, j)
@@ -137,9 +159,42 @@ def diagnose(flow, state, t, diagnostic_n):
         pressure_grad2 += dot(PP, PP)
         memory_grad2 += dot(CP, CP)
         base_diffusion += flow.nu*ddPsi
-        selection_diffusion += flow.nu*h*curvature*dz*dz
+        Jj = flow.nu*h*curvature*dz*dz
+        selection_diffusion += Jj
+        Njet = (2*weight[..., None, None]*PP
+                +2*(curvature*dz)[..., None, None]*P)
+        jet_cost = flow.nu*dot(Njet, Njet)
+        jet_payment = 8*flow.nu*weight*dot(PP, PP)+16*Jj
+        if np.min((jet_payment-jet_cost)/np.maximum(1, jet_payment)) < -2e-12:
+            raise ArithmeticError('actual receiver-gradient diffusion payment fails')
+        receiver_gradient_cost += jet_cost
+        receiver_payment += jet_payment
+        receiver_divergence += Njet[..., :, j]
+        for i in range(3):
+            left = Njet[..., i, j]*test_sin
+            right = 2*weight*P[..., i, j]*qtest[j]*test_cos
+            weak_moments.append(float(np.mean(left+right)))
+            weak_scales.append(float(np.mean(abs(left)+abs(right))))
+            weak_left.append(float(np.mean(left)))
+            weak_right.append(float(np.mean(right)))
         Qgeom += (flow.nu/3)*(np.trace(Hj @ Hj, axis1=-2, axis2=-1)
                                   -np.trace(Hj, axis1=-2, axis2=-1)**2/3)
+    # Apply the full discrete orthogonal gradient projection to the
+    # sampled literal divergence. There is no Galerkin mask in this test.
+    divergence_hat = flow.fft(receiver_divergence)
+    projected_hat = -flow.K*flow.inv[..., None]*np.sum(
+        flow.K*divergence_hat, axis=-1)[..., None]
+    projected_energy = float(np.sum(abs(projected_hat)**2)/flow.n**6)
+    divergence_energy = float(np.mean(np.sum(receiver_divergence**2, axis=-1)))
+    projection_slack = divergence_energy-projected_energy
+    if projection_slack < -2e-12*max(1, divergence_energy):
+        raise ArithmeticError('actual discrete pressure projection is not contractive')
+    if 3*float(np.mean(receiver_gradient_cost))-flow.nu*divergence_energy < -2e-12:
+        raise ArithmeticError('receiver divergence Cauchy--Schwarz estimate fails')
+    weak_relative = max((abs(a)/b if b > 1e-14 else abs(a))
+                        for a, b in zip(weak_moments, weak_scales))
+    del divergence_hat, projected_hat, receiver_divergence, Njet, Jj
+    del jet_cost, jet_payment, left, right, test_phase, test_sin, test_cos
     new_diffusion = base_diffusion+2*flow.nu*pressure_grad2
     pressure_lower = flow.nu*((56/5)*observer_grad2+2*pressure_grad2)
     local_slack = (33/56)*pressure_lower-flow.nu*memory_grad2
@@ -195,6 +250,21 @@ def diagnose(flow, state, t, diagnostic_n):
             'selected_extra_transport_commutator': mean(weight*extra_transport),
             'selected_extra_viscous_source': mean(weight*extra_viscous),
             'selected_weight_gradient_diffusion': mean(selection_diffusion),
+            'literal_receiver_gradient_cost': mean(receiver_gradient_cost),
+            'literal_receiver_gradient_payment': mean(receiver_payment),
+            'literal_receiver_gradient_payment_ratio':
+                mean(receiver_gradient_cost)/mean(receiver_payment)
+                if mean(receiver_payment) > 0 else None,
+            'receiver_divergence_cost': flow.nu*divergence_energy,
+            'receiver_pressure_projection_cost': flow.nu*projected_energy,
+            'receiver_projection_unscaled_slack': projection_slack,
+            'receiver_weak_test_mode': list(map(int, qtest)),
+            'receiver_weak_test_phase': weak_phase,
+            'receiver_weak_test_amplitude': weak_amplitude,
+            'receiver_weak_test_derivative_moments': weak_left,
+            'receiver_weak_test_undifferentiated_moments': weak_right,
+            'receiver_weak_test_moments': weak_moments,
+            'receiver_weak_test_relative_residual': weak_relative,
             'signed_augmented_excess_PDE_expression': mean(signed),
             'scope': 'padded full-PDE expression on saved Galerkin slice; '
                      'no continuum enclosure or arbitrary-history payment'}

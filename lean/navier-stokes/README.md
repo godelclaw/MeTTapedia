@@ -665,6 +665,41 @@ production. This does not refute the candidate's integrated history bound,
 and the new diffusion payment does not establish that bound. Time evolution,
 memory construction and the full physical matrix Hessian remain analytic.
 
+`WholeSpacePressureReceiver` pays the full spatial derivative of the added
+canonical receiver `N=2aP`, including the derivative of its selector. For
+`z=Phi/h`, `a=(1-b^2/z^2)_+` and active curvature `c=2b^2/z^3`, it proves
+
+```text
+partial_k N = 2a partial_k P + 2P c partial_k z       almost everywhere,
+nu integral |grad N|^2 <=8nu integral a|grad P|^2+16 integral J,
+J=nu h c|grad z|^2.
+```
+
+The weight has a globally Lipschitz extension. Its minimum at zero handles
+the cutoff level without assuming that level set has measure zero. The
+actual receiver is locally Lipschitz and belongs to `L²`; the derivative
+integrability is concluded from the native diffusion payment. Ratio
+regularity, `|P|²<=hz` and instantaneous integrability of `J` are explicit.
+The ratio's Lipschitz modulus does not enter the payment, and there is no
+division by the selector. Retaining the canonical pressure square supplies
+`|P|²<=Phi` when the previous observable is nonnegative.
+
+The module also constructs the actual `L²` Helmholtz pressure component of
+the receiver divergence and proves
+
+```text
+nu ||grad q_N||_2^2 <=24nu integral a|grad P|^2+48 integral J.
+```
+
+Its sign agrees with `-Delta q_N=div div N`. The estimate is **unweighted**;
+it does not pay the anisotropic memory-weighted pressure norm. Identification
+with the weak Poisson potential uses the locally Lipschitz weak derivative
+interpretation, which is analytic here; the Lean theorem constructs the
+pressure component directly from the literal almost-everywhere divergence.
+The weak/time PDE chain rule and the signed allowance for arbitrary parent
+histories remain open. This is a further spatial payment for the stronger
+sufficient observable, not a global reserve certificate.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
