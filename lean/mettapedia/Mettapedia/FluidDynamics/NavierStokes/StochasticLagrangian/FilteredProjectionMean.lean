@@ -112,7 +112,7 @@ theorem hasDerivAt_meanCorrectedEnergy {ν T B : ℝ} {u₀ : FourierVelocity}
         (filteredVelocity χ (infiniteVelocityRHS ν (s.coefficients t))) x) t := by
   have hs (v : FourierVelocity) (q : Wavevector) (hq : q ∉ P) : filteredVelocity χ v q = 0 := by
     simp [filteredVelocity, hcut q hq]
-  apply CompactMeanContinuousRate.hasDerivAt_integral
+  apply CompactMeanContinuousRate.hasDerivAt_integral volume
     (fun τ x ↦ correctedDensity δ κ (filteredVelocity χ (s.coefficients τ)) x)
     (fun τ x ↦ correctedDensityRate δ κ (filteredVelocity χ (s.coefficients τ))
       (filteredVelocity χ (infiniteVelocityRHS ν (s.coefficients τ))) x) 0 T t ht

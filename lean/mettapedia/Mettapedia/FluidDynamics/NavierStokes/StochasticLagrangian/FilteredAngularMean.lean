@@ -58,7 +58,7 @@ theorem hasDerivAt_correctedEnergy {ν T B : ℝ} {u₀ : FourierVelocity}
     funext τ
     exact integral_correctedDensity_eq κ P _ (hs _)
   rw [← he]
-  apply CompactMeanContinuousRate.hasDerivAt_integral
+  apply CompactMeanContinuousRate.hasDerivAt_integral volume
     (fun τ x ↦ correctedDensity κ (filteredVelocity χ (s.coefficients τ)) x)
     (fun τ x ↦ correctedDensityRate κ (filteredVelocity χ (s.coefficients τ))
       (filteredVelocity χ (infiniteVelocityRHS ν (s.coefficients τ))) x) 0 T t ht

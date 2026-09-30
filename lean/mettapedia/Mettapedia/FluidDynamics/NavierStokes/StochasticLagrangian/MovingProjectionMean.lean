@@ -120,7 +120,7 @@ theorem hasDerivAt_mean {ν T B : ℝ} {u₀ : FourierVelocity}
         (filteredVelocity χ (infiniteVelocityRHS ν (s.coefficients t))) x) t := by
   have hs (v : FourierVelocity) (q : Wavevector) (hq : q ∉ P) : filteredVelocity χ v q = 0 := by
     simp [filteredVelocity, hcut q hq]
-  apply CompactMeanContinuousRate.hasDerivAt_integral
+  apply CompactMeanContinuousRate.hasDerivAt_integral volume
     (fun τ x ↦ correctedDensity (ν ^ 2 * κ τ ^ 2 / 3) (κ τ)
       (filteredVelocity χ (s.coefficients τ)) x)
     (fun τ x ↦ movingRate ν (κ τ) (dκ τ) (filteredVelocity χ (s.coefficients τ))
