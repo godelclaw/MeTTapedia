@@ -62,8 +62,17 @@ cofaciality. The source-facing theorem returns both actual vertex rotations
 and exact predecessor/successor port return with the same orientation choice.
 The [audit](CycleBoundaryRecognitionAudit.lean) excludes the complete theorem
 and catalogue certificates. The inner-pentagon rotation is thus governed by
-a uniform law; the full pentagon/eleven-lobe attachment recognition and
-coverage are still open. Catalogue counts are unchanged.
+a uniform law. [CycleSpokeConnectivity](CycleSpokeConnectivity.lean) now derives
+the connected complement when all spokes meet one connected outer set.
+[ElevenLobeSpokeOrder](ElevenLobeSpokeOrder.lean) computes the actual outer
+return, including the longer closing gap, and uses opposite shore order to
+force the pentagon's matching to be a cyclic shift or reflected shift.
+Its direction agrees with every inner rotation. The explicit inputs remain
+the two disjoint cycles, bijective attachment at the five inward positions,
+and the alternating outer turns. The [eight-root audit](ElevenLobeSpokeOrderAudit.lean)
+excludes complete theorems and catalogue certificates. Full patch-isomorphism
+assembly and geometric supply/coverage are still open. Catalogue counts are
+unchanged.
 
 ## Independent corridor route — checkpoint of 22 September 2026
 

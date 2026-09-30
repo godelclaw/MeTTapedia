@@ -1,6 +1,6 @@
 # Compositional Four Colour: proof plan and current results
 
-Updated 29 September 2026. Original complete assembly: `b99eaf006`.
+Updated 30 September 2026. Original complete assembly: `b99eaf006`.
 The current assembly additionally consumes a shared joint-profile certificate
 for the diamond cores and a general boundary-split law transferring repair from
 configuration 2 to configuration 1.
@@ -124,8 +124,14 @@ In a spherical map with connected complement, a face-side invariant forces
 all local turns to agree, and computes the exact cyclic port return. Rotation
 and return order retain the same global orientation choice. This derives
 geometry needed for the inner pentagon without enumerating its 32 rotation
-assignments. The eleven-lobe attachment pattern and full patch recognition
-remain open; no further catalogue certificate has been removed.
+assignments. The [eleven-lobe spoke-order theorem](tube-example/README.md#forcing-the-pentagons-spoke-order)
+now derives the attachment order as well. Given disjoint inner and outer cycles,
+all five inner spokes at the five inward outer positions, and the alternating
+outer turns, the matching must be a cyclic shift or reflected shift. Its
+direction is the same choice that governs the inner rotations. The closing
+gap's extra face step is included. Constructing the complete literal-patch
+isomorphism and proving supply of this geometric arrangement remain open;
+no further catalogue certificate has been removed.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,

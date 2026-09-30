@@ -1,0 +1,125 @@
+{
+  "status": "Kernel-checked actual eleven-lobe spoke order. Full literal-patch isomorphism assembly and geometric supply/coverage remain open.",
+  "completed_utc": "2026-09-30T00:05:04.726738+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "fc4822b7ad683a72c048c221d133421ab8a5eb17",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleSpokeConnectivity",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleSpokeConnectivity.lean",
+      "source_sha256": "13e5e5afe5cf50f61cf412f6776ccab669f0a04e3aaa2bff00cf1bbb7b671524",
+      "olean_sha256": "5ed899f37844808715883c3542ffea1501b418dab516ab6e4f9063677a8c4e57",
+      "olean_bytes": 118864,
+      "reported_build_seconds": 2.6
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeSpokeOrder.lean",
+      "source_sha256": "66822f5183ae27901ad579a721de9f94100d06ab7824da1f908385d134c211e3",
+      "olean_sha256": "df48b06f7fdfc8df87da52d2fe61776715b0a7da0e2ca7dd3d5c7cbb3836f46a",
+      "olean_bytes": 1112792,
+      "reported_build_seconds": 5.1
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrderAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeSpokeOrderAudit.lean",
+      "source_sha256": "73b28d3db8bfe42fab55e28027f0741293595e3ef70789fc2b3517de31e78bca",
+      "olean_sha256": "eb16f0bfb97c72e2b1aedad2f36f06f333220eb2208a6559fe7b54612ce41179",
+      "olean_bytes": 3392,
+      "reported_build_seconds": 5.6
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.CycleSpokeConnectivity.connected_complement_of_boundary_reachable",
+      "Mettapedia.GraphTheory.FourColor.CycleSpokeConnectivity.exterior_connected_of_spokes_in_connected_side",
+      "Mettapedia.GraphTheory.FourColor.CycleSpokeConnectivity.uniform_geometry_of_spokes_in_connected_side",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.eq_shift_or_reflection_of_step",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.exterior_connected",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.boundary_return",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.inner_geometry",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.inner_geometry_affine"
+    ],
+    "combined_dependency_closure": 21053,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual cubic incidence",
+      "exterior connectivity from connected spoke carrier",
+      "uniform inner cycle orientation",
+      "exact three/four-step complementary return",
+      "opposite planar-bond orders",
+      "shared orientation and signed matching formula"
+    ],
+    "excluded_dependencies": "Complete Four Colour endpoints, original catalogue certificates and diamond reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrderAudit",
+      "working_directory": "lean/mettapedia",
+      "jobs": 3258,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "input": "Two disjoint graph cycles of lengths eleven and five; an arbitrary bijective matching of inner spokes to outer positions 1,3,5,7,9; alternating outer turns with two adjacent outward positions at the closing gap. Ambient connected spherical cubic simple graph, cyclic vertex rotations and two-sided faces.",
+    "inner_rotation_assumed": false,
+    "cyclic_spoke_order_assumed": false,
+    "connected_complement_assumed": false,
+    "tangle_isomorphism_assumed": false,
+    "outer_rotation_pattern_assumed": true,
+    "two_cycle_attachment_incidence_assumed": true,
+    "connectivity": "The connected outer cycle contains every inner spoke endpoint and therefore forces the entire inner complement to be connected.",
+    "outer_return": "j -> j - 1 on the five inward attachment positions",
+    "ordinary_gap_face_steps": 3,
+    "closing_gap_face_steps": 4,
+    "absence_of_intermediate_boundary_hits_proved": true,
+    "matching_formula": "sigma(i) = sigma(0) + i or sigma(i) = sigma(0) - i, according to the same Boolean choice controlling all inner rotations.",
+    "phase_choices": 5,
+    "shared_orientation_bits": 1,
+    "general_components": [
+      "Connected complement from a connected exterior attachment carrier, for arbitrary graphs/cycles.",
+      "Signed cyclic-step preservation determines a phase and direction, for any nonzero finite cyclic interface size."
+    ],
+    "existence_of_two_cycle_arrangement_proved": false,
+    "full_literal_patch_isomorphism_proved": false,
+    "new_strict_reduction_proved": false,
+    "colour_count_equivalence_proved": false,
+    "executable_history_transport_proved": false,
+    "coverage_proved": false
+  },
+  "program_evidence": {
+    "record": "tools/fourcolor/classical/lobe-spoke-order-probe.json",
+    "record_sha256": "674953949800953a966c6e4f9d69f502a5a387bf1f752c69696d9ef2b45b7c23",
+    "script": "tools/fourcolor/classical/lobe_spoke_order_probe.py",
+    "script_sha256": "94da3877bfe0854da46dc481dad17e9532f1319bbfd5dd0157880756220746a2",
+    "cases": 3840,
+    "kernel_certification_of_enumeration": false,
+    "rerun_this_checkpoint": false,
+    "reason": "The existing unchanged enumeration motivated the attack. The new theorem derives the matching constraint directly in actual source graphs under the stated hypotheses."
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "spoke_order_recognition_schemes_added": 1,
+    "potential_matching_permutations_before_order_constraint": 120,
+    "potential_local_turn_assignments_before_geometry": 32,
+    "remaining_joint_parameters": "One phase in Fin 5 and one Boolean orientation; they jointly determine matching and inner rotations.",
+    "finite_check_or_runtime_savings_in_complete_proof_claimed": false,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1
+  },
+  "cost_scope": "Reported Lake module times include elaboration and kernel checking. No isolated kernel timing or new complete-baseline replay is claimed.",
+  "next_obligations": [
+    "Construct the full sixteen-vertex patch isomorphism from the two-cycle incidence and the now-proved matching/rotation laws.",
+    "Consume the existing twelve-vertex strict reduction for the geometric family.",
+    "Derive the assumed attachment pattern from appropriate stopping-lobe hypotheses, prove broader supply/coverage and audit any certificate replacements."
+  ]
+}

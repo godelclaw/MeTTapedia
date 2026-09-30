@@ -533,11 +533,13 @@ complete Four Colour endpoints and catalogue certificates. The reusable
 [six-port theorem][six-port-connectivity] needs no embedding or colouring;
 the [twenty-vertex bound][vertex-lower-bound] counts actual quotient faces.
 
-The next missing theorem must derive exact recognition from independently
-specified alternating-lobe geometry, including the inner pentagon's incidence,
-rotation and port order. The 29 program-recognized examples do not prove that
-general implication. Coverage of the relevant stopping configurations remains
-open. The [measurement record][minimal-exterior-measurements] credits no
+Exact recognition must still be constructed from independently specified
+alternating-lobe geometry. The cycle and spoke-order results below now derive
+the inner rotation and attachment order under explicit two-cycle incidence
+hypotheses. They have not yet been assembled into the full tangle isomorphism.
+The 29 program-recognized examples do not prove general supply. Coverage of
+the relevant stopping configurations remains open. The
+[measurement record][minimal-exterior-measurements] credits no
 additional original configuration-certificate savings; the 22 terminal
 witnesses, nine answer-cover checks and one shared matching codec remain.
 Counts and executable recolouring histories are not asserted equivalent.
@@ -568,13 +570,14 @@ transporting graph incidence into an operational boundary summary while
 retaining the choice on which both representations depend.
 
 For the inner pentagon, this replaces a potential enumeration of 32 local
-rotation assignments with the uniform law. It does not yet determine how
-that pentagon attaches to the eleven-lobe. The [bounded experiment][spoke-order-probe]
+rotation assignments with the uniform law. The separate attachment-order
+argument is now proved below. The [bounded experiment][spoke-order-probe]
 fixes the outer lobe and tests all 120 spoke assignments and 32 inner rotation
 choices. Of 3,840 combinations, ten have the seven open faces required of
 this connected spherical shore. All ten become the literal patch after
-relabelling the inner vertices by their spokes. These are program checks;
-the general attachment-recognition implication is still open.
+relabelling the inner vertices by their spokes. The enumeration is program
+evidence; the following theorem derives its order constraint directly from
+actual spherical source geometry.
 
 The [kernel audit][cycle-recognition-audit] checks nine roots and 20,865
 dependency declarations, allowing only `propext`, `Classical.choice` and
@@ -584,8 +587,58 @@ and catalogue certificates. The [receipt][cycle-recognition-measurements]
 records source and artifact fingerprints. This is one uniform recognition
 law, with no additional original certificate removed and no assertion of
 colour-count or executable-history equivalence. The next geometric task is
-to derive the pentagon/lobe attachment order and consume the existing
-twelve-vertex strict reduction.
+to assemble the recognized incidence and attachment order into the full
+patch isomorphism and consume the existing twelve-vertex strict reduction.
+
+## Forcing the pentagon's spoke order
+
+The [spoke-order theorem][lobe-spoke-order] starts with two disjoint graph
+cycles: an eleven-cycle and a five-cycle. The five inner spokes meet outer
+positions 1, 3, 5, 7 and 9 in an arbitrary bijective order. The outer vertex
+turns alternate, with the two adjacent outward positions at the closing
+seam. No inner rotation, cyclic matching or tangle isomorphism is assumed.
+The source is a connected spherical cubic simple graph with cyclic vertex
+rotations and two-sided faces.
+
+First, [spoke connectivity][cycle-spoke-connectivity] proves that all exterior
+attachment vertices reaching one connected outer set forces the entire
+complement to be connected. The proof is ordinary graph theory and works
+for cycles of every length. Here the eleven-cycle supplies that connected
+outer set, so the inner-cycle orientation theorem applies without a separate
+complement hypothesis or distinct exterior attachment vertices.
+
+Next, trace the actual face path through that complement. The return moves
+from attachment `j` to `j - 1`. It takes three face steps across each ordinary
+gap and four across the closing gap. The proof checks that no intermediate
+dart is a boundary hit. Opposite planar-bond boundary orders then give
+
+```text
+inner return: i → i + 1 or i - 1
+outer return: j → j - 1
+spoke matching σ: σ(i ± 1) = σ(i) + 1
+```
+
+An induction valid for any cyclic interface length turns the last equation
+into `σ(i) = σ(0) + i` or `σ(i) = σ(0) - i`. Crucially, the same orientation
+witness controls this formula and all actual inner vertex rotations. Thus
+one argument rules out the other attachment/rotation combinations without
+enumerating 120 permutations and 32 turn assignments. It applies to every
+ambient graph satisfying these local incidence and embedding hypotheses.
+
+The [eight-root audit][lobe-spoke-order-audit] checks 21,053 dependency
+declarations, permits only the three standard axioms, and excludes complete
+Four Colour endpoints and original catalogue certificates. The
+[receipt][lobe-spoke-order-measurements] records exact source and artifact
+fingerprints. The final module build took 5.1 seconds and its audit 5.6 seconds;
+these include elaboration and kernel checking.
+
+This settles the attachment-order component of recognition. Constructing
+the full sixteen-vertex tangle isomorphism, deriving the stated two-cycle
+arrangement from a stopping lobe, and proving coverage remain separate
+obligations. The existing strict reduction still needs that isomorphism.
+The complete proof retains 633 configurations and 630 original certificates;
+this result removes no additional certificate and makes no assertion about
+preserving colouring counts or executable recolouring histories.
 
 ## Scope and verification
 
@@ -687,3 +740,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [minimal-exterior-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-minimal-exterior-measurements.json
 [six-port-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SixPortBoundaryConnectivity.lean
 [vertex-lower-bound]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SphericalVertexLowerBound.lean
+
+[cycle-spoke-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleSpokeConnectivity.lean
+[lobe-spoke-order]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeSpokeOrder.lean
+[lobe-spoke-order-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeSpokeOrderAudit.lean
+[lobe-spoke-order-measurements]: ../../../../tools/fourcolor/classical/eleven-lobe-spoke-order-measurements.json

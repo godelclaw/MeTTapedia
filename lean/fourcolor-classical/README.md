@@ -346,7 +346,14 @@ cycle edges and outward spokes in a spherical cubic source with connected
 complement. It works at every length and retains one shared orientation
 choice. The [audit receipt](../../tools/fourcolor/classical/cycle-boundary-recognition-measurements.json)
 separates this uniform geometric law from the independent 3,840-case
-pentagon-spoke experiment. The complete eleven-lobe attachment recognition,
+pentagon-spoke experiment. The [spoke-order theorem](../mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeSpokeOrder.lean)
+now proves its order constraint in actual spherical sources: two disjoint
+cycles with the five inner spokes at the inward lobe positions and the
+stated outer turns force a cyclic or reflected matching, coupled to the
+inner rotations. Complement connectivity is derived from the outer cycle;
+the longer closing gap is included in the exact return. The
+[receipt](../../tools/fourcolor/classical/eleven-lobe-spoke-order-measurements.json)
+records the eight-root audit. The full patch-isomorphism assembly, supply,
 coverage and further certificate replacement remain open.
 
 The hypermap dictionary preserves actual dart permutations, components and

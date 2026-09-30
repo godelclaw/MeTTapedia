@@ -1190,8 +1190,8 @@ The formal result follows a uniform route, at arbitrary cycle length:
 actual graph vertices and neighbours. Spherical geometry and a connected
 complement force uniform local rotations and determine the exact port
 return with the same global orientation choice. No local rotation or
-isomorphism is a field of the graph input. The inner pentagon's attachment
-to the outer lobe remains a separate obligation.
+isomorphism is a field of the graph input. Its attachment order to the
+outer lobe is now established by the separate theorem below.
 
 ```sh
 lake build Mettapedia.GraphTheory.FourColor.CycleBoundaryRecognitionAudit
@@ -1201,3 +1201,25 @@ Run this in `lean/mettapedia`. The nine-root audit checks 20,865 dependency
 declarations and excludes the complete Four Colour theorem and catalogue
 certificates. `cycle-boundary-recognition-measurements.json` records exact
 scope, source/artifact fingerprints and unchanged compression counts.
+
+The next formal step, `ElevenLobeSpokeOrder.Incidence.inner_geometry_affine`,
+derives that the spoke matching is a shift or reflected shift, with the same
+direction as the actual inner rotations. The graph input supplies two disjoint
+cycles and an arbitrary bijective matching of the inner spokes to the five
+inward outer positions. The outer turns are stated geometrically; no inner
+rotation or cyclic matching is assumed. The outer cycle supplies connectedness
+of the inner complement. The exact complementary face return takes three
+steps across ordinary gaps and four across the closing gap. Opposite
+planar-bond orders force the matching formula.
+
+```sh
+lake build Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrderAudit
+```
+
+Run this in `lean/mettapedia`. The eight-root audit checks 21,053 dependency
+declarations with only standard axioms and no catalogue or complete-theorem
+dependency. `eleven-lobe-spoke-order-measurements.json` records its source and
+artifact hashes. This proves the order implication geometrically; it does not
+turn the program enumeration into a kernel-certified finite classifier.
+The full literal patch isomorphism and supply/coverage remain open. No further
+original certificate is removed. The old probe inputs are unchanged.
