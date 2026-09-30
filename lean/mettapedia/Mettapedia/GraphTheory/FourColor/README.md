@@ -66,6 +66,16 @@ every smaller colouring. No local isomorphism, vertex injection or exterior
 connectivity is supplied. The shared all-width colouring law is reused;
 the finite certificate checks geometry. Separation at other widths and
 global occurrence coverage remain open obligations.
+The [two-row wiring law](ZigzagTwoRowWiring.lean) now proves the colouring
+component of a shorter stopping-case operation: at every width `k ≥ 3`,
+two rows accept any nonzero word and its cyclic shift. Actual closed
+reconstruction retains every exterior dart colour. The
+[residual replay](../../../../../tools/fourcolor/classical/residual-coverage-probe.json)
+finds a 240-vertex fullerene outside the current diamond, cap and three-row
+tube patterns, and independently checks a 240→168 shifted free-wire
+replacement with complete colouring reconstruction. The
+[audit](ZigzagTwoRowWiringAudit.lean) checks the uniform colouring component;
+general free-wire replacement geometry and global coverage remain separate.
 Independent replay includes an all-five/six 96→60 example and the earlier
 guarded GP(2,0) 80→50 example. No further catalogue dependency is removed.
 See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).

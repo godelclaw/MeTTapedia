@@ -74,6 +74,18 @@ disconnected odd-width exteriors outside this face pattern and global
 coverage remain open. The complete classical catalogue
 and certificate counts are unchanged.
 
+The [combined occurrence replay](tube-example/README.md#a-residual-map-and-the-two-row-stopping-case)
+now identifies a concrete residual: dual-and-truncation of GP(2,0) produces
+a 240-vertex map with no matching diamond or padded cap, and at most two
+hexagonal rows at every alternating orbit. This excludes universal coverage
+by the presently recognized patterns in that unconditional fullerene scope.
+A shifted free-wire replacement independently reduces this example to
+168 vertices and reconstructs all original edge colours. The new uniform
+colouring law proves that two rows accept every nonzero word paired with
+its one-port shift, and reconstructs actual closed witnesses in any compatible
+exterior. General free-wire replacement geometry remains open. The example
+does not refute a minimality-dependent mechanism or remove a catalogue entry.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

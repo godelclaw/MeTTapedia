@@ -1,0 +1,123 @@
+{
+  "status": "Kernel-checked uniform two-row colouring reconstruction; finite residual and physical replacement example checked independently. General free-wire replacement geometry remains open.",
+  "completed_utc": "2026-09-30T15:53:06.315611+00:00",
+  "build_base_revision": "d546a8933862ae27f0b7a1445749954392dc34a5",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiring",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiring.lean",
+      "source_sha256": "c8b246178170ee8ee7853c59fdd7cbdc24020f72abc83614294ee7c024421417",
+      "source_bytes": 3346,
+      "olean_sha256": "c71b75820157c8afef64819d6fdb60b5981778405e304ad04dc2257b52ba3289",
+      "olean_bytes": 166128,
+      "reported_build_seconds": 3.1
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiringAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiringAudit.lean",
+      "source_sha256": "d15b6946fa2d90ed6fa9cd1ea88cb2f8db0b63b98dd90adb922589e07d7d4ea9",
+      "source_bytes": 2618,
+      "olean_sha256": "62b19773f8b5b5dc6fdbd288128c07bbb6c9f885882913fc6575f76e1451607c",
+      "olean_bytes": 3568,
+      "reported_build_seconds": 3.2
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "bbda1847a5e30fc58b8691905c2997a1f78e08f58539a3ff38efdaeb12d9fc46",
+      "source_bytes": 33152,
+      "olean_sha256": "f154dd8fd1dc5cc2be1aa536ddca94af2691f7e8fd5a46a90e27d336c80046c8",
+      "olean_bytes": 38840,
+      "reported_build_seconds": 7.2
+    }
+  ],
+  "audit": {
+    "root_count": 3,
+    "combined_dependency_closure": 7004,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "full words use the existing local cursor construction",
+      "words missing a colour use the constant cursor construction",
+      "the shared first ring and its complement accept a cyclic shift",
+      "actual closed reconstruction retains every exterior dart colour"
+    ],
+    "excluded": [
+      "complete classical FourColor namespace",
+      "classical integration MettapediaFourColor namespace",
+      "finite tube-stabilization certificates",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11082,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel times; cached targets have null timing. No isolated kernel timing or speedup claim.",
+    "replay": "python3 tools/fourcolor/classical/residual_coverage_probe.py",
+    "optimized_assertion_bypass_rejected": true
+  },
+  "mathematical_scope": {
+    "widths": "Every integer k >= 3.",
+    "input": "Every nonzero word x of length k.",
+    "output": "The same x shifted by one cyclic port.",
+    "actual_closed_consumer": "Any finite open exterior with a proper nonzero colouring and the stated shifted port equalities reconstructs a genuine closed colouring around the two literal rows.",
+    "exterior_colour_retention": "Pointwise at every exterior dart, including the seam.",
+    "general_free_wire_geometry_proved": false,
+    "strict_reduction_proved": false,
+    "global_occurrence_coverage_proved": false,
+    "minimality_dependent_coverage_refuted": false,
+    "colouring_counts_preserved": false,
+    "executable_history_equivalence_proved": false
+  },
+  "independent_replay": {
+    "record": "residual-coverage-probe.json",
+    "record_sha256": "5741d8a6beb0f9d209772a8612a789453e4e532cac195476e808528d3b667f1d",
+    "maps": 8,
+    "covered_by_current_occurrence_union": 7,
+    "residual_vertices": 240,
+    "residual_simple_orbits": 40,
+    "residual_width": 18,
+    "maximum_complete_rows": 2,
+    "whole_map_example_vertices_removed": 72,
+    "smaller_coloured_edges": 252,
+    "reconstructed_original_edges": 360,
+    "short_dual_circuits_checked": 1332,
+    "cyclic_five_circuits_with_small_shore": 12,
+    "source_sha256": {
+      "tools/fourcolor/classical/residual_coverage_probe.py": "54d514da9122d210db13f9e308b88aa5e5d2cdd104ea25091aab90ccaf840f8d",
+      "tools/fourcolor/classical/alternating_lobe_probe.py": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8",
+      "tools/fourcolor/classical/alternating_cycle_probe.py": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e",
+      "tools/fourcolor/classical/diamond_supply_probe.py": "4058087de71cf3b2c7eece613d0ffe55172587d8ec8f8e4e7f29839a0b07f44d",
+      "tools/fourcolor/classical/hexagonal_collar_probe.py": "ed7ac5133c962f6da27e3f86b0baff39986ec2214f3e86b1655b784ba4700d23",
+      "tools/fourcolor/classical/padded_cap_recognition_probe.py": "5ebe4d908b2d2bc7f5f843b1239b358282551e7f1157142b6206e6c8662af4aa",
+      "tools/fourcolor/classical/padded_cap_geometry_probe.py": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a",
+      "tools/fourcolor/classical/padded_cap_probe.py": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba",
+      "tools/fourcolor/classical/twisted_tube_probe.py": "cd011330f51c62d86634305e460e486ec6a62087cac335bff6fb0f9c538470bc",
+      "tools/fourcolor/classical/hexagonal_seam_probe.py": "ca16ec566f36ac57e6f0be9c77eebf65620f7a95034eb73420e2c44b3081b9b6",
+      "tools/fourcolor/v24_goldberg.py": "df33e20166e60fbf605ffec9820d4ac3e3218a26ed6efd4e913e1b973231e90e",
+      "tools/fourcolor/v24_annular_census.py": "a052fa1bdfe91b50e79503eb69b482b5c7117889ffc0900093958ab727bfc7c8"
+    }
+  },
+  "compression": {
+    "new_uniform_colouring_components": 1,
+    "new_uniform_strict_reductions": 0,
+    "new_colouring_certificates": 0,
+    "original_configuration_certificates_replaced": 0,
+    "configurations_removed": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "integrated_into_complete_assembly": false
+  },
+  "remaining": [
+    "Prove the actual shifted free-wire construction and determine its exact exterior-component and cut hypotheses.",
+    "Prove class preservation and strict decrease, and consume the existing closed colouring reconstruction.",
+    "Recognize applicable stopping cases and prove their contribution to residual geometric coverage."
+  ]
+}

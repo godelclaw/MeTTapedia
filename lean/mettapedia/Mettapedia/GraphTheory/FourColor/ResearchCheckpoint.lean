@@ -3,6 +3,7 @@ import Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapRecognitionAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapExteriorAudit
 import Mettapedia.GraphTheory.FourColor.PentagonalPaddedCapAudit
+import Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiringAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand

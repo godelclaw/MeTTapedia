@@ -81,6 +81,29 @@ simultaneous operations. The flat route data comprises eight blocks and
 960 four-byte records, including 24 unused equal-vertex rows. No new
 colouring certificate or coverage reduction is credited.
 
+The [combined occurrence replay](residual-coverage-probe.json) inspects the
+four Goldberg controls and their explicit dual-and-truncate maps. Seven
+contain one of the current diamond, padded-cap or three-row tube patterns.
+The 240-vertex residual has none, although all forty alternating dart-phase
+orbits are simple. Their widths are eighteen, and their strips have one or
+two rows. The replay checks a shifted free-wire replacement giving a
+168-vertex connected bridgeless spherical cubic map, a proper colouring of
+its 252 edges, and reconstruction of all 360 original edges with every
+exterior dart colour retained. It also inspects all 1,332 simple dual
+circuits of lengths three through five: the twelve cyclic circuits have
+five edges and a five-vertex shore. These finite diagnostics are not kernel
+certificates of the universal cut or minimality hypotheses.
+
+The [two-row colouring receipt](two-row-wiring-measurements.json) records
+the independent Lean component: at every width `k ≥ 3`, two rings accept
+every nonzero word and its one-port shift, and compatible exterior witnesses
+glue into an actual closed colouring. It supplies no general free-wire
+replacement geometry and removes no catalogue or certificate dependency.
+
+```sh
+python3 tools/fourcolor/classical/residual_coverage_probe.py
+```
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

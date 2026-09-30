@@ -2014,3 +2014,61 @@ The coverage catalogue and original-certificate counts remain 633 and 630.
 [cap-pentagonal-reduction]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapReduction.lean
 [cap-pentagonal-probe]: ../../../../tools/fourcolor/classical/pentagonal-padded-cap-probe.json
 [cap-pentagonal-measurements]: ../../../../tools/fourcolor/classical/pentagonal-padded-cap-measurements.json
+
+## A residual map and the two-row stopping case
+
+A construction law has two linked meanings: it changes an actual graph,
+and its boundary relation states which colouring choices fit together.
+For two pieces with relations `R` and `S`, composition requires a shared
+middle word `z`: `R(x,z)` and `S(z,y)`. Both interior witnesses are retained.
+A reduction instead reconstructs the original piece from a simpler
+boundary contract. Such a contract can permit several choices; it need not
+be a single-valued function.
+
+The [combined occurrence replay][residual-probe] supplies a concrete next
+coverage obligation. Replacing every vertex of GP(2,0)'s dual by its cyclic
+neighbour polygon gives a 240-vertex spherical cubic map. It has no flanked
+diamond or recognized padded cap. All forty alternating dart-phase orbits
+are simple, of width eighteen. Twenty start one-row strips and twenty
+start two-row strips; none reaches the three rows required by the existing
+twisted-tube reduction. Thus the current occurrence predicates do not cover
+this actual map. This is finite program evidence in the unconditional
+fullerene domain, not a refutation of a minimality-dependent coverage law.
+
+The [new colouring theorem][two-row-colours] addresses precisely this
+stopping case. For every `k ≥ 3` and nonzero boundary word `x`, a first
+ring witness exists: a missing colour supplies a constant cursor, while
+the full-colour case uses the existing cursor construction. Its complement
+then gives
+
+```text
+R(x,z) and R(z,shift(x))  →  two rows accept (x,shift(x)).
+```
+
+One shared `z` composes the two genuine ring witnesses. The closed consumer
+reconstructs an actual Tait colouring in any compatible exterior and retains
+every exterior dart colour. The [audit and measurement record][two-row-receipt]
+exclude complete Four Colour endpoints and finite tube stabilization from
+the three proof roots. No new colouring table is introduced. Existence and
+pointwise colour retention are proved; colouring counts and executable
+history equivalence are not asserted.
+
+The independent replay deletes both width-eighteen rows in the residual
+map and joins left port `i+1` to right port `i`. The result has 168 vertices,
+is connected, bridgeless and spherical, and still has only five- and
+six-sided faces. A genuine colouring of its 252 edges reconstructs all
+360 original edges, retaining every exterior dart colour. The operation
+removes exactly `4·18 = 72` vertices and introduces none.
+
+This example guides the next general theorem: characterize when the
+shifted free-wire replacement preserves the actual map class, then consume
+the proved colour reconstruction and derive strict reduction. Its geometric
+proof must account for the exterior's components and cuts; the existing
+theorem for nonempty replacement tubes cannot simply be applied to an
+empty interior. Global coverage and catalogue replacement remain open.
+The ledger still has 633 coverage configurations and 630 original
+configuration-certificate dependencies.
+
+[residual-probe]: ../../../../tools/fourcolor/classical/residual-coverage-probe.json
+[two-row-colours]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTwoRowWiring.lean
+[two-row-receipt]: ../../../../tools/fourcolor/classical/two-row-wiring-measurements.json
