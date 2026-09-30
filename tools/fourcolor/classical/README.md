@@ -1371,9 +1371,10 @@ A central pentagon with consecutive neighbour lengths five, six, five gives
 the thirteen-vertex dual of configuration 2. The other two neighbour lengths
 are unrestricted. The actual occurrence and ordered colouring observation
 are proved; `DiamondProfileReducibility.repair002` supplies the shared repair.
-The context endpoint explicitly assumes physical Kempe closure of its
-seven-port exterior and one genuine exterior colouring. A strict replacement
-and unconditional exterior closure are not part of this checkpoint.
+The original recognition checkpoint left physical Kempe closure explicit.
+The uniform boundary theorem below now discharges that geometric premise.
+An initial genuine exterior colouring and a valid strict replacement remain
+separate obligations.
 
 `mixed-diamond-measurements.json` records 21 audit roots and 27,512 dependency
 declarations. The audit excludes the complete Four Colour endpoints, original
@@ -1393,3 +1394,41 @@ the others already separate under triangle-freeness. In the same 137 fixtures,
 the face scan finds 1,059 rooted occurrences, 792 central faces and 130 maps
 with the pattern. All scanned occurrences have seven actual ports. The scan
 does not certify each fixture's internal-six normal form or universal coverage.
+
+
+## Uniform matching codec and actual exterior closure
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.MixedDiamondExteriorClosureAudit
+```
+
+The matching-to-chromogram theorem is now uniform in boundary width. Its
+stack induction preserves the original paired endpoint choices and
+reconstructs every accepted answer by whole-component switches. It replaces
+the previous six-port enumeration. Uniform cyclic arithmetic also replaces
+the five-port arc classification; the planar separator supplies physical
+noncrossing in either boundary orientation.
+
+The actual seven-port mixed diamond consumes these results. Normal form
+supplies a connected exterior with no distinct-attachment assumption. Its
+proved boundary order discharges reference Kempe closure, so one genuine
+exterior colouring suffices for full reconstruction. A strict replacement
+supplying that initial colouring is not proved in this checkpoint.
+
+`uniform-kempe-measurements.json` records twenty audited roots, exact artifact
+hashes and separately measured classification and catalogue changes. The
+complete proof still retains 633 configurations and 630 original certificates.
+The audit excludes complete Four Colour endpoints, original certificates and
+the removed finite matching/arc translations from the new theorem chains.
+
+```sh
+python3 tools/fourcolor/classical/uniform_matching_probe.py
+```
+
+The independent replay checks all noncrossing involutions through width eight
+and all their chromograms' complete answer sets. It additionally checks 6,188
+ordered cyclic quadruples through width sixteen and the mixed diamond's
+literal connectedness, seven first-return arcs and Euler mass. These are
+bounded program checks; arbitrary-width correctness comes from the Lean
+induction. Neither the replay nor exterior closure implies global coverage.

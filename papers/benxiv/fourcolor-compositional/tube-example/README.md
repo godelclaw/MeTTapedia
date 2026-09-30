@@ -953,8 +953,8 @@ The remaining obligations are visible in the statements:
 | --- | --- |
 | Four actual face lengths give the full thirteen-vertex occurrence | Proved under the stated ambient normal form; minimality supplies that form |
 | The joint boundary observation transports the existing repair | Proved, retaining genuine whole-shore colouring witnesses |
-| Compatible interior and exterior assignments reconstruct the original map | Proved with physical Kempe closure and one initial exterior colouring explicit |
-| The actual seven-port exterior has that closure | Open; the present physical-to-reference bridge is specialized to six ports |
+| Compatible interior and exterior assignments reconstruct the original map | Proved from one initial exterior colouring; actual physical closure is now derived |
+| The actual seven-port exterior has that closure | Proved by the arbitrary-width matching codec and actual cyclic boundary geometry |
 | A valid strict replacement and whole-map decrease | Open; every introduced vertex must be counted |
 | The known local patterns cover the intended source class | Open |
 
@@ -970,9 +970,8 @@ and 630 original certificate dependencies.
 An [independent replay][mixed-probe] verifies the literal tables, ordered dual
 correspondence, all collision traces and actual face traversals. In the same
 137 fixtures it finds 1,059 rooted occurrences on 792 central faces in 130
-maps; every occurrence has seven outgoing ports. This motivates completing
-the exterior theorem, without claiming that the census establishes normal
-form or universal coverage. The assignment bijection concerns exact
+maps; every occurrence has seven outgoing ports. The census does not
+establish normal form or universal coverage. The assignment bijection concerns exact
 representation changes; it asserts neither count preservation under graph
 reduction nor an executable Kempe history.
 
@@ -1096,3 +1095,62 @@ reduction nor an executable Kempe history.
 [six-port-replacement]: ../../../../lean/fourcolor-classical/MettapediaFourColor/SixPortTreeReplacement.lean
 [diamond-probe]: ../../../../tools/fourcolor/classical/pentagonal-diamond-probe.json
 [diamond-measurements]: ../../../../tools/fourcolor/classical/pentagonal-diamond-measurements.json
+
+
+## Uniform boundary reconstruction
+
+The [matching translation][uniform-codec] now works at every finite width.
+Scan the ordered ports: a fixed port is skipped, the first end of a pair
+opens a stack entry, and its second end closes that entry. Noncrossing
+ensures that a closing endpoint meets the top open pair.
+The [literal stack law][uniform-stack] proves these transitions
+for arbitrary involutions, and the parser proof preserves the endpoint
+colour relation.
+
+This retains the coupling that made the diamond repair successful. Every
+accepted answer differs from the original colouring by switches of complete
+original pairs. The proof never chooses a new matching for each answer.
+[Physical switching][uniform-closure] reconstructs a genuine colouring of
+the whole exterior. Thus the representation change preserves both the joint
+boundary observation and the interior witnesses needed for sewing.
+
+The [actual mixed-diamond consumer][mixed-closure] supplies the geometric
+hypotheses. The recognized core has one boundary-return cycle. In a
+cyclically five-edge-connected cubic graph, a component with a cycle needs
+at least five outgoing ports; another component needs at least three.
+Seven ports and at least six exterior vertices therefore force connectivity.
+No distinctness condition on exterior attachment vertices is used. Planarity
+then gives the opposite exterior order and noncrossing of its actual
+bichromatic components. The generic proof applies directly at width seven.
+
+The [dependency audit][uniform-audit] requires the stack theorem, physical
+component switches, planar separation, actual occurrence and shared
+configuration-2 repair. It excludes the old finite matching and arc
+translations, original catalogue certificates and complete Four Colour
+endpoints. The earlier six-port consumer now uses the same uniform codec.
+The [measurement record][uniform-measurements] keeps this replacement of
+finite classifications separate from catalogue counts: 633 configurations
+and 630 original configuration certificates still remain.
+
+The [bounded replay][uniform-probe] checks all noncrossing involutions through
+width eight, including 127 at width seven and 323 at width eight. For each
+chromogram it compares the complete answer set with simultaneous switches
+of whole original pairs. It also checks cyclic arc witnesses through width
+sixteen and the literal mixed diamond's boundary-return geometry. These
+program checks are independent finite evidence; the Lean theorem covers
+arbitrary widths.
+
+The remaining reduction task is concrete: construct a valid smaller map
+whose colouring restricts to an initial exterior colouring. Replacing the
+thirteen-vertex piece by five vertices would decrease the whole map by
+eight, but that replacement and its preservation of the ambient class are
+not established here. No global coverage, colour-count preservation under
+reduction, or executable recolouring-history theorem is inferred.
+
+[uniform-codec]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeMatchingChromogram.lean
+[uniform-stack]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/NoncrossingMatchingStack.lean
+[uniform-closure]: ../../../../lean/fourcolor-classical/MettapediaFourColor/OpenTangleKempeClosure.lean
+[mixed-closure]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondExteriorClosure.lean
+[uniform-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondExteriorClosureAudit.lean
+[uniform-measurements]: ../../../../tools/fourcolor/classical/uniform-kempe-measurements.json
+[uniform-probe]: ../../../../tools/fourcolor/classical/uniform-matching-probe.json

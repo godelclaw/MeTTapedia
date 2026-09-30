@@ -1,0 +1,130 @@
+{
+  "scope": "Independent finite replay; the general results are proved separately in Lean.",
+  "matching_codec": [
+    {
+      "width": 0,
+      "matchings": 1,
+      "chromograms": 1,
+      "answer_tests": 1
+    },
+    {
+      "width": 1,
+      "matchings": 1,
+      "chromograms": 1,
+      "answer_tests": 1
+    },
+    {
+      "width": 2,
+      "matchings": 2,
+      "chromograms": 3,
+      "answer_tests": 9
+    },
+    {
+      "width": 3,
+      "matchings": 4,
+      "chromograms": 7,
+      "answer_tests": 25
+    },
+    {
+      "width": 4,
+      "matchings": 9,
+      "chromograms": 21,
+      "answer_tests": 177
+    },
+    {
+      "width": 5,
+      "matchings": 21,
+      "chromograms": 61,
+      "answer_tests": 721
+    },
+    {
+      "width": 6,
+      "matchings": 51,
+      "chromograms": 191,
+      "answer_tests": 4601
+    },
+    {
+      "width": 7,
+      "matchings": 127,
+      "chromograms": 603,
+      "answer_tests": 22569
+    },
+    {
+      "width": 8,
+      "matchings": 323,
+      "chromograms": 1961,
+      "answer_tests": 138209
+    }
+  ],
+  "cyclic_arcs": {
+    "max_width": 16,
+    "ordered_quadruples": 6188
+  },
+  "mixed_diamond_geometry": {
+    "vertices": 13,
+    "ports": 7,
+    "vertex_order": [
+      0,
+      1,
+      10,
+      2,
+      9,
+      11,
+      3,
+      8,
+      12,
+      4,
+      5,
+      7,
+      6
+    ],
+    "first_return_arcs": [
+      [
+        32,
+        8,
+        33
+      ],
+      [
+        33,
+        10,
+        13,
+        34
+      ],
+      [
+        34,
+        15,
+        35
+      ],
+      [
+        35,
+        16,
+        31,
+        36
+      ],
+      [
+        36,
+        28,
+        25,
+        37
+      ],
+      [
+        37,
+        1,
+        38
+      ],
+      [
+        38,
+        3,
+        6,
+        32
+      ]
+    ],
+    "open_face_count": 5,
+    "euler_mass": 4
+  },
+  "source_sha256": {
+    "tools/fourcolor/classical/uniform_matching_probe.py": "a77e43186afd38ebcf6d90215fbf61d8f360a86529a1b510f07bd01d48d17ad1",
+    "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondTangle.lean": "cf12abb7505a0bb098664519da580ebcbcdbff9e51678a34dcbe8b215ee45591",
+    "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondIntrinsic.lean": "1c3900ed9370ad449db8ae8aa4ba30eff8537e33e7f6731a0c7ca13657ee464e"
+  }
+}

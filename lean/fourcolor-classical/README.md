@@ -432,11 +432,14 @@ all seven outgoing ports are derived from the actual face pattern.
 whole colouring witnesses and their ordered boundary observation through
 the constructed isomorphism. The actual region therefore inherits
 `DiamondProfileReducibility.repair002`. The context theorem glues compatible
-interior and exterior witnesses at arbitrary boundary width, with physical
-Kempe closure of the exterior explicit. Establishing that closure at seven
-ports, the replacement geometry and its whole-map strict decrease remain
-open. Exact representation changes give a bijection of colouring assignments;
-no counting or executable recolouring claim is made for a graph reduction.
+interior and exterior witnesses at arbitrary boundary width.
+[MixedDiamondExteriorClosure](MettapediaFourColor/MixedDiamondExteriorClosure.lean)
+now derives physical Kempe closure of the actual seven-port exterior from
+its connected shores and cyclic boundary order. It allows repeated exterior
+attachment vertices. The replacement geometry, its initial exterior colouring
+and whole-map strict decrease remain open. Exact representation changes give
+a bijection of colouring assignments; no counting or executable recolouring
+claim is made for a graph reduction.
 
 The [new audit](MettapediaFourColor/MixedDiamondFaceRecognitionAudit.lean)
 checks 21 roots and 27,512 dependency declarations using only the standard
@@ -445,6 +448,18 @@ and [independent replay](../../tools/fourcolor/classical/mixed-diamond-probe.jso
 record 468 geometric separation cases and 1,059 rooted occurrences across
 130 of 137 existing fixtures. No new colour certificate, catalogue removal,
 complete-proof dependency replacement or universal coverage is claimed.
+
+[KempeMatchingChromogram](MettapediaFourColor/KempeMatchingChromogram.lean)
+and [KempeMatchingReconstruction](MettapediaFourColor/KempeMatchingReconstruction.lean)
+now work at every finite width. One noncrossing-stack proof replaces the
+six-port matching enumeration and retains the original paired choices for
+every answer. The physical separator's cyclic-arc witnesses are also uniform;
+the earlier five-port enumeration is removed. The
+[twenty-root audit](MettapediaFourColor/MixedDiamondExteriorClosureAudit.lean)
+checks the complete chain through the actual mixed-diamond exterior, and the
+[receipt](../../tools/fourcolor/classical/uniform-kempe-measurements.json)
+records separate proof, classification and catalogue metrics. No additional
+configuration certificate is removed by this boundary extension.
 
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as

@@ -71,7 +71,7 @@ theorem encode_permWord (g : EdgePerm) (w : HexagonTaitWord) :
     encode (permWord g w) = (encode w).map g := by
   simp [encode, referenceWord, permWord, relabelTaitWord, perm]
 
-private theorem decode_swap (c : Mettapedia.GraphTheory.FourColor.Color) :
+theorem decode_swap (c : Mettapedia.GraphTheory.FourColor.Color) :
     palette.symm (Mettapedia.GraphTheory.FourColor.Color.swap blue purple c) =
       EdgePerm.e132 (palette.symm c) := by
   obtain ⟨c, rfl⟩ := palette.surjective c

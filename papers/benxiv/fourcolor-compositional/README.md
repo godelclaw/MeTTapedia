@@ -52,10 +52,14 @@ The next shared member now has [actual face recognition](tube-example/README.md#
 A central pentagon with consecutive neighbouring lengths five, six, five
 constructs configuration 2's thirteen-vertex, seven-port core. Exact
 representation transport brings its existing joint repair to the selected
-region, retaining genuine colouring witnesses. This advances the geometric
-side of the same mechanism without another colour certificate. Physical
-Kempe closure of the seven-port exterior and a strict replacement remain
-open; the new recognition is not yet another complete local reduction.
+region, retaining genuine colouring witnesses. Its actual exterior now has
+[proved physical Kempe closure](tube-example/README.md#uniform-boundary-reconstruction).
+One stack argument translates noncrossing component matchings at every finite
+width, replacing the earlier six-port enumeration. Whole-component switches
+reconstruct all answers through the same physical matching. The planar order
+and exterior connectivity are derived for the mixed diamond, allowing repeated
+attachment vertices. A valid strict replacement supplying an initial exterior
+colouring remains the next obligation.
 
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
@@ -368,7 +372,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Separate finite input identities or classifications | 218, counted separately |
 | Discharging-rule labels retained | 32 |
 | Reference configuration certificate dependencies retained / replaced | 630 / 3 |
-| Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's |
+| Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's; one arbitrary-width matching codec reconstructs all chromogram answers through the same physical components |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
 | Geometric corridor reduction | Actual hexagonal row chains assemble as literal tubes; five-port strips reduce to four rows, preserving the map class and exterior colours |
 | Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within three extensions at width five in a minimal counterexample |
@@ -380,6 +384,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |
 | Retained joint-anchor classifications | 44, using three shared signature sets of sizes 7, 10 and 10 |
+| Finite matching translations replaced | Six-port matching enumeration replaced by a proof for all finite widths; five-port cyclic-arc enumeration replaced by uniform cyclic arithmetic |
+| Mixed-diamond exterior | Actual seven-port closure proved from normal-form geometry; initial exterior colouring and strict replacement remain separate |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 

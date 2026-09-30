@@ -1,14 +1,13 @@
-import Mathlib.Tactic.FinCases
+import Mettapedia.GraphTheory.OrderedCyclicArcs
 import Mettapedia.GraphTheory.FourColor.Compositional.BoundaryKempeSwitch
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalKempeNoncrossing
 
 /-!
 # Physical matchings on a cyclic boundary
 
-This file separates the arity-generic notion of crossing boundary chords from
-the older six-port consumer.  It then proves the five-port instance needed by
-the exact five-cut lane: the physical bichromatic mate of a spherical shore is
-noncrossing in its facial cyclic coordinates.
+The physical bichromatic mate of a spherical shore is noncrossing in its
+facial cyclic coordinates at every finite boundary width. The arc witnesses
+are supplied uniformly by cyclic arithmetic, without enumerating positions.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor.Compositional
@@ -85,91 +84,24 @@ theorem physicalMate_order_eq_of_coordinate_eq
   have htransport := congrArg order hmatch
   simpa [physicalMateInCoordinates] using htransport
 
-/-! ## Five cyclic ports -/
+/-! ## Cyclic arcs at arbitrary width -/
 
-private def leftArcBad (cut separator : Fin 5) (steps : Fin 5) :
-    Finset (Fin 5) :=
-  Finset.univ.filter fun index =>
-    index < steps ∧
-      let port := (finRotate 5)^[index.val] (finRotate 5 cut)
-      port = cut ∨ port = separator
+variable {n : ℕ}
 
-private def rightArcBad (cut separator right : Fin 5) (steps : Fin 5) :
-    Finset (Fin 5) :=
-  Finset.univ.filter fun index =>
-    index < steps ∧
-      let port := (finRotate 5)^[index.val] right
-      port = cut ∨ port = separator
-
-private def FiniteArcWitness
-    (cut separator left right : Fin 5) : Prop :=
-  ∃ leftSteps rightSteps : Fin 5,
-    (finRotate 5)^[leftSteps.val] (finRotate 5 cut) = left ∧
-    (finRotate 5)^[rightSteps.val] right = cut ∧
-    leftArcBad cut separator leftSteps = ∅ ∧
-    rightArcBad cut separator right rightSteps = ∅
-
-private theorem finiteArcWitness_of_lt
-    (cut left separator right : Fin 5)
-    (hcutLeft : cut < left) (hleftSeparator : left < separator)
-    (hseparatorRight : separator < right) :
-    FiniteArcWitness cut separator left right := by
-  fin_cases cut
-  all_goals fin_cases left
-  all_goals fin_cases separator
-  all_goals fin_cases right
-  all_goals simp_all only [Fin.mk_lt_mk]
-  all_goals try omega
-  all_goals unfold FiniteArcWitness
-  all_goals decide
-
-private def ArcWitness (cut separator left right : Fin 5) : Prop :=
-  ∃ leftSteps rightSteps : Nat,
-    (finRotate 5)^[leftSteps] (finRotate 5 cut) = left ∧
-    (finRotate 5)^[rightSteps] right = cut ∧
-    (∀ index, index < leftSteps →
-      let port := (finRotate 5)^[index] (finRotate 5 cut)
-      port ≠ cut ∧ port ≠ separator) ∧
-    (∀ index, index < rightSteps →
-      let port := (finRotate 5)^[index] right
-      port ≠ cut ∧ port ≠ separator)
-
-private theorem arcWitness_of_finite
-    {cut separator left right : Fin 5}
-    (h : FiniteArcWitness cut separator left right) :
-    ArcWitness cut separator left right := by
-  rcases h with ⟨leftSteps, rightSteps, hleft, hright, hleftAvoid,
-    hrightAvoid⟩
-  refine ⟨leftSteps.val, rightSteps.val, hleft, hright, ?_, ?_⟩
-  · intro index hindex
-    have hi : index < 5 := lt_trans hindex leftSteps.isLt
-    have hnot : (⟨index, hi⟩ : Fin 5) ∉
-        leftArcBad cut separator leftSteps := by
-      rw [hleftAvoid]
-      simp
-    simp [leftArcBad] at hnot
-    simpa [finRotate_apply] using hnot hindex
-  · intro index hindex
-    have hi : index < 5 := lt_trans hindex rightSteps.isLt
-    have hnot : (⟨index, hi⟩ : Fin 5) ∉
-        rightArcBad cut separator right rightSteps := by
-      rw [hrightAvoid]
-      simp
-    simp [rightArcBad] at hnot
-    exact hnot hindex
+private abbrev ArcWitness (cut separator left right : Fin n) : Prop :=
+  Mettapedia.GraphTheory.OrderedCyclicArcs.Witness cut separator left right
 
 private theorem arcWitness_of_lt
-    (cut left separator right : Fin 5)
+    (cut left separator right : Fin n)
     (hcutLeft : cut < left) (hleftSeparator : left < separator)
     (hseparatorRight : separator < right) :
     ArcWitness cut separator left right :=
-  arcWitness_of_finite
-    (finiteArcWitness_of_lt cut left separator right
-      hcutLeft hleftSeparator hseparatorRight)
+  Mettapedia.GraphTheory.OrderedCyclicArcs.witness_of_lt
+    cut left separator right hcutLeft hleftSeparator hseparatorRight
 
 private theorem mate_min_eq_max
-    (mate : Fin 5 → Fin 5) (hinvolutive : ∀ port, mate (mate port) = port)
-    (port : Fin 5) :
+    (mate : Fin n → Fin n) (hinvolutive : ∀ port, mate (mate port) = port)
+    (port : Fin n) :
     mate (min port (mate port)) = max port (mate port) := by
   by_cases hle : port ≤ mate port
   · rw [min_eq_left hle, max_eq_right hle]
@@ -177,10 +109,10 @@ private theorem mate_min_eq_max
     rw [min_eq_right hge, max_eq_left hge, hinvolutive]
 
 private theorem exists_orientedArcWitness_of_chordsCross
-    (mate : Fin 5 → Fin 5) (hinvolutive : ∀ port, mate (mate port) = port)
-    {first third : Fin 5}
+    (mate : Fin n → Fin n) (hinvolutive : ∀ port, mate (mate port) = port)
+    {first third : Fin n}
     (hcross : ChordsCross first (mate first) third (mate third)) :
-    ∃ cut separator left right : Fin 5,
+    ∃ cut separator left right : Fin n,
       mate cut = separator ∧ mate left = right ∧
       cut < left ∧ left < separator ∧ separator < right ∧
       ArcWitness cut separator left right := by
@@ -230,9 +162,9 @@ theorem isCubic_vertexSidePortTangle
     (ofVertexSide graphData.toRotationSystem keep outer)
     (openIsCubic_ofVertexSide graphData.toRotationSystem keep outer hcubic)
 
-/-- On a spherical shore with a five-port cyclic facial boundary, the
+/-- On a spherical shore with a cyclic facial boundary, the
 literal physical bichromatic mate is noncrossing. -/
-theorem physicalMateInCoordinates_isNoncrossing_five
+theorem physicalMateInCoordinates_isNoncrossing
     (graphData : Data G)
     (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
     (hdual : (interiorDualGraph
@@ -244,8 +176,9 @@ theorem physicalMateInCoordinates_isNoncrossing_five
     (hrotation : VertexRotationCyclic graphData.toRotationSystem)
     (keep : V₁ → Prop)
     (hcomplementConnected : (G.induce {vertex | ¬keep vertex}).Connected)
-    (order : Fin 5 ≃ BoundaryDart graphData.toRotationSystem keep)
-    (hsuccessor : order.permCongr (finRotate 5) =
+    (hwidth : 2 ≤ n)
+    (order : Fin n ≃ BoundaryDart graphData.toRotationSystem keep)
+    (hsuccessor : order.permCongr (finRotate n) =
       retainedRegionBoundarySuccessor graphData.toRotationSystem keep)
     (outer : RetainedDart graphData.toRotationSystem keep)
     (coloring : Coloring (vertexSidePortTangle graphData keep outer))
@@ -259,8 +192,8 @@ theorem physicalMateInCoordinates_isNoncrossing_five
   let hcubicT := isCubic_vertexSidePortTangle graphData keep outer hcubic
   let mate := physicalMateInCoordinates order T hcubicT coloring hproper pair
   let data : CyclicBondBoundaryData graphData.toRotationSystem keep :=
-    { length := 5
-      two_le_length := by omega
+    { length := n
+      two_le_length := hwidth
       order := order
       successor_eq := hsuccessor }
   intro first third hcross
@@ -332,6 +265,34 @@ theorem physicalMateInCoordinates_isNoncrossing_five
       ne_of_gt hseparatorRight⟩
     hcutActive hcutSpec.2.1 hleftActive hleftSpec.2.1
     hcutSpec.2.2 hleftSpec.2.2 hdistinctComponents
+
+/-- Compatibility with the original five-port consumer. -/
+theorem physicalMateInCoordinates_isNoncrossing_five
+    (graphData : Data G)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (hsphere : OrbitSphericalCubicMapData graphData.toRotationSystem)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    (keep : V₁ → Prop)
+    (hcomplementConnected : (G.induce {vertex | ¬keep vertex}).Connected)
+    (order : Fin 5 ≃ BoundaryDart graphData.toRotationSystem keep)
+    (hsuccessor : order.permCongr (finRotate 5) =
+      retainedRegionBoundarySuccessor graphData.toRotationSystem keep)
+    (outer : RetainedDart graphData.toRotationSystem keep)
+    (coloring : Coloring (vertexSidePortTangle graphData keep outer))
+    (hproper : IsProper coloring) (pair : TaitColorPair) :
+    IsNoncrossingMatching
+      (physicalMateInCoordinates order
+        (vertexSidePortTangle graphData keep outer)
+        (isCubic_vertexSidePortTangle graphData keep outer hcubic)
+        coloring hproper pair) := by
+  exact physicalMateInCoordinates_isNoncrossing graphData htwoSided hdual hconnected
+    hsphere hcubic hrotation keep hcomplementConnected (by decide) order hsuccessor
+    outer coloring hproper pair
 
 end GraphBacked
 

@@ -1,0 +1,344 @@
+{
+  "status": "Kernel-checked arbitrary-width matching reconstruction and physical closure of the actual seven-port mixed-diamond exterior. A valid strict replacement supplying an initial exterior colouring remains open.",
+  "completed_utc": "2026-09-30T04:28:44.098494+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "cb1f1eb15e2430d67a9d1d74ce46c052183d2f56",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.KempeMatchingSyntax",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeMatchingSyntax.lean",
+      "source_sha256": "3f9ff2c281758220c8f5e87de0cb317018a3718b07585f5e43e918907dd6996a",
+      "olean_sha256": "944246476a5e4d2a054775451afb5d5a0603e0b11a2c3ab446f845be4851f958",
+      "olean_bytes": 1143240,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.KempeMatchingStack",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeMatchingStack.lean",
+      "source_sha256": "b94fe2984bc740a75a4c3ed034424e36a61afdf9cccd9ea9452b7e0eef532dcc",
+      "olean_sha256": "717c861ce08a6f18fda37ecfb5c5e1b9c20d01ff9c82ee2e884daee847f2f31d",
+      "olean_bytes": 291136,
+      "reported_build_seconds": 1.5
+    },
+    {
+      "module": "MettapediaFourColor.KempeMatchingChromogram",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeMatchingChromogram.lean",
+      "source_sha256": "63216122bc1815e53e685fc3084844d3e3ed95dd9d2e08c4f5ea306575674ed7",
+      "olean_sha256": "434398e1cdb4069ddf79751b490820e6101e5aa202749d36f88d3626eeec81cd",
+      "olean_bytes": 308464,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.KempeMatchingReconstruction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/KempeMatchingReconstruction.lean",
+      "source_sha256": "e066cc345ec8e1740b7e0de1c7ff192fc6852ad39d7d24df2ea892cd5e1f074d",
+      "olean_sha256": "362dbc8e23e8d4c015484edb97203d92bb29f2bd4d034e084520c8efa3174e68",
+      "olean_bytes": 132088,
+      "reported_build_seconds": 1.4
+    },
+    {
+      "module": "MettapediaFourColor.PhysicalKempeBoundary",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PhysicalKempeBoundary.lean",
+      "source_sha256": "78154ddecbfabf6f45584e6938beaa970dbe7bf3494421bfb2d31f56319baf88",
+      "olean_sha256": "9b13a7931536e11c4b12790c2e042b2d93057e0e667283eb18418317e9ac8dc4",
+      "olean_bytes": 315720,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.OpenTangleKempeClosure",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/OpenTangleKempeClosure.lean",
+      "source_sha256": "10a44cd144f4fca1be68ceacbea0321e9f2a7266ab05e0b572919ca0b68da6fa",
+      "olean_sha256": "a95ec970344fc6199ab43684c999e5b9f0eaa364e1ff59349f45704658136d79",
+      "olean_bytes": 247736,
+      "reported_build_seconds": 4.0
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondIntrinsic",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondIntrinsic.lean",
+      "source_sha256": "1c3900ed9370ad449db8ae8aa4ba30eff8537e33e7f6731a0c7ca13657ee464e",
+      "olean_sha256": "a324ac8587f685ab45d5a3b29e0e0239cefe7ea1e4b454b6291a52e3f815c9a0",
+      "olean_bytes": 124728,
+      "reported_build_seconds": 6.3
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondExteriorClosure",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondExteriorClosure.lean",
+      "source_sha256": "e9297ffa4e413c8bdc459c3c53ada57ab008ef12601a78b5694aec44bddcf0f9",
+      "olean_sha256": "298ea469725bede2d307ea8d30af627ce3ceebbea2dfa76a8a61cac7d9de3699",
+      "olean_bytes": 256664,
+      "reported_build_seconds": 3.7
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondExteriorClosureAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondExteriorClosureAudit.lean",
+      "source_sha256": "72e05f7a6af1eeecb8b5b4e5ae9964dec3627b6c13eb25388b4a48fd31a1ae1a",
+      "olean_sha256": "8130b0d11cc5f1b8f65d7c6672c11da935312d8146a6e8823fdb58b55cdb9b22",
+      "olean_bytes": 3392,
+      "reported_build_seconds": 10.0
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeDistinctAttachments",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeDistinctAttachments.lean",
+      "source_sha256": "b400f68e6af880d4fce6745388e3b3f2cb9b3d03d90e4e4731be5b8acfb42b00",
+      "olean_sha256": "de985f6f9ba585c0a252a88719a480460547af7431dfa49ea7ff4c27321ef87f",
+      "olean_bytes": 128504,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.NoncrossingMatchingStack",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/NoncrossingMatchingStack.lean",
+      "source_sha256": "006c691112a43ca1d7fbdf9c2f56d7d02dbf080c669fc1f4a761d32d5ad34f1d",
+      "olean_sha256": "260f0e1f0c67bec276b7b445b3cd7f03923eefe6fb3b99dee8ca3ca82fb51f09",
+      "olean_bytes": 234840,
+      "reported_build_seconds": 1.3
+    },
+    {
+      "module": "Mettapedia.GraphTheory.OrderedCyclicArcs",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/OrderedCyclicArcs.lean",
+      "source_sha256": "166c9293c941b7afdb857110603687541308d7e1e38b27e3231884aed2394725",
+      "olean_sha256": "4ec0a43b9130de699464ef7eb102949a08e7a5887b945ccf198fdcac771a2093",
+      "olean_bytes": 426704,
+      "reported_build_seconds": 1.6
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/CyclicBoundaryMatching.lean",
+      "source_sha256": "154415bc9b436b390dede6ca0ddef798bc006f951d4d4eed081a9e03071841a4",
+      "olean_sha256": "b9cc9c142713814dd1422611186417f8a736f71bbcf30521583404925ef6f36a",
+      "olean_bytes": 265128,
+      "reported_build_seconds": 2.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryReflection",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/CyclicBoundaryReflection.lean",
+      "source_sha256": "9bc53ecb1b6c8d0c585199d216b2c128cada7200d74f5a3cac09a9332d2144ec",
+      "olean_sha256": "d7ca30f5896dd8d765850cacd4a4dc2c4c3f8bdc321a5b323e0d462f570208f2",
+      "olean_bytes": 11328976,
+      "reported_build_seconds": 24.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CrossingBoundaryEquiv",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CrossingBoundaryEquiv.lean",
+      "source_sha256": "3117225c8b1a54fd898f1692e9a550e83870e46464c94c7421ab0f8337373cb8",
+      "olean_sha256": "16f274133b98a0c3912ff8acc3e3a45f5d9947b7aab29bb17472c12af4daba9c",
+      "olean_bytes": 58376,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SevenPortBoundaryConnectivity",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/SevenPortBoundaryConnectivity.lean",
+      "source_sha256": "fc5c32932e59480cc33b53c826c23303693c870d6ba26450ec58f9852837afee",
+      "olean_sha256": "580cac8bb28b19e5711f8bad05a4199e11576da669bd9e7a53047a1e408c1ed9",
+      "olean_bytes": 158000,
+      "reported_build_seconds": 3.1
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.NoncrossingMatchingStack.stack_close",
+      "Mettapedia.GraphTheory.OrderedCyclicArcs.witness_of_lt",
+      "FourColor.KempeMatchingChromogram.Stack.accepted",
+      "FourColor.KempeMatchingChromogram.Stack.mask_constant",
+      "FourColor.KempeMatchingChromogram.translation",
+      "FourColor.KempeMatchingChromogram.reconstruct",
+      "FourColor.PhysicalKempeBoundary.ordered_closed",
+      "Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching.physicalMateInCoordinates_isNoncrossing",
+      "Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching.physicalMateInCoordinates_isNoncrossing_five",
+      "Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching.physicalMateInCoordinates_isNoncrossing_inverse",
+      "FourColor.OpenTangleKempeRepair.closed_of_physical_noncrossing",
+      "Mettapedia.GraphTheory.FourColor.SevenPortBoundaryConnectivity.connected_of_cycles_of_boundary_card_lt_eight",
+      "Mettapedia.GraphTheory.FourColor.SevenPortBoundaryConnectivity.connected_of_six_le_card_of_boundary_card_le_seven",
+      "FourColor.MixedDiamondPatch.Tangle.piece_connected",
+      "FourColor.MixedDiamondPatch.Tangle.piece_returnCode",
+      "FourColor.MixedDiamondPatch.Tangle.piece_eulerMass",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.exterior_connected",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.exterior_order",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.exterior_closed",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.colorable_of_exterior"
+    ],
+    "combined_dependency_closure": 24074,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "literal noncrossing stack transitions at arbitrary width",
+      "same-pair matching reconstruction for every accepted answer",
+      "genuine whole-component physical switches",
+      "uniform cyclic-arc witnesses and actual planar separation",
+      "actual face recognition, shore connectivity and opposite boundary order",
+      "existing shared configuration-2 repair and simultaneous witness gluing"
+    ],
+    "excluded": [
+      "former finite matching translation",
+      "former finite cyclic-arc classification",
+      "original catalogue configuration certificates",
+      "complete Four Colour endpoints",
+      "former independent diamond and corona colour-repair certificates"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.MixedDiamondExteriorClosureAudit",
+      "MettapediaFourColor.PentagonalDiamondFaceReductionAudit",
+      "MettapediaFourColor.PentagonalCoronaFaceReductionAudit"
+    ],
+    "build_jobs": 3962,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "regression_audits": [
+      {
+        "name": "pentagonal diamond face reduction",
+        "roots": 18,
+        "dependency_declarations": 27238
+      },
+      {
+        "name": "pentagonal corona face reduction",
+        "roots": 12,
+        "dependency_declarations": 26780
+      }
+    ],
+    "timing_scope": "Reported module frontend-plus-kernel seconds for unchanged final sources where observed. Null means no such timing was retained. No isolated kernel cost or whole-baseline speedup is claimed.",
+    "classical_baseline": {
+      "target": "kernelComplete",
+      "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+      "prepared_dependency_count": 126,
+      "refreshed_targets": [
+        "kernelAdapters",
+        "kernelConfigurationFamilies"
+      ],
+      "compiler_options": [
+        "-Dpp.unicode.fun=true",
+        "-DautoImplicit=false",
+        "-DrelaxedAutoImplicit=false",
+        "-Dweak.linter.mathlibStandardSet=true",
+        "-DmaxSynthPendingDepth=3"
+      ],
+      "native_code_generation": false,
+      "completed": true,
+      "modules": [
+        {
+          "module": "MettapediaFourColor.ReferenceBaselineAudit",
+          "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
+          "exit_code": 0,
+          "frontend_wall_seconds": 4.253,
+          "olean_bytes": 3320,
+          "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e"
+        },
+        {
+          "module": "MettapediaFourColor.DiamondFamilyReducibility",
+          "source_sha256": "71fb0a5407ace3d65ad85c53b4733d03ea4f382675ee1e2fab7ca14425b26824",
+          "exit_code": 0,
+          "frontend_wall_seconds": 3.579,
+          "olean_bytes": 37328,
+          "olean_sha256": "2e8e476bff5beda5c8eeb7e7b30761099c2226848f9425a74ead204147630377"
+        },
+        {
+          "module": "MettapediaFourColor.Complete",
+          "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
+          "exit_code": 0,
+          "frontend_wall_seconds": 3.968,
+          "olean_bytes": 39288,
+          "olean_sha256": "fce0dd591168e2d7bf9463281c20f1fad4ff9bb96a9e4f106248346d79971ccf"
+        },
+        {
+          "module": "MettapediaFourColor.CompleteAudit",
+          "source_sha256": "2469479845e74a1e68271b7a79cb05eaaaf973e086b2780576f75f1cff04d6ff",
+          "exit_code": 0,
+          "frontend_wall_seconds": 20.273,
+          "olean_bytes": 6776,
+          "olean_sha256": "470427286cb17f0d48ffac4b175a2d0568b1300c807a11bfeda796200ed29f8f"
+        }
+      ]
+    }
+  },
+  "mathematical_scope": {
+    "matching_codec": "Every finite width, including zero; noncrossing involutions may have fixed points.",
+    "physical_separator": "Spherical cubic shores in either cyclic boundary orientation, width at least two, with the stated connectedness and two-sided-face hypotheses.",
+    "physical_closure": "Actual cubic open-tangle colourings with noncrossing physical bichromatic pairings; each answer reconstructs through the original components.",
+    "mixed_diamond": {
+      "vertices": 13,
+      "ordered_ports": 7,
+      "central_face_length": 5,
+      "neighbour_face_lengths_required": {
+        "0": 6,
+        "1": 5,
+        "4": 5
+      },
+      "neighbour_face_lengths_unrestricted": [
+        2,
+        3
+      ],
+      "ambient_hypotheses": [
+        "finite simple graph with a cubic cyclic dart rotation",
+        "bridgeless connected spherical map",
+        "minimum face size five",
+        "cubic-dual internal-six connectivity",
+        "two-sided orbit faces"
+      ],
+      "derived": [
+        "connected actual thirteen-vertex shore",
+        "connected actual exterior",
+        "single interior boundary-return cycle",
+        "opposite exterior cyclic order",
+        "noncrossing physical exterior pairings",
+        "reference Kempe closure of actual exterior",
+        "whole-map colouring reconstructed from any genuine starting exterior colouring"
+      ],
+      "distinct_exterior_attachment_vertices_required": false,
+      "initial_exterior_colouring_required": true
+    },
+    "open": [
+      "valid strict replacement supplying the initial exterior colouring",
+      "ambient map-class preservation of that replacement",
+      "whole-operation strict vertex decrease",
+      "broader-family recognition and universal geometric coverage"
+    ],
+    "not_claimed": [
+      "unconditional mixed-diamond strict reduction",
+      "colour-count preservation under graph reduction",
+      "executable Kempe histories",
+      "complete uniform Four Colour explanation"
+    ]
+  },
+  "compression": {
+    "new_uniform_proof_schemes": [
+      "noncrossing matching stack and chromogram reconstruction",
+      "cyclic arc witnesses by modular arithmetic"
+    ],
+    "finite_classifications_replaced": [
+      "six-port matching translation",
+      "five-port cyclic-arc witnesses"
+    ],
+    "existing_consumers": [
+      "six-port physical Kempe closure",
+      "five-port physical noncrossing"
+    ],
+    "new_consumer": "actual seven-port mixed-diamond exterior",
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "additional_original_configuration_certificate_dependencies_replaced": 0,
+    "additional_catalogue_entries_removed": 0,
+    "new_independent_colour_certificates": 0,
+    "retained_finite_geometry": "Literal mixed-diamond incidence, connectedness, boundary-return arcs and face count; earlier occurrence separation remains.",
+    "scope_of_removed_arc_classification": "The old five-port classification is removed; no claim is made that every legacy six-port geometry module has been refactored.",
+    "runtime_or_artifact_size_saving_claimed": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/uniform_matching_probe.py",
+    "script_sha256": "a77e43186afd38ebcf6d90215fbf61d8f360a86529a1b510f07bd01d48d17ad1",
+    "report": "tools/fourcolor/classical/uniform-matching-probe.json",
+    "report_sha256": "7093eb3030a0ef32c0f30dddc83c94e5a50c870f44ffddcb32b1fe31cabc44d8",
+    "matching_widths": [
+      0,
+      8
+    ],
+    "noncrossing_matchings_at_width_seven": 127,
+    "noncrossing_matchings_at_width_eight": 323,
+    "cyclic_arc_max_width": 16,
+    "ordered_cyclic_quadruples": 6188,
+    "checks": "Complete accepted answer sets versus simultaneous switches of original pairs, cyclic avoidance witnesses, and literal mixed-diamond geometry.",
+    "kernel_proof": false
+  }
+}

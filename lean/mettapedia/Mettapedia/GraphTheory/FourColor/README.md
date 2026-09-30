@@ -142,9 +142,16 @@ excludes the possible five-cut.
 inverse whole-colouring transport, preserving each boundary colour. Its
 [actual consumer](../../../../fourcolor-classical/MettapediaFourColor/MixedDiamondFaceRecognition.lean)
 inherits configuration 2's existing shared repair on the recognized shore.
-The seven-port exterior closure and a valid strict replacement remain open.
-This representation theorem does not assert count preservation under
-reduction or transport of executable Kempe histories.
+The [actual exterior theorem](../../../../fourcolor-classical/MettapediaFourColor/MixedDiamondExteriorClosure.lean)
+now derives seven-port Kempe closure using the uniform matching codec.
+[SevenPortBoundaryConnectivity](SevenPortBoundaryConnectivity.lean) permits
+repeated attachment vertices; [cyclic separation](Compositional/CyclicBoundaryMatching.lean)
+and [reflection](Compositional/CyclicBoundaryReflection.lean) apply at arbitrary
+boundary widths of at least two. The [generic stack law](../NoncrossingMatchingStack.lean)
+retains the paired choices needed by reconstruction. A valid strict replacement
+supplying an initial exterior colouring remains open. These representation
+results do not assert count preservation under reduction or transport of
+executable Kempe histories.
 
 ## Independent corridor route — checkpoint of 22 September 2026
 
