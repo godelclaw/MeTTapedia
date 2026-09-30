@@ -700,6 +700,48 @@ The weak/time PDE chain rule and the signed allowance for arbitrary parent
 histories remain open. This is a further spatial payment for the stronger
 sufficient observable, not a global reserve certificate.
 
+`MemoryAgePressure` separates old memory from newly generated parent memory.
+For a prescribed age `delta>0`, scalar incompressible diffusion gives the
+analytic whole-space estimate
+
+```text
+||U(s,t)||_(L1->Linfinity) <=(sqrt(3)/pi^2)[nu(t-s)]^(-3/2).
+```
+
+Positivity, the original source-mass payment and composition then bound
+`C_old=U(t-delta,t)C(t-delta)` by `L_delta I`, with
+`L_delta=E0 sqrt(3)/(pi^2 (nu delta)^(3/2))`. For `t<delta`, old memory is
+zero. The rest is the actual positive recent source integral; no account is
+reset. The normalized periodic estimate has a separate explicit constant.
+The propagator and age identification are analytic, not Lean-certified.
+
+For `K=eta+L_delta`, `c=tr C_recent`, and any receiver pressure gradient `v`,
+the module certifies the directional comparison
+
+```text
+tr(H) v.Hv <=3K^2|v|^2+K c|v|^2+(3K+c)v.C_recent v,
+H=eta I+C_old+C_recent.
+```
+
+It retains turning, anisotropy and the isotropic trace term without a
+common eigenframe. The simpler trace consequence is
+`tr(H)v.Hv<=5K^2|v|^2+3c^2|v|^2`. Its literal spatial consumer uses the
+constructed canonical receiver pressure, positivity, the displayed old
+bound and an explicit integrable recent remainder. Combined with the
+analytic entropy pairing, an already native-paid receiver admits a finite
+datum-fixed old-memory allowance and a still unpaid recent-memory cost.
+This does not identify the canonical component with the full joint effective
+receiver or pay the complete signed pressure production and commutator.
+
+The [age-splitting lab](labs/memory_age_pressure.py) also exhibits a measuring
+defect exactly: projecting the gradient square of a smooth unforced shear
+to the same Fourier band can make its auxiliary memory source negative.
+The real stochastic memory remains positive. The scalar negative certificate
+is Lean-checked; the Fourier identification is checked by exact arithmetic.
+An age-split numerical prefix failing positivity is excluded from physical
+payment evidence. Ordinary spectral compression needs an additional
+positivity argument before it represents this memory reserve.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

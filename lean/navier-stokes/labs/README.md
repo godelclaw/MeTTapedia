@@ -7243,3 +7243,151 @@ looks accurate. Numerical prefixes are Fourier-Galerkin approximations,
 not continuum enclosures; unretained evolution, positivity and threshold
 quadrature require separate refinement. No bound for arbitrary repeated
 parent renewal is inferred from these finite checks.
+
+## Old stochastic memory and a recent-parent pressure remainder
+
+`memory_age_pressure.py` and `MettapediaNS.MemoryAgePressure` price the age of
+retained memory. The physical input is the same positive tensor, not a new
+fluid force or a different equation:
+
+```text
+D=partial_t+u.grad-nu Delta,   D C=2nu B B^T,   C(0)=0,   B=grad u.
+```
+
+Let `U(s,t)` propagate scalar incompressible advection and diffusion, acting
+entrywise on tensors in a fixed frame. It preserves positivity and composes.
+For a prescribed `delta>0`, set
+
+```text
+C_old(t)=U(t-delta,t)C(t-delta)                         t>=delta,
+C_old(t)=0                                             t<delta,
+C_recent(t)=2nu integral_max(0,t-delta)^t U(s,t) B B^T(s) ds.
+```
+
+Their sum is the actual `C`. All past parents and every tensor component are
+retained. The age cut does not grant another initial allowance.
+
+### Smoothing independent of the unknown future drift
+
+The scalar propagator is positivity preserving and contracts `L1`. For
+`y=||f||_2^2`, incompressibility gives `y'=-2nu||grad f||_2^2`. On whole
+space, with the Fourier transform `integral exp(-ik.x)f(x)dx`, splitting
+frequencies at `R` gives
+
+```text
+y<=R^3||f||_1^2/(6pi^2)+R^-2||grad f||_2^2,
+y^(5/3)<=C_N||f||_1^(4/3)||grad f||_2^2,
+C_N=2^(5/3)/(6pi^2)^(2/3).
+```
+
+The second inequality follows by balancing the two terms; its constant is
+not optimal. Integrating the resulting differential inequality bounds the
+`L1->L2` norm by `(3C_N/(4nu(t-s)))^(3/4)`. The adjoint propagates the reversed
+divergence-free drift and has the same estimate. Composition at the temporal
+midpoint therefore gives
+
+```text
+||U(s,t)||_(L1->Linfinity)<=(sqrt(3)/pi^2)[nu(t-s)]^(-3/2).
+```
+
+On the normalized period-2pi torus, at most `27R^3` modes lie below `R>=1`.
+For `y>54||f||_1^2` use `R=(y/(54||f||_1^2))^(1/3)`; otherwise use that
+threshold directly. The same energy, adjoint and composition argument gives
+
+```text
+||U(s,t)||_(L1->Linfinity)<=54 max(1,[3/(nu(t-s))]^(3/2)).
+```
+
+These analytic estimates apply to any smooth incompressible drift on an
+available prefix, including a forced one. The unforced input is the original
+source payment `integral tr C(t)<=E0=||u0||_2^2`. Positivity and smoothing
+bound `C_old<=L_delta I`, where `L_delta` is `E0` times the respective kernel
+bound at `delta`. No future strain modulus appears. Construction of `U`,
+the adjoint and the Nash differential inequality are not yet Lean-certified.
+
+### Geometry retained in the pressure cost
+
+Fix `eta>0`, put `H=eta I+C`, `K=eta+L_delta`, `c=tr C_recent`, and let `v`
+be the pressure gradient of an actual receiver tensor. Positivity gives
+`v.C_recent v<=c|v|^2`, without a common eigenframe. More precisely,
+
+```text
+tr(H)v.Hv <=(3K+c)(K|v|^2+v.C_recent v)
+          =3K^2|v|^2+R_geom,
+R_geom=K c|v|^2+(3K+c)v.C_recent v.
+```
+
+This retains directional geometry and the isotropic trace term. The simpler
+consequence, using `2(K-c)^2>=0`, is
+`tr(H)v.Hv<=5K^2|v|^2+3c^2|v|^2`. Both tensor comparisons are Lean-certified.
+Their old-bound and positivity hypotheses are explicit. The integral consumer
+constructs weighted-cost integrability from the recent remainder, and applies
+the spatial result to the actual canonical pressure receiver from
+`WholeSpacePressureReceiver`.
+
+That constructed receiver `N=2aP` has native payment
+
+```text
+nu integral|grad q_N|^2<=48Q_native,
+Q_native=sum_j [2nu integral a|partial_j P|^2+integral J_j].
+```
+
+The full augmented selected diffusion plus `J` dominates this native cost.
+The module proves the literal projection consumer, with the same ratio
+regularity and instantaneous integrability hypotheses as its predecessor.
+It does not identify this component with the whole joint effective receiver.
+
+For any receiver with the same integrated native payment, the analytic
+entropy pairing yields `|I|<=alpha E0+T/(4alpha nu eta)`, where
+`T=integral tr(H)v.Hv` and `I=integral receiver:P_C`. With all integrals over
+one entire available prefix and `alpha=36K^2/(epsilon nu^2 eta)`, the new
+scalar certificate gives
+
+```text
+|I|<=36K^2 E0/(epsilon nu^2 eta)+epsilon Q
+       +(epsilon nu/(144K^2)) integral R_geom,    epsilon>0.
+```
+
+The trace version instead gives the allowance `60K^2 E0/(epsilon nu^2 eta)`
+and remainder `(epsilon nu/(80K^2)) integral c^2|v|^2`. Neither remainder is
+asserted bounded. The space-time entropy/weak-pressure identification remains
+analytic. The original allowance is used once, not again at each seam.
+As `delta` tends to zero, the whole-space allowance grows like
+`E0^3/(epsilon eta nu^5 delta^3)`. Taking a vanishing age cannot remove the
+recent cost. This is a component estimate with explicit recent parents;
+full pressure work, the signed commutator and repeated renewal remain open.
+
+### Spectral compression can destroy the required positivity
+
+The exact checker also constructs the globally smooth unforced shear
+
+```text
+u(t,y)=(sum_(k=1)^3 exp(-nu k^2 t) sin(ky)/k,0,0).
+```
+
+At time zero its actual positive memory source, divided by `2nu`, is
+`(cos y+cos 2y+cos 3y)^2`. Projection onto `|k_y|<=3` gives
+`3/2+2cos y+(3/2)cos 2y+cos 3y`. At `cos y=1/10`, the actual source is
+`21609/15625`, while the projected source is `-33/500`. The projected
+memory starts from zero and has a negative initial derivative there for
+every `nu>0`. Its positivity guarantee fails. The genuine unforced velocity
+and its unprojected memory do not fail. The Fourier coefficients are checked
+exactly; the rational scalar certificates and negative viscous rate are Lean.
+
+A bounded extension of the existing 96-cube reciprocal-parent prefix to
+`t=1.6`, with memory older than `delta=.1` transported without new sources,
+also loses recent-memory positivity under its spectral cutoff. On the
+evolution grid the recent minimum eigenvalue is about `-9.74e-5`, although
+old and total memory remain sampled positive. This run is excluded from
+physical pressure-payment evidence; no weighted bound is inferred from it.
+The diagnostic guard rejects the approximation before estimating that cost.
+A positivity-preserving memory discretization, with its own convergence
+checks, is required to use further numerical history evidence here.
+
+```sh
+python3 -O labs/memory_age_pressure.py
+```
+
+Default checks retain exact noncommuting tensor fixtures, both payment
+constants, the actual heat shear memory equation and the filtering defect.
+The arbitrary-flow fresh-parent reserve remains the principal physical target.
