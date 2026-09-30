@@ -140,6 +140,18 @@ and reduction for the stated two-cycle family. Its occurrence in more general
 stopping lobes, wider families and coverage remain open. No additional
 catalogue certificate has been removed.
 
+The [six-face construction](tube-example/README.md#constructing-the-lobe-from-its-neighbouring-faces)
+now supplies that two-cycle arrangement. Start at a pentagon adjacent to
+four pentagons and one hexagon. Actual face traversal determines both
+cycles, all outer turns and the shared spoke matching. If the sixteen
+traced vertices are distinct and the outer cycle has no extra chord, the
+existing reduction applies and removes twelve vertices from the complete
+map. The two local geometric conditions remain explicit. A finite replay
+finds 76 such occurrences in the same 29 maps as the earlier selected lobes;
+it supplies examples, not universal noncollision or coverage. The next
+geometric task is to derive those conditions from minimality or appropriate
+stopping-face hypotheses, then extend the joint repair to broader patterns.
+
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
 ordered rings, specified contracts and both colouring branches are now proved
@@ -333,7 +345,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within three extensions at width five in a minimal counterexample |
 | Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; its embedded closing operation remains open |
 | Cycle boundary contraction | One marked-seam law reconstructs literal cycle colourings at every length; forgetting the seam guard fails on a kernel-checked four-cycle |
-| Pentagonal lobe reduction | Two-cycle incidence and outer turns now construct exact recognition and a twelve-vertex reduction; minimality supplies all exterior conditions. Broader supply and coverage remain open; nine finite answer checks remain |
+| Pentagonal lobe reduction | A pentagon with neighbours of lengths 5,5,5,5,6 constructs the two-cycle arrangement and a twelve-vertex reduction, assuming distinct traced vertices and an induced outer cycle. Minimality supplies exterior conditions. Broader supply and coverage remain open; nine finite answer checks remain |
 | Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |

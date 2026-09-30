@@ -1,0 +1,146 @@
+{
+  "status": "Kernel-checked face-derived recognition and strict reduction; distinct traced vertices and an induced outer cycle remain explicit hypotheses.",
+  "completed_utc": "2026-09-30T00:56:01.531388+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "97a2efa2014909bdc8bc76c9c59c756fd0e94687",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FacialCoronaTraversal",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/FacialCoronaTraversal.lean",
+      "source_sha256": "9aecf6e6b998e06b59ff5839fb4d5784af79fa1779d7177251651802cc6ef4ff",
+      "olean_sha256": "2b30efdb3de05218e01be0fb64b9d08a2d44e168b9ec051f611bf4596abfc432",
+      "olean_bytes": 126448,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaGeometry.lean",
+      "source_sha256": "8a77210eab68c95706aeb5ed49da7eb639e62352f5aa8e2e1d95d0e8a0e42238",
+      "olean_sha256": "7e59de636375efb4de3415af8b8f82913e7b324d5a4dc8fe905476e0df828a08",
+      "olean_bytes": 746840,
+      "reported_build_seconds": 3.3
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalCoronaIncidence",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaIncidence.lean",
+      "source_sha256": "75b03ba34e0a2b9f604110fa95f58ff1d8d88fafd040b685860d7bd0a7169a00",
+      "olean_sha256": "ae929ab69f95e9105e5a92c98372aa4647fd5212969f3c82f8dd91a609c2832d",
+      "olean_bytes": 533312,
+      "reported_build_seconds": 2.0
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalCoronaReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaReduction.lean",
+      "source_sha256": "01faa09171cc1108680de02ac50d1b0039c9bffad844f0a61c325e0e0639dfb7",
+      "olean_sha256": "16e78ccbcebc3890d8d0db0ec00009b2ccee0b1f8700f72f082d8585ee1be6cc",
+      "olean_bytes": 105984,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalCoronaReductionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaReductionAudit.lean",
+      "source_sha256": "61bbf8b9b8c67bc616437f088fcb1227c8ab1e4ed4b892ace9fbfdddceef2f7b",
+      "olean_sha256": "f1370dace97d30b6dfd7f7cb663d0ce8d867e3624b4a9d04f8b61abbeef8ac40",
+      "olean_bytes": 3248,
+      "reported_build_seconds": 5.5
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.FacialCoronaTraversal.outside_arc",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.period_of_face_length",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.outerStar_edge",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.outerStar_spoke_outside",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.incidence",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.incidence_rotation",
+      "FourColor.PentagonalLobePatch.Tangle.Corona.strict_reduction",
+      "FourColor.PentagonalLobePatch.Tangle.Corona.not_in_minimal_counterexample"
+    ],
+    "combined_dependency_closure": 26590,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual face periods from orbit cardinalities",
+      "uniform neighbouring-face traversal",
+      "actual outer edges and rotations",
+      "both graph cycle frames and shared attachment matching",
+      "strict whole-map decrease and class preservation",
+      "genuine colouring reconstruction"
+    ],
+    "excluded_dependencies": "Complete Four Colour endpoints, original catalogue certificates and diamond reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalCoronaReductionAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3670,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "input_faces": "A rooted central pentagon; the neighbour across the root edge has length six, and the other four neighbours have length five.",
+    "distinct_traced_vertices_required": true,
+    "outer_inducedness_required": true,
+    "input_outer_cycle_frame_required": false,
+    "input_outer_rotation_equations_required": false,
+    "input_inner_matching_required": false,
+    "input_tangle_isomorphism_required": false,
+    "derived_vertices": 16,
+    "derived_outer_cycle_length": 11,
+    "boundary_ports": 6,
+    "replacement_vertices": 4,
+    "whole_map_vertex_decrease": 12,
+    "generic_face_law": "For every positive central cycle length and every n, an adjacent face period n+3 supplies an n-step outer arc between the appropriate consecutive spoke endpoints.",
+    "strict_reduction_endpoint": "FourColor.PentagonalLobePatch.Tangle.Corona.strict_reduction",
+    "minimality_endpoint": "FourColor.PentagonalLobePatch.Tangle.Corona.not_in_minimal_counterexample",
+    "ambient_conditions": "Bridgeless spherical cubic simple-graph source with cyclic vertex rotations and two-sided faces; minimum face size five and cyclic edge-connectivity at least four. Minimality supplies these ambient conditions.",
+    "all_introduced_vertices_counted": true,
+    "exterior_recolouring_allowed": true,
+    "distinct_exterior_endpoints_required": false,
+    "universal_noncollision_proved": false,
+    "universal_outer_chordlessness_proved": false,
+    "geometric_coverage_proved": false,
+    "new_colour_count_preservation_claim": false,
+    "new_executable_history_transport_claim": false
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "new_independent_colour_repair_schemes": 0,
+    "new_family_recognition_input": "Actual six-face pattern, replacing supplied two-cycle incidence and outer turns under the stated geometric side conditions.",
+    "terminal_colourings_retained": 22,
+    "finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "new_finite_colouring_enumeration": false
+  },
+  "program_replay": {
+    "command": "python3 tools/fourcolor/classical/pentagonal_corona_probe.py",
+    "report": "pentagonal-corona-probe.json",
+    "maps": 137,
+    "pentagons": 1644,
+    "matching_faces": 76,
+    "recognized_instances": 76,
+    "maps_with_pattern": 29,
+    "previous_selected_lobes_recovered": 29,
+    "observed_vertex_collisions": 0,
+    "observed_outer_chords": 0,
+    "kernel_certification_of_census": false,
+    "new_maps_covered_beyond_previous_selected_lobes": 0
+  },
+  "cost_scope": "Lake module times include elaboration and kernel checking. The final-source timing of FacialCoronaTraversal was not retained; no isolated kernel benchmark is claimed.",
+  "baseline_replay": {
+    "rerun": false,
+    "reason": "Existing complete assembly, colouring repair, finite certificates and their inputs are unchanged. The new actual face consumer and dependency audit were built."
+  },
+  "next_obligations": [
+    "Derive the local noncollision and outer-inducedness hypotheses from minimality or other independently justified stopping-face geometry.",
+    "Extend the joint colouring repair to other neighbouring-face patterns or longer lobes; geometric traversal alone does not supply their repair.",
+    "Establish coverage and reconstructible termination, and audit any new replacements in the complete assembly."
+  ]
+}

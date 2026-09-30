@@ -1250,3 +1250,36 @@ representation codec. Existing lobe witness and answer-cover checks remain.
 This closes recognition for one shape in arbitrary qualifying exteriors.
 General stopping-lobe supply, broader local families and coverage remain
 open. No further original certificate or catalogue entry is removed.
+
+## Facial origin of the pentagonal lobe
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/classical/pentagonal_corona_probe.py
+```
+
+The replay examines all 1,644 pentagons in the 137 saved rotations. Exactly
+76 have four pentagonal neighbours and one hexagonal neighbour. All 76
+face-traced patches have sixteen distinct vertices and an induced outer
+eleven-cycle. These occur in the same 29 maps as the previously selected
+lobes; all earlier instances are recovered. The report
+`pentagonal-corona-probe.json` records source/input hashes and every
+occurrence. It is independent program evidence, not a general noncollision
+or coverage proof.
+
+From `lean/fourcolor-classical`:
+
+```sh
+lake build MettapediaFourColor.PentagonalCoronaReductionAudit
+```
+
+The Lean theorem constructs both cycles and all outer turns from the actual
+face lengths. Distinctness of the sixteen traced vertices and outer-cycle
+inducedness remain explicit hypotheses. The existing joint repair is then
+consumed in the strict twelve-vertex ambient reduction. The eight-root audit
+checks 26,590 dependencies using the standard three axioms and excludes
+complete Four Colour endpoints, catalogue certificates and diamond
+reducibility. `pentagonal-corona-measurements.json` records the proof scope,
+source/artifact pairs and measured module costs. No additional colouring
+enumeration or complete-proof certificate saving is claimed.

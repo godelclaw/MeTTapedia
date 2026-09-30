@@ -84,6 +84,19 @@ requires this full reconstruction chain and excludes complete theorems and
 catalogue certificates. Broader geometric supply and coverage remain open;
 catalogue counts are unchanged.
 
+[FacialCoronaTraversal](FacialCoronaTraversal.lean) now constructs an outer
+arc from each neighbouring face: period `n + 3` supplies `n` outer steps.
+[PentagonalCoronaGeometry](PentagonalCoronaGeometry.lean) and
+[PentagonalCoronaIncidence](PentagonalCoronaIncidence.lean) apply this to a
+pentagon with neighbours of lengths 5,5,5,5,6. They derive both cycles, all
+outer turns and the attachment matching, retaining explicit distinctness
+of the sixteen traced vertices and outer-cycle inducedness. The
+[face-derived consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalCoronaReduction.lean)
+immediately performs the twelve-vertex reduction. Its eight-root audit
+checks 26,590 declarations with standard axioms only. General derivation of
+the two local geometric hypotheses, broader families and coverage remain
+open. No additional original certificate is removed.
+
 ## Independent corridor route — checkpoint of 22 September 2026
 
 The following table describes the earlier direct Count proposal. Its open

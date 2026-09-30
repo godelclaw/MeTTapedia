@@ -705,6 +705,69 @@ arrangement, or a larger family with a similarly reconstructible reduction.
 Existing alternating-walk extraction retains the closing transition but
 does not yet supply the enclosed pentagon and its five attachments.
 
+## Constructing the lobe from its neighbouring faces
+
+The [facial construction][corona-geometry] starts from a rooted pentagon
+with four pentagonal neighbours and one hexagonal neighbour. The hexagon
+lies across the chosen root edge. Crossing the third edge at each central
+vertex reaches five outer attachment vertices. Following the neighbouring
+faces connects consecutive attachments: each pentagon contributes a path
+of two edges, and the hexagon contributes a path of three edges. Together
+these form the eleven-position boundary, including its longer closing gap.
+
+The underlying [traversal law][corona-traversal] applies at every central
+cycle length: a neighbouring face of period `n + 3` supplies an `n`-step
+outer arc. It uses actual edge reversals and vertex rotations. For this
+six-face pattern, the [incidence construction][corona-incidence] derives
+both cycles, their spoke matching and all alternating outer turns. The
+input supplies no outer cycle frame, rotation equations or patch isomorphism.
+
+Two local geometric hypotheses remain: the sixteen traced vertices must be
+distinct, and the outer cycle must have no extra chord. Under these
+conditions, the [actual consumer][corona-reduction] performs the existing
+strict reduction with genuine colouring reconstruction. The source is a
+bridgeless spherical cubic simple graph with cyclic rotations and two-sided
+faces, minimum face size five and cyclic edge-connectivity at least four.
+The minimal-counterexample consumer derives those ambient conditions from
+minimality. Repeated exterior attachment vertices remain allowed.
+
+```text
+central pentagon + four pentagonal neighbours + one hexagonal neighbour
+  → actual facial arcs of lengths 2,2,2,2,3
+  → two cycles and their joint rotation/attachment data
+      [sixteen distinct vertices; outer cycle induced]
+  → exact six-port semantics and compatible colouring repair
+  → four-vertex replacement; twelve fewer vertices in the whole map.
+```
+
+The [independent replay][corona-probe] checks all 1,644 pentagons in the 137
+recorded maps. It finds 76 matching faces across 29 maps; every traced patch
+has the required distinct vertices and induced boundary. All 29 previously
+selected lobe instances are recovered. This finds additional occurrences
+in the same maps, not additional map coverage. The census remains program
+evidence, with no claimed universal noncollision theorem.
+
+The [eight-root audit][corona-audit] checks 26,590 dependency declarations,
+using only `propext`, `Classical.choice` and `Quot.sound`. It requires face
+periods, the actual arc construction, cycle incidence, strict size decrease
+and colouring reconstruction, and excludes complete Four Colour endpoints,
+original catalogue certificates and diamond reducibility. The
+[receipt][corona-measurements] records source and artifact hashes. The
+reduction module took 2.7 seconds and its audit 5.5 seconds, including
+elaboration and kernel checking. From `lean/fourcolor-classical`:
+
+```sh
+lake build MettapediaFourColor.PentagonalCoronaReductionAudit
+```
+
+This supplies a concrete facial origin for the existing local reduction.
+No additional colouring enumeration is introduced. The 22 terminal witnesses,
+nine answer-cover checks, 633 catalogue configurations and 630 original
+configuration certificates remain. Next: derive the two local geometric
+hypotheses where justified, then extend the joint repair to other face
+patterns or longer lobes. Face traversal alone does not supply their
+colouring repair or prove global coverage.
+
 ## Scope and verification
 
 The tube result establishes an infinite family reduction from the corridor idea,
@@ -730,6 +793,13 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 ```
 
 [certificate]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/GoertzelV24FiveTubeExclusion.lean
+[corona-traversal]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FacialCoronaTraversal.lean
+[corona-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaGeometry.lean
+[corona-incidence]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaIncidence.lean
+[corona-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaReduction.lean
+[corona-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaReductionAudit.lean
+[corona-probe]: ../../../../tools/fourcolor/classical/pentagonal-corona-probe.json
+[corona-measurements]: ../../../../tools/fourcolor/classical/pentagonal-corona-measurements.json
 [decoder]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagRingTable.lean
 [normalization]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeFiniteNormalization.lean
 [generic]: ../../../../lean/mettapedia/Mettapedia/GSLT/Core/BoundaryCertificateComposition.lean

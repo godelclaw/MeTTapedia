@@ -372,6 +372,18 @@ original catalogue certificates and diamond reducibility. The
 records the exact scope and artifacts. General stopping-lobe supply,
 broader families, coverage and further certificate replacement remain open.
 
+[PentagonalCoronaReduction](MettapediaFourColor/PentagonalCoronaReduction.lean)
+now derives the two-cycle geometry from an actual pentagon surrounded by
+four pentagons and one hexagon. Face traversal constructs the edges, turns
+and spoke matching. The sixteen traced vertices must be distinct, and the
+outer cycle must be induced; these remain explicit local hypotheses. The
+consumer retains the same twelve-vertex strict reduction and reconstruction.
+Its [eight-root audit](MettapediaFourColor/PentagonalCoronaReductionAudit.lean)
+checks 26,590 declarations, excluding complete theorems and catalogue
+certificates. The [receipt](../../tools/fourcolor/classical/pentagonal-corona-measurements.json)
+separates the Lean theorem from the 76 finite occurrences found in 29 maps.
+The original certificate counts and finite colouring checks are unchanged.
+
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as
 GSLT witnesses and glues them into an explicit ambient colouring. The graph
