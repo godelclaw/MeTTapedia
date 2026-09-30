@@ -742,6 +742,44 @@ An age-split numerical prefix failing positivity is excluded from physical
 payment evidence. Ordinary spectral compression needs an additional
 positivity argument before it represents this memory reserve.
 
+### Complete pressure-source evolution and a local viscous payment
+
+`WholeSpacePressureProduction` differentiates the actual canonical pressure
+source at every interior time of a smooth whole-space NS evolution. With
+`B=grad u`, `s=tr(B²)`, `P=Hess p` and
+`D=partial_t+u.grad-nu Delta`, the kernel-certified law is
+
+```text
+D s=-2tr(B³)-2tr(BP)-2nu sum_j tr((partial_j B)²),
+D(s²)=-4s tr(B³)-4s tr(BP)-4nu s sum_j tr((partial_j B)²)
+       -2nu|grad s|².
+```
+
+The pressure source is identified from the evolution's solenoidal velocity
+and canonical pressure. The crossed viscous term can be positive, but its
+absolute value is bounded pointwise and in the genuine spatial integral:
+
+```text
+|4nu s sum_j tr((partial_j B)²)|
+  <=4nu|B|² sum_j|partial_j B|²,
+```
+
+for `nu>=0`. This is half the local strain-gradient density in the completed
+diffusion lower bound, and the pointwise comparison retains any common
+nonnegative selector. Identification of that full candidate matrix Hessian
+is still an analytic application obligation.
+
+The [exact checker](labs/pressure_source_production.py) retains all Fourier
+outputs, including a resonant pair with crossed viscous productions
+`+48/175` and `-48/175`, interacting parents, constant drift, and nonzero
+external forcing at a tested state. It identifies the complete unweighted
+pressure-square production with the source-square production. That integrated
+time identification is analytic, not an additional Lean theorem here.
+A variable weight adds a nonzero differentiated localization flux in these
+fixtures. The selected canonical pressure square cannot be replaced by the
+local source square without it. The cubic, pressure, flux and fresh-memory
+history payments remain open.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

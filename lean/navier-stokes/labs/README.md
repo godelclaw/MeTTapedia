@@ -7391,3 +7391,71 @@ python3 -O labs/memory_age_pressure.py
 Default checks retain exact noncommuting tensor fixtures, both payment
 constants, the actual heat shear memory equation and the filtering defect.
 The arbitrary-flow fresh-parent reserve remains the principal physical target.
+
+## Complete canonical pressure-square production
+
+`pressure_source_production.py` compares the full NS tangent with the local
+Poisson-source evolution on the normalized `2*pi` torus. Gaussian rational
+arithmetic retains every convolution output. For `B=grad u`, `s=tr(B²)`,
+canonical `P=Hess p`, and `D=partial_t+u.grad-nu Delta`, it verifies
+
+```text
+D s=-2tr(B³)-2tr(BP)-2nu sum_j tr((partial_j B)²),
+D(s²)=2s Ds-2nu|grad s|².
+```
+
+The actual pressure-square mass, its tangent, complete signed production
+and square diffusion agree after integration with those of the source.
+The whole-space pointwise source/time laws and crossed viscous absorption
+are kernel-certified in `MettapediaNS.WholeSpacePressureProduction`.
+The integrated time identification for the pressure square is analytic.
+No finite-history production bound is inferred from these identities.
+
+The resonant datum adds a transverse `(0,0,+/-2)` mode to the general
+three-dimensional fixture. Reversing its sign changes the crossed viscous
+production from `+48/175` to `-48/175` at `nu=1/10`. Both signs are required
+by the checker. Thus this production term is not automatically dissipative.
+Nevertheless, at every point of every smooth velocity, for `nu>=0`,
+
+```text
+|4nu s sum_j tr((partial_j B)²)|
+  <=4nu|B|² sum_j|partial_j B|².
+```
+
+The right side is half the local strain-gradient density in the completed
+diffusion lower bound. The checker verifies the actual crossed-trace
+sum-of-squares and integrated comparison; Lean proves the pointwise,
+selected and whole-space spatial comparisons. The full candidate Hessian
+identification and remaining nonlinear history payment are separate.
+
+For the added pressure square, the complete cotangent `4Hess(s)u` differs
+from the local cotangent `-4Bᵀ grad s` by `4grad(u.grad s)`. They perform
+the same work on the actual solenoidal velocity tangent. This identity
+is exactly checked, including a constant drift; it does not discard the
+canonical pressure from the observable or the other coupled equations.
+
+The localization flux is `J=(P-Delta(p)I)grad p`, with
+`div J=|P|²-s²`. For a fixed smooth weight `a`,
+
+```text
+integral a partial_t(|P|²-s²)=-integral grad a.partial_t J.
+```
+
+The checker retains every output of `J` and its complete time derivative
+and verifies a nonzero flux correction against a smooth positive weight.
+This is not the actual soft selector. Differentiating an entire weighted
+mass with an evolving selector also differentiates that selector. The
+chain-rule component `a partial_t|P|²` itself does not add that derivative.
+The selector's weak-limit identification still needs proof.
+The local source square cannot replace the selected pressure square in
+the memory reserve without these corrections.
+
+The forced tangent uses the solenoidal force `f=u` at the tested state.
+Its additional source is `2tr(B grad f)` and its square production is
+`4s tr(B grad f)`. This is a nonzero initial-state forcing comparison,
+not the imported forced blowup construction. The unforced interacting
+parent pair retains its opposite nonlinear signs.
+
+```sh
+python3 -O labs/pressure_source_production.py
+```
