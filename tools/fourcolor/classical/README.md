@@ -148,6 +148,29 @@ python3 tools/fourcolor/classical/two_row_short_faces.py
 python3 tools/fourcolor/classical/two_row_growth.py
 ```
 
+The [enlarged supply replay](family-supply-probe.json) tests the current
+diamond, face-derived padded-cap and hexagonal-seam simple-cycle union on
+44 explicit rotations. The [new fixtures](family-supply-fixtures.json)
+retain eighteen isolated-pentagon rotations generated at orders 60–80,
+the generator source hash and command. Each is also dual-and-truncated;
+the eight larger saved controls are included. All local roots and all
+dart/phase orbits are inspected, without a cycle-length cutoff.
+
+Thirty-nine maps have a qualifying occurrence. Five transformed maps of
+orders 222–240 do not: four have no simple complete alternating orbit,
+and one has six simple rows all stopping at pentagons. Explicit proper
+colourings show that these are colourable residuals. The replay checks
+6,396 simple dual circuits of lengths three through five and finds only
+the sixty trivial pentagonal cyclic circuits. Shortest extracted lobes
+have lengths 31, 33 or 35 and split the twelve pentagons as five and seven.
+This is independent finite evidence against unconditional supply by this
+union, not a kernel normal-form or minimal-counterexample certificate.
+The [receipt](family-supply-measurements.json) records the exact scope.
+
+```sh
+python3 tools/fourcolor/classical/family_supply_probe.py
+```
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

@@ -1467,6 +1467,37 @@
       "integrated_into_complete_assembly": false,
       "global_coverage_proved": false,
       "next_obligation": "Supply suitable initial cycles or another reduction, including closing-lobe and pentagonal-stop cases, in a justified residual class."
+    },
+    {
+      "name": "larger finite residuals defeat the current recognized family union",
+      "record": "family-supply-measurements.json",
+      "status": "Independent finite obstruction to unconditional supply by the current three recognized families; minimality-dependent coverage remains open.",
+      "maps_checked": 44,
+      "covered_maps": 39,
+      "uncovered_maps": 5,
+      "failed_map_vertices": [
+        222,
+        228,
+        228,
+        234,
+        240
+      ],
+      "failures_without_simple_complete_orbit": 4,
+      "failure_with_only_immediate_pentagonal_stops": true,
+      "shortest_lobe_pentagon_shores": [
+        5,
+        7
+      ],
+      "explicit_colour_witnesses_replayed": true,
+      "full_normal_form_kernel_certified": false,
+      "minimality_dependent_coverage_refuted": false,
+      "new_uniform_reductions": 0,
+      "new_family_colouring_certificates": 0,
+      "original_configuration_certificates_replaced": 0,
+      "configurations_removed": 0,
+      "integrated_into_complete_assembly": false,
+      "global_coverage_proved": false,
+      "next_obligation": "The unconditional three-branch supply candidate fails on these maps. Add a justified closing-lobe, pentagonal-stop or exact representation operation; stronger minimality hypotheses remain available."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",

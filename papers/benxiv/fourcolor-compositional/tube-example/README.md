@@ -2159,3 +2159,42 @@ dependencies.
 [two-row-growth]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowGrowthReduction.lean
 [two-row-growth-receipt]: ../../../../tools/fourcolor/classical/two-row-growth-measurements.json
 [two-row-growth-replay]: ../../../../tools/fourcolor/classical/two-row-growth.json
+
+## Testing the current family union beyond the density-covered range
+
+The earlier 137 saved rotations have 20–42 vertices, within the already
+proved below-56 diamond-supply range. They cannot provide an informative
+test of broad coverage by the newer tube and cap laws.
+
+The [new replay][family-supply-probe] instead inspects 44 explicit rotations:
+eight saved controls, eighteen isolated-pentagon sources of orders 60–80,
+and the dual-and-truncate map of each source. Every rooted face trace and
+every original dart/phase orbit is checked. The supply branches are an
+actual recognized diamond, a fully recognized padded cap, or a simple
+alternating cycle of width at least three with a wholly hexagonal output
+seam. Each branch has its separately proved reduction theorem on the stated
+domain; this test concerns where the branches occur.
+
+Thirty-nine maps contain a qualifying branch. Five dual-and-truncate maps,
+with 222, 228, 228, 234 and 240 vertices, contain none. Four have no simple
+complete alternating orbit. The other 228-vertex map has six simple
+width-eighteen rows, each stopping immediately at a pentagon. Thus both
+initial-row failure and pentagonal stopping cases survive the improved
+two-row reduction.
+
+Every failure has an explicitly replayed proper Tait colouring. The replay
+also checks all 6,396 simple dual circuits of lengths three through five:
+there is no cyclic circuit below five, and the sixty cyclic five-circuits
+have the trivial pentagonal shores. These are bounded finite diagnostics,
+not kernel certificates of the full normal-form hypotheses or minimality.
+The shortest lobes have lengths 31, 33 or 35 and separate five original
+pentagons from seven. Full rotations, colouring witnesses, lobe darts and
+connected facial shores are retained in the record.
+
+The unconditional occurrence union therefore fails on these sources.
+Minimality-dependent repair remains open. The next mechanism must treat
+these closing or pentagonal seams, or exploit another exact representation
+of the map. No coverage configuration or original certificate dependency
+is removed: the complete assembly retains 633 and 630 respectively.
+
+[family-supply-probe]: ../../../../tools/fourcolor/classical/family-supply-probe.json

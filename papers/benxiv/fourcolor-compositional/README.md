@@ -108,6 +108,19 @@ and finite tube stabilization. This strengthens the geometric stopping theorem;
 initial cycle supply, nonsimple closing lobes and reduction at pentagonal stops
 remain the coverage obligations. No catalogue entry is removed.
 
+An [enlarged finite supply test](../../../tools/fourcolor/classical/family-supply-probe.json)
+now examines 44 explicit maps, including eighteen isolated-pentagon sources
+of orders 60–80 and their dual-and-truncate maps. Thirty-nine contain a
+currently recognized reduction; five maps of orders 222–240 contain none.
+Four have no simple complete alternating orbit; the fifth has six simple
+starting rows, all stopping immediately at pentagons. Explicit colourings
+and bounded dual-circuit diagnostics are retained. The shortest lobes in
+these failures have lengths 31–35 and separate five pentagons from seven.
+This finite obstruction changes the next geometric obligation: the present
+union needs a closing-lobe, pentagonal-stop or different representation
+operation. It does not refute a supply theorem using stronger minimality
+information, and it removes no catalogue entry.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

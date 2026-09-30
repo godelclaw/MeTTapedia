@@ -114,6 +114,18 @@ See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-composit
 A simple cycle with alternating local turns now constructs that
 row's facial sides and complete ordered interfaces at every width at least two;
 see [AlternatingCycleRecognition](AlternatingCycleRecognition.lean).
+The [enlarged supply replay](../../../../../tools/fourcolor/classical/family-supply-probe.json)
+tests the diamond, recognized padded-cap and hexagonal-seam simple-cycle
+union on 44 explicit maps. Thirty-nine have a qualifying occurrence; five
+dual-and-truncate maps of orders 222–240 do not. Four have no simple
+complete alternating orbit. The fifth has six simple width-eighteen rows,
+each already meeting a pentagon. All five have explicit Tait colourings
+and no nontrivial cyclic cut detected among all simple dual circuits of
+length at most five. Their shortest extracted lobes have lengths 31, 33
+or 35 and separate five pentagons from seven. These are independent finite
+diagnostics, not kernel certificates of normal form or minimality. They
+exclude unconditional coverage by the present union on these maps;
+closing-lobe and pentagonal-stop laws remain necessary candidates.
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

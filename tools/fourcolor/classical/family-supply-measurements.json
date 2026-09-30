@@ -1,0 +1,80 @@
+{
+  "status": "Independent finite obstruction to unconditional supply by the current three recognized families; minimality-dependent coverage remains open.",
+  "completed_utc": "2026-09-30T18:45:47.924641+00:00",
+  "build_base_revision": "aa45b1fc88a6a1dd376634d728077ca5b6a38c63",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "record": "family-supply-probe.json",
+  "record_sha256": "2cea4a13790c91a824c5f4373c4da66072302c0ca76bea87c2362ef0455678de",
+  "program": "family_supply_probe.py",
+  "program_sha256": "2c873c8c87dcd810b794818f2f61d10cbdb3226f0b26113336b8f18c64d36fdd",
+  "fixtures": "family-supply-fixtures.json",
+  "fixtures_sha256": "791169d2f8d8d63d24fc410615eb811fc487cd46a3a483c013f239e99f796dd2",
+  "input_controls": "residual-coverage-probe.json",
+  "input_controls_sha256": "5741d8a6beb0f9d209772a8612a789453e4e532cac195476e808528d3b667f1d",
+  "candidate_branches": [
+    "existing diamond face pattern",
+    "face-derived padded cap with fully checked recognition conditions",
+    "simple alternating row of width at least three with wholly hexagonal outgoing seam"
+  ],
+  "maps_checked": 44,
+  "covered_maps": 39,
+  "uncovered_maps": 5,
+  "failure_vertices": [
+    222,
+    228,
+    228,
+    234,
+    240
+  ],
+  "failures_without_simple_complete_orbit": 4,
+  "remaining_failure": {
+    "vertices": 228,
+    "simple_rows": 6,
+    "width": 18,
+    "successful_extensions": 0
+  },
+  "short_dual_circuits_checked": 6396,
+  "cyclic_five_circuits": 60,
+  "cyclic_circuits_below_five": 0,
+  "nontrivial_five_cyclic_circuit_violations": 0,
+  "shortest_lobe_lengths": [
+    31,
+    31,
+    33,
+    33,
+    35
+  ],
+  "shortest_lobe_pentagon_shores": [
+    5,
+    7
+  ],
+  "explicit_colour_witnesses_replayed": true,
+  "kernel_occurrence_certificate": false,
+  "full_normal_form_kernel_certified": false,
+  "minimality_dependent_coverage_refuted": false,
+  "global_coverage_proved": false,
+  "all_3_family_coverage_asserted": false,
+  "new_lean_theorems": 0,
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11100,
+    "exit_code": 0,
+    "scope": "Existing formal gates maintained; no new Lean declarations in this diagnostic tranche.",
+    "replay": "python3 tools/fourcolor/classical/family_supply_probe.py",
+    "optimized_assertion_bypass_rejected": true
+  },
+  "compression": {
+    "configurations_removed": 0,
+    "original_configuration_certificates_replaced": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "discharging_computations_replaced": 231,
+    "integrated_into_complete_assembly": false
+  },
+  "next_obligations": [
+    "Handle the actual nonsimple closing-lobe and immediate pentagonal stopping cases.",
+    "Investigate an exact dual-and-truncate colouring transport for the five new residuals.",
+    "Prove supply and any catalogue replacements separately from finite occurrence evidence."
+  ]
+}
