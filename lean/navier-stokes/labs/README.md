@@ -6977,3 +6977,114 @@ payment and illustrates a real excess burst. It does not verify an estimate
 uniform over arbitrary mutually amplifying parent histories. The stochastic
 representation, parabolic comparison, pressure observer bound, weak selector
 limit and resulting full-history allowance remain analytic results.
+
+## Reciprocal cellular-parent renewal
+
+`reciprocal_parent_history.py` adds genuine three-dimensional feedback to
+the pressure-bearing cellular datum above. Its torus has period `2*pi` and
+normalized volume. Keep the three cellular parents and `v0=2sin x`, and add
+two real cosine modes with Fourier amplitudes
+
+```text
+k=(1,1,1),    u_k=u_-k=(epsilon/2)(1,-1,0),
+l=(0,-1,1),   u_l=u_-l=(sigma epsilon/2)(1,1,1),  sigma=±1.
+```
+
+They are transverse and vertically dependent. Together with the other
+parents, the datum is genuinely three-dimensional. Their difference is the
+receiving cellular frequency `q=(1,2,0)`, whose initial coefficient is
+`i(-1/5,1/10,0)`. Only the ordered pairs `(k,-l)` and `(-l,k)` reach this
+receiver. The complete, canonical-pressure-corrected nonlinear source is
+
+```text
+N_q=i sigma epsilon^2(-4/5,2/5,1/4),
+Re(conj(u_q).N_q)=sigma epsilon^2/5,
+E_{q,-q}'=(4/5)sigma epsilon^2-nu.
+```
+
+The exact checker retains all outputs, including forty newly generated
+modes for `epsilon=1/5`. The full nonlinear kinetic work is zero. At
+`epsilon=1/5`, the cellular parents receive nonlinear energy at rate
+`4/125` for the positive phase, and the remaining modes lose energy at
+exactly that rate. Reversing the phase reverses this transfer. Both data
+have energy `469/200` and the same initial pressure-Hessian Fourier
+majorant `1831996/144375`. No body force or independent hidden controller
+is introduced.
+
+`MettapediaNS.CellularParentRenewal` kernel-checks the real, transverse datum,
+the two actual sources, equal initial energy, complete kinetic balance,
+physical receiving-pair rates, and their derivative consumer. It identifies
+the apparent force on the observed plane wave with the existing all-input
+subgrid force, including the Leray pressure correction. The finite support
+describes the initial datum; it is never assumed invariant under evolution.
+Lean's torus has period one: viscosity `1/(200*pi)` and the receiving rates
+`11*pi/250` and `-21*pi/250` correspond to viscosity `1/100` and rates
+`11/500` and `-21/500` here. The derivative consumer requires the actual
+coefficient derivative at the stated datum; it supplies no new existence
+or time-interval theorem.
+
+The heat-style parent reserve from the restricted class is, on this initial
+cellular set `P`, while its coefficients are nonzero,
+
+```text
+R_P=(1/nu) sum_{q in P}|u_q|/|q|,
+S_P=sum_{q in P}|q| |u_q|,
+R_P'=-S_P+(1/nu)sum_{q in P} Re(conj(u_q).N_q)/(|q| |u_q|).
+```
+
+It starts at `54` for `nu=.01`. Its initial rate is `1/2` for the positive
+phase and `-59/10` for the reversed phase. Thus autonomous monotonicity of
+this projected reserve fails outside the restricted class. Smooth local
+NS existence and continuity turn the positive initial rate into a short
+increasing interval analytically; that interval claim is not newly
+Lean-certified. A corrected full-datum reserve and recurrent-history
+payment remain possible.
+
+For a fixed parent band, elementary kinetic control already gives
+`R_P <= sqrt(6 E0/5)/nu` and `S_P <= sqrt(30 E0)`, because these six modes
+have squared frequency five. This finite-band bound is consistent with
+the observed increase. The open problem is a payment that controls the
+dangerous observable across all evolving scales and geometries.
+
+The default checker also compares every velocity and memory coefficient of
+the numerical initial operator with the exact complete Fourier operator.
+Six rational amplitude/phase checks pass; the maximum floating operator
+error is below `7e-17`.
+
+```sh
+python3 labs/reciprocal_parent_history.py
+python3 labs/reciprocal_parent_history.py --prefix --n 32 --final-time .1 --dt .005
+python3 labs/reciprocal_parent_history.py --prefix --n 48 --final-time .1 --dt .005
+python3 labs/reciprocal_parent_history.py --prefix --n 48 --final-time .1 --dt .0025
+python3 labs/reciprocal_parent_history.py --prefix --n 48 --final-time .1 --dt .005 --phase -1
+```
+
+Prefixes evolve all velocities and all six symmetric memory entries with
+no prescribed parent path. The threshold `b=75713.1665463` is fixed from an
+analytic initial gradient bound and the exact initial pressure majorant;
+it is not fitted to a future maximum. Pressure and its full nonlinear
+history are evaluated on an enlarged grid. Diagnostics retain canonical
+pressure, the full pressure commutator, memory positivity, high-frequency
+fractions, the soft selector, completed diffusion and the signed parent
+reserve and energy ledgers.
+
+The joint-excess production diagnostic evaluates the full PDE expression
+on the current approximate field. It is not asserted equal to the excess
+derivative of the truncated evolution: that comparison also requires
+the Galerkin residual. The parent ledgers, in contrast, use the actual
+coefficient RHS integrated by the numerical solver.
+
+At `t=.1`, the positive-phase reserve is `54.0092382831345`; spatial
+refinement changes it by less than `4e-14`, and halving the time step by
+less than `1.2e-11`. Its renewal integral is about `.279295323817`, exceeding
+the shear integral `.270057040682`. The reversed-phase reserve is about
+`53.3735035945694`. Sampled memory eigenvalues are positive at that endpoint
+and both signed ledgers close to about `1.4e-13` or better. The soft excess
+is still zero there, so this does not test its active pressure payment.
+
+Longer coarse prefixes lose memory positivity and are excluded from
+physical payment evidence, even when their integrated kinetic balance
+looks accurate. Numerical prefixes are Fourier-Galerkin approximations,
+not continuum enclosures; unretained evolution, positivity and threshold
+quadrature require separate refinement. No bound for arbitrary repeated
+parent renewal is inferred from these finite checks.

@@ -604,6 +604,30 @@ the actual varying selector and complete memory. The horizontal parents
 decay autonomously, so the class does not establish a payment for mutually
 regenerating arbitrary three-dimensional parents.
 
+`CellularParentRenewal` now tests that restriction against genuine internal
+feedback. Two transverse modes with vertical dependence feed an existing
+cellular parent through the complete infinite NS coefficient equation.
+Reversing one hidden cosine phase reverses the parent's energy transfer
+while preserving the full initial energy. The receiving-pair rate includes
+viscosity and the exact unit-torus normalization. The complete kinetic
+balance still dissipates energy: the receiving gain is supplied internally.
+The apparent force on the receiving plane wave is identified with the
+existing pressure-corrected subgrid force, not an independently prescribed
+fluid force. These source, energy and derivative-consumer statements are
+Lean-certified; construction of their short-time history is not newly
+formalized here.
+
+The [reciprocal parent lab](labs/reciprocal_parent_history.py) retains every
+generated output in its exact initial calculation. For its stated data,
+the projected heat-style parent reserve initially increases despite zero
+external forcing. Resolved short prefixes retain all velocity components,
+all six memory entries, canonical pressure and the signed parent-transfer
+ledger. This refutes autonomous decay of that projected reserve outside
+the restricted cellular class. It does not refute a corrected full-datum
+reserve or establish recurrent unbounded renewal. Paying the signed
+pressure flux and joint reaction over arbitrary interacting histories
+remains the continuation obligation.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

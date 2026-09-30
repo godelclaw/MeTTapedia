@@ -24,6 +24,7 @@ import MettapediaNS.ViscousMemorySoftExcess
 import MettapediaNS.PressureDiffusionCompletion
 import MettapediaNS.WholeSpacePressureDiffusion
 import MettapediaNS.WholeSpacePressureLocalization
+import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
 import MettapediaNS.PressureHessianLocalization
@@ -796,3 +797,45 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.orderEnergy_one_le_of_middle
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.hasNSEvolution_of_middle_bound
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_middle_bound
+
+-- Complete unforced source and phase-dependent cellular parent renewal.
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parentP
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parentQ
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parentR
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.verticalMode
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.hiddenK
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.hiddenL
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.support
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.pv
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.qv
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.rv
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.vv
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.kv
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.lv
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.velocity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.support_symmetric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.velocity_supported
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.support_nonzero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.velocity_transverse
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.velocity_reality
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parent_pairs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.negative_parent_pairs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parent_source
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.negative_parent_source
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.actual_source
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parent_work
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.negative_parent_work
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parentPair
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.summable_full_fiber
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.filtered_parent_convection_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.actual_subgrid_force
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parent_nonlinear_energy_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.parent_pair_energy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.initial_energy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.phase_energy_equal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.actual_kinetic_balance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.actual_parent_energy_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.forward_parent_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.reversed_parent_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.phase_changes_receiving_growth
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularParentRenewal.hasDerivAt_parent_energy
