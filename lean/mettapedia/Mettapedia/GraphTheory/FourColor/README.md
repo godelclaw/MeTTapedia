@@ -55,8 +55,17 @@ joins consecutive outside endpoints by one or two actual edges. Complete
 boundary classification and ambient connectivity then connect the whole
 exterior. Its [cap consumer](PaddedCycleCapExteriorConnectivity.lean) removes
 the separate exterior-connectivity hypothesis from the all-width strict
-reduction and counts the whole-map loss exactly. Vertex separation, broader
-recognition and coverage remain open obligations.
+reduction and counts the whole-map loss exactly. The
+[pentagonal separation theorem](PentagonalPaddedCapSeparation.lean) now derives
+forty distinct traced vertices from the actual face closures and ambient girth.
+Its compact joint routes preserve both darts and their relative slot choices;
+the decoded diagram is checked against the face-trace operations. The
+[face-pattern reduction](PentagonalPaddedCapReduction.lean) derives girth from
+normal form, replaces the forty-vertex cap by a ten-cycle and reconstructs
+every smaller colouring. No local isomorphism, vertex injection or exterior
+connectivity is supplied. The shared all-width colouring law is reused;
+the finite certificate checks geometry. Separation at other widths and
+global occurrence coverage remain open obligations.
 Independent replay includes an all-five/six 96→60 example and the earlier
 guarded GP(2,0) 80→50 example. No further catalogue dependency is removed.
 See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).

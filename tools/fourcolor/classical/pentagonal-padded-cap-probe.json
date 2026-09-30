@@ -1,0 +1,69 @@
+{
+  "evidence": "Independent program replay of the fixed pentagonal diagram; exact Lean certification is separate.",
+  "sectors": 5,
+  "vertices": 40,
+  "internal_edges": 55,
+  "ports": 10,
+  "route_record_bytes": 4,
+  "route_rows": 960,
+  "unused_rows": 24,
+  "compact_route_bytes": 3840,
+  "route_blocks": 8,
+  "compact_flip_bytes": 240,
+  "decoded_internal_and_port_slots": 120,
+  "simultaneous_translation_checks": 600,
+  "normalized_vertex_pair_phase_checks": 936,
+  "all_translated_vertex_pair_phase_checks": 4680,
+  "maximum_simultaneous_route_operations": 12,
+  "terminal_counts": {
+    "path_1": 66,
+    "path_2": 120,
+    "path_3": 326,
+    "path_4": 424
+  },
+  "route_length_counts": {
+    "0": 492,
+    "1": 66,
+    "2": 97,
+    "3": 35,
+    "4": 95,
+    "5": 50,
+    "6": 39,
+    "7": 42,
+    "8": 4,
+    "9": 9,
+    "10": 3,
+    "11": 2,
+    "12": 2
+  },
+  "dependencies": [
+    {
+      "source": "tools/fourcolor/classical/pentagonal_padded_cap_probe.py",
+      "source_sha256": "e405899056b777fc2aad21fffc9bcc57c5692b3879113121cb4717a31362268f"
+    },
+    {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapSeparation.lean",
+      "source_sha256": "643285a67ae784466921d4b7bbc68e4a44b6b4952aa18f2d55158e1659a5d344"
+    },
+    {
+      "source": "tools/fourcolor/classical/padded_cap_geometry_probe.py",
+      "source_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a"
+    },
+    {
+      "source": "tools/fourcolor/classical/padded_cap_recognition_probe.py",
+      "source_sha256": "5ebe4d908b2d2bc7f5f843b1239b358282551e7f1157142b6206e6c8662af4aa"
+    },
+    {
+      "source": "tools/fourcolor/classical/padded_cap_probe.py",
+      "source_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba"
+    },
+    {
+      "source": "tools/fourcolor/classical/alternating_cycle_probe.py",
+      "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+    },
+    {
+      "source": "tools/fourcolor/classical/alternating_lobe_probe.py",
+      "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+    }
+  ]
+}

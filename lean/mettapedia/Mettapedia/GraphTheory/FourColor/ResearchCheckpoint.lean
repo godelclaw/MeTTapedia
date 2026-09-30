@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.PaddedCycleCapAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapRecognitionAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapExteriorAudit
+import Mettapedia.GraphTheory.FourColor.PentagonalPaddedCapAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
@@ -73,7 +74,12 @@ The constructed isomorphism is consumed by the all-width strict reduction
 and vertex-minimal counterexample exclusion. Vertex separation and exterior
 connectivity were initially retained. Short seam faces now derive exterior
 connectivity through actual one- or two-edge paths and complete boundary
-classification. Vertex separation remains explicit; no new catalogue
+classification. In the pentagonal case, a compact joint-route certificate
+now derives all forty distinct vertices from local face closure and ambient
+girth. Normal form supplies girth, completing recognition and strict thirty-
+vertex decrease without a supplied isomorphism, vertex injection or exterior
+connectivity. The all-width colouring law is reused. Vertex separation at
+other widths and occurrence coverage remain separate; no new catalogue
 coverage is established.
 
 An explicit build root for preserved results outside the active headline.

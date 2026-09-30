@@ -1200,7 +1200,7 @@
           "normal_form_asserted": false
         }
       },
-      "next_obligation": "Short seam faces now derive exterior connectivity for the face-traced family in padded-cap-exterior-measurements.json. Derive vertex separation, prove geometric supply and replace actual complete-assembly dependencies. General disconnected odd-width exteriors outside this face pattern remain separate."
+      "next_obligation": "Pentagonal traced-vertex injectivity and the complete actual face-pattern reduction are now derived in pentagonal-padded-cap-measurements.json. Prove residual geometric supply, broaden recognition as necessary, and replace actual coverage dependencies. Other sector counts still retain vertex separation."
     },
     {
       "name": "face-derived padded-cap recognition and uniform port exposure",
@@ -1250,7 +1250,7 @@
           20
         ]
       },
-      "next_obligation": "Short seam faces now derive exterior connectivity for the face-traced family in padded-cap-exterior-measurements.json. Derive vertex separation, prove geometric supply and replace actual complete-assembly dependencies. General disconnected odd-width exteriors outside this face pattern remain separate."
+      "next_obligation": "Pentagonal traced-vertex injectivity and the complete actual face-pattern reduction are now derived in pentagonal-padded-cap-measurements.json. Prove residual geometric supply, broaden recognition as necessary, and replace actual coverage dependencies. Other sector counts still retain vertex separation."
     },
     {
       "name": "short-face exterior connectivity consumed by all-width cap reduction",
@@ -1298,7 +1298,42 @@
           20
         ]
       },
-      "next_obligation": "Derive traced-vertex separation, then establish geometric supply and replace actual coverage dependencies."
+      "next_obligation": "Pentagonal traced-vertex injectivity and the complete actual face-pattern reduction are now derived in pentagonal-padded-cap-measurements.json. Prove residual geometric supply, broaden recognition as necessary, and replace actual coverage dependencies. Other sector counts still retain vertex separation."
+    },
+    {
+      "name": "pentagonal cap recognition and strict reduction from actual faces",
+      "record": "pentagonal-padded-cap-measurements.json",
+      "status": "Kernel-checked pentagonal cap face-pattern recognition and actual strict reduction; vertex injectivity and exterior connectivity are derived.",
+      "sectors": 5,
+      "cap_vertices": 40,
+      "replacement_vertices": 10,
+      "boundary_ports": 10,
+      "whole_map_vertex_difference": 30,
+      "actual_vertex_injectivity_derived": true,
+      "actual_exterior_connectivity_derived": true,
+      "local_isomorphism_supplied": false,
+      "new_geometric_vertex_separation_schemes": 1,
+      "additional_distinct_geometric_families": 0,
+      "new_family_colouring_certificates": 0,
+      "existing_all_width_colouring_law_reused": true,
+      "actual_ambient_reconstruction_and_minimality": true,
+      "source_normal_form_retained": true,
+      "short_seam_face_condition_retained": true,
+      "finite_geometry_certificate": {
+        "compact_flip_bytes": 240,
+        "route_blocks": 8,
+        "compact_route_bytes": 3840,
+        "total_route_rows": 960,
+        "unused_route_rows": 24,
+        "normalized_vertex_pair_phase_cases": 936,
+        "cyclic_translation_slot_cases": 600,
+        "maximum_simultaneous_operations": 12
+      },
+      "original_configuration_certificates_replaced": 0,
+      "configurations_removed": 0,
+      "integrated_into_complete_assembly": false,
+      "global_coverage_proved": false,
+      "next_obligation": "Connect the recognized family to geometric supply for residual maps, and prove a smaller unavoidable catalogue rather than only replacing colour checks."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",

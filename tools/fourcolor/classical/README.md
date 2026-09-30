@@ -57,9 +57,29 @@ removes the separate connected-exterior hypothesis from that face-derived
 strict reduction. One or two actual exterior edges join consecutive ports;
 boundary completeness and ambient connectivity exclude other components.
 The [independent replay](padded-cap-exterior-probe.json) checks 956 such arcs,
-including both five- and six-sided seam faces. Vertex separation and global
-coverage remain open, and the complete assembly still retains 633
+including both five- and six-sided seam faces. The
+[pentagonal recognition receipt](pentagonal-padded-cap-measurements.json)
+now removes the separate vertex-injection condition at sector count five.
+Actual face operations realize the forty-vertex partial diagram, and a
+compact joint-route certificate proves distinctness from ambient girth.
+Normal form supplies girth. The actual face-pattern consumer then replaces
+the cap by a ten-cycle and reconstructs all smaller colourings, with thirty
+fewer vertices in the whole map. It supplies neither local injectivity nor
+exterior connectivity as hypotheses. The certificate checks geometry;
+the shared all-width colouring law is reused. Separation at other widths
+and global coverage remain open, and the complete assembly still retains 633
 configurations and 630 original certificate dependencies.
+
+```sh
+python3 tools/fourcolor/classical/pentagonal_padded_cap_probe.py
+```
+
+This independent replay checks the decoded internal reversals and ports,
+cyclic translation and every translated collision/phase route. It checks
+936 normalized cases and 4,680 translated cases, with at most twelve
+simultaneous operations. The flat route data comprises eight blocks and
+960 four-byte records, including 24 unused equal-vertex rows. No new
+colouring certificate or coverage reduction is credited.
 
 ## Complete endpoints
 

@@ -1,0 +1,187 @@
+{
+  "status": "Kernel-checked pentagonal cap face-pattern recognition and actual strict reduction; vertex injectivity and exterior connectivity are derived.",
+  "completed_utc": "2026-09-30T15:03:28.259127+00:00",
+  "build_base_revision": "9dc8cf8bc533bcb3fe78aea072f38b0d344c7392",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartRoutes",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartRoutes.lean",
+      "source_sha256": "8b301088f7f3af00f9353936d1588b31ca4e1c5ec20aaba46014d5cc0b397c35",
+      "source_bytes": 4607,
+      "olean_sha256": "e89675753fa5810fa615ba392e1561f91a38b6e7db84b823b3dd8a535b42ed36",
+      "olean_bytes": 387024,
+      "reported_build_seconds": 1.9
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapImmersion",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapImmersion.lean",
+      "source_sha256": "2a68d2fde37bd0d789fd6dc23edba798fdd0c1d34290baad114901a91dd4c3ec",
+      "source_bytes": 4832,
+      "olean_sha256": "274d2e81fbe0bb7d1f0a6737f09f8da95327ae5a3ddac5c55076e6decd594f6c",
+      "olean_bytes": 318960,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalPaddedCapSeparation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapSeparation.lean",
+      "source_sha256": "643285a67ae784466921d4b7bbc68e4a44b6b4952aa18f2d55158e1659a5d344",
+      "source_bytes": 13249,
+      "olean_sha256": "f28d27381d899dd55b224097ce0173a5fdaf5f995aebde025a9f878fba1867b5",
+      "olean_bytes": 391328,
+      "reported_build_seconds": 438.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalPaddedCapReduction",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapReduction.lean",
+      "source_sha256": "0e71ed08421912f97146ee414fccf49b5b24e47188c9c75c2e4f26c2a9b76b23",
+      "source_bytes": 5251,
+      "olean_sha256": "d6bcca76b97a2b30f3082f8af087cf9e2e0d0e8b66340ce0f3fd7fe932017519",
+      "olean_bytes": 222600,
+      "reported_build_seconds": 3.4
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalPaddedCapAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapAudit.lean",
+      "source_sha256": "aef2e501e56b0a7696fb466acc0a63caf3af9833f17d9c531354084694dd02e9",
+      "source_bytes": 4972,
+      "olean_sha256": "01cd4a4cdd6d8ede6270d752e0da1a3e3efa84bf28de67af21bb29c78da953c0",
+      "olean_bytes": 3568,
+      "reported_build_seconds": 7.2
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "0df5ae4e5278e142c3664516995185c1c1c73a89118541602bb37baf1cfe3879",
+      "source_bytes": 33088,
+      "olean_sha256": "e770ee4111027f723c27a4905dca0227e7c4e679090f492b5a892daa2748be38",
+      "olean_bytes": 38720,
+      "reported_build_seconds": 99.0
+    }
+  ],
+  "audit": {
+    "root_count": 12,
+    "combined_dependency_closure": 26655,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "genuine four-path terminals retain distinct opposite corners",
+      "binary routes preserve the joint dart equality under simultaneous rotations and reversals",
+      "all-width actual face closure supplies the partial cubic diagram realization",
+      "compact flip decoding agrees with the original diagram at all 120 slots",
+      "cyclic coordinate translation preserves both operations and the same joint dart",
+      "936 normalized collision-phase routes prove actual vertex injectivity",
+      "spherical normal form supplies size and girth without source colouring",
+      "derived vertex injection and short seam faces construct the cap occurrence and connected exterior",
+      "the shared all-width cap repair reconstructs genuine colourings after strict whole-map decrease",
+      "minimality supplies source normal form and a smaller-map colouring"
+    ],
+    "excluded": [
+      "complete classical FourColor namespace",
+      "classical integration MettapediaFourColor namespace",
+      "finite tube-stabilization certificates",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11080,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel times; null means cached in the recorded gates. No isolated kernel timing or speedup claim.",
+    "geometry_kernel_check": "The separation certificate was evaluated in the component build; actual source reduction and reconstruction were audited in the complete lane gate.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "sectors": "Five in the new geometric separation and face-pattern consumer; the existing colouring repair handles every m >= 2.",
+    "source": "A finite simple graph with bridgeless spherical cubic map data, minimum actual orbit-face boundary size five, and cyclic five-edge connectivity; minimality derives these hypotheses.",
+    "local_faces": "An actual central pentagon, five inner hexagons, five outer hexagons and five outer pentagons at the stated dart coordinates.",
+    "seam_faces": "Every final cap port lies on an actual face of length five or six.",
+    "generic_separation": "Any simple graph of girth at least five realizing all slots, rotations and internal reversals of this partial diagram has forty distinct image vertices.",
+    "vertex_separation": "Derived, not supplied, for the pentagonal pattern.",
+    "exterior_connectivity": "Derived from the complete cyclic boundary and actual short seam faces.",
+    "reduction": "Replace the actual forty-vertex cap by a ten-cycle; the smaller map remains spherical, cubic, connected and bridgeless.",
+    "count": "The whole smaller-map vertex count plus thirty equals the whole original-map vertex count.",
+    "reconstruction": "Every smaller-map Tait colouring reconstructs a genuine source colouring. The existing physical repair may recolour the exterior jointly with the smaller cycle.",
+    "interface": "Ten ordered ports retain shared boundary choices and genuine internal colouring witnesses.",
+    "finite_data": "A checked 240-byte compact flip table and eight flat binary-route blocks totaling 3840 bytes. The 960 four-byte route rows include 24 unused equal-vertex rows.",
+    "colour_checks": "No new table of cap colourings; the previously proved uniform cyclic-choice and physical-repair laws are reused.",
+    "minimality": "Only the actual face lengths and short seam faces are supplied to the graph-backed vertex-minimal-counterexample exclusion.",
+    "limitations": "Other sector counts still retain vertex injectivity. No universal occurrence coverage, smaller catalogue or additional complete-assembly dependency replacement is proved."
+  },
+  "programme": {
+    "existing_face_derived_reduction_hypothesis_removed": "Pentagonal traced-vertex injectivity",
+    "new_geometric_vertex_separation_schemes": 1,
+    "additional_distinct_geometric_families": 0,
+    "new_family_colouring_certificates": 0,
+    "existing_all_width_colouring_law_reused": true,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "additional_original_certificates_replaced": 0,
+    "catalogue_entries_removed": 0,
+    "integrated_into_complete_assembly": false,
+    "global_coverage_proved": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/pentagonal_padded_cap_probe.py",
+    "script_sha256": "e405899056b777fc2aad21fffc9bcc57c5692b3879113121cb4717a31362268f",
+    "record": "tools/fourcolor/classical/pentagonal-padded-cap-probe.json",
+    "record_sha256": "eff8b72d56df7f57e2ace78d373fb470c75bd1d15df6d5adf4da914f2107ae08",
+    "decoded_slots": 120,
+    "translation_cases": 600,
+    "normalized_vertex_pair_phase_cases": 936,
+    "translated_vertex_pair_phase_cases": 4680,
+    "maximum_simultaneous_operations": 12,
+    "terminal_counts": {
+      "path_1": 66,
+      "path_2": 120,
+      "path_3": 326,
+      "path_4": 424
+    },
+    "evidence": "Independent program replay of the fixed pentagonal diagram; exact Lean certification is separate.",
+    "program_dependencies": [
+      {
+        "source": "tools/fourcolor/classical/pentagonal_padded_cap_probe.py",
+        "source_sha256": "e405899056b777fc2aad21fffc9bcc57c5692b3879113121cb4717a31362268f"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapSeparation.lean",
+        "source_sha256": "643285a67ae784466921d4b7bbc68e4a44b6b4952aa18f2d55158e1659a5d344"
+      },
+      {
+        "source": "tools/fourcolor/classical/padded_cap_geometry_probe.py",
+        "source_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a"
+      },
+      {
+        "source": "tools/fourcolor/classical/padded_cap_recognition_probe.py",
+        "source_sha256": "5ebe4d908b2d2bc7f5f843b1239b358282551e7f1157142b6206e6c8662af4aa"
+      },
+      {
+        "source": "tools/fourcolor/classical/padded_cap_probe.py",
+        "source_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba"
+      },
+      {
+        "source": "tools/fourcolor/classical/alternating_cycle_probe.py",
+        "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+      },
+      {
+        "source": "tools/fourcolor/classical/alternating_lobe_probe.py",
+        "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+      }
+    ]
+  },
+  "remaining": [
+    "Connect the successful pentagonal cap and other family laws to actual residual occurrence supply.",
+    "Prove an appropriate broader geometric family or justified vertex separation at other widths.",
+    "Use proved occurrence supply to remove residual coverage configurations, then audit the complete assembly."
+  ]
+}

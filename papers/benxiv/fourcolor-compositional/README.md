@@ -63,7 +63,13 @@ derives boundary exposure at every width. The same short seam faces now
 connect successive exterior endpoints by one or two actual edges. Boundary
 completeness and ambient connectivity prove that the entire exterior is
 connected, removing that hypothesis from the actual face-derived strict
-reduction. Vertex separation remains explicit; broader recognition,
+reduction. The [pentagonal recognition step](tube-example/README.md#pentagonal-cap-separation)
+now derives forty distinct actual vertices through joint dart routes.
+Normal form supplies the required girth, so this face-pattern consumer has
+no supplied vertex-injection or exterior-connectivity hypothesis. It replaces
+forty vertices by a ten-cycle and reuses the all-width colouring repair to
+reconstruct the source. The retained compact certificate checks geometric
+routes, not colourings. Separation at other widths, broader recognition,
 disconnected odd-width exteriors outside this face pattern and global
 coverage remain open. The complete classical catalogue
 and certificate counts are unchanged.

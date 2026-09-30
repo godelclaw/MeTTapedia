@@ -1921,7 +1921,8 @@ every width.
 The [actual cap consumer][cap-exterior] uses this derived connectivity in the
 strict reduction and colouring reconstruction. The entire map loses exactly
 `6m` vertices, including every vertex of the replacement cycle. The `8m`
-traced vertices must still be distinct. Minimality supplies the ambient map
+traced vertices must be distinct in this all-width consumer. The pentagonal
+case below derives that condition. Minimality supplies the ambient map
 class, and a smaller-map colouring reconstructs a genuine original colouring.
 A face pattern alone has not yet been proved sufficient at every width.
 
@@ -1961,3 +1962,55 @@ certificate or catalogue removal is credited.
 [cap-exterior]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapExteriorConnectivity.lean
 [cap-exterior-probe]: ../../../../tools/fourcolor/classical/padded-cap-exterior-probe.json
 [cap-exterior-measurements]: ../../../../tools/fourcolor/classical/padded-cap-exterior-measurements.json
+
+## Pentagonal cap separation
+
+For the pentagonal cap, [actual face darts][cap-immersion] realize all forty
+vertex positions before distinctness is known. Local face closure preserves
+each internal edge reversal; cubic rotation preserves the three ordered
+slots at each position. The [separation certificate][cap-separation] follows
+two proposed equal darts together, rotating both or reversing both internal
+edges. Each route ends at different slots of one vertex or a path of one
+through four edges. Slot injectivity, triangle-freeness and four-cycle
+exclusion rule out these equalities. Four-edge paths retain both distinct
+opposite corners, so a backtracking closed walk cannot pass the check.
+
+A compact diagram is checked against the face-derived one at every slot.
+Cyclic translation preserves both operations. This reduces the geometry
+certificate to 936 unequal normalized vertex-pair/slot cases, represented
+by 960 four-byte records including 24 unused rows. Eight flat blocks keep
+each kernel check bounded; the routes use at most twelve simultaneous
+operations. This finite geometric certificate remains part of the proof;
+the all-width cap-colouring law is still the shared cyclic-choice argument,
+rather than a new colouring table.
+
+The [actual strict-reduction consumer][cap-pentagonal-reduction] derives
+girth from spherical cubic normal form and cyclic five-edge connectivity.
+Face closure and the joint routes therefore yield forty distinct actual
+vertices. The earlier short-seam law supplies exposed ports and connected
+exterior. The whole-map operation replaces the cap by a ten-cycle, loses
+exactly thirty vertices and reconstructs a genuine source colouring from
+every smaller colouring. A graph-backed vertex-minimal counterexample
+cannot contain the stated pattern. No local isomorphism, vertex-injection
+or exterior-connectivity premise is supplied to that endpoint.
+
+Thus one graph transformation has three linked maps: actual faces to a
+faithful operation diagram, the diagram to its joint boundary constraint,
+and compatible smaller-map witnesses back to an original colouring.
+Keeping a pair of darts together in the geometric check plays the same
+role as keeping the cycle and exterior colouring together in the repair.
+
+The [independent replay][cap-pentagonal-probe] checks all 120 decoded slots,
+600 cyclic-translation cases and 4,680 translated collision/phase cases.
+It is program evidence; the [audit receipt][cap-pentagonal-measurements]
+records the separate kernel check and actual reconstruction chain.
+This completes recognition for this fixed local pentagonal pattern in
+arbitrary qualifying exteriors. It does not prove global occurrence,
+separation at other widths or removal of another classical dependency.
+The coverage catalogue and original-certificate counts remain 633 and 630.
+
+[cap-immersion]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapImmersion.lean
+[cap-separation]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapSeparation.lean
+[cap-pentagonal-reduction]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalPaddedCapReduction.lean
+[cap-pentagonal-probe]: ../../../../tools/fourcolor/classical/pentagonal-padded-cap-probe.json
+[cap-pentagonal-measurements]: ../../../../tools/fourcolor/classical/pentagonal-padded-cap-measurements.json
