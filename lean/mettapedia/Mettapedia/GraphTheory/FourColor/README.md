@@ -126,6 +126,18 @@ or 35 and separate five pentagons from seven. These are independent finite
 diagnostics, not kernel certificates of normal form or minimality. They
 exclude unconditional coverage by the present union on these maps;
 closing-lobe and pentagonal-stop laws remain necessary candidates.
+There is now a [uniform dual-and-truncate colouring law](DualTruncateColoring.lean)
+for another structural branch. Expanded vertices are source darts, and a
+proper source three-vertex colouring gives a genuine target Tait edge
+colouring by the local rule `a+b, b, a`. The
+[GSLT consumer](DualTruncateConstructionGSLT.lean) supplies compatible
+witnesses on every complete sweep, including exact representation adapters.
+The source colouring remains an explicit input. An
+[independent replay](../../../../../tools/fourcolor/classical/dual-truncate-colouring.json)
+checks the source witnesses and exact dart/rotation adapters on all five
+residuals: 1,152 target vertices and 3,456 darts. Those finite inputs are
+not kernel certificates. Source-colouring existence and geometric family
+recognition remain separate; no coverage configuration is removed.
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

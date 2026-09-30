@@ -171,6 +171,24 @@ The [receipt](family-supply-measurements.json) records the exact scope.
 python3 tools/fourcolor/classical/family_supply_probe.py
 ```
 
+The [dual-and-truncate replay](dual-truncate-colouring.json) checks one
+vertex-to-edge colouring law on all five residuals above. A proper
+three-vertex source colouring gives expanded star colours `a+b, b, a`.
+The [uniform Lean theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateColoring.lean)
+constructs the actual rotation and target edge colouring; its
+[GSLT consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateConstructionGSLT.lean)
+supplies compatible witnesses on every complete sweep and through exact
+representation adapters. The
+[source words](dual-truncate-colouring-fixtures.json) and concrete adapters
+are independently replayed, not kernel input certificates. The source
+colouring hypothesis remains explicit, and no coverage entry is removed.
+The [receipt](dual-truncate-colouring-measurements.json) records the nine
+audited proof roots, dependency scope and full build gate.
+
+```sh
+python3 tools/fourcolor/classical/dual_truncate_colouring.py
+```
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

@@ -2198,3 +2198,43 @@ of the map. No coverage configuration or original certificate dependency
 is removed: the complete assembly retains 633 and 630 respectively.
 
 [family-supply-probe]: ../../../../tools/fourcolor/classical/family-supply-probe.json
+
+## One colouring law across a different graph representation
+
+The five uncovered maps above are literal dual-and-truncate transforms of
+smaller cubic sources. Their expanded vertices can be named by the source
+darts. For source permutations `alpha` and `phi`, the three neighbours of
+expanded vertex `d` are `alpha d`, `phi d`, `phi.symm d`, in that cyclic order.
+Cross edges retain the source edge identifiers; polygon edges are indexed
+by the source darts. The [Lean construction][dual-truncate-colouring] proves
+the edge fibres, reversal, absence of self loops and cubic vertex stars.
+
+Take a proper source vertex colouring using the three nonzero Klein colours.
+At a source dart from a vertex of colour `a` to one of colour `b`, give the
+expanded star colours `a+b`, `b`, `a`. Since `a` and `b` are distinct and
+nonzero, these three colours are distinct and nonzero. The rule agrees at
+both ends of every actual edge, so it constructs a genuine proper Tait
+colouring. It works uniformly for every source with the stated witness,
+without a table of target colourings.
+
+The [GSLT bridge][dual-truncate-gslt] reuses the existing exact source encoder:
+every complete vertex order gives a construction route with compatible
+colouring choices. The same conclusion holds in another representation
+when dart, vertex and rotation equivalences commute with the relevant
+operations. The [dependency audit][dual-truncate-audit] excludes complete
+classical Four Colour endpoints and admits only the standard axioms.
+
+The [concrete replay][dual-truncate-replay] retains five source colouring
+words and checks the adapters to the saved residual rotations. It covers
+1,152 target vertices, 1,728 target edges and 3,456 target darts. These
+specific input and adapter checks are independent program evidence, not
+kernel certificates. When the source is cubic, it has one third as many
+vertices; the smaller constraint is vertex colouring rather than Tait
+edge colouring. Universal source-colouring existence, geometric recognition
+and coverage therefore remain separate obligations. No catalogue entry or
+original configuration certificate is removed.
+
+[dual-truncate-colouring]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateColoring.lean
+[dual-truncate-gslt]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateConstructionGSLT.lean
+[dual-truncate-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateColoringAudit.lean
+[dual-truncate-replay]: ../../../../tools/fourcolor/classical/dual-truncate-colouring.json

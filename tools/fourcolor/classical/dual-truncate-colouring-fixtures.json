@@ -1,0 +1,31 @@
+{
+  "status": "Concrete source vertex-colouring inputs for independent replay; not kernel input certificates.",
+  "palette": "The nonzero Klein colours encoded as 1, 2, 3; addition is XOR.",
+  "maps": [
+    {
+      "source": "IPR-C74-fullgen-0000",
+      "target": "dual-truncate-IPR-C74-fullgen-0000",
+      "vertex_colour_word": "12121212121212121212231212121321212121321231231231231321321213213212313131"
+    },
+    {
+      "source": "IPR-C76-fullgen-0000",
+      "target": "dual-truncate-IPR-C76-fullgen-0000",
+      "vertex_colour_word": "1212121212121212121223121212132121232132312323211321212121321213123132131312"
+    },
+    {
+      "source": "IPR-C76-fullgen-0001",
+      "target": "dual-truncate-IPR-C76-fullgen-0001",
+      "vertex_colour_word": "1212121212121212121223121212132121232132312323211321212121321213123132131312"
+    },
+    {
+      "source": "IPR-C78-fullgen-0000",
+      "target": "dual-truncate-IPR-C78-fullgen-0000",
+      "vertex_colour_word": "121212121212121212212121212121212121321212312123121323232132121321213212313131"
+    },
+    {
+      "source": "IPR-C80-fullgen-0002",
+      "target": "dual-truncate-IPR-C80-fullgen-0002",
+      "vertex_colour_word": "12121212121212121212231212121321212121321231231231231321212121321213123132131312"
+    }
+  ]
+}

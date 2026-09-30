@@ -121,6 +121,19 @@ union needs a closing-lobe, pentagonal-stop or different representation
 operation. It does not refute a supply theorem using stronger minimality
 information, and it removes no catalogue entry.
 
+A [uniform representation transport](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateColoring.lean)
+now addresses that residual family conditionally. A proper three-vertex
+colouring of the smaller source reconstructs a proper three-edge colouring
+of its literal dual-and-truncate map through one local Klein-group formula.
+The source has one third as many vertices when cubic. The
+[operational bridge](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateConstructionGSLT.lean)
+proves compatible colouring witnesses on every complete construction sweep
+and transports them through exact dart, vertex and rotation equivalences.
+An [independent concrete replay](../../../tools/fourcolor/classical/dual-truncate-colouring.json)
+checks all five new residuals. Source-colouring existence is still required;
+this is a change of constraint type, not an unconditional Tait-to-Tait
+reduction or a new coverage theorem.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

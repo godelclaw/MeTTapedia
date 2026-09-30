@@ -1,0 +1,90 @@
+{
+  "status": "Kernel-checked uniform vertex-to-edge colouring reconstruction and faithful GSLT route consumers; five concrete input adapters independently replayed.",
+  "completed_utc": "2026-09-30T19:28:02.475996+00:00",
+  "build_base_revision": "309cc049bea3719f6b4f66b64807d1ab3e2e94b1",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "proof_modules": {
+    "DualTruncateColoring": {
+      "source_sha256": "e97316720b70768d9d728e747b6d0f00a9100deab87ed81867e373f38443b43c",
+      "source_bytes": 9119,
+      "olean_bytes": 1078672
+    },
+    "DualTruncateConstructionGSLT": {
+      "source_sha256": "078c377ada4d7e230d2fcb7a9214279edf3a6469e0b6148c2215e49d56da3497",
+      "source_bytes": 4207,
+      "olean_bytes": 306464
+    },
+    "DualTruncateColoringAudit": {
+      "source_sha256": "55c40054a7f7ab657bb099eaf02b4143a520bc089251facbc34e5b677b9cfdf7",
+      "source_bytes": 3100,
+      "olean_bytes": 3552
+    }
+  },
+  "record": "dual-truncate-colouring.json",
+  "record_sha256": "4475e27ab0e3ce9da8e3cb89e1040ca6c5fe66dce2670180a8b68bb60373036f",
+  "program": "dual_truncate_colouring.py",
+  "program_sha256": "a71454820077c042af532b1eb4c3ff335f2bd38c643de73f3ccd8044968100e3",
+  "fixtures": "dual-truncate-colouring-fixtures.json",
+  "fixtures_sha256": "75a27a562fa35aaacebaa8084b6987815c4b9a34d9c036f3be81b311dbce14f2",
+  "audit": {
+    "roots": 9,
+    "dependency_closure": 7847,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoint_used": false
+  },
+  "construction": {
+    "vertices": "source darts",
+    "edges": "source edges plus source darts",
+    "neighbours": [
+      "alpha d",
+      "phi d",
+      "phi.symm d"
+    ],
+    "source_colouring": "proper vertex colouring by nonzero Klein colours",
+    "target_colouring": "proper nonzero edge colouring",
+    "local_rule": "At source dart v->w: c(v)+c(w), c(w), c(v).",
+    "source_vertices": "One third of target vertices for a cubic source; source is strictly smaller.",
+    "source_colouring_existence_proved": false,
+    "target_spherical_geometry_proved": false,
+    "unconditional_tait_to_tait_reduction": false
+  },
+  "operational_consumers": {
+    "every_complete_sweep_supported": true,
+    "exact_relabelled_sweeps_supported": true,
+    "joint_source_choices_retained": true,
+    "counting_equivalence_asserted": false,
+    "recolouring_history_equivalence_asserted": false
+  },
+  "concrete_replay": {
+    "maps_checked": 5,
+    "source_vertices": 384,
+    "target_vertices": 1152,
+    "target_edges": 1728,
+    "target_darts_checked": 3456,
+    "kernel_input_certificates": false
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11103,
+    "exit_code": 0,
+    "replay": "python3 tools/fourcolor/classical/dual_truncate_colouring.py"
+  },
+  "compression": {
+    "configurations_removed": 0,
+    "original_configuration_certificates_replaced": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "discharging_computations_replaced": 231,
+    "integrated_into_complete_assembly": false
+  },
+  "next_obligations": [
+    "Prove or kernel-certify source three-vertex colourings on the intended family.",
+    "Kernel-certify concrete source and target representation adapters.",
+    "Prove geometric recognition and coverage before removing any catalogue obligation."
+  ]
+}
