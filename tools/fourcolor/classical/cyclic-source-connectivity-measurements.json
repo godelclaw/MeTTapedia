@@ -1,0 +1,128 @@
+{
+  "status": "kernel checked geometric source-domain bridge and cube consumer; independent separator replay",
+  "checked_utc": "2026-09-30T22:03:36.924807+00:00",
+  "audit_roots": 18,
+  "dependency_closure": 11606,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "forbidden_dependencies": [
+    "complete classical Four Colour endpoints",
+    "source colour-word certificate predicates and suppliers",
+    "unfinished AutoBooks Brooks development",
+    "sorryAx",
+    "Lean.ofReduceBool"
+  ],
+  "general_domain": {
+    "graph": "finite simple cubic graph",
+    "minimum_cyclic_edge_connectivity": 4,
+    "connected_deletion_theorem": "deleting any two distinct vertices leaves the actual induced graph connected",
+    "ambient_connectedness_required_by_deletion_theorem": false,
+    "colouring_consumer_domain": "connected and noncomplete source primal graph, or a specified suitable nonadjacent neighbour pair",
+    "source_colour_word_supplied": false,
+    "per_deletion_connectivity_certificate_supplied": false,
+    "joint_pair_colour_retained": true
+  },
+  "reused_mathematics": [
+    "CyclicFiveBoundary.hasCycle_of_boundary_card_lt_card_add_two",
+    "CoupledThreeColouring.colourable_of_pairDeletionConnected",
+    "DualTruncateConstructionGSLT.supported_encoded_route"
+  ],
+  "kernel_consumer": {
+    "source": "eight-vertex cube rotation",
+    "source_vertices": 8,
+    "source_edges": 12,
+    "vertex_sides_checked": 256,
+    "cyclic_cut_predicate_interpreted_exactly": true,
+    "pair_deletions_derived_by_general_law": 28,
+    "initial_pair": [
+      1,
+      3
+    ],
+    "closing_vertex": 0,
+    "target_vertices": 24,
+    "target_edges": 36,
+    "proper_source_colouring_derived": true,
+    "genuine_target_tait_colouring_proved": true,
+    "every_complete_GSLT_sweep_supported": true,
+    "source_colour_word_supplied": false
+  },
+  "proof_modules": {
+    "CubicPairDeletionConnectivity": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicPairDeletionConnectivity.lean",
+      "source_sha256": "7408d8609a0de75e9bbcc891dcc2e72ba257503612466d82f49202a02c1f04f4",
+      "source_bytes": 10570,
+      "olean_sha256": "d4110f5d4c75f06c9b45ee74c7f1d8a33934573e02e6bdb5e466a6ab9900a16c",
+      "olean_bytes": 306496
+    },
+    "DualTruncateCyclicSource": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSource.lean",
+      "source_sha256": "cb9e7131801c0a3cd8e06eb632731f94421706667b9ac84c3af37cec29c18598",
+      "source_bytes": 4119,
+      "olean_sha256": "8d6b642e36c5591ea58da8b8b51650283fb4f719fa1e76ea0b2d1bac5151606a",
+      "olean_bytes": 60480
+    },
+    "DualTruncateCyclicSourceExample": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceExample.lean",
+      "source_sha256": "f12646e0fcf4442d638c5baab4df34254d7a48d7d28cf7c2dfe06be8121df43a",
+      "source_bytes": 6129,
+      "olean_sha256": "5b378498f2e23997641a7994c45a1483fa2973f1ef72f5b4f8e9c9c2c28a2767",
+      "olean_bytes": 273712
+    },
+    "DualTruncateCyclicSourceAudit": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceAudit.lean",
+      "source_sha256": "7ab549db4b018ad324fb4d79af15717daf47ae6d507542f595053ec30ad82c4f",
+      "source_bytes": 4778,
+      "olean_sha256": "63df7bee3bb7403b48610766dbf4736192da7b3c4d20485f3c2af995897db2e0",
+      "olean_bytes": 3616
+    }
+  },
+  "measured_frontend_seconds": {
+    "CubicPairDeletionConnectivity": 3.3,
+    "DualTruncateCyclicSource": 3.0,
+    "DualTruncateCyclicSourceExample": 7.1,
+    "DualTruncateCyclicSourceAudit": 7.2,
+    "ResearchCheckpoint_gate": 6.4
+  },
+  "maximum_sampled_lean_rss_mib": 3577,
+  "gate_maximum_sampled_lean_rss_mib": 6883,
+  "gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "jobs": 11122,
+    "exit": 0
+  },
+  "independent_replay": {
+    "record": "cyclic-source-connectivity-probe.json",
+    "sha256": "df0fcbbe6c698d49fe21553dd69389eb351d06d0dbbc5ed400a40669a2c8f10e",
+    "cube_vertex_sides_checked": 256,
+    "cube_nontrivial_sides_checked": 238,
+    "minimum_nontrivial_boundary": 4,
+    "cube_pair_deletions_checked": 28,
+    "cube_disconnected_pair_deletions": 0,
+    "source_colour_words_read": 0,
+    "separator_diagnostic_vertices": 10,
+    "separator_diagnostic_deleted_pair": [
+      8,
+      9
+    ],
+    "separator_diagnostic_connected_after_deletion": false,
+    "separator_diagnostic_has_cyclic_bridge": true
+  },
+  "new_uniform_colouring_schemes": 0,
+  "existing_coupled_colouring_scheme_geometric_domain_discharged": true,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "new_catalogue_replacements": 0,
+  "saved_residual_cyclic_source_domain_kernel_certified": false,
+  "target_spherical_geometry_proved": false,
+  "inverse_geometric_recognition_proved": false,
+  "unconditional_tait_to_tait_reduction": false,
+  "global_coverage_proved": false,
+  "next_obligation": "Recognize actual inverse sources with the proved cut domain and establish spherical geometry; then prove occurrence coverage before crediting catalogue replacement."
+}

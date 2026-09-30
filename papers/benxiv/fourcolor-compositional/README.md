@@ -156,9 +156,23 @@ supplies actual retained paths and reconstructs a 24-vertex map. The
 separates the kernel theorem and cube from the independent tests of all five
 larger residuals. Those tests regenerate the choices and check 14,564 connected
 two-vertex deletions, but do not kernel-certify that domain for the five sources.
-The next geometric bridge is to derive the source hypotheses from recognized
-target structure. No catalogue entry or original certificate dependency is
-removed by this supplier.
+The [geometric cut bridge](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicPairDeletionConnectivity.lean)
+now derives the connected-deletion hypothesis for every finite simple cubic
+source with cyclic edge-connectivity at least four. Its six-dart boundary
+accounting reuses the forest-boundary law: a disconnected deletion would
+produce a cyclic cut with at most three edges. The
+[cut-based supplier](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSource.lean)
+consumes this geometry in actual colouring and GSLT reconstruction. The
+[cube consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceExample.lean)
+interprets one finite cut check, then derives all 28 pair deletions and the
+24-vertex target colouring. The
+[audit and measurement receipt](../../../tools/fourcolor/classical/cyclic-source-connectivity-measurements.json)
+excludes source colour words and complete classical endpoints.
+
+This closes the connected-deletion bridge on the stated cut domain. The
+remaining geometric task is to recognize inverse sources, establish that
+domain and spherical geometry, and prove occurrence coverage. No catalogue
+entry or original certificate dependency is removed by this supplier.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

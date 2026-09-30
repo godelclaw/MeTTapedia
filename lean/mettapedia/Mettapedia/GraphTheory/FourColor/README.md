@@ -161,10 +161,31 @@ certificates, unfinished Brooks developments and complete Four Colour endpoints.
 The [new replay](../../../../../tools/fourcolor/classical/coupled-source-colouring-probe.json)
 derives fresh choices on all five residuals and finds all 14,564 two-vertex
 deletions connected. Those five domain checks remain program evidence;
-the structural theorem and cube domain are kernel checked. The intended
-source-domain bridge, inverse geometric recognition and global coverage remain
-open, and the complete assembly retains 633 configurations and 630 original
-configuration certificates.
+the structural theorem and cube domain are kernel checked.
+
+The [cut bridge](CubicPairDeletionConnectivity.lean) now derives every
+connected two-vertex deletion from simple primal degree three and cyclic
+edge-connectivity at least four. Two different retained components cannot
+share an outgoing dart; their total boundary uses at most the six darts of
+the deleted pair. One component has at most three crossings. The existing
+forest-boundary law forces cycles on both sides of its exact cut, a
+contradiction. The [geometric supplier](DualTruncateCyclicSource.lean)
+consumes this fact in actual source colouring, target reconstruction and
+every complete GSLT sweep. A connected noncomplete source is the general
+colouring domain; a specified nonadjacent neighbour pair also retains its
+shared colour.
+
+The [cut-based cube consumer](DualTruncateCyclicSourceExample.lean) interprets
+a check of all 256 vertex sides as actual cyclic connectivity, derives all
+28 pair deletions through the uniform law, and reconstructs the 24-vertex
+target. Its [audit](DualTruncateCyclicSourceAudit.lean) checks 18 roots and
+excludes source colour-word certificates and complete classical endpoints.
+The [receipt](../../../../../tools/fourcolor/classical/cyclic-source-connectivity-measurements.json)
+records the kernel checks and an independent cubic separator diagnostic.
+The connected-deletion bridge is proved on this cut domain. Recognizing
+inverse sources with that domain, spherical geometry and global coverage
+remain open. The complete assembly retains 633 configurations and 630
+original configuration certificates.
 
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay

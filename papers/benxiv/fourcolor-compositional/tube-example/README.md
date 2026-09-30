@@ -2296,3 +2296,47 @@ counts remain 633 and 630.
 [coupled-replay]: ../../../../tools/fourcolor/classical/coupled-source-colouring-probe.json
 [coupled-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateStructuralAudit.lean
 [coupled-receipt]: ../../../../tools/fourcolor/classical/coupled-source-colouring-measurements.json
+
+## Deriving the source connectivity from cuts
+
+The [cut theorem][cyclic-source-connectivity] derives all connected
+two-vertex deletions in a finite simple cubic graph with cyclic
+edge-connectivity at least four. If deleting `a,b` left two components,
+reverse their outgoing darts. They now start at `a` or `b`; the two components
+cannot reuse the same dart. Cubicity therefore bounds their combined
+boundary by six, and one component has at most three crossings.
+
+That component contains at least two vertices, since three distinct
+neighbours cannot all lie among the two deleted vertices. Its complement
+also contains at least two vertices, namely `a,b`. The existing forest
+boundary theorem applies even to disconnected sides and forces cycles on
+both shores of this at-most-three-edge boundary. This contradicts the
+stated cyclic connectivity.
+
+The [source supplier][cyclic-source-supplier] consumes this cut law in the
+coupled colouring proof and literal Klein reconstruction. It retains equal
+colours at any specified suitable nonadjacent neighbour pair. For a
+connected noncomplete source, the initial pair is derived from a shortest
+path. The target receives an actual Tait colouring, and every complete
+faithful GSLT sweep receives compatible witnesses.
+
+The [cube consumer][cyclic-source-cube] checks all 256 vertex sides through
+an exact boundary observation, establishing cyclic connectivity. The general
+law then derives all 28 pair-deletion results. The same source structure
+colours the 24-vertex target; no source colour word is supplied. The
+[audit][cyclic-source-audit] checks 18 load-bearing roots against the
+standard axioms and excludes complete Four Colour endpoints.
+
+The [receipt][cyclic-source-receipt] separates these kernel results from an
+independent separator diagnostic: a ten-vertex cubic graph has a bridge,
+and deleting its endpoints disconnects the remainder. Cubicity alone does
+not discharge the source-domain hypothesis. Recognizing inverse sources
+with the required cut condition, spherical geometry and global coverage
+remain open. The coverage catalogue remains 633 and the original
+configuration-certificate count remains 630.
+
+[cyclic-source-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicPairDeletionConnectivity.lean
+[cyclic-source-supplier]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSource.lean
+[cyclic-source-cube]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceExample.lean
+[cyclic-source-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceAudit.lean
+[cyclic-source-receipt]: ../../../../tools/fourcolor/classical/cyclic-source-connectivity-measurements.json

@@ -1779,3 +1779,42 @@ the general theorem and cube consumer are kernel checked. The receipt
 and kernel cost. The source-domain bridge for recognized inverse targets,
 spherical geometry and coverage remain open. No additional catalogue entry
 or original configuration certificate is removed.
+
+## Source connectivity from cyclic cuts
+
+```sh
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.DualTruncateCyclicSourceAudit
+```
+
+`CubicPairDeletionConnectivity` derives connected deletion of every pair of
+distinct vertices from simple cubic degree and cyclic edge-connectivity at
+least four. The proof counts the actual outgoing darts of two different
+retained components inside the six darts starting at the deleted pair. One
+component has at most three crossings; the reused forest-boundary theorem
+forces a cyclic cut on that boundary, contradicting the hypothesis.
+
+`DualTruncateCyclicSource` consumes the cut result in actual source colours,
+literal target Tait reconstruction and every complete GSLT sweep. A
+connected noncomplete source supplies its initial pair; a specified suitable
+nonadjacent neighbour pair retains equal colours. No per-deletion
+connectivity certificate or source colour word is a theorem input.
+
+`DualTruncateCyclicSourceExample` proves the cube's cut condition with an
+exact interpretation of its finite boundary observation. All 256 vertex
+sides are covered by that check; the uniform theorem then derives all 28
+pair deletions and reconstructs the 24-vertex target. The audit checks 18
+roots and excludes source colour-word certificates and complete classical
+endpoints.
+
+```sh
+python3 tools/fourcolor/classical/cyclic_source_connectivity_probe.py --check
+```
+
+The independent replay reads the cube's flat neighbour table, verifies all
+cuts and pair deletions, and derives fresh coupled source choices. A
+ten-vertex cubic separator diagnostic violates the cut domain and has a
+disconnected pair deletion. The measurement receipt records this program
+evidence separately from the kernel theorem, source domain and consumers.
+Recognized inverse sources, spherical geometry and global coverage remain
+open. Catalogue and original-certificate counts remain 633 and 630.

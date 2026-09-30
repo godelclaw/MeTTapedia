@@ -1,0 +1,114 @@
+{
+  "catalogue_entries_removed": 0,
+  "cube_cut_interpretation_proved_in_lean": true,
+  "cube_disconnected_pair_deletions": 0,
+  "cube_minimum_nontrivial_boundary": 4,
+  "cube_nontrivial_sides_checked": 238,
+  "cube_pair_deletions_checked": 28,
+  "cube_small_cyclic_cuts": [],
+  "cube_source_edges": 12,
+  "cube_source_vertices": 8,
+  "cube_vertex_sides_checked": 256,
+  "derived_closing_vertex": 0,
+  "derived_initial_pair": [
+    1,
+    3
+  ],
+  "derived_order_sha256": "a155b7d34a1d9172a3328abb8dce1e084ca61412e15913e1a9727537f6e851ea",
+  "derived_source_colour_sha256": "0a510007504cdb13ef06875365372ec3cfe0f31ff3a789a04e62f5335bd889fb",
+  "diagnostic_deleted_pair": [
+    8,
+    9
+  ],
+  "diagnostic_pair_deletion_connected": false,
+  "diagnostic_small_cyclic_cuts": [
+    {
+      "boundary": 3,
+      "side": [
+        0,
+        2,
+        3
+      ]
+    },
+    {
+      "boundary": 2,
+      "side": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "boundary": 1,
+      "side": [
+        0,
+        1,
+        2,
+        3,
+        8
+      ]
+    },
+    {
+      "boundary": 2,
+      "side": [
+        0,
+        1,
+        2,
+        3,
+        8,
+        9
+      ]
+    },
+    {
+      "boundary": 3,
+      "side": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        8,
+        9
+      ]
+    },
+    {
+      "boundary": 3,
+      "side": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        8,
+        9
+      ]
+    },
+    {
+      "boundary": 3,
+      "side": [
+        0,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    }
+  ],
+  "diagnostic_vertices": 10,
+  "general_theorem_proved_in_lean": true,
+  "global_coverage_proved": false,
+  "input_sha256": {
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicPairDeletionConnectivity.lean": "7408d8609a0de75e9bbcc891dcc2e72ba257503612466d82f49202a02c1f04f4",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCoupledExample.lean": "580a732e010f002d1d20cbbc939f70cd1894fecd420ea94b1ee81696f2172637",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSource.lean": "cb9e7131801c0a3cd8e06eb632731f94421706667b9ac84c3af37cec29c18598",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCyclicSourceExample.lean": "f12646e0fcf4442d638c5baab4df34254d7a48d7d28cf7c2dfe06be8121df43a",
+    "tools/fourcolor/classical/coupled_source_colouring_probe.py": "7e36cea2ca4e0230ad6cf46098e730d8221d61fe9dbf0bd289905dcc8ac76fa1",
+    "tools/fourcolor/classical/cyclic_source_connectivity_probe.py": "bf2b208cba389d4ddef91fa71bdad00a931335b9044f408c49bb1cb8313f50db"
+  },
+  "maximum_prior_colours": 1,
+  "source_colour_words_read": 0,
+  "status": "independent program replay"
+}
