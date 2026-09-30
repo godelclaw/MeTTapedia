@@ -873,6 +873,49 @@ spatial diagnostics, not time evolutions or continuum enclosures.
 
 ## Checked applications and semantic interfaces
 
+### Signed viscous pressure source and a finite-initial-resource correction
+
+`SignedViscousPressure` constructs the actual tensor rows of
+`G=(grad u)(grad u)^T` and certifies their divergence and canonical source
+pressure from all three derivative parents. An ordinary unweighted
+projection and local Cauchy--Schwarz give
+
+```text
+||grad q_G||_2^2 <= integral |grad u|^2 sum_k |partial_k grad u|^2,
+nu ||grad q_G||_2^2 <= (1/8) integral D_Phi.
+```
+
+The second statement retains the completed matrix diffusion lower bound
+as an explicit analytic input. No weighted projection contraction is used.
+The canonical pressure trace also certifies the flux matrix square
+`|P+sI|^2=|P|^2+s^2`, with `s=tr((grad u)^2)`.
+
+The analytic bilinear Hessian identity retains the moving-selector flux
+in the canonical viscous pressure work. A candidate correction
+`F_b+8(Phi-Phi_infinity)` supplies its unselected diffusion from one finite
+initial resource. It pays the complete explicit viscous pressure term
+while leaving at least one quarter of the total diffusion:
+
+```text
+R_b'+D_total/4 <= integral (a+8)R_NL - C_capacity.
+```
+
+Here `R_NL` is the FULL unforced strain, pressure and transported-memory
+reaction, including its transport commutator; it is not bounded by this
+result. The correction is nonnegative, dominates the earlier soft excess
+and retains its actual whole-space continuation adapter in Lean. Its
+analytic initial bound depends on the full datum rather than energy alone.
+Neither the matrix/time application nor a uniform signed history allowance
+is kernel-certified. The same spatial estimates hold at forced states,
+where the generator has an additional force-production leg.
+
+The [signed source checker](labs/signed_viscous_pressure.py) retains every
+3D Fourier parent/output and a nonzero selector flux. Optional independent
+quadratures use the actual soft selector and full initial PDE generator,
+not an initialized history or a continuum enclosure. See the
+[complete derivation](labs/README.md#signed-viscous-pressure-flux-and-a-reserve-financed-by-the-full-datum)
+for the precise costs, finite initial deposit and remaining signed estimate.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

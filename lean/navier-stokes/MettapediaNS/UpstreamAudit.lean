@@ -30,6 +30,7 @@ import MettapediaNS.MemoryAgePressure
 import MettapediaNS.WholeSpacePressureProduction
 import MettapediaNS.SelectedPressureCotangent
 import MettapediaNS.JointReceiverDiffusion
+import MettapediaNS.SignedViscousPressure
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -999,3 +1000,31 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.joint_velocity_work_integrable
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.integral_joint_velocity_work
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverDiffusion.NSEvolution.joint_velocity_work
+
+/-! Actual viscous source, selector flux and finite-initial-resource correction. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourceAdvection
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourcePressure
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourceRow
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourceRow_coordinate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourceAdvection_coordinate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourceRow_divergence
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourceAdvection_square_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourcePressure_toLp
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourcePressure_projection
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourcePressure_mem_gradient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourcePressure_trace
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.parent_cost_integrable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.sourcePressure_norm_sq_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.source_pressure_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.pressureFluxMatrix
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.pressureFluxMatrix_square
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.actual_pressureFluxMatrix_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.boundary_flux_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.selected_viscous_source_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.augmented_viscous_source_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.quarter_diffusion_survives
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.augmentedExcess
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.augmentedExcess_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.soft_excess_le_augmented
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.initialized_augmentedExcess
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.massEnvelope_of_augmented_excess
