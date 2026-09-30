@@ -111,6 +111,25 @@ coverage and further catalogue integration remain open. The new finite
 geometric checks are counted separately; no additional original colouring
 certificate is removed.
 
+[PentagonalDiamondGeometry](PentagonalDiamondGeometry.lean) now retains only
+the central pentagon and three consecutive pentagonal neighbours. The two
+remaining neighbouring face lengths are unrestricted. Its
+[separation check](PentagonalDiamondSeparation.lean) handles 392 collision
+cases by shared dart transport and four more by excluding genuine four-cycles.
+[PartialCubicDartBoundary](PartialCubicDartBoundary.lean) supplies a general
+inducedness law: an even-sized injective cubic diagram with six missing
+reversals, more than four vertices and enough exterior vertices has six
+actual boundary darts under cyclic-five connectivity. Degree parity excludes
+an unrecorded internal chord.
+
+The [actual consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalDiamondFaceReduction.lean)
+constructs the twelve-vertex occurrence and uses the existing joint diamond
+profile to replace it by four vertices. No fresh colouring certificate is
+needed. The [audit](../../../../fourcolor-classical/MettapediaFourColor/PentagonalDiamondFaceReductionAudit.lean)
+excludes the older corona's separate colouring checks. This strengthens the
+local recognition domain and shares a proof; global coverage and additional
+catalogue replacement remain open.
+
 ## Independent corridor route — checkpoint of 22 September 2026
 
 The following table describes the earlier direct Count proposal. Its open

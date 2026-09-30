@@ -36,6 +36,18 @@ relation. Strict physical shortening and GSLT composition preserve that
 relation in arbitrary surrounding contexts. This reuses the earlier finite
 certificate and does not depend on the classical Four Colour theorem.
 
+A smaller interface now connects the pentagonal stopping-lobe work directly
+to the shared diamond proof. A central pentagon with three consecutive
+pentagonal neighbours gives an actual twelve-vertex core; the other two
+neighbouring face lengths are unrestricted. One existing repair replaces
+that core by four vertices and reconstructs a compatible whole-map colouring.
+For the earlier six-face corona application this avoids its separate 22
+terminal-colouring and nine answer-cover checks. The
+[worked explanation](tube-example/README.md#using-a-smaller-shared-core)
+shows why changing the interface succeeds where a stronger larger-boundary
+contract fails. This is a broader local reduction, with global coverage
+still to establish; it removes no further catalogue entries.
+
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
 hexagonal seam faces force the port matching to be a cyclic translation.

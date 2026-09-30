@@ -86,6 +86,11 @@ variable {P : Diagram W} (F : Realization P G)
 /-- Triangle-freeness is stated directly in the target graph. -/
 def TriangleFree : Prop := ∀ a b c, G.Adj a b → G.Adj b c → G.Adj c a → False
 
+/-- Distinct opposite corners exclude a genuine four-cycle, while permitting
+closed walks that immediately retrace an edge. -/
+def FourCycleFree : Prop := ∀ a b c d, G.Adj a b → G.Adj b c → G.Adj c d →
+  G.Adj d a → a ≠ c → b ≠ d → False
+
 theorem snd_of_flip {d e : Dart W} (he : P.flip d = some e) :
     (F.dart d).snd = F.vertex e.1 := by
   have h := congrArg (fun d : G.Dart => d.fst) (F.flip_eq d e he)
@@ -132,6 +137,25 @@ theorem ne_of_path_three (ht : TriangleFree (G := G)) {u v : W}
   rw [hv, ← hc] at hlast
   exact ht (F.vertex u) (F.vertex e.1) (F.vertex f.1)
     (F.adjacent_of_flip (d := (u, s)) he) (F.adjacent_of_flip (d := (e.1, t)) hf) hlast
+
+/-- A four-edge path separates its endpoints when its two pairs of opposite
+source corners differ. Local slot injectivity preserves these distinctions;
+an arbitrary four-edge walk would not suffice. -/
+theorem ne_of_path_four (hfour : FourCycleFree (G := G)) {u b c d v : W}
+    (huc : u ≠ c) (hbd : b ≠ d)
+    (hub : P.Path 1 u b) (hbc : P.Path 1 b c)
+    (hcd : P.Path 1 c d) (hdv : P.Path 1 d v) :
+    F.vertex u ≠ F.vertex v := by
+  have compose {x y z : W} (hxy : P.Path 1 x y) (hyz : P.Path 1 y z) :
+      P.Path 2 x z := by
+    obtain ⟨s, e, he, hy⟩ := hxy
+    change e.1 = y at hy
+    exact ⟨s, e, he, hy ▸ hyz⟩
+  intro he
+  exact hfour (F.vertex u) (F.vertex b) (F.vertex c) (F.vertex d)
+    (F.adjacent_of_path_one hub) (F.adjacent_of_path_one hbc)
+    (F.adjacent_of_path_one hcd) (he ▸ F.adjacent_of_path_one hdv)
+    (F.ne_of_path_two huc (compose hub hbc)) (F.ne_of_path_two hbd (compose hbc hcd))
 
 variable [DecidableEq W]
 

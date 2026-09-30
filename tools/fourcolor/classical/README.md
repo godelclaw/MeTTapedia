@@ -1323,3 +1323,39 @@ actual triangle-free realization. The finite check took 25 seconds and the
 audit 7 seconds, including elaboration and kernel checking. The source class,
 whole-map size and colouring reconstruction are proved separately and consumed
 by the face-pattern endpoint. Broader local cores and global coverage remain open.
+
+## Smaller diamond core for the facial family
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.PentagonalDiamondFaceReductionAudit
+```
+
+The theorem starts with a central pentagon and three consecutive pentagonal
+neighbours. It derives twelve distinct vertices, six genuine ports and the
+complete tangle isomorphism. The shared diamond profile reconstructs genuine
+colouring witnesses. Replacing the core by the four-vertex tree preserves the
+ambient map class and decreases the whole vertex count by eight.
+
+`pentagonal-diamond-measurements.json` records the 18-root, 27,171-declaration
+audit. It excludes the earlier corona's separate 22 terminal-colouring and
+nine answer-cover checks, all original configuration certificates and the
+complete Four Colour endpoints. No extra catalogue entry or certificate is
+removed from the complete assembly. Incidence/coordinate checks and the
+396 collision cases are geometric checks, counted separately from colouring.
+
+Replay the independent bounded experiments from the repository root:
+
+```sh
+python3 tools/fourcolor/classical/pentagonal_diamond_probe.py
+```
+
+The script reconstructs the literal core, checks its ordered dual graph and
+Lean codecs, replays all separation cases and recognizes 458 rooted patterns
+across 75 of the existing 137 maps. It also checks full boundary repair for
+six-, seven- and eight-port coronas. The eight-port test leaves an abstract
+600-word closed obstruction, while five of 132 tree contracts avoid it.
+The report retains every obstruction word and its chromogram witness.
+This finite evidence is separate from the kernel theorem and does not assert
+that an actual exterior realizes that obstruction or that all source maps
+contain the smaller core.

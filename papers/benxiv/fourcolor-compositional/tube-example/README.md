@@ -842,6 +842,78 @@ From `lean/mettapedia`, the gate is:
 lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 ```
 
+## Using a smaller shared core
+
+The neighbouring-face construction contains a smaller piece: the central
+pentagon and just three consecutive pentagonal neighbours. Their twelve
+vertices form the cubic dual of the diamond configuration already handled
+by the joint-profile proof. The other two neighbouring face lengths do not
+enter this core. The [new theorem][diamond-face-reduction] therefore applies
+more broadly than the earlier pentagon-with-four-pentagons-and-a-hexagon result.
+
+```text
+central pentagon + three consecutive pentagonal neighbours
+  → twelve actual vertices and six actual boundary darts
+  → the existing diamond graph and its ordered boundary observation
+  → shared joint-profile repair with compatible exterior witnesses
+  → four-vertex tree; eight fewer vertices in the whole map.
+```
+
+Recognition is proved from face lengths and ambient normal form. The partial
+diagram has 396 ordered collision/phase cases. Shared operations separate
+392 using triangle-freeness; the remaining four would close genuine
+four-cycles. Cyclic-five connectivity and the source-size bound exclude both
+short cycles. A [general boundary law][partial-dart-boundary] then proves
+that all six missing reversals are genuine ports: the cut has size at least
+five and at most six, and the cubic degree identity makes its size even.
+No unrecorded internal edge remains. The literal coordinate map preserves
+all vertices, internal reversals, rotations and ordered ports.
+
+The [colouring bridge][diamond-tangle] turns the existing diamond colourings
+into genuine interior witnesses, preserving their entire boundary word.
+Physical Kempe closure provides a compatible exterior witness. The
+[shared reduction law][six-port-replacement] proves preservation of the
+bridgeless spherical cubic class and counts all four introduced vertices.
+Exterior attachment endpoints may coincide. The theorem concerns existence
+and reconstruction; it does not assert preservation of colouring counts or
+provide an executable sequence of Kempe swaps.
+
+This choice of interface matters. The independent tests for full coronas
+with exceptional neighbour length six, seven and eight found:
+
+| Outer ports | Realized words | Words in the remaining closed obstruction |
+| --- | ---: | ---: |
+| 6 | 132 | 0 |
+| 7 | 282 | 0 |
+| 8 | 576 | 600 |
+
+The last row refutes the tested full-repair statement against arbitrary
+abstract Kempe-closed exterior predicates. It is not a constructed planar
+exterior counterexample. Five of 132 tested eight-port tree contracts avoid
+the obstruction. More directly, the proved smaller-core reduction uses the
+inner six-port interface. Minimality supplies a colouring of its actual
+smaller map; the omitted neighbouring faces belong to the exterior and may
+be recoloured along with it. This implements the freedom to choose a
+successful decomposition and compatible witnesses.
+
+The [dependency audit][diamond-face-audit] checks 18 roots and 27,171
+declarations. For the earlier corona exclusion, the new route avoids its
+22 separate terminal-colouring checks and nine answer-cover checks by
+reusing the integrated diamond profile. It adds no colouring certificate.
+The old reduction with a decrease of twelve remains separately available;
+the broader reduction has a decrease of eight. All 633 catalogue entries
+and 630 original certificate dependencies remain. This is sharing at one
+local application, not a new reduction of the complete catalogue.
+
+The [independent replay][diamond-probe] checks 458 rooted occurrences,
+representing 318 central faces and 229 vertex subsets across 75 of the same
+137 recorded maps. The earlier pattern covered 76 central faces in 29 maps.
+The mathematical theorem has no exterior-size bound, but its local core is
+fixed. Neither this census nor the theorem proves that every target contains
+such a core. Coverage of graphs with more widely separated pentagons remains
+an explicit task. The [receipt][diamond-measurements] records source and
+artifact hashes, checks, scope and unchanged complete-assembly counts.
+
 [certificate]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/GoertzelV24FiveTubeExclusion.lean
 [corona-traversal]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FacialCoronaTraversal.lean
 [corona-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaGeometry.lean
@@ -946,3 +1018,11 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [corona-separation]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaSeparationCheck.lean
 [corona-noncollision]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaNoncollision.lean
 [corona-separation-probe]: ../../../../tools/fourcolor/classical/pentagonal_corona_separation_probe.py
+
+[diamond-face-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondFaceReduction.lean
+[diamond-tangle]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondTangle.lean
+[diamond-face-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondFaceReductionAudit.lean
+[partial-dart-boundary]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartBoundary.lean
+[six-port-replacement]: ../../../../lean/fourcolor-classical/MettapediaFourColor/SixPortTreeReplacement.lean
+[diamond-probe]: ../../../../tools/fourcolor/classical/pentagonal-diamond-probe.json
+[diamond-measurements]: ../../../../tools/fourcolor/classical/pentagonal-diamond-measurements.json

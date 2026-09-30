@@ -391,6 +391,34 @@ records the theorem, artifact hashes and geometric checks. Original certificate
 counts and finite colouring checks are unchanged. Broader family coverage
 and integration of further complete-proof replacements remain open.
 
+[PentagonalDiamondFaceReduction](MettapediaFourColor/PentagonalDiamondFaceReduction.lean)
+now supplies a smaller shared core. A central pentagon with three consecutive
+pentagonal neighbours suffices; the other two neighbouring face lengths are
+unrestricted. Actual face traversal constructs twelve distinct vertices and
+six genuine ports. The [shared replacement theorem](MettapediaFourColor/SixPortTreeReplacement.lean)
+replaces this core by four vertices, preserves the ambient map class and
+reconstructs a colouring jointly with the exterior. The colouring proof is
+`DiamondProfileReducibility.repair001`, already used by the classical assembly.
+
+The earlier six-face corona exclusion is a corollary. In this application,
+the separate 22 terminal-colouring and nine answer-cover checks disappear
+from the dependency closure. The old twelve-vertex decrease remains available
+separately; the broader theorem decreases the whole map by eight. The
+[eighteen-root audit](MettapediaFourColor/PentagonalDiamondFaceReductionAudit.lean)
+checks 27,171 declarations and excludes those older checks, original catalogue
+certificates and complete Four Colour endpoints. Its
+[receipt](../../tools/fourcolor/classical/pentagonal-diamond-measurements.json)
+separates this application-level sharing from catalogue compression: all 633
+configurations and 630 original certificate dependencies remain.
+
+The [independent replay](../../tools/fourcolor/classical/pentagonal-diamond-probe.json)
+finds 318 matching central faces across 75 of the same 137 maps, compared
+with 76 faces across 29 maps for the earlier pattern. It also records why
+retaining the larger interface was too strong: the eight-port full-repair
+test leaves an abstract closed obstruction, while the smaller diamond
+reduction succeeds under the proved source hypotheses. No claim of universal
+pattern occurrence follows from the census or the local reduction.
+
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as
 GSLT witnesses and glues them into an explicit ambient colouring. The graph

@@ -1,0 +1,278 @@
+{
+  "status": "Kernel-checked recognition and strict reduction from a central pentagon with three consecutive pentagonal neighbours, reusing the integrated joint diamond profile repair.",
+  "completed_utc": "2026-09-30T02:46:43.460805+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "470b7d9e88174cca276bb21f332a48806ba57cac",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartSeparation.lean",
+      "source_sha256": "1ec32e80a67d568d6e1417caa7f8cb03aaf825e7ef7a8dc2de951ff1de23baad",
+      "olean_sha256": "de0aba0a7e8f649be017a303180323e892c3d5d6e6836763cc928d09349f3b50",
+      "olean_bytes": 499312,
+      "reported_build_seconds": 1.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartBoundary",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartBoundary.lean",
+      "source_sha256": "fd5c1e38df5b421c149f012fd414e808c0fa436d23fdb614d42f8054b85c2056",
+      "olean_sha256": "a41e48a3f29382adc8e1cf9ab7b58dae923facbf6303a5407e638a26f2cd0d61",
+      "olean_bytes": 297384,
+      "reported_build_seconds": 2.8
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartNormalForm",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartNormalForm.lean",
+      "source_sha256": "6f5f90d2064de3feddbfd3d575ef1861d09af0009269133d83ac5020f27fc25f",
+      "olean_sha256": "9d0da3fdc0cd0b6c76c3da76aa78ce8dcb273809580ea9fa87ef32cbd4742991",
+      "olean_bytes": 66056,
+      "reported_build_seconds": 2.5
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalDiamondSeparation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalDiamondSeparation.lean",
+      "source_sha256": "e9625d2a9e8cef236fd952b140cce8b064146ba06122f1660e33d51d5656619a",
+      "olean_sha256": "9c260e722e5e1088bc2773d39392ed45d716639b3595785973b3fab33654e264",
+      "olean_bytes": 206976,
+      "reported_build_seconds": 17.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalDiamondGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalDiamondGeometry.lean",
+      "source_sha256": "9ea8b82b0459a4daf9ba083446ec76f00fb511b261d2679ac1d84e4bcae361e5",
+      "olean_sha256": "c65c9cd9b82ddc9e6c3e47e00ce1646ae5f8190c3bbaf49dbb60bfe82b4671b7",
+      "olean_bytes": 846608,
+      "reported_build_seconds": 4.0
+    },
+    {
+      "module": "MettapediaFourColor.SixPortTreeReplacement",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/SixPortTreeReplacement.lean",
+      "source_sha256": "9e9ac7bc925ee4a718c4847000182106a0d11d3b7fb86d39e0e8a832e1cd4567",
+      "olean_sha256": "3085e02c7914dee8b0a65f60e0cd103b35dbadc8e81649c75e88e0b1dd1b4b97",
+      "olean_bytes": 936352,
+      "reported_build_seconds": 3.5
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalDiamondTangle",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondTangle.lean",
+      "source_sha256": "d8da8403469bdf04f650a29e4b07b9c78c854302a85d76675e0d9caf135327d6",
+      "olean_sha256": "f6428d5574ad4195d16ba076beb01bfd9ccd5956db7aa70721f8c9e20d0391e1",
+      "olean_bytes": 250016,
+      "reported_build_seconds": 6.0
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalDiamondScheme",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondScheme.lean",
+      "source_sha256": "2714de26b0ebc7121ab38bf66ce13fdb87a89913c5503df4fc2e1f27b44b06b1",
+      "olean_sha256": "5cf96d7e7070673060dc9d24587001a8f3bd86a869fbcb51cffe31b221bf5115",
+      "olean_bytes": 138640,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalDiamondRecognition",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondRecognition.lean",
+      "source_sha256": "6274b755558566815894509cbe780c6c2f0e446c6fd57cdd29c2cc2e769e68f6",
+      "olean_sha256": "65723c861db8002dab9a1538a7c5060ff4b5168cb65882d13918d7daf2c09544",
+      "olean_bytes": 212592,
+      "reported_build_seconds": 4.5
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalDiamondFaceReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondFaceReduction.lean",
+      "source_sha256": "638c1e7d5c4fbf0b5e635eca34219da0d61b2a360a39d1b1c908e128b50e315f",
+      "olean_sha256": "934b6cd3bcff316f07aae9b901595b59dc606643360fbde60cfff2ddee6f4ea3",
+      "olean_bytes": 177856,
+      "reported_build_seconds": 3.4
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalDiamondFaceReductionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondFaceReductionAudit.lean",
+      "source_sha256": "7b95ae2346ab6a25ee2f5fc3802ea22816db9428914bfccdf5623d0ccd92155b",
+      "olean_sha256": "60c2c54a9a8896c92b3edb64603f177af0a8daff594bd7b5bd345dac262a1e17",
+      "olean_bytes": 3320,
+      "reported_build_seconds": 10.0
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation.Realization.ne_of_path_four",
+      "Mettapedia.GraphTheory.FourColor.PentagonalDiamond.separates_or_ends",
+      "Mettapedia.GraphTheory.FourColor.PentagonalDiamond.vertex_injective",
+      "Mettapedia.GraphTheory.FourColor.PentagonalDiamond.realization",
+      "Mettapedia.GraphTheory.FourColor.PentagonalDiamond.vertex_injective_of_girth",
+      "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation.Realization.unpaired_leaves_of_cyclicallyFive",
+      "FourColor.PentagonalDiamondPatch.Tangle.colouring_valid",
+      "FourColor.PentagonalDiamondPatch.Tangle.boundary_colouring",
+      "FourColor.PentagonalDiamondPatch.Tangle.repair",
+      "FourColor.PentagonalDiamondPatch.Tangle.open_repair",
+      "FourColor.SixPortTreeReplacement.open_colorable",
+      "FourColor.SixPortTreeReplacement.tree_replacement_class",
+      "FourColor.SixPortTreeReplacement.Embedded.strict_reduction",
+      "FourColor.PentagonalDiamondPatch.Tangle.Recognition.recognized",
+      "FourColor.PentagonalDiamondPatch.Tangle.FaceReduction.recognized",
+      "FourColor.PentagonalDiamondPatch.Tangle.FaceReduction.strict_reduction_of_face_pattern",
+      "FourColor.PentagonalDiamondPatch.Tangle.FaceReduction.not_in_minimal_counterexample_of_face_pattern",
+      "FourColor.PentagonalDiamondPatch.Tangle.FaceReduction.corona_excluded_via_diamond"
+    ],
+    "combined_dependency_closure": 27171,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual four-face dart realization",
+      "392 generic separation cases and four cases using genuine four-cycle exclusion",
+      "six unpaired slots are actual boundary darts by degree parity and cyclic connectivity",
+      "literal dual graph and exact ordered colour observation",
+      "shared joint-profile repair with genuine interior witnesses",
+      "connected exterior and physical noncrossing derived from source geometry",
+      "strict whole-map count and reconstruction"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "every FourColor.Bulk.Cfg* original certificate",
+      "former configuration-specific diamond repair",
+      "PentagonalLobePatch.repair and its terminal colouring/answer-cover checks",
+      "the older 720-case corona separation theorem"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.PentagonalDiamondFaceReductionAudit",
+      "MettapediaFourColor.PentagonalCoronaFaceReductionAudit"
+    ],
+    "build_jobs": 3903,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Reported module frontend-plus-kernel times for final sources; dependency/cache rebuilds are separate. No isolated kernel or whole-baseline speedup is claimed.",
+    "complete_baseline_rerun": false,
+    "baseline_reason": "Complete assembly, source configuration data and profile certificates are unchanged. The preceding corona audit was also rebuilt after the generic theorem addition."
+  },
+  "mathematical_scope": {
+    "central_face_length": 5,
+    "neighbour_face_lengths_required": {
+      "1": 5,
+      "2": 5,
+      "3": 5
+    },
+    "neighbour_face_lengths_unrestricted": [
+      0,
+      4
+    ],
+    "ambient_hypotheses": [
+      "finite cubic simple graph with connected cyclic rotation system",
+      "bridgeless and spherical",
+      "two-sided faces",
+      "minimum face size five",
+      "cyclically five-edge-connected"
+    ],
+    "derived_local_conditions": [
+      "twelve distinct vertices",
+      "all retained dart slots",
+      "six actual exposed ports",
+      "exact open-tangle isomorphism",
+      "connected exterior and physical noncrossing"
+    ],
+    "repeated_exterior_attachment_vertices_allowed": true,
+    "patch_vertices": 12,
+    "replacement_vertices": 4,
+    "whole_map_vertex_decrease": 8,
+    "interface_ports": 6,
+    "qualifying_exterior_size_bounded": false,
+    "unbounded_distinct_local_core_family_proved": false,
+    "existence_and_reconstruction_proved": true,
+    "count_preservation_claimed": false,
+    "executable_Kempe_history_claimed": false,
+    "universal_occurrence_or_coverage_proved": false
+  },
+  "compression": {
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies": 630,
+    "additional_original_certificates_replaced": 0,
+    "new_colour_certificates": 0,
+    "shared_repair": "FourColor.DiamondProfileReducibility.repair001",
+    "application": "The earlier six-face corona exclusion is now a corollary of the four-face diamond reduction.",
+    "application_checks_avoided": {
+      "separate_terminal_colourings": 22,
+      "separate_answer_cover_checks": 9
+    },
+    "new_geometric_separation_cases": 396,
+    "triangle_free_cases": 392,
+    "four_cycle_cases": 4,
+    "literal_coordinate_and_incidence_checks_retained": true,
+    "old_stronger_twelve_vertex_decrease_preserved_separately": true,
+    "integrated_into_complete_assembly": false,
+    "certificate_bytes_saved_claimed": 0,
+    "kernel_seconds_saved_claimed": 0
+  },
+  "independent_program": {
+    "script": "pentagonal_diamond_probe.py",
+    "script_sha256": "ef43b84d36f236053907375268e1fd990d3b9fccb3588bd384ebd1b633cbd146",
+    "report": "pentagonal-diamond-probe.json",
+    "report_sha256": "e8b0c836d7e9da8d7c013ff006786efe8e19aa2bb64ace9a8020ae03bbf745ee",
+    "face_census": {
+      "maps": 137,
+      "rooted_occurrences": 458,
+      "distinct_central_faces": 318,
+      "distinct_vertex_subsets": 229,
+      "maps_with_pattern": 75,
+      "all_occurrences_sha256": "e14cf377c6b988302a1ccff3ca771b74fe7874b3d976b9c51eb48208cf8c214b",
+      "first_occurrence": {
+        "id": "C20-plantri-0",
+        "central_face": 0,
+        "root": [
+          0,
+          1
+        ],
+        "vertices": [
+          8,
+          14,
+          15,
+          16,
+          10,
+          11,
+          5,
+          0,
+          1,
+          4,
+          9,
+          3
+        ],
+        "neighbour_lengths": [
+          5,
+          5,
+          5,
+          5,
+          5
+        ]
+      }
+    },
+    "larger_boundary_results": [
+      {
+        "ports": 6,
+        "support": 132,
+        "closed_obstruction_size": 0
+      },
+      {
+        "ports": 7,
+        "support": 282,
+        "closed_obstruction_size": 0
+      },
+      {
+        "ports": 8,
+        "support": 576,
+        "closed_obstruction_size": 600
+      }
+    ],
+    "eight_port_tree_contracts_avoiding_obstruction": 5,
+    "eight_port_tree_contracts_tested": 132,
+    "interpretation": "A failed full-support contract at the larger boundary does not refute reducing through the smaller diamond interface. The 600-word abstract obstruction is not asserted to be realized by a planar exterior."
+  },
+  "remaining": [
+    "recognize additional shared diamond members at their actual geometric interfaces",
+    "coverage of sources without this four-face pattern",
+    "replace and audit further complete-proof dependencies",
+    "universal geometric supply and reconstructible termination"
+  ]
+}
