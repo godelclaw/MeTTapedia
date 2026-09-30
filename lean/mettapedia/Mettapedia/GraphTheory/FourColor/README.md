@@ -49,9 +49,10 @@ occurrence under the documented spherical and exterior hypotheses. In a minimal 
 [SphericalVertexLowerBound](SphericalVertexLowerBound.lean) supply exterior
 connectedness without distinct attachment vertices; the
 [actual consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalLobeMinimalExterior.lean)
-excludes the recognized occurrence. Deriving recognition from the lobe's
-geometry and proving coverage remain open. The GSLT, graph and MeTTa
-results have their own verified consumers, listed in the guide.
+excludes the recognized occurrence. Recognition from the stated two-cycle
+geometry is now constructed below; broader supply and coverage remain open.
+The GSLT, graph and MeTTa results have their own verified consumers, listed
+in the guide.
 
 [CubicCycleIncidence](CubicCycleIncidence.lean) now derives a cycle shore's
 complete incidence coordinates from its actual graph vertices, cycle edges
@@ -70,9 +71,18 @@ force the pentagon's matching to be a cyclic shift or reflected shift.
 Its direction agrees with every inner rotation. The explicit inputs remain
 the two disjoint cycles, bijective attachment at the five inward positions,
 and the alternating outer turns. The [eight-root audit](ElevenLobeSpokeOrderAudit.lean)
-excludes complete theorems and catalogue certificates. Full patch-isomorphism
-assembly and geometric supply/coverage are still open. Catalogue counts are
-unchanged.
+excludes complete theorems and catalogue certificates.
+[ElevenLobeNormalizedGeometry](ElevenLobeNormalizedGeometry.lean) and
+[ElevenLobeDartCoordinates](ElevenLobeDartCoordinates.lean) now retain the shared
+orientation through all sixteen vertices, forty-eight darts and six ports.
+The reusable [dart constructor](OpenTangleDartRecognition.lean) supplies an
+exact tangle isomorphism from the actual vertex/dart bijections and their
+incidence equations. Its [geometric consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalLobeRecognition.lean)
+constructs the literal patch and performs the twelve-vertex reduction.
+The [twelve-root audit](../../../../fourcolor-classical/MettapediaFourColor/PentagonalLobeRecognitionAudit.lean)
+requires this full reconstruction chain and excludes complete theorems and
+catalogue certificates. Broader geometric supply and coverage remain open;
+catalogue counts are unchanged.
 
 ## Independent corridor route — checkpoint of 22 September 2026
 

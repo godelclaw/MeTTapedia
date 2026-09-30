@@ -1165,8 +1165,9 @@ lake build MettapediaFourColor.PentagonalLobeMinimalExteriorAudit
 
 Run this in `lean/fourcolor-classical`.
 `pentagonal-lobe-minimal-exterior-measurements.json` records the eleven-root
-audit, source/artifact hashes and exact scope. Deriving recognition from
-alternating-lobe geometry and proving coverage remain open. The unchanged
+audit, source/artifact hashes and exact scope. The later geometric consumer
+below constructs recognition for the specified two-cycle family. Broader
+supply and coverage remain open. The unchanged
 406-case replacement replay remains independent program evidence. No new
 catalogue or original-certificate saving is credited.
 
@@ -1221,5 +1222,31 @@ declarations with only standard axioms and no catalogue or complete-theorem
 dependency. `eleven-lobe-spoke-order-measurements.json` records its source and
 artifact hashes. This proves the order implication geometrically; it does not
 turn the program enumeration into a kernel-certified finite classifier.
-The full literal patch isomorphism and supply/coverage remain open. No further
-original certificate is removed. The old probe inputs are unchanged.
+The full literal patch isomorphism is now constructed by the geometric
+consumer below. Supply/coverage remain open. The old probe inputs are unchanged.
+
+## Complete recognition of the two-cycle lobe family
+
+```sh
+lake build MettapediaFourColor.PentagonalLobeRecognitionAudit
+```
+
+Run this in `lean/fourcolor-classical`. `PentagonalLobeRecognition` constructs
+the literal sixteen-vertex patch from two disjoint cycles, their five-spoke
+matching and the stated outer turns in an actual spherical cubic source.
+The same orientation witness controls adjacency, rotation and the finite
+coordinate codec. Six exposed darts and all internal edges are preserved;
+cubicity rules out hidden inner attachments. The actual consumer replaces
+the patch by a four-vertex tree, preserving the source class and reconstructing
+colourings. Minimum face size five and cyclic edge-connectivity at least
+four supply exterior connectedness; minimality supplies both bounds.
+
+The twelve-root audit checks 26,523 dependency declarations and requires the
+full geometry-to-reconstruction chain, excluding original catalogue
+certificates and the complete theorem. `pentagonal-lobe-recognition-measurements.json`
+records the source/artifact pairs, timings and scope. No fresh colouring-case
+enumeration is introduced: the new compact tables check a 16-vertex/48-dart
+representation codec. Existing lobe witness and answer-cover checks remain.
+This closes recognition for one shape in arbitrary qualifying exteriors.
+General stopping-lobe supply, broader local families and coverage remain
+open. No further original certificate or catalogue entry is removed.

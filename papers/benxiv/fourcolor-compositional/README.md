@@ -76,8 +76,9 @@ now proves its cycle-colouring component. At every length, merging adjacent
 ports commutes with taking the boundary colours; reconstruction is exact
 when the retained seam colour passes one explicit guard. Forgetting that
 guard fails on a kernel-checked four-cycle. This develops the boundary-algebra
-part of the plan. An embedded lobe adapter and an exterior operation giving
-strict map reduction remain to be supplied.
+part of the plan. A strict embedded reduction is now available for the
+pentagonal eleven-lobe family below; arbitrary stopping lobes still need
+a suitable operation and reconstruction contract.
 
 The [pentagonal lobe patch](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
 now supplies a positive joint repair beyond the cycle alone. Its literal dual
@@ -111,9 +112,9 @@ exterior connectedness now follows without distinct attachment vertices.
 The patch contains a cycle; a disconnected exterior with six ports could
 only have two isolated vertices. Euler and minimum face size leave at least
 four exterior vertices. Exact local recognition therefore suffices for the
-strict reduction and contradiction. Deriving that recognition from
-alternating-lobe geometry, and proving coverage, remain open. No further
-original certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
+strict reduction and contradiction. The two-cycle recognition theorem below
+now constructs the required correspondence. Broader supply and coverage
+remain open. No further original certificate is removed. The [worked reduction](tube-example/README.md#from-one-seam-to-a-joint-patch-repair)
 separates this theorem from the 406 independent tests of fourteen tree shapes.
 
 One part of recognition now has a uniform geometric explanation, valid at
@@ -129,9 +130,15 @@ now derives the attachment order as well. Given disjoint inner and outer cycles,
 all five inner spokes at the five inward outer positions, and the alternating
 outer turns, the matching must be a cyclic shift or reflected shift. Its
 direction is the same choice that governs the inner rotations. The closing
-gap's extra face step is included. Constructing the complete literal-patch
-isomorphism and proving supply of this geometric arrangement remain open;
-no further catalogue certificate has been removed.
+gap's extra face step is included. The [full geometric consumer](tube-example/README.md#reducing-the-actual-two-cycle-family)
+now reindexes the inner cycle by this shared witness and constructs the
+complete sixteen-vertex patch isomorphism. Every edge, rotation and exposed
+port is preserved. Under minimum face size five and cyclic edge-connectivity
+at least four, the actual map reduces by twelve vertices, with colouring
+reconstruction. Minimality supplies those bounds. This completes recognition
+and reduction for the stated two-cycle family. Its occurrence in more general
+stopping lobes, wider families and coverage remain open. No additional
+catalogue certificate has been removed.
 
 The [diamond insertion example](diamond-example/README.md) connects the local
 insertion idea to actual configurations 1, 2 and 4. Their graphs, cyclic orders,
@@ -326,7 +333,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Geometric successor supply | Hexagonal seam faces force distinct candidate vertices and construct the complete next row under short output-face hypotheses; finite growth reaches a pentagon, within three extensions at width five in a minimal counterexample |
 | Geometric cycle supply | Every alternating trajectory supplies a simple cycle segment and connected facial shores; its embedded closing operation remains open |
 | Cycle boundary contraction | One marked-seam law reconstructs literal cycle colourings at every length; forgetting the seam guard fails on a kernel-checked four-cycle |
-| Pentagonal lobe reduction | Exact recognized occurrences admit twelve-vertex reduction and reconstruction; minimality supplies all exterior conditions. Recognition from alternating-lobe geometry and coverage remain open; nine finite answer checks remain |
+| Pentagonal lobe reduction | Two-cycle incidence and outer turns now construct exact recognition and a twelve-vertex reduction; minimality supplies all exterior conditions. Broader supply and coverage remain open; nine finite answer checks remain |
 | Common finite core explanation | Joint-profile descent for configurations 1, 2 and 4; 92 ranked types, 236 representatives, 291 answers |
 | Original chromogram-cover obligations | 100 → 0: single chords handle 71 representatives, coupled ears 24, and joint anchors 5 |
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |

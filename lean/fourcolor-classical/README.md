@@ -336,9 +336,9 @@ cubic incidence. Minimality supplies both geometric bounds. The theorem
 the exact local occurrence and minimality; an exterior root is also derived.
 The [receipt](../../tools/fourcolor/classical/pentagonal-lobe-minimal-exterior-measurements.json)
 records eleven audited roots, including the strict whole-map reduction and
-colouring reconstruction. Deriving recognition from alternating-lobe geometry
-and proving coverage remain open. The complete assembly and credited
-certificate savings are unchanged.
+colouring reconstruction. The two-cycle recognition bridge below now
+constructs the local occurrence. Broader supply and coverage remain open.
+The complete assembly and credited certificate savings are unchanged.
 
 The [cycle-recognition component](../mettapedia/Mettapedia/GraphTheory/FourColor/CubicCycleIncidence.lean)
 now derives all local rotations and exact port return from cycle vertices,
@@ -353,8 +353,24 @@ stated outer turns force a cyclic or reflected matching, coupled to the
 inner rotations. Complement connectivity is derived from the outer cycle;
 the longer closing gap is included in the exact return. The
 [receipt](../../tools/fourcolor/classical/eleven-lobe-spoke-order-measurements.json)
-records the eight-root audit. The full patch-isomorphism assembly, supply,
-coverage and further certificate replacement remain open.
+records the eight-root audit.
+
+[PentagonalLobeRecognition](MettapediaFourColor/PentagonalLobeRecognition.lean)
+now completes the family bridge. `recognized` constructs the full literal
+patch isomorphism from that independently stated two-cycle geometry.
+`strict_reduction_of_geometry` gives an actual smaller map in the same
+bridgeless spherical cubic class, with twelve fewer vertices and genuine
+colouring reconstruction, under minimum face size five and cyclic
+edge-connectivity at least four. `not_in_minimal_counterexample` derives
+those exterior conditions from minimality. Repeated attachment endpoints
+are permitted. The [coordinate codec](MettapediaFourColor/PentagonalLobeCoordinates.lean)
+preserves every vertex, edge reversal, rotation and exposed port. Its flat
+permutation tables are kernel-checked. The [twelve-root audit](MettapediaFourColor/PentagonalLobeRecognitionAudit.lean)
+checks 26,523 dependency declarations and excludes the complete theorem,
+original catalogue certificates and diamond reducibility. The
+[receipt](../../tools/fourcolor/classical/pentagonal-lobe-recognition-measurements.json)
+records the exact scope and artifacts. General stopping-lobe supply,
+broader families, coverage and further certificate replacement remain open.
 
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as

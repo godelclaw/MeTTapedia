@@ -1,0 +1,167 @@
+{
+  "status": "Kernel-checked recognition and strict reduction for the specified actual two-cycle lobe family. Broader supply, wider local families and coverage remain open.",
+  "completed_utc": "2026-09-30T00:34:07.245008+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "0da7811930501c9928675381a09d791739771a41",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ElevenLobeNormalizedGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeNormalizedGeometry.lean",
+      "source_sha256": "fe51a942017e62e8af3c52b16ab4a41522eabdb857dc9a62a6f11573805ec15a",
+      "olean_sha256": "68401166bb27baf99b421febce555659f9f66f85562ba600498ded57a3912037",
+      "olean_bytes": 396456,
+      "reported_build_seconds": 3.3
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ElevenLobeDartCoordinates",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeDartCoordinates.lean",
+      "source_sha256": "0a50dc9d576e6fea568840d2ceac29a2532bdf711e4e69556a2c0004bebe50fb",
+      "olean_sha256": "956e22902c9b1076d88b1c67eae610334beff090439ff6556040ff0eee4b2bcb",
+      "olean_bytes": 800992,
+      "reported_build_seconds": 3.4
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleDartRecognition",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleDartRecognition.lean",
+      "source_sha256": "9afb17ad4ce20dbe9b156a751865c5d26cb6e2a9abd43a27eb08d73ba3894d06",
+      "olean_sha256": "b86fb0dcb87e5665157ba4346e07a553cfe9b1d4f10f6c78bc917e6ffe99f93a",
+      "olean_bytes": 200128,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeCoordinates",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeCoordinates.lean",
+      "source_sha256": "72310dd2b5c3e6b89098c7ec063f475cc64bec99ad0db9ab2d0c94d3a80308d3",
+      "olean_sha256": "49cab16169d73bfe0d3403a72dbebcb565bf9abe4c2c043d86999fc125353281",
+      "olean_bytes": 203952,
+      "reported_build_seconds": 4.2
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeRecognition",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeRecognition.lean",
+      "source_sha256": "ef5ff688453e57abd4ab58e7a6d1b36602f456b5ee472b2916d2f8feb5e48fc1",
+      "olean_sha256": "a4d1b4f17e173595d279947c8ee51801e0194fb847341a13b68e6fac58fee451",
+      "olean_bytes": 236400,
+      "reported_build_seconds": 3.6
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalLobeRecognitionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeRecognitionAudit.lean",
+      "source_sha256": "b1ce59161d24ac98ea453b9f64dcfca496f5f313e9d24d28b6b9f0fea1d7ca75",
+      "olean_sha256": "9b6dc0c91baf16529e60fffc51a7ea08666ac5fdb134d7f1dbaceec00d9cf918",
+      "olean_bytes": 3256,
+      "reported_build_seconds": 6.5
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.innerBySpoke_rotation",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.outward_spoke_not_inner",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.patchDartEquiv",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.coordinateDart_boundary",
+      "Mettapedia.GraphTheory.FourColor.ElevenLobeSpokeOrder.Incidence.coordinateDart_flip",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphism.ofRetainedDarts",
+      "FourColor.PentagonalLobePatch.Tangle.Coordinates.alpha",
+      "FourColor.PentagonalLobePatch.Tangle.Coordinates.rotation",
+      "FourColor.PentagonalLobePatch.Tangle.Recognition.withOrientation",
+      "FourColor.PentagonalLobePatch.Tangle.Recognition.recognized",
+      "FourColor.PentagonalLobePatch.Tangle.Recognition.strict_reduction_of_geometry",
+      "FourColor.PentagonalLobePatch.Tangle.Recognition.not_in_minimal_counterexample"
+    ],
+    "combined_dependency_closure": 26523,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "same matching/orientation witness throughout inner relabelling",
+      "exhaustive actual graph vertices and darts",
+      "exact internal/exposed classification",
+      "edge and rotation transport",
+      "geometrically derived inner order",
+      "minimality-derived exterior conditions",
+      "whole-map strict decrease",
+      "actual colouring reconstruction"
+    ],
+    "excluded_dependencies": "Complete Four Colour endpoints, original catalogue certificates and diamond reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalLobeRecognitionAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3635,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "input": "Two disjoint cycles of lengths eleven and five; an arbitrary bijective matching of inner spokes to outer positions 1,3,5,7,9; stated alternating outer turns including the closing gap. Ambient connected spherical cubic simple graph with cyclic vertex rotations and two-sided faces.",
+    "input_isomorphism_required": false,
+    "input_inner_rotation_required": false,
+    "input_cyclic_spoke_order_required": false,
+    "distinct_exterior_attachment_vertices_required": false,
+    "shared_inner_orientation_and_matching_preserved": true,
+    "patch_vertices": 16,
+    "retained_darts": 48,
+    "internal_darts": 42,
+    "boundary_ports": 6,
+    "replacement_vertices": 4,
+    "whole_map_vertex_decrease": 12,
+    "whole_map_class_preserved": "Bridgeless spherical cubic rotation-system class",
+    "general_reduction_additional_hypotheses": "Minimum face size five and cyclic edge-connectivity at least four. A minimal counterexample supplies both.",
+    "recognition_endpoint": "FourColor.PentagonalLobePatch.Tangle.Recognition.recognized",
+    "strict_reduction_endpoint": "FourColor.PentagonalLobePatch.Tangle.Recognition.strict_reduction_of_geometry",
+    "minimality_endpoint": "FourColor.PentagonalLobePatch.Tangle.Recognition.not_in_minimal_counterexample",
+    "all_surviving_and_introduced_vertices_counted": true,
+    "genuine_colouring_reconstruction": true,
+    "exterior_recolouring_allowed": true,
+    "all_starting_colours_preserved": false,
+    "new_count_preservation_claim": false,
+    "new_executable_history_transport_claim": false,
+    "unbounded_exterior_size_allowed": true,
+    "unbounded_distinct_local_core_family_proved": false,
+    "general_stopping_lobe_supply_proved": false,
+    "coverage_proved": false
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_configuration_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "geometric_family_recognition_scheme_completed": 1,
+    "new_independent_recolouring_schemes": 0,
+    "patch_terminal_witnesses_retained": 22,
+    "patch_finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "new_coordinate_codec": "One 16-vertex and one 48-dart bijection with inverse flat tables and kernel-checked incidence/rotation/port equations; these are representation checks, not new colouring cases.",
+    "finite_check_or_runtime_savings_in_complete_proof_claimed": false
+  },
+  "cost_scope": "Reported Lake module times include elaboration and kernel checking. The final source timing for OpenTangleDartRecognition was not retained. No isolated kernel benchmark is claimed.",
+  "baseline_replay": {
+    "rerun": false,
+    "reason": "The complete classical assembly, existing repair proofs and their finite replay inputs are unchanged. The new consumer and full dependency audit were built."
+  },
+  "next_obligations": [
+    "Derive the two-cycle incidence and outer turns from suitable independently stated stopping-lobe conditions.",
+    "Extend reconstruction to other local cores or longer stopping lobes, with measured family coverage.",
+    "Integrate applicable replacements into the complete proof and audit actual certificate dependencies; establish global supply/coverage and reconstructible termination."
+  ],
+  "unchanged_program_evidence": [
+    {
+      "path": "tools/fourcolor/classical/lobe_spoke_order_probe.py",
+      "sha256": "94da3877bfe0854da46dc481dad17e9532f1319bbfd5dd0157880756220746a2",
+      "rerun_this_checkpoint": false
+    },
+    {
+      "path": "tools/fourcolor/classical/lobe-spoke-order-probe.json",
+      "sha256": "674953949800953a966c6e4f9d69f502a5a387bf1f752c69696d9ef2b45b7c23",
+      "rerun_this_checkpoint": false
+    },
+    {
+      "path": "tools/fourcolor/classical/pentagonal-lobe-tree-probe.json",
+      "sha256": "fa652b825897ae502650f9a6a6ff6e66318ce32a13b955b1587fc56e6752d5c1",
+      "rerun_this_checkpoint": false
+    }
+  ]
+}

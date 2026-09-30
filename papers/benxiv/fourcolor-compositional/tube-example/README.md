@@ -533,12 +533,10 @@ complete Four Colour endpoints and catalogue certificates. The reusable
 [six-port theorem][six-port-connectivity] needs no embedding or colouring;
 the [twenty-vertex bound][vertex-lower-bound] counts actual quotient faces.
 
-Exact recognition must still be constructed from independently specified
-alternating-lobe geometry. The cycle and spoke-order results below now derive
-the inner rotation and attachment order under explicit two-cycle incidence
-hypotheses. They have not yet been assembled into the full tangle isomorphism.
-The 29 program-recognized examples do not prove general supply. Coverage of
-the relevant stopping configurations remains open. The
+The cycle, spoke-order and full recognition results below now construct the
+required isomorphism from independently specified two-cycle incidence and
+outer turns. The 29 program-recognized examples do not prove general supply.
+Coverage of the relevant stopping configurations remains open. The
 [measurement record][minimal-exterior-measurements] credits no
 additional original configuration-certificate savings; the 22 terminal
 witnesses, nine answer-cover checks and one shared matching codec remain.
@@ -632,17 +630,84 @@ Four Colour endpoints and original catalogue certificates. The
 fingerprints. The final module build took 5.1 seconds and its audit 5.6 seconds;
 these include elaboration and kernel checking.
 
-This settles the attachment-order component of recognition. Constructing
-the full sixteen-vertex tangle isomorphism, deriving the stated two-cycle
-arrangement from a stopping lobe, and proving coverage remain separate
-obligations. The existing strict reduction still needs that isomorphism.
+This settles the attachment-order component. The full sixteen-vertex tangle
+isomorphism and its strict-reduction consumer are now constructed below.
+Deriving the stated two-cycle arrangement from a general stopping lobe and
+proving coverage remain separate obligations.
 The complete proof retains 633 configurations and 630 original certificates;
 this result removes no additional certificate and makes no assertion about
 preserving colouring counts or executable recolouring histories.
 
+## Reducing the actual two-cycle family
+
+[PentagonalLobeRecognition][lobe-recognition] completes the geometric chain
+for the specified pentagon-plus-eleven-cycle arrangement. The graph input
+consists of two disjoint cycles, an arbitrary bijective matching of the five
+inner spokes to outer positions 1, 3, 5, 7 and 9, and the alternating outer
+turns. The ambient map is connected, spherical and cubic, with cyclic vertex
+rotations and two-sided faces. No inner rotation, cyclic matching, connected
+exterior or tangle isomorphism is supplied.
+
+The construction labels each inner vertex by its actual outer attachment.
+The previously derived orientation is used for both its adjacent vertices
+and its three-dart rotation. Cubic neighbour exhaustiveness proves that the
+six remaining outer spokes leave the entire patch. It also proves that the
+coordinate map covers every actual dart at every retained vertex. A
+[kernel-checked codec][lobe-coordinates] identifies these two cyclic lists
+with the existing literal patch, preserving all vertices, edge reversals,
+rotations and exposed half-edges. The general [dart-recognition constructor][dart-recognition]
+then supplies the exact open-tangle isomorphism. The same witness is retained
+through every representation change.
+
+```text
+two cycles + five spoke attachments + outer turns
+  → spherical geometry forces one joint inner order and orientation
+  → exact correspondence of 16 vertices, 48 darts and 6 ports
+  → actual patch-to-exterior sewing and compatible recolouring
+  → replacement by a four-vertex tree, reducing the whole map by 12 vertices.
+```
+
+`strict_reduction_of_geometry` proves the final step under minimum face size
+five and cyclic edge-connectivity at least four. It constructs a smaller
+map in the bridgeless spherical cubic class and reconstructs an original-map
+colouring from a smaller-map colouring. All replacement vertices are counted.
+Exterior attachments may repeat. `not_in_minimal_counterexample` obtains the
+face-size and cut bounds from minimality and excludes this actual family.
+The reconstruction may recolour the exterior; it retains compatible joint
+choices throughout.
+
+This is one local geometric shape in arbitrary qualifying surrounding maps.
+It completes its recognition and reduction obligations, without proving an
+unbounded family of distinct local cores or occurrence in every stopping
+lobe. The proof still uses the existing 22 terminal colourings, nine finite
+answer-cover checks and one shared six-port matching codec. The new literal
+coordinate tables certify a representation change, not additional colouring
+cases. No further original configuration certificate or catalogue entry is
+removed: the complete proof still has 633 configurations and 630 original
+certificates. Existence reconstruction is proved; no new count-preservation
+or executable recolouring-history theorem is claimed.
+
+The [audit][lobe-recognition-audit] checks twelve roots and 26,523 dependency
+declarations, allowing only `propext`, `Classical.choice` and `Quot.sound`.
+It requires the geometric-order, exact-dart, exterior-connectivity, strict-size
+and colouring-reconstruction chains. Complete Four Colour endpoints,
+original catalogue certificates and diamond reducibility are excluded.
+The [receipt][lobe-recognition-measurements] records source and artifact hashes.
+The final recognition module took 3.6 seconds and its audit 6.5 seconds,
+including elaboration and kernel checking. From `lean/fourcolor-classical`:
+
+```sh
+lake build MettapediaFourColor.PentagonalLobeRecognitionAudit
+```
+
+The next geometric question is which stopping-lobe conditions force this
+arrangement, or a larger family with a similarly reconstructible reduction.
+Existing alternating-walk extraction retains the closing transition but
+does not yet supply the enclosed pentagon and its five attachments.
+
 ## Scope and verification
 
-This establishes an infinite family reduction from the corridor idea,
+The tube result establishes an infinite family reduction from the corridor idea,
 independently of the classical Four Colour theorem. It does not establish
 that every large relevant map contains such a tube, that arbitrary linked
 bands are literal zigzag tubes, or that unbounded interfaces have finitely
@@ -745,3 +810,9 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [lobe-spoke-order]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeSpokeOrder.lean
 [lobe-spoke-order-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ElevenLobeSpokeOrderAudit.lean
 [lobe-spoke-order-measurements]: ../../../../tools/fourcolor/classical/eleven-lobe-spoke-order-measurements.json
+
+[lobe-recognition]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeRecognition.lean
+[lobe-coordinates]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeCoordinates.lean
+[dart-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleDartRecognition.lean
+[lobe-recognition-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeRecognitionAudit.lean
+[lobe-recognition-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-recognition-measurements.json
