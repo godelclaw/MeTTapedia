@@ -628,6 +628,43 @@ reserve or establish recurrent unbounded renewal. Paying the signed
 pressure flux and joint reaction over arbitrary interacting histories
 remains the continuation obligation.
 
+`WholeSpacePressureAugmentation` supplies an alternative spatial payment
+for a stronger sufficient observable. Add the square of the actual
+canonical pressure Hessian to the completed joint observer:
+
+```text
+Phi=Psi+|P|^2,       D_Phi=D_Psi+2nu|grad P|^2,
+nu a|grad P_C|^2 <= (33/56)a D_Phi.
+```
+
+This payment is pointwise for every nonnegative selector. Its integrated
+consumer accepts any bounded measurable selector, including the continuous
+soft-excess weight, with no localization flux or weight-derivative estimate.
+The completed observer-Hessian lower bound is an explicit application
+obligation. The literal square diffusion identity uses the constructed
+whole-fluid pressure; it does not introduce an independently chosen matrix.
+The additional initial mass is at most `integral |grad u0|^4`, and the
+augmented soft-excess bound still implies the actual vorticity criterion.
+Nineteen public definitions and theorems certify these spatial statements
+and the conditional continuation adapter.
+
+The stronger candidate has an additional signed pressure-production term.
+Writing `K` for the pressure-Hessian observer and
+`D=partial_t+u.grad-nu Delta`, the physical equation is
+
+```text
+D P = -K(u tensor grad p+grad p tensor u)
+       +[u.grad,K](u tensor u)-2nu K(grad u (grad u)^T).
+```
+
+The complete extra production `2P:D P` remains in the history obligation.
+The [pressure-square lab](labs/pressure_square_augmentation.py) checks this
+equation against the full exact initial NS operator and retains every
+Fourier output. Its equal-energy phase pair has opposite signed additional
+production. This does not refute the candidate's integrated history bound,
+and the new diffusion payment does not establish that bound. Time evolution,
+memory construction and the full physical matrix Hessian remain analytic.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |

@@ -6978,6 +6978,108 @@ uniform over arbitrary mutually amplifying parent histories. The stochastic
 representation, parabolic comparison, pressure observer bound, weak selector
 limit and resulting full-history allowance remain analytic results.
 
+## Canonical pressure square and selected diffusion
+
+`pressure_square_augmentation.py` examines a stronger sufficient observable
+that pays the varying-selector memory-gradient cost pointwise. Let
+`P=Hess p`, `P_hat=P+P_C`, and let `Psi` be the completed joint observable.
+The proposed addition is the **actual canonical pressure**, not a free
+pressure slot:
+
+```text
+Phi=Psi+|P|^2,
+D_Phi=D_Psi+2nu sum_j |partial_j P|^2.
+```
+
+For arbitrary matrices `L` and `PP`, the exact square is
+
+```text
+(33/5)|L|^2+(33/28)|PP|^2-|L-PP|^2
+  =|28L+5PP|^2/140 >=0.
+```
+
+The completed observer diffusion supplies `(56/5)nu|grad P_hat|^2`.
+The extra square supplies `2nu|grad P|^2`. Thus
+
+```text
+nu a|grad P_C|^2 <= (33/56)a D_Phi
+```
+
+pointwise for every nonnegative weight `a`. No positive lower bound on `a`
+and no spatial derivative of it is used. In particular this accepts
+`a=max(1-b^2/z^2,0)` on `z=Phi/h>0`. The corresponding integrated theorem
+accepts bounded measurable weights. The scalar square diffusion, actual
+initial-cost bound, selector identification and conditional continuation
+adapter are Lean-certified in `WholeSpacePressureAugmentation`. The full
+matrix lower bound and construction of the physical memory remain analytic
+application obligations.
+
+The addition preserves coercivity and has finite initial cost:
+
+```text
+integral |P0|^2 <= integral |grad u0|^4.
+```
+
+It creates extra signed production, which must be retained. With the exact
+pressure-Hessian observer `K` and the physical material-diffusion operator
+`D=partial_t+u.grad-nu Delta`, the unforced equation gives
+
+```text
+D P=-K(u tensor grad p+grad p tensor u)
+     +[u.grad,K](u tensor u)-2nu K(grad u (grad u)^T),
+extra production=2P:D P.
+```
+
+The default checker differentiates the actual canonical pressure using
+every coefficient of the full NS right-hand side and compares the entire
+field with this formula. It also checks the literal pressure-square
+Laplacian, the absorption square and the initial quartic estimate. Checks
+use exact Gaussian-rational algebra and remain enabled under `python3 -O`.
+For the reciprocal-parent datum at `epsilon=1/5`, `nu=1/100`, the two phases
+have the same pressure-square mass `8549/6250` but added production
+`-phase*2728269/24062500`. The transport commutator is included; its work is
+`phase*63/15625`. The viscous-source work happens to vanish at this initial
+slice, and is retained at later slices. These are instantaneous identities,
+not a sign obstruction to a compatible time-integrated reserve.
+
+From the package directory:
+
+```sh
+python3 -O labs/pressure_square_augmentation.py
+python3 labs/reciprocal_parent_history.py --prefix --n 96 --final-time 1.5 --dt .005 --sample-interval 1.5 --save-state state.npz
+python3 labs/pressure_square_augmentation.py --state state.npz --diagnostic-n 192
+```
+
+The diagnostic reads the saved velocity and all six memory entries without
+reintegration. Its threshold is the previous full-datum majorant plus the
+square of the initial pressure majorant; it is fixed before evolution.
+It checks the pointwise absorption and reports the pressure-production
+components separately. Its signed excess expression is the full physical
+PDE evaluated on a padded Galerkin slice. Galerkin residuals are not included,
+so it is not the derivative of the truncated solution. Positive sampled
+memory and quadrature/refinement checks do not constitute a continuum
+enclosure. This stronger candidate leaves payment of arbitrary signed
+production histories open; it does not assert equivalence with the weaker
+unaugmented excess criterion.
+
+For the saved `96^3` prefix at `t=1.5`, the `192^3` and `208^3` diagnostic
+grids give:
+
+| Quantity | `192^3` | `208^3` |
+| --- | ---: | ---: |
+| Augmented excess mass | 97.85460061 | 97.85205124 |
+| Selected memory-gradient cost | .00271088672 | .00271034600 |
+| Selected augmented diffusion | 141.07097081 | 141.15267432 |
+| Added signed pressure production | .03815585728 | .03816474308 |
+| Selected transport-commutator production | .09547050445 | .09546497523 |
+| Weight-gradient diffusion | 415.91755863 | 417.25974173 |
+
+Both grids retain positive sampled memory and satisfy the pointwise square
+payment. The extra selected pressure production is positive: its positive
+transport commutator exceeds negative pressure-work and viscous-source
+contributions. These refined spatial diagnostics concern the same numerical
+history, not independent evolution resolutions or a future resource bound.
+
 ## Reciprocal cellular-parent renewal
 
 `reciprocal_parent_history.py` adds genuine three-dimensional feedback to
