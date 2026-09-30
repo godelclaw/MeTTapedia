@@ -238,6 +238,13 @@ theorem hasDerivAt_matrix_mul {f g : ℝ → Matrix (Fin 2) (Fin 2) ℂ}
       (hasDerivAt_pi.mp (hasDerivAt_pi.mp hg k) j)))
   simpa only [Matrix.mul_apply, Matrix.add_apply, Finset.sum_add_distrib, Pi.mul_apply] using hd
 
+theorem hasDerivAt_su2_left_mul (q : SU2) {v : ℝ → SU2}
+    {df : Matrix (Fin 2) (Fin 2) ℂ} {t : ℝ}
+    (hd : HasDerivAt (fun s ↦ (v s).val) df t) :
+    HasDerivAt (fun s ↦ (q * v s).val) (q.val * df) t := by
+  simpa only [Submonoid.coe_mul, zero_mul, zero_add] using
+    hasDerivAt_matrix_mul (hasDerivAt_const_matrix q.val t) hd
+
 theorem contDiff_matrix_mul {f g : ℝ → Matrix (Fin 2) (Fin 2) ℂ}
     (hf : ContDiff ℝ ∞ f) (hg : ContDiff ℝ ∞ g) :
     ContDiff ℝ ∞ (fun t ↦ f t * g t) := by

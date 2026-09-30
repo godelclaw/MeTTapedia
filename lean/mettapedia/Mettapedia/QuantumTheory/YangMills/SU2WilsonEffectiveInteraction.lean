@@ -4,9 +4,10 @@ import Mettapedia.QuantumTheory.YangMills.SU2WilsonSeparatorComparison
 /-!
 # Spatial response of the actual two-level effective Wilson weights
 
-The logarithms of both assembly marginals are the boundary log partition
-functions used in the spatial response theorem. Their mixed finite changes
-therefore decay uniformly in surrounding volume at strong coupling. The
+The logarithms of both assembly marginals are the original boundary log
+partition functions. Their first and mixed derivatives retain the original
+action scores, contact term and staged conditional covariance. Separated
+responses decay uniformly in surrounding volume at strong coupling. The
 growing family changes genuine retained links at both levels.
 -/
 set_option autoImplicit false
@@ -109,6 +110,39 @@ theorem mixedDerivative_eq_covariance (N : ℕ) (β : ℝ) (coarse : Bool)
   exact SU2BoundaryResponse.mixedDerivative_eq_covariance β univ
     (retainedSet (mesh coarse)) S T q r b hST
 
+/-- Both generated log weights retain the contact term for overlapping patches. -/
+theorem mixedDerivative_eq_covariance_sub_contact (N : ℕ) (β : ℝ) (coarse : Bool)
+    (S T : Finset (AssemblyLink N)) (q r b : FullField N) :
+    mixedDerivative N β coarse S T q r b =
+      β ^ 2 * covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) S q b 0)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) T r b 0) -
+      β * expectation (Measure.pi fun _ ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+        (SU2BoundaryResponse.contact univ (retainedSet (mesh coarse)) S T q r b 0) := by
+  rw [mixedDerivative_eq_boundary]
+  exact SU2BoundaryResponse.mixedDerivative_eq_covariance_sub_contact β univ
+    (retainedSet (mesh coarse)) S T q r b
+
+/-- For arbitrary patches the actual coarse Hessian consists of the route's
+conditional covariance and its transported original-action contact mark. -/
+theorem mixedDerivative_eq_route_with_contact (N : ℕ) (β : ℝ)
+    (S T : Finset (AssemblyLink N)) (q r b : FullField N) :
+    mixedDerivative N β true S T q r b = β ^ 2 *
+      WilsonEliminationRoutes.remainder (route N β)
+        (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0))
+        (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0))
+        (coarseRestriction N b) -
+      β * secondProjected N β (SU2BoundaryResponse.contact univ (retainedSet 4) S T q r b 0) b := by
+  have hc := conditional_covariance_remainder N β _ _ b
+    (SU2BoundaryResponse.score_pin univ (retainedSet 4) S q b)
+    (SU2BoundaryResponse.score_pin univ (retainedSet 4) T r b)
+  have hj := secondProjected_eq_pinnedExpectation N β _ b
+    (SU2BoundaryResponse.contact_pin univ (retainedSet 4) S T q r b)
+  exact (mixedDerivative_eq_covariance_sub_contact N β true S T q r b).trans
+    (congrArg₂ (fun x y : ℝ ↦ β ^ 2 * x - β * y) hc hj.symm)
+
 /-- The Hessian of the second generated log weight is the actual conditional
 covariance remainder of the assembled two-step route. -/
 theorem mixedDerivative_eq_route_remainder (N : ℕ) (β : ℝ)
@@ -146,6 +180,33 @@ theorem mixedDerivative_staged (N : ℕ) (β : ℝ)
         (coarseRestriction N b) := by
   rw [mixedDerivative_eq_route_remainder N β S T q r b hST, route_remainder_staged]
   exact mul_add _ _ _
+
+/-- The full Hessian agrees with staged Haar elimination. Both the contact
+mark and the first conditional covariance pass through the generated density. -/
+theorem mixedDerivative_staged_with_contact (N : ℕ) (β : ℝ)
+    (S T : Finset (AssemblyLink N)) (q r b : FullField N) :
+    mixedDerivative N β true S T q r b =
+      β ^ 2 * fiberCovariance (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0)))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0)))
+        (coarseRestriction N b) -
+      β * project (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N (SU2BoundaryResponse.contact univ (retainedSet 4) S T q r b 0)))
+        (coarseRestriction N b) +
+      β ^ 2 * project (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (fiberCovariance (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0))
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0)))
+        (coarseRestriction N b) := by
+  rw [mixedDerivative_eq_route_with_contact, route_remainder_staged, secondProjected_eq_staged]
+  have h (a c j : ℝ) : β ^ 2 * (a + c) - β * j = β ^ 2 * a - β * j + β ^ 2 * c := by ring
+  exact h _ _ _
 
 /-- The same decay rate works for both actual elimination levels, before
 choosing the ambient volume, background, directions and separated patches. -/
@@ -254,6 +315,8 @@ theorem tendsto_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0
 #print axioms hasDerivAt_logWeight
 #print axioms mixedDerivative_eq_covariance
 #print axioms mixedDerivative_staged
+#print axioms mixedDerivative_eq_covariance_sub_contact
+#print axioms mixedDerivative_staged_with_contact
 #print axioms uniform_mixedDerivative
 #print axioms tendsto_mixedDerivative
 #print axioms uniform_mixedChange

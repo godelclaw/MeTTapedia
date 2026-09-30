@@ -170,6 +170,61 @@ theorem hasDerivAt_traceScore_insertion (v u dv du : ℝ → Fin 4 → SU2)
       (hasDerivAt_const t (1 : ℝ))
   simpa only [traceScore_eq_potential_sub_one, holonomyInsertion_eq_holonomy_update, sub_zero] using h
 
+/-- The mixed action derivative on one plaquette. The inserted first
+derivative also changes when the two rotations act on the same slot. -/
+def holonomyContact (v u dv du : Fin 4 → SU2) (S T : Finset (Fin 4)) : ℝ :=
+  ∑ i ∈ S, holonomyScore (Function.update v i (u i))
+    (Function.update dv i (du i)) T
+
+theorem continuous_holonomyContact (S T : Finset (Fin 4)) :
+    Continuous (fun z : ((Fin 4 → SU2) × (Fin 4 → SU2)) ×
+      ((Fin 4 → SU2) × (Fin 4 → SU2)) ↦
+        holonomyContact z.1.1 z.1.2 z.2.1 z.2.2 S T) := by
+  apply continuous_finsetSum
+  intro i _
+  have hv : Continuous (fun z : ((Fin 4 → SU2) × (Fin 4 → SU2)) ×
+      ((Fin 4 → SU2) × (Fin 4 → SU2)) ↦ Function.update z.1.1 i (z.1.2 i)) := by
+    apply continuous_pi
+    intro j
+    by_cases h : j = i
+    · subst j
+      simp only [Function.update_self]
+      fun_prop
+    · simp only [Function.update_of_ne h]
+      fun_prop
+  have hd : Continuous (fun z : ((Fin 4 → SU2) × (Fin 4 → SU2)) ×
+      ((Fin 4 → SU2) × (Fin 4 → SU2)) ↦ Function.update z.2.1 i (z.2.2 i)) := by
+    apply continuous_pi
+    intro j
+    by_cases h : j = i
+    · subst j
+      simp only [Function.update_self]
+      fun_prop
+    · simp only [Function.update_of_ne h]
+      fun_prop
+  simpa only [Function.comp_def] using (continuous_holonomyScore T).comp (hv.prodMk hd)
+
+theorem abs_holonomyContact_le (v u dv du : Fin 4 → SU2) (S T : Finset (Fin 4)) :
+    |holonomyContact v u dv du S T| ≤ (S.card : ℝ) * T.card := by
+  exact (Finset.abs_sum_le_sum_abs _ _).trans (by
+    simpa only [Finset.sum_const, nsmul_eq_mul] using
+      Finset.sum_le_sum (s := S) (fun i _ ↦ abs_holonomyScore_le _ _ T))
+
+@[simp] theorem holonomyContact_empty (v u dv du : Fin 4 → SU2) (S : Finset (Fin 4)) :
+    holonomyContact v u dv du S ∅ = 0 := by
+  simp [holonomyContact, holonomyScore]
+
+theorem hasDerivAt_holonomyScore (v u dv du : ℝ → Fin 4 → SU2)
+    (S T : Finset (Fin 4)) (t : ℝ)
+    (hdv : ∀ j, HasDerivAt (fun s ↦ (v s j).val)
+      (if j ∈ T then (dv t j).val else 0) t)
+    (hdu : ∀ i ∈ S, HasDerivAt (fun s ↦ (u s i).val)
+      (if i ∈ T then (du t i).val else 0) t) :
+    HasDerivAt (fun s ↦ holonomyScore (v s) (u s) S)
+      (holonomyContact (v t) (u t) (dv t) (du t) S T) t := by
+  exact HasDerivAt.fun_sum (fun i hi ↦
+    hasDerivAt_traceScore_insertion v u dv du T i t hdv (hdu i hi))
+
 theorem continuous_plaquetteHolonomy (p : BlockPlaquette) :
     Continuous (fun U : BlockLinkField => plaquetteHolonomy U p) := by
   unfold plaquetteHolonomy
@@ -277,6 +332,7 @@ theorem plaquetteObservable_gaugeAct (p : BlockPlaquette) (g : BlockGaugeTransfo
 #print axioms abs_holonomyScore_le
 #print axioms hasDerivAt_holonomy_potential
 #print axioms hasDerivAt_traceScore_insertion
+#print axioms hasDerivAt_holonomyScore
 #print axioms measurePreserving_assembleField
 #print axioms blockPartition_pos
 #print axioms continuous_effectiveBlockAction

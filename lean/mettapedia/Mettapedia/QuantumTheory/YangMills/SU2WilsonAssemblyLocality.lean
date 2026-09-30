@@ -94,6 +94,13 @@ def firstProjected (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) (b : FullField
 def secondProjected (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) (b : FullField N) : ℝ :=
   WilsonEliminationRoutes.action (route N β) (splitObservable N F) (coarseRestriction N b)
 
+theorem secondProjected_eq_staged (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) (b : FullField N) :
+    secondProjected N β F b =
+      project (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N F)) (coarseRestriction N b) := rfl
+
 theorem continuous_firstProjected (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) :
     Continuous (firstProjected N β F) := by
   apply (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
