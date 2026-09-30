@@ -493,25 +493,36 @@ arguments and actual colouring reconstruction. The
 records exact scope, kernel gates and the independent finite geometry replay.
 No additional colouring certificate or catalogue saving is credited.
 
-[JointDiamondFaceReduction](MettapediaFourColor/JointDiamondFaceReduction.lean)
-now constructs the occurrence from four face lengths and an explicit
-`BoundaryClear` check on the eight outgoing endpoints. The actual traversal
-supplies all seventeen internal edges. Joint dart transport, girth and a
-four-edge-cut contradiction prove that its fourteen vertices are distinct
-under normal form. Thus vertex distinctness and the tangle isomorphism are
-derived, while absence of hidden boundary chords remains a stated local
-geometric check. The strict twelve-vertex reduction and minimal-counterexample
-consumer use this constructed occurrence. Deriving `BoundaryClear` from
-normal form alone is the next obligation.
+[JointDiamondFaceClearance](MettapediaFourColor/JointDiamondFaceClearance.lean)
+constructs the complete ordered occurrence from the four face lengths and
+spherical normal form. The fourteen vertices are distinct and all eight
+candidate ports leave the core. A hidden internal chord would consume two
+ports; cubic parity and cyclic connectivity force the other six to leave.
+An invariant cyclic-interval label separates their actual capped face
+orbits, contradicting the planar-bond theorem for the connected core and
+exterior. The exact coordinate map commutes with both edge and vertex
+operations, so the contradiction concerns the actual embedded graph.
 
-The [face audit](MettapediaFourColor/JointDiamondFaceAudit.lean) requires the
-joint separation, cut contradiction, actual face traversal and strict
-reconstruction chain. Its [receipt](../../tools/fourcolor/classical/joint-diamond-face-measurements.json)
-records standard-axiom and dependency checks. The independent face-pattern
-replay tests all 15,864 rooted darts in 137 saved maps: all 1,424 patterns
-pass the boundary check and actual replacement checks. It also records the
-twelve possible long chords and their two boundary-face orbits, without
-claiming their exclusion in an arbitrary ambient map.
+The strict-reduction consumer removes fourteen vertices, introduces two,
+preserves the connected bridgeless spherical cubic class, and reconstructs
+colourings using the same coupled repair. Its minimal-counterexample
+consumer obtains the smaller colouring from minimality. No occurrence
+isomorphism, vertex-injectivity premise or outgoing-endpoint check is supplied.
+The face pattern itself remains a hypothesis; broader supply and coverage
+are separate tasks.
+
+The [clearance audit](MettapediaFourColor/JointDiamondClearanceAudit.lean)
+checks eighteen roots and 28,530 dependency declarations with standard
+axioms only. Its [receipt](../../tools/fourcolor/classical/joint-diamond-clearance-measurements.json)
+records the required geometric and reconstruction chains. The
+[independent replay](../../tools/fourcolor/classical/joint-diamond-clearance-probe.json)
+checks the interval law on 2,688 dart transitions and replays all 1,424
+matching face patterns in 137 saved maps. The fixtures' internal-six
+connectivity is not certified. No additional colouring certificate or
+complete-assembly dependency saving is credited. The earlier
+[conditional face audit](MettapediaFourColor/JointDiamondFaceAudit.lean)
+and [receipt](../../tools/fourcolor/classical/joint-diamond-face-measurements.json)
+remain historical checkpoints.
 
 The earlier [occurrence audit](MettapediaFourColor/JointDiamondOccurrenceAudit.lean) checks twenty
 roots and 23,910 dependency declarations. The

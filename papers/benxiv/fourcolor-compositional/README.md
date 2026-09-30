@@ -81,9 +81,11 @@ rule out a new bridge, and the complete ordered seam preserves Euler
 characteristic. Minimality supplies the smaller graph's colouring.
 The four face lengths now construct every internal operation, and joint
 dart transport plus a cyclic-cut argument force fourteen distinct vertices.
-An explicit check that the eight remaining darts leave those vertices then
-constructs the exact occurrence and consumes the strict reduction.
-Deriving this outgoing-port check from normal form alone remains open.
+The outgoing-port condition is now derived as well. A hidden chord would
+leave six genuine ports, separated by a cyclic-interval invariant into two
+face orbits. The actual spherical embedding and connected exterior require
+one orbit. Thus the four face lengths supply the exact occurrence and the
+strict reduction, without an additional endpoint check.
 The independent replay starts from face lengths and checks 1,424 rooted
 patterns in 137 saved fullerene maps; all pass the outgoing-port check and
 give connected, spherical, bridgeless replacements. This finite evidence is
@@ -416,7 +418,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Finite matching translations replaced | Six-port matching enumeration replaced by a proof for all finite widths; five-port cyclic-arc enumeration replaced by uniform cyclic arithmetic |
 | Mixed-diamond strict reduction | The actual thirteen-vertex core is replaced by a five-vertex tree: net decrease eight, ambient class preserved, and genuine colouring reconstructed using the shared repair |
 | Shared replacement geometry | One theorem for arbitrary finite interfaces preserves the map class from equal ordered returns and Euler mass, connectedness and boundary-essentiality; six- and seven-port consumers are checked |
-| Coupled eight-port strict reduction | Four face lengths and normal form force fourteen distinct vertices. With the explicit outgoing-port check, the constructed occurrence gives a strict reduction by twelve vertices. Deriving that check from normal form remains open |
+| Coupled eight-port strict reduction | Four face lengths and spherical normal form construct the complete ordered occurrence, including all eight outgoing ports. The coupled operation gives a strict reduction by twelve vertices and genuine colouring reconstruction; broader supply and coverage remain open |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 

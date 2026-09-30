@@ -1,0 +1,1199 @@
+{
+  "status": "independent replay accompanying kernel-checked complete four-face recognition",
+  "face_lengths": {
+    "central": 6,
+    "across_root": 6,
+    "neighbours_at_positions_1_and_5": 5
+  },
+  "stats": {
+    "maps_checked": 137,
+    "rooted_darts_checked": 15864,
+    "face_patterns": 1424,
+    "boundary_checks_passed": 1424,
+    "strict_replacement_checks_passed": 1424
+  },
+  "maps": [
+    {
+      "id": "C20-plantri-0",
+      "vertices": 20,
+      "face_patterns": 0
+    },
+    {
+      "id": "C24-plantri-0",
+      "vertices": 24,
+      "face_patterns": 0
+    },
+    {
+      "id": "C26-plantri-0",
+      "vertices": 26,
+      "face_patterns": 0
+    },
+    {
+      "id": "C28-plantri-0",
+      "vertices": 28,
+      "face_patterns": 0
+    },
+    {
+      "id": "C28-plantri-1",
+      "vertices": 28,
+      "face_patterns": 4
+    },
+    {
+      "id": "C30-plantri-0",
+      "vertices": 30,
+      "face_patterns": 4
+    },
+    {
+      "id": "C30-plantri-1",
+      "vertices": 30,
+      "face_patterns": 6
+    },
+    {
+      "id": "C30-plantri-3",
+      "vertices": 30,
+      "face_patterns": 10
+    },
+    {
+      "id": "C32-plantri-0",
+      "vertices": 32,
+      "face_patterns": 0
+    },
+    {
+      "id": "C32-plantri-1",
+      "vertices": 32,
+      "face_patterns": 6
+    },
+    {
+      "id": "C32-plantri-6",
+      "vertices": 32,
+      "face_patterns": 8
+    },
+    {
+      "id": "C32-plantri-7",
+      "vertices": 32,
+      "face_patterns": 12
+    },
+    {
+      "id": "C32-plantri-8",
+      "vertices": 32,
+      "face_patterns": 12
+    },
+    {
+      "id": "C32-plantri-9",
+      "vertices": 32,
+      "face_patterns": 10
+    },
+    {
+      "id": "C34-plantri-1",
+      "vertices": 34,
+      "face_patterns": 4
+    },
+    {
+      "id": "C34-plantri-2",
+      "vertices": 34,
+      "face_patterns": 6
+    },
+    {
+      "id": "C34-plantri-3",
+      "vertices": 34,
+      "face_patterns": 6
+    },
+    {
+      "id": "C34-plantri-6",
+      "vertices": 34,
+      "face_patterns": 12
+    },
+    {
+      "id": "C34-plantri-7",
+      "vertices": 34,
+      "face_patterns": 10
+    },
+    {
+      "id": "C34-plantri-8",
+      "vertices": 34,
+      "face_patterns": 12
+    },
+    {
+      "id": "C36-plantri-8",
+      "vertices": 36,
+      "face_patterns": 8
+    },
+    {
+      "id": "C36-plantri-10",
+      "vertices": 36,
+      "face_patterns": 8
+    },
+    {
+      "id": "C36-plantri-16",
+      "vertices": 36,
+      "face_patterns": 12
+    },
+    {
+      "id": "C36-plantri-18",
+      "vertices": 36,
+      "face_patterns": 12
+    },
+    {
+      "id": "C36-plantri-21",
+      "vertices": 36,
+      "face_patterns": 14
+    },
+    {
+      "id": "C36-plantri-22",
+      "vertices": 36,
+      "face_patterns": 14
+    },
+    {
+      "id": "C36-plantri-23",
+      "vertices": 36,
+      "face_patterns": 16
+    },
+    {
+      "id": "C36-plantri-32",
+      "vertices": 36,
+      "face_patterns": 12
+    },
+    {
+      "id": "C36-plantri-35",
+      "vertices": 36,
+      "face_patterns": 4
+    },
+    {
+      "id": "C36-plantri-36",
+      "vertices": 36,
+      "face_patterns": 10
+    },
+    {
+      "id": "C36-plantri-39",
+      "vertices": 36,
+      "face_patterns": 14
+    },
+    {
+      "id": "C36-plantri-41",
+      "vertices": 36,
+      "face_patterns": 16
+    },
+    {
+      "id": "C36-plantri-42",
+      "vertices": 36,
+      "face_patterns": 18
+    },
+    {
+      "id": "C36-plantri-45",
+      "vertices": 36,
+      "face_patterns": 0
+    },
+    {
+      "id": "C36-plantri-46",
+      "vertices": 36,
+      "face_patterns": 4
+    },
+    {
+      "id": "C38-plantri-36",
+      "vertices": 38,
+      "face_patterns": 12
+    },
+    {
+      "id": "C38-plantri-43",
+      "vertices": 38,
+      "face_patterns": 8
+    },
+    {
+      "id": "C38-plantri-44",
+      "vertices": 38,
+      "face_patterns": 14
+    },
+    {
+      "id": "C38-plantri-49",
+      "vertices": 38,
+      "face_patterns": 18
+    },
+    {
+      "id": "C38-plantri-52",
+      "vertices": 38,
+      "face_patterns": 18
+    },
+    {
+      "id": "C38-plantri-72",
+      "vertices": 38,
+      "face_patterns": 10
+    },
+    {
+      "id": "C38-plantri-79",
+      "vertices": 38,
+      "face_patterns": 10
+    },
+    {
+      "id": "C38-plantri-81",
+      "vertices": 38,
+      "face_patterns": 12
+    },
+    {
+      "id": "C38-plantri-82",
+      "vertices": 38,
+      "face_patterns": 14
+    },
+    {
+      "id": "C38-plantri-84",
+      "vertices": 38,
+      "face_patterns": 8
+    },
+    {
+      "id": "C38-plantri-85",
+      "vertices": 38,
+      "face_patterns": 12
+    },
+    {
+      "id": "C38-plantri-90",
+      "vertices": 38,
+      "face_patterns": 16
+    },
+    {
+      "id": "C38-plantri-109",
+      "vertices": 38,
+      "face_patterns": 0
+    },
+    {
+      "id": "C38-plantri-110",
+      "vertices": 38,
+      "face_patterns": 0
+    },
+    {
+      "id": "C38-plantri-112",
+      "vertices": 38,
+      "face_patterns": 4
+    },
+    {
+      "id": "C38-plantri-137",
+      "vertices": 38,
+      "face_patterns": 6
+    },
+    {
+      "id": "C38-plantri-140",
+      "vertices": 38,
+      "face_patterns": 8
+    },
+    {
+      "id": "C40-plantri-38",
+      "vertices": 40,
+      "face_patterns": 14
+    },
+    {
+      "id": "C40-plantri-40",
+      "vertices": 40,
+      "face_patterns": 14
+    },
+    {
+      "id": "C40-plantri-73",
+      "vertices": 40,
+      "face_patterns": 14
+    },
+    {
+      "id": "C40-plantri-75",
+      "vertices": 40,
+      "face_patterns": 14
+    },
+    {
+      "id": "C40-plantri-143",
+      "vertices": 40,
+      "face_patterns": 12
+    },
+    {
+      "id": "C40-plantri-144",
+      "vertices": 40,
+      "face_patterns": 18
+    },
+    {
+      "id": "C40-plantri-152",
+      "vertices": 40,
+      "face_patterns": 6
+    },
+    {
+      "id": "C40-plantri-163",
+      "vertices": 40,
+      "face_patterns": 16
+    },
+    {
+      "id": "C40-plantri-165",
+      "vertices": 40,
+      "face_patterns": 22
+    },
+    {
+      "id": "C40-plantri-167",
+      "vertices": 40,
+      "face_patterns": 20
+    },
+    {
+      "id": "C40-plantri-194",
+      "vertices": 40,
+      "face_patterns": 22
+    },
+    {
+      "id": "C40-plantri-195",
+      "vertices": 40,
+      "face_patterns": 24
+    },
+    {
+      "id": "C40-plantri-216",
+      "vertices": 40,
+      "face_patterns": 4
+    },
+    {
+      "id": "C40-plantri-231",
+      "vertices": 40,
+      "face_patterns": 18
+    },
+    {
+      "id": "C40-plantri-232",
+      "vertices": 40,
+      "face_patterns": 10
+    },
+    {
+      "id": "C40-plantri-233",
+      "vertices": 40,
+      "face_patterns": 16
+    },
+    {
+      "id": "C40-plantri-239",
+      "vertices": 40,
+      "face_patterns": 20
+    },
+    {
+      "id": "C40-plantri-241",
+      "vertices": 40,
+      "face_patterns": 14
+    },
+    {
+      "id": "C40-plantri-268",
+      "vertices": 40,
+      "face_patterns": 12
+    },
+    {
+      "id": "C40-plantri-281",
+      "vertices": 40,
+      "face_patterns": 2
+    },
+    {
+      "id": "C40-plantri-318",
+      "vertices": 40,
+      "face_patterns": 0
+    },
+    {
+      "id": "C40-plantri-327",
+      "vertices": 40,
+      "face_patterns": 6
+    },
+    {
+      "id": "C40-plantri-329",
+      "vertices": 40,
+      "face_patterns": 8
+    },
+    {
+      "id": "C40-plantri-330",
+      "vertices": 40,
+      "face_patterns": 6
+    },
+    {
+      "id": "C40-plantri-359",
+      "vertices": 40,
+      "face_patterns": 8
+    },
+    {
+      "id": "C40-plantri-366",
+      "vertices": 40,
+      "face_patterns": 12
+    },
+    {
+      "id": "C40-plantri-368",
+      "vertices": 40,
+      "face_patterns": 16
+    },
+    {
+      "id": "C40-plantri-370",
+      "vertices": 40,
+      "face_patterns": 8
+    },
+    {
+      "id": "C40-plantri-388",
+      "vertices": 40,
+      "face_patterns": 10
+    },
+    {
+      "id": "C40-plantri-391",
+      "vertices": 40,
+      "face_patterns": 10
+    },
+    {
+      "id": "C40-plantri-394",
+      "vertices": 40,
+      "face_patterns": 6
+    },
+    {
+      "id": "C40-plantri-397",
+      "vertices": 40,
+      "face_patterns": 8
+    },
+    {
+      "id": "C40-plantri-402",
+      "vertices": 40,
+      "face_patterns": 12
+    },
+    {
+      "id": "C40-plantri-403",
+      "vertices": 40,
+      "face_patterns": 10
+    },
+    {
+      "id": "C40-plantri-404",
+      "vertices": 40,
+      "face_patterns": 14
+    },
+    {
+      "id": "C40-plantri-406",
+      "vertices": 40,
+      "face_patterns": 14
+    },
+    {
+      "id": "C40-plantri-580",
+      "vertices": 40,
+      "face_patterns": 8
+    },
+    {
+      "id": "C40-plantri-593",
+      "vertices": 40,
+      "face_patterns": 0
+    },
+    {
+      "id": "C40-plantri-610",
+      "vertices": 40,
+      "face_patterns": 6
+    },
+    {
+      "id": "C40-plantri-612",
+      "vertices": 40,
+      "face_patterns": 4
+    },
+    {
+      "id": "C42-plantri-129",
+      "vertices": 42,
+      "face_patterns": 20
+    },
+    {
+      "id": "C42-plantri-130",
+      "vertices": 42,
+      "face_patterns": 20
+    },
+    {
+      "id": "C42-plantri-139",
+      "vertices": 42,
+      "face_patterns": 12
+    },
+    {
+      "id": "C42-plantri-142",
+      "vertices": 42,
+      "face_patterns": 12
+    },
+    {
+      "id": "C42-plantri-145",
+      "vertices": 42,
+      "face_patterns": 10
+    },
+    {
+      "id": "C42-plantri-147",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-175",
+      "vertices": 42,
+      "face_patterns": 4
+    },
+    {
+      "id": "C42-plantri-188",
+      "vertices": 42,
+      "face_patterns": 10
+    },
+    {
+      "id": "C42-plantri-189",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-190",
+      "vertices": 42,
+      "face_patterns": 6
+    },
+    {
+      "id": "C42-plantri-202",
+      "vertices": 42,
+      "face_patterns": 4
+    },
+    {
+      "id": "C42-plantri-203",
+      "vertices": 42,
+      "face_patterns": 6
+    },
+    {
+      "id": "C42-plantri-268",
+      "vertices": 42,
+      "face_patterns": 16
+    },
+    {
+      "id": "C42-plantri-273",
+      "vertices": 42,
+      "face_patterns": 18
+    },
+    {
+      "id": "C42-plantri-486",
+      "vertices": 42,
+      "face_patterns": 16
+    },
+    {
+      "id": "C42-plantri-600",
+      "vertices": 42,
+      "face_patterns": 24
+    },
+    {
+      "id": "C42-plantri-744",
+      "vertices": 42,
+      "face_patterns": 16
+    },
+    {
+      "id": "C42-plantri-800",
+      "vertices": 42,
+      "face_patterns": 20
+    },
+    {
+      "id": "C42-plantri-806",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-820",
+      "vertices": 42,
+      "face_patterns": 10
+    },
+    {
+      "id": "C42-plantri-821",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-822",
+      "vertices": 42,
+      "face_patterns": 6
+    },
+    {
+      "id": "C42-plantri-840",
+      "vertices": 42,
+      "face_patterns": 0
+    },
+    {
+      "id": "C42-plantri-972",
+      "vertices": 42,
+      "face_patterns": 10
+    },
+    {
+      "id": "C42-plantri-975",
+      "vertices": 42,
+      "face_patterns": 4
+    },
+    {
+      "id": "C42-plantri-1035",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-1037",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-1043",
+      "vertices": 42,
+      "face_patterns": 14
+    },
+    {
+      "id": "C42-plantri-1044",
+      "vertices": 42,
+      "face_patterns": 16
+    },
+    {
+      "id": "C42-plantri-1049",
+      "vertices": 42,
+      "face_patterns": 20
+    },
+    {
+      "id": "C42-plantri-1052",
+      "vertices": 42,
+      "face_patterns": 18
+    },
+    {
+      "id": "C42-plantri-1068",
+      "vertices": 42,
+      "face_patterns": 16
+    },
+    {
+      "id": "C42-plantri-1069",
+      "vertices": 42,
+      "face_patterns": 10
+    },
+    {
+      "id": "C42-plantri-1072",
+      "vertices": 42,
+      "face_patterns": 14
+    },
+    {
+      "id": "C42-plantri-1075",
+      "vertices": 42,
+      "face_patterns": 16
+    },
+    {
+      "id": "C42-plantri-1076",
+      "vertices": 42,
+      "face_patterns": 14
+    },
+    {
+      "id": "C42-plantri-1077",
+      "vertices": 42,
+      "face_patterns": 12
+    },
+    {
+      "id": "C42-plantri-1078",
+      "vertices": 42,
+      "face_patterns": 12
+    },
+    {
+      "id": "C42-plantri-1081",
+      "vertices": 42,
+      "face_patterns": 16
+    },
+    {
+      "id": "C42-plantri-1203",
+      "vertices": 42,
+      "face_patterns": 4
+    },
+    {
+      "id": "C42-plantri-1234",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-1235",
+      "vertices": 42,
+      "face_patterns": 12
+    },
+    {
+      "id": "C42-plantri-1634",
+      "vertices": 42,
+      "face_patterns": 6
+    },
+    {
+      "id": "C42-plantri-1636",
+      "vertices": 42,
+      "face_patterns": 8
+    },
+    {
+      "id": "C42-plantri-1640",
+      "vertices": 42,
+      "face_patterns": 4
+    }
+  ],
+  "unverified_domain_property": "Internal-six connectivity of the fixtures is not certified.",
+  "remaining_theorem": "Geometric supply or broader family coverage for the full target graph class.",
+  "chord_obligations": [
+    {
+      "ports": [
+        0,
+        3
+      ],
+      "old_distance": 4,
+      "remaining_boundary_orbits": [
+        [
+          1,
+          2
+        ],
+        [
+          4,
+          5,
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "ports": [
+        0,
+        4
+      ],
+      "old_distance": 5,
+      "remaining_boundary_orbits": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          5,
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "ports": [
+        0,
+        5
+      ],
+      "old_distance": 4,
+      "remaining_boundary_orbits": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          6,
+          7
+        ]
+      ]
+    },
+    {
+      "ports": [
+        1,
+        4
+      ],
+      "old_distance": 4,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          5,
+          6,
+          7
+        ],
+        [
+          2,
+          3
+        ]
+      ]
+    },
+    {
+      "ports": [
+        1,
+        5
+      ],
+      "old_distance": 5,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          6,
+          7
+        ],
+        [
+          2,
+          3,
+          4
+        ]
+      ]
+    },
+    {
+      "ports": [
+        1,
+        6
+      ],
+      "old_distance": 4,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          7
+        ],
+        [
+          2,
+          3,
+          4,
+          5
+        ]
+      ]
+    },
+    {
+      "ports": [
+        2,
+        5
+      ],
+      "old_distance": 4,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          1,
+          6,
+          7
+        ],
+        [
+          3,
+          4
+        ]
+      ]
+    },
+    {
+      "ports": [
+        2,
+        6
+      ],
+      "old_distance": 5,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          1,
+          7
+        ],
+        [
+          3,
+          4,
+          5
+        ]
+      ]
+    },
+    {
+      "ports": [
+        2,
+        7
+      ],
+      "old_distance": 5,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          4,
+          5,
+          6
+        ]
+      ]
+    },
+    {
+      "ports": [
+        3,
+        6
+      ],
+      "old_distance": 5,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          1,
+          2,
+          7
+        ],
+        [
+          4,
+          5
+        ]
+      ]
+    },
+    {
+      "ports": [
+        3,
+        7
+      ],
+      "old_distance": 5,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          4,
+          5,
+          6
+        ]
+      ]
+    },
+    {
+      "ports": [
+        4,
+        7
+      ],
+      "old_distance": 4,
+      "remaining_boundary_orbits": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          5,
+          6
+        ]
+      ]
+    }
+  ],
+  "chord_test_scope": "All 64 port pairs preserve the cyclic-interval label on 42 darts. Forty ordered nonadjacent pairs separate surviving boundary ports. Girth leaves twelve unordered chords. The Lean consumer independently derives genuine remaining ports, connected shores and the exact capped-face conjugacy in an arbitrary qualifying map.",
+  "ordered_census_sha256": "30db49b6bfe27045706f8d07e467cf5c66f07429b1a510ca41dbc17793c718a3",
+  "source_sha256": {
+    "tools/fourcolor/classical/joint_diamond_face_probe.py": "1f63c826e515de2aa62a35fd90fa4f9f784ec57c727c0053a963c1cdc23363a1",
+    "tools/fourcolor/classical/alternating-lobe-fixtures.json": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3",
+    "tools/fourcolor/classical/joint_diamond_occurrence_probe.py": "b6684de33125bfbfe566247d473cc588d033808de0811cad9b89669c567f9030",
+    "tools/fourcolor/classical/mixed_diamond_reduction_probe.py": "cc0363374bc14bc60d8921b2ad2e72fa2cee1f01b90c7ead843aaafa2a4a4752",
+    "tools/fourcolor/classical/alternating_lobe_probe.py": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8",
+    "tools/fourcolor/classical/coupled_wiring_probe.py": "7c257638ae6f2fdc7be2bbf30c6d7f1d09f908819ee289fb4d93831847a85107",
+    "lean/fourcolor-classical/MettapediaFourColor/JointDiamondTangle.lean": "b264d6558f142c6e4733e0c8c870ade729eec4270ab4d50802a721d0c651b4a5",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean": "14f6912265cc817d090cacdc62067b87512ca576e626333b322bdf93d6bbfe56",
+    "tools/fourcolor/classical/joint_diamond_clearance_probe.py": "ea1e267f7d1b595b0e1be6f740b6cf586e1a0530738344db5138643ec8d6b646",
+    "lean/fourcolor-classical/MettapediaFourColor/JointDiamondChord.lean": "125ed0ca324e84868e9ffe11bd46f3cbfad28e73b9e8aebe13bbccb8b282aa2b",
+    "lean/fourcolor-classical/MettapediaFourColor/JointDiamondFaceClearance.lean": "56397770e63f4b178fda56e37598a3a7b04de51252e0f8e63ec4da2714e8a008",
+    "lean/fourcolor-classical/MettapediaFourColor/JointDiamondClearanceAudit.lean": "3e7e8d98fe61e45da2900001073a8e4a2bb23a2a066dcb822821d3d96ee5eb98",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartBoundaryCompletion.lean": "e12b005ba294acaebd95409df69c41028f6914a792aabdb60e3b0f9181edf2a4"
+  },
+  "kernel_consumer": "FourColor.JointDiamondPatch.Tangle.FaceClearance.boundary_clear",
+  "interval_check": {
+    "label_characters": 42,
+    "port_pairs": 64,
+    "dart_transitions": 2688,
+    "separated_ordered_pairs": [
+      [
+        0,
+        2,
+        1,
+        3
+      ],
+      [
+        0,
+        3,
+        1,
+        4
+      ],
+      [
+        0,
+        4,
+        1,
+        5
+      ],
+      [
+        0,
+        5,
+        1,
+        6
+      ],
+      [
+        0,
+        6,
+        1,
+        7
+      ],
+      [
+        1,
+        3,
+        2,
+        4
+      ],
+      [
+        1,
+        4,
+        2,
+        5
+      ],
+      [
+        1,
+        5,
+        2,
+        6
+      ],
+      [
+        1,
+        6,
+        2,
+        7
+      ],
+      [
+        1,
+        7,
+        2,
+        0
+      ],
+      [
+        2,
+        0,
+        3,
+        1
+      ],
+      [
+        2,
+        4,
+        3,
+        5
+      ],
+      [
+        2,
+        5,
+        3,
+        6
+      ],
+      [
+        2,
+        6,
+        3,
+        7
+      ],
+      [
+        2,
+        7,
+        3,
+        0
+      ],
+      [
+        3,
+        0,
+        4,
+        1
+      ],
+      [
+        3,
+        1,
+        4,
+        2
+      ],
+      [
+        3,
+        5,
+        4,
+        6
+      ],
+      [
+        3,
+        6,
+        4,
+        7
+      ],
+      [
+        3,
+        7,
+        4,
+        0
+      ],
+      [
+        4,
+        0,
+        5,
+        1
+      ],
+      [
+        4,
+        1,
+        5,
+        2
+      ],
+      [
+        4,
+        2,
+        5,
+        3
+      ],
+      [
+        4,
+        6,
+        5,
+        7
+      ],
+      [
+        4,
+        7,
+        5,
+        0
+      ],
+      [
+        5,
+        0,
+        6,
+        1
+      ],
+      [
+        5,
+        1,
+        6,
+        2
+      ],
+      [
+        5,
+        2,
+        6,
+        3
+      ],
+      [
+        5,
+        3,
+        6,
+        4
+      ],
+      [
+        5,
+        7,
+        6,
+        0
+      ],
+      [
+        6,
+        0,
+        7,
+        1
+      ],
+      [
+        6,
+        1,
+        7,
+        2
+      ],
+      [
+        6,
+        2,
+        7,
+        3
+      ],
+      [
+        6,
+        3,
+        7,
+        4
+      ],
+      [
+        6,
+        4,
+        7,
+        5
+      ],
+      [
+        7,
+        1,
+        0,
+        2
+      ],
+      [
+        7,
+        2,
+        0,
+        3
+      ],
+      [
+        7,
+        3,
+        0,
+        4
+      ],
+      [
+        7,
+        4,
+        0,
+        5
+      ],
+      [
+        7,
+        5,
+        0,
+        6
+      ]
+    ]
+  }
+}

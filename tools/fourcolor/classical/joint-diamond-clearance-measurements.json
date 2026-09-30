@@ -1,0 +1,159 @@
+{
+  "status": "Kernel-checked complete four-face recognition, outgoing-port clearance and strict twelve-vertex reduction under spherical normal form.",
+  "completed_utc": "2026-09-30T08:01:16.129531+00:00",
+  "build_base_revision": "11a094e60af198191e1d378292c76ca76379db92",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartBoundaryCompletion",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartBoundaryCompletion.lean",
+      "source_sha256": "e12b005ba294acaebd95409df69c41028f6914a792aabdb60e3b0f9181edf2a4",
+      "olean_sha256": "f4e2ee116fe3c43b385fbc0930c565fc20a42716449dd35ca3d220571c06086e",
+      "olean_bytes": 364816,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondChord",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondChord.lean",
+      "source_sha256": "125ed0ca324e84868e9ffe11bd46f3cbfad28e73b9e8aebe13bbccb8b282aa2b",
+      "olean_sha256": "83d613eed77d410288f3c081928acd907b17852e6965290d57f5ede992c79773",
+      "olean_bytes": 158240,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondFaceClearance",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondFaceClearance.lean",
+      "source_sha256": "56397770e63f4b178fda56e37598a3a7b04de51252e0f8e63ec4da2714e8a008",
+      "olean_sha256": "010cf227386ac1a0e89ca69ea02183e72fc32bd8c35de8de4117fa37004f2c06",
+      "olean_bytes": 499384,
+      "reported_build_seconds": 5.1
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondClearanceAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondClearanceAudit.lean",
+      "source_sha256": "3e7e8d98fe61e45da2900001073a8e4a2bb23a2a066dcb822821d3d96ee5eb98",
+      "olean_sha256": "1d468c7bd801b46aeb69cf5d788d4ae22261ff7ea0c001a70c7376eec8383ed4",
+      "olean_bytes": 3392,
+      "reported_build_seconds": 11.0
+    }
+  ],
+  "audit": {
+    "root_count": 18,
+    "combined_dependency_closure": 28530,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "injective partial-diagram realization and genuine internal mates",
+      "short-path exclusions from simple-graph incidence and girth",
+      "cubic parity and cyclic cuts saturate the six remaining ports",
+      "connected actual core and exterior before boundary clearance",
+      "actual spherical planar-bond cofaciality",
+      "conjugacy of the actual capped-face permutation with the one-chord operation",
+      "cyclic-interval invariant separates surviving ports",
+      "strict class-preserving reduction and actual shared colouring reconstruction",
+      "minimality supplies the smaller-map colouring"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "original catalogue configuration certificates",
+      "superseded independent diamond repairs",
+      "enumerated matching-translation tables"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.JointDiamondClearanceAudit",
+      "MettapediaFourColor.JointDiamondFaceAudit",
+      "MettapediaFourColor.MixedDiamondFaceReductionAudit"
+    ],
+    "build_jobs": 3980,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "regression_audits": [
+      {
+        "name": "conditional four-face recognition",
+        "roots": 17,
+        "dependency_declarations": 28233
+      },
+      {
+        "name": "mixed-diamond strict reduction",
+        "roots": 14,
+        "dependency_declarations": 28102
+      }
+    ],
+    "timing_scope": "Lake frontend-plus-kernel module seconds when reported by the final gates. Null denotes artifact reuse; no speedup or isolated kernel benchmark is claimed.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "theorem_domain": {
+    "face_pattern": "Central hexagon, hexagon across the root edge, pentagons across central positions 1 and 5. Other neighbouring face lengths are unrestricted.",
+    "source": "Finite simple-graph-backed connected bridgeless spherical cubic map with cyclic vertex rotations, minimum orbit-face edge support five, cubic-dual internal-six connectivity and two-sided faces.",
+    "occurrence_isomorphism_assumed": false,
+    "vertex_injectivity_assumed": false,
+    "boundary_clearance_assumed": false,
+    "exterior_connectedness_assumed": false,
+    "distinct_exterior_attachment_vertices_assumed": false,
+    "strict_reduction": {
+      "vertices_removed": 14,
+      "vertices_introduced": 2,
+      "net_vertex_decrease": 12,
+      "class_preservation_proved": true,
+      "actual_colouring_reconstruction_proved": true
+    },
+    "not_claimed": [
+      "universal occurrence of the face pattern",
+      "an unbounded family of distinct local cores",
+      "colouring-count preservation",
+      "equivalence of executable recolouring histories",
+      "a completed uniform Four Colour proof"
+    ]
+  },
+  "compression": {
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "additional_original_configuration_certificate_dependencies_replaced": 0,
+    "additional_configurations_removed": 0,
+    "new_colour_certificates": 0,
+    "interface_ports": 8,
+    "shared_repair": "FourColor.DiamondProfileReducibility.repair004",
+    "integrated_into_complete_assembly": false,
+    "kernel_seconds_saved": null,
+    "certificate_bytes_saved": null,
+    "new_geometric_application": "Every actual four-face occurrence in the stated normal form gives the coupled strict reduction.",
+    "finite_geometric_data": {
+      "boundary_arc_characters": 42,
+      "port_pairs_checked": 64,
+      "dart_transitions_checked": 2688
+    },
+    "reusable_component": "Unrecorded-edge identification, path transport and six-port saturation for arbitrary injectively realized partial cubic diagrams."
+  },
+  "independent_replay": {
+    "script": "joint_diamond_clearance_probe.py",
+    "report": "joint-diamond-clearance-probe.json",
+    "script_sha256": "ea1e267f7d1b595b0e1be6f740b6cf586e1a0530738344db5138643ec8d6b646",
+    "report_sha256": "e3971456c41152ba63ae43a580af278e2bd285746beb8ada86144ee5eb84e555",
+    "stats": {
+      "maps_checked": 137,
+      "rooted_darts_checked": 15864,
+      "face_patterns": 1424,
+      "boundary_checks_passed": 1424,
+      "strict_replacement_checks_passed": 1424
+    },
+    "interval_transitions": 2688,
+    "separated_ordered_chords": 40,
+    "girth_admissible_unordered_chords": 12,
+    "kernel_proof": false,
+    "fixture_internal_six_connectivity_certified": false
+  },
+  "remaining_obligations": [
+    "Extend the local mechanism to justified broader core families or alternative reductions at alternating-walk closing lobes.",
+    "Prove geometric supply or coverage and integrate only audited complete-proof dependency replacements."
+  ]
+}

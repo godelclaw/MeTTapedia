@@ -1418,34 +1418,69 @@ a cyclic shore behind at most four edges, which cyclic-five connectivity
 excludes. This is a geometric use of the same principle as the colouring
 repair: keep the relation between the two sides while applying operations.
 
-The [recognizer and strict-reduction consumer][joint-face-reduction] now give:
+The [complete recognizer and strict-reduction consumer][joint-clearance] now give:
 
 ```text
-four face lengths + ambient normal form
+four face lengths + spherical normal form
   → fourteen distinct vertices and all internal operations
-  + BoundaryClear: the eight unpaired darts leave those vertices
+  → connected core and connected exterior
+  → all eight candidate ports leave the core
   → exact ordered occurrence
   → strict twelve-vertex reduction and actual colouring reconstruction
 ```
 
-`BoundaryClear` is an explicit finite endpoint check, not a colouring or
-reducibility assumption. Its derivation from the ambient normal form and
-spherical embedding remains open. The new [independent replay][joint-face-probe]
-starts with face lengths and finds 1,424 matching rooted patterns among
-15,864 darts in 137 saved maps. Every pattern has fourteen vertices, passes
-the endpoint check, and gives a connected bridgeless spherical replacement
-with twelve fewer vertices. The fixtures' internal-six connectivity is not
-certified by this replay.
+The outgoing-port assertion is proved. Suppose one candidate returns to the
+core. Its reversed dart must be another candidate: injectivity and the
+recorded edge pairs exclude every internal slot. This consumes two of the
+eight candidates. The [general boundary-completion theorem][boundary-completion]
+uses cubic parity and cyclic five-edge connectivity to show that all six
+remaining candidates genuinely leave. The same theorem applies to any
+injectively realized even-sized partial cubic diagram satisfying its size
+and cut hypotheses.
 
-The replay also isolates the next geometric task. Girth leaves twelve
-possible extra chords between the ports. Each single-chord completion
-splits the remaining ports into two open-face orbits. The next proof must
-transport this separation to the actual embedded map and use the connected
-exterior to exclude it. These finite observations are recorded separately
-from the kernel-checked distinctness and conditional recognition theorem.
-The [face-recognition audit and receipt][joint-face-measurements] record the
-exact hypotheses and dependencies. No additional catalogue entry or original
-colouring certificate is removed; broader geometric coverage remains open.
+The geometry now retains the cyclic order of those six ports. The original
+piece's forty-two darts carry one fixed boundary-arc map. Joining ports
+`p` and `q` creates a cyclic-interval label invariant under every step of
+the completed face permutation. Ports on opposite sides have different
+labels, so they cannot share a face orbit. Girth excludes short chords;
+this [single chord argument][joint-chord] handles every remaining pair.
+It uses a forty-two-character arc map, without separate stored orbit tables
+for each chord.
+
+This literal computation is connected to the actual graph by a proved
+permutation conjugacy. The real capped edge flip follows the added chord
+and fixes the six exposed darts; vertex rotations commute with the same
+coordinate map. On the other hand, the core and its exterior are both
+connected, so spherical planar-bond geometry puts all exposed ports on
+one capped face. The two conclusions contradict each other. This proves
+`BoundaryClear` and removes it as a premise of the final recognizer.
+
+The resulting operation handles every occurrence of this face pattern
+in an arbitrary qualifying exterior. It removes fourteen vertices,
+introduces two, preserves the connected bridgeless spherical cubic class,
+and reconstructs genuine colourings through the shared seam choice.
+A vertex-minimal counterexample therefore cannot contain this pattern.
+The local face pattern remains an explicit hypothesis; broader families,
+geometric supply and global coverage remain open. Colouring counts and
+executable-history equivalence are not asserted.
+
+The [independent replay][joint-clearance-probe] tests all 2,688 combinations
+of chord choices and dart steps against the cyclic-interval law. It also
+replays 15,864 rooted darts in 137 saved maps: all 1,424 matching four-face
+patterns have the recognized ports and admit the physical reduction.
+Fixture internal-six connectivity is not certified by this replay. These
+program checks accompany the universal geometric theorem; they are not
+its proof.
+
+The [clearance audit][joint-clearance-audit] checks eighteen roots and 28,530
+dependency declarations with only `propext`, `Classical.choice` and
+`Quot.sound`. It requires the actual face transport, planar bond, six-port
+saturation, strict reduction and smaller-map minimality. Complete Four
+Colour endpoints, original configuration certificates and superseded
+independent repairs are excluded. The [receipt][joint-clearance-measurements]
+records the exact scope and validation. The earlier conditional
+[recognition receipt][joint-face-measurements] remains a historical checkpoint.
+No additional catalogue entry or original colouring certificate is removed.
 
 [joint-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondOccurrence.lean
 [joint-wired-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondWiredOccurrence.lean
@@ -1470,3 +1505,10 @@ colouring certificate is removed; broader geometric coverage remains open.
 [joint-tangle]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondTangle.lean
 [coupled-probe]: ../../../../tools/fourcolor/classical/coupled-wiring-probe.json
 [coupled-measurements]: ../../../../tools/fourcolor/classical/coupled-wiring-measurements.json
+
+[boundary-completion]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartBoundaryCompletion.lean
+[joint-chord]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondChord.lean
+[joint-clearance]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondFaceClearance.lean
+[joint-clearance-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondClearanceAudit.lean
+[joint-clearance-probe]: ../../../../tools/fourcolor/classical/joint-diamond-clearance-probe.json
+[joint-clearance-measurements]: ../../../../tools/fourcolor/classical/joint-diamond-clearance-measurements.json
