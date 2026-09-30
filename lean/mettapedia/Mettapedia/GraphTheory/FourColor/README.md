@@ -149,6 +149,19 @@ repeated attachment vertices; [cyclic separation](Compositional/CyclicBoundaryMa
 and [reflection](Compositional/CyclicBoundaryReflection.lean) apply at arbitrary
 boundary widths of at least two. The [generic stack law](../NoncrossingMatchingStack.lean)
 retains the paired choices needed by reconstruction.
+[EightPortBoundaryConnectivity](EightPortBoundaryConnectivity.lean) extends
+the connectivity argument to eight ports using internal-six connectivity:
+seven vertices on the selected side, six on the opposite cyclic shore,
+and at most eight crossing darts force the selected side to be connected.
+It allows repeated attachment vertices and assumes no embedding.
+[SphericalVertexLowerBound](SphericalVertexLowerBound.lean) makes the
+twenty-vertex bound strict when an actual face has more than five darts.
+The [joint-diamond consumer](../../../../fourcolor-classical/MettapediaFourColor/JointDiamondWiredOccurrence.lean)
+derives exterior closure and wire separation at an exact embedded occurrence,
+then reconstructs the original graph from the two-vertex wiring.
+[OpenTangleBoundaryReindexWitness](OpenTangleBoundaryReindexWitness.lean)
+supplies its exact whole-witness coordinate transport. Smaller-map class
+preservation and face-pattern recognition remain open for this consumer.
 [OpenTangleReplacementClass](OpenTangleReplacementClass.lean) now combines exact
 ordered returns, Euler mass, connectedness and boundary-essentiality into a
 single map-class preservation theorem at arbitrary finite interfaces. Both

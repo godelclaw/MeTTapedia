@@ -470,11 +470,26 @@ valid insertion choices.
 reference configuration's literal darts, edges, rotations and face labels.
 Its `colorable_of_wiring` uses the existing shared `repair004` to reconstruct
 the original fourteen-vertex piece, assuming the exterior's Kempe closure.
-The two new vertices give a whole-map count difference of twelve. Geometric
-recognition, derivation of the exterior hypotheses and ambient-class
-preservation remain separate obligations: this is not yet a strict reduction
-in the spherical map class. In particular, disconnected exterior samples
-can introduce a bridge; the observed counterexamples have triangular faces.
+The two new vertices give a whole-map count difference of twelve.
+[JointDiamondOccurrence](MettapediaFourColor/JointDiamondOccurrence.lean)
+now transports an internal hexagon through an exact isomorphism with an
+actual vertex shore. Euler counting forces more than twenty ambient vertices.
+The new eight-port connectivity law and planar boundary order then supply
+[physical exterior closure](MettapediaFourColor/JointDiamondExteriorClosure.lean).
+[JointDiamondWiredOccurrence](MettapediaFourColor/JointDiamondWiredOccurrence.lean)
+derives wire separation from triangle exclusion, builds the actual wiring,
+and reconstructs the original graph from its colouring. No exterior closure
+or wire-separation premise remains in `colorable_of_actual_wiring`.
+
+The exact occurrence is still an input. Recognition from face lengths and
+preservation of the smaller map's bridgeless spherical class remain open;
+this is not yet a strict reduction in that class. The
+[new audit](MettapediaFourColor/JointDiamondOccurrenceAudit.lean) checks twenty
+roots and 23,910 dependency declarations. The
+[receipt](../../tools/fourcolor/classical/joint-diamond-occurrence-measurements.json)
+also records 1,424 rooted occurrences in 126 of 137 saved fullerene maps.
+Every finite replacement passes the graph-class checks, while internal-six
+connectivity of the fixture collection is not certified by that scan.
 
 The [audit](MettapediaFourColor/DiamondCoupledWiringAudit.lean) checks fifteen
 roots and excludes original configuration certificates, superseded repairs

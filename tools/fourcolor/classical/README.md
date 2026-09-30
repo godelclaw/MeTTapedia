@@ -1501,3 +1501,35 @@ and bridge-freedom. Four planar disconnected-exterior samples introduce a
 bridge; all four original maps have triangular faces. These are bounded
 controls for the next geometric theorem, not a refutation of the intended
 normal-form domain or a coverage theorem.
+
+## Actual joint-diamond occurrences
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.JointDiamondOccurrenceAudit
+```
+
+An exact fourteen-vertex occurrence supplies an actual internal hexagon.
+Euler counting, the eight-port cut argument and spherical boundary order
+derive exterior connectivity and physical Kempe closure. Triangle exclusion
+separates the free wire endpoints. The actual smaller wiring and its whole-map
+colouring reconstruction therefore no longer assume these exterior conditions.
+The count decreases by twelve. The occurrence is still an input; recognition
+from face lengths and smaller-map class preservation remain open.
+
+`joint-diamond-occurrence-measurements.json` records twenty audit roots,
+23,910 dependency declarations, artifact hashes and the regression gates.
+Standard axioms only; no new colouring certificate or catalogue saving.
+
+```sh
+python3 tools/fourcolor/classical/joint_diamond_occurrence_probe.py
+```
+
+The replay propagates the literal dart generators from every root in the
+137 saved fullerene rotations. It checks all rotations, internal reversals,
+fourteen distinct vertices and eight genuine outgoing ports. Across 15,864
+roots it finds 1,424 occurrences on 712 vertex subsets in 126 maps. Every
+exterior is connected. Every wired graph is connected, bridgeless, loop-free
+and spherical, with twelve fewer vertices. Internal-six connectivity of
+the fixture collection is not certified by this census. The report retains
+per-map counts, representative witnesses and an ordered census digest.

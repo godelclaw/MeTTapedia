@@ -1283,14 +1283,52 @@ piece from a colouring of the smaller wired graph, assuming the exterior's
 Kempe closure. The whole-map count includes both introduced vertices:
 `(|exterior| + 2) + 12 = |exterior| + 14`.
 
-The remaining theorem is geometric: recognize the piece in the intended
-source class, derive wire separation and physical exterior closure, and
-prove that this replacement stays in the class on which minimality supplies
-a colouring. Planarity and bridge-freedom alone do not suffice. The
+At an exact embedded occurrence, the formerly assumed exterior conditions
+are now derived. [JointDiamondOccurrence][joint-occurrence] transports one
+of the core's hexagons as six distinct actual face darts. Minimum face length
+five and Euler counting then force more than twenty ambient vertices, leaving
+at least seven vertices outside the fourteen-vertex core.
+
+The [eight-port connectivity law][eight-port-connectivity] explains why this
+is enough. Seven cubic vertices behind eight ports force a cycle. A cyclic
+component consumes at least five ports; any other
+component consumes at least three. A disconnected side behind eight ports
+can therefore only have a cyclic component and an isolated point. Internal-six
+connectivity bounds that cyclic component by five vertices when the other
+shore is large. Seven exterior vertices exclude this split. Attachments may
+repeat; no distinct-endpoint assumption is used for exterior connectivity.
+
+Connected shores in the spherical embedding have opposite cyclic boundary
+orders. The existing arbitrary-width matching theorem then reconstructs
+physical Kempe answers on this eight-port exterior. Finally, each proposed
+free wire joins two ports whose core vertices are adjacent. Identifying its
+exterior endpoints would create a triangle, excluded by normal form.
+
+[JointDiamondWiredOccurrence][joint-wired-occurrence] combines these facts
+with exact boundary-coordinate transport. Its `colorable_of_actual_wiring`
+reconstructs a colouring of the actual original graph from a colouring of
+the actual wiring. Its whole-map count is twelve fewer vertices, including
+both new vertices. Wire separation and exterior closure are conclusions.
+The occurrence itself is supplied as an exact isomorphism with a vertex
+shore, preserving every internal edge, rotation and boundary dart.
+
+Two geometric obligations remain: construct that occurrence from the
+intended neighbouring face lengths, and prove that the wiring stays in the
+bridgeless spherical class on which minimality supplies a colouring. The
+current reconstruction does not assume or establish that class-preservation
+theorem. Planarity and bridge-freedom alone do not suffice. The
 [independent replay][coupled-probe] finds planar bridgeless originals whose
 disconnected exterior acquires a bridge after replacement. Those originals
 have triangular faces, excluded by the intended minimal-counterexample
-normal form. The next argument must use that stronger geometry explicitly.
+normal form.
+
+The [actual-occurrence replay][joint-occurrence-probe] checks all 15,864
+rooted darts in the saved 137 fullerene rotations. It finds 1,424 rooted
+occurrences, representing 712 vertex subsets in 126 maps. Every exterior
+is connected, and every wired graph is connected, bridgeless, loop-free
+and spherical with twelve fewer vertices. These finite checks support the
+operation; they do not certify internal-six connectivity of the fixtures
+or prove arbitrary-context preservation or coverage.
 
 The [audit and measurements][coupled-measurements] cover the actual witness
 chain and exclude the former configuration-specific repair certificate.
@@ -1298,6 +1336,19 @@ This advances the geometric implementation of the existing shared proof;
 the complete baseline still retains 633 configurations and 630 original
 configuration certificates. No additional certificate saving or global
 coverage is credited.
+
+The [actual-occurrence audit][joint-occurrence-measurements] checks twenty
+roots and 23,910 dependency declarations with standard axioms only. It
+requires the hexagon, eight-port cut argument, physical Kempe matching,
+exact coordinate transport, joint repair and genuine whole-map gluing.
+The former configuration certificates and complete Four Colour endpoints
+are absent from these theorem dependencies.
+
+[joint-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondOccurrence.lean
+[joint-wired-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondWiredOccurrence.lean
+[eight-port-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/EightPortBoundaryConnectivity.lean
+[joint-occurrence-probe]: ../../../../tools/fourcolor/classical/joint-diamond-occurrence-probe.json
+[joint-occurrence-measurements]: ../../../../tools/fourcolor/classical/joint-diamond-occurrence-measurements.json
 
 [coupled-wiring]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiring.lean
 [coupled-rotation]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean

@@ -70,12 +70,17 @@ remains the next obligation.
 Configuration 4 now has an [actual coupled-wiring reconstruction](tube-example/README.md#the-coupled-eight-port-wiring).
 Its repair needs a joint contraction trace. Two free wires and two cubic
 vertices joined by an edge realize exactly that contract. The central edge
-retains the shared choice that separate insertion summaries lose. Colouring
-this smaller graph reconstructs the original fourteen-vertex piece against
-a Kempe-closed exterior; the full vertex difference is twelve. Recognition,
-ambient-class preservation and the actual exterior's closure are still open
-for this member. Finite planar examples with triangular faces show why
-bridge-freedom cannot be inferred from planarity alone.
+retains the shared choice that separate insertion summaries lose. At an
+exact embedded occurrence, normal form now derives wire separation and
+physical Kempe closure of the actual exterior. Colouring the smaller wiring
+reconstructs the original map, with twelve fewer vertices in the smaller
+graph. The internal hexagon and an eight-port cut lemma supply the exterior
+connectivity needed by this argument. Recognition from neighbouring face
+lengths and preservation of the smaller graph's ambient class remain open.
+The independent replay checks 1,424 rooted occurrences in 126 of 137 saved
+fullerene maps; all replacements preserve connectedness, sphere and
+bridge-freedom. This supports the operation without proving universal
+class preservation or coverage.
 
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual

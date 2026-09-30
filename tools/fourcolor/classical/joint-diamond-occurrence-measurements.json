@@ -1,0 +1,205 @@
+{
+  "status": "Kernel-checked actual occurrence geometry, physical exterior closure, wire separation and whole-map reconstruction. Recognition from face lengths and smaller-map class preservation remain open.",
+  "completed_utc": "2026-09-30T06:03:44.692450+00:00",
+  "build_base_revision": "efb3d775dc8c6eb597b3c94f5ebaa312207d8c9e",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.EightPortBoundaryConnectivity",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/EightPortBoundaryConnectivity.lean",
+      "source_sha256": "ad2994ca888d270a1b90d4490d787a1854fddf307ce494648e2dec930549bfc2",
+      "olean_sha256": "e875168d7efbde348989038d5af19b24c164e1d8b4681bab8be7fcbfe0616d93",
+      "olean_bytes": 328896,
+      "reported_build_seconds": 3.3
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SphericalVertexLowerBound",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/SphericalVertexLowerBound.lean",
+      "source_sha256": "33e2d66c56f9e8c2c92fce5965533ff7c60c9580f24f194bc16ba56b63ef46aa",
+      "olean_sha256": "e1d75349f7d5357c204f449c73bbf326b06c4771804debd036a995adc52efdd7",
+      "olean_bytes": 138464,
+      "reported_build_seconds": 2.6
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleBoundaryReindexWitness",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleBoundaryReindexWitness.lean",
+      "source_sha256": "b677828c8dd2eb37854a3c162ba48b58eeaedba725642146b6cacc16c3363e21",
+      "olean_sha256": "c577e7aee0b9bd3119919a335f5a3caf2f98ceb45339c9d7d8bfa1c865530d20",
+      "olean_bytes": 33600,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondIntrinsic",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondIntrinsic.lean",
+      "source_sha256": "d32b33d381588cdf8d68c50e9d86cb0c306674205a0831a34e5918d6c8a3a4f5",
+      "olean_sha256": "678fd32441ba8365dd454e4d9ed71725adee4939100e345933189689f8e299df",
+      "olean_bytes": 124776,
+      "reported_build_seconds": 7.0
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondOccurrence",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondOccurrence.lean",
+      "source_sha256": "68f0efc9a3e5c14790aeac770969f3990ab092f1aba43788d307fbe6a1a0211d",
+      "olean_sha256": "fbfdda87308d1bc47c6833675ce6c4d6fb51787431f84ba0d4859f2637f2cd91",
+      "olean_bytes": 263592,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondExteriorClosure",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondExteriorClosure.lean",
+      "source_sha256": "fbc0ddd6350a0f6693f7fded4d26792936d0c339c421e35ff07aaf91a87a646f",
+      "olean_sha256": "ebdbf617063c064d53a06ff07e3914e07baaec17fe1861e1475148962a0754aa",
+      "olean_bytes": 430008,
+      "reported_build_seconds": 4.3
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondWiredOccurrence",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondWiredOccurrence.lean",
+      "source_sha256": "589507326193e0da9206ad9eac93297febc1f156b8c9b768d22e6ef5aedd07b8",
+      "olean_sha256": "67f809b7f9160ec8d3e71c79833d8d1a202da7c0821cfd058f6b88388d6faba0",
+      "olean_bytes": 155368,
+      "reported_build_seconds": 3.6
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondOccurrenceAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondOccurrenceAudit.lean",
+      "source_sha256": "ac3119b3784b8516fa93226d81fdc28cf48581374b4041f11f30f552b4a7658e",
+      "olean_sha256": "441ea5c094202940b4a6f71022654104be746bb6dd667b29b6c00f09e61526a7",
+      "olean_bytes": 3472,
+      "reported_build_seconds": 10.0
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.EightPortBoundaryConnectivity.connected_of_seven_le_card_of_boundary_card_le_eight",
+      "Mettapedia.GraphTheory.FourColor.SphericalVertexLowerBound.twenty_lt_card_vertices_of_long_face",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphism.boundaryReindex",
+      "FourColor.JointDiamondPatch.Tangle.piece_connected",
+      "FourColor.JointDiamondPatch.Tangle.piece_returnCode",
+      "FourColor.JointDiamondPatch.Tangle.piece_eulerMass",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.actual_injective",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.actual_alpha",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.actual_rho",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.long_face",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.twenty_lt_vertices",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.inside_connected",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.exterior_card",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.exterior_connected",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.exterior_order",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.exterior_closed",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.colorable_of_joint_exterior",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.wire_separated",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.wired_vertex_decrease",
+      "FourColor.JointDiamondPatch.Tangle.Occurrence.colorable_of_actual_wiring"
+    ],
+    "combined_dependency_closure": 23910,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "literal actual hexagon and strict Euler vertex bound",
+      "internal-six eight-port exterior connectivity with repeated attachments",
+      "opposite planar boundary order and arbitrary-width physical Kempe reconstruction",
+      "triangle-free separation of both free wires",
+      "exact boundary-coordinate whole-witness transport",
+      "actual coupled-wiring restriction, shared repair004 and whole-map gluing"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "original catalogue configuration certificates",
+      "superseded independent diamond repairs",
+      "enumerated finite matching-translation tables"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.JointDiamondOccurrenceAudit",
+      "MettapediaFourColor.DiamondCoupledWiringAudit",
+      "MettapediaFourColor.MixedDiamondFaceReductionAudit"
+    ],
+    "build_jobs": 3961,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "regression_audits": [
+      {
+        "name": "coupled wiring",
+        "roots": 15,
+        "dependency_declarations": 9631
+      },
+      {
+        "name": "mixed diamond strict reduction",
+        "roots": 14,
+        "dependency_declarations": 28102
+      }
+    ],
+    "timing_scope": "Reported frontend-plus-kernel module seconds for final sources; not isolated kernel cost or a claimed speedup.",
+    "classical_baseline": {
+      "verification": "126 prepared dependencies and four complete assembly/audit modules match the source and artifact hashes of the prior passing receipts; no new full baseline replay.",
+      "prepared_dependency_count": 126,
+      "complete_assembly_module_count": 4,
+      "fingerprints_sha256": "b4917941ab274ff993997ce39dfadea77c31208bf165214053f16d098b65604d"
+    }
+  },
+  "independent_replay": {
+    "script": "joint_diamond_occurrence_probe.py",
+    "report": "joint-diamond-occurrence-probe.json",
+    "report_sha256": "170f072965e65d5837002ecb5e1c0352df35864227207e74ad46e740ea6d7127",
+    "stats": {
+      "maps_checked": 137,
+      "rooted_darts_checked": 15864,
+      "distinct_vertex_subsets": 712,
+      "occurrences": 1424,
+      "exterior_components_1": 1424,
+      "replacement_minimum_face_3": 1074,
+      "maps_with_occurrence": 126,
+      "replacement_minimum_face_4": 350
+    },
+    "occurrences_by_ambient_vertices": {
+      "28": 4,
+      "30": 20,
+      "32": 48,
+      "34": 50,
+      "36": 162,
+      "38": 170,
+      "40": 458,
+      "42": 512
+    },
+    "ordered_census_sha256": "caf5ed2a880a7a871d154b5f8e884d0c508bee496a2f9bc3a01c0c8fe79ce1f2",
+    "scope": "independent finite evidence; not a universal replacement theorem",
+    "unverified_domain_property": "Internal-six connectivity is not certified by this census."
+  },
+  "theorem_domain": {
+    "source": "Finite simple-graph-backed bridgeless spherical cubic map, minimum orbit-face edge support at least five, cubic-dual internal-six connectivity and two-sided orbit faces.",
+    "occurrence": "Supplied exact open-tangle isomorphism between the fourteen-vertex joint diamond and an actual vertex shore.",
+    "derived": [
+      "more than twenty ambient vertices",
+      "connected exterior",
+      "exact inverse cyclic exterior order",
+      "physical exterior Kempe closure",
+      "both free wire endpoint inequalities"
+    ],
+    "remaining_input": "A genuine Tait colouring of the constructed actual two-vertex wiring.",
+    "conclusion": "A genuine Tait colouring of the original ambient graph; the wiring has exactly twelve fewer vertices."
+  },
+  "compression": {
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "original_configuration_certificates_replaced": 0,
+    "new_colour_certificates": 0,
+    "configurations_removed": 0,
+    "interface_ports": 8,
+    "original_piece_vertices": 14,
+    "new_vertices": 2,
+    "whole_map_vertex_difference": 12,
+    "kernel_seconds_saved": null,
+    "certificate_bytes_saved": null,
+    "integrated_into_complete_assembly": false
+  },
+  "remaining_obligations": [
+    "Construct the exact occurrence from the intended neighbouring face lengths.",
+    "Prove the actual wired replacement stays in the bridgeless spherical cubic map class so minimality supplies its colouring.",
+    "Prove broader family recognition and geometric coverage; integrate only demonstrated dependency replacements."
+  ]
+}
