@@ -896,7 +896,7 @@ smaller map; the omitted neighbouring faces belong to the exterior and may
 be recoloured along with it. This implements the freedom to choose a
 successful decomposition and compatible witnesses.
 
-The [dependency audit][diamond-face-audit] checks 18 roots and 27,171
+The [dependency audit][diamond-face-audit] checks 18 roots and 27,238
 declarations. For the earlier corona exclusion, the new route avoids its
 22 separate terminal-colouring checks and nine answer-cover checks by
 reusing the integrated diamond profile. It adds no colouring certificate.
@@ -955,7 +955,7 @@ The remaining obligations are visible in the statements:
 | The joint boundary observation transports the existing repair | Proved, retaining genuine whole-shore colouring witnesses |
 | Compatible interior and exterior assignments reconstruct the original map | Proved from one initial exterior colouring; actual physical closure is now derived |
 | The actual seven-port exterior has that closure | Proved by the arbitrary-width matching codec and actual cyclic boundary geometry |
-| A valid strict replacement and whole-map decrease | Open; every introduced vertex must be counted |
+| A valid strict replacement and whole-map decrease | Proved below: thirteen removed, five introduced, net eight; the smaller map supplies the initial exterior colouring |
 | The known local patterns cover the intended source class | Open |
 
 The [audit][mixed-audit] checks 21 roots and 27,512 dependency declarations,
@@ -1140,12 +1140,12 @@ sixteen and the literal mixed diamond's boundary-return geometry. These
 program checks are independent finite evidence; the Lean theorem covers
 arbitrary widths.
 
-The remaining reduction task is concrete: construct a valid smaller map
-whose colouring restricts to an initial exterior colouring. Replacing the
-thirteen-vertex piece by five vertices would decrease the whole map by
-eight, but that replacement and its preservation of the ambient class are
-not established here. No global coverage, colour-count preservation under
-reduction, or executable recolouring-history theorem is inferred.
+The next result completes the replacement step: the five-vertex path
+preserves the ambient class and supplies the initial exterior colouring by
+restriction from the smaller map. This uses the closure proved here;
+closure alone does not give colourability. No global coverage, colour-count
+preservation under reduction, or executable recolouring-history theorem is
+inferred.
 
 [uniform-codec]: ../../../../lean/fourcolor-classical/MettapediaFourColor/KempeMatchingChromogram.lean
 [uniform-stack]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/NoncrossingMatchingStack.lean
@@ -1154,3 +1154,78 @@ reduction, or executable recolouring-history theorem is inferred.
 [uniform-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondExteriorClosureAudit.lean
 [uniform-measurements]: ../../../../tools/fourcolor/classical/uniform-kempe-measurements.json
 [uniform-probe]: ../../../../tools/fourcolor/classical/uniform-matching-probe.json
+
+
+## Strict reduction of the mixed diamond
+
+The [actual face-pattern theorem][mixed-reduction] completes a second
+geometric application of the shared diamond repair. A central pentagon has
+a hexagonal neighbour flanked by two pentagons; the other two neighbouring
+face lengths are unrestricted. In the stated connected bridgeless spherical
+cubic normal form, this recognizes the thirteen-vertex, seven-port piece.
+The ambient assumptions are minimum face size five, cubic-dual internal-six
+connectivity and two-sided orbit faces. Minimal-counterexample normal form
+supplies all of them.
+
+The replacement is the [five-vertex path][seven-tree]. Each vertex has a
+boundary port and each endpoint has two. Its seven ordered face returns
+are the same cyclic permutation as the old piece's. Although the interiors
+have different face counts, both have Euler mass four. Consequently they
+contribute the same Euler characteristic in every fixed exterior.
+
+[One map-preservation theorem][replacement-class] combines that exact boundary
+calculation with connectedness, boundary-essentiality and cubic cyclic
+rotations. It now serves both the six-port and seven-port reductions. The
+exterior's connectedness is proved from the actual geometry; its attachment
+vertices need not be distinct. Every seam edge keeps its own identity.
+
+The colouring argument then follows the compositional plan:
+
+```text
+13-vertex interior + actual exterior
+                 |
+        replace interior by 5-vertex path
+                 |
+        smaller valid map: 8 fewer vertices
+                 |
+        restrict a colouring to the exterior
+                 |
+        shared joint repair and physical Kempe switches
+                 |
+        compatible witnesses colour the original map
+```
+
+The strict-reduction theorem proves the last implication for any colouring
+of the smaller map. In a vertex-minimal counterexample, minimality supplies
+that colouring and yields a contradiction. No initial exterior colouring is
+assumed in the exclusion theorem. The exterior may be arbitrarily large;
+the local core and boundary width are fixed.
+
+The [dependency audit][mixed-reduction-audit] checks fourteen roots and 28,102
+declarations, using only `propext`, `Classical.choice` and `Quot.sound`.
+It requires actual recognition, the smaller-map geometry, complete vertex
+counting, physical closure, shared `repair002` and genuine witness gluing.
+It excludes complete Four Colour endpoints, original configuration
+certificates and the superseded finite matching translations.
+
+The [independent geometric replay][mixed-reduction-probe] reads the exact
+Lean tables and checks all fourteen dihedral sewings to a five-vertex
+exterior. The seven reflected seams are spherical; the other orientation
+has Euler characteristic minus four. Replacement preserves Euler
+characteristic, connectedness and bridge-freedom in all fourteen tests, with
+an eighteen-to-ten vertex decrease. These are bounded geometric controls;
+the Lean theorem establishes the reduction in every qualifying exterior.
+
+The [measurement record][mixed-reduction-measurements] credits a completed
+local strict reduction and a shared geometric proof. It introduces no new
+colouring certificate and removes no additional catalogue dependency:
+633 configurations and 630 original certificates remain. The next family
+and coverage work must explain which stopping lobes supply these patterns,
+or provide a sound replacement for the lobes they do not cover.
+
+[mixed-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceReduction.lean
+[seven-tree]: ../../../../lean/fourcolor-classical/MettapediaFourColor/SevenPortTree.lean
+[replacement-class]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleReplacementClass.lean
+[mixed-reduction-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceReductionAudit.lean
+[mixed-reduction-probe]: ../../../../tools/fourcolor/classical/mixed-diamond-reduction-probe.json
+[mixed-reduction-measurements]: ../../../../tools/fourcolor/classical/mixed-diamond-reduction-measurements.json

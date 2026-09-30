@@ -22,7 +22,7 @@ run_cmd do
     (``PentagonalDiamondPatch.Tangle.repair, [``DiamondProfileReducibility.repair001, ``DiamondProfileFamilyRepair.repair0, ``DiamondProfileReducibility.supports_graph]),
     (``PentagonalDiamondPatch.Tangle.open_repair, [``PentagonalDiamondPatch.Tangle.repair, ``PentagonalDiamondPatch.Tangle.colouring_valid, ``PentagonalDiamondPatch.Tangle.boundary_colouring]),
     (``SixPortTreeReplacement.open_colorable, [``PentagonalLobePatch.Tangle.open_exterior_closed, ``OpenTangleClosedWitness.glueOpen]),
-    (``SixPortTreeReplacement.tree_replacement_class, [``OpenTangleConnectedReplacement.replacement_structural, ``SixPortTreeReplacement.tree_replacement_euler]),
+    (``SixPortTreeReplacement.tree_replacement_class, [``OpenTangleReplacementClass.mapClass, ``OpenTangleConnectedReplacement.replacement_structural, ``OpenTanglePortReplacement.euler_eq_iff_mass]),
     (``SixPortTreeReplacement.Embedded.strict_reduction, [``SixPortTreeReplacement.Embedded.size_decrease, ``SixPortTreeReplacement.open_reconstruct_from_tree, ``SixPortTreeReplacement.Embedded.exterior_noncrossing]),
     (``PentagonalDiamondPatch.Tangle.Recognition.recognized, [``OpenTangleIsomorphism.ofRetainedDarts, ``PartialCubicDartSeparation.Realization.unpaired_leaves_of_cyclicallyFive, ``PentagonalDiamondPatch.Tangle.coordinate_flip, ``PentagonalDiamondPatch.Tangle.coordinate_rotate]),
     (``PentagonalDiamondPatch.Tangle.FaceReduction.recognized, [``PentagonalDiamond.vertex_injective_of_girth, ``PentagonalDiamondPatch.Tangle.Recognition.recognized, ``PartialCubicDartSeparation.Realization.girth_of_cyclicallyFive]),

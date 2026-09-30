@@ -58,8 +58,14 @@ One stack argument translates noncrossing component matchings at every finite
 width, replacing the earlier six-port enumeration. Whole-component switches
 reconstruct all answers through the same physical matching. The planar order
 and exterior connectivity are derived for the mixed diamond, allowing repeated
-attachment vertices. A valid strict replacement supplying an initial exterior
-colouring remains the next obligation.
+attachment vertices. The [strict reduction](tube-example/README.md#strict-reduction-of-the-mixed-diamond)
+now replaces that core by a five-vertex path, preserving the bridgeless
+spherical cubic class and removing eight vertices in total. Restricting a
+colouring of the smaller map supplies the genuine exterior colouring needed
+by the shared repair. Minimality therefore excludes the actual face pattern.
+Six- and seven-port reductions now consume the same map-preservation law.
+No fresh colouring certificate is introduced; broader geometric supply
+remains the next obligation.
 
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
@@ -385,7 +391,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Retained local classifications for the two-ear rule | 216 disjoint-ear pair checks; the six-active-port planar fact is checked once |
 | Retained joint-anchor classifications | 44, using three shared signature sets of sizes 7, 10 and 10 |
 | Finite matching translations replaced | Six-port matching enumeration replaced by a proof for all finite widths; five-port cyclic-arc enumeration replaced by uniform cyclic arithmetic |
-| Mixed-diamond exterior | Actual seven-port closure proved from normal-form geometry; initial exterior colouring and strict replacement remain separate |
+| Mixed-diamond strict reduction | The actual thirteen-vertex core is replaced by a five-vertex tree: net decrease eight, ambient class preserved, and genuine colouring reconstructed using the shared repair |
+| Shared replacement geometry | One theorem for arbitrary finite interfaces preserves the map class from equal ordered returns and Euler mass, connectedness and boundary-essentiality; six- and seven-port consumers are checked |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 

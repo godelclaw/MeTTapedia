@@ -1,0 +1,214 @@
+{
+  "status": "Kernel-checked strict reduction of the actual mixed-diamond face pattern: thirteen vertices removed, five introduced, net eight; source colouring reconstructs from the smaller map.",
+  "completed_utc": "2026-09-30T04:54:44.963277+00:00",
+  "build_base_revision": "cdb08338d9dd06856ce62fff5802833db1ae8c73",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleReplacementClass",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleReplacementClass.lean",
+      "source_sha256": "ea79b36e1d342a9d9ebd6097c8c8ccdf94918070ee963566cb0291cfed74e1bb",
+      "olean_sha256": "da37c72af2e66d3d3de63c4d3dbd2cdf3d4b59653857330004f44058f7abbf51",
+      "olean_bytes": 82864,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "MettapediaFourColor.SevenPortTree",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/SevenPortTree.lean",
+      "source_sha256": "75b31c8c8aab6281b3e1eee1b808c1821640fb0d17babeb88ea56d3da1c0e6b8",
+      "olean_sha256": "ffa35c56da2e28e4da74cde76f10f8f45a1c328e5c3766b167086afd4ec23223",
+      "olean_bytes": 205088,
+      "reported_build_seconds": 3.1
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondFaceReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceReduction.lean",
+      "source_sha256": "5e23e917118998f2bc3caa36f17cc03acdf1c11802b517e1089ee01e0f9f5182",
+      "olean_sha256": "732dcef36d2650fba81c83a82c23fd8bb6844a1047d0aa9ebd9d9c04015eeacb",
+      "olean_bytes": 344760,
+      "reported_build_seconds": 4.2
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondFaceReductionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceReductionAudit.lean",
+      "source_sha256": "cd7abf47c3e878b332c889be4330a1c324f35a6f089e7763d7ae39e50673196b",
+      "olean_sha256": "b0cd39373f44ed2de12afc8828c54f3e152585664e149cc42257b33911a261ac",
+      "olean_bytes": 3576,
+      "reported_build_seconds": 9.1
+    },
+    {
+      "module": "MettapediaFourColor.SixPortTreeReplacement",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/SixPortTreeReplacement.lean",
+      "source_sha256": "f7ff7182f54e9859966fb768d0f979e9224e80b700f916ac389e6373086fc0e6",
+      "olean_sha256": "4e944525cfd4b052ebd9f186b4f186b8e58179c23ea461404ce809e6f46716aa",
+      "olean_bytes": 909408,
+      "reported_build_seconds": 3.6
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalDiamondFaceReductionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalDiamondFaceReductionAudit.lean",
+      "source_sha256": "ffee18982829ab721c0025b2e6d1cf88a9594b3d55c63a0d1df6b75221203922",
+      "olean_sha256": "60c2c54a9a8896c92b3edb64603f177af0a8daff594bd7b5bd345dac262a1e17",
+      "olean_bytes": 3320,
+      "reported_build_seconds": 10.0
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.OpenTangleReplacementClass.mapClass",
+      "FourColor.SixPortTreeReplacement.tree_replacement_class",
+      "FourColor.SevenPortTree.cubic",
+      "FourColor.SevenPortTree.cyclic",
+      "FourColor.SevenPortTree.connected",
+      "FourColor.SevenPortTree.ports_surjective",
+      "FourColor.SevenPortTree.piece_returnCode",
+      "FourColor.SevenPortTree.piece_eulerMass",
+      "FourColor.MixedDiamondPatch.Tangle.FaceReduction.reassembled_class",
+      "FourColor.MixedDiamondPatch.Tangle.FaceReduction.smaller_class",
+      "FourColor.MixedDiamondPatch.Tangle.FaceReduction.size_decrease",
+      "FourColor.MixedDiamondPatch.Tangle.FaceReduction.colorable_of_smaller",
+      "FourColor.MixedDiamondPatch.Tangle.FaceReduction.strict_reduction_of_face_pattern",
+      "FourColor.MixedDiamondPatch.Tangle.FaceReduction.not_in_minimal_counterexample_of_face_pattern"
+    ],
+    "combined_dependency_closure": 28102,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "exact ordered return and Euler-mass preservation",
+      "connected boundary-essential replacement with named seam edges",
+      "actual face recognition and exterior connectivity",
+      "whole-map thirteen-minus-five count",
+      "genuine restriction of a smaller-map colouring",
+      "uniform same-component Kempe reconstruction",
+      "existing shared repair002 and simultaneous witness gluing",
+      "minimal-counterexample normal form and smaller-map colourability"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "original catalogue configuration certificates",
+      "superseded independent diamond and corona repairs",
+      "old finite matching and cyclic-arc translations"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.MixedDiamondFaceReductionAudit",
+      "MettapediaFourColor.PentagonalCoronaFaceReductionAudit",
+      "MettapediaFourColor.PentagonalDiamondFaceReductionAudit",
+      "MettapediaFourColor.MixedDiamondExteriorClosureAudit"
+    ],
+    "build_jobs": 3966,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "regression_audits": [
+      {
+        "name": "pentagonal corona face reduction",
+        "roots": 12,
+        "dependency_declarations": 26780
+      },
+      {
+        "name": "pentagonal diamond face reduction",
+        "roots": 18,
+        "dependency_declarations": 27238
+      },
+      {
+        "name": "uniform matching and mixed-diamond exterior",
+        "roots": 20,
+        "dependency_declarations": 24074
+      }
+    ],
+    "timing_scope": "Reported frontend-plus-kernel module seconds. Null means no final-source timing was retained. No isolated kernel or whole-baseline speedup is claimed.",
+    "classical_baseline": {
+      "prior_receipt": "tools/fourcolor/classical/uniform-kempe-measurements.json",
+      "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "source": "finite simple graph with a connected bridgeless spherical cubic dart rotation",
+    "pattern": {
+      "central_face_length": 5,
+      "neighbour_face_lengths_required": {
+        "0": 6,
+        "1": 5,
+        "4": 5
+      },
+      "neighbour_face_lengths_unrestricted": [
+        2,
+        3
+      ]
+    },
+    "ambient_hypotheses": [
+      "minimum face size five",
+      "cubic-dual internal-six connectivity",
+      "two-sided orbit faces"
+    ],
+    "minimality_derives_ambient_hypotheses": true,
+    "replacement": {
+      "removed_vertices": 13,
+      "introduced_vertices": 5,
+      "ordered_ports": 7,
+      "net_vertex_decrease": 8,
+      "seam_edges_retained": true,
+      "same_boundary_return": "cyclic successor",
+      "old_and_new_euler_mass": 4
+    },
+    "reconstruction": "A colouring of the smaller map implies a colouring of the source; the exterior may be recoloured by whole-component switches.",
+    "initial_exterior_colouring_assumed": false,
+    "distinct_exterior_attachment_vertices_required": false,
+    "exterior_size": "unbounded, subject to the stated source hypotheses",
+    "open": [
+      "supply or alternatives at general alternating-walk stopping lobes",
+      "broader reducible core families",
+      "universal geometric coverage"
+    ],
+    "not_claimed": [
+      "all boundary assignments survive replacement",
+      "colour-count preservation under reduction",
+      "executable recolouring-history equivalence",
+      "new complete uniform Four Colour proof"
+    ]
+  },
+  "compression": {
+    "new_uniform_geometric_assembly": "OpenTangleReplacementClass.mapClass",
+    "geometric_consumers": [
+      "six-port tree replacement scheme",
+      "seven-port mixed-diamond replacement"
+    ],
+    "new_colour_certificates": 0,
+    "existing_colour_repair": "DiamondProfileReducibility.repair002",
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "additional_original_certificate_dependencies_replaced": 0,
+    "additional_catalogue_entries_removed": 0,
+    "new_geometric_application": "actual mixed-diamond face-pattern strict reduction",
+    "retained_finite_geometry": "literal five-vertex tree incidence, cubic rotations, first returns and face count; existing mixed-diamond occurrence data",
+    "runtime_or_artifact_size_saving_claimed": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/mixed_diamond_reduction_probe.py",
+    "report": "tools/fourcolor/classical/mixed-diamond-reduction-probe.json",
+    "script_sha256": "cc0363374bc14bc60d8921b2ad2e72fa2cee1f01b90c7ead843aaafa2a4a4752",
+    "report_sha256": "18dfed15880071560892cf0f2a0660554e0c03cc8c6514a3f4d95ab7e66a0835",
+    "dihedral_sewings": 14,
+    "planar_sewings": 7,
+    "nonplanar_orientation_controls": 7,
+    "whole_map_test_before": 18,
+    "whole_map_test_after": 10,
+    "checks": [
+      "literal cyclic vertex rotations",
+      "ordered first returns and Euler mass",
+      "surjective port attachment",
+      "named-edge bridge deletion",
+      "connectedness and Euler characteristic in both orientations",
+      "all introduced vertices counted"
+    ],
+    "kernel_proof": false
+  }
+}

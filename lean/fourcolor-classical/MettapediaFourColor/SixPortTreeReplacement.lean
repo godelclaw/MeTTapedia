@@ -1,4 +1,5 @@
 import MettapediaFourColor.PentagonalLobeMinimalExterior
+import Mettapedia.GraphTheory.FourColor.OpenTangleReplacementClass
 
 /-!
 # A shared six-port reduction scheme
@@ -102,25 +103,13 @@ theorem tree_replacement_class
     (hout : (sideMultigraph outside).Connected)
     (h : BridgelessSphericalCubicMapData (outside.composeRotationSystem S.piece seam)) :
     BridgelessSphericalCubicMapData (outside.composeRotationSystem Tree.piece seam) := by
-  have hs := OpenTangleConnectedReplacement.replacement_structural outside S.piece Tree.piece
-    seam seam hout Tree.connected
+  exact OpenTangleReplacementClass.mapClass outside S.piece Tree.piece seam
+    (S.return_eq.trans tree_returnCode.symm) (S.euler_eq.trans tree_eulerMass.symm)
+    Tree.cubic Tree.cyclic hout Tree.connected
     (OpenTangleConnectedReplacement.essential_of_surjective (sideMultigraph Tree.piece)
       (Tree.piece.boundaryVert ∘ seam) (Tree.ports_surjective.comp seam.surjective))
-    ⟨h.primalConnected, h.edgeBridgeFree⟩
     (p := seam.symm 0) (q := seam.symm 1)
-    (by intro he; have := seam.symm.injective he; exact (by decide : (0 : Fin 6) ≠ 1) this)
-  exact {
-    spherical := {
-      cubic := isCubic_composeRotationSystem outside Tree.piece seam
-        (exterior_isCubic outside S.piece seam h.spherical.cubic) Tree.cubic
-      euler := by
-        change OpenTangleRewireFaces.compositeEuler outside Tree.piece seam = 2
-        rw [← tree_replacement_euler S outside seam]
-        exact h.spherical.euler }
-    primalConnected := hs.1
-    vertexRotationCyclic := vertexRotationCyclic_composeRotationSystem outside Tree.piece seam
-      (exterior_rotationCyclic outside S.piece seam h.vertexRotationCyclic) Tree.cyclic
-    edgeBridgeFree := hs.2 }
+    (by intro he; have := seam.symm.injective he; exact (by decide : (0 : Fin 6) ≠ 1) this) h
 end Geometry
 
 namespace Embedded

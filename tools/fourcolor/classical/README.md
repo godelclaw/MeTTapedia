@@ -1373,8 +1373,9 @@ are unrestricted. The actual occurrence and ordered colouring observation
 are proved; `DiamondProfileReducibility.repair002` supplies the shared repair.
 The original recognition checkpoint left physical Kempe closure explicit.
 The uniform boundary theorem below now discharges that geometric premise.
-An initial genuine exterior colouring and a valid strict replacement remain
-separate obligations.
+At that recognition checkpoint, an initial exterior colouring and a valid
+strict replacement remained separate obligations. The strict replacement
+below now supplies both.
 
 `mixed-diamond-measurements.json` records 21 audit roots and 27,512 dependency
 declarations. The audit excludes the complete Four Colour endpoints, original
@@ -1413,8 +1414,8 @@ noncrossing in either boundary orientation.
 The actual seven-port mixed diamond consumes these results. Normal form
 supplies a connected exterior with no distinct-attachment assumption. Its
 proved boundary order discharges reference Kempe closure, so one genuine
-exterior colouring suffices for full reconstruction. A strict replacement
-supplying that initial colouring is not proved in this checkpoint.
+exterior colouring suffices for full reconstruction. The strict replacement
+supplying that initial colouring is proved in the following section.
 
 `uniform-kempe-measurements.json` records twenty audited roots, exact artifact
 hashes and separately measured classification and catalogue changes. The
@@ -1432,3 +1433,38 @@ ordered cyclic quadruples through width sixteen and the mixed diamond's
 literal connectedness, seven first-return arcs and Euler mass. These are
 bounded program checks; arbitrary-width correctness comes from the Lean
 induction. Neither the replay nor exterior closure implies global coverage.
+
+
+## Mixed-diamond strict replacement
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.MixedDiamondFaceReductionAudit
+```
+
+The actual thirteen-vertex mixed diamond now has a five-vertex tree
+replacement. One general map-preservation theorem supplies the topology
+for both this seven-port reduction and the earlier six-port reductions.
+Restricting a colouring of the smaller map supplies an exterior witness;
+physical Kempe closure and the existing shared repair reconstruct the
+original colouring. The whole-map vertex decrease is eight. Minimality
+therefore excludes the actual face pattern under its derived normal form.
+
+`mixed-diamond-reduction-measurements.json` records fourteen audited roots,
+28,102 dependency declarations, artifact hashes, module timings and the
+regression gates. No complete Four Colour endpoint or original catalogue
+certificate occurs in these theorem chains. The 633 retained configurations
+and 630 original certificate dependencies are unchanged.
+
+```sh
+python3 tools/fourcolor/classical/mixed_diamond_reduction_probe.py
+```
+
+The replay reads both literal interiors from Lean, checks their cubic
+rotations, ordered first returns and Euler mass, then checks all fourteen
+dihedral sewings to a fixed five-vertex exterior with repeated attachment
+vertices. Seven seams are spherical and seven are nonplanar orientation
+controls. Every sewing preserves Euler characteristic, connectedness and
+bridge-freedom and removes eight vertices. Named edges are deleted
+separately during bridge checks. This is bounded geometric evidence;
+arbitrary-context reconstruction and strict reduction come from Lean.

@@ -1,0 +1,392 @@
+{
+  "scope": "Independent bounded geometric replay. Colouring reconstruction and arbitrary-exterior reduction are proved separately in Lean.",
+  "interiors": {
+    "mixed_diamond": {
+      "vertices": 13,
+      "internal": 32,
+      "ports": 7,
+      "first_return_arcs": [
+        [
+          32,
+          8,
+          33
+        ],
+        [
+          33,
+          10,
+          13,
+          34
+        ],
+        [
+          34,
+          15,
+          35
+        ],
+        [
+          35,
+          16,
+          31,
+          36
+        ],
+        [
+          36,
+          28,
+          25,
+          37
+        ],
+        [
+          37,
+          1,
+          38
+        ],
+        [
+          38,
+          3,
+          6,
+          32
+        ]
+      ],
+      "open_faces": 5,
+      "euler_mass": 4
+    },
+    "replacement": {
+      "vertices": 5,
+      "internal": 8,
+      "ports": 7,
+      "first_return_arcs": [
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          0,
+          10
+        ],
+        [
+          10,
+          2,
+          11
+        ],
+        [
+          11,
+          4,
+          12
+        ],
+        [
+          12,
+          6,
+          13
+        ],
+        [
+          13,
+          14
+        ],
+        [
+          14,
+          7,
+          5,
+          3,
+          1,
+          8
+        ]
+      ],
+      "open_faces": 1,
+      "euler_mass": 4
+    }
+  },
+  "test_exterior": "The five-vertex seven-port tree, including repeated attachment vertices.",
+  "sewings": [
+    {
+      "sign": 1,
+      "shift": 0,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 5,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 1,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": 1,
+      "shift": 1,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 5,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 1,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": 1,
+      "shift": 2,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 5,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 1,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": 1,
+      "shift": 3,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 5,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 1,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": 1,
+      "shift": 4,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 5,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 1,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": 1,
+      "shift": 5,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 5,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 1,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": 1,
+      "shift": 6,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 5,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 1,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": -1,
+      "shift": 0,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 11,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": -1,
+      "shift": 1,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 11,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": -1,
+      "shift": 2,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 11,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": -1,
+      "shift": 3,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 11,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": -1,
+      "shift": 4,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 11,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": -1,
+      "shift": 5,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 11,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "sign": -1,
+      "shift": 6,
+      "before": {
+        "vertices": 18,
+        "edges": 27,
+        "faces": 11,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 10,
+        "edges": 15,
+        "faces": 7,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    }
+  ],
+  "summary": {
+    "seam_cases": 14,
+    "planar_cases": 7,
+    "nonplanar_orientation_controls": 7,
+    "whole_map_vertex_decrease": 8
+  },
+  "source_sha256": {
+    "tools/fourcolor/classical/mixed_diamond_reduction_probe.py": "cc0363374bc14bc60d8921b2ad2e72fa2cee1f01b90c7ead843aaafa2a4a4752",
+    "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondTangle.lean": "cf12abb7505a0bb098664519da580ebcbcdbff9e51678a34dcbe8b215ee45591",
+    "lean/fourcolor-classical/MettapediaFourColor/SevenPortTree.lean": "75b31c8c8aab6281b3e1eee1b808c1821640fb0d17babeb88ea56d3da1c0e6b8"
+  }
+}

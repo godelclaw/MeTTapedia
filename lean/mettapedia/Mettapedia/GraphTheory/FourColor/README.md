@@ -148,10 +148,15 @@ now derives seven-port Kempe closure using the uniform matching codec.
 repeated attachment vertices; [cyclic separation](Compositional/CyclicBoundaryMatching.lean)
 and [reflection](Compositional/CyclicBoundaryReflection.lean) apply at arbitrary
 boundary widths of at least two. The [generic stack law](../NoncrossingMatchingStack.lean)
-retains the paired choices needed by reconstruction. A valid strict replacement
-supplying an initial exterior colouring remains open. These representation
-results do not assert count preservation under reduction or transport of
-executable Kempe histories.
+retains the paired choices needed by reconstruction.
+[OpenTangleReplacementClass](OpenTangleReplacementClass.lean) now combines exact
+ordered returns, Euler mass, connectedness and boundary-essentiality into a
+single map-class preservation theorem at arbitrary finite interfaces. Both
+the existing six-port reduction and the [mixed-diamond reduction](../../../../fourcolor-classical/MettapediaFourColor/MixedDiamondFaceReduction.lean)
+consume it. The latter removes thirteen vertices, introduces five, and
+reconstructs the source colouring from the smaller map. Every introduced
+vertex is counted. Broader geometric coverage remains open; count preservation
+under reduction and executable Kempe histories are not asserted.
 
 ## Independent corridor route — checkpoint of 22 September 2026
 

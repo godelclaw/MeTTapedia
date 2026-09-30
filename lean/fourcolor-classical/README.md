@@ -405,7 +405,7 @@ the separate 22 terminal-colouring and nine answer-cover checks disappear
 from the dependency closure. The old twelve-vertex decrease remains available
 separately; the broader theorem decreases the whole map by eight. The
 [eighteen-root audit](MettapediaFourColor/PentagonalDiamondFaceReductionAudit.lean)
-checks 27,171 declarations and excludes those older checks, original catalogue
+checks 27,238 declarations and excludes those older checks, original catalogue
 certificates and complete Four Colour endpoints. Its
 [receipt](../../tools/fourcolor/classical/pentagonal-diamond-measurements.json)
 separates this application-level sharing from catalogue compression: all 633
@@ -436,12 +436,26 @@ interior and exterior witnesses at arbitrary boundary width.
 [MixedDiamondExteriorClosure](MettapediaFourColor/MixedDiamondExteriorClosure.lean)
 now derives physical Kempe closure of the actual seven-port exterior from
 its connected shores and cyclic boundary order. It allows repeated exterior
-attachment vertices. The replacement geometry, its initial exterior colouring
-and whole-map strict decrease remain open. Exact representation changes give
-a bijection of colouring assignments; no counting or executable recolouring
-claim is made for a graph reduction.
+attachment vertices. [MixedDiamondFaceReduction](MettapediaFourColor/MixedDiamondFaceReduction.lean)
+now supplies the smaller map: replace thirteen vertices by the five vertices
+of [SevenPortTree](MettapediaFourColor/SevenPortTree.lean), with all seven seam
+edges retained. The connected bridgeless spherical cubic class is preserved.
+A colouring of this smaller map restricts to a genuine exterior witness;
+the existing joint repair reconstructs the source colouring. The whole-map
+decrease is eight, and minimality excludes the face pattern without assuming
+an exterior colouring. Exact representation changes give a bijection of
+colouring assignments; this reduction asserts colourability reconstruction,
+with no counting or executable-history equivalence claimed.
 
-The [new audit](MettapediaFourColor/MixedDiamondFaceRecognitionAudit.lean)
+The [strict-reduction audit](MettapediaFourColor/MixedDiamondFaceReductionAudit.lean)
+checks fourteen roots and 28,102 dependency declarations. It requires the
+actual recognition, seven-port exterior closure, whole-map count, shared
+configuration-2 repair and the common map-preservation theorem now also used
+by the six-port reductions. Its [receipt](../../tools/fourcolor/classical/mixed-diamond-reduction-measurements.json)
+records the exact assumptions, artifact hashes and bounded geometry replay.
+Broader-family coverage and the 633/630 catalogue counts are unchanged.
+
+The [recognition audit](MettapediaFourColor/MixedDiamondFaceRecognitionAudit.lean)
 checks 21 roots and 27,512 dependency declarations using only the standard
 three axioms. The [receipt](../../tools/fourcolor/classical/mixed-diamond-measurements.json)
 and [independent replay](../../tools/fourcolor/classical/mixed-diamond-probe.json)
