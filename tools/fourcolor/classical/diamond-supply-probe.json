@@ -1,0 +1,6170 @@
+{
+  "status": "independent finite program evidence accompanying a separate Lean supply theorem",
+  "domain": "Saved spherical cubic all-five/six rotations. Internal-six connectivity and minimality are not certified by this probe.",
+  "scope": "All dart/phase starts and distinct first-return lobes, with no cycle-length cutoff.",
+  "observation": "Incidence positions, not just distinct neighbouring faces.",
+  "source_sha256": {
+    "tools/fourcolor/classical/diamond_supply_probe.py": "4058087de71cf3b2c7eece613d0ffe55172587d8ec8f8e4e7f29839a0b07f44d",
+    "tools/fourcolor/classical/alternating-lobe-fixtures.json": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3",
+    "tools/fourcolor/classical/alternating_lobe_probe.py": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8",
+    "tools/fourcolor/classical/alternating_cycle_probe.py": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e",
+    "tools/fourcolor/classical/hexagonal_collar_probe.py": "ed7ac5133c962f6da27e3f86b0baff39986ec2214f3e86b1655b784ba4700d23",
+    "tools/fourcolor/v24_goldberg.py": "df33e20166e60fbf605ffec9820d4ac3e3218a26ed6efd4e913e1b973231e90e",
+    "tools/fourcolor/v24_annular_census.py": "a052fa1bdfe91b50e79503eb69b482b5c7117889ffc0900093958ab727bfc7c8",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalNeighbourSupply.lean": "a172a485be8b2d39aca9889d61011348e6f43dce3104fb487d91cf63d5c272e4",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondGeometricSupply.lean": "ed664b29b1e4ff8d310d88f861662644dfee189c4b5974306bbc51107ea43897"
+  },
+  "local_binary_words": {
+    "5": {
+      "checked": 32,
+      "with_three_or_more": 16
+    },
+    "6": {
+      "checked": 64,
+      "with_three_or_more": 42
+    }
+  },
+  "summary": {
+    "maps": 140,
+    "maps_with_core": 137,
+    "maps_with_odd_lobes": 133,
+    "maps_with_core_containing_odd_seam": 133,
+    "maps_without_core": [
+      "Goldberg-GP(2,0)",
+      "Goldberg-GP(3,0)",
+      "Goldberg-GP(4,0)"
+    ],
+    "totals": {
+      "distinct_lobes": 1962,
+      "lobes_meeting_core": 1907,
+      "odd_lobes": 1489,
+      "odd_seams_in_core": 1489
+    }
+  },
+  "seam_observation": "All 1489 odd closing seams in the 137 saved small maps lie in a recognized diamond core. This is finite evidence, not universal supply.",
+  "even_row_observation": "One even alternating row is disjoint from every diamond core in its map. Row continuation or a different choice remains available; the controls have no diamond anywhere.",
+  "first_disjoint_row": {
+    "id": "C40-plantri-593",
+    "rotation": "1,2,3;0,4,5;0,6,7;0,8,9;1,9,10;1,11,12;2,12,13;2,14,8;3,7,15;3,16,4;4,17,18;5,18,19;5,20,6;6,21,22;7,22,23;8,23,16;9,15,17;10,16,24;10,25,11;11,26,27;12,27,28;13,28,29;13,30,14;14,24,15;17,23,31;18,31,32;19,32,33;19,34,20;20,35,21;21,36,37;22,37,31;24,30,25;25,38,26;26,39,34;27,33,35;28,34,36;29,35,39;29,38,30;32,37,39;33,38,36",
+    "occurrences": [
+      {
+        "dart": [
+          3,
+          8
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          2,
+          0
+        ],
+        "faces": [
+          0,
+          2,
+          5,
+          9
+        ],
+        "vertices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          7,
+          8,
+          9,
+          14,
+          15,
+          16,
+          23
+        ]
+      },
+      {
+        "dart": [
+          3,
+          9
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          15,
+          8
+        ],
+        "faces": [
+          0,
+          2,
+          5,
+          6
+        ],
+        "vertices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          7,
+          8,
+          9,
+          10,
+          15,
+          16,
+          17
+        ]
+      },
+      {
+        "dart": [
+          8,
+          3
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          16,
+          15
+        ],
+        "faces": [
+          0,
+          2,
+          5,
+          9
+        ],
+        "vertices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          7,
+          8,
+          9,
+          14,
+          15,
+          16,
+          23
+        ]
+      },
+      {
+        "dart": [
+          8,
+          15
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          14,
+          7
+        ],
+        "faces": [
+          2,
+          5,
+          9,
+          14
+        ],
+        "vertices": [
+          0,
+          2,
+          3,
+          7,
+          8,
+          9,
+          14,
+          15,
+          16,
+          17,
+          23,
+          24
+        ]
+      },
+      {
+        "dart": [
+          9,
+          3
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          1,
+          4
+        ],
+        "faces": [
+          0,
+          2,
+          5,
+          6
+        ],
+        "vertices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          7,
+          8,
+          9,
+          10,
+          15,
+          16,
+          17
+        ]
+      },
+      {
+        "dart": [
+          9,
+          16
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          8,
+          3
+        ],
+        "faces": [
+          0,
+          5,
+          6,
+          14
+        ],
+        "vertices": [
+          0,
+          1,
+          3,
+          4,
+          8,
+          9,
+          10,
+          15,
+          16,
+          17,
+          23,
+          24
+        ]
+      },
+      {
+        "dart": [
+          15,
+          8
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          9,
+          16
+        ],
+        "faces": [
+          2,
+          5,
+          9,
+          14
+        ],
+        "vertices": [
+          0,
+          2,
+          3,
+          7,
+          8,
+          9,
+          14,
+          15,
+          16,
+          17,
+          23,
+          24
+        ]
+      },
+      {
+        "dart": [
+          15,
+          16
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          24,
+          23
+        ],
+        "faces": [
+          5,
+          6,
+          9,
+          14
+        ],
+        "vertices": [
+          3,
+          4,
+          7,
+          8,
+          9,
+          10,
+          14,
+          15,
+          16,
+          17,
+          23,
+          24
+        ]
+      },
+      {
+        "dart": [
+          16,
+          9
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          10,
+          17
+        ],
+        "faces": [
+          0,
+          5,
+          6,
+          14
+        ],
+        "vertices": [
+          0,
+          1,
+          3,
+          4,
+          8,
+          9,
+          10,
+          15,
+          16,
+          17,
+          23,
+          24
+        ]
+      },
+      {
+        "dart": [
+          16,
+          15
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          3,
+          9
+        ],
+        "faces": [
+          5,
+          6,
+          9,
+          14
+        ],
+        "vertices": [
+          3,
+          4,
+          7,
+          8,
+          9,
+          10,
+          14,
+          15,
+          16,
+          17,
+          23,
+          24
+        ]
+      },
+      {
+        "dart": [
+          33,
+          34
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          36,
+          39
+        ],
+        "faces": [
+          15,
+          16,
+          19,
+          21
+        ],
+        "vertices": [
+          19,
+          20,
+          26,
+          27,
+          28,
+          32,
+          33,
+          34,
+          35,
+          36,
+          38,
+          39
+        ]
+      },
+      {
+        "dart": [
+          33,
+          39
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          32,
+          26
+        ],
+        "faces": [
+          15,
+          19,
+          20,
+          21
+        ],
+        "vertices": [
+          19,
+          26,
+          27,
+          29,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ]
+      },
+      {
+        "dart": [
+          34,
+          33
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          19,
+          27
+        ],
+        "faces": [
+          15,
+          16,
+          19,
+          21
+        ],
+        "vertices": [
+          19,
+          20,
+          26,
+          27,
+          28,
+          32,
+          33,
+          34,
+          35,
+          36,
+          38,
+          39
+        ]
+      },
+      {
+        "dart": [
+          34,
+          35
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          39,
+          33
+        ],
+        "faces": [
+          15,
+          16,
+          17,
+          21
+        ],
+        "vertices": [
+          19,
+          20,
+          21,
+          26,
+          27,
+          28,
+          29,
+          33,
+          34,
+          35,
+          36,
+          39
+        ]
+      },
+      {
+        "dart": [
+          35,
+          34
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          20,
+          28
+        ],
+        "faces": [
+          15,
+          16,
+          17,
+          21
+        ],
+        "vertices": [
+          19,
+          20,
+          21,
+          26,
+          27,
+          28,
+          29,
+          33,
+          34,
+          35,
+          36,
+          39
+        ]
+      },
+      {
+        "dart": [
+          35,
+          36
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          33,
+          34
+        ],
+        "faces": [
+          16,
+          17,
+          20,
+          21
+        ],
+        "vertices": [
+          20,
+          21,
+          27,
+          28,
+          29,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ]
+      },
+      {
+        "dart": [
+          36,
+          35
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          21,
+          29
+        ],
+        "faces": [
+          16,
+          17,
+          20,
+          21
+        ],
+        "vertices": [
+          20,
+          21,
+          27,
+          28,
+          29,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ]
+      },
+      {
+        "dart": [
+          36,
+          39
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          34,
+          35
+        ],
+        "faces": [
+          17,
+          19,
+          20,
+          21
+        ],
+        "vertices": [
+          21,
+          26,
+          28,
+          29,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ]
+      },
+      {
+        "dart": [
+          39,
+          33
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          35,
+          36
+        ],
+        "faces": [
+          15,
+          19,
+          20,
+          21
+        ],
+        "vertices": [
+          19,
+          26,
+          27,
+          29,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ]
+      },
+      {
+        "dart": [
+          39,
+          36
+        ],
+        "family": "six_port",
+        "recognized_root": [
+          37,
+          38
+        ],
+        "faces": [
+          17,
+          19,
+          20,
+          21
+        ],
+        "vertices": [
+          21,
+          26,
+          28,
+          29,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ]
+      }
+    ],
+    "disjoint_lobes": [
+      {
+        "vertices": [
+          5,
+          11,
+          18,
+          25,
+          31,
+          30,
+          22,
+          13,
+          6,
+          12
+        ],
+        "dart_phase_segment": "5,11,0;11,18,1;18,25,0;25,31,1;31,30,0;30,22,1;22,13,0;13,6,1;6,12,0;12,5,1",
+        "turns": [
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1
+        ],
+        "closing_faults": [],
+        "seam": null,
+        "pentagon_shores": [
+          6,
+          6
+        ],
+        "intersecting_families": [],
+        "seam_containing_families": []
+      }
+    ]
+  },
+  "controls": [
+    {
+      "id": "Goldberg-GP(2,0)",
+      "rotation": "1,7,2;0,4,8;0,14,3;2,21,4;1,3,28;6,9,7;5,8,10;0,5,12;1,26,6;5,11,16;6,32,11;9,10,46;7,15,13;12,17,14;2,13,19;12,16,18;9,40,15;13,18,25;15,42,17;14,22,20;19,23,21;3,20,34;19,25,24;20,24,39;22,50,23;17,47,22;8,27,29;26,28,30;4,33,27;26,31,32;27,36,31;29,30,57;10,29,54;28,34,35;21,37,33;33,38,36;30,35,76;34,39,38;35,37,79;23,64,37;16,43,41;40,44,42;18,41,48;40,46,45;41,45,53;43,60,44;11,55,43;25,48,49;42,51,47;47,52,50;24,49,61;48,53,52;49,51,63;44,67,51;32,56,55;46,54,58;54,57,59;31,73,56;55,59,60;56,75,58;45,58,69;50,62,64;61,63,65;52,68,62;39,61,66;62,72,66;64,65,79;53,69,68;63,67,70;60,71,67;68,71,72;69,75,70;65,70,77;57,76,74;73,77,75;59,74,71;36,78,73;72,74,78;76,79,77;38,66,78",
+      "result": {
+        "id": "Goldberg-GP(2,0)",
+        "vertices": 80,
+        "faces": 42,
+        "rotation_sha256": "7d7fe4aea1220a45dfd57d75ee5ad07fc9f767254f8125a90f3c571833d4baf8",
+        "neighbour_histogram": {
+          "0": 12,
+          "2": 30
+        },
+        "pentagonal_incidences": 60,
+        "flanked_darts": 0,
+        "distinct_cores": {},
+        "occurrences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "dart_phase_states": 480,
+        "lobe_lengths": {
+          "20": 12
+        },
+        "closing_fault_histogram": {
+          "0": 12
+        },
+        "coverage": {
+          "distinct_lobes": 12,
+          "lobes_meeting_core": 0
+        },
+        "lobes_sha256": "088823b201359b875a8de56ec7fff6053549300f914b8bb89c3e00c53986a540"
+      },
+      "first_lobe": {
+        "vertices": [
+          0,
+          1,
+          8,
+          26,
+          29,
+          31,
+          57,
+          73,
+          74,
+          77,
+          72,
+          65,
+          62,
+          61,
+          50,
+          24,
+          22,
+          19,
+          14,
+          2
+        ],
+        "dart_phase_segment": "0,1,1;1,8,0;8,26,1;26,29,0;29,31,1;31,57,0;57,73,1;73,74,0;74,77,1;77,72,0;72,65,1;65,62,0;62,61,1;61,50,0;50,24,1;24,22,0;22,19,1;19,14,0;14,2,1;2,0,0",
+        "turns": [
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "closing_faults": [],
+        "seam": null,
+        "pentagon_shores": [
+          6,
+          6
+        ],
+        "intersecting_families": [],
+        "seam_containing_families": []
+      }
+    },
+    {
+      "id": "Goldberg-GP(3,0)",
+      "rotation": "1,7,2;0,4,8;0,18,3;2,32,4;1,3,46;6,11,7;5,8,12;0,5,16;1,44,6;10,13,11;9,12,14;5,9,19;6,54,10;9,15,22;10,57,15;13,14,88;7,20,17;16,25,18;2,17,30;11,21,20;16,19,23;19,22,27;13,85,21;20,26,24;23,28,25;17,24,40;23,27,29;21,75,26;24,29,43;26,77,28;18,35,31;30,36,32;3,31,59;34,35,37;33,38,36;30,40,33;31,34,71;33,42,39;34,39,73;37,94,38;25,41,35;40,43,42;37,41,91;28,89,41;8,45,49;44,46,50;4,58,45;48,51,49;47,50,52;44,47,54;45,60,48;47,53,56;48,63,53;51,52,111;12,49,55;54,56,57;51,108,55;14,55,106;46,59,61;32,66,58;50,61,62;58,64,60;60,68,63;52,62,163;61,65,67;64,66,69;59,71,65;64,70,68;62,67,171;65,74,70;67,69,173;36,72,66;71,73,74;38,134,72;69,72,175;27,80,76;75,81,77;29,76,90;79,80,82;78,83,81;75,85,78;76,79,102;78,87,84;79,84,104;82,121,83;22,86,80;85,88,87;82,86,119;15,107,86;43,90,92;77,97,89;42,92,93;89,95,91;91,99,94;39,93,133;92,96,98;95,97,100;90,102,96;95,101,99;93,98,123;96,105,101;98,100,125;81,103,97;102,104,105;83,145,103;100,103,136;57,109,107;88,106,114;56,110,109;106,108,112;108,111,116;53,162,110;109,115,113;112,117,114;107,113,119;112,116,118;110,152,115;113,118,122;115,154,117;87,114,120;119,122,121;84,120,146;117,165,120;99,124,128;123,125,129;101,137,124;127,130,128;126,129,131;123,126,133;124,148,127;126,132,135;127,150,132;130,131,177;94,128,134;73,133,135;130,175,134;105,140,137;125,136,141;139,140,142;138,143,141;136,145,138;137,139,148;138,147,144;139,144,151;142,167,143;104,146,140;121,147,145;142,146,165;129,141,149;148,151,150;131,149,179;143,169,149;116,157,153;152,158,154;118,153,166;156,157,159;155,160,158;152,162,155;153,156,168;155,164,161;156,161,170;159,174,160;111,163,157;63,164,162;159,163,171;122,166,147;154,167,165;144,166,168;158,169,167;151,168,170;160,179,169;68,172,164;171,173,174;70,176,172;161,172,178;74,135,176;173,175,177;132,178,176;174,177,179;150,170,178",
+      "result": {
+        "id": "Goldberg-GP(3,0)",
+        "vertices": 180,
+        "faces": 92,
+        "rotation_sha256": "58f6557c005ead0063dec6dcbe778bf8c2834e5089aac24885acf5dc7fc21c05",
+        "neighbour_histogram": {
+          "0": 32,
+          "1": 60
+        },
+        "pentagonal_incidences": 60,
+        "flanked_darts": 0,
+        "distinct_cores": {},
+        "occurrences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "dart_phase_states": 1080,
+        "lobe_lengths": {
+          "30": 18
+        },
+        "closing_fault_histogram": {
+          "0": 18
+        },
+        "coverage": {
+          "distinct_lobes": 18,
+          "lobes_meeting_core": 0
+        },
+        "lobes_sha256": "e469ce2487e0c22655009770f025841111c125aff3780d5e1ffe3eea7c0290f2"
+      },
+      "first_lobe": {
+        "vertices": [
+          0,
+          1,
+          8,
+          44,
+          49,
+          47,
+          51,
+          53,
+          111,
+          162,
+          157,
+          155,
+          156,
+          160,
+          170,
+          179,
+          150,
+          131,
+          127,
+          126,
+          128,
+          133,
+          94,
+          39,
+          37,
+          33,
+          35,
+          30,
+          18,
+          2
+        ],
+        "dart_phase_segment": "0,1,1;1,8,0;8,44,1;44,49,0;49,47,1;47,51,0;51,53,1;53,111,0;111,162,1;162,157,0;157,155,1;155,156,0;156,160,1;160,170,0;170,179,1;179,150,0;150,131,1;131,127,0;127,126,1;126,128,0;128,133,1;133,94,0;94,39,1;39,37,0;37,33,1;33,35,0;35,30,1;30,18,0;18,2,1;2,0,0",
+        "turns": [
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "closing_faults": [],
+        "seam": null,
+        "pentagon_shores": [
+          6,
+          6
+        ],
+        "intersecting_families": [],
+        "seam_containing_families": []
+      }
+    },
+    {
+      "id": "Goldberg-GP(4,0)",
+      "rotation": "1,7,2;0,4,8;0,22,3;2,45,4;1,3,68;6,11,7;5,8,12;0,5,20;1,66,6;10,15,11;9,12,16;5,9,23;6,80,10;14,17,15;13,16,18;9,13,25;10,85,14;13,19,28;14,88,19;17,18,142;7,24,21;20,31,22;2,21,43;11,26,24;20,23,29;15,27,26;23,25,32;25,28,35;17,139,27;24,33,30;29,38,31;21,30,57;26,34,33;29,32,36;32,35,40;27,134,34;33,39,37;36,41,38;30,37,62;36,40,42;34,120,39;37,42,65;39,122,41;22,48,44;43,49,45;3,44,90;47,48,52;46,53,49;43,57,46;44,47,111;51,52,54;50,55,53;46,58,50;47,51,112;50,61,56;51,56,115;54,150,55;31,59,48;52,59,60;57,62,58;58,64,61;54,60,147;38,63,59;62,65,64;60,63,145;41,143,63;8,67,71;66,68,72;4,89,67;70,75,71;69,72,76;66,69,80;67,91,70;74,77,75;73,76,78;69,73,81;70,93,74;73,79,84;74,96,79;77,78,181;12,71,82;75,83,82;80,81,85;81,84,87;77,178,83;16,82,86;85,87,88;83,176,86;18,86,174;68,90,92;45,99,89;72,92,94;89,97,91;76,94,95;91,100,93;93,103,96;78,95,277;92,98,101;97,99,106;90,111,98;94,101,102;97,104,100;100,108,103;95,102,303;101,105,107;104,106,109;98,116,105;104,110,108;102,107,295;105,119,110;107,109,297;49,113,99;53,114,113;111,112,116;112,115,118;55,225,114;106,113,117;116,118,119;114,311,117;109,117,304;40,125,121;120,126,122;42,121,144;124,125,129;123,130,126;120,134,123;121,124,165;128,129,131;127,132,130;123,135,127;124,128,166;127,138,133;128,133,169;131,200,132;35,136,125;129,136,137;134,139,135;135,141,138;131,137,197;28,140,136;139,142,141;137,140,196;19,175,140;65,144,146;122,153,143;64,146,148;143,151,145;61,148,149;145,154,147;147,157,150;56,149,224;146,152,155;151,153,160;144,165,152;148,155,156;151,158,154;154,162,157;149,156,219;155,159,161;158,160,163;152,170,159;158,164,162;156,161,205;159,173,164;161,163,207;126,167,153;130,168,167;165,166,170;166,169,172;132,245,168;160,167,171;170,172,173;168,240,171;163,171,227;88,177,175;142,174,184;87,179,177;174,176,182;84,180,179;176,178,185;178,181,188;79,276,180;177,186,183;182,191,184;175,183,196;179,187,186;182,185,189;185,188,193;180,271,187;186,192,190;189,194,191;183,190,201;189,193,195;187,257,192;190,195,204;192,259,194;141,184,198;138,198,199;196,201,197;197,203,200;133,199,246;191,202,198;201,204,203;199,202,286;194,279,202;162,206,210;205,207,211;164,228,206;209,214,210;208,211,215;205,208,219;206,248,209;213,216,214;212,215,217;208,212,220;209,249,213;212,218,223;213,252,218;216,217,310;157,210,221;214,222,221;219,220,224;220,223,226;216,306,222;150,221,225;115,224,226;222,311,225;173,231,228;207,227,232;230,231,235;229,236,232;227,240,229;228,230,248;234,235,237;233,238,236;229,241,233;230,234,253;233,244,239;234,239,256;237,285,238;172,242,231;235,242,243;240,245,241;241,247,244;237,243,281;169,246,242;200,247,245;243,246,286;211,232,250;215,250,251;248,253,249;249,255,252;217,251,315;236,254,250;253,256,255;251,254,319;238,293,254;193,262,258;257,263,259;195,258,280;261,262,266;260,267,263;257,271,260;258,261,287;265,266,268;264,269,267;260,272,264;261,265,288;264,275,270;265,270,291;268,302,269;188,273,262;266,273,274;271,276,272;272,278,275;268,274,298;181,277,273;96,278,276;274,277,303;204,280,283;259,284,279;244,283,282;281,284,285;279,281,286;280,287,282;239,282,292;203,283,247;263,289,284;267,290,289;287,288,292;288,291,294;269,317,290;285,289,293;256,292,294;290,319,293;108,296,300;295,297,301;110,305,296;275,300,299;298,301,302;295,298,303;296,312,299;270,299,316;103,300,278;119,308,305;297,304,309;223,307,308;306,310,309;304,311,306;305,307,312;218,313,307;118,226,308;301,309,314;310,315,314;312,313,316;252,318,313;302,314,317;291,316,318;315,319,317;255,294,318",
+      "result": {
+        "id": "Goldberg-GP(4,0)",
+        "vertices": 320,
+        "faces": 162,
+        "rotation_sha256": "00dd97e33f6f18716782e9a8760f8766000055bd2c7b5de73cc98aca35c34274",
+        "neighbour_histogram": {
+          "0": 102,
+          "1": 60
+        },
+        "pentagonal_incidences": 60,
+        "flanked_darts": 0,
+        "distinct_cores": {},
+        "occurrences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "dart_phase_states": 1920,
+        "lobe_lengths": {
+          "40": 24
+        },
+        "closing_fault_histogram": {
+          "0": 24
+        },
+        "coverage": {
+          "distinct_lobes": 24,
+          "lobes_meeting_core": 0
+        },
+        "lobes_sha256": "ce5f8a5569b1a14d38db320abb30f8da7395d4ac4308854114bf7e628bc908a6"
+      },
+      "first_lobe": {
+        "vertices": [
+          0,
+          1,
+          8,
+          66,
+          71,
+          69,
+          75,
+          73,
+          77,
+          79,
+          181,
+          276,
+          273,
+          272,
+          266,
+          264,
+          265,
+          269,
+          291,
+          317,
+          318,
+          315,
+          252,
+          217,
+          213,
+          212,
+          214,
+          220,
+          221,
+          224,
+          150,
+          56,
+          54,
+          50,
+          52,
+          46,
+          48,
+          43,
+          22,
+          2
+        ],
+        "dart_phase_segment": "0,1,1;1,8,0;8,66,1;66,71,0;71,69,1;69,75,0;75,73,1;73,77,0;77,79,1;79,181,0;181,276,1;276,273,0;273,272,1;272,266,0;266,264,1;264,265,0;265,269,1;269,291,0;291,317,1;317,318,0;318,315,1;315,252,0;252,217,1;217,213,0;213,212,1;212,214,0;214,220,1;220,221,0;221,224,1;224,150,0;150,56,1;56,54,0;54,50,1;50,52,0;52,46,1;46,48,0;48,43,1;43,22,0;22,2,1;2,0,0",
+        "turns": [
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "closing_faults": [],
+        "seam": null,
+        "pentagon_shores": [
+          6,
+          6
+        ],
+        "intersecting_families": [],
+        "seam_containing_families": []
+      }
+    }
+  ],
+  "maps": [
+    {
+      "id": "C20-plantri-0",
+      "vertices": 20,
+      "faces": 12,
+      "rotation_sha256": "fc840f5a3eec87e33fa0f35072ce051a5278465499572a8d0e5008f28e58578f",
+      "neighbour_histogram": {
+        "5": 12
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 60,
+      "distinct_cores": {
+        "six_port": 30
+      },
+      "occurrences_sha256": "64ccb486289889bba0358e3cbfc9c2a1bedace1d2030cddefd1777b5713a73cc",
+      "dart_phase_states": 120,
+      "lobe_lengths": {
+        "10": 6
+      },
+      "closing_fault_histogram": {
+        "0": 6
+      },
+      "coverage": {
+        "distinct_lobes": 6,
+        "lobes_meeting_core": 6
+      },
+      "lobes_sha256": "5583f0135f4dec79828f4f3d67741ef940f2b39cfe2cca74c8150bcdebe31052"
+    },
+    {
+      "id": "C24-plantri-0",
+      "vertices": 24,
+      "faces": 14,
+      "rotation_sha256": "19faf98f34815f5fd64af8a0465ed577e843076f7ab9cd3d68e9babfa07c4db9",
+      "neighbour_histogram": {
+        "4": 12,
+        "6": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 48,
+      "distinct_cores": {
+        "seven_port": 12,
+        "six_port": 12
+      },
+      "occurrences_sha256": "422673bf654be8fe33b547ae9389f12e7afa219fd1458720240201ea087b7694",
+      "dart_phase_states": 144,
+      "lobe_lengths": {
+        "11": 12,
+        "12": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "8a085f5db3b21b70e8df34827c4becdb94306d40014f2edfcd63e5dc5d7edfcd"
+    },
+    {
+      "id": "C26-plantri-0",
+      "vertices": 26,
+      "faces": 15,
+      "rotation_sha256": "8fe22f87785cbd1492a2cebbdffdfe1fe7984ebce19b8e4acec4414f58f68cdb",
+      "neighbour_histogram": {
+        "3": 6,
+        "4": 6,
+        "6": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 48,
+      "distinct_cores": {
+        "seven_port": 18,
+        "six_port": 6
+      },
+      "occurrences_sha256": "333690d13468fab9cc4846aa86c63328a254167d22848b63ca500cd0846bcc93",
+      "dart_phase_states": 156,
+      "lobe_lengths": {
+        "11": 6,
+        "12": 3
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 6
+      },
+      "coverage": {
+        "distinct_lobes": 9,
+        "lobes_meeting_core": 9,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "5b6f8079aa9ebcaf49431572c4b4341c52fc80c70869d667d6762483410d4d39"
+    },
+    {
+      "id": "C28-plantri-0",
+      "vertices": 28,
+      "faces": 16,
+      "rotation_sha256": "6787c93b5a0673e58dd41c47f39b067236d0c5500979b44c58ab52bd1f71aad4",
+      "neighbour_histogram": {
+        "3": 12,
+        "6": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 48,
+      "distinct_cores": {
+        "seven_port": 24
+      },
+      "occurrences_sha256": "daf1527102bc2ce95da1543b27db89148264c40e9bcb5070bf6edbaec6df61c0",
+      "dart_phase_states": 168,
+      "lobe_lengths": {
+        "12": 7
+      },
+      "closing_fault_histogram": {
+        "0": 7
+      },
+      "coverage": {
+        "distinct_lobes": 7,
+        "lobes_meeting_core": 7
+      },
+      "lobes_sha256": "26b0c719e65cbf23e6885315f8fc60aa34e9a45c88e7573a4cff6c2e01b86c46"
+    },
+    {
+      "id": "C28-plantri-1",
+      "vertices": 28,
+      "faces": 16,
+      "rotation_sha256": "4519f9ec73f2fe92c1523bfd4a72c28ab8a59fe6e3c86d9db81689a7bcdb9f24",
+      "neighbour_histogram": {
+        "3": 8,
+        "4": 4,
+        "5": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 40,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 12,
+        "six_port": 6
+      },
+      "occurrences_sha256": "d594efd3ed2014f3c6c2e9c57f7b2fe1681bff0eea1e91d02aca3c8e7d08da53",
+      "dart_phase_states": 168,
+      "lobe_lengths": {
+        "11": 4,
+        "12": 1,
+        "13": 8
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "31e84d61c540899d4c557a5f9171d4ad5debe3e2af007adf7930df9be57cfa07"
+    },
+    {
+      "id": "C30-plantri-0",
+      "vertices": 30,
+      "faces": 17,
+      "rotation_sha256": "1614b7ed3c8f9ecdde7867995c05947ed3888ba09e203d0207e904ed4f850dc3",
+      "neighbour_histogram": {
+        "2": 2,
+        "3": 10,
+        "5": 4,
+        "6": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 42,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 18,
+        "six_port": 1
+      },
+      "occurrences_sha256": "d63025e164607906613d62f27fbb703719551f58d2490ac68abcd7a52094e8f6",
+      "dart_phase_states": 180,
+      "lobe_lengths": {
+        "12": 3,
+        "13": 10
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "9b3562abe5b858ca7967ce028dfea21f990da8113f03179eb1ec733efaa62c6b"
+    },
+    {
+      "id": "C30-plantri-1",
+      "vertices": 30,
+      "faces": 17,
+      "rotation_sha256": "802dffccae155c57a196d2ff5d6889682975e5abc15c254fbde0623b4fb1b736",
+      "neighbour_histogram": {
+        "2": 2,
+        "3": 8,
+        "4": 3,
+        "5": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 38,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 12,
+        "six_port": 4
+      },
+      "occurrences_sha256": "9e40316b2db02836b7942f32fc1ac2210d0744daa95e510d6c2b73afe2676497",
+      "dart_phase_states": 180,
+      "lobe_lengths": {
+        "11": 2,
+        "13": 12
+      },
+      "closing_fault_histogram": {
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "f14a054e7610490df982e02f2f68c07f52cf7490bac77236be4770b65419fdf7"
+    },
+    {
+      "id": "C30-plantri-3",
+      "vertices": 30,
+      "faces": 17,
+      "rotation_sha256": "88a9107a9ce19b65957102f22033f92204ecd71fd3db39368dfffdbf50bca95e",
+      "neighbour_histogram": {
+        "3": 10,
+        "4": 5,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 5,
+        "six_port": 10
+      },
+      "occurrences_sha256": "c437d5762fa7d2c77f47219a1e7af6e6600625139f550df13104ab149042e473",
+      "dart_phase_states": 180,
+      "lobe_lengths": {
+        "10": 2,
+        "13": 10
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "45ea9a04fd5512a114e3285724ab96d3e2330417e9e54d7d83a7bc72fa2a36d2"
+    },
+    {
+      "id": "C32-plantri-0",
+      "vertices": 32,
+      "faces": 18,
+      "rotation_sha256": "7c15f629e163819d887a66767ab626b5eff7da83fad36c30d7e6c732e4ef68d8",
+      "neighbour_histogram": {
+        "3": 12,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "seven_port": 12,
+        "six_port": 3
+      },
+      "occurrences_sha256": "cbbe3ede0db206862483a02607439e7963d2ae65430a6bef37576c85b6840289",
+      "dart_phase_states": 192,
+      "lobe_lengths": {
+        "12": 3,
+        "14": 6,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 6,
+        "2": 6
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "06ed1c110ce7c1e5660b85a677296b1d023f25394a69d112ad2f94eae48ae340"
+    },
+    {
+      "id": "C32-plantri-1",
+      "vertices": 32,
+      "faces": 18,
+      "rotation_sha256": "97dabf8fe2ab7b4ad91b47ecce72930f8d04a9a794a2793babe2bf9d6f09c34a",
+      "neighbour_histogram": {
+        "2": 6,
+        "3": 6,
+        "5": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 42,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 18
+      },
+      "occurrences_sha256": "3e2eb9d98d6a2413930c53eea7dfea2712c1c38afff54f96f74c3cbec1dbddd3",
+      "dart_phase_states": 192,
+      "lobe_lengths": {
+        "12": 1,
+        "13": 12
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "f4d103acb55ae011a57bdc9c5058eb8bb1e57c98ce54e9239cf88485b34c8ae3"
+    },
+    {
+      "id": "C32-plantri-6",
+      "vertices": 32,
+      "faces": 18,
+      "rotation_sha256": "23e0510f6a870898eafc958c24ba652b5fcf49c01d6ef95e908a417dbbd08875",
+      "neighbour_histogram": {
+        "2": 4,
+        "3": 8,
+        "4": 2,
+        "5": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 38,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 14,
+        "six_port": 1
+      },
+      "occurrences_sha256": "c231a425c3bd1280a93eb256e669a2953819d80edaf03f474915b796c218eb8f",
+      "dart_phase_states": 192,
+      "lobe_lengths": {
+        "12": 1,
+        "13": 12,
+        "14": 1
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "5ef728a81fec09fd304d4d6ac56524583c4d3a1546de7d51f963e2b009d08a13"
+    },
+    {
+      "id": "C32-plantri-7",
+      "vertices": 32,
+      "faces": 18,
+      "rotation_sha256": "d40b41e8f264069b086418791effb9b7f2b3ce7f9f9c82ddf7575fb2e1730fdc",
+      "neighbour_histogram": {
+        "2": 6,
+        "4": 12
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 6,
+        "six_port": 6
+      },
+      "occurrences_sha256": "3c13469edb19cdbdf480f8e2913cb2c2fe0479183dc3d15e0f2d9736ee2af90c",
+      "dart_phase_states": 192,
+      "lobe_lengths": {
+        "11": 6,
+        "14": 3
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 6
+      },
+      "coverage": {
+        "distinct_lobes": 9,
+        "lobes_meeting_core": 9,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "11c7a6b92a8a8ea766acca2d5303870f816937f1c7daf109a29493dea152dbaf"
+    },
+    {
+      "id": "C32-plantri-8",
+      "vertices": 32,
+      "faces": 18,
+      "rotation_sha256": "78d9d67d3e1f1073dac8368fac3d382282e5f5cf5942199bab00340d42b2451c",
+      "neighbour_histogram": {
+        "2": 4,
+        "3": 4,
+        "4": 10
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 4,
+        "six_port": 6
+      },
+      "occurrences_sha256": "6f205b59688f0f0023b02f08e97abbb5f15d6e3f4c2f8a9df1a174817c986bda",
+      "dart_phase_states": 192,
+      "lobe_lengths": {
+        "11": 4,
+        "13": 4,
+        "14": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 8
+      },
+      "coverage": {
+        "distinct_lobes": 10,
+        "lobes_meeting_core": 10,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "a562519e5d843d1880b56481a2b23f8c936f5e2d30130ce3cbd545b4c94ab890"
+    },
+    {
+      "id": "C32-plantri-9",
+      "vertices": 32,
+      "faces": 18,
+      "rotation_sha256": "45a4f5ca61fdee0f5da6d44fafd5963da86462e9cac73a5bd8280eb743bbc71f",
+      "neighbour_histogram": {
+        "2": 4,
+        "3": 6,
+        "4": 6,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 34,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 8,
+        "six_port": 4
+      },
+      "occurrences_sha256": "b2dbc821ff74344110deedec719b5e0c75bfb45c26892a95eb00c11c56c610c0",
+      "dart_phase_states": 192,
+      "lobe_lengths": {
+        "11": 2,
+        "13": 8,
+        "14": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 11,
+        "lobes_meeting_core": 11,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "d1d9f40156fb9678c522041b0a191af66cb628e62e2a5555f3b00d6ae54c5d09"
+    },
+    {
+      "id": "C34-plantri-1",
+      "vertices": 34,
+      "faces": 19,
+      "rotation_sha256": "ad8a4f8e7fab637723563261602693c34905144266e4161a4016793f0fc510a7",
+      "neighbour_histogram": {
+        "2": 4,
+        "3": 8,
+        "4": 7
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 8,
+        "six_port": 4
+      },
+      "occurrences_sha256": "aff5e0539580b395a05c0ae064517c199d05ee238beba5018d588b5351293cbe",
+      "dart_phase_states": 204,
+      "lobe_lengths": {
+        "11": 2,
+        "13": 4,
+        "14": 2,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "eeb5ad53591b40d6e8aaef5c9cfb0a9040a2a90a16652dd1853c0137f2cb3ad3"
+    },
+    {
+      "id": "C34-plantri-2",
+      "vertices": 34,
+      "faces": 19,
+      "rotation_sha256": "476b67f233ec33e481d9ee7166c0015191a339b2fe0a39bd7405dbd6cf7ed932",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 4,
+        "3": 7,
+        "4": 5,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 14,
+        "six_port": 1
+      },
+      "occurrences_sha256": "fc9a21d85cf1197f58d837c63188bbe5052850aaa8de0d11ae4084950ccf6566",
+      "dart_phase_states": 204,
+      "lobe_lengths": {
+        "12": 1,
+        "13": 7,
+        "14": 1,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 13,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 13,
+        "odd_seams_in_core": 13
+      },
+      "lobes_sha256": "de1aa76e3c3cac9dfe8954399ee8876e18483c943cb8049dfc3e427bdc050505"
+    },
+    {
+      "id": "C34-plantri-3",
+      "vertices": 34,
+      "faces": 19,
+      "rotation_sha256": "5fc19ce3f9b64289bf096864c04d81ad4cdec396b5936a4bcee80181bfc7c148",
+      "neighbour_histogram": {
+        "2": 6,
+        "3": 7,
+        "4": 3,
+        "5": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 15
+      },
+      "occurrences_sha256": "27dd04f2e017da2d4f32e6ab6e5de6949a89140ba1bbeac156e5952eafdd7a58",
+      "dart_phase_states": 204,
+      "lobe_lengths": {
+        "13": 12,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "1": 18
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 18,
+        "odd_seams_in_core": 18
+      },
+      "lobes_sha256": "78a271a78a98741a126d4de7b72356477bb258ead5dde4dd0e2f25a02a9db735"
+    },
+    {
+      "id": "C34-plantri-6",
+      "vertices": 34,
+      "faces": 19,
+      "rotation_sha256": "a7a391be2c6b0581e65258ff80675b170ada7775588dfb8d27563e698f69df50",
+      "neighbour_histogram": {
+        "2": 6,
+        "3": 6,
+        "4": 5,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 8,
+        "six_port": 2
+      },
+      "occurrences_sha256": "95dc8a0e790fed23d922a3884ed2590aa53a480028f33c5cde954738b1025ea3",
+      "dart_phase_states": 204,
+      "lobe_lengths": {
+        "13": 10,
+        "14": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "ad6a0e7d9504fddf33e36df5cdf23cf1a098bfc3f1e455d7a4170ac8ed87af27"
+    },
+    {
+      "id": "C34-plantri-7",
+      "vertices": 34,
+      "faces": 19,
+      "rotation_sha256": "8ad4ad4929eaef66b9975d58979155b8ca504caf6ae1ab462361b9d150c22d47",
+      "neighbour_histogram": {
+        "2": 8,
+        "3": 4,
+        "4": 3,
+        "5": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 38,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 14
+      },
+      "occurrences_sha256": "290521c409f3ecf2a5c2d6d63b7993aa5bd50b11ac4a9bd2dfe4bee70c1c0605",
+      "dart_phase_states": 204,
+      "lobe_lengths": {
+        "13": 10,
+        "14": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "24619a32129e358554781fc23b53e16318c0042fc02f97108bebf2c90994e220"
+    },
+    {
+      "id": "C34-plantri-8",
+      "vertices": 34,
+      "faces": 19,
+      "rotation_sha256": "b78bce9350cc52f8296bb901e318c8f45433ea88aaa685517620cf9a9490299c",
+      "neighbour_histogram": {
+        "2": 7,
+        "3": 4,
+        "4": 7,
+        "6": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 34,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 9,
+        "six_port": 2
+      },
+      "occurrences_sha256": "868133c776b83989947dca603f724ce32ca6d95d9143e584d3364f76cc09d2ce",
+      "dart_phase_states": 204,
+      "lobe_lengths": {
+        "11": 1,
+        "12": 1,
+        "13": 5,
+        "14": 3
+      },
+      "closing_fault_histogram": {
+        "0": 4,
+        "1": 6
+      },
+      "coverage": {
+        "distinct_lobes": 10,
+        "lobes_meeting_core": 10,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "9c7fb9d60740dd02f71ee3fd9c53110045b330516bba2d60e23a5786a4cc5d4a"
+    },
+    {
+      "id": "C36-plantri-8",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "278f52cd14f3f76681cc2805b800e5ced33c9df1a9bf7664d0d71b14ae0ebb79",
+      "neighbour_histogram": {
+        "2": 5,
+        "3": 10,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 5,
+        "six_port": 3
+      },
+      "occurrences_sha256": "959fa9fbce99a2609f572c20cedc13ea05062bff118f285dfc56800e3a4bbf37",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "11": 1,
+        "12": 1,
+        "13": 3,
+        "14": 3,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 10,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "a2c2231b676f93ce3a2df50cb9e23d9788b2c5499c2b7f43c7ff37af1db0cf9a"
+    },
+    {
+      "id": "C36-plantri-10",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "7be3a1f3d3be480e700050186e6c57bf991bb5efffcc94f93ee9346406dca83a",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 2,
+        "3": 10,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 6,
+        "six_port": 4
+      },
+      "occurrences_sha256": "c63d7972a8a568725ac46c951b7455217a39051baea38d8942fcc9fe6e325f50",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "11": 2,
+        "13": 2,
+        "14": 2,
+        "15": 8
+      },
+      "closing_fault_histogram": {
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "8f849408f6578b71c91fca964bb5d02b269deb402d5121f032afbada112ce610"
+    },
+    {
+      "id": "C36-plantri-16",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "77aea6424f41d980c30e18aef18b607e52b5a6b08050c28b3e78bbdf762f4bb6",
+      "neighbour_histogram": {
+        "2": 12,
+        "4": 6,
+        "6": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 12
+      },
+      "occurrences_sha256": "264c8e442df0f08ed1a2dce498a770560db64895512addcf5661ff3280cb7ae7",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "12": 2,
+        "14": 6
+      },
+      "closing_fault_histogram": {
+        "0": 8
+      },
+      "coverage": {
+        "distinct_lobes": 8,
+        "lobes_meeting_core": 8
+      },
+      "lobes_sha256": "7792de37bf44de789a74e840ce8a268d36f94efb57a1ecc37cca1e6be35b26a6"
+    },
+    {
+      "id": "C36-plantri-18",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "9e38e2f2eb5db131289274e51be3c37535eb98f79a16e9ae0b78e0dde911aab8",
+      "neighbour_histogram": {
+        "2": 12,
+        "4": 4,
+        "5": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 12
+      },
+      "occurrences_sha256": "9b3d231a0404adc331a215f0303c08bf14d35014a7ee8d7f4e013e8150ca5ded",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 4
+      },
+      "closing_fault_histogram": {
+        "0": 4,
+        "1": 4
+      },
+      "coverage": {
+        "distinct_lobes": 8,
+        "lobes_meeting_core": 8,
+        "odd_lobes": 4,
+        "odd_seams_in_core": 4
+      },
+      "lobes_sha256": "29bef8b3a4a8307b56866e1feb68b304aef6ddf6901cbf1c1b50a561b8c35a8e"
+    },
+    {
+      "id": "C36-plantri-21",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "593201c8c535e710bc995e9171cea353d2c3bc26e41be8086474ae8123bafc7a",
+      "neighbour_histogram": {
+        "2": 10,
+        "3": 2,
+        "4": 6,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 8,
+        "six_port": 1
+      },
+      "occurrences_sha256": "c60faac631a0a8e669d990d45a600f8db82e792fbaff602d9d1774f12346936c",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 4
+      },
+      "closing_fault_histogram": {
+        "0": 4,
+        "1": 4
+      },
+      "coverage": {
+        "distinct_lobes": 8,
+        "lobes_meeting_core": 8,
+        "odd_lobes": 4,
+        "odd_seams_in_core": 4
+      },
+      "lobes_sha256": "63d65929020e2c667a5aa7e434f8dda2591a5b61374aea81719b24e69b4f190f"
+    },
+    {
+      "id": "C36-plantri-22",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "130c8b5ab44d6b906d07117f310e83efdacef062f454004945ffffa27e733cbb",
+      "neighbour_histogram": {
+        "2": 10,
+        "3": 2,
+        "4": 6,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 34,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "4e6b8b31e91b83d8c45b0a29461457261c4314262559169e226865e045f96637",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 5
+      },
+      "closing_fault_histogram": {
+        "0": 5,
+        "1": 4
+      },
+      "coverage": {
+        "distinct_lobes": 9,
+        "lobes_meeting_core": 9,
+        "odd_lobes": 4,
+        "odd_seams_in_core": 4
+      },
+      "lobes_sha256": "41683c2a6e37169ffcdd076fe07d613aff2d7c535e65433172d67b72ee69c1a3"
+    },
+    {
+      "id": "C36-plantri-23",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "8f9ec58f75349b78a6af791d64bfaf0ad24761ca1fa2e24e428b1802c895dc76",
+      "neighbour_histogram": {
+        "1": 4,
+        "3": 8,
+        "4": 8
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 8,
+        "six_port": 2
+      },
+      "occurrences_sha256": "3f1b1a05a11922547fffc3840f30dea9312ea95f7fe746ba5e17c779e4cb417e",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "12": 1,
+        "13": 4,
+        "15": 12
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 17,
+        "lobes_meeting_core": 17,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "52b2efc7a1597812af6002ff2021e10e27dadcb9ea18e2f8b193531e9632e60d"
+    },
+    {
+      "id": "C36-plantri-32",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "6cbaccce9cb701dae87a41b92d9d7ce4e2633b3f91ac651e020a5a8be2e448b8",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 5,
+        "3": 8,
+        "4": 5,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 7,
+        "six_port": 2
+      },
+      "occurrences_sha256": "a01f3d86dbc22ab041b251c8865b4edbc74e344cc8c1ad07649bca860c1bef32",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "11": 1,
+        "12": 1,
+        "13": 3,
+        "14": 2,
+        "15": 7
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 11,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "5473a2113a36ce4323868bbd8f39041ca710463c0730fb5b372eb12b43075041"
+    },
+    {
+      "id": "C36-plantri-35",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "bd97582540df009779112a69db35b0b3bb7ab87d3d2b9424c34d60ab4a3fa56a",
+      "neighbour_histogram": {
+        "2": 8,
+        "3": 6,
+        "4": 4,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 14
+      },
+      "occurrences_sha256": "14320336f4e22033df52e27a30ef70238a6b70680e51b340c3fa9d7a83904d96",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 8,
+        "15": 8
+      },
+      "closing_fault_histogram": {
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "10c1f90f85b7c3b75ef5e7f7ce414c8ab71eb9a13e42e5488f63d30bf26906e8"
+    },
+    {
+      "id": "C36-plantri-36",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "077d1ad9bff72ecef89f7b353ebc2730c87a944ab98887aa4d115ea4d2d4bca9",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 6,
+        "3": 6,
+        "4": 6,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 10,
+        "six_port": 1
+      },
+      "occurrences_sha256": "34e81a3ec78b698ef6d4804a7b851ed1b33c1560c5246f625739c564223f9eb8",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 7,
+        "14": 2,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 13,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 13,
+        "odd_seams_in_core": 13
+      },
+      "lobes_sha256": "a97b7814edc22be6c31799359fccade10b492e085e0d1bbf152d23341370def1"
+    },
+    {
+      "id": "C36-plantri-39",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "9e441b2252f197fd9b20ca3500aa3cfd9b2632cb86012b22815fcc05235c853b",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 6,
+        "3": 4,
+        "4": 6,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 38,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 12
+      },
+      "occurrences_sha256": "373924d90f0be432bafac96ca1ef2667dc286f4db0801dab1ebca92142be9c4d",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 6,
+        "14": 2,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "ded7c2456fceea7c086a9065ea2b6dc6aaefab788bca1426dfe7e4de9f047c1d"
+    },
+    {
+      "id": "C36-plantri-41",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "58aa987bf1adfcc6a5c1366129f6eb04bec4dad56d3100ff6b07d57d3dbc133f",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 6,
+        "3": 6,
+        "4": 6,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 7,
+        "six_port": 1
+      },
+      "occurrences_sha256": "0e636e9ddeb34947040e249cd6d57ab01a69b733fb0c47418ad7ac7301c5d564",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 6,
+        "14": 2,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "069de3ab41b06c36add09f5f4a670a0b262f995c6a2f63234863223674530507"
+    },
+    {
+      "id": "C36-plantri-42",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "1c06115370a266a287410670a0db3c35927ff1e0737cd3bfdf43c289cf5b6585",
+      "neighbour_histogram": {
+        "2": 6,
+        "3": 8,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 9,
+        "six_port": 3
+      },
+      "occurrences_sha256": "7bd7854cc70dc2b69f10a7738084f5f136f36ec7b53c0dc51eb66539abe2c52a",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "b4086c776d3eefe3ae70b49599fdc9d735cb7647a87958d3f674a202ddcddf20"
+    },
+    {
+      "id": "C36-plantri-45",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "14b6dfdc93d06175680770458690e8f84d39b12405ddc17acfa72d30a579665e",
+      "neighbour_histogram": {
+        "2": 4,
+        "3": 12,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "seven_port": 12,
+        "six_port": 2
+      },
+      "occurrences_sha256": "bf60e37e0ec30cee1e96fda97336eb520606d7b01c489845e7bd6eed09194095",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "12": 1,
+        "13": 4,
+        "14": 4,
+        "16": 5
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 4,
+        "2": 8
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 4,
+        "odd_seams_in_core": 4
+      },
+      "lobes_sha256": "ecf43d75843855944d3101378a2b06813bb74b2907ab075f045d68bb701c2899"
+    },
+    {
+      "id": "C36-plantri-46",
+      "vertices": 36,
+      "faces": 20,
+      "rotation_sha256": "b55dfdcae04caa9042fa4447eee28f980863726dc9566b99b47a7a123b472d8c",
+      "neighbour_histogram": {
+        "2": 4,
+        "3": 12,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 4,
+        "six_port": 6
+      },
+      "occurrences_sha256": "8222bce02c57478fbf8a2a58741d9fa2cca32a3a5e112c29c07fbc86d24beff6",
+      "dart_phase_states": 216,
+      "lobe_lengths": {
+        "11": 4,
+        "14": 4,
+        "15": 4,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 8,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "80e069e133b621dd9e8cfd4b677027b1e3b2436b18cd73f5ab5e63a52494e873"
+    },
+    {
+      "id": "C38-plantri-36",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "6c1173f30f9334749165a93cc755ef6126129cf531dde7305099a1ac3fd64d5b",
+      "neighbour_histogram": {
+        "2": 12,
+        "4": 9
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 9
+      },
+      "occurrences_sha256": "31d707e3c70cf568e6c3d428a34e0af2b9354f3456ddd4fc2c28dd5dd4eac247",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "14": 6,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 6,
+        "1": 6
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "9d8cb97274cf25933276a513066fe024b7a9090fac68e888b5b9f51e5a762598"
+    },
+    {
+      "id": "C38-plantri-43",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "3085bc522ba37220c3f143a751a231efac62e51f7de92268f902b7ee4b60ffd1",
+      "neighbour_histogram": {
+        "2": 10,
+        "3": 6,
+        "4": 4,
+        "6": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "bd2baccc3c454576642a9e53cc84c2e1c3313bf918de7d8e6c1562b2ce6ecf96",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "12": 2,
+        "14": 2,
+        "15": 10
+      },
+      "closing_fault_histogram": {
+        "0": 4,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "ad62f6fd3ec886e43381ab3c1a6f6303d6852cf50bcffa401085b81acbb78911"
+    },
+    {
+      "id": "C38-plantri-44",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "46fff0d71719306c02e74b2470baaea0622dc2608ba428c0ac2ef193c22afcef",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 4,
+        "3": 8,
+        "4": 5,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 8,
+        "six_port": 1
+      },
+      "occurrences_sha256": "a7d256ff8be679255509ac44b82af7112a74785378b25729593e52b2db1dae52",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 10
+      },
+      "closing_fault_histogram": {
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "25b805193976c6d1ddde4d32adca20d3d3633290ab99a9fdbdca566b8e827866"
+    },
+    {
+      "id": "C38-plantri-49",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "450e4da2df70b0afdfd9ca655a70f2591ea56c7b9bf01c08c12c9cd6440ca24d",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 4,
+        "4": 5,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 34,
+      "distinct_cores": {
+        "eight_port": 9,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "9c8accae73a1244dca7fce8f63de472ca9302ea984ace3d368d63a8772494b1d",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 2,
+        "15": 8
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "51fbcbe55ae9603360183b229486baed029edd59f5ab8d0d9f504bc2c6c15e4e"
+    },
+    {
+      "id": "C38-plantri-52",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "0797c322edafab7cd5f5347f65d8763cedafb73a4011a7c8fea24e7008cafa28",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 4,
+        "3": 6,
+        "4": 5,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 38,
+      "distinct_cores": {
+        "eight_port": 9,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "5ccc158e096b908d881cfc3b40291481510e444f3192eda4c416c313de599546",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 10
+      },
+      "closing_fault_histogram": {
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "156fe242b4d7094a0adcafc42abcadd0a9fe1b9ae0e13913e045a1bf20c125d4"
+    },
+    {
+      "id": "C38-plantri-72",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "7ac3f6424393f7cfd0153303994a4a7e839cfd683c21c1009501b7267bb92931",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 3,
+        "3": 10,
+        "4": 4,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 8,
+        "six_port": 2
+      },
+      "occurrences_sha256": "86153b104d8f15a8fa3d1618afc35f186fa72e6854e002679d1d1519fb8c5337",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "11": 1,
+        "12": 1,
+        "13": 3,
+        "14": 1,
+        "15": 7
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 11,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "05e7a916b96d2b31adc083f1b348093b3b2958c1a1d9de54042f757e08de3e07"
+    },
+    {
+      "id": "C38-plantri-79",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "9c38df7a4ab5c20e04e2f760806de793bcd96b42cf89d50beb28723ebc81eda1",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 4,
+        "3": 10,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 6,
+        "six_port": 2
+      },
+      "occurrences_sha256": "b1c430893b53402120aadc595ed45990a271fc17c2f3e20d6c56209720f4df94",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 6,
+        "14": 2,
+        "15": 8
+      },
+      "closing_fault_histogram": {
+        "1": 14,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "16b2e135480955ddb2e859e08d37474e96de24e7873186219ab038b342392500"
+    },
+    {
+      "id": "C38-plantri-81",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "1f111d48dff69313763141f5949d118ecb920208b500f65385f727c8c5d2606b",
+      "neighbour_histogram": {
+        "2": 6,
+        "3": 12,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 18,
+      "distinct_cores": {
+        "eight_port": 6,
+        "six_port": 3
+      },
+      "occurrences_sha256": "d3dcca95ab612bf50a9e2c1c8a2726546718df91c9f7f61e321706762a995e9e",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "b609db51d3961c8609e276321fbaf0dca30f40cb097fc9912d57d0a6d1b0b201"
+    },
+    {
+      "id": "C38-plantri-82",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "d1aca89c14839a87d3b0421f0b675f4ebb91996ffa17d3fbe8bb4cbec8794c51",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 8,
+        "3": 6,
+        "4": 5,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 6,
+        "six_port": 1
+      },
+      "occurrences_sha256": "1412622a389bfecf8b65a347ea13a3e3ed48c44a3f9f6edade1bb4e5bf44d97c",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 1,
+        "15": 8
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "066cb9ee402178c727ab664e1406fcd6ac7c6ed796226d56f5518d0fcc351352"
+    },
+    {
+      "id": "C38-plantri-84",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "256a9d28e09fae9fb626ec7faabb0854fff07e3b0d89b0b54349e51f6b7f8f72",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 8,
+        "3": 6,
+        "4": 5,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 11
+      },
+      "occurrences_sha256": "afef0034a9a5705141a5cc1b790f573cb26298b3b4fdcbaba4642270114c3551",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 1,
+        "15": 10
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "03c50a056bd63e1b9b64483734f464f418ff5cc41c4b62d308e320b63cd494b4"
+    },
+    {
+      "id": "C38-plantri-85",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "dc1656fd39b418ab259f2fc1a2876c2e224a0025f894b3aac52eeb5df2c12e1e",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 10,
+        "3": 2,
+        "4": 7,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "29303ce097afa1ec19d0183f4ba56ad63813c502b3b81cdedd854aadee2d498b",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 3,
+        "15": 8
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "9a5cfff0116d180c3003eb63574ab507c60de407dd29fa96cc178837c410e7d5"
+    },
+    {
+      "id": "C38-plantri-90",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "698a8c5dee85977668a85248b3959fafe2a8e0c74e6cbae20f65e9c80f8a5513",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "4": 7,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "5e71645294b8ea1786f7704a7199c69440f1396f36af52f728079bc5eada8da2",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 4,
+        "15": 6
+      },
+      "closing_fault_histogram": {
+        "0": 4,
+        "1": 8
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "c8e409cbdb593caaad492c0447a9e9280d0b5db251479f3b62d12dc60f96dbd5"
+    },
+    {
+      "id": "C38-plantri-109",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "3dab64b452bcfb32fa963abe43ebdc33ebfd55a50c6ebb8e5d83c82b6a81f19d",
+      "neighbour_histogram": {
+        "2": 9,
+        "3": 6,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "seven_port": 6,
+        "six_port": 6
+      },
+      "occurrences_sha256": "186ebfe2980ecdbc77cb8598171fbe706191f8036846bb063c8f2cab299982c5",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "11": 6,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 6
+      },
+      "coverage": {
+        "distinct_lobes": 9,
+        "lobes_meeting_core": 9,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "5939996f80fb4a47977a1dcb61161363ff050ce97406fa6f43f5fb9e0a41137c"
+    },
+    {
+      "id": "C38-plantri-110",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "b2516a42958e6d4923613fce57957d5f85b08d08798c8d75cd8e76872d1fa027",
+      "neighbour_histogram": {
+        "2": 9,
+        "3": 6,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "seven_port": 14
+      },
+      "occurrences_sha256": "d426421b68d6c5460faeafaebed05a0bf9a45dc3c8116d4415cf00b50af156ef",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 6,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "2f1d7aeb3ac1bcb8ceb89d7087be8573ba3d0a70260178be07ddd861aedcb987"
+    },
+    {
+      "id": "C38-plantri-112",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "669fe07c641dee1ee86fa61f0cf2e8d2ccf1874553d219f4df5103411c73d680",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 3,
+        "3": 12,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 6,
+        "six_port": 4
+      },
+      "occurrences_sha256": "cbdbdb109ed0c762456f1da7d711eafe7ee3b82466f8a733d05d0fdad8829373",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "11": 2,
+        "13": 2,
+        "14": 2,
+        "15": 4,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 8,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 11,
+        "lobes_meeting_core": 11,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "b682cddbacee6c041769663e119eaed2ca0f1523192e75920bc0400deb2bc480"
+    },
+    {
+      "id": "C38-plantri-137",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "8234e09f78c497b09a0939e9a27d16c3336e9bdad117be65f5302364c9266eb6",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 6,
+        "3": 10,
+        "4": 3,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 10,
+        "six_port": 1
+      },
+      "occurrences_sha256": "cb4f9fdd528a417d8e7de8c5bfc3347f7fcf06e0a731447b49c27ab578543b4f",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "13": 5,
+        "14": 3,
+        "15": 3,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 8,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "3cd8c50363aae58f8ecfdca1fcf9b3eacb67d5ab0d8f28ed781d20abb9f0bae8"
+    },
+    {
+      "id": "C38-plantri-140",
+      "vertices": 38,
+      "faces": 21,
+      "rotation_sha256": "6564c8884fb3a5530871ce4980ca546e10daff8e9b267ee0c20ad1108dc78205",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 5,
+        "3": 12,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 5,
+        "six_port": 3
+      },
+      "occurrences_sha256": "dde4152e8f2890000febb405cdb5eae90fb0b87f3ea52efc75150e67ad52a9d8",
+      "dart_phase_states": 228,
+      "lobe_lengths": {
+        "11": 1,
+        "13": 6,
+        "14": 2,
+        "15": 5,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "5369c621433dbe95cc4b73dbcf6077bd7258023471ea187fd442b7a2a6844471"
+    },
+    {
+      "id": "C40-plantri-38",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "3b83ffab940843d6f9f210ebbd27bd007c9b9d00d205b418f1009edc8608eefd",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 8,
+        "4": 2,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "d456be944364f75cee636b2bbe696b48a42a35e9a7df42f1949fbe1e0ca5590a",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 1,
+        "15": 8,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "284d00af7c7e3387ccbb341b671f1a1eeb03bccc2bbf7ad3546df1b512e95655"
+    },
+    {
+      "id": "C40-plantri-40",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "167582faa604e300717897f508993c8afad5dfa9443d1f3f1b2b677da8d85a0e",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 4,
+        "3": 10,
+        "4": 2,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 34,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "f1f073aeb769152b43a38a628a509709db54893333463b86f6c96bc5911587d2",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 6,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "b721a6bae4e11c38e6e273e5bf2c2629fabc4780017e5ddd5fdb8618adb546ec"
+    },
+    {
+      "id": "C40-plantri-73",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "d8b3cb01e28e540fdb8245a206f72cda5e7b16d763b9957d793058eb59fad3e2",
+      "neighbour_histogram": {
+        "0": 1,
+        "2": 10,
+        "3": 4,
+        "4": 7
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 9
+      },
+      "occurrences_sha256": "59c59d30d31abd435405ac5c8ba36bf00b9d041beb7813ed780d7075b3956b34",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "15": 3,
+        "16": 2,
+        "17": 7
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "2da8e6bd136ec9789bb2fec408f11f9040437e58d72dfc205f54083607a77360"
+    },
+    {
+      "id": "C40-plantri-75",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "c3362b1a6074f35c3668b387bb2837de6101a3bdd4424d66b0b3ab3ed22d5aa3",
+      "neighbour_histogram": {
+        "0": 1,
+        "1": 2,
+        "2": 3,
+        "3": 12,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 5,
+        "six_port": 3
+      },
+      "occurrences_sha256": "ce2a65cdd42dbbc14d1c9f8c42f58eb9832578d7f5c4aadd83f57d450c866826",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "11": 1,
+        "12": 1,
+        "13": 1,
+        "14": 3,
+        "15": 4,
+        "17": 5
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 11,
+        "2": 3
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "8f30e65961fda3e99d50d9071499072ac50d739503be90e7026b6157dde5e359"
+    },
+    {
+      "id": "C40-plantri-143",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "80acd9d8d8c72a63764162521fd90e2c1b9f1f306987775c21daa407d76dc8da",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 6,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "81de4ced5f0e02c239af1a42c220c0ab70071009bf3dab6cbd8eff34598fb903",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 14
+      },
+      "closing_fault_histogram": {
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "428c3461bb100242f691d83ab3ac18e2867e1c52acd84fb98cf9fb7c537e0272"
+    },
+    {
+      "id": "C40-plantri-144",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "951058c398a0425dbe6521e4b5f407582baa5337874f09b1d5f4b059ef391f74",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 6,
+        "3": 7,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 9,
+        "seven_port": 6
+      },
+      "occurrences_sha256": "550f635a33e470600ebaa10f7ed078dad96827d7bd6b1c31d0b7fff39ac8b6a2",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 3,
+        "15": 12
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "8e1d3c0c1963bcf2891f9f410e6e86baeb30b632453b766732ab454370fa960f"
+    },
+    {
+      "id": "C40-plantri-152",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "df8ba2966da8064d5455604a5545dea4e67fce64ed2d010f3cef025367b9ed14",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 6,
+        "3": 9,
+        "4": 3,
+        "6": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 12
+      },
+      "occurrences_sha256": "a8d16866b1afb0bffe6cf8a7edd41260804be50c4d90f225f36193568b336837",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "12": 2,
+        "15": 12
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "5e1926756f7498c3cbd2cd3c64fc68a6dc77e67653ca2a6581246a3cf6bd1bf0"
+    },
+    {
+      "id": "C40-plantri-163",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "9447f6b5a7573dc69cdcf59722227cd13c19ebe1caafcc68355fdab4481a4ca4",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 8,
+        "3": 4,
+        "4": 6,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "17f3ec124db84ff20669ffe3fd6927b4fa386d994dc1136c03dcff2781114170",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 1,
+        "15": 12
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "573b89cb087924111fa9e5bb51e5a898f6476a316e18b381f66ad885e8ca7897"
+    },
+    {
+      "id": "C40-plantri-165",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "f97193f0ffce1398ec94b2178da6a6bf57b0d85782185259fd169ef465b13f28",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 6,
+        "3": 4,
+        "4": 8
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 34,
+      "distinct_cores": {
+        "eight_port": 11,
+        "seven_port": 6
+      },
+      "occurrences_sha256": "2957bd4bf86ae9c35a25b7979a521af3308b2256c45cd3e7b621c59d27dccf5f",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 3,
+        "15": 12
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "458e54ad76303d86fded5b07190ecf15b85266af7f77929f94e51a6879385461"
+    },
+    {
+      "id": "C40-plantri-167",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "f9839c76c1395fff38758ab7f0cb200e25be1fa411eb21314946bf2cd76b78cd",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 8,
+        "4": 10
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 10,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "46682655ce3d0dab04b320b4cb69b657a2b0d63e165589701fd7950e595f28eb",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 2,
+        "15": 16
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "b63bb1743ba1da0c8190135f64ed7a753eaa4babcc9e725f6cdb050c489f7c72"
+    },
+    {
+      "id": "C40-plantri-194",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "351949b58a8869b4407ddbbb93a2d2d85f3b07f64c4fdceaa5f52e9fcaf0b217",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 8,
+        "3": 3,
+        "4": 8
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 11,
+        "seven_port": 5
+      },
+      "occurrences_sha256": "9190b0a80dbe1a05448c39095c7b08a52fae7d148ebc6d278f2cd23fc859ebda",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 2,
+        "15": 16
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "2b5c5c7a366ea2f198d41e9ef0d71783567300f5baa40769cac795b7bf1b27e6"
+    },
+    {
+      "id": "C40-plantri-195",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "3e62b66b0e1f8989939fe3c2e7a811b0dd9166c16cc3f5ef044e22abc300996f",
+      "neighbour_histogram": {
+        "2": 12,
+        "3": 4,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 12
+      },
+      "occurrences_sha256": "e6cfcd4b6f20fe63b5493ce4d2cb17caf8111a6c2fa4fc74da534db3a0cf1f35",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "15": 24
+      },
+      "closing_fault_histogram": {
+        "1": 24
+      },
+      "coverage": {
+        "distinct_lobes": 24,
+        "lobes_meeting_core": 24,
+        "odd_lobes": 24,
+        "odd_seams_in_core": 24
+      },
+      "lobes_sha256": "802b35d57ab205b4e181de05bf4fc7b75b252a788ccd0aeb1425443266982844"
+    },
+    {
+      "id": "C40-plantri-216",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "935102821ea0e2a3c74cbb66b4254e63007775f01a12c59335f5085ef916d33b",
+      "neighbour_histogram": {
+        "2": 10,
+        "3": 8,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "36fbc45a238e77d8f3e4340c0c22901e95652998564227a926049081817e62dc",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "12": 2,
+        "15": 12,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "80591ccb5ec7e9973928808fbf39d54640bc8e02cbb3f14e8244c6ccf7dccb5f"
+    },
+    {
+      "id": "C40-plantri-231",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "c9f38c83f72f705fe1af876a38313fb46e52d055be9e818f85212cd082d4a2a4",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 4,
+        "3": 8,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 9,
+        "seven_port": 5,
+        "six_port": 1
+      },
+      "occurrences_sha256": "d1891a4cb4a47846ae415b76ed5d64a33336dd54e90b94797ee6f5ad7020b761",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "15": 9
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 11,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "07902f5b798ca443bb1c4b19830f6070acc9b54fe77ac55ee2fd387e48339de5"
+    },
+    {
+      "id": "C40-plantri-232",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "c02d3552c3b4b584d5408358ef3de52beb37f6b47f9a166b000fd01d7a575ebe",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "3": 2,
+        "4": 8
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "a7715c79daf986e8a97672d41068a5eacd042e5e4f0c7655764c97a4b85982fa",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 3,
+        "15": 12
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "c37328ba90f1c9addb32537443fc8b7d7066e8b0275b66883ba156c6a55ce0b0"
+    },
+    {
+      "id": "C40-plantri-233",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "1657b7b5bd3fc9d5b24a535e1fb54334ac60498d079da9483af97f20a971001c",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 6,
+        "3": 5,
+        "4": 6,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 34,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 9
+      },
+      "occurrences_sha256": "253e28673e0a6c55c3d8da28fa42bfd1f0335cf2065e76f6c2c432058dbfdeeb",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 14
+      },
+      "closing_fault_histogram": {
+        "1": 16
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "73ff690e50d0a87c8e4f22ff98c04ed0323951d0769f3a492a88f779e9c44794"
+    },
+    {
+      "id": "C40-plantri-239",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "293745cbb4be10719ca362db66af2076476ea6863fb89e4303689eddc4af6e48",
+      "neighbour_histogram": {
+        "0": 2,
+        "2": 10,
+        "4": 10
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 40,
+      "distinct_cores": {
+        "eight_port": 10,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "fdc7f8f25900b8c65c8535da59c005f8e3cb3eafd64c1c202c8abbe4efa8f949",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 5,
+        "17": 10
+      },
+      "closing_fault_histogram": {
+        "0": 5,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "5aefd1c7503e7893542930e1ab07f73f2a2c6fef15d3fb9a3c54d090ca5f8ebd"
+    },
+    {
+      "id": "C40-plantri-241",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "7de5f84527b47eef5950ca3e87a8999626cd674ca4d4d2a90ff17fd82be55be9",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 8,
+        "3": 9,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 3,
+        "six_port": 1
+      },
+      "occurrences_sha256": "f24b0c5d2b61bd5345c9be02b570a9cad015cf0fe839f1a12f86ac38e2171189",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "15": 11
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 13,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 13,
+        "odd_seams_in_core": 13
+      },
+      "lobes_sha256": "3d7b4c58b3765e99a7afde632903cc0d42c4ff86fdd9e60f939129be87a317f2"
+    },
+    {
+      "id": "C40-plantri-268",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "3e6e9a8cdfde995fa4d955d5cb19346b0a97959938cac8dd142fc04f4c08235e",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 6,
+        "3": 8,
+        "4": 4,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 9
+      },
+      "occurrences_sha256": "4c221e3d3f06545430de2b29166a2854f26117dce308ce26bb32fc1b4d509ca4",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "15": 10
+      },
+      "closing_fault_histogram": {
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "03626090e45b275684983c39964fa499e862371218a1a609ad92aa261d9d73b7"
+    },
+    {
+      "id": "C40-plantri-281",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "046aa443f02373d7cd352aa386f58d092c9c251ebf551594bc374331354a825a",
+      "neighbour_histogram": {
+        "2": 8,
+        "3": 12,
+        "4": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 1,
+        "seven_port": 8,
+        "six_port": 2
+      },
+      "occurrences_sha256": "76e54c1fee12c0f923900cb6c6adb81f7434ec130c7d35822cddc93684c22dc2",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 4,
+        "15": 4,
+        "16": 2,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 12,
+        "2": 6
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "3f0cd89a8bd258a9a59179a6e5103fefd94e67d95c4609aae65bfe882dc07f48"
+    },
+    {
+      "id": "C40-plantri-318",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "f085275f7eb19023bd4f81b8f018ddd2bcc27feff2c5099c1c60173fa3d9aac9",
+      "neighbour_histogram": {
+        "2": 10,
+        "3": 8,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "seven_port": 4,
+        "six_port": 6
+      },
+      "occurrences_sha256": "23bea43d4a8f4b744091a1bc7079bb81246d7252e0757c0e125c9859928a1f64",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "11": 4,
+        "14": 4,
+        "16": 1,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 8,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "a4bbb874c2711c2d1565b5f651132032fc59bdb3821c5693a4f587615d2a1b13"
+    },
+    {
+      "id": "C40-plantri-327",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "9337c1b32428a8b74c7a20feab50cdd0ed884adfc64f2acf6a1b53ac8b0a1695",
+      "neighbour_histogram": {
+        "2": 9,
+        "3": 11,
+        "4": 1,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 6,
+        "six_port": 2
+      },
+      "occurrences_sha256": "270875e4c230b19aed47bb208f7ccfb7c38aee9ea6cf7ce426579c49dc387e7b",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "11": 1,
+        "13": 4,
+        "14": 2,
+        "15": 6,
+        "17": 5
+      },
+      "closing_fault_histogram": {
+        "1": 16,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 16,
+        "odd_seams_in_core": 16
+      },
+      "lobes_sha256": "75ceeaf40a729019cf635d91b2db6455d020be51844aa48615170625dd875b5c"
+    },
+    {
+      "id": "C40-plantri-329",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "1f852b1938c70454b88177207089a9f20ad78a8d13acb4c5a3f1fec4f79f539c",
+      "neighbour_histogram": {
+        "2": 10,
+        "3": 8,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 6,
+        "six_port": 1
+      },
+      "occurrences_sha256": "06e941be62ab9a954480bc7eb7825e943dbae86c2c6fe8b63010f8fad55de220",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 1,
+        "15": 2,
+        "16": 2,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "0e01e98c39e499a18d3a403aaa233d244825fb9c255c0f5a8e04d572c37a1aef"
+    },
+    {
+      "id": "C40-plantri-330",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "6ed434b2dee27af0b9a3dcb3ecbf10983c21b9068873615f3b6246138c69f064",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 5,
+        "3": 12,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 6,
+        "six_port": 3
+      },
+      "occurrences_sha256": "7c62710876348e2b924d23b62e75c4ddf22186c79023acfeee2ed3a19783c900",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "11": 1,
+        "12": 1,
+        "13": 2,
+        "14": 3,
+        "15": 3,
+        "16": 1,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 10,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "fbc11df2591d4fb83d1da99240e5262b68bed12ab1285bab10c8db75144ad184"
+    },
+    {
+      "id": "C40-plantri-359",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "e0af6d4e4142119e0fc61d4b4e86b0413add75cf038a16e032ad752ccaee86fe",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 5,
+        "3": 9,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 8,
+        "six_port": 1
+      },
+      "occurrences_sha256": "5a2fc41d16abaf8dd2fd9ccf2160d2f6bab1158808dc3a75fef3868d438ce2ea",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 5,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 11,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "595d56a343b1c0a841a4f0474abf5772ed7b1485a9857f97bf89ec1279a3fc42"
+    },
+    {
+      "id": "C40-plantri-366",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "acdcb27bb3f97bddd4071718061d6f1b82923eb2e98739d1e0afbc783021c657",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "3": 2,
+        "4": 8
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "65917528b09cb21fbd9ce4d74c448fb79ac8743aeb2b5525921a7cfbb811ecce",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 4,
+        "15": 6,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 5,
+        "1": 6,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "77894eb7529c079f59a52a41092d0b9f10ec5dd7e823286c6d8e068983629e00"
+    },
+    {
+      "id": "C40-plantri-368",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "2ed92f6c766a3fba40b4370a4de930a8f60e7bd0b17d39447f3c2697843513b9",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 2,
+        "3": 12,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 4,
+        "six_port": 2
+      },
+      "occurrences_sha256": "0c52975c2cb157a0639a7a5ca4313e6964c72eaafb28c5387b7766866c0cc313",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 2,
+        "15": 6,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 10,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "fd53170eb3e89e59f1f3843844b4efc34b9769d3682962fd8123909abee7f93e"
+    },
+    {
+      "id": "C40-plantri-370",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "d9831628dd1d36ae886e055c0dfabd478bd11e6d436aa64fff3f008007aceb19",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 6,
+        "3": 10,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 2,
+        "six_port": 4
+      },
+      "occurrences_sha256": "f20690f6945118276aba16dc0317ba92931ff4bb0a7ea1b752a82d6cc7cdf8cf",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "11": 2,
+        "13": 6,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 8
+      },
+      "coverage": {
+        "distinct_lobes": 11,
+        "lobes_meeting_core": 11,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "e9b2a1f344c41448f85ef514893d89840a90ca5d7eac6a3968adc912faf688df"
+    },
+    {
+      "id": "C40-plantri-388",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "719ef9a3064ef6925713c15b47af156c7f280c47bca5cc9870df18ed388715ef",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 4,
+        "3": 12,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 8,
+        "six_port": 1
+      },
+      "occurrences_sha256": "7ca66463c6290c1922193f83ec2c7ffc6f172c5d93e591251085434f049de2e7",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 5,
+        "14": 2,
+        "15": 5,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 10,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "18e40ba6b383b7cc6ed2596ed82fcf79f6834556319f5663284c706ec8374f87"
+    },
+    {
+      "id": "C40-plantri-391",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "b12450a141802726116beb38397241dc1a84a70407309d6231997ea508a9c3a0",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 6,
+        "3": 11,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 7,
+        "six_port": 1
+      },
+      "occurrences_sha256": "5d3714504bc2265edbfd8a6802f1cf6315b1b1a6ffd3f2f362d5b02845c8ead7",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 1,
+        "15": 9,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 13,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 13,
+        "odd_seams_in_core": 13
+      },
+      "lobes_sha256": "428043a7d5dfd1674f491413d309ac1e1e795894d51e0133d2e8cac97c3686bd"
+    },
+    {
+      "id": "C40-plantri-394",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "7dff9a919414d95234e89dde10fe1bb4322fec86ca2d907419557a9ec3e030e7",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 6,
+        "3": 11,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 7,
+        "six_port": 2
+      },
+      "occurrences_sha256": "601a86ed832de2861fa3f6fe9414ed75cc7bc2a7b267547a86acc8be9de8ab18",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "11": 1,
+        "13": 6,
+        "14": 1,
+        "15": 2,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 9,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 9,
+        "odd_seams_in_core": 9
+      },
+      "lobes_sha256": "2db869b7646a4f83e4776fbd581dd0ad27b0d5e49f3d26bcb34d747452522674"
+    },
+    {
+      "id": "C40-plantri-397",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "38311e1c40546b7ac51cdbcd45afd9428ae23c3a14a879fff7b83b4f4b535b54",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 10,
+        "3": 6,
+        "4": 4,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "8ead263b29a5ef25c5a8ae77eb4c5969367dcb6531837d74f9d904870af1aa5e",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "15": 7,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 9,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 9,
+        "odd_seams_in_core": 9
+      },
+      "lobes_sha256": "e4a256bb78a9cba2e8e75da71b9be65b694c544e54c75706e85caa1e461f2ad8"
+    },
+    {
+      "id": "C40-plantri-402",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "e016f35142b62bb91fa45d5de0a4cbcc6cc243a93a8bb56c9ee8c54affff2027",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 8,
+        "4": 2,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 6,
+        "six_port": 1
+      },
+      "occurrences_sha256": "5d10fbc9ccd9fba81a356dacc476bb9b5a95d24aca92d526c1ef7ac8f3381ee2",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "15": 8,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "a41f09a2a388250c843e30dfbb1078adb0de32eeaddb1ef77b479f7e3b169773"
+    },
+    {
+      "id": "C40-plantri-403",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "336279c2cac8a7164b6e91db300cdc19f9a40fc4bce63174132ba48c3ac522b8",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "3": 4,
+        "4": 4,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "8d13bafc44e85236a14cd0e74a03ad5e577ba3267eb15cda689f62d80ab79d20",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "15": 8,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "dcf00a1926fc3385c565046f37630ba5640967f9e2f94d0cdc381485002e459d"
+    },
+    {
+      "id": "C40-plantri-404",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "b33b646f5801838a1b85ac734cc53612207f2274ee47baa8ea4cce14b738df7f",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 6,
+        "3": 10,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 4,
+        "six_port": 1
+      },
+      "occurrences_sha256": "f59df10835af7e51678d6b960d7abeb430512ba810e66e19b3492d72999bc565",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "14": 6,
+        "15": 4,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 5,
+        "1": 4,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 4,
+        "odd_seams_in_core": 4
+      },
+      "lobes_sha256": "02803159cad0294aa172a28ace093209218dad33a9e0da39e9c549069262ccc7"
+    },
+    {
+      "id": "C40-plantri-406",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "411cb430597524f6b4b85ba0ceb335e2bcfe35f73c150948d3676db672e91a64",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 6,
+        "3": 10,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 2,
+        "six_port": 2
+      },
+      "occurrences_sha256": "3715182003fd458f0bf91661fb89e4b991ea63e5330f46326f7568b8465a3d62",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 4,
+        "15": 6,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 8,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "4f225461c53b3488618183758338dd8f4f9af52ff70e7a45d1ea6530f092713a"
+    },
+    {
+      "id": "C40-plantri-580",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "158895f486a525c7f82b1f8643b082af258753a9b7b269f4b8ffe098b827c0cc",
+      "neighbour_histogram": {
+        "2": 12,
+        "3": 4,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "970c8a51350ea775faa81dd22e5ec0d38927ddbc995713fe35121e0b16a912b5",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "12": 2,
+        "14": 2,
+        "16": 4,
+        "17": 8
+      },
+      "closing_fault_histogram": {
+        "0": 4,
+        "1": 8,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "cf896301adf999cb213504f3189ab1b83057e6b7694e26abbc043e215f2387db"
+    },
+    {
+      "id": "C40-plantri-593",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "79568d29d8b501cec53aa52ac77cf64806909079a13256e7637f879c1f57cbbf",
+      "neighbour_histogram": {
+        "2": 10,
+        "3": 10,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "six_port": 10
+      },
+      "occurrences_sha256": "b91bd9f435468fce7ce3aae34a1aca647daeca5f50ca31f1e8da52c24f96210b",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "10": 3,
+        "14": 10
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "2": 10
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 12
+      },
+      "lobes_sha256": "5d6dace7dc0412a04bf358e9da44724ec7ee5d10dcfa63c427ab94481010a682"
+    },
+    {
+      "id": "C40-plantri-610",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "34951050023845b95a023a6a3d341e16653ab65f1bd53d6eaeac682282aa84de",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 6,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 12
+      },
+      "occurrences_sha256": "038961a04cb3999096dc6c0d6f363a2b1313efdd776be4442ad0f1545c48c6bb",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "13": 4,
+        "15": 6,
+        "16": 4,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 14,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "195bcf42d9cceedcd64de52b71bf5de12f1e8bf6b836d5bcdb6ae0b2b7b084ee"
+    },
+    {
+      "id": "C40-plantri-612",
+      "vertices": 40,
+      "faces": 22,
+      "rotation_sha256": "f282c3e4b968535d962580d0d9f511ffbc78b1a18bd82a81dbcb9b8006e430f6",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 6,
+        "3": 10,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 6,
+        "six_port": 4
+      },
+      "occurrences_sha256": "ef3f7425a9e1fe3768ab84daa05dcf633bb8c5e3c2e894843c71238d681b6844",
+      "dart_phase_states": 240,
+      "lobe_lengths": {
+        "11": 2,
+        "14": 4,
+        "15": 2,
+        "16": 2,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 8,
+        "2": 6
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "88a12ebb31f66b6ea768b2a5dbb51a8a740307668f33168378dd562e96285fa9"
+    },
+    {
+      "id": "C42-plantri-129",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "9dd86179b1e16064f1656d2a885f31d5fabf2f9e8ed139c6984540c37b177eaa",
+      "neighbour_histogram": {
+        "1": 5,
+        "2": 6,
+        "3": 6,
+        "4": 5,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 10,
+        "seven_port": 6
+      },
+      "occurrences_sha256": "37dc7a9fb11647726028d39cfe0df1a0e7458dd87bc055c7d4c86508d9de6ab5",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 1,
+        "14": 2,
+        "15": 9,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "5724bb7a8ba215c2746768fd7527ceb59b9401ba71df410a9ed343eb16975b04"
+    },
+    {
+      "id": "C42-plantri-130",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "83d1ef62d9474c840b43b6ba77528d95f8f21af098e6fcf94648d560c06f0e16",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 8,
+        "3": 5,
+        "4": 5,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 10,
+        "seven_port": 5
+      },
+      "occurrences_sha256": "cf6a63a890ba09c3210e3a4f52b8f806098193cde3dd3cd4e7bd0fb3dd64c9b3",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 1,
+        "14": 1,
+        "15": 13,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "428a54def1c919da97942d5ec62010238e718b7481c713317cc9b976cdb54599"
+    },
+    {
+      "id": "C42-plantri-139",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "b3def66dd406e6446a84d0bec135086b6975b3deda144413d00a2429ce6a6b56",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 6,
+        "3": 9,
+        "4": 3,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 9
+      },
+      "occurrences_sha256": "605370c12abda6e3dcd5181759d3238ed51aabd42a7dad76611e0432073bc47f",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 10,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "b3e3425aca30b450aca2b383bdfec2cc502f111945d2c19129237adfe4a9bb32"
+    },
+    {
+      "id": "C42-plantri-142",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "306517298cc98dab29a71d656e974a9f0644a03df9697504846ab5dcca100cc0",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 8,
+        "3": 7,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "c4052f3b8ec3d2e06a955ad6b2bc7a266cb2745b505f784db75a98f36874238e",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "14": 1,
+        "15": 14,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "5155619c0e9ea1fcbbf17d5293a2b90cec3159f65318478967ec64ae808a4417"
+    },
+    {
+      "id": "C42-plantri-145",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "d6f0e0ea328e19d589840b53382afc2d1da5007dc14f6c0c7d18211970553707",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 5,
+        "3": 12,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "b580d49c216384f3f4a1950d890cb06a2957e36a614dc69f5e6c5e52f6c87557",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 2,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 8
+      },
+      "coverage": {
+        "distinct_lobes": 11,
+        "lobes_meeting_core": 11,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "b5799832b2f3668efe30d1e40ab2e418d14345a38e594832e7779fec81cd2b31"
+    },
+    {
+      "id": "C42-plantri-147",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "9b96bee6e541be36b7592d582af0bb57cc32536879131e9975d7d6f0a9ae5391",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 7,
+        "3": 10,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 9
+      },
+      "occurrences_sha256": "c5b6f892c78eab0cafa1784b425a7be56df32a64d43a8a0a013889bd9c9ccb6b",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 4,
+        "15": 6,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 10
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "a38f617615195e038d2ca864c9213301dcadda50b7800abf2c4ceb4cba4f63fb"
+    },
+    {
+      "id": "C42-plantri-175",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "8408a13de868936a5e3dce3a20f448ef7b5d18173390e972ba10374087f581c1",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 12,
+        "6": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 10,
+        "six_port": 1
+      },
+      "occurrences_sha256": "8e85e7a90be4f0aa837ee093c974def743bf180393e0cd6d08118810a9ab4ada",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "12": 2,
+        "14": 2,
+        "15": 6,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "28850343a62fb86f255a3fe1d9bd2bb44bc68bc05c8d289300543711640c346f"
+    },
+    {
+      "id": "C42-plantri-188",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "32bef0fb6534640e371971e5e38b3422004fec8f3b01e4e1428351178684de95",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "3": 8,
+        "4": 1,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "65898f22b05eca9da951b05f9371e9c26f6397c61a0d27ced3e5a4e3834b0b00",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 4,
+        "15": 8,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "1": 18
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 18,
+        "odd_seams_in_core": 18
+      },
+      "lobes_sha256": "dbf4438b5ab8b275037a033bbb07e00a21aa52f9e95a49d722390687971c7d57"
+    },
+    {
+      "id": "C42-plantri-189",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "1aa513a68e2e8dc43933bf8814d8af9845fda2bf44f92e0507bb0986d0bf19b9",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 7,
+        "3": 10,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 8,
+        "six_port": 1
+      },
+      "occurrences_sha256": "5bdc82f510f63d403c4154bafb02b10673a2e1f1abe4608f75c4f58a4f608a75",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 5,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 5
+      },
+      "closing_fault_histogram": {
+        "1": 12,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "52c46ee4d322378b7c9715cf5ec723a4c752cb35bca8f1896c433d76d338e5b2"
+    },
+    {
+      "id": "C42-plantri-190",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "b417c7b4ec4c41a0d667838d3858a7bfdb7f15d2ba34dd56945504b09a2a5ff4",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 12,
+        "3": 6,
+        "4": 3,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "f2dd8476bf142021955de1bebc93f0d77bd16e60dd382a2b5c6d2bb349ea59be",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 1,
+        "15": 6,
+        "16": 2,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 14,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 17,
+        "lobes_meeting_core": 17,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "94edec5f147d3b4ad57ce8db5108abfa54bbf99bc399d38ead33c37186dce26b"
+    },
+    {
+      "id": "C42-plantri-202",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "9bfb5293f034f1cb05604ad0fdb497d7b1e0d7f3139887d36bde37901578294e",
+      "neighbour_histogram": {
+        "2": 14,
+        "3": 4,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "73a35a8330e8bd45c8861f7acba6d59e51c6cce6631ff0e47ee8b21ed63aff36",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "16": 4,
+        "17": 6,
+        "18": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 8,
+        "2": 6
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "7df443a1260d3eaf4161b3a164a37ddbd4cb609ac359fa4a0baaae1cc6c7a714"
+    },
+    {
+      "id": "C42-plantri-203",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "c76a4df1386bed0ab7eb997133b0049d8fb08536fb82916c5b33546a07c18495",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 9,
+        "3": 9,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 7,
+        "six_port": 2
+      },
+      "occurrences_sha256": "c5f330cdbfb1184177edd0414d517c05b18eeb3fe110ce6f96070eff93c8bcb3",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "11": 1,
+        "13": 4,
+        "14": 2,
+        "15": 2,
+        "16": 1,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "1": 13,
+        "2": 3
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 13,
+        "odd_seams_in_core": 13
+      },
+      "lobes_sha256": "a164726bda6aeba6513bf606b841c23397f491ba0561baa98938852d1ebbf4dd"
+    },
+    {
+      "id": "C42-plantri-268",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "59e8e637b70203464da734c29c14d17985eb06e806c54487b69c4bac38488ed3",
+      "neighbour_histogram": {
+        "0": 1,
+        "1": 3,
+        "2": 6,
+        "3": 7,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "ddd0a0bed8f3ee8e7255478d1680668c1807872e242f1b2a07caa0d8349a4a7f",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 8,
+        "16": 1,
+        "17": 5
+      },
+      "closing_fault_histogram": {
+        "1": 15,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 15,
+        "odd_seams_in_core": 15
+      },
+      "lobes_sha256": "d7b7abd9e3de8a549cff92b513ba90dd508d35331856aafeb802c5f1687f4396"
+    },
+    {
+      "id": "C42-plantri-273",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "3879d5489510fc8a1e45ca1f70b9dd7a1c8b34254913ba3acd17b349718590fc",
+      "neighbour_histogram": {
+        "0": 2,
+        "1": 2,
+        "2": 3,
+        "3": 12,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 9,
+        "seven_port": 4,
+        "six_port": 2
+      },
+      "occurrences_sha256": "57aef80cc8d37997cd47eb772691f5914cb122e45f7c5d749c65bbefd796b7e5",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 6,
+        "15": 2,
+        "16": 1,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "1c85e2403992c4f72e07c032949fe47727f18e44d82c01f1f2df6ffbe07637ae"
+    },
+    {
+      "id": "C42-plantri-486",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "8e39ca7f958ddc5036d107f862b6c4e79e3fc5763911bbd3ab5f9aee386de18f",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "3": 6,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 4
+      },
+      "occurrences_sha256": "140c719e6f21be953f75012b12015d65d642c639e79d95657d136fe835f6d45e",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "15": 18
+      },
+      "closing_fault_histogram": {
+        "1": 18
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 18,
+        "odd_seams_in_core": 18
+      },
+      "lobes_sha256": "34902f5b6dca96012d834966c42d90bb7930bb8e890cf6d25686c6c2d8219aa7"
+    },
+    {
+      "id": "C42-plantri-600",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "9bc31aa0e0c56c603429b1df9b8a923aae0ad146799b2bf8bdc597e1b17c1e9e",
+      "neighbour_histogram": {
+        "1": 6,
+        "2": 6,
+        "3": 2,
+        "4": 9
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 36,
+      "distinct_cores": {
+        "eight_port": 12,
+        "seven_port": 6
+      },
+      "occurrences_sha256": "2416751cf7ade4bd6f1a9d533ee0b0d2d9599a6f137ce24c441034981b0fbcaf",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "15": 18
+      },
+      "closing_fault_histogram": {
+        "1": 18
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 18,
+        "odd_seams_in_core": 18
+      },
+      "lobes_sha256": "a5a46daf5f864e25cdb3846475aff55f66fb56589fbab66b5c59d550480418bc"
+    },
+    {
+      "id": "C42-plantri-744",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "78b1f94193fe1f7adb18a0b93ad33f311e1792dec3ad0b856de3b3553d57c555",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 6,
+        "3": 8,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 4,
+        "six_port": 1
+      },
+      "occurrences_sha256": "1af6ac4e75bf174cf431cd0f6fa8bdf605efd8789921384c7f2172eedbd71034",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "14": 4,
+        "15": 8
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 8,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "633950135d086fabc82c27daaaac6e8e8d8e7eb8d0d749035e049c7a5541ce96"
+    },
+    {
+      "id": "C42-plantri-800",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "73ebf691c1e3eae548e46fcdd92595a890ec1bc8f46f59505b9f819c246d279d",
+      "neighbour_histogram": {
+        "1": 5,
+        "2": 6,
+        "3": 5,
+        "4": 7
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 10,
+        "seven_port": 6
+      },
+      "occurrences_sha256": "eb4c832f743869b74908770d8149f55fda59fb666b89ddce1d295ebb1fa1bb4e",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "14": 1,
+        "15": 14
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "9b9c0d35f9801148c2b410d99c2489ae2de08ef26b8beb9e365d4d54b0f16882"
+    },
+    {
+      "id": "C42-plantri-806",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "92237d8dd42dc977845c28254915417e4ece1d57fc9f369b942f7dfcf124a6b7",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 7,
+        "3": 6,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "5383cab8db5124ca29eb1eb065236ff094cb6c9d6afaac8ac3d684d928dd7094",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 4,
+        "15": 4,
+        "16": 4,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 12,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "f7dcbb9e2712b3b0989d98dee4adf4a21a535e26462876584f230781e4df45dd"
+    },
+    {
+      "id": "C42-plantri-820",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "3b0164fe84c5f989f5416814d73ad53d0092c08d10db483f0b6d1aa3c8f86008",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 6,
+        "3": 12,
+        "4": 1,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 7,
+        "six_port": 1
+      },
+      "occurrences_sha256": "12f92c2c34327f9f5ce169e8773fd350a10a5fb54b3a5a34bb8e7eb77b693936",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "15": 6,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 8,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 12,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "e68649004be449e3f210abe5b7264176088c6c0b30927d8e6f7e51d2df694837"
+    },
+    {
+      "id": "C42-plantri-821",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "b9cd6e8e84b4adaf4c4f10a4306c06966b06c5f320eb039acb57336b71b2dc2b",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "3": 6,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "326f5d2ab14469499eafce9e8e729e7a1286bd8dc2ce2e4880220dae26d49101",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "14": 2,
+        "15": 8,
+        "16": 4
+      },
+      "closing_fault_histogram": {
+        "0": 4,
+        "1": 8,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "392447902be951f9f56cb39efbf7287ed95e18cb7c576e645dd44241cb33c4b0"
+    },
+    {
+      "id": "C42-plantri-822",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "6b8e6ad66c18106b75cd7e2775dc52e581c38d7b94b4d63f125be1e3337f434b",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 6,
+        "3": 11,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 8,
+        "six_port": 1
+      },
+      "occurrences_sha256": "fdf70f45670d0d3e83191b403f6eae73d82f741d423c02c5654967a863dfc26d",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 1,
+        "15": 3,
+        "16": 3,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 11,
+        "2": 3
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "31e8eef149792d37acaae67da967246e52f8f36b651a8bfe0542cd0d193f6bbf"
+    },
+    {
+      "id": "C42-plantri-840",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "8ef9a39ae84ddbd84c2c99c6f443a6671f7cf2c668e3c4fd73d972d6dbcbeb2a",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 9,
+        "3": 8,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "seven_port": 6,
+        "six_port": 4
+      },
+      "occurrences_sha256": "01ad5ca58868574afe9579e8f24ba655ce5cdf534fc494c7f698427e64b396a9",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "11": 2,
+        "14": 4,
+        "15": 2,
+        "16": 2,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 8,
+        "2": 6
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "72c33d4cc509f5eed88fd825df3db9e1d01a47d87e53d9899a9e50d71cfd7787"
+    },
+    {
+      "id": "C42-plantri-972",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "8ca8dabda683865ade6753b67a5db96c893db332c7f368bdaf7ad28b00decd65",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 10,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 4,
+        "six_port": 1
+      },
+      "occurrences_sha256": "8e9513a89589be1d8132a8c75ed33462fda8ea516098529d408d0586770aa775",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 3,
+        "14": 1,
+        "15": 5,
+        "16": 1,
+        "17": 5
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 13,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 13,
+        "odd_seams_in_core": 13
+      },
+      "lobes_sha256": "81fe4320d1f3f48b9b5dfb0463f3718c2d4964f79129e3348ef72563a4202dc8"
+    },
+    {
+      "id": "C42-plantri-975",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "14e1c6e4a876efdf6eeb62c9bdb1c923141c7dfdb469b2b4617cd0e7197bbc4f",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 11,
+        "4": 1,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 7,
+        "six_port": 2
+      },
+      "occurrences_sha256": "adac070f75b29279ebd559c0191d8bf419743d59daa60f22fe3a55686e6c7c87",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "11": 1,
+        "13": 5,
+        "14": 1,
+        "16": 3,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 10,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 10,
+        "odd_seams_in_core": 10
+      },
+      "lobes_sha256": "c3b3671c03f440b2a69c269e45b6e4312af854e6686c83a9445b2f71d20a76bc"
+    },
+    {
+      "id": "C42-plantri-1035",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "481fad92366a675011379a1760858d8039dd87d03432a78876e0bdd95818b528",
+      "neighbour_histogram": {
+        "0": 1,
+        "1": 1,
+        "2": 7,
+        "3": 11,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 4,
+        "six_port": 3
+      },
+      "occurrences_sha256": "c0e829f0abf4fd76f95d80c57aefa4e21d32da5a32744177c60cabc63915bb8d",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "11": 1,
+        "13": 5,
+        "14": 2,
+        "16": 2,
+        "17": 5
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 11,
+        "2": 3
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "d9f8a40ac7d42237df178f5c3c84b1aa5ecbe240d9bb2bce7cd2bebae6480b70"
+    },
+    {
+      "id": "C42-plantri-1037",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "d5418f5267d1a3835cb520982b381b8f2ee71103e618e0163d85b20f65de33cc",
+      "neighbour_histogram": {
+        "0": 1,
+        "2": 12,
+        "3": 4,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 11
+      },
+      "occurrences_sha256": "e950d970df08de19dd6b6205215dd49e597e4f9211ad268bf3c30d5038acf251",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "14": 3,
+        "15": 5,
+        "16": 2,
+        "17": 6,
+        "18": 1
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 11,
+        "2": 3
+      },
+      "coverage": {
+        "distinct_lobes": 17,
+        "lobes_meeting_core": 17,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "d06126bacb60b87222f891b8290d1f5c0a20ce4e1fa5041a5bf3709cc1fb7361"
+    },
+    {
+      "id": "C42-plantri-1043",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "49e808ba6d203d4506431743df038ae90011fda02eccfe8f0791318463da0e53",
+      "neighbour_histogram": {
+        "0": 1,
+        "1": 2,
+        "2": 6,
+        "3": 11,
+        "4": 2,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 6,
+        "six_port": 1
+      },
+      "occurrences_sha256": "7a7672bc7ffb19311dc29f32439361e1de92832479a1c6802fa2bd8d3a36e37e",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 1,
+        "15": 5,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "1": 15,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 15,
+        "odd_seams_in_core": 15
+      },
+      "lobes_sha256": "77df3745811a89d24f8d6f19b03e81b0a9010b507c01645195d4f3d4ab7b27bb"
+    },
+    {
+      "id": "C42-plantri-1044",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "85ba9325a20ca568456d8f6e8eaf0dff303ae80f6f428545dcc23899489ff918",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 7,
+        "3": 6,
+        "4": 6
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 28,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 6
+      },
+      "occurrences_sha256": "4fff87118ee06888a1dd0c601e4ea81dfd568006c41882f632a5acccd06046ee",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 10,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "49d2234a105269fb5a65916444ed9b7120527229af21b4f78b5d878dfdaab792"
+    },
+    {
+      "id": "C42-plantri-1049",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "ce9d4697a176ebba574c8d0bc6a6983fdee29477dbd75bee69106fb3321045bd",
+      "neighbour_histogram": {
+        "1": 5,
+        "2": 6,
+        "3": 5,
+        "4": 7
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 32,
+      "distinct_cores": {
+        "eight_port": 10,
+        "seven_port": 6
+      },
+      "occurrences_sha256": "4626005cc402ff747ec58aae8f4e64b02b8a226522fcfd8ea5b5a875f2c48155",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "14": 2,
+        "15": 9,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 9,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 9,
+        "odd_seams_in_core": 9
+      },
+      "lobes_sha256": "c070725a5218034c8d87c64cba7b9f3e201ada8bb9aca794522d1d0a6502e985"
+    },
+    {
+      "id": "C42-plantri-1052",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "84b713967224615583114cd4133adebaf189c95687b092101d4a1f69f8795898",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 5,
+        "3": 10,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 9,
+        "six_port": 2
+      },
+      "occurrences_sha256": "1c676c9ad5e1ec6ff5cdc7150910b24f2fa7a4742029d2dc5c23a482b7f329b2",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 4,
+        "15": 2,
+        "16": 3
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 6
+      },
+      "coverage": {
+        "distinct_lobes": 9,
+        "lobes_meeting_core": 9,
+        "odd_lobes": 6,
+        "odd_seams_in_core": 6
+      },
+      "lobes_sha256": "a98e7cf48c065a5e8be55bc93f9c5e4fa072cd0bb42b4c33f38d3c9597897429"
+    },
+    {
+      "id": "C42-plantri-1068",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "8a41957a85b612a19cddad70b227504d4bd4dfa3ece5183b6043c43ff30bfbcd",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 6,
+        "3": 9,
+        "4": 3,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 4,
+        "six_port": 1
+      },
+      "occurrences_sha256": "2090c047e7522ec98ef1d128c48dd4b3b11601cea8174fe920a6d111bbabfa6c",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 1,
+        "14": 5,
+        "15": 3,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 5,
+        "1": 4,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 11,
+        "lobes_meeting_core": 11,
+        "odd_lobes": 4,
+        "odd_seams_in_core": 4
+      },
+      "lobes_sha256": "de16ac4c0a497ac8fa42310f2ca76eecb13ff550a6d405831f2995b9d1f519b0"
+    },
+    {
+      "id": "C42-plantri-1069",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "482ecb5f3c01be096926d7d0de6de25f106aee27dadbf6d6f5c8e1d82d94d710",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 8,
+        "3": 8,
+        "4": 3,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 5,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "6362471080024ee40a57f1af5052c2b6d08fb026b83eb01158208f32e2b11071",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 10,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "9ff8c9f164f2142f4c9bdf446716dc25c9e09e1715208a16099579aae7f9ab28"
+    },
+    {
+      "id": "C42-plantri-1072",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "7f12c35af35a4b8e960b60df081ce8d31d633b9d22a9147dd288658d6a53e0f3",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 8,
+        "3": 4,
+        "4": 7
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "35f1d7d84b050370c25cfbe1b02447c884991ae78b985e24fa9399e43482b656",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "14": 1,
+        "15": 14,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 14
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 14,
+        "odd_seams_in_core": 14
+      },
+      "lobes_sha256": "7b0c28319047ec94da08c202b14805d0e7f7dee47ce8d39ce1745bc205e2294c"
+    },
+    {
+      "id": "C42-plantri-1075",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "60a09063875226a587eab7af64a59e933e8f43aaea069b4bbf926c07c3a18cc7",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 6,
+        "3": 9,
+        "4": 3,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 4,
+        "six_port": 1
+      },
+      "occurrences_sha256": "23bcc4cd9b71ffd344830ff1cc046b0c5ae75b423078d3c949f309a10ecd68ad",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 2,
+        "15": 5,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 7,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 11,
+        "lobes_meeting_core": 11,
+        "odd_lobes": 7,
+        "odd_seams_in_core": 7
+      },
+      "lobes_sha256": "0320e5c5e4942e6b9f3045cd3fde2ec55326738f8609e5b6beca38da326eba79"
+    },
+    {
+      "id": "C42-plantri-1076",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "07f4bdf31b6733d964bc6ebc86c3c2422fd4b4be8caa1bbf682328730155d1ed",
+      "neighbour_histogram": {
+        "1": 4,
+        "2": 8,
+        "3": 6,
+        "4": 3,
+        "5": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 30,
+      "distinct_cores": {
+        "eight_port": 7,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "1fd0593f951f008be9efe0a35478db1054f1f5560e3f18765f0ab00780d24dc5",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 10,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 12
+      },
+      "coverage": {
+        "distinct_lobes": 14,
+        "lobes_meeting_core": 14,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "5b92a0c6c406e5415a55e53803d13f40362a1cb8fc01ebd73e8b2bc173e88d03"
+    },
+    {
+      "id": "C42-plantri-1077",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "d4eecfc46153f577dfa6db2091fdf5debdcd0092e0597a5a8140f5754ecae8ae",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 8,
+        "3": 10,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 3,
+        "six_port": 1
+      },
+      "occurrences_sha256": "b52e72bbba1c3224fe0bd71b6085f1600b0a0da42fa34a1aefac376493e57d6a",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 1,
+        "14": 3,
+        "15": 8,
+        "16": 1
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 9,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 9,
+        "odd_seams_in_core": 9
+      },
+      "lobes_sha256": "b43f51dd0e354b97dcb433c806322f272dc58bd76857be8eef67caf57bca8161"
+    },
+    {
+      "id": "C42-plantri-1078",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "923c87489486d5eb944b7136c6563baf24439eaa31d04e3eca03b5cf61361bc2",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 7,
+        "3": 9,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 4,
+        "six_port": 1
+      },
+      "occurrences_sha256": "a1962f85ee9f7ce0aa20155aa69c178e475de6eef99b3063da95289b113cd3c6",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 3,
+        "14": 1,
+        "15": 5,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 8
+      },
+      "coverage": {
+        "distinct_lobes": 11,
+        "lobes_meeting_core": 11,
+        "odd_lobes": 8,
+        "odd_seams_in_core": 8
+      },
+      "lobes_sha256": "fb39f001fb8705eb095a32f89e55079d48695352003327117861aca29363bc4b"
+    },
+    {
+      "id": "C42-plantri-1081",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "21abf40b08208c74b80cfc0f2d216a7b55ee83219e0b961588bca0a6a25e2eab",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 8,
+        "3": 8,
+        "4": 3,
+        "5": 1
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 26,
+      "distinct_cores": {
+        "eight_port": 8,
+        "seven_port": 5
+      },
+      "occurrences_sha256": "22c6942a449553cbd4a9db71366062cbb9d8c65248cd7a90a45ef4c8e9605a5d",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 1,
+        "14": 2,
+        "15": 8,
+        "16": 2
+      },
+      "closing_fault_histogram": {
+        "0": 3,
+        "1": 9,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 13,
+        "lobes_meeting_core": 13,
+        "odd_lobes": 9,
+        "odd_seams_in_core": 9
+      },
+      "lobes_sha256": "6ffc939f500ea0cc8afc0797b5aee52990868768eee54985a2b4b8b857c775e4"
+    },
+    {
+      "id": "C42-plantri-1203",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "c77ec4c3aa8a9007e16ab2f9bfb94cb985e7fbc98eaf1e9d0252abf273dace54",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 8,
+        "3": 7,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 10
+      },
+      "occurrences_sha256": "b51ae37c444698974946102232211ec080342695cb641588cc9b8b9c28a18627",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "12": 2,
+        "15": 7,
+        "16": 3,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "0": 2,
+        "1": 11,
+        "2": 3
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 11,
+        "odd_seams_in_core": 11
+      },
+      "lobes_sha256": "1d33a9af2a845f4685ea9a74122a9755702253e9766d57b5786af5c62ff8e0b1"
+    },
+    {
+      "id": "C42-plantri-1234",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "c2d921259e2c4aec4a8428b18e7b450ddbab44eec1595b88a8282f5617ec51c5",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 9,
+        "3": 8,
+        "4": 4
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 2,
+        "six_port": 4
+      },
+      "occurrences_sha256": "c4e113bd54a1ff9f840a05aa98dfa5082bf00ac208a9e2db83a9c73cfd4b7f37",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "11": 2,
+        "13": 4,
+        "14": 2,
+        "16": 1,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "5c70b3dd81a20c1d83d91347eccc2e2f39bfda9f041bca0b359a08112b48c010"
+    },
+    {
+      "id": "C42-plantri-1235",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "f4458a6b283a40bbb76fa63a13bb79337d1c75250329aec960b08aa0cdf4810d",
+      "neighbour_histogram": {
+        "1": 3,
+        "2": 6,
+        "3": 11,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 22,
+      "distinct_cores": {
+        "eight_port": 6,
+        "seven_port": 3,
+        "six_port": 2
+      },
+      "occurrences_sha256": "00a983112faa11d0584f145a9c138f61aa1ec1a86bcb0e12b2db9b4f5bf2bdd9",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "17": 6
+      },
+      "closing_fault_histogram": {
+        "0": 1,
+        "1": 12,
+        "2": 2
+      },
+      "coverage": {
+        "distinct_lobes": 15,
+        "lobes_meeting_core": 15,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "65fab206343b41949d316400aab533eb2ef96568a3902c63d9bf4e1df62b109b"
+    },
+    {
+      "id": "C42-plantri-1634",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "f9fcb42fd59a04d43d1b7e494259abb4fd21e1d2064c82d8929898156e09aa8c",
+      "neighbour_histogram": {
+        "1": 1,
+        "2": 10,
+        "3": 9,
+        "4": 3
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "eight_port": 3,
+        "seven_port": 6,
+        "six_port": 1
+      },
+      "occurrences_sha256": "cec68966b39c06681c19d5c4277aaf051d6b2dd62c2a25805d2833c0b93979f2",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "14": 1,
+        "15": 11,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 17,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 17,
+        "odd_seams_in_core": 17
+      },
+      "lobes_sha256": "338103f5ffbf3c6ad60b2693ff10efc4d76a034446edf8e04546cf3b451421cd"
+    },
+    {
+      "id": "C42-plantri-1636",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "e0d9e586bef59cbefce77a17d1ddb47292c1d5dba6d68f8a1d0d125ad0b35bf4",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 10,
+        "3": 6,
+        "4": 5
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 24,
+      "distinct_cores": {
+        "eight_port": 4,
+        "seven_port": 8
+      },
+      "occurrences_sha256": "9a921d07fca878f71652d9b8c193f9d565bc3dfbe9af048d1d5cc93f242f854e",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 2,
+        "15": 11,
+        "16": 1,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 17,
+        "2": 1
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 18,
+        "odd_lobes": 17,
+        "odd_seams_in_core": 17
+      },
+      "lobes_sha256": "41d62a215004e33721399c562408717f0c74682761629f1b201accdf73009b69"
+    },
+    {
+      "id": "C42-plantri-1640",
+      "vertices": 42,
+      "faces": 23,
+      "rotation_sha256": "b6c8ac40f2a2ae50ce51235a054df6a68847ddf507e3355bb8d0ebf65747f386",
+      "neighbour_histogram": {
+        "1": 2,
+        "2": 7,
+        "3": 12,
+        "4": 2
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 20,
+      "distinct_cores": {
+        "eight_port": 2,
+        "seven_port": 6,
+        "six_port": 2
+      },
+      "occurrences_sha256": "48a0a186ce47f1a99dfa3606e1af4902aa5fe82f7aeb1d8ff4ad1c12c7bdfb15",
+      "dart_phase_states": 252,
+      "lobe_lengths": {
+        "13": 4,
+        "14": 4,
+        "15": 4,
+        "17": 4
+      },
+      "closing_fault_histogram": {
+        "1": 12,
+        "2": 4
+      },
+      "coverage": {
+        "distinct_lobes": 16,
+        "lobes_meeting_core": 16,
+        "odd_lobes": 12,
+        "odd_seams_in_core": 12
+      },
+      "lobes_sha256": "05ab296326c700c7442c7f131f71d5205f1c1d2d1fc3708c10116754e3db0950"
+    },
+    {
+      "id": "Goldberg-GP(2,0)",
+      "vertices": 80,
+      "faces": 42,
+      "rotation_sha256": "7d7fe4aea1220a45dfd57d75ee5ad07fc9f767254f8125a90f3c571833d4baf8",
+      "neighbour_histogram": {
+        "0": 12,
+        "2": 30
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 0,
+      "distinct_cores": {},
+      "occurrences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "dart_phase_states": 480,
+      "lobe_lengths": {
+        "20": 12
+      },
+      "closing_fault_histogram": {
+        "0": 12
+      },
+      "coverage": {
+        "distinct_lobes": 12,
+        "lobes_meeting_core": 0
+      },
+      "lobes_sha256": "088823b201359b875a8de56ec7fff6053549300f914b8bb89c3e00c53986a540"
+    },
+    {
+      "id": "Goldberg-GP(3,0)",
+      "vertices": 180,
+      "faces": 92,
+      "rotation_sha256": "58f6557c005ead0063dec6dcbe778bf8c2834e5089aac24885acf5dc7fc21c05",
+      "neighbour_histogram": {
+        "0": 32,
+        "1": 60
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 0,
+      "distinct_cores": {},
+      "occurrences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "dart_phase_states": 1080,
+      "lobe_lengths": {
+        "30": 18
+      },
+      "closing_fault_histogram": {
+        "0": 18
+      },
+      "coverage": {
+        "distinct_lobes": 18,
+        "lobes_meeting_core": 0
+      },
+      "lobes_sha256": "e469ce2487e0c22655009770f025841111c125aff3780d5e1ffe3eea7c0290f2"
+    },
+    {
+      "id": "Goldberg-GP(4,0)",
+      "vertices": 320,
+      "faces": 162,
+      "rotation_sha256": "00dd97e33f6f18716782e9a8760f8766000055bd2c7b5de73cc98aca35c34274",
+      "neighbour_histogram": {
+        "0": 102,
+        "1": 60
+      },
+      "pentagonal_incidences": 60,
+      "flanked_darts": 0,
+      "distinct_cores": {},
+      "occurrences_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "dart_phase_states": 1920,
+      "lobe_lengths": {
+        "40": 24
+      },
+      "closing_fault_histogram": {
+        "0": 24
+      },
+      "coverage": {
+        "distinct_lobes": 24,
+        "lobes_meeting_core": 0
+      },
+      "lobes_sha256": "ce5f8a5569b1a14d38db320abb30f8da7395d4ac4308854114bf7e628bc908a6"
+    }
+  ],
+  "remaining": "Geometric supply for the residual larger all-five/six maps, other face sizes, and broader joint lobe reductions."
+}

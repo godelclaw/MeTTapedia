@@ -1,0 +1,124 @@
+{
+  "status": "Kernel-checked shared geometric supply for three diamond reductions, with minimality consumers independent of the complete Four Colour theorem.",
+  "completed_utc": "2026-09-30T08:31:48.114059+00:00",
+  "build_base_revision": "609cf737da811eb1eb90e5c7d476ea32edd78e88",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalNeighbourSupply",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalNeighbourSupply.lean",
+      "source_sha256": "a172a485be8b2d39aca9889d61011348e6f43dce3104fb487d91cf63d5c272e4",
+      "olean_sha256": "d380d16691ade718ea48617e22cdcd934191da2b3d2535c9e524f749244df742",
+      "olean_bytes": 537376,
+      "reported_build_seconds": 3.0
+    },
+    {
+      "module": "MettapediaFourColor.DiamondGeometricSupply",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondGeometricSupply.lean",
+      "source_sha256": "ed664b29b1e4ff8d310d88f861662644dfee189c4b5974306bbc51107ea43897",
+      "olean_sha256": "f3a4b0c093e2896d75a8bb7e329e5d307ba3e8ed369aad1b9c51d6cbc6ed75b8",
+      "olean_bytes": 335720,
+      "reported_build_seconds": 47.0
+    },
+    {
+      "module": "MettapediaFourColor.DiamondGeometricSupplyAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/DiamondGeometricSupplyAudit.lean",
+      "source_sha256": "3cd6d4c103eef0898089ef99630687758dbb2c0f15ddb5d8950b44af2035e6e8",
+      "olean_sha256": "4d2c8e5ac168443c9818189db086667c86366a7b9466138a0edd08b7946bff5b",
+      "olean_bytes": 3384,
+      "reported_build_seconds": 10.0
+    }
+  ],
+  "audit": {
+    "root_count": 11,
+    "combined_dependency_closure": 29486,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual cyclic face indexing and retained incidence multiplicity",
+      "pentagonal-neighbour density and cubic Euler counting",
+      "dart reversal and rebasing to all three actual face-pattern hypotheses",
+      "physical strict reductions and genuine exterior recolouring",
+      "smaller-map minimality",
+      "boundary-edge/dart-length correspondence for the existing fullerene class"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "original catalogue configuration certificates",
+      "superseded independent diamond repairs"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.DiamondGeometricSupplyAudit"
+    ],
+    "build_jobs": 3986,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel module times in the final incremental build; no isolated kernel timing or speedup claimed.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "local_supply": "At least three pentagonal incidences at a face of length five or six supply a flanked edge.",
+    "global_supply": "In a spherical cubic map with all actual face lengths five or six, fewer than 56 vertices force one of the three diamond patterns.",
+    "geometric_reduction": "The existing normal-form hypotheses turn each supplied pattern into a strict class-preserving physical reduction.",
+    "minimality": "An all-five/six graph-backed vertex-minimal Tait counterexample has at least 56 vertices and at most two pentagonal incidences at every face.",
+    "representation": "The usual boundary-edge fullerene predicate gives the required dart lengths using actual two-sided face geometry."
+  },
+  "finite_position_classification": {
+    "face_lengths": [
+      5,
+      6
+    ],
+    "binary_words": [
+      32,
+      64
+    ],
+    "new_colouring_certificates": 0
+  },
+  "programme": {
+    "geometric_supply_schemes": 1,
+    "strict_reduction_branches_reused": 3,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "additional_original_certificates_replaced": 0,
+    "catalogue_entries_removed": 0,
+    "integrated_into_complete_assembly": false,
+    "global_coverage_proved": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/diamond_supply_probe.py",
+    "record": "tools/fourcolor/classical/diamond-supply-probe.json",
+    "record_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171",
+    "summary": {
+      "maps": 140,
+      "maps_with_core": 137,
+      "maps_with_odd_lobes": 133,
+      "maps_with_core_containing_odd_seam": 133,
+      "maps_without_core": [
+        "Goldberg-GP(2,0)",
+        "Goldberg-GP(3,0)",
+        "Goldberg-GP(4,0)"
+      ],
+      "totals": {
+        "distinct_lobes": 1962,
+        "lobes_meeting_core": 1907,
+        "odd_lobes": 1489,
+        "odd_seams_in_core": 1489
+      }
+    }
+  },
+  "remaining": [
+    "Supply reductions in larger sparse all-five/six maps.",
+    "Extend the joint lobe operations or effective row reductions beyond the supplied small cores.",
+    "Handle other face sizes and integrate broader coverage with termination and reconstruction."
+  ]
+}

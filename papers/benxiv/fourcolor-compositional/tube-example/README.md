@@ -1512,3 +1512,81 @@ No additional catalogue entry or original colouring certificate is removed.
 [joint-clearance-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondClearanceAudit.lean
 [joint-clearance-probe]: ../../../../tools/fourcolor/classical/joint-diamond-clearance-probe.json
 [joint-clearance-measurements]: ../../../../tools/fourcolor/classical/joint-diamond-clearance-measurements.json
+
+## Geometric supply from pentagonal neighbour density
+
+The three diamond reductions now have one common supply argument. It uses
+the actual cyclic positions of neighbouring pentagonal faces. Incidences
+are counted separately, preserving information that a set of neighbour
+names could lose.
+
+Mark each position of a five- or six-sided face when the face across that
+edge is a pentagon. Any three marked positions include two separated by
+exactly one position. The intervening edge therefore has a pentagon at
+each flank. If all face lengths are five or six, its incident faces select
+one of the completed reductions:
+
+| Incident face lengths | Existing core | Replacement | Net vertices removed |
+| --- | --- | --- | --- |
+| 5, 5 | Twelve vertices, six ports | Four-vertex tree | 8 |
+| 5, 6 | Thirteen vertices, seven ports | Five-vertex path | 8 |
+| 6, 6 | Fourteen vertices, eight ports | Coupled wiring with two vertices | 12 |
+
+[`classify_flanked`][diamond-supply] proves the exact reversal and rebasing
+of the actual dart into the existing face-pattern hypotheses. Each physical
+reduction retains the joint colouring relation its reconstruction needs;
+choosing a representation does not introduce an independent choice of
+colours. The existing normal-form hypotheses supply the recognized pieces,
+compatible exterior, preserved map class and strict size decrease.
+
+The same local observation gives a coverage bound. If no diamond occurs,
+every face has at most two pentagonal incidences. A spherical cubic
+all-five/six map has twelve pentagons, hence sixty such incidences. Writing
+`F` and `V` for the numbers of faces and vertices, double counting and Euler
+give
+
+\[
+60 \leq 2F = V+4, \qquad V\geq56.
+\]
+
+[`of_card_lt_fiftysix`][diamond-supply] therefore produces an actual root
+and one of the three face patterns below 56 vertices. This proof uses
+orbit incidence and the cubic Euler identity; it does not enumerate maps.
+`not_in_minimal` consumes all three physical reductions.
+`fiftysix_le_vertices_of_fullerene_minimal` states the resulting bound in
+the existing fullerene class, deriving the boundary-edge/dart-length
+correspondence from the actual two-sided embedding. Three pentagonal
+incidences at any face are also excluded from an all-five/six minimal
+counterexample, regardless of its size.
+
+The [independent replay][diamond-supply-probe] checks all dart/phase starts
+in 137 saved maps and three larger controls. Every one of the 1,489 odd
+closing seams in the small maps lies in a recognized diamond core. The
+scanner independently compares the flanked-edge criterion with all three
+original face predicates; multiple predicates at a root are retained.
+One even ten-vertex row is disjoint from every diamond in its map, where
+row continuation or another choice is needed. Goldberg GP(2,0), GP(3,0)
+and GP(4,0), with 80, 180 and 320 vertices, have no diamond of these three
+types anywhere. Their extracted lobes are alternating rows of lengths
+20, 30 and 40. These are finite observations; the fixture census does not
+certify internal-six connectivity or minimality.
+
+The [dependency audit][diamond-supply-audit] checks the actual incidence,
+geometric transport and three reduction branches. Original configuration
+certificates, superseded independent diamond repairs and complete Four
+Colour endpoints are excluded. The [measurement record][diamond-supply-measurements]
+records the kernel build and source/artifact hashes. The only new finite
+checks concern the 32 and 64 binary position patterns at lengths five and
+six; no new colouring certificate is introduced.
+
+This is a shared coverage argument for the stated class. The complete
+assembly still retains 633 catalogue entries and 630 original certificate
+dependencies. Larger sparse all-five/six maps, other face sizes and global
+coverage require further mechanisms. Existence of colouring witnesses is
+the semantic conclusion used here; neither colouring counts nor execution
+history equivalence is inferred.
+
+[diamond-supply]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondGeometricSupply.lean
+[diamond-supply-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondGeometricSupplyAudit.lean
+[diamond-supply-probe]: ../../../../tools/fourcolor/classical/diamond-supply-probe.json
+[diamond-supply-measurements]: ../../../../tools/fourcolor/classical/diamond-supply-measurements.json

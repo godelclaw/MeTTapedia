@@ -34,6 +34,19 @@ adapters. Import `MettapediaFourColor.Complete` explicitly for the complete
 assembly. `OrbitAssembly`, `Orbit11Assembly` and `Orbit9Assembly` remain
 available as the intermediate conditional results.
 
+`MettapediaFourColor.DiamondGeometricSupply` connects the three shared
+diamond reductions to one geometric occurrence law. Three pentagonal
+incidences at a five- or six-sided face supply an edge with pentagonal
+flanks. In a spherical cubic all-five/six map, double counting forces such
+an edge when there are fewer than 56 vertices. The actual face lengths
+select the appropriate existing strict reduction under normal form.
+Its minimality consumer uses no complete Four Colour endpoint or original
+catalogue certificate. The
+[worked argument](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#geometric-supply-from-pentagonal-neighbour-density)
+and [audit receipt](../../tools/fourcolor/classical/diamond-supply-measurements.json)
+separate this geometric coverage from the unchanged 633 configurations and
+630 original certificate dependencies of the complete assembly.
+
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
 Mathlib as Mettapedia. The compatibility preparation changes the obsolete

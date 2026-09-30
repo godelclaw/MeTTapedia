@@ -92,6 +92,21 @@ give connected, spherical, bridgeless replacements. This finite evidence is
 separate from the theorem; the fixtures' internal-six connectivity is not
 certified. Global coverage remains open.
 
+A first [shared geometric supply law](tube-example/README.md#geometric-supply-from-pentagonal-neighbour-density)
+now connects all three reductions. On a five- or six-sided face, three
+pentagonal neighbour incidences force two positions separated by one edge.
+The resulting edge has pentagonal flanks, and its two incident face lengths
+select the six-, seven- or eight-port diamond. Counting these incidences
+proves occurrence below 56 vertices in spherical cubic all-five/six maps.
+Under the existing normal-form hypotheses, the selected pattern has its
+certified strict reduction. The minimal-counterexample consumer uses the
+smaller map's colouring and the shared repair, independently of the complete
+Four Colour theorem. This establishes coverage for a bounded geometric
+class; it replaces no further original configuration certificate.
+Independent replay finds a diamond containing each of 1,489 odd closing
+seams in the 137 saved small maps. Larger Goldberg controls have no such
+diamond, so broader supply remains a substantive obligation.
+
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
 hexagonal seam faces force the port matching to be a cyclic translation.
