@@ -67,7 +67,7 @@ Six- and seven-port reductions now consume the same map-preservation law.
 No fresh colouring certificate is introduced; broader geometric supply
 remains the next obligation.
 
-Configuration 4 now has an [actual coupled-wiring reconstruction](tube-example/README.md#the-coupled-eight-port-wiring).
+Configuration 4 now has an [actual coupled-wiring strict reduction](tube-example/README.md#the-coupled-eight-port-wiring).
 Its repair needs a joint contraction trace. Two free wires and two cubic
 vertices joined by an edge realize exactly that contract. The central edge
 retains the shared choice that separate insertion summaries lose. At an
@@ -75,12 +75,16 @@ exact embedded occurrence, normal form now derives wire separation and
 physical Kempe closure of the actual exterior. Colouring the smaller wiring
 reconstructs the original map, with twelve fewer vertices in the smaller
 graph. The internal hexagon and an eight-port cut lemma supply the exterior
-connectivity needed by this argument. Recognition from neighbouring face
-lengths and preservation of the smaller graph's ambient class remain open.
+connectivity needed by this argument. The smaller graph's ambient class is
+now proved: two different extensions of a hypothetical separating cut
+rule out a new bridge, and the complete ordered seam preserves Euler
+characteristic. Minimality supplies the smaller graph's colouring. The exact
+occurrence is still an input; recognition from neighbouring face lengths
+remains open.
 The independent replay checks 1,424 rooted occurrences in 126 of 137 saved
 fullerene maps; all replacements preserve connectedness, sphere and
-bridge-freedom. This supports the operation without proving universal
-class preservation or coverage.
+bridge-freedom. This finite evidence is separate from the new arbitrary-exterior
+theorem under the stated normal form. Global coverage remains open.
 
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
@@ -408,7 +412,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Finite matching translations replaced | Six-port matching enumeration replaced by a proof for all finite widths; five-port cyclic-arc enumeration replaced by uniform cyclic arithmetic |
 | Mixed-diamond strict reduction | The actual thirteen-vertex core is replaced by a five-vertex tree: net decrease eight, ambient class preserved, and genuine colouring reconstructed using the shared repair |
 | Shared replacement geometry | One theorem for arbitrary finite interfaces preserves the map class from equal ordered returns and Euler mass, connectedness and boundary-essentiality; six- and seven-port consumers are checked |
-| Coupled eight-port reconstruction | An exact two-vertex wiring realizes configuration 4's joint contract and reconstructs its fourteen-vertex piece against a Kempe-closed exterior; count difference twelve. Strict ambient-class reduction remains open |
+| Coupled eight-port strict reduction | At an exact occurrence under normal form, the two-vertex wiring preserves the map class and reconstructs the source colouring; net decrease twelve. Face-pattern recognition remains open |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 

@@ -1481,8 +1481,9 @@ joint contract required by configuration 4. The actual graph construction
 has exact witness restriction and reconstruction in every exterior with
 distinct endpoints for each free wire. Against a Kempe-closed exterior,
 the existing shared repair reconstructs the original fourteen-vertex piece.
-The vertex-count difference is twelve. Recognition and preservation of the
-ambient spherical class remain unproved for this operation.
+The vertex-count difference is twelve. This construction theorem alone does
+not assert ambient class preservation. The occurrence and strict-reduction
+theorems below derive it under the source normal form.
 
 `coupled-wiring-measurements.json` records the fifteen audit roots and their
 dependencies. No new colouring certificate, complete-theorem dependency,
@@ -1515,7 +1516,8 @@ derive exterior connectivity and physical Kempe closure. Triangle exclusion
 separates the free wire endpoints. The actual smaller wiring and its whole-map
 colouring reconstruction therefore no longer assume these exterior conditions.
 The count decreases by twelve. The occurrence is still an input; recognition
-from face lengths and smaller-map class preservation remain open.
+from face lengths remains open. The strict reduction below now proves
+smaller-map class preservation.
 
 `joint-diamond-occurrence-measurements.json` records twenty audit roots,
 23,910 dependency declarations, artifact hashes and the regression gates.
@@ -1533,3 +1535,41 @@ exterior is connected. Every wired graph is connected, bridgeless, loop-free
 and spherical, with twelve fewer vertices. Internal-six connectivity of
 the fixture collection is not certified by this census. The report retains
 per-map counts, representative witnesses and an ordered census digest.
+
+## Strict coupled-wiring reduction
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.JointDiamondReductionAudit
+```
+
+In `JointDiamondOccurrenceReduction`, `strict_reduction_of_occurrence` proves
+the entire reduction from a supplied exact occurrence under normal form. The
+actual replacement remains connected, bridgeless, spherical and cubic. It has
+twelve fewer vertices, including both new vertices. Smaller-map minimality
+supplies a colouring, and the shared joint repair reconstructs the original.
+
+`JointDiamondCutLifting` extends hypothetical exterior cuts through the old
+core. The coupled four-port case needs two extensions, with four and ten old
+vertices respectively. Internal-six connectivity applied to both cuts rules
+out the new bridge. `OpenTanglePortFaceCount` and `DiamondCoupledWiringFaces`
+account for both free wires through exact ordered returns. The decreases are
+twelve vertices, eighteen edges and six faces, preserving Euler characteristic.
+
+`joint-diamond-reduction-measurements.json` records 28 audited roots and
+28,002 dependency declarations, standard axioms only. The complete Four Colour
+endpoints, original configuration certificates and superseded independent
+diamond repairs are excluded from the new theorem dependencies.
+The complete baseline still retains 633 configurations and 630 original
+configuration certificates. Recognition from a face pattern and broader
+coverage remain separate obligations.
+
+```sh
+python3 tools/fourcolor/classical/joint_diamond_class_probe.py
+```
+
+This independent replay reads the literal source and wiring incidence tables.
+It checks all 1,024 binary seam assignments, their eight zero-cut assignments,
+the four old-core extensions and the complete face corrections. The receipt
+keeps these finite geometric checks separate from the Lean theorem for
+arbitrary qualifying exteriors. No new colouring certificate is introduced.

@@ -481,10 +481,20 @@ derives wire separation from triangle exclusion, builds the actual wiring,
 and reconstructs the original graph from its colouring. No exterior closure
 or wire-separation premise remains in `colorable_of_actual_wiring`.
 
-The exact occurrence is still an input. Recognition from face lengths and
-preservation of the smaller map's bridgeless spherical class remain open;
-this is not yet a strict reduction in that class. The
-[new audit](MettapediaFourColor/JointDiamondOccurrenceAudit.lean) checks twenty
+The exact occurrence is still an input; recognition from face lengths remains
+open. [JointDiamondOccurrenceReduction](MettapediaFourColor/JointDiamondOccurrenceReduction.lean)
+now proves preservation of the smaller map's bridgeless spherical cubic class,
+strict decrease and exclusion from a vertex-minimal counterexample. Its cut
+argument uses two old-shore extensions of the same four-port block; its complete
+seam calculation removes twelve vertices, eighteen edges and six faces.
+The [strict-reduction audit](MettapediaFourColor/JointDiamondReductionAudit.lean)
+checks 28 roots and 28,002 dependency declarations, requiring both geometric
+arguments and actual colouring reconstruction. The
+[reduction receipt](../../tools/fourcolor/classical/joint-diamond-reduction-measurements.json)
+records exact scope, kernel gates and the independent finite geometry replay.
+No additional colouring certificate or catalogue saving is credited.
+
+The earlier [occurrence audit](MettapediaFourColor/JointDiamondOccurrenceAudit.lean) checks twenty
 roots and 23,910 dependency declarations. The
 [receipt](../../tools/fourcolor/classical/joint-diamond-occurrence-measurements.json)
 also records 1,424 rooted occurrences in 126 of 137 saved fullerene maps.

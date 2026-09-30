@@ -1,0 +1,324 @@
+{
+  "scope": "Independent finite checks of literal cut extensions and boundary face counts; not a universal reduction proof or a coverage theorem.",
+  "seam_assignments_checked": 1024,
+  "seam_edge_cut_distribution": {
+    "0": 8,
+    "1": 56,
+    "2": 168,
+    "3": 280,
+    "4": 280,
+    "5": 168,
+    "6": 56,
+    "7": 8
+  },
+  "zero_cut_assignments": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  ],
+  "port_blocks": [
+    [
+      0,
+      1
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      2,
+      3,
+      6,
+      7
+    ]
+  ],
+  "old_core_extensions": [
+    {
+      "ports": [
+        0,
+        1
+      ],
+      "core_shore": [
+        0,
+        1
+      ],
+      "core_shore_vertices": 2,
+      "internal_edges_cut": 2,
+      "seam_edges_cut": 0,
+      "total_edges_cut": 2
+    },
+    {
+      "ports": [
+        4,
+        5
+      ],
+      "core_shore": [
+        8,
+        9
+      ],
+      "core_shore_vertices": 2,
+      "internal_edges_cut": 2,
+      "seam_edges_cut": 0,
+      "total_edges_cut": 2
+    },
+    {
+      "ports": [
+        2,
+        3,
+        6,
+        7
+      ],
+      "core_shore": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "core_shore_vertices": 4,
+      "internal_edges_cut": 4,
+      "seam_edges_cut": 0,
+      "total_edges_cut": 4
+    },
+    {
+      "ports": [
+        2,
+        3,
+        6,
+        7
+      ],
+      "core_shore": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        10,
+        11,
+        12,
+        13
+      ],
+      "core_shore_vertices": 10,
+      "internal_edges_cut": 4,
+      "seam_edges_cut": 0,
+      "total_edges_cut": 4
+    }
+  ],
+  "face_boundary_cycles": {
+    "old_before": [
+      [
+        0,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    ],
+    "old_after": [
+      [
+        0,
+        9
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        11
+      ],
+      [
+        3,
+        12
+      ],
+      [
+        4,
+        13
+      ],
+      [
+        5,
+        14
+      ],
+      [
+        6,
+        15
+      ],
+      [
+        7,
+        8
+      ]
+    ],
+    "new_before": [
+      [
+        0,
+        7,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      [
+        8,
+        9,
+        10
+      ],
+      [
+        11,
+        12,
+        13
+      ]
+    ],
+    "new_after": [
+      [
+        0
+      ],
+      [
+        1,
+        7,
+        13,
+        8
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        3,
+        10,
+        11,
+        5
+      ],
+      [
+        4
+      ],
+      [
+        6,
+        12
+      ]
+    ]
+  },
+  "face_count_relative_to_open_exterior": {
+    "original": 11,
+    "replacement": 5
+  },
+  "whole_map_decreases": {
+    "vertices": 12,
+    "edges": 18,
+    "faces": 6
+  },
+  "source_sha256": {
+    "tools/fourcolor/classical/joint_diamond_class_probe.py": "b504857ddfd4d5d73c0e3bd66ab770b9ee6254ae48bc00365bd42b656a2902cb",
+    "tools/fourcolor/classical/joint_diamond_occurrence_probe.py": "b6684de33125bfbfe566247d473cc588d033808de0811cad9b89669c567f9030",
+    "tools/fourcolor/classical/mixed_diamond_reduction_probe.py": "cc0363374bc14bc60d8921b2ad2e72fa2cee1f01b90c7ead843aaafa2a4a4752",
+    "lean/fourcolor-classical/MettapediaFourColor/JointDiamondTangle.lean": "b264d6558f142c6e4733e0c8c870ade729eec4270ab4d50802a721d0c651b4a5",
+    "lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean": "14f6912265cc817d090cacdc62067b87512ca576e626333b322bdf93d6bbfe56"
+  }
+}

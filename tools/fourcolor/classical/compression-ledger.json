@@ -841,7 +841,7 @@
     {
       "name": "actual coupled-wiring semantics for the joint diamond",
       "record": "coupled-wiring-measurements.json",
-      "status": "Kernel checked: exact joint contract, actual two-vertex closure, whole-colouring restriction/reconstruction and shared repair004 consumer. Ambient class preservation remains open.",
+      "status": "Kernel checked: exact joint contract, actual two-vertex closure, whole-colouring restriction/reconstruction and shared repair004 consumer. Ambient class preservation remains open. This receipt is the earlier checkpoint; strict class preservation is now proved in the later reduction receipt.",
       "reference_configuration": 4,
       "interface_ports": 8,
       "original_piece_vertices": 14,
@@ -863,12 +863,13 @@
       "integrated_into_complete_assembly": false,
       "ambient_class_preservation_proved": false,
       "coverage_proved": false,
-      "next_obligation": "Derive separation, bridge-freedom and actual exterior closure from normal-form occurrence geometry, then complete strict reduction."
+      "next_obligation": "Derive separation, bridge-freedom and actual exterior closure from normal-form occurrence geometry, then complete strict reduction.",
+      "later_checkpoint": "joint-diamond-reduction-measurements.json"
     },
     {
       "name": "physical exterior closure and reconstruction at an actual joint-diamond occurrence",
       "record": "joint-diamond-occurrence-measurements.json",
-      "status": "Kernel-checked actual occurrence geometry, physical exterior closure, wire separation and whole-map reconstruction. Recognition from face lengths and smaller-map class preservation remain open.",
+      "status": "Kernel-checked actual occurrence geometry, physical exterior closure, wire separation and whole-map reconstruction. Recognition from face lengths and smaller-map class preservation remain open. This receipt is the earlier checkpoint; strict class preservation is now proved in the later reduction receipt.",
       "reference_configuration": 4,
       "interface_ports": 8,
       "original_piece_vertices": 14,
@@ -888,7 +889,42 @@
       "integrated_into_complete_assembly": false,
       "ambient_class_preservation_proved": false,
       "coverage_proved": false,
-      "next_obligation": "Prove normal-form class preservation of the three-component coupled wiring, then derive its occurrence from local face lengths."
+      "next_obligation": "Prove normal-form class preservation of the three-component coupled wiring, then derive its occurrence from local face lengths.",
+      "later_checkpoint": "joint-diamond-reduction-measurements.json"
+    },
+    {
+      "name": "strict coupled-wiring reduction at actual joint-diamond occurrences",
+      "record": "joint-diamond-reduction-measurements.json",
+      "status": "Kernel-checked strict coupled-wiring reduction at every supplied exact joint-diamond occurrence under source normal form. Ambient class preservation, twelve-vertex decrease, genuine colouring reconstruction and the minimal-counterexample consumer are proved. Face-pattern recognition remains open.",
+      "reference_configuration": 4,
+      "interface_ports": 8,
+      "original_piece_vertices": 14,
+      "replacement_vertices": 2,
+      "whole_map_vertex_difference": 12,
+      "whole_map_edge_difference": 18,
+      "whole_map_face_difference": 6,
+      "strict_reduction_consumer": "FourColor.JointDiamondPatch.Tangle.Occurrence.strict_reduction_of_occurrence",
+      "minimal_counterexample_consumer": "FourColor.JointDiamondPatch.Tangle.Occurrence.not_in_minimal_counterexample_of_occurrence",
+      "shared_repair": "FourColor.DiamondProfileReducibility.repair004",
+      "occurrence_hypothesis": "Supplied exact open-tangle isomorphism between the fourteen-vertex joint diamond and an actual vertex shore.",
+      "ambient_class_preservation_proved": true,
+      "exterior_closure_and_wire_separation_derived": true,
+      "exterior_size_bounded": false,
+      "face_pattern_recognition_proved": false,
+      "unbounded_distinct_local_core_family_proved": false,
+      "new_colour_certificates": 0,
+      "original_configuration_certificates_replaced": 0,
+      "configurations_removed": 0,
+      "integrated_into_complete_assembly": false,
+      "coverage_proved": false,
+      "structural_cut_argument": "Two old-shore extensions of the same four-port block rule out a new bridge using internal-six connectivity; neither extension alone gives both exterior shore bounds.",
+      "retained_finite_geometry": [
+        "classification of 1024 seam bit assignments into eight zero-cut assignments",
+        "four distinct old-shore extensions, with a duplicated Boolean choice for each free-wire block",
+        "cycle counts on sixteen old and fourteen new marked seam darts",
+        "literal two-vertex cubic rotations"
+      ],
+      "next_obligation": "Construct the exact occurrence from the intended four-face pattern: two adjacent hexagons flanked by two pentagons, each touching both."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",

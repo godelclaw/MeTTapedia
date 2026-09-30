@@ -1312,11 +1312,11 @@ both new vertices. Wire separation and exterior closure are conclusions.
 The occurrence itself is supplied as an exact isomorphism with a vertex
 shore, preserving every internal edge, rotation and boundary dart.
 
-Two geometric obligations remain: construct that occurrence from the
-intended neighbouring face lengths, and prove that the wiring stays in the
-bridgeless spherical class on which minimality supplies a colouring. The
-current reconstruction does not assume or establish that class-preservation
-theorem. Planarity and bridge-freedom alone do not suffice. The
+The wiring's class preservation is now proved in
+[JointDiamondOccurrenceReduction][joint-reduction]. This closes the strict
+reduction at every supplied exact occurrence under the stated normal form.
+The occurrence must still be constructed from the intended neighbouring
+face lengths. Planarity and bridge-freedom alone do not suffice: the
 [independent replay][coupled-probe] finds planar bridgeless originals whose
 disconnected exterior acquires a bridge after replacement. Those originals
 have triangular faces, excluded by the intended minimal-counterexample
@@ -1328,7 +1328,56 @@ occurrences, representing 712 vertex subsets in 126 maps. Every exterior
 is connected, and every wired graph is connected, bridgeless, loop-free
 and spherical with twelve fewer vertices. These finite checks support the
 operation; they do not certify internal-six connectivity of the fixtures
-or prove arbitrary-context preservation or coverage.
+or prove coverage. The new Lean theorem establishes preservation for arbitrary
+qualifying exteriors, independently of this census.
+
+The new bridge argument explains why the coupling also matters geometrically.
+The wiring has three port blocks: `{0,1}`, `{4,5}` and `{2,3,6,7}`. A potential
+bridge can only separate whole blocks when the exterior is connected.
+For either free-wire block, extending the putative cut through two old core
+vertices would give a cut of at most three edges with at least three vertices
+on each side. Cyclic-five connectivity excludes it.
+
+The four-port block needs **two extensions of the same exterior cut**. One
+puts four old vertices on the selected side; the other puts ten there. Both
+add four crossing edges. Including the putative exterior bridge gives at
+most five edges, so internal-six connectivity forces a shore of at most five
+vertices. The four-vertex extension forces at most one selected exterior
+vertex. The ten-vertex extension forces at most one unselected exterior
+vertex. The exterior has at least seven vertices, contradicting both bounds
+together. [JointDiamondCutLifting][joint-cut-lifting] proves this argument
+with exterior size and vertex assignments left arbitrary. The constant-port
+and complementary-block cases are covered too.
+
+The face calculation retains all eight ports and all six new vertex darts,
+so both free wires are counted. The exact exterior return is the inverse
+eight-cycle. A generic [port-return face theorem][port-face-count] and the
+[wiring's face theorem][wiring-faces] give:
+
+| Whole-map quantity | Decrease |
+| --- | --- |
+| Vertices | 14 removed, 2 added: 12 |
+| Edges | 18 |
+| Faces | 6 |
+| Euler characteristic | `12 − 18 + 6 = 0` |
+
+Exterior vertex rotations are unchanged; the two new vertices are cubic.
+The resulting map is connected, bridgeless and spherical. Thus the chain is
+now complete for a supplied occurrence:
+
+```text
+exact embedded joint diamond + ambient normal form
+  → actual smaller coupled wiring in the same map class
+  → smaller-map colouring from minimality
+  → shared joint repair with genuine exterior witnesses
+  → original-map colouring
+```
+
+This is Ben's proposed boundary mechanism working in a concrete strict
+reduction: keep the shared choice, reduce the interior, and reconstruct
+compatible witnesses. It handles arbitrary qualifying exteriors around this
+fixed core. It does not yet establish an unbounded family of distinct cores,
+preservation of colouring counts, or executable recolouring histories.
 
 The [audit and measurements][coupled-measurements] cover the actual witness
 chain and exclude the former configuration-specific repair certificate.
@@ -1337,18 +1386,35 @@ the complete baseline still retains 633 configurations and 630 original
 configuration certificates. No additional certificate saving or global
 coverage is credited.
 
-The [actual-occurrence audit][joint-occurrence-measurements] checks twenty
+The earlier [actual-occurrence audit][joint-occurrence-measurements] checks twenty
 roots and 23,910 dependency declarations with standard axioms only. It
 requires the hexagon, eight-port cut argument, physical Kempe matching,
 exact coordinate transport, joint repair and genuine whole-map gluing.
 The former configuration certificates and complete Four Colour endpoints
 are absent from these theorem dependencies.
 
+The [strict-reduction audit and measurements][joint-reduction-measurements]
+check 28 roots and 28,002 dependency declarations with the same standard-axiom
+restriction. Required dependencies include actual source-cut transport, both
+cut extensions, complete seam face counting, strict decrease, joint repair
+and the minimal-counterexample consumer. The independent
+[finite geometry replay][joint-class-probe] checks all 1,024 binary seam
+assignments, the four old-shore extensions and the face corrections.
+No additional colouring certificate is introduced. Next: recognize the
+four-face pattern—two adjacent hexagons flanked by two pentagons, each touching
+both—and then prove broader supply or justified alternatives.
+
 [joint-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondOccurrence.lean
 [joint-wired-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondWiredOccurrence.lean
 [eight-port-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/EightPortBoundaryConnectivity.lean
 [joint-occurrence-probe]: ../../../../tools/fourcolor/classical/joint-diamond-occurrence-probe.json
 [joint-occurrence-measurements]: ../../../../tools/fourcolor/classical/joint-diamond-occurrence-measurements.json
+[joint-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondOccurrenceReduction.lean
+[joint-cut-lifting]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondCutLifting.lean
+[port-face-count]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTanglePortFaceCount.lean
+[wiring-faces]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringFaces.lean
+[joint-reduction-measurements]: ../../../../tools/fourcolor/classical/joint-diamond-reduction-measurements.json
+[joint-class-probe]: ../../../../tools/fourcolor/classical/joint-diamond-class-probe.json
 
 [coupled-wiring]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiring.lean
 [coupled-rotation]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean

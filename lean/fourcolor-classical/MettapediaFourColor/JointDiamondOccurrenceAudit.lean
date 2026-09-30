@@ -3,8 +3,9 @@ import Lean.Util.CollectAxioms
 
 /-! Audit of actual joint-diamond exterior closure and wiring reconstruction.
 The occurrence is supplied as an exact isomorphism. Normal form derives the
-wire separation, exterior connectivity and physical Kempe closure. Ambient
-class preservation of the wiring and face-pattern recognition remain open. -/
+wire separation, exterior connectivity and physical Kempe closure. The separate
+`JointDiamondReductionAudit` covers ambient class preservation and strict
+reduction. Face-pattern recognition remains open. -/
 
 open Lean Elab Command
 open FourColor Mettapedia.GraphTheory Mettapedia.GraphTheory.FourColor
