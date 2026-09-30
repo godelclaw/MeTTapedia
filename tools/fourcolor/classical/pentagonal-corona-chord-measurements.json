@@ -1,0 +1,145 @@
+{
+  "status": "Kernel-checked exclusion of all additional outer chords and strict reduction with outer-inducedness derived. Distinctness of the sixteen traced vertices remains required.",
+  "completed_utc": "2026-09-30T01:19:02.169992+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "aef9e6ee6a2a7e5b7334420a7f4346cba00222b6",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalCoronaBoundary",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaBoundary.lean",
+      "source_sha256": "b93c8e589317a513a5faf25e6860945e571e3a17fbed05932fc50b5ca7218cd8",
+      "olean_sha256": "966a2b3891e1184f1f72bad22d9509ec7c7b4013b34842c1abcef26f65d56894",
+      "olean_bytes": 492792,
+      "reported_build_seconds": 2.9
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CyclicFiveBoundary",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicFiveBoundary.lean",
+      "source_sha256": "9669c2139bbe0612d3c5eaaf7cf949cea5f637af8e8d7eab9d178fa8f5e33ad2",
+      "olean_sha256": "ab328e0dc22fa0262c96c9a771d053fafa8f8e3a5010287eab8332c5abcce526",
+      "olean_bytes": 166112,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PentagonalCoronaChordExclusion",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaChordExclusion.lean",
+      "source_sha256": "13bad70033bce85e14375dcb3885bed82b9d2dcc3949ea6de35f47c70a584eca",
+      "olean_sha256": "9c51f950cb246dc0c95afe82281880971e0e371ee752e272183806f77de368f6",
+      "olean_bytes": 125368,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalCoronaMinimalReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaMinimalReduction.lean",
+      "source_sha256": "11ada8e837689650ed9ffb324bde53f4d24bd67c4e1f0c37b32a2c3e1dece2e5",
+      "olean_sha256": "eb869a5ee59630033b7d4c353624a57e5c61cdc881a71b13fda1ee9ca441efff",
+      "olean_bytes": 172856,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "MettapediaFourColor.PentagonalCoronaChordExclusionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaChordExclusionAudit.lean",
+      "source_sha256": "492dd3757d67ce564c945587a4970894a7d65487631d46776971708820eca678",
+      "olean_sha256": "ca76c16a30c6b83b1046ca718870f4938dc51c317fc59033fa88a1366ca5ee78",
+      "olean_bytes": 3256,
+      "reported_build_seconds": 7.7
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.crossing_origin",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.crossing_card_le_four_of_chord",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.card_tracedSide",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.tracedSide_hasCycle",
+      "Mettapedia.GraphTheory.FourColor.CyclicFiveBoundary.hasCycle_of_boundary_card_lt_card_add_two",
+      "Mettapedia.GraphTheory.FourColor.CyclicFiveBoundary.five_le_crossing_card",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.outerInduced_of_cyclicallyFive",
+      "Mettapedia.GraphTheory.FourColor.PentagonalCoronaGeometry.outerInduced_of_minimality",
+      "FourColor.PentagonalLobePatch.Tangle.Corona.strict_reduction_of_cyclicallyFive",
+      "FourColor.PentagonalLobePatch.Tangle.Corona.not_in_minimal_counterexample_of_distinct_vertices"
+    ],
+    "combined_dependency_closure": 26634,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual facial darts and cubic neighbour exhaustiveness",
+      "all crossing darts inject into six outward positions",
+      "a chord consumes two distinct positions",
+      "retained central cycle",
+      "forest edge bound and cubic degree count without connectedness",
+      "cyclic-five connectivity and minimum face size from minimality",
+      "strict whole-map decrease and genuine colouring reconstruction"
+    ],
+    "excluded_dependencies": "Complete Four Colour endpoints, original catalogue certificates and diamond reducibility."
+  },
+  "gates": [
+    {
+      "command": "lake build MettapediaFourColor.PentagonalCoronaChordExclusionAudit",
+      "working_directory": "lean/fourcolor-classical",
+      "jobs": 3675,
+      "exit_code": 0
+    }
+  ],
+  "mathematics": {
+    "input_faces": "A rooted central pentagon with neighbouring face lengths 6,5,5,5,5, the hexagon across the root edge.",
+    "distinct_traced_vertices_required": true,
+    "outer_inducedness_required": false,
+    "outer_inducedness_derived_from_minimality": true,
+    "generic_boundary_law": "A cyclic side in a finite cubic cyclically five-edge-connected graph has at least five outgoing darts when its complement has at least three vertices.",
+    "generic_boundary_law_requires_complement_connected": false,
+    "chord_exclusion_ambient_vertex_bound": 19,
+    "minimality_ambient_vertex_lower_bound": 20,
+    "patch_vertices": 16,
+    "potential_outward_darts": 6,
+    "outward_darts_upper_bound_if_chord": 4,
+    "replacement_vertices": 4,
+    "whole_map_vertex_decrease": 12,
+    "strict_reduction_endpoint": "FourColor.PentagonalLobePatch.Tangle.Corona.strict_reduction_of_cyclicallyFive",
+    "minimality_endpoint": "FourColor.PentagonalLobePatch.Tangle.Corona.not_in_minimal_counterexample_of_distinct_vertices",
+    "strict_reduction_ambient_conditions": "Bridgeless spherical cubic simple graph with cyclic vertex rotations, two-sided faces, minimum face size five and cyclic-five edge connectivity.",
+    "minimality_supplies_ambient_conditions": true,
+    "all_introduced_vertices_counted": true,
+    "exterior_recolouring_allowed": true,
+    "distinct_exterior_endpoints_required": false,
+    "universal_traced_vertex_distinctness_proved": false,
+    "geometric_coverage_proved": false,
+    "new_colour_count_preservation_claim": false,
+    "new_executable_history_transport_claim": false
+  },
+  "compression": {
+    "catalogue_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_configurations_removed": 0,
+    "new_original_certificates_replaced": 0,
+    "complete_assembly_changed": false,
+    "new_independent_colour_repair_schemes": 0,
+    "local_recognition_hypotheses_removed": [
+      "outer inducedness"
+    ],
+    "terminal_colourings_retained": 22,
+    "finite_answer_cover_checks_retained": 9,
+    "shared_matching_codec_checks_retained": 1,
+    "new_finite_colouring_enumeration": false
+  },
+  "program_replay": {
+    "command": "python3 tools/fourcolor/classical/pentagonal_corona_chord_probe.py",
+    "report": "pentagonal-corona-chord-probe.json",
+    "additional_chords_checked": 14,
+    "remaining_outward_darts_in_each_case": 4,
+    "scope": "Local graph count only; the general theorem and its exterior argument are proved separately in Lean.",
+    "kernel_certification_of_enumeration": false
+  },
+  "cost_scope": "Lake module times include elaboration and kernel checking. The boundary module was built in the preceding targeted gate; the remaining four were built in the final audit gate. No isolated kernel timing is claimed.",
+  "baseline_replay": {
+    "rerun": false,
+    "reason": "The complete assembly and existing colouring certificates and their inputs are unchanged. The strengthened geometric consumer and its dependency audit were built."
+  },
+  "next_obligations": [
+    "Derive traced-vertex distinctness from minimality or another independently justified geometric premise, or isolate its exact collision cases.",
+    "Extend the joint colouring repair to additional face patterns or longer lobes.",
+    "Prove supply, coverage and reconstructible termination; audit actual certificate replacements in the complete assembly."
+  ]
+}

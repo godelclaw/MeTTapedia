@@ -89,13 +89,18 @@ arc from each neighbouring face: period `n + 3` supplies `n` outer steps.
 [PentagonalCoronaGeometry](PentagonalCoronaGeometry.lean) and
 [PentagonalCoronaIncidence](PentagonalCoronaIncidence.lean) apply this to a
 pentagon with neighbours of lengths 5,5,5,5,6. They derive both cycles, all
-outer turns and the attachment matching, retaining explicit distinctness
-of the sixteen traced vertices and outer-cycle inducedness. The
-[face-derived consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalCoronaReduction.lean)
-immediately performs the twelve-vertex reduction. Its eight-root audit
-checks 26,590 declarations with standard axioms only. General derivation of
-the two local geometric hypotheses, broader families and coverage remain
-open. No additional original certificate is removed.
+outer turns and the attachment matching. Distinctness of the sixteen traced
+vertices remains explicit. [PentagonalCoronaBoundary](PentagonalCoronaBoundary.lean)
+confines the cut to six potential outward darts; an extra chord consumes two.
+[CyclicFiveBoundary](CyclicFiveBoundary.lean) combines the forest edge bound
+with cyclic connectivity, and [PentagonalCoronaChordExclusion](PentagonalCoronaChordExclusion.lean)
+therefore derives outer inducedness from minimality. No exterior connectedness
+or distinct attachment endpoints are needed for this chord argument. The
+[strengthened consumer](../../../../fourcolor-classical/MettapediaFourColor/PentagonalCoronaMinimalReduction.lean)
+performs the twelve-vertex reduction. Its ten-root audit checks 26,634
+declarations with standard axioms only. Derivation of traced-vertex
+distinctness, broader family repair and coverage remain open. No additional
+original certificate is removed.
 
 ## Independent corridor route — checkpoint of 22 September 2026
 

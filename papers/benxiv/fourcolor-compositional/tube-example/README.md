@@ -722,20 +722,38 @@ six-face pattern, the [incidence construction][corona-incidence] derives
 both cycles, their spoke matching and all alternating outer turns. The
 input supplies no outer cycle frame, rotation equations or patch isomorphism.
 
-Two local geometric hypotheses remain: the sixteen traced vertices must be
-distinct, and the outer cycle must have no extra chord. Under these
-conditions, the [actual consumer][corona-reduction] performs the existing
-strict reduction with genuine colouring reconstruction. The source is a
-bridgeless spherical cubic simple graph with cyclic rotations and two-sided
-faces, minimum face size five and cyclic edge-connectivity at least four.
-The minimal-counterexample consumer derives those ambient conditions from
-minimality. Repeated exterior attachment vertices remain allowed.
+The remaining local hypothesis is that the sixteen traced vertices are
+**distinct**. [Chord exclusion][corona-chord] derives the absence of extra
+outer edges from the ambient normal form. The [actual consumer][corona-reduction]
+then performs the strict reduction with genuine colouring reconstruction.
+Its ambient source is a bridgeless spherical cubic simple graph with cyclic
+rotations and two-sided faces, minimum face size five and cyclic-five edge
+connectivity. The minimal-counterexample consumer derives these ambient
+conditions from minimality. Repeated exterior attachment vertices are allowed.
+
+The chord argument uses the information retained at the boundary. Before
+assuming inducedness, [cubic dart counting][corona-boundary] places every
+outgoing edge at one of six outer positions. An extra chord uses two distinct
+positions, leaving at most four outward edges. The retained patch contains
+the central pentagon. Minimality gives at least twenty vertices in the whole
+graph, hence at least four outside this sixteen-vertex patch. If that exterior
+were a forest, cubic degree counting would require at least six outward edges.
+It therefore contains a cycle, giving a cyclic cut of at most four edges,
+contrary to cyclic-five connectivity.
+
+The reusable [boundary theorem][cyclic-five-boundary] needs only three
+exterior vertices and no exterior connectedness assumption. Thus the local
+chord theorem already holds at ambient size nineteen under its stated
+cubic and cyclic-connectivity hypotheses. This replaces one geometric
+recognition premise with a general argument; it introduces no new colouring
+certificate and claims no new catalogue saving.
 
 ```text
 central pentagon + four pentagonal neighbours + one hexagonal neighbour
   → actual facial arcs of lengths 2,2,2,2,3
   → two cycles and their joint rotation/attachment data
-      [sixteen distinct vertices; outer cycle induced]
+      [sixteen distinct traced vertices]
+  → cubic port count + cyclic connectivity exclude outer chords
   → exact six-port semantics and compatible colouring repair
   → four-vertex replacement; twelve fewer vertices in the whole map.
 ```
@@ -747,26 +765,30 @@ selected lobe instances are recovered. This finds additional occurrences
 in the same maps, not additional map coverage. The census remains program
 evidence, with no claimed universal noncollision theorem.
 
-The [eight-root audit][corona-audit] checks 26,590 dependency declarations,
-using only `propext`, `Classical.choice` and `Quot.sound`. It requires face
-periods, the actual arc construction, cycle incidence, strict size decrease
-and colouring reconstruction, and excludes complete Four Colour endpoints,
-original catalogue certificates and diamond reducibility. The
-[receipt][corona-measurements] records source and artifact hashes. The
-reduction module took 2.7 seconds and its audit 5.5 seconds, including
-elaboration and kernel checking. From `lean/fourcolor-classical`:
+The [ten-root audit][corona-audit] checks 26,634 dependency declarations,
+using only `propext`, `Classical.choice` and `Quot.sound`. It requires the
+actual dart count, forest bound, cyclic-connectivity theorem, derived
+inducedness, strict whole-map decrease and colouring reconstruction.
+Complete Four Colour endpoints, original catalogue certificates and diamond
+reducibility are excluded. The [receipt][corona-measurements] records source
+and artifact hashes. The strengthened reduction module took 2.7 seconds and
+its audit 7.7 seconds, including elaboration and kernel checking. From
+`lean/fourcolor-classical`:
 
 ```sh
-lake build MettapediaFourColor.PentagonalCoronaReductionAudit
+lake build MettapediaFourColor.PentagonalCoronaChordExclusionAudit
 ```
 
-This supplies a concrete facial origin for the existing local reduction.
+The [local chord replay][corona-chord-probe] checks fourteen possible extra
+chords in the literal patch, confirming four remaining outward darts in
+each case. The exterior and minimality argument is a separate Lean proof.
+
 No additional colouring enumeration is introduced. The 22 terminal witnesses,
-nine answer-cover checks, 633 catalogue configurations and 630 original
-configuration certificates remain. Next: derive the two local geometric
-hypotheses where justified, then extend the joint repair to other face
-patterns or longer lobes. Face traversal alone does not supply their
-colouring repair or prove global coverage.
+nine answer-cover checks, one six-port matching codec, 633 catalogue
+configurations and 630 original configuration certificates remain. Next:
+derive traced-vertex distinctness where justified, then extend the joint
+repair to other face patterns or longer lobes. Face traversal alone does
+not supply their colouring repair or prove global coverage.
 
 ## Scope and verification
 
@@ -796,10 +818,10 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [corona-traversal]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FacialCoronaTraversal.lean
 [corona-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaGeometry.lean
 [corona-incidence]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaIncidence.lean
-[corona-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaReduction.lean
-[corona-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaReductionAudit.lean
+[corona-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaMinimalReduction.lean
+[corona-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalCoronaChordExclusionAudit.lean
 [corona-probe]: ../../../../tools/fourcolor/classical/pentagonal-corona-probe.json
-[corona-measurements]: ../../../../tools/fourcolor/classical/pentagonal-corona-measurements.json
+[corona-measurements]: ../../../../tools/fourcolor/classical/pentagonal-corona-chord-measurements.json
 [decoder]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagRingTable.lean
 [normalization]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ZigzagTubeFiniteNormalization.lean
 [generic]: ../../../../lean/mettapedia/Mettapedia/GSLT/Core/BoundaryCertificateComposition.lean
@@ -886,3 +908,8 @@ lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint
 [dart-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleDartRecognition.lean
 [lobe-recognition-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/PentagonalLobeRecognitionAudit.lean
 [lobe-recognition-measurements]: ../../../../tools/fourcolor/classical/pentagonal-lobe-recognition-measurements.json
+
+[corona-boundary]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaBoundary.lean
+[corona-chord]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaChordExclusion.lean
+[cyclic-five-boundary]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicFiveBoundary.lean
+[corona-chord-probe]: ../../../../tools/fourcolor/classical/pentagonal_corona_chord_probe.py

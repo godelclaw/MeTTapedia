@@ -1271,15 +1271,30 @@ or coverage proof.
 From `lean/fourcolor-classical`:
 
 ```sh
-lake build MettapediaFourColor.PentagonalCoronaReductionAudit
+lake build MettapediaFourColor.PentagonalCoronaChordExclusionAudit
 ```
 
-The Lean theorem constructs both cycles and all outer turns from the actual
-face lengths. Distinctness of the sixteen traced vertices and outer-cycle
-inducedness remain explicit hypotheses. The existing joint repair is then
-consumed in the strict twelve-vertex ambient reduction. The eight-root audit
-checks 26,590 dependencies using the standard three axioms and excludes
-complete Four Colour endpoints, catalogue certificates and diamond
-reducibility. `pentagonal-corona-measurements.json` records the proof scope,
-source/artifact pairs and measured module costs. No additional colouring
-enumeration or complete-proof certificate saving is claimed.
+The Lean theorem constructs both cycles and all outer turns from actual face
+lengths. Distinctness of the sixteen traced vertices remains explicit.
+Outer inducedness now follows from minimality: a chord would consume two of
+six possible outward darts and create a forbidden cyclic cut of at most four
+edges. The general boundary theorem uses cubic forest counting and allows a
+disconnected exterior. The joint repair then gives the strict twelve-vertex
+ambient reduction with genuine colouring reconstruction. The ten-root audit
+checks 26,634 dependencies using the standard three axioms and excludes
+complete Four Colour endpoints, catalogue certificates and diamond reducibility.
+`pentagonal-corona-chord-measurements.json` records the scope, source/artifact
+pairs and module costs. The earlier `pentagonal-corona-measurements.json`
+remains the historical receipt for the version assuming outer inducedness.
+No additional colouring enumeration or complete-proof certificate saving is claimed.
+
+A separate local count can be replayed from the repository root:
+
+```sh
+python3 tools/fourcolor/classical/pentagonal_corona_chord_probe.py
+```
+
+The six outward positions have fifteen unordered pairs. One pair is already
+a perimeter edge; the other fourteen possible chords each leave four outward
+darts. `pentagonal-corona-chord-probe.json` retains this bounded test. It does
+not construct an exterior or prove minimality; those are separate Lean arguments.

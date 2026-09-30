@@ -1,0 +1,114 @@
+{
+  "scope": "Literal patch only; no exterior, planarity, or minimality claim.",
+  "script_sha256": "8f0f1cd3523520f2cae58720f1893b84ec176b60383b6ebec1e2e93477a7a895",
+  "vertices": 16,
+  "original_edges": 21,
+  "original_outward_darts": 6,
+  "unordered_outward_pairs": 15,
+  "excluded_existing_edge": [
+    0,
+    10
+  ],
+  "additional_chords_checked": 14,
+  "cases": [
+    {
+      "chord": [
+        0,
+        2
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        0,
+        4
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        0,
+        6
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        0,
+        8
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        2,
+        4
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        2,
+        6
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        2,
+        8
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        2,
+        10
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        4,
+        6
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        4,
+        8
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        4,
+        10
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        6,
+        8
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        6,
+        10
+      ],
+      "remaining_outward_darts": 4
+    },
+    {
+      "chord": [
+        8,
+        10
+      ],
+      "remaining_outward_darts": 4
+    }
+  ],
+  "kernel_certified_enumeration": false
+}
