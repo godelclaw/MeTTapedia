@@ -6646,10 +6646,11 @@ integrated correction on actual fluid pressure with a smooth strictly
 positive trigonometric test weight. That test weight is not the actual
 excess selector, so it refutes only the uncorrected weighted identity.
 The continuous excess weight already has a paid derivative, but the
-remaining v and grad v factors have not been absorbed. Approximation to
-the actual continuous, piecewise smooth excess weight is also required.
-Neither this weighted comparison nor the nonlinear production budget is
-proved here. A full spatial entropy could supply full diffusion, at the
+remaining v and grad v factors have not been absorbed. The next section
+supplies a weighted comparison retaining this flux and an analytic weak-limit
+application to the actual continuous excess selector. The nonlinear
+production budget remains open. A full spatial entropy could supply full
+diffusion, at the
 price of retaining its added nonlinear reactions; it is not an equivalent
 replacement for the weaker excess target.
 
@@ -6721,3 +6722,258 @@ compatible, retained-memory NS histories. The strict unweighted derivative
 payment and fixed-cutoff pressure-square estimate discharge specific
 spatial costs; they do not yet prevent repeated parent amplification or
 establish arbitrary-data continuation.
+
+## Signed weighted pressure payment and cellular parent histories
+
+`MettapediaNS.WholeSpacePressureLocalization` extends the actual-pressure
+spatial calculation to a varying weight. The pressure gradient is constructed
+from the full smooth solenoidal whole-space velocity; its scalar potential
+need not belong to L². Put `P=Hess p`, `B=grad u`, and `r=||B||_F²`.
+For a smooth scalar weight `a` with all jets in L², two integrations by parts
+give, for every genuine gradient field A,
+
+```text
+integral a ||grad A||_F²
+  =integral a (div A)²
+   +integral grad a.[(div A)A-(grad A)A].
+```
+
+Applying this to each coordinate derivative of `grad p` and summing yields
+the literal pressure flux
+
+```text
+Flux_p=P grad(Delta p)-(1/2)grad||P||_F²,
+integral a ||grad P||_F²
+  =integral a ||grad Delta p||²+integral grad a.Flux_p.
+```
+
+These weighted identities and the flux formula are Lean-certified. For
+`a>=0`, the actual Poisson source derivative satisfies
+`|partial_j tr(B²)|²<=4r||partial_j B||_F²` pointwise. Consequently, with
+`P_C=P_hat-P` and the same explicit completed diffusion lower bound as
+in the preceding section,
+
+```text
+nu integral a ||grad P_C||_F²
+ <=(33/56) integral a D_Psi
+   +(33/28)nu integral grad a.Flux_p.
+```
+
+The memory-pressure consumer keeps the physical lower bound as a hypothesis.
+The new strict comparison does not discard the signed flux. An additional
+payment for that flux, together with the joint receivers and transport
+commutator, remains necessary over arbitrary histories. The unweighted
+coefficient cannot simply be inserted into an excess-selected estimate.
+
+### Applying the identity to the actual continuous selector
+
+There is an analytic approximation argument on a fixed smooth whole-space
+prefix. Assume the velocity and constructed memory have the stated smooth,
+decaying jets, `C>=0`, and a fixed threshold `b>Psi_inf`. Then `h>=1`,
+`z=X/h>0`, and `a_b=(1-b²/z²)_+` is compactly supported and Lipschitz.
+Indeed the jets decay at infinity, `h->1`, and `X` approaches at most
+`Psi_inf`; the threshold is strictly above that offset. The derivative
+`2b²/z³` is bounded by `2/b` on the active branch. The weight is continuous
+at the threshold, so its weak derivative has no jump measure.
+
+Convolve `a_b` with a positive compactly supported mollifier. The smooth
+nonnegative weights converge uniformly, their derivatives converge almost
+everywhere and remain bounded by the Lipschitz constant of this fixed
+prefix, and their supports lie in one compact enlargement. The pressure
+flux is integrable, being a sum of products of smooth L² pressure jets.
+Dominated convergence passes both weighted identities and the conditional
+payment to `a_b`. The required physical lower-bound integrand is likewise
+integrable on the fixed prefix. Per-prefix regularity is used only for this
+identity, not as a uniform future estimate. The weak-limit application is
+analytic, not a new Lean theorem. On the torus the corresponding integration
+by parts and approximation are periodic; the whole-space L² theorem is not
+applied to a periodic lift.
+
+### A pressure-bearing family with a finite stochastic parent reserve
+
+Work on the normalized `2*pi` torus. Let
+
+```text
+psi(x,y)=sum_j a_j cos(k_j.(x,y)+theta_j),
+|k_j|²=lambda>0,       A1=sum_j |a_j|,
+u_h(t)=exp(-nu lambda t) J grad psi,       nu>0,
+u(t,x,y,z)=(u_h(t,x,y),v(t,x,y)).
+```
+
+The same arguments allow a real combination of sine and cosine modes,
+with `A1` taken from an amplitude representation. The vertical datum `v0`
+is arbitrary smooth periodic data independent of z. The horizontal
+vorticity is proportional to psi, so its self-advection vanishes. Literal
+NS substitution gives
+
+```text
+p(t)=-exp(-2nu lambda t)(|grad psi|²+lambda psi²)/2,
+v_t+u_h.grad v=nu Delta v.
+```
+
+The pressure formula is up to an irrelevant spatial constant. The vertical
+component has no feedback into the horizontal equation because every field
+is independent of z; its genuine stretching is retained. The full vorticity
+is `(v_y,-v_x,-lambda exp(-nu lambda t)psi)` and may change direction.
+This defines an actual unforced periodic NS class, with nonzero pressure
+and recirculating horizontal parents, rather than prescribed free pressure.
+
+The horizontal gradient has operator norm at most
+`lambda A1 exp(-nu lambda t)`. Define the nonnegative remaining parent reserve
+
+```text
+R_parent(t)=A1 exp(-nu lambda t)/nu,
+-R_parent'(t)=lambda A1 exp(-nu lambda t),
+integral_s^t ||grad u_h||_op,infty
+ <=R_parent(s)-R_parent(t).
+```
+
+Compatible segments use the same decaying parent amplitudes; composition
+does not grant a new initial reserve. All parameters are fixed by the full
+initial horizontal datum and viscosity, before any solution prefix.
+
+The stochastic representation of the vertical component uses backward
+horizontal characteristics
+`dY_s=-u_h(t-s,Y_s)ds+sqrt(2nu)dW_s`. The spatial Jacobian obeys
+`J_s'=-grad u_h(t-s,Y_s)J_s`. Its norm is bounded pathwise by the exponential
+of the paid parent history. Differentiating the representation gives
+
+```text
+||grad v(t)||_infty
+ <=B exp(A1(1-exp(-nu lambda t))/nu),   B=||grad v0||_infty.
+```
+
+This is an identification with the literal passive-component PDE through
+Itô's formula. The Brownian motion represents viscosity; it does not apply
+a force to the fluid. No Schrödinger-bridge optimizer identification is
+used. The smooth known drift and smooth initial datum give a global smooth
+linear evolution, so the estimate assumes no arbitrary NS continuation.
+
+### Paying the observed memory pressure from the same parents
+
+The complete memory still obeys
+`(partial_t+u.grad-nu Delta)C=2nu B B^T`, `C(0)=0`. Its stochastic formula
+preserves positivity. Since all fields are z independent, its pressure
+observer depends only on the horizontal block `C_hh`. That block is driven
+entirely by the known horizontal parents. The other components remain in
+the full memory determinant `h`; they cannot be discarded at history seams.
+
+Let `M>=1` bound the absolute components of every horizontal input frequency.
+For derivatives of total order m, the parents obey
+`||partial^alpha u_l||_infty<=M^(m+1) A1 exp(-nu lambda t)`.
+Let `N4(t)` be the maximum absolute component norm of all derivatives of
+`C_hh` through order four. Differentiating its literal parabolic equation
+and applying comparison to this finite derivative system yields
+
+```text
+N4'(t) <=K4 exp(-nu lambda t) N4(t)
+          +S4 exp(-2nu lambda t),
+K4=2M A1 ((1+M)^4-1),
+S4=4nu M^4 (2M)^4 A1²,
+N4(0)=0.
+```
+
+The upper derivative can be interpreted in the Dini sense. In the transport
+commutator, the sum of binomial coefficients with the frequency weights is
+`(1+M)^m-1`; all differentiated memory terms have order at most m. In the
+quadratic source it is `2^m`, with two horizontal derivative directions.
+No memory norm of an unknown future solution occurs on the right. Thus
+
+```text
+N4(t)<=K_C,
+K_C=(2/lambda) M^4 (2M)^4 A1² exp(K4/(nu lambda)).
+```
+
+For each horizontal tensor component,
+`||(1-Delta)^2 C_ij||_2<=9K_C`; the four-component Frobenius norm is at most
+`18K_C`. The memory-pressure symbol has norm at most
+`|k|²||C_hh_hat(k)||_F`. Fourier Cauchy--Schwarz and
+
+```text
+sum_(k in Z²) (1+|k|²)^(-2)
+ <=1+8 sum_(n>=1) n^(-3)<=13<16
+```
+
+therefore give `||P_C||_infty<=72K_C`. This bound has two derivatives of
+memory and is not inferred from trace mass alone.
+
+The full velocity gradient is bounded by
+`r<=r_star=(lambda A1)^2+B² exp(2A1/nu)`. Let `P_star` be any fixed Fourier
+majorant of the initial horizontal pressure Hessian. The completed observable
+from the preceding section then obeys
+
+```text
+||P_hat||_infty<=P_star+72K_C,
+Psi<=K_Psi=1+76[r_star+sqrt(sigma²+(P_star+72K_C)^2)]²,
+Psi/h<=K_Psi,                 h>=1.
+```
+
+The coefficient 76 follows from the earlier branch bounds
+`A<=54Q²`, `B0<=53Q²`, and `sqrt(54²+53²)<76`.
+The constants are conservative and may be large, but are finite from the
+full datum and viscosity. The soft excess satisfies `F_b<=Psi<=K_Psi`,
+so its time-integrated mass on every horizon H is at most `H K_Psi`.
+If f(t) is its spatial mass, the complete signed PDE production satisfies
+
+```text
+integral_0^tau(H-t) f'(t)dt
+  =(H-tau)f(tau)-H f(0)+integral_0^tau f(t)dt
+  <=H K_Psi,                       tau<=H.
+```
+
+Both receivers, the transport commutator and memory evolution are retained
+in f'. This is an analytic allowance for the complete compatible histories
+of this class. Equivalently `K_Psi-f(t)` is a physically justified nonnegative
+reserve for the signed excess change; it cancels at compatible seams.
+The local pressure flux need not vanish for this conclusion.
+
+The autonomous eigenshell parents are the crucial restriction. General 3D
+parents can produce new modes and amplify one another. No replacement for
+their finite decaying reserve, no arbitrary-history flux absorption, and
+no arbitrary-data global regularity bound has been proved here. The periodic
+class is not a finite-energy whole-space field.
+
+### Exact checks and resolved-prefix diagnostics
+
+`cellular_parent_history.py` checks the exact Euler/NS parent, canonical
+pressure, literal passive-component reduction, parent reserve and memory
+coefficients. Its two-mode parent has zero total pressure localization
+defect pointwise. Its three-mode parent has a nonzero defect, verified in
+Gaussian rational Fourier arithmetic with every output retained.
+
+The optional solver evolves the vertical component and all six symmetric
+memory components. It evaluates the full coupled Hessian, the actual
+continuous excess selector, pressure flux, signed production, memory
+positivity and kinetic-plus-memory balance. These are Fourier approximations,
+not kernel-certified histories. Their explicit threshold uses the exact
+initial pressure-Hessian majorant `578/125` and the analytic initial
+gradient bound, rather than a later grid maximum.
+
+```sh
+python3 -O labs/cellular_parent_history.py
+python3 -O labs/cellular_parent_history.py --run-prefix --n 128 --final-time 2 --dt .005 --diagnostic-n 512
+python3 -O labs/cellular_parent_history.py --run-prefix --n 128 --final-time 2 --dt .005 --diagnostic-n 1024
+python3 -O labs/cellular_parent_history.py --run-prefix --n 128 --final-time 2 --dt .0025 --diagnostic-n 512
+python3 -O labs/cellular_parent_history.py --run-prefix --n 256 --final-time 2 --dt .005 --diagnostic-n 512
+```
+
+For `nu=.01`, the three-parent fixture and `v0=2sin x`, the threshold is
+about `19507.852`; the initial excess is zero. At t=2 its excess mass is
+about `2901.694`. On a common 512 quadrature grid, the 128 and 256 histories'
+pressure corrections differ by less than `8e-10` at the same time step.
+Halving the step at resolution 128 changes that correction by less than
+`1e-11`. A 1024 quadrature evaluation gives a positive
+pressure correction about `.0150534`. The derivative-based flux pairing
+agrees to about `.00004`; its kink-sensitive quadrature is reported separately
+from evolution resolution. Sampled memory eigenvalues stay positive after
+the initial zero tensor on these resolved prefixes; the energy-memory
+balance error is below `6e-13`. A coarser 64 evolution loses memory positivity
+later and is not used as physical evidence.
+
+The selected memory-pressure derivative cost divided by the displayed
+diffusion lower bound is about `5.45e-5`, well below `33/56`; against the
+full completed diffusion it is about `5.90e-7`. This supports this tested
+payment and illustrates a real excess burst. It does not verify an estimate
+uniform over arbitrary mutually amplifying parent histories. The stochastic
+representation, parabolic comparison, pressure observer bound, weak selector
+limit and resulting full-history allowance remain analytic results.

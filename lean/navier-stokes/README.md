@@ -567,6 +567,43 @@ also retains the pressure transport commutator: the lab verifies its
 exact compensation under a constant-velocity shift. A sign change of
 an isolated boost-dependent fragment is not a physical history obstruction.
 
+`WholeSpacePressureLocalization` identifies the exact signed correction
+for a varying spatial weight on actual canonical fluid pressure. For
+`P=Hess p`, the full pressure flux is
+`P grad(Delta p)-(1/2)grad|P|^2`. For a nonnegative smooth weight `a`
+with all jets in L²,
+the completed memory-pressure payment becomes
+
+```text
+nu integral a |grad P_C|^2
+  <= (33/56) integral a D_Psi
+     +(33/28)nu integral grad a.[P grad(Delta p)-(1/2)grad|P|^2].
+```
+
+Twelve declarations certify the weighted identities, the literal flux
+formula and this conditional payment. Approximation extends the identity
+analytically to the actual continuous soft-excess selector on a smooth
+prefix with decaying memory jets and a threshold above the far-field
+offset. Its signed flux still requires payment, together with the joint
+pressure/strain reactions and transport commutator, over arbitrary histories.
+
+The companion [cellular parent history](labs/cellular_parent_history.py)
+provides a pressure-bearing stochastic example beyond the zero-pressure
+triangular shear. A horizontal streamfunction in one Laplacian eigenshell
+has a heat-decaying unforced NS evolution and drives an arbitrary smooth
+vertical component independent of the vertical coordinate. Its remaining
+parent reserve `A1 exp(-nu lambda t)/nu`, with `A1` the sum of streamfunction
+amplitudes, pays every accumulated parent-shear segment without refilling
+at seams. Stochastic characteristics bound the vertical gradient; an
+explicit finite allowance also controls the retained horizontal memory
+derivatives and hence the memory pressure. This analytically bounds the
+completed envelope on every prescribed horizon for this periodic class.
+The exact PDE reduction and coefficients are checked; the stochastic and
+memory estimates are not new Lean theorems. Resolved-prefix diagnostics use
+the actual varying selector and complete memory. The horizontal parents
+decay autonomously, so the class does not establish a payment for mutually
+regenerating arbitrary three-dimensional parents.
+
 ## Checked applications and semantic interfaces
 
 | Module | Reused mathematics | Exact remaining boundary |
