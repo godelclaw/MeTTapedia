@@ -183,11 +183,29 @@ combines this with the cut-based colouring and GSLT suppliers. A kernel-checked
 cube instance has 24 target vertices, 36 edges, six squares and eight hexagons.
 The [geometry receipt](../../../tools/fourcolor/classical/dual-truncate-geometry-measurements.json)
 records the 19-root audit and separates the cube from the five larger
-source-domain replays. The next geometric task is inverse recognition with
-these source domains and occurrence coverage. This is a forward construction
-and a change of colouring constraint; it does not yet give an unconditional
-Tait-to-Tait strict reduction. No additional catalogue entry or original
-certificate dependency is removed.
+source-domain replays. Forward construction changes the colouring constraint;
+it does not by itself give an unconditional Tait-to-Tait strict reduction.
+
+The [inverse recognition](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverse.lean)
+now starts from actual target faces with exactly one marked corner per vertex.
+If every unmarked face is hexagonal, it recovers a cubic source with one third
+as many vertices, the same spherical Euler and descended connectivity.
+Expanding the recovered source preserves target edges, cyclic order and vertices
+exactly. This formalizes the face-cover mechanism associated with classical
+leapfrog recognition; see [Fowler and Pisanski](https://doi.org/10.1039/FT9949002865).
+The [cube inverse consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseExample.lean)
+derives a genuine target colouring and compatible GSLT witnesses through the
+recovered source. A [24-root audit and replay receipt](../../../tools/fourcolor/classical/dual-truncate-inverse-measurements.json)
+exclude source colour words, old target-colouring shortcuts and the complete
+classical theorem. Five larger targets are independently recognized without
+their saved sources, separately from the kernel cube.
+
+The next obligation is to derive the recovered source's colouring domain from
+target geometry and establish coverage of the intended target class. The
+face-cover condition is substantive: a program diagnostic rejects the
+dodecahedron. Source vertex and target edge colours remain different constraints.
+No additional catalogue entry or original certificate dependency is removed;
+the retained counts are 633 and 630.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

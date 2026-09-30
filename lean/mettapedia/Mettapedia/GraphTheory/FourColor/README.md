@@ -201,10 +201,37 @@ classical endpoints and source colour-word certificates. The
 [receipt](../../../../../tools/fourcolor/classical/dual-truncate-geometry-measurements.json)
 separates the uniform theorem and kernel cube from an independent replay of
 the five larger residual sources and exact target adapters. Their source
-geometry and cut domains are not yet kernel-certified. Recognizing inverse
-sources with the required domains and proving occurrence coverage remain
-open. The complete assembly retains 633 configurations and 630 original
+geometry and cut domains are not yet kernel-certified. The target-only
+inverse recognition below establishes source geometry on its stated face-cover
+domain. Inheriting the source colouring domain and proving occurrence coverage
+remain open. The complete assembly retains 633 configurations and 630 original
 configuration certificates.
+
+The [face-cover frame](DualTruncateFaceCoverFrame.lean) now selects a cyclic
+frame from the unique marked facial corner at each actual target vertex.
+The [inverse](DualTruncateInverse.lean) recovers the source edge flip and face
+permutation from target edges and uses their rotation orbits as source
+vertices. Its literal expansion preserves target alpha, rho and vertex identity
+exactly. This follows the classical face-cover interpretation of leapfrog
+recognition by [Fowler and Pisanski](https://doi.org/10.1039/FT9949002865).
+
+The [inverse geometry](DualTruncateInverseGeometry.lean) proves that unmarked
+hexagons give a cubic source, with spherical Euler, connectivity and one third
+as many vertices. The [exact round trip](DualTruncateInverseRoundTrip.lean)
+transports genuine source vertex colours. The [cube consumer](DualTruncateInverseExample.lean)
+selects actual target faces, recovers an 8-vertex, 12-edge, 6-face source and
+consumes that inverse in target colouring and every complete GSLT sweep.
+The [24-root audit](DualTruncateInverseAudit.lean) excludes previous target-colouring
+shortcuts, source colour-word certificates and complete classical endpoints.
+The [receipt](../../../../../tools/fourcolor/classical/dual-truncate-inverse-measurements.json)
+separates these kernel results from target-only program recognition of five
+larger saved targets. No saved residual source rotation or colour word is read;
+3,528 adapter darts are replayed across all six examples. The dodecahedron
+diagnostic has no cover satisfying the unmarked-hexagon condition.
+Source simple degree, cyclic cuts and noncompleteness remain explicit in the
+general structural colouring consumer. This recognition is a change from
+source vertex colours to target edge colours, not an unconditional Tait-to-Tait
+reduction or universal coverage theorem. Catalogue counts remain unchanged.
 
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay

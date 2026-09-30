@@ -2384,7 +2384,8 @@ why merely preserving a vertex fibre does not suffice for the face bijection.
 Dual-and-truncate is the classical leapfrog construction, described for
 fullerenes by [Kardoš and Mockovčiaková](https://arxiv.org/abs/1910.03992).
 These Lean results establish its literal rotation geometry and connect it to
-the existing colouring and GSLT consumers. Inverse recognition and coverage
+the existing colouring and GSLT consumers. The inverse recognition below
+establishes the face-cover domain; source-domain inheritance and coverage
 remain separate obligations. Source vertex colours and target edge colours
 are different constraints; this forward theorem alone is not a Tait-to-Tait
 strict reduction. No additional configuration or original certificate
@@ -2395,3 +2396,69 @@ dependency is removed: the counts remain 633 and 630.
 [dual-truncate-geometry-cube]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateGeometryExample.lean
 [dual-truncate-geometry-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateGeometryAudit.lean
 [dual-truncate-geometry-receipt]: ../../../../tools/fourcolor/classical/dual-truncate-geometry-measurements.json
+
+## Inverse recognition from actual target faces
+
+The [face-cover frame][dual-truncate-cover-frame] selects exactly one marked
+facial corner at each target vertex. Its cyclic successors define the three
+slots, with the marked corner in slot two. This is a faithful rotation frame,
+not an enumeration which forgets cyclic order. The face-cover approach is
+classical; see [Fowler and Pisanski](https://doi.org/10.1039/FT9949002865).
+
+Pulling target alpha back through the frame forces the joint slot relations
+
+```text
+(v,0) ↔ (a(v),0)       (v,1) ↔ (p(v),2)
+```
+
+Here `a` is a fixed-point-free involution and `p` a permutation. The
+[inverse operation][dual-truncate-inverse] defines source rotation `p*a`,
+source vertices as its actual orbits, and source edges as the actual `a`
+orbits. Distinct target facial sides exclude source loops. The source's
+literal expansion has an exact adapter to the input target, preserving alpha,
+rho and vertex identity. No earlier source or colouring is an inverse input.
+
+The [geometry theorem][dual-truncate-inverse-geometry] derives source cubicity
+when every unmarked target face has length six: each such face has twice the
+corresponding source valence. The actual face equivalence preserves Euler;
+target walks descend to source walks. A connected spherical target therefore
+gives a connected spherical cubic source, with exactly one third as many
+vertices. The theorem does not assert source bridge-freeness or inherit the
+source cut condition from target geometry.
+
+The [round trip][dual-truncate-inverse-roundtrip] proves that cover selection
+recovers the literal frame and that recovered source vertices correspond
+exactly to original source vertices. Genuine vertex-colouring witnesses
+transport through this equivalence while retaining every edge constraint.
+The [cube consumer][dual-truncate-inverse-cube] starts with the actual square
+face cover, recovers an 8-vertex, 12-edge, 6-face source from the 24-vertex
+target, derives its geometry and reconstructs the target colouring. Source
+colours come from the coupled cyclic-cut argument, with no saved colour word.
+The same inverse supplies compatible witnesses on every complete GSLT sweep.
+
+The [audit][dual-truncate-inverse-audit] checks 24 roots and 13,248 declarations
+in their combined closure. It excludes previous target-colouring shortcuts,
+source colour-word certificates and complete Four Colour endpoints. The
+[receipt][dual-truncate-inverse-receipt] separates these kernel results from
+an independent [target-only replay][dual-truncate-inverse-probe]. The cube and
+five saved residual targets replay all 3,528 adapter darts; the larger source
+sizes are 74–80. Those five inputs do not read saved sources. The dodecahedron
+is rejected because its mandatory nonhexagonal faces cannot cover vertices
+disjointly. This is a program diagnostic, not a Lean obstruction theorem.
+
+The source colouring consumer still requires simple degree three, cyclic
+edge-connectivity at least four and noncompleteness, or an actual source
+vertex-colouring witness. The next task is to derive an adequate domain from
+target geometry, then prove occurrence coverage. A size decrease with a change
+of colouring constraint is not yet an unconditional Tait-to-Tait reduction.
+No further catalogue or certificate dependency disappears: 633 configurations
+and 630 original configuration certificates remain.
+
+[dual-truncate-cover-frame]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateFaceCoverFrame.lean
+[dual-truncate-inverse]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverse.lean
+[dual-truncate-inverse-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseGeometry.lean
+[dual-truncate-inverse-roundtrip]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseRoundTrip.lean
+[dual-truncate-inverse-cube]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseExample.lean
+[dual-truncate-inverse-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseAudit.lean
+[dual-truncate-inverse-receipt]: ../../../../tools/fourcolor/classical/dual-truncate-inverse-measurements.json
+[dual-truncate-inverse-probe]: ../../../../tools/fourcolor/classical/dual_truncate_inverse_probe.py

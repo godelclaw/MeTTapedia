@@ -205,6 +205,37 @@ by the reconstruction. Their decoder and consumer audit uses only the
 standard axioms. Input hashes bind the replay to its saved rotations; the
 JSON parser and emitter are not proof-trust assumptions.
 
+## Target-only inverse recognition
+
+The [inverse recognition receipt](dual-truncate-inverse-measurements.json)
+records the uniform Lean recovery from marked target facial corners. The
+actual target frame recovers a source edge involution and face permutation;
+source vertices are rotation orbits. Literal reconstruction preserves target
+alpha, rho and vertex identity. Unmarked hexagons give source cubicity;
+spherical Euler, connectivity and a threefold vertex decrease are derived.
+The cube consumer uses the inverse in genuine colouring reconstruction and
+every complete GSLT sweep. The 24-root audit excludes old target-colouring
+shortcuts, source colour words and complete classical endpoints.
+
+```sh
+python3 tools/fourcolor/classical/dual_truncate_inverse_probe.py
+```
+
+The [program replay](dual-truncate-inverse-probe.json) recognizes five saved
+residual targets without reading their saved sources, then replays every dart
+of each reconstructed target. Cube fixture generation is separate from the
+target-only recognizer. All six examples replay 3,528 darts. The recovered
+source rotations and marked face indices are retained for subsequent source-domain
+checks. The dodecahedron diagnostic is rejected: its mandatory nonhexagonal
+faces overlap. The replay is independent evidence, not a kernel certificate
+for the five larger source cut domains.
+
+This face-cover mechanism follows classical leapfrog recognition;
+[Fowler and Pisanski](https://doi.org/10.1039/FT9949002865) give its Clar-type
+interpretation. Inheriting the source colouring domain from target geometry
+and proving occurrence coverage remain open. No additional catalogue saving
+or unconditional Tait-to-Tait reduction is claimed.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

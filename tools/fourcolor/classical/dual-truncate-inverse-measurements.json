@@ -1,0 +1,164 @@
+{
+  "status": "kernel checked target face-cover recognition, recovered source geometry and actual cube colouring/GSLT consumers; independent target-only replay",
+  "checked_utc": "2026-09-30T23:42:24.171957+00:00",
+  "audit_roots": 24,
+  "dependency_closure": 13248,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "forbidden_dependencies": [
+    "complete classical Four Colour endpoints",
+    "source colour-word certificate predicates and suppliers",
+    "previous cube target-colouring shortcuts",
+    "unfinished AutoBooks Brooks development",
+    "sorryAx",
+    "Lean.ofReduceBool"
+  ],
+  "general_inverse_domain": {
+    "target": "finite cubic rotation system with cyclic vertex rotations and distinct facial sides",
+    "cover": "actual quotient faces select exactly one marked facial corner per target vertex",
+    "source_geometry_domain": "target connected, actual quotient-face Euler two, and every unmarked face hexagonal",
+    "recovered_source": "target vertices are source darts; edge involution and face permutation are recovered from target alpha in the marked cyclic frame; source vertices and edges are actual permutation orbits",
+    "source_looplessness_proved": true,
+    "source_vertex_rotation_cyclic_proved": true,
+    "exact_target_alpha_rho_vertex_adapter_proved": true,
+    "source_cubicity_proved": true,
+    "source_spherical_euler_proved": true,
+    "source_primal_connectivity_proved": true,
+    "target_vertices_per_source_vertex": 3,
+    "source_strictly_smaller_proved": true,
+    "source_bridge_freeness_inherited": false,
+    "source_simple_primal_degree_three_inherited": false,
+    "source_cyclic_cut_domain_inherited": false,
+    "counting_colourings_preserved": false,
+    "executable_recolouring_history_transport_proved": false,
+    "compatible_GSLT_witness_existence_proved": true
+  },
+  "colouring_consumer_domain": "actual three-vertex source colouring, or source simple primal degree three, cyclic edge-connectivity at least four and noncompleteness; source connectivity descends from target",
+  "primary_source": {
+    "authors": [
+      "Patrick Fowler",
+      "Tomaz Pisanski"
+    ],
+    "title": "Leapfrog transformations and polyhedra of Clar type",
+    "year": 1994,
+    "doi": "10.1039/FT9949002865"
+  },
+  "kernel_consumer": {
+    "target": "actual twenty-four-vertex cube expansion",
+    "target_face_observation": "actual quotient faces with four darts",
+    "face_cover_selection_load_bearing": true,
+    "source_vertices": 8,
+    "source_edges": 12,
+    "source_faces": 6,
+    "target_vertices": 24,
+    "source_geometry_derived_from_target": true,
+    "genuine_target_tait_colouring_proved": true,
+    "every_complete_GSLT_sweep_supported": true,
+    "source_colour_word_supplied": false,
+    "old_target_tait_theorem_used": false
+  },
+  "proof_modules": {
+    "DualTruncateFaceCoverFrame": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateFaceCoverFrame.lean",
+      "source_sha256": "c6ccd98bdf298b9c24b2ef9168e00f8a2df6684c95c8da99b4b4ff773737395e",
+      "source_bytes": 4053,
+      "olean_sha256": "4a9aa3fea315f75a1b3d0a9db4723c891619228180831cb92919f4cdc43c2a91",
+      "olean_bytes": 352944
+    },
+    "DualTruncateInverse": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverse.lean",
+      "source_sha256": "f695d2b55f39843bb7f7fcf6dae47aa84708b6d5d85ea6a7f39516a1da6aa18e",
+      "source_bytes": 10634,
+      "olean_sha256": "86f00c063b0b337a3ea1b1d6d6b1052c6269cde5593e54305f0b5fd65e0edab2",
+      "olean_bytes": 710936
+    },
+    "DualTruncateInverseGeometry": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseGeometry.lean",
+      "source_sha256": "c59b885ed0bb849a9e7eb1a1a9b60b39cff02a669d1e70053a583b0bfd82045d",
+      "source_bytes": 8379,
+      "olean_sha256": "c45d203ff25b21b09cb83e0f8f8bdd913730a17654601d6afa5a8e3dab6c8927",
+      "olean_bytes": 499720
+    },
+    "DualTruncateInverseRoundTrip": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseRoundTrip.lean",
+      "source_sha256": "fb802d8cee679f5264636b1fd0f9a4766d8df6c1befd6eb0700e93847cedc6ba",
+      "source_bytes": 6100,
+      "olean_sha256": "677a30936447bc976507ff7268ef7a722c1080ecdc90016c2c35467ae2523c46",
+      "olean_bytes": 567240
+    },
+    "DualTruncateInverseExample": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseExample.lean",
+      "source_sha256": "e2cc9ad41c95d0b708577ab48fe3761cbe9223e873b82a333d2ac0c5e21de396",
+      "source_bytes": 7252,
+      "olean_sha256": "9c3dde0a66bf1af0541ec82757a1564d01bb7e3d90194eb1ef9d5b27ae6fee85",
+      "olean_bytes": 305880
+    },
+    "DualTruncateInverseAudit": {
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseAudit.lean",
+      "source_sha256": "226a15cc2b1c76fff8df158001d725c668ea04d3f026375c721674b8b15cdce9",
+      "source_bytes": 5573,
+      "olean_sha256": "847ea507f1444db429a9931c682945f71001c6b1342f73489dc61562f04fc9f3",
+      "olean_bytes": 3544
+    }
+  },
+  "measured_frontend_seconds": {
+    "DualTruncateInverse": 3.5,
+    "DualTruncateInverseGeometry": 3.2,
+    "DualTruncateInverseRoundTrip": 3.4,
+    "DualTruncateInverseExample": 3.2,
+    "DualTruncateInverseAudit": 7.9,
+    "ResearchCheckpoint_gate": 5.5
+  },
+  "maximum_sampled_lean_rss_mib_across_recorded_builds": 6893,
+  "final_gate_maximum_sampled_lean_rss_mib": null,
+  "memory_sampling_scope": "periodic process sampling; null denotes an invocation with no recorded sample",
+  "gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "jobs": 11132,
+    "exit": 0
+  },
+  "independent_replay": {
+    "record": "dual-truncate-inverse-probe.json",
+    "sha256": "3c5c13bca301cef6597607dd3f8bc6ebefbd2b9e5427d1dfcdbbd720ec66e855",
+    "maps_checked": 6,
+    "actual_target_adapter_darts_checked": 3528,
+    "saved_residual_source_rotations_read": 0,
+    "source_colour_words_read": 0,
+    "cube_fixture_synthesis_separate_from_recognition": true,
+    "saved_residual_recovered_source_vertices": [
+      78,
+      74,
+      76,
+      76,
+      80
+    ],
+    "cube_inverse_and_consumer_kernel_certified": true,
+    "five_saved_recovered_source_instances_kernel_certified": false,
+    "no_cover_diagnostic": {
+      "name": "dodecahedron",
+      "target_vertices": 20,
+      "target_faces": 12,
+      "target_rotation_sha256": "258379dd9f2a47f605155d076484b0bbee5f9224bae1957ec44b08cd48d5fe40",
+      "recognized": false,
+      "search_nodes": 0
+    },
+    "no_cover_diagnostic_kernel_certified": false
+  },
+  "new_uniform_recognition_schemes": 1,
+  "new_uniform_colouring_schemes": 0,
+  "new_uniform_tait_to_tait_reductions": 0,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "discharging_computations_replaced": 231,
+  "new_catalogue_replacements": 0,
+  "inverse_geometric_recognition_proved": true,
+  "global_coverage_proved": false,
+  "next_obligation": "Derive a suitable recovered-source colouring domain from target geometry, then establish occurrence coverage. The target face-cover condition is substantive; changing source vertex colours into target edge colours is not an unconditional Tait-to-Tait reduction."
+}
