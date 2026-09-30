@@ -130,9 +130,15 @@ The source has one third as many vertices when cubic. The
 proves compatible colouring witnesses on every complete construction sweep
 and transports them through exact dart, vertex and rotation equivalences.
 An [independent concrete replay](../../../tools/fourcolor/classical/dual-truncate-colouring.json)
-checks all five new residuals. Source-colouring existence is still required;
-this is a change of constraint type, not an unconditional Tait-to-Tait
-reduction or a new coverage theorem.
+checks all five new residuals. Their
+[compact kernel certificates](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateResidualCertificates.lean)
+now establish the actual source colour words and exact rotation adapters.
+One shared formula produces genuine colourings and supported GSLT sweeps
+of all five saved targets, covering 1,152 vertices. The
+[input receipt](../../../tools/fourcolor/classical/dual-truncate-input-measurements.json)
+separates these checked consumers from universal source-colouring existence
+and geometric recognition, which remain open. This changes the constraint
+type; it is not an unconditional Tait-to-Tait reduction or a new coverage theorem.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

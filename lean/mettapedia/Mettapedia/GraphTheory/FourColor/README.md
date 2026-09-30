@@ -135,9 +135,16 @@ witnesses on every complete sweep, including exact representation adapters.
 The source colouring remains an explicit input. An
 [independent replay](../../../../../tools/fourcolor/classical/dual-truncate-colouring.json)
 checks the source witnesses and exact dart/rotation adapters on all five
-residuals: 1,152 target vertices and 3,456 darts. Those finite inputs are
-not kernel certificates. Source-colouring existence and geometric family
-recognition remain separate; no coverage configuration is removed.
+residuals: 1,152 target vertices and 3,456 darts. The
+[compact input certificates](DualTruncateResidualCertificates.lean) now
+check those source and target rotations, proper source colour words, and
+exact adapters in the kernel. Each target receives a genuine colouring
+and compatible choices on every complete GSLT sweep through the uniform
+law, without a target-colouring table. The
+[input audit](DualTruncateResidualAudit.lean) excludes complete classical
+endpoints. These are concrete family consumers; source-colouring existence
+throughout the intended family and geometric recognition remain separate.
+No coverage configuration is removed.
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

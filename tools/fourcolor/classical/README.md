@@ -180,14 +180,30 @@ constructs the actual rotation and target edge colouring; its
 supplies compatible witnesses on every complete sweep and through exact
 representation adapters. The
 [source words](dual-truncate-colouring-fixtures.json) and concrete adapters
-are independently replayed, not kernel input certificates. The source
-colouring hypothesis remains explicit, and no coverage entry is removed.
-The [receipt](dual-truncate-colouring-measurements.json) records the nine
-audited proof roots, dependency scope and full build gate.
+are independently replayed. The
+[compact input certificates](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateResidualCertificates.lean)
+now check all five saved source/target rotations, proper source words and
+exact representation adapters in the kernel. One shared decoder verifies
+edge fibres and the supplied neighbour order. All target colourings and
+GSLT route witnesses come through the uniform law, without a stored target
+colouring. The
+[input receipt](dual-truncate-input-measurements.json) records this audit,
+source identities and kernel costs separately from the
+[uniform-law receipt](dual-truncate-colouring-measurements.json). The source
+colouring hypothesis remains explicit for the general family, and no
+coverage entry is removed.
 
 ```sh
 python3 tools/fourcolor/classical/dual_truncate_colouring.py
+python3 tools/fourcolor/classical/generate_dual_truncate_certificates.py --check
 ```
+
+The emitter is untrusted. Little-endian data pages preserve the original
+cyclic neighbour rows, source colour words, vertex inverses and cyclic
+offsets. The Lean declarations validate every mathematical condition used
+by the reconstruction. Their decoder and consumer audit uses only the
+standard axioms. Input hashes bind the replay to its saved rotations; the
+JSON parser and emitter are not proof-trust assumptions.
 
 ## Complete endpoints
 

@@ -2226,9 +2226,22 @@ classical Four Colour endpoints and admits only the standard axioms.
 
 The [concrete replay][dual-truncate-replay] retains five source colouring
 words and checks the adapters to the saved residual rotations. It covers
-1,152 target vertices, 1,728 target edges and 3,456 target darts. These
-specific input and adapter checks are independent program evidence, not
-kernel certificates. When the source is cubic, it has one third as many
+1,152 target vertices, 1,728 target edges and 3,456 target darts. The
+[compact input certificates][dual-truncate-inputs] now establish those
+source words, both literal rotations, and all vertex/dart adapters in Lean.
+The checked neighbour tables retain the supplied cyclic order. A global
+vertex permutation and local cyclic offsets give an actual dart bijection;
+opposite-dart compatibility is checked everywhere, and rotation compatibility
+is proved algebraically. Thus the target receives the shared reconstruction,
+with no stored target-colouring table. Every complete target sweep also
+receives compatible operational choices. The
+[input audit][dual-truncate-input-audit] excludes complete classical endpoints.
+The [receipt][dual-truncate-input-receipt] records the kernel cost separately
+from the independent replay and uniform mathematical law.
+
+This is a concrete instance of retaining shared choices while changing
+representations: every expanded star depends on the same two source vertex
+colours at its source edge. When the source is cubic, it has one third as many
 vertices; the smaller constraint is vertex colouring rather than Tait
 edge colouring. Universal source-colouring existence, geometric recognition
 and coverage therefore remain separate obligations. No catalogue entry or
@@ -2238,3 +2251,6 @@ original configuration certificate is removed.
 [dual-truncate-gslt]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateConstructionGSLT.lean
 [dual-truncate-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateColoringAudit.lean
 [dual-truncate-replay]: ../../../../tools/fourcolor/classical/dual-truncate-colouring.json
+[dual-truncate-inputs]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateResidualCertificates.lean
+[dual-truncate-input-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateResidualAudit.lean
+[dual-truncate-input-receipt]: ../../../../tools/fourcolor/classical/dual-truncate-input-measurements.json

@@ -1,0 +1,227 @@
+{
+  "status": "Kernel-certified rotations, source colour words, exact representation adapters and uniform colouring/GSLT consumers for all five saved residual maps.",
+  "completed_utc": "2026-09-30T20:30:48.054194+00:00",
+  "build_base_revision": "4cb431c8d7696e7004474582b2d5f25be67e6254",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "uniform_law_record": "dual-truncate-colouring-measurements.json",
+  "proof_modules": {
+    "CubicRotationByteCertificate": {
+      "source_sha256": "0f72c493da891b4d314dfc944c1698390224111d7fd51d0b2ecc920f64b0aa1b",
+      "source_bytes": 6187,
+      "olean_bytes": 567848
+    },
+    "DualTruncateByteCertificate": {
+      "source_sha256": "fb5ac587f34d7e5d9203290d24ee68b3b278a83ae345fb59650b03d2ddb603ae",
+      "source_bytes": 6175,
+      "olean_bytes": 274024
+    },
+    "DualTruncateResidualCertificate0": {
+      "source_sha256": "617dfa29166ae60066cea35e2147cc49e90fe0fbb6adb0043180cdd9021eb1b8",
+      "source_bytes": 37901,
+      "olean_bytes": 4604664
+    },
+    "DualTruncateResidualCertificate1": {
+      "source_sha256": "7cba5dbe9e3f5cc704cefce2ee926d846734bc39846dc2b79d943bd78686223b",
+      "source_bytes": 38712,
+      "olean_bytes": 4733344
+    },
+    "DualTruncateResidualCertificate2": {
+      "source_sha256": "f466cbed7a58af71f259193224995790673ab20251f8ebe8cda46e5ee55b7479",
+      "source_bytes": 38712,
+      "olean_bytes": 4717672
+    },
+    "DualTruncateResidualCertificate3": {
+      "source_sha256": "9eb31c6cf5274f93e8fbd5ce8bc33fcd5bd58b052975359c38008ed3e03c75a0",
+      "source_bytes": 39506,
+      "olean_bytes": 4810720
+    },
+    "DualTruncateResidualCertificate4": {
+      "source_sha256": "4de1efaa82492ff34a7153d4ec1735cb3d234614851c5934d303867449a3d3a7",
+      "source_bytes": 40581,
+      "olean_bytes": 4941504
+    },
+    "DualTruncateResidualCertificates": {
+      "source_sha256": "766910838c9ffb149f6cb7218249af01cf24080d8d400936dc89a4e72202325c",
+      "source_bytes": 283,
+      "olean_bytes": 2432
+    },
+    "DualTruncateResidualAudit": {
+      "source_sha256": "212e1f22d6061ebe1787107e3a1b1d01d4f311077dde659a7e3e31bdfd7bc62d",
+      "source_bytes": 4585,
+      "olean_bytes": 3520
+    }
+  },
+  "input_sha256": {
+    "family-supply-fixtures.json": "791169d2f8d8d63d24fc410615eb811fc487cd46a3a483c013f239e99f796dd2",
+    "family-supply-probe.json": "2cea4a13790c91a824c5f4373c4da66072302c0ca76bea87c2362ef0455678de",
+    "dual-truncate-colouring-fixtures.json": "75a27a562fa35aaacebaa8084b6987815c4b9a34d9c036f3be81b311dbce14f2",
+    "dual-truncate-colouring.json": "4475e27ab0e3ce9da8e3cb89e1040ca6c5fe66dce2670180a8b68bb60373036f",
+    "generate_dual_truncate_certificates.py": "ce54d84a199009ca37e7258293590849055ba4043a8fa9dc0727148689d1cca8"
+  },
+  "maps": [
+    {
+      "source": "IPR-C74-fullgen-0000",
+      "target": "dual-truncate-IPR-C74-fullgen-0000",
+      "source_vertices": 74,
+      "target_vertices": 222,
+      "target_edges": 333,
+      "target_darts": 666,
+      "source_rotation_sha256": "65c3d5a0ef3a99e0a6ddb621f730a77cd9c745429c22a64a0b703575ab3cd114",
+      "target_rotation_sha256": "00ed3bebcacaa47790b4e80e7dba996b0b63e1fed5cb5bbc7852b43866c0f93b",
+      "source_word_sha256": "928c000d87f047d6853022bc26eca3ad90baad937dae90d3665ef54478c37bd8",
+      "kernel_module": "DualTruncateResidualCertificate0",
+      "kernel_build_seconds": 159,
+      "source_rotation_checked": true,
+      "target_rotation_checked": true,
+      "proper_source_word_checked": true,
+      "vertex_and_dart_adapters_checked": true,
+      "target_tait_proved": true,
+      "every_complete_GSLT_sweep_supported": true
+    },
+    {
+      "source": "IPR-C76-fullgen-0000",
+      "target": "dual-truncate-IPR-C76-fullgen-0000",
+      "source_vertices": 76,
+      "target_vertices": 228,
+      "target_edges": 342,
+      "target_darts": 684,
+      "source_rotation_sha256": "33aa36b0b7c46704249b822e84fd7699fd3bc697be7ba810d733e772c83bbb0b",
+      "target_rotation_sha256": "aaa73ea3b99ffa4a7000428709caca493befd506e9092bab844788bf6277e76a",
+      "source_word_sha256": "453a69c17f585b29c0525f6ea602fee2cd91da14a46759a862bbb848c7670ab7",
+      "kernel_module": "DualTruncateResidualCertificate1",
+      "kernel_build_seconds": 169,
+      "source_rotation_checked": true,
+      "target_rotation_checked": true,
+      "proper_source_word_checked": true,
+      "vertex_and_dart_adapters_checked": true,
+      "target_tait_proved": true,
+      "every_complete_GSLT_sweep_supported": true
+    },
+    {
+      "source": "IPR-C76-fullgen-0001",
+      "target": "dual-truncate-IPR-C76-fullgen-0001",
+      "source_vertices": 76,
+      "target_vertices": 228,
+      "target_edges": 342,
+      "target_darts": 684,
+      "source_rotation_sha256": "5f0be1eddc3919488e2f9ebcb5f2f1c50713fdcd72da6fa15794d4d9bdd2f77a",
+      "target_rotation_sha256": "e1ee4e253aec46ef4f0130cd9c6a18aeea619bcd2b4f293802b68953284dd871",
+      "source_word_sha256": "453a69c17f585b29c0525f6ea602fee2cd91da14a46759a862bbb848c7670ab7",
+      "kernel_module": "DualTruncateResidualCertificate2",
+      "kernel_build_seconds": 165,
+      "source_rotation_checked": true,
+      "target_rotation_checked": true,
+      "proper_source_word_checked": true,
+      "vertex_and_dart_adapters_checked": true,
+      "target_tait_proved": true,
+      "every_complete_GSLT_sweep_supported": true
+    },
+    {
+      "source": "IPR-C78-fullgen-0000",
+      "target": "dual-truncate-IPR-C78-fullgen-0000",
+      "source_vertices": 78,
+      "target_vertices": 234,
+      "target_edges": 351,
+      "target_darts": 702,
+      "source_rotation_sha256": "bcbc5010c0309a4d8712900b98f6579ed1b8ce708161a46171b94f1a9d5f2647",
+      "target_rotation_sha256": "6dd3e35e8bf934441bae4a8e44824824342222cf1a3e72bd3a6453aed76e42fd",
+      "source_word_sha256": "a69f7c8a81c1569959bd0833ae36a07c54ac1b485b5ba24a75fcaa76e076f3f8",
+      "kernel_module": "DualTruncateResidualCertificate3",
+      "kernel_build_seconds": 170,
+      "source_rotation_checked": true,
+      "target_rotation_checked": true,
+      "proper_source_word_checked": true,
+      "vertex_and_dart_adapters_checked": true,
+      "target_tait_proved": true,
+      "every_complete_GSLT_sweep_supported": true
+    },
+    {
+      "source": "IPR-C80-fullgen-0002",
+      "target": "dual-truncate-IPR-C80-fullgen-0002",
+      "source_vertices": 80,
+      "target_vertices": 240,
+      "target_edges": 360,
+      "target_darts": 720,
+      "source_rotation_sha256": "0199a4f7ceb1070028c18b99b71719c59813509a6dce23a1f54dbb9bab0b3d05",
+      "target_rotation_sha256": "35d1ad2d8734ccba72ea889d1bc13acba4852501a85d9ce0ca389230b91c3d00",
+      "source_word_sha256": "d46630bd2ef89515eb85d9406876537ff169bbf2ece25f4154e626c37382d7a6",
+      "kernel_module": "DualTruncateResidualCertificate4",
+      "kernel_build_seconds": 193,
+      "source_rotation_checked": true,
+      "target_rotation_checked": true,
+      "proper_source_word_checked": true,
+      "vertex_and_dart_adapters_checked": true,
+      "target_tait_proved": true,
+      "every_complete_GSLT_sweep_supported": true
+    }
+  ],
+  "totals": {
+    "maps": 5,
+    "source_vertices": 384,
+    "target_vertices": 1152,
+    "target_edges": 1728,
+    "target_darts": 3456
+  },
+  "kernel_input_certificates": true,
+  "representation": {
+    "cyclic_neighbour_order_preserved": true,
+    "edge_fibres_exactly_two": true,
+    "vertex_map_bijective": true,
+    "dart_map_bijective": true,
+    "alpha_commutes": true,
+    "vertex_commutes": true,
+    "rho_commutes": true,
+    "flat_table_page_entries": 64,
+    "stored_target_colouring": false
+  },
+  "audit": {
+    "roots": 14,
+    "dependency_closure": 8252,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoint_used": false
+  },
+  "kernel_cost": {
+    "certificate_seconds": 856,
+    "maximum_sampled_lean_rss_mib": 16827,
+    "total_source_bytes": 212642,
+    "total_olean_bytes": 24655728,
+    "independent_modules_with_ordered_imports": true
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11113,
+    "exit_code": 0,
+    "input_audit": "lake build Mettapedia.GraphTheory.FourColor.DualTruncateResidualAudit",
+    "input_identity": "python3 tools/fourcolor/classical/generate_dual_truncate_certificates.py --check",
+    "literal_neighbour_tables_and_words_match_saved_inputs": true,
+    "vertex_adapters_match_independent_replay": true,
+    "emitter_is_proof_trust_assumption": false
+  },
+  "scope": {
+    "uniform_source_colour_existence_proved": false,
+    "target_spherical_geometry_proved": false,
+    "normal_form_kernel_certified": false,
+    "unconditional_tait_to_tait_reduction": false,
+    "colour_count_equivalence_asserted": false,
+    "recolouring_history_equivalence_asserted": false,
+    "global_coverage_proved": false
+  },
+  "compression": {
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "discharging_computations_replaced": 231,
+    "new_original_configuration_certificates_replaced": 0,
+    "new_configurations_removed": 0,
+    "integrated_into_complete_assembly": false
+  },
+  "next_obligations": [
+    "Prove source three-vertex-colouring existence for the intended cubic source family, with any exceptions explicit.",
+    "Recognize actual target maps as the literal construction and prove the needed source/target geometry.",
+    "Prove coverage before removing any catalogue obligation."
+  ]
+}
