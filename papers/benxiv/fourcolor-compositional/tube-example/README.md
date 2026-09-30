@@ -1400,9 +1400,52 @@ cut extensions, complete seam face counting, strict decrease, joint repair
 and the minimal-counterexample consumer. The independent
 [finite geometry replay][joint-class-probe] checks all 1,024 binary seam
 assignments, the four old-shore extensions and the face corrections.
-No additional colouring certificate is introduced. Next: recognize the
-four-face pattern—two adjacent hexagons flanked by two pentagons, each touching
-both—and then prove broader supply or justified alternatives.
+No additional colouring certificate is introduced.
+
+Recognition now starts from the four face lengths: two adjacent hexagons,
+flanked by two pentagons that each touch both. The [actual traversal][joint-face-geometry]
+constructs all seventeen internal edges and forty-two incident darts from
+four face periods. This is a geometric interpretation before vertex
+distinctness or absence of additional edges is assumed.
+
+The [distinctness theorem][joint-distinct] supplies fourteen distinct vertices
+under girth, cyclic five-edge connectivity and an ambient size of at least
+seventeen; the normal form supplies these conditions. Joint dart transport
+separates most positions. The exceptional identification would make the two
+flanking pentagons share their outer edge. Transport fixes the slot phase
+and consumes four candidate ports. Twelve vertices remain distinct, leaving
+a cyclic shore behind at most four edges, which cyclic-five connectivity
+excludes. This is a geometric use of the same principle as the colouring
+repair: keep the relation between the two sides while applying operations.
+
+The [recognizer and strict-reduction consumer][joint-face-reduction] now give:
+
+```text
+four face lengths + ambient normal form
+  → fourteen distinct vertices and all internal operations
+  + BoundaryClear: the eight unpaired darts leave those vertices
+  → exact ordered occurrence
+  → strict twelve-vertex reduction and actual colouring reconstruction
+```
+
+`BoundaryClear` is an explicit finite endpoint check, not a colouring or
+reducibility assumption. Its derivation from the ambient normal form and
+spherical embedding remains open. The new [independent replay][joint-face-probe]
+starts with face lengths and finds 1,424 matching rooted patterns among
+15,864 darts in 137 saved maps. Every pattern has fourteen vertices, passes
+the endpoint check, and gives a connected bridgeless spherical replacement
+with twelve fewer vertices. The fixtures' internal-six connectivity is not
+certified by this replay.
+
+The replay also isolates the next geometric task. Girth leaves twelve
+possible extra chords between the ports. Each single-chord completion
+splits the remaining ports into two open-face orbits. The next proof must
+transport this separation to the actual embedded map and use the connected
+exterior to exclude it. These finite observations are recorded separately
+from the kernel-checked distinctness and conditional recognition theorem.
+The [face-recognition audit and receipt][joint-face-measurements] record the
+exact hypotheses and dependencies. No additional catalogue entry or original
+colouring certificate is removed; broader geometric coverage remains open.
 
 [joint-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondOccurrence.lean
 [joint-wired-occurrence]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondWiredOccurrence.lean
@@ -1415,6 +1458,11 @@ both—and then prove broader supply or justified alternatives.
 [wiring-faces]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringFaces.lean
 [joint-reduction-measurements]: ../../../../tools/fourcolor/classical/joint-diamond-reduction-measurements.json
 [joint-class-probe]: ../../../../tools/fourcolor/classical/joint-diamond-class-probe.json
+[joint-face-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/JointDiamondGeometry.lean
+[joint-distinct]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/JointDiamondDistinct.lean
+[joint-face-reduction]: ../../../../lean/fourcolor-classical/MettapediaFourColor/JointDiamondFaceReduction.lean
+[joint-face-probe]: ../../../../tools/fourcolor/classical/joint-diamond-face-probe.json
+[joint-face-measurements]: ../../../../tools/fourcolor/classical/joint-diamond-face-measurements.json
 
 [coupled-wiring]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiring.lean
 [coupled-rotation]: ../../../../lean/fourcolor-classical/MettapediaFourColor/DiamondCoupledWiringRotation.lean

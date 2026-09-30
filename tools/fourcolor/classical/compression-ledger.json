@@ -924,7 +924,30 @@
         "cycle counts on sixteen old and fourteen new marked seam darts",
         "literal two-vertex cubic rotations"
       ],
-      "next_obligation": "Construct the exact occurrence from the intended four-face pattern: two adjacent hexagons flanked by two pentagons, each touching both."
+      "next_obligation": "Construct the exact occurrence from the intended four-face pattern: two adjacent hexagons flanked by two pentagons, each touching both.",
+      "later_checkpoint": "joint-diamond-face-measurements.json"
+    },
+    {
+      "name": "four-face traversal and joint-diamond vertex recognition",
+      "record": "joint-diamond-face-measurements.json",
+      "status": "Kernel-checked four-face traversal and fourteen-vertex distinctness under normal form. Exact recognition and strict twelve-vertex reduction consume an explicit outgoing-port check. Deriving that check from normal form alone remains open.",
+      "reference_configuration": 4,
+      "interface_ports": 8,
+      "original_piece_vertices": 14,
+      "replacement_vertices": 2,
+      "whole_map_vertex_difference": 12,
+      "actual_face_traversal_proved": true,
+      "vertex_distinctness_from_normal_form_proved": true,
+      "boundary_clearance_from_normal_form_proved": false,
+      "local_boundary_check_explicit": true,
+      "occurrence_isomorphism_assumed": false,
+      "strict_reduction_consumer": "FourColor.JointDiamondPatch.Tangle.FaceReduction.strict_reduction_of_checked_face_pattern",
+      "new_colour_certificates": 0,
+      "original_configuration_certificates_replaced": 0,
+      "configurations_removed": 0,
+      "integrated_into_complete_assembly": false,
+      "coverage_proved": false,
+      "next_obligation": "Prove BoundaryClear from spherical normal form by transporting the single-chord boundary-orbit obstruction to the actual map."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",

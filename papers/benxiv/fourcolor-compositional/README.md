@@ -78,13 +78,17 @@ graph. The internal hexagon and an eight-port cut lemma supply the exterior
 connectivity needed by this argument. The smaller graph's ambient class is
 now proved: two different extensions of a hypothetical separating cut
 rule out a new bridge, and the complete ordered seam preserves Euler
-characteristic. Minimality supplies the smaller graph's colouring. The exact
-occurrence is still an input; recognition from neighbouring face lengths
-remains open.
-The independent replay checks 1,424 rooted occurrences in 126 of 137 saved
-fullerene maps; all replacements preserve connectedness, sphere and
-bridge-freedom. This finite evidence is separate from the new arbitrary-exterior
-theorem under the stated normal form. Global coverage remains open.
+characteristic. Minimality supplies the smaller graph's colouring.
+The four face lengths now construct every internal operation, and joint
+dart transport plus a cyclic-cut argument force fourteen distinct vertices.
+An explicit check that the eight remaining darts leave those vertices then
+constructs the exact occurrence and consumes the strict reduction.
+Deriving this outgoing-port check from normal form alone remains open.
+The independent replay starts from face lengths and checks 1,424 rooted
+patterns in 137 saved fullerene maps; all pass the outgoing-port check and
+give connected, spherical, bridgeless replacements. This finite evidence is
+separate from the theorem; the fixtures' internal-six connectivity is not
+certified. Global coverage remains open.
 
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
@@ -412,7 +416,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Finite matching translations replaced | Six-port matching enumeration replaced by a proof for all finite widths; five-port cyclic-arc enumeration replaced by uniform cyclic arithmetic |
 | Mixed-diamond strict reduction | The actual thirteen-vertex core is replaced by a five-vertex tree: net decrease eight, ambient class preserved, and genuine colouring reconstructed using the shared repair |
 | Shared replacement geometry | One theorem for arbitrary finite interfaces preserves the map class from equal ordered returns and Euler mass, connectedness and boundary-essentiality; six- and seven-port consumers are checked |
-| Coupled eight-port strict reduction | At an exact occurrence under normal form, the two-vertex wiring preserves the map class and reconstructs the source colouring; net decrease twelve. Face-pattern recognition remains open |
+| Coupled eight-port strict reduction | Four face lengths and normal form force fourteen distinct vertices. With the explicit outgoing-port check, the constructed occurrence gives a strict reduction by twelve vertices. Deriving that check from normal form remains open |
 | Uniform broader core reduction and geometric coverage | Open |
 | Runtime or artifact-size saving | Not claimed |
 

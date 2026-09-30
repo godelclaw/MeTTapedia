@@ -1,0 +1,207 @@
+{
+  "status": "Kernel-checked four-face traversal and fourteen-vertex distinctness under normal form. Exact recognition and strict twelve-vertex reduction consume an explicit outgoing-port check. Deriving that check from normal form alone remains open.",
+  "completed_utc": "2026-09-30T07:32:33.110220+00:00",
+  "build_base_revision": "b48ae60262586ce55bf9fffd8c3198797aafcb39",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CubicDartStar",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicDartStar.lean",
+      "source_sha256": "c5b7b05c097a4608d198d47052867ecc0f34e8a7396a587577a90545949e40f0",
+      "olean_sha256": "4c969da216aa55e7e6a989b192e7b48ddec15a123327d3ef5727096aa04679d7",
+      "olean_bytes": 291312,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartCutBound",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartCutBound.lean",
+      "source_sha256": "223abc824b0fb479a0e0eaeb5c935e778092e734401e061cbb9485fa3c6212d6",
+      "olean_sha256": "07859043e9bba2e704df137ac73afb151e9378d675e1f6b13248882047af1d44",
+      "olean_bytes": 42104,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.JointDiamondSeparation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/JointDiamondSeparation.lean",
+      "source_sha256": "a2e86aa692b5a53e80a8b047fbf73394d5eacea6c0d2d4759df8eae6665a3284",
+      "olean_sha256": "fb084e6cc2fdf42f4f47c13dcffa1101dfe23c8bd23e4b2d8fb3c70f4ae7fbd9",
+      "olean_bytes": 246320,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.JointDiamondDistinct",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/JointDiamondDistinct.lean",
+      "source_sha256": "206394f80d74b207dd03a56e7d9539b7970552cc79c6f4a449a5519167c83c4c",
+      "olean_sha256": "d34e2210666f153aeeb355036b98b8b75bb3f3441819cfa39b605adf9db2b199",
+      "olean_bytes": 618392,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.JointDiamondGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/JointDiamondGeometry.lean",
+      "source_sha256": "89e96c2938290cf50fef86227f76eee1f847871e7a197014c81875d07ada2200",
+      "olean_sha256": "60405130f0391e5a0f4f2ddb9deb6dbcf2566611c0f6e686a3c68b726ffb9577",
+      "olean_bytes": 1317024,
+      "reported_build_seconds": 4.8
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondRecognition",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondRecognition.lean",
+      "source_sha256": "97848578880a5a6c09a424a8114979af68d38cec0fc003db80dfba693bd3b27b",
+      "olean_sha256": "3b91b5d4b76b7ce3db6b9889b6d852e16975e9c932993b1e02d166e17f2ea830",
+      "olean_bytes": 211304,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondFaceReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondFaceReduction.lean",
+      "source_sha256": "831f47209e5390d93b965b32b59caf88e44193b422fce4be081292e0d772838c",
+      "olean_sha256": "5c3e1bd696da4d120f61c77de75f37ddb0f700bc9a4d09ae5c9a0df99d84a924",
+      "olean_bytes": 125640,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.JointDiamondFaceAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/JointDiamondFaceAudit.lean",
+      "source_sha256": "f0682be78ce0b883a566946aa797f2061c572a1c01bf78e9d7c54a8cb86ce3db",
+      "olean_sha256": "d4590a019c945869be96b8e05866cec95d3e459b7883c02efa36acf96593cde9",
+      "olean_bytes": 3464,
+      "reported_build_seconds": null
+    }
+  ],
+  "audit": {
+    "root_count": 17,
+    "roots": [
+      "CubicDartStar.injective",
+      "CubicDartStar.surjective_at",
+      "PartialCubicDartSeparation.Realization.crossing_card_le_of_internal",
+      "JointDiamond.separates_nonexceptional",
+      "JointDiamond.terminal_sound",
+      "JointDiamond.exceptional_dart_eq",
+      "JointDiamond.twelve_le_image",
+      "JointDiamond.exceptional_internal",
+      "JointDiamond.exceptional_ne",
+      "JointDiamond.vertex_injective",
+      "JointDiamond.realization",
+      "JointDiamondPatch.Tangle.coordinate_rotate",
+      "JointDiamondPatch.Tangle.coordinate_flip",
+      "JointDiamondPatch.Tangle.Recognition.recognized",
+      "JointDiamondPatch.Tangle.FaceReduction.vertex_injective",
+      "JointDiamondPatch.Tangle.FaceReduction.strict_reduction_of_checked_face_pattern",
+      "JointDiamondPatch.Tangle.FaceReduction.not_in_minimal_counterexample_of_checked_face_pattern"
+    ],
+    "combined_dependency_closure": 28233,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "joint dart equality transport and separately sound girth tests",
+      "at least twelve distinct image vertices before global injectivity",
+      "exceptional identification consumes four ports and contradicts cyclic five-edge connectivity",
+      "four actual face periods realize every internal edge and vertex rotation",
+      "exact coordinate transport with explicit BoundaryClear hypothesis",
+      "strict class-preserving reduction and actual joint colouring reconstruction"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "original catalogue configuration certificates",
+      "superseded independent diamond repairs",
+      "enumerated matching-translation tables"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.JointDiamondFaceAudit",
+      "MettapediaFourColor.JointDiamondReductionAudit",
+      "MettapediaFourColor.MixedDiamondFaceReductionAudit"
+    ],
+    "build_jobs": 3977,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "regression_audits": [
+      {
+        "name": "joint-diamond strict occurrence reduction",
+        "roots": 28,
+        "dependency_declarations": 28002
+      },
+      {
+        "name": "mixed-diamond strict reduction",
+        "roots": 14,
+        "dependency_declarations": 28102
+      }
+    ],
+    "timing_scope": "Lake frontend-plus-kernel module seconds for final sources; null means this gate reused the artifact. No isolated kernel benchmark or speedup is claimed.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "theorem_domain": {
+    "face_pattern": "Central hexagon, hexagon across the root edge, pentagons across central positions 1 and 5. Other neighbouring face lengths are unrestricted.",
+    "distinctness": "Any realization in a triangle-free and four-cycle-free cubic simple graph with cyclic five-edge connectivity and at least seventeen vertices is injective on the fourteen vertices.",
+    "source": "Finite simple-graph-backed connected bridgeless spherical cubic map with cyclic vertex rotations, minimum orbit-face edge support five, cubic-dual internal-six connectivity and two-sided faces.",
+    "remaining_local_hypothesis": "BoundaryClear: the other endpoint of each of the eight candidate ports is outside the fourteen-vertex image.",
+    "occurrence_isomorphism_assumed": false,
+    "vertex_injectivity_assumed": false,
+    "boundary_clearance_assumed": true,
+    "strict_reduction": {
+      "vertices_removed": 14,
+      "vertices_introduced": 2,
+      "net_vertex_decrease": 12,
+      "class_preservation_proved": true,
+      "actual_colouring_reconstruction_proved": true
+    },
+    "not_claimed": [
+      "outgoing-port clearance from normal form alone",
+      "universal occurrence of the face pattern",
+      "an unbounded family of distinct reducible cores",
+      "colouring-count preservation",
+      "equivalence of executable recolouring histories",
+      "a completed uniform Four Colour proof"
+    ]
+  },
+  "compression": {
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 630,
+    "additional_original_configuration_certificate_dependencies_replaced": 0,
+    "additional_configurations_removed": 0,
+    "new_colour_certificates": 0,
+    "interface_ports": 8,
+    "shared_repair": "FourColor.DiamondProfileReducibility.repair004",
+    "integrated_into_complete_assembly": false,
+    "kernel_seconds_saved": null,
+    "certificate_bytes_saved": null,
+    "new_geometric_application": "Actual four-face traversal plus a finite outgoing-endpoint check consumes the existing strict coupled reduction.",
+    "retained_finite_geometry": [
+      "joint separation of 546 ordered distinct vertex/phase cases, with geometric terminal tests",
+      "fourteen-vertex coordinate and internal-flip tables",
+      "classification of the four remaining slots in the exceptional branch"
+    ]
+  },
+  "independent_replay": {
+    "script": "joint_diamond_face_probe.py",
+    "report": "joint-diamond-face-probe.json",
+    "script_sha256": "1f63c826e515de2aa62a35fd90fa4f9f784ec57c727c0053a963c1cdc23363a1",
+    "report_sha256": "b7f3f8b85db2fc324fe35150a5013e0d81f5ab4b4dd1c557beee319990b9f604",
+    "stats": {
+      "maps_checked": 137,
+      "rooted_darts_checked": 15864,
+      "face_patterns": 1424,
+      "boundary_checks_passed": 1424,
+      "strict_replacement_checks_passed": 1424
+    },
+    "long_chord_cases": 12,
+    "kernel_proof": false,
+    "scope": "A single extra chord, after vertex injectivity. All twelve candidates not excluded by girth split the remaining ports into two capped-face orbits. Exclusion in an arbitrary ambient map still needs the geometric transport proof.",
+    "fixture_internal_six_connectivity_certified": false
+  },
+  "remaining_obligations": [
+    "Prove BoundaryClear from spherical normal form by transporting the single-chord boundary-orbit obstruction to the actual map.",
+    "Extend to justified broader core families or alternative reductions at alternating-walk closing lobes.",
+    "Establish geometric coverage and integrate only audited complete-proof dependency replacements."
+  ]
+}
