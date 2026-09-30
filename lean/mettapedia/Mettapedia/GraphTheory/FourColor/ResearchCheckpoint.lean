@@ -6,6 +6,7 @@ import Mettapedia.GraphTheory.FourColor.PentagonalPaddedCapAudit
 import Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiringAudit
 import Mettapedia.GraphTheory.FourColor.ZigzagTwoRowWiringGeometryAudit
 import Mettapedia.GraphTheory.FourColor.HexagonalTwoRowWiringRecognitionAudit
+import Mettapedia.GraphTheory.FourColor.HexagonalTwoRowGrowthReductionAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
@@ -223,6 +224,18 @@ simple alternating cycle still has to be supplied. Independent dart/phase
 orbit tests find wider rows in the formerly empty five-port Goldberg examples,
 but also nonsimple orbits in capped strips. Neither universal simplicity nor
 universal row supply is inferred from those finite tests.
+A recognized row with a hexagonal seam now constructs its literal two-row
+slab directly. The actual successor inherits its input labels from the old
+output, so their serial matching is identity, with no supplied second row
+or permutation. In the all-five/six-face class, the short-end-face theorem
+then derives both exterior conditions. At every width at least three this
+gives strict reduction with exactly four times the width fewer vertices.
+Every smaller colouring reconstructs with all exterior dart colours fixed.
+Thus a minimal counterexample has a pentagonal seam at the starting row
+itself; its recognized hexagonal chains have length at most one. The raw
+simple alternating-cycle consumer locates that pentagon at an original
+outgoing cycle dart. Initial cycle supply, nonsimple closing lobes and
+pentagonal-stop reduction remain separate coverage obligations.
 AlternatingWalkLobes now supplies a simple contiguous cycle from every
 alternating dart/phase trajectory in a finite cubic graph. Its length lies
 between three and the ambient vertex count; its actual darts and every

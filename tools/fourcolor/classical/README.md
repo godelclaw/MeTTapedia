@@ -123,10 +123,29 @@ at all twenty two-row starts in the stored residual: 720 end-face paths,
 no earlier boundary hit. Broader geometric supply and global coverage
 remain open. No additional catalogue or certificate dependency is removed.
 
+The [constructed-growth receipt](two-row-growth-measurements.json) records
+the next consumer: one recognized row with a hexagonal seam constructs its
+actual successor and the literal two-row slab, with identity seam matching.
+In the all-five/six-face class, at every width `k ≥ 3`, its short end faces
+derive both exterior conditions and supply the strict reduction. Exactly
+`4k` vertices are removed, with all exterior dart colours retained in
+reconstruction. A minimal counterexample therefore meets a pentagonal
+seam at every recognized starting row: zero extensions, and recognized
+chains have length at most one. The raw alternating-cycle recognizer
+locates an actual outgoing cycle dart on that pentagon. The ten-root
+audit excludes complete classical endpoints and finite tube stabilization.
+The [alignment replay](two-row-growth.json) checks 2,160 collar-star dart
+positions and 360 identity seam labels at all twenty saved starts. It is
+independent program evidence, not a kernel occurrence certificate.
+Initial cycle supply, nonsimple closing lobes and pentagonal-stop reduction
+remain open; the complete assembly still retains 633 configurations and
+630 original configuration certificates.
+
 ```sh
 python3 tools/fourcolor/classical/residual_coverage_probe.py
 python3 tools/fourcolor/classical/two_row_free_wire_domain.py
 python3 tools/fourcolor/classical/two_row_short_faces.py
+python3 tools/fourcolor/classical/two_row_growth.py
 ```
 
 ## Complete endpoints

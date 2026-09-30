@@ -1,0 +1,143 @@
+{
+  "status": "Kernel-checked constructed two-row strict reduction from a single recognized row, with immediate pentagonal-seam and raw alternating-cycle consumers. Broader supply and catalogue replacement remain open.",
+  "completed_utc": "2026-09-30T18:03:08.242434+00:00",
+  "build_base_revision": "29063ce76df500df5109ebb1f5d2c12449dfacdd",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTwoRowGrowthReduction",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowGrowthReduction.lean",
+      "source_sha256": "4a31260369cfe606bd815365f09edf06c85d7830874421f8cb01b7d9da639a8a",
+      "source_bytes": 6664,
+      "olean_sha256": "623bd553118ae64d37f18cbad7939b8cc809ee744f1fc3f612d74edc25617c37",
+      "olean_bytes": 257792,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/AlternatingCycleRecognition.lean",
+      "source_sha256": "caf06468963a8a6a402fe1838d0e065a9863cc79892e848550d62efb39f5736a",
+      "source_bytes": 13348,
+      "olean_sha256": "a05ffc2be3ae36843d73cd1a04f198cbf3fef39cd79a9608e5f018eccaf58515",
+      "olean_bytes": 394536,
+      "reported_build_seconds": 4.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HexagonalTwoRowGrowthReductionAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowGrowthReductionAudit.lean",
+      "source_sha256": "6a5f102cb431ec43e787f007ed700ce97233f8bb3e462b0b42c834ab59c04ef7",
+      "source_bytes": 3729,
+      "olean_sha256": "5f20ca84c2cc66620508659c5f2221e497a8216e375ee64162a1d30a0697014e",
+      "olean_bytes": 3528,
+      "reported_build_seconds": 7.4
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "9523d5c46b8953c4d606bcc38792f32a4b500c07700a5d606a022e678a2bc149",
+      "source_bytes": 34249,
+      "olean_sha256": "1b5e90a1a7fbcf9ed9b0bd6675af3ae6a04c70a8e2a7e984aa7b9bc140b2c34c",
+      "olean_bytes": 40112,
+      "reported_build_seconds": 5.4
+    }
+  ],
+  "audit": {
+    "root_count": 10,
+    "combined_dependency_closure": 22880,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual collar noncollision constructs the successor",
+      "successor input labels equal original output labels",
+      "serial assembly preserves original darts and rotation",
+      "exact whole-map vertex loss",
+      "short end faces derive both exterior conditions",
+      "strict reduction reconstructs genuine colourings",
+      "minimality excludes the constructed two-row piece",
+      "raw simple alternating-cycle recognition locates an original outgoing dart"
+    ],
+    "excluded": [
+      "complete classical FourColor namespace",
+      "classical integration MettapediaFourColor namespace",
+      "finite tube-stabilization certificates",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11100,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel times across the focused audit build and final gate; no isolated kernel timing or speedup claim.",
+    "replay": "python3 tools/fourcolor/classical/two_row_growth.py",
+    "optimized_assertion_bypass_rejected": true
+  },
+  "mathematical_scope": {
+    "widths": "Every integer k >= 3.",
+    "source": "A single actual rotation-compatible recognized row with hexagonal output seam in a finite connected bridgeless spherical cubic rotation with all ambient faces of length five or six.",
+    "constructed": [
+      "actual hexagonal successor with distinct fresh vertices",
+      "literal two-row slab",
+      "identity matching of old output and new input labels",
+      "opposite exterior first return",
+      "two internally connected exterior shores"
+    ],
+    "separate_two_row_occurrence_supplied": false,
+    "separate_seam_permutation_supplied": false,
+    "separate_exterior_conditions_supplied": false,
+    "whole_vertex_loss": "Exactly 4*k vertices; no auxiliary vertices introduced.",
+    "class_preserved": [
+      "connected",
+      "bridgeless",
+      "spherical",
+      "cubic",
+      "cyclic vertex rotation"
+    ],
+    "reconstruction": "Every smaller colouring reconstructs a genuine original colouring with every exterior dart colour retained.",
+    "strict_reduction_proved": true,
+    "minimal_counterexample_consumer": "In the all-five/six-face class, every recognized starting row has a pentagonal output seam; zero successful hexagonal extensions.",
+    "chain_length_bound": 1,
+    "raw_cycle_consumer": "A simple original alternating cycle supplies the row and an actual outgoing cycle dart incident to a pentagon.",
+    "initial_simple_cycle_supply_proved": false,
+    "arbitrary_lobe_closing_transition_resolved": false,
+    "pentagonal_stop_asserted_reducible": false,
+    "global_occurrence_coverage_proved": false,
+    "colouring_counts_preserved": false,
+    "executable_history_equivalence_proved": false
+  },
+  "independent_replay": {
+    "record": "two-row-growth.json",
+    "record_sha256": "297d6d045d711a01354ca025bbc2f02144abdbfb6f56aa90b17db95c9e39d154",
+    "program": "two_row_growth.py",
+    "program_sha256": "b098c639fde339fa3c4f8531fc299626fb17523d13dbf29da147dcfd19006e28",
+    "input_record": "residual-coverage-probe.json",
+    "input_record_sha256": "5741d8a6beb0f9d209772a8612a789453e4e532cac195476e808528d3b667f1d",
+    "two_row_starts": 20,
+    "collar_star_darts_checked": 2160,
+    "identity_seam_labels_checked": 360,
+    "kernel_occurrence_certificate": false,
+    "full_occurrence_census_repeated": false,
+    "colouring_search_repeated": false
+  },
+  "compression": {
+    "new_uniform_strict_reductions": 0,
+    "existing_uniform_strict_reduction_extended": true,
+    "geometric_recognition_consumers_added": 1,
+    "new_colouring_certificates": 0,
+    "original_configuration_certificates_replaced": 0,
+    "configurations_removed": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "discharging_computations_replaced": 231,
+    "integrated_into_complete_assembly": false
+  },
+  "remaining": [
+    "Supply suitable initial cycles or another applicable reduction in the residual class.",
+    "Handle closing transitions of nonsimple alternating lobes and actual pentagonal stopping cases.",
+    "Prove broader coverage and integrate actual catalogue replacements with audited dependencies."
+  ]
+}

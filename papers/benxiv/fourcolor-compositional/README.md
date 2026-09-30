@@ -94,7 +94,19 @@ now derives both conditions from an actual embedded two-row slab and
 five- or six-dart end faces. No separate exterior connectivity or return
 hypothesis is retained. An eight-root dependency audit connects these
 facts to the actual strict reduction and minimal-counterexample exclusion.
-Broader geometric supply and coverage remain open; no catalogue entry is removed.
+The [constructed-growth consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowGrowthReduction.lean)
+now derives this two-row occurrence from a single recognized row with a
+hexagonal seam. Its actual collar constructs the successor, with input order
+exactly equal to the old output order. Short ambient faces then derive the
+exterior conditions and the operation removes `4k` vertices, at every `k ≥ 3`.
+Every smaller colouring reconstructs with the exterior fixed. Consequently
+a minimal counterexample in the all-five/six-face class has a pentagonal seam
+at every recognized starting row: no successful hexagonal extension is possible.
+The raw simple alternating-cycle recognizer now locates such a pentagon at
+an original outgoing cycle dart. A ten-root audit excludes classical endpoints
+and finite tube stabilization. This strengthens the geometric stopping theorem;
+initial cycle supply, nonsimple closing lobes and reduction at pentagonal stops
+remain the coverage obligations. No catalogue entry is removed.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

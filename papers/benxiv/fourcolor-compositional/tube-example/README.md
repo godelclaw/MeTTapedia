@@ -2117,8 +2117,29 @@ paths, of which 120 are pentagonal and 600 hexagonal, with no earlier
 exterior boundary hit. This remains independent program evidence, not a
 kernel occurrence certificate.
 
-The next obligation is to connect the two-row slab input to the existing
-row-growth recognizer and establish its contribution to residual supply.
+The [constructed-growth bridge][two-row-growth] now completes the next
+step. One recognized row with a hexagonal output seam constructs its actual
+successor through the collar operations. Its new input order is exactly
+the old output order, so the two rows assemble with identity matching into
+the literal tube. In the all-five/six-face class, short end faces then derive
+the two exterior conditions. At every width `k ≥ 3`, this constructs the
+strict free-wire reduction with exactly `4k` fewer vertices and no auxiliary
+vertices. All smaller colourings reconstruct while fixing the exterior.
+
+The minimality consumer is correspondingly sharper: every recognized row
+already meets a pentagon at its output seam. Zero hexagonal extensions are
+possible, and any recognized hexagonal chain has length at most one.
+The raw simple alternating-cycle recognizer identifies that pentagon at
+an actual outgoing dart of the original cycle, without supplied facial
+shores or a completed second row. The [growth receipt][two-row-growth-receipt]
+records ten audited roots with no complete classical endpoint or finite
+tube-stabilization dependency. The [alignment replay][two-row-growth-replay]
+checks all twenty saved two-row starts: 2,160 collar-star dart positions
+and 360 identity seam labels. This remains independent finite evidence,
+not a kernel occurrence certificate.
+
+The next geometric obligations are initial cycle supply, the closing seam
+of nonsimple alternating lobes, and useful reductions at pentagonal stops.
 Global coverage and catalogue replacement remain open. The ledger still
 has 633 coverage configurations and 630 original configuration-certificate
 dependencies.
@@ -2135,3 +2156,6 @@ dependencies.
 [two-row-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowWiringRecognition.lean
 [two-row-recognition-receipt]: ../../../../tools/fourcolor/classical/two-row-recognition-measurements.json
 [two-row-short-faces]: ../../../../tools/fourcolor/classical/two-row-short-faces.json
+[two-row-growth]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HexagonalTwoRowGrowthReduction.lean
+[two-row-growth-receipt]: ../../../../tools/fourcolor/classical/two-row-growth-measurements.json
+[two-row-growth-replay]: ../../../../tools/fourcolor/classical/two-row-growth.json

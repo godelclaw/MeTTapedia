@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.CycleFrameWalk
 import Mettapedia.GraphTheory.FourColor.HexagonalCollarProgress
+import Mettapedia.GraphTheory.FourColor.HexagonalTwoRowGrowthReduction
 import Mettapedia.GraphTheory.FourColor.FacialCycleChord
 
 /-!
@@ -245,6 +246,30 @@ theorem recognized_pentagonWithin_three (width : k = 5)
   subst k
   exact (row turns ambient (fun v => faces (C.star hk hG v 0))).pentagonWithin_three
     data minimal faces (row_rotation turns ambient (fun v => faces (C.star hk hG v 0)))
+
+omit walk exactEdges R separator short in
+/-- In the five/six-face class, a minimal counterexample meets a pentagon
+at the starting cycle itself. The row and its ordered interfaces are
+constructed from the original alternating turns, at every width at least
+three; no hexagonal extension or two-row occurrence is supplied. -/
+theorem recognized_pentagonalSeam (width : 3 ≤ k)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (faces : ∀ d : (RS data).D,
+      ((RS data).faceOrbit d).card = 5 ∨ ((RS data).faceOrbit d).card = 6) :
+    (row turns ambient (fun v => faces (C.star hk hG v 0))).PentagonalSeam :=
+  (row turns ambient (fun v => faces (C.star hk hG v 0))).pentagonalSeam_of_minimal
+    width data minimal faces (row_rotation turns ambient (fun v => faces (C.star hk hG v 0)))
+
+omit walk exactEdges R separator short in
+include ambient in
+/-- The pentagon is incident to an actual outgoing port of the original
+cycle, with its original dart and face length. -/
+theorem recognized_outgoing_pentagon (width : 3 ≤ k)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (faces : ∀ d : (RS data).D,
+      ((RS data).faceOrbit d).card = 5 ∨ ((RS data).faceOrbit d).card = 6) :
+    ∃ i : Fin k, ((RS data).faceOrbit (C.star hk hG (.inr i) 0)).card = 5 :=
+  recognized_pentagonalSeam turns ambient width minimal faces
 
 end
 end Mettapedia.GraphTheory.FourColor.AlternatingCycleRecognition

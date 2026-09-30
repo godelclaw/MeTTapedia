@@ -1,0 +1,139 @@
+{
+  "evidence": "Independent finite successor/alignment replay; not a Lean occurrence certificate.",
+  "source_map": "dual-truncate-Goldberg-GP(2,0)",
+  "two_row_starts": 20,
+  "widths": {
+    "18": 20
+  },
+  "collar_star_darts_checked": 2160,
+  "identity_seam_labels_checked": 360,
+  "auxiliary_vertices_introduced": 0,
+  "cases": [
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    },
+    {
+      "width": 18,
+      "removed_vertices": 72,
+      "original_vertices": 240,
+      "smaller_vertices": 168
+    }
+  ],
+  "kernel_occurrence_certificate": false,
+  "global_occurrence_coverage_proved": false,
+  "full_occurrence_census_repeated": false,
+  "colouring_search_repeated": false,
+  "input_sha256": "5741d8a6beb0f9d209772a8612a789453e4e532cac195476e808528d3b667f1d",
+  "program_sha256": "b098c639fde339fa3c4f8531fc299626fb17523d13dbf29da147dcfd19006e28"
+}

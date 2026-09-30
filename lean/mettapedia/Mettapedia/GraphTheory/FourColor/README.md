@@ -30,7 +30,8 @@ The total decrease is exactly `4k` vertices. No finite colouring certificate
 is used. [GSLT route reconstruction](ZigzagTubeTwistGSLT.lean) composes this
 directed witness map in arbitrary contexts. In the all-five/six face class,
 a supplied row in a minimal counterexample now reaches a pentagonal seam
-within one successful extension, at every width at least two.
+within one successful extension at width two. The constructed two-row
+reduction below improves this to zero extensions at every width at least three.
 The [padded-cap family](PaddedCycleCapEven.lean) now has a strict reduction
 for every even `m ≥ 2`: replace its `8m` vertices by a `2m`-cycle and
 reconstruct every smaller colouring while fixing the exterior. One cyclic
@@ -90,7 +91,20 @@ now derives both exterior conditions from the actual slab and five- or
 six-dart ambient end faces. Its [audit](HexagonalTwoRowWiringRecognitionAudit.lean)
 checks eight roots, including the strict reduction and minimality consumers.
 No shore-connectivity or return-order premise is supplied to this theorem.
-Broader geometric supply and global coverage remain open. The
+The [constructed-growth consumer](HexagonalTwoRowGrowthReduction.lean)
+now starts from one recognized row with a hexagonal seam. Its actual collar
+supplies the second row; the successor input order equals the original
+output order, so assembly has the literal identity matching. The reduction
+then follows without a supplied two-row occurrence or exterior conditions.
+Exactly `4k` vertices disappear and every smaller colouring reconstructs
+while retaining all exterior dart colours. In a minimal counterexample in
+the all-five/six-face class, every recognized row of width `k ≥ 3` already
+has a pentagonal seam, and recognized chains have length at most one.
+The raw [alternating-cycle consumer](AlternatingCycleRecognition.lean)
+locates it at an original outgoing cycle port. Its
+[audit](HexagonalTwoRowGrowthReductionAudit.lean) checks ten roots without
+complete classical endpoints or finite tube stabilization. Initial cycle
+supply, closing lobes and pentagonal-stop reductions remain open. The
 [domain replay](../../../../../tools/fourcolor/classical/two-row-free-wire-domain.json)
 independently verifies those conditions in the saved 240→168 example.
 Independent replay includes an all-five/six 96→60 example and the earlier
