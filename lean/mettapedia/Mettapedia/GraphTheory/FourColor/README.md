@@ -49,8 +49,14 @@ together, then reconstruct the cap. The new
 representation from a central `m`-face, two hexagons and one pentagon per
 sector, short outward seam faces, and an injective vertex trace. A
 [uniform short-face law](Compositional/ShortFacePortExclusion.lean) derives
-boundary exposure; no induced-patch check is supplied. Vertex separation,
-exterior connectivity, broader recognition and coverage remain open obligations.
+boundary exposure; no induced-patch check is supplied. The
+[short-face connectivity law](Compositional/ShortFaceBoundaryConnectivity.lean)
+joins consecutive outside endpoints by one or two actual edges. Complete
+boundary classification and ambient connectivity then connect the whole
+exterior. Its [cap consumer](PaddedCycleCapExteriorConnectivity.lean) removes
+the separate exterior-connectivity hypothesis from the all-width strict
+reduction and counts the whole-map loss exactly. Vertex separation, broader
+recognition and coverage remain open obligations.
 Independent replay includes an all-five/six 96→60 example and the earlier
 guarded GP(2,0) 80→50 example. No further catalogue dependency is removed.
 See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).

@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapRecognitionAudit
+import Mettapedia.GraphTheory.FourColor.PaddedCycleCapExteriorAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
@@ -70,7 +71,10 @@ face closures, short seam faces and an injective vertex trace. A generic
 short-face reflection argument proves boundary exposure at every width.
 The constructed isomorphism is consumed by the all-width strict reduction
 and vertex-minimal counterexample exclusion. Vertex separation and exterior
-connectivity remain explicit; no new catalogue coverage is established.
+connectivity were initially retained. Short seam faces now derive exterior
+connectivity through actual one- or two-edge paths and complete boundary
+classification. Vertex separation remains explicit; no new catalogue
+coverage is established.
 
 An explicit build root for preserved results outside the active headline.
 The minimal-counterexample selection module imports the historical

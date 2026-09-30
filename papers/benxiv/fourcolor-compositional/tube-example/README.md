@@ -1907,12 +1907,30 @@ to construct the exact open-tangle isomorphism and consumes it in the
 all-width strict reduction. An isomorphism or an induced-patch check is no
 longer supplied as a hypothesis.
 
-Two geometric conditions remain explicit: the `8m` traced vertices must be
-distinct, and the complementary exterior must be connected. The consumer
-excludes the face-traced cap from a graph-backed vertex-minimal Tait
-counterexample under those conditions. This is a recognition component
-with an actual reduction consumer; a face pattern alone has not yet been
-proved sufficient at every width.
+The [short-face connectivity law][short-face-connectivity] removes the
+separate exterior-connectivity condition. A pentagonal seam joins successive
+outside port endpoints by one exterior edge; a hexagonal seam joins them by
+two. The hexagon's intermediate vertex cannot return into the cap: its
+incoming edge would be another boundary port, whose next rotated edge is
+internal, contradicting the final outside endpoint. Thus all port endpoints
+lie in one exterior component. Ambient connectedness and classification of
+every outgoing dart exclude any further exterior component. This argument
+uses neither a colouring nor a cyclic cut-size condition, and applies at
+every width.
+
+The [actual cap consumer][cap-exterior] uses this derived connectivity in the
+strict reduction and colouring reconstruction. The entire map loses exactly
+`6m` vertices, including every vertex of the replacement cycle. The `8m`
+traced vertices must still be distinct. Minimality supplies the ambient map
+class, and a smaller-map colouring reconstructs a genuine original colouring.
+A face pattern alone has not yet been proved sufficient at every width.
+
+This is one concrete meaning of a compositional map: the graph operation
+replaces a cap by a cycle, the boundary relation retains compatible shared
+choices, and colouring reconstruction goes back from the smaller map to
+the original. The short-face law supplies the exterior geometry used by
+that reconstruction. These maps compose through their common interface;
+independent choices at each port would lose information the repair needs.
 
 The [independent face replay][cap-face-probe] checks 3,214 actual faces in
 140 saved maps. It finds twelve matching central faces, all in GP(2,0);
@@ -1925,9 +1943,21 @@ chains. The complete classical theorem and finite tube-stabilization
 certificates are excluded. The coverage and original-certificate counts
 remain 633 and 630.
 
+The [exterior-arc replay][cap-exterior-probe] checks 956 arcs: 418 pentagonal
+and 538 hexagonal. It includes both literal cap/cap and cap/cycle gluings at
+sector counts two through twenty, plus the twelve saved GP(2,0) occurrences.
+These remain finite program checks; the general connectivity argument and
+its strict-reduction consumer are kernel-checked separately in the
+[new audit receipt][cap-exterior-measurements]. No additional colouring
+certificate or catalogue removal is credited.
+
 [cap-face-trace]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapFaceTraversal.lean
 [short-face-ports]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/ShortFacePortExclusion.lean
 [cap-port-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPortGeometry.lean
 [cap-face-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapRecognition.lean
 [cap-face-probe]: ../../../../tools/fourcolor/classical/padded-cap-recognition-probe.json
 [cap-face-measurements]: ../../../../tools/fourcolor/classical/padded-cap-recognition-measurements.json
+[short-face-connectivity]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/ShortFaceBoundaryConnectivity.lean
+[cap-exterior]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapExteriorConnectivity.lean
+[cap-exterior-probe]: ../../../../tools/fourcolor/classical/padded-cap-exterior-probe.json
+[cap-exterior-measurements]: ../../../../tools/fourcolor/classical/padded-cap-exterior-measurements.json

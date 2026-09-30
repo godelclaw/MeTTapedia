@@ -1,0 +1,197 @@
+{
+  "status": "Kernel-checked short-seam exterior connectivity, consumed by actual all-width cap strict reduction and colouring reconstruction; vertex injectivity remains explicit.",
+  "completed_utc": "2026-09-30T13:51:04.520197+00:00",
+  "build_base_revision": "ad2cd36c827c8db6671a36333c055f595993431d",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.Compositional.ShortFacePortExclusion",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/ShortFacePortExclusion.lean",
+      "source_sha256": "b04479bf176f3a7e73596a292c4eb638c8e6ba941c205c91e79b3ae37c8aa241",
+      "source_bytes": 4672,
+      "olean_sha256": "b68d7ffa9fd0382e52f4811fee9503bb40a8898e5070cc2ff5e093b3ac9dd272",
+      "olean_bytes": 145312,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.Compositional.ShortFaceBoundaryConnectivity",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/ShortFaceBoundaryConnectivity.lean",
+      "source_sha256": "434bf7e079cc746dab5b00fed6688a5c5afcd10b2e38a220b6a8d708c5f98070",
+      "source_bytes": 7230,
+      "olean_sha256": "b99b3d98f33813fe89f528d460df662219db9a58a2793edf833d0b58795dcdc0",
+      "olean_bytes": 191216,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapExteriorConnectivity",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapExteriorConnectivity.lean",
+      "source_sha256": "a26c9988c005d8c5ec0ed0a4f6006d435b14a02b56c33de673a22cf9ced1873c",
+      "source_bytes": 7651,
+      "olean_sha256": "c77ab938a8140a2a8f440c69096f043462e8484c1a25ecc287686884d57cf9c2",
+      "olean_bytes": 377896,
+      "reported_build_seconds": 3.4
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapExteriorAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapExteriorAudit.lean",
+      "source_sha256": "d95528cbf13a199f28b714022a68c9a8cf53fbdeacd05fdff08b844c31e0fab1",
+      "source_bytes": 4110,
+      "olean_sha256": "3b4b9dcfe35d722b97a6e0ec9a6a1e2434c6a152b8e151d659384bd5d43ad927",
+      "olean_bytes": 3536,
+      "reported_build_seconds": 6.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "ad83823a929cfc74a4cd5b56a47fcbecf0e13f858abf676ef8367c7850e87061",
+      "source_bytes": 32643,
+      "olean_sha256": "55d382e7d9f1ae899c3bb4560b2df612f7a0ccb9a2699388ca90166c76a71389",
+      "olean_bytes": 38216,
+      "reported_build_seconds": 5.8
+    }
+  ],
+  "audit": {
+    "root_count": 10,
+    "combined_dependency_closure": 23210,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual short face periods to two- or three-step complementary face arcs",
+      "complete outgoing boundary and internal rotated port mates to one- or two-edge exterior paths",
+      "cyclic endpoint reachability and ambient-walk crossing to whole-exterior connectivity",
+      "exhaustive face-traced cap darts to actual boundary completeness",
+      "derived exterior connectivity to physical repair, strict reduction and genuine colouring reconstruction",
+      "actual vertex correspondence and complementary partition to whole-map count",
+      "strict decrease and reconstruction to smaller-map minimality"
+    ],
+    "excluded": [
+      "complete classical FourColor namespace",
+      "classical integration MettapediaFourColor namespace",
+      "finite tube-stabilization certificates",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11059,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel times; null means cached in the final gate. No isolated kernel timing or speedup claim.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "sectors": "Every m >= 2 in the actual cap reduction consumer",
+    "local_faces": "A central m-face, m inner hexagons, then m hexagons and m pentagons at the stated actual dart coordinates.",
+    "seam_faces": "Every final cap port lies on an actual face of length five or six.",
+    "vertex_separation": "The 8*m actual traced vertices are distinct; this hypothesis remains explicit.",
+    "generic_connectivity": "In a connected graph with the complete stated cyclic boundary and internal rotated port mates, each short face connects consecutive exterior endpoints by one or two exterior edges, and no other exterior component can exist.",
+    "cap_adapter": "Complete retained-dart coordinates classify all actual outgoing edges; rotated boundary-port mates are interior. No local isomorphism or exterior connectivity is supplied.",
+    "colouring_assumptions_in_connectivity": "None; no cut-size or monochromatic parity assumption is used.",
+    "strict_reduction": "The smaller actual map is spherical, cubic, connected and bridgeless, and every smaller-map colouring reconstructs a genuine original colouring.",
+    "count": "The original whole-map cardinality equals the smaller whole-map cardinality plus 6*m; all 2*m introduced cycle vertices are counted.",
+    "exterior_repair": "The previous physical constant-boundary repair may recolour the exterior jointly with the smaller cycle. This checkpoint introduces no new colouring repair or table.",
+    "minimality": "The strengthened face-pattern endpoint derives the ambient source class from graph-backed vertex-minimal Tait counterexample hypotheses and contradicts its noncolourability.",
+    "limitations": "Vertex separation, broader geometric recognition and universal occurrence coverage are not proved; no further complete-assembly certificate or catalogue removal is established."
+  },
+  "programme": {
+    "existing_face_derived_reduction_hypothesis_removed": "Separate exterior connectivity",
+    "new_uniform_exterior_connectivity_schemes": 1,
+    "additional_distinct_geometric_families": 0,
+    "new_family_colouring_certificates": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "additional_original_certificates_replaced": 0,
+    "catalogue_entries_removed": 0,
+    "integrated_into_complete_assembly": false,
+    "global_coverage_proved": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/padded_cap_exterior_probe.py",
+    "script_sha256": "eaf1d5fb334a05d8e271ab4f2aa9d9ca69ea439ae90da98d72f791cdfe69aa81",
+    "record": "tools/fourcolor/classical/padded-cap-exterior-probe.json",
+    "record_sha256": "23030b88add524ebde30244a6fe0f3f969a153752dfc6b4eab453db97d64c882",
+    "arcs_checked": 956,
+    "seam_faces": {
+      "5": 418,
+      "6": 538
+    },
+    "actual_occurrences": 12,
+    "literal_sector_counts": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "literal_examples": 38,
+    "evidence": "Independent finite program replay; no fixture normal-form, minimality or global coverage certification.",
+    "program_dependencies": [
+      {
+        "source": "padded_cap_exterior_probe.py",
+        "source_sha256": "eaf1d5fb334a05d8e271ab4f2aa9d9ca69ea439ae90da98d72f791cdfe69aa81"
+      },
+      {
+        "source": "alternating-lobe-fixtures.json",
+        "source_sha256": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3"
+      },
+      {
+        "source": "diamond-supply-probe.json",
+        "source_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171"
+      },
+      {
+        "source": "padded-cap-recognition-probe.json",
+        "source_sha256": "982197ff93bdab04e9c2240a386abfd8ab6e84440e81db412e4ce0ecee7f0aa8"
+      },
+      {
+        "source": "padded_cap_recognition_probe.py",
+        "source_sha256": "5ebe4d908b2d2bc7f5f843b1239b358282551e7f1157142b6206e6c8662af4aa"
+      },
+      {
+        "source": "padded_cap_geometry_probe.py",
+        "source_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a"
+      },
+      {
+        "source": "padded_cap_probe.py",
+        "source_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba"
+      },
+      {
+        "source": "alternating_lobe_probe.py",
+        "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+      },
+      {
+        "source": "alternating_cycle_probe.py",
+        "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+      }
+    ],
+    "literal_width_two": "Parallel edge identity is retained by the rotation data; the general graph-backed Lean consumer has a simple-graph domain."
+  },
+  "remaining": [
+    "Derive traced-vertex injectivity from actual source normal form, beginning with the pentagonal cap.",
+    "Connect applicable family reductions to geometric occurrence supply and a smaller residual unavoidable catalogue.",
+    "Broaden recognition beyond the current short-seam pattern if residual maps require it.",
+    "Integrate successful replacements and audit actual complete-assembly dependencies."
+  ]
+}

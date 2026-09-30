@@ -40,6 +40,22 @@ private theorem arc_three (i : Fin n) :
   change ((RS.phi ^ 2) * RS.phi) (RS.alpha (port i)) = _
   simpa only [Perm.mul_apply, RotationSystem.phi, RS.alpha_involutive] using arc i
 
+include arc short in
+/-- The complementary part of a short seam face reaches the next port's
+edge mate in two or three face steps. No separation hypothesis is needed. -/
+theorem exterior_arc (i : Fin n) :
+    (RS.phi ^ 2) (port (i-1)) = RS.alpha (port i) ∨
+      (RS.phi ^ 3) (port (i-1)) = RS.alpha (port i) := by
+  rcases short (i-1) with h5 | h6
+  · left
+    apply (RS.phi ^ 3).injective
+    rw [← Perm.mul_apply, ← pow_add, arc_three RS port arc]
+    exact period RS h5
+  · right
+    apply (RS.phi ^ 3).injective
+    rw [← Perm.mul_apply, ← pow_add, arc_three RS port arc]
+    exact period RS h6
+
 include arc in
 private theorem mate_three {i j : Fin n} (h : RS.alpha (port i) = port j) :
     (RS.phi ^ 3) (port i) = port (j-1) := by

@@ -45,8 +45,21 @@ GSLT and exact graph-representation consumers are audited. The
 and 24 constant even-width colourings. The
 [geometry replay](padded-cap-geometry-probe.json) checks widths 2 through 20
 and an all-five/six 96→60 reconstruction. GP(2,0)'s guarded 80→50 example
-remains available. No additional classical certificate dependency is removed;
-odd-width exterior repair and broader recognition and coverage remain open.
+remains available. The later odd-width repair and face-derived recognition
+are recorded below; broader geometric coverage remains open.
+
+The subsequent [all-width physical repair](padded-cap-physical-measurements.json)
+handles constant boundary words by a joint exterior/cycle switch. Actual
+[face-trace recognition](padded-cap-recognition-measurements.json) constructs
+the cap shore from its faces, an injective vertex trace and short seam faces.
+The [exterior-connectivity receipt](padded-cap-exterior-measurements.json) now
+removes the separate connected-exterior hypothesis from that face-derived
+strict reduction. One or two actual exterior edges join consecutive ports;
+boundary completeness and ambient connectivity exclude other components.
+The [independent replay](padded-cap-exterior-probe.json) checks 956 such arcs,
+including both five- and six-sided seam faces. Vertex separation and global
+coverage remain open, and the complete assembly still retains 633
+configurations and 630 original certificate dependencies.
 
 ## Complete endpoints
 

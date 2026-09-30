@@ -1,0 +1,1233 @@
+{
+  "evidence": "Independent finite program replay; no fixture normal-form, minimality or global coverage certification.",
+  "dependencies": [
+    {
+      "source": "padded_cap_exterior_probe.py",
+      "source_sha256": "eaf1d5fb334a05d8e271ab4f2aa9d9ca69ea439ae90da98d72f791cdfe69aa81"
+    },
+    {
+      "source": "alternating-lobe-fixtures.json",
+      "source_sha256": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3"
+    },
+    {
+      "source": "diamond-supply-probe.json",
+      "source_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171"
+    },
+    {
+      "source": "padded-cap-recognition-probe.json",
+      "source_sha256": "982197ff93bdab04e9c2240a386abfd8ab6e84440e81db412e4ce0ecee7f0aa8"
+    },
+    {
+      "source": "padded_cap_recognition_probe.py",
+      "source_sha256": "5ebe4d908b2d2bc7f5f843b1239b358282551e7f1157142b6206e6c8662af4aa"
+    },
+    {
+      "source": "padded_cap_geometry_probe.py",
+      "source_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a"
+    },
+    {
+      "source": "padded_cap_probe.py",
+      "source_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba"
+    },
+    {
+      "source": "alternating_lobe_probe.py",
+      "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+    },
+    {
+      "source": "alternating_cycle_probe.py",
+      "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+    }
+  ],
+  "seam_faces": {
+    "5": 418,
+    "6": 538
+  },
+  "arcs_checked": 956,
+  "literal_sector_counts": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "literal_examples": [
+    {
+      "map": "cap-cap",
+      "original_vertices": 32,
+      "sectors": 2,
+      "arcs_checked": 4,
+      "seam_faces": {
+        "6": 4
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 20,
+      "sectors": 2,
+      "arcs_checked": 4,
+      "seam_faces": {
+        "5": 4
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 48,
+      "sectors": 3,
+      "arcs_checked": 6,
+      "seam_faces": {
+        "6": 6
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 30,
+      "sectors": 3,
+      "arcs_checked": 6,
+      "seam_faces": {
+        "5": 6
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 64,
+      "sectors": 4,
+      "arcs_checked": 8,
+      "seam_faces": {
+        "6": 8
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 40,
+      "sectors": 4,
+      "arcs_checked": 8,
+      "seam_faces": {
+        "5": 8
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 80,
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 50,
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "5": 10
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 96,
+      "sectors": 6,
+      "arcs_checked": 12,
+      "seam_faces": {
+        "6": 12
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 60,
+      "sectors": 6,
+      "arcs_checked": 12,
+      "seam_faces": {
+        "5": 12
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 112,
+      "sectors": 7,
+      "arcs_checked": 14,
+      "seam_faces": {
+        "6": 14
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 70,
+      "sectors": 7,
+      "arcs_checked": 14,
+      "seam_faces": {
+        "5": 14
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 128,
+      "sectors": 8,
+      "arcs_checked": 16,
+      "seam_faces": {
+        "6": 16
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 80,
+      "sectors": 8,
+      "arcs_checked": 16,
+      "seam_faces": {
+        "5": 16
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 144,
+      "sectors": 9,
+      "arcs_checked": 18,
+      "seam_faces": {
+        "6": 18
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 90,
+      "sectors": 9,
+      "arcs_checked": 18,
+      "seam_faces": {
+        "5": 18
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 160,
+      "sectors": 10,
+      "arcs_checked": 20,
+      "seam_faces": {
+        "6": 20
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 100,
+      "sectors": 10,
+      "arcs_checked": 20,
+      "seam_faces": {
+        "5": 20
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 176,
+      "sectors": 11,
+      "arcs_checked": 22,
+      "seam_faces": {
+        "6": 22
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 110,
+      "sectors": 11,
+      "arcs_checked": 22,
+      "seam_faces": {
+        "5": 22
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 192,
+      "sectors": 12,
+      "arcs_checked": 24,
+      "seam_faces": {
+        "6": 24
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 120,
+      "sectors": 12,
+      "arcs_checked": 24,
+      "seam_faces": {
+        "5": 24
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 208,
+      "sectors": 13,
+      "arcs_checked": 26,
+      "seam_faces": {
+        "6": 26
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 130,
+      "sectors": 13,
+      "arcs_checked": 26,
+      "seam_faces": {
+        "5": 26
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 224,
+      "sectors": 14,
+      "arcs_checked": 28,
+      "seam_faces": {
+        "6": 28
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 140,
+      "sectors": 14,
+      "arcs_checked": 28,
+      "seam_faces": {
+        "5": 28
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 240,
+      "sectors": 15,
+      "arcs_checked": 30,
+      "seam_faces": {
+        "6": 30
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 150,
+      "sectors": 15,
+      "arcs_checked": 30,
+      "seam_faces": {
+        "5": 30
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 256,
+      "sectors": 16,
+      "arcs_checked": 32,
+      "seam_faces": {
+        "6": 32
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 160,
+      "sectors": 16,
+      "arcs_checked": 32,
+      "seam_faces": {
+        "5": 32
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 272,
+      "sectors": 17,
+      "arcs_checked": 34,
+      "seam_faces": {
+        "6": 34
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 170,
+      "sectors": 17,
+      "arcs_checked": 34,
+      "seam_faces": {
+        "5": 34
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 288,
+      "sectors": 18,
+      "arcs_checked": 36,
+      "seam_faces": {
+        "6": 36
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 180,
+      "sectors": 18,
+      "arcs_checked": 36,
+      "seam_faces": {
+        "5": 36
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 304,
+      "sectors": 19,
+      "arcs_checked": 38,
+      "seam_faces": {
+        "6": 38
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 190,
+      "sectors": 19,
+      "arcs_checked": 38,
+      "seam_faces": {
+        "5": 38
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cap",
+      "original_vertices": 320,
+      "sectors": 20,
+      "arcs_checked": 40,
+      "seam_faces": {
+        "6": 40
+      },
+      "exterior_connected": true
+    },
+    {
+      "map": "cap-cycle",
+      "original_vertices": 200,
+      "sectors": 20,
+      "arcs_checked": 40,
+      "seam_faces": {
+        "5": 40
+      },
+      "exterior_connected": true
+    }
+  ],
+  "literal_width_two": "Parallel edge identity is retained by the rotation data; the general graph-backed Lean consumer has a simple-graph domain.",
+  "actual_occurrences": 12,
+  "actual_examples": [
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        0,
+        1
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          40,
+          43,
+          46
+        ],
+        [
+          46,
+          55,
+          54
+        ],
+        [
+          54,
+          56,
+          57
+        ],
+        [
+          57,
+          73,
+          76
+        ],
+        [
+          76,
+          78,
+          79
+        ],
+        [
+          79,
+          66,
+          64
+        ],
+        [
+          64,
+          61,
+          50
+        ],
+        [
+          50,
+          49,
+          47
+        ],
+        [
+          47,
+          48,
+          42
+        ],
+        [
+          42,
+          41,
+          40
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        5,
+        9
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          19,
+          22,
+          25
+        ],
+        [
+          25,
+          47,
+          48
+        ],
+        [
+          48,
+          51,
+          53
+        ],
+        [
+          53,
+          67,
+          69
+        ],
+        [
+          69,
+          71,
+          75
+        ],
+        [
+          75,
+          74,
+          73
+        ],
+        [
+          73,
+          76,
+          36
+        ],
+        [
+          36,
+          35,
+          33
+        ],
+        [
+          33,
+          34,
+          21
+        ],
+        [
+          21,
+          20,
+          19
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        12,
+        13
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          26,
+          27,
+          28
+        ],
+        [
+          28,
+          33,
+          34
+        ],
+        [
+          34,
+          37,
+          39
+        ],
+        [
+          39,
+          64,
+          61
+        ],
+        [
+          61,
+          62,
+          63
+        ],
+        [
+          63,
+          68,
+          67
+        ],
+        [
+          67,
+          69,
+          60
+        ],
+        [
+          60,
+          58,
+          55
+        ],
+        [
+          55,
+          54,
+          32
+        ],
+        [
+          32,
+          29,
+          26
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        19,
+        20
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          5,
+          6,
+          8
+        ],
+        [
+          8,
+          26,
+          27
+        ],
+        [
+          27,
+          30,
+          36
+        ],
+        [
+          36,
+          76,
+          78
+        ],
+        [
+          78,
+          77,
+          72
+        ],
+        [
+          72,
+          70,
+          68
+        ],
+        [
+          68,
+          67,
+          53
+        ],
+        [
+          53,
+          44,
+          41
+        ],
+        [
+          41,
+          40,
+          16
+        ],
+        [
+          16,
+          9,
+          5
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        26,
+        29
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          12,
+          15,
+          16
+        ],
+        [
+          16,
+          40,
+          43
+        ],
+        [
+          43,
+          45,
+          60
+        ],
+        [
+          60,
+          69,
+          71
+        ],
+        [
+          71,
+          70,
+          72
+        ],
+        [
+          72,
+          65,
+          66
+        ],
+        [
+          66,
+          64,
+          39
+        ],
+        [
+          39,
+          23,
+          20
+        ],
+        [
+          20,
+          19,
+          14
+        ],
+        [
+          14,
+          13,
+          12
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        33,
+        35
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          6,
+          10,
+          32
+        ],
+        [
+          32,
+          54,
+          56
+        ],
+        [
+          56,
+          59,
+          75
+        ],
+        [
+          75,
+          71,
+          70
+        ],
+        [
+          70,
+          68,
+          63
+        ],
+        [
+          63,
+          52,
+          49
+        ],
+        [
+          49,
+          47,
+          25
+        ],
+        [
+          25,
+          17,
+          13
+        ],
+        [
+          13,
+          12,
+          7
+        ],
+        [
+          7,
+          5,
+          6
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        40,
+        41
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          0,
+          2,
+          14
+        ],
+        [
+          14,
+          19,
+          22
+        ],
+        [
+          22,
+          24,
+          50
+        ],
+        [
+          50,
+          61,
+          62
+        ],
+        [
+          62,
+          65,
+          72
+        ],
+        [
+          72,
+          77,
+          74
+        ],
+        [
+          74,
+          73,
+          57
+        ],
+        [
+          57,
+          31,
+          29
+        ],
+        [
+          29,
+          26,
+          8
+        ],
+        [
+          8,
+          1,
+          0
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        47,
+        49
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          2,
+          3,
+          21
+        ],
+        [
+          21,
+          34,
+          37
+        ],
+        [
+          37,
+          38,
+          79
+        ],
+        [
+          79,
+          78,
+          77
+        ],
+        [
+          77,
+          74,
+          75
+        ],
+        [
+          75,
+          59,
+          58
+        ],
+        [
+          58,
+          55,
+          46
+        ],
+        [
+          46,
+          11,
+          9
+        ],
+        [
+          9,
+          5,
+          7
+        ],
+        [
+          7,
+          0,
+          2
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        54,
+        55
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          1,
+          0,
+          7
+        ],
+        [
+          7,
+          12,
+          15
+        ],
+        [
+          15,
+          18,
+          42
+        ],
+        [
+          42,
+          48,
+          51
+        ],
+        [
+          51,
+          52,
+          63
+        ],
+        [
+          63,
+          62,
+          65
+        ],
+        [
+          65,
+          66,
+          79
+        ],
+        [
+          79,
+          38,
+          35
+        ],
+        [
+          35,
+          33,
+          28
+        ],
+        [
+          28,
+          4,
+          1
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        61,
+        64
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          17,
+          13,
+          14
+        ],
+        [
+          14,
+          2,
+          3
+        ],
+        [
+          3,
+          4,
+          28
+        ],
+        [
+          28,
+          27,
+          30
+        ],
+        [
+          30,
+          31,
+          57
+        ],
+        [
+          57,
+          56,
+          59
+        ],
+        [
+          59,
+          58,
+          60
+        ],
+        [
+          60,
+          45,
+          44
+        ],
+        [
+          44,
+          41,
+          42
+        ],
+        [
+          42,
+          18,
+          17
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        67,
+        68
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          18,
+          17,
+          25
+        ],
+        [
+          25,
+          22,
+          24
+        ],
+        [
+          24,
+          23,
+          39
+        ],
+        [
+          39,
+          37,
+          38
+        ],
+        [
+          38,
+          35,
+          36
+        ],
+        [
+          36,
+          30,
+          31
+        ],
+        [
+          31,
+          29,
+          32
+        ],
+        [
+          32,
+          10,
+          11
+        ],
+        [
+          11,
+          9,
+          16
+        ],
+        [
+          16,
+          15,
+          18
+        ]
+      ]
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "root": [
+        73,
+        74
+      ],
+      "sectors": 5,
+      "arcs_checked": 10,
+      "seam_faces": {
+        "6": 10
+      },
+      "exterior_connected": true,
+      "outside_arc_vertices": [
+        [
+          10,
+          11,
+          46
+        ],
+        [
+          46,
+          43,
+          45
+        ],
+        [
+          45,
+          44,
+          53
+        ],
+        [
+          53,
+          51,
+          52
+        ],
+        [
+          52,
+          49,
+          50
+        ],
+        [
+          50,
+          24,
+          23
+        ],
+        [
+          23,
+          20,
+          21
+        ],
+        [
+          21,
+          3,
+          4
+        ],
+        [
+          4,
+          1,
+          8
+        ],
+        [
+          8,
+          6,
+          10
+        ]
+      ]
+    }
+  ]
+}

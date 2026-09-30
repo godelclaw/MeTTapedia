@@ -59,9 +59,13 @@ odd-width example reduces 50 vertices to 20. The new
 [face-trace recognition](tube-example/README.md#recognizing-caps-from-their-faces)
 constructs the exact cap-shore representation from actual face closures,
 an injective vertex trace and short seam faces. A uniform reflection law
-derives boundary exposure at every width. Vertex separation and exterior
-connectivity remain explicit; broader recognition, disconnected odd-width
-exteriors and global coverage remain open. The complete classical catalogue
+derives boundary exposure at every width. The same short seam faces now
+connect successive exterior endpoints by one or two actual edges. Boundary
+completeness and ambient connectivity prove that the entire exterior is
+connected, removing that hypothesis from the actual face-derived strict
+reduction. Vertex separation remains explicit; broader recognition,
+disconnected odd-width exteriors outside this face pattern and global
+coverage remain open. The complete classical catalogue
 and certificate counts are unchanged.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
