@@ -47,11 +47,17 @@ reconstructs with the entire exterior fixed. A shared cyclic choice law
 closes both varying and constant boundary words at even widths. Exact
 representation transport excludes recognized members from a least
 counterexample, and GSLT composition retains the joint boundary choices.
-An independent all-five/six example reduces 96 vertices to 60. For odd `m`,
-the geometric replacement is proved but colouring reconstruction retains
-the nonconstant guard. The guarded GP(2,0) replay gives 80→50. Exterior repair
-at odd widths, broader geometric recognition and coverage remain open;
-the complete classical certificate counts are unchanged.
+An independent all-five/six example reduces 96 vertices to 60.
+The [coupled physical repair](tube-example/README.md#repairing-a-constant-cap-boundary)
+now extends strict reduction to every `m ≥ 2` for exactly recognized caps
+with connected exterior. Spherical geometry derives the actual noncrossing
+component matching; an adjacent component switch repairs a constant boundary
+and its shared cycle edge together. The repaired witnesses reconstruct an
+ambient colouring. The exterior may change in this branch, and the GSLT cell
+therefore retains the cap and its exterior as one joint witness. An independent
+odd-width example reduces 50 vertices to 20. Recognition from broader face
+patterns, disconnected odd-width exteriors and global coverage remain open;
+the complete classical catalogue and certificate counts are unchanged.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

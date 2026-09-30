@@ -1,0 +1,250 @@
+{
+  "status": "Kernel-checked all-width padded-cap strict reduction for exactly recognized spherical shores with connected exterior; physical matching noncrossing derived geometrically.",
+  "completed_utc": "2026-09-30T11:31:10.598137+00:00",
+  "build_base_revision": "dde8507def0b9687398269250b78d4952be3d4d2",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingMatchingEar",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/NoncrossingMatchingEar.lean",
+      "source_sha256": "b47b4439aaadd58a5bc5d6d8bef8f819a0f3c9eb2efbbb820bced79e6fbf6fd4",
+      "source_bytes": 3389,
+      "olean_sha256": "0b8f301667216b84923df843c587fd64682b0528b38f6269c61f25ed00d8a8e9",
+      "olean_bytes": 312784,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleAdjacentBoundaryRepair",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleAdjacentBoundaryRepair.lean",
+      "source_sha256": "b25488223d4a5a04965d65fd63b782822402577bf6b6e791abb5210a13864daf",
+      "source_bytes": 5983,
+      "olean_sha256": "41983d7929e717bf586f4264186832dc6ba56f620e63dfaba6516c5dfac141e0",
+      "olean_bytes": 215576,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.Compositional.ConstantBoundaryKempeRepair",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/ConstantBoundaryKempeRepair.lean",
+      "source_sha256": "2ade3252c32f129436630756e6d4c98863e926727577e2aaeed47d773db45f33",
+      "source_bytes": 4733,
+      "olean_sha256": "2b3772542d2994c604f07ff6b5c7e8a0894262b0a302d54d91297ce33975de6f",
+      "olean_bytes": 170200,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalRepair",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPhysicalRepair.lean",
+      "source_sha256": "a90a8ac746aa2a797d89ade3961130da21d5bd1cc30b26642f309ff8bea25a42",
+      "source_bytes": 8917,
+      "olean_sha256": "d94b4a2cb2443e16b246e8c02ee809aa3b2ec834193dc51c7e1bd79673efa341",
+      "olean_bytes": 724792,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPhysicalGeometry.lean",
+      "source_sha256": "ee73bb4a5d86f3ad47005213ed9064ec6d3d024381e4af124d43ba988fc320cb",
+      "source_bytes": 10964,
+      "olean_sha256": "70cd149e4c2647e9093ce24a260cfa19b39a5963e835e8cd2d9ce2d6e9783b2f",
+      "olean_bytes": 525984,
+      "reported_build_seconds": 3.4
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPhysicalAudit.lean",
+      "source_sha256": "abf43fd1181aff0214f61e3b158ed21fde54162e49bad6ac4f350bc457b336e4",
+      "source_bytes": 4710,
+      "olean_sha256": "8d7b5a50497047399432851a989891c0c46fc2dd3fc84f0ed79e3388215006d1",
+      "olean_bytes": 3616,
+      "reported_build_seconds": 9.7
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/ResearchCheckpoint.lean",
+      "source_sha256": "299d1b70b51ca59a4b7649714aaf814d3e6297dbd025d9908db013715755c636",
+      "source_bytes": 31889,
+      "olean_sha256": "f31f9c5db7b2f0021ef8e3d6ca2c94ca1984c0cb9369fffe26947de8a545a719",
+      "olean_bytes": 37344,
+      "reported_build_seconds": 5.4
+    }
+  ],
+  "audit": {
+    "root_count": 14,
+    "combined_dependency_closure": 23078,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "adjacent pair in a noncrossing perfect physical matching",
+      "switch a complete actual exterior component and repair the shared smaller-cycle edge",
+      "actual cap colouring reconstruction and strict whole-map vertex decrease",
+      "computed cap return, opposite shore order and spherical noncrossing",
+      "recognized ambient strict reduction and vertex-minimal counterexample exclusion",
+      "joint closed GSLT colouring-witness map and contextual preservation"
+    ],
+    "excluded": [
+      "complete classical FourColor namespace",
+      "finite tube-stabilization certificates",
+      "long-length mixing bound"
+    ]
+  },
+  "validation": {
+    "working_directory": "lean/mettapedia",
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "jobs": 11049,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Lake-reported frontend-plus-kernel times; null means cached in the final gate. No isolated kernel timing or speedup claim.",
+    "classical_baseline": {
+      "prepared_source_and_artifact_hashes_rechecked": 126,
+      "complete_module_source_and_artifact_hashes_rechecked": 4,
+      "all_unchanged": true,
+      "fresh_baseline_rebuild": false
+    }
+  },
+  "mathematical_scope": {
+    "sectors": "Every m >= 2, including odd m",
+    "operation": "Replace an 8*m-vertex padded cap by its 2*m-cycle in the actual sewn exterior.",
+    "whole_map_vertex_loss": "Exactly 6*m; no new exterior vertices.",
+    "literal_domain": "A cubic exterior with physical noncrossing in the cap coordinates; original sewn map in the connected bridgeless spherical cubic class.",
+    "embedded_domain": "A two-sided spherical graph-backed map, an exact cap-shore isomorphism and connected complementary exterior.",
+    "derived_geometry": "Cap connectivity, exterior cyclic port order, and noncrossing of every actual physical exterior colouring.",
+    "reconstruction": "A nonconstant word lifts directly. A constant word chooses an adjacent actual component, switches the exterior and repairs the source cycle together, then reconstructs the cap.",
+    "exterior": "The constant branch may recolour the exterior; reconstruction fixes that repaired exterior.",
+    "gslt": "A cell on actual closed-map colouring witnesses. The cap and its exterior are retained jointly; separate surrounding GSLT witnesses and observations are preserved under horizontal composition.",
+    "observations": "Closed interface only for the new physical cell. No arbitrary predicate on cap-exterior colours is asserted preserved.",
+    "direction": "Directed reconstruction; support equality, colouring counts and certified executable recolouring histories are separate claims.",
+    "minimality": "No exactly recognized cap with connected exterior occurs in a graph-backed vertex-minimal Tait counterexample.",
+    "even_family": "Earlier even-width reconstruction still fixes every exterior dart in arbitrary exteriors, including disconnected ones."
+  },
+  "programme": {
+    "existing_cap_family_broadened": true,
+    "new_uniform_physical_repair_schemes": 1,
+    "additional_distinct_geometric_families": 0,
+    "new_family_colouring_certificates": 0,
+    "configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "additional_original_certificates_replaced": 0,
+    "catalogue_entries_removed": 0,
+    "integrated_into_complete_assembly": false,
+    "global_coverage_proved": false,
+    "recognition_from_general_face_patterns": false
+  },
+  "independent_replay": {
+    "script": "tools/fourcolor/classical/padded_cap_physical_probe.py",
+    "script_sha256": "ea3edcf58a026eb96335fd846a8c47c0a3cbdbbd8ba7662fd34c80ec485e21b0",
+    "record": "tools/fourcolor/classical/padded-cap-physical-probe.json",
+    "record_sha256": "9d370205b7b9d0eb9a4a861e136287bc026ea214b643cdcb522decaecdf7de8b",
+    "matchings_checked": 476,
+    "adjacent_pair_colour_tests": 12000,
+    "literal_physical_repairs": 84,
+    "sector_counts": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "example": {
+      "sectors": 5,
+      "original_vertices": 50,
+      "smaller_vertices": 20,
+      "vertex_loss": 30,
+      "old_boundary_colour": 1,
+      "new_boundary_colour": 2,
+      "repaired_boundary_word": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "shared_radial_choices": [
+        1,
+        2,
+        3,
+        2,
+        3
+      ],
+      "exterior_darts_changed": 4,
+      "original_face_lengths": {
+        "5": 16,
+        "6": 10,
+        "10": 1
+      },
+      "spherical_cubic_connected_bridgeless": true,
+      "actual_colouring_reconstructed": true,
+      "normal_form_asserted": false
+    },
+    "opposite_parity_counterexample": {
+      "word": [
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "noncrossing_matching": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "cycle_witness_exists": false
+    },
+    "evidence": "Independent finite program checks, separate from Lean proofs; no fixture normal-form or coverage claim.",
+    "program_dependencies": [
+      {
+        "source": "tools/fourcolor/classical/padded_cap_probe.py",
+        "source_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba"
+      },
+      {
+        "source": "tools/fourcolor/classical/padded_cap_geometry_probe.py",
+        "source_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a"
+      },
+      {
+        "source": "tools/fourcolor/classical/alternating_cycle_probe.py",
+        "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+      },
+      {
+        "source": "tools/fourcolor/classical/alternating_lobe_probe.py",
+        "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+      },
+      {
+        "source": "tools/fourcolor/classical/hexagonal_collar_probe.py",
+        "source_sha256": "ed7ac5133c962f6da27e3f86b0baff39986ec2214f3e86b1655b784ba4700d23"
+      }
+    ]
+  },
+  "remaining": [
+    "Derive cap-shore recognition from broader actual face patterns.",
+    "Handle disconnected odd-width exteriors or prove sufficient domain coverage without them.",
+    "Connect the uniform families to a smaller residual unavoidable catalogue with a proved coverage theorem.",
+    "Integrate successful replacements and audit additional complete-assembly dependencies."
+  ]
+}

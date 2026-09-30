@@ -1789,18 +1789,20 @@ setting; the replay is program evidence, not a general recognition theorem.
 At odd widths, the guard cannot simply be dropped. Exhaustive support checks at `m=3`
 and `m=5` find exactly three smaller-cycle words missing from the padded
 cap: the three monochromatic words. At `m=4` the checked inclusion has no
-exceptions. These finite obstructions identify the next repair obligation:
-change a constant interface through a justified exterior Kempe operation,
-or use another compatible smaller construction. A candidate is a component
-switch joining opposite-parity ports of the smaller cycle; its geometric
-existence and preservation obligations remain to prove.
+exceptions. These finite obstructions identify the repair obligation: change
+a constant interface through a justified exterior Kempe operation, or use
+another compatible smaller construction. Opposite parity alone is insufficient:
+switching ports 0 and 3 of six constant-1 ports gives `[2,1,1,2,1,1]`, which
+admits no cycle colouring. This also occurs in the noncrossing matching
+`[(0,3),(1,2),(4,5)]`. The adjacent-component law below repairs that failure.
 
 The even family reduction is complete on its stated domain. Its relation
 to Ben's proposed uniform explanation is concrete: one law replaces all
 width-specific colouring checks for this family, and joint interface data
-lets the law act in arbitrary contexts. The next boundary is the odd family,
-including the pentagonal GP(2,0) cap. Its monochromatic escape, geometric
-recognition in broader residual maps and eventual coverage remain open.
+lets the law act in arbitrary contexts. The odd family now has the coupled
+repair below on its connected-exterior geometric domain. Recognition in
+broader residual maps, disconnected odd-width exteriors and eventual coverage
+remain open.
 The finite GP(2,0) example does not certify those universal statements or
 establish minimality.
 The [audit receipt](../../../../tools/fourcolor/classical/padded-cap-measurements.json)
@@ -1809,3 +1811,71 @@ absence of the complete classical theorem and finite tube-stabilization
 certificates. All 633 catalogue entries and 630 original configuration
 certificate dependencies remain; this checkpoint replaces no further
 certificate in the complete assembly.
+
+## Repairing a constant cap boundary
+
+The [physical repair][cap-physical] reconstructs at every sector count
+`m ≥ 2`, including odd widths, when the actual exterior component matching
+is noncrossing in the cap's ordered ports. It retains both pieces together.
+For a nonconstant boundary, apply the earlier cap law. For a constant
+boundary, choose one actual bichromatic exterior component joining adjacent
+ports and switch the whole component. Renaming the two smaller cycle colours
+first aligns their shared edge with the intended new boundary colour; changing
+that edge then changes exactly the same two ports. Both pieces remain properly
+coloured with one common, now nonconstant, boundary word. The cap law applies
+and reconstructs the original sewn graph.
+
+An [adjacent-pair theorem][matching-ear] supplies that component at every
+boundary width. Choose a shortest chord of the physical perfect matching.
+If it contains an interior port, noncrossing puts that port's mate inside
+as well and gives a shorter chord. Thus a shortest chord joins consecutive
+ports. The [physical component switch][constant-repair] preserves an actual
+exterior colouring. No table of matching shapes or cap boundary words is used.
+
+The [embedded consumer][cap-physical-geometry] discharges noncrossing from
+spherical geometry. An exact local isomorphism identifies the cap's vertices,
+internal edge mates, cyclic stars and boundary ports with an actual vertex
+shore. Its preceding-port return and the opposite complementary-shore orders
+determine the exterior coordinates. The cap's connectivity follows from the
+isomorphism; **exterior connectivity remains explicit**. The spherical
+separator theorem supplies noncrossing for every physical exterior colouring.
+Replacing this recognized cap preserves the connected bridgeless spherical
+cubic class, removes exactly `6m` vertices and reconstructs an ambient
+colouring. A vertex-minimal counterexample therefore has no such occurrence.
+Recognition from a broader face pattern and universal coverage are additional
+obligations.
+
+The GSLT map in [the repair module][cap-physical] acts on actual closed-map
+colouring witnesses. The cap and its exterior are one joint witness, so the
+component switch may change exterior colours. Horizontal composition preserves
+separate surrounding GSLT witnesses and outer observations. This is the precise
+compositional domain of this cell. The earlier even-width cell still fixes
+every cap-exterior colour in arbitrary exteriors, including disconnected ones.
+Neither map establishes equality of colouring counts or a certified executable
+recolouring history.
+
+The [independent replay][cap-physical-probe] checks 476 noncrossing matchings
+at 6, 10 and 14 ports and 12,000 adjacent-pair colour choices. It also checks
+84 literal closed-map repairs: all six ordered colour pairs at sector counts
+2 through 15. In the pentagonal-sector example, a 50-vertex cap/cycle sewing
+reduces to a 20-vertex smaller map. One actual exterior component changes
+four dart colours, and cap reconstruction retains that repaired exterior.
+The rotations, vertex stars, edge agreement and strict whole-map counts are
+checked directly. These finite examples are program evidence; they are not
+Lean certificates of the fixtures or a normal-form coverage result.
+
+The [audit][cap-physical-audit] checks the physical switch, geometric order,
+strict reduction, minimality and GSLT consumers. Its [receipt][cap-physical-measurements]
+records 14 roots and 23,078 dependency declarations, with only the three
+standard axioms. The complete classical theorem and finite tube-stabilization
+certificates are absent from these proofs. This broadens a uniform family;
+it removes no further catalogue entry or original certificate dependency
+from the complete assembly. Those counts remain 633 and 630.
+
+[cap-physical]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPhysicalRepair.lean
+[matching-ear]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/NoncrossingMatchingEar.lean
+[constant-repair]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/ConstantBoundaryKempeRepair.lean
+[cap-physical-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPhysicalGeometry.lean
+[cap-physical-probe]: ../../../../tools/fourcolor/classical/padded-cap-physical-probe.json
+[cap-physical-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPhysicalAudit.lean
+[cap-physical-measurements]: ../../../../tools/fourcolor/classical/padded-cap-physical-measurements.json

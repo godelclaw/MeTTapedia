@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapAudit
+import Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
