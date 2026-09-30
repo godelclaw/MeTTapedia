@@ -914,6 +914,76 @@ such a core. Coverage of graphs with more widely separated pentagons remains
 an explicit task. The [receipt][diamond-measurements] records source and
 artifact hashes, checks, scope and unchanged complete-assembly counts.
 
+## Recognizing the mixed diamond
+
+The next member of the shared diamond family now has an actual geometric
+interpretation. Start with a pentagonal face and three consecutive neighbours
+of lengths five, six, five. The remaining two neighbour lengths are unrestricted.
+This is the thirteen-vertex, seven-port dual of configuration 2, whose abstract
+repair already uses the same joint-profile law as configurations 1 and 4.
+
+[MixedDiamondFaceRecognition][mixed-recognition] constructs the occurrence
+from those face lengths and the ambient normal form. It follows real darts,
+preserves rotations and reversals, and proves all thirteen positions distinct.
+The common dart-separation argument handles 464 of the 468 ordered
+vertex/phase cases under triangle-freeness. One four-edge path, transported
+in both directions, resolves the four remaining cases using absence of
+four-cycles. Minimality supplies both girth restrictions.
+
+Odd boundary width adds a geometric obligation. With seven possible ports,
+a hidden internal chord could leave five actual outgoing edges. Cut parity
+does not rule that out. [The seven-port boundary law][seven-boundary] uses
+internal-six connectivity: every cyclic five-cut has a shore of at most five
+vertices. Here both shores have at least six, so that hidden cut is impossible.
+Every unpaired dart really reaches the exterior. No distinctness assumption
+on the exterior attachment vertices is added.
+
+The representation change preserves the information repair needs. The
+[colouring isomorphism][colouring-isomorphism] sends a whole interior
+assignment to the actual region, reads back each boundary colour, and has an
+inverse recovering the original assignment. The
+[arbitrary-width context theorem][open-repair] then glues two compatible
+whole assignments. The recognized region inherits the existing
+`DiamondProfileReducibility.repair002`, with no new colour certificate.
+This is an exact transfer of a successful argument between representations.
+
+The remaining obligations are visible in the statements:
+
+| Step | Status |
+| --- | --- |
+| Four actual face lengths give the full thirteen-vertex occurrence | Proved under the stated ambient normal form; minimality supplies that form |
+| The joint boundary observation transports the existing repair | Proved, retaining genuine whole-shore colouring witnesses |
+| Compatible interior and exterior assignments reconstruct the original map | Proved with physical Kempe closure and one initial exterior colouring explicit |
+| The actual seven-port exterior has that closure | Open; the present physical-to-reference bridge is specialized to six ports |
+| A valid strict replacement and whole-map decrease | Open; every introduced vertex must be counted |
+| The known local patterns cover the intended source class | Open |
+
+The [audit][mixed-audit] checks 21 roots and 27,512 dependency declarations,
+using only `propext`, `Classical.choice` and `Quot.sound`. It excludes complete
+Four Colour endpoints, original catalogue certificates and superseded
+independent repairs. The existing six-port face reductions also pass their
+audits after the generic transport extension. The
+[measurement record][mixed-measurements] separates this recognition from
+strict reduction and catalogue compression: totals remain 633 configurations
+and 630 original certificate dependencies.
+
+An [independent replay][mixed-probe] verifies the literal tables, ordered dual
+correspondence, all collision traces and actual face traversals. In the same
+137 fixtures it finds 1,059 rooted occurrences on 792 central faces in 130
+maps; every occurrence has seven outgoing ports. This motivates completing
+the exterior theorem, without claiming that the census establishes normal
+form or universal coverage. The assignment bijection concerns exact
+representation changes; it asserts neither count preservation under graph
+reduction nor an executable Kempe history.
+
+[mixed-recognition]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceRecognition.lean
+[seven-boundary]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartSevenBoundary.lean
+[colouring-isomorphism]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleIsomorphismColoring.lean
+[open-repair]: ../../../../lean/fourcolor-classical/MettapediaFourColor/OpenTangleKempeRepair.lean
+[mixed-audit]: ../../../../lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceRecognitionAudit.lean
+[mixed-measurements]: ../../../../tools/fourcolor/classical/mixed-diamond-measurements.json
+[mixed-probe]: ../../../../tools/fourcolor/classical/mixed-diamond-probe.json
+
 [certificate]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/GoertzelV24FiveTubeExclusion.lean
 [corona-traversal]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FacialCoronaTraversal.lean
 [corona-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PentagonalCoronaGeometry.lean

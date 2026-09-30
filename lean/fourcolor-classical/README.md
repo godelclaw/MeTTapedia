@@ -419,6 +419,33 @@ test leaves an abstract closed obstruction, while the smaller diamond
 reduction succeeds under the proved source hypotheses. No claim of universal
 pattern occurrence follows from the census or the local reduction.
 
+[MixedDiamondFaceRecognition](MettapediaFourColor/MixedDiamondFaceRecognition.lean)
+now constructs configuration 2's thirteen-vertex, seven-port occurrence from
+a central pentagon and consecutive neighbour lengths five, six, five.
+The other two neighbours remain unrestricted. At this odd boundary width,
+cyclic-five connectivity and degree parity alone allow a hidden five-cut;
+cubic-dual internal-six connectivity excludes it. Minimality supplies that
+stronger ambient hypothesis. Vertex distinctness, the complete dart map and
+all seven outgoing ports are derived from the actual face pattern.
+
+[OpenTangleKempeRepair](MettapediaFourColor/OpenTangleKempeRepair.lean) transports
+whole colouring witnesses and their ordered boundary observation through
+the constructed isomorphism. The actual region therefore inherits
+`DiamondProfileReducibility.repair002`. The context theorem glues compatible
+interior and exterior witnesses at arbitrary boundary width, with physical
+Kempe closure of the exterior explicit. Establishing that closure at seven
+ports, the replacement geometry and its whole-map strict decrease remain
+open. Exact representation changes give a bijection of colouring assignments;
+no counting or executable recolouring claim is made for a graph reduction.
+
+The [new audit](MettapediaFourColor/MixedDiamondFaceRecognitionAudit.lean)
+checks 21 roots and 27,512 dependency declarations using only the standard
+three axioms. The [receipt](../../tools/fourcolor/classical/mixed-diamond-measurements.json)
+and [independent replay](../../tools/fourcolor/classical/mixed-diamond-probe.json)
+record 468 geometric separation cases and 1,059 rooted occurrences across
+130 of 137 existing fixtures. No new colour certificate, catalogue removal,
+complete-proof dependency replacement or universal coverage is claimed.
+
 The hypermap dictionary preserves actual dart permutations, components and
 planarity. Reconstruction retains compatible disk and exterior colourings as
 GSLT witnesses and glues them into an explicit ambient colouring. The graph

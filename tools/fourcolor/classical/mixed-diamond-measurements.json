@@ -1,0 +1,256 @@
+{
+  "status": "Kernel-checked mixed-diamond face recognition, exact representation transport and shared repair on the actual shore. Physical exterior closure and strict replacement remain open.",
+  "completed_utc": "2026-09-30T03:23:54.818627+00:00",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "build_base_revision": "48c2f8637f56724e99580a971e74e99cff9c5ee1",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartSeparation.lean",
+      "source_sha256": "fce2a66efaaf206dea99006c1eea5785b10908046934031dbb2f2261889170a1",
+      "olean_sha256": "ad503246a378f750532df019fcd434d22039d5b0ba7150219ef9d2b4bf350416",
+      "olean_bytes": 570552,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PartialCubicDartSevenBoundary",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/PartialCubicDartSevenBoundary.lean",
+      "source_sha256": "66524e04abc0b2d0d0288013918c7a89e61b300c93fdf1c65639fba77cf084c8",
+      "olean_sha256": "08a2c9dea34ffd26af53d697e4ef06b2b2e256c7200a527b5a9e3f182b860117",
+      "olean_bytes": 406904,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.MixedDiamondSeparation",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/MixedDiamondSeparation.lean",
+      "source_sha256": "20d07f381e78c69bb3b00ad3724eb1d14328d63d78c4326aa54bb34ce36b9228",
+      "olean_sha256": "c10ef91ca6808f8aa444f3b9859062caa5f5808d26323a0725486c0dd9e49984",
+      "olean_bytes": 228848,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.MixedDiamondGeometry",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/MixedDiamondGeometry.lean",
+      "source_sha256": "45c2fb0fd120892092769d47a1af6f57b9fe647b88af6899f3b693df0358cb94",
+      "olean_sha256": "bbfc771e9dcecd5b602d30615d68b9abe58cd2d3bf22f1af3ca707da8d004fc0",
+      "olean_bytes": 901496,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphismColoring",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleIsomorphismColoring.lean",
+      "source_sha256": "5795c4510f0f7f089be0bc3aa454a7bdeeb0688628171b9531359578897d47fe",
+      "olean_sha256": "8a59e42f56e679377b13172a2f087c322ad9e35a8bcf6fd6b67a8504176e5ae8",
+      "olean_bytes": 203032,
+      "reported_build_seconds": null
+    },
+    {
+      "module": "MettapediaFourColor.OpenTangleKempeRepair",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/OpenTangleKempeRepair.lean",
+      "source_sha256": "184b40bf8067ef1691cbd43b78c9be2185271e5739388a59fd10bf64bf30634a",
+      "olean_sha256": "090cf795a2979c90d31d47f7de4434ec8e82973cf550586430c79ea30d2cd335",
+      "olean_bytes": 244952,
+      "reported_build_seconds": 2.7
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondTangle",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondTangle.lean",
+      "source_sha256": "cf12abb7505a0bb098664519da580ebcbcdbff9e51678a34dcbe8b215ee45591",
+      "olean_sha256": "4b7e62551e1fd827ab1b5d34b3ed83b90e58b7b1f45731c3c4aea16918e66e31",
+      "olean_bytes": 236512,
+      "reported_build_seconds": 6.5
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondRecognition",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondRecognition.lean",
+      "source_sha256": "43ab893c1f9ec2755cd3cbdacbd62f73196db29218c121a2ad31f699c275686d",
+      "olean_sha256": "1f603c47351263b4195297935292437f22d16bdafbeee409c140c7c3c01c5a56",
+      "olean_bytes": 212744,
+      "reported_build_seconds": 4.8
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondFaceRecognition",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceRecognition.lean",
+      "source_sha256": "461e473fafe92e56b77d2b1da2c94c2347f352768bfd7577bea4c8d4abd47dfc",
+      "olean_sha256": "26c9fc9fae502b1e048cca098ae2be430b93988a75a38c7c2c340a6971236936",
+      "olean_bytes": 275000,
+      "reported_build_seconds": 3.5
+    },
+    {
+      "module": "MettapediaFourColor.MixedDiamondFaceRecognitionAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/MixedDiamondFaceRecognitionAudit.lean",
+      "source_sha256": "683a004bef08b2e85cfd640ba51829fd8b3b4c0ac8451dbcac597bc4b4974794",
+      "olean_sha256": "133250c18ee27d9a7fde12f93a6afb36b11ae6a092096bf6cc9d61eaba6290b5",
+      "olean_bytes": 3400,
+      "reported_build_seconds": 8.4
+    }
+  ],
+  "audit": {
+    "roots": [
+      "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation.Realization.separatesWith_sound",
+      "Mettapedia.GraphTheory.FourColor.MixedDiamond.separates_all",
+      "Mettapedia.GraphTheory.FourColor.MixedDiamond.vertex_injective",
+      "Mettapedia.GraphTheory.FourColor.MixedDiamond.realization",
+      "Mettapedia.GraphTheory.FourColor.MixedDiamond.vertex_injective_of_girth",
+      "Mettapedia.GraphTheory.FourColor.PartialCubicDartSeparation.Realization.unpaired_leaves_of_internalSix",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphism.Iso.mapColor_valid",
+      "Mettapedia.GraphTheory.FourColor.OpenTangleIsomorphism.Iso.coloringEquiv",
+      "FourColor.OpenTangleKempeRepair.trace_transport",
+      "FourColor.OpenTangleKempeRepair.glue_of_repair",
+      "FourColor.OpenTangleKempeRepair.trace_valid",
+      "FourColor.MixedDiamondPatch.Tangle.colouring_valid",
+      "FourColor.MixedDiamondPatch.Tangle.boundary_colouring",
+      "FourColor.MixedDiamondPatch.Tangle.repair",
+      "FourColor.MixedDiamondPatch.Tangle.open_repair",
+      "FourColor.MixedDiamondPatch.Tangle.Recognition.recognized",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.recognized",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.recognized_of_minimality",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.actual_repair",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.deleted_card",
+      "FourColor.MixedDiamondPatch.Tangle.FaceRecognition.colorable_of_exterior_closure"
+    ],
+    "combined_dependency_closure": 27512,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_chains": [
+      "actual pentagonal and hexagonal face traversal",
+      "joint dart transport with independently justified terminal tests",
+      "all seven unpaired slots leave the region by odd parity and internal-six connectivity",
+      "exact open-tangle correspondence and whole-colouring transport",
+      "the existing shared configuration-2 profile repair",
+      "simultaneous witness gluing under an explicit physical exterior closure premise"
+    ],
+    "excluded": [
+      "complete Four Colour endpoints",
+      "every FourColor.Bulk.Cfg* original certificate",
+      "former configuration-specific diamond repair and coversRec",
+      "older corona terminal-colouring and answer-cover checks",
+      "older 720-case corona separation theorem"
+    ]
+  },
+  "validation": {
+    "gate": [
+      "MettapediaFourColor.MixedDiamondFaceRecognitionAudit",
+      "MettapediaFourColor.PentagonalDiamondFaceReductionAudit",
+      "MettapediaFourColor.PentagonalCoronaFaceReductionAudit"
+    ],
+    "build_jobs": 3952,
+    "exit_code": 0,
+    "new_module_warnings": 0,
+    "timing_scope": "Module frontend-plus-kernel times for final sources where observed. Null means not timed in the recorded gates. No isolated kernel or whole-baseline speedup is claimed.",
+    "complete_baseline_rerun": false,
+    "baseline_reason": "Complete assembly and existing profile certificates are unchanged. Both existing face-reduction audits passed after the generic separation addition."
+  },
+  "mathematical_scope": {
+    "central_face_length": 5,
+    "neighbour_face_lengths_required": {
+      "0": 6,
+      "1": 5,
+      "4": 5
+    },
+    "neighbour_face_lengths_unrestricted": [
+      2,
+      3
+    ],
+    "ambient_hypotheses": [
+      "finite simple cubic graph with connected cyclic rotation system",
+      "bridgeless and spherical",
+      "minimum face size five",
+      "cubic-dual internal-six connectivity"
+    ],
+    "derived_local_conditions": [
+      "thirteen distinct selected vertices",
+      "all thirty-nine incident darts",
+      "seven genuine outgoing ports",
+      "exact open-tangle isomorphism",
+      "shared repair with genuine whole-shore colouring witnesses"
+    ],
+    "minimality_supplies_ambient_hypotheses": true,
+    "distinct_exterior_endpoints_required": false,
+    "patch_vertices": 13,
+    "interface_ports": 7,
+    "replacement_vertices": null,
+    "whole_map_vertex_decrease": null,
+    "physical_exterior_closure_proved": false,
+    "whole_map_reconstruction_conditional_on_exterior_closure": true,
+    "initial_genuine_exterior_colouring_required": true,
+    "strict_reduction_proved": false,
+    "universal_occurrence_or_coverage_proved": false,
+    "whole_assignment_bijection_for_exact_representation_changes": true,
+    "colour_count_preservation_under_graph_reduction_claimed": false,
+    "executable_Kempe_history_claimed": false
+  },
+  "compression": {
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies": 630,
+    "additional_original_certificates_replaced": 0,
+    "new_colour_certificates": 0,
+    "shared_repair": "FourColor.DiamondProfileReducibility.repair002",
+    "new_geometric_separation_cases": 468,
+    "triangle_free_cases": 464,
+    "four_cycle_cases": 4,
+    "literal_coordinate_and_incidence_checks_retained": true,
+    "integrated_into_complete_assembly": false,
+    "certificate_bytes_saved_claimed": 0,
+    "kernel_seconds_saved_claimed": 0
+  },
+  "independent_program": {
+    "script": "mixed_diamond_probe.py",
+    "script_sha256": "9766dd922b181c0764167a1e87dd839f523d0c7d2f67fc7a7fd8c84ffbfd0b8a",
+    "report": "mixed-diamond-probe.json",
+    "report_sha256": "9e9affddb8e37e6fe4f35b1cc599a5d110dee827484df26dd1f386d84f8b2c2a",
+    "face_census": {
+      "maps": 137,
+      "rooted_occurrences": 1059,
+      "distinct_central_faces": 792,
+      "distinct_vertex_subsets": 1059,
+      "maps_with_pattern": 130,
+      "actual_port_histogram": {
+        "7": 1059
+      },
+      "all_occurrences_sha256": "fdfdd396f52dd8e19ba4cb3d5f81e154c89635d5312ec3bcde35280b2ab615f8",
+      "first_occurrence": {
+        "id": "C24-plantri-0",
+        "central_face": 0,
+        "root": [
+          1,
+          4
+        ],
+        "vertices": [
+          15,
+          16,
+          10,
+          17,
+          11,
+          5,
+          6,
+          2,
+          1,
+          4,
+          9,
+          3,
+          0
+        ],
+        "neighbour_lengths": [
+          6,
+          5,
+          5,
+          5,
+          5
+        ],
+        "actual_ports": 7
+      }
+    },
+    "interpretation": "The existing fixtures are checked independently for the stated local pattern and exact dart operations. Their normal-form hypotheses and universal coverage are not inferred."
+  },
+  "remaining": [
+    "physical-to-reference Kempe closure at seven ordered ports, preferably through a width-independent theorem",
+    "derive the actual exterior geometry needed by that closure",
+    "construct a valid strict replacement and count all introduced vertices",
+    "integrate and audit further complete-proof replacements",
+    "geometric supply and coverage for sources lacking the known local patterns"
+  ]
+}

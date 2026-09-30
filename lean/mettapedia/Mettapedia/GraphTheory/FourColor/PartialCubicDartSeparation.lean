@@ -64,6 +64,17 @@ def separates (P : Diagram W) : ℕ → Dart W → Dart W → Bool
       | some a', some b' => separates P n a' b'
       | _, _ => false
 
+/-- The same joint search can use additional independently proved terminal
+separations, such as a genuine four-cycle obstruction. -/
+def separatesWith (P : Diagram W) (terminal : Dart W → Dart W → Bool) :
+    ℕ → Dart W → Dart W → Bool
+  | 0, a, b => terminal a b
+  | n + 1, a, b => terminal a b ||
+      separatesWith P terminal n (P.rotate a) (P.rotate b) ||
+      match P.flip a, P.flip b with
+      | some a', some b' => separatesWith P terminal n a' b'
+      | _, _ => false
+
 end Diagram
 
 variable {W V : Type*} {G : SimpleGraph V}
@@ -191,6 +202,33 @@ theorem separates_sound (ht : TriangleFree (G := G)) {n : ℕ} {a b : Dart W}
     rcases h with h | h
     · rcases h with h | h
       · exact F.apart_sound ht h he
+      · apply ih h
+        rw [F.rotate_eq, F.rotate_eq, he]
+    · cases ha : P.flip a with
+      | none => simp [ha] at h
+      | some a' =>
+        cases hb : P.flip b with
+        | none => simp [ha, hb] at h
+        | some b' =>
+          apply ih (by simpa [ha, hb] using h)
+          exact (F.flip_eq a a' ha).symm.trans
+            ((congrArg SimpleGraph.Dart.symm he).trans (F.flip_eq b b' hb))
+
+/-- Additional terminal tests are sound exactly when their claimed dart
+inequalities hold in the actual realization. Joint transport retains that
+same equality hypothesis throughout the search. -/
+theorem separatesWith_sound (terminal : Dart W → Dart W → Bool)
+    (hsound : ∀ a b, terminal a b = true → F.dart a ≠ F.dart b)
+    {n : ℕ} {a b : Dart W} (h : P.separatesWith terminal n a b = true) :
+    F.dart a ≠ F.dart b := by
+  induction n generalizing a b with
+  | zero => exact hsound a b h
+  | succ n ih =>
+    intro he
+    simp only [Diagram.separatesWith, Bool.or_eq_true] at h
+    rcases h with h | h
+    · rcases h with h | h
+      · exact hsound a b h he
       · apply ih h
         rw [F.rotate_eq, F.rotate_eq, he]
     · cases ha : P.flip a with

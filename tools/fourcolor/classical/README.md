@@ -1359,3 +1359,37 @@ The report retains every obstruction word and its chromogram witness.
 This finite evidence is separate from the kernel theorem and does not assert
 that an actual exterior realizes that obstruction or that all source maps
 contain the smaller core.
+
+## Mixed diamond: exact recognition at seven ports
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.MixedDiamondFaceRecognitionAudit
+```
+
+A central pentagon with consecutive neighbour lengths five, six, five gives
+the thirteen-vertex dual of configuration 2. The other two neighbour lengths
+are unrestricted. The actual occurrence and ordered colouring observation
+are proved; `DiamondProfileReducibility.repair002` supplies the shared repair.
+The context endpoint explicitly assumes physical Kempe closure of its
+seven-port exterior and one genuine exterior colouring. A strict replacement
+and unconditional exterior closure are not part of this checkpoint.
+
+`mixed-diamond-measurements.json` records 21 audit roots and 27,512 dependency
+declarations. The audit excludes the complete Four Colour endpoints, original
+catalogue certificates and older independent colouring checks. The existing
+six-port diamond and corona audits also pass after the generic dart-transport
+extension. Global totals remain 633 configurations and 630 original certificate
+dependencies; this recognition introduces no colour certificate.
+
+```sh
+python3 tools/fourcolor/classical/mixed_diamond_probe.py
+```
+
+Run the independent replay from the repository root. It reconstructs the
+literal diagram, all nine codec tables and its ordered dual correspondence,
+then replays 468 collision/phase cases. Four cases need four-cycle exclusion;
+the others already separate under triangle-freeness. In the same 137 fixtures,
+the face scan finds 1,059 rooted occurrences, 792 central faces and 130 maps
+with the pattern. All scanned occurrences have seven actual ports. The scan
+does not certify each fixture's internal-six normal form or universal coverage.

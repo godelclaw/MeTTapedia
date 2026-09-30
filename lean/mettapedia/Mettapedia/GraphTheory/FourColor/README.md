@@ -130,6 +130,22 @@ excludes the older corona's separate colouring checks. This strengthens the
 local recognition domain and shares a proof; global coverage and additional
 catalogue replacement remain open.
 
+[MixedDiamondGeometry](MixedDiamondGeometry.lean) extends actual recognition
+to a central pentagon with consecutive neighbour lengths five, six, five.
+Joint dart transport and one four-edge path prove the thirteen positions
+distinct. [PartialCubicDartSevenBoundary](PartialCubicDartSevenBoundary.lean)
+supplies the odd-width inducedness law: seven unpaired slots really reach
+the exterior when both shores are large enough and internal-six connectivity
+excludes the possible five-cut.
+
+[OpenTangleIsomorphismColoring](OpenTangleIsomorphismColoring.lean) gives
+inverse whole-colouring transport, preserving each boundary colour. Its
+[actual consumer](../../../../fourcolor-classical/MettapediaFourColor/MixedDiamondFaceRecognition.lean)
+inherits configuration 2's existing shared repair on the recognized shore.
+The seven-port exterior closure and a valid strict replacement remain open.
+This representation theorem does not assert count preservation under
+reduction or transport of executable Kempe histories.
+
 ## Independent corridor route — checkpoint of 22 September 2026
 
 The following table describes the earlier direct Count proposal. Its open

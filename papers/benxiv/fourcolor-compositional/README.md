@@ -48,6 +48,15 @@ shows why changing the interface succeeds where a stronger larger-boundary
 contract fails. This is a broader local reduction, with global coverage
 still to establish; it removes no further catalogue entries.
 
+The next shared member now has [actual face recognition](tube-example/README.md#recognizing-the-mixed-diamond).
+A central pentagon with consecutive neighbouring lengths five, six, five
+constructs configuration 2's thirteen-vertex, seven-port core. Exact
+representation transport brings its existing joint repair to the selected
+region, retaining genuine colouring witnesses. This advances the geometric
+side of the same mechanism without another colour certificate. Physical
+Kempe closure of the seven-port exterior and a strict replacement remain
+open; the new recognition is not yet another complete local reduction.
+
 The [geometric seam result](tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 now derives compatibility between consecutive recognized rows. Their actual
 hexagonal seam faces force the port matching to be a cyclic translation.
