@@ -24,8 +24,7 @@ namespace Mettapedia.QuantumTheory.YangMills.StrongCouplingTwist
 
 variable {E : Type*} [Group E]
 
-/-- The positively oriented plaquette product in boundary order. -/
-def holonomy (v : Fin 4 → E) : E := v 0 * v 1 * (v 2)⁻¹ * (v 3)⁻¹
+export StrongCouplingCrossing (holonomy)
 
 /-- Plaquettes of the `(0,1)` stack at the specified first coordinate. -/
 def onStack {d n : ℕ} (a : ZMod (n + 3)) (p : Plaquette (d + 2) n) : Prop :=

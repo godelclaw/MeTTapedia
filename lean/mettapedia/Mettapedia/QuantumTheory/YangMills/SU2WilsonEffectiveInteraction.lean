@@ -70,6 +70,99 @@ theorem logWeight_eq_boundary (N : ℕ) (β : ℝ) (coarse : Bool) (b : FullFiel
       (IntegralKernel.integrable_continuous_fun _ (by
         exact (fullDensity N β).continuous.comp ((continuous_assemble N).comp (by fun_prop))))).symm
 
+/-- The first derivative of either generated log weight is the conditional
+expectation of the original, locally supported Wilson action score. -/
+theorem hasDerivAt_logWeight (N : ℕ) (β : ℝ) (coarse : Bool)
+    (S : Finset (AssemblyLink N)) (q b : FullField N) (t : ℝ) :
+    HasDerivAt (fun s ↦ logWeight N β coarse (SU2BoundaryResponse.boundaryCurve S q b s))
+      (-β * expectation (Measure.pi fun _ ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse))
+          (SU2BoundaryResponse.boundaryCurve S q b t))
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) S q b t)) t := by
+  simp_rw [logWeight_eq_boundary]
+  exact SU2BoundaryResponse.hasDerivAt_boundaryLogPartition β univ
+    (retainedSet (mesh coarse)) S q b t
+
+/-- An iterated derivative of the complete generated log weight; no generated
+interaction is replaced by a new Wilson-form plaquette ansatz. -/
+def mixedDerivative (N : ℕ) (β : ℝ) (coarse : Bool) (S T : Finset (AssemblyLink N))
+    (q r b : FullField N) : ℝ :=
+  deriv (fun t ↦ deriv (fun s ↦ logWeight N β coarse
+    (SU2BoundaryResponse.boundaryCurve S q (SU2BoundaryResponse.boundaryCurve T r b t) s)) 0) 0
+
+theorem mixedDerivative_eq_boundary (N : ℕ) (β : ℝ) (coarse : Bool)
+    (S T : Finset (AssemblyLink N)) (q r b : FullField N) :
+    mixedDerivative N β coarse S T q r b = SU2BoundaryResponse.mixedDerivative β univ
+      (retainedSet (mesh coarse)) S T q r b := by
+  unfold mixedDerivative SU2BoundaryResponse.mixedDerivative
+  simp_rw [logWeight_eq_boundary]
+
+theorem mixedDerivative_eq_covariance (N : ℕ) (β : ℝ) (coarse : Bool)
+    (S T : Finset (AssemblyLink N)) (q r b : FullField N)
+    (hST : Disjoint (incident S) (incident T)) :
+    mixedDerivative N β coarse S T q r b =
+      β ^ 2 * covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) S q b 0)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) T r b 0) := by
+  rw [mixedDerivative_eq_boundary]
+  exact SU2BoundaryResponse.mixedDerivative_eq_covariance β univ
+    (retainedSet (mesh coarse)) S T q r b hST
+
+/-- The Hessian of the second generated log weight is the actual conditional
+covariance remainder of the assembled two-step route. -/
+theorem mixedDerivative_eq_route_remainder (N : ℕ) (β : ℝ)
+    (S T : Finset (AssemblyLink N)) (q r b : FullField N)
+    (hST : Disjoint (incident S) (incident T)) :
+    mixedDerivative N β true S T q r b = β ^ 2 *
+      WilsonEliminationRoutes.remainder (route N β)
+        (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0))
+        (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0))
+        (coarseRestriction N b) := by
+  rw [mixedDerivative_eq_covariance N β true S T q r b hST]
+  congr 1
+  exact conditional_covariance_remainder N β _ _ b
+    (SU2BoundaryResponse.score_pin univ (retainedSet 4) S q b)
+    (SU2BoundaryResponse.score_pin univ (retainedSet 4) T r b)
+
+/-- Direct and staged second derivatives agree, including the first-stage
+conditional covariance transported under the generated first density. -/
+theorem mixedDerivative_staged (N : ℕ) (β : ℝ)
+    (S T : Finset (AssemblyLink N)) (q r b : FullField N)
+    (hST : Disjoint (incident S) (incident T)) :
+    mixedDerivative N β true S T q r b =
+      β ^ 2 * fiberCovariance (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0)))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0)))
+        (coarseRestriction N b) +
+      β ^ 2 * project (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (fiberCovariance (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0))
+          (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0)))
+        (coarseRestriction N b) := by
+  rw [mixedDerivative_eq_route_remainder N β S T q r b hST, route_remainder_staged]
+  exact mul_add _ _ _
+
+/-- The same decay rate works for both actual elimination levels, before
+choosing the ambient volume, background, directions and separated patches. -/
+theorem uniform_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (N : ℕ) (coarse : Bool) (S T : Finset (AssemblyLink N))
+      (q r b : FullField N),
+      (collar S).Nonempty → (collar T).Nonempty → 1 < polymerDist S T →
+      |mixedDerivative N β coarse S T q r b| ≤
+        3 * β ^ 2 * (256 * S.card) * (256 * T.card) *
+          Real.exp (768 * (S.card + T.card) + 2 * κ) *
+          Real.exp (-κ * polymerDist S T) := by
+  obtain ⟨κ, hκ, h⟩ := SU2BoundaryResponse.uniform_mixedDerivative hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro N coarse S T q r b
+  rw [mixedDerivative_eq_boundary]
+  exact h (volumeIndex N) univ (retainedSet (mesh coarse)) S T q r b
+
 /-- Mixed finite change of the complete effective log weight. -/
 def mixedChange (N : ℕ) (β : ℝ) (coarse : Bool) (S T : Finset (AssemblyLink N))
     (b a c : FullField N) : ℝ :=
@@ -137,7 +230,32 @@ theorem tendsto_mixedChange {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4)
   exact SU2BoundaryResponse.tendsto_growing_response hβ hβ0 (fun _ => univ)
     (fun N => retainedSet (mesh (coarse N))) b a c
 
+theorem growing_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (N : ℕ) (coarse : Bool) (q r b : FullField N),
+      |mixedDerivative N β coarse (SU2BoundaryResponse.firstPatch N)
+        (SU2BoundaryResponse.secondPatch N) q r b| ≤
+        3 * β ^ 2 * 256 ^ 2 * Real.exp (1536 + 2 * κ) *
+          Real.exp (-κ * ((N : ℝ) + 3)) := by
+  obtain ⟨κ, hκ, h⟩ := SU2BoundaryResponse.growing_mixedDerivative_bound hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro N coarse q r b
+  rw [mixedDerivative_eq_boundary]
+  exact h N univ (retainedSet (mesh coarse)) q r b
+
+theorem tendsto_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4)
+    (coarse : ℕ → Bool) (q r b : ∀ N, FullField N) :
+    Tendsto (fun N ↦ mixedDerivative N β (coarse N) (SU2BoundaryResponse.firstPatch N)
+      (SU2BoundaryResponse.secondPatch N) (q N) (r N) (b N)) atTop (𝓝 0) := by
+  simp_rw [mixedDerivative_eq_boundary]
+  exact SU2BoundaryResponse.tendsto_growing_mixedDerivative hβ hβ0 (fun _ ↦ univ)
+    (fun N ↦ retainedSet (mesh (coarse N))) q r b
+
 #print axioms logWeight_eq_boundary
+#print axioms hasDerivAt_logWeight
+#print axioms mixedDerivative_eq_covariance
+#print axioms mixedDerivative_staged
+#print axioms uniform_mixedDerivative
+#print axioms tendsto_mixedDerivative
 #print axioms uniform_mixedChange
 #print axioms growing_patches_retained
 #print axioms growing_mixedChange

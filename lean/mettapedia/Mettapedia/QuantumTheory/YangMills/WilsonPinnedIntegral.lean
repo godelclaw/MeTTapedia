@@ -26,6 +26,11 @@ def fill (held : Finset X) (b : X → E) (i : {x // x ∉ held} → E) : X → E
 def pin (held : Finset X) (b ω : X → E) : X → E :=
   fun x => if x ∈ held then b x else ω x
 
+@[simp] theorem pin_pin (held : Finset X) (b ω : X → E) :
+    pin held b (pin held b ω) = pin held b ω := by
+  funext x
+  by_cases hx : x ∈ held <;> simp [pin, hx]
+
 /-- Exact equality of the two integration conventions, for an arbitrary
 integrand and any probability law on each link. -/
 theorem integral_pin (ν₀ : Measure E) [IsProbabilityMeasure ν₀]

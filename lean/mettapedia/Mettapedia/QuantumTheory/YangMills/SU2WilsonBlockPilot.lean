@@ -1,5 +1,8 @@
 import Mettapedia.QuantumTheory.YangMills.WilsonBlockMajorant
 import Mathlib.Analysis.CStarAlgebra.Matrix
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
+import Mathlib.Analysis.Calculus.Deriv.Prod
+import Mathlib.Analysis.Calculus.Deriv.Star
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.Haar.Basic
@@ -30,7 +33,7 @@ set_option maxRecDepth 100000
 
 noncomputable section
 
-open scoped BigOperators Matrix.Norms.Elementwise
+open scoped BigOperators Matrix.Norms.Elementwise ContDiff
 open MeasureTheory Set TopologicalSpace
 
 namespace Mettapedia
@@ -52,7 +55,15 @@ instance su2ContinuousInv : ContinuousInv SU2 where
     exact continuous_induced_rng.mpr
       (continuous_star.comp continuous_subtype_val)
 
+instance su2ContinuousStar : ContinuousStar SU2 where
+  continuous_star := continuous_induced_rng.mpr
+    (continuous_star.comp continuous_subtype_val)
+
 instance su2IsTopologicalGroup : IsTopologicalGroup SU2 where
+
+@[simp] theorem su2_matrix_inv (U : SU2) : U.val⁻¹ = star U.val :=
+  Matrix.inv_eq_left_inv (Matrix.mem_unitaryGroup_iff'.mp
+    (Matrix.specialUnitaryGroup_le_unitaryGroup U.property))
 
 theorem su2_isClosed :
     IsClosed (SU2 : Set (Matrix (Fin 2) (Fin 2) ℂ)) := by
@@ -118,6 +129,156 @@ instance su2VolumeIsProbability : IsProbabilityMeasure (volume : Measure SU2) :=
 instance su2VolumeIsHaar : (volume : Measure SU2).IsHaarMeasure := by
   change su2Haar.IsHaarMeasure
   infer_instance
+
+/-! ## Smooth rotations in the actual matrix group -/
+
+/-- A real rotation, embedded in the defining representation of `SU(2)`. -/
+def su2CartanMatrix (theta : ℝ) : Matrix (Fin 2) (Fin 2) ℂ :=
+  !![(Real.cos theta : ℂ), (Real.sin theta : ℂ);
+     -(Real.sin theta : ℂ), (Real.cos theta : ℂ)]
+
+theorem su2CartanMatrix_mem (theta : ℝ) :
+    su2CartanMatrix theta ∈ Matrix.specialUnitaryGroup (Fin 2) ℂ := by
+  rw [Matrix.mem_specialUnitaryGroup_iff]
+  constructor
+  · rw [Matrix.mem_unitaryGroup_iff]
+    ext i j
+    fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
+      simp [su2CartanMatrix, Matrix.mul_apply, Fin.sum_univ_two,
+        star, Matrix.conjTranspose_apply, -Complex.ofReal_cos,
+        -Complex.ofReal_sin] <;>
+      nlinarith [Real.sin_sq_add_cos_sq theta]
+  · apply Complex.ext <;>
+      simp [su2CartanMatrix, Matrix.det_fin_two, -Complex.ofReal_cos,
+        -Complex.ofReal_sin] <;>
+      nlinarith [Real.sin_sq_add_cos_sq theta]
+
+def su2CartanElement (theta : ℝ) : SU2 :=
+  ⟨su2CartanMatrix theta, su2CartanMatrix_mem theta⟩
+
+@[simp] theorem su2CartanElement_zero : su2CartanElement 0 = 1 := by
+  apply Subtype.ext
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [su2CartanElement, su2CartanMatrix]
+
+@[fun_prop] theorem continuous_su2CartanElement : Continuous su2CartanElement := by
+  apply continuous_induced_rng.mpr
+  change Continuous su2CartanMatrix
+  apply continuous_pi
+  intro i
+  apply continuous_pi
+  intro j
+  fin_cases i <;> fin_cases j <;> simp only [su2CartanMatrix,
+    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one] <;> fun_prop
+
+/-- Smoothness is stated in the ambient matrix representation of SU(2). -/
+theorem contDiff_su2CartanMatrix : ContDiff ℝ ∞ su2CartanMatrix := by
+  have hc : ContDiff ℝ ∞ (fun t : ℝ ↦ (Real.cos t : ℂ)) := by
+    simpa only [Function.comp_def, Complex.ofRealCLM_apply] using
+      Complex.ofRealCLM.contDiff.comp (Real.contDiff_cos (n := ∞))
+  have hs : ContDiff ℝ ∞ (fun t : ℝ ↦ (Real.sin t : ℂ)) := by
+    simpa only [Function.comp_def, Complex.ofRealCLM_apply] using
+      Complex.ofRealCLM.contDiff.comp (Real.contDiff_sin (n := ∞))
+  apply contDiff_pi.mpr
+  intro i
+  apply contDiff_pi.mpr
+  intro j
+  fin_cases i <;> fin_cases j
+  · exact hc
+  · exact hs
+  · exact hs.neg
+  · exact hc
+
+/-- The ambient derivative is itself a unitary matrix, a quarter turn ahead
+of the original curve. This gives a uniform entrywise derivative bound. -/
+theorem hasDerivAt_su2CartanMatrix (t : ℝ) :
+    HasDerivAt su2CartanMatrix (su2CartanMatrix (t + Real.pi / 2)) t := by
+  have hc : HasDerivAt (fun s : ℝ ↦ (Real.cos s : ℂ)) (-(Real.sin t : ℂ)) t := by
+    simpa only [Function.comp_def, Complex.ofRealCLM_apply, Complex.ofReal_neg] using
+      Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt t (Real.hasDerivAt_cos t)
+  have hs : HasDerivAt (fun s : ℝ ↦ (Real.sin s : ℂ)) (Real.cos t : ℂ) t := by
+    simpa only [Function.comp_def, Complex.ofRealCLM_apply] using
+      Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt t (Real.hasDerivAt_sin t)
+  apply hasDerivAt_pi.mpr
+  intro i
+  apply hasDerivAt_pi.mpr
+  intro j
+  fin_cases i <;> fin_cases j
+  · simpa [su2CartanMatrix, Real.cos_add_pi_div_two, Real.sin_add_pi_div_two,
+      -Complex.ofReal_cos, -Complex.ofReal_sin] using hc
+  · simpa [su2CartanMatrix, Real.cos_add_pi_div_two, Real.sin_add_pi_div_two,
+      -Complex.ofReal_cos, -Complex.ofReal_sin] using hs
+  · simpa [su2CartanMatrix, Real.cos_add_pi_div_two, Real.sin_add_pi_div_two,
+      Pi.neg_apply, -Complex.ofReal_cos, -Complex.ofReal_sin] using hs.fun_neg
+  · simpa [su2CartanMatrix, Real.cos_add_pi_div_two, Real.sin_add_pi_div_two,
+      -Complex.ofReal_cos, -Complex.ofReal_sin] using hc
+
+/-- Constant-curve calculus in the same product topology as the matrix
+derivative identities below. -/
+theorem hasDerivAt_const_matrix (A : Matrix (Fin 2) (Fin 2) ℂ) (t : ℝ) :
+    HasDerivAt (fun _ : ℝ ↦ A) 0 t := by
+  apply hasDerivAt_pi.mpr
+  intro i
+  apply hasDerivAt_pi.mpr
+  intro j
+  exact hasDerivAt_const t (A i j)
+
+/-- Entrywise matrix multiplication calculus for the ambient representation.
+It uses finite sums and does not change the chosen matrix norm. -/
+theorem hasDerivAt_matrix_mul {f g : ℝ → Matrix (Fin 2) (Fin 2) ℂ}
+    {df dg : Matrix (Fin 2) (Fin 2) ℂ} {t : ℝ}
+    (hf : HasDerivAt f df t) (hg : HasDerivAt g dg t) :
+    HasDerivAt (fun s ↦ f s * g s) (df * g t + f t * dg) t := by
+  apply hasDerivAt_pi.mpr
+  intro i
+  apply hasDerivAt_pi.mpr
+  intro j
+  have hd := HasDerivAt.fun_sum (u := Finset.univ) (fun k _ ↦
+    ((hasDerivAt_pi.mp (hasDerivAt_pi.mp hf i) k).mul
+      (hasDerivAt_pi.mp (hasDerivAt_pi.mp hg k) j)))
+  simpa only [Matrix.mul_apply, Matrix.add_apply, Finset.sum_add_distrib, Pi.mul_apply] using hd
+
+theorem contDiff_matrix_mul {f g : ℝ → Matrix (Fin 2) (Fin 2) ℂ}
+    (hf : ContDiff ℝ ∞ f) (hg : ContDiff ℝ ∞ g) :
+    ContDiff ℝ ∞ (fun t ↦ f t * g t) := by
+  apply contDiff_pi.mpr
+  intro i
+  apply contDiff_pi.mpr
+  intro j
+  simpa only [Matrix.mul_apply, Finset.sum_apply] using ContDiff.sum (s := Finset.univ) (fun k _ ↦
+    (contDiff_pi.mp (contDiff_pi.mp hf i) k).mul (contDiff_pi.mp (contDiff_pi.mp hg k) j))
+
+/-- Conjugation permits every background and independently chosen local
+group frame, without requiring the field to be Cartan-valued. -/
+def rotationPerturbation (q b : SU2) (t : ℝ) : SU2 :=
+  q * su2CartanElement t * q⁻¹ * b
+
+@[simp] theorem rotationPerturbation_zero (q b : SU2) : rotationPerturbation q b 0 = b := by
+  simp [rotationPerturbation, mul_assoc]
+
+@[fun_prop] theorem continuous_rotationPerturbation (q b : SU2) :
+    Continuous (rotationPerturbation q b) := by
+  unfold rotationPerturbation
+  exact ((continuous_const.mul continuous_su2CartanElement).mul continuous_const).mul
+    continuous_const
+
+theorem hasDerivAt_rotationPerturbation (q b : SU2) (t : ℝ) :
+    HasDerivAt (fun s ↦ (rotationPerturbation q b s).val)
+      (rotationPerturbation q b (t + Real.pi / 2)).val t := by
+  simpa [rotationPerturbation, su2CartanElement, mul_zero, zero_mul, add_zero, zero_add] using
+    hasDerivAt_matrix_mul
+    (hasDerivAt_matrix_mul
+      (hasDerivAt_matrix_mul (hasDerivAt_const t q.val) (hasDerivAt_su2CartanMatrix t))
+      (hasDerivAt_const t (q⁻¹).val)) (hasDerivAt_const t b.val)
+
+theorem contDiff_rotationPerturbation (q b : SU2) :
+    ContDiff ℝ ∞ (fun t ↦ (rotationPerturbation q b t).val) := by
+  have hq : ContDiff ℝ ∞ (fun _ : ℝ ↦ q.val) := contDiff_const
+  have hqi : ContDiff ℝ ∞ (fun _ : ℝ ↦ (q⁻¹).val) := contDiff_const
+  have hb : ContDiff ℝ ∞ (fun _ : ℝ ↦ b.val) := contDiff_const
+  simpa only [rotationPerturbation, su2CartanElement, Submonoid.coe_mul] using
+    contDiff_matrix_mul (contDiff_matrix_mul
+      (contDiff_matrix_mul hq contDiff_su2CartanMatrix) hqi) hb
 
 /-! ## Exact `b = 2` four-dimensional block geometry -/
 

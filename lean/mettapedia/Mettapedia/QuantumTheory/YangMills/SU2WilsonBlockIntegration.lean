@@ -1,5 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.SU2WilsonBlockPilot
 import Mettapedia.QuantumTheory.YangMills.WilsonSeparator
+import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
 
 /-!
 # Exact integration of the four-dimensional SU(2) Wilson block
@@ -11,6 +12,7 @@ positive and continuous, and its effective action is a continuous logarithm.
 -/
 
 set_option autoImplicit false
+set_option maxHeartbeats 800000
 noncomputable section
 
 open MeasureTheory
@@ -43,6 +45,130 @@ theorem potential_bounds (U : SU2) : 0 ≤ potential U ∧ potential U ≤ 2 := 
     1 - (Matrix.trace U.1).re / Fintype.card (Fin 2) ≤ 2
   simp only [Matrix.trace, Fin.sum_univ_two, Matrix.diag_apply, Complex.add_re, Fintype.card_fin, Nat.cast_ofNat]
   constructor <;> linarith
+
+/-! ## Local derivatives of the Wilson plaquette -/
+
+/-- A normalized trace contribution to an action derivative. -/
+def traceScore (U : SU2) : ℝ := -(Matrix.trace U.val).re / 2
+
+theorem traceScore_eq_potential_sub_one (U : SU2) : traceScore U = potential U - 1 := by
+  change -(Matrix.trace U.val).re / 2 =
+    (1 - (Matrix.trace U.val).re / Fintype.card (Fin 2)) - 1
+  norm_num
+  ring
+
+theorem abs_traceScore_le (U : SU2) : |traceScore U| ≤ 1 := by
+  rw [traceScore_eq_potential_sub_one, abs_le]
+  have h := potential_bounds U
+  constructor <;> linarith
+
+@[fun_prop] theorem continuous_traceScore : Continuous traceScore := by
+  unfold traceScore
+  exact (Complex.continuous_re.comp continuous_subtype_val.matrix_trace).neg.div_const 2
+
+/-- Insert one ambient link derivative in the correctly oriented plaquette.
+For a reversed link the ambient derivative is its adjoint. -/
+def holonomyInsertion (v : Fin 4 → SU2) (i : Fin 4) (u : SU2) : SU2 :=
+  match i with
+  | 0 => u * v 1 * star (v 2) * star (v 3)
+  | 1 => v 0 * u * star (v 2) * star (v 3)
+  | 2 => v 0 * v 1 * star u * star (v 3)
+  | 3 => v 0 * v 1 * star (v 2) * star u
+
+theorem holonomyInsertion_eq_holonomy_update (v : Fin 4 → SU2) (i : Fin 4) (u : SU2) :
+    holonomyInsertion v i u = StrongCouplingCrossing.holonomy (Function.update v i u) := by
+  fin_cases i <;> simp [holonomyInsertion, StrongCouplingCrossing.holonomy, Function.update]
+  all_goals rfl
+
+/-- The exact Wilson action score for the slots that move along explicit
+rotation curves. The other slots have zero ambient derivative. -/
+def holonomyScore (v u : Fin 4 → SU2) (moving : Finset (Fin 4)) : ℝ :=
+  ∑ i ∈ moving, traceScore (holonomyInsertion v i (u i))
+
+theorem continuous_holonomyInsertion (i : Fin 4) :
+    Continuous (fun z : (Fin 4 → SU2) × SU2 ↦ holonomyInsertion z.1 i z.2) := by
+  fin_cases i <;> simp only [holonomyInsertion] <;> fun_prop
+
+theorem continuous_holonomyScore (moving : Finset (Fin 4)) :
+    Continuous (fun z : (Fin 4 → SU2) × (Fin 4 → SU2) ↦ holonomyScore z.1 z.2 moving) := by
+  change Continuous (fun z : (Fin 4 → SU2) × (Fin 4 → SU2) ↦
+    ∑ i ∈ moving, traceScore (holonomyInsertion z.1 i (z.2 i)))
+  refine continuous_finsetSum moving (fun i _ ↦ ?_)
+  have hfst : Continuous (fun z : (Fin 4 → SU2) × (Fin 4 → SU2) ↦ z.1) := continuous_fst
+  have hi : Continuous (fun z : (Fin 4 → SU2) × (Fin 4 → SU2) ↦ z.2 i) :=
+    (continuous_apply i).comp continuous_snd
+  have hpair : Continuous (fun z : (Fin 4 → SU2) × (Fin 4 → SU2) ↦ (z.1, z.2 i)) :=
+    hfst.prodMk hi
+  have hins : Continuous (fun z : (Fin 4 → SU2) × (Fin 4 → SU2) ↦
+      holonomyInsertion z.1 i (z.2 i)) := by
+    simpa only [Function.comp_def] using (continuous_holonomyInsertion i).comp hpair
+  simpa only [Function.comp_def] using continuous_traceScore.comp hins
+
+theorem abs_holonomyScore_le (v u : Fin 4 → SU2) (moving : Finset (Fin 4)) :
+    |holonomyScore v u moving| ≤ moving.card := by
+  exact (Finset.abs_sum_le_sum_abs _ _).trans (by
+    simpa only [Finset.sum_const, nsmul_eq_mul, mul_one] using
+      Finset.sum_le_sum (s := moving) (fun i _ ↦ abs_traceScore_le _))
+
+theorem hasDerivAt_holonomy_potential (v u : ℝ → Fin 4 → SU2)
+    (moving : Finset (Fin 4)) (t : ℝ)
+    (hd : ∀ i, HasDerivAt (fun s ↦ (v s i).val)
+      (if i ∈ moving then (u t i).val else 0) t) :
+    HasDerivAt (fun s ↦ potential (StrongCouplingCrossing.holonomy (v s)))
+      (holonomyScore (v t) (u t) moving) t := by
+  classical
+  have h01 := hasDerivAt_matrix_mul (hd 0) (hd 1)
+  have h012 := hasDerivAt_matrix_mul h01 (hd 2).star
+  have h0123 := hasDerivAt_matrix_mul h012 (hd 3).star
+  have hmat : HasDerivAt (fun s ↦ (StrongCouplingCrossing.holonomy (v s)).val)
+      (∑ i ∈ moving, (holonomyInsertion (v t) i (u t i)).val) t := by
+    apply h0123.congr_deriv
+    rw [show (∑ i ∈ moving, (holonomyInsertion (v t) i (u t i)).val) =
+      ∑ i : Fin 4, if i ∈ moving then (holonomyInsertion (v t) i (u t i)).val else 0 by
+        simpa using (Finset.sum_ite_mem (Finset.univ : Finset (Fin 4)) moving
+          (fun i : Fin 4 ↦ (holonomyInsertion (v t) i (u t i)).val)).symm]
+    simp only [Fin.sum_univ_four]
+    by_cases h0 : (0 : Fin 4) ∈ moving <;>
+      by_cases h1 : (1 : Fin 4) ∈ moving <;>
+      by_cases h2 : (2 : Fin 4) ∈ moving <;>
+      by_cases h3 : (3 : Fin 4) ∈ moving <;>
+      simp only [h0, h1, h2, h3, ↓reduceIte, holonomyInsertion, Submonoid.coe_mul,
+        Matrix.specialUnitaryGroup.coe_star, mul_add, add_mul, zero_mul, mul_zero,
+        add_zero, zero_add, star_zero]
+  have htrace : HasDerivAt
+      (fun s ↦ Matrix.trace (StrongCouplingCrossing.holonomy (v s)).val)
+      (Matrix.trace (∑ i ∈ moving, (holonomyInsertion (v t) i (u t i)).val)) t := by
+    exact HasDerivAt.fun_sum (fun i _ ↦ hasDerivAt_pi.mp (hasDerivAt_pi.mp hmat i) i)
+  have hre := Complex.reCLM.hasFDerivAt.comp_hasDerivAt t htrace
+  have h := (hasDerivAt_const t (1 : ℝ)).sub (hre.div_const 2)
+  apply h.congr_deriv
+  simp only [holonomyScore, traceScore, zero_sub, Matrix.trace_sum, Complex.reCLM_apply,
+    Complex.re_sum, Finset.sum_neg_distrib, Finset.sum_div, neg_div]
+
+/-- Differentiate one inserted score, retaining changes to both the ordinary
+plaquette links and the inserted derivative. The latter is the contact term
+when two boundary patches meet the same plaquette. -/
+theorem hasDerivAt_traceScore_insertion (v u dv du : ℝ → Fin 4 → SU2)
+    (moving : Finset (Fin 4)) (i : Fin 4) (t : ℝ)
+    (hdv : ∀ j, HasDerivAt (fun s ↦ (v s j).val)
+      (if j ∈ moving then (dv t j).val else 0) t)
+    (hdu : HasDerivAt (fun s ↦ (u s i).val)
+      (if i ∈ moving then (du t i).val else 0) t) :
+    HasDerivAt (fun s ↦ traceScore (holonomyInsertion (v s) i (u s i)))
+      (holonomyScore (Function.update (v t) i (u t i))
+        (Function.update (dv t) i (du t i)) moving) t := by
+  have hd : ∀ j, HasDerivAt (fun s ↦ ((Function.update (v s) i (u s i)) j).val)
+      (if j ∈ moving then ((Function.update (dv t) i (du t i)) j).val else 0) t := by
+    intro j
+    by_cases hji : j = i
+    · subst j
+      simpa only [Function.update_self] using hdu
+    · simpa only [Function.update_of_ne hji] using hdv j
+  have h := (hasDerivAt_holonomy_potential
+    (fun s ↦ Function.update (v s) i (u s i))
+    (fun s ↦ Function.update (dv s) i (du s i)) moving t hd).fun_sub
+      (hasDerivAt_const t (1 : ℝ))
+  simpa only [traceScore_eq_potential_sub_one, holonomyInsertion_eq_holonomy_update, sub_zero] using h
 
 theorem continuous_plaquetteHolonomy (p : BlockPlaquette) :
     Continuous (fun U : BlockLinkField => plaquetteHolonomy U p) := by
@@ -148,6 +274,9 @@ theorem plaquetteObservable_gaugeAct (p : BlockPlaquette) (g : BlockGaugeTransfo
   plaquettePotential_gaugeAct g U p
 
 #print axioms potential_bounds
+#print axioms abs_holonomyScore_le
+#print axioms hasDerivAt_holonomy_potential
+#print axioms hasDerivAt_traceScore_insertion
 #print axioms measurePreserving_assembleField
 #print axioms blockPartition_pos
 #print axioms continuous_effectiveBlockAction

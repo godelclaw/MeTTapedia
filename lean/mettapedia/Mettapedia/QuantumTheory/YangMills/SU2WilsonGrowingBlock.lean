@@ -92,7 +92,43 @@ theorem tendsto_mixedChange {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4)
   simp_rw [mixedChange_eq_response]
   exact SU2BoundaryResponse.tendsto_growing_response hβ hβ0 (fun _ => univ) boundary b a c
 
+/-- The actual mixed derivative of the original growing-block interior
+integral, along independent directions on its two retained singleton patches. -/
+def mixedDerivative (N : ℕ) (β : ℝ) (q r b : FullField N) : ℝ :=
+  deriv (fun t ↦ deriv (fun s ↦ logPartition N β
+    (SU2BoundaryResponse.boundaryCurve (SU2BoundaryResponse.firstPatch N) q
+      (SU2BoundaryResponse.boundaryCurve (SU2BoundaryResponse.secondPatch N) r b t) s)) 0) 0
+
+theorem mixedDerivative_eq_boundary (N : ℕ) (β : ℝ) (q r b : FullField N) :
+    mixedDerivative N β q r b = SU2BoundaryResponse.mixedDerivative β univ (boundary N)
+      (SU2BoundaryResponse.firstPatch N) (SU2BoundaryResponse.secondPatch N) q r b := by
+  unfold mixedDerivative SU2BoundaryResponse.mixedDerivative
+  simp_rw [logPartition_eq_boundary]
+
+/-- The Hessian decays across the growing integrated block. The prefactor is
+independent of its side length, while `boundary_card_lower` records the
+growing microscopic boundary rather than suppressing it in the interface. -/
+theorem mixedDerivative_decay {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (N : ℕ) (q r b : FullField N),
+      |mixedDerivative N β q r b| ≤
+        3 * β ^ 2 * 256 ^ 2 * Real.exp (1536 + 2 * κ) *
+          Real.exp (-κ * ((N : ℝ) + 3)) := by
+  obtain ⟨κ, hκ, h⟩ := SU2BoundaryResponse.growing_mixedDerivative_bound hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro N q r b
+  rw [mixedDerivative_eq_boundary]
+  exact h N univ (boundary N) q r b
+
+theorem tendsto_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4)
+    (q r b : ∀ N, FullField N) :
+    Tendsto (fun N ↦ mixedDerivative N β (q N) (r N) (b N)) atTop (𝓝 0) := by
+  simp_rw [mixedDerivative_eq_boundary]
+  exact SU2BoundaryResponse.tendsto_growing_mixedDerivative hβ hβ0 (fun _ ↦ univ) boundary q r b
+
 #print axioms logPartition_eq_boundary
+#print axioms mixedDerivative_eq_boundary
+#print axioms mixedDerivative_decay
+#print axioms tendsto_mixedDerivative
 #print axioms one_cell
 #print axioms interior_nonempty
 #print axioms boundary_card_lower

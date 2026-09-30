@@ -41,5 +41,60 @@ theorem project_staged (ν : Measure I) (ρ : Measure J)
   rw [hmul, marginal_staged, marginal_staged]
   rfl
 
+omit [MeasurableSpace B] [BorelSpace B] in
+/-- The covariance inside the combined fiber is the covariance of the first
+projected marks plus the first fiber covariance transported through the next
+weighted integral. This is a pointwise identity at each retained boundary. -/
+theorem fiberCovariance_staged (ν : Measure I) (ρ : Measure J)
+    [IsProbabilityMeasure ν] [IsProbabilityMeasure ρ]
+    (W : C((B × I) × J, ℝ)) (hW : ∀ p, 0 < W p)
+    (F G : C((B × I) × J, ℝ)) :
+    fiberCovariance (ν.prod ρ) (reassociate W) (fun _ ↦ hW _)
+      (reassociate F) (reassociate G) =
+      fiberCovariance ν (marginal ρ W) (marginal_pos ρ W hW)
+        (project ρ W hW F) (project ρ W hW G) +
+      project ν (marginal ρ W) (marginal_pos ρ W hW) (fiberCovariance ρ W hW F G) := by
+  have hsub : project ν (marginal ρ W) (marginal_pos ρ W hW)
+      (fiberCovariance ρ W hW F G) =
+      project ν (marginal ρ W) (marginal_pos ρ W hW) (project ρ W hW (F * G)) -
+      project ν (marginal ρ W) (marginal_pos ρ W hW)
+        (project ρ W hW F * project ρ W hW G) := by
+    ext b
+    exact expectation_sub ν ((marginal ρ W).curry b)
+      ((project ρ W hW (F * G)).curry b)
+      ((project ρ W hW F * project ρ W hW G).curry b)
+  rw [hsub]
+  change project (ν.prod ρ) (reassociate W) _ (reassociate (F * G)) -
+      project (ν.prod ρ) (reassociate W) _ (reassociate F) *
+        project (ν.prod ρ) (reassociate W) _ (reassociate G) = _
+  rw [← project_staged ν ρ W hW (F * G), ← project_staged ν ρ W hW F,
+    ← project_staged ν ρ W hW G]
+  ext b
+  simp only [fiberCovariance, ContinuousMap.add_apply, ContinuousMap.sub_apply,
+    ContinuousMap.mul_apply]
+  ring
+
+omit [MeasurableSpace B] [BorelSpace B] in
+/-- The mixed log-partition coefficient transports with both its contact
+score and its conditional covariance. Omitting the latter changes the
+Hessian of the generated effective weight. -/
+theorem mixedScore_staged (ν : Measure I) (ρ : Measure J)
+    [IsProbabilityMeasure ν] [IsProbabilityMeasure ρ]
+    (β : ℝ) (W : C((B × I) × J, ℝ)) (hW : ∀ p, 0 < W p)
+    (F G J₀ : C((B × I) × J, ℝ)) (b : B) :
+    β ^ 2 * fiberCovariance (ν.prod ρ) (reassociate W) (fun _ ↦ hW _)
+        (reassociate F) (reassociate G) b -
+      β * project (ν.prod ρ) (reassociate W) (fun _ ↦ hW _) (reassociate J₀) b =
+    β ^ 2 * fiberCovariance ν (marginal ρ W) (marginal_pos ρ W hW)
+        (project ρ W hW F) (project ρ W hW G) b -
+      β * project ν (marginal ρ W) (marginal_pos ρ W hW) (project ρ W hW J₀) b +
+    β ^ 2 * project ν (marginal ρ W) (marginal_pos ρ W hW)
+      (fiberCovariance ρ W hW F G) b := by
+  rw [fiberCovariance_staged ν ρ W hW F G, ← project_staged ν ρ W hW J₀]
+  simp only [ContinuousMap.add_apply]
+  ring
+
 #print axioms project_staged
+#print axioms fiberCovariance_staged
+#print axioms mixedScore_staged
 end Mettapedia.QuantumTheory.YangMills.WilsonProjectionComposition

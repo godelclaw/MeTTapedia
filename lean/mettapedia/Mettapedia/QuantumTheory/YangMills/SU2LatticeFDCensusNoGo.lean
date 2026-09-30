@@ -85,31 +85,7 @@ abbrev CartanCurvature := Fin 4 → Fin 4 → ℝ
 
 /-! ### An exact Cartan subgroup and a realizing link-field chart -/
 
-/-- A real two-dimensional rotation, regarded as a complex matrix.  This is a
-concrete maximal-torus chart in `SU(2)`. -/
-def su2CartanMatrix (theta : ℝ) : Matrix (Fin 2) (Fin 2) ℂ :=
-  !![(Real.cos theta : ℂ), (Real.sin theta : ℂ);
-     -(Real.sin theta : ℂ), (Real.cos theta : ℂ)]
-
-theorem su2CartanMatrix_mem (theta : ℝ) :
-    su2CartanMatrix theta ∈ Matrix.specialUnitaryGroup (Fin 2) ℂ := by
-  rw [Matrix.mem_specialUnitaryGroup_iff]
-  constructor
-  · rw [Matrix.mem_unitaryGroup_iff]
-    ext i j
-    fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
-      simp [su2CartanMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-        star, Matrix.conjTranspose_apply, -Complex.ofReal_cos,
-        -Complex.ofReal_sin] <;>
-      nlinarith [Real.sin_sq_add_cos_sq theta]
-  · apply Complex.ext <;>
-      simp [su2CartanMatrix, Matrix.det_fin_two, -Complex.ofReal_cos,
-        -Complex.ofReal_sin] <;>
-      nlinarith [Real.sin_sq_add_cos_sq theta]
-
-/-- The exact `SU(2)` Cartan element used by the small-field chart. -/
-def su2CartanElement (theta : ℝ) : SU2 :=
-  ⟨su2CartanMatrix theta, su2CartanMatrix_mem theta⟩
+export SU2WilsonBlockPilot (su2CartanMatrix su2CartanMatrix_mem su2CartanElement)
 
 /-- On the Cartan subgroup, the normalized `SU(2)` Wilson potential is exactly
 `1 - cos theta`. -/

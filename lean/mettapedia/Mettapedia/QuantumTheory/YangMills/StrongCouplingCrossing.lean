@@ -41,6 +41,11 @@ def linkAt {d n : ℕ} (p : Plaquette d n) : Fin 4 → Link d n :=
   ![(p.1, p.2.1.1), (p.1 + step p.2.1.1, p.2.1.2),
     (p.1 + step p.2.1.2, p.2.1.1), (p.1, p.2.1.2)]
 
+/-- The positively oriented group plaquette product in the same four-link
+order as `linkAt`. -/
+def holonomy {E : Type*} [Group E] (v : Fin 4 → E) : E :=
+  v 0 * v 1 * (v 2)⁻¹ * (v 3)⁻¹
+
 /-- The support of one plaquette. -/
 def support {d n : ℕ} (p : Plaquette d n) : Finset (Link d n) := univ.image (linkAt p)
 

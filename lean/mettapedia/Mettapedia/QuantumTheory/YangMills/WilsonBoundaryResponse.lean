@@ -1,4 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.WilsonSeparator
+import Mettapedia.Analysis.CompactMeanContinuousRate
+import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
 /-!
 # Boundary free-energy response from an actual connected correlation
@@ -111,7 +113,81 @@ theorem abs_mixedResponse_le_of_covariance (W A B : C(X, ℝ))
   (abs_mixedResponse_le_covariance μ W A B hW hlA hlB hA hB).trans
     (div_le_div_of_nonneg_right hcov (mul_pos hlA hlB).le)
 
+section DifferentialResponse
+
+variable [Nonempty X]
+
+/-- The logarithmic derivative of an actual positive density is the
+expectation of its action score. Compactness supplies the domination needed
+to differentiate the original reference-measure integral. -/
+theorem hasDerivAt_logPartition (β : ℝ) (W A : ℝ → C(X, ℝ))
+    (hW : Continuous (fun z : ℝ × X ↦ W z.1 z.2))
+    (hA : Continuous (fun z : ℝ × X ↦ A z.1 z.2))
+    (hd : ∀ r x, HasDerivAt (fun s ↦ W s x) (-β * (W r x * A r x)) r)
+    (t : ℝ) (hpos : ∀ x, 0 < W t x) :
+    HasDerivAt (fun s ↦ logPartition μ (W s))
+      (-β * expectation μ (W t) (A t)) t := by
+  have hi := Mettapedia.Analysis.CompactMeanContinuousRate.hasDerivAt_integral_of_continuous
+    μ (fun r x ↦ W r x) (fun r x ↦ -β * (W r x * A r x))
+    hW (continuous_const.mul (hW.mul hA)) hd t
+  have h := hi.log (partition_pos μ (W t) hpos).ne'
+  simpa only [logPartition, expectation, integral_const_mul, mul_div_assoc] using h
+
+/-- Differentiating a normalized marked integral produces both the direct
+mark derivative and its connected correlation with the density score. -/
+theorem hasDerivAt_expectation (β : ℝ) (W A F B : ℝ → C(X, ℝ))
+    (hW : Continuous (fun z : ℝ × X ↦ W z.1 z.2))
+    (hA : Continuous (fun z : ℝ × X ↦ A z.1 z.2))
+    (hF : Continuous (fun z : ℝ × X ↦ F z.1 z.2))
+    (hB : Continuous (fun z : ℝ × X ↦ B z.1 z.2))
+    (hdW : ∀ r x, HasDerivAt (fun s ↦ W s x) (-β * (W r x * A r x)) r)
+    (hdF : ∀ r x, HasDerivAt (fun s ↦ F s x) (B r x) r)
+    (t : ℝ) (hpos : ∀ x, 0 < W t x) :
+    HasDerivAt (fun s ↦ expectation μ (W s) (F s))
+      (expectation μ (W t) (B t) - β * covariance μ (W t) (F t) (A t)) t := by
+  have hZ := Mettapedia.Analysis.CompactMeanContinuousRate.hasDerivAt_integral_of_continuous
+    μ (fun r x ↦ W r x) (fun r x ↦ -β * (W r x * A r x))
+    hW (continuous_const.mul (hW.mul hA)) hdW t
+  have hN := Mettapedia.Analysis.CompactMeanContinuousRate.hasDerivAt_integral_of_continuous
+    μ (fun r x ↦ W r x * F r x)
+    (fun r x ↦ W r x * B r x - β * (W r x * (F r x * A r x)))
+    (hW.mul hF) ((hW.mul hB).sub (continuous_const.mul (hW.mul (hF.mul hA))))
+    (fun r x ↦ ((hdW r x).mul (hdF r x)).congr_deriv (by ring)) t
+  have iB : Integrable (fun x ↦ W t x * B t x) μ :=
+    CompactTransferGap.IntegralKernel.integrable_continuous_fun μ (by fun_prop)
+  have iFA : Integrable (fun x ↦ W t x * (F t x * A t x)) μ :=
+    CompactTransferGap.IntegralKernel.integrable_continuous_fun μ (by fun_prop)
+  rw [integral_const_mul] at hZ
+  rw [integral_sub iB (iFA.const_mul β), integral_const_mul] at hN
+  have hzero := (partition_pos μ (W t) hpos).ne'
+  apply (hN.div hZ hzero).congr_deriv
+  simp only [expectation, covariance, ContinuousMap.mul_apply]
+  field_simp
+  ring
+
+/-- The mixed logarithmic response keeps the action's contact derivative.
+Separated plaquette patches discharge this term by proving that their first
+score is unchanged by the other boundary curve. -/
+theorem hasDerivAt_logPartitionScore (β : ℝ) (W A B J : ℝ → C(X, ℝ))
+    (hW : Continuous (fun z : ℝ × X ↦ W z.1 z.2))
+    (hA : Continuous (fun z : ℝ × X ↦ A z.1 z.2))
+    (hB : Continuous (fun z : ℝ × X ↦ B z.1 z.2))
+    (hJ : Continuous (fun z : ℝ × X ↦ J z.1 z.2))
+    (hdW : ∀ r x, HasDerivAt (fun s ↦ W s x) (-β * (W r x * B r x)) r)
+    (hdA : ∀ r x, HasDerivAt (fun s ↦ A s x) (J r x) r)
+    (t : ℝ) (hpos : ∀ x, 0 < W t x) :
+    HasDerivAt (fun s ↦ -β * expectation μ (W s) (A s))
+      (β ^ 2 * covariance μ (W t) (A t) (B t) - β * expectation μ (W t) (J t)) t := by
+  apply ((hasDerivAt_expectation μ β W B A J hW hB hA hJ hdW hdA t hpos).const_mul
+    (-β)).congr_deriv
+  ring
+
+end DifferentialResponse
+
 #print axioms mixedResponse_eq_log_expectations
 #print axioms abs_mixedResponse_le_covariance
+#print axioms hasDerivAt_logPartition
+#print axioms hasDerivAt_expectation
+#print axioms hasDerivAt_logPartitionScore
 
 end Mettapedia.QuantumTheory.YangMills.WilsonBoundaryResponse

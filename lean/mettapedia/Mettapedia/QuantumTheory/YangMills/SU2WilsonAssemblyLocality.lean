@@ -180,6 +180,73 @@ theorem secondProjected_eq_conditional (N : ℕ) (β : ℝ) (F : C(FullField N, 
       (∫ ω : FullField N, fullDensity N β (pin (retainedSet 4) b ω))
   rw [integral_pin_coarse, integral_pin_coarse]
 
+/-- An original mark already ignoring the held dummy variables is transported
+without an extra change to its value in the pinned Wilson expectation. -/
+theorem secondProjected_eq_pinnedExpectation (N : ℕ) (β : ℝ)
+    (F : C(FullField N, ℝ)) (b : FullField N)
+    (hF : ∀ ω, F (pin (retainedSet 4) b ω) = F ω) :
+    secondProjected N β F b = expectation
+      (Measure.pi fun _ : AssemblyLink N ↦ (volume : Measure SU2))
+      (SU2BoundaryResponse.boundaryDensity β univ (retainedSet 4) b) F := by
+  rw [secondProjected_eq_conditional]
+  exact WilsonConditionalProjection.project_eq_expectation_of_pinInvariant _ _ _ _ _ _ _ hF
+
+/-- Conditional covariance at fixed coarse data is the actual GSLT route
+remainder, with both original integrated groups still present. -/
+theorem conditional_covariance_remainder (N : ℕ) (β : ℝ)
+    (F G : C(FullField N, ℝ)) (b : FullField N)
+    (hF : ∀ ω, F (pin (retainedSet 4) b ω) = F ω)
+    (hG : ∀ ω, G (pin (retainedSet 4) b ω) = G ω) :
+    covariance (Measure.pi fun _ : AssemblyLink N ↦ (volume : Measure SU2))
+      (SU2BoundaryResponse.boundaryDensity β univ (retainedSet 4) b) F G =
+      WilsonEliminationRoutes.remainder (route N β) (splitObservable N F) (splitObservable N G)
+        (coarseRestriction N b) := by
+  have hFG : ∀ ω, (F * G) (pin (retainedSet 4) b ω) = (F * G) ω := by
+    intro ω
+    simp only [ContinuousMap.mul_apply, hF, hG]
+  rw [covariance, ← secondProjected_eq_pinnedExpectation N β (F * G) b hFG,
+    ← secondProjected_eq_pinnedExpectation N β F b hF,
+    ← secondProjected_eq_pinnedExpectation N β G b hG]
+  rfl
+
+/-- Exact stage-by-stage covariance transport for the concrete Haar assembly.
+The first-stage fiber covariance is projected through the generated first
+weight before being added to the second-stage covariance. -/
+theorem route_remainder_staged (N : ℕ) (β : ℝ) (F G : C(FullField N, ℝ)) :
+    WilsonEliminationRoutes.remainder (route N β) (splitObservable N F) (splitObservable N G) =
+      fiberCovariance (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N F))
+        (project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N G)) +
+      project (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β))
+        (fiberCovariance (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+          (splitObservable N F) (splitObservable N G)) := by
+  have hdirect : WilsonEliminationRoutes.remainder (route N β)
+      (splitObservable N F) (splitObservable N G) =
+      fiberCovariance ((volume : Measure (InterfaceField N)).prod
+        (volume : Measure (InternalField N))) (reassociate (density N β))
+        (fun p ↦ density_pos N β _) (reassociate (splitObservable N F))
+        (reassociate (splitObservable N G)) := by
+    ext b
+    change project volume (marginal volume (density N β))
+        (marginal_pos volume (density N β) (density_pos N β))
+        (project volume (density N β) (density_pos N β)
+          (splitObservable N F * splitObservable N G)) b -
+        project volume (marginal volume (density N β))
+          (marginal_pos volume (density N β) (density_pos N β))
+          (project volume (density N β) (density_pos N β) (splitObservable N F)) b *
+        project volume (marginal volume (density N β))
+          (marginal_pos volume (density N β) (density_pos N β))
+          (project volume (density N β) (density_pos N β) (splitObservable N G)) b = _
+    rw [WilsonProjectionComposition.project_staged, WilsonProjectionComposition.project_staged,
+      WilsonProjectionComposition.project_staged]
+    rfl
+  rw [hdirect, WilsonProjectionComposition.fiberCovariance_staged]
+  rfl
+
 /-- First-stage locality derived from the original Wilson plaquettes. -/
 theorem firstProjected_locality (N : ℕ) (β : ℝ) (S : Finset (AssemblyLink N))
     (F : C(FullField N, ℝ)) (hF : DependsOn S F) :
@@ -233,6 +300,8 @@ theorem plaquetteObservable_local (N : ℕ) (p : AssemblyPlaquette N) :
   exact h _ (mem_image.mpr ⟨i, mem_univ _, rfl⟩)
 
 #print axioms firstProjected_eq_conditional
+#print axioms conditional_covariance_remainder
+#print axioms route_remainder_staged
 #print axioms secondProjected_eq_conditional
 #print axioms firstProjected_locality
 #print axioms secondProjected_locality

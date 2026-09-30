@@ -44,6 +44,9 @@ def expectation (W F : C(X, ℝ)) : ℝ :=
 def covariance (W F G : C(X, ℝ)) : ℝ :=
   expectation μ W (F * G) - expectation μ W F * expectation μ W G
 
+@[simp] theorem expectation_zero (W : C(X, ℝ)) : expectation μ W 0 = 0 := by
+  simp [expectation]
+
 theorem partition_pos (W : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
     0 < ∫ x, W x ∂μ := by
   rw [integral_pos_iff_support_of_nonneg (fun x => (hW x).le)

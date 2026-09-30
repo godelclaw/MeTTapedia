@@ -122,6 +122,18 @@ def project (ν₀ : Measure E) (M : Model d E) (hφ : ∀ p, Continuous (M.φ p
   expectation (Measure.pi fun _ => ν₀)
     (realDensity (M.pinned held b) (continuous_pinned M hφ held b) β) (pinnedMark held b F)
 
+/-- A mark already insensitive to held dummy coordinates needs no additional
+pinning inside the original conditional expectation. -/
+theorem project_eq_expectation_of_pinInvariant (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (M : Model d E) (hφ : ∀ p, Continuous (M.φ p)) (β : ℝ)
+    (held : Finset (Link d M.n)) (F : C(Link d M.n → E, ℝ)) (b : Link d M.n → E)
+    (hF : ∀ ω, F (pin held b ω) = F ω) :
+    project ν₀ M hφ β held F b = expectation (Measure.pi fun _ ↦ ν₀)
+      (realDensity (M.pinned held b) (continuous_pinned M hφ held b) β) F := by
+  have hm : pinnedMark held b F = F := ContinuousMap.ext hF
+  unfold project
+  rw [hm]
+
 theorem project_eq_ratio (ν₀ : Measure E) (M : Model d E)
     (hφ : ∀ p, Continuous (M.φ p)) (β : ℝ) (held : Finset (Link d M.n))
     (F : C(Link d M.n → E, ℝ)) (b : Link d M.n → E) :
