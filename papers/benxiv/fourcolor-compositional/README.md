@@ -55,9 +55,14 @@ component matching; an adjacent component switch repairs a constant boundary
 and its shared cycle edge together. The repaired witnesses reconstruct an
 ambient colouring. The exterior may change in this branch, and the GSLT cell
 therefore retains the cap and its exterior as one joint witness. An independent
-odd-width example reduces 50 vertices to 20. Recognition from broader face
-patterns, disconnected odd-width exteriors and global coverage remain open;
-the complete classical catalogue and certificate counts are unchanged.
+odd-width example reduces 50 vertices to 20. The new
+[face-trace recognition](tube-example/README.md#recognizing-caps-from-their-faces)
+constructs the exact cap-shore representation from actual face closures,
+an injective vertex trace and short seam faces. A uniform reflection law
+derives boundary exposure at every width. Vertex separation and exterior
+connectivity remain explicit; broader recognition, disconnected odd-width
+exteriors and global coverage remain open. The complete classical catalogue
+and certificate counts are unchanged.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

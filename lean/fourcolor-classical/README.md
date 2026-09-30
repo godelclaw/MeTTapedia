@@ -60,9 +60,14 @@ replaces an `8m`-vertex padded cap by a `2m`-cycle for every even `m ≥ 2`.
 The surrounding map keeps its class, and every smaller colouring reconstructs
 with the exterior fixed. Exact graph-representation and GSLT consumers use
 the same joint choices. The dependency audit excludes this classical package.
-Odd widths retain a nonconstant boundary guard; broader geometric recognition
-and coverage are still open. This result adds no certificate replacement to
-the complete endpoints.
+The [coupled physical repair](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#repairing-a-constant-cap-boundary)
+also handles odd widths in exactly recognized spherical shores with connected
+exterior. [Actual face-trace recognition](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#recognizing-caps-from-their-faces)
+constructs the representation from face closures, vertex separation and short
+seam faces, deriving boundary exposure by one width-independent law.
+Vertex separation, exterior connectivity and global coverage remain explicit
+obligations. These results add no certificate replacement to the complete
+endpoints.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned

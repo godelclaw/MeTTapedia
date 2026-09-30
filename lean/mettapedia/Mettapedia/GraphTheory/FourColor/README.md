@@ -41,9 +41,18 @@ widths. [Exact representation transport](PaddedCycleCapTransport.lean) excludes
 recognized even caps from a vertex-minimal counterexample. GSLT horizontal
 composition preserves shared words and actual witnesses. The entire map
 loses exactly `6m` vertices. Odd widths still require the nonconstant guard
-or an additional exterior repair; broader recognition and coverage remain
-open. Independent replay includes an all-five/six 96→60 example and the
-earlier guarded GP(2,0) 80→50 example. No further catalogue dependency is removed.
+in a fixed arbitrary exterior. The [coupled physical repair](PaddedCycleCapPhysicalGeometry.lean)
+now covers every `m ≥ 2` for exactly recognized spherical shores with connected
+exterior: switch an adjacent exterior component and repair the smaller cycle
+together, then reconstruct the cap. The new
+[face-trace recognition](PaddedCycleCapRecognition.lean) constructs that exact
+representation from a central `m`-face, two hexagons and one pentagon per
+sector, short outward seam faces, and an injective vertex trace. A
+[uniform short-face law](Compositional/ShortFacePortExclusion.lean) derives
+boundary exposure; no induced-patch check is supplied. Vertex separation,
+exterior connectivity, broader recognition and coverage remain open obligations.
+Independent replay includes an all-five/six 96→60 example and the earlier
+guarded GP(2,0) 80→50 example. No further catalogue dependency is removed.
 See the [worked cap explanation](../../../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#a-joint-colouring-law-for-padded-cycle-caps).
 
 A simple cycle with alternating local turns now constructs that

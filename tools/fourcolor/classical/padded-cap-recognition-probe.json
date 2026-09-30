@@ -1,0 +1,3805 @@
+{
+  "evidence": "Independent finite program replay; no Lean certificates or global coverage claim.",
+  "dependencies": [
+    {
+      "source": "padded_cap_recognition_probe.py",
+      "source_sha256": "5ebe4d908b2d2bc7f5f843b1239b358282551e7f1157142b6206e6c8662af4aa"
+    },
+    {
+      "source": "alternating-lobe-fixtures.json",
+      "source_sha256": "16123f017937ca7b85bf07ad50832b8f50a1b4b630e1c41883a629f5c859d3e3"
+    },
+    {
+      "source": "diamond-supply-probe.json",
+      "source_sha256": "aee4e1693ae1eb2b7acc4732e018b0cb5d41a153ad1430faa4dc212d488f4171"
+    },
+    {
+      "source": "padded_cap_geometry_probe.py",
+      "source_sha256": "1a0d356efe7612de794638273e6f6ac7283a1c18015de4b3d225e935fa56077a"
+    },
+    {
+      "source": "padded_cap_probe.py",
+      "source_sha256": "35909a3473f642d8daa1588687079612625ea007f574cc1856b8807642593cba"
+    },
+    {
+      "source": "alternating_lobe_probe.py",
+      "source_sha256": "d8f3e4396070257ebe7ce24e7c70c2e5e83249541343f797d0370570d2bcd1f8"
+    },
+    {
+      "source": "alternating_cycle_probe.py",
+      "source_sha256": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e"
+    }
+  ],
+  "maps_checked": 140,
+  "actual_faces_checked": 3214,
+  "actual_cap_candidates": 12,
+  "hypothesis_counts": [
+    {
+      "distinct_vertices": true,
+      "short_boundary_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "occurrences": 12
+    }
+  ],
+  "literal_families": [
+    {
+      "original_vertices": 32,
+      "sectors": 2,
+      "face_lengths": [
+        2,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5
+      ],
+      "trace_vertices": 16,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 16,
+      "boundary_ports": 4,
+      "proposed_smaller_vertices": 20
+    },
+    {
+      "original_vertices": 48,
+      "sectors": 3,
+      "face_lengths": [
+        3,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 24,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 24,
+      "boundary_ports": 6,
+      "proposed_smaller_vertices": 30
+    },
+    {
+      "original_vertices": 64,
+      "sectors": 4,
+      "face_lengths": [
+        4,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 32,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 32,
+      "boundary_ports": 8,
+      "proposed_smaller_vertices": 40
+    },
+    {
+      "original_vertices": 80,
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "original_vertices": 96,
+      "sectors": 6,
+      "face_lengths": [
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 48,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 48,
+      "boundary_ports": 12,
+      "proposed_smaller_vertices": 60
+    },
+    {
+      "original_vertices": 112,
+      "sectors": 7,
+      "face_lengths": [
+        7,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 56,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 56,
+      "boundary_ports": 14,
+      "proposed_smaller_vertices": 70
+    },
+    {
+      "original_vertices": 128,
+      "sectors": 8,
+      "face_lengths": [
+        8,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 64,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 64,
+      "boundary_ports": 16,
+      "proposed_smaller_vertices": 80
+    },
+    {
+      "original_vertices": 144,
+      "sectors": 9,
+      "face_lengths": [
+        9,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 72,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 72,
+      "boundary_ports": 18,
+      "proposed_smaller_vertices": 90
+    },
+    {
+      "original_vertices": 160,
+      "sectors": 10,
+      "face_lengths": [
+        10,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 80,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 80,
+      "boundary_ports": 20,
+      "proposed_smaller_vertices": 100
+    },
+    {
+      "original_vertices": 176,
+      "sectors": 11,
+      "face_lengths": [
+        11,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 88,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 88,
+      "boundary_ports": 22,
+      "proposed_smaller_vertices": 110
+    },
+    {
+      "original_vertices": 192,
+      "sectors": 12,
+      "face_lengths": [
+        12,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 96,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 96,
+      "boundary_ports": 24,
+      "proposed_smaller_vertices": 120
+    },
+    {
+      "original_vertices": 208,
+      "sectors": 13,
+      "face_lengths": [
+        13,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 104,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 104,
+      "boundary_ports": 26,
+      "proposed_smaller_vertices": 130
+    },
+    {
+      "original_vertices": 224,
+      "sectors": 14,
+      "face_lengths": [
+        14,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 112,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 112,
+      "boundary_ports": 28,
+      "proposed_smaller_vertices": 140
+    },
+    {
+      "original_vertices": 240,
+      "sectors": 15,
+      "face_lengths": [
+        15,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 120,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 120,
+      "boundary_ports": 30,
+      "proposed_smaller_vertices": 150
+    },
+    {
+      "original_vertices": 256,
+      "sectors": 16,
+      "face_lengths": [
+        16,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 128,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 128,
+      "boundary_ports": 32,
+      "proposed_smaller_vertices": 160
+    },
+    {
+      "original_vertices": 272,
+      "sectors": 17,
+      "face_lengths": [
+        17,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 136,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 136,
+      "boundary_ports": 34,
+      "proposed_smaller_vertices": 170
+    },
+    {
+      "original_vertices": 288,
+      "sectors": 18,
+      "face_lengths": [
+        18,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 144,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 144,
+      "boundary_ports": 36,
+      "proposed_smaller_vertices": 180
+    },
+    {
+      "original_vertices": 304,
+      "sectors": 19,
+      "face_lengths": [
+        19,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 152,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 152,
+      "boundary_ports": 38,
+      "proposed_smaller_vertices": 190
+    },
+    {
+      "original_vertices": 320,
+      "sectors": 20,
+      "face_lengths": [
+        20,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 160,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "exterior_vertices": 160,
+      "boundary_ports": 40,
+      "proposed_smaller_vertices": 200
+    }
+  ],
+  "actual_candidates": [
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        0,
+        1
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          7
+        ],
+        [
+          0,
+          2,
+          5
+        ],
+        [
+          0,
+          3,
+          6
+        ],
+        [
+          0,
+          4,
+          9
+        ],
+        [
+          0,
+          5,
+          11
+        ],
+        [
+          0,
+          6,
+          10
+        ],
+        [
+          0,
+          7,
+          32
+        ],
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          8
+        ],
+        [
+          1,
+          2,
+          26
+        ],
+        [
+          1,
+          3,
+          27
+        ],
+        [
+          1,
+          4,
+          29
+        ],
+        [
+          1,
+          5,
+          31
+        ],
+        [
+          1,
+          6,
+          30
+        ],
+        [
+          1,
+          7,
+          36
+        ],
+        [
+          2,
+          0,
+          4
+        ],
+        [
+          2,
+          1,
+          28
+        ],
+        [
+          2,
+          2,
+          33
+        ],
+        [
+          2,
+          3,
+          34
+        ],
+        [
+          2,
+          4,
+          35
+        ],
+        [
+          2,
+          5,
+          38
+        ],
+        [
+          2,
+          6,
+          37
+        ],
+        [
+          2,
+          7,
+          39
+        ],
+        [
+          3,
+          0,
+          3
+        ],
+        [
+          3,
+          1,
+          21
+        ],
+        [
+          3,
+          2,
+          20
+        ],
+        [
+          3,
+          3,
+          19
+        ],
+        [
+          3,
+          4,
+          23
+        ],
+        [
+          3,
+          5,
+          24
+        ],
+        [
+          3,
+          6,
+          22
+        ],
+        [
+          3,
+          7,
+          25
+        ],
+        [
+          4,
+          0,
+          2
+        ],
+        [
+          4,
+          1,
+          14
+        ],
+        [
+          4,
+          2,
+          13
+        ],
+        [
+          4,
+          3,
+          12
+        ],
+        [
+          4,
+          4,
+          17
+        ],
+        [
+          4,
+          5,
+          18
+        ],
+        [
+          4,
+          6,
+          15
+        ],
+        [
+          4,
+          7,
+          16
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        5,
+        9
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          5
+        ],
+        [
+          0,
+          1,
+          7
+        ],
+        [
+          0,
+          2,
+          12
+        ],
+        [
+          0,
+          3,
+          15
+        ],
+        [
+          0,
+          4,
+          13
+        ],
+        [
+          0,
+          5,
+          17
+        ],
+        [
+          0,
+          6,
+          18
+        ],
+        [
+          0,
+          7,
+          42
+        ],
+        [
+          1,
+          0,
+          9
+        ],
+        [
+          1,
+          1,
+          16
+        ],
+        [
+          1,
+          2,
+          40
+        ],
+        [
+          1,
+          3,
+          43
+        ],
+        [
+          1,
+          4,
+          41
+        ],
+        [
+          1,
+          5,
+          44
+        ],
+        [
+          1,
+          6,
+          45
+        ],
+        [
+          1,
+          7,
+          60
+        ],
+        [
+          2,
+          0,
+          11
+        ],
+        [
+          2,
+          1,
+          46
+        ],
+        [
+          2,
+          2,
+          55
+        ],
+        [
+          2,
+          3,
+          54
+        ],
+        [
+          2,
+          4,
+          58
+        ],
+        [
+          2,
+          5,
+          59
+        ],
+        [
+          2,
+          6,
+          56
+        ],
+        [
+          2,
+          7,
+          57
+        ],
+        [
+          3,
+          0,
+          10
+        ],
+        [
+          3,
+          1,
+          32
+        ],
+        [
+          3,
+          2,
+          29
+        ],
+        [
+          3,
+          3,
+          26
+        ],
+        [
+          3,
+          4,
+          31
+        ],
+        [
+          3,
+          5,
+          30
+        ],
+        [
+          3,
+          6,
+          27
+        ],
+        [
+          3,
+          7,
+          28
+        ],
+        [
+          4,
+          0,
+          6
+        ],
+        [
+          4,
+          1,
+          8
+        ],
+        [
+          4,
+          2,
+          1
+        ],
+        [
+          4,
+          3,
+          0
+        ],
+        [
+          4,
+          4,
+          4
+        ],
+        [
+          4,
+          5,
+          3
+        ],
+        [
+          4,
+          6,
+          2
+        ],
+        [
+          4,
+          7,
+          14
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        12,
+        13
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          12
+        ],
+        [
+          0,
+          1,
+          7
+        ],
+        [
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          3,
+          2
+        ],
+        [
+          0,
+          4,
+          1
+        ],
+        [
+          0,
+          5,
+          4
+        ],
+        [
+          0,
+          6,
+          3
+        ],
+        [
+          0,
+          7,
+          21
+        ],
+        [
+          1,
+          0,
+          13
+        ],
+        [
+          1,
+          1,
+          14
+        ],
+        [
+          1,
+          2,
+          19
+        ],
+        [
+          1,
+          3,
+          22
+        ],
+        [
+          1,
+          4,
+          20
+        ],
+        [
+          1,
+          5,
+          23
+        ],
+        [
+          1,
+          6,
+          24
+        ],
+        [
+          1,
+          7,
+          50
+        ],
+        [
+          2,
+          0,
+          17
+        ],
+        [
+          2,
+          1,
+          25
+        ],
+        [
+          2,
+          2,
+          47
+        ],
+        [
+          2,
+          3,
+          48
+        ],
+        [
+          2,
+          4,
+          49
+        ],
+        [
+          2,
+          5,
+          52
+        ],
+        [
+          2,
+          6,
+          51
+        ],
+        [
+          2,
+          7,
+          53
+        ],
+        [
+          3,
+          0,
+          18
+        ],
+        [
+          3,
+          1,
+          42
+        ],
+        [
+          3,
+          2,
+          41
+        ],
+        [
+          3,
+          3,
+          40
+        ],
+        [
+          3,
+          4,
+          44
+        ],
+        [
+          3,
+          5,
+          45
+        ],
+        [
+          3,
+          6,
+          43
+        ],
+        [
+          3,
+          7,
+          46
+        ],
+        [
+          4,
+          0,
+          15
+        ],
+        [
+          4,
+          1,
+          16
+        ],
+        [
+          4,
+          2,
+          9
+        ],
+        [
+          4,
+          3,
+          5
+        ],
+        [
+          4,
+          4,
+          11
+        ],
+        [
+          4,
+          5,
+          10
+        ],
+        [
+          4,
+          6,
+          6
+        ],
+        [
+          4,
+          7,
+          8
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        19,
+        20
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          19
+        ],
+        [
+          0,
+          1,
+          14
+        ],
+        [
+          0,
+          2,
+          2
+        ],
+        [
+          0,
+          3,
+          3
+        ],
+        [
+          0,
+          4,
+          0
+        ],
+        [
+          0,
+          5,
+          1
+        ],
+        [
+          0,
+          6,
+          4
+        ],
+        [
+          0,
+          7,
+          28
+        ],
+        [
+          1,
+          0,
+          20
+        ],
+        [
+          1,
+          1,
+          21
+        ],
+        [
+          1,
+          2,
+          34
+        ],
+        [
+          1,
+          3,
+          37
+        ],
+        [
+          1,
+          4,
+          33
+        ],
+        [
+          1,
+          5,
+          35
+        ],
+        [
+          1,
+          6,
+          38
+        ],
+        [
+          1,
+          7,
+          79
+        ],
+        [
+          2,
+          0,
+          23
+        ],
+        [
+          2,
+          1,
+          39
+        ],
+        [
+          2,
+          2,
+          64
+        ],
+        [
+          2,
+          3,
+          61
+        ],
+        [
+          2,
+          4,
+          66
+        ],
+        [
+          2,
+          5,
+          65
+        ],
+        [
+          2,
+          6,
+          62
+        ],
+        [
+          2,
+          7,
+          63
+        ],
+        [
+          3,
+          0,
+          24
+        ],
+        [
+          3,
+          1,
+          50
+        ],
+        [
+          3,
+          2,
+          49
+        ],
+        [
+          3,
+          3,
+          47
+        ],
+        [
+          3,
+          4,
+          52
+        ],
+        [
+          3,
+          5,
+          51
+        ],
+        [
+          3,
+          6,
+          48
+        ],
+        [
+          3,
+          7,
+          42
+        ],
+        [
+          4,
+          0,
+          22
+        ],
+        [
+          4,
+          1,
+          25
+        ],
+        [
+          4,
+          2,
+          17
+        ],
+        [
+          4,
+          3,
+          13
+        ],
+        [
+          4,
+          4,
+          18
+        ],
+        [
+          4,
+          5,
+          15
+        ],
+        [
+          4,
+          6,
+          12
+        ],
+        [
+          4,
+          7,
+          7
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        26,
+        29
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          26
+        ],
+        [
+          0,
+          1,
+          8
+        ],
+        [
+          0,
+          2,
+          6
+        ],
+        [
+          0,
+          3,
+          10
+        ],
+        [
+          0,
+          4,
+          5
+        ],
+        [
+          0,
+          5,
+          9
+        ],
+        [
+          0,
+          6,
+          11
+        ],
+        [
+          0,
+          7,
+          46
+        ],
+        [
+          1,
+          0,
+          29
+        ],
+        [
+          1,
+          1,
+          32
+        ],
+        [
+          1,
+          2,
+          54
+        ],
+        [
+          1,
+          3,
+          56
+        ],
+        [
+          1,
+          4,
+          55
+        ],
+        [
+          1,
+          5,
+          58
+        ],
+        [
+          1,
+          6,
+          59
+        ],
+        [
+          1,
+          7,
+          75
+        ],
+        [
+          2,
+          0,
+          31
+        ],
+        [
+          2,
+          1,
+          57
+        ],
+        [
+          2,
+          2,
+          73
+        ],
+        [
+          2,
+          3,
+          76
+        ],
+        [
+          2,
+          4,
+          74
+        ],
+        [
+          2,
+          5,
+          77
+        ],
+        [
+          2,
+          6,
+          78
+        ],
+        [
+          2,
+          7,
+          79
+        ],
+        [
+          3,
+          0,
+          30
+        ],
+        [
+          3,
+          1,
+          36
+        ],
+        [
+          3,
+          2,
+          35
+        ],
+        [
+          3,
+          3,
+          33
+        ],
+        [
+          3,
+          4,
+          38
+        ],
+        [
+          3,
+          5,
+          37
+        ],
+        [
+          3,
+          6,
+          34
+        ],
+        [
+          3,
+          7,
+          21
+        ],
+        [
+          4,
+          0,
+          27
+        ],
+        [
+          4,
+          1,
+          28
+        ],
+        [
+          4,
+          2,
+          4
+        ],
+        [
+          4,
+          3,
+          1
+        ],
+        [
+          4,
+          4,
+          3
+        ],
+        [
+          4,
+          5,
+          2
+        ],
+        [
+          4,
+          6,
+          0
+        ],
+        [
+          4,
+          7,
+          7
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        33,
+        35
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          33
+        ],
+        [
+          0,
+          1,
+          28
+        ],
+        [
+          0,
+          2,
+          27
+        ],
+        [
+          0,
+          3,
+          30
+        ],
+        [
+          0,
+          4,
+          26
+        ],
+        [
+          0,
+          5,
+          29
+        ],
+        [
+          0,
+          6,
+          31
+        ],
+        [
+          0,
+          7,
+          57
+        ],
+        [
+          1,
+          0,
+          35
+        ],
+        [
+          1,
+          1,
+          36
+        ],
+        [
+          1,
+          2,
+          76
+        ],
+        [
+          1,
+          3,
+          78
+        ],
+        [
+          1,
+          4,
+          73
+        ],
+        [
+          1,
+          5,
+          74
+        ],
+        [
+          1,
+          6,
+          77
+        ],
+        [
+          1,
+          7,
+          72
+        ],
+        [
+          2,
+          0,
+          38
+        ],
+        [
+          2,
+          1,
+          79
+        ],
+        [
+          2,
+          2,
+          66
+        ],
+        [
+          2,
+          3,
+          64
+        ],
+        [
+          2,
+          4,
+          65
+        ],
+        [
+          2,
+          5,
+          62
+        ],
+        [
+          2,
+          6,
+          61
+        ],
+        [
+          2,
+          7,
+          50
+        ],
+        [
+          3,
+          0,
+          37
+        ],
+        [
+          3,
+          1,
+          39
+        ],
+        [
+          3,
+          2,
+          23
+        ],
+        [
+          3,
+          3,
+          20
+        ],
+        [
+          3,
+          4,
+          24
+        ],
+        [
+          3,
+          5,
+          22
+        ],
+        [
+          3,
+          6,
+          19
+        ],
+        [
+          3,
+          7,
+          14
+        ],
+        [
+          4,
+          0,
+          34
+        ],
+        [
+          4,
+          1,
+          21
+        ],
+        [
+          4,
+          2,
+          3
+        ],
+        [
+          4,
+          3,
+          4
+        ],
+        [
+          4,
+          4,
+          2
+        ],
+        [
+          4,
+          5,
+          0
+        ],
+        [
+          4,
+          6,
+          1
+        ],
+        [
+          4,
+          7,
+          8
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        40,
+        41
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          40
+        ],
+        [
+          0,
+          1,
+          16
+        ],
+        [
+          0,
+          2,
+          15
+        ],
+        [
+          0,
+          3,
+          18
+        ],
+        [
+          0,
+          4,
+          12
+        ],
+        [
+          0,
+          5,
+          13
+        ],
+        [
+          0,
+          6,
+          17
+        ],
+        [
+          0,
+          7,
+          25
+        ],
+        [
+          1,
+          0,
+          41
+        ],
+        [
+          1,
+          1,
+          42
+        ],
+        [
+          1,
+          2,
+          48
+        ],
+        [
+          1,
+          3,
+          51
+        ],
+        [
+          1,
+          4,
+          47
+        ],
+        [
+          1,
+          5,
+          49
+        ],
+        [
+          1,
+          6,
+          52
+        ],
+        [
+          1,
+          7,
+          63
+        ],
+        [
+          2,
+          0,
+          44
+        ],
+        [
+          2,
+          1,
+          53
+        ],
+        [
+          2,
+          2,
+          67
+        ],
+        [
+          2,
+          3,
+          69
+        ],
+        [
+          2,
+          4,
+          68
+        ],
+        [
+          2,
+          5,
+          70
+        ],
+        [
+          2,
+          6,
+          71
+        ],
+        [
+          2,
+          7,
+          75
+        ],
+        [
+          3,
+          0,
+          45
+        ],
+        [
+          3,
+          1,
+          60
+        ],
+        [
+          3,
+          2,
+          58
+        ],
+        [
+          3,
+          3,
+          55
+        ],
+        [
+          3,
+          4,
+          59
+        ],
+        [
+          3,
+          5,
+          56
+        ],
+        [
+          3,
+          6,
+          54
+        ],
+        [
+          3,
+          7,
+          32
+        ],
+        [
+          4,
+          0,
+          43
+        ],
+        [
+          4,
+          1,
+          46
+        ],
+        [
+          4,
+          2,
+          11
+        ],
+        [
+          4,
+          3,
+          9
+        ],
+        [
+          4,
+          4,
+          10
+        ],
+        [
+          4,
+          5,
+          6
+        ],
+        [
+          4,
+          6,
+          5
+        ],
+        [
+          4,
+          7,
+          7
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        47,
+        49
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          47
+        ],
+        [
+          0,
+          1,
+          25
+        ],
+        [
+          0,
+          2,
+          22
+        ],
+        [
+          0,
+          3,
+          24
+        ],
+        [
+          0,
+          4,
+          19
+        ],
+        [
+          0,
+          5,
+          20
+        ],
+        [
+          0,
+          6,
+          23
+        ],
+        [
+          0,
+          7,
+          39
+        ],
+        [
+          1,
+          0,
+          49
+        ],
+        [
+          1,
+          1,
+          50
+        ],
+        [
+          1,
+          2,
+          61
+        ],
+        [
+          1,
+          3,
+          62
+        ],
+        [
+          1,
+          4,
+          64
+        ],
+        [
+          1,
+          5,
+          66
+        ],
+        [
+          1,
+          6,
+          65
+        ],
+        [
+          1,
+          7,
+          72
+        ],
+        [
+          2,
+          0,
+          52
+        ],
+        [
+          2,
+          1,
+          63
+        ],
+        [
+          2,
+          2,
+          68
+        ],
+        [
+          2,
+          3,
+          67
+        ],
+        [
+          2,
+          4,
+          70
+        ],
+        [
+          2,
+          5,
+          71
+        ],
+        [
+          2,
+          6,
+          69
+        ],
+        [
+          2,
+          7,
+          60
+        ],
+        [
+          3,
+          0,
+          51
+        ],
+        [
+          3,
+          1,
+          53
+        ],
+        [
+          3,
+          2,
+          44
+        ],
+        [
+          3,
+          3,
+          41
+        ],
+        [
+          3,
+          4,
+          45
+        ],
+        [
+          3,
+          5,
+          43
+        ],
+        [
+          3,
+          6,
+          40
+        ],
+        [
+          3,
+          7,
+          16
+        ],
+        [
+          4,
+          0,
+          48
+        ],
+        [
+          4,
+          1,
+          42
+        ],
+        [
+          4,
+          2,
+          18
+        ],
+        [
+          4,
+          3,
+          17
+        ],
+        [
+          4,
+          4,
+          15
+        ],
+        [
+          4,
+          5,
+          12
+        ],
+        [
+          4,
+          6,
+          13
+        ],
+        [
+          4,
+          7,
+          14
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        54,
+        55
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          54
+        ],
+        [
+          0,
+          1,
+          32
+        ],
+        [
+          0,
+          2,
+          10
+        ],
+        [
+          0,
+          3,
+          11
+        ],
+        [
+          0,
+          4,
+          6
+        ],
+        [
+          0,
+          5,
+          5
+        ],
+        [
+          0,
+          6,
+          9
+        ],
+        [
+          0,
+          7,
+          16
+        ],
+        [
+          1,
+          0,
+          55
+        ],
+        [
+          1,
+          1,
+          46
+        ],
+        [
+          1,
+          2,
+          43
+        ],
+        [
+          1,
+          3,
+          45
+        ],
+        [
+          1,
+          4,
+          40
+        ],
+        [
+          1,
+          5,
+          41
+        ],
+        [
+          1,
+          6,
+          44
+        ],
+        [
+          1,
+          7,
+          53
+        ],
+        [
+          2,
+          0,
+          58
+        ],
+        [
+          2,
+          1,
+          60
+        ],
+        [
+          2,
+          2,
+          69
+        ],
+        [
+          2,
+          3,
+          71
+        ],
+        [
+          2,
+          4,
+          67
+        ],
+        [
+          2,
+          5,
+          68
+        ],
+        [
+          2,
+          6,
+          70
+        ],
+        [
+          2,
+          7,
+          72
+        ],
+        [
+          3,
+          0,
+          59
+        ],
+        [
+          3,
+          1,
+          75
+        ],
+        [
+          3,
+          2,
+          74
+        ],
+        [
+          3,
+          3,
+          73
+        ],
+        [
+          3,
+          4,
+          77
+        ],
+        [
+          3,
+          5,
+          78
+        ],
+        [
+          3,
+          6,
+          76
+        ],
+        [
+          3,
+          7,
+          36
+        ],
+        [
+          4,
+          0,
+          56
+        ],
+        [
+          4,
+          1,
+          57
+        ],
+        [
+          4,
+          2,
+          31
+        ],
+        [
+          4,
+          3,
+          29
+        ],
+        [
+          4,
+          4,
+          30
+        ],
+        [
+          4,
+          5,
+          27
+        ],
+        [
+          4,
+          6,
+          26
+        ],
+        [
+          4,
+          7,
+          8
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        61,
+        64
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          61
+        ],
+        [
+          0,
+          1,
+          50
+        ],
+        [
+          0,
+          2,
+          24
+        ],
+        [
+          0,
+          3,
+          23
+        ],
+        [
+          0,
+          4,
+          22
+        ],
+        [
+          0,
+          5,
+          19
+        ],
+        [
+          0,
+          6,
+          20
+        ],
+        [
+          0,
+          7,
+          21
+        ],
+        [
+          1,
+          0,
+          64
+        ],
+        [
+          1,
+          1,
+          39
+        ],
+        [
+          1,
+          2,
+          37
+        ],
+        [
+          1,
+          3,
+          38
+        ],
+        [
+          1,
+          4,
+          34
+        ],
+        [
+          1,
+          5,
+          33
+        ],
+        [
+          1,
+          6,
+          35
+        ],
+        [
+          1,
+          7,
+          36
+        ],
+        [
+          2,
+          0,
+          66
+        ],
+        [
+          2,
+          1,
+          79
+        ],
+        [
+          2,
+          2,
+          78
+        ],
+        [
+          2,
+          3,
+          77
+        ],
+        [
+          2,
+          4,
+          76
+        ],
+        [
+          2,
+          5,
+          73
+        ],
+        [
+          2,
+          6,
+          74
+        ],
+        [
+          2,
+          7,
+          75
+        ],
+        [
+          3,
+          0,
+          65
+        ],
+        [
+          3,
+          1,
+          72
+        ],
+        [
+          3,
+          2,
+          70
+        ],
+        [
+          3,
+          3,
+          68
+        ],
+        [
+          3,
+          4,
+          71
+        ],
+        [
+          3,
+          5,
+          69
+        ],
+        [
+          3,
+          6,
+          67
+        ],
+        [
+          3,
+          7,
+          53
+        ],
+        [
+          4,
+          0,
+          62
+        ],
+        [
+          4,
+          1,
+          63
+        ],
+        [
+          4,
+          2,
+          52
+        ],
+        [
+          4,
+          3,
+          49
+        ],
+        [
+          4,
+          4,
+          51
+        ],
+        [
+          4,
+          5,
+          48
+        ],
+        [
+          4,
+          6,
+          47
+        ],
+        [
+          4,
+          7,
+          25
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        67,
+        68
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          67
+        ],
+        [
+          0,
+          1,
+          53
+        ],
+        [
+          0,
+          2,
+          51
+        ],
+        [
+          0,
+          3,
+          52
+        ],
+        [
+          0,
+          4,
+          48
+        ],
+        [
+          0,
+          5,
+          47
+        ],
+        [
+          0,
+          6,
+          49
+        ],
+        [
+          0,
+          7,
+          50
+        ],
+        [
+          1,
+          0,
+          68
+        ],
+        [
+          1,
+          1,
+          63
+        ],
+        [
+          1,
+          2,
+          62
+        ],
+        [
+          1,
+          3,
+          65
+        ],
+        [
+          1,
+          4,
+          61
+        ],
+        [
+          1,
+          5,
+          64
+        ],
+        [
+          1,
+          6,
+          66
+        ],
+        [
+          1,
+          7,
+          79
+        ],
+        [
+          2,
+          0,
+          70
+        ],
+        [
+          2,
+          1,
+          72
+        ],
+        [
+          2,
+          2,
+          77
+        ],
+        [
+          2,
+          3,
+          74
+        ],
+        [
+          2,
+          4,
+          78
+        ],
+        [
+          2,
+          5,
+          76
+        ],
+        [
+          2,
+          6,
+          73
+        ],
+        [
+          2,
+          7,
+          57
+        ],
+        [
+          3,
+          0,
+          71
+        ],
+        [
+          3,
+          1,
+          75
+        ],
+        [
+          3,
+          2,
+          59
+        ],
+        [
+          3,
+          3,
+          58
+        ],
+        [
+          3,
+          4,
+          56
+        ],
+        [
+          3,
+          5,
+          54
+        ],
+        [
+          3,
+          6,
+          55
+        ],
+        [
+          3,
+          7,
+          46
+        ],
+        [
+          4,
+          0,
+          69
+        ],
+        [
+          4,
+          1,
+          60
+        ],
+        [
+          4,
+          2,
+          45
+        ],
+        [
+          4,
+          3,
+          44
+        ],
+        [
+          4,
+          4,
+          43
+        ],
+        [
+          4,
+          5,
+          40
+        ],
+        [
+          4,
+          6,
+          41
+        ],
+        [
+          4,
+          7,
+          42
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    },
+    {
+      "map": "Goldberg-GP(2,0)",
+      "original_vertices": 80,
+      "root": [
+        73,
+        74
+      ],
+      "sectors": 5,
+      "face_lengths": [
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "trace_vertices": 40,
+      "distinct_vertices": true,
+      "boundary_short_faces": true,
+      "exposed_ports": true,
+      "exterior_connected": true,
+      "cap_vertex_correspondence": [
+        [
+          0,
+          0,
+          73
+        ],
+        [
+          0,
+          1,
+          57
+        ],
+        [
+          0,
+          2,
+          56
+        ],
+        [
+          0,
+          3,
+          59
+        ],
+        [
+          0,
+          4,
+          54
+        ],
+        [
+          0,
+          5,
+          55
+        ],
+        [
+          0,
+          6,
+          58
+        ],
+        [
+          0,
+          7,
+          60
+        ],
+        [
+          1,
+          0,
+          74
+        ],
+        [
+          1,
+          1,
+          75
+        ],
+        [
+          1,
+          2,
+          71
+        ],
+        [
+          1,
+          3,
+          70
+        ],
+        [
+          1,
+          4,
+          69
+        ],
+        [
+          1,
+          5,
+          67
+        ],
+        [
+          1,
+          6,
+          68
+        ],
+        [
+          1,
+          7,
+          63
+        ],
+        [
+          2,
+          0,
+          77
+        ],
+        [
+          2,
+          1,
+          72
+        ],
+        [
+          2,
+          2,
+          65
+        ],
+        [
+          2,
+          3,
+          66
+        ],
+        [
+          2,
+          4,
+          62
+        ],
+        [
+          2,
+          5,
+          61
+        ],
+        [
+          2,
+          6,
+          64
+        ],
+        [
+          2,
+          7,
+          39
+        ],
+        [
+          3,
+          0,
+          78
+        ],
+        [
+          3,
+          1,
+          79
+        ],
+        [
+          3,
+          2,
+          38
+        ],
+        [
+          3,
+          3,
+          35
+        ],
+        [
+          3,
+          4,
+          37
+        ],
+        [
+          3,
+          5,
+          34
+        ],
+        [
+          3,
+          6,
+          33
+        ],
+        [
+          3,
+          7,
+          28
+        ],
+        [
+          4,
+          0,
+          76
+        ],
+        [
+          4,
+          1,
+          36
+        ],
+        [
+          4,
+          2,
+          30
+        ],
+        [
+          4,
+          3,
+          31
+        ],
+        [
+          4,
+          4,
+          27
+        ],
+        [
+          4,
+          5,
+          26
+        ],
+        [
+          4,
+          6,
+          29
+        ],
+        [
+          4,
+          7,
+          32
+        ]
+      ],
+      "exterior_vertices": 40,
+      "boundary_ports": 10,
+      "proposed_smaller_vertices": 50
+    }
+  ]
+}

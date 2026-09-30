@@ -1879,3 +1879,55 @@ from the complete assembly. Those counts remain 633 and 630.
 [cap-physical-probe]: ../../../../tools/fourcolor/classical/padded-cap-physical-probe.json
 [cap-physical-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPhysicalAudit.lean
 [cap-physical-measurements]: ../../../../tools/fourcolor/classical/padded-cap-physical-measurements.json
+
+## Recognizing caps from their faces
+
+The [face trace][cap-face-trace] now constructs the cap's actual dart and
+vertex coordinates from one central `m`-face, an inner hexagonal collar,
+and a second collar with one hexagon and one pentagon per sector. Face
+closure proves every internal edge reversal; the actual cubic rotations
+give the three darts at each vertex. The family parameter is unrestricted
+apart from `m ≥ 2` in the reduction consumer.
+
+The remaining boundary has `2m` ports. Between successive ports the trace
+gives a three-step face arc. A [general short-face law][short-face-ports]
+proves that these ports cannot connect to each other when their actual
+outward faces have length five or six and their two-step predecessors are
+separate from all ports. A proposed connection on a pentagon contradicts
+that separation. A connection on a hexagon reflects to its neighbouring
+pair. Repeated reflection reaches either a fixed edge or a three-step
+facial loop, both impossible. This argument handles every width without
+enumerating boundary matchings.
+
+The [cap adapter][cap-port-geometry] derives the separation from injectivity
+of the vertex trace. Its complete cubic stars then show that every port
+leaves the entire cap, not just that it avoids the other ports.
+The [recognition theorem][cap-face-recognition] uses these incidence equations
+to construct the exact open-tangle isomorphism and consumes it in the
+all-width strict reduction. An isomorphism or an induced-patch check is no
+longer supplied as a hypothesis.
+
+Two geometric conditions remain explicit: the `8m` traced vertices must be
+distinct, and the complementary exterior must be connected. The consumer
+excludes the face-traced cap from a graph-backed vertex-minimal Tait
+counterexample under those conditions. This is a recognition component
+with an actual reduction consumer; a face pattern alone has not yet been
+proved sufficient at every width.
+
+The [independent face replay][cap-face-probe] checks 3,214 actual faces in
+140 saved maps. It finds twelve matching central faces, all in GP(2,0);
+each has forty distinct cap vertices, short seam faces, exposed ports and
+a connected exterior. It separately checks the literal face trace at
+sector counts two through twenty. These are finite program checks,
+separate from the Lean family proof and from a coverage theorem.
+The [audit receipt][cap-face-measurements] records the checked dependency
+chains. The complete classical theorem and finite tube-stabilization
+certificates are excluded. The coverage and original-certificate counts
+remain 633 and 630.
+
+[cap-face-trace]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapFaceTraversal.lean
+[short-face-ports]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/ShortFacePortExclusion.lean
+[cap-port-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapPortGeometry.lean
+[cap-face-recognition]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PaddedCycleCapRecognition.lean
+[cap-face-probe]: ../../../../tools/fourcolor/classical/padded-cap-recognition-probe.json
+[cap-face-measurements]: ../../../../tools/fourcolor/classical/padded-cap-recognition-measurements.json
