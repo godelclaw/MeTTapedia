@@ -1131,6 +1131,46 @@ positive-time passage are analytic, not Lean-certified. No full-datum
 history allowance or global-regularity claim is refuted. See the
 [receiver, pressure-completion and area-memory tests](labs/README.md#actual-receiver-cancellation-and-signed-area-memory).
 
+### A transported original-gradient tensor retains physical curl
+
+`JointReceiverTensor` lifts both covariant indices on the same original
+stochastic path. Write `alpha=X^-1`, `F=grad alpha`, `G=F^T F`, and
+`C=E[G tensor G]`. The finite normalized joint law gives a positive
+definite C and certifies
+
+```text
+A=E[F^T (grad u_0)(alpha) F],
+vec(A)^T C^-1 vec(A)<=E|grad u_0(alpha)|_F^2.
+```
+
+Analytically, `D A=-B^T A-AB`, where `D=partial_t+u.grad-nu Delta`
+and `B=grad u`. Its inverse joint metric cancels both strains, leaving
+the complete nonnegative diffusion cost. This payment uses the original
+gradient energy, with no allowance reset at history boundaries.
+Differentiating the Constantin--Iyer velocity covector produces
+`grad m=A+E[sum_a u_0,a(alpha) Hess(alpha_a)]`. The second tensor is
+symmetric, so the physical curl is exactly A's antisymmetric part.
+Lean certifies this actual smooth-field curl reconstruction with the
+symmetry identification explicit, and proves the finite original-label
+bound and supplied full production identity. Continuous stochastic
+construction, differentiation and physical-time comparison remain
+analytic, rather than consequences of finite samples.
+
+The changing metric still needs a datum-fixed conversion controlling
+physical vorticity over every admissible continuation. That is the
+missing arbitrary-history estimate. A finite normalized payment alone
+does not bound the ordinary gradient energy. The earlier completed
+receiver Y retains its separate, generally nonzero internal source;
+the source-free original tensor does not erase that source.
+
+Independent averaging cannot replace C by `N tensor N`, with `N=E G`:
+the parabolic product rule adds a signed cross-diffusion term. Exact
+canonical unforced jets retain it and the joint area's covariance.
+A force also adds curl absent from the original-data tensor, even when
+its initial kinetic work is zero. The forced representation requires
+the accumulated pulled-back source. See the
+[joint tensor, original payment and curl tests](labs/README.md#joint-two-index-metric-and-original-gradient-payment).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

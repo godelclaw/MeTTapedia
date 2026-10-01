@@ -39,6 +39,7 @@ import MettapediaNS.JointCoframeCompletion
 import MettapediaNS.CovectorFluidBridge
 import MettapediaNS.CovectorJointParent
 import MettapediaNS.CovectorReceiverGeometry
+import MettapediaNS.JointReceiverTensor
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1221,3 +1222,41 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.forwardMoment_eq_sample_area
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.completedDefectRate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.completed_defect_rate
+
+-- The joint original tensor retains physical curl and full normalized diffusion.
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.flatten
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.twoIndexDrift
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.retainedSource
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.tensorRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.tensor_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.completed_receiver_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.jointFrame
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.jointMoment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.jointMoment_eq_jointGram
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.jointMoment_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.jointFrame_left_inverse
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.jointMoment_posDef
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.skewMatrix
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.skew_gram_area
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.joint_skew_area
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.normalizedSquare
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.normalizedSquare_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.diffusionCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.diffusionCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.sourceWork
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.production_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.production_le_source
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.transportedOriginalTensor
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.originalTensorCovector
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_matches
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.originalTensorEnergy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.originalTensorVariance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.originalTensorVariance_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.originalTensorVariance_expansion
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.originalTensorVariance_deficit
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_energy_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_normalized_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_curl
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_curl_conversion

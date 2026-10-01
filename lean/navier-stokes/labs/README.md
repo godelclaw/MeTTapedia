@@ -9249,3 +9249,176 @@ receiver-gradient defect, signed area covariance and remaining complete
 gradient production, with metric/curl conversion in a norm sufficient
 for continuation. Every allowed constant must come from the full
 initial datum, viscosity and prescribed horizon.
+
+### Joint two-index metric and original-gradient payment
+
+The two indices of the completed receiver Y must retain their common
+stochastic path. A more direct packet also transports the original
+velocity gradient. The starting representation is the
+[Constantin--Iyer stochastic Weber formula](https://www.math.cmu.edu/~gautam/research/papers/200511-detsns.pdf),
+Theorem 2.2; its forced extension is Remark 2.4. The tensor and metric
+calculations below are consequences on a smooth prefix, not a global
+existence conclusion from the representation theorem.
+
+Write `D=partial_t+u.grad-nu Delta`, `B=grad u`, `alpha=X^-1`, and
+`F=grad alpha`. Each inverse-flow path starts at the same original datum.
+Let `G=F^T F`, `N=E G`, `J=F^-1`, and `M=E[J J^T]`. Vectorize 3-by-3
+matrices by their row indices. The joint two-index frame and moment are
+
+```text
+Phi=F tensor F,                 C=E[Phi^T Phi]=E[G tensor G],
+L=-B^T tensor I-I tensor B^T,   D C=L C+C L^T,
+W=C^-1,                        K2_k=(partial_k C)W,
+partial_k W=-W K2_k,
+D W=-W L-L^T W-2nu sum_k K2_k^T W K2_k.
+```
+
+`MettapediaNS.JointReceiverTensor` proves the finite same-sample joint
+Gram identity, positive definiteness from the normalized law and its
+invertible frames, and the exact tensor strain/production algebra.
+Positive definiteness gives an inverse at that state; it gives no
+uniform lower eigenvalue over unknown future histories.
+
+For the original-gradient packet, retain all label information:
+
+```text
+A=E[F^T (grad u_0)(alpha) F],        A(0)=grad u_0,
+D A=-B^T A-AB,
+q_A=vec(A)^T W vec(A),
+F_A=sum_k |vec(partial_k A)-K2_k vec(A)|_W^2,
+D q_A=-2nu F_A.
+```
+
+The finite original-label variance proves
+
+```text
+a=W vec(A),
+E|vec(grad u_0(alpha))-Phi a|^2
+    = E|grad u_0(alpha)|_F^2-q_A >=0.
+```
+
+The normalized finite law, actual joint inverse, variance expansion and
+bound are kernel-certified. Under the continuous construction, volume
+preservation and the scalar transport equation give
+
+```text
+h_grad=E|grad u_0(alpha)|_F^2,       D h_grad=0,
+0<=q_A<=h_grad,
+integral q_A(t)+2nu integral_0^t integral F_A
+    <= ||grad u_0||_2^2.
+```
+
+The last statement uses the full continuum construction and spatial/time
+comparison on a smooth prefix; it remains analytic. Its resource is the
+original gradient energy, not an energy-only allowance or the current
+state's freshly assigned gradient energy. Every continuation retains
+the original paths. No Schrödinger-bridge optimizer is identified here.
+
+This packet has a direct physical curl. Differentiating the actual
+covector `m=E[F^T u_0(alpha)]` gives
+
+```text
+grad m=A+E[sum_a u_0,a(alpha) Hess(alpha_a)].
+```
+
+The second tensor is symmetric. With `u=P_sol m`, its antisymmetric
+part therefore reconstructs actual vorticity exactly:
+
+```text
+omega_i=A_(i+2,i+1)-A_(i+1,i+2),
+|omega|^2<=2|A|_F^2.
+```
+
+Lean proves that reconstruction for literal whole-space smooth fields,
+with the gradient projection difference and curvature symmetry stated
+explicitly. It also certifies a pointwise conversion whenever
+`b|A|_F^2<=q_A`, with `b>=0`. Deriving the continuum curvature identity
+and controlling the changing geometry over arbitrary histories are
+separate obligations. In this representation there is no separate curl
+of a moment connection; the earlier regression representation still has
+its correctly retained connection curl.
+
+A sufficient next physical theorem is a bound
+`|omega|^2<=K(u_0,nu,H) q_A` on all smooth prefixes of a fixed horizon,
+or a weaker spatial estimate giving the same bounded enstrophy. It need
+only control the actual packet's curl channel; bounding every direction
+of the nine-dimensional metric would be stronger. With the analytic
+original-gradient payment, this would feed the established whole-space
+enstrophy continuation theorem. No such full-datum geometric bound is
+proved. The periodic continuation application and stochastic passage
+also retain their separate formalization obligations.
+
+The generated receiver Y is a different tensor. With the original
+passive H and the complete Hessian/connection source S,
+
+```text
+Y=R-grad H,                 Y(0)=0,
+T_Y=S-B^T grad H,
+D Y=-B^T Y-YB+T_Y,
+q_Y=vec(Y)^T W vec(Y),
+D q_Y=2 vec(Y)^T W vec(T_Y)-2nu F_Y.
+```
+
+The same lift certifies this complete supplied-rate identity. An
+unforced fluid generally has `T_Y!=0`; transporting original A does not
+erase Y's internal source. Coupled physical pressure/receiver estimates
+may still need its signed history payment.
+
+The common path is essential. For any skew matrix `[v]_cross`,
+
+```text
+vec([v]_cross)^T C vec([v]_cross)=2v^T Mv.
+```
+
+This finite area-channel identity is kernel-certified. Replacing C by
+`N tensor N` loses the signed area covariance. More directly, with
+`Q=N^-1` and `K_k=(partial_k N)Q`, the complete parabolic rate of the
+independent product `Q tensor Q` contains the extra term
+
+```text
+2nu sum_k (QK_k tensor QK_k).
+```
+
+Its contribution to tensor production has no universal sign. Rational
+supplied matrices give `841/1280>0` and `-447/5120<0`. For the actual
+compactly localizable core
+`u=(xz-y,x+yz,(x^2+y^2)/2-z^2)` at `(0,0,-1)` and `nu=1/10`, the
+completed receiver has `Y'(0)=diag(-3,-3,-2)`. Its extra independent
+metric production is `(232/5)t^4+O(t^5)`, and its independent-minus-joint
+normalized square is `(232/15)t^5+O(t^6)`. Localization and the smooth
+positive-time/Taylor passage are analytic. This rejects dropping the
+signed cross diffusion; it refutes neither joint production nor a full
+original-datum history bound.
+
+```sh
+python3 -O labs/joint_receiver_tensor.py
+```
+
+The checker retains all Gaussian-rational Fourier outputs on the
+`2*pi` torus, canonical pressure and the changing NS drift. It checks
+original A, m, curvature symmetry and actual curl through second order;
+the complete original normalized diffusion law through its first time
+variation; generated Y's complete source and production; and all 81
+entries of the joint-moment gap through third order. In particular,
+
+```text
+C-N tensor N has zero first and second jets,
+(C-N tensor N)'''(0)=4nu sum_k N'(0)_k tensor N'(0)_k,
+mean q_A(0)=31905344/1156155,
+(mean q_A)'(0)=-103042048/5780775,
+mean F_A(0)=103042048/1156155,              nu=1/10.
+```
+
+The nine tensor coordinates are all retained in the diffusion residual.
+A finite noncommuting determinant-one sample law independently checks
+original-label variance, the joint inverse, full spatial connections
+and both index-strain cancellations.
+
+Finally, a fixed solenoidal forcing filter has zero initial kinetic
+work but positive curl/gradient square. It contributes `grad f` to
+Y's source and `curl f` to physical vorticity, absent from original A.
+The forced stochastic representation needs the accumulated pulled-back
+force and its extra gradient packet. Thus the original-label payment
+cannot be applied to the forced solution's full curl without that cost.
+This filter is an initial-time test, not the imported singular trajectory
+and not a claim of zero forcing work at later times.
