@@ -14383,3 +14383,292 @@ and history consequences are analytic. No Lean declarations or
 axioms change. The original-data bound on the signed core history,
 construction of a funded interior compression weight, and general
 three-dimensional continuation remain open.
+
+## Residual source funding retains parent transport
+
+`residual_parent_transport.py` follows the generated component after the
+previous paid-parent factorization. It supplies a finite allowance for
+one direct source contribution and identifies the transport that remains.
+The setting is an available smooth unforced axisymmetric whole-space
+prefix, with regular axis and sufficient decay for the stated inverses,
+integrations and stopped stochastic identities. It does not establish
+arbitrary-data regularity or fund the entire residual.
+
+### The residual is transported by the full fluid
+
+Keep the same original cutoff and actual source-history split:
+
+```text
+beta=1-zeta_rho,   f=beta b^2>=0,
+(partial_t+v.grad-nu L5)eta_core=partial_z f,
+eta_core(0)=0,
+K5=(-L5)^(-1),   T=2partial_z K5,
+q_core=T eta_core=-2a_core.
+```
+
+The last field is defined off the axis by its elliptic formula. Its axis
+trace is the residual axial strain; it is not asserted to equal a full
+velocity's axial derivative away from the axis. The full lifted drift
+has `div_5 v=2a`, although the physical three-dimensional velocity is
+incompressible. The actual residual equation is
+
+```text
+(partial_t+v.grad-nu L5)q_core=C+sigma,
+C=[v.grad,T]eta_core,
+sigma=2partial_zz K5 f.
+```
+
+For `N5(y)=|y|^(-3)/(8pi^2)` and `k=2partial_z N5`, its commutator is
+
+```text
+C(x)=integral [(v(x)-v(y)).grad k(x-y)+2a(y)k(x-y)] eta_core(y) dy.
+```
+
+Integration by parts gives the second term. Dropping it would impose
+incompressibility in the wrong dimension. The velocity difference makes
+the differentiated kernel locally integrable for smooth v, retaining
+the actual transport of the generated parents. The paid part of v has
+not disappeared from this expression.
+
+The current source stock also retains its physical evolution:
+
+```text
+(partial_t+v.grad-nu L5)f
+ =-4a f-2nu beta|grad b|^2
+   +b^2(v_r beta_r-nu L5 beta)-2nu beta_r partial_r(b^2).
+```
+
+Here the cutoff is fixed; no moving cutoff or clock is introduced. These
+terms explain why a reserve depending on the current source must still
+account for its parents and diffusion.
+
+Along the same axis process `dZ=U dt+sqrt(2nu)dB`, write J for J_core
+in this section and set `V=J q_core`. Its complete laws are
+
+```text
+dJ=V dt,
+dV=J F_core dt+sqrt(2nu)J partial_z q_core dB,
+F_core=q_core^2+nu(L5 q_core+partial_zz q_core)|axis+C|axis+sigma|axis.
+```
+
+The residual has no automatic full-fluid Riccati cancellation. In
+particular, the displayed positive square must remain unless an actual
+identity with the commutator or other terms pays it.
+
+### Original energy funds a separated direct source
+
+Fix delta>0. Split sigma by its Newtonian kernel at distance delta from
+the observation. The far part uses the ordinary kernel
+
+```text
+2partial_zz N5(y)=(-3+15 y_z^2/|y|^2)/(4pi^2|y|^5), y!=0.
+```
+
+The near part retains both the principal value and the local contact
+term `-2f(x)/5`. No singular contribution is discarded. Since beta is
+between zero and one, the complete lifted mass obeys
+
+```text
+integral_R5 f <= integral_R5 b^2
+  =pi ||u_theta(t)||_L2(R3)^2 <= pi E0,
+E0=||u0||_L2(R3)^2.
+```
+
+Thus at every position, including the random observation,
+
+```text
+|sigma_far|<=K_delta:=3E0/(pi delta^5).
+```
+
+This pays a direct contribution to newly generated strain. It does not
+pay every future transported effect of those source elements; C is
+still present. The distance split is distinct from the original radial
+source-history cutoff rho. Neither parameter varies with time.
+
+For ell>0 set `Q=J^2+ell^2 V^2`, `E=Q^2>=J^4` and
+
+```text
+G=q_core^2+nu(L5 q_core+partial_zz q_core)|axis+C|axis+sigma_near|axis,
+D_core=4ell^2 JVQ G
+       +4nu ell^2 J^2(partial_z q_core)^2(J^2+3ell^2 V^2),
+c=2/ell+2ell K_delta,
+Psi=exp(c(H-t))E.
+```
+
+The mixed-moment bound `2ell|JV|<=Q` gives the actual inequality
+
+```text
+(partial_t+L)Psi<=exp(c(H-t))D_core.
+```
+
+One original-horizon factor pays the kinematic term and the separated
+source. For E0>0, the choice `ell=1/sqrt(K_delta)` minimizes this comparison
+rate and gives `c=4sqrt(K_delta)`. Since the residual initially vanishes,
+`J(0)=1,V(0)=0,E(0)=1`. The corresponding initial multiplier for the full
+deformation, including the preceding paid history, is
+
+```text
+exp(8M_H+4H sqrt(K_delta)).
+```
+
+The zero-energy datum gives the zero fluid and requires no such choice.
+There is no reset at a history seam. The remaining sufficient axis
+obligation is a finite original-datum bound A_H on
+
+```text
+E integral_0^tau exp(c(H-s))D_core(s) ds <= A_H,
+```
+
+uniformly over the initial axis position, available smooth prefixes up
+to H and their localized stopping times tau. If established, it would
+bound the full fourth deformation moment by
+`exp(8M_H)[exp(cH)+A_H]`. This signed bound remains open. Defining A_H as
+an uncontrolled future supremum would not prove it. Even this axis bound
+would still need a funded interior physical weight and the subsequent
+general three-dimensional and periodic obligations.
+
+### Hidden parents change the next generated response
+
+The test uses genuine compact smooth data. Let R^2=r^2+z^2 and take a
+nonzero smooth radial B supported in R<1. Choose a smooth radial kappa
+equal to one for R<=3 and zero for R>=4. Set
+
+```text
+b0=B(R^2),
+chi0=C z r^4 kappa(R^2),
+u_r=-r chi0_z, u_z=2chi0+r chi0_r, u_theta=r b0.
+```
+
+Both signs of C give smooth finite-energy divergence-free data and
+actual local unforced solutions at every fixed nu>0. On the initial
+source support, the meridional velocity is exactly
+`v=(-C r^5,6C z r^4)`, with `a=-C r^4`. Along the entire initial axis,
+U and q vanish, as does the trace `Delta_3 partial_z u_z`. For rho=5,
+the initial source and its first time derivative are wholly assigned to
+the core. This statement concerns these initial jets, not later support.
+
+Define the positive finite initial moments
+
+```text
+M_j=integral_R5 |y|^j b0(y)^2 dy,
+D=integral_R5 |grad b0|^2 dy.
+```
+
+Outside the swirl support, radial Newtonian integration gives, on z>1,
+
+```text
+K5(b0^2)(0,z)=M0/(8pi^2 z^3),
+partial_t q_core(0,0,z)=sigma(z)=3M0/(pi^2 z^5)>0.
+```
+
+The next derivative retains both source evolution and transport:
+
+```text
+partial_tt q_core(0,0,z)=C H(z)-6nu D/(pi^2 z^5),
+H(z)=1/(8pi^2) [3456M4/(35z^5)+4992M6/(7z^7)
+                -21760M8/(11z^9)+161280M10/(143z^11)].
+```
+
+For z>=2 this coefficient is strictly positive. Indeed M8<=M6 because
+the swirl support has R<1, and
+`4*(4992/7)-21760/11>0`, so the M6 term pays the negative M8 term.
+In particular `H(z)>=432M4/(35pi^2 z^5)>0`.
+
+To identify every contribution, the table gives coefficients after
+factoring `C M_(l+4)/(8pi^2 z^(l+5))`:
+
+| l | sigma_t, nonviscous | T(v.grad S) | Difference |
+|---|---:|---:|---:|
+| 0 | 1152/35 | -2304/35 | 3456/35 |
+| 2 | 384 | -2304/7 | 4992/7 |
+| 4 | -11008/11 | 10752/11 | -21760/11 |
+| 6 | 80640/143 | -80640/143 | 161280/143 |
+
+These are finite angular moments of the Newtonian expansion. The source
+stock derivative has angular degree at most six, and v.grad S at most
+seven. Gegenbauer orthogonality removes all higher terms. Radial
+integration by parts reduces them to the displayed M_j; smooth compact
+support removes all boundary terms. Also `L5 sigma=0` outside the initial
+source, so no physical diffusion of sigma was omitted there. The
+remaining viscous term follows from the radial source-gradient mass D.
+
+Start the actual axis sampling path at any fixed z>=2. The complete
+time-dependent Ito generator gives
+
+```text
+d_tt E[J_core^4]|0=4sigma(z),
+d_ttt E[J_core^4]|0
+ =4[C H(z)+nu(-6D/(pi^2 z^5)+180M0/(pi^2 z^7))].
+```
+
+The coefficient 180 includes both time-ordered sampling-diffusion
+contributions. Choose |C| large enough to dominate the displayed finite
+viscous offset. Opposite signs of C then give opposite third moment
+derivatives, while the positive second derivative is unchanged. These
+localized short-time expansions are analytic for each fixed datum;
+they do not assert a uniform turnover window or recurrent growth.
+
+The two signs have the same b0, current source and its elliptic forecast,
+entire initial axis velocity, axis diffusion trace, total energy,
+initial eta L2 norm and previous scalar allowance M_H. They even have
+the same initial canonical pressure: the meridional/swirl cross term
+in `tr[(grad u)^2]` vanishes, so meridional reversal leaves its complete
+Poisson source unchanged. The full initial velocities differ.
+
+Thus those snapshots and scalar payments do not determine the next
+generated deformation. Treating the paid parents as absent from
+transport would give the wrong coefficient. An allowance can still
+bound both signs using the original datum; this does not refute such
+an allowance, the paid-parent factorization, or regularity.
+
+### Test a source-funded forecast against the actual parent response
+
+One specific candidate for the residual axis weight uses its first
+stochastic strain rate rather than only the current strain. Write
+
+```text
+A=partial_t+U partial_z+nu partial_zz,
+h=A q_core, tau=H-t,
+psi=4tau q_core+2tau^2 h+Lambda tau^3, w=exp(psi).
+```
+
+The first two terms give a nonzero initial allocation for the newly
+generated source. The complete logarithmic supersolution defect is
+
+```text
+A psi+nu psi_z^2+4q_core
+ =2tau^2 A h-3Lambda tau^2
+   +nu(4tau partial_z q_core+2tau^2 partial_z h)^2.
+```
+
+For the compact-parent test, initially h=sigma and
+`A h=C H(z)+nu B_visc(z)`, where
+`B_visc=-6D/(pi^2 z^5)+180M0/(pi^2 z^7)`. Thus the uncorrected choice
+Lambda=0 fails for sufficiently large positive C. At the tested point
+its initial psi is `2H^2 sigma>0`, so imposing the obstacle psi>=0 does
+not remove this differential failure. A constant cubic correction must
+at least satisfy, at this initial state,
+
+```text
+Lambda >= (2/3)[C H(z)+nu B_visc(z)]
+          +(4/3)nu H^2 sigma_z(z)^2.
+```
+
+This is a necessary initial payment, not a sufficient full-history bound.
+The scalar formula accounts for source generation but its evolution still
+depends on the parent's phase. A dynamic correction must control A h and
+the displayed gradient cost along the actual evolution. Choosing Lambda
+from an uncontrolled future bound merely relocates the open estimate.
+Failure of this particular forecast does not rule out other stochastic
+weights or original-datum reserves.
+
+Run `python3 -O labs/residual_parent_transport.py` for the exact symbolic
+checks. Add `--quadrature` for an independent numerical integration of
+the original kernels with the compact smooth profile
+`B(R^2)=exp(-1/(1-R^2))` inside R<1. At quadrature orders 80 and 128,
+both z=2 and z=3 agree with the moment formula to relative error below
+`1.1e-14`. This is supporting numerical evidence, not a certified error
+bound. PDE evolution, elliptic identification, integral inequalities and
+stochastic interval conclusions remain analytic. No Lean declarations
+or axioms change. The signed residual history and its original-datum
+funding remain open.

@@ -1852,6 +1852,22 @@ strictly positive residual axial deformation after this removal. It
 refutes a zero-cost residual comparison, while leaving positive source
 prefunding and its arbitrary-horizon renewal open.
 
+The [residual parent transport calculation](labs/README.md#residual-source-funding-retains-parent-transport)
+derives the residual's actual transport--elliptic commutator, including
+the nonzero divergence of the five-dimensional lifted drift. A direct
+source contribution separated from the observation by a fixed distance
+has an original-energy bound. Together with the paid-parent factor, this
+gives an explicit initial allowance for those terms of the residual
+deformation metric. Nearby source work, transport, viscous acceleration
+and quadratic variation remain in one signed history cost.
+A compact smooth test pair has identical initial source, canonical
+pressure, axis velocity, energy and scalar paid-parent bound, but opposite
+signs of the next residual deformation coefficient. Thus the scalar
+payment does not determine the transport of newly generated parents.
+The equations and moment coefficients are symbolically checked; elliptic
+identification and the interval conclusions remain analytic. This tests
+a source-only closure, not a full-datum history allowance or regularity.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
