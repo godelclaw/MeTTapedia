@@ -47,21 +47,33 @@ variable [Fintype V] [DecidableEq V] [Fintype I] [DecidableEq I]
 variable (piece : OpenTangleData V I (Fin n)) (outside : OpenTangleData W J C)
   (seam : Fin n ≃ C)
 
-/-- The final two assignments agree on all ports at once. The selected
-exterior may differ from the initial one represented by `et`. -/
-theorem glue_of_repair
+/-- A closed observation need only read back to genuine exterior witnesses.
+It need not describe every exterior colouring. The final two assignments
+agree on all ports at once, and the selected exterior may be recoloured. -/
+theorem glue_of_closed_observation
     (hrepair : KempeBoundarySplit.Repairs (Trace piece (Equiv.refl _)) n)
-    (hclosed : KempeClosed (Trace outside seam))
+    (E : List Color → Prop) (hclosed : KempeClosed E)
+    (hread : ∀ et, E et → Trace outside seam et)
     (et : List Color) (hlen : et.length = n) (hzero : (0 : Color) ∉ et)
-    (hsum : et.sum = 0) (hold : Trace outside seam et) :
+    (hsum : et.sum = 0) (hold : E et) :
     RotationSystemTaitColorable (outside.composeRotationSystem piece seam.symm) := by
-  obtain ⟨es, ⟨l, hl, hel⟩, r, hr, her⟩ :=
-    hrepair et hlen hzero hsum (Trace outside seam) hclosed hold
+  obtain ⟨es, ⟨l, hl, hel⟩, hes⟩ := hrepair et hlen hzero hsum E hclosed hold
+  obtain ⟨r, hr, her⟩ := hread es hes
   have hm (i : Fin n) : l (.inr i) = r (.inr (seam i)) :=
     List.map_inj_left.mp (hel.trans her.symm) i (List.mem_finRange i)
   obtain ⟨result, hresult, _⟩ := OpenTangleClosedWitness.glueOpen outside piece seam.symm
     r l hr hl (fun b => by simpa only [Equiv.apply_symm_apply] using (hm (seam.symm b)).symm)
   exact ⟨result, hresult⟩
+
+/-- Specialize the observation to the complete physical exterior trace. -/
+theorem glue_of_repair
+    (hrepair : KempeBoundarySplit.Repairs (Trace piece (Equiv.refl _)) n)
+    (hclosed : KempeClosed (Trace outside seam))
+    (et : List Color) (hlen : et.length = n) (hzero : (0 : Color) ∉ et)
+    (hsum : et.sum = 0) (hold : Trace outside seam et) :
+    RotationSystemTaitColorable (outside.composeRotationSystem piece seam.symm) :=
+  glue_of_closed_observation piece outside seam hrepair (Trace outside seam)
+    hclosed (fun _ h => h) et hlen hzero hsum hold
 
 omit [Fintype V] [DecidableEq V] [Fintype I] [DecidableEq I] [Fintype B] [DecidableEq B] in
 /-- Actual cubic colourings supply proper zero-sum words at any width. -/

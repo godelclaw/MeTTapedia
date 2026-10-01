@@ -67,12 +67,13 @@ replaces these twenty vertices by an eight-cycle with the same ordered ports.
 Equal boundary face returns and Euler mass preserve the spherical, cubic,
 connected and bridgeless map class in every fixed exterior, including
 disconnected exteriors. The complete operation has twelve fewer vertices.
-Colouring reconstruction uses the existing transferred repair and retains
-an explicit exterior Kempe-closure hypothesis; a physically noncrossing
-component matching suffices to discharge it. Deriving that hypothesis from
-embedded occurrence geometry and recognizing the pattern in arbitrary maps
-remain open. The geometry and joint construction have no colour-certificate
-dependency; repair retains configuration 6's existing base certificate.
+The [hub reconstruction](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondHubColoring.lean)
+now proves that every smaller colouring reconstructs, with no extra exterior
+closure or connectivity hypothesis. It may recolour the exterior. Geometry
+and transport have no configuration-colour-certificate dependency; the repair
+retains configuration 6's existing base certificate. This advances the
+reconstruction part of the compositional plan while leaving arbitrary-source
+recognition and global coverage separate.
 
 The [receipt](../../../tools/fourcolor/classical/two-diamond-cycle-measurements.json)
 separates these kernel statements from a bounded program test: all 258 proper
@@ -95,16 +96,43 @@ arbitrary boundary choices extend.
 The [transport receipt](../../../tools/fourcolor/classical/source-tait-inverse-measurements.json)
 records the nine-root dependency audit and both passing build gates.
 
-The remaining closure bridge must handle disconnected exteriors. A replayable
+The boundary bridge handles disconnected exteriors. A replayable
 24-vertex simple spherical cubic bridgeless map of girth five has this source
 disk with two exterior components; its faces are twelve pentagons and two
 hexagons. This is independent program evidence against inferring exterior
 connectivity from those hypotheses. An exhaustive check of all 8,388,607 vertex
-bipartitions also finds no cyclic cut below five; all twelve cyclic five-cuts
-isolate five vertices. This tests the library's cubic-dual internal-six cut
-conditions, without supplying a kernel theorem or a decoder bridge. The next
-target is exact transport of the planar remainder's boundary
-trace, including its cyclic order, into the physical exterior repair theorem.
+bipartitions finds no cyclic cut below five; all twelve cyclic five-cuts
+isolate five vertices. The example is not yet connected to a kernel-checked
+decoder.
+
+The general kernel proof instead uses one ordered eight-valent hub:
+
+```mermaid
+flowchart LR
+  S[Supplied smaller-cycle colouring] --> F[Exact face-colour representation]
+  F --> H[Colour the ordered boundary hub]
+  H --> R[Repair within its closed reference trace]
+  R --> E[Read back a genuine exterior colouring]
+  R --> D[Reconstruct the joint diamond colouring]
+  E --> G[Glue matching ordered ports]
+  D --> G
+```
+
+The hub retains what the repair needs: the joint ordered boundary relation
+and witnesses that reconstruct genuine exterior colourings. It preserves
+spherical geometry and exterior cofaciality but has an eight-valent vertex;
+the actual smaller induction map remains the cubic eight-cycle. The generic
+`glue_of_closed_observation` theorem allows a sufficient closed observation
+instead of demanding closure of all physical exterior assignments. This is
+the successful-choice principle in a concrete consumer.
+
+The [hub audit receipt](../../../tools/fourcolor/classical/two-diamond-hub-measurements.json)
+separates this new strict reduction from the unchanged complete-assembly
+counts. It uses the reference Kempe theorem and retained configuration-6
+repair, not the complete Four Colour theorem. It does not extract a physical
+Kempe-move program or give exact colouring counts. The next geometric target
+is to recognize this disk from actual source face incidences and transport
+the reduction back to that source; universal coverage remains open.
 
 For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
 semantic bounds, a general reflection theorem, and an audited replacement in

@@ -17,6 +17,8 @@ vertices are counted, so the whole closed map loses exactly twelve vertices.
 The colouring implication uses the existing transferred shared-tip repair.
 Its exterior Kempe-closure hypothesis remains explicit; geometric class
 preservation alone does not establish that hypothesis or occurrence coverage.
+`TwoDiamondHubColoring.reconstruct` supplies the stronger implication without
+that hypothesis, using a closed reference observation and exact readback.
 -/
 
 namespace FourColor.TwoDiamondCycleReplacement

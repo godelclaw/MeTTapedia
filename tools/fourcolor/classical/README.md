@@ -1,5 +1,22 @@
 # Classical Four Colour sources and compression baseline
 
+The [boundary-hub reconstruction receipt](two-diamond-hub-measurements.json)
+records the exact removal of the shared-tip disk's exterior-closure hypothesis.
+The actual twenty-vertex disk is replaced by its eight-cycle, losing twelve
+vertices and preserving the spherical cubic connected bridgeless class.
+A supplied smaller colouring lifts to an ordered hub; reference Kempe repair
+selects compatible choices; exact readback produces a genuine exterior
+colouring. The exterior may be disconnected and may change colour.
+The generic closed-observation gluing law is consumed by this reconstruction.
+Geometry and transport exclude all configuration certificates; repair retains
+configuration 6's base. No further original certificate or coverage entry is
+removed. Earlier receipts below record the hypotheses at their checkpoints.
+
+Replay the local kernel audit with
+`lake build MettapediaFourColor.TwoDiamondHubAudit` in the integration package.
+Because the generalized `SourceTait` helpers also serve the complete assembly,
+the checkpoint additionally replays `kernelAdapters` and `kernelComplete`.
+
 The latest [shared-tip double-diamond receipt](two-diamond-measurements.json)
 records exact kernel semantics for configurations 3 and 6 and the repair
 transfer from 6 to 3. The complete audit now retains 629 original certificates

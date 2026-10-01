@@ -69,17 +69,25 @@ theorem rho_three (hc : RS.IsCubic) (hcyc : VertexRotationCyclic RS) (d : RS.D) 
     RS.rho (RS.rho (RS.rho d)) = d :=
   congrArg Subtype.val (rot_three hc hcyc (⟨d, rfl⟩ : At RS (RS.vertOf d)))
 
-theorem dartTrace_ne_rho (hc : RS.IsCubic) (hcyc : VertexRotationCyclic RS)
+/-- Adjacent differences are distinct at any individual three-dart node;
+other nodes, such as a boundary hub, may have different valence. -/
+theorem dartTrace_ne_rho_of_three
     {k : RS.D → Color} (hk : (sourceMap RS).Coloring k) (d : RS.D) :
-    dartTrace RS k d ≠ dartTrace RS k (RS.rho d) := by
-  intro h
+    RS.rho (RS.rho (RS.rho d)) = d →
+      dartTrace RS k d ≠ dartTrace RS k (RS.rho d) := by
+  intro hthree h
   simp only [dartTrace, ← faceColor_rho hk] at h
   have hends : k d = k (RS.rho (RS.rho d)) :=
     add_right_cancel (h.trans (add_comm _ _))
   apply hk.edge (RS.rho (RS.rho d))
   change k (RS.alpha (RS.rho (RS.rho d))) = k (RS.rho (RS.rho d))
-  rw [← faceColor_rho hk, rho_three hc hcyc]
+  rw [← faceColor_rho hk, hthree]
   exact hends
+
+theorem dartTrace_ne_rho (hc : RS.IsCubic) (hcyc : VertexRotationCyclic RS)
+    {k : RS.D → Color} (hk : (sourceMap RS).Coloring k) (d : RS.D) :
+    dartTrace RS k d ≠ dartTrace RS k (RS.rho d) :=
+  dartTrace_ne_rho_of_three hk d (rho_three hc hcyc d)
 
 /-- Distinct incident darts have distinct edge differences. Cubicity and
 one cyclic order per vertex are the only structural inputs. -/
@@ -132,20 +140,23 @@ theorem taitColoring_dart (hc : RS.IsCubic) (hcyc : VertexRotationCyclic RS)
     (fun d => congrArg palette (dartTrace_alpha RS k d))
     (fun hv hn heq => dartTrace_ne_of_sameVertex hc hcyc hk hv hn (palette.injective heq)) d
 
-/-- The source's labelled Euler equation becomes the exact hypermap planarity condition. -/
-theorem sourceMap_planar (hclass : BridgelessSphericalCubicMapData RS) :
+/-- The labelled Euler equation gives reference planarity also for maps
+with a higher-valence boundary vertex. Every displayed vertex must have a dart. -/
+theorem sourceMap_planar_of_vertexCovered
+    (hs : Function.Surjective RS.vertOf)
+    (hrotation : VertexRotationCyclic RS)
+    (hconnected : (rotationPrimalGraph RS).Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card E +
+      Fintype.card (GoertzelV24FaceOrbitIncidence.OrbitFace RS) = 2) :
     (sourceMap RS).Planar := by
   apply (planar_iff _).mpr
-  have hs : Function.Surjective RS.vertOf := fun v =>
-    ⟨(SourceVertexCodeTrace.root hclass.spherical.cubic v).val,
-      (SourceVertexCodeTrace.root hclass.spherical.cubic v).property⟩
   have hv := GoertzelV24StellarDualStructure.orbitCount_rho_eq_card_vertex
-    RS hclass.vertexRotationCyclic hs
+    RS hrotation hs
   have he := orbitCount_alpha_eq_card_edge RS
   have hf := GoertzelV24StellarDualStructure.orbitCount_phi_eq_card_orbitFace RS
   have hd := RS.card_darts_eq_twice_card_edges
   have hn := hypermap_compCount_eq_one_of_primalConnected
-    RS hclass.primalConnected hclass.vertexRotationCyclic
+    RS hconnected hrotation
   change Mettapedia.GraphTheory.Hypermap.eulerDefect
     (Mettapedia.GraphTheory.Hypermap.ofRotationSystem RS) = 0
   rw [Mettapedia.GraphTheory.Hypermap.eulerDefect,
@@ -154,8 +165,15 @@ theorem sourceMap_planar (hclass : BridgelessSphericalCubicMapData RS) :
     Mettapedia.GraphTheory.Hypermap.ofRotationSystem_edge,
     Mettapedia.GraphTheory.Hypermap.orbitCount_node,
     Mettapedia.GraphTheory.Hypermap.ofRotationSystem_face, hv, he, hf, hd, hn]
-  have := hclass.spherical.euler
   omega
+
+/-- The source's labelled Euler equation becomes the exact hypermap planarity condition. -/
+theorem sourceMap_planar (hclass : BridgelessSphericalCubicMapData RS) :
+    (sourceMap RS).Planar :=
+  sourceMap_planar_of_vertexCovered
+    (fun v => ⟨(SourceVertexCodeTrace.root hclass.spherical.cubic v).val,
+      (SourceVertexCodeTrace.root hclass.spherical.cubic v).property⟩)
+    hclass.vertexRotationCyclic hclass.primalConnected hclass.spherical.euler
 
 theorem sourceMap_bridgeless (hclass : BridgelessSphericalCubicMapData RS) :
     (sourceMap RS).Bridgeless := by

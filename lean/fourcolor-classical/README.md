@@ -25,15 +25,33 @@ actual twenty-vertex cubic open disk, preserving the reference rotations,
 internal edges and joint colouring witnesses. `TwoDiamondCycleReplacement`
 replaces it by an eight-cycle in any fixed exterior, preserving the spherical
 cubic connected bridgeless map class and removing twelve whole-map vertices.
-Its colouring implication still assumes exterior Kempe closure, with a
-physical noncrossing-matching consumer. `TwoDiamondCycleAudit` checks seventeen
-roots, excludes colour certificates from pure geometry and joint construction,
-and requires configuration 6's retained base in repair. Broader occurrence,
-unconditional exterior closure and coverage are not supplied by this step.
-The [receipt](../../tools/fourcolor/classical/two-diamond-cycle-measurements.json)
-records its scope. The local audit target is
-`lake build MettapediaFourColor.TwoDiamondCycleAudit`; it is separate from
-the complete assembly and changes none of its certificate or coverage counts.
+The earlier colouring implication made exterior Kempe closure explicit.
+`TwoDiamondHubColoring.reconstruct` now removes that extra hypothesis: a supplied
+colouring of the smaller cycle map always reconstructs an original colouring.
+It permits disconnected exteriors and may recolour them. The repair still
+uses configuration 6's retained base certificate. Recognition of the disk in
+an arbitrary source and geometric coverage remain separate obligations.
+
+`TwoDiamondBoundaryHub` replaces the disk by one ordered eight-valent hub
+for reference Kempe semantics. Equal face returns preserve literal exterior
+cofaciality; the spherical source gives a planar plain quasicubic reference
+map. This hub is an observation device, not the smaller cubic induction map.
+The cycle's supplied face colouring transports into the hub. Every repaired
+hub colouring reads back to a proper physical exterior colouring with exactly
+the same ordered boundary word, including the closing seam.
+`OpenTangleKempeRepair.glue_of_closed_observation` then joins the compatible
+witnesses. This reusable law needs a closed observation that reads back to
+actual witnesses, without requiring it to describe every exterior colouring.
+
+The [hub receipt](../../tools/fourcolor/classical/two-diamond-hub-measurements.json)
+records the local gate and dependency audit. The target is
+`lake build MettapediaFourColor.TwoDiamondHubAudit`.
+It excludes all configuration certificates from geometry and transport,
+and permits only the retained configuration-6 base in reconstruction.
+No complete Four Colour endpoint is used. The separate GSLT construction
+witness remains available; the new implication consumes the actual joint
+colouring reconstruction. No executable physical Kempe path is extracted.
+The complete assembly retains 629 original certificates and 633 coverage entries.
 
 `SourceTaitInverse` connects physical edge colourings back to reference face
 colourings. A conserved nonzero edge field on a two-sided spherical rotation
@@ -46,8 +64,9 @@ returns every supplied edge colour exactly. `TwoDiamondCycleFaceTransport`
 uses this round trip on the actual smaller cycle replacement, retaining both
 pieces' witnesses and the whole seam equation even for disconnected exteriors.
 `SourceTaitInverseAudit` excludes complete colouring endpoints and all
-configuration colour certificates. This representation bridge does not yet
-derive exterior closure or replace a further catalogue dependency.
+configuration colour certificates. The new hub consumer uses this representation
+bridge for reconstruction; the bridge itself transports a supplied witness
+and removes no catalogue dependency.
 The [transport receipt](../../tools/fourcolor/classical/source-tait-inverse-measurements.json)
 records its nine-root audit, source/artifact hashes and program evidence.
 
