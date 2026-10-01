@@ -536,4 +536,243 @@ theorem tendsto_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0
 #print axioms growing_patches_retained
 #print axioms growing_mixedChange
 #print axioms tendsto_mixedChange
+/-! ## Responses under the actual scale-two product constraint
+
+The remaining integration variables carry product Haar measure. Their positive
+weight is the complete fine Wilson density evaluated in the block chart; it
+is not the law obtained by pinning individual fine links. The unitary rotation
+frames depend on fluctuation variables, and all ordered contact terms remain.
+-/
+
+namespace ScaleTwo
+open StrongCouplingCrossing WilsonDyadicGeometry SU2WilsonBlockPilot WilsonBlockElimination
+open SU2BoundaryResponse SU2WilsonAssembly.ScaleTwo
+variable {n : ℕ}
+
+def configuration (c : CoarseConfig n) : C(Fluctuation n, FineConfig n) :=
+  ⟨fun f ↦ chart n (c, f), (PairedLinks.continuous_chart (E := SU2) (blockIndexEquiv 4 n)).comp
+    (continuous_const.prodMk continuous_id)⟩
+
+/-- The fine Wilson density in the exact product-constrained Haar chart. -/
+def fiberDensity (β : ℝ) (c : CoarseConfig n) : C(Fluctuation n, ℝ) :=
+  (fineDensity n β).comp (configuration c)
+
+theorem fiberDensity_pos (β : ℝ) (c : CoarseConfig n) (f : Fluctuation n) :
+    0 < fiberDensity β c f := fineDensity_pos n β _
+
+theorem integral_fiberDensity (β : ℝ) (c : CoarseConfig n) :
+    (∫ f, fiberDensity β c f) = coarseDensity n β c := rfl
+
+theorem fiberDensity_eq_pinned (β : ℝ) (c : CoarseConfig n) (f : Fluctuation n) :
+    fiberDensity β c f = boundaryDensity β univ univ (chart n (c, f)) (fun _ ↦ 1) := by
+  simp only [fiberDensity, configuration, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
+    fineDensity, boundaryDensity, WilsonLocalResponse.realDensity,
+    StrongCouplingCrossing.potential, InhomogeneousWilsonCrossing.Model.pinned,
+    Finset.mem_univ, ↓reduceIte]
+  rfl
+
+def blockScore (S : Finset (Link 4 n)) (q c : CoarseConfig n) (t : ℝ) :
+    C(Fluctuation n, ℝ) :=
+  ⟨fun f ↦ score univ univ (liftPatch S) (liftFrame q f) (chart n (c, f)) t (fun _ ↦ 1),
+    continuous_score_parametric univ univ (liftPatch S) (continuous_liftFrame q)
+      (configuration c).continuous continuous_const continuous_const⟩
+
+def blockContact (S T : Finset (Link 4 n)) (q r c : CoarseConfig n) (t : ℝ) :
+    C(Fluctuation n, ℝ) :=
+  ⟨fun f ↦ contact univ univ (liftPatch S) (liftPatch T)
+    (liftFrame q f) (liftFrame r f) (chart n (c, f)) t (fun _ ↦ 1),
+    continuous_contact_parametric univ univ (liftPatch S) (liftPatch T)
+      (continuous_liftFrame q) (continuous_liftFrame r)
+      (configuration c).continuous continuous_const continuous_const⟩
+
+def blockThirdContact (S T V : Finset (Link 4 n)) (q r u c : CoarseConfig n) (t : ℝ) :
+    C(Fluctuation n, ℝ) :=
+  ⟨fun f ↦ thirdContact univ univ (liftPatch S) (liftPatch T) (liftPatch V)
+    (liftFrame q f) (liftFrame r f) (liftFrame u f) (chart n (c, f)) t (fun _ ↦ 1),
+    continuous_thirdContact_parametric univ univ (liftPatch S) (liftPatch T) (liftPatch V)
+      (continuous_liftFrame q) (continuous_liftFrame r) (continuous_liftFrame u)
+      (configuration c).continuous continuous_const continuous_const⟩
+
+theorem abs_blockScore_le (S : Finset (Link 4 n)) (q c : CoarseConfig n) (t : ℝ)
+    (f : Fluctuation n) : |blockScore S q c t f| ≤ 256 * S.card := by
+  simpa only [blockScore, ContinuousMap.coe_mk, card_liftPatch] using
+    abs_score_le univ univ (liftPatch S) (liftFrame q f) (chart n (c, f)) t (fun _ ↦ 1)
+
+theorem abs_blockContact_le (S T : Finset (Link 4 n)) (q r c : CoarseConfig n) (t : ℝ)
+    (f : Fluctuation n) : |blockContact S T q r c t f| ≤ 1024 * S.card := by
+  simpa only [blockContact, ContinuousMap.coe_mk, card_liftPatch] using abs_contact_le univ univ (liftPatch S) (liftPatch T)
+    (liftFrame q f) (liftFrame r f) (chart n (c, f)) t (fun _ ↦ 1)
+
+theorem abs_blockThirdContact_le (S T V : Finset (Link 4 n))
+    (q r u c : CoarseConfig n) (t : ℝ) (f : Fluctuation n) :
+    |blockThirdContact S T V q r u c t f| ≤ 4096 * S.card := by
+  simpa only [blockThirdContact, ContinuousMap.coe_mk, card_liftPatch] using abs_thirdContact_le univ univ
+    (liftPatch S) (liftPatch T) (liftPatch V)
+    (liftFrame q f) (liftFrame r f) (liftFrame u f) (chart n (c, f)) t (fun _ ↦ 1)
+
+theorem continuous_configuration_curve (S : Finset (Link 4 n)) (q c : CoarseConfig n) :
+    Continuous (fun z : ℝ × Fluctuation n ↦ chart n (boundaryCurve S q c z.1, z.2)) :=
+  (PairedLinks.continuous_chart (E := SU2) (blockIndexEquiv 4 n)).comp
+    (((continuous_boundaryCurve S q c).comp continuous_fst).prodMk continuous_snd)
+
+theorem continuous_fiberDensity_curve (β : ℝ) (S : Finset (Link 4 n)) (q c : CoarseConfig n) :
+    Continuous (fun z : ℝ × Fluctuation n ↦ fiberDensity β (boundaryCurve S q c z.1) z.2) :=
+  (fineDensity n β).continuous.comp (continuous_configuration_curve S q c)
+
+theorem continuous_blockScore (S : Finset (Link 4 n)) (q c : CoarseConfig n) :
+    Continuous (fun z : ℝ × Fluctuation n ↦ blockScore S q c z.1 z.2) :=
+  continuous_score_parametric univ univ (liftPatch S)
+    ((continuous_liftFrame q).comp continuous_snd)
+    ((configuration c).continuous.comp continuous_snd) continuous_const continuous_fst
+
+theorem continuous_blockScore_other (S V : Finset (Link 4 n)) (q u c : CoarseConfig n) :
+    Continuous (fun z : ℝ × Fluctuation n ↦ blockScore S q (boundaryCurve V u c z.1) 0 z.2) :=
+  continuous_score_parametric univ univ (liftPatch S)
+    ((continuous_liftFrame q).comp continuous_snd)
+    (continuous_configuration_curve V u c) continuous_const continuous_const
+
+theorem continuous_blockContact (S T : Finset (Link 4 n)) (q r c : CoarseConfig n) :
+    Continuous (fun z : ℝ × Fluctuation n ↦ blockContact S T q r c z.1 z.2) :=
+  continuous_contact_parametric univ univ (liftPatch S) (liftPatch T)
+    ((continuous_liftFrame q).comp continuous_snd) ((continuous_liftFrame r).comp continuous_snd)
+    ((configuration c).continuous.comp continuous_snd) continuous_const continuous_fst
+
+theorem continuous_blockContact_other (S T V : Finset (Link 4 n))
+    (q r u c : CoarseConfig n) :
+    Continuous (fun z : ℝ × Fluctuation n ↦
+      blockContact S T q r (boundaryCurve V u c z.1) 0 z.2) :=
+  continuous_contact_parametric univ univ (liftPatch S) (liftPatch T)
+    ((continuous_liftFrame q).comp continuous_snd) ((continuous_liftFrame r).comp continuous_snd)
+    (continuous_configuration_curve V u c) continuous_const continuous_const
+
+theorem continuous_blockThirdContact (S T V : Finset (Link 4 n))
+    (q r u c : CoarseConfig n) :
+    Continuous (fun z : ℝ × Fluctuation n ↦ blockThirdContact S T V q r u c z.1 z.2) :=
+  continuous_thirdContact_parametric univ univ (liftPatch S) (liftPatch T) (liftPatch V)
+    ((continuous_liftFrame q).comp continuous_snd) ((continuous_liftFrame r).comp continuous_snd)
+    ((continuous_liftFrame u).comp continuous_snd)
+    ((configuration c).continuous.comp continuous_snd) continuous_const continuous_fst
+
+theorem hasDerivAt_fiberDensity (β : ℝ) (S : Finset (Link 4 n))
+    (q c : CoarseConfig n) (t : ℝ) (f : Fluctuation n) :
+    HasDerivAt (fun s ↦ fiberDensity β (boundaryCurve S q c s) f)
+      (-β * (fiberDensity β (boundaryCurve S q c t) f * blockScore S q c t f)) t := by
+  simp_rw [fiberDensity_eq_pinned, chart_boundaryCurve]
+  exact hasDerivAt_boundaryDensity β univ univ (liftPatch S)
+    (liftFrame q f) (chart n (c, f)) t (fun _ ↦ 1)
+
+theorem hasDerivAt_blockScore_contact (S T : Finset (Link 4 n))
+    (q r c : CoarseConfig n) (t : ℝ) (f : Fluctuation n) :
+    HasDerivAt (fun s ↦ blockScore S q (boundaryCurve T r c s) 0 f)
+      (blockContact S T q r c t f) t := by
+  simp only [blockScore, ContinuousMap.coe_mk]
+  simp_rw [chart_boundaryCurve T r c f]
+  exact hasDerivAt_score_contact univ univ (liftPatch S) (liftPatch T)
+    (liftFrame q f) (liftFrame r f) (chart n (c, f)) t (fun _ ↦ 1)
+
+theorem hasDerivAt_blockContact_thirdContact (S T V : Finset (Link 4 n))
+    (q r u c : CoarseConfig n) (t : ℝ) (f : Fluctuation n) :
+    HasDerivAt (fun s ↦ blockContact S T q r (boundaryCurve V u c s) 0 f)
+      (blockThirdContact S T V q r u c t f) t := by
+  simp only [blockContact, ContinuousMap.coe_mk]
+  simp_rw [chart_boundaryCurve V u c f]
+  exact hasDerivAt_contact_thirdContact univ univ (liftPatch S) (liftPatch T) (liftPatch V)
+    (liftFrame q f) (liftFrame r f) (liftFrame u f) (chart n (c, f)) t (fun _ ↦ 1)
+
+def blockLogWeight (β : ℝ) (c : CoarseConfig n) : ℝ := Real.log (coarseDensity n β c)
+
+theorem hasDerivAt_blockLogWeight (β : ℝ) (S : Finset (Link 4 n))
+    (q c : CoarseConfig n) (t : ℝ) :
+    HasDerivAt (fun s ↦ blockLogWeight β (boundaryCurve S q c s))
+      (-β * expectation volume (fiberDensity β (boundaryCurve S q c t)) (blockScore S q c t)) t := by
+  have h := WilsonBoundaryResponse.hasDerivAt_logPartition volume β
+    (fun t ↦ fiberDensity β (boundaryCurve S q c t)) (blockScore S q c)
+    (continuous_fiberDensity_curve β S q c) (continuous_blockScore S q c)
+    (hasDerivAt_fiberDensity β S q c) t (fiberDensity_pos β _)
+  simpa only [WilsonBoundaryResponse.logPartition, integral_fiberDensity, blockLogWeight] using h
+
+def blockMixedDerivative (β : ℝ) (S T : Finset (Link 4 n)) (q r c : CoarseConfig n) : ℝ :=
+  deriv (fun t ↦ deriv (fun s ↦ blockLogWeight β
+    (boundaryCurve S q (boundaryCurve T r c t) s)) 0) 0
+
+theorem blockMixedDerivative_eq_covariance_sub_contact (β : ℝ) (S T : Finset (Link 4 n))
+    (q r c : CoarseConfig n) :
+    blockMixedDerivative β S T q r c =
+      β ^ 2 * covariance volume (fiberDensity β c) (blockScore S q c 0) (blockScore T r c 0) -
+      β * expectation volume (fiberDensity β c) (blockContact S T q r c 0) := by
+  have hd (t : ℝ) := (hasDerivAt_blockLogWeight β S q (boundaryCurve T r c t) 0).deriv
+  simp only [boundaryCurve_zero] at hd
+  unfold blockMixedDerivative
+  simp_rw [hd]
+  have h := WilsonBoundaryResponse.hasDerivAt_logPartitionScore volume β
+    (fun t ↦ fiberDensity β (boundaryCurve T r c t))
+    (fun t ↦ blockScore S q (boundaryCurve T r c t) 0)
+    (blockScore T r c) (blockContact S T q r c)
+    (continuous_fiberDensity_curve β T r c) (continuous_blockScore_other S T q r c)
+    (continuous_blockScore T r c) (continuous_blockContact S T q r c)
+    (hasDerivAt_fiberDensity β T r c) (hasDerivAt_blockScore_contact S T q r c) 0
+    (fiberDensity_pos β _)
+  simpa only [boundaryCurve_zero] using h.deriv
+
+def blockThirdDerivative (β : ℝ) (S T V : Finset (Link 4 n)) (q r u c : CoarseConfig n) : ℝ :=
+  deriv (fun t ↦ blockMixedDerivative β S T q r (boundaryCurve V u c t)) 0
+
+/-- The full ordered third derivative of the actual scale-two Wilson log
+weight. Expectations use the constrained Haar law `fiberDensity`, and every
+contact term remains even for coincident patches. Valid for every real beta. -/
+theorem blockThirdDerivative_eq_cumulant_contacts (β : ℝ) (S T V : Finset (Link 4 n))
+    (q r u c : CoarseConfig n) :
+    blockThirdDerivative β S T V q r u c =
+      -β ^ 3 * thirdCumulant volume (fiberDensity β c)
+        (blockScore S q c 0) (blockScore T r c 0) (blockScore V u c 0) +
+      β ^ 2 * (covariance volume (fiberDensity β c)
+          (blockContact S V q u c 0) (blockScore T r c 0) +
+        covariance volume (fiberDensity β c) (blockScore S q c 0) (blockContact T V r u c 0) +
+        covariance volume (fiberDensity β c) (blockContact S T q r c 0) (blockScore V u c 0)) -
+      β * expectation volume (fiberDensity β c) (blockThirdContact S T V q r u c 0) := by
+  have h := WilsonBoundaryResponse.hasDerivAt_logPartitionHessian volume β
+    (fun t ↦ fiberDensity β (boundaryCurve V u c t)) (blockScore V u c)
+    (fun t ↦ blockScore S q (boundaryCurve V u c t) 0)
+    (fun t ↦ blockScore T r (boundaryCurve V u c t) 0)
+    (fun t ↦ blockContact S T q r (boundaryCurve V u c t) 0)
+    (blockContact S V q u c) (blockContact T V r u c) (blockThirdContact S T V q r u c)
+    (continuous_fiberDensity_curve β V u c) (continuous_blockScore V u c)
+    (continuous_blockScore_other S V q u c) (continuous_blockScore_other T V r u c)
+    (continuous_blockContact_other S T V q r u c)
+    (continuous_blockContact S V q u c) (continuous_blockContact T V r u c)
+    (continuous_blockThirdContact S T V q r u c)
+    (hasDerivAt_fiberDensity β V u c) (hasDerivAt_blockScore_contact S V q u c)
+    (hasDerivAt_blockScore_contact T V r u c) (hasDerivAt_blockContact_thirdContact S T V q r u c)
+    0 (fiberDensity_pos β _)
+  unfold blockThirdDerivative
+  simp_rw [blockMixedDerivative_eq_covariance_sub_contact]
+  simpa only [boundaryCurve_zero] using h.deriv
+
+/-- Rotation sites are second halves, not the even anchors. Their bounded
+shift costs `exp(2η)` for the second response after doubling the rate. -/
+theorem weightedSecond_blockEdges (η : ℝ) (hη : 0 ≤ η)
+    (H : Link 4 (doubleIndex n) → Link 4 (doubleIndex n) → ℝ) :
+    WilsonBoundaryResponse.weightedResponseSeminorm (2 * η)
+      (fun i j : Link 4 n ↦ H (blockEdge i 1) (blockEdge j 1)) ≤
+      Real.exp (2 * η) * WilsonBoundaryResponse.weightedResponseSeminorm η H := by
+  simpa only [mul_comm η 2] using
+    WilsonBoundaryResponse.weightedResponseSeminorm_reindex_le_of_dist_le
+      (fun i : Link 4 n ↦ blockEdge i 1)
+      (fun i j h ↦ congrArg Prod.fst (@blockEdge_injective 4 n (i, 1) (j, 1) h))
+      2 η 2 hη dist_coarse_le_second H
+
+/-- The two edges of a three-point tree cost `exp(4η)` under the same
+representative shift. This is a geometric comparison of response arrays. -/
+theorem weightedThird_blockEdges (η : ℝ) (hη : 0 ≤ η)
+    (H : Link 4 (doubleIndex n) → Link 4 (doubleIndex n) → Link 4 (doubleIndex n) → ℝ) :
+    WilsonBoundaryResponse.weightedThirdSeminorm (2 * η)
+      (fun i j k : Link 4 n ↦ H (blockEdge i 1) (blockEdge j 1) (blockEdge k 1)) ≤
+      Real.exp (4 * η) * WilsonBoundaryResponse.weightedThirdSeminorm η H := by
+  convert WilsonBoundaryResponse.weightedThirdSeminorm_reindex_le_of_dist_le
+      (fun i : Link 4 n ↦ blockEdge i 1)
+      (fun i j h ↦ congrArg Prod.fst (@blockEdge_injective 4 n (i, 1) (j, 1) h))
+      2 η 2 (by norm_num) hη dist_coarse_le_second H using 1 <;> ring_nf
+
+end ScaleTwo
+
 end Mettapedia.QuantumTheory.YangMills.SU2WilsonEffectiveInteraction

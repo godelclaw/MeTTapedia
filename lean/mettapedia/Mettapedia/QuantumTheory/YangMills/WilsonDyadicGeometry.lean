@@ -187,6 +187,48 @@ theorem blockEdge_injective : Function.Injective
   subst y
   rfl
 
+/-- The first and second halves as two disjoint copies of the coarse links. -/
+def blockPair : Link d n ⊕ Link d n → Link d (doubleIndex n) :=
+  Sum.elim (fun l ↦ blockEdge l 0) (fun l ↦ blockEdge l 1)
+
+theorem blockPair_injective : Function.Injective (blockPair (d := d) (n := n)) := by
+  intro a b h
+  cases a with
+  | inl l =>
+    cases b with
+    | inl k => exact congrArg Sum.inl (congrArg Prod.fst (@blockEdge_injective d n (l, 0) (k, 0) h))
+    | inr k =>
+      have hh : (0 : Fin 2) = 1 := congrArg Prod.snd (@blockEdge_injective d n (l, 0) (k, 1) h)
+      exact (by decide : (0 : Fin 2) ≠ 1) hh |>.elim
+  | inr l =>
+    cases b with
+    | inl k =>
+      have hh : (1 : Fin 2) = 0 := congrArg Prod.snd (@blockEdge_injective d n (l, 1) (k, 0) h)
+      exact (by decide : (1 : Fin 2) ≠ 0) hh |>.elim
+    | inr k => exact congrArg Sum.inr (congrArg Prod.fst (@blockEdge_injective d n (l, 1) (k, 1) h))
+
+/-- Fine links that occur in no coarse two-link path remain fluctuation
+coordinates; they are integrated rather than deleted. -/
+abbrev UnusedLink (d n : ℕ) :=
+  {l : Link d (doubleIndex n) // l ∉ Set.range (blockPair (d := d) (n := n))}
+
+/-- Every fine link is uniquely a first half, a second half, or an unused
+edge. This finite equivalence is the index map of the Haar block chart. -/
+def blockIndexEquiv (d n : ℕ) :
+    ((Link d n ⊕ Link d n) ⊕ UnusedLink d n) ≃ Link d (doubleIndex n) :=
+  ((Equiv.ofInjective (blockPair (d := d) (n := n)) blockPair_injective).sumCongr
+    (Equiv.refl (UnusedLink d n))).trans
+    (@Equiv.Set.sumCompl _ (Set.range blockPair) (Classical.decPred _))
+
+@[simp] theorem blockIndexEquiv_first (l : Link d n) :
+    blockIndexEquiv d n (.inl (.inl l)) = blockEdge l 0 := rfl
+
+@[simp] theorem blockIndexEquiv_second (l : Link d n) :
+    blockIndexEquiv d n (.inl (.inr l)) = blockEdge l 1 := rfl
+
+@[simp] theorem blockIndexEquiv_unused (l : UnusedLink d n) :
+    blockIndexEquiv d n (.inr l) = l.val := rfl
+
 /-- Circle distances scale exactly with the lattice spacing and period. -/
 theorem norm_doubleCoordinate (z : ZMod (n + 3)) :
     ‖coordinateCircle (doubleIndex n) (doubleCoordinate n z)‖ =
@@ -240,6 +282,36 @@ theorem blockField_gaugeAct {E : Type*} [Group E]
   rw [← blockEdge_endpoint l]
   simp only [blockEdge_one]
   group
+
+/-- Gauge factors telescope around the plaquette in its original noncommutative order. -/
+theorem holonomy_gaugeAct {E : Type*} [Group E]
+    (g : Site d n → E) (U : Link d n → E) (p : Plaquette d n) :
+    holonomy (fun i ↦ gaugeAct g U (linkAt p i)) =
+      g p.1 * holonomy (fun i ↦ U (linkAt p i)) * (g p.1)⁻¹ := by
+  dsimp [holonomy, linkAt, gaugeAct]
+  rw [show p.1 + step p.2.1.1 + step p.2.1.2 =
+    p.1 + step p.2.1.2 + step p.2.1.1 by abel]
+  group
+
+/-- The lifted rotation sites lie within one fine step of their even anchors. -/
+theorem dist_blockEdge_halves_le (l : Link d n) : dist (blockEdge l 0) (blockEdge l 1) ≤ 1 := by
+  rw [dist_link_eq]
+  apply (dist_pi_le_iff (by norm_num : (0 : ℝ) ≤ 1)).mpr
+  intro i
+  apply dist_coordinateCircle_le_one (x := doubleSite l.1 i)
+  · simp [blockEdge_zero]
+  · by_cases hi : i = l.2
+    · simp [blockEdge_one, step, hi]
+    · simp [blockEdge_one, step, hi]
+
+theorem dist_coarse_le_second (l k : Link d n) :
+    2 * dist l k ≤ dist (blockEdge l 1) (blockEdge k 1) + 2 := by
+  have h := dist_triangle4 (blockEdge l 0) (blockEdge l 1) (blockEdge k 1) (blockEdge k 0)
+  rw [dist_blockEdge_zero, dist_comm (blockEdge k 1)] at h
+  have hl := dist_blockEdge_halves_le l
+  have hk := dist_blockEdge_halves_le k
+  linarith
+
 
 #print axioms coarse_retained_fine
 #print axioms internal_link_cell

@@ -246,6 +246,26 @@ theorem coordinateResponseState_triple {ι : Type} (ν₀ : Measure E) [IsProbab
 
 end Coordinates
 
+section PairedCoordinates
+open WilsonEliminationRoutes
+variable {X I J E : Type} [Fintype X] [Fintype I] [Fintype J]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+/-- A genuine change to coarse product coordinates is an actual weighted
+GSLT step. Its target carries the entire generated marginal density. -/
+def blockedStep (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U) :
+    Step (coordinateState ν W hW)
+      (coordinateState ν (PairedLinks.blockedDensity ν e W)
+        (PairedLinks.blockedDensity_pos ν e W hW)) where
+  project := PairedLinks.blockedProjectLinear ν e W hW
+  expectation := PairedLinks.expectation_blockedProject ν e W hW
+  contract := fun F _ hF ↦ PairedLinks.abs_blockedProject_le ν e W hW F hF
+
+end PairedCoordinates
+
 #print axioms project_staged
 #print axioms fiberCovariance_staged
 #print axioms mixedScore_staged

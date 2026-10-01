@@ -5,7 +5,7 @@ import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.Deriv.Star
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib.MeasureTheory.Measure.Haar.Basic
+import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.Topology.Algebra.Group.Matrix
 import Mathlib.Topology.Algebra.Star.Unitary
 import Mathlib.Topology.MetricSpace.Bounded
@@ -129,6 +129,21 @@ instance su2VolumeIsProbability : IsProbabilityMeasure (volume : Measure SU2) :=
 instance su2VolumeIsHaar : (volume : Measure SU2).IsHaarMeasure := by
   change su2Haar.IsHaarMeasure
   infer_instance
+
+/-- Compactness and probability normalization turn the left Haar law into
+a right-invariant law without any commutativity assumption. -/
+instance su2VolumeIsMulRightInvariant : (volume : Measure SU2).IsMulRightInvariant := by
+  constructor
+  intro g
+  have h := Measure.isMulInvariant_eq_smul_of_compactSpace
+    ((volume : Measure SU2).map (· * g)) volume
+  have hmass := congrArg (fun μ : Measure SU2 ↦ μ Set.univ) h
+  simp only [Measure.map_apply (measurable_mul_const g) MeasurableSet.univ,
+    Set.preimage_univ, measure_univ, Measure.smul_apply, ENNReal.smul_def, smul_eq_mul, mul_one] at hmass
+  norm_cast at hmass
+  rw [h]
+  rw [← hmass]
+  simp
 
 /-! ## Smooth rotations in the actual matrix group -/
 

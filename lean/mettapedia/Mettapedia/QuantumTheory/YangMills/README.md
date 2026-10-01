@@ -248,6 +248,26 @@ fine links. `blockField_gaugeAct` proves gauge equivariance;
 the periodic seam. `dist_blockEdge_zero` proves exact factor-two rescaling
 of the circle sup metric at the even base points.
 
+`SU2WilsonAssembly.ScaleTwo` constructs the product-Haar block chart: first
+halves and unused edges remain fluctuation variables, while second halves
+are recovered from the prescribed coarse products. Its positive
+`coarseDensity` preserves the full Wilson partition and marked expectations.
+It is gauge invariant at every real coupling, and `integrationStep` is an
+actual existing GSLT weighted step. `projected_blockObservable` proves that
+all coarse-product observables survive exactly, including nonconstant ones.
+
+`SU2WilsonEffectiveInteraction.ScaleTwo` differentiates that same generated
+weight under its explicit conditional density `fiberDensity`.
+`blockThirdDerivative_eq_cumulant_contacts` retains the score third cumulant,
+all three contact covariances and the direct third contact. It holds for
+arbitrary real coupling and arbitrary overlapping or coincident patches.
+The score and two direct contact bounds are `256 |S|`, `1024 |S|` and
+`4096 |S|`, uniformly in volume, boundary and frame. Coarse rotations lift to
+second fine links with fluctuation-dependent unitary frames. Their bounded
+shift from even anchors costs `exp(2η)` and `exp(4η)` for second and third
+spatial arrays while doubling the rate. These metric comparisons do not
+assert clustering of the product-constrained law from individual-link pinning.
+
 The old spatial budgets survive projection with factor one.
 `WilsonBlockElimination.one_le_project_uniform_bound` proves that constant
 marks prevent a smaller uniform factor on the full observable space.
@@ -257,10 +277,10 @@ Consequently these results do not yet instantiate
 The coordinate-rescaling lemmas in `WilsonBoundaryResponse.lean` prove that
 an injective coordinate map with `d_fine = s · d_coarse` changes the admissible
 exponent to `η_coarse = sη_fine`, without a volume factor. The current assembly
-uses the original link metric. Repeated RG steps additionally need the actual
-gauge-equivariant block map, its derivative and contact bounds, the relevant
-interaction extraction, and preservation of the analytic budgets after those
-operations in the same rescaled norm.
+uses the original link metric. The concrete scale-two map and its first
+three ordered response identities are now proved. Repeated scale changes
+still require the relevant interaction extraction and preservation of the
+analytic budgets under the generated product constraints in the same rescaled norm.
 
 A precise all-order target is a uniform bound
 `sup_l sum_(l₂,...,lᵣ) exp(η τᵣ) |Cumᵣ| ≤ A · r! · R^(-r)` for every `r ≥ 2`,

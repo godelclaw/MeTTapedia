@@ -48,7 +48,7 @@ theorem model_continuous (n : ℕ) (active : Finset (Plaquette 4 n)) :
 
 /-! ## Actual boundary curves and their local action scores -/
 
-variable {n : ℕ}
+variable {n : ℕ} {X : Type*} [TopologicalSpace X]
 
 /-- Independently framed rotation directions on a patch of boundary links.
 Every other boundary value is left fixed. -/
@@ -59,6 +59,15 @@ def boundaryCurve (S : Finset (Link 4 n)) (q b : Link 4 n → SU2) (t : ℝ) :
     boundaryCurve S q b 0 = b := by
   funext l
   simp [boundaryCurve]
+
+theorem continuous_boundaryCurve_parametric (S : Finset (Link 4 n))
+    {q b : X → Link 4 n → SU2} {t : X → ℝ}
+    (hq : Continuous q) (hb : Continuous b) (ht : Continuous t) :
+    Continuous (fun x ↦ boundaryCurve S (q x) (b x) (t x)) := by
+  apply continuous_pi
+  intro l
+  by_cases hl : l ∈ S <;> simp only [boundaryCurve, hl, ↓reduceIte, rotationPerturbation] <;>
+    fun_prop
 
 @[fun_prop] theorem continuous_boundaryCurve (S : Finset (Link 4 n))
     (q b : Link 4 n → SU2) : Continuous (boundaryCurve S q b) := by
@@ -126,6 +135,14 @@ def plaquetteScore (active : Finset (Plaquette 4 n)) (held S : Finset (Link 4 n)
     (fun i ↦ rotationPerturbation (q (linkAt p i)) (b (linkAt p i)) (t + Real.pi / 2))
     (movingSlots held S p) else 0
 
+theorem continuous_plaquetteValues_parametric (held : Finset (Link 4 n)) (p : Plaquette 4 n)
+    {b ω : X → Link 4 n → SU2} (hb : Continuous b) (hω : Continuous ω) :
+    Continuous (fun x ↦ plaquetteValues held (b x) p (ω x)) := by
+  apply continuous_pi
+  intro i
+  by_cases hi : linkAt p i ∈ held <;>
+    simp only [plaquetteValues, WilsonPinnedIntegral.pin, hi, ↓reduceIte] <;> fun_prop
+
 theorem continuous_plaquetteValues_curve (held S : Finset (Link 4 n))
     (q b : Link 4 n → SU2) (p : Plaquette 4 n) :
     Continuous (fun z : ℝ × (Link 4 n → SU2) ↦
@@ -179,10 +196,28 @@ def score (active : Finset (Plaquette 4 n)) (held S : Finset (Link 4 n))
         (show Continuous (fun ω : Link 4 n → SU2 ↦ (t, ω)) from
           continuous_const.prodMk continuous_id)⟩
 
+theorem continuous_score_parametric (active : Finset (Plaquette 4 n))
+    (held S : Finset (Link 4 n)) {q b ω : X → Link 4 n → SU2} {t : X → ℝ}
+    (hq : Continuous q) (hb : Continuous b) (hω : Continuous ω) (ht : Continuous t) :
+    Continuous (fun x ↦ score active held S (q x) (b x) (t x) (ω x)) := by
+  apply continuous_finsetSum
+  intro p _
+  by_cases hp : p ∈ active
+  · simp only [plaquetteScore, hp, ↓reduceIte]
+    apply (SU2WilsonBlockIntegration.continuous_holonomyScore (movingSlots held S p)).comp
+      (Continuous.prodMk ?_ ?_)
+    · exact continuous_plaquetteValues_parametric held p
+        (continuous_boundaryCurve_parametric S hq hb ht) hω
+    · try simp only [rotationPerturbation]
+      fun_prop
+  · simp only [plaquetteScore, hp, ↓reduceIte]
+    exact continuous_const
+
 theorem continuous_score (active : Finset (Plaquette 4 n)) (held S : Finset (Link 4 n))
     (q b : Link 4 n → SU2) :
     Continuous (fun z : ℝ × (Link 4 n → SU2) ↦ score active held S q b z.1 z.2) :=
-  continuous_finsetSum _ fun p _ ↦ continuous_plaquetteScore active held S q b p
+  continuous_score_parametric active held S continuous_const continuous_const
+    continuous_snd continuous_fst
 
 theorem plaquetteScore_off_incident (active : Finset (Plaquette 4 n))
     (held S : Finset (Link 4 n)) (q b : Link 4 n → SU2) (t : ℝ) (p : Plaquette 4 n)
@@ -391,6 +426,29 @@ def contact (active : Finset (Plaquette 4 n)) (held S T : Finset (Link 4 n))
           (show Continuous (fun ω : Link 4 n → SU2 ↦ (t, ω)) from
             continuous_const.prodMk continuous_id)⟩
 
+theorem continuous_contact_parametric (active : Finset (Plaquette 4 n))
+    (held S T : Finset (Link 4 n)) {q r b ω : X → Link 4 n → SU2} {t : X → ℝ}
+    (hq : Continuous q) (hr : Continuous r) (hb : Continuous b) (hω : Continuous ω)
+    (ht : Continuous t) :
+    Continuous (fun x ↦ contact active held S T (q x) (r x) (b x) (t x) (ω x)) := by
+  apply continuous_finsetSum
+  intro p _
+  by_cases hp : p ∈ active
+  · simp only [plaquetteContact, hp, ↓reduceIte]
+    have hc := continuous_boundaryCurve_parametric T hr hb ht
+    apply (SU2WilsonBlockIntegration.continuous_holonomyContact
+      (movingSlots held S p) (movingSlots held T p)).comp
+      ((Continuous.prodMk ?_ ?_).prodMk (Continuous.prodMk ?_ ?_))
+    · exact continuous_plaquetteValues_parametric held p hc hω
+    · try simp only [rotationPerturbation]
+      fun_prop
+    · try simp only [rotationPerturbation]
+      fun_prop
+    · try simp only [rotationPerturbation]
+      fun_prop
+  · simp only [plaquetteContact, hp, ↓reduceIte]
+    exact continuous_const
+
 theorem continuous_score_other (active : Finset (Plaquette 4 n))
     (held S T : Finset (Link 4 n)) (q r b : Link 4 n → SU2) :
     Continuous (fun z : ℝ × (Link 4 n → SU2) ↦
@@ -400,7 +458,8 @@ theorem continuous_score_other (active : Finset (Plaquette 4 n))
 theorem continuous_contact (active : Finset (Plaquette 4 n))
     (held S T : Finset (Link 4 n)) (q r b : Link 4 n → SU2) :
     Continuous (fun z : ℝ × (Link 4 n → SU2) ↦ contact active held S T q r b z.1 z.2) :=
-  continuous_finsetSum _ fun p _ ↦ continuous_plaquetteContact active held S T q r b p
+  continuous_contact_parametric active held S T continuous_const continuous_const
+    continuous_const continuous_snd continuous_fst
 
 theorem hasDerivAt_plaquetteScore_other (active : Finset (Plaquette 4 n))
     (held S T : Finset (Link 4 n)) (q r b : Link 4 n → SU2) (t : ℝ)
@@ -600,6 +659,22 @@ def thirdContact (active : Finset (Plaquette 4 n)) (held S T V : Finset (Link 4 
           (show Continuous (fun ω : Link 4 n → SU2 ↦ (t, ω)) from
             continuous_const.prodMk continuous_id)⟩
 
+theorem continuous_thirdContact_parametric (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) {q r u b ω : X → Link 4 n → SU2} {t : X → ℝ}
+    (hq : Continuous q) (hr : Continuous r) (hu : Continuous u)
+    (hb : Continuous b) (hω : Continuous ω) (ht : Continuous t) :
+    Continuous (fun x ↦ thirdContact active held S T V (q x) (r x) (u x) (b x) (t x) (ω x)) := by
+  apply continuous_finsetSum
+  intro p _
+  by_cases hp : p ∈ active
+  · simp only [plaquetteThirdContact, hp, ↓reduceIte]
+    have hc := continuous_boundaryCurve_parametric V hu hb ht
+    apply SU2WilsonBlockIntegration.continuous_holonomyThirdContact
+    · exact continuous_plaquetteValues_parametric held p hc hω
+    all_goals simp only [rotationPerturbation]; fun_prop
+  · simp only [plaquetteThirdContact, hp, ↓reduceIte]
+    exact continuous_const
+
 theorem continuous_contact_other (active : Finset (Plaquette 4 n))
     (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) :
     Continuous (fun z : ℝ × (Link 4 n → SU2) ↦
@@ -609,7 +684,8 @@ theorem continuous_contact_other (active : Finset (Plaquette 4 n))
 theorem continuous_thirdContact (active : Finset (Plaquette 4 n))
     (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) :
     Continuous (fun z : ℝ × (Link 4 n → SU2) ↦ thirdContact active held S T V q r u b z.1 z.2) :=
-  continuous_finsetSum _ fun p _ ↦ continuous_plaquetteThirdContact active held S T V q r u b p
+  continuous_thirdContact_parametric active held S T V continuous_const continuous_const
+    continuous_const continuous_const continuous_snd continuous_fst
 
 theorem hasDerivAt_contact_thirdContact (active : Finset (Plaquette 4 n))
     (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ)

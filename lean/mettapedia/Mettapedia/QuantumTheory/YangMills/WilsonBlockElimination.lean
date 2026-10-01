@@ -1,5 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.CompactTransferGap
 import Mettapedia.GSLT.Core.Ultrainfinite
+import Mathlib.MeasureTheory.Group.Prod
 
 /-!
 # Exact weighted block elimination
@@ -466,6 +467,236 @@ theorem correlation (ψ : E → ℝ) (hψ : Continuous ψ) (β : ℝ)
   covariance_decomposition _ _ _ (density_pos ψ hψ β) F G
 
 end Rectangle
+
+/-! ## Exact Haar coordinates for ordered link pairs -/
+
+namespace PairedLinks
+
+variable {X I J E : Type*} [MeasurableSpace E]
+
+/-- Reindex two link families and the unused edges without changing their order. -/
+def reassembly (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    (((I → E) × (I → E)) × (J → E)) ≃ᵐ (X → E) :=
+  (((MeasurableEquiv.sumPiEquivProdPi (fun _ : I ⊕ I ↦ E)).symm.prodCongr
+    (MeasurableEquiv.refl (J → E))).trans
+    (MeasurableEquiv.sumPiEquivProdPi (fun _ : (I ⊕ I) ⊕ J ↦ E)).symm).trans
+    (MeasurableEquiv.piCongrLeft (fun _ : X ↦ E) e)
+
+@[simp] theorem reassembly_first (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (p : ((I → E) × (I → E)) × (J → E)) (i : I) :
+    reassembly e p (e (.inl (.inl i))) = p.1.1 i := by
+  simp only [reassembly, MeasurableEquiv.trans_apply, MeasurableEquiv.piCongrLeft_apply_apply]
+  rfl
+
+@[simp] theorem reassembly_second (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (p : ((I → E) × (I → E)) × (J → E)) (i : I) :
+    reassembly e p (e (.inl (.inr i))) = p.1.2 i := by
+  simp only [reassembly, MeasurableEquiv.trans_apply, MeasurableEquiv.piCongrLeft_apply_apply]
+  rfl
+
+@[simp] theorem reassembly_unused (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (p : ((I → E) × (I → E)) × (J → E)) (j : J) :
+    reassembly e p (e (.inr j)) = p.2 j := by
+  simp only [reassembly, MeasurableEquiv.trans_apply, MeasurableEquiv.piCongrLeft_apply_apply]
+  rfl
+
+section Group
+variable [Group E] [MeasurableMul₂ E] [MeasurableInv E]
+
+/-- Reconstruct fine links from the coarse product, the first link of each
+pair, and all unused edges. The second link is exactly `a⁻¹ * c`. -/
+def chart (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    ((I → E) × ((I → E) × (J → E))) ≃ᵐ (X → E) :=
+  ((MeasurableEquiv.prodAssoc : ((I → E) × (I → E)) × (J → E) ≃ᵐ _).symm.trans
+    (((MeasurableEquiv.prodComm : (I → E) × (I → E) ≃ᵐ _).trans
+      (MeasurableEquiv.shearMulRight (I → E)).symm).prodCongr
+      (MeasurableEquiv.refl (J → E)))).trans (reassembly e)
+
+@[simp] theorem chart_first (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (p : (I → E) × ((I → E) × (J → E))) (i : I) :
+    chart e p (e (.inl (.inl i))) = p.2.1 i := by
+  simp only [chart, MeasurableEquiv.trans_apply, reassembly_first]
+  rfl
+
+@[simp] theorem chart_second (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (p : (I → E) × ((I → E) × (J → E))) (i : I) :
+    chart e p (e (.inl (.inr i))) = (p.2.1 i)⁻¹ * p.1 i := by
+  simp only [chart, MeasurableEquiv.trans_apply, reassembly_second]
+  rfl
+
+@[simp] theorem chart_unused (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (p : (I → E) × ((I → E) × (J → E))) (j : J) :
+    chart e p (e (.inr j)) = p.2.2 j := by
+  simp only [chart, MeasurableEquiv.trans_apply, reassembly_unused]
+  rfl
+
+/-- Ordered multiplication recovers the requested coarse field exactly. -/
+def block (e : ((I ⊕ I) ⊕ J) ≃ X) (U : X → E) : I → E :=
+  fun i ↦ U (e (.inl (.inl i))) * U (e (.inl (.inr i)))
+
+@[simp] theorem block_chart (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (p : (I → E) × ((I → E) × (J → E))) : block e (chart e p) = p.1 := by
+  funext i
+  simp [block]
+
+variable [Fintype X] [Fintype I] [Fintype J]
+
+omit [Group E] [MeasurableMul₂ E] [MeasurableInv E] in
+/-- Reindexing preserves the independent reference laws. -/
+theorem measurePreserving_reassembly (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    MeasurePreserving (reassembly (E := E) e)
+      (((Measure.pi fun _ : I ↦ ν).prod (Measure.pi fun _ : I ↦ ν)).prod
+        (Measure.pi fun _ : J ↦ ν)) (Measure.pi fun _ : X ↦ ν) := by
+  exact (measurePreserving_piCongrLeft (fun _ : X ↦ ν) e).comp
+    ((measurePreserving_sumPiEquivProdPi_symm (fun _ : (I ⊕ I) ⊕ J ↦ ν)).comp
+      ((measurePreserving_sumPiEquivProdPi_symm (fun _ : I ⊕ I ↦ ν)).prod
+        (MeasurePreserving.id (Measure.pi fun _ : J ↦ ν))))
+
+/-- The coarse product and all fluctuation coordinates are independent Haar
+variables before inserting the full interaction density. -/
+theorem measurePreserving_chart (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    MeasurePreserving (chart (E := E) e)
+      ((Measure.pi fun _ : I ↦ ν).prod ((Measure.pi fun _ : I ↦ ν).prod
+        (Measure.pi fun _ : J ↦ ν))) (Measure.pi fun _ : X ↦ ν) := by
+  exact (measurePreserving_reassembly ν e).comp
+    (((measurePreserving_prod_inv_mul_swap (Measure.pi fun _ : I ↦ ν)
+      (Measure.pi fun _ : I ↦ ν)).prod
+      (MeasurePreserving.id (Measure.pi fun _ : J ↦ ν))).comp
+      (measurePreserving_prodAssoc (Measure.pi fun _ : I ↦ ν)
+        (Measure.pi fun _ : I ↦ ν) (Measure.pi fun _ : J ↦ ν)).symm)
+
+/-- Multiplication of independent pairs pushes product Haar to product Haar. -/
+theorem measurePreserving_block (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    MeasurePreserving (block (E := E) e) (Measure.pi fun _ : X ↦ ν)
+      (Measure.pi fun _ : I ↦ ν) := by
+  have hb : block (E := E) e = fun U ↦ ((chart (E := E) e).symm U).1 := by
+    funext U
+    rw [← block_chart e ((chart e).symm U), (chart e).apply_symm_apply]
+  rw [hb]
+  exact measurePreserving_fst.comp (measurePreserving_chart ν e).symm
+
+section Continuous
+variable [TopologicalSpace E] [IsTopologicalGroup E]
+
+omit [Fintype X] [Fintype I] [Fintype J] in
+@[fun_prop] theorem continuous_chart (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    Continuous (chart (E := E) e) := by
+  apply continuous_pi
+  intro x
+  obtain ⟨s, rfl⟩ := e.surjective x
+  rcases s with (i | i) | j
+  · simp only [chart_first]
+    fun_prop
+  · simp only [chart_second]
+    fun_prop
+  · simp only [chart_unused]
+    fun_prop
+
+omit [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]
+    [Fintype X] [Fintype I] [Fintype J] in
+@[fun_prop] theorem continuous_block (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    Continuous (block (E := E) e) := by
+  apply continuous_pi
+  intro i
+  exact (continuous_apply _).mul (continuous_apply _)
+
+def chartMap (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    C((I → E) × ((I → E) × (J → E)), X → E) := ⟨chart e, continuous_chart e⟩
+
+def blockMap (e : ((I ⊕ I) ⊕ J) ≃ X) : C(X → E, I → E) :=
+  ⟨block e, continuous_block e⟩
+
+variable [CompactSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+/-- Exact generated coarse density; every unused and fluctuation link is
+integrated, and every original interaction is retained in the integrand. -/
+def blockedDensity (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) : C(I → E, ℝ) :=
+  marginal ((Measure.pi fun _ : I ↦ ν).prod (Measure.pi fun _ : J ↦ ν))
+    (W.comp (chartMap e))
+
+theorem blockedDensity_pos (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U) :
+    ∀ c, 0 < blockedDensity ν e W c :=
+  marginal_pos _ _ (fun _ ↦ hW _)
+
+/-- The corresponding exact conditional transport of a fine observable. -/
+def blockedProject (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(X → E, ℝ)) : C(I → E, ℝ) :=
+  project ((Measure.pi fun _ : I ↦ ν).prod (Measure.pi fun _ : J ↦ ν))
+    (W.comp (chartMap e)) (fun _ ↦ hW _) (F.comp (chartMap e))
+
+/-- Exact block integration is linear in the observable. -/
+def blockedProjectLinear (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U) :
+    C(X → E, ℝ) →ₗ[ℝ] C(I → E, ℝ) where
+  toFun := blockedProject ν e W hW
+  map_add' F G := by
+    ext c
+    exact expectation_add _ ((W.comp (chartMap e)).curry c)
+      ((F.comp (chartMap e)).curry c) ((G.comp (chartMap e)).curry c)
+  map_smul' a F := by
+    ext c
+    exact expectation_const_mul _ ((W.comp (chartMap e)).curry c)
+      ((F.comp (chartMap e)).curry c) a
+
+theorem abs_blockedProject_le (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(X → E, ℝ)) {B : ℝ} (hF : ∀ U, |F U| ≤ B) :
+    ∀ c, |blockedProject ν e W hW F c| ≤ B :=
+  abs_project_le _ _ _ _ (fun _ ↦ hF _)
+
+omit [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+    [BorelSpace E] [SecondCountableTopology E] in
+theorem integral_chart (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X) (F : (X → E) → ℝ) :
+    (∫ p, F (chart e p) ∂(Measure.pi fun _ : I ↦ ν).prod
+      ((Measure.pi fun _ : I ↦ ν).prod (Measure.pi fun _ : J ↦ ν))) =
+      ∫ U, F U ∂Measure.pi (fun _ : X ↦ ν) :=
+  (measurePreserving_chart ν e).integral_comp' F
+
+/-- Partition normalization is unchanged by genuine link blocking. -/
+theorem integral_blockedDensity (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) :
+    (∫ c, blockedDensity ν e W c ∂Measure.pi (fun _ : I ↦ ν)) =
+      ∫ U, W U ∂Measure.pi (fun _ : X ↦ ν) :=
+  (integral_marginal _ _ (W.comp (chartMap e))).trans (integral_chart ν e W)
+
+/-- Fine expectations agree with those under the complete generated coarse
+law. Positivity and compactness justify all normalized integrals. -/
+theorem expectation_blockedProject (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U) (F : C(X → E, ℝ)) :
+    expectation (Measure.pi fun _ : I ↦ ν) (blockedDensity ν e W)
+      (blockedProject ν e W hW F) = expectation (Measure.pi fun _ : X ↦ ν) W F := by
+  rw [blockedDensity, blockedProject, expectation_project]
+  unfold expectation
+  change (∫ p, (W * F) (chart e p) ∂(Measure.pi fun _ : I ↦ ν).prod
+    ((Measure.pi fun _ : I ↦ ν).prod (Measure.pi fun _ : J ↦ ν))) /
+      (∫ p, W (chart e p) ∂(Measure.pi fun _ : I ↦ ν).prod
+        ((Measure.pi fun _ : I ↦ ν).prod (Measure.pi fun _ : J ↦ ν))) = _
+  rw [integral_chart, integral_chart]
+  rfl
+
+/-- An observable already expressed in the coarse products is preserved
+pointwise, without a projection error or an interaction truncation. -/
+theorem blockedProject_lift (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(I → E, ℝ)) :
+    blockedProject ν e W hW (F.comp (blockMap e)) = F := by
+  have hF : (F.comp (blockMap e)).comp (chartMap e) = lift F := by
+    ext p
+    exact congrArg F (block_chart e p)
+  rw [blockedProject, hF, project_lift]
+
+end Continuous
+
+end Group
+end PairedLinks
 
 #print axioms expectation_project
 #print axioms expectation_boundary_context

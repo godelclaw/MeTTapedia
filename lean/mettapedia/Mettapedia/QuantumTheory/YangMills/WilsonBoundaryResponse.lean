@@ -552,6 +552,81 @@ theorem weightedThirdSeminorm_reindex_le (e : ι → ξ) (he : Function.Injectiv
         (fun _ ↦ Finset.sum_nonneg (fun _ _ ↦ by positivity))
     _ ≤ weightedThirdSeminorm η H := weightedThirdRow_le η (e i) H
 
+omit [Fintype ι] [Fintype ξ] in
+/-- A bounded displacement of representatives has a finite exponential
+cost, with no volume factor. A three-point tree has two edges. -/
+theorem threeTreeLength_reindex_le (e : ι → ξ) {s δ : ℝ} (hs : 0 ≤ s)
+    (hd : ∀ i j, s * dist i j ≤ dist (e i) (e j) + δ) (i j k : ι) :
+    s * threeTreeLength i j k ≤ threeTreeLength (e i) (e j) (e k) + 2 * δ := by
+  have hij := hd i j
+  have hik := hd i k
+  have hjk := hd j k
+  calc
+    _ = min (s * dist i j + s * dist i k)
+        (min (s * dist i j + s * dist j k) (s * dist i k + s * dist j k)) := by
+      simp only [threeTreeLength, mul_min_of_nonneg _ _ hs, mul_add]
+    _ ≤ min (dist (e i) (e j) + dist (e i) (e k) + 2 * δ)
+        (min (dist (e i) (e j) + dist (e j) (e k) + 2 * δ)
+          (dist (e i) (e k) + dist (e j) (e k) + 2 * δ)) :=
+      min_le_min (by linarith) (min_le_min (by linarith) (by linarith))
+    _ = _ := by simp only [min_add_add_right, threeTreeLength]
+
+theorem weightedResponseSeminorm_reindex_le_of_dist_le (e : ι → ξ)
+    (he : Function.Injective e) (s η δ : ℝ) (hη : 0 ≤ η)
+    (hd : ∀ i j, s * dist i j ≤ dist (e i) (e j) + δ) (H : ξ → ξ → ℝ) :
+    weightedResponseSeminorm (s * η) (fun i j ↦ H (e i) (e j)) ≤
+      Real.exp (η * δ) * weightedResponseSeminorm η H := by
+  apply weightedResponseSeminorm_le _ _ (by positivity)
+  intro i
+  calc
+    _ ≤ ∑ j, Real.exp (η * δ) * (Real.exp (η * dist (e i) (e j)) * |H (e i) (e j)|) := by
+      apply Finset.sum_le_sum
+      intro j _
+      rw [← mul_assoc, ← Real.exp_add]
+      apply mul_le_mul_of_nonneg_right (Real.exp_le_exp.mpr ?_) (abs_nonneg _)
+      nlinarith [mul_le_mul_of_nonneg_left (hd i j) hη]
+    _ = Real.exp (η * δ) * ∑ j, Real.exp (η * dist (e i) (e j)) * |H (e i) (e j)| := by
+      rw [Finset.mul_sum]
+    _ ≤ Real.exp (η * δ) * weightedResponseSeminorm η H := by
+      apply mul_le_mul_of_nonneg_left _ (Real.exp_pos _).le
+      exact (sum_reindex_le e he
+        (fun j ↦ Real.exp (η * dist (e i) j) * |H (e i) j|) (fun _ ↦ by positivity)).trans
+        (weightedResponseRow_le η (e i) H)
+
+theorem weightedThirdSeminorm_reindex_le_of_dist_le (e : ι → ξ)
+    (he : Function.Injective e) (s η δ : ℝ) (hs : 0 ≤ s) (hη : 0 ≤ η)
+    (hd : ∀ i j, s * dist i j ≤ dist (e i) (e j) + δ) (H : ξ → ξ → ξ → ℝ) :
+    weightedThirdSeminorm (s * η) (fun i j k ↦ H (e i) (e j) (e k)) ≤
+      Real.exp (2 * η * δ) * weightedThirdSeminorm η H := by
+  apply weightedThirdSeminorm_le _ _ (by positivity)
+  intro i
+  calc
+    _ ≤ ∑ j, ∑ k, Real.exp (2 * η * δ) *
+        (Real.exp (η * threeTreeLength (e i) (e j) (e k)) * |H (e i) (e j) (e k)|) := by
+      apply Finset.sum_le_sum
+      intro j _
+      apply Finset.sum_le_sum
+      intro k _
+      rw [← mul_assoc, ← Real.exp_add]
+      apply mul_le_mul_of_nonneg_right (Real.exp_le_exp.mpr ?_) (abs_nonneg _)
+      nlinarith [mul_le_mul_of_nonneg_left (threeTreeLength_reindex_le e hs hd i j k) hη]
+    _ = Real.exp (2 * η * δ) * ∑ j, ∑ k,
+        Real.exp (η * threeTreeLength (e i) (e j) (e k)) * |H (e i) (e j) (e k)| := by
+      simp only [Finset.mul_sum]
+    _ ≤ Real.exp (2 * η * δ) * weightedThirdSeminorm η H := by
+      apply mul_le_mul_of_nonneg_left _ (Real.exp_pos _).le
+      calc
+        _ ≤ ∑ j, ∑ k, Real.exp (η * threeTreeLength (e i) (e j) k) * |H (e i) (e j) k| :=
+          Finset.sum_le_sum (fun j _ ↦ sum_reindex_le e he
+            (fun k ↦ Real.exp (η * threeTreeLength (e i) (e j) k) * |H (e i) (e j) k|)
+            (fun _ ↦ by positivity))
+        _ ≤ ∑ j, ∑ k, Real.exp (η * threeTreeLength (e i) j k) * |H (e i) j k| :=
+          sum_reindex_le e he
+            (fun j ↦ ∑ k, Real.exp (η * threeTreeLength (e i) j k) * |H (e i) j k|)
+            (fun _ ↦ Finset.sum_nonneg (fun _ _ ↦ by positivity))
+        _ ≤ weightedThirdSeminorm η H := weightedThirdRow_le η (e i) H
+
+
 end CoordinateRescaling
 
 #print axioms mixedResponse_eq_log_expectations
