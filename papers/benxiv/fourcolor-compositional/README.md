@@ -415,6 +415,25 @@ on two hexagonal-prism side splices need a different measure or multistep
 argument. These finite checks guide the joint contract; they do not establish
 a general repair, recursive reduction domain or geometric coverage theorem.
 
+The [spanning-face witness map](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSpanningFace.lean)
+now proves one geometric domain of that contract. If one face of the
+connected spherical smaller source touches every vertex, with two-sided
+faces and cyclic cubic rotations, an arbitrary target Tait witness determines
+a proper nonzero source three-colouring. Its corner differences integrate
+on the sphere, and the shared phase on that face calibrates every source
+vertex. All cross-edge colours are preserved jointly. The
+[strict splice consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceSpanningFaceReduction.lean)
+then reconstructs the original and supplies every complete GSLT sweep;
+exactly six target vertices disappear in the reduction direction.
+The [receipt](../../../tools/fourcolor/classical/adjacent-source-spanning-face-measurements.json)
+records twenty-one audited roots, a separate literal parallel-edge geometry
+example, and 1,488 independently checked target witnesses on six small
+recognized splice interfaces. The other four tested interfaces lack this
+face condition. This develops compatible-choice reconstruction without
+new finite colouring tables. A physical recolouring history from the input,
+unbounded literal recognition, recursive closure and universal geometric
+supply remain open; no catalogue entry is removed.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two
@@ -708,6 +727,14 @@ Taking nonemptiness gives composition of boundary relations. Taking finite
 cardinality gives matrix multiplication. This explains why support, counts,
 and witnesses are related but different semantics: equal support permits
 existence-preserving replacement even when colouring counts differ.
+
+A configuration can therefore be presented as a recipe of pieces and
+operations. Each law is a map or relation between actual witnesses over
+their shared boundary assignment. Gluing uses the same intermediate colours
+in both pieces; reconstruction retains the choices they share. One such law
+can explain many recipes. Reducing the catalogue additionally needs a
+geometric theorem that every relevant map contains a piece explained by the
+retained laws.
 
 For reduction from an original piece `P` to a smaller piece `Q`, the useful
 direction is `support(Q) ⊆ support(P)`. A colouring of the smaller graph then

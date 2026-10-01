@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "base_revision": "2aee393e6d41b82f28a9bc87bb1e08dc05b5950f",
+  "status": "kernel checked with independent finite replay",
+  "theorem_scope": "Connected spherical source rotation multigraphs with two-sided faces, cyclic cubic vertex rotations and one actual face touching every source vertex.",
+  "arbitrary_target_tait_witnesses_accepted": true,
+  "source_witness_input_required": false,
+  "all_literal_cross_edge_observations_preserved": true,
+  "polygon_edge_observations_preserved": false,
+  "colouring_counts_preserved": false,
+  "physical_kempe_history_from_input_proved": false,
+  "strict_operation": "Actual 03|12 adjacent source splice; source minus two vertices, target minus six vertices.",
+  "uniform_theorems": [
+    "RotationClosedEdgePotential.edgeSum_eq_zero_of_faces",
+    "RotationClosedEdgePotential.potential_difference",
+    "DualTruncateSpanningFace.sourceColouring",
+    "DualTruncateSpanningFace.preserves_cross"
+  ],
+  "actual_consumers": [
+    "AdjacentSourceSpanningFaceReduction.sourceWitness",
+    "AdjacentSourceSpanningFaceReduction.smaller_cross_preserved",
+    "AdjacentSourceSpanningFaceReduction.strict_reconstruction",
+    "AdjacentSourceSpanningFaceReduction.every_complete_sweep"
+  ],
+  "audit": {
+    "roots": 21,
+    "dependency_declarations": 23037,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoints_absent": true,
+    "brooks_suppliers_absent": true,
+    "source_colour_words_absent": true,
+    "finite_fixtures_absent_from_general_roots": true
+  },
+  "kernel_gate": {
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "passed": true,
+    "completed_jobs": 11176
+  },
+  "kernel_geometric_fixtures": 1,
+  "kernel_splice_fixtures": 0,
+  "kernel_fixture": "Literal spherical theta source; all target Tait inputs calibrate; one actual input proves nonvacuity.",
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/adjacent_source_spanning_face_probe.py --check",
+    "record": "adjacent-source-spanning-face-probe.json",
+    "interfaces_tested": 10,
+    "spanning_face_interfaces": 6,
+    "calibrated_target_witnesses": 1488,
+    "all_cross_edges_preserved": true,
+    "parallel_edge_identities_retained": true,
+    "splice_geometry_kernel_certified": false
+  },
+  "catalogue_entries_removed": 0,
+  "original_configuration_certificate_dependencies_removed": 0,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "integrated_into_complete_four_color_assembly": false,
+  "remaining": "Physical phase calibration from the arbitrary target input; actual unbounded rung-splice recognition; recursive domain closure; compatible broader side-splice contract; geometric occurrence and catalogue replacement.",
+  "source_sha256": {
+    "RotationClosedEdgePotential.lean": "7ca49eefa924c43bc1f5c1472ba29a580c2346193e0a6966aa82ab05d5f53328",
+    "DualTruncateSpanningFace.lean": "8ceeb09163aaa9882b5884e4aa4c5807f1946d87c5b9bc4382cb80ebf0064021",
+    "AdjacentSourceSpanningFaceReduction.lean": "0ac769ded464b04196fabe49af02d41ae3af1490c031c66f9add89f2d9e169a5",
+    "DualTruncateSpanningFaceExample.lean": "ba1b29827e72a892dec2cc3e36a29f771a80035879851c41c25624c01a5d8fde",
+    "DualTruncateSpanningFaceAudit.lean": "0c6c084df7fc88cae708fa0cd18162e3aefeb08e6208d7e5df92ff699f1e7727",
+    "ResearchCheckpoint.lean": "5f3c30ca71b4ef0fcbcc5535c74b4b7e1148b6e2d714f9753d33b63308682a8b"
+  }
+}

@@ -470,6 +470,26 @@ on six states, although their multistep repair succeeds. This is finite
 program evidence for the next witness contract, with no general repair,
 recursive closure or coverage theorem inferred.
 
+The [spanning-face calibration law](DualTruncateSpanningFace.lean) now
+extracts a proper nonzero source three-colouring from **every** target Tait
+witness when the connected spherical source has two-sided faces, cyclic
+cubic rotations and one face touching all source vertices. Corner
+differences telescope on faces; the existing spherical cycle-space theorem
+integrates the cross-edge field; one shared face phase makes every source
+value nonzero. Re-expansion preserves all literal cross-edge colours
+jointly, including parallel edges. Polygon colours may change.
+The [strict splice consumer](AdjacentSourceSpanningFaceReduction.lean)
+uses that extracted witness in the actual six-vertex reduction and every
+complete faithful GSLT sweep. The [audit and receipt](../../../../../tools/fourcolor/classical/adjacent-source-spanning-face-measurements.json)
+check twenty-one roots, exclude complete colouring suppliers and audit a
+separate literal theta geometry consumer. An independent exhaustive replay
+calibrates 1,488 normalized target witnesses on six recognized splice
+interfaces. Four other interfaces have no spanning face and remain outside
+this mechanism. A physical Kempe history from the arbitrary input,
+recognition of an unbounded literal splice family, recursive closure and
+geometric coverage remain separate obligations. The catalogue and original
+certificate counts remain 633 and 630.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

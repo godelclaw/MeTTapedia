@@ -568,6 +568,47 @@ colouring has such a preimage. Counts, all recolouring histories, recursive
 domain closure and global coverage remain separate. No further catalogue
 entry or original configuration certificate is removed.
 
+## Arbitrary target witnesses on a spanning-face domain
+
+`DualTruncateSpanningFace` turns every target Tait witness into a genuine
+source three-colouring when the connected spherical source has two-sided
+faces, cyclic cubic rotations and one face touching every vertex. Its
+cross-edge field telescopes on each face. `RotationClosedEdgePotential`
+uses the existing spherical cycle-space theorem to recover every literal
+edge difference, including parallel edges. The spanning face fixes one
+joint phase, so the reconstructed source values are all nonzero.
+Re-expansion preserves all cross-edge observations; polygon colours may
+change, and no physical history from the arbitrary input is supplied.
+
+`AdjacentSourceSpanningFaceReduction` consumes this witness in the actual
+six-vertex splice reduction, whole-map reconstruction and faithful GSLT
+sweeps. `DualTruncateSpanningFaceExample` separately recognizes the actual
+theta multigraph domain and calibrates every target input. The generic law
+does not depend on that example. The [receipt](adjacent-source-spanning-face-measurements.json)
+records twenty-one audited roots, excludes complete classical endpoints,
+Brooks suppliers and source colour words, and checks fixture independence.
+
+```sh
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.DualTruncateSpanningFaceAudit
+```
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/classical/adjacent_source_spanning_face_probe.py --check
+```
+
+The independent replay recognizes six spanning-face interfaces among the
+ten previous smaller prism outputs and calibrates all 1,488 normalized
+target witnesses there. It verifies actual incidence, complete source
+properness, cross-edge equality and the induced coherent target witness.
+The four interfaces without such a face are outside this mechanism.
+The finite splice recognitions remain program evidence; the kernel theta
+fixture checks the geometric domain and calibration rather than a splice.
+Unbounded literal recognition, recursive closure and occurrence coverage
+remain open. Catalogue and original-certificate counts remain 633 and 630.
+
 ## Target colouring choices on parallel seams
 
 The [target diagnostic](adjacent-source-target-kempe-probe.json) exhausts

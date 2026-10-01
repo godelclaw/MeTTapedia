@@ -1,0 +1,419 @@
+{
+  "schema": 1,
+  "evidence": "independent exhaustive finite program replay",
+  "records": [
+    {
+      "map": "triangular-prism",
+      "omitted": [
+        0,
+        3
+      ],
+      "source_vertices": 4,
+      "target_vertices": 12,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "face_lengths": [
+        2,
+        4,
+        4,
+        2
+      ],
+      "spanning_faces": 2,
+      "calibrated_target_witnesses": 16,
+      "all_cross_edges_preserved": true,
+      "spanning_face": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          3
+        ]
+      ]
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        1
+      ],
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "face_lengths": [
+        6,
+        2,
+        4,
+        2,
+        4
+      ],
+      "spanning_faces": 1,
+      "calibrated_target_witnesses": 64,
+      "all_cross_edges_preserved": true,
+      "spanning_face": [
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          7
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          2
+        ]
+      ]
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        3
+      ],
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "face_lengths": [
+        6,
+        2,
+        4,
+        2,
+        4
+      ],
+      "spanning_faces": 1,
+      "calibrated_target_witnesses": 64,
+      "all_cross_edges_preserved": true,
+      "spanning_face": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          1
+        ]
+      ]
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        4
+      ],
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "face_lengths": [
+        2,
+        6,
+        4,
+        4,
+        2
+      ],
+      "spanning_faces": 1,
+      "calibrated_target_witnesses": 64,
+      "all_cross_edges_preserved": true,
+      "spanning_face": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          5,
+          4
+        ]
+      ]
+    },
+    {
+      "map": "pentagonal-prism",
+      "omitted": [
+        0,
+        1
+      ],
+      "source_vertices": 8,
+      "target_vertices": 24,
+      "parallel_source_edges": 1,
+      "parallel_target_edges": 1,
+      "face_lengths": [
+        6,
+        3,
+        4,
+        4,
+        2,
+        5
+      ],
+      "spanning_faces": 0,
+      "calibrated_target_witnesses": 0,
+      "all_cross_edges_preserved": null
+    },
+    {
+      "map": "pentagonal-prism",
+      "omitted": [
+        0,
+        4
+      ],
+      "source_vertices": 8,
+      "target_vertices": 24,
+      "parallel_source_edges": 1,
+      "parallel_target_edges": 1,
+      "face_lengths": [
+        6,
+        3,
+        4,
+        4,
+        2,
+        5
+      ],
+      "spanning_faces": 0,
+      "calibrated_target_witnesses": 0,
+      "all_cross_edges_preserved": null
+    },
+    {
+      "map": "pentagonal-prism",
+      "omitted": [
+        0,
+        5
+      ],
+      "source_vertices": 8,
+      "target_vertices": 24,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "face_lengths": [
+        2,
+        8,
+        4,
+        4,
+        4,
+        2
+      ],
+      "spanning_faces": 1,
+      "calibrated_target_witnesses": 256,
+      "all_cross_edges_preserved": true,
+      "spanning_face": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          9,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          7,
+          6
+        ],
+        [
+          6,
+          5
+        ]
+      ]
+    },
+    {
+      "map": "hexagonal-prism",
+      "omitted": [
+        0,
+        1
+      ],
+      "source_vertices": 10,
+      "target_vertices": 30,
+      "parallel_source_edges": 1,
+      "parallel_target_edges": 1,
+      "face_lengths": [
+        6,
+        4,
+        4,
+        4,
+        4,
+        2,
+        6
+      ],
+      "spanning_faces": 0,
+      "calibrated_target_witnesses": 0,
+      "all_cross_edges_preserved": null
+    },
+    {
+      "map": "hexagonal-prism",
+      "omitted": [
+        0,
+        5
+      ],
+      "source_vertices": 10,
+      "target_vertices": 30,
+      "parallel_source_edges": 1,
+      "parallel_target_edges": 1,
+      "face_lengths": [
+        6,
+        4,
+        4,
+        4,
+        4,
+        2,
+        6
+      ],
+      "spanning_faces": 0,
+      "calibrated_target_witnesses": 0,
+      "all_cross_edges_preserved": null
+    },
+    {
+      "map": "hexagonal-prism",
+      "omitted": [
+        0,
+        6
+      ],
+      "source_vertices": 10,
+      "target_vertices": 30,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "face_lengths": [
+        2,
+        10,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "spanning_faces": 1,
+      "calibrated_target_witnesses": 1024,
+      "all_cross_edges_preserved": true,
+      "spanning_face": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          11,
+          10
+        ],
+        [
+          10,
+          9
+        ],
+        [
+          9,
+          8
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          7,
+          6
+        ]
+      ]
+    }
+  ],
+  "interfaces_tested": 10,
+  "spanning_face_interfaces": 6,
+  "calibrated_target_witnesses": 1488,
+  "kernel_geometry_fixtures": 1,
+  "kernel_splice_fixtures": 0,
+  "catalogue_entries_removed": 0,
+  "source_sha256": {
+    "RotationClosedEdgePotential.lean": "7ca49eefa924c43bc1f5c1472ba29a580c2346193e0a6966aa82ab05d5f53328",
+    "DualTruncateSpanningFace.lean": "8ceeb09163aaa9882b5884e4aa4c5807f1946d87c5b9bc4382cb80ebf0064021",
+    "AdjacentSourceSpanningFaceReduction.lean": "0ac769ded464b04196fabe49af02d41ae3af1490c031c66f9add89f2d9e169a5",
+    "DualTruncateSpanningFaceExample.lean": "ba1b29827e72a892dec2cc3e36a29f771a80035879851c41c25624c01a5d8fde",
+    "DualTruncateSpanningFaceAudit.lean": "0c6c084df7fc88cae708fa0cd18162e3aefeb08e6208d7e5df92ff699f1e7727"
+  },
+  "checker_sha256": {
+    "adjacent_source_spanning_face_probe.py": "746a919de92085b1e1d929a4c7073310bb572b1c45f6d64ab6185f3b4b7a1198",
+    "adjacent_source_target_kempe_probe.py": "fbce0021deddb3a2bf3272feef5d436cf98848376c841d7d2bad8855604a46d9",
+    "adjacent_source_splice_probe.py": "ec1516c2412e7aa07006b34f939def06faaa5c466fd2a2b777d5105a86c05ede",
+    "source_alternating_boundary_probe.py": "62d4c7c73995669985641feb44cec51e8fcf6417fe003b7964d36c86155f132c",
+    "two_cell_source_repair_probe.py": "2d5021cde2508640bb081e56d5b2f3a7d390e0c2699a5f0b70617e6cfd9140d1",
+    "dual_truncate_open_patch_probe.py": "177757e261bbc240ad6c3ffca2c5263f510e8bae65d984bc59453b73255dbe3f",
+    "dual_truncate_geometry_probe.py": "e1b0759456429ab4bf5377119ebc5aaffe6d8f3b516c7064ce8fe671c3ff84a3"
+  },
+  "scope": "Six recognized splice interfaces admit exact calibration of every normalized target witness. The four interfaces without a spanning face are outside this mechanism. The generic Lean theorem and the separate theta geometry fixture have their own audit. No physical Kempe history, recursive domain closure or universal coverage follows from this replay."
+}

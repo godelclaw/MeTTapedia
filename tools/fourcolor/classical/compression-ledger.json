@@ -2065,6 +2065,53 @@
       "integrated_into_complete_four_color_assembly": false,
       "scope": "All target witnesses modulo global colour permutation on these interfaces. Quotient search paths are lifted to genuine component switches without applying renamings. The one-step incoherent-vertex-count measure fails on the two hexagonal-prism side outputs, although repair succeeds. No general reachability or recursive closure theorem is asserted.",
       "next_obligation": "Prove an actual witness-domain repair or closed contract for a structurally recognised family; retain joint information and permit neutral preparation steps. A generic source-colouring supplier alone does not provide new reduction coverage."
+    },
+    {
+      "name": "spanning-face calibration of arbitrary smaller target Tait witnesses",
+      "record": "adjacent-source-spanning-face-measurements.json",
+      "status": "Kernel-checked exact source witness extraction and strict splice/GSLT consumer on the geometric spanning-face domain",
+      "evidence": "21 audited roots, 23037 dependency declarations; only standard axioms; literal spherical-cycle integration and actual splice reconstruction required. Complete endpoints, Brooks suppliers, source colour words and finite fixtures excluded from general roots.",
+      "strict_family_reduction": true,
+      "strict_reduction_domain": "Connected spherical source rotation multigraphs with two-sided faces, cyclic cubic vertex rotations and one actual face touching every source vertex.",
+      "arbitrary_target_tait_witnesses_accepted": true,
+      "source_witness_input_required": false,
+      "cross_edge_colours_preserved_jointly": true,
+      "physical_kempe_history_from_input_proved": false,
+      "kernel_geometry_fixtures": 1,
+      "kernel_splice_fixtures": 0,
+      "credited_compression": false,
+      "independent_reducibility_checks_replaced": 0,
+      "catalogue_entries_removed": 0,
+      "original_configuration_certificate_dependencies_removed": 0,
+      "configurations_retained": 633,
+      "original_configuration_certificates_retained": 630,
+      "integrated_into_complete_four_color_assembly": false,
+      "source_vertices_removed": 2,
+      "target_vertices_removed": 6,
+      "uniform_theorems": [
+        "RotationClosedEdgePotential.edgeSum_eq_zero_of_faces",
+        "RotationClosedEdgePotential.potential_difference",
+        "DualTruncateSpanningFace.sourceColouring",
+        "DualTruncateSpanningFace.preserves_cross"
+      ],
+      "consumers": [
+        "AdjacentSourceSpanningFaceReduction.sourceWitness",
+        "AdjacentSourceSpanningFaceReduction.smaller_cross_preserved",
+        "AdjacentSourceSpanningFaceReduction.strict_reconstruction",
+        "AdjacentSourceSpanningFaceReduction.every_complete_sweep"
+      ],
+      "independent_replay": {
+        "command": "python3 tools/fourcolor/classical/adjacent_source_spanning_face_probe.py --check",
+        "record": "adjacent-source-spanning-face-probe.json",
+        "interfaces_tested": 10,
+        "spanning_face_interfaces": 6,
+        "calibrated_target_witnesses": 1488,
+        "all_cross_edges_preserved": true,
+        "parallel_edge_identities_retained": true,
+        "splice_geometry_kernel_certified": false
+      },
+      "scope": "An arbitrary smaller target witness now supplies the missing source witness when the actual smaller source has a spanning face. This is exact joint cross-edge preservation, not full target equality or equality of counts. The generic law is not a universal face-supply theorem.",
+      "next_obligation": "Physical phase calibration from the arbitrary target input; actual unbounded rung-splice recognition; recursive domain closure; compatible broader side-splice contract; geometric occurrence and catalogue replacement."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",
