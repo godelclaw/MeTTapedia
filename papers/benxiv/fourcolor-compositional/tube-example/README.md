@@ -2446,11 +2446,11 @@ sizes are 74–80. Those five inputs do not read saved sources. The dodecahedron
 is rejected because its mandatory nonhexagonal faces cannot cover vertices
 disjointly. This is a program diagnostic, not a Lean obstruction theorem.
 
-The source colouring consumer still requires simple degree three, cyclic
-edge-connectivity at least four and noncompleteness, or an actual source
-vertex-colouring witness. The next task is to derive an adequate domain from
-target geometry, then prove occurrence coverage. A size decrease with a change
-of colouring constraint is not yet an unconditional Tait-to-Tait reduction.
+The earlier cyclic-cut colouring consumer requires simple degree three,
+cyclic edge-connectivity at least four and noncompleteness, or a genuine source
+vertex-colouring witness. The broader source bridge below derives its domain
+from target connectivity and size; occurrence coverage remains open. A size
+decrease with a change of colouring constraint is not yet an unconditional Tait-to-Tait reduction.
 No further catalogue or certificate dependency disappears: 633 configurations
 and 630 original configuration certificates remain.
 
@@ -2474,11 +2474,53 @@ squares exclude it from the pentagonal/hexagonal normal-form domain.
 The [14-root audit receipt][dual-truncate-source-domain-receipt] checks
 11,206 declarations in the combined closure, excluding source colour words,
 the cyclic-four supplier and the complete classical theorem. Independent
-replay finds twelve suitable pair/root choices. A general subcubic supplier
-is a possible next bridge: the known
-[Brooks argument](https://arxiv.org/abs/1805.11176) requires no cyclic-cut
-condition. Its full formal proof and consumption here remain open.
+replay finds twelve suitable pair/root choices. The general subcubic bridge
+below now supplies the larger recognized class without cyclic-cut assumptions.
 No additional configuration or certificate dependency is removed.
+
+The [uniform three-colour theorem][subcubic-three] formalizes the degree-three,
+four-clique-free case of [Zając’s Brooks argument](https://arxiv.org/abs/1805.11176).
+It inducts on actual vertex count. Low-degree insertion preserves all existing
+colours. A full started path receives equal initial colours at two nonadjacent
+neighbours and closes at their common vertex. Otherwise a selected tail region
+copies one exterior neighbour’s colour to an internally supported seed;
+[the relative extension][subcubic-boundary] preserves the complete supplied
+exterior. Chords in that region do not invalidate the insertion order.
+Maximal path existence and both orders are proved, not separate per-source
+certificates.
+
+A connected subcubic graph with more than four vertices cannot contain a
+four-clique: every clique vertex has already used all three neighbours inside
+it, and connectivity would force the whole graph into those four vertices.
+The [inverse supplier][subcubic-inverse] combines this fact with the recovered
+source’s cubicity, descended connectivity and factor-three size law. Thus a
+connected recognized target with more than twelve vertices receives genuine
+source choices, actual Tait colours and every complete GSLT sweep. No cyclic
+source cut condition or saved colour word is a hypothesis.
+
+The [same-law prism and cube consumers][subcubic-examples] use the 18- and
+24-vertex targets. The [24-root audit][subcubic-audit] checks 12,375 declarations
+and excludes their earlier source-specific suppliers, colour tables and
+complete classical endpoints. The [receipt][subcubic-receipt] distinguishes
+these kernel results from constructive program replay on 12,876 eligible
+labelled graphs through six vertices and larger prism families. The replay
+exercises both coupled branches and preserves every supplied exterior value.
+Thirty-six small graphs containing a four-clique are correctly excluded;
+Lean separately proves the four-clique is not three-colourable.
+
+This closes the source-colouring bridge on the stated recognized domain.
+Face-cover occurrence, the small exceptional target domain and a genuine
+Tait-to-Tait reduction remain separate obligations. Source vertex-colouring
+and target edge-colouring are still different constraints. No coverage
+configuration or original certificate dependency is removed: counts remain
+633 and 630.
+
+[subcubic-three]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/SubcubicThreeColouring.lean
+[subcubic-boundary]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/OrderedBoundaryColouring.lean
+[subcubic-inverse]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateBrooksSource.lean
+[subcubic-examples]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateBrooksExample.lean
+[subcubic-audit]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateBrooksAudit.lean
+[subcubic-receipt]: ../../../../tools/fourcolor/classical/subcubic-source-measurements.json
 
 [dual-truncate-source-domain]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainExample.lean
 [cyclic-cut-iso]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicEdgeCutIso.lean

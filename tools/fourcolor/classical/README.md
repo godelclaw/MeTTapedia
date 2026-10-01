@@ -232,9 +232,9 @@ for the five larger source cut domains.
 
 This face-cover mechanism follows classical leapfrog recognition;
 [Fowler and Pisanski](https://doi.org/10.1039/FT9949002865) give its Clar-type
-interpretation. Inheriting the source colouring domain from target geometry
-and proving occurrence coverage remain open. No additional catalogue saving
-or unconditional Tait-to-Tait reduction is claimed.
+interpretation. The general source-colouring bridge below derives its domain
+from target connectivity and size. Occurrence coverage remains open. No
+additional catalogue saving or unconditional Tait-to-Tait reduction is claimed.
 
 ## Recovered source cut domain
 
@@ -259,8 +259,42 @@ three is independently checked. The source colouring itself is supplied by
 the Lean structural proof. The target has two triangles, three squares and
 six hexagons; this is not a pentagonal/hexagonal normal-form obstruction.
 The broad inverse domain does not force cyclic-four source connectivity.
-A more general source-colouring supplier and occurrence coverage remain
-open, with no additional catalogue saving.
+The broader source supplier below discharges the colouring bridge on the
+stated larger target domain; occurrence coverage remains open. No additional
+catalogue saving is claimed.
+
+## Uniform subcubic source bridge
+
+The [uniform source receipt](subcubic-source-measurements.json) records the
+completed subcubic three-vertex-colouring bridge. Its kernel theorem covers
+every finite simple graph of degree at most three with no four-clique, using
+low-degree insertion and two coupled path-closing laws. The relative law
+copies one exterior colour to an internally supported seed and preserves
+all exterior values. Actual path selection and insertion orders are proved;
+no table of source colour words is consumed.
+
+`DualTruncateBrooksSource` derives the recovered source domain from target
+connectivity and size greater than twelve, then reconstructs target Tait
+colours and every complete GSLT sweep. `DualTruncateBrooksExample` consumes
+this same law on the prism and cube expansions. The 24-root audit checks
+12,375 declarations and excludes their earlier source-specific suppliers,
+colour-word tables and complete classical endpoints. The four-clique
+exception is separately kernel-checked.
+
+```sh
+python3 tools/fourcolor/classical/subcubic_source_probe.py
+```
+
+This independent constructive replay examines all 33,868 labelled simple
+graphs through six vertices: 12,912 are subcubic, 36 contain a four-clique,
+and the remaining 12,876 receive proper colourings. Larger prism families
+and a disconnected regular example exercise both coupled branches and
+separate-region composition. The output contains no source colouring table.
+The general kernel theorem is stronger than this finite diagnostic.
+
+Face-cover occurrence, the small exceptional target domain, and a strict
+Tait-to-Tait reduction remain separate. No coverage configuration or original
+configuration certificate is removed; counts remain 633 and 630.
 
 ## Complete endpoints
 

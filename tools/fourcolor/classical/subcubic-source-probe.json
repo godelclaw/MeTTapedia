@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "scope": "All labelled simple graphs with 0 through 6 vertices, plus named larger families",
+  "method": "Constructive low-degree / coupled full-path / coupled relative-region replay",
+  "primary_source": "https://arxiv.org/abs/1805.11176",
+  "totals": {
+    "excluded_four_clique": 36,
+    "labelled_graphs": 33868,
+    "subcubic_graphs": 12912,
+    "successfully_coloured": 12876
+  },
+  "branch_counts": {
+    "coupled_full_path": 61,
+    "coupled_relative_region": 20,
+    "disconnected_region": 1,
+    "low_degree": 37493,
+    "small_base": 12826
+  },
+  "named_inputs": [
+    {
+      "name": "prism_3",
+      "vertices": 6,
+      "degree": 3
+    },
+    {
+      "name": "prism_4",
+      "vertices": 8,
+      "degree": 3
+    },
+    {
+      "name": "prism_5",
+      "vertices": 10,
+      "degree": 3
+    },
+    {
+      "name": "prism_6",
+      "vertices": 12,
+      "degree": 3
+    },
+    {
+      "name": "prism_7",
+      "vertices": 14,
+      "degree": 3
+    },
+    {
+      "name": "prism_8",
+      "vertices": 16,
+      "degree": 3
+    },
+    {
+      "name": "prism_12",
+      "vertices": 24,
+      "degree": 3
+    },
+    {
+      "name": "prism_20",
+      "vertices": 40,
+      "degree": 3
+    },
+    {
+      "name": "prism_40",
+      "vertices": 80,
+      "degree": 3
+    },
+    {
+      "name": "two_triangular_prisms",
+      "vertices": 12,
+      "degree": 3
+    }
+  ],
+  "exterior_values_preserved": true,
+  "source_colour_tables_saved": false,
+  "lean_certificate": false,
+  "coverage_entries_removed": 0
+}

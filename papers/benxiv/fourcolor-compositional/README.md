@@ -200,9 +200,9 @@ exclude source colour words, old target-colouring shortcuts and the complete
 classical theorem. Five larger targets are independently recognized without
 their saved sources, separately from the kernel cube.
 
-The next obligation is to derive the recovered source's colouring domain from
-target geometry and establish coverage of the intended target class. The
-face-cover condition is substantive: a program diagnostic rejects the
+The recovered source’s general colouring domain is now derived from target
+connectivity and size by the Brooks bridge below. Occurrence coverage of the
+intended target class remains open. The face-cover condition is substantive: a program diagnostic rejects the
 dodecahedron. Source vertex and target edge colours remain different constraints.
 No additional catalogue entry or original certificate dependency is removed;
 the retained counts are 633 and 630.
@@ -217,8 +217,34 @@ which reconstruct the target colouring and every complete GSLT sweep.
 The [14-root receipt](../../../tools/fourcolor/classical/dual-truncate-source-domain-measurements.json)
 excludes source colour words, the cyclic-four supplier and the classical
 theorem. Triangles and squares distinguish this example from the pentagonal
-normal-form domain. General source-colouring and occurrence coverage remain
-separate tasks; no catalogue entry is removed.
+normal-form domain. The source-colouring task is now discharged on the larger
+recognized domain below; occurrence coverage remains separate. No catalogue entry is removed.
+
+The [uniform subcubic source theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/SubcubicThreeColouring.lean)
+proves the degree-three, four-clique-free case of
+[Brooks’ theorem using Zając’s argument](https://arxiv.org/abs/1805.11176).
+It shares three construction laws: insert a low-degree vertex; close a full
+path with two equal initial choices; or extend a coloured exterior across a
+selected region with one internally supported seed copying an exterior colour.
+The final law fixes every exterior value, including the choice used at the
+closing seam. The region may have chords.
+
+The [inverse consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateBrooksSource.lean)
+now derives genuine source choices solely from recognized target geometry,
+connectivity and size greater than twelve. It reconstructs target edge colours
+and every complete GSLT sweep. The same law handles the prism and cube
+expansions without their earlier source-specific suppliers. The
+[24-root receipt](../../../tools/fourcolor/classical/subcubic-source-measurements.json)
+excludes source colour tables, cyclic-cut suppliers and complete classical
+endpoints from the new consumers’ proof closures.
+
+This advances the compositional mechanism by removing a source-colouring
+hypothesis on a whole recognized class. It is a reuse of classical Brooks
+mathematics, not a new theorem about all planar targets. Establishing where
+a face cover or another successful decomposition occurs, handling the small
+exception, and proving a suitable strict reduction remain the next obligations.
+The baseline still retains 633 coverage configurations and 630 original
+configuration certificates.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

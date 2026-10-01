@@ -1,0 +1,214 @@
+{
+  "status": "PASS",
+  "primary_source": {
+    "title": "A short proof of Brooks\u2019 theorem",
+    "author": "Mariusz Zaj\u0105c",
+    "year": 2018,
+    "url": "https://arxiv.org/abs/1805.11176",
+    "scope": "Theorem 1, specialized to maximum degree three"
+  },
+  "kernel_theorems": {
+    "finite_source": "Mettapedia.GraphTheory.SubcubicThreeColouring.colourable",
+    "relative_boundary": "Mettapedia.GraphTheory.OrderedBoundaryColouring.coupled_region_extension",
+    "selected_region": "Mettapedia.GraphTheory.SubcubicCycleExtension.selected_tail_extension",
+    "connected_exception_domain": "Mettapedia.GraphTheory.SubcubicCliqueDomain.cliqueFree_of_connected_card_gt",
+    "target_only_source": "Mettapedia.GraphTheory.FourColor.DualTruncateBrooksSource.inverse_source",
+    "recognized_target": "Mettapedia.GraphTheory.FourColor.DualTruncateBrooksSource.recognized_tait",
+    "every_complete_GSLT_sweep": "Mettapedia.GraphTheory.FourColor.DualTruncateBrooksSource.every_complete_sweep"
+  },
+  "source_domain": "Every finite simple graph with maximum degree at most three and no four-clique",
+  "target_domain": "Certified inverse frame/face data, unmarked hexagons, two-sided faces, connected target, more than twelve target vertices",
+  "target_source_colouring_hypothesis_eliminated": true,
+  "cyclic_cut_hypothesis_required": false,
+  "source_colour_word_required": false,
+  "source_specific_pair_deletion_certificate_required": false,
+  "exterior_colouring_preserved": true,
+  "shared_seed_colour_retained": true,
+  "region_chords_allowed": true,
+  "vertex_and_edge_colour_constraints_distinguished": true,
+  "unconditional_tait_to_tait_reduction": false,
+  "global_coverage_proved": false,
+  "small_exceptional_target_domain_closed": false,
+  "kernel_examples": [
+    {
+      "target_vertices": 18,
+      "source_vertices": 6,
+      "name": "triangular prism expansion"
+    },
+    {
+      "target_vertices": 24,
+      "source_vertices": 8,
+      "name": "cube expansion"
+    }
+  ],
+  "four_clique_non_three_colourability_kernel_checked": true,
+  "audit": {
+    "roots": 24,
+    "combined_dependency_closure": 12375,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoint_absent": true,
+    "source_colour_tables_absent": true,
+    "previous_source_specific_suppliers_absent": true,
+    "module": "Mettapedia.GraphTheory.FourColor.DualTruncateBrooksAudit"
+  },
+  "independent_program_replay": {
+    "record": "subcubic-source-probe.json",
+    "lean_certificate": false,
+    "totals": {
+      "excluded_four_clique": 36,
+      "labelled_graphs": 33868,
+      "subcubic_graphs": 12912,
+      "successfully_coloured": 12876
+    },
+    "branch_counts": {
+      "coupled_full_path": 61,
+      "coupled_relative_region": 20,
+      "disconnected_region": 1,
+      "low_degree": 37493,
+      "small_base": 12826
+    },
+    "named_inputs": [
+      {
+        "name": "prism_3",
+        "vertices": 6,
+        "degree": 3
+      },
+      {
+        "name": "prism_4",
+        "vertices": 8,
+        "degree": 3
+      },
+      {
+        "name": "prism_5",
+        "vertices": 10,
+        "degree": 3
+      },
+      {
+        "name": "prism_6",
+        "vertices": 12,
+        "degree": 3
+      },
+      {
+        "name": "prism_7",
+        "vertices": 14,
+        "degree": 3
+      },
+      {
+        "name": "prism_8",
+        "vertices": 16,
+        "degree": 3
+      },
+      {
+        "name": "prism_12",
+        "vertices": 24,
+        "degree": 3
+      },
+      {
+        "name": "prism_20",
+        "vertices": 40,
+        "degree": 3
+      },
+      {
+        "name": "prism_40",
+        "vertices": 80,
+        "degree": 3
+      },
+      {
+        "name": "two_triangular_prisms",
+        "vertices": 12,
+        "degree": 3
+      }
+    ],
+    "source_colour_tables_saved": false
+  },
+  "build": {
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "exit": 0,
+    "jobs": 11143,
+    "completed_utc": "2026-10-01T01:07:02Z",
+    "maximum_sampled_lean_rss_mib": 6898,
+    "source_bytes": 53591,
+    "olean_bytes": 4087904,
+    "files": [
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/OrderedBoundaryColouring.lean",
+        "source_sha256": "36b485835515f91cdcb21b43f352509ef52818b5a81652a392ca430f8f4e92ed",
+        "source_bytes": 12694,
+        "olean_bytes": 578904,
+        "olean_sha256": "93462fad9ee945aafddfaf14ab91e871639d7d49b46ab917e7898f8493287801"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/SubcubicPathSelection.lean",
+        "source_sha256": "cf77d92870021c34f825840937aa4fd448ecc3f8f0f04dfad31df5d39db177fa",
+        "source_bytes": 8038,
+        "olean_bytes": 1937352,
+        "olean_sha256": "d1e3cb91bdecb3de47ec110597520b2f0dfd3c9f6d5643eafdecccd416f40860"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/SubcubicCycleExtension.lean",
+        "source_sha256": "0087e7e8be76c8c67eb8532201ad6a2e7f32625187f3c9369411188fbdaa1703",
+        "source_bytes": 5760,
+        "olean_bytes": 812808,
+        "olean_sha256": "6c0694eb525cbeb9a7b9ce374ea8673223a45e659ca0e57da208e8a98f84e53a"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/SubcubicThreeColouring.lean",
+        "source_sha256": "765608368511a9f124d70cfc907e3179ea2d2e0a5a13e2f57c1ba24b5e292778",
+        "source_bytes": 9257,
+        "olean_bytes": 524384,
+        "olean_sha256": "44fa33db1f91ab2923f1003485326122ef47e357ea483eff05559d588c2c2896"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/SubcubicCliqueDomain.lean",
+        "source_sha256": "e10fa4814adad474bc8a33baad594e91c13e81987ce1c6273febec5f5b318773",
+        "source_bytes": 2315,
+        "olean_bytes": 61344,
+        "olean_sha256": "e08cdc82acf08342429f5974ccdc123b6c05caf0f5c5b053cf9a826407e57bca"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateBrooksSource.lean",
+        "source_sha256": "d832645447680302da3b540f71fe8d6187c0c047fd75c7d5ba222c9b8731c6b9",
+        "source_bytes": 5074,
+        "olean_bytes": 117144,
+        "olean_sha256": "64faed914417d06fd321566c6e428895547a341693c34f7223f6b83ac7e9e62a"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateBrooksExample.lean",
+        "source_sha256": "173236977231eb2b85c318968ee36045388346709061083a4e588b352204a82c",
+        "source_bytes": 4475,
+        "olean_bytes": 52432,
+        "olean_sha256": "bb895177efa7ea7367a0c1bb864904000628d8c247f834143a7a9b360df043a1"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateBrooksAudit.lean",
+        "source_sha256": "31cee0cefc1beb5948131c1bdb058e849ba8aab0d59265bc35fcc958924025c4",
+        "source_bytes": 5978,
+        "olean_bytes": 3536,
+        "olean_sha256": "086228f47dc8d237ec30888abc809ba97963d94768e0687a6b7f66ace5b0d595"
+      }
+    ]
+  },
+  "compression": {
+    "coverage_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "new_coverage_configurations_removed": 0,
+    "new_original_certificates_replaced": 0,
+    "shared_discharging_replacements_retained": 231,
+    "new_uniform_source_colouring_suppliers": 1,
+    "new_relative_boundary_extension_schemes": 1
+  },
+  "next_obligation": "Prove occurrence coverage or an applicable open-region recognition and strict-reconstruction contract, then integrate a coverage replacement. Handle the small exceptional target domain separately.",
+  "recognition_hypotheses": [
+    "finite spherical cubic target",
+    "cyclic vertex rotations",
+    "actual marked face cover with exactly one marked corner at each vertex",
+    "every unmarked face is hexagonal",
+    "two-sided faces",
+    "connected target",
+    "more than twelve target vertices"
+  ]
+}

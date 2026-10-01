@@ -228,8 +228,9 @@ separates these kernel results from target-only program recognition of five
 larger saved targets. No saved residual source rotation or colour word is read;
 3,528 adapter darts are replayed across all six examples. The dodecahedron
 diagnostic has no cover satisfying the unmarked-hexagon condition.
-Source simple degree, cyclic cuts and noncompleteness remain explicit in the
-general structural colouring consumer. This recognition is a change from
+The earlier structural colouring consumer retains explicit source cut
+hypotheses. The broader Brooks consumer below derives its domain from
+target connectivity and size. This recognition is a change from
 source vertex colours to target edge colours, not an unconditional Tait-to-Tait
 reduction or universal coverage theorem. Catalogue counts remain unchanged.
 
@@ -246,9 +247,36 @@ supplier, source colour words and complete classical endpoints. The
 [receipt](../../../../../tools/fourcolor/classical/dual-truncate-source-domain-measurements.json)
 records the kernel obstruction and independent replay. This example has
 triangles and squares; it does not refute inheritance under pentagonal or
-cyclic-five normal-form hypotheses. The next supplier should require the
-colouring structure actually needed, rather than inheriting an unnecessary
-cut condition. Coverage and catalogue counts remain unchanged.
+cyclic-five normal-form hypotheses. The general supplier below needs no
+inherited cyclic-cut condition.
+Coverage and catalogue counts remain unchanged.
+
+The [subcubic theorem](../SubcubicThreeColouring.lean) proves three-vertex-
+colourability for every finite simple graph of maximum degree three with no
+four-clique. It specializes [Zając’s short Brooks proof](https://arxiv.org/abs/1805.11176):
+low-degree insertion, a coupled full-path closing, or a selected closed-path
+region extending a fixed exterior. The [boundary kernel](../OrderedBoundaryColouring.lean)
+retains every exterior value and the shared seed choice. Path selection and
+both insertion directions are proved from actual adjacency, with chords allowed.
+
+The [target-only supplier](DualTruncateBrooksSource.lean) consumes inverse
+cubicity, descended connectivity and the factor-three size law. A connected
+recognized target with more than twelve vertices has a source with more than
+four, excluding the four-clique exception. It receives actual Tait colours
+and witnesses on every complete GSLT sweep, without source colour words or
+cyclic-cut hypotheses. The [prism and cube consumers](DualTruncateBrooksExample.lean)
+use this same theorem on the 18- and 24-vertex targets. Their earlier
+source-specific suppliers are absent from the new proof closures.
+
+The [24-root audit](DualTruncateBrooksAudit.lean) checks 12,375 declarations
+using only the standard axioms and excludes complete classical endpoints.
+The [receipt](../../../../../tools/fourcolor/classical/subcubic-source-measurements.json)
+separates the general kernel theorem from independent constructive replay:
+12,876 eligible labelled graphs through six vertices are coloured, 36
+four-clique-containing graphs are excluded, and larger prism families are
+replayed. Actual face-cover occurrence, the small exceptional target domain,
+and a Tait-to-Tait strict-reduction contract remain separate obligations.
+No catalogue entry or original configuration certificate is removed.
 
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
