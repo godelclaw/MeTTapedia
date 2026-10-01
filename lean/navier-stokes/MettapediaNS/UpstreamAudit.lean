@@ -37,6 +37,7 @@ import MettapediaNS.CovectorParentHistory
 import MettapediaNS.JointCoframePressure
 import MettapediaNS.JointCoframeCompletion
 import MettapediaNS.CovectorFluidBridge
+import MettapediaNS.CovectorJointParent
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1165,3 +1166,35 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metric_production
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metric_nonpos
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.actual_vorticity_conversion
+
+-- The actual parent RHS and finite joint variance retain the geometric receiver cost.
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.parentRhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.parentRhs_field
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.parentRhs_solenoidal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.materialParentRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.material_parent_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.covector
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.coframeMoment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.forwardMoment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parent
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.terminalEnergy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.variance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.receiverCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.variance_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.receiverCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.receiverCost_eq_forward
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.variance_expansion
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.variance_eq_deficit
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.normalized_energy_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.normalized_energy_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.variance_le_terminalEnergy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parent_mismatch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.receiver_completion
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.receiver_square_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.receiver_work_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.receiver_work_neg_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.sourceReceiver
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parentSourceWork
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parent_source_mismatch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parent_source_transfer

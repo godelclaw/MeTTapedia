@@ -8975,3 +8975,131 @@ changing-frame curl and its conversion to a sufficient continuation
 norm, retaining compatible parents, phases, pressure, geometry and
 viscosity. The pressure/strain/vorticity completion above remains a
 parallel route to that same history bound.
+
+### Joint original-parent variance and the geometric source
+
+The same stochastic flow used in the
+[Constantin--Iyer representation](https://arxiv.org/abs/math/0511067)
+retains more information than its separate averaged moments. Write
+`F=grad A`, `J=F^-1`, `v=u_0(A)`, and use one joint realization:
+
+```text
+m=E[F^T v],   N=E[F^T F],   Q=N^-1,   a=Qm,
+g=E[Jv],      M=E[J J^T],   h=E|v|^2.
+```
+
+Here a is an auxiliary normalized vector; it is not the incompressible
+fluid velocity. The original forward parent g obeys Lie transport by the
+actual fluid drift, with viscosity:
+
+```text
+D g=B g,      g(0)=u_0,      div g=0,
+D=partial_t+u.grad-nu Delta, B=grad u.
+```
+
+`MettapediaNS.CovectorJointParent` certifies the literal whole-space
+smooth-field RHS `nu Delta g-(u.grad)g+(g.grad)u` and its membership in
+the solenoidal space when u and g are solenoidal. Constructing g's smooth
+stochastic time path and proving its time-dependent identification remain
+analytic. The finite joint sample structure below does not assert that
+arbitrary supplied frames arise from a fluid flow.
+
+Retaining each inverse frame with its own original parent gives
+
+```text
+V=h-m^T Qm=E|v-Fa|^2,       0<=V<=h,
+g-a=E[J(v-Fa)],
+|z.(g-a)|^2 <= V (z^T M z),
+ 2 z.(g-a) <= V+z^T M z,
+-2 z.(g-a) <= V+z^T M z.
+```
+
+Lean certifies the exact finite normalized-law statements for every
+receiver z, with `Na=m` for the energy-deficit identification. The
+full signed completion is `E|v-Fa-t J^T z|^2>=0` for every real t.
+This preserves joint frame/parent choices rather than matching independent
+summaries. Under the smooth continuous stochastic realization,
+`D h=0`, `D V=2nu F_m`, and spatial volume preservation gives
+`integral V=||u_0||_2^2-integral m^T Qm<=||u_0||_2^2`.
+Thus the integrated variance on a prescribed horizon H is at most
+`H ||u_0||_2^2`. These time and spatial passages are analytic here;
+the forward receiver cost is not paid by this inequality.
+
+The complete normalized-parent and connection equations retain diffusion:
+
+```text
+K_j=(partial_j N)Q,        r_j=partial_j m-K_j m,
+D a=B a+2nu sum_k K_k^T partial_k a,
+D(a-g)=B(a-g)+2nu sum_k K_k^T partial_k a,
+D K_j=[K_j,B^T]-partial_j B^T-N(partial_j B)Q
+       -sum_k B_kj K_k+2nu sum_k (partial_k K_j)K_k,
+D r_j=-B^T r_j-sum_k B_kj r_k+N(partial_j B)a
+       +2nu sum_k (partial_k K_j)r_k.
+```
+
+The source `N(partial_j B)a` has a concrete joint receiver when tested
+in the inverse-frame metric. With
+`z=sum_j (partial_j B)^T r_j`, Lean proves
+
+```text
+2 sum_j r_j.(partial_j B)a
+ <= 2 sum_j r_j.(partial_j B)g+V+z^T M z.
+```
+
+One variance payment transfers the entire combined source. The retained
+parent work and the receiver cost remain. For clarity, the full analytic
+covariant-gradient production is
+
+```text
+D F_m = -2 sum_jk B_kj r_j^T Q r_k
+        +2 sum_j r_j.(partial_j B)a
+        +4nu sum_jk r_j^T Q (partial_k K_j)r_k
+        -2nu sum_jk |partial_k r_j-K_k r_j|_Q^2.
+```
+
+The source transfer alone does not bound the other terms, physical metric
+coercivity, changing-frame curl, or a continuation norm. A joint allowance
+for these actual evolving geometric quantities is still required.
+
+```sh
+python3 -O labs/covector_joint_parent.py
+```
+
+The exact checker uses three separate tests. The full Fourier test retains
+all convolution outputs, canonical pressure, original initial velocity,
+and first/second unforced PDE derivatives on the `2*pi` torus. At nu=1/10,
+
+```text
+a'(0)=g'(0)=nu Delta u_0,
+div g'(0)=div g''(0)=0,
+mean|div a''(0)|^2=5019506670815216/11139119866875 >0,
+a''(0)-g''(0)=2nu sum_k K_k'(0)^T partial_k u_0,
+mean|a''(0)-g''(0)|^2=1274001115178936/33417359600625.
+```
+
+These complete initial derivatives refute the claim that moment
+normalization always yields an incompressible parent, conditional on
+smooth short-prefix realization. They do not refute physical
+incompressibility, a full-datum history allowance, or regularity.
+No uniform Taylor window is asserted.
+
+A second test exercises nonzero mixed diffusion with noncommuting rational
+matrix jets. It checks every term of the displayed K, a and r equations,
+including the combined source receiver. These supplied local jets are
+algebra fixtures, not a stochastic fluid realization. A third test uses a
+normalized finite law with determinant-one frames and joint original
+terminal vectors. Its variance equals the energy deficit, every tested
+completion is nonnegative, and the geometric-source transfer holds.
+Permuting only the terminal parents changes the covector; shared choices
+are necessary for reconstruction. Lean proves the finite-law inequalities
+universally, while the script checks these particular fixtures.
+
+For a physical force f the complete covector equation adds f, the
+normalized-parent equation adds Qf, and the original h deficit has
+`D(h-m^T Qm)=2nu F_m-2m^T Qf`. That deficit is no longer the nonnegative
+original-parent variance unless the changed stochastic source is retained.
+The forced representation includes the accumulated pulled-back force
+(Constantin--Iyer, Remark 2.4). The checker retains a fixed solenoidal
+initial source with zero initial kinetic work; this is neither the
+imported singular trajectory nor a zero-work assertion at later times.
+No auxiliary stochastic control is treated as a free physical force.

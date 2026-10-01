@@ -1073,6 +1073,34 @@ positive later connection work. A finite original-datum history bound
 and control strong enough for continuation remain open. See the
 [physical bridge and curl-conversion test](labs/README.md#actual-covector-reconstruction-and-the-retained-curl).
 
+### Retaining the joint original parent pays a geometric source error
+
+`CovectorJointParent` certifies the literal parent RHS
+`g_t=nu Delta g-(u.grad)g+(g.grad)u`; that RHS is solenoidal when u and g
+are solenoidal whole-space smooth L² fields. Analytically, the same stochastic flow
+has `g=E[J u_0(A)]`, where J is the inverse of the inverse-flow frame F.
+This original forward parent differs from the moment quotient `a=N^-1m`.
+Complete unforced time jets show that a can acquire nonzero divergence
+while g remains solenoidal. Neither auxiliary parent replaces fluid velocity.
+
+For a normalized finite joint law, Lean proves
+`V=E|v-Fa|^2=h-a.m`, `0<=V<=h`, and `g-a=E[J(v-Fa)]`,
+when `Na=m`. Every receiver z satisfies
+`|z.(g-a)|^2<=V(z^T M z)`, with `M=E[J J^T]`.
+The frames and original terminal parents share each sample. Independently
+recombining them changes the response and the reserve.
+
+The concrete consumer is the complete covariant-gradient source
+`N (partial_j B) a`. Its combined receiver is
+`z=sum_j (partial_j B)^T r_j`. One variance pays its entire error:
+`2 sum_j r_j.(partial_j B)a <= 2 sum_j r_j.(partial_j B)g+V+z^T M z`.
+This finite transfer is kernel-certified. Under the continuous stochastic
+identification, `D V=2nu F_m` and spatial `integral V<=||u_0||_2^2`.
+The stochastic construction and time comparison remain analytic. The
+retained parent work, receiver cost, other full gradient-production terms,
+and a conversion strong enough for continuation are still open. See the
+[joint parent derivation and full rate tests](labs/README.md#joint-original-parent-variance-and-the-geometric-source).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
