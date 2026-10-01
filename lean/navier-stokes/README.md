@@ -1775,6 +1775,19 @@ to generate a parent before the parent is present. This finite-burst
 obstruction does not refute a positive full-datum allowance or regularity.
 The identities are symbolically checked; the interval proof is analytic.
 
+The [source-funded forecast reserve](labs/README.md#a-source-funded-reserve-pays-the-first-generated-interval)
+then pays that actual first burst. It combines the current parent with
+the response to the current swirl source, using coefficients fixed from
+the original datum and a sufficiently short horizon H. Its initial
+allowance is `14gamma H^2/3`. The complete derivative retains the new
+nonlocal and boundary-flux defects. `RotationalForecastReserve` certifies
+the scalar derivative, strict polynomial margin and tolerance for five
+errors; local weighted transport-diffusion estimates supply those errors
+analytically for the physical calibration. Both earlier Gaussian phases
+also admit a local payment. Reinitializing the reserve after each interval
+would give fresh resources; no bound on repeated renewal or arbitrary
+prescribed horizons is established.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

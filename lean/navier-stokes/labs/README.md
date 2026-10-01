@@ -13153,10 +13153,253 @@ Here `partial_z v` differentiates both meridional velocity components.
 The nonlocal forecast `J=r^3 partial_r K S` already contributes at the
 pure-swirl initial time. Adding a reserve term depending on J would
 restore an initial resource, but also restores the boundary defect
-`<b^2 F.grad(weight)>_5` and the full evolution of J. No payment for
-those additional terms is asserted.
+`<b^2 F.grad(weight)>_5` and the full evolution of J. The parent-only
+cancellation does not pay these terms. The next section supplies a
+separate, short-interval payment using their complete local derivatives.
 
 Run `python3 -O labs/rotational_parent_generation.py`. Differential and
 Gaussian/resolvent identities are exact symbolic checks. The local
 Sobolev estimates, interval argument and scaling consequence are analytic.
 No new Lean declarations, axioms or arbitrary-data bound are asserted.
+
+## A source-funded reserve pays the first generated interval
+
+The [forecast checker](rotational_forecast_reserve.py) and
+`MettapediaNS.RotationalForecastReserve` repair the initially empty
+reserve for the pure-swirl datum above. The result is a local physical
+calibration with a fixed original horizon; it does not bound the cost of
+repeatedly generating new parents.
+
+Keep the actual evolving quantities
+
+```text
+I=r^3 partial_r chi, S=partial_z(b^2), J=r^3 partial_r (-L5)^-1 S,
+e=eta^2+|grad b|^2, psi_ell(q)=q^2/(ell^2+q^2),
+U(t)=<psi_ellI(I(t)) e(t)>_5,
+V(t)=<psi_ellJ(J(t)) e(t)>_5.
+```
+
+Both ellI and ellJ are fixed positive numbers. J is the response to the
+current internally generated source, not a prescribed future field. In
+particular `J_t=r^3 partial_r (-L5)^-1 S_t` retains the complete source
+equation in the preceding section.
+
+### The full new defect stays in the calculation
+
+For any scalar weight w and `h=e/2`, the exact weighted local balance is
+
+```text
+partial_t(w h)
+  +div_5[w(v h+b^2 F-nu grad h)+nu h grad w]
+  =w(g_rot-nu d)+b^2 F.grad w
+    +h(w_t+v.grad w+nu L5 w),
+F=(a_r,a_z-eta).
+```
+
+The checker verifies this identity against the actual eta,b equations.
+For the J weight, its integrated flux defect is
+`<b^2 psi'_ellJ(J) F.grad J>_5`, and the adjoint rate is
+
+```text
+psi'_ellJ(J)(J_t+v.grad J+nu L5 J)
+  +nu psi''_ellJ(J)|grad J|^2.
+```
+
+Unlike the I weight, this term has no asserted flux cancellation. The
+local proof below bounds the complete derivative V', including this
+defect, rather than setting it to zero.
+
+### Physical initial coefficients
+
+For the preceding pure swirl, I(0)=0 and I_t(0)=J(0)=I_1. Define
+
+```text
+C=<J(0)^2 e(0)>_5/ellI^2 > 0,
+M=<psi_ellJ(J(0)) e(0)>_5 > 0,
+gamma=3 sqrt(2) pi^(3/2)(11pi-34)/128 > 0.
+```
+
+These are finite quantities of the full original datum. Positivity
+follows from the explicit I_1 kernel on r,z>0. Direct differentiation
+gives
+
+```text
+U(0)=U'(0)=0, U''(0)=2C,
+V(0)=M,
+G(0)=0, G'(0)=gamma.
+```
+
+The derivatives remain those of the actual viscous evolution. In
+particular V'(0) need not vanish at positive viscosity.
+
+### Uniform local control of the nonlocal observables
+
+The following analytic argument supplies the local remainders; it is not
+part of the scalar Lean theorem. Use a common local interval `[0,T0]`
+with sufficiently high spatial Sobolev bounds, uniform for `0<=nu<=1`,
+from the fixed initial datum. Such local bounds are the ones constructed
+in `WholeSpaceViscousFlow`, and they give bounded spatial derivatives of
+u and the time derivatives obtained from its projected equation.
+
+It would be incorrect to assume the velocity remains Schwartz. Smooth
+rapidly decaying velocity data can develop algebraic spatial tails; see
+[Brandolese, Theorem 1.2 and Section 2](https://arxiv.org/html/math/0304436v1).
+Instead use the actual scalar transport-diffusion equations
+
+```text
+(partial_t+v.grad-nu L5)b=-2ab,
+(partial_t+v.grad-nu L5)eta=S.
+```
+
+Lift the radial variable to four dimensions, so L5 is the ordinary
+five-dimensional Laplacian. The lifted drift is bounded on the common
+local interval, its divergence is 2a, and its derivatives and those of a
+are controlled by sufficiently high physical velocity derivatives.
+Multiply differentiated equations by polynomial spatial weights. Weighted
+transport costs involve bounded logarithmic derivatives of the weights
+and the bounded drift; stretching and commutators involve its bounded
+derivatives. Diffusion is nonpositive apart from weighted commutators,
+which are absorbed with a remainder bounded uniformly for nu<=1.
+Thus, for each fixed N,m, the weighted b norm obeys
+
+```text
+d/dt ||<x>^N b||_{H^m(R5)}^2
+  <= A_Nm ||<x>^N b||_{H^m(R5)}^2.
+```
+
+For eta there is also the weighted source norm, controlled by one higher
+weighted b order and Sobolev products. The Gaussian initial b and zero
+initial eta have all these weighted norms finite. Gronwall therefore
+supplies uniform local bounds at each required order. Differentiating the
+actual equations supplies the corresponding weighted bounds on their
+first few time derivatives. The constants here come from the initial
+Sobolev and weighted norms and the prescribed local interval.
+
+These estimates also control the nonlocal weights. The regular-axis
+streamfunction identity gives, for each needed time derivative j,
+
+```text
+partial_t^j I=r^2 partial_t^j u_z
+              -2 integral_0^r s partial_t^j u_z(s,z) ds,
+|partial_t^j I| <= 2r^2 ||partial_t^j u_z||_infinity.
+```
+
+The gradient of the Newtonian kernel in five dimensions is locally
+integrable and bounded away from its origin. Hence
+`||grad K f||_infinity <= C_K (||f||_infinity+||f||_1)`.
+Apply this to the actual time derivatives of S to bound each needed
+time derivative of J by a constant times r^3. The weighted eta,b bounds
+integrate these polynomial factors, and all derivatives of psi_ell are
+bounded for fixed ell>0. Differentiating U,V under their integrals is
+therefore justified with uniform integrable majorants.
+
+In particular the preceding estimates construct finite constants
+`B_U,B_V,B_G` from the original data such that
+`|U'''|<=B_U`, `|V'|<=B_V`, and `|G''|<=B_G` on a common shorter interval,
+uniformly in `0<=nu<=1`. These constants are upper bounds obtained from
+the local estimates, not suprema over an uncontrolled future solution.
+
+### A complete first-interval payment
+
+Fix an original horizon H within that local interval and put tau=H-t.
+Choose the coefficients of the tested two-part reserve to be
+
+```text
+R(t)=4gamma/(H C) tau U(t)+14gamma/(3H M) tau^3 V(t).
+```
+
+The source term now supplies `R(0)=14gamma H^2/3>0`, R is nonnegative
+for 0<=t<=H, and R(H)=0. These coefficients and the whole clock are fixed
+from the original datum and H.
+
+Normalize s=t/H and set
+
+```text
+p(s)=U(Hs)/(C H^2), q(s)=V(Hs)/M, g(s)=G(Hs)/(gamma H),
+r(s)=2(1-s)p(s)+(7/3)(1-s)^3 q(s), R(t)=2gamma H^2 r(t/H).
+```
+
+The exact leading shapes are `p=s^2`, `q=1`, `g=s`. Their payment is
+
+```text
+r'(s)+g(s)=-13s^2+19s-7
+          =-(26s-19)^2/52-3/52 <= -3/52.
+```
+
+This strict margin pays all five Taylor errors. Lean proves that, for
+0<=s<=1, if
+
+```text
+|p-s^2|, |p'-2s|, |q-1|, |q'|, |g-s| <= epsilon,
+0<=epsilon<=9/4472,
+```
+
+then `r'+g<=-3/104`. The general error bound is
+`r'+g<=-3/52+(43/3)epsilon`. Set
+
+```text
+L=1+B_U/(2C)+B_V/M+B_G/(2gamma),
+0<H<=min(T0,9/(4472L)).
+```
+
+Taylor's theorem and the preceding derivative bounds give all five
+errors at most LH. Consequently, along the actual unforced evolution,
+
+```text
+R'(t)+2G(t)-nu D(t) <= -3gamma H/52,
+R(t)+2 integral_0^t G ds-nu integral_0^t D ds <= 14gamma H^2/3.
+```
+
+The scalar differentiation, error absorption and physical rescaling are
+Lean-certified. `PlanarParentReserve.interval_payment` integrates the
+inequality without introducing a new allowance at intermediate seams.
+The application to these nonlocal physical U,V and the uniform local
+moment estimates above is analytic. The sufficient signed-renewal
+observable is exactly the existing one, with G(0)=0 for this datum.
+
+This payment includes the earlier positive-viscosity burst: the local
+horizon bound is uniform in nu, so choose small H and nu=H/2000. At
+t=H/2=1000nu the preceding counterexample has positive enstrophy and
+renewal excess, and the new initial source allowance pays it. Thus the
+test is not restricted to intervals where diffusion alone wins.
+
+Both pieces matter for this particular clock. The parent-only leading
+payment fails at s=1/2; the source-only cubic clock has zero derivative
+at s=1 and leaves positive stretching unpaid. The combined polynomial
+has a strict margin on the entire interval.
+
+The two earlier Gaussian phases have U(0)>0 and V(0)>0: at r=z=1,
+their I values are `-5sigma exp(-3)`, the density is positive, and J has
+the same strictly positive source kernel. They therefore admit a simpler
+local calibration of the same family. Use datum-controlled local bounds
+`|U'|<=B_1`, `|V'|<=B_2`, `|G'|<=B_3`. Choose H small enough that
+`U>=U(0)/2`, `V>=V(0)/2`, `H B_1<=U(0)/4`, and
+`H B_2<=V(0)/2`. With
+`alpha=8(1+B_3)H/U(0)` and beta=1, the complete derivatives give
+
+```text
+[alpha(H-t)U]' <= -2(1+B_3)H,
+[(H-t)^3 V]' <= 0,
+2(G(t)-G(0)) <= 2B_3 H.
+```
+
+Thus the signed renewal cost is paid locally on both phases as well.
+This uses their full evolving derivatives and does not infer a sign from
+their identical source totals. It supplies no prescribed-large-horizon
+bound and adds no new local existence theorem.
+
+### Remaining history obligation
+
+This construction repairs one generated-parent interval; it does not
+improve the classical local existence time or prove global regularity.
+The estimates used to make LH small hold on the original datum-controlled
+local interval. At its end, setting a new H and recomputing C,M,gamma
+would grant a fresh reserve. A proof for arbitrary prescribed horizons
+must pay for that change and for the continued nonlocal source and
+geometric defects. There is no bound here on the sum of those renewals.
+
+Run `python3 -O labs/rotational_forecast_reserve.py`. Its exact checks
+retain the full spatial flux, adjoint diffusion, the two-part polynomial
+and its error tolerance. The scalar certificate is in
+`MettapediaNS.RotationalForecastReserve`; the physical application remains
+analytic and the arbitrary-history continuation hypothesis remains open.

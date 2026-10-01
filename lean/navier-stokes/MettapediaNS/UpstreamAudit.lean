@@ -48,6 +48,7 @@ import MettapediaNS.JointCubicRenewal
 import MettapediaNS.PairCycleHistory
 import MettapediaNS.AnisotropicCycleHistory
 import MettapediaNS.PlanarParentReserve
+import MettapediaNS.RotationalForecastReserve
 import MettapediaNS.FullEnergyParentReserve
 import MettapediaNS.HeatGradientObserver
 import MettapediaNS.CellularParentRenewal
@@ -1426,6 +1427,20 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.unforced_receiver_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.unforced_absolute_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.reserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.reserve_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.reserve_terminal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.physical_reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.physical_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.ideal_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.ideal_margin
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.rate_defect
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.rate_error_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.strict_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RotationalForecastReserve.physical_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.reserve
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.loss
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.reserve_nonneg
