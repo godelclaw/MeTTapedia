@@ -1788,6 +1788,24 @@ also admit a local payment. Reinitializing the reserve after each interval
 would give fresh resources; no bound on repeated renewal or arbitrary
 prescribed horizons is established.
 
+The [circulation source reserve](labs/README.md#circulation-pays-source-histories-with-a-radial-weight)
+provides a different payment on every available smooth axisymmetric
+whole-space prefix. If `C4(0)=integral (r u_theta(0))^4 dx` is finite,
+`C4/(3nu)` pays the complete history of `r^6 S^2` in the lifted measure.
+Outside a fixed axis tube of radius rho it pays the unweighted source
+and the full Hessian of its nonlocal elliptic response, with cost
+`C4(0)/(3nu rho^6)`. Removing that radius weight restores signed radial
+compression; shrinking rho also adds a positive payment defect. Exact
+Gaussian tests separate decreasing circulation stock from growing
+source-scale stock. These analytic estimates do not pay full stretching,
+the complementary axis source, or the angular defects of general 3D flow.
+For the full source norm, the actual weighted quartic equation identifies
+a sufficient compression potential: `W>=1` and
+`W_t+v.grad W+nu L5 W-6(u_r/r)W<=0`. Its logarithm has the quadratic HJB
+Hamiltonian, with actual fluid coefficients held fixed. Bounding its
+initial weighted cost from the original datum remains open; auxiliary
+sampling drifts do not become forces on the fluid.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

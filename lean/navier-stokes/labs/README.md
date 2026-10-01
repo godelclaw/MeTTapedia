@@ -13403,3 +13403,304 @@ retain the full spatial flux, adjoint diffusion, the two-part polynomial
 and its error tolerance. The scalar certificate is in
 `MettapediaNS.RotationalForecastReserve`; the physical application remains
 analytic and the arbitrary-history continuation hypothesis remains open.
+
+## Circulation pays source histories with a radial weight
+
+The [circulation source checker](circulation_source_reserve.py) connects a
+physical resource to repeated parent generation. This estimate holds on
+every available smooth axisymmetric whole-space solution prefix, with
+constants fixed from the original datum. It does not restart a local clock.
+It pays a source norm and its linear elliptic response, not the complete
+stretching or the derivative of the preceding forecast reserve.
+
+The input is the classical circulation equation for
+`Gamma=r u_theta=r^2 b`; see [Wei, equations (1.3)--(1.4)](https://arxiv.org/html/1508.03318v1).
+The calculation below uses its quartic diffusion balance. Related quadratic
+circulation and radial-weight distinctions are discussed in
+[Shahmurov, Section 11](https://arxiv.org/html/2606.07869v2#S11).
+No new general regularity result is claimed.
+
+### A resource that is not replenished by meridional transport
+
+Fix nu>0. Assume regularity at the axis and sufficient decay for the
+following identities, with `C4(0)<infinity`. Schwartz initial velocities
+satisfy that moment condition. Finite kinetic energy alone does not imply
+it. Use the actual coupled velocity v, with physical divergence zero:
+
+```text
+Gamma_t+v.grad Gamma=nu(Gamma_rr-Gamma_r/r+Gamma_zz),
+C4(t)=integral Gamma^4 dx,
+D_Gamma(t)=integral Gamma^2 |grad Gamma|^2 dx,
+C4'=-12nu D_Gamma.
+```
+
+Here `dx=2pi r dr dz`. Transport cancels after spatial integration, even
+when the meridional parents amplify one another. The exact local entropy
+flux is
+
+```text
+partial_t(Gamma^4)
+  +div_3[v Gamma^4-nu grad(Gamma^4)+2nu Gamma^4 e_r/r]
+  =-12nu Gamma^2 |grad Gamma|^2.
+```
+
+The singular radial drift has a boundary flux. It vanishes at the axis
+because Gamma=O(r^2) for a smooth axisymmetric field, and at infinity under
+the stated decay. One may first use spatial cutoffs on each compact smooth
+prefix. The scalar equation propagates the initial moment, and its energy
+identity removes the auxiliary cutoff bounds from the final estimate.
+No bound on a future strain supremum enters the allowance.
+
+For the actual meridional-vorticity source `S=partial_z(b^2)`, define
+`||f||_5^2=2pi integral |f|^2 r^3 dr dz`, as above. Then
+
+```text
+<r^6 S^2>_5=4 integral Gamma^2 Gamma_z^2 dx,
+C4'+3nu <r^6 S^2>_5
+  +12nu integral Gamma^2 Gamma_r^2 dx=0.
+```
+
+Consequently the nonnegative reserve `R=C4/(3nu)` satisfies
+
+```text
+R(t)+integral_0^t <r^6 S^2>_5 ds <= R(0).
+```
+
+This is a payment for the whole source history on every smooth prefix.
+For disjoint time intervals, their nonnegative costs add under this single
+initial allowance. The result does not require any intermediate reserve
+reinitialization. Diffusion supplies the loss in the quartic chain rule;
+transport by the interacting fluid does not create new circulation stock.
+
+### Fixed-radius source and nonlocal response
+
+Let rho>0 be fixed from the original data, and let `0<=zeta_rho(r)<=1`
+vanish for r<rho. Filter the source itself:
+
+```text
+S_rho=zeta_rho S=partial_z(zeta_rho b^2),
+Phi_rho=(-L5)^-1 S_rho,
+J_rho=r^3 partial_r Phi_rho.
+```
+
+In the actual parent equation these are the source contributions
+
+```text
+chi_t=nu L5 chi+(-L5)^-1(-v.grad eta)+Phi_rho+Phi_core,
+Phi_core=(-L5)^-1((1-zeta_rho)S).
+```
+
+This decomposition retains the exact inverse-Laplacian response throughout
+space. It does not identify distant source support with a localized
+pressure field. The complementary source has its own complementary
+nonlocal response.
+
+The source inequality and its resulting reserve are
+
+```text
+||S_rho||_5^2 <= 4 rho^(-6) D_Gamma,
+R_rho=C4/(3nu rho^6),
+R_rho(t)+integral_0^t ||S_rho||_5^2 ds <= C4(0)/(3nu rho^6).
+```
+
+L5 is the radial restriction of the five-dimensional Laplacian. Plancherel
+therefore gives the full Hessian estimate
+
+```text
+||Hess_5 Phi_rho||_5^2=||S_rho||_5^2.
+```
+
+The Hessian includes its radial tangential components. Its Fourier symbol
+has squared Frobenius norm `sum_ij xi_i^2 xi_j^2/|xi|^4=1` away from zero.
+The homogeneous inverse fixes the response; this assertion does not demand
+an L2 bound for the inverse potential itself. The measure used in ||.||_5
+is a constant multiple of the usual radial R5 measure, so the same equality
+holds with this normalization.
+
+There is also a uniform bound for the current forecast. Since zeta is
+independent of z, the multiplier for
+`grad_horizontal(-Delta_5)^-1 partial_z` has norm at most 1/2. Thus
+
+```text
+||J_rho/r^3||_5^2
+  <= (1/4)||zeta_rho b^2||_5^2
+  <= C4(t)/(4rho^6) <= C4(0)/(4rho^6).
+```
+
+The scalar symbol bound follows from
+`4|xi_horizontal|^2 xi_z^2 <= (|xi_horizontal|^2+xi_z^2)^2`.
+These estimates control this part of the source and response repeatedly,
+but do not bound its product with arbitrary high vorticity, its full time
+derivative J_t, or the near-axis source left in the complementary field.
+
+### Removing the radial weight restores the compression bill
+
+For a radial test weight `w=r^(-beta)`, the full integrated defect is
+
+```text
+E_beta=integral r^(-beta) Gamma^4 dx,
+E_beta'=-12nu integral r^(-beta) Gamma^2 |grad Gamma|^2 dx
+        -beta integral a r^(-beta) Gamma^4 dx
+        +nu beta(beta-2) integral r^(-beta-2) Gamma^4 dx.
+```
+
+This formula assumes its integrability and vanishing boundary terms; the
+checker retains the complete local flux before those assumptions.
+The exponent beta=0 removes the compression term. The source-scale
+exponent beta=6 gives `B=<b^4>_5`. In the b variables its exact balance is
+particularly simple:
+
+```text
+B'+3nu ||S||_5^2+12nu <b^2 b_r^2>_5=-6<a b^4>_5,
+a=u_r/r.
+```
+
+Thus the full source reserve `B/(3nu)` has the signed radial-compression
+cost `-(2/nu)<a b^4>_5`. This term is not replaced by its absolute value or
+set to zero. Bounding its accumulated contribution from the original datum
+would extend the source payment into the axis region; that estimate remains
+open here and would still need to be connected to full stretching.
+
+A moving tube radius also has a cost. With rho=rho(t)>0,
+
+```text
+R_rho'+||S_rho||_5^2 <= -6(rho'/rho)R_rho.
+```
+
+Shrinking the tube makes the right side positive. Dropping it would
+replenish the allowance by changing the observation scale.
+Differentiating the moving filtered response would additionally introduce
+`(partial_t zeta_rho)S`; the displayed resource inequality is not an
+estimate for that response derivative.
+
+### A conditional compression potential with an exact physical consumer
+
+The full source payment has a direct backward-weight formulation. Let
+W(t,r,z)>=1 be a smooth weight with the necessary moments and boundary
+limits, along the actual solution. Its exact physical balance is
+
+```text
+d/dt <W b^4>_5
+  =<b^4 (W_t+v.grad W+nu L5 W-6aW)>_5
+    -12nu <W b^2 |grad b|^2>_5.
+```
+
+Thus the sufficient inequality
+
+```text
+W_t+v.grad W+nu L5 W-6aW <= 0,       W>=1
+```
+
+makes `R=<W b^4>_5/(3nu)` pay `||S||_5^2` on every compatible segment.
+The initial allowance must be bounded from the original datum uniformly
+over all available prefixes. No such general bound is established here.
+This is a physical source criterion, not yet the full signed-stretching
+criterion used by continuation.
+
+For W=exp(psi) the exact logarithmic condition is
+
+```text
+psi_t+v.grad psi+nu L5 psi+nu |grad psi|^2-6a <= 0,
+psi>=0.
+```
+
+Its quadratic Hamiltonian has the identity
+
+```text
+nu |p|^2 = sup_q [q.p-|q|^2/(4nu)],
+nu |p|^2-[q.p-|q|^2/(4nu)]=|q-2nu p|^2/(4nu).
+```
+
+Here v and a remain the actual fluid fields. A drift q in this variational
+description changes the auxiliary sampling process; it is not a force
+added to Navier--Stokes.
+
+There is also a direct stochastic interpretation without identifying
+arbitrary auxiliary controls with fluids. Lift the meridional drift to
+R5 as `(a x_1,...,a x_4,u_z)` and use the diffusion with this drift and
+covariance `2nu I`. It exactly represents the scalar L5 operator; it is
+not a claim that the physical fluid lives in five dimensions. Ito's formula
+shows that
+
+```text
+exp(-6 integral_t^s a(q,X_q) dq) W(s,X_s)
+```
+
+is a local supermartingale under the displayed weight inequality.
+Localization, integrability and optional stopping imply that W dominates
+the corresponding expectations stopped before the horizon, because W>=1.
+An un-stopped backward Feynman--Kac solution need not be >=1; that obstacle
+cannot be omitted when paying the unweighted source cost.
+
+Bounding this weighted compression history from the full initial fluid is
+the remaining construction problem for this criterion. Merely solving a
+backward equation using the unknown future velocity, or defining its
+initial value by an uncontrolled supremum, supplies no finite a priori
+allowance. The differential identities and Hamiltonian are symbolically
+checked; the stochastic implication is analytic and conditional on the
+stated hypotheses.
+
+### Two adversarial checks
+
+For the earlier phases
+`b=exp(-r^2-2z^2)` and
+`chi=sigma z(1-3r^2+4z^2)b/2`, sigma=+1 or -1, exact Gaussian integration
+gives, with `K_j=2pi sqrt(pi/(2j))`,
+
+```text
+B=K4/32, C4=3K4/256,
+<b^2 |grad b|^2>_5=3K4/32,
+D_Gamma=3K4/128, ||S||_5^2=K4/8,
+<a b^4>_5=-(2sigma/625)K5.
+```
+
+At nu=1/1000 the complete physical rates are
+
+```text
+B'/K4=-9nu/8+(12sigma/625)sqrt(4/5),
+C4'/K4=-9nu/32.
+```
+
+B grows on the positive phase and falls on the negative phase, while C4
+decreases on both. These are actual initial rates of smooth unforced data;
+continuity gives short intervals with the same strict signs. This refutes
+monotonicity of the unweighted source-scale stock, not a full-datum
+integrated allowance.
+
+Concentration supplies a second exact test. Under the physical NS scaling,
+C4 has degree -3, D_Gamma degree -1, and ||S||_5^2 degree 5. On the scaled
+Gaussian data,
+
+```text
+||S_lambda||_5^2 / D_Gamma_lambda=(16/3)lambda^6.
+```
+
+No one fixed coefficient C>=0 makes `C C4/(3nu)` pay the full source norm
+for all these data: its initial payment fails when `lambda^6>3C/4`.
+The factor rho^(-6) is therefore not removable by a uniform comparison.
+This does not refute a coefficient or cutoff chosen from the full datum.
+
+### Exact scope in forced and general three-dimensional flows
+
+Without axisymmetry, the same physical circulation variable satisfies
+an equation with the additional term
+
+```text
+A_Gamma=2nu partial_theta(u_r)/r-partial_theta(p)+r f_theta.
+```
+
+Its quartic balance gains `4 integral Gamma^3 A_Gamma dx`. Angular pressure
+and vector diffusion are genuine defects even when the fluid force is zero.
+They are checked from the full cylindrical vector equation.
+
+Even in exact axisymmetry, a meridional external force can add
+`curl(f)_theta/r` to the eta equation while f_theta=0. The circulation
+budget may then remain valid but pays only S, not this extra source.
+It cannot, by itself, distinguish every forced construction from an
+unforced flow. The coupled pressure/strain evolution and the full signed
+stretching remain necessary for the regularity goal.
+
+Run `python3 -O labs/circulation_source_reserve.py`. The differential,
+Gaussian and Fourier-symbol identities are checked exactly. Spatial and
+time integration, moment propagation and the Fourier norm consequences
+are analytic, not Lean-certified. No Lean declarations or axioms change.
