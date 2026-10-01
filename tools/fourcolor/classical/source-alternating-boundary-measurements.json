@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "status": "Kernel-checked geometric availability of an alternating source-pin repair and its whole-witness, physical-edge and GSLT consumers",
+  "proof_roots": 13,
+  "dependency_closure": 20956,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "complete_four_color_endpoint_used": false,
+  "complete_source_colouring_supplier_used": false,
+  "finite_graph_data_in_uniform_laws": false,
+  "uniform_source_size_bound": null,
+  "geometric_hypotheses": [
+    "Actual simple-graph dart rotation",
+    "Spherical cubic Euler data and cyclic vertex rotations",
+    "Distinct facial sides of every edge",
+    "Connected source and full face dual",
+    "Connected deleted shore",
+    "Four exhaustive boundary darts in actual retained facial first-return order",
+    "Incidence frame for two insertions and exact identification of the four pins"
+  ],
+  "colouring_hypotheses": [
+    "Proper partial exterior, nonzero on all retained source vertices",
+    "Two distinct alternating pin colours a,b,a,b"
+  ],
+  "kernel_conclusions": [
+    "At least one third-colour component separates its equal-coloured pins",
+    "Constructed actual component is a saturated source region",
+    "Its switch supplies joint compatible insertion choices",
+    "A genuine whole source and target Tait colouring reconstructs",
+    "Reconstruction agrees with the actual target-edge operation on all exterior stars and cut observations",
+    "Every complete faithful GSLT sweep supports compatible choices"
+  ],
+  "geometric_separation_assumed": false,
+  "strict_smaller_operation_proved": false,
+  "universal_occurrence_coverage_proved": false,
+  "kernel_finite_fixture_adapters": 0,
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/source_alternating_boundary_probe.py --check",
+    "record": "source-alternating-boundary-probe.json",
+    "maps": 5,
+    "selected_geometric_interfaces": 13,
+    "totals": {
+      "alternating_reconstructed": 302,
+      "first_pin": 251,
+      "both_separated": 200,
+      "second_pin": 51,
+      "adjacent_controls": 996
+    },
+    "concrete_geometry_kernel_certified": false,
+    "exact_source_first_return": true,
+    "both_repair_branches_replayed": true
+  },
+  "measurements": [
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/SourceAlternatingBoundaryRepair.lean",
+      "source_bytes": 25554,
+      "source_sha256": "a222156107a7a092777b84dbe726783199dbb6c766016c1f89abfa06d2bbc2f0",
+      "artifact_bytes": 1005424,
+      "artifact_sha256": "b034b25b8ad06a6ca381969d774ac368c82bd99f23a98d17f1cc7e2958128572"
+    },
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/SourceAlternatingBoundaryRepairAudit.lean",
+      "source_bytes": 4934,
+      "source_sha256": "b762725ca6fe450e54b7be64204cf0233186b2e06171d45446c61557285e391a",
+      "artifact_bytes": 3544,
+      "artifact_sha256": "50a647c9f0808c342dc9677dbb38fccef4fc1cb16f52d58ee3bdb5967c23ec99"
+    }
+  ],
+  "source_bytes": 30488,
+  "olean_bytes": 1008968,
+  "frontend_seconds_in_final_audit_run": {
+    "SourceAlternatingBoundaryRepair.lean": null,
+    "SourceAlternatingBoundaryRepairAudit.lean": 10.0
+  },
+  "frontend_scope": "Null means the module was cached in this final audit run.",
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "discharging_computations_replaced": 231,
+  "catalogue_entries_removed": 0,
+  "original_configuration_certificate_dependencies_removed": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "scope": "The uniform implication derives repair availability from independently stated actual embedding and boundary hypotheses. Concrete geometric instances are program replays rather than new kernel fixture adapters. Adjacent arrangements, a strictly smaller embedded operation, termination and occurrence coverage remain open."
+}

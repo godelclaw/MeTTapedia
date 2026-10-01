@@ -357,6 +357,24 @@ exclude a successful history. Availability in all relevant exteriors and
 strict reduction remain geometric obligations. No further catalogue saving
 is credited to these consumers.
 
+The [alternating-boundary repair](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SourceAlternatingBoundaryRepair.lean)
+now proves availability on a geometric domain. Four source pins have colours
+`a,b,a,b` in the literal retained facial first-return order of a spherical
+cubic embedding with distinct facial edge sides and connected deleted shore
+and full face dual. Proper colouring makes the two third-colour path systems
+edge-disjoint; actual planar separation excludes simultaneous crossing
+connections. Hence a separating component exists, and one shared switch and
+joint reconstruction law yields a whole colouring and compatible GSLT
+choices. A successful component is a conclusion rather than an assumption.
+
+The [receipt](../../../tools/fourcolor/classical/source-alternating-boundary-measurements.json)
+keeps the uniform kernel implication separate from the program-checked
+geometric instances and 302 reconstructed partial exteriors. This is a
+precise component of the compositional vision: geometry supplies a choice
+that the algebra can compose. Adjacent boundary arrangements, a smaller
+embedded operation and occurrence coverage remain separate obligations;
+the catalogue remains at 633 entries.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

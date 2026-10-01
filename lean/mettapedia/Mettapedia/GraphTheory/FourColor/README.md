@@ -401,6 +401,29 @@ repairs one of those cases. This does not exclude other physical target-edge
 operations. Universal availability, a smaller embedded operation and
 occurrence coverage remain open; no catalogue entry is removed.
 
+The [alternating-boundary theorem](SourceAlternatingBoundaryRepair.lean)
+now supplies a repair under explicit geometric hypotheses: a graph-backed
+spherical cubic source, distinct facial edge sides, connected full dual and
+deleted shore, and four pins in the actual retained facial first-return
+order, coloured `a,b,a,b`. Two third-colour paths joining both equal-colour
+pairs would be edge-disjoint by proper colouring. The existing spherical
+separating-trail theorem excludes that crossing, so at least one actual
+component separates its pins. Its switch supplies both insertion choices,
+a whole source witness, the exact physical target-edge effect, and every
+complete faithful GSLT sweep. No successful component or completed source
+colouring is assumed.
+This is an existence and reconstruction law; it does not assert preservation
+of colouring counts or lifting of every recolouring history.
+
+The [receipt](../../../../../tools/fourcolor/classical/source-alternating-boundary-measurements.json)
+distinguishes this uniform implication from finite geometry instantiations.
+An independent replay computes source first-return order directly and
+reconstructs all 302 alternating partial exteriors on five small sources;
+251 use the first-pin branch and 51 the second. Those finite geometric
+instances are program checks, not new kernel-certified fixture adapters.
+Adjacent pin order, a strict smaller operation and occurrence coverage
+remain open. Catalogue and original-certificate counts remain 633 and 630.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

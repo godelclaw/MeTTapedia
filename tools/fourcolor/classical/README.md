@@ -480,6 +480,38 @@ availability or exclude other physical target-edge operations. No strict
 smaller embedded operation or coverage saving is claimed; the catalogue
 and original-certificate counts remain 633 and 630.
 
+## Geometric availability at alternating source pins
+
+The [uniform theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/SourceAlternatingBoundaryRepair.lean)
+derives a separating third-colour source component from actual spherical
+cubic geometry and four alternating observations in retained facial
+first-return order. The deleted shore and the full face dual are connected,
+and opposite darts have distinct faces. Properly coloured paths using the
+two different third-colour pairs are edge-disjoint; the spherical boundary
+separation theorem prevents both crossing connections. The constructed
+component is a saturated source region, and its switch is consumed by the
+joint insertion constructor, exact physical edge transport and GSLT sweep
+semantics. Neither a successful component nor a full source colouring is
+supplied as an input.
+
+```sh
+python3 tools/fourcolor/classical/source_alternating_boundary_probe.py --check
+```
+
+The [receipt](source-alternating-boundary-measurements.json) separates the
+kernel implication from the [finite replay](source-alternating-boundary-probe.json).
+The replay computes capped retained facial steps and their first return,
+compares that order with the actual expanded patch perimeter, and checks
+geometry and reconstruction for all 302 alternating partial exteriors on
+five small sources. Both repair branches occur: 251 first-pin and 51
+second-pin repairs. Geometry of these finite instances remains program
+evidence; no kernel fixture adapter is asserted here.
+
+This advances availability on the alternating domain. The 996 adjacent
+controls remain outside its hypotheses. A strictly smaller embedded
+operation and occurrence coverage are still needed for a catalogue saving.
+The catalogue and original-certificate counts remain 633 and 630.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves
