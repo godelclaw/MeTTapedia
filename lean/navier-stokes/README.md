@@ -1501,6 +1501,58 @@ checks the exact limiting equations and integrals, not the convergence
 proof. No full-datum reserve or regularity claim is refuted.
 See [the full directional calculation](labs/README.md#directional-cubic-renewal-and-original-labels).
 
+### Generated modes can return work to their original parents
+
+The [returned-parent lab](labs/parent_return_history.py) tests complete
+unforced histories starting with empty unobserved modes. An original parent
+can receive positive nonlinear work later, after earlier transfers generated
+those modes. Consequently a universal assertion that every return damps its
+original parent is too strong. This does not refute a signed history payment.
+
+For actual triangular data `u0=(A sin y,0,A sin x)`, `A>0`, put
+`sigma=A t`, `kappa=nu/A`. A scalar parabolic contraction comparison with
+`sin(x-sigma sin y)` proves that whenever `0<kappa<=1/1000`, the original
+vertical sine mode has nonlinear kinetic work at least `A^3/96` on
+`47/16<=sigma<=49/16`. Its integrated returned work is at least `A^2/768`.
+The phase evolution changes the parent's sign; the returned work is paid by
+energy previously stored in the generated modes. The original shear gives
+an all-time absolute kinetic-work allowance `A^3/(6nu)`. This kinetic
+allowance is distinct from the actual cubic stretching required for
+continuation. The interval and its positive-viscosity passage are analytic;
+the checker verifies rational margins and complete finite identities.
+
+Three nonzero cyclic sine parents generate pressure and reciprocal
+feedback. Complete canonical jets retain the first returned work and a
+three-parent correction absent from the sum of the two-parent limits.
+The generic returned-work third derivative has a positive correction
+`(3/2)a^2 b^2 c^2`. It is not a time-interval or indefinite-renewal theorem.
+Dealiased three-dimensional prefixes with a third parent `epsilon=1/20`
+show positive returned work near the same phase interval, with spatial
+and time refinement and retained pressure. These are numerical prefixes,
+not continuum enclosures or certified all-time evolutions.
+
+There is a paid analytic neighborhood with genuine reciprocal feedback.
+The triangular reference's fourth derivatives are bounded from its original
+integrated shear `|a|/nu` by explicit polynomials. A datum-fixed H3
+smallness threshold on a solenoidal perturbation then absorbs its own
+nonlinearity into viscosity, using the complete NS pressure orthogonality.
+The resulting all-time H3 envelope gives a decreasing nonnegative reserve
+paying actual cubic stretching on every compatible interval. The third
+parent can be nonzero. This is a perturbative calibration, with a potentially
+very small threshold; the numerical `epsilon=1/20` is not certified to
+satisfy it. Scalar recurrence and reserve identities are checked exactly;
+the continuous estimates are analytic, not new Lean declarations.
+
+The physical distinction is between return from retained old storage and
+independently supplied new work. Empty initial hidden modes do not eliminate
+later returns. The arbitrary-data question is whether full original
+resources can pay the derivative-level signed renewal when the mutually
+affecting parents no longer remain in a controlled neighborhood. Neither
+the finite kinetic-energy ledger nor these paid classes settles that
+question. No internal realization or exclusion of the imported forced
+blowup construction is established here.
+See [the return interval, three-parent test and paid neighborhood](labs/README.md#returned-parent-work-and-a-paid-reciprocal-neighborhood).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

@@ -10523,3 +10523,323 @@ Run the complete exact and independent symbolic checks:
 ```sh
 python3 -O labs/cubic_parent_renewal.py
 ```
+
+## Returned parent work and a paid reciprocal neighborhood
+
+`parent_return_history.py` keeps the original sine parents, the modes
+generated from them, and their later return interactions. The domain is
+the normalized torus of period `2*pi`; all energies below are squared
+L2 norms, without a factor of one half. Parent kinetic work is distinct
+from vorticity stretching. The purpose is to test whether every internal
+return must damp its original parent, and to retain the actual resource
+paying a return when that stronger assertion fails.
+
+Let P be the fixed L2 orthogonal projection onto the three divergence-free
+vectors `(sin y,0,0)`, `(0,sin z,0)`, `(0,0,sin x)`, and Q=I-P. These
+vectors have Laplacian eigenvalue -1. For the complete unforced NS source
+`N(u)=-Leray[(u.grad)u]`, write
+
+```text
+W_P=<Pu,PN(u)>, E_P=||Pu||_2^2,
+E_H=||Qu||_2^2, D_H=||grad Qu||_2^2.
+E_P'+2nu E_P=2W_P,
+E_H'+2nu D_H=-2W_P.
+```
+
+These are actual smooth-solution kinetic balances: P commutes with the
+Laplacian, and total nonlinear kinetic work vanishes. If the unobserved
+modes start empty, `E_H(0)=0`. Thus on every compatible interval
+
+```text
+2 integral_s^t W_P=E_H(s)-E_H(t)-2nu integral_s^t D_H<=E_H(s).
+```
+
+Later positive return may spend storage created by earlier negative
+parent work. Resetting the hidden energy or phases at a seam discards
+that history. The identity bounds net return; it does not by itself
+bound repeated positive transfers or pay the derivative-level
+continuation criterion. It is not a new energy-conservation mechanism
+distinguishing NS from every energy-conserving averaged equation.
+The earlier [crossing-box test](#generated-modes-can-return-positive-work-to-their-parents)
+already has a positive individual return channel in an initial jet.
+Here the positive-viscosity interval concerns the net work of the original
+parent projection, with its complete prior history and an all-time payment.
+
+### An actual positive-viscosity return interval
+
+Use the globally regular triangular class already described above,
+`u=(a exp(-nu t)sin y,0,v)`, `v0=b sin x`, with a,b>=0. Its vertical
+scalar obeys `v_t+a exp(-nu t)sin y v_x=nu Delta v`. Set a=b=A>0,
+`sigma=A t`, `kappa=nu/A`, and v=A w_kappa. Then
+
+```text
+w_sigma+exp(-kappa sigma)sin y w_x=kappa Delta w, w(0)=sin x,
+p_kappa=2mean(w_kappa sin x),
+r_kappa=partial_sigma p_kappa+kappa p_kappa
+       =2exp(-kappa sigma)mean(w_kappa sin y cos x),
+W_P=A^3 p_kappa r_kappa/2.
+```
+
+At kappa=0 the explicit reference is `w_0=sin(x-sigma sin y)`.
+Define the phase integrals
+`J0(sigma)=mean_y cos(sigma sin y)` and
+`J1(sigma)=mean_y sin y sin(sigma sin y)=-J0'(sigma)`.
+The original mode has p_0=J0 and r_0=-J1. Integrating the absolutely
+convergent cosine and sine series, with
+`mean sin(y)^(2m)=(2m)!/[4^m(m!)^2]`, gives
+
+```text
+J0(3)=sum_m>=0 (-1)^m(9/4)^m/(m!)^2,
+J1(3)=(3/2)sum_m>=0 (-1)^m(9/4)^m/[m!(m+1)!].
+```
+
+After m=1 the absolute terms decrease. Odd/even partial sums through
+m=5/4 therefore certify `J0(3)<-1/4` and `J1(3)>1/3`.
+Differentiating the phase integrals gives `|J0'|<=1` and `|J1'|<=1/2`.
+These exact rational margins are checked by the program.
+
+The passage to actual positive viscosity uses a scalar L2 contraction,
+not a generic NS Taylor window. For z=w_kappa-w_0 the complete equation is
+
+```text
+z_sigma+exp(-kappa sigma)sin y z_x-kappa Delta z
+  =(1-exp(-kappa sigma))sin y (w_0)_x+kappa Delta w_0, z(0)=0.
+```
+
+The drift is divergence-free and the diffusion is dissipative. The
+explicit reference satisfies
+`||sin y (w_0)_x||_2=1/2` and
+`||Delta w_0||_2^2=1/2+3sigma^2/4+3sigma^4/16`.
+For sigma>=0 its latter norm is at most `1+sigma+sigma^2/2`.
+Using `1-exp(-kappa sigma)<=kappa sigma`, on [0,S] contraction gives
+
+```text
+||z(sigma)||_2<=kappa B(S), B(S)=S+3S^2/4+S^3/6,
+|p_kappa-J0|<=(3/2)kappa B(S),
+|r_kappa+J1|<=kappa[B(S)+S].
+```
+
+The observation bounds follow by Cauchy--Schwarz, using
+`||sin x||_2=1/sqrt(2)`, `||sin y cos x||_2=1/2`,
+`||w_0||_2=1/sqrt(2)` and `sqrt(2)<3/2`.
+For S=49/16 and `0<kappa<=1/1000`, both errors are less than 1/16.
+The phase derivative bounds then give throughout I=[47/16,49/16]
+
+```text
+p_kappa<=-1/8, r_kappa<=-1/6,
+W_P>=A^3/96, integral_(I/A) W_P>=A^2/768.
+```
+
+The original mode changes sign before receiving positive work. Generated
+modes are initially empty. This disproves universal instantaneous damping
+of returned parent work on actual unforced positive-viscosity flows.
+It does not disprove a full-datum history payment or regularity. At fixed
+nu>0 the interval fits any prescribed positive horizon by choosing
+`A>=1000nu` and `A>=49/(16T)`.
+
+The full return is paid. Since the vertical scalar always retains its
+nonzero x harmonic, diffusion gives
+`||v||_2,||v_x||_2<=b exp(-nu t)/sqrt(2)`.
+The parent projection and Cauchy--Schwarz consequently give
+
+```text
+|W_P(t)|<=a b^2 exp(-3nu t)/2,
+integral_0^infinity |W_P|<=a b^2/(6nu),
+R_kin(t)=a b^2 exp(-3nu t)/(3nu),
+2 integral_s^t |W_P|<=R_kin(s)-R_kin(t).
+```
+
+This nonnegative original reserve crosses every seam. The previously
+proved analytic actual-cubic allowance `a^2 b^2/(6nu^2)` is a different
+payment; the kinetic allowance is not substituted for it.
+
+### Reciprocal parents retain generated pressure
+
+For `u0=(a sin y,b sin z,c sin x)`, all initially unobserved modes vanish
+and canonical pressure starts at zero. Complete Fourier velocity jets
+through order four retain every output and pressure through order three.
+An independent symbolic calculation retains p1 and p2 explicitly:
+
+```text
+p1=-2abc cos x cos y cos z,
+p2=-(2/3)abc[c sin(2x)cos y sin z+a sin x sin(2y)cos z
+             +b cos x sin y sin(2z)]-6nu p1.
+```
+
+Only in the independent final parent projection is grad p3 omitted:
+it is orthogonal to the divergence-free original sine vectors. The full
+Fourier calculation does retain p3 and all other output components.
+Write `S22=a^2 b^2+a^2 c^2+b^2 c^2`,
+`S42=a^2 b^4+b^2 c^4+c^2 a^4` and `R=a^2 b^2 c^2`. The generic result is
+
+```text
+W_P(0)=0, W_P'(0)=-S22/4, W_P''(0)=2nu S22,
+W_P'''(0)=(9/16)S42+(3/2)R-12nu^2 S22.
+```
+
+The first transfer depletes the original parents and fills hidden modes.
+The positive three-parent correction `(3/2)R` disappears from the sum
+of the three two-parent limits. At a=1,b=2,c=3,nu=1/10, the four work
+jets are `0,-49/4,49/5,97773/400`, and the cycle correction is 54.
+The exact kinetic ledger is checked at every available derivative order.
+The initial mean cubic stretching g0 is zero, also checked independently.
+These are jets of actual smooth unforced NS at its initial data; they do
+not supply a uniform time window or establish indefinite renewal.
+
+### A paid class with a nonzero third parent
+
+A positive all-time analytic calibration allows reciprocal feedback,
+within an original-datum small neighborhood of the triangular reference.
+Use the inhomogeneous multi-index Sobolev norm
+`||u||_Hm^2=sum_(|alpha|<=m)||partial^alpha u||_2^2` on this torus.
+The reference's scalar equation commutes with x differentiation, and every
+vertical derivative retains x harmonic one. After j y differentiations,
+its source is the complete sum
+`-sum_(r=1..j) binom(j,r) partial_y^r U partial_x partial_y^(j-r) v`.
+Here `||partial_y^r U||_infinity<=a exp(-nu t)` for a>=0.
+Scalar contraction and induction therefore give
+
+```text
+||partial_x^ell partial_y^j v||_2<=b exp(-nu t) P_j(L(t))/sqrt(2),
+L(t)=a(1-exp(-nu t))/nu,
+P_0=1, P_j(0)=0, P_j'=sum_(r=1..j) binom(j,r)P_(j-r),
+P_1=L, P_2=L+L^2, P_3=L+3L^2+L^3,
+P_4=L+7L^2+6L^3+L^4.
+```
+
+The scalar L2 differential inequality follows by pairing with the
+differentiated field; the x harmonic contributes at least nu times its
+norm. Vanishing norms are handled by a regularized norm and passage to
+the limit. No unknown future bound on the reference is assumed.
+Counting every multi-index, with no z derivatives, proves
+
+```text
+||u_ref(t)||_H4<=Q4 exp(-nu t),
+Q4^2=5a^2/2+(b^2/2)sum_(j=0..4)(5-j)P_j(a/nu)^2.
+```
+
+Let d=u-u_ref be an actual smooth mean-zero solenoidal perturbation and
+Y=||d||_H3^2. Pair every differentiated difference equation with the
+corresponding derivative of d. Pressure gradients remain orthogonal.
+The reference transport commutators and `d.grad u_ref` are bounded using
+its H4 norm; the complete self-transport commutators use H3 embedding.
+Thus there is a fixed torus/norm constant C3>0 such that
+
+```text
+Y'+2nu D4<=C3 ||u_ref||_H4 Y+C3 Y^(3/2),
+D4=sum_(|alpha|<=3)||grad partial^alpha d||_2^2>=Y.
+```
+
+The last inequality is Poincare for the mean-zero fields. Put
+`M=C3 Q4/nu` and choose the original perturbation so that
+`sqrt(Y0)exp(M/2)<=nu/(2C3)`. Bootstrap within
+`sqrt(Y)<nu/C3`: its self term is absorbed by nu D4, and comparison gives
+
+```text
+Y(t)<=Y0 exp[M(1-exp(-nu t))-nu t]<=Y0 exp(M)exp(-nu t).
+```
+
+This stays strictly inside the bootstrap region, supplies the H3
+continuation bound and hence an all-time smooth unforced solution for
+smooth initial data in this neighborhood. It is a standard perturbative
+comparison around an explicitly controlled reference. The constants are
+fixed by the original reference, initial perturbation, viscosity and torus;
+they are not read off an unknown future NS flow. For the genuinely
+three-dimensional third parent `d0=(0,epsilon sin z,0)`, `Y0=2epsilon^2`.
+Its canonical pressure has `p1=-2a epsilon b cos x cos y cos z`, so the
+reciprocal pressure interaction is present when a,b,epsilon are nonzero.
+The threshold can be extremely small. It does not certify the larger
+epsilon used in the numerical prefixes below.
+
+This class pays the actual continuation bill. Write
+`N=Q4+sqrt(Y0)exp(M/2)`; then `||u(t)||_H3<=N exp(-nu t/2)`.
+For a fixed torus Sobolev constant C_emb,
+`|mean omega^T grad(u) omega|<=C_emb ||u||_H3^3`, using
+`||omega||_2=||grad u||_2` for solenoidal u. Consequently
+
+```text
+R_3D(t)=4 C_emb N^3 exp(-3nu t/2)/(3nu),
+2 integral_s^t |mean omega^T grad(u) omega|<=R_3D(s)-R_3D(t).
+```
+
+R_3D is finite, nonnegative, decreasing and determined by the full original
+datum. For the cyclic sine perturbation g0=0, it pays the joined
+covariance/compatibility renewal of the preceding section directly.
+For a general perturbation with nonzero g0, the sufficient finite-horizon
+joined allowance can be `R_3D(0)+2|g0|T`. This is an actual cubic reserve,
+not the kinetic hidden-energy ledger. The derivative recurrence, bootstrap,
+continuous stability and spatial continuation are analytic arguments;
+the program checks the polynomials and scalar comparison/reserve rates.
+No new Lean certification of these continuous estimates is claimed.
+
+Combining strict return on the triangular compact interval with continuous
+dependence gives positive returned parent work for a sufficiently small
+nonzero third parent as well. The margin can be fixed from the original
+data. Let C_N be a fixed constant for
+`||N(v,w)||_2<=C_N ||v||_H3 ||w||_H3`.
+For `||d||_H3<=Q4`, expansion of the parent work gives
+`|W_P(u_ref+d)-W_P(u_ref)|<=7C_N Q4^2 ||d||_H3`.
+When a=b=A, in addition to the all-time threshold choose
+
+```text
+sqrt(Y0)exp(M/2)<=min(Q4,A^3/(1344 C_N Q4^2)).
+```
+
+Then the actual full three-parent flow has `W_P>=A^3/192` throughout
+I/A and integrated work at least `A^2/1536`, while its original reserve
+pays actual cubic stretching for all time. A nonzero epsilon satisfying
+both original-data thresholds exists. This produces genuinely reciprocal,
+globally paid actual flows with positive parent return. It proves no
+all-time claim for an arbitrary third parent, nor the general mutually
+amplifying-parent estimate.
+
+### Three-dimensional numerical prefixes
+
+Optional prefixes evolve the full three-velocity field from
+`u0=(sin y,(1/20)sin z,sin x)`, nu=1/1000, with the integrating-factor
+RK4 solver used in `reciprocal_parent_history.py`. Nonlinear products use
+strict componentwise 2/3 dealiasing. Canonical pressure diagnostics use a
+doubled grid retaining every quadratic pressure output of that Galerkin
+state. A nontrivial polynomial probe checks the complete pressure L2 and
+Hessian moments against the independent exact canonical calculation.
+These observations do not remove pressure from the actual velocity
+equation. Its Leray projection remains at every stage.
+
+At the matched phase interval [47/16,49/16], all original parents together
+receive positive nonlinear work. The hidden energy drops from about
+0.46947 to 0.45829 while paying this return and viscosity.
+
+| Velocity grid | Time step | Twice integrated parent work in the interval |
+| --- | --- | --- |
+| 32 cubed | 0.005 | 0.0105072475486 |
+| 48 cubed | 0.005 | 0.0105073075457 |
+| 48 cubed | 0.0025 | 0.0105073075455 |
+| 64 cubed | 0.005 | 0.0105073086842 |
+
+The 32-to-48 grid difference is about 6e-8 for that integrated work.
+Halving the time step at 48 cubed changes sampled parent work by less
+than 1e-12. The refined maximum kinetic-ledger error is below 1.6e-13.
+The pressure-Hessian moment changes by about 2e-5 under the first spatial
+refinement; it is more sensitive than the parent observation. Refining
+48 to 64 cubed changes the integrated work by about 1.2e-9, sampled
+parent work by less than 6.6e-9, and the pressure-Hessian moment by about
+1.3e-6. These are
+dealiased finite Galerkin prefixes and numerical convergence checks, not
+continuum enclosures. In particular epsilon=1/20 is not certified to meet
+the conservative all-time perturbation threshold.
+
+Run exact checks and optional prefixes:
+
+```sh
+python3 -O labs/parent_return_history.py
+python3 labs/parent_return_history.py --prefix --n 48 --dt 0.0025
+```
+
+This step retains a funded return with actual changing phases and pressure,
+rather than assuming universal parent damping. It supplies a paid
+perturbative reciprocal class but does not supply the arbitrary-data
+reserve. The remaining obligation is to control derivative-level signed
+renewal when mutually affecting parents leave every controlled reference
+neighborhood, keeping original storage and spent resources across all
+seams. No internal realization or impossibility theorem for the imported
+forced blowup candidate follows from these periodic examples.
