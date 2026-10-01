@@ -13801,3 +13801,261 @@ Run `python3 -O labs/circulation_source_reserve.py`. The differential,
 Gaussian and Fourier-symbol identities are checked exactly. Spatial and
 time integration, moment propagation and the Fourier norm consequences
 are analytic, not Lean-certified. No Lean declarations or axioms change.
+
+## Physical compression weight and its continuation consumer
+
+`physical_compression_weight.py` checks the physical-measure version of the
+preceding source criterion, including the axis boundary, its sampling
+generator and adversarial Gaussian data. The resulting **analytic conditional
+criterion reaches gradient-energy continuation in the axisymmetric whole-space
+class**. A uniformly funded weight is not constructed. General three-dimensional
+angular defects and the periodic problem remain outside this reduction.
+
+Use the same actual unforced axisymmetric equations, positive viscosity,
+regular axis and sufficient decay. Write `dx=2pi r dr dz`,
+`b=u_theta/r`, `eta=omega_theta/r`, `a=u_r/r`, `v=(u_r,u_z)` and
+`S=partial_z(b^2)`. Initial quantities used below are finite for smooth
+axisymmetric Schwartz data. None of the following constants uses a norm
+read off the unknown future solution.
+
+### Physical balance, boundary and uniform funding obligation
+
+Define `Lminus=partial_rr-partial_r/r+partial_zz`. For a smooth even radial
+weight W with the requisite integrability and vanishing flux at infinity,
+
+```text
+I(t)=integral W b^4 dx,
+D_W=W_t+v.grad W+nu Lminus W-8aW,
+I'+12nu integral W b^2 |grad b|^2 dx
+   +4pi nu integral W(t,0,z)b(t,0,z)^4 dz
+ =integral b^4 D_W dx.
+```
+
+The local flux before integration is
+`W[v b^4-nu grad(b^4)-2nu b^4 e_r/r]+nu b^4 grad W`.
+Its outward flux through r=epsilon tends to the displayed positive axis
+term. The axis cannot be discarded on the grounds that it has zero volume.
+The conjugation `W_5=r^(-2)W` gives
+
+```text
+(partial_t+v.grad+nu L5-6a)(r^(-2)W)
+ =r^(-2)(partial_t+v.grad+nu Lminus-8a)W.
+```
+
+W_5 is singular at the axis. Its lifted flux has the same nonzero limit,
+so the previous smooth lifted-weight formula cannot be applied with its
+boundary silently set to zero.
+
+For an original H>0 the precise funding obligation is: there is a finite
+`B_H(u0,nu)` such that, on **every** available smooth prefix `[0,T]`,
+`0<T<=H`, a weight satisfies
+
+```text
+W>=1,       D_W<=0,
+integral W(0,x)b(0,x)^4 dx <= B_H(u0,nu).
+```
+
+The weight also satisfies the smoothness, moment and boundary hypotheses
+of the balance. The same B_H must work for all prefixes. Weights may depend
+on the prefix; their initial bounds cannot depend on its unknown solution
+norms. The balance uses one weight over each complete prefix and does not
+give a new allowance at intermediate seams. It yields
+
+```text
+I(t)+3nu integral_0^t ||S||_2^2 ds <= I(0),
+integral_0^t ||S||_2^2 ds <= P_H:=B_H/(3nu).
+```
+
+All these source norms now use physical dx. Constructing weights from a
+future-dependent equation without proving the bound B_H does not meet
+the funding obligation.
+
+### From this source payment to full gradient energy
+
+Here is the analytic continuation implication, with finite constants
+displayed to make the quantifiers explicit. Define
+
+```text
+Y_H=||eta0||_2+sqrt(H P_H),
+A_H=C_BS H^(3/4)(2nu)^(-1/4)Y_H.
+```
+
+Apply the preceding physical L2 propagator estimate to the **full** eta
+equation, with source S. It gives
+`sup||eta||_2<=Y_H`, `integral||grad eta||_2^2<=Y_H^2/(2nu)` and
+`integral_0^t||a||_infinity<=A_H`. This uses the actual interacting v.
+The elliptic step is the axisymmetric estimate of
+[Wei, Lemma 2.1](https://arxiv.org/html/1508.03318v1#S2), followed by
+homogeneous Sobolev interpolation as above.
+
+The two angular-velocity equations and maximum principles give
+
+```text
+b_t+v.grad b=nu L5 b-2ab,
+(u_theta)_t+v.grad u_theta=nu(Delta_3-r^(-2))u_theta-a u_theta,
+sup||b||_infinity <= L_H:=||b0||_infinity exp(2A_H),
+sup||u_theta||_infinity <= D_H:=||u_theta0||_infinity exp(A_H).
+```
+
+The angular velocity vanishes at the axis; its singular diffusion term
+has the favorable sign. No initial circulation moment is needed for this
+particular conditional implication. The earlier outside-tube payment
+still has its separately stated circulation-moment hypothesis.
+
+For `Omega=omega_theta=r eta`, the actual angular-vorticity equation gives
+
+```text
+(1/2)d_t||Omega||_2^2
+ +nu(||grad Omega||_2^2+||Omega/r||_2^2)
+ =integral a Omega^2 dx-integral b u_theta partial_z Omega dx.
+```
+
+Absorb the second term using half the gradient dissipation and the original
+kinetic energy `E0=||u0||_2^2`. Gronwall yields the uniform bound
+
+```text
+sup||Omega||_2^2 <= Q_H
+ :=exp(2A_H)[||Omega0||_2^2+H L_H^2 E0/nu].
+```
+
+The meridional velocity `V=u_r e_r+u_z e_z` is divergence free and has
+curl `Omega e_theta`. Hence `||V||_6<=C_S||Omega||_2`. Interpolation between
+the swirl's L2 energy and L-infinity bound gives
+
+```text
+sup||u||_6 <= U_H:=C_S sqrt(Q_H)+E0^(1/6)D_H^(2/3).
+```
+
+Finally test the full NS equation against `-Delta u`. With
+`Z=||grad u||_2^2` and `D=||Delta u||_2^2`, incompressibility removes the
+pressure and Sobolev interpolation bounds its nonlinear term by
+`C U_H Z^(1/4)D^(3/4)`. Young's inequality and Gronwall imply
+
+```text
+sup_[0,T] Z <= Z(0) exp(C nu^(-3)H U_H^4),       T<=H.
+```
+
+C_BS, C_S and C are universal constants. This is precisely a bound of the
+form consumed by `WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound`
+in `WholeSpaceEnstrophyContinuation.lean`. Rotational invariance and
+uniqueness preserve the axisymmetric class. This argument is analytic;
+the axisymmetric hypotheses, weighted PDE calculations and norm estimates
+have not been assembled into a new Lean theorem. In particular the
+formal consumer's arbitrary-data hypothesis is not discharged.
+
+### The actual sampling process and its axis deformation
+
+For `W=exp(psi)` the condition is
+
+```text
+psi_t+v.grad psi+nu Lminus psi+nu|grad psi|^2-8a<=0,
+psi>=0.
+```
+
+The physical-measure adjoint changes the sampling geometry. In squared
+radius `Y=r^2`, its diffusion can be written, before localization limits,
+
+```text
+dY=2a(t,sqrt(Y),Z)Y dt+sqrt(8nu Y)dB1,
+dZ=u_z(t,sqrt(Y),Z)dt+sqrt(2nu)dB2.
+```
+
+B1 and B2 are independent Brownian motions. Y=0 is absorbing in radius;
+axial motion continues there. For smooth regular coefficients, the
+squared-radius generator is
+`2aY partial_Y+u_z partial_Z+4nu Y partial_YY+nu partial_ZZ`.
+This is the sampling process of the weighted adjoint, not the physical
+three-dimensional particle process.
+Ito's formula makes `exp(-8 integral a)W` a local supermartingale under
+the weight inequality. With localization and the stated integrability,
+W dominates the corresponding stopped exponential expectations. Killing
+the entire process with zero payoff on reaching the axis would lose the
+required boundary value `W>=1`.
+
+The quadratic Hamiltonian is equally explicit. Writing
+`psi(t,r,z)=Psi(t,Y,z)`, maximize
+`2sqrt(Y)q1 Psi_Y+q2 Psi_z-(q1^2+q2^2)/(4nu)` over q1,q2. Its value is
+`nu(4Y Psi_Y^2+Psi_z^2)`. Radial control vanishes at Y=0. These controls
+alter the auxiliary sampling process; physical v and a are held fixed.
+
+Let `w(t,z)=W(t,0,z)` and `U(t,z)=u_z(t,0,z)`. Smooth even radial
+regularity and actual incompressibility imply the necessary axis condition
+
+```text
+w_t+U w_z+nu w_zz+4U_z w<=0,       w>=1,
+U_z=-2a(t,0,z).
+```
+
+Radial curvature cancels here: `Lminus W|axis=w_zz`. Along the additive
+one-dimensional diffusion `dZ=U dt+sqrt(2nu)dB`, the derivative J with
+respect to its starting point satisfies `dJ=U_z J dt`, `J(t)=1`.
+Consequently w must dominate the stopped expectations of J^4, under
+the same localization and integrability conditions. This identifies a
+specific stochastic deformation moment required by the candidate weight.
+Neither that moment nor its initial weighted cost is bounded here.
+
+The true axial momentum equation, differentiated before taking the axis,
+also identifies what can sustain this deformation. With `q=U_z`,
+
+```text
+q_t+U q_z=nu(Delta_3 partial_z u_z)|axis-q^2-p_zz|axis.
+```
+
+The quadratic term damps positive axial expansion. The full radial second
+derivatives in the diffusion term and the nonlocal pressure curvature
+remain. Dropping either would replace the actual fluid by a different
+model. This is a deterministic physical evolution law; inserting it into
+the stochastic process additionally requires its complete Ito correction.
+
+### Paid histories and failed static radial weights
+
+The earlier history decomposition still applies. If the paid radial strain
+has `integral||a_paid||_infinity<=M_H`, its physical-measure factor is now
+
+```text
+W_paid(t)=exp(8M_H-8 integral_0^t||a_paid||_infinity ds)>=1.
+```
+
+If W_core satisfies the physical weight inequality with a_core and the
+same full v, `W_paid W_core` satisfies it with a. The extra defect is
+`-8W_paid W_core(||a_paid||_infinity+a_paid)<=0`. The initial multiplier
+is exp(8M_H), fixed from the original datum; the inside-tube history weight
+still needs its own funding.
+
+On the earlier Gaussian phases, with `K_j=2pi sqrt(pi/(2j))`, the physical
+quartic and source quantities are
+
+```text
+integral b^4 dx=K4/8,
+integral b^2|grad b|^2 dx=K4/4,
+||S||_2^2=K4/2,
+integral a b^4 dx=-sigma K5/25,
+d_t integral b^4 dx /K4=-5nu+(8sigma/25)sqrt(4/5).
+```
+
+At nu=1/1000 the positive phase grows and the negative phase decays.
+The axis contributes `2nu K4` to the dissipative balance; omitting it
+already fails this exact Gaussian calculation.
+
+There is a stronger pointwise failure for this particular sufficient
+weight ansatz. In the positive phase, `a(0,0)=-1/2`. Every smooth,
+time-independent radius-only weight with W(0)>0 has
+
+```text
+D_W(0,0)=4W(0)>0.
+```
+
+Its radial shape, even if chosen from the full datum, cannot change this
+axis defect. Smoothness makes the defect positive in a neighborhood as
+well. Thus such weights cannot satisfy the proposed pointwise inequality
+for all these actual unforced data. This does not refute time-dependent
+or z-dependent weights, integrated cancellations in another reserve,
+finite datum-dependent allowances, or regularity.
+
+Run `python3 -O labs/physical_compression_weight.py`. It checks the local
+balances, both boundary representations, sampling generator, Hamiltonian,
+physical evolution identities and Gaussian tests with exact symbolic
+arithmetic. PDE integration, stochastic implications and the continuation
+argument are analytic, not Lean-certified. No Lean declarations or axioms
+change. The central open task is the uniform initial funding of an evolving
+weight through the coupled pressure and source histories.

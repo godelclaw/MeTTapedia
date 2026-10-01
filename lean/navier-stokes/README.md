@@ -1813,6 +1813,24 @@ generation in r<=2rho and retains its nonlocal response. A finite,
 datum-controlled exponential factor removes the paid radial history from
 the conditional HJB weight without restarting its allowance.
 
+The [physical-measure compression criterion](labs/README.md#physical-compression-weight-and-its-continuation-consumer)
+now connects a uniformly funded weight to full gradient-energy continuation
+for smooth axisymmetric whole-space data. In physical measure its condition
+is `W>=1` and `W_t+v.grad W+nu Lminus W-8(u_r/r)W<=0`, with
+`Lminus=partial_rr-partial_r/r+partial_zz` and a favorable, nonzero axis
+boundary term. A bound on the initial weighted fourth-power swirl slope,
+uniform over all available prefixes, pays the full source history. Analytic
+propagator, maximum-principle and energy estimates then produce the bound
+consumed by `hasNSEvolution_of_orderOne_bound`. The weight's initial funding
+remains open; the physical implication is not yet a Lean theorem.
+The associated sampling process has an absorbing radial coordinate and
+continuing axial motion. Its axis trace must dominate stopped fourth
+moments of stochastic axial deformation. Every smooth positive static
+radius-only weight fails the pointwise criterion on the compressive
+Gaussian calibration. Evolving weights and full-datum integrated allowances
+are not refuted. The actual pressure curvature and lateral diffusion that
+can sustain axial stretching remain in the next physical estimate.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
