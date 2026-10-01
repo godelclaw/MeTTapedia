@@ -1,0 +1,1381 @@
+{
+  "evidence": "Independent bounded program checks; kernel statements have their own audits.",
+  "source_piece": {
+    "vertices": 20,
+    "internal": 52,
+    "ports": 8,
+    "first_return_arcs": [
+      [
+        52,
+        1,
+        53
+      ],
+      [
+        53,
+        9,
+        7,
+        54
+      ],
+      [
+        54,
+        30,
+        41,
+        39,
+        55
+      ],
+      [
+        55,
+        37,
+        35,
+        56
+      ],
+      [
+        56,
+        15,
+        57
+      ],
+      [
+        57,
+        19,
+        17,
+        58
+      ],
+      [
+        58,
+        25,
+        23,
+        21,
+        59
+      ],
+      [
+        59,
+        5,
+        3,
+        52
+      ]
+    ],
+    "open_faces": 8,
+    "euler_mass": 4
+  },
+  "replacement_piece": {
+    "vertices": 8,
+    "internal": 16,
+    "ports": 8,
+    "first_return_arcs": [
+      [
+        16,
+        0,
+        17
+      ],
+      [
+        17,
+        14,
+        18
+      ],
+      [
+        18,
+        12,
+        19
+      ],
+      [
+        19,
+        10,
+        20
+      ],
+      [
+        20,
+        8,
+        21
+      ],
+      [
+        21,
+        6,
+        22
+      ],
+      [
+        22,
+        4,
+        23
+      ],
+      [
+        23,
+        2,
+        16
+      ]
+    ],
+    "open_faces": 2,
+    "euler_mass": 4
+  },
+  "sewings": [
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 0,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 1,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 2,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 3,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 4,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 5,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 6,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": 1,
+      "shift": 7,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 0,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 1,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 2,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 3,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 4,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 5,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 6,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        8
+      ],
+      "sign": -1,
+      "shift": 7,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 10,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 4,
+        "euler": -4,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 0,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 1,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 2,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 3,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 4,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 5,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 6,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": 1,
+      "shift": 7,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 0,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 1,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 2,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 3,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 4,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 5,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 6,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        4,
+        4
+      ],
+      "sign": -1,
+      "shift": 7,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 0,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 1,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 2,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 3,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 4,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 5,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 6,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": 1,
+      "shift": 7,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 16,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 10,
+        "euler": 2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 0,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 1,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 2,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 3,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 4,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 5,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 6,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    },
+    {
+      "exterior_cycle_widths": [
+        2,
+        6
+      ],
+      "sign": -1,
+      "shift": 7,
+      "before": {
+        "vertices": 28,
+        "edges": 42,
+        "faces": 12,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      },
+      "after": {
+        "vertices": 16,
+        "edges": 24,
+        "faces": 6,
+        "euler": -2,
+        "connected": true,
+        "bridgeless": true
+      }
+    }
+  ],
+  "literal_exterior_repair": {
+    "scope": "Literal eight-cycle exterior only; independent program evidence.",
+    "proper_exterior_colourings": 258,
+    "directly_compatible": 114,
+    "distance_counts": {
+      "0": 114,
+      "1": 126,
+      "2": 18
+    },
+    "maximum_component_switches": 2,
+    "repaired_colourings": 258,
+    "two_switch_example": {
+      "initial": [
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        3,
+        2
+      ],
+      "path": [
+        {
+          "before": [
+            1,
+            2,
+            1,
+            2,
+            3,
+            1,
+            3,
+            2
+          ],
+          "operation": {
+            "pair": [
+              1,
+              3
+            ],
+            "vertices": [
+              3,
+              4,
+              5,
+              6
+            ]
+          },
+          "after": [
+            1,
+            2,
+            1,
+            2,
+            1,
+            3,
+            1,
+            2
+          ]
+        },
+        {
+          "before": [
+            1,
+            2,
+            1,
+            2,
+            1,
+            3,
+            1,
+            2
+          ],
+          "operation": {
+            "pair": [
+              2,
+              3
+            ],
+            "vertices": [
+              6,
+              7
+            ]
+          },
+          "after": [
+            1,
+            2,
+            1,
+            2,
+            1,
+            3,
+            1,
+            3
+          ]
+        }
+      ],
+      "compatible_face_colouring": [
+        0,
+        3,
+        0,
+        3,
+        0,
+        2,
+        0,
+        2,
+        0,
+        1,
+        2,
+        3,
+        1,
+        3,
+        2
+      ]
+    }
+  },
+  "summary": {
+    "seam_cases": 48,
+    "spherical_cases": 24,
+    "disconnected_spherical_cases": 16,
+    "whole_map_vertex_decrease": 12
+  },
+  "source_sha256": {
+    "lean/externals/fourcolor/FourColor/Configurations.lean": "7a05039e76944dd51616721039edb872ccb2f1a6d90fa8b93ef4834095760966",
+    "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondConfigurations.lean": "f8dfb26c4f510b4095382f837fe4a6c9712f6524c470a9a8e9b2d70062a732a4",
+    "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondCycleReplacement.lean": "6f15a8c06e10d3e05f229c1a722c1924a277f661884a7180788d216c0aabf4b7",
+    "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondIntrinsic.lean": "e591add80fcc917db3ba6f4eb85317cfd0d145963294a0ff147db8a1e98aec0c",
+    "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondSplitRepair.lean": "40f47c9fc96431e5b4a71c3d84995de98ed67a6064dc25537fe590f228949459",
+    "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondTangle.lean": "71e670cc1d6528599f171dad5de0baddd0b8825daea16e4c1309aa81a3472e27",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleCapGeometry.lean": "c6d8a3fb3720bf7a3bb72aee6de91f70fcdd9c79c905b9295dfd2715fccfea2c",
+    "tools/fourcolor/classical/configuration_map_isomorphism.py": "0a13ca6e636f79ce8a38ab6b40ee406f0ce68d6cbe6748c9a37e6253fbaf6fe8",
+    "tools/fourcolor/classical/diamond_coloring_alternatives.py": "0075009196d573a65d0516ccba101b6c81528678c4babadda86c00372bdc2970",
+    "tools/fourcolor/classical/diamond_subdivision_geometry.py": "f67fd39a87248acb321d6c1601b5dec2000d6cfd093fc9a5c8f2852086b18874",
+    "tools/fourcolor/classical/mixed_diamond_reduction_probe.py": "cc0363374bc14bc60d8921b2ad2e72fa2cee1f01b90c7ead843aaafa2a4a4752",
+    "tools/fourcolor/classical/probe_common_support.py": "11ea2346e446b4c4911ae03fe0b00d49bfbdd636eb36c062a5332472a9d588ca",
+    "tools/fourcolor/classical/probe_diamond_joint_repair.py": "2969b597a97e6a562cf844aeb2bf402583fb3d401ad6beb74bfe1f678139257c",
+    "tools/fourcolor/classical/probe_diamond_kempe.py": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d",
+    "tools/fourcolor/classical/probe_diamond_star.py": "37178eb5716ba2e5d51746a662c03f562c0159018d3e5386f3a606c729c9b75d",
+    "tools/fourcolor/classical/two_diamond_cycle_probe.py": "d08eeed0cc2cecd479789f025bb59b1a531c9bf70dade8792956d3c8ac04eb91",
+    "tools/fourcolor/classical/two_diamond_shared_tip_probe.py": "9507b6220573eafc89c0a5f2440cf1f6f8d311cdfe8eca5e6a2bbaeba5733a8e"
+  }
+}

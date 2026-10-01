@@ -55,6 +55,32 @@ the 633 coverage entries remain. No additional colouring-rank table is added.
 A finite check confirms that the retained configuration 6 base covers every
 proper nine-port input; no net saving in primitive checks or artifact size is claimed.
 
+The [actual cubic disk](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondTangle.lean)
+now connects this joint witness to configuration 3's twenty cubic vertices,
+twenty-six internal edges and eight outgoing ports. Its embedding preserves
+the original construction's vertex rotations and internal edge identities.
+`joint_construction` proves that the GSLT route and this physical piece use
+the same complete witness and boundary trace.
+
+The [cycle replacement](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondCycleReplacement.lean)
+replaces these twenty vertices by an eight-cycle with the same ordered ports.
+Equal boundary face returns and Euler mass preserve the spherical, cubic,
+connected and bridgeless map class in every fixed exterior, including
+disconnected exteriors. The complete operation has twelve fewer vertices.
+Colouring reconstruction uses the existing transferred repair and retains
+an explicit exterior Kempe-closure hypothesis; a physically noncrossing
+component matching suffices to discharge it. Deriving that hypothesis from
+embedded occurrence geometry and recognizing the pattern in arbitrary maps
+remain open. The geometry and joint construction have no colour-certificate
+dependency; repair retains configuration 6's existing base certificate.
+
+The [receipt](../../../tools/fourcolor/classical/two-diamond-cycle-measurements.json)
+separates these kernel statements from a bounded program test: all 258 proper
+colourings of a literal eight-cycle exterior repair with at most two physical
+component switches. That test does not establish closure for arbitrary
+exteriors. This geometric step changes neither the 629 original certificates
+nor the 633 coverage entries in the complete assembly.
+
 For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
 semantic bounds, a general reflection theorem, and an audited replacement in
 the finished proof. It illustrates discharging compression; the diamond example

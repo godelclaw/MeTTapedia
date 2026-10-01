@@ -20,6 +20,21 @@ to configuration 3 through an actual embedded boundary insertion.
 excludes the original certificates for configurations 1, 2, 3 and 4.
 The assembly retains 629 original certificates and all 633 coverage entries.
 
+`TwoDiamondTangle` and `TwoDiamondIntrinsic` realize configuration 3 as an
+actual twenty-vertex cubic open disk, preserving the reference rotations,
+internal edges and joint colouring witnesses. `TwoDiamondCycleReplacement`
+replaces it by an eight-cycle in any fixed exterior, preserving the spherical
+cubic connected bridgeless map class and removing twelve whole-map vertices.
+Its colouring implication still assumes exterior Kempe closure, with a
+physical noncrossing-matching consumer. `TwoDiamondCycleAudit` checks seventeen
+roots, excludes colour certificates from pure geometry and joint construction,
+and requires configuration 6's retained base in repair. Broader occurrence,
+unconditional exterior closure and coverage are not supplied by this step.
+The [receipt](../../tools/fourcolor/classical/two-diamond-cycle-measurements.json)
+records its scope. The local audit target is
+`lake build MettapediaFourColor.TwoDiamondCycleAudit`; it is separate from
+the complete assembly and changes none of its certificate or coverage counts.
+
 `MettapediaFourColor.Complete` proves the finite planar-graph theorem and
 supplies compatible colouring witnesses along exact source constructions.
 It supplies all 633 reducibility obligations and consumes all seven discharging

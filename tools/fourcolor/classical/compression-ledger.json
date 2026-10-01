@@ -2360,6 +2360,50 @@
       "executable_kempe_move_sequence": false,
       "scope": "For arbitrary exterior graphs, attachments and colour types, two diamond witnesses agreeing at their shared tip are equivalent to complete graph colourings. Exact consumers are configurations 3 and 6. The existing split law then derives configuration 3 repair from the retained configuration 6 base, with genuine graph restriction and actual ordered-ring collapse.",
       "limits": "Configuration 6 keeps its original rank planes and checker. The new 6561-code input-coverage check uses those planes. This is another exact target for the existing uniform transfer law; it is not a base-free repair for an unbounded double-diamond family, new physical recolouring histories, or geometric coverage. No net saving in primitive checks, kernel time or artifact size is credited."
+    },
+    {
+      "name": "actual shared-tip cubic disk replaced by its boundary cycle",
+      "record": "two-diamond-cycle-measurements.json",
+      "status": "Kernel checked geometry and conditional colouring reconstruction",
+      "configurations": [
+        3
+      ],
+      "source_vertices": 20,
+      "replacement_vertices": 8,
+      "ordered_boundary_ports": 8,
+      "whole_map_vertices_removed": 12,
+      "uniform_theorems": [
+        "OpenTangleInternalReplacement.replacement_structural",
+        "OpenTanglePortReplacement.euler_eq_iff_mass"
+      ],
+      "consumers": [
+        "FourColor.TwoDiamondTangle.reference_embedding",
+        "FourColor.TwoDiamondTangle.joint_construction",
+        "FourColor.TwoDiamondCycleReplacement.replacement_class",
+        "FourColor.TwoDiamondCycleReplacement.reconstruct"
+      ],
+      "arbitrary_fixed_exteriors_including_disconnected": true,
+      "joint_shared_tip_retained": true,
+      "pure_geometry_and_joint_construction_exclude_colour_certificates": true,
+      "retained_repair_dependency": "FourColor.Bulk.Cfg005.hgood",
+      "colouring_reconstruction_requires_exterior_kempe_closure": true,
+      "noncrossing_physical_matching_consumer": true,
+      "actual_arbitrary_source_recognition_proved": false,
+      "new_coverage_theorems": 0,
+      "credited_compression": false,
+      "original_configuration_certificate_dependencies_removed": 0,
+      "catalogue_entries_removed": 0,
+      "configurations_retained": 633,
+      "original_configuration_certificates_retained": 629,
+      "integrated_into_complete_four_color_assembly": false,
+      "program_replay": "python3 tools/fourcolor/classical/two_diamond_cycle_probe.py --check",
+      "program_seam_cases": 48,
+      "program_spherical_cases": 24,
+      "program_disconnected_spherical_cases": 16,
+      "program_literal_cycle_exterior_colourings": 258,
+      "program_maximum_physical_component_switches": 2,
+      "scope": "Actual reference incidence and joint witnesses are connected to a twenty-vertex cubic disk. Equal ordered boundary returns, equal Euler mass and internally connected bridgeless pieces preserve the ambient spherical cubic connected bridgeless map class in every fixed exterior, including disconnected exteriors. Every smaller colouring reconstructs under the explicit exterior Kempe-closure hypothesis. A physical noncrossing matching is a sufficient consumer hypothesis. The geometry and joint construction exclude colour certificates; colouring repair retains configuration 6's existing certificate.",
+      "limits": "Unconditional exterior closure, recognition in an arbitrary embedded source and geometric coverage are not proved. The literal cycle repair-depth result is program evidence only. The compatible GSLT construction witnesses do not certify an executable physical Kempe history. This step adds no complete-assembly replacement, base-free family theorem, smaller unavoidable catalogue or net primitive-check saving."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",

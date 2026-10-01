@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "status": "kernel checked geometric replacement with explicit colouring closure hypothesis",
+  "completed_utc": "2026-10-01T16:07:06.888941+00:00",
+  "base_revision": "a77ec48d54a9578166ceb105fb0bf8209b9adc76",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "classical_gate": "lake build MettapediaFourColor.TwoDiamondCycleAudit",
+  "classical_working_directory": "lean/fourcolor-classical",
+  "local_gate_jobs": 3613,
+  "main_gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+  "main_working_directory": "lean/mettapedia",
+  "main_gate_jobs": 11191,
+  "local_modules": [
+    {
+      "module": "MettapediaFourColor.TwoDiamondTangle",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondTangle.lean",
+      "source_sha256": "71e670cc1d6528599f171dad5de0baddd0b8825daea16e4c1309aa81a3472e27",
+      "olean_bytes": 294104,
+      "olean_sha256": "8f74781e237366c733c77273ad6a4729bf0909fe098ccff5e2fffd4a3d5ff9cb",
+      "frontend_wall_seconds_rounded": 16.0
+    },
+    {
+      "module": "MettapediaFourColor.TwoDiamondIntrinsic",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondIntrinsic.lean",
+      "source_sha256": "e591add80fcc917db3ba6f4eb85317cfd0d145963294a0ff147db8a1e98aec0c",
+      "olean_bytes": 241216,
+      "olean_sha256": "21e417dec517cc04644044339c8f13a964c1077fc65cba5cf22f5303dc10d02c",
+      "frontend_wall_seconds_rounded": 31.0
+    },
+    {
+      "module": "MettapediaFourColor.TwoDiamondCycleReplacement",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondCycleReplacement.lean",
+      "source_sha256": "6f15a8c06e10d3e05f229c1a722c1924a277f661884a7180788d216c0aabf4b7",
+      "olean_bytes": 310600,
+      "olean_sha256": "d2fed88e43068345cb68f1ab0480851642491461a97ce7b2dab6df755469c9f6",
+      "frontend_wall_seconds_rounded": 3.9
+    },
+    {
+      "module": "MettapediaFourColor.TwoDiamondCycleAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondCycleAudit.lean",
+      "source_sha256": "6f301a5407d99de2e6f3850182b210cf53dab0e7b5f111cc845931e31316a378",
+      "olean_bytes": 3464,
+      "olean_sha256": "8c32804a1da9eadd37665c7fbefdf2e6202602ae7c84fd8d082516ff52cc949f",
+      "frontend_wall_seconds_rounded": 7.2
+    }
+  ],
+  "proof_audit": {
+    "roots": 17,
+    "dependency_declarations": 17720,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "pure_geometry_and_joint_construction_roots": 14,
+    "pure_geometry_and_joint_construction_exclude_namespace": "FourColor.Bulk",
+    "actual_reference_embedding": "FourColor.TwoDiamondTangle.reference_embedding",
+    "joint_gslt_and_physical_witness": "FourColor.TwoDiamondTangle.joint_construction",
+    "arbitrary_exterior_class_preservation": "FourColor.TwoDiamondCycleReplacement.replacement_class",
+    "whole_vertex_count": "FourColor.TwoDiamondCycleReplacement.whole_vertex_loss",
+    "colouring_reconstruction": "FourColor.TwoDiamondCycleReplacement.reconstruct",
+    "colouring_hypothesis": "KempeClosed (OpenTangleKempeRepair.Trace outside seam.symm)",
+    "physical_consumer": "FourColor.TwoDiamondCycleReplacement.reconstruct_of_noncrossing",
+    "retained_repair_dependency": "FourColor.Bulk.Cfg005.hgood",
+    "forbidden_configuration_namespaces": [
+      "FourColor.Bulk.Cfg000",
+      "FourColor.Bulk.Cfg001",
+      "FourColor.Bulk.Cfg002",
+      "FourColor.Bulk.Cfg003"
+    ],
+    "complete_colouring_endpoints_absent": true
+  },
+  "source_piece": {
+    "configuration": 3,
+    "vertices": 20,
+    "internal_edges": 26,
+    "internal_darts": 52,
+    "outgoing_ports": 8,
+    "selected_reference_darts": 60,
+    "open_faces": 8,
+    "euler_mass": 4,
+    "boundary_return": "finRotate 8",
+    "first_return_arc_lengths": [
+      2,
+      3,
+      4,
+      3,
+      2,
+      3,
+      4,
+      3
+    ]
+  },
+  "replacement_piece": {
+    "vertices": 8,
+    "internal_edges": 8,
+    "internal_darts": 16,
+    "outgoing_ports": 8,
+    "open_faces": 2,
+    "euler_mass": 4,
+    "boundary_return": "finRotate 8",
+    "whole_map_vertices_removed": 12
+  },
+  "program_replay": {
+    "command": "python3 tools/fourcolor/classical/two_diamond_cycle_probe.py --check",
+    "record": "two-diamond-cycle-probe.json",
+    "record_sha256": "495621d4353269e59b75c78e2283bfb351dee5f74cbd289c8c7c2090cbae0a84",
+    "checker_sha256": "d08eeed0cc2cecd479789f025bb59b1a531c9bf70dade8792956d3c8ac04eb91",
+    "evidence": "Independent program evidence, not a kernel theorem of repair depth or an established equivalence of decoders.",
+    "seam_summary": {
+      "seam_cases": 48,
+      "spherical_cases": 24,
+      "disconnected_spherical_cases": 16,
+      "whole_map_vertex_decrease": 12
+    },
+    "literal_cycle_exterior": {
+      "proper_exterior_colourings": 258,
+      "directly_compatible": 114,
+      "distance_counts": {
+        "0": 114,
+        "1": 126,
+        "2": 18
+      },
+      "maximum_component_switches": 2,
+      "repaired_colourings": 258
+    }
+  },
+  "credited": {
+    "catalogue_entries_removed": 0,
+    "reference_certificate_dependencies_replaced": 0,
+    "new_coverage_theorems": 0,
+    "kernel_seconds_saved": 0,
+    "artifact_bytes_saved": 0
+  },
+  "complete_assembly": {
+    "consumes_this_geometric_step": false,
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 629,
+    "source_or_artifact_changes": false,
+    "last_configuration_milestone": "983c8136e"
+  },
+  "resource_measurements": {
+    "metric": "Sampled maximum RSS of one Lean process, not aggregate memory.",
+    "local_max_single_lean_rss_mib": 7425
+  },
+  "scope": "Actual reference incidence and joint witnesses are connected to a twenty-vertex cubic disk. Equal ordered boundary returns, equal Euler mass and internally connected bridgeless pieces preserve the ambient spherical cubic connected bridgeless map class in every fixed exterior, including disconnected exteriors. Every smaller colouring reconstructs under the explicit exterior Kempe-closure hypothesis. A physical noncrossing matching is a sufficient consumer hypothesis. The geometry and joint construction exclude colour certificates; colouring repair retains configuration 6's existing certificate.",
+  "limits": "Unconditional exterior closure, recognition in an arbitrary embedded source and geometric coverage are not proved. The literal cycle repair-depth result is program evidence only. The compatible GSLT construction witnesses do not certify an executable physical Kempe history. This step adds no complete-assembly replacement, base-free family theorem, smaller unavoidable catalogue or net primitive-check saving.",
+  "remaining": "Derive exterior closure from independently proved embedded hypotheses; recognize the actual disk in arbitrary sources; supply and integrate a geometric coverage theorem."
+}

@@ -13,6 +13,29 @@ program evidence; the complete graph/ring correspondence, witness reconstruction
 one proper rejected boundary, and actual certificate replacement have separate
 kernel proofs. Historical receipts retain their checkpoint counts.
 
+The [shared-tip disk-to-cycle receipt](two-diamond-cycle-measurements.json)
+records a further geometric step: replace the actual twenty-vertex cubic
+disk by an eight-cycle with equal ordered boundary returns and Euler mass.
+Kernel proofs preserve the spherical cubic connected bridgeless map class
+in every fixed exterior and count all twelve removed vertices. The same joint
+witness supplies the GSLT construction and physical disk colouring.
+Colouring reconstruction still requires exterior Kempe closure; the audit
+requires the retained configuration 6 base in repair and excludes every
+colour certificate from pure geometry and joint construction.
+
+```sh
+python3 tools/fourcolor/classical/two_diamond_cycle_probe.py --check
+```
+
+This independent replay checks 48 seam cases, including 24 spherical cases
+and 16 spherical cases with disconnected exteriors. For the literal
+eight-cycle exterior, all 258 proper colourings repair in at most two physical
+component switches: 114 extend directly, 126 need one switch and 18 need two.
+This is program evidence for that example, not a kernel theorem about repair
+depth or closure of arbitrary exteriors. Actual occurrence recognition and
+geometric coverage remain open. This step removes no further certificate
+dependency or coverage entry; the complete assembly remains at 629 and 633.
+
 The [proof-plan guide](../../../papers/benxiv/fourcolor-compositional/README.md)
 connects these source and measurement records to the compositional argument
 and its current research questions.
