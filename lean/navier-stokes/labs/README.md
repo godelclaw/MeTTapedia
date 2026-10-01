@@ -9612,3 +9612,204 @@ are actual periodic initial NS jets, not an external strain or force.
 They expose both reciprocal amplification and generated pressure for
 the next prefix estimate. They establish neither its payment over
 time nor indefinitely renewed stretching.
+
+### Cyclic pressure renewal and the original frame history
+
+`cyclic_pressure_history.py` tests a full coupled history with
+
+```text
+u_0=a(sin y,sin z,sin x),       a>0, nu>0,
+D=partial_t+u.grad-nu Delta,
+D B=-B^2-Hess p,              D M=BM+MB^T,   M(0)=I.
+```
+
+M is the original forward-frame moment, not the additive viscous memory
+C evolved in the cellular-parent lab. Its initial identity is assigned
+once, at the original datum; there is no restart at a later seam. This
+is the actual directional conversion from the preceding tensor/curl
+estimate. The nine-dimensional joint metric and q_A are not evolved by
+this lab, so it makes no numerical claim about their payment identity.
+
+The initial velocity is odd under complete spatial reflection and
+equivariant under cyclic permutation of the coordinates. These
+symmetries are preserved on a smooth unforced lifespan by uniqueness.
+They make the origin a stationary material point and give
+
+```text
+B(t,0)=[[0,alpha,beta],[beta,0,alpha],[alpha,beta,0]],
+ell=alpha+beta,                w=beta-alpha,
+omega(t,0)=w(1,1,1),           Pi=partial_x partial_y p(t,0),
+mu(t,x)=(1,1,1)^T M(t,x)(1,1,1)/3.
+```
+
+At the origin, cyclic symmetry of the symmetric M implies that (1,1,1)
+is its eigenvector with eigenvalue mu. Consequently the physical
+directional cost rho is mu whenever w is nonzero. Unlike the quotient
+rho, mu remains defined at w=0. Spatial derivatives below are those of
+the full fields, not derivatives of a closed centre ODE. The complete
+equations at the material symmetry centre are
+
+```text
+ell'=nu Delta ell-(alpha^2+beta^2)-2Pi,
+w'=nu Delta w+ell w,
+mu'=nu Delta mu+2ell mu,
+(log mu)'=2ell+nu Delta mu/mu.
+```
+
+The quadratic loss is `(ell^2+w^2)/2`. The pressure comes from the
+entire evolving fluid, not from an independent control or a free
+boundary source. In particular, its offdiagonal component need not
+stop renewal. The canonical zero-mean pressure has the exact jets
+
+```text
+p(0)=0,
+p_t(0)=-2a^3 cos x cos y cos z,
+p_tt(0)=-(2/3)a^4 [sin(2x) cos y sin z
+                  +sin x sin(2y) cos z
+                  +cos x sin y sin(2z)]-6nu p_t(0),
+Pi(0)=Pi_t(0)=0,             Pi_tt(0)=-4a^4/3.
+```
+
+Both differentiated Poisson equations retain every velocity component,
+the previous pressure, viscosity and newly generated modes. Their
+solutions have zero spatial mean. On an actual smooth local solution,
+Taylor continuity therefore gives
+
+```text
+Pi(t)=-(2/3)a^4 t^2+o(t^2),
+integral_0^tau -2Pi(t) dt=(4/9)a^4 tau^3+o(tau^3)>0
+```
+
+for sufficiently small positive tau. The initial stretch derivative
+is nevertheless `ell'(0)=-a^2-nu*a<0`. The claim is positive pressure
+renewal, not growth of ell at every time. The exact checker establishes
+the jet identities; identifying them with the smooth solution and the
+positive interval is analytic. No viscosity-uniform or amplitude-uniform
+Taylor window is proved. This refutes the universal sign `-2Pi<=0`,
+not a datum-fixed cumulative payment or global regularity.
+
+The feedback calculation also connects directly to the positive triangular
+class. For `u_0=(a sin y,c sin z,b sin x)`, arbitrary positive a,b,c,
+the checker proves the complete pressure jets with
+`p_t=-2abc cos x cos y cos z` and
+
+```text
+p_tt=-(2/3)abc [b sin(2x) cos y sin z
+               +a sin x sin(2y) cos z
+               +c cos x sin y sin(2z)]-6nu p_t,
+(P_xy)tt(0)=-4a^2bc/3,
+(P_xz)tt(0)=-4ab^2c/3,
+(P_yz)tt(0)=-4abc^2/3.
+```
+
+These pressure renewals vanish with c, the parent that closes the
+feedback loop. At c=0 the earlier triangular class has a proved analytic
+all-time payment. These jet identities do not give an all-time history
+allowance or quantify a stable perturbation neighborhood. The original
+parents' subsequent renewal still has to be controlled.
+
+The complete rational Fourier recurrence checks the first four canonical
+pressure jets, including their additional output modes, for
+`(a,nu)=(1,1/2),(1,1/10),(2,1/2)`. It also checks every coefficient of
+the numerical velocity/moment operator against independent exact Fourier
+products, both at the initial identity and at a nonidentity moment, and
+checks all full-product pressure Hessian components at that second
+snapshot. These checks survive Python optimization.
+
+```sh
+python3 -O labs/cyclic_pressure_history.py
+python3 -O labs/cyclic_pressure_history.py --prefix --n 32 --nu .1 --final-time 4 --dt .01
+python3 -O labs/cyclic_pressure_history.py --prefix --n 48 --nu .1 --final-time 4 --dt .01
+python3 -O labs/cyclic_pressure_history.py --prefix --n 64 --nu .1 --final-time 4 --dt .01
+python3 -O labs/cyclic_pressure_history.py --prefix --n 32 --nu .1 --final-time 4 --dt .005
+```
+
+The optional prefixes reuse the dealiased grid operations and Lawson RK4
+from the existing reciprocal-parent solver. They evolve all three
+velocities and all six symmetric entries of M, rather than an initial
+mode family or a centre ODE. The signed physical ledgers are
+
+```text
+ell(t)-a+integral quadratic_loss
+        -integral pressure_renewal-integral viscous_stretch = 0,
+log mu(t)-integral 2ell-integral nu Delta mu/mu = 0.
+```
+
+For a Galerkin prefix, the corresponding retained projection-residue
+integrals are subtracted as well. All ledger costs are integrated at the
+same RK stages as the coupled state. Pressure is reconstructed with
+every quadratic product output on a grid enlarged by a factor 3/2;
+it is not restricted to the modes evolved by the Galerkin dynamics.
+The explicit signed residues measure that distinction. Reports also
+include the kinetic energy/dissipation balance, moment positivity,
+cyclic symmetry, reality, incompressibility, high palinstrophy and
+high moment-gradient fractions. The solver stops if the reported
+moment positivity or frequency-resolution diagnostic fails. These
+checks are convergence diagnostics, not continuum error bounds.
+
+For a=1 and nu=.1, all four prefixes reach T=4. Selected values from the
+64-cubed run are:
+
+| Time | ell | mu | Pressure renewal -2Pi | Accumulated pressure renewal |
+| --- | --- | --- | --- | --- |
+| 0.5 | 0.509463 | 2.067017 | 0.236687 | 0.043710 |
+| 1.25 | 0.046836 | 2.860116 | 0.668438 | 0.406541 |
+| 2.5 | -0.153503 | 2.214426 | 0.679187 | 1.299616 |
+| 4 | -0.119179 | 2.045015 | 0.447118 | 2.152211 |
+
+At T=4, the cumulative quadratic loss is 3.008171 and the signed viscous
+stretch contribution is -0.263218. These compensate the positive pressure
+renewal. The log-frame ledger contains cumulative strain 0.469420 and
+diffusion 0.245985. Its late instantaneous diffusion contribution is
+positive, about 0.471548, while 2ell is negative, about -0.238358:
+deformation from surrounding histories can increase the local frame
+moment even during compression. This is a numerical observation on
+these resolved prefixes, not an analytic arbitrary-history estimate.
+
+The largest reported frame-diffusion discrepancy between 32 and 48
+points per coordinate is 0.00203784, at t=2. On refinement from 48 to
+64 it falls to 0.00000298817. Across the reported times, the latter
+comparison changes ell and pressure renewal by at most 3.1e-9 and
+mu by at most 1.3e-7. Halving the 32-grid time step changes the selected
+centre channels by at most 7.0e-9. At 64 points, the largest signed
+history-balance error is 2.2e-10; the reported moment eigenvalues remain
+positive, with minimum above 0.0501. The accumulated stretch/frame
+projection residues at T=4 are approximately -2.2e-11 and -1.7e-10.
+The coarse derivative discrepancy is retained as a resolution warning,
+despite its already closely matching velocity. None of these diagnostics
+is a certified continuum error bound or a test of a singular solution.
+
+For comparison, holding this initial velocity stationary requires the
+manufactured force `f=(u.grad)u-nu Delta u`, with p=0. Its value at the
+origin is zero, yet `partial_y f_1+partial_z f_1=a^2+nu*a` there. This
+force gradient exactly supplies the missing stretch reaction. Its
+normalized kinetic work is `nu integral |grad u|^2=3nu*a^2/2>0`.
+It is a regular sustaining-force filter, not the imported forced
+blowup construction. A zero observed force value does not remove its
+effect on deformation. Applying the original-data tensor to a forced
+solution would require the separately accumulated pulled-back force.
+
+The target remains finite original-datum payment for the coupled
+spatial geometry over every compatible continuation. The pressure
+jet shows that unforced surrounding fluid can provide renewal. The
+full frame equation also keeps diffusion from surrounding histories:
+local compression alone need not decrease mu. Neither effect grants
+a fresh resource at a seam, and neither establishes indefinitely
+renewed dangerous stretching.
+
+A concrete spatial target can avoid division by curl altogether. With
+`Omega=omega^T Momega>=0`, spatial Cauchy and the original-gradient
+payment give the analytic implication
+
+```text
+integral |omega|^2<=sqrt(2 integral q_A integral Omega),
+||omega||_2^4<=2 ||grad u_0||_2^2 integral Omega.
+```
+
+It applies on R3 as well as the torus, without a volume factor. Thus a
+finite original-datum bound on integral Omega over every continuation
+would control the existing enstrophy criterion. The complete production
+of Omega, including its mixed vorticity/moment derivatives, was stated
+above; those signed terms have no proved arbitrary-history payment.
+The spatial stochastic passage and this integral implication remain
+analytic. This lab's centre ledgers do not supply that spatial bound.

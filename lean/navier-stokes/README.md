@@ -1222,6 +1222,51 @@ complete evolution retains mixed derivatives of vorticity and M;
 their signed payment over arbitrary histories is open. See the
 [directional curl, mixing history and full cost-rate tests](labs/README.md#physical-curl-and-a-paid-triangular-parent-history).
 
+### Reciprocal parents renew pressure; their full signed history remains
+
+The [cyclic pressure-history lab](labs/cyclic_pressure_history.py) evolves
+the feedback test `u_0=a(sin y,sin z,sin x)` with positive viscosity.
+It retains all velocity components, generated Fourier outputs and the
+original forward moment M, starting at the identity. At the fixed
+symmetry centre, write
+
+```text
+B=[[0,alpha,beta],[beta,0,alpha],[alpha,beta,0]],
+ell=alpha+beta,   omega=(beta-alpha)(1,1,1),
+Pi=partial_x partial_y p,   mu=(1,1,1)^T M(1,1,1)/3.
+```
+
+The complete smooth equations are
+`ell'=nu Delta ell-(alpha^2+beta^2)-2Pi` and
+`mu'=nu Delta mu+2ell mu`. Thus the actual curl-direction cost is mu
+when the curl is nonzero; mu is defined without dividing by curl at its
+zeros. Pressure, spatial frame diffusion and the already accumulated
+original moment cannot be discarded at a history boundary.
+
+Exact symbolic and complete rational Fourier jets give
+`Pi(0)=Pi'(0)=0` and `Pi''(0)=-4a^4/3`, at every positive viscosity.
+Consequently `integral_0^tau -2Pi=(4/9)a^4 tau^3+o(tau^3)>0` on a
+sufficiently short actual smooth interval. The local-existence/Taylor
+passage is analytic, not kernel-certified and not a uniform time window.
+This refutes a universal nonrenewing pressure sign. It does not refute
+a finite allowance from the full original datum.
+
+The optional dealiased prefixes record the signed pressure payment,
+quadratic loss, viscous term, frame strain and frame diffusion at the
+same time-integration stages. Full-product pressure is observed on an
+enlarged grid; the discarded dynamical outputs have explicit signed
+projection residues. A local negative stretching rate does not force
+the original moment to decrease: diffusion can bring in deformation
+generated elsewhere. These are numerical histories, not continuum
+enclosures or arbitrary-data estimates. The remaining theorem is a
+full-datum payment for the coupled spatial geometry over all compatible
+continuations. One division-free sufficient target is a finite bound on
+`integral omega^T Momega`: spatial Cauchy and the analytic original
+payment give `||omega||_2^4<=2||grad u_0||_2^2 integral omega^T Momega`,
+on either R3 or the torus. Its complete signed production remains
+unpaid for arbitrary histories. See the
+[pressure renewal and original-frame ledgers](labs/README.md#cyclic-pressure-renewal-and-the-original-frame-history).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
