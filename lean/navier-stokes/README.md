@@ -1267,6 +1267,52 @@ on either R3 or the torus. Its complete signed production remains
 unpaid for arbitrary histories. See the
 [pressure renewal and original-frame ledgers](labs/README.md#cyclic-pressure-renewal-and-the-original-frame-history).
 
+### The original tensor splits; its physical compatibility retains pressure
+
+`MettapediaNS.JointTensorSymmetry` identifies exactly what the retained
+same-frame quadratic reserve contains. With `W=C^-1`,
+`C=E[(F^T F) tensor (F^T F)]` and `M=E[J J^T]`, determinant-one frames give
+
+```text
+q_A=q_sym+(1/2) omega^T M^-1 omega,
+F_A=F_sym+F_skew.
+```
+
+The first identity includes the literal physical curl consumer with its
+existing projection and symmetric-curvature hypotheses. The full diffusion
+and supplied source-free production also split when the retained spatial
+connections preserve transpose. Those connections and every tensor
+derivative remain explicit. Thus this quadratic norm has no cross payment
+between the symmetric and skew channels. It does not exclude nonlinear
+coupling through the velocity, pressure and their complete histories.
+
+A distinct physical quantity is the compatibility defect `E=A-grad u`.
+It is symmetric after actual curl identification and starts at zero. With
+`D=partial_t+u.grad-nu Delta`, `B=grad u` and `P=Hess p`, its rate is
+
+```text
+D E=-B^T E-E B+P-B^T B,
+D(vec(E)^T W vec(E))=2 vec(E)^T W vec(P-B^T B)-2nu F_E.
+```
+
+Lean certifies the finite defect algebra, complete supplied production,
+and the canonical unforced NS gradient-rate bridge. Continuous stochastic
+construction and differentiation are separate analytic obligations. No
+bound on the signed source over arbitrary histories follows from the ledger.
+
+The [exact symmetry and compatibility lab](labs/joint_tensor_symmetry.py)
+rejects a nonpositive-matrix shortcut. For the actual periodic datum
+`u_0=(a sin y,c sin z,b sin x)`, at `x*=(pi/2,pi/2,0)` and `z=(1,-1,0)`,
+the complete canonical PDE jets give `z^T E_t(0)z=0` and
+`z^T E_tt(0)z=4abc-2nu(a^2+b^2)`. At `a=b=c=1,nu=1/10`,
+`z^T E(t,x*)z=(9/5)t^2+o(t^2)>0` on a sufficiently short smooth interval.
+That time passage is analytic, not Lean-certified or uniform. It refutes
+preservation of `E<=0`, not a full-datum history payment or global regularity.
+The remaining estimate must pay the physical compatibility/geometry through
+its coupled pressure and parents; neither normalization nor a fresh resource
+at a composition boundary supplies that payment. See the
+[full channel and source checks](labs/README.md#same-frame-tensor-channels-and-the-physical-compatibility-source).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

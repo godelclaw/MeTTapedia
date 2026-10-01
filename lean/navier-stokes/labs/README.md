@@ -9813,3 +9813,121 @@ of Omega, including its mixed vorticity/moment derivatives, was stated
 above; those signed terms have no proved arbitrary-history payment.
 The spatial stochastic passage and this integral implication remain
 analytic. This lab's centre ledgers do not supply that spatial bound.
+
+## Same-frame tensor channels and the physical compatibility source
+
+`joint_tensor_symmetry.py` checks the original-gradient packet rather than
+a new independently supplied tensor or a reset history. Its finite law has
+three noncommuting determinant-one frames with weights `1/3,1/6,1/2`.
+Each original label gradient and both copies of its coframe stay together.
+Write `T vec(A)=vec(A^T)`, `A_s=(A+A^T)/2`, `A_k=(A-A^T)/2`,
+`C=E[(F^T F) tensor (F^T F)]`, `W=C^-1` and `M=E[J J^T]`.
+The exact identities, certified in `MettapediaNS.JointTensorSymmetry`, are
+
+```text
+CT=TC, WT=TW,
+C vec(skew(z))=vec(skew(Mz)),
+W vec(skew(z))=vec(skew(M^-1 z)),
+vec(A_s)^T W vec(A_k)=0,
+q_A=q_sym+(1/2) omega^T M^-1 omega.
+```
+
+Here `skew(z)` is the cross-product matrix and
+`omega=(A_21-A_12,A_02-A_20,A_10-A_01)`. The actual-curl consumer retains
+the projection and symmetric flow-curvature hypotheses; it is not an
+arbitrary declaration identifying a supplied tensor with physical curl.
+The finite forward moment is proved positive definite, so its inverse is
+genuine. The factor `1/2` accounts for the two skew matrix entries per
+vorticity coordinate.
+
+The split also retains complete spatial diffusion. For determinant-preserving
+frame tangents, `K_k=C_k W` preserves transpose, and
+
+```text
+r_k=partial_k vec(A)-K_k vec(A),
+r_k=r_sym,k+r_skew,k,
+F_A=sum_k r_k^T W r_k=F_sym+F_skew,
+F_skew=(1/2) sum_k (partial_k omega-M_k M^-1 omega)^T
+                         M^-1 (partial_k omega-M_k M^-1 omega).
+```
+
+Lean certifies the split into symmetric/skew diffusion and supplied
+source-free production with explicit transpose and metric-connection
+hypotheses. The last three-dimensional connection formula is checked
+exactly in the finite lab. Three spatial directions, all nine coordinates,
+all metric derivatives and the inverse-metric diffusion correction remain.
+The independent full-production calculation gives `Dq_A=-2nu F_A`.
+Continuous stochastic construction, passage under expectations and
+space-time integration remain analytic. The absence of a quadratic cross
+term does not remove the nonlinear coupling of the two channels through
+the actual velocity or pressure.
+
+The physical coupling can be represented by `E=A-B`, `B=grad u`.
+It starts at zero and is symmetric after the actual curl identification.
+Its complete parabolic source differs from the source-free original packet:
+
+```text
+D=partial_t+u.grad-nu Delta,  P=Hess p,
+D E=-B^T E-E B+S_E,   S_E=P-B^T B,
+Dq_E=2 vec(E)^T W vec(S_E)-2nu F_E.
+```
+
+The finite equation, symmetric source, complete production and literal
+canonical NS gradient rate are kernel-certified. The physical construction
+of A over time is analytic. The signed source work must be paid over every
+compatible continuation; the identity supplies no finite arbitrary-data
+allowance and q_E alone is not asserted to be a regularity criterion.
+
+The actual test keeps every generated Fourier mode and the complete
+canonical pressure on the normalized period-2*pi torus. For
+`u_0=(a sin y,c sin z,b sin x)`, the initial pressure is zero and
+`p_t(0)=-2abc cos x cos y cos z`. At `x*=(pi/2,pi/2,0)` and
+`z=(1,-1,0)`, the full equations give
+
+```text
+E(0)=0, E_t(0)=-B_0^T B_0<=0,
+z^T E_t(0,x*)z=0,
+z^T E_tt(0,x*)z=4abc-2nu(a^2+b^2).
+```
+
+Pressure supplies `4abc` in this direction; viscosity supplies
+`-2nu(a^2+b^2)`. Transport and the remaining reaction terms are included
+and vanish in this particular contraction at the selected point. Thus
+`2abc>nu(a^2+b^2)` makes the second derivative positive. For
+`a=b=c=1,nu=1/10` its value is exactly `18/5`, and
+`z^T E(t,x*)z=(9/5)t^2+o(t^2)>0` on a sufficiently short actual smooth
+interval. Analytic stochastic identification, local existence and Taylor
+continuity justify that passage. It is not a Lean-certified or uniform
+positive-time window.
+
+This refutes the comparison `A-grad u<=0` for all unforced evolutions.
+It does not refute a bound on the trace, a signed integral correction,
+a full-datum allowance, or global regularity. The data are periodic;
+their nonzero periodic lifts are not finite-energy whole-space data.
+No indefinite renewal or singularity is inferred from this finite burst.
+
+Independent Gaussian-rational Fourier checks verify the complete defect
+rate and symmetry through second time order, actual curl identification,
+and the normalized channel split through the same order. They also verify
+the first nonzero full defect production, retaining the changing joint
+metric, actual pressure and every spatial derivative. At `a=1,nu=1/10`,
+the normalized spatial means are
+
+```text
+source_work_E'(0)=9/8,
+q_E''(0)=9/4,
+q_E'''(0)=-9/4.
+```
+
+Run the exact tests, whose checks remain active under optimization:
+
+```sh
+python3 -O labs/joint_tensor_symmetry.py
+```
+
+The useful remaining theorem is finite payment for the coupled physical
+geometry and compatibility from the full original datum, viscosity and
+horizon. The symmetric original-gradient packet still retains parent
+information, but its norm has no free cross-channel transfer. A successful
+correction must use actual pressure/velocity coupling and complete
+histories, with no reset of spent resources at a composition boundary.

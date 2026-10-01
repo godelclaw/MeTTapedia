@@ -41,6 +41,7 @@ import MettapediaNS.CovectorJointParent
 import MettapediaNS.CovectorReceiverGeometry
 import MettapediaNS.JointReceiverTensor
 import MettapediaNS.JointCurlGeometry
+import MettapediaNS.JointTensorSymmetry
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1277,3 +1278,30 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangularBudget_nonneg
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangular_frame_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangular_curl_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.transposeVector
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.symmetricPart
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.skewPart
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.tensor_decomposition
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.jointMoment_transpose
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.jointInverse_transpose
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.inverse_channel_orthogonal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.symmetric_skew_orthogonal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.normalized_tensor_split
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.jointMoment_skew
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.forwardMoment_posDef
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.jointInverse_skew
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.normalized_skew_square
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.normalized_curl_channel
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.normalized_original_split
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.jointConnection_transpose
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.diffusion_channel_split
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.original_production_split
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.actual_original_split
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradientDefect
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradientDefectSource
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradient_defect_symmetric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.actual_gradient_defect_symmetric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradient_defect_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradient_defect_source_symmetric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradient_defect_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.actual_gradient_defect_rate
