@@ -2692,6 +2692,45 @@
         "compatible repair and strict reduction",
         "zero-charge classification, source and charge transport, global coverage"
       ]
+    },
+    {
+      "name": "exceptional eleven-port completion and exact boundary reconstruction",
+      "record": "../near-linear/boundary-measurements.json",
+      "status": "Kernel-checked actual completion and compatible-colouring reconstruction; no repair existence or strict reduction claimed.",
+      "actual_consumers": [
+        "FourColor.ExceptionalBoundaryOccurrence.sourceHom",
+        "FourColor.ExceptionalBoundaryReconstruction.reconstruct",
+        "FourColor.ExceptionalBoundaryReconstruction.extension_iff"
+      ],
+      "uniform_theorems": [
+        "FourColor.FacialStarCompletion.across_edge",
+        "FourColor.FacialStarCompletion.covers",
+        "FourColor.PatchBoundaryGluing.reconstruct"
+      ],
+      "source_vertices": 19,
+      "source_core_vertices": 8,
+      "ordered_ring_ports": 11,
+      "shared_seams": 8,
+      "boundary_globally_injective_required": false,
+      "boundary_core_collisions_excluded": true,
+      "all_incident_ambient_edges_accounted_for": true,
+      "colouring_scope": "Every colour type. A supplied proper exterior assignment extends to the ambient dual iff a genuine source completion colouring agrees on the joint ordered boundary.",
+      "finite_checks_retained": [
+        "prescribed degree and star lengths",
+        "ring-owner positions and eight shared readings",
+        "source edge classification and core-star incidences",
+        "preceding collision, orientation and inducedness source checks"
+      ],
+      "original_configuration_certificates_replaced": 0,
+      "coverage_entries_removed": 0,
+      "integrated_into_complete_assembly": false,
+      "remaining": [
+        "compatible colouring existence or actual exterior Kempe repair",
+        "valid strict reduction",
+        "zero-charge classification and coverage",
+        "general triangle-construction collision theorem beyond this consumer",
+        "simultaneous repair scheduling and cost bounds"
+      ]
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",

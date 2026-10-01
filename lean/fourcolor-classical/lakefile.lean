@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check the eleven-port completion and actual compatible-colouring reconstruction. -/
+target kernelExceptionalBoundary pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-boundary-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "FacialStarCompletion",
+        "ExceptionalBoundaryCompletion", "ExceptionalBoundaryOccurrence", "PatchBoundaryGluing",
+        "ExceptionalBoundaryReconstruction", "ExceptionalBoundaryAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check induced core recognition using actual triangular and four-cycle geometry. -/
 target kernelExceptionalInduced pkg : Unit := do
   let env ← getAugmentedEnv

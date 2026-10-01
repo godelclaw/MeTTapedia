@@ -1,0 +1,131 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FacialStarCompletion",
+      "source_sha256": "ae7bc70a91686d9ee21a66ff5000b6e4044d6933b5b136ff3cabf7feb6d4e56c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.252,
+      "olean_bytes": 99344,
+      "olean_sha256": "7be02b25ab6a32e0c0c6af1c219089d8cd4c0296f3d74bfe65420efcc937a6bd"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalBoundaryCompletion",
+      "source_sha256": "b25374780083a74cd0a6e4c2767511e5a787a92431cb52e39df6e8dd7f24e9e3",
+      "exit_code": 0,
+      "frontend_wall_seconds": 19.484,
+      "olean_bytes": 536880,
+      "olean_sha256": "e08d88ed0410474a1a201ad6e1af7659c0978b3b39f777ee48ef7f443c7324ac"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalBoundaryOccurrence",
+      "source_sha256": "3ab99857c8f9a8913dd3fcfc2ec9396a327d1e3e5d1bb7dad3895e6b38397bd3",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.824,
+      "olean_bytes": 194880,
+      "olean_sha256": "8f185a241cee075096fd15eb881ec65e5fdb65d7c66bd38a5a78a06d03a5e408"
+    },
+    {
+      "module": "MettapediaFourColor.PatchBoundaryGluing",
+      "source_sha256": "faf8ffbaa1829153eeab267f3ff29646b9a6e3d9185a9e4bb1d00aa68e31b516",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.732,
+      "olean_bytes": 82424,
+      "olean_sha256": "b84931ad7e4cbc0629da9b31b8d37d01988aa43e9a1ae018c3a140800e57dc4b"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalBoundaryReconstruction",
+      "source_sha256": "b393720611801c4e81db98fc36bc68a02334886c2615361ceb3d15a15c102764",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.962,
+      "olean_bytes": 292160,
+      "olean_sha256": "7d391b5015def3f698109c86b8ec8599712c32642abd17ec5fe8077b44f0a9cd"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalBoundaryAudit",
+      "source_sha256": "3adab57f4662817c5fdfdbb70380d9cde67b733b19e460243e96579d5cdbde72",
+      "exit_code": 0,
+      "frontend_wall_seconds": 9.081,
+      "olean_bytes": 2616,
+      "olean_sha256": "c898d041183f67af177638b31f5fea0ed8ce26e26b88e0a373580a7bcc3a4ddc"
+    }
+  ],
+  "status": "Kernel replay, dependency audit, flat-coverage and complete-classical regressions, and full main lane build passed.",
+  "recorded_at": "2026-10-01T22:09:26.011650+00:00",
+  "base_revision": "2d6824bdf4c40441be58b0f79c825e60ea0377d8",
+  "replay_command": "lake build kernelExceptionalBoundary",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 14,
+    "declarations_in_dependency_closure": 24658,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false
+  },
+  "mathematical_scope": {
+    "uniform_seam_law": "The preceding neighbour at one endpoint of an actual edge is the succeeding neighbour at its reverse, under triangular closure.",
+    "uniform_reconstruction_law": "An interior-injective graph patch map with no boundary capture and full incident-edge coverage reconstructs genuine ambient colourings from a compatible patch colouring and proper exterior assignment.",
+    "actual_geometry": "Two aligned source exceptional occurrences in the actual facial dual of a graph-backed vertex-minimal Tait counterexample. Actual core injectivity and inducedness are derived, not extra inputs.",
+    "completion_consumer": "FourColor.ExceptionalBoundaryOccurrence.sourceHom",
+    "reconstruction_consumer": "FourColor.ExceptionalBoundaryReconstruction.reconstruct",
+    "exact_semantics": "FourColor.ExceptionalBoundaryReconstruction.extension_iff",
+    "source_vertices": 19,
+    "core_vertices": 8,
+    "ordered_ring_ports": 11,
+    "shared_seams": 8,
+    "preservation": [
+      "all source graph edges",
+      "all full cyclic core-star turns",
+      "every ambient edge incident with the core",
+      "joint boundary assignments",
+      "actual colouring witnesses",
+      "entire exterior assignment during reconstruction"
+    ],
+    "boundary_identifications": "Different ring labels may have the same exterior image. No ring label can have a core image. The shared exterior assignment enforces the corresponding colour equalities.",
+    "colour_type": "Arbitrary; no existence of a compatible four-colouring is asserted.",
+    "finite_checks_retained": [
+      "source degrees and core star lengths",
+      "ring ownership and shared readings",
+      "source edge classification",
+      "source core-star incidences",
+      "prior orientation, collision and inducedness checks"
+    ],
+    "open": [
+      "compatible colouring existence or justified exterior Kempe repair",
+      "valid strict reduction",
+      "zero-charge classification and supply",
+      "charge and source-representation bridges",
+      "general collision theorem beyond this concrete consumer",
+      "universal coverage and simultaneous repair scheduling"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "source_fidelity": "exception-source-audit.json",
+  "obligations": "coverage-obligations.json",
+  "primary_reference": "https://arxiv.org/html/2603.24880v1#S9.SS1",
+  "regression": {
+    "classical_command": "lake build kernelFlatCoverage kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}

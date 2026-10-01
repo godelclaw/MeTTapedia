@@ -1047,13 +1047,48 @@ supplies that last hypothesis for the same actual dual.
 Kernel checks establish that all D1774 core stars are proper intervals and
 that the core has diameter at most three. The source consumer then applies
 the shared geometric laws; it does not enumerate ambient maps or use an
-original rank certificate. The boundary completion, compatible colouring
-repair, strict reduction and supply from zero-charge classification remain
-open. Counts stay 633 coverage entries and 629 original certificate
-dependencies.
+original rank certificate. The boundary construction and conditional
+colouring reconstruction are supplied below. Compatible colouring repair,
+strict reduction and supply from zero-charge classification remain open.
+Counts stay 633 coverage entries and 629 original certificate dependencies.
 
 Replay with `lake build kernelExceptionalInduced`. The nine-root audit
 requires the interval, short-path, triangle and four-cycle arguments in the
 source consumer's dependencies, allowing only standard axioms. See the
 [account](../../tools/fourcolor/near-linear/README.md#induced-core-from-facial-intervals-and-short-paths)
 and [measurements](../../tools/fourcolor/near-linear/induced-measurements.json).
+
+## Exceptional boundary: shared ports and exact colouring reconstruction
+
+`ExceptionalBoundaryOccurrence.sourceHom` constructs all nineteen vertices
+and every edge of the eleven-port free completion in the actual minimal
+facial dual, starting from the two aligned exceptional occurrences.
+`FacialStarCompletion.across_edge` proves the uniform geometric seam law:
+the neighbour preceding an edge at one endpoint is the neighbour following
+its reverse at the other endpoint. Eight applications make all shared
+boundary readings agree. Full cyclic core stars are preserved and cover
+every ambient edge incident with the core.
+
+Inducedness and rotation injectivity exclude boundary ports from the core.
+Different boundary labels may have the same ambient image. Consequently
+the colouring contract uses one exterior assignment for all eleven ports,
+retaining every equality caused by those identifications.
+
+`PatchBoundaryGluing.reconstruct` is a general graph-colouring gluing theorem.
+`ExceptionalBoundaryReconstruction.reconstruct` consumes the actual geometry:
+a proper completion colouring agreeing with a proper exterior assignment
+gives a genuine colouring of the whole dual, fixing the entire exterior.
+`extension_iff` proves the converse as well. This is exact boundary semantics
+for a fixed exterior assignment; the statement allows any colour type.
+
+Existence of a compatible completion colouring, or a justified Kempe repair
+reaching one, is still open for this consumer. So are strict reduction,
+zero-charge classification and the integrated coverage branch. The result
+removes no additional certificate or coverage entry; counts remain 633/629.
+
+Replay with `lake build kernelExceptionalBoundary`. The fourteen-root audit
+checks actual source construction, inducedness, complete star coverage and
+the generic reconstruction consumer, excluding complete Four Colour
+endpoints and original rank certificates. See the
+[account](../../tools/fourcolor/near-linear/README.md#eleven-port-completion-and-exact-reconstruction)
+and [measurements](../../tools/fourcolor/near-linear/boundary-measurements.json).

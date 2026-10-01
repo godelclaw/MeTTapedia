@@ -1,5 +1,5 @@
 {
-  "status": "Conditional coverage assembly, exact exceptional overlap and induced core in the actual minimal facial dual proved; ring completion, repair and classification bridges open.",
+  "status": "Conditional coverage assembly, actual induced exceptional core, eleven-port completion and compatible-colouring reconstruction proved; repair existence, strict reduction and classification bridges open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -111,6 +111,38 @@
     {
       "declaration": "FourColor.ExceptionalCoreInduced.source_core_induced",
       "meaning": "Two aligned actual source occurrences yield a core map that preserves and reflects adjacency. Combined with source_core_injective this gives an induced eight-vertex core."
+    },
+    {
+      "declaration": "FourColor.FacialStarCompletion.across_edge",
+      "meaning": "Triangular closure identifies the preceding neighbour at one edge endpoint with the succeeding neighbour at the reverse endpoint."
+    },
+    {
+      "declaration": "FourColor.ExceptionalBoundaryCompletion.row_agrees",
+      "meaning": "One reading of each ring port agrees with every full cyclic core-star reading, using the same seam law eight times."
+    },
+    {
+      "declaration": "FourColor.ExceptionalBoundaryOccurrence.sourceHom",
+      "meaning": "Two aligned actual exceptional occurrences construct the whole nineteen-vertex completion homomorphism, including all ring edges."
+    },
+    {
+      "declaration": "FourColor.ExceptionalBoundaryOccurrence.full_turn",
+      "meaning": "Every cyclic source step around each core vertex is an actual ambient corner."
+    },
+    {
+      "declaration": "FourColor.ExceptionalBoundaryOccurrence.star_covers",
+      "meaning": "Every ambient edge incident with the core is represented in the full source star."
+    },
+    {
+      "declaration": "FourColor.ExceptionalBoundaryOccurrence.source_ring_outside",
+      "meaning": "Inducedness and rotation injectivity exclude ring images from the core; distinct ring ports may still have equal images."
+    },
+    {
+      "declaration": "FourColor.PatchBoundaryGluing.reconstruct",
+      "meaning": "A general patch with injective interior, no boundary capture and complete incident-edge coverage reconstructs an ambient colouring from compatible genuine patch and exterior assignments."
+    },
+    {
+      "declaration": "FourColor.ExceptionalBoundaryReconstruction.extension_iff",
+      "meaning": "For any colour type and fixed proper exterior assignment, an ambient extension exists exactly when a source completion colouring matches its eleven joint observations."
     }
   ],
   "open": [
@@ -150,7 +182,7 @@
       "id": "exception_joint_close",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
       "source": "Figure 13 and Lemma 8.4",
-      "obligation": "Both occurrences now give an injective, orientation-preserving induced core in the actual dual of a graph-backed vertex-minimal Tait counterexample. Complete the cyclic eleven-port boundary, preserving shared choices and any justified identifications, and provide compatible repair and strict reduction. The close field for certified reductions remains open."
+      "obligation": "The actual induced core now has a complete eleven-port graph map, full cyclic stars, incident-edge coverage and reconstruction from a compatible colouring. Prove existence or justified exterior Kempe repair of a compatible source colouring, respecting possible ring identifications, and construct valid strict reduction. The close field for certified reductions remains open."
     },
     {
       "id": "residuals",
@@ -162,11 +194,12 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Actual eleven-port completion and colouring repair contract",
-    "test": "Decode every core-to-ring incidence and cyclic step. Construct the exterior neighbour readings from actual rotation powers, prove agreement where two core stars read the same ring port, and identify exactly which boundary identifications the repair consumer permits.",
-    "acceptance": "A checked actual free-completion map extending the induced core and preserving the prescribed cyclic stars and shared boundary observations, followed by a compatible repair consumer. Do not assume that different ring labels denote different ambient vertices unless the geometry proves it.",
+    "target": "Compatible D1774 repair for the actual completed boundary",
+    "test": "Extract the exact source boundary-colouring support and compare its repair contract with the existing Kempe machinery. Retain equal-image constraints and actual shared exterior Kempe components. Test the smallest informative boundary partitions and identify the geometry needed for the repair consumer.",
+    "acceptance": "A kernel-checked repair or exact obstruction for a stated domain of actual exterior colourings, consumed by ExceptionalBoundaryReconstruction.reconstruct. Successful repair must yield genuine witnesses and preserve all forced boundary equalities; a finite support inventory alone is not sufficient.",
     "primary_lemmas": [
       "3.1",
+      "3.2",
       "9.2"
     ]
   },
@@ -178,7 +211,7 @@
   },
   "limits": [
     "No inhabitant of all local supply fields is claimed.",
-    "The source getX pattern is decoded and joint core geometry is proved; its supply from flatness and the full D1774 cyclic boundary occurrence are still open.",
+    "The source getX pattern, joint induced core, full cyclic core stars and joint boundary reconstruction are proved. Supply from flatness and existence of compatible repair remain open.",
     "No scheduling, executable global recolouring or near-linear runtime is proved.",
     "The existing joint diamond profile certificate remains in the reduction consumer."
   ]

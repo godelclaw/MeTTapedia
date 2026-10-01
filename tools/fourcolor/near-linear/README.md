@@ -411,13 +411,79 @@ case needed for diameter-four configurations.
 
 The finite source checks retain the star bounds, consecutive source edges
 and short-path witnesses. The new reusable laws are not a colouring-repair
-theorem. The eleven-port completion must still preserve all shared boundary
-choices and any justified identifications. Compatible repair, strict
-reduction, final-charge classification and coverage remain open; counts
-remain 633/629.
+theorem. The eleven-port completion and conditional reconstruction below
+now preserve shared boundary choices and allow boundary identifications.
+Compatible repair, strict reduction, final-charge classification and
+coverage remain open; counts remain 633/629.
 
 Run `lake build kernelExceptionalInduced`. The nine-root audit requires the
 actual source construction and the triangle/four-cycle geometry. Only
 standard axioms are allowed, and complete Four Colour endpoints and original
 catalogue rank certificates are excluded. See
 [induced-measurements.json](induced-measurements.json).
+
+## Eleven-port completion and exact reconstruction
+
+The source core's partial cyclic stars now extend to all eleven ring ports.
+For an actual directed edge `d`, triangular closure proves
+
+```text
+second endpoint of predecessor(d)
+                =
+second endpoint of successor(reverse(d)).
+```
+
+This is `FacialStarCompletion.across_edge`. Combined with the exact degree
+and retained core-star interval, it supplies each of the eight seams around
+the core. There is one chosen reading for each ring label; the seam law
+proves agreement with every other reading of that label. Two ring labels
+occur in three core stars, so their agreement uses two applications of the
+same law.
+
+`ExceptionalBoundaryCompletion.row_agrees` identifies every full source
+star entry with an actual rotation power. A kernel-checked source edge
+classification then constructs a homomorphism of the complete nineteen-vertex
+source graph, including the ring edges. The source labels and their order
+are retained. `ExceptionalBoundaryOccurrence.full_turn` preserves all full
+cyclic core-star steps; `star_covers` proves that every actual incident edge
+has a source reading.
+
+No assumption makes the boundary globally injective. The theorem
+`ring_outside_core` uses induced core adjacency and injectivity of a full
+vertex rotation to exclude capture of a core vertex by a ring label. It
+allows distinct ring labels to denote the same exterior vertex.
+
+The general theorem `PatchBoundaryGluing.reconstruct` applies to any graph
+patch whose interior map is injective, whose boundary avoids the interior,
+and whose incident-edge coverage is complete. Given an actual patch
+colouring and an exterior assignment, proper off the interior, agreement
+on the entire boundary reconstructs a colouring of the ambient graph while
+fixing every exterior vertex.
+
+Its actual consumer is `ExceptionalBoundaryReconstruction.reconstruct`.
+The companion `extension_iff` gives the exact contract:
+
+```text
+proper exterior assignment extends to the ambient dual
+                         iff
+the source completion has a colouring with those same eleven observations.
+```
+
+The equality is about joint assignments, not independent port possibilities.
+If ports have equal ambient images, the common exterior assignment enforces
+the corresponding equality of colours. The theorem works for every colour
+type and reconstructs a witness; it is not merely a numerical count.
+
+The next obligation is to obtain such a compatible colouring, allowing
+justified exterior Kempe changes. No repair rank, strict reduction or
+zero-charge supply theorem is established by this equivalence. No global
+boundary embedding or general collision theorem for all triangle programs
+is asserted. Counts remain 633 coverage entries and 629 original catalogue
+certificate dependencies.
+
+Run `lake build kernelExceptionalBoundary`. The fourteen-root dependency
+audit requires actual source construction, core injectivity, inducedness,
+full incident-edge coverage and reconstruction. It allows only standard
+axioms and excludes complete Four Colour endpoints and original catalogue
+rank certificates. The source and object hashes, replay times and gate
+results are in [boundary-measurements.json](boundary-measurements.json).
