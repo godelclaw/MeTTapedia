@@ -49,6 +49,7 @@ import MettapediaNS.PairCycleHistory
 import MettapediaNS.AnisotropicCycleHistory
 import MettapediaNS.PlanarParentReserve
 import MettapediaNS.FullEnergyParentReserve
+import MettapediaNS.HeatGradientObserver
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1441,3 +1442,35 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_interval_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_initial_allowance
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.weighted_enstrophy_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.heat
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.heat_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.heat_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profile
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profileX
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profileXX
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profile_lower
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profile_space
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profile_space_second
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profile_heat
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.profile_origin
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.initial_profile_gradient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.potential
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.potential_space_origin
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.amplitude
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.amplitudeRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.fluidSource
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.amplitude_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.amplitude_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.amplitude_pos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.observation_from_log_gradient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.full_fluid_source
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.initial_source
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.not_unforced_initial_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayedRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayedRate_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_acceleration
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_source_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_not_unforced

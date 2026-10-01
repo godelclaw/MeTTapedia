@@ -11907,3 +11907,197 @@ There is no numerical time discretization in this checkpoint. The
 adaptive-metric counterexample and spatial observer identifications are
 analytic with exact algebraic checks. The actual whole-space energy
 history payment and the scalar high-strain comparison are Lean-certified.
+
+## Heat-gradient observations and physical evolution compatibility
+
+The [heat-gradient observer checker](heat_gradient_observer.py) tests the
+claim that a scalar heat/HJB evolution automatically induces an unforced
+fluid evolution by reconstructing its gradient at one group element.
+Initial velocity matching is insufficient. The examples below have a
+positive heat profile and zero observed initial velocity, but their later
+observed velocity is nonzero and has a solenoidal momentum source.
+They are not unforced NS solutions from zero data.
+
+### A complete finite-frame calculation
+
+Fix `nu>0`. Use the normalized period-`2pi` torus and twelve fields, for `j!=k`:
+
+```text
+E_(j,k,c)(x)=e_j cos(x_k)/sqrt(2),
+E_(j,k,s)(x)=e_j sin(x_k)/sqrt(2).
+```
+
+Each field is divergence free. The complete sums satisfy
+`sum E_i tensor E_i=I` and `sum (E_i.grad)E_i=0`. Thus their scalar
+sum-of-squares operator is exactly the Laplacian. Their reconstruction
+kernel has first column
+
+```text
+K(x,0)e_1 = sum_i E_i(x) E_i(0)_1
+         = ((cos y+cos z)/2,0,0) = v(x).
+```
+
+Consider the positive heat solution
+
+```text
+phi(t,x)=2+exp(-nu t)sin x_1-(1/2)exp(-4nu t)sin(2x_1).
+```
+
+For `nu,t>=0`, `phi>=1/2`. The log potential `w=-2nu log phi` solves
+`w_t=nu Delta w-|grad w|^2/2`. Its initial gradient at the origin is zero.
+There are two distinct composition conventions on volume-preserving maps;
+neither may be substituted for the other:
+
+1. With `D_E F(g)=d/ds F(exp(sE) composed with g)|_0`, take
+   `Phi(t,g)=phi(t,g(0))`. Evaluation intertwines the group generator
+   with the base scalar Laplacian, and its squared gradient with the
+   base squared gradient. Hence `W=-2nu log Phi` solves the group HJB.
+2. With `D_E F(g)=d/ds F(g composed with exp(sE))|_0`, take
+   `Phi(t,g)=P_t(phi(0) composed with g)(0)`, where `P_t=exp(nu t Delta)`.
+   Differentiating inside this spatial heat average gives
+   `L_g Phi=P_t(Delta(phi(0) composed with g))(0)=Phi_t/nu`.
+   Positivity and the chain rule again give a group HJB solution.
+
+For the second convention the frame derivative is
+`D_i Phi(t,id)=P_t(E_i.grad phi(0))(0)`. It is not generally
+`E_i(0).grad P_t(phi(0))(0)`. Both conventions have `Phi(t,id)=2`.
+Define the identity-gradient observation by
+`u(t,x)=-sum_i D_i W(t,id) E_i(x)`. The exact outputs are
+
+```text
+u_post(t,x)=a_0(t)v(x),  a_0=nu[exp(-nu t)-exp(-4nu t)],
+u_pre(t,x) =a_1(t)v(x),  a_1=nu[exp(-2nu t)-exp(-5nu t)].
+```
+
+The extra heat rate in the second line comes from the transverse
+frequency of the frame itself. Both velocities are zero at time zero,
+positive multiples of `v` for every `t>0`, and divergence free.
+For this shear, `(u.grad)u=0` and `Delta u=-u`. Its full projected fluid
+residual is therefore `f=(a'+nu a)v`, with
+
+```text
+f_post=3nu^2 exp(-4nu t)v,
+f_pre =nu^2[-exp(-2nu t)+4exp(-5nu t)]v.
+```
+
+At zero both equal `3nu^2 v`, which is nonzero for `nu>0` and has nonzero
+curl. Pressure cannot remove it. The normalized kinetic energy is `a^2/4`,
+and the exact energy ledger retains the work `a(a'+nu a)/4` from this
+source. A constant heat profile instead gives the identically zero
+observed velocity. Thus the two heat data have the same initial observed
+fluid state and different observed evolutions.
+
+### The obstruction is not an artifact of an incomplete frame
+
+Suppose a possibly infinite solenoidal frame obeys the same tight-frame
+and transport identities, with convergence sufficient for these derivatives
+and reconstruction in `C^2`. Let `K(x,0)=sum_i E_i(x) tensor E_i(0)`.
+For the same two-mode initial profile, either composition convention has
+
+```text
+u(0,x)=0,    partial_t u(0,x)=3nu^2 K(x,0)e_1,
+partial_t u(0,0)=3nu^2 e_1,
+```
+
+because `K(0,0)=I`. In the precomposition calculation, the first two
+spatial derivatives of `phi(0)` vanish at the origin, so the only term
+in `Delta(E_i.grad phi(0))(0)` is `3 E_i(0)_1`.
+An unforced periodic NS solution starting from zero has zero initial
+acceleration: its convective and viscous terms vanish and its periodic
+pressure is harmonic. This gives an initial contradiction for every
+such complete frame as well. The required sum convergence is an explicit
+analytic hypothesis, not supplied by the finite checker.
+
+### Arbitrarily many initial compatibility tests can pass
+
+For any integer `m>=1`, replace the initial heat profile by
+`phi_m(0,x)=2+sin(x_1)^(2m+1)>=1`. Its finite sine expansion is
+
+```text
+sin(x)^(2m+1)=sum_(j=0)^m c_j sin(n_j x),
+n_j=2j+1,   c_j=(-1)^j binomial(2m+1,m-j)/4^m.
+```
+
+For the twelve-field frame, the two observed amplitudes are
+
+```text
+a_(m,kappa)(t)=nu sum_j c_j n_j exp[-(n_j^2+kappa)nu t],
+kappa=0 or 1.
+```
+
+The zero of order `2m+1` in the initial sine power implies
+
+```text
+a^(r)(0)=0 for 0<=r<m,
+a^(m)(0)=(2m+1)! nu^(m+1)>0.
+```
+
+Indeed the lower odd derivatives give the vanishing Fourier moments;
+in `(n_j^2+kappa)^m` only its highest power survives. These are finite
+exponential formulas, so Taylor expansion gives a nonzero observed
+velocity on a positive time interval. Given any finite number of initial
+velocity jets to match to the zero fluid, choose m so that `r<m` includes
+every tested derivative order. Matching those jets still does not ensure
+evolution compatibility. The exact checker tests `m=1,...,6`; the moment
+argument covers every m analytically. No uniform window across m is
+required or asserted.
+
+There is a stronger analytic obstruction in the precomposition cylinder
+class. For any smooth positive periodic profile `phi0(x_1)`, put
+`c(t)=P_t phi0(0)` and `b(t)=P_t phi0'(0)`. The same frame gives
+
+```text
+a(t)=2nu exp(-nu t)b(t)/c(t).
+```
+
+The scalar heat equation has `b(t)->0` and `c(t)->mean(phi0)>0`.
+An unforced shear would require `a(t)exp(nu t)` to be constant.
+Therefore no such profile with `a(0)!=0` yields an unforced shear for
+all time. In fact it cannot do so on any open positive-time interval:
+the quotient is real analytic for `t>0`, so constancy on an interval
+would extend to all positive times, contradicting its limiting value
+and continuity at zero.
+
+Even every initial time derivative can match. Choose a smooth periodic
+cutoff potential `w0(x)=c0 x` near zero, constant near the period seam,
+with `c0!=0`, and take `phi0=exp(-w0/(2nu))`. Write `alpha=-c0/(2nu)`;
+then `phi0^(r)(0)=alpha^r phi0(0)` for every r. Consequently
+`b^(r)(0)=alpha c^(r)(0)` for every r, and
+
+```text
+a^(r)(0)=2nu alpha(-nu)^r for every r>=0.
+```
+
+These are precisely the time jets of the unforced shear
+`2nu alpha exp(-nu t)v`. Nevertheless the preceding limiting argument
+excludes actual agreement on a positive interval. Smooth heat evolution
+need not be time analytic at its initial endpoint; the global cutoff
+can affect later observations while remaining invisible to all these
+initial jets. This argument concerns the stated cylinder class, not
+every possible group chart or selected lift. It is analytic, not part
+of the finite checker or the Lean certification below.
+
+### What a physical lift must additionally prove
+
+For `Ev(W)=-sum_i D_i W(id)E_i`, an admissible class of potentials must
+satisfy the projected evolution identity
+
+```text
+Ev(nu L W-Gamma(W)/2)
+  = nu Delta Ev(W)-P[(Ev(W).grad)Ev(W)],
+```
+
+and must be preserved by the HJB evolution. Initial matching alone
+proves neither property. The examples refute the unrestricted implication
+from a scalar group HJB solution to an unforced NS observation. They do
+not refute a selected invariant class of compatible lifts, a construction
+based directly on actual fluid histories, or arbitrary-data regularity.
+They also do not construct an internal realization of a forced singularity.
+
+`MettapediaNS.HeatGradientObserver` certifies the scalar heat profile and
+its positive lower bound, the log-gradient observation, both explicit
+fluid-source amplitudes, and the delayed case with initial source zero
+but source derivative `120nu^3`. The spatial frame, group identifications,
+complete-frame passage and general delayed family are analytic with exact
+finite checks, not Lean theorems. Run
+`python3 -O labs/heat_gradient_observer.py`.

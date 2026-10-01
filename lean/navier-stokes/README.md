@@ -1697,6 +1697,19 @@ An adaptive anisotropic hidden-energy correction also fails an exact
 test because its evolving coefficients introduce positive quartic work.
 Both observations guide the outstanding geometric high-strain estimate.
 
+The [heat-gradient observation test](labs/README.md#heat-gradient-observations-and-physical-evolution-compatibility)
+isolates another obligation in a heat/HJB lift: its observed velocity
+must satisfy the actual fluid evolution, beyond matching the initial
+velocity. An explicit positive heat profile and tight solenoidal frame
+give zero initial observed velocity and a later nonzero shear with a
+solenoidal force. Both composition conventions retain this obstruction.
+An analytic family matches arbitrarily many initial velocity derivatives
+before its source becomes visible. `MettapediaNS.HeatGradientObserver`
+certifies the scalar heat/log-gradient calculation, the explicit fluid
+residual and one delayed case. The group and spatial identifications
+remain analytic. The unrestricted push-down implication fails; an
+invariant physically compatible class of lifts remains a separate task.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
