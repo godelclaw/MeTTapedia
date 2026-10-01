@@ -1,0 +1,277 @@
+{
+  "all_scope_colourings_retained_by_corner_summary": true,
+  "all_source_subsets": [
+    {
+      "actual_witnesses": 344353,
+      "exact_corner_states": 344353,
+      "fixed_exterior_witnesses": 38525,
+      "name": "cube",
+      "patches": 256,
+      "source_vertices": 8,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 8455,
+      "exact_corner_states": 8455,
+      "fixed_exterior_witnesses": 224,
+      "name": "triangular-prism",
+      "patches": 64,
+      "source_vertices": 6,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 475,
+      "exact_corner_states": 475,
+      "fixed_exterior_witnesses": 41,
+      "name": "four-clique",
+      "patches": 16,
+      "source_vertices": 4,
+      "target_vertices": 12
+    }
+  ],
+  "classical_endpoint_used": false,
+  "four_clique_obstruction_kernel_certified": false,
+  "global_coverage_proved": false,
+  "input_sha256": {
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerCoherence.lean": "0b3fa9f8464fc137adc71d9ac8943d9039a11dc971d7079e9ed1d6e3159b7ef0",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerSemantics.lean": "4667c77a2a7b04bba803ffe9215cf7dcf9271ed8f1e1526d38a32946ef8880e0",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCoupledExample.lean": "580a732e010f002d1d20cbbc939f70cd1894fecd420ea94b1ee81696f2172637",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatch.lean": "40bc07300c2ed6055663a0f4c94fc7a6cedc7eb43f45d8a6e7350e883fec0ae2",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatchAudit.lean": "12c9c07c8e9fffeedba051276093a9135f8b5d5609e67da2acb0b55dfefcf029",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatchExample.lean": "0c9cccb0548cb88b3823cb53b0ed37ff2fef1192bc177b974c084e264e755ddc",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainExample.lean": "20ff10579b99232b5384f478040a4b181684d33fed9aea6c7d6cfc742f21778b",
+    "tools/fourcolor/classical/alternating_cycle_probe.py": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e",
+    "tools/fourcolor/classical/dual_truncate_geometry_probe.py": "e1b0759456429ab4bf5377119ebc5aaffe6d8f3b516c7064ce8fe671c3ff84a3",
+    "tools/fourcolor/classical/dual_truncate_open_patch_probe.py": "177757e261bbc240ad6c3ffca2c5263f510e8bae65d984bc59453b73255dbe3f"
+  },
+  "kernel_fixture": {
+    "eliminated_cross_variables": 7,
+    "exterior_fixed": true,
+    "exterior_vertices": 10,
+    "internal_edge_variables": 17,
+    "matching_source_witness_exists": false,
+    "patch_vertices": 14,
+    "retained_internal_polygon_variables": 10,
+    "target_vertices": 24,
+    "witness_has_varying_corners": true
+  },
+  "kernel_general_exact_equivalence": true,
+  "named_patches": [
+    {
+      "actual_patch_witnesses": 66,
+      "cross_variables_eliminated": 3,
+      "exact_corner_states": 66,
+      "fibre_count_mismatches": 0,
+      "fixed_exterior_witnesses": 2,
+      "fixed_exterior_witnesses_with_varying_corners": 0,
+      "internal_edge_variables": 6,
+      "mismatch_examples": [],
+      "name": "cube",
+      "paired_patch_witnesses": 24,
+      "paired_profiles": 21,
+      "ports": 6,
+      "retained_internal_polygon_variables": 3,
+      "selected_source_vertices": [
+        0
+      ],
+      "source_compatible_witnesses": 24,
+      "support_mismatches": 0,
+      "target_patch_vertices": 6
+    },
+    {
+      "actual_patch_witnesses": 366,
+      "cross_variables_eliminated": 5,
+      "exact_corner_states": 366,
+      "fibre_count_mismatches": 0,
+      "fixed_exterior_witnesses": 3,
+      "fixed_exterior_witnesses_with_varying_corners": 0,
+      "internal_edge_variables": 11,
+      "mismatch_examples": [],
+      "name": "cube",
+      "paired_patch_witnesses": 96,
+      "paired_profiles": 69,
+      "ports": 8,
+      "retained_internal_polygon_variables": 6,
+      "selected_source_vertices": [
+        0,
+        1
+      ],
+      "source_compatible_witnesses": 96,
+      "support_mismatches": 0,
+      "target_patch_vertices": 10
+    },
+    {
+      "actual_patch_witnesses": 822,
+      "cross_variables_eliminated": 7,
+      "exact_corner_states": 822,
+      "fibre_count_mismatches": 42,
+      "fixed_exterior_witnesses": 7,
+      "fixed_exterior_witnesses_with_varying_corners": 2,
+      "internal_edge_variables": 17,
+      "mismatch_examples": [
+        {
+          "boundary": [
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              1
+            ]
+          ],
+          "patch_witnesses": 7,
+          "source_witnesses": 5
+        },
+        {
+          "boundary": [
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              2
+            ]
+          ],
+          "patch_witnesses": 3,
+          "source_witnesses": 2
+        }
+      ],
+      "name": "cube",
+      "paired_patch_witnesses": 192,
+      "paired_profiles": 75,
+      "ports": 8,
+      "retained_internal_polygon_variables": 10,
+      "selected_source_vertices": [
+        0,
+        1,
+        2
+      ],
+      "source_compatible_witnesses": 144,
+      "support_mismatches": 0,
+      "target_patch_vertices": 14
+    },
+    {
+      "actual_patch_witnesses": 66,
+      "cross_variables_eliminated": 3,
+      "exact_corner_states": 66,
+      "fibre_count_mismatches": 0,
+      "fixed_exterior_witnesses": 1,
+      "fixed_exterior_witnesses_with_varying_corners": 0,
+      "internal_edge_variables": 6,
+      "mismatch_examples": [],
+      "name": "triangular-prism",
+      "paired_patch_witnesses": 24,
+      "paired_profiles": 21,
+      "ports": 6,
+      "retained_internal_polygon_variables": 3,
+      "selected_source_vertices": [
+        0
+      ],
+      "source_compatible_witnesses": 24,
+      "support_mismatches": 0,
+      "target_patch_vertices": 6
+    },
+    {
+      "actual_patch_witnesses": 78,
+      "cross_variables_eliminated": 5,
+      "exact_corner_states": 78,
+      "fibre_count_mismatches": 0,
+      "fixed_exterior_witnesses": 1,
+      "fixed_exterior_witnesses_with_varying_corners": 0,
+      "internal_edge_variables": 12,
+      "mismatch_examples": [],
+      "name": "triangular-prism",
+      "paired_patch_witnesses": 24,
+      "paired_profiles": 21,
+      "ports": 6,
+      "retained_internal_polygon_variables": 7,
+      "selected_source_vertices": [
+        0,
+        1
+      ],
+      "source_compatible_witnesses": 24,
+      "support_mismatches": 0,
+      "target_patch_vertices": 10
+    },
+    {
+      "actual_patch_witnesses": 108,
+      "cross_variables_eliminated": 6,
+      "exact_corner_states": 108,
+      "fibre_count_mismatches": 0,
+      "fixed_exterior_witnesses": 2,
+      "fixed_exterior_witnesses_with_varying_corners": 0,
+      "internal_edge_variables": 15,
+      "mismatch_examples": [],
+      "name": "triangular-prism",
+      "paired_patch_witnesses": 48,
+      "paired_profiles": 24,
+      "ports": 6,
+      "retained_internal_polygon_variables": 9,
+      "selected_source_vertices": [
+        0,
+        1,
+        2
+      ],
+      "source_compatible_witnesses": 48,
+      "support_mismatches": 0,
+      "target_patch_vertices": 12
+    },
+    {
+      "actual_patch_witnesses": 6,
+      "cross_variables_eliminated": 6,
+      "exact_corner_states": 6,
+      "fibre_count_mismatches": 1,
+      "fixed_exterior_witnesses": 6,
+      "fixed_exterior_witnesses_with_varying_corners": 6,
+      "internal_edge_variables": 18,
+      "mismatch_examples": [
+        {
+          "boundary": [],
+          "patch_witnesses": 6,
+          "source_witnesses": 0
+        }
+      ],
+      "name": "four-clique",
+      "paired_patch_witnesses": 6,
+      "paired_profiles": 1,
+      "ports": 0,
+      "retained_internal_polygon_variables": 12,
+      "selected_source_vertices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "source_compatible_witnesses": 0,
+      "support_mismatches": 1,
+      "target_patch_vertices": 12
+    }
+  ],
+  "new_catalogue_entries_removed": 0,
+  "new_smaller_embedded_graph_operation": false,
+  "status": "independent exact open-patch replay",
+  "totals": {
+    "actual_witnesses": 353283,
+    "exact_corner_states": 353283,
+    "fixed_exterior_witnesses": 38790,
+    "patches": 336
+  }
+}

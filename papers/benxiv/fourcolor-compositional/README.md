@@ -1,6 +1,6 @@
 # Compositional Four Colour: proof plan and current results
 
-Updated 30 September 2026. Original complete assembly: `b99eaf006`.
+Updated 1 October 2026. Original complete assembly: `b99eaf006`.
 The current assembly additionally consumes a shared joint-profile certificate
 for the diamond cores and a general boundary-split law transferring repair from
 configuration 2 to configuration 1.
@@ -243,6 +243,32 @@ hypothesis on a whole recognized class. It is a reuse of classical Brooks
 mathematics, not a new theorem about all planar targets. Establishing where
 a face cover or another successful decomposition occurs, handling the small
 exception, and proving a suitable strict reduction remain the next obligations.
+
+The [open-patch reconstruction](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatch.lean)
+now makes the boundary-elimination principle exact at every patch size.
+It retains the joint polygon-corner colours and restores the cross-edge
+colours forced by their two endpoint equations. Projection and reconstruction
+are inverse on genuine colouring witnesses. An arbitrary fixed compatible
+exterior keeps every colour, including its cut edges; every complete GSLT
+sweep receives the reconstructed witness.
+
+The [fourteen-vertex cube patch](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatchExample.lean)
+demonstrates why the relation matters. Ten polygon variables reconstruct
+the original seventeen interior edge colours while the ten-vertex exterior
+is fixed. Its retained corners vary around source vertices. The
+[exact source-collapse criterion](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerCoherence.lean)
+identifies the next geometric obligation: force or repair the cyclic
+differences before replacing those joint choices by one source vertex colour.
+Different histories may support other successful choices; this particular
+witness is not representable by the smaller source-colouring summary.
+
+The [kernel audit and independent replay](../../../tools/fourcolor/classical/dual-truncate-open-patch-measurements.json)
+separate exact witness compression from existential reconstruction and from
+strict graph reduction. In the three-cell program test, paired boundaries
+still admit successful source choices, while the source summary loses some
+actual colourings. The general corner law retains them all. It removes no
+coverage configuration: a sound smaller embedded operation, recognition
+and occurrence coverage remain necessary to replace classical obligations.
 The baseline still retains 633 coverage configurations and 630 original
 configuration certificates.
 

@@ -1,0 +1,181 @@
+{
+  "status": "PASS",
+  "kernel_theorems": {
+    "exact_complete_witness_equivalence": "Mettapedia.GraphTheory.FourColor.DualTruncateCornerSemantics.colouringEquiv",
+    "actual_exterior_edge_observer": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatch.extends_iff_visible_edges",
+    "actual_polygon_observer": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatch.polygon_visible_iff",
+    "actual_cross_observer": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatch.cross_visible_iff",
+    "exact_fixed_exterior_equivalence": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatch.extensionEquiv",
+    "colouring_count": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatch.extension_count",
+    "source_collapse_criterion": "Mettapedia.GraphTheory.FourColor.DualTruncateCornerCoherence.source_witness_iff",
+    "cyclic_difference_criterion": "Mettapedia.GraphTheory.FourColor.DualTruncateCornerCoherence.source_witness_iff_difference_zero",
+    "cross_endpoint_difference": "Mettapedia.GraphTheory.FourColor.DualTruncateCornerCoherence.difference_alpha",
+    "every_complete_GSLT_sweep": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatch.every_complete_sweep",
+    "actual_patch_consumer": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatchExample.repaired",
+    "varying_corner_witness_obstruction": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatchExample.no_matching_source_witness"
+  },
+  "domain": "Every finite literal dual-and-truncate rotation system; selected target region closed under source edge reversal; supplied exterior locally Tait at every exterior vertex",
+  "retained_state": "Polygon-corner colours indexed by actual source darts; nonzero distinct adjacent polygon colours and the joint endpoint balance equation",
+  "eliminated_state": "Cross-edge colours forced by the sum of the two adjacent polygon colours in the four-element colour group",
+  "observer": "Every actual target edge incident to any exterior vertex, including cut edges",
+  "witnesses_preserved_exactly": true,
+  "counts_preserved_exactly": true,
+  "full_exterior_fixed": true,
+  "cut_edge_colours_fixed": true,
+  "every_complete_faithful_construction_supported": true,
+  "source_collapse": "A valid retained corner state agrees with a proper nonzero source vertex colouring exactly when all corners at each source vertex agree. Under genuine cyclic vertex rotations this is equivalent to all cyclic differences vanishing.",
+  "zero_difference_forced_by_general_patch_hypotheses": false,
+  "new_smaller_embedded_graph_operation": false,
+  "unconditional_tait_to_tait_strict_reduction": false,
+  "global_coverage_proved": false,
+  "kernel_example": {
+    "eliminated_cross_variables": 7,
+    "exterior_fixed": true,
+    "exterior_vertices": 10,
+    "internal_edge_variables": 17,
+    "matching_source_witness_exists": false,
+    "patch_vertices": 14,
+    "retained_internal_polygon_variables": 10,
+    "target_vertices": 24,
+    "witness_has_varying_corners": true,
+    "kernel_certified": true,
+    "scope_of_source_obstruction": "No source vertex-colouring witness matches this particular retained corner state; other successful source choices are not excluded."
+  },
+  "audit": {
+    "module": "Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatchAudit",
+    "roots": 26,
+    "combined_dependency_closure": 9287,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoint_absent": true,
+    "source_colour_words_absent": true,
+    "source_specific_suppliers_absent": true,
+    "diagnostic_corner_word_absent_from_general_theorems": true,
+    "diagnostic_corner_word_used_only_by_finite_consumer": true
+  },
+  "independent_program_replay": {
+    "command": "python3 tools/fourcolor/classical/dual_truncate_open_patch_probe.py --check",
+    "record": "dual-truncate-open-patch-probe.json",
+    "kernel_certified": false,
+    "all_source_subsets": [
+      {
+        "actual_witnesses": 344353,
+        "exact_corner_states": 344353,
+        "fixed_exterior_witnesses": 38525,
+        "name": "cube",
+        "patches": 256,
+        "source_vertices": 8,
+        "target_vertices": 24
+      },
+      {
+        "actual_witnesses": 8455,
+        "exact_corner_states": 8455,
+        "fixed_exterior_witnesses": 224,
+        "name": "triangular-prism",
+        "patches": 64,
+        "source_vertices": 6,
+        "target_vertices": 18
+      },
+      {
+        "actual_witnesses": 475,
+        "exact_corner_states": 475,
+        "fixed_exterior_witnesses": 41,
+        "name": "four-clique",
+        "patches": 16,
+        "source_vertices": 4,
+        "target_vertices": 12
+      }
+    ],
+    "totals": {
+      "actual_witnesses": 353283,
+      "exact_corner_states": 353283,
+      "fixed_exterior_witnesses": 38790,
+      "patches": 336
+    },
+    "three_cell_paired_actual_witnesses": 192,
+    "three_cell_paired_source_witnesses": 144,
+    "three_cell_support_mismatches": 0,
+    "three_cell_fixed_exterior_witnesses": 7,
+    "three_cell_fixed_exterior_varying_corner_witnesses": 2,
+    "four_clique_target_witnesses": 6,
+    "four_clique_source_witnesses": 0,
+    "four_clique_target_obstruction_kernel_certified": false
+  },
+  "build": {
+    "gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "exit": 0,
+    "jobs": 11148,
+    "started_utc": "2026-10-01T02:08:25+00:00",
+    "completed_utc": "2026-10-01T02:08:35+00:00",
+    "elapsed_seconds": 10.0,
+    "gate_timing_scope": "Incremental full gate after the new patch and audit modules were compiled",
+    "audit_build": {
+      "command": "lake build Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatchAudit",
+      "exit": 0,
+      "jobs": 3767,
+      "started_utc": "2026-10-01T02:03:17+00:00",
+      "completed_utc": "2026-10-01T02:03:35+00:00",
+      "elapsed_seconds": 18.0,
+      "maximum_sampled_lean_rss_mib": 3589
+    },
+    "example_compile_seconds": 6.6,
+    "source_bytes": 31940,
+    "olean_bytes": 1137624,
+    "files": [
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerSemantics.lean",
+        "source_sha256": "4667c77a2a7b04bba803ffe9215cf7dcf9271ed8f1e1526d38a32946ef8880e0",
+        "source_bytes": 8528,
+        "olean_bytes": 451896,
+        "olean_sha256": "303ac5bcb14fbd693c4ad27710636acf47fc2415677f04e165f41dd12d20a4c3"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerCoherence.lean",
+        "source_sha256": "0b3fa9f8464fc137adc71d9ac8943d9039a11dc971d7079e9ed1d6e3159b7ef0",
+        "source_bytes": 4148,
+        "olean_bytes": 141872,
+        "olean_sha256": "de5734a9f24230356bf6ca58eae3120d6c78f753bcabf29ead3f472608155701"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatch.lean",
+        "source_sha256": "40bc07300c2ed6055663a0f4c94fc7a6cedc7eb43f45d8a6e7350e883fec0ae2",
+        "source_bytes": 8524,
+        "olean_bytes": 351720,
+        "olean_sha256": "379dfe102fe13a01762a9e5f6d5e224e93ced98148ac7fe3dcbe5f818abe1697"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatchExample.lean",
+        "source_sha256": "0c9cccb0548cb88b3823cb53b0ed37ff2fef1192bc177b974c084e264e755ddc",
+        "source_bytes": 5035,
+        "olean_bytes": 188592,
+        "olean_sha256": "ecdb68f265ee7fea46303aa8fc6df00d5b6cff79b98ac0beb57a42fc3b086f0c"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatchAudit.lean",
+        "source_sha256": "12c9c07c8e9fffeedba051276093a9135f8b5d5609e67da2acb0b55dfefcf029",
+        "source_bytes": 5705,
+        "olean_bytes": 3544,
+        "olean_sha256": "bb1721c92ba436e7969589f1cf3898d3d20bb2984e4c796eba20b5113a38506d"
+      }
+    ]
+  },
+  "compression": {
+    "coverage_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "shared_discharging_replacements_retained": 231,
+    "new_coverage_configurations_removed": 0,
+    "new_original_certificates_replaced": 0,
+    "new_uniform_witness_elimination_schemes": 1,
+    "new_fixed_exterior_equivalence_schemes": 1,
+    "example_internal_colour_variables_before": 17,
+    "example_retained_internal_colour_variables": 10,
+    "example_forced_variables_reconstructed": 7,
+    "example_graph_vertices_removed": 0,
+    "integrated_into_research_checkpoint": true,
+    "integrated_into_complete_classical_assembly": false
+  },
+  "next_obligation": "Prove geometry that forces or permits repair of the cyclic differences while preserving the actual visible choices. Connect a justified source-patch family to a smaller embedded operation, recognition and occurrence coverage before crediting classical replacements."
+}

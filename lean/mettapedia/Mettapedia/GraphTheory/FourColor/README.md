@@ -278,6 +278,36 @@ replayed. Actual face-cover occurrence, the small exceptional target domain,
 and a Tait-to-Tait strict-reduction contract remain separate obligations.
 No catalogue entry or original configuration certificate is removed.
 
+The [exact corner semantics](DualTruncateCornerSemantics.lean) now retain
+all target Tait-colouring witnesses. One polygon-corner colour is kept per
+source dart; the other edge colour at each expanded vertex is forced by the
+two polygon colours. The joint balance equation identifies the values
+computed at the two ends of a cross edge. Projection and reconstruction
+are inverse, so this elimination preserves both witnesses and counts.
+
+The [open-patch contract](DualTruncateOpenPatch.lean) applies at every size
+to regions closed under source edge reversal. Its visible polygon colours
+are exactly those on actual edges incident to an exterior vertex. The
+extension equivalence fixes every exterior colour, including cut edges,
+and supplies witnesses on every complete GSLT sweep. The
+[cube consumer](DualTruncateOpenPatchExample.lean) reconstructs a fourteen-
+vertex patch while fixing the ten-vertex exterior. It carries ten internal
+polygon variables and reconstructs seven cross variables, replacing the
+original seventeen interior edge-colour variables.
+
+The [collapse criterion](DualTruncateCornerCoherence.lean) also makes the
+retained information explicit: a compatible source vertex witness exists
+exactly when the corners agree at each source vertex. With cyclic vertex
+rotations, this is equivalent to vanishing cyclic differences. The cube's
+reconstructed witness has a nonzero difference and cannot itself be
+collapsed. Other compatible source choices still exist in this example.
+The [audit](DualTruncateOpenPatchAudit.lean) excludes classical endpoints,
+source-colouring suppliers and diagnostic corner data from the general law.
+The [receipt](../../../../../tools/fourcolor/classical/dual-truncate-open-patch-measurements.json)
+separates it from program replay of 336 source-selected patches and 353,283
+actual witnesses. A smaller embedded replacement and occurrence coverage
+remain open; catalogue and original certificate counts remain 633 and 630.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

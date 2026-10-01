@@ -296,6 +296,55 @@ Face-cover occurrence, the small exceptional target domain, and a strict
 Tait-to-Tait reduction remain separate. No coverage configuration or original
 configuration certificate is removed; counts remain 633 and 630.
 
+## Exact open-patch corner elimination
+
+The [patch receipt](dual-truncate-open-patch-measurements.json) records an
+exact colouring-witness equivalence for dual-and-truncate patches at every
+size. Keep the polygon-corner colours and reconstruct each cross-edge
+colour from its two adjacent polygon colours. The shared balance equation
+retains agreement at both cross endpoints. No source vertex-colouring
+supplier is needed by this general reconstruction.
+
+The selected region is closed under source edge reversal. The
+[actual edge observer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatch.lean)
+proves exactly which polygon colours an exterior sees. Compatible summaries
+reconstruct genuine Tait colourings with every exterior edge fixed,
+including cut edges. Both inverse laws and the equality of colouring counts
+are proved. The reconstructed colouring supplies every complete faithful
+GSLT construction sweep.
+
+The [cube patch](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatchExample.lean)
+has fourteen selected target vertices and ten exterior vertices. Its summary
+carries ten internal polygon-colour variables, restoring seven forced cross
+variables among the original seventeen interior edges. A small diagnostic
+corner word supplies a genuine exterior-preserving witness with a nonzero
+cyclic difference. The general law uses no such word. The
+[collapse theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerCoherence.lean)
+says precisely when a retained witness can be represented by source vertex
+colours: all corners at each source vertex must agree. Genuine cyclic vertex
+rotations make the zero-difference criterion equivalent.
+
+```sh
+python3 tools/fourcolor/classical/dual_truncate_open_patch_probe.py --check
+```
+
+The [independent replay](dual-truncate-open-patch-probe.json) exhausts all
+336 source vertex subsets of the cube, triangular prism and four-clique.
+It projects and reconstructs 353,283 local witnesses and 38,790 completions
+of fixed exteriors. All retained corner states match the actual witnesses.
+On the cube's three-cell patch, paired boundary profiles admit 192 actual
+witnesses but only 144 source-compatible witnesses; their tested supports
+are equal. A particular fixed exterior admits seven witnesses, two with
+varying corners. The four-clique expansion separately has six Tait
+colourings and no three-vertex source colouring. This latter observation
+is a program diagnostic, not a kernel-certified target obstruction.
+
+This compresses colouring variables while retaining exact reconstruction.
+It proves neither a smaller embedded graph replacement nor a coverage
+theorem, and removes no classical configuration or certificate. The next
+structural task is to prove when actual geometry forces or permits repair
+of the cyclic differences while preserving the required visible choices.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves
