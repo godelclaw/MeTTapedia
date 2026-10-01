@@ -44,7 +44,11 @@ def seed(amplitude):
 
 
 def time_jets(amplitude, nu, order):
-    jets, pressures = [seed(amplitude)], []
+    return velocity_time_jets(seed(amplitude), nu, order)
+
+
+def velocity_time_jets(initial, nu, order):
+    jets, pressures = [initial], []
     for n in range(order):
         tensor = [[f.add(*(f.scale(math.comb(n, r), f.mul(jets[r][i], jets[n-r][j]))
                            for r in range(n+1))) for j in range(3)] for i in range(3)]

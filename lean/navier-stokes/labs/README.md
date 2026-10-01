@@ -10159,3 +10159,149 @@ curl/enstrophy criterion. Payment of q_E alone is not that criterion. It must re
 original histories, pressure, changing geometry and every parent. The paid
 class demonstrates a mechanism; it does not extend its datum-fixed frame
 bound to arbitrary continuations.
+
+## Causal joint-source history and reciprocal pressure generation
+
+`joint_source_history.py` checks the complete compatibility defect
+`E=A-grad u` in its original nine-coordinate moment `C` and inverse `W`.
+Pressure and parent history share that original metric. The exact lab retains
+every generated Fourier output, changing drift, matrix connection and spatial
+diffusion. Its independent symbolic calculation uses exact torus moments of
+trigonometric polynomials rather than numerical quadrature.
+
+### A physical-time comparison with a named source
+
+The established supplied rate is
+
+```text
+D q_E=2 vec(E)^T W vec(S_E)-2nu F_E,
+S_E=Hess p-B^T B,  D=partial_t+u.grad-nu Delta.
+```
+
+`JointSourceHistory.lean` certifies the finite metric Cauchy--Schwarz estimate
+and its tensor-production consumer, retaining the complete diffusion. It also
+certifies the scalar time comparison
+
+```text
+q,b,d>=0, q(0)=0, q'+d<=2sqrt(q)b
+ => q(T)+integral_0^T d<=(integral_0^T b)^2.
+```
+
+For a smoothly constructed original tensor history, weak spatial integration
+gives `q=integral E:W E`, `d=2nu integral F_E`, and
+`b=sqrt(integral S_E:W S_E)`. Spatial Cauchy--Schwarz, the original continuous
+stochastic construction and its physical-time identification remain analytic
+obligations. The scalar theorem handles zero energies by regularizing the
+square root; no nonzero initial energy is assumed.
+
+The combined source keeps
+`q(S_E)=q(Hess p)+q(B^T B)-2(Hess p):W(B^T B)`.
+It does not replace the two legs by independently averaged frames or remove
+their cross term. The norm bound can nevertheless overpay cancellation between
+different times. It is a comparison benchmark and sufficient cap target,
+not a proof that this stronger norm cap is the only possible signed mechanism.
+
+With an arbitrary seam energy, the time theorem retains
+`sqrt(q(s))+B_source(t)-B_source(s)`. For a zero initial defect and the same
+original source primitive, every compatible interval satisfies
+
+```text
+q(t)-q(s)+integral_s^t d
+ <= B_source(t)^2-B_source(s)^2,
+B_source(t)=integral_0^t b.
+```
+
+If an original-datum cap `B_source(t)<=L` is proved on the whole window,
+`R(t)=L^2-B_source(t)^2` is nonnegative and pays these costs at every seam.
+The required cap is not assumed in the construction of the history. Replacing
+an interval by the fresh increment's square loses
+`2 B_source(s)(B_source(t)-B_source(s))`; Lean proves that strict underpayment
+for positive old and new amplitudes. Compatibility preserves the original
+source primitive and diffusion cost. It supplies no new allowance.
+
+### Actual reciprocal parents create positive defect-pressure work
+
+On the normalized period-2pi torus, take
+`u0=(a sin y,b sin z,c sin x)` and positive viscosity. Initial pressure is zero.
+Full canonical NS jets give
+
+```text
+p1=-2abc cos x cos y cos z,
+p2=-(2/3)abc[c sin(2x)cos y sin z+a sin x sin(2y)cos z
+                      +b cos x sin y sin(2z)]-6nu p1.
+```
+
+Here subscripts denote time derivatives at zero. The independent original
+packet and moment equations give `E1=-B0^T B0` and the complete `E2,E3,W1,W2`.
+Every defect jet remains symmetric and every original packet jet keeps the
+literal physical curl. Define
+
+```text
+P_E(t)=2mean(E:W Hess p),  T_E(t)=2mean(E:W B^T B),
+q(t)=mean(E:W E),  F(t)=mean(F_E),
+S4=a^4+b^4+c^4,  R=a^2 b^2 c^2.
+```
+
+The generic exact identities are:
+
+| Quantity | Time derivative at zero |
+| --- | --- |
+| `P_E''` | `0` |
+| `P_E'''` | `27R` |
+| `q''` | `3S4/4` |
+| `q'''` | `-15nu S4/2` |
+| `q''''` | `27R+69nu^2 S4` |
+| `T_E'''` | `-33nu^2 S4` |
+| `F''` | `S4` |
+| `F'''` | `-18nu S4` |
+
+The pointwise fourth-order balance, before spatial integration, keeps
+`q4+u0.grad q3+3u1.grad q2-nu Delta q3=P_E3-T_E3-2nu F3`.
+After averaging it gives exactly the displayed energy derivative. A negative
+diffusion derivative in this table describes its initial change; the
+diffusion density itself is nonnegative.
+
+All three legs of `P_E'''` are checked:
+
+```text
+mean(E2:P1)=(9/2)R,
+mean(E1:P2)=0,
+mean(vec(E1)^T W1 vec(P1))=0,
+P_E'''=6[mean(E2:P1)+mean(E1:P2)+2mean(vec(E1)^T W1 vec(P1))].
+```
+
+Consequently `P_E(t)=(9/2)R t^3+o(t^3)>0` for nonzero parents and a
+sufficiently short actual smooth solution interval, using analytic local
+existence and original stochastic identification. This rejects a universal
+nonpositive defect-pressure work, not a full-datum allowance or regularity.
+The third-parent-zero limit removes this feedback. Sign flips leave `R`
+unchanged. Five positive-viscosity rational cases and one zero-viscosity
+algebraic diagnostic are checked; zero viscosity is not the viscous theorem's
+setting. These are periodic data, not whole-space finite-energy lifts.
+
+The source histories `DY_P=-B^T Y_P-Y_P B+Hess p` and
+`DY_G=-B^T Y_G-Y_G B+B^T B`, both initially zero, reconstruct
+`E=Y_P-Y_G`. The full fourth norm identity retains their cross pairing.
+Its spatial mean vanishes to this order for this family; it is not discarded
+as a general history rule. `mean(Y_P:W Y_P)=(9/8)R t^4+o(t^4)`.
+The causal pressure-input square has the same leading coefficient, since
+`mean(P1:P1)=(9/2)R`. In contrast,
+`nu^-1 integral_0^t Gamma=(3/(2nu))R t^3+o(t^3)` for the cotangent estimate.
+The latter remains valid but overpays this initial feedback. The causal input
+uses a weighted pressure Hessian rather than a weighted pressure gradient;
+its later cost has not been paid from original data.
+
+No uniform Taylor remainder, certified turnover window, renewed-parent cap,
+indefinite recurrence or singularity is claimed. Physical `q_E` payment alone
+is also not the established continuation criterion: original `q_A` payment
+must still be combined with sufficient curl-direction geometry. For a forced
+velocity, the compatibility source also retains `-grad f`; the causal comparison
+works for a supplied source and does not itself distinguish forced from
+unforced dynamics. The unforced structure must enter the source-history and
+geometry estimates. No arbitrary-fluid stochastic optimizer is identified.
+
+Run the exact checks, including the independent symbolic formulas:
+
+```sh
+python3 -O labs/joint_source_history.py
+```

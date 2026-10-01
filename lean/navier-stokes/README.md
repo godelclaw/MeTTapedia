@@ -1375,6 +1375,53 @@ work above. The smooth passage is analytic, with no certified uniform
 window, recurrence, singularity or whole-space lift. See the
 [full cotangent and paid-history calculation](labs/README.md#joint-pressure-cotangent-and-a-complete-paid-history).
 
+### Causal joint-source transfer and reciprocal pressure generation
+
+`MettapediaNS.JointSourceHistory` keeps the combined source
+`S_E=Hess p-B^T B` in the original joint metric. Its finite production
+estimate retains the complete covariant diffusion and the pressure-parent
+cross term in `S_E^T W S_E`. The scalar physical-time theorem states:
+
+```text
+q(0)=0,  q'+d<=2 sqrt(q)b,  q,b,d>=0
+    => q(T)+integral_0^T d <= (integral_0^T b)^2.
+```
+
+For the compatibility defect, weak spatial integration and Cauchy--Schwarz
+give `q=integral E:W E`, `d=2nu integral F_E` and
+`b=sqrt(integral S_E:W S_E)`, analytically. The time comparison is
+kernel-certified, including vanishing energies and all compatible intervals.
+Writing `B_source(t)=integral_0^t b`, every interval keeps the square
+increment `B_source(t)^2-B_source(s)^2`. A fresh source square would lose
+the cross cost with prior history. A proved original-datum cap `L` would
+give the nonnegative reserve `L^2-B_source(t)^2`; the cap is still open.
+
+The [exact reciprocal-source lab](labs/joint_source_history.py) tests actual
+unforced initial data `u0=(a sin y,b sin z,c sin x)`. Pressure starts at zero,
+but `p_t(0)=-2abc cos x cos y cos z`. With all original moment and packet
+jets retained, the defect's mean pressure work satisfies
+
+```text
+2mean(E:W Hess p)=(9/2)a^2 b^2 c^2 t^3+o(t^3).
+```
+
+This positive feedback vanishes when any parent is removed. The complete
+fourth energy jet keeps the generated pressure, parent work, changing metric
+and all diffusion. The causal pressure-history input square is sharp at its
+first nonzero order, proportional to `t^4`; the earlier cotangent absorption
+instead charges `t^3/nu` at that order. The causal comparison uses a weighted
+Hessian source norm, so it is a different estimate, not a free reduction of
+the derivative requirements.
+
+The exact algebra checks and fixed-datum short-time analytic passage do not
+prove a uniform turnover window, indefinite renewal or singularity. The
+source-norm cap may overpay cancellations between different times; a weaker
+signed correction remains possible. Both an original-datum history payment
+and sufficient actual curl-direction geometry remain open. This comparison
+does not identify an arbitrary-fluid Schrödinger-bridge optimizer, supply an
+independent physical force, or assume a bound on unknown future strain.
+See [the complete source and history tests](labs/README.md#causal-joint-source-history-and-reciprocal-pressure-generation).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

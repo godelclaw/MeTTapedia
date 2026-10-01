@@ -43,6 +43,7 @@ import MettapediaNS.JointReceiverTensor
 import MettapediaNS.JointCurlGeometry
 import MettapediaNS.JointTensorSymmetry
 import MettapediaNS.JointPressureCotangent
+import MettapediaNS.JointSourceHistory
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1324,3 +1325,18 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressureCost_le_uniform
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.defect_diffusion_cost
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressure_metric_kronecker
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.metric_pair_square_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.metric_pair_le_roots
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.tensor_source_production_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.defect_source_square
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.defect_source_production_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.root_history_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.completed_history_antitone
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.compatible_interval_cost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.completed_prefix_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.integrated_source_history
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.remainingReserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.remainingReserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.reserve_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.square_increment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.fresh_square_strictly_underpays
