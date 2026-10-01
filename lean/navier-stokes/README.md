@@ -1831,6 +1831,27 @@ Gaussian calibration. Evolving weights and full-datum integrated allowances
 are not refuted. The actual pressure curvature and lateral diffusion that
 can sustain axial stretching remain in the next physical estimate.
 
+The [axial deformation pressure test](labs/README.md#axial-deformation-retains-its-actual-pressure-suppliers)
+derives the complete stochastic acceleration of the required deformation
+moment, including its positive quadratic variation. Smooth unforced
+whole-space Gaussian data realize an expanding state that defeats every
+frozen positive quadratic metric squared on deformation and its rate.
+Surrounding-fluid variations leave the initial axis velocity, strain and
+diffusion trace fixed while changing their canonical pressure acceleration.
+The same metric obstruction occurs in the source-free no-swirl class;
+it does not refute a finite datum-dependent history allowance.
+The existing energy-paid distant-pressure estimate supplies an explicit
+whole-horizon factor for this new observable. Signed nearby-pressure work,
+full viscous acceleration and stochastic quadratic variation remain in
+the unpaid core cost. The symbolic checks pass; physical history and
+stopping arguments are analytic, with no new Lean theorem claimed.
+The stronger pathwise factorization `J^4<=exp(8M_H)J_core^4` removes the
+already paid initial and outside-source parents without differentiating
+them or factoring expectations. A pure-swirl calculation then produces
+strictly positive residual axial deformation after this removal. It
+refutes a zero-cost residual comparison, while leaving positive source
+prefunding and its arbitrary-horizon renewal open.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

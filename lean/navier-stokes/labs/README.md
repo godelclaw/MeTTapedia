@@ -14059,3 +14059,327 @@ arithmetic. PDE integration, stochastic implications and the continuation
 argument are analytic, not Lean-certified. No Lean declarations or axioms
 change. The central open task is the uniform initial funding of an evolving
 weight through the coupled pressure and source histories.
+
+## Axial deformation retains its actual pressure suppliers
+
+`axis_deformation_pressure.py` tests a specific proposed payment for the
+fourth deformation moment required by the preceding axis condition.
+It derives the complete forward Ito generator, calculates the canonical
+whole-space pressure of smooth Gaussian data, and refutes pointwise
+monotonicity of every frozen positive quadratic metric squared on this
+deformation state. A datum-funded horizon factor still pays the already
+controlled distant-pressure contribution. The remaining signed pressure
+work and quadratic variation are explicit and unpaid.
+
+### Complete stochastic acceleration
+
+Along an available smooth axisymmetric unforced prefix, set
+`U(t,z)=u_z(t,0,z)` and `q=partial_z U`. Use the axis sampling process
+`dZ=U dt+sqrt(2nu)dB`. Its derivative J in the initial axial coordinate
+satisfies `dJ=qJ dt`, with J initially one. Define `V=Jq`. The full laws are
+
+```text
+dJ=V dt,
+dV=J F dt+sqrt(2nu)J q_z dB,
+F=-p_zz|axis+nu[(Delta_3 partial_z u_z)|axis+q_zz].
+```
+
+All fluid quantities are evaluated along the same Z. The additional
+`nu q_zz` is from forward stochastic sampling. It adds to the physical
+viscous term; it does not cancel it. The deterministic `-q^2` cancels
+when differentiating V=Jq, but does not make the deformation dissipative.
+In particular,
+
+```text
+drift(V^2)=2VJ F+2nu J^2 q_z^2,
+drift(JV)=V^2+J^2 F.
+```
+
+The noise-square term is nonnegative. Treating the deterministic strain
+equation as an ordinary differential equation along the noisy path would
+miss both this term and the extra axial diffusion.
+
+For a fixed time scale ell>0, the proposed nonnegative observable is
+
+```text
+Q=J^2+ell^2 V^2,       E=Q^2>=J^4.
+L E=4JVQ(1+ell^2 F)
+    +4nu ell^2 J^2 q_z^2(J^2+3ell^2 V^2).
+```
+
+L denotes the generator along the actual fluid-driven sampling process.
+A bound `L E<=k_ell E` follows with
+`k_ell=2|1+ell^2 F|/ell+(9/2)nu ell^2 q_z^2`. The diffusion constant
+comes from the exact identity
+
+```text
+9Q^2-8J^2(J^2+3ell^2 V^2)=(J^2-3ell^2 V^2)^2.
+```
+
+This is only a conditional comparison: k_ell depends on the future fluid
+and is not an initial-data allowance. The signed expression for L E is
+retained in the actual payment target.
+
+### Canonical pressure with unchanged initial axis data
+
+Consider the whole-space family
+
+```text
+chi=z(A/2+C r^4) exp(-r^2-z^2),
+b=B exp(-r^2-z^2),
+u_r=-r chi_z,    u_z=2chi+r chi_r,    u_theta=r b.
+```
+
+In Cartesian coordinates all components are polynomials times a Gaussian.
+They are smooth, divergence free and finite energy, and therefore start
+actual local unforced solutions at every positive viscosity. The pressure
+is the decaying canonical pressure, determined by
+`-Delta_3 p=tr[(grad u)^2]`; it is not a supplied force or a free Hessian.
+
+Varying C leaves the entire initial axis velocity and strain unchanged:
+
+```text
+U0(z)=A z exp(-z^2),
+q0(z)=A(1-2z^2) exp(-z^2).
+```
+
+It also leaves `(Delta_3 partial_z u_z)|axis` unchanged. Nevertheless,
+the actual pressure curvature at the origin is
+
+```text
+p_zz(0)=-9A^2/14-8AC/385+2B^2/5-128C^2/455,
+F(0)=9A^2/14+8AC/385-2B^2/5+128C^2/455-20nu A.
+```
+
+The checker calculates this curvature from the three-dimensional heat
+resolvent of the complete pressure source. For each Gaussian monomial it
+checks a rational antiderivative after `x=sqrt(1+8h)` and an independent
+factorial endpoint formula. A separate computation of the transverse
+pressure Hessian verifies `2p_xx+p_zz=-tr[(grad u)^2]` at the origin.
+The divergence of the full vector convection independently reproduces
+the pressure source, including the swirl basis terms.
+
+Thus local axis data, even with the displayed lateral-diffusion trace,
+do not determine the pressure supplier. The C-dependent field vanishes
+to high radial order on the axis, but is not supported beyond a fixed
+positive radius. No spatial-separation claim is made for this family.
+Its full initial energy records the hidden parent:
+
+```text
+||u0||_2^2=pi^(3/2)sqrt(2)
+           [7A^2+18AC+16B^2+162C^2]/128.
+```
+
+The examples do not have equal full energy and do not refute an allowance
+depending on the full datum.
+
+### A realized expanding state defeats every frozen quadratic metric
+
+Take the exact parameters
+
+```text
+A=B=1, C=2, nu=4101/200200>0.
+```
+
+At the origin the actual values are
+
+```text
+q=1, q_z=0, p_zz=-14111/10010, F=1.
+```
+
+At the initial deformation state `(J,V)=(1,1)`, the stochastic velocity
+noise vanishes and the drift of `(J,V)` is exactly `(1,1)`. Consequently,
+for **every fixed positive definite matrix P**, including one selected
+from this full datum,
+
+```text
+X=(J,V)^T,       E_P(J,V)=(X^T P X)^2,
+(L E_P)(1,1)=4E_P(1,1)>0.
+```
+
+This also follows from Euler's identity for homogeneous functions; the
+checker verifies the polynomial identity for arbitrary matrix entries.
+For the diagonal family it becomes
+`(L E_ell)(1,1)=4(1+ell^2)^2>0` for every ell>0.
+Local smoothness and stopping in a compact neighborhood give an actual
+short-time increase of the corresponding stopped expectation. This
+interval implication is analytic; no uniform turnover time is claimed.
+
+With A=B=1 and the same viscosity, varying C gives
+`F(0)=(1408C^2+104C-835)/5005`. Thus C=0 gives `-167/1001`, whereas C=2
+gives 1, with the same initial axial velocity, strain and diffusion trace.
+The variation is generated by surrounding unforced fluid through its
+canonical pressure. It does not realize an arbitrary forcing history or
+embed a forced singular solution.
+
+The same expanding state is realized with no swirl: take A=1, B=0, C=2
+and nu=1621/40040. Then the earlier source-free eta history already has a
+finite datum-controlled bound. This separates failure of the proposed
+monotonicity from failure of finite history payment.
+
+The refuted assertion is a nonpositive pointwise/local-stopped drift for
+a frozen homogeneous metric on `(J,V)`. A time-dependent or spatially
+adaptive metric has additional derivative terms and is not covered.
+Neither a finite initial allowance for J^4 nor a reserve retaining the
+pressure suppliers is refuted. Growth of E_P also does not by itself
+show that J^4 exceeds E_P's initial value.
+
+### A whole-horizon payment survives for distant pressure
+
+Reuse the earlier `PressureBoundaryResponse` estimate at a fixed radius
+R>0, with the same physical pressure normalization:
+
+```text
+|p_zz_far(t,x)|<=K_R:=6||u0||_2^2/(pi R^5).
+```
+
+It holds at arbitrary observation positions, including the random Z.
+Write
+`F=F_near-p_zz_far`, where
+`F_near=-p_zz_near+nu[(Delta_3 partial_z u_z)|axis+q_zz]`.
+The full actual fluid and q_z remain unchanged in this decomposition.
+
+For the quartic metric E, the distant contribution is
+`-4ell^2 JVQ p_zz_far<=2ell K_R E`. Its kinematic contribution satisfies
+`4JVQ<=2E/ell`. Hence, for an original H and
+
+```text
+c=2/ell+2ell K_R,
+Psi(t,J,V)=exp(c(H-t))E(J,V),
+C_near=4ell^2 JVQ F_near
+       +4nu ell^2 J^2 q_z^2(J^2+3ell^2 V^2),
+```
+
+the actual generator obeys
+
+```text
+(partial_t+L)Psi <= exp(c(H-t))C_near.
+```
+
+The initial multiplier exp(cH) uses only the original energy, R, ell and
+H. It pays these two contributions throughout every available prefix,
+without a new clock at intermediate seams. Under localized optional
+stopping the remaining obligation is the signed expectation of the
+integrated right side. Absolute values have not been inserted into
+C_near. Its pressure work and its positive quadratic variation remain
+uncontrolled from the initial datum.
+
+The calibrated Gaussian still detects the missing part after this payment.
+Set ell=1 and choose the datum-fixed radius `R^5=12||u0||_2^2/pi`, so
+K_R=1/2 and c=3. At the initial state, the full clocked generator is
+`(4-3)Psi=Psi>0`. Thus the already paid distant pressure and kinematic
+terms do not alone close this reserve.
+
+An external axial force adds `partial_z f_z|axis` to F, using the actual
+pressure of the forced equation, and adds
+`4ell^2 JVQ partial_z f_z|axis` to the quartic drift. In unforced flow
+that term is absent, but the internal pressure example shows that absence
+alone does not give a sign to C_near. A quantitative bound must use the
+evolution of its physical suppliers.
+
+### Remove the parents that already have a payment
+
+The Gaussian meridional parents above are included in the earlier
+circulation/propagator payment. They are not a new obstruction to the
+remaining source-history problem. Use that complete history split before
+introducing extra derivative costs for already controlled fields:
+
+```text
+q=q_paid+q_core,       q_paid=-2a_paid|axis,
+integral_0^t||a_paid||_infinity ds<=M_H,
+J_paid=exp(integral q_paid along Z),
+J_core=exp(integral q_core along Z),
+J=J_paid J_core,       J^4<=exp(8M_H)J_core^4.
+```
+
+This split follows generation and transport histories; it is distinct
+from the fixed-distance pressure split above.
+This is a pathwise bound along the same actual sampling trajectory. It
+does not factor expectations or discard a covariance. It removes all
+initial meridional parents and all outside-cutoff source histories at
+their already established, original-datum cost. It requires no separate
+estimate of derivatives of q_paid. The pure no-swirl example has q_core=0
+and is therefore paid despite its frozen-metric failure.
+
+### A positive burst remains in the generated core
+
+To test this residual directly, start from the actual pure-swirl datum
+
+```text
+chi0=0,       b0=exp(-r^2-z^2),       nu>0.
+```
+
+Initially eta and q vanish. The actual unforced equation gives
+`eta_t=partial_z(b0^2)`. The five-dimensional heat resolvent therefore
+gives the initial axial-strain production
+
+```text
+q_1(z):=partial_t q(0,0,z)
+ =2partial_zz(-L5)^(-1)(b0^2)(0,z)
+ =integral_0^1 tau^(3/2)(4z^2 tau-1) exp(-2z^2 tau) d tau.
+```
+
+This calculation includes the canonical meridional response; it is not a
+pressure-free model. It is independent of nu at this initial instant
+because the initial meridional field is zero.
+
+At z=1 a simple analytic lower bound suffices. The absolute negative
+contribution on `[0,1/4]` is at most 1/80. On `[1/2,1]`, use
+`tau^(3/2)>=1/4`, `4tau-1>=1` and `exp(-2tau)>1/9`, the last following
+from e<3. This positive portion exceeds 1/72; the remaining interval is
+nonnegative. Thus `q_1(1)>1/720`.
+
+The positivity survives removal of an actually paid outside source.
+Choose the previous smooth cutoff with rho=5, zero for r<=5 and one
+for r>=10. At t=0 its contribution is
+`q_paid_prime=2partial_zz(-L5)^(-1)(zeta b0^2)` on the axis. The fundamental
+solution `N5=|x|^(-3)/(8pi^2)` satisfies
+`|2partial_zz N5(x)|<=3/(pi^2|x|^5)`. Every source in this component is
+at distance at least rho from the axis observation. Consequently,
+
+```text
+|q_paid_prime(0,0,1)|
+ <=3sqrt(pi)/(2^(5/2)rho^5)<3/(2rho^5)=3/6250,
+delta:=q_core_prime(0,0,1)>1/720-3/6250>0.
+```
+
+This uses the full five-dimensional Gaussian mass and pi<4, without
+assuming that the response is supported where its source is.
+
+Initially q_core and all its spatial derivatives vanish. Along the actual
+axis sampling path started at z=1, a localized short-time Ito expansion
+therefore gives
+
+```text
+E[J_core(t)^4]=1+2delta t^2+O(t^3).
+```
+
+For the diagonal residual metric with V_core=J_core q_core, its expectation
+has second derivative `4delta+4ell^2 delta^2>0` at zero. This is a real
+finite burst generated by the residual source after the paid history has
+been removed. The expansion is analytic for each fixed positive viscosity;
+no uniform long-time remainder or recurrent growth is inferred.
+
+It refutes a residual comparison with initial allowance exactly one and
+no source payment, and refutes monotonicity of this normalized diagonal
+residual metric. A positive allowance based on the initial swirl's ability
+to generate parents is not refuted. The existing first-interval forecast
+reserve already illustrates that kind of prefunding for a different
+physical observable; renewing it over arbitrary horizons remains open.
+
+The residual itself is not an independent NS solution. Its later equation
+comes from `eta_core_t+v.grad eta_core=nu L5 eta_core+(1-zeta)S` under the
+same full v. Applying `T=2partial_z(-L5)^(-1)` retains the commutator
+`[v.grad,T]eta_core`, the full viscosity and `T((1-zeta)S)`.
+Substituting q_core into the full-fluid Riccati law without those terms
+would discard its hidden suppliers.
+
+Run `python3 -O labs/axis_deformation_pressure.py`. Differential,
+generator, Gaussian-resolvent, energy and scaling calculations are exact
+symbolic checks. The residual-source calculation also checks its heat
+kernel, change of variables and rational comparison constants. Local PDE
+existence, resolvent identification, integral bounds, stochastic stopping
+and history consequences are analytic. No Lean declarations or
+axioms change. The original-data bound on the signed core history,
+construction of a funded interior compression weight, and general
+three-dimensional continuation remain open.
