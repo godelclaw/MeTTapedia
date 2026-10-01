@@ -568,6 +568,30 @@ colouring has such a preimage. Counts, all recolouring histories, recursive
 domain closure and global coverage remain separate. No further catalogue
 entry or original configuration certificate is removed.
 
+## Target colouring choices on parallel seams
+
+The [target diagnostic](adjacent-source-target-kempe-probe.json) exhausts
+2,920 target edge-colourings modulo global colour permutation on ten
+triangular-prism, cube, pentagonal-prism and hexagonal-prism splice outputs.
+Actual parallel edge identities are retained. The exact corner round trip
+is checked for every witness, and the 284 coherent states equal the
+independently enumerated source-colouring image. Every computed Kempe class
+contains such an image. Saved paths lift the normalized search to literal
+physical component switches, without applying global colour renamings.
+
+```sh
+python3 tools/fourcolor/classical/adjacent_source_target_kempe_probe.py --check
+```
+
+This also tests a proposed progress measure: count source vertices whose
+three corner observations disagree. Six normalized states, on the two
+hexagonal-prism side splices, admit no single Kempe move which strictly
+decreases that count. Their saved repair paths still reach coherence.
+The test therefore rejects that strict one-step measure in this domain,
+while supporting investigation of joint choices and multistep repair.
+These are finite program checks. No general Kempe-repair theorem, recursive
+domain closure, kernel-certified fixture or catalogue reduction is claimed.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

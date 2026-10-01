@@ -461,6 +461,15 @@ witness from an arbitrary smaller target Tait colouring; recognition,
 recursive closure and global occurrence remain separate obligations.
 Catalogue and original-certificate counts remain 633 and 630.
 
+The [target-witness diagnostic](../../../../../tools/fourcolor/classical/adjacent-source-target-kempe-probe.json)
+now enumerates 2,920 normalized target colourings on ten smaller prism
+outputs, with literal parallel edges. All computed Kempe classes reach
+one of 284 coherent source images; saved paths use actual component
+switches. A strict one-step decrease in incoherent source vertices fails
+on six states, although their multistep repair succeeds. This is finite
+program evidence for the next witness contract, with no general repair,
+recursive closure or coverage theorem inferred.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

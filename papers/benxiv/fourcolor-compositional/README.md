@@ -405,6 +405,16 @@ smaller source three-colouring, not an arbitrary smaller target Tait
 colouring. Recognition and closure of the reduction domain, occurrence
 coverage and catalogue replacement remain open; the catalogue stays at 633.
 
+The [smaller-target diagnostic](../../../tools/fourcolor/classical/adjacent-source-target-kempe-probe.json)
+tests whether physical recolouring can supply that source-image contract.
+All 2,920 normalized target witnesses on ten small prism splices reach
+one of 284 coherent source images. Exact corner reconstruction and saved
+physical component paths are independently checked. Counting incoherent
+source vertices does not give a strict one-step progress law: six states
+on two hexagonal-prism side splices need a different measure or multistep
+argument. These finite checks guide the joint contract; they do not establish
+a general repair, recursive reduction domain or geometric coverage theorem.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two
