@@ -958,13 +958,13 @@ and lies within radius four; the core alone lies within radius three.
 
 The theorem `ExceptionalCore.overlap_supply` fills the next-centre and
 joint closing fields for **core readings**, conditional on classification.
-The close field for **certified reductions** is still open: a graph
-homomorphism can identify distinct source vertices or acquire extra ambient
-edges, and this result does not construct the full eleven-port cyclic
-boundary or repair a colouring.
-Those obligations, the source zero-charge classification and the dual-graph
-bridge remain explicit. The ledger remains 633 coverage entries and 629
-original certificate dependencies.
+The close field for **certified reductions** is still open. The results
+below construct the actual dual rotation and exclude both core collisions
+and extra ambient core edges in the minimal regime. The full eleven-port
+cyclic boundary, colouring repair, source zero-charge classification and
+transport of the published observations remain explicit obligations.
+The ledger remains 633 coverage entries and 629 original certificate
+dependencies.
 
 Run `lake build kernelExceptionalOverlap` with the prepared dependencies.
 Its dependency audit excludes complete Four Colour endpoints and original
@@ -1017,9 +1017,9 @@ produced by any exceptional core collision.
 `MinimalExceptionalEmbedding.source_core_injective` therefore derives an
 injective core homomorphism from two aligned actual exceptional occurrences.
 It uses their joint rotation and degree information; injectivity is not an
-input. The result is not yet an induced occurrence or a colouring repair.
-Extra edges, the eleven-port ring, source supply from final charge, and the
-complete repair contract remain separate obligations. Counts stay 633/629.
+input. The inducedness theorem below now excludes extra ambient core edges.
+The eleven-port ring, source supply from final charge, and the complete
+repair contract remain separate obligations. Counts stay 633/629.
 
 Replay with `lake build kernelExceptionalDual`. Its twelve-root audit checks
 the source consumer, the actual rotation bridge and the singleton-cut proof
@@ -1027,3 +1027,33 @@ chain, allowing only standard axioms and excluding complete Four Colour
 endpoints and original catalogue rank certificates. See the
 [account](../../tools/fourcolor/near-linear/README.md#collision-elimination-in-the-actual-minimal-dual)
 and [measurements](../../tools/fourcolor/near-linear/minimal-embedding-measurements.json).
+
+## Exceptional core: exact induced adjacency
+
+`ExceptionalCoreInduced.source_core_induced` proves that two aligned actual
+exceptional occurrences in the minimal facial dual preserve and reflect
+every core edge. Together with the preceding injectivity theorem, this
+gives an induced realization of the eight-vertex core in the actual map.
+
+Two uniform laws do the work. `FacialPatchInduced.corner_chain_successor`
+proves that a proper interval of a cyclic vertex rotation has no additional
+facial corner between its entries. If all ambient triangles are facial,
+the source star therefore reflects adjacency between its neighbours.
+`FacialPatchInduced.reflects_of_short_paths` extends that local reflection
+to any injective patch with paths of length at most three, provided ambient
+four-cycles have a diagonal. The existing minimal four-cycle classification
+supplies that last hypothesis for the same actual dual.
+
+Kernel checks establish that all D1774 core stars are proper intervals and
+that the core has diameter at most three. The source consumer then applies
+the shared geometric laws; it does not enumerate ambient maps or use an
+original rank certificate. The boundary completion, compatible colouring
+repair, strict reduction and supply from zero-charge classification remain
+open. Counts stay 633 coverage entries and 629 original certificate
+dependencies.
+
+Replay with `lake build kernelExceptionalInduced`. The nine-root audit
+requires the interval, short-path, triangle and four-cycle arguments in the
+source consumer's dependencies, allowing only standard axioms. See the
+[account](../../tools/fourcolor/near-linear/README.md#induced-core-from-facial-intervals-and-short-paths)
+and [measurements](../../tools/fourcolor/near-linear/induced-measurements.json).

@@ -1,5 +1,5 @@
 {
-  "status": "Conditional coverage assembly, exact exceptional overlap, facial core transport and injective core in the actual minimal facial dual proved; induced occurrence, ring repair and classification bridges open.",
+  "status": "Conditional coverage assembly, exact exceptional overlap and induced core in the actual minimal facial dual proved; ring completion, repair and classification bridges open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -95,6 +95,22 @@
     {
       "declaration": "FourColor.MinimalExceptionalEmbedding.source_core_injective",
       "meaning": "Two aligned actual exceptional occurrences yield an injective D1774 core homomorphism in the minimal regime; the collision alternative is excluded through the actual singleton-cut classification."
+    },
+    {
+      "declaration": "FourColor.FacialPatchInduced.corner_chain_successor",
+      "meaning": "A proper interval of an actual cyclic vertex rotation has a facial corner only between successive retained indices."
+    },
+    {
+      "declaration": "FourColor.FacialPatchInduced.reflects_of_short_paths",
+      "meaning": "Local adjacency reflection extends to the entire injective patch when source paths have length at most three and ambient four-cycles have a diagonal."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCoreInduced.four_cycle_chord",
+      "meaning": "The existing minimal four-cycle classification supplies a diagonal in the same actual quotient-face dual."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCoreInduced.source_core_induced",
+      "meaning": "Two aligned actual source occurrences yield a core map that preserves and reflects adjacency. Combined with source_core_injective this gives an induced eight-vertex core."
     }
   ],
   "open": [
@@ -134,7 +150,7 @@
       "id": "exception_joint_close",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
       "source": "Figure 13 and Lemma 8.4",
-      "obligation": "Both occurrences give an orientation-preserving core, now proved injective in the actual dual of a graph-backed vertex-minimal Tait counterexample. Prove absence of extra ambient core edges, complete the cyclic eleven-port boundary, and provide compatible repair and strict reduction. The close field for certified reductions remains open."
+      "obligation": "Both occurrences now give an injective, orientation-preserving induced core in the actual dual of a graph-backed vertex-minimal Tait counterexample. Complete the cyclic eleven-port boundary, preserving shared choices and any justified identifications, and provide compatible repair and strict reduction. The close field for certified reductions remains open."
     },
     {
       "id": "residuals",
@@ -146,9 +162,9 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Induced D1774 core and eleven-port boundary promotion",
-    "test": "List absent core pairs and test which extra edges force nonfacial triangles or obstructing short cycles, retaining actual cyclic turns and the two source occurrences. Compare the residual pairs with the pinned paper Lemma 3.1 before constructing the full ring.",
-    "acceptance": "A checked induced core or a precise remaining obstruction, followed by an actual full-ring consumer. Injectivity alone earns no reduction or coverage credit.",
+    "target": "Actual eleven-port completion and colouring repair contract",
+    "test": "Decode every core-to-ring incidence and cyclic step. Construct the exterior neighbour readings from actual rotation powers, prove agreement where two core stars read the same ring port, and identify exactly which boundary identifications the repair consumer permits.",
+    "acceptance": "A checked actual free-completion map extending the induced core and preserving the prescribed cyclic stars and shared boundary observations, followed by a compatible repair consumer. Do not assume that different ring labels denote different ambient vertices unless the geometry proves it.",
     "primary_lemmas": [
       "3.1",
       "9.2"

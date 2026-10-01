@@ -2664,6 +2664,34 @@
         "zero-charge classification, charge and source bridges, global coverage",
         "general first-collision theorem for patch programs"
       ]
+    },
+    {
+      "name": "exceptional core inducedness from facial intervals and short paths",
+      "record": "../near-linear/induced-measurements.json",
+      "status": "Kernel-checked source core adjacency equivalence using uniform interval and short-path reflection laws with actual minimal-dual geometry.",
+      "actual_consumer": "FourColor.ExceptionalCoreInduced.source_core_induced",
+      "domain": "Actual facial dual of a graph-backed vertex-minimal Tait counterexample, with two aligned exceptional source occurrences.",
+      "uniform_laws": [
+        "facial successor rigidity in a proper cyclic neighbour interval",
+        "local-to-global adjacency reflection for injective diameter-three patches in ambient graphs with chorded four-cycles"
+      ],
+      "core_vertices": 8,
+      "core_edges": 13,
+      "unordered_nonedges": 15,
+      "core_diameter_bound": 3,
+      "finite_checks_retained": [
+        "strict source star degree bounds",
+        "source edges between consecutive star entries",
+        "source short-path witnesses"
+      ],
+      "reused_geometry": "Actual minimal-dual triangle faciality and the existing minimal four-cycle diagonal theorem.",
+      "catalogue_entries_removed": 0,
+      "additional_original_certificate_dependencies_replaced": 0,
+      "remaining_obligations": [
+        "eleven-port boundary completion with shared choices and justified identifications",
+        "compatible repair and strict reduction",
+        "zero-charge classification, source and charge transport, global coverage"
+      ]
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",

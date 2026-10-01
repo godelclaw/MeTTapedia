@@ -221,11 +221,13 @@ the support used by the scaffold includes them all.
 `overlap_supply` instantiates the existing
 degree-eight scaffold with these joint readings: its next-centre and joint
 core-reading fields are proved, while classification remains a hypothesis.
-It does **not** instantiate the scaffold with certified reductions. Moving
-from a core reading to the full eleven-port occurrence requires collision
-and inducedness analysis, boundary completion with cyclic order, and a colouring-repair
-contract. The zero-charge classification and actual-dual bridge also remain
-open. No coverage or certificate dependency is removed here.
+It does **not** instantiate the scaffold with certified reductions. The
+results below supply the actual dual rotation, exclude core collisions and
+prove inducedness in the minimal regime. Moving to the full eleven-port
+occurrence still requires boundary completion with cyclic order and a
+colouring-repair contract. Zero-charge classification and transport of the
+published source observations remain open. No coverage or certificate
+dependency is removed here.
 
 Replay the independent source comparison and the Lean proof audit with:
 
@@ -346,10 +348,11 @@ A general first-collision theorem for arbitrary construction programs remains
 open.
 
 This result assumes a graph-backed vertex-minimal Tait counterexample and
-the two actual exceptional occurrences. It neither supplies them from the
-paper's final-charge classification nor establishes inducedness, the full
-eleven-port ring, colouring repair or strict reduction. It removes no
-catalogue or certificate dependency from the complete assembly.
+the two actual exceptional occurrences. The inducedness result below
+excludes extra ambient core edges. Supply from the paper's final-charge
+classification, the full eleven-port ring, colouring repair and strict
+reduction remain open. No catalogue or certificate dependency is removed
+from the complete assembly.
 
 Run `lake build kernelExceptionalDual`. The twelve-root audit requires the
 actual dual bridge, singleton separator and source collision theorem in the
@@ -357,3 +360,64 @@ dependency closure. It admits only `propext`, `Classical.choice` and
 `Quot.sound`, and excludes complete Four Colour endpoints and original
 catalogue rank certificates. See
 [minimal-embedding-measurements.json](minimal-embedding-measurements.json).
+
+## Induced core from facial intervals and short paths
+
+The core has thirteen edges and fifteen distinct unordered nonedges.
+Eleven nonedges join vertices with a common core neighbour. The remaining
+four pairs have distance three. All eight core stars are consecutive
+intervals strictly shorter than the prescribed ambient degree; each retains
+at least one exterior neighbour.
+
+`FacialPatchInduced.corner_chain_successor` proves the relevant general
+rotation law. If `n` retained consecutive neighbours satisfy `n < degree`,
+then a facial corner between retained entries can only join successive
+indices. The strict inequality excludes a wraparound corner. Combined with
+the actual minimal dual's triangle-faciality theorem, this rules out any
+extra edge between two neighbours of a core vertex.
+
+The second law, `FacialPatchInduced.reflects_of_short_paths`, is independent
+of rotations and of the catalogue. Suppose an injective graph homomorphism
+reflects adjacency between neighbours of each source vertex, all source
+vertex pairs have a path of length at most three, and every ambient
+four-cycle has a diagonal. Then the entire homomorphism reflects adjacency.
+An extra edge across a three-edge source path closes a four-cycle; either
+diagonal reduces the claim to the same local reflection law twice.
+
+```text
+retained proper neighbour intervals
+             +
+actual triangles are facial
+             |
+no extra edge across any two-step core path
+             +
+actual four-cycles have a diagonal
+             |
+no extra edge across any three-step core path
+             +
+kernel-checked core diameter at most three
+             |
+       exact induced core
+```
+
+`ExceptionalCoreInduced.four_cycle_chord` transports the existing minimal
+dual four-cycle theorem through the exact adjacency bridge.
+`ExceptionalCoreInduced.source_core_induced` consumes that geometry and the
+same two aligned source occurrences used for injectivity. It establishes
+the exact adjacency equivalence, rather than adding absence of extra edges
+as a field. This is a special case of the inducedness task in the paper's
+Lemmas 3.1 and 9.2; the source diameter-three fact avoids the five-cycle
+case needed for diameter-four configurations.
+
+The finite source checks retain the star bounds, consecutive source edges
+and short-path witnesses. The new reusable laws are not a colouring-repair
+theorem. The eleven-port completion must still preserve all shared boundary
+choices and any justified identifications. Compatible repair, strict
+reduction, final-charge classification and coverage remain open; counts
+remain 633/629.
+
+Run `lake build kernelExceptionalInduced`. The nine-root audit requires the
+actual source construction and the triangle/four-cycle geometry. Only
+standard axioms are allowed, and complete Four Colour endpoints and original
+catalogue rank certificates are excluded. See
+[induced-measurements.json](induced-measurements.json).

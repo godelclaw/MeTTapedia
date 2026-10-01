@@ -1,0 +1,96 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FacialPatchInduced",
+      "source_sha256": "aa14db0fcfbc6349efd18293220c9c43664901ccff3ecc9a4935fef5828ccf6d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.171,
+      "olean_bytes": 163936,
+      "olean_sha256": "1c57286c700c7746313dccf485b19e0591b3f992b5c61187c43ac52387d7c4ac"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalCoreInduced",
+      "source_sha256": "e0f5281d1eff6ae49eff2a149afb6bafe5f3907ba501d1690d00b40ee43ea82e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.856,
+      "olean_bytes": 136912,
+      "olean_sha256": "54ea24557932a0b5de2ef238f7e8e0356c8334c095b0d5bd3b4b240550294897"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalInducedAudit",
+      "source_sha256": "0cf75593e15df431f0c5b2802ba5b33d8bc53518467ea9d961a6e4a08a1ec646",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.046,
+      "olean_bytes": 2600,
+      "olean_sha256": "51d3b759c3f0e7881e076e839f748d060563b35fdcce9fe58b53a44c9065827e"
+    }
+  ],
+  "status": "Kernel replay, dependency audit, flat-coverage and complete-classical regressions, and full main lane build passed.",
+  "recorded_at": "2026-10-01T21:35:02.054584+00:00",
+  "base_revision": "2174a188be6a24a7be7e0d8cd44a3f15783cf518",
+  "replay_command": "lake build kernelExceptionalInduced",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 9,
+    "declarations_in_dependency_closure": 24565,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false
+  },
+  "mathematical_scope": {
+    "uniform_interval_law": "A facial corner within a proper interval of a cyclic vertex rotation joins successive retained indices. The interval must be strictly shorter than the actual degree.",
+    "uniform_short_path_law": "Local adjacency reflection implies global reflection for an injective graph homomorphism when every source pair has a path of length at most three and ambient four-cycles have a diagonal.",
+    "actual_geometry": "Actual minimal-dual triangle faciality and the existing minimal four-cycle classification supply the two ambient hypotheses.",
+    "source_consumer": "FourColor.ExceptionalCoreInduced.source_core_induced",
+    "result": "The same two aligned actual exceptional occurrences yield an eight-vertex core that preserves and reflects adjacency. Combined with the previously proved injectivity, this is an induced core realization.",
+    "domain": "Actual facial dual of a graph-backed vertex-minimal Tait counterexample; both source occurrences and alignment are inputs.",
+    "core_vertices": 8,
+    "core_edges": 13,
+    "unordered_nonedges": 15,
+    "diameter_bound": 3,
+    "finite_checks_retained": [
+      "strict source star degree bounds",
+      "source edges between consecutive star entries",
+      "source short-path witnesses",
+      "previous source collision and orientation checks"
+    ],
+    "open": [
+      "eleven-port boundary completion with shared observations and justified identifications",
+      "compatible colouring repair and strict reduction",
+      "supply from zero-charge classification",
+      "published charge and source-representation bridges",
+      "general patch-construction theorem beyond the checked domain",
+      "universal coverage and scheduling"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "source_fidelity": "exception-source-audit.json",
+  "obligations": "coverage-obligations.json",
+  "primary_reference": "https://arxiv.org/html/2603.24880v1#S9.SS1",
+  "regression": {
+    "classical_command": "lake build kernelExceptionalInduced kernelFlatCoverage kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}
