@@ -1746,6 +1746,21 @@ across every seam. The continuation cost needs a higher derivative
 pairing. The checker retains these distinctions and tests smooth
 whole-space data. Payment for arbitrary interacting histories remains open.
 
+The [joint rotational enstrophy calculation](labs/README.md#joint-rotational-enstrophy-and-the-remaining-directional-work)
+then retains both vorticity channels. Their balances cancel the higher
+swirl source exactly, leaving the meridional strain acting on the swirl
+gradient. The remaining term is identified with the literal full
+three-dimensional stretching, including its boundary flux. Two smooth
+Schwartz data have identical energy, enstrophy, dissipation and zero source
+pairings but opposite stretching; one has increasing enstrophy at positive
+viscosity while its meridional stretching is negative. The complete signed
+geometric history is still needed. The local density equation retains the
+internal boundary flux, and spatial reserve weights have an explicit
+compatibility defect. Weights depending on `r^3 partial_r chi` preserve
+that cancellation, but their evolving parent cost remains unpaid. These
+analytic identities and exact checks supply no arbitrary-data allowance
+or new Lean continuation theorem.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

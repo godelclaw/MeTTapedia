@@ -12634,7 +12634,9 @@ smooth axisymmetric prefixes with the stated decay. It pairs S with
 chi, whereas the azimuthal enstrophy balance below pairs it with
 `eta=-L5 chi`. The latter asks for two additional spatial derivatives.
 The kinetic payment does not automatically pay that higher pairing or
-the full continuation cost.
+the full continuation cost. The joint calculation below retains the
+swirl's own vorticity energy and cancels this higher source; its remaining
+directional deformation still needs payment.
 
 For a general three-dimensional smooth solenoidal field, the exact
 observer equation on r>0 is
@@ -12688,3 +12690,256 @@ differential identities, the signed kinetic-transfer pairing, Gaussian
 data, scaling and scalar reserve algebra. The maximum principle,
 stochastic representation, norm estimates and interval arguments are
 analytic; no new Lean declaration is claimed.
+
+## Joint rotational enstrophy and the remaining directional work
+
+The [joint enstrophy checker](rotational_joint_enstrophy.py) retains both
+vorticity components of an actual smooth, sufficiently decaying,
+axisymmetric unforced flow on R3, at viscosity nu>0. It uses the preceding
+physical equations for eta and b and their full meridional parent.
+No new external control or closed Fourier model is introduced.
+
+Set `v=(u_r,u_z)`, `a=u_r/r`, `b=u_theta/r`, `eta=omega_theta/r`,
+and let chi be the actual scaled streamfunction:
+
+```text
+u_r=-r chi_z,    u_z=2chi+r chi_r,    eta=-L5 chi,
+L5=partial_rr+3/r partial_r+partial_zz,
+<f>_5=integral r^2 f dx=2pi integral f r^3 dr dz.
+```
+
+Smoothness at the axis and the stated decay justify the boundary terms
+below. In particular the meridional velocity may not be chosen independently
+of eta: the elliptic relation is part of the physical state.
+
+### A higher source cancels when its supplying vorticity is retained
+
+The meridional velocity has azimuthal vorticity `r eta`. The swirl velocity
+has vorticity components `(-r b_z, 2b+r b_r)`. Integration by parts gives
+
+```text
+Z_m=<eta^2>_5,       Z_s=<|grad b|^2>_5,
+Z_m+Z_s=||omega||_2^2,
+D_m=<|grad eta|^2>_5, D_s=<(L5 b)^2>_5,
+D_m+D_s=||grad omega||_2^2.
+```
+
+These are the actual physical norms, including the cylindrical basis
+derivatives, not norms of a surrogate tensor. Let
+
+```text
+C_theta=<eta partial_z(b^2)>_5,
+G_m=<a eta^2>_5,
+H_s=-<grad(b)^T [grad(v)+a I] grad(b)>_5.
+```
+
+Using `eta_z=L5 a` and the weighted Green identity gives
+
+```text
+C_theta=-2<a b L5 b>_5-2<a |grad b|^2>_5.
+```
+
+The first term cancels the reaction in the gradient energy of b. Its
+transport also retains `div_5 v=2a`. The resulting complete balances are
+
+```text
+Z_m'/2 = G_m+C_theta-nu D_m,
+Z_s'/2 = H_s-C_theta-nu D_s,
+G = integral omega^T grad(u) omega dx = G_m+H_s.
+```
+
+Thus adding the genuine supplying vorticity energy cancels C_theta
+exactly. The earlier isolated source need not be purchased separately.
+The full enstrophy balance still contains `G_m+H_s`; no favorable sign
+is asserted for that remaining physical deformation.
+
+The compatibility behind the cancellation is especially direct if
+`g=grad b`. The actual gradient equation is
+
+```text
+(partial_t+v.grad-nu L5)g
+ = -(grad v)^T g-2a g-2b grad a-(3nu/r^2)g_r e_r,
+C_theta=2<b g.grad a>_5.
+```
+
+Its last nondiffusive source cancels the eta source in the joint norm.
+Both `g=grad b` and `eta_z=L5 a` are essential; the channels are not
+independent controls. The complete gradient diffusion is nonnegative:
+
+```text
+D_s=<|Hess_(r,z)b|_F^2+3 b_r^2/r^2>_5=<(L5 b)^2>_5.
+```
+
+The radial diffusion term comes from differentiating the actual L5
+operator. Dropping it would change the physical gradient history.
+
+The checker also verifies the universal local identity relating the
+literal three-dimensional stretching density to this split:
+
+```text
+r omega^T grad(u) omega
+ -r^3[a eta^2-grad(b)^T(grad(v)+a I)grad(b)]
+ = partial_r(2r^2 b^2 partial_z u_z)
+   -partial_z(2r^2 b^2 partial_r u_z).
+```
+
+It does not infer the physical equality merely because two reduced
+equations happen to have matching terms.
+
+### The remaining work observes a direction
+
+The matrix `S0=sym(grad v)+(a/2)I` is traceless. Consequently
+
+```text
+G=<a[eta^2-|grad b|^2/2]-grad(b)^T S0 grad(b)>_5.
+```
+
+The second contraction retains the direction of the swirl gradient
+relative to the meridional strain. It is distinct from the paid kinetic
+transfer `T=<chi partial_z(b^2)>_5`, and from C_theta. Calling either
+source zero does not delete this directional term.
+
+The cancelled coupling is a spatial flux, not an absent interaction.
+Set `F=(a_r,a_z-eta)` and
+`div_5 j=r^-3 partial_r(r^3 j_r)+partial_z j_z`. Elliptic compatibility
+gives `div_5 F=0`. For `e=eta^2+|g|^2`,
+`d=|grad eta|^2+|Hess b|_F^2+3 b_r^2/r^2`, and the preceding signed
+deformation density `g_rot`, the complete local equation is
+
+```text
+partial_t(e/2)+div_5[v e/2+b^2 F]-nu L5(e/2)=g_rot-nu d.
+```
+
+The checker verifies this directly from the actual eta,b equations.
+A local history summary must retain the normal flux of
+`v e/2+b^2 F-nu grad(e/2)` across its boundary. Its b^2 F part depends on
+the surrounding meridional field through the elliptic parent relation.
+Cancelling that transfer after integration over all space does not
+authorize deleting it on a local region or when composing regions.
+
+A spatially varying reserve weight must preserve this coupling too.
+For a smooth positive weight w(t,r,z), put
+
+```text
+Q_w=<w(eta^2+|g|^2)>_5,
+G_w=<w[a eta^2-g^T(grad(v)+a I)g]>_5,
+D_w=<w[|grad eta|^2+|Hess b|_F^2+3 b_r^2/r^2]>_5,
+J_w=<b^2[grad w.grad a-eta partial_z w]>_5,
+A_w=partial_t w+v.grad w+nu L5 w.
+```
+
+The actual weighted equation is
+
+```text
+Q_w'/2+nu D_w = G_w+J_w+<A_w(eta^2+|g|^2)>_5/2.
+```
+
+The positive diffusion sign in A_w comes from integration by parts;
+it is the adjoint weight evolution, not the material heat operator.
+The new term J_w is the compatibility defect of the weighted source
+cancellation and is checked with its complete local boundary flux.
+The unweighted identity has J_w=0. If w>=1, Q_w controls the full physical
+enstrophy, but choosing w to reduce G_w must also pay J_w and A_w. No
+such arbitrary-history weight with an original-datum bound is supplied.
+This gives a concrete derivative test for a geometric Bellman reserve
+without interpreting the weight as a new force on the fluid.
+
+There is a nonconstant family that preserves the source cancellation.
+The actual parent quantity `I=r^3 chi_r` satisfies
+
+```text
+grad I = r^3(F_z,-F_r),     F.grad I=0.
+```
+
+Hence `w=Phi(t,I)` has J_w=0 for any smooth scalar Phi. In particular,
+`w=1+alpha I^2`, alpha>=0, is nonnegative, dominates one, and retains
+the compatibility exactly. This is a physical geometric candidate, not
+a completed reserve: its A_w term includes the evolving nonlocal parent
+I, and its remaining G_w has no established payment. If alpha is fixed,
+
+```text
+A_w=2alpha I(I_t+v.grad I+nu L5 I)+2alpha nu |grad I|^2.
+```
+
+Both terms must be retained in the next derivative test. Choosing weights
+along these parent level sets removes J_w; it does not remove their
+time evolution or prove a finite original-datum bound for Q_w.
+Bounded choices, such as `w=1+alpha I^2/(ell^2+I^2)` with ell>0, preserve
+the same cancellation and satisfy `1<=w<=1+alpha`. Their initial Q_w is
+therefore finite for finite initial enstrophy without an extra weighted
+moment assumption. A sufficient derivative estimate for such a weight,
+with parameters fixed from the original datum, remains open.
+
+### Two actual smooth data with the same source totals and opposite stretching
+
+Let sigma be +1 or -1 and set
+
+```text
+rho=r^2+2z^2,
+b=exp(-rho),
+chi_sigma=(sigma/2)z(1-3r^2+4z^2)exp(-rho).
+```
+
+Recover the meridional velocity through chi and set `u_theta=r b`.
+In Cartesian coordinates this is
+`u=(-x chi_z-y b,-y chi_z+x b,2chi+r chi_r)`, a smooth Schwartz
+divergence-free field on all of R3. These data start actual local
+unforced NS evolutions. Their canonical pressures are not assumed zero;
+pressure drops out of the curl equations used for the instantaneous test.
+
+Put `K_j=2pi sqrt(pi/(2j))`. Exact Gaussian integration gives
+
+| Quantity | sigma=+1 | sigma=-1 | Integral factor |
+| --- | ---: | ---: | --- |
+| T | 0 | 0 | K_3 |
+| C_theta | 0 | 0 | K_3 |
+| G_m | -28/729 | 28/729 | K_3 |
+| H_s | 4/81 | -4/81 | K_3 |
+| Full physical G | 8/729 | -8/729 | K_3 |
+| `||u||_2^2` | 249/512 | 249/512 | K_2 |
+| Full physical enstrophy | 1893/256 | 1893/256 | K_2 |
+| Full physical vorticity dissipation | 19537/128 | 19537/128 | K_2 |
+
+The source field `partial_z(b^2)` itself is also identical. At
+`nu=1/100000`, the positive member has
+
+```text
+Z'(0)/(2K_2) = (8/729)sqrt(2/3)-19537/12800000 > 0.
+```
+
+The parent meridional stretching is negative, yet the full stretching
+and enstrophy derivative are positive. Reversing the meridional field
+reverses G without changing either source total or the quadratic norms.
+This shows that these summaries do not reconstruct stretching's sign;
+it does not exclude an upper bound using richer original-data resources.
+
+In particular the proposed instantaneous implication
+`T=C_theta=0 and G_m<=0 implies G<=nu D` is false. Multiplying the
+positive datum by A preserves the zero pairings and the sign of G_m,
+while G scales as A^3 and D as A^2. For any fixed viscosity and any
+fixed coefficient on nu D, sufficiently large A refutes absorption
+using only diffusion and these vanishing source totals. Strict failure
+persists briefly on a local smooth solution by continuity. No uniform
+interval across that amplitude family is claimed. These tests do not
+refute the signed-renewal estimate with its G(0) subtraction and a
+full-original-datum allowance.
+
+The checker includes a separate nonzero-C_theta Gaussian fixture. It
+verifies both individual evolution balances before cancellation,
+complete viscosity, full Cartesian tensor components expressed in the
+cylindrical orthonormal frame, and the ordinary vorticity dissipation.
+Gaussian moments are exact; no grid, mode truncation or quadrature is used.
+It also checks the complete weighted equation for `w=1+r^2`; on the sign
+pair, `J_w` equals `sigma*(8/81)K_3` despite both unweighted source
+pairings vanishing. The adjoint weight term and its viscous Laplacian
+are retained in that check.
+
+The next physical obligation is payment of the remaining directional
+contraction along the coupled evolving eta,b system, including their
+nonlocal parent relation, and then the angular/geometric defects of
+general three-dimensional flows. The joint cancellation removes a
+separate source bill; it does not close that history estimate.
+
+Run `python3 -O labs/rotational_joint_enstrophy.py`. The PDE integrations
+and local-solution consequences are analytic and the identities are
+checked symbolically. No new Lean declarations or axioms are claimed.
