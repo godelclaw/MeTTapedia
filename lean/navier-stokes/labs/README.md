@@ -8210,3 +8210,219 @@ monotonicity even with the intended initialization. An initial burst is
 compatible with a finite full-datum allowance; neither that allowance nor
 arbitrary-data regularity is refuted. The changing-receiver and recurrent
 parent estimates remain the decisive obligations.
+
+## Retained-parent completion with the actual vorticity geometry
+
+The impulse payment does not justify cancelling or bounding the entire
+pressure contribution independently of the receiver. On the preceding
+interacting 3D fixture, the original direct strain-pressure leg is favorable
+for the sign with positive complete initial production. Removing that leg
+by its impulse endpoint transfer therefore increases the initial production.
+The dominant positive component is parent deformation. The following
+completion retains that deformation and the actual vorticity geometry.
+
+### An actual split, with the original geometry preserved
+
+Let `H` be the original-datum passive vector and `I=H-u` as in the previous
+section. Write
+
+```text
+B_H=grad H,      A=grad I,      B=B_H-A=grad u,
+D B_H=-B_H B,   D A=P-AB,      D B=-B^2-P.
+```
+
+Here `D=partial_t+u.grad-nu Delta`. The two retained parents share the
+actual NS drift and original history; they are not independently selectable
+controls. Physical vorticity, strain and the branch invariants are computed
+from B. In particular the passive vector's curl does not replace the fluid
+vorticity.
+
+Keep the previously defined `p0(B,P_hat)` and `c0(B)`. Change their radial
+completion to the joint size
+
+```text
+R=|B_H|^2+|A|^2,        q=sqrt(sigma^2+|P_hat|^2),        Q=R+q,
+U=p0(B,P_hat)+192Q^2,   V=c0(B)+192Q^2,
+Psi_joint=1+sqrt(U^2+V^2),
+Phi_joint=Psi_joint+|P|^2.
+```
+
+The positive regularizers remain fixed. Since `|B|^2<=2R` and
+`|omega|^2<=2|B|^2`, while `c0>=0`,
+
+```text
+Psi_joint>=1+192Q^2,
+Phi_joint>=1+48|B|^4+|P|^2>=1+12|omega|^4+|P|^2.
+```
+
+The pressure branch obeys `U>=190Q^2>0`. Both branches are at least
+`192sigma^2`, so the background
+`Phi_joint,infinity=1+192sqrt(2)sigma^2` can be subtracted nonnegatively.
+The same actual-vorticity continuation interface therefore applies once
+its integrability, capacity and uniform physical-time allowance are supplied.
+That allowance is not established here.
+
+### Why the constant 192 preserves the physical source payment
+
+For simultaneous increments `E_H,E_I,L` put
+
+```text
+E_B=E_H-E_I,       e=|E_H|^2+|E_I|^2,       g=|L|^2,
+d=B_H:E_H+A:E_I,   ell=(P_hat:L)/q.
+```
+
+The radial curvature formula applies to the joint space:
+
+```text
+D2(Q^2)=8d^2+4Qe+8d ell+2g+(2R/q)(g-ell^2)
+        >=2Qe+(2/5)g.
+```
+
+All increments vary together. The retained geometry obeys
+`r_B=|B|^2<=2R`, `|E_B|^2<=2e`, hence `r_B|E_B|^2<=4Re`.
+The original negative-part bounds for the actual B branches give
+
+```text
+D2 c0>=-(6976/21)Re,
+D2 p0>=-(352R+16q)e-8g.
+```
+
+Adding `192D2(Q^2)` leaves, for either branch,
+
+```text
+D2 U,D2 V>=32Qe+(56/5)g,
+D2 Psi_joint>=32Qe+(56/5)g>=8|B|^2|E_B|^2.
+```
+
+The radial norm's remaining curvature is its nonnegative square. This is
+an analytic uniform mixed matrix estimate; Lean certifies the coefficient
+combinations with their physical negative-part inputs explicit. Independent
+exact matrix differentiation checks both retained increments and a
+noncommuting pressure increment. It also checks the numerical value and
+two derivatives against those independently differentiated expressions
+when the impulse is nonzero. These tests do not assert that arbitrary
+matrix pairs are attained by a fluid history.
+
+`MettapediaNS.RetainedParentCompletion` additionally constructs the actual
+impulse-gradient entries and joint parent sizes from whole-space smooth L2
+fields. It proves the original velocity's parent-cost comparison and applies
+the already certified pressure projection to its literal derivative-parent
+source:
+
+```text
+nu ||grad q_G||_2^2<=integral D_Phi,joint/8,
+G=(grad u)(grad u)^T.
+```
+
+The physical mixed-curvature lower bound and integrability of its constructed
+diffusion remain explicit inputs to this kernel source consumer. No
+weighted projection contraction is used. The flux matrix square is still
+`|P+sI|^2=|P|^2+s^2<=Phi_joint`, with `s=tr(B^2)`.
+Consequently the prior signed selected/unselected viscous absorption applies
+to this joint completion with the same surviving quarter of total diffusion,
+under the same weak chain-rule and integrability obligations.
+
+At the original datum `B_H=B`, `A=0`, `C=0`, `P_hat=P`. The conservative
+analytic bound
+
+```text
+0<=Phi_joint-Phi_joint,infinity
+ <=1024(R^2+sigma R+|P_hat|^2+|P|^2)
+```
+
+gives a finite initial deposit for the same soft-excess correction:
+
+```text
+R_joint=integral[F_b(Phi_joint,h)+8(Phi_joint-Phi_joint,infinity)],
+R_joint(0)<=24576 integral |grad u_0|^4
+             +8192sigma integral |grad u_0|^2,
+```
+
+when b is fixed above the initial supremum and `h(0)=1`. This uses the
+actual initial canonical Hessian comparison `integral|P|^2<=integral|B|^4`.
+The physical initial bound is analytic, not kernel-certified assembly.
+
+### Complete reaction and the remaining history estimate
+
+Denote the derivatives of `Psi_joint` in its three independent slots by
+`Psi_H`, `Psi_A`, `Psi_hat`. Retain the previous actual pressure reactions
+`A_hat` and `A_p`, including transport commutators and all memory parents.
+The full unforced nonlinear reaction is
+
+```text
+R_NL,joint=Psi_H:(-B_H B)+Psi_A:(P-AB)
+           +Psi_hat:A_hat+2P:A_p.
+```
+
+The canonical explicit viscous pressure source remains unchanged. The
+analytic assembled production inequality is therefore
+
+```text
+R_joint'+D_total,joint/4
+ <= integral(a+8)R_NL,joint-C_capacity,joint.
+```
+
+At `A=0`, the radial part of `Psi_A` vanishes, so its direct pressure
+injection is transferred. The derivative of the actual vorticity geometry
+with respect to A is still present: differentiating B=B_H-A retains its
+pressure leg. At later times the radial impulse-pressure term also returns.
+The parent deformation is not cancelled, and the paid unweighted impulse
+does not bound these weighted work terms automatically.
+
+The sufficient missing estimate remains a finite original-datum payment
+for every compatible unforced prefix:
+
+```text
+integral_0^tau [integral(a+8)R_NL,joint-C_capacity,joint]
+ <= integral_0^tau D_total,joint/8+A(u_0,nu,H).
+```
+
+It is OPEN. Receiver responses and endpoints must keep the two coupled
+parents, actual vorticity, pressure, memory and original label. No
+Schrodinger-bridge optimizer or independently tunable fluid force is
+identified with this completion.
+
+For forced flow, `D A=P-grad f-AB`, while `D B_H=-B_H B`. The pressure
+reactions also retain their force contributions. The finite force test
+keeps these extra legs for fixed Eulerian `f=curl u_0`, with zero kinetic
+work only initially. It is not the imported blowup construction or an
+unforced internal realization.
+
+### Reproducible tests
+
+```sh
+python3 -O labs/retained_parent_completion.py
+python3 -O labs/retained_parent_completion.py --quadrature
+```
+
+The exact default checks retain all Fourier outputs, both velocity signs,
+the actual passive/impulse gradient equations and the force impulse.
+The quartic gradient reaction has parent contribution
+`+162790222016/75150075` and pressure contribution
+`-314203808/20495475` for one sign, with both signs reversed for the other.
+These are reaction components, not the full viscous derivative or a
+counterexample to a finite full-datum history allowance.
+
+Optional independent spatial quadratures retain the complete initial
+NS/pressure/memory generator, all joint slots and actual mixed diffusion.
+Their threshold comes from the analytic Fourier bound above the initial
+joint envelope, independently of the grid and unknown future. They test
+the signed balance, actual derivative-parent payment and previous viscous
+absorption. They do not construct a continuum trajectory or provide a
+continuum enclosure. Finite bursts and changing geometry remain allowed.
+
+At `nu=0.1`, the independent `96^3` and `128^3` checks use the same
+datum-fixed threshold `b=94502831`; the sampled initial joint envelope
+maximum is below `4.81e6`. For one sign the complete initial derivative
+is approximately `+792957.81`, with nonlinear work `+5300633.63` and
+total diffusion `4507675.81`. The opposite sign gives a negative initial
+derivative. The initial soft selector is inactive, so the selected costs
+vanish while the unselected correction retains the complete generator.
+
+The largest scaled generator residual is `2.80e-9`, and the reported
+independent comparisons agree within `2.09e-9`. Transferring the radial
+pressure injection changes the derivative by `+45091.51` for the positive
+production sign. Thus pressure transfer does not remove the initial parent
+burst on this fixture. These are spatial numerical diagnostics, not a
+continuum sign certificate or a counterexample to a finite full-datum
+history allowance. The latter remains the open estimate.

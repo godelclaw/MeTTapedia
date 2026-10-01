@@ -955,6 +955,33 @@ Schrodinger-bridge optimizer nor the full nonlinear reserve is identified
 with the paid impulse alone. See the
 [history derivation and bounded tests](labs/README.md#pressure-compensated-history-a-paid-channel-and-its-geometric-consumer).
 
+### Actual vorticity geometry with both retained parents
+
+`RetainedParentCompletion` keeps the original fluid gradient
+`B=B_H-A`, where `B_H=grad H` and `A=grad I`. Its literal whole-space
+field reconstruction, actual-vorticity comparison and actual derivative-parent
+source payment are kernel-certified. The companion analytic completion keeps
+the original vorticity/strain branches evaluated at B, and uses
+
+```text
+R=|B_H|^2+|A|^2,      Q=R+sqrt(sigma^2+|P_hat|^2),
+Psi_joint=1+sqrt((p0(B,P_hat)+192Q^2)^2+(c0(B)+192Q^2)^2),
+Phi_joint=Psi_joint+|P|^2.
+```
+
+It controls the ACTUAL vorticity and retains sufficient mixed diffusion
+to pay the same full derivative-parent viscous pressure source. The scalar
+curvature certificates retain the physical matrix lower bounds as inputs;
+the full matrix and evolving PDE identification remain analytic.
+
+The actual parent equations are `D B_H=-B_H B`, `D A=P-AB`. Only the
+radial completion's direct pressure injection is transferred at `A(0)=0`;
+the vorticity geometry, pressure commutators and later impulse-pressure
+work remain. This does not remove parent deformation or prove a signed
+renewal allowance. Exact Fourier tests retain both signs of that deformation
+and a favorable direct pressure contribution. See the
+[joint derivation and tests](labs/README.md#retained-parent-completion-with-the-actual-vorticity-geometry).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

@@ -32,6 +32,7 @@ import MettapediaNS.SelectedPressureCotangent
 import MettapediaNS.JointReceiverDiffusion
 import MettapediaNS.SignedViscousPressure
 import MettapediaNS.PressureImpulseHistory
+import MettapediaNS.RetainedParentCompletion
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1060,3 +1061,22 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.spent_initial
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.pressure_work_between
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.pressure_work_between_paid
+
+/-! Actual geometry, joint parent curvature and the literal source consumer. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.split_product_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.completed_core_lower
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.completed_pressure_lower
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.actual_parent_curvature
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.pressure_branch_scale
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.branch_baseline
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.impulse_gradient_entry
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.retainedGradientSquare
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.retainedGradientSquare_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.actual_gradient_square_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.retainedGradientSquare_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.retainedDerivativeSquare
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.retainedDerivativeSquare_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.actual_parent_cost_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.source_pressure_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.vorticity_normSq_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.actual_vorticity_coercivity
