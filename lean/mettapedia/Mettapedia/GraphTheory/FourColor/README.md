@@ -424,6 +424,23 @@ instances are program checks, not new kernel-certified fixture adapters.
 Adjacent pin order, a strict smaller operation and occurrence coverage
 remain open. Catalogue and original-certificate counts remain 633 and 630.
 
+The [adjacent-pair adapter](AdjacentSourceBoundaryRepair.lean) now derives
+that boundary order from the two local rotations, instead of accepting an
+independent order certificate. Its graph-backed pair has four distinct
+exterior pins and connected retained and deleted shores in a spherical
+cubic embedding. The local rotations enumerate every deleted boundary
+dart; planar complementary-shore separation reverses their order on the
+retained side. Reflecting both pin pairs together preserves the shared
+insertion contract. Full-dual and deleted-shore connectedness are derived,
+and the resulting adapter feeds whole source and target witnesses, the
+exact physical exterior switch and every complete faithful GSLT sweep.
+The [audit and receipt](../../../../../tools/fourcolor/classical/adjacent-source-boundary-measurements.json)
+exclude classical endpoints, complete-colouring suppliers and finite
+fixtures from the uniform proof. Thirteen finite order instances on five
+sources are independently replayed; their geometric hypotheses remain
+program checks. No strictly smaller operation or catalogue saving is
+credited.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

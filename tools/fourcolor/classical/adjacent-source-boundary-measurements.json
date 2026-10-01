@@ -1,0 +1,88 @@
+{
+  "schema": 1,
+  "status": "Kernel-checked adjacent source-pair adapter deriving actual retained boundary order and feeding whole witness, physical-edge and GSLT consumers",
+  "proof_roots": 13,
+  "dependency_closure": 22241,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "complete_four_color_endpoint_used": false,
+  "complete_source_colouring_supplier_used": false,
+  "finite_graph_data_in_uniform_laws": false,
+  "uniform_source_size_bound": null,
+  "boundary_ports": 4,
+  "joint_insertion_choices": 2,
+  "geometric_hypotheses": [
+    "Actual simple-graph dart rotation",
+    "Actual adjacent pair with four distinct exterior pins and exhaustive cubic incidences",
+    "Spherical cubic Euler data and cyclic vertex rotations",
+    "Distinct facial sides of every edge",
+    "Connected source and retained shore"
+  ],
+  "derived_geometric_fields": [
+    "Connected deleted shore from the actual central adjacency",
+    "Connected full facial dual from source connectedness and cyclic rotations",
+    "Exhaustive deleted boundary enumeration from the local cubic rotations",
+    "Actual retained first-return order by planar complementary-shore inversion",
+    "Exact frame pin identification under a shared reflection"
+  ],
+  "independent_boundary_order_certificate_required": false,
+  "colouring_hypotheses": [
+    "Proper nonzero partial source exterior",
+    "Distinct colours a,b,a,b in the derived retained pin order"
+  ],
+  "kernel_conclusions": [
+    "A saturated separating source component is supplied",
+    "Its switch supplies both coupled insertion choices",
+    "A whole source colouring and actual target Tait colouring reconstruct",
+    "Reconstruction agrees with the actual target-edge switch on all exterior stars and cut observations",
+    "Every complete faithful GSLT sweep supports compatible witnesses"
+  ],
+  "preserves_colouring_counts_asserted": false,
+  "preserves_every_recolouring_history_asserted": false,
+  "strict_smaller_operation_proved": false,
+  "universal_occurrence_coverage_proved": false,
+  "kernel_finite_geometric_fixtures": 0,
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/adjacent_source_boundary_probe.py --check",
+    "record": "adjacent-source-boundary-probe.json",
+    "maps": 5,
+    "interfaces": 13,
+    "deleted_first_return_matches_local_rotations": true,
+    "retained_first_return_matches_reflected_ports": true,
+    "both_shores_connected": true,
+    "concrete_geometry_kernel_certified": false
+  },
+  "measurements": [
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceBoundaryRepair.lean",
+      "source_bytes": 17154,
+      "source_sha256": "921648253b700f0bd568af50050593d3f994c077dc6f3b502f903632fb9d9a97",
+      "artifact_bytes": 423096,
+      "artifact_sha256": "6f5b40a24b38ca4cda16c716dc70a88fc350be1b32e8c29bc00771d91aed67f2"
+    },
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceBoundaryRepairAudit.lean",
+      "source_bytes": 5436,
+      "source_sha256": "dfb15a57ef68f2dacffb873a3d9ccf0611da69e95184ff6cd1f163c1e3038a7b",
+      "artifact_bytes": 3600,
+      "artifact_sha256": "65d81fed158503b724c97d4c4640281daa4545c235dc2bdbe1d24b6af0c805c6"
+    }
+  ],
+  "source_bytes": 22590,
+  "olean_bytes": 426696,
+  "frontend_seconds_in_targeted_audit_run": {
+    "AdjacentSourceBoundaryRepair.lean": 4.9,
+    "AdjacentSourceBoundaryRepairAudit.lean": 10.0
+  },
+  "frontend_scope": "The targeted audit run rebuilt both new modules; the full gate may use them from cache.",
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "discharging_computations_replaced": 231,
+  "catalogue_entries_removed": 0,
+  "original_configuration_certificate_dependencies_removed": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "scope": "The uniform implication derives the boundary geometry for actual adjacent pairs with connected planar shores. Concrete finite geometric instances remain independent program checks. Adjacent colour arrangements, a compatible strictly smaller operation, termination and occurrence coverage remain separate."
+}

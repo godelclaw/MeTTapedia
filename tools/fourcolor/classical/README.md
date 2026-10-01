@@ -512,6 +512,32 @@ controls remain outside its hypotheses. A strictly smaller embedded
 operation and occurrence coverage are still needed for a catalogue saving.
 The catalogue and original-certificate counts remain 633 and 630.
 
+## Adjacent source pairs with a derived order
+
+The [geometric adapter](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceBoundaryRepair.lean)
+derives the alternating repair's actual port order from local cubic
+rotations and connected planar complementary shores. Four distinct
+exterior pins exhaust the boundary. The retained first-return order is
+the inverse of the deleted one; a shared reflection preserves the two
+insertion pairs. The full facial dual and deleted-pair connectedness are
+also derived. Whole source and target reconstruction, exact physical
+exterior agreement and faithful GSLT witnesses consume this adapter.
+
+```sh
+python3 tools/fourcolor/classical/adjacent_source_boundary_probe.py --check
+```
+
+The [receipt](adjacent-source-boundary-measurements.json) records thirteen
+audited roots using only the standard three axioms, with complete-colouring
+suppliers, classical endpoints and finite fixtures excluded. The
+[independent replay](adjacent-source-boundary-probe.json) checks both shore
+connections and both actual first-return permutations on thirteen pairs
+from five sources. These concrete geometric instances remain program
+checks; the uniform geometric adapter and its consumers are kernel-checked.
+Colouring existence, counts and execution histories are not identified.
+Strict reduction and occurrence coverage remain separate. This tranche
+removes no catalogue entries or original configuration certificates.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

@@ -375,6 +375,19 @@ that the algebra can compose. Adjacent boundary arrangements, a smaller
 embedded operation and occurrence coverage remain separate obligations;
 the catalogue remains at 633 entries.
 
+The [adjacent-pair geometric adapter](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceBoundaryRepair.lean)
+removes the independent port-order certificate on a connected planar
+shore domain. The two local rotations list all four ports, and planar
+complementary shores determine the exterior order by reversal. Both
+insertion choices are transported together. The resulting repair yields
+genuine source and expanded-target colourings, fixes the physically
+switched exterior, and supplies compatible witnesses on every complete
+faithful GSLT sweep. This is a uniform geometric bridge rather than a
+table of source examples. Its [receipt](../../../tools/fourcolor/classical/adjacent-source-boundary-measurements.json)
+separates the kernel theorem from thirteen program-checked geometric
+instances. A smaller embedded operation and occurrence coverage are still
+needed before this bridge reduces the unavoidable catalogue.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two
