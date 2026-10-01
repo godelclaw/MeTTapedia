@@ -36,6 +36,7 @@ import MettapediaNS.RetainedParentCompletion
 import MettapediaNS.CovectorParentHistory
 import MettapediaNS.JointCoframePressure
 import MettapediaNS.JointCoframeCompletion
+import MettapediaNS.CovectorFluidBridge
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1133,3 +1134,34 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedProduction
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completed_production
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.actual_skew_reconstruction
+
+/-! Actual covector reconstruction and its retained physical curl conversion. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.transposeStretch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.transposeStretch_coordinate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.pairingPotential
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.pairing_gradient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.gradient_lie_transport
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.transposeStretch_self_gradient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.covectorRhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.covectorRhs_field
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.covectorRhs_sub
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.gradient_covectorRhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.projected_covectorRhs_self
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.projected_covectorRhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.nonlinear_pushdown
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.actual_curl_reconstruction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.materialCovectorRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.material_covector_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metricSquare
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metricSquare_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metricSquare_initial_identity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.covariantDerivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.connectionCurl
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.covariantCurl
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.actual_vorticity_split
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metricCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metricCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metricProduction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metric_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.metric_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorFluidBridge.actual_vorticity_conversion

@@ -8869,3 +8869,109 @@ Its initial kinetic work is zero while its completed rotational work
 is strictly positive. The full initial velocity/impulse generator
 retains that term. This is a local forced filter, not the imported
 singular construction or a zero-work assertion for later times.
+
+### Actual covector reconstruction and the retained curl
+
+The velocity covector formulation is the
+[Constantin--Iyer stochastic representation](https://arxiv.org/abs/math/0511067),
+Theorem 2.2 and equation (4.5). It is an identification on a smooth solution
+interval, not an arbitrary-data global existence theorem. For
+`D=partial_t+u.grad-nu Delta`, `B=grad u`, and the actual Helmholtz
+projection P, retain the original canonical covector:
+
+```text
+D m=-B^T m,       m(0)=u_0,       u=P m.
+```
+
+If gamma=m-u is a smooth gradient, its full Lie transport satisfies
+`(u.grad)gamma+B^T gamma=grad(u.gamma)`. Also
+`B^T u=grad(|u|^2/2)`. Projecting the COMPLETE covector equation
+therefore gives exactly the unforced Navier--Stokes equation. Curl m is
+the actual fluid vorticity. `MettapediaNS.CovectorFluidBridge` certifies
+both statements on literal whole-space smooth L² fields, with the actual
+projection rather than an abstract observation map. The stochastic
+construction and identification of its smooth time paths remain analytic.
+
+For the SAME translation-noise flow X, inverse label A=X^-1, F=grad A,
+the analytic representation has `m=E[F^T u_0(A)]` and `N=E[F^T F]`.
+Incompressibility preserves volume for each noise realization. With
+`Q=N^-1`, `N(0)=I`, and `K_j=(partial_j N)Q`, the complete generator is
+
+```text
+D(m^T Q m)=-2nu F_m,
+F_m=sum_j r_j^T Q r_j >=0,     r_j=partial_j m-K_j m.
+```
+
+This uses the full inverse differentiation, including every spatial
+metric derivative. Under the smooth stochastic/time realization, spatial
+comparison yields
+`integral m(t)^T Q(t)m(t)+2nu integral_0^t integral F_m <= ||u_0||_2^2`.
+Weighted Cauchy--Schwarz also gives
+`m^T Q m <= E[|u_0(A)|^2]` pointwise. These are analytic payments for
+the normalized covector, not bounds on the ordinary curl. Lean certifies
+the literal material covector rate, full supplied-metric production,
+nonnegative square/cost and initial identity. It does not construct Q or
+prove the physical-time comparison.
+
+The curl conversion retains the connection:
+
+```text
+omega_i=r_(i+1),(i+2)-r_(i+2),(i+1)+C_i,
+C_i=(K_(i+1)m)_(i+2)-(K_(i+2)m)_(i+1).
+```
+
+Indices are cyclic. Lean certifies this actual-vorticity decomposition and,
+if `b>=0` and `b |r_j|^2<=r_j^T Q r_j` for every j, the pointwise bound
+`b |omega|^2<=4 F_m+2b |C|^2`. Useful physical coercivity requires b>0.
+Neither that lower bound nor a payment for C is provided by the normalized
+energy inequality. Even finite spacetime L² vorticity alone would not
+give the required continuation criterion. Bounds must have the necessary
+spatial strength and remain finite on every prescribed finite horizon
+from the full original datum.
+
+```sh
+python3 -O labs/covector_fluid_bridge.py
+```
+
+The exact checker retains all Fourier convolution outputs on the `2*pi`
+torus, canonical pressure, original m(0)=u_0, the same coframe and complete
+unforced first/second time derivatives. Projection and actual curl agree
+at all three tested orders; the full metric generator and its first
+time derivative retain drift_t and every diffusion/connection term.
+These are initial derivatives of the full PDE, not a closed Galerkin
+evolution or a uniform Taylor window.
+
+For the three-dimensional datum at nu=1/10,
+
+```text
+(mean m^T Q m)'(0)=-31905344/5780775 <0,
+(mean m^T Q m)''(0)=171344128/28903875,
+C(0)=0,       C'(0)=-(u_0.grad)omega_0,
+mean |C'(0)|^2=183108608/3468465 >0,
+W(0)=W'(0)=0,       W''(0)=64/33 >0,
+W(t)=mean omega(t).C(t).
+```
+
+The first connection curl is transport and has zero integrated signed
+vorticity work. Its next COMPLETE derivative has positive work. Under
+analytic smooth short-prefix realization this excludes a universally
+zero or nonpositive W. It does not assert positive total covector
+production, indefinitely renewed stretching, failure of a finite
+full-datum history payment, or unforced singularity.
+
+A nonzero retained gradient difference preserves the projected RHS and
+curl but changes the covector energy. Thus projection equality cannot
+authorize a reset of the canonical original-data reserve. An auxiliary
+gradient source projects to zero. A physical solenoidal force survives
+in the reconstructed equation and its curl. The checker tests these
+filters with an explicit initial source; it does not realize or exclude
+an imported singular trajectory inside unforced fluid. A freely chosen
+auxiliary control is not a physical fluid force, and no Schrodinger
+optimizer or Bellman certificate for the unbounded curl history is
+identified here.
+
+The next physical obligation is joint original-datum control of the
+changing-frame curl and its conversion to a sufficient continuation
+norm, retaining compatible parents, phases, pressure, geometry and
+viscosity. The pressure/strain/vorticity completion above remains a
+parallel route to that same history bound.

@@ -1047,6 +1047,32 @@ source work. Thus cancelling the explicit pressure does not make the new
 source dissipative. A coupled history payment and physical conversion
 remain open; see the [completion test](labs/README.md#nonnegative-pressure-endpoint-completion).
 
+### Stochastic velocity covectors reconstruct the actual fluid
+
+`CovectorFluidBridge` certifies the nonlinear reconstruction in the
+[Constantin--Iyer representation](https://arxiv.org/abs/math/0511067):
+for a smooth velocity covector m, set u to its actual Helmholtz projection.
+The complete covector RHS `D m=-(grad u)^T m` projects exactly to
+`nsProjectedRhs`, and `curl m=curl u`. The gradient difference is retained;
+it is not an independently selected force. The literal whole-space field
+reconstruction and supplied-coframe rate algebra are kernel-certified.
+
+Analytically, m starts at u_0 and is the expectation of the inverse-flow
+pullback of that same datum. The same inverse-flow moment N and Q=N^-1
+give `D(m^T Q m)=-2nu F_m`, where
+`F_m=sum_j |partial_j m-(partial_j N)Qm|_Q^2`.
+This yields a normalized channel paid by the original velocity energy.
+The stochastic construction and physical-time comparison are not yet
+kernel-certified. Nor does this identify a Schrodinger-bridge optimizer.
+
+Ordinary vorticity additionally retains the curl of the connection
+`(partial_j N)Qm`. Lean certifies its exact reconstruction and a pointwise
+conversion exposing both metric coercivity and that extra curl. Exact
+full unforced time jets show initial signed transport cancellation but
+positive later connection work. A finite original-datum history bound
+and control strong enough for continuation remain open. See the
+[physical bridge and curl-conversion test](labs/README.md#actual-covector-reconstruction-and-the-retained-curl).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
