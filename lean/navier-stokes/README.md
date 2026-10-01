@@ -1710,6 +1710,17 @@ residual and one delayed case. The group and spatial identifications
 remain analytic. The unrestricted push-down implication fails; an
 invariant physically compatible class of lifts remains a separate task.
 
+The [physical covector HJB calculation](labs/README.md#a-physical-covector-hjb-equation-and-its-mean-action-payment)
+uses the existing fluid reconstruction directly. On each smooth periodic
+unforced prefix, `m=u-grad S` has the actual covector evolution when
+`D S=|u|^2/2-p`. Its HJB source is `|m|^2/2-p`; the positive heat transform
+retains that internal potential. The auxiliary control does not force the
+fluid. With zero-mean pressure, `(mean S)'=||u||_2^2/2`, paid on every
+compatible interval by `(H-t)||u(t)||_2^2/2`. This analytic identification
+and payment survive interacting parents, with exact shear and full 3D-jet
+checks. They control the signed spatial mean; the gradient/pressure work
+and the sufficient physical stretching budget remain open.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

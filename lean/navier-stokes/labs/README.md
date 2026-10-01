@@ -12101,3 +12101,166 @@ but source derivative `120nu^3`. The spatial frame, group identifications,
 complete-frame passage and general delayed family are analytic with exact
 finite checks, not Lean theorems. Run
 `python3 -O labs/heat_gradient_observer.py`.
+
+## A physical covector HJB equation and its mean-action payment
+
+The [covector Bellman checker](covector_bellman_bridge.py) tests a coupled
+HJB representation that uses the actual fluid drift and pressure. Its
+consumer is the physical covector reconstruction in
+`MettapediaNS.CovectorFluidBridge`. It does not use the unrestricted
+identity-gradient observation refuted above.
+
+### Identification on every smooth physical prefix
+
+Work on the normalized period-`2pi` torus with positive viscosity. Let
+`u,p` be a smooth unforced NS evolution on an available finite interval,
+with `div u=0` and spatial `mean p=0`. Write
+`D=partial_t+u.grad-nu Delta` and `B=grad u`. Solve the linear scalar
+equation on that same interval:
+
+```text
+D S = |u|^2/2-p,       S(0)=0,
+m = u-grad S.
+```
+
+Smooth periodic coefficients give this scalar solution on each smooth
+prefix. Commuting a gradient through D gives the complete equations
+
+```text
+D grad S = B^T m-grad p,
+D m = -B^T m,        m(0)=u(0),
+P m = u,            curl m = curl u.
+```
+
+Here P is the Helmholtz projection. The first equation retains the
+pressure gradient; the cancellation in the second is exact. Projection
+identifies this RHS with the nonlinear NS RHS. The periodic identification
+here is analytic; the existing covector theorem certifies the corresponding
+whole-space smooth-field algebra, not a torus existence theorem. These
+identities do not assume existence beyond the available smooth lifespan.
+
+Completing the kinetic square gives a physical HJB equation:
+
+```text
+S_t-nu Delta S+|grad S|^2/2 = V,
+V = |m|^2/2-p.
+```
+
+The positive transform `Phi=exp(-S/(2nu))` satisfies
+
+```text
+Phi_t = nu Delta Phi - (V/(2nu)) Phi,       Phi(0)=1.
+```
+
+Thus the scalar heat representation retains a potential supplied by
+the same fluid and covector. Dropping V changes the equation. It is an
+internal term of this representation, not an externally imposed force.
+For a solenoidal applied fluid force f, the scalar construction instead
+gives `D m=-B^T m+f`; its projection retains f. The force is not hidden
+in a freely chosen scalar gauge.
+
+### What the auxiliary control does
+
+For a fixed smooth physical prefix, the elementary square completion
+
+```text
+a.grad S+|a|^2/2 = -|grad S|^2/2+|a+grad S|^2/2
+```
+
+gives the usual control verification. Starting at x, let
+`dX_s=a_s ds+sqrt(2nu)dB_s`, using periodic positions, over `0<=s<=t`.
+For progressively measurable controls of finite expected quadratic cost,
+Ito's formula applied to `S(t-s,X_s)` gives
+
+```text
+S(t,x) = inf_a E integral_0^t [|a_s|^2/2+V(t-s,X_s)] ds.
+```
+
+The smooth feedback `a_s=-grad S(t-s,X_s)` attains equality. The initial
+value S(0)=0 removes the terminal term. On each compact smooth prefix,
+the required coefficients and derivatives are bounded, so this
+verification has finite integrals. It is an analytic argument, not a
+new Lean stochastic-control theorem.
+
+This auxiliary drift is `m-u`, not the physical velocity u. The fluid
+history fixes V before this auxiliary optimization; varying a does not
+independently vary the fluid pressure or its parents. This identifies a
+control representation of actual prefixes, not an independently prescribed
+Schrodinger-bridge optimizer or an arbitrary-data global construction.
+
+### A finite original-data payment, with its exact limitation
+
+Let `E(t)=mean |u(t)|^2` and `d(t)=mean |grad u(t)|^2`. Integration by
+parts and `div u=0` give
+
+```text
+mean |m|^2 = E+mean |grad S|^2,
+(mean S)' = E/2,             E'=-2nu d.
+```
+
+The hidden gradient's kinetic square cancels the HJB control square
+in the spatial mean. No assumption of noninteracting parents is used.
+Consequently `0<=mean S(t)<=t E(0)/2`. For a horizon H fixed from the
+start, the nonnegative remaining reserve
+
+```text
+R(t)=(H-t)E(t)/2,
+R'(t)+E(t)/2 = -nu(H-t)d(t)<=0
+```
+
+pays every compatible interval `0<=a<=b<=H` in the smooth lifespan:
+
+```text
+mean S(b)-mean S(a) = integral_a^b E(t)/2 dt <= R(a)-R(b).
+```
+
+Every seam uses the same horizon and complete kinetic energy. This is
+a consequence of the standard energy identity, not a new regularity
+criterion. It pays the signed spatial mean, not `mean |S|`, its pointwise
+supremum, its spatial derivatives or cubic vorticity stretching. The
+mean identity uses the stated zero-mean pressure normalization; a time
+dependent pressure constant changes S's mean but not the physical u.
+No whole-space integral of S is asserted here.
+
+### Exact physical tests and the next cost
+
+For the unforced shear `u=A exp(-nu t)sin y e_1`, pressure is zero and
+the canonical scalar is explicitly
+
+```text
+S=A^2/(8nu) [1-exp(-2nu t)
+             -(exp(-2nu t)-exp(-4nu t))cos(2y)].
+```
+
+The checker verifies the complete covector and HJB equations for all
+time, with its nonzero hidden gradient and unchanged physical shear.
+It also checks both signed 3D interacting fixtures at viscosities
+`1/10` and `1`, their complete first and second NS/covector jets,
+nonconstant scalar gauges, mean cancellations and a retained
+solenoidal applied force. No Fourier output is discarded.
+
+The raw value S itself is not a nonnegative reserve. For the exact
+Taylor-Green flow `u=A exp(-2nu t)(sin x cos y,-cos x sin y,0)` with
+`p=A^2 exp(-4nu t)(cos 2x+cos 2y)/4`, the canonical initial HJB source
+at the origin is `V(0,0)=-A^2/2`. Hence S becomes negative there on a
+short smooth interval. This excludes that particular pointwise reserve
+interpretation; it does not exclude a corrected reserve or another
+pressure gauge. Such a gauge change does not control spatial derivatives.
+
+For `g=grad S`, the remaining derivative-level production is explicitly
+
+```text
+(mean |g|^2)' = 2 mean g.(B^T m-grad p)-2nu mean |grad g|^2.
+```
+
+Its source and geometry must be paid together with the physical curl
+history. In particular, `curl grad S=0`: a bound on this gauge gradient
+alone is not a bound on `curl m=curl u`. A continuation estimate must
+retain the vector covector and its deformation or the existing joint
+original-gradient tensor. The preceding mean payment supplies no such
+bound. The original-datum signed renewal estimate used by
+`JointCubicRenewal.hasNSEvolution_of_signed_renewal` remains open.
+The physical PDE/control identification and interval estimates in this
+section are analytic. The new checker certifies exact finite identities,
+not a continuous stochastic theorem or a new Lean regularity result.
+Run `python3 -O labs/covector_bellman_bridge.py`.
