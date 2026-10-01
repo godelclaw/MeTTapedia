@@ -1761,6 +1761,20 @@ that cancellation, but their evolving parent cost remains unpaid. These
 analytic identities and exact checks supply no arbitrary-data allowance
 or new Lean continuation theorem.
 
+The [generated-parent test](labs/README.md#generated-parents-and-an-initially-empty-geometric-reserve)
+computes the full evolution of those compatible weights. A smooth
+whole-space pure swirl has zero initial meridional parent and stretching,
+but its actual pressure-corrected acceleration generates strictly positive
+stretching production. Exact heat-resolvent integration and a uniform
+local Taylor bound give a short positive-viscosity interval of enstrophy
+growth and positive signed renewal excess. Consequently no nonnegative
+reserve that starts at zero on these data can pay that cost, including
+the tested bounded parent-weight family with arbitrary datum-dependent
+parameters. A repaired reserve must charge the swirl's existing ability
+to generate a parent before the parent is present. This finite-burst
+obstruction does not refute a positive full-datum allowance or regularity.
+The identities are symbolically checked; the interval proof is analytic.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

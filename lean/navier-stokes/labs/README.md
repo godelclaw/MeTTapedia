@@ -12943,3 +12943,220 @@ separate source bill; it does not close that history estimate.
 Run `python3 -O labs/rotational_joint_enstrophy.py`. The PDE integrations
 and local-solution consequences are analytic and the identities are
 checked symbolically. No new Lean declarations or axioms are claimed.
+
+## Generated parents and an initially empty geometric reserve
+
+The [parent-generation checker](rotational_parent_generation.py) tests the
+compatible weight above against actual unforced whole-space dynamics.
+Write `I=r^3 chi_r`, `e=eta^2+|grad b|^2`, `Z=<e>_5`, and consider
+
+```text
+psi(I)=I^2/(ell^2+I^2),       ell>0,
+w=1+alpha(H-t)psi(I),        alpha>=0, 0<=t<=H,
+R=<(w-1)e>_5,               Q=Z+R.
+```
+
+Parameters may depend on the full original datum, viscosity and horizon.
+The proposed sufficient claims are that Q is nonincreasing, or that R
+pays the existing signed renewal cost:
+
+```text
+R(t)+2 integral_0^t [G(s)-G(0)] ds-nu integral_0^t D(s) ds <= R(0).
+```
+
+Both claims fail for this reserve family, including all such parameter
+choices. The failure is not a refutation of an additional initially
+positive allowance drawn from the full datum. The weight still preserves
+the spatial source cancellation proved above.
+
+### Complete evolution of the weight
+
+Let `K=(-L5)^-1` be the decaying whole-space inverse and
+`N_eta=-v.grad eta+partial_z(b^2)`. The actual parent evolves by
+
+```text
+chi_t=nu L5 chi+K N_eta,
+I_t=nu(I_rr-3 I_r/r+I_zz)+r^3 partial_r K N_eta.
+```
+
+Consequently the adjoint weight term in the full weighted balance is
+
+```text
+A_w=-alpha psi(I)
+    +alpha(H-t)[psi'(I)(I_t+v.grad I+nu L5 I)
+                 +nu psi''(I)|grad I|^2],
+psi'(I)=2 I ell^2/(ell^2+I^2)^2,
+psi''(I)=2 ell^2(ell^2-3I^2)/(ell^2+I^2)^3.
+```
+
+In particular `I_t+nu L5 I` contains `2nu(I_rr+I_zz)` and the full
+nonlocal source. The spatial identity `F.grad I=0` does not eliminate
+this evolution. Neither that source nor the changing-sign second
+derivative may be dropped from a Bellman test.
+
+### Smooth pure swirl creates the missing parent
+
+Take the fixed Schwartz initial datum
+
+```text
+b=exp(-r^2-2z^2), chi=0,
+u0(x,y,z)=(-y b,x b,0), r^2=x^2+y^2.
+```
+
+It is smooth and divergence free on all of R3, including the axis. At
+time zero the meridional velocity, eta and I vanish; physical stretching
+G also vanishes pointwise. Nevertheless the source `S=partial_z(b^2)`
+does not vanish. The actual initial meridional acceleration has
+streamfunction `chi_1=K S`. It is the pressure-corrected centrifugal
+acceleration, not an independently prescribed force. Indeed its components
+are `v_1=(-r partial_z chi_1,2chi_1+r partial_r chi_1)`, and
+
+```text
+p_r=r b^2+r partial_z chi_1,
+p_z=-2chi_1-r partial_r chi_1
+```
+
+are compatible precisely because `-L5 chi_1=S`.
+
+The inverse is explicit as a heat integral. With `A=1+8s`, `C=1+16s`,
+
+```text
+chi_1 = integral_0^infinity
+          -8z A^(-2) C^(-3/2) exp(-2r^2/A-4z^2/C) ds.
+```
+
+The checker verifies the heat equation and its initial value. The kernel
+decays integrably at infinity, so integrating the heat equation gives the
+stated inverse relation. It also gives
+
+```text
+I_1=r^3 partial_r chi_1
+   =integral_0^infinity 32r^4 z A^(-3) C^(-3/2)
+                         exp(-2r^2/A-4z^2/C) ds,
+```
+
+which is strictly positive for r,z>0. Thus parent generation is present
+even though the proposed reserve sees no initial parent.
+
+The resulting physical stretching derivative is
+
+```text
+G(0)=0,
+G'(0)=gamma=3 sqrt(2) pi^(3/2) (11pi-34)/128 > 0.
+```
+
+This expression includes every term in the derivative of
+`integral omega^T grad(u) omega`. Its value is independent of viscosity:
+the viscous part of the initial acceleration remains pure swirl, whose
+stretching is identically zero. The checker independently compares the
+literal three-dimensional derivative with the joint-vorticity expression.
+After the substitution `y=sqrt(1+8s)` its inverse-elliptic integral,
+divided by `sqrt(2) pi^(3/2)`, has rational integrand
+
+```text
+-(6y^4-11y^2-9)/(16y^4(y^2+1)^3),  1<=y<infinity.
+```
+
+An exact antiderivative certificate gives `3(11pi-34)/128`. This is not
+a numerical quadrature or a closed-mode approximation.
+
+### A positive-viscosity interval, including the remainder
+
+Use the ordinary physical quantities
+`D=||grad omega||_2^2` and `L=||Delta omega||_2^2`. At the initial datum,
+
+```text
+Z0=(3/4)pi^(3/2), D0=(13/2)pi^(3/2), L0=75pi^(3/2),
+Z'(0)=-2nu D0,
+D'(0)=-2nu L0,
+Z''(0)=2gamma+4nu^2 L0.
+```
+
+The nonlinear contribution to D'(0) is zero: the newly generated curl
+is azimuthal, orthogonal in the full dissipation pairing to the initial
+meridional curl. The checker retains the cylindrical basis derivatives.
+
+For this fixed smooth datum, local existence and Sobolev estimates give a
+common interval `[0,T0]` and an H^12 bound for `0<=nu<=1`. One can obtain
+these from the usual estimate `d/dt ||u||_{H^12}^2 <= C||u||_{H^12}^3`, with
+viscosity nonpositive in that estimate. The lane's
+`WholeSpaceViscousFlow.regularizedViscous_all_order` already gives
+viscosity-independent spatial bounds on the regularized Euler interval,
+and `localNSEvolution` uses that same interval for every nonnegative
+viscosity. Differentiating the projected PDE through three time orders
+loses at most six spatial derivatives. Sobolev products therefore bound
+`|Z'''(t)|` by a constant M of the original datum, uniformly on a shorter
+common interval. This Taylor-bound application is analytic, not a new
+Lean theorem.
+
+It follows uniformly as nu decreases to zero that
+
+```text
+Z(t)=Z0-2nu D0 t+(gamma+2nu^2 L0)t^2+O(t^3),
+Z(1000nu)-Z0=nu^2[10^6 gamma-2000D0]+O(nu^3)>0.
+```
+
+For example `pi>157/50` and `sqrt(2)>7/5` give
+`gamma/pi^(3/2)>567/32000`; the displayed leading coefficient is at
+least `(18875/4)pi^(3/2)`. Choose nu positive, small enough that
+`1000nu<min(T0,H)` and the uniform Taylor remainder is smaller than half
+that positive leading term. All constants in that choice come from the
+fixed datum and prescribed horizon. This proves an actual smooth
+positive-viscosity interval, rather than inferring one from a second
+derivative without controlling its remainder.
+
+The exact enstrophy balance also gives a positive signed renewal excess:
+
+```text
+2 integral_0^t G ds-nu integral_0^t D ds
+  =Z(t)-Z0+nu integral_0^t D ds>0.
+```
+
+For any fixed viscosity nu>0 and horizon H>0 the same failure occurs for
+sufficiently large amplitude A of the initial datum. Apply the previous
+argument at viscosity `mu=nu/A` and set `u_A(t)=A u_mu(At)`. The test
+time becomes `1000nu/A^2`, which lies inside H for large A. These remain
+actual unforced flows. This amplitude argument does not claim an
+unbounded energy-normalized excess.
+
+### Exact scope of the reserve obstruction
+
+For these data, R(0)=0 for every alpha,ell in the stated family, whereas
+R(t)>=0 for t<=H. Since Z(t)>Z0, Q cannot be nonincreasing. Since the
+signed renewal excess is positive, R cannot pay that cost either. More
+generally any nonnegative proposed reserve that starts at zero on these
+data fails the same payment claim. The G(0) subtraction offers no escape
+here because G(0)=0.
+
+For alpha>0 the reserve itself initially grows quadratically:
+`R(t)=alpha H t^2 <I_1^2 |grad b|^2>_5/ell^2+O(t^3)`.
+Its strictly positive leading coefficient measures the newly generated
+parent, but provides no initial payment for creating it.
+
+This is a finite generated burst, not indefinite renewal or a blowup
+construction. It leaves the sufficient signed budget with a positive
+full-datum allowance open. The missing initial resource is concrete:
+the existing swirl already has the nonzero source S and projected parent
+acceleration K S, before any meridional parent is present. A repaired
+reserve must account for that capacity and its later replenishment.
+The source itself evolves through the same coupled fluid; treating it
+as fixed or freely selectable would lose the original physical question.
+Its exact equation, also checked, is
+
+```text
+(partial_t+v.grad-nu L5)S
+  =-(partial_z v).grad(b^2)-4aS-4a_z b^2
+    -2nu partial_z(|grad b|^2).
+```
+
+Here `partial_z v` differentiates both meridional velocity components.
+The nonlocal forecast `J=r^3 partial_r K S` already contributes at the
+pure-swirl initial time. Adding a reserve term depending on J would
+restore an initial resource, but also restores the boundary defect
+`<b^2 F.grad(weight)>_5` and the full evolution of J. No payment for
+those additional terms is asserted.
+
+Run `python3 -O labs/rotational_parent_generation.py`. Differential and
+Gaussian/resolvent identities are exact symbolic checks. The local
+Sobolev estimates, interval argument and scaling consequence are analytic.
+No new Lean declarations, axioms or arbitrary-data bound are asserted.
