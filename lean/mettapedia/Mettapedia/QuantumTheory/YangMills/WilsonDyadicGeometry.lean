@@ -313,6 +313,21 @@ theorem dist_coarse_le_second (l k : Link d n) :
   linarith
 
 
+/-- No elementary plaquette contains both consecutive halves of a coarse
+link. Parallel sides differ only in a transverse coordinate. -/
+theorem no_blockPair_in_support (p : Plaquette d (doubleIndex n)) (l : Link d n) :
+    ¬(blockEdge l 0 ∈ support p ∧ blockEdge l 1 ∈ support p) := by
+  rintro ⟨h0, h1⟩
+  have he0 := support_parallel_coordinate p (blockEdge l 0) h0
+  have he1 := support_parallel_coordinate p (blockEdge l 1) h1
+  have hd0 : (blockEdge l 0).2 = l.2 := rfl
+  have hd1 : (blockEdge l 1).2 = l.2 := rfl
+  rw [hd0] at he0
+  rw [hd1] at he1
+  have he := congrArg ZMod.val (he0.trans he1.symm)
+  rw [val_blockEdge_direction, val_blockEdge_direction] at he
+  norm_num at he
+
 #print axioms coarse_retained_fine
 #print axioms internal_link_cell
 #print axioms internal_support_same_cell

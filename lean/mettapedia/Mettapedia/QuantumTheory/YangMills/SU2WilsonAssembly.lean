@@ -1,3 +1,4 @@
+import Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection
 import Mettapedia.QuantumTheory.YangMills.SU2BoundaryResponse
 import Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry
 import Mettapedia.QuantumTheory.YangMills.WilsonEliminationRoutes
@@ -259,6 +260,78 @@ def plaquetteObservable (N : ℕ) (p : AssemblyPlaquette N) : C(FullField N, ℝ
 theorem plaquetteObservable_bounds (N : ℕ) (p : AssemblyPlaquette N) (ω : FullField N) :
     0 ≤ plaquetteObservable N p ω ∧ plaquetteObservable N p ω ≤ 2 :=
   SU2WilsonBlockIntegration.potential_bounds _
+
+open WilsonConditionalProjection.PairedHaar SU2BoundaryResponse WilsonLocalResponse
+
+def wilsonInteraction (n : ℕ) (β : ℝ) : Finset (Link 4 n) → C(Link 4 n → SU2, ℝ) :=
+  regroupInteraction support (fun p : Plaquette 4 n ↦ (-β) • plaquetteTrace p)
+
+theorem wilsonInteraction_local (n : ℕ) (β : ℝ) (S : Finset (Link 4 n)) :
+    DependsOn S (wilsonInteraction n β S) := by
+  apply regroupInteraction_local
+  intro p U V h
+  exact congrArg (fun x : ℝ ↦ -β * x) (plaquetteTrace_local p U V h)
+
+theorem wilsonInteraction_centered (n : ℕ) (β : ℝ) (S : Finset (Link 4 n)) :
+    (∫ U, wilsonInteraction n β S U) = 0 := by
+  simp only [wilsonInteraction, regroupInteraction, ContinuousMap.sum_apply,
+    ContinuousMap.smul_apply, smul_eq_mul]
+  have hi (p : Plaquette 4 n) : Integrable (fun U ↦ -β * plaquetteTrace p U) volume :=
+    CompactTransferGap.IntegralKernel.integrable_continuous_fun _
+      (continuous_const.mul (plaquetteTrace p).continuous)
+  rw [integral_finsetSum _ (fun p _ ↦ hi p)]
+  simp only [integral_const_mul, integral_plaquetteTrace_zero, mul_zero, sum_const_zero]
+
+theorem sum_wilsonInteraction (n : ℕ) (β : ℝ) :
+    (∑ S, wilsonInteraction n β S) = ∑ p : Plaquette 4 n, (-β) • plaquetteTrace p :=
+  sum_regroupInteraction _ _
+
+theorem wilsonInteraction_norm_le (n : ℕ) (β a : ℝ) (ha : 0 ≤ a) :
+    interactionNorm a (wilsonInteraction n β) ≤ 64 * |β| * Real.exp (4 * a) := by
+  apply interactionNorm_le _ _ (by positivity)
+  intro l
+  refine (interactionRow_regroup_le support (fun p : Plaquette 4 n ↦ (-β) • plaquetteTrace p) a l).trans ?_
+  calc
+    _ ≤ ∑ p ∈ univ.filter (fun p : Plaquette 4 n ↦ l ∈ support p), Real.exp (4*a) * |β| := by
+      apply sum_le_sum
+      intro p _
+      have hnorm : ‖(-β) • plaquetteTrace p‖ ≤ |β| := by
+        rw [norm_smul, Real.norm_eq_abs, abs_neg]
+        exact (mul_le_mul_of_nonneg_left (norm_plaquetteTrace_le p) (abs_nonneg β)).trans_eq (mul_one _)
+      have he : Real.exp (a * (support p).card) ≤ Real.exp (4*a) := by
+        apply Real.exp_le_exp.mpr
+        have hc : ((support p).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le p
+        nlinarith
+      exact mul_le_mul he hnorm (norm_nonneg _) (Real.exp_pos _).le
+    _ ≤ 64 * |β| * Real.exp (4*a) := by
+      simp only [sum_const, nsmul_eq_mul]
+      have hc : (((univ : Finset (Plaquette 4 n)).filter (fun p ↦ l ∈ support p)).card : ℝ) ≤ 64 := by
+        exact_mod_cast card_incident_le 4 n l
+      nlinarith [mul_le_mul_of_nonneg_right hc (show 0 ≤ Real.exp (4*a) * |β| by positivity)]
+
+theorem wilsonInteraction_entry (a ρ : ℝ) (ha : 0 ≤ a)
+    (n : ℕ) (β : ℝ) (hβ : |β| ≤ ρ / (64 * Real.exp (4*a))) :
+    interactionNorm a (wilsonInteraction n β) ≤ ρ := by
+  have hp : 0 < 64 * Real.exp (4*a) := by positivity
+  have hh := (le_div_iff₀ hp).mp hβ
+  exact (wilsonInteraction_norm_le n β a ha).trans (by nlinarith)
+
+theorem realDensity_eq_wilsonInteraction (n : ℕ) (β : ℝ) (U : Link 4 n → SU2) :
+    realDensity (model n univ) (model_continuous n univ) β U =
+      Real.exp (-β * Fintype.card (Plaquette 4 n) + (∑ S, wilsonInteraction n β S) U) := by
+  rw [sum_wilsonInteraction]
+  simp only [ContinuousMap.sum_apply, ContinuousMap.smul_apply, smul_eq_mul]
+  change (∏ p, Real.exp (-β * potential ((model n univ).φ p) p U)) = _
+  rw [← Real.exp_sum]
+  apply congrArg Real.exp
+  have he (p : Plaquette 4 n) : potential ((model n univ).φ p) p U = 1 + plaquetteTrace p U := by
+    simp only [mem_univ, ↓reduceIte,
+      potential, plaquetteEnergy, ContinuousMap.coe_mk, plaquetteTrace,
+      SU2WilsonBlockIntegration.traceScore_eq_potential_sub_one]
+    ring
+  simp_rw [he, mul_add, mul_one]
+  simp only [sum_add_distrib, sum_const, card_univ, nsmul_eq_mul]
+  ring
 
 namespace ScaleTwo
 
@@ -532,6 +605,90 @@ theorem chart_boundaryCurve (S : Finset (Link 4 n)) (q c : CoarseConfig n)
   · rw [blockIndexEquiv_unused, chart_unused]
     simp only [boundaryCurve, not_mem_liftPatch_unused, ↓reduceIte, chart_unused]
 
+
+open WilsonConditionalProjection.PairedHaar SU2BoundaryResponse
+
+theorem retainedSupport_plaquette (p : Plaquette 4 (doubleIndex n)) :
+    retainedSupport (blockIndexEquiv 4 n) (support p) = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro l hl
+  obtain ⟨h0, h1⟩ := (mem_retainedSupport _ _ _).mp hl
+  rw [blockIndexEquiv_first] at h0
+  rw [blockIndexEquiv_second] at h1
+  exact no_blockPair_in_support p l ⟨h0, h1⟩
+
+theorem blocked_plaquetteTrace_eq_zero (p : Plaquette 4 (doubleIndex n)) :
+    PairedLinks.blockedDensity (volume : Measure SU2) (blockIndexEquiv 4 n) (plaquetteTrace p) = 0 :=
+  blockedDensity_eq_zero volume (blockIndexEquiv 4 n) (support p) (plaquetteTrace p)
+    (plaquetteTrace_local p) (integral_plaquetteTrace_zero p) (retainedSupport_plaquette p)
+
+def retainedWilsonObservable (p : Plaquette 4 n) : C(FineConfig n, ℝ) :=
+  (plaquetteTrace p).comp (PairedLinks.blockMap (blockIndexEquiv 4 n))
+
+@[simp] theorem projected_retainedWilsonObservable (β : ℝ) (p : Plaquette 4 n) :
+    projected n β (retainedWilsonObservable p) = plaquetteTrace p :=
+  projected_blockObservable n β (plaquetteTrace p)
+
+theorem projected_retainedWilsonObservable_ne_zero (β : ℝ) (p : Plaquette 4 n) :
+    projected n β (retainedWilsonObservable p) ≠ 0 := by
+  intro h
+  have he := congrArg (fun F : C(CoarseConfig n, ℝ) ↦ F (fun _ ↦ 1)) h
+  rw [projected_retainedWilsonObservable, plaquetteTrace_one] at he
+  norm_num at he
+
+theorem integral_retainedWilsonObservable_zero (p : Plaquette 4 n) :
+    (∫ U, retainedWilsonObservable p U) = 0 := by
+  have hm := measurePreserving_blockField n
+  have hi := integral_map_of_stronglyMeasurable (μ := (volume : Measure (FineConfig n)))
+    hm.measurable (plaquetteTrace p).continuous.stronglyMeasurable
+  rw [hm.map_eq] at hi
+  exact hi.symm.trans (integral_plaquetteTrace_zero p)
+
+def rectangleSupport (p : Plaquette 4 n) : Finset (Link 4 (doubleIndex n)) :=
+  (support p).biUnion (fun l ↦ {blockEdge l 0, blockEdge l 1})
+
+theorem retainedWilsonObservable_local (p : Plaquette 4 n) :
+    WilsonLocalResponse.DependsOn (rectangleSupport p) (retainedWilsonObservable p) := by
+  intro U V h
+  apply plaquetteTrace_local p
+  intro l hl
+  change U (blockEdge l 0) * U (blockEdge l 1) = V (blockEdge l 0) * V (blockEdge l 1)
+  rw [h _ (mem_biUnion.mpr ⟨l, hl, by simp⟩), h _ (mem_biUnion.mpr ⟨l, hl, by simp⟩)]
+
+theorem plaquetteTrace_gauge (p : Plaquette 4 n) (g : Site 4 n → SU2) (U : CoarseConfig n) :
+    plaquetteTrace p (WilsonDyadicGeometry.gaugeAct g U) = plaquetteTrace p U := by
+  change SU2WilsonBlockIntegration.traceScore (holonomy (fun i ↦
+    WilsonDyadicGeometry.gaugeAct g U (linkAt p i))) = _
+  rw [holonomy_gaugeAct, SU2WilsonBlockIntegration.traceScore_eq_potential_sub_one]
+  change _ = SU2WilsonBlockIntegration.traceScore _
+  rw [SU2WilsonBlockIntegration.traceScore_eq_potential_sub_one]
+  exact congrArg (fun x : ℝ ↦ x - 1)
+    ((specialUnitaryWilsonPotential (Fin 2)).conjugation_invariant (g p.1) _)
+
+theorem retainedWilsonObservable_gauge (p : Plaquette 4 n)
+    (g : Site 4 (doubleIndex n) → SU2) (U : FineConfig n) :
+    retainedWilsonObservable p (WilsonDyadicGeometry.gaugeAct g U) = retainedWilsonObservable p U := by
+  change plaquetteTrace p (blockField (WilsonDyadicGeometry.gaugeAct g U)) = plaquetteTrace p (blockField U)
+  rw [blockField_gaugeAct]
+  exact plaquetteTrace_gauge p _ _
+
+theorem blocked_wilsonInteraction_zero (n : ℕ) (β : ℝ) :
+    blockedInteraction (volume : Measure SU2) (WilsonDyadicGeometry.blockIndexEquiv 4 n)
+      (wilsonInteraction (WilsonDyadicGeometry.doubleIndex n) β) = 0 := by
+  funext T
+  unfold blockedInteraction regroupInteraction
+  apply Finset.sum_eq_zero
+  intro S _
+  change (blockedDensityLinear (volume : Measure SU2) (WilsonDyadicGeometry.blockIndexEquiv 4 n))
+    (∑ p ∈ univ.filter (fun p : Plaquette 4 (WilsonDyadicGeometry.doubleIndex n) ↦ support p = S),
+      (-β) • plaquetteTrace p) = 0
+  rw [map_sum]
+  apply Finset.sum_eq_zero
+  intro p _
+  rw [map_smul]
+  change (-β) • WilsonBlockElimination.PairedLinks.blockedDensity
+    (volume : Measure SU2) (WilsonDyadicGeometry.blockIndexEquiv 4 n) (plaquetteTrace p) = 0
+  rw [blocked_plaquetteTrace_eq_zero, smul_zero]
 
 end ScaleTwo
 

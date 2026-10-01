@@ -46,6 +46,53 @@ theorem model_continuous (n : ℕ) (active : Finset (Plaquette 4 n)) :
   · exact plaquetteEnergy.continuous
   · exact continuous_const
 
+/-! ## Centered local Wilson interactions -/
+
+section PlaquetteTrace
+variable {n : ℕ}
+
+def plaquetteTrace (p : Plaquette 4 n) : C(Link 4 n → SU2, ℝ) :=
+  ⟨fun U ↦ SU2WilsonBlockIntegration.traceScore (holonomy (fun i ↦ U (linkAt p i))), by
+    apply SU2WilsonBlockIntegration.continuous_traceScore.comp
+    unfold holonomy
+    fun_prop⟩
+
+theorem plaquetteTrace_local (p : Plaquette 4 n) : DependsOn (support p) (plaquetteTrace p) := by
+  intro U V h
+  have he : (fun i ↦ U (linkAt p i)) = (fun i ↦ V (linkAt p i)) := by
+    funext i
+    exact h _ (mem_image.mpr ⟨i, mem_univ _, rfl⟩)
+  exact congrArg (fun v ↦ SU2WilsonBlockIntegration.traceScore (holonomy v)) he
+
+theorem abs_plaquetteTrace_le (p : Plaquette 4 n) (U : Link 4 n → SU2) :
+    |plaquetteTrace p U| ≤ 1 := SU2WilsonBlockIntegration.abs_traceScore_le _
+
+theorem norm_plaquetteTrace_le (p : Plaquette 4 n) : ‖plaquetteTrace p‖ ≤ 1 :=
+  (ContinuousMap.norm_le _ (by norm_num : (0 : ℝ) ≤ 1)).mpr (abs_plaquetteTrace_le p)
+
+@[simp] theorem plaquetteTrace_one (p : Plaquette 4 n) : plaquetteTrace p (fun _ ↦ 1) = -1 := by
+  simp only [plaquetteTrace, ContinuousMap.coe_mk, holonomy, one_mul, inv_one, SU2WilsonBlockIntegration.traceScore_one]
+
+def plaquetteFlip (p : Plaquette 4 n) : Link 4 n → SU2 :=
+  fun l ↦ if l = linkAt p 0 then su2CartanElement Real.pi else 1
+
+theorem plaquetteTrace_flip (p : Plaquette 4 n) (U : Link 4 n → SU2) :
+    plaquetteTrace p (plaquetteFlip p * U) = -plaquetteTrace p U := by
+  have h : holonomy (fun i ↦ (plaquetteFlip p * U) (linkAt p i)) =
+      su2CartanElement Real.pi * holonomy (fun i ↦ U (linkAt p i)) := by
+    simp [holonomy, Pi.mul_apply, plaquetteFlip, linkAt_eq_first_iff, mul_assoc]
+  change SU2WilsonBlockIntegration.traceScore (holonomy (fun i ↦ (plaquetteFlip p * U) (linkAt p i))) = _
+  rw [h, SU2WilsonBlockIntegration.traceScore_flip]
+  rfl
+
+theorem integral_plaquetteTrace_zero (p : Plaquette 4 n) : (∫ U, plaquetteTrace p U) = 0 := by
+  have h := integral_mul_left_eq_self (μ := (volume : Measure (Link 4 n → SU2)))
+    (plaquetteTrace p) (plaquetteFlip p)
+  simp only [plaquetteTrace_flip, integral_neg] at h
+  linarith
+
+end PlaquetteTrace
+
 /-! ## Actual boundary curves and their local action scores -/
 
 variable {n : ℕ} {X : Type*} [TopologicalSpace X]

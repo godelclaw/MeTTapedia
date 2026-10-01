@@ -57,6 +57,35 @@ theorem support_nonempty {d n : ℕ} (p : Plaquette d n) : (support p).Nonempty 
 theorem card_support_le {d n : ℕ} (p : Plaquette d n) : (support p).card ≤ 4 := by
   simpa [support] using (card_image_le (s := (univ : Finset (Fin 4))) (f := linkAt p))
 
+/-- A positive plaquette edge has no displacement in its own direction. -/
+theorem linkAt_parallel_coordinate {d n : ℕ} (p : Plaquette d n) (i : Fin 4) :
+    (linkAt p i).1 (linkAt p i).2 = p.1 (linkAt p i).2 := by
+  have hμν : p.2.1.1 ≠ p.2.1.2 := ne_of_lt p.2.2
+  have hνμ := hμν.symm
+  fin_cases i <;> simp [linkAt, step, hμν, hνμ]
+
+theorem support_parallel_coordinate {d n : ℕ} (p : Plaquette d n) (l : Link d n) (hl : l ∈ support p) :
+    l.1 l.2 = p.1 l.2 := by
+  obtain ⟨i, _, rfl⟩ := mem_image.mp hl
+  exact linkAt_parallel_coordinate p i
+
+theorem linkAt_eq_first_iff {d n : ℕ} (p : Plaquette d n) (i : Fin 4) :
+    linkAt p i = linkAt p 0 ↔ i = 0 := by
+  have hμν : p.2.1.1 ≠ p.2.1.2 := ne_of_lt p.2.2
+  have hνμ := hμν.symm
+  haveI : Fact (1 < n + 3) := ⟨by omega⟩
+  fin_cases i
+  · simp
+  · simp [linkAt, hνμ]
+  · constructor
+    · intro h
+      have hh := congrArg (fun l : Link d n ↦ l.1 p.2.1.2) h
+      have : (1 : ZMod (n + 3)) = 0 := by simpa [linkAt, step] using hh
+      exact one_ne_zero this |>.elim
+    · simp
+  · simp [linkAt, hνμ]
+
+
 /-- Embed a cyclic coordinate into the additive circle with the same period. -/
 def coordinateCircle (n : ℕ) : ZMod (n + 3) →+ AddCircle (n + 3 : ℝ) :=
   ZMod.lift (n + 3)

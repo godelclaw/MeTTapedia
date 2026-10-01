@@ -66,6 +66,27 @@ theorem abs_traceScore_le (U : SU2) : |traceScore U| ≤ 1 := by
   unfold traceScore
   exact (Complex.continuous_re.comp continuous_subtype_val.matrix_trace).neg.div_const 2
 
+/-- The central half-turn negates the defining matrix. -/
+theorem su2CartanElement_pi_val : (su2CartanElement Real.pi).val = -(1 : Matrix (Fin 2) (Fin 2) ℂ) := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [su2CartanElement, su2CartanMatrix]
+
+theorem traceScore_flip (U : SU2) :
+    traceScore (su2CartanElement Real.pi * U) = -traceScore U := by
+  simp only [traceScore, Submonoid.coe_mul, su2CartanElement_pi_val, neg_mul, one_mul,
+    Matrix.trace_neg, Complex.neg_re]
+  ring
+
+@[simp] theorem traceScore_one : traceScore (1 : SU2) = -1 := by
+  norm_num [traceScore, Matrix.trace, Fin.sum_univ_two, Matrix.diag_apply]
+
+theorem integral_traceScore_zero : (∫ U : SU2, traceScore U) = 0 := by
+  have h := integral_mul_left_eq_self (μ := (volume : Measure SU2)) traceScore (su2CartanElement Real.pi)
+  simp only [traceScore_flip, integral_neg] at h
+  linarith
+
+
+
 /-- Insert one ambient link derivative in the correctly oriented plaquette.
 For a reversed link the ambient derivative is its adjoint. -/
 def holonomyInsertion (v : Fin 4 → SU2) (i : Fin 4) (u : SU2) : SU2 :=

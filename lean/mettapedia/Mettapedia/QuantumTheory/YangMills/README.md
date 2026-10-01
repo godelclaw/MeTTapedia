@@ -268,11 +268,30 @@ shift from even anchors costs `exp(2η)` and `exp(4η)` for second and third
 spatial arrays while doubling the rate. These metric comparisons do not
 assert clustering of the product-constrained law from individual-link pinning.
 
-The old spatial budgets survive projection with factor one.
-`WilsonBlockElimination.one_le_project_uniform_bound` proves that constant
-marks prevent a smaller uniform factor on the full observable space.
-Consequently these results do not yet instantiate
-`RGBootstrap.IsRGContractionGain` or the physical `AffineRGStepBound`.
+`WilsonConditionalProjection.PairedHaar.strict_linear_gain` gives an actual
+strict gain for centered local interactions under the unweighted block-Haar
+average. The norm is the maximum over links of
+`sum_(S containing l) exp(a |S|) ||Phi_S||_sup`. A local term can depend after
+averaging only on coarse pairs whose two fine edges both belong to `S`.
+Consequently its regrouped norm decreases by `exp(-a) < 1` for every `a > 0`,
+independently of volume. Locality, Haar centering and the full averaged action
+are preserved, and the empty-support component is zero.
+
+`SU2WilsonAssembly.wilsonInteraction` is the actual centered Wilson action,
+with norm at most `64 |beta| exp(4a)` for `a >= 0`. Its exponential, multiplied
+by the explicitly recorded vacuum factor, is exactly the full Wilson density.
+Thus `|beta| <= rho / (64 exp(4a))` puts the starting family in radius `rho`,
+uniformly in volume. `ScaleTwo.blocked_wilsonInteraction_zero` proves that its
+entire linear blocked interaction vanishes. The operator is nontrivial:
+`retainedWilsonObservable` is a gauge-invariant ordered two-by-two Wilson loop,
+with Haar mean zero, whose normalized projection is the nonzero coarse
+plaquette trace at every real coupling.
+
+The full observable space still has norm-one projection because constants
+survive (`WilsonBlockElimination.one_le_project_uniform_bound`). The strict
+interaction estimate is for the linear Haar average. A uniform quadratic
+bound for the connected logarithmic remainder of the actual generated density
+is still needed before it supplies a nonlinear physical RG step bound.
 
 The coordinate-rescaling lemmas in `WilsonBoundaryResponse.lean` prove that
 an injective coordinate map with `d_fine = s · d_coarse` changes the admissible
