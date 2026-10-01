@@ -9103,3 +9103,149 @@ The forced representation includes the accumulated pulled-back force
 initial source with zero initial kinetic work; this is neither the
 imported singular trajectory nor a zero-work assertion at later times.
 No auxiliary stochastic control is treated as a free physical force.
+
+### Actual receiver cancellation and signed area memory
+
+The receiver of the complete covariant-gradient source is
+`z=sum_j (partial_j B)^T r_j`, with `B=grad u` and
+`r_j=partial_j m-K_j m`. Split it using the current actual velocity:
+
+```text
+E_j=r_j-partial_j u,
+z=grad(|B|^2/2)+sum_j (partial_j B)^T E_j,
+P_sol z=P_sol sum_j (partial_j B)^T E_j,
+integral z.g=integral [sum_j (partial_j B)^T E_j].g   (div g=0).
+```
+
+`MettapediaNS.CovectorReceiverGeometry` proves the literal whole-space
+smooth-field receiver identity, decomposition, gradient membership,
+Helmholtz projection equality and integrated parent-work equality.
+These statements hold for every current smooth velocity and retained
+gradient columns, not just at the original time. Constructing their
+stochastic paths and paying the evolving defect are separate obligations.
+In particular the auxiliary a=N^-1m need not be solenoidal, so this
+parent-work cancellation does not authorize dropping the gradient part
+from the full variance transfer or from its M-weighted receiver cost.
+
+The original passive parent supplies a compatible pressure completion.
+Let R have columns r_j, `B_H=grad H`, `D H=0`, and `H(0)=u_0`.
+Then, with every connection term retained,
+
+```text
+D R=-B^T R-RB+S,
+S_j=N(partial_j B)a+2nu sum_k (partial_k K_j)r_k,
+D B=-B^2-P,                    P=Hess p,
+D E=-B^T E-EB+P-B^T B+S,        E=R-B,
+A=grad(H-u),                   D A=P-AB,
+Y=E-A=R-B_H,                   Y(0)=0,
+D Y=-B^T Y-YB-B^T B_H+S.
+```
+
+The explicit pressure Hessian cancels in Y without selecting a new
+pressure or restarting H. Lean proves the actual-field reconstruction
+`E=grad(H-u)+Y` and the supplied full matrix-rate identity. The continuum
+R equation, parabolic comparison and original-data payment of the
+remaining terms are analytic/open. The original B_H channel has the
+earlier inverse-coframe gradient payment; its coupling with Y and S
+still requires an estimate. Cancellation alone is not a continuation
+bound, and a future-solution norm is not an initial allowance.
+
+The forward receiver metric must also retain its joint area covariance.
+For the same determinant-one inverse-flow samples `F=grad A`, `J=F^-1`,
+
+```text
+G=F^T F,       J J^T=adj(G),
+N=E[G],        M=E[adj(G)],
+Gamma=M-adj(N),                 Gamma(0)=0,
+D N=-B^T N-NB,                  D M=BM+MB^T,
+D adj(N)=B adj(N)+adj(N) B^T-2nu sum_k adj(partial_k N),
+D Gamma=B Gamma+Gamma B^T+2nu sum_k adj(partial_k N).
+```
+
+Here adj is the three-dimensional adjugate. Lean proves the finite
+determinant-one sample identity for the existing joint law and the
+algebraic strain/area-defect rates. The parabolic chain rule, stochastic
+identification and history payment are analytic here. Even with
+incompressibility, adjugation cannot be commuted through expectation.
+The signed source is a genuine term, not a positive scalar variance or
+an automatically dissipative correction.
+
+```sh
+python3 -O labs/covector_receiver_geometry.py
+```
+
+The checker uses full Gaussian-rational convolution without truncation
+on the `2*pi` torus. It computes physical u through its second canonical
+time derivative, m through second order and N/M through third order,
+including pressure, time-dependent drift and all mixed connection
+diffusion. It independently checks the complete first derivative of
+both E and Y equations above. At nu=1/10,
+
+```text
+mean z(0).g(0)=0,
+(mean z.g)'(0)=183108608/3468465 >0,
+mean|P_sol z'(0)|^2=1075568653965170009072/408005910307870875 >0,
+Gamma(0)=Gamma'(0)=Gamma''(0)=0,
+Gamma'''(0)=4nu sum_k adj(partial_k N'(0)),
+Gamma'''_00(0,0)=6494816/9316125 >0.
+```
+
+The mean trace of the last tensor is negative
+`-206084096/5780775`, while its displayed direction is positive. An
+averaged trace does not control every receiver direction. The nonzero
+projected receiver derivative excludes the persistent-zero shortcut,
+conditional on smooth short-prefix realization. It does not refute a
+finite original-data allowance. A separate noncommuting local matrix
+fixture checks the full parabolic adjugate rule with nonzero spatial
+diffusion; those supplied jets are not asserted to be a fluid flow.
+
+There is also an analytic whole-space obstruction to the cofactor
+comparison in the actual full receiver direction. Take the local core
+
+```text
+u_q=(xz,yz,(x^2+y^2)/2-z^2),
+u_l=(-y,x,0),                    u_core=u_q+u_l,
+A_core=-x cross u_q/4-x cross u_l/3,
+u_0=curl(chi A_core),            chi=1 on |x|<=2, chi=0 on |x|>=3.
+```
+
+The homogeneous vector-potential identity `curl A_core=u_core` is
+checked exactly. A smooth cutoff makes u_0 compactly supported,
+divergence-free and finite-energy, with all derivatives in L²; the
+existing local existence theory supplies an actual unforced prefix.
+The cutoff and this time passage are analytic, not constructed by the
+checker. At the interior point x_*=(0,0,-1), nu=1/10,
+
+```text
+omega_0=(0,0,2),      omega_0.B_0 omega_0=8,
+z_0=grad(|B_0|^2/2)=(0,0,-6),
+Gamma'''(0,x_*)=(8/5)diag(-3,-3,1),
+z_0^T Gamma'''(0,x_*) z_0=288/5,
+z(t,x_*)^T Gamma(t,x_*) z(t,x_*)=(48/5)t^3+O(t^4)>0
+```
+
+for some short positive interval. The same positive direction is the
+nonzero initial vorticity direction. The leading coefficient depends
+only on the local original strain derivatives: the changing canonical
+pressure/drift cancels from Gamma's first three time jets. Thus the
+localized datum, not an infinite-energy affine flow, rejects
+`M<=adj(N)`, including the full receiver-cost comparison
+`z^T M z<=z^T adj(N)z`. This is the unprojected receiver used by the
+joint variance transfer; no failure in a projected receiver direction
+is inferred. No explicit uniform Taylor endpoint is claimed.
+This excludes a particular pointwise comparison, not a signed history
+payment, indefinite renewal or global regularity.
+
+The checker finally retains an initial physical solenoidal force f
+with zero initial kinetic work. Its first gradients cancel in
+`E=R-B` but survive as `grad f` in `Y=R-grad H`, because H retains
+the original passive datum. This is an initial source filter, not the
+imported forced singular trajectory, its internal realization, or a
+claim of zero force work at later times. No stochastic control is
+treated as a free physical force.
+
+The next estimate must jointly pay the original parent work,
+receiver-gradient defect, signed area covariance and remaining complete
+gradient production, with metric/curl conversion in a norm sufficient
+for continuation. Every allowed constant must come from the full
+initial datum, viscosity and prescribed horizon.

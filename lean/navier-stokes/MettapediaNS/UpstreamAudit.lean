@@ -38,6 +38,7 @@ import MettapediaNS.JointCoframePressure
 import MettapediaNS.JointCoframeCompletion
 import MettapediaNS.CovectorFluidBridge
 import MettapediaNS.CovectorJointParent
+import MettapediaNS.CovectorReceiverGeometry
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1198,3 +1199,25 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parentSourceWork
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parent_source_mismatch
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorJointParent.JointSamples.parent_source_transfer
+
+-- The actual gradient cancellation retains joint area and original-parent defects.
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.fullReceiver
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.baselineReceiver
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.receiverDefect
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.full_receiver_matches
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.receiver_decomposition
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.baselineReceiver_gradient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.projected_receiver_defect
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.receiver_parent_work
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.integral_receiver_parent_work
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.adjugateRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.adjugate_strain_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.areaMomentDefect
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.areaDefectRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.area_defect_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.completedGradientDefect
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.actual_defect_reconstruction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.inverseFrame_eq_adjugate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.forwardMoment_eq_sample_area
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.completedDefectRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorReceiverGeometry.completed_defect_rate

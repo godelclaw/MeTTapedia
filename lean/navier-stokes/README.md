@@ -1101,6 +1101,36 @@ retained parent work, receiver cost, other full gradient-production terms,
 and a conversion strong enough for continuation are still open. See the
 [joint parent derivation and full rate tests](labs/README.md#joint-original-parent-variance-and-the-geometric-source).
 
+### The current-gradient receiver cancels; its history defect remains
+
+`CovectorReceiverGeometry` identifies the previous source receiver with
+literal whole-space smooth fields. At every current velocity,
+`sum_j (partial_j B)^T partial_j u=grad(|B|^2/2)`. Its Helmholtz
+projection and integrated work against any solenoidal parent vanish.
+Thus the projected receiver and parent work depend only on
+`E_j=r_j-partial_j u`. These are kernel-certified current-field statements;
+they do not assert that the evolving defect stays zero.
+
+Retaining the original passive parent H gives `Y=R-grad H`, where R has
+columns r_j. Lean certifies `E=grad(H-u)+Y` on the actual fields and
+the supplied full-rate cancellation
+`D Y=-B^T Y-YB-B^T grad H+S`, with the original Hessian/connection
+source S retained. The physical-time rate and its signed payment remain
+analytic/open; removing the explicit pressure Hessian is not a bound.
+
+Volume preservation identifies the joint forward moment as
+`M=E[adj(F^T F)]`, rather than `adj(E[F^T F])`. Lean certifies that
+finite joint identity and the algebraic rate of
+`Gamma=M-adj(N)`. Analytically its full parabolic equation is
+`D Gamma=B Gamma+Gamma B^T+2nu sum_k adj(partial_k N)`.
+The signed source has no universal favorable matrix sign. Complete
+unforced initial PDE jets and a compactly localized straining core
+reject the shortcut `M<=adj(N)`, including the full receiver cost's
+actual direction. Localization, stochastic construction and the
+positive-time passage are analytic, not Lean-certified. No full-datum
+history allowance or global-regularity claim is refuted. See the
+[receiver, pressure-completion and area-memory tests](labs/README.md#actual-receiver-cancellation-and-signed-area-memory).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
