@@ -650,8 +650,51 @@ are proper; all original cross colours survive; the final field equals the
 shared source image. The region masks are independently decomposed into
 actual bichromatic components: up to six occur per history in this census.
 The finite splice geometries remain program evidence. Literal unbounded
-recognition, recursive domain closure and coverage are the next obligations.
+prism recognition and broader coverage are the next obligations.
 No further configuration or certificate dependency is removed.
+
+## A complete recursive ladder family
+
+`CappedLadderRotation` computes the actual faces at every width `m ≥ 1`,
+including the distinct parallel end edges, and proves the spherical class,
+connectedness, two-sidedness and a spanning face. `CappedLadderEndReduction`
+deletes an end vertex pair and sews exactly its exposed rail darts. The
+retained-dart equivalence identifies this operation with the preceding ladder;
+intact edges and rotations stay fixed. The expanded graph loses six vertices.
+
+Every arbitrary smaller target Tait witness first undergoes the physical
+face-phase repair. All initial cross colours survive; polygon colours can
+change. Reconstruction uses the actual terminal source witness and preserves
+its whole retained-star view. `CappedLadderFamilyGSLT` recursively constructs
+all widths from the two-vertex, three-edge base, with compatible witnesses
+at every step. The reverse paths terminate by their decreasing width rank.
+The reverse witness paths concern these constructed compatible states;
+the theorem does not fix an arbitrary larger colouring along every reduction.
+
+The [receipt](capped-ladder-measurements.json) records forty-seven audited
+roots and 20,288 dependency declarations. Only the standard axioms occur;
+complete colouring endpoints, generic Brooks suppliers and saved source colour
+words are absent. The small base is excluded from the structural and
+arbitrary-input reconstruction roots.
+
+```sh
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.CappedLadderAudit
+```
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/classical/capped_ladder_probe.py --check
+```
+
+Independent replay checks twelve geometric widths and 468 retained-dart
+sewings. Exhaustive normalized inputs at four small widths give 340 target
+colourings, including 300 nontrivial physical repairs. These checks are
+separate from the all-width kernel proof. The exact all-width prism-rung
+correspondence and broader occurrence remain open. This family is not yet
+a dependency replacement in the completed classical assembly: 633 coverage
+configurations and 630 original certificate dependencies remain.
 
 ## Target colouring choices on parallel seams
 

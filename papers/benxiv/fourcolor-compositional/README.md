@@ -459,8 +459,39 @@ records thirty-two audited roots and a nontrivial literal parallel-edge
 repair. Independent replay checks every intermediate field on 1,488 inputs,
 including 1,350 that change, with up to six individual components in this
 census. This is a uniform argument with a stated geometric supply condition.
-Unbounded literal recognition, recursive closure and universal geometric
-supply remain open; no additional catalogue entry is removed.
+Unbounded literal prism recognition and universal geometric supply remain
+open; no additional catalogue entry is removed.
+
+The [capped-ladder family](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CappedLadderFamilyGSLT.lean)
+now closes a complete recursive example of this recipe. One graph operation
+deletes an end pair, sews its two exposed rails and yields the preceding
+ladder. It works at every width, retaining the parallel edge identities.
+Actual face classification supplies the spanning-face geometry. Any smaller
+target input repairs and reconstructs through the same joint choice law;
+the larger colouring fixes every retained observation of the terminal field.
+All initial cross colours remain fixed, while the repair may change polygon
+colours.
+
+```text
+two-vertex source base with three parallel edges
+  → repeated joint end insertion
+  → all capped-ladder widths with actual colouring witnesses
+  → supported construction sweeps of the expanded maps
+
+reverse end removal: six fewer expanded vertices at each step
+  → decreasing width rank → termination at the six-vertex expanded base
+```
+
+The [receipt](../../../tools/fourcolor/classical/capped-ladder-measurements.json)
+records forty-seven audited roots, excluding classical colouring endpoints
+and saved colour words. Independent replay includes 340 smaller target
+inputs and 300 nontrivial repairs. This establishes family geometry,
+reconstruction and termination through one structural law. Connecting an
+actual prism rung splice to this family at all widths is still open, as is
+broader occurrence. The reverse colouring routes retain the compatible
+witnesses constructed by the law. No smaller unavoidable catalogue follows;
+the complete assembly still uses 633 configurations and 630 original
+certificate dependencies.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

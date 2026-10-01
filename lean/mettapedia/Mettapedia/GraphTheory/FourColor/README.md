@@ -501,9 +501,31 @@ three individual Kempe swaps. The [receipt](../../../../../tools/fourcolor/class
 records thirty-two audited roots and a separate nontrivial parallel-edge
 repair fixture. Independent replay checks 1,488 inputs, including 1,350
 nontrivial repairs; up to six components occur in these small examples.
-Unbounded literal splice recognition, recursive closure and geometric
-coverage remain separate obligations. Catalogue and original-certificate
-counts remain 633 and 630.
+Unbounded literal prism-splice recognition and broader geometric coverage
+remain separate obligations. Catalogue and original-certificate counts
+remain 633 and 630.
+
+The [literal capped-ladder family](CappedLadderRotation.lean) now gives a
+complete recursive consumer. At every width `m ≥ 1`, exact face classification
+proves spherical geometry, two-sided edges and a face touching all `2m`
+source vertices. Parallel end edges retain distinct dart identities.
+The [end operation](CappedLadderEndReduction.lean) deletes two source vertices
+and sews the two exposed rail darts, producing the preceding ladder and
+removing exactly six expanded vertices. Any smaller target Tait input admits
+the physical repair; reconstruction fixes every retained star observation
+of its terminal field. Every initial cross colour survives the repair;
+initial polygon colours may change.
+
+One [GSLT construction law](CappedLadderFamilyGSLT.lean) builds every width
+from the two-vertex, three-edge source base. The compatible paths reverse
+into terminating reductions with a decreasing width rank. These witnesses
+also support every complete faithful construction sweep of the expanded
+maps. The [receipt](../../../../../tools/fourcolor/classical/capped-ladder-measurements.json)
+records forty-seven audited roots and independent replay of 340 smaller
+target inputs, including 300 nontrivial repairs. No classical colouring
+endpoint or saved colour table supplies the family proof. The all-width
+correspondence from a prism's actual rung splice to this ladder, occurrence
+in broader maps and catalogue integration remain open.
 
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay

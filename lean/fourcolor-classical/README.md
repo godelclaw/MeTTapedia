@@ -69,6 +69,17 @@ Vertex separation, exterior connectivity and global coverage remain explicit
 obligations. These results add no certificate replacement to the complete
 endpoints.
 
+A [recursive capped-ladder family](../../papers/benxiv/fourcolor-compositional/README.md)
+now supplies a complete construction from a two-vertex, three-edge source
+base. Its end-removal operation preserves the actual parallel edge identities,
+stays in the spherical map class and removes six expanded vertices per step.
+Arbitrary smaller target witnesses admit the proved physical repair and
+joint reconstruction; compatible reverse paths terminate by a width rank.
+The [audit receipt](../../tools/fourcolor/classical/capped-ladder-measurements.json)
+separates this all-width result from the still-open prism-splice correspondence,
+broader occurrence and complete-assembly integration. It changes neither the
+633 coverage configurations nor the 630 original certificate dependencies.
+
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
 Mathlib as Mettapedia. The compatibility preparation changes the obsolete
