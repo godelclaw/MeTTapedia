@@ -233,6 +233,23 @@ general structural colouring consumer. This recognition is a change from
 source vertex colours to target edge colours, not an unconditional Tait-to-Tait
 reduction or universal coverage theorem. Catalogue counts remain unchanged.
 
+The [source-domain example](DualTruncateSourceDomainExample.lean) recognizes
+an 18-vertex target using its actual triangular and square faces, recovering
+the 6-vertex triangular prism. An [exact graph-isomorphism law](CyclicEdgeCutIso.lean)
+transports its cyclic three-edge cut into the recovered rotation-orbit graph.
+Thus the broad face-cover, cubic, connected and spherical hypotheses do not
+imply the cyclic-four condition. Nevertheless, deleting two suitable
+nonadjacent neighbours leaves a connected graph, and the existing coupled
+argument supplies source colours and every complete target GSLT sweep.
+The [14-root audit](DualTruncateSourceDomainAudit.lean) excludes the cyclic-four
+supplier, source colour words and complete classical endpoints. The
+[receipt](../../../../../tools/fourcolor/classical/dual-truncate-source-domain-measurements.json)
+records the kernel obstruction and independent replay. This example has
+triangles and squares; it does not refute inheritance under pentagonal or
+cyclic-five normal-form hypotheses. The next supplier should require the
+colouring structure actually needed, rather than inheriting an unnecessary
+cut condition. Coverage and catalogue counts remain unchanged.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

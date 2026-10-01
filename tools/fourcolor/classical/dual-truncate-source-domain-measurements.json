@@ -1,0 +1,86 @@
+{
+  "status": "kernel-checked recovered-source cut obstruction and alternative coupled reconstruction",
+  "proofs": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CyclicEdgeCutIso",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicEdgeCutIso.lean",
+      "source_bytes": 3394,
+      "source_sha256": "7fd8c28774fc46c1d0101a664545dcee22d73800b9f7f6ca2e1ac27336d569c2",
+      "olean_bytes": 181040,
+      "olean_sha256": "93ee42296e379959acf4a3090fee863c85290b54bdc362917032217d0c0d6fe9"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.DualTruncateInverseRoundTrip",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseRoundTrip.lean",
+      "source_bytes": 6455,
+      "source_sha256": "a84a7c22fb1e6e47710c3ce16173301337872acd13f1a663a104878f1dcbcf4e",
+      "olean_bytes": 579808,
+      "olean_sha256": "b45ea4c44c37307c22a980f8322889235e465a67481b12e85676bd4c88305ad6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.DualTruncateSourceDomainExample",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainExample.lean",
+      "source_bytes": 14137,
+      "source_sha256": "20ff10579b99232b5384f478040a4b181684d33fed9aea6c7d6cfc742f21778b",
+      "olean_bytes": 975416,
+      "olean_sha256": "cb2a2d83867ca7bd4094cbdd1bdfbbab782d88e6314fc16dc54e7044663d674e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.DualTruncateSourceDomainAudit",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainAudit.lean",
+      "source_bytes": 4610,
+      "source_sha256": "78854c8511e022477a16faba9e359a49482a403ab867f6e9c9795cdfdbb1073b",
+      "olean_bytes": 3600,
+      "olean_sha256": "255c4164f8eb11a47606af799a71acd03f70a5e9c7eeb243455364e9ea57e08a"
+    }
+  ],
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "audit_roots": 14,
+  "dependency_closure": 11206,
+  "gate_targets": [
+    "FourColorLane",
+    "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "gate_jobs": 11135,
+  "gate_exit": 0,
+  "maximum_sampled_lean_rss_mib": 6356,
+  "source_vertices": 6,
+  "target_vertices": 18,
+  "target_edges": 27,
+  "target_faces": 11,
+  "target_face_lengths": {
+    "3": 2,
+    "4": 3,
+    "6": 6
+  },
+  "actual_nonhexagonal_face_cover_load_bearing": true,
+  "recovered_source_primal_isomorphism_proved": true,
+  "recovered_source_cyclic_three_cut_proved": true,
+  "broad_face_cover_geometry_implies_source_cyclic_four": false,
+  "source_choice_supplier": "one nonadjacent neighbour pair with connected retained graph",
+  "source_choices_jointly_equal": true,
+  "source_colour_word_used": false,
+  "cyclic_four_supplier_used": false,
+  "classical_four_colour_endpoint_used": false,
+  "target_colouring_reconstructed": true,
+  "every_complete_GSLT_sweep_supported": true,
+  "pentagonal_hexagonal_normal_form_obstruction": false,
+  "normal_form_cut_inheritance_refuted": false,
+  "unconditional_tait_to_tait_reduction": false,
+  "global_coverage_proved": false,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "discharging_computations_replaced": 231,
+  "new_configuration_certificates_replaced": 0,
+  "new_catalogue_entries_removed": 0,
+  "new_uniform_colouring_schemes": 0,
+  "new_uniform_cyclic_cut_transport_schemes": 1,
+  "independent_probe": "tools/fourcolor/classical/dual-truncate-source-domain-probe.json",
+  "independent_probe_sha256": "91e359bf173a51a72decc06125730b93b6e0ff7d4e8e0c737ccd047ddb7d52cf",
+  "independent_compatible_coupled_choices": 12,
+  "next_obligation": "Prove and consume a general subcubic source-colouring supplier on an adequate domain; retain the complete-four exception. Then establish occurrence coverage. Cyclic-four inheritance is unnecessary for the broad colouring supplier and is false without stronger target hypotheses."
+}

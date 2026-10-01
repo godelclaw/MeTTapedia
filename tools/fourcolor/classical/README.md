@@ -236,6 +236,32 @@ interpretation. Inheriting the source colouring domain from target geometry
 and proving occurrence coverage remain open. No additional catalogue saving
 or unconditional Tait-to-Tait reduction is claimed.
 
+## Recovered source cut domain
+
+The [source-domain receipt](dual-truncate-source-domain-measurements.json)
+records an actual 18-vertex target whose nonhexagonal faces determine a cover
+and recover the triangular prism. Its connected spherical cubic source has a
+cyclic three-edge cut. Exact graph-isomorphism transport makes this an
+obstruction on the recovered graph, rather than just its original labels.
+The existing connected-pair argument nevertheless supplies source choices,
+actual target colours and every complete GSLT sweep. The 14-root audit
+excludes source colour words, the cyclic-four supplier and classical
+Four Colour endpoints.
+
+```sh
+python3 tools/fourcolor/classical/dual_truncate_source_domain_probe.py --check
+```
+
+The replay constructs a fixture separately, then gives the recognizer only
+the actual target rotation. It verifies the recovered cyclic-three cut and
+finds twelve suitable coupled pair/root choices. Source vertex-connectivity
+three is independently checked. The source colouring itself is supplied by
+the Lean structural proof. The target has two triangles, three squares and
+six hexagons; this is not a pentagonal/hexagonal normal-form obstruction.
+The broad inverse domain does not force cyclic-four source connectivity.
+A more general source-colouring supplier and occurrence coverage remain
+open, with no additional catalogue saving.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

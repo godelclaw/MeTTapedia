@@ -2454,6 +2454,36 @@ of colouring constraint is not yet an unconditional Tait-to-Tait reduction.
 No further catalogue or certificate dependency disappears: 633 configurations
 and 630 original configuration certificates remain.
 
+The [triangular-prism source-domain example][dual-truncate-source-domain]
+tests whether this stronger cut hypothesis is actually necessary. The
+18-vertex target has two triangles, three squares and six hexagons. Its
+actual nonhexagonal faces select a cover and recover a six-vertex source.
+Deleting nonadjacent neighbours 1 and 3 of source vertex 0 leaves the path
+0–2–5–4 connected. One coupled insertion argument gives those neighbours
+the same colour; the exact inverse consumes the resulting genuine source
+witness in target colouring and every complete GSLT sweep.
+
+Both source triangles lie behind the three crossing edges 0–3, 1–4 and 2–5.
+The [graph-isomorphism transport][cyclic-cut-iso] retains these cycle and
+edge-count witnesses on the recovered source. Consequently the broad
+face-cover geometry cannot imply cyclic source connectivity four. The
+obstruction concerns that assertion, while the successful coupled choice
+demonstrates a supplier which does not need it. This target's triangles and
+squares exclude it from the pentagonal/hexagonal normal-form domain.
+
+The [14-root audit receipt][dual-truncate-source-domain-receipt] checks
+11,206 declarations in the combined closure, excluding source colour words,
+the cyclic-four supplier and the complete classical theorem. Independent
+replay finds twelve suitable pair/root choices. A general subcubic supplier
+is a possible next bridge: the known
+[Brooks argument](https://arxiv.org/abs/1805.11176) requires no cyclic-cut
+condition. Its full formal proof and consumption here remain open.
+No additional configuration or certificate dependency is removed.
+
+[dual-truncate-source-domain]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainExample.lean
+[cyclic-cut-iso]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CyclicEdgeCutIso.lean
+[dual-truncate-source-domain-receipt]: ../../../../tools/fourcolor/classical/dual-truncate-source-domain-measurements.json
+
 [dual-truncate-cover-frame]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateFaceCoverFrame.lean
 [dual-truncate-inverse]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverse.lean
 [dual-truncate-inverse-geometry]: ../../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateInverseGeometry.lean

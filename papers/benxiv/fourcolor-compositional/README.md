@@ -207,6 +207,19 @@ dodecahedron. Source vertex and target edge colours remain different constraints
 No additional catalogue entry or original certificate dependency is removed;
 the retained counts are 633 and 630.
 
+A [source-domain obstruction and successful alternative](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainExample.lean)
+now makes that distinction concrete. Actual nonhexagonal target faces recover
+a triangular-prism source from an 18-vertex target. The source has a cyclic
+three-edge cut, transported through the exact recovered graph isomorphism.
+The stronger cyclic-four supplier cannot follow from the broad face-cover
+geometry. A suitable nonadjacent pair still admits coupled source choices,
+which reconstruct the target colouring and every complete GSLT sweep.
+The [14-root receipt](../../../tools/fourcolor/classical/dual-truncate-source-domain-measurements.json)
+excludes source colour words, the cyclic-four supplier and the classical
+theorem. Triangles and squares distinguish this example from the pentagonal
+normal-form domain. General source-colouring and occurrence coverage remain
+separate tasks; no catalogue entry is removed.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

@@ -111,6 +111,12 @@ def vertexEquiv : SourceVertex (rotation S) (data S hc hr) ≃ V :=
 @[simp] theorem vertexEquiv_dart (v : S.D) :
     vertexEquiv S hc hr ((recovered S hc hr).vertOf v) = S.vertOf v := rfl
 
+/-- The inverse retains the actual source adjacency, including every dart
+crossing; the vertex equivalence is a graph isomorphism. -/
+def primalIso : rotationPrimalGraph (recovered S hc hr) ≃g rotationPrimalGraph S :=
+  RotationSystemExactTransport.primalIso (recovered S hc hr) S (Equiv.refl _)
+    (vertexEquiv S hc hr) (fun _ => rfl) (fun _ => rfl)
+
 /-- Genuine vertex colouring witnesses descend through the recovered
 rotation orbits and remain proper on every actual source edge. -/
 def colouring (c : ThreeVertexColoring S) : ThreeVertexColoring (recovered S hc hr) where
