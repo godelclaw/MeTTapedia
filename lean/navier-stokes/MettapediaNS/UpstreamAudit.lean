@@ -40,6 +40,7 @@ import MettapediaNS.CovectorFluidBridge
 import MettapediaNS.CovectorJointParent
 import MettapediaNS.CovectorReceiverGeometry
 import MettapediaNS.JointReceiverTensor
+import MettapediaNS.JointCurlGeometry
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1260,3 +1261,19 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_production
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_curl
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointReceiverTensor.original_tensor_curl_conversion
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.tensorCurl
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.curl_pair
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.directional_curl_square_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.actual_curl_square_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.curl_le_of_direction_budget
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.invariant_curl_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.frameSquare
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.transpose_frame_square_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.receiver_le_of_frame_budget
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangularFrame
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangularFrame_det
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangularFrame_square
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangularBudget
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangularBudget_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangular_frame_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCurlGeometry.triangular_curl_le

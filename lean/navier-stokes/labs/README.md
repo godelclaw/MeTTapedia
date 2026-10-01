@@ -9422,3 +9422,193 @@ force and its extra gradient packet. Thus the original-label payment
 cannot be applied to the forced solution's full curl without that cost.
 This filter is an initial-time test, not the imported singular trajectory
 and not a claim of zero forcing work at later times.
+
+### Physical curl and a paid triangular parent history
+
+The common original-gradient packet above retains actual curl. Its
+physical conversion can use just the area cost in that direction. Write
+`omega=curl A`, `q_A=vec(A)^T C^-1 vec(A)` and `M=E[J J^T]`.
+For each direction z, pairing curl against z is precisely pairing A
+against the skew matrix `[z]_cross`. Cauchy in the retained joint metric,
+together with `vec([z]_cross)^T C vec([z]_cross)=2z^T Mz`, gives
+
+```text
+(z.omega)^2<=2q_A z^T Mz,
+|omega|^4<=2q_A omega^T M omega.
+```
+
+`MettapediaNS.JointCurlGeometry` certifies these finite-law estimates,
+including a literal whole-space smooth-field curl consumer with the
+projection difference and curvature symmetry explicit. If the same
+retained law has `omega^T Momega<=kappa |omega|^2`, kappa>=0, Lean
+proves `|omega|^2<=2kappa q_A`. At zero curl the inequality holds
+without division. The argument does not require a lower eigenvalue
+bound in every direction of the nine-dimensional joint tensor.
+
+For a velocity tangent to a fixed plane and independent of its normal
+coordinate, every frame preserves a common planar normal n.
+If curl is parallel to n, then `J^T omega=omega` on every path and
+the normal cost is exactly `|omega|^2`. The certified invariant-direction
+conversion gives `|omega|^2<=2q_A`. This allows arbitrary deformation
+inside the plane. This physical illustration applies to the periodic
+planar class or a genuinely two-dimensional problem: nonzero
+z-independent fields are not finite-energy velocities on R3.
+
+The class in [the stochastic parent-history calculation](#actual-ns-with-a-bounded-stochastic-parent-history)
+provides a three-component positive consumer with actual stretching.
+For period 2pi and normalized periodic volume, a,b>=0 and nu>0, let
+
+```text
+u=(a exp(-nu t)sin y,0,v(x,y,t)),      p=0,
+v_t+a exp(-nu t)sin(y)v_x=nu(v_xx+v_yy),    v(0)=b sin x.
+```
+
+This is the literal unforced NS equation. The horizontal heat parent
+decays autonomously; the vertical component is globally supplied by
+the smooth linear parabolic subsystem. The already identified
+stochastic phase formula gives, with q=exp(-nu t),
+
+```text
+|partial_y u_1|<=a q,
+|v_x|<=b q,
+|v_y|<=ab q(1-q)/nu.
+```
+
+Common translation noise has no spatial Jacobian. Along each original
+stochastic path the forward frame satisfies `J'=B J`, `J(0)=I`, with
+`B=grad u`. Its complete solution has the form
+
+```text
+J=[[1,beta,0],[0,1,0],[gamma,delta,1]],
+beta'=partial_y u_1,
+gamma'=v_x,
+delta'=v_x beta+v_y.
+```
+
+The derivative bounds hold uniformly over space and thus along every
+original path. Integration gives
+
+```text
+|beta(t)|<=a(1-q)/nu,
+|gamma(t)|<=b(1-q)/nu,
+|delta(t)|<=ab(1-q)^2/nu^2.
+```
+
+Both terms in delta' are counted. Its comparison envelope has derivative
+`2ab q(1-q)/nu`, the sum of their full envelopes; none is discarded
+as transport. With r=a/nu, s=b/nu, this yields
+
+```text
+tr(JJ^T)<=kappa=3+r^2+s^2+r^2s^2,
+z^T Mz=E|J^T z|^2<=kappa |z|^2,
+|omega|^2<=2kappa q_A,
+sup_t integral |omega(t)|^2<=2kappa ||grad u_0||_2^2.
+```
+
+Here the initial normalized gradient energy is `(a^2+b^2)/2`.
+The certified finite frame-square/triangular algebra supplies the
+conversion. Stochastic construction, comparison, continuous original
+payment and the spatial/time argument remain analytic. This is an
+all-time full-datum allowance for this actual class, not an arbitrary
+3D continuation theorem. Genuine stretching is present:
+`omega^T S omega=-(partial_y u_1)v_x v_y`, where S is symmetric strain.
+The important restriction is the absence of vertical feedback into
+the horizontal parent. Original labels and paths are never reset
+when the interval is partitioned.
+
+The directional geometry cannot be dropped. A single coherent law with
+
+```text
+F=diag(lambda^-1,lambda,1),      J=diag(lambda,lambda^-1,1),
+V=[e_1]_cross,                  A=F^T V F,
+q_A=2,                         |curl A|^2=4lambda^2
+```
+
+has determinant one and constant original tensor norm, yet unbounded
+ordinary curl as lambda grows. Its directional Cauchy estimate is an
+equality: the growing area cost pays exactly the difference. This
+refutes a geometry-free universal conversion from incompressibility
+and coherence alone. It assigns no finite-energy or periodic NS
+trajectory to those frames and does not refute a full-datum physical
+history budget.
+
+For the actual history target, retain the complete parabolic rate.
+On a smooth unforced prefix, `D omega=Bomega` and `D M=BM+MB^T`.
+Let `W=|omega|^2`, `Omega=omega^T Momega`, `V=omega^T S omega`.
+The full product rule gives
+
+```text
+D Omega=4omega^T M S omega
+  -2nu sum_k [(partial_k omega)^T M(partial_k omega)
+             +2(partial_k omega)^T(partial_k M)omega],
+D W=2V-2nu sum_k |partial_k omega|^2.
+```
+
+For rho=Omega/W on W>0,
+
+```text
+(D-2nu grad log W.grad)rho
+  =(4omega^T M S omega-2rho V)/W
+   -(2nu/W)sum_k [(partial_k omega)^T(M-rho I)(partial_k omega)
+                  +2(partial_k omega)^T(partial_k M)omega].
+```
+
+The mixed diffusion has no automatic favorable sign. At M(0)=I and
+zero initial spatial moment derivatives, rho(0)=1 and its initial
+material rate is `2V/W`. The complete canonical unforced periodic
+datum tested below has positive rate `2134367150/1383763869` at the
+origin, even at nu=1/10. This is consistent with the earlier inverse-
+metric quotient calculation: viscosity is not an instantaneous
+nonincrease theorem for the changing measurement. It refutes that
+monotonicity shortcut, not finite full-datum payment for its growth.
+The initial tangent is exact; stochastic realization and a positive-
+time passage are analytic. No uniform Taylor window is asserted.
+Pressure also remains physical: `D B=-B^2-Hess p` is checked using
+the actual canonical Poisson pressure in every Fourier output.
+
+```sh
+python3 -O labs/joint_curl_geometry.py
+```
+
+The checker keeps all nine tensor coordinates, a single normalized
+three-sample original law, and both copies of every determinant-one
+frame. It checks the original-label variance and payment, directional
+curl conversion, the invariant planar normal, complete triangular
+comparison envelopes, the coherent kinematic obstruction, and the
+full signed cost-rate algebra with nonzero spatial derivatives. Its
+actual three-dimensional periodic initial-data test uses the full
+canonical unforced RHS, not a closed mode evolution.
+
+The next physical estimate is finite directional geometry payment for
+parents that reciprocally amplify, with constants fixed from the full
+original datum, viscosity and horizon. A pointwise rho bound is one
+sufficient candidate; a weaker spatial estimate controlling physical
+enstrophy also suffices. The derivative terms, rotating orientation,
+pressure and parent feedback must remain in that estimate. The
+triangular class establishes a working mechanism, not that extension.
+
+A small reciprocal-parent test extends its initial datum to
+
+```text
+u_0=(a sin y,epsilon sin z,b sin x),
+```
+
+with a,b>0, epsilon>=0. At epsilon=0 this is the established mixing
+datum. For epsilon>0 all three components interact in a loop. The
+exact initial field and its full unforced viscous tangent remain
+solenoidal. Canonical periodic pressure has
+
+```text
+p(0)=0,
+partial_t p(0)=-2ab epsilon cos x cos y cos z,
+V(0)=3ab epsilon cos x cos y cos z,
+partial_t rho(0,0)=6ab epsilon/(a^2+b^2+epsilon^2).
+```
+
+The pressure derivative is verified by the complete differentiated
+Poisson equation, including viscosity; its mean is zero. At a=2,
+b=3, epsilon=1/4 the initial directional rate is 144/209. These
+are actual periodic initial NS jets, not an external strain or force.
+They expose both reciprocal amplification and generated pressure for
+the next prefix estimate. They establish neither its payment over
+time nor indefinitely renewed stretching.

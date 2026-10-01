@@ -1171,6 +1171,57 @@ its initial kinetic work is zero. The forced representation requires
 the accumulated pulled-back source. See the
 [joint tensor, original payment and curl tests](labs/README.md#joint-two-index-metric-and-original-gradient-payment).
 
+### Physical curl needs only its actual direction's frame budget
+
+`JointCurlGeometry` combines the retained joint metric's Cauchy bound
+with its exact skew/area channel. For a normalized finite common law,
+det F=1, `J=F^-1`, `M=E[J J^T]`, and `q_A=vec(A)^T C^-1 vec(A)`,
+Lean certifies, for every direction z,
+
+```text
+(z.curl A)^2 <= 2 q_A z^T M z,
+|curl A|^4 <= 2 q_A (curl A)^T M (curl A).
+```
+
+With the previously stated curvature symmetry and gradient projection
+difference, this curl is the literal whole-space field's vorticity.
+Thus a bound `omega^T M omega<=kappa |omega|^2` suffices for
+`|omega|^2<=2kappa q_A`. It asks for the actual curl direction's cost,
+not uniform coercivity in every tensor direction. Lean also proves
+the conversion with kappa=1 when every retained J^T preserves that
+curl, as in a common planar normal channel. A nonzero z-independent
+periodic field is not a finite-energy whole-space field.
+
+There is a positive analytic consumer with genuine stretching. In the
+actual periodic triangular mixing class
+`u=(a exp(-nu t) sin y,0,v)`, `v(0)=b sin x`, the stochastic bounds
+give `|v_x|<=b exp(-nu t)` and
+`|v_y|<=ab exp(-nu t)(1-exp(-nu t))/nu`, for a,b>=0 and nu>0.
+Every original forward frame has the form
+
+```text
+J=[[1,beta,0],[0,1,0],[gamma,delta,1]],
+|beta|<=r=a/nu,  |gamma|<=s=b/nu,  |delta|<=rs,
+tr(JJ^T)<=kappa=3+r^2+s^2+r^2s^2.
+```
+
+The finite triangular conversion is kernel-certified. The stochastic
+construction, pathwise comparison and integrated original-gradient
+payment are analytic; together they give an all-time enstrophy allowance
+`2kappa ||grad u_0||_2^2` for this periodic class. No new allowance is
+assigned at a history boundary. The vertical component does not feed
+back into the horizontal parent; reciprocally amplifying parents remain
+the missing extension.
+
+Volume preservation and coherence alone cannot pay the geometric
+conversion. A single determinant-one frame has q_A=2 but curl square
+4lambda^2. This is a kinematic obstruction, not a finite-energy NS
+counterexample. Actual canonical unforced initial jets also allow
+the directional geometry to increase from its initial value. The
+complete evolution retains mixed derivatives of vorticity and M;
+their signed payment over arbitrary histories is open. See the
+[directional curl, mixing history and full cost-rate tests](labs/README.md#physical-curl-and-a-paid-triangular-parent-history).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
