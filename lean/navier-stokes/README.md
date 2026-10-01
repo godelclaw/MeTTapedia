@@ -1868,6 +1868,29 @@ The equations and moment coefficients are symbolically checked; elliptic
 identification and the interval conclusions remain analytic. This tests
 a source-only closure, not a full-datum history allowance or regularity.
 
+The [smooth-receiver history estimate](labs/README.md#smooth-receivers-and-the-complete-generated-parent-history)
+pays the full residual's source and actual transport when paired with a
+smooth axial receiver whose first two axial derivatives have prescribed
+bounds, in the stated axisymmetric whole-space class. Integrating the heat
+response over its history leaves a logarithmic source concentration,
+paid by the actual full-energy law. Renormalizing
+the receiver by r^2 retains the correct physical measure and axis flux.
+The transport correction is then bounded using the full physical vorticity
+and the already paid parent history, without assuming either is absent.
+The source identification, reserve, duality and transport estimate are
+analytic, with exact symbolic checks.
+For the actual deformation-weighted receiver, its derivative bounds remain
+uncontrolled by the original datum; smooth averaged observations do not
+give the uniform point-started moment required by the compression criterion.
+An exact Fisher-information identity retains full diffusion and permits
+a finite old-parent allowance for mass plus weighted Fisher information;
+the signed generated-strain cost is still open.
+The heat-referenced variant starts every normalized Gaussian receiver
+with allowance two, uniformly in its width. It gives an explicit signed
+cost whose uniform payment would control the point-started axis moment;
+that payment and the further interior-weight construction remain open.
+This is a partial physical bound, not an arbitrary-data continuation result.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

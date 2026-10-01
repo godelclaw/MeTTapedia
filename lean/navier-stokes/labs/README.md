@@ -14672,3 +14672,356 @@ bound. PDE evolution, elliptic identification, integral inequalities and
 stochastic interval conclusions remain analytic. No Lean declarations
 or axioms change. The signed residual history and its original-datum
 funding remain open.
+
+## Smooth receivers and the complete generated-parent history
+
+`source_receiver_duality.py` pairs the residual with an entire smooth
+observation history before estimating it. In the same axisymmetric
+whole-space class, it bounds both source generation and full parent
+transport for this observable. Constants retain the receiver's first
+two axial derivatives. Controlling those derivatives for the actual
+deformation receiver, and passing to point observations, remain open.
+
+Take a smooth unforced prefix `[0,T]`, `T<=H`, positive viscosity,
+regular axis and sufficient decay for the integrals below. Fix the
+original source cutoff rho and the compatible history split
+
+```text
+eta=omega_theta/r=g+eta_core,    eta_core(0)=0,
+(partial_t+v.grad-nu L5)eta_core=partial_z f,
+f=(1-zeta_rho)b^2>=0,    b=u_theta/r,
+q_core=𝒯 eta_core,    𝒯=2partial_z(-L5)^(-1).
+```
+
+The axis trace of q_core is the residual axial strain. Both histories
+retain the same full interacting v. The earlier
+source estimate supplies
+
+```text
+sup_t ||g(t)||_L2(R3)<=Y,
+Y=||eta(0)||_2+sqrt(H C4(0)/(3nu rho^8)),
+C4(0)=integral_R3 (r u_theta(0))^4.
+```
+
+### The full source has a paid logarithmic concentration
+
+Write `E=||u||_2^2`, `d=||grad u||_2^2`, so `E'=-2nu d`.
+The lifted measure is `dy5=pi r^2 dx3`. The physical angular derivative
+of u has components `(-b,u_r/r,0)` in the cylindrical orthonormal frame.
+Consequently `integral_R3 b^2<=d`, and for any fixed L>0,
+
+```text
+B_L(t)=integral_R5 f(t) [1+log(1+L^2/r^2)] dy5
+      <=pi [E(t)+L^2 d(t)],
+R_L(t)=pi [H-t+L^2/(2nu)] E(t)>=0,
+R_L'(t)+pi[E(t)+L^2 d(t)]=-2pi nu(H-t)d(t)<=0.
+```
+
+Here `log(1+x)<=x`, `0<=1-zeta_rho<=1`, and the angular gradient
+comparison pay all source scales, including the axis limit. Thus
+
+```text
+integral_a^b B_L <= R_L(a)-R_L(b),
+integral_0^T B_L <= pi [H+L^2/(2nu)] E0.
+```
+
+The same reserve is spent at every seam; there is no renewed allowance.
+In particular L^2=4nu H costs at most `3pi E0 H`. This weaker observable
+does not contradict the earlier failures of energy-only stretching or
+caloric-renewal budgets.
+
+For a forced evolution the reserve rate has the additional term
+`2pi[H-t+L^2/(2nu)]<u,force>`. The residual's equation also retains its
+additional vorticity source and hence another receiver pairing. Finite
+energy work alone does not remove that source; no forced construction
+is ruled out by this partial observation estimate.
+
+### Exact duality retains transport
+
+Let m(t,z) be a smooth receiver with enough axial decay and prescribed
+bounds `M1=sup|m_z|`, `M2=sup|m_zz|`. Define the signed observation and
+its backward heat receiver on this prefix:
+
+```text
+I=integral_0^T integral_R m(t,z) q_core(t,0,z) dz dt,
+w(t)=𝒯* [delta_R4 m(t)],      𝒯*=-2partial_z(-L5)^(-1),
+rho(s)=integral_s^T exp(nu(t-s)Delta5) w(t) dt.
+```
+
+The residual's actual PDE and `eta_core(0)=rho(T)=0` give
+
+```text
+I = -integral_0^T integral_R5 f rho_z
+    +integral_0^T integral_R5 eta_core div_5(v rho).
+```
+
+The second term is essential. Replacing the fluid propagator by heat
+without this correction would erase the hidden parents. Set `A=r^2 rho`.
+Physical incompressibility gives the exact identities, off the axis,
+
+```text
+L5(r^-2 A)=r^-2 Lminus A,
+div_5(v r^-2 A)=r^-2 v.grad A,
+I=pi integral_0^T integral_R3 [-f A_z+eta_core v.grad A],
+Lminus=partial_rr-partial_r/r+partial_zz.
+```
+
+The Green boundary flux is also retained:
+
+```text
+r(A L5 eta-eta Lminus A)
+ =partial_r[r(A eta_r-eta A_r)+2A eta]
+  +partial_z[r(A eta_z-eta A_z)].
+```
+
+An instantaneous receiver has a nonzero renormalized axis trace:
+`r^2 w=-(P_r*m_z)/(2pi^2)`, where
+`P_r(z)=r^2/[2(r^2+z^2)^(3/2)]` has mass one. Its limit is
+`-m_z/(2pi^2)`. The history receiver instead has
+`A=O(r^2(1+|log r|))` and `r A_r=O(r^2(1+|log r|))` for bounded M1,
+so its displayed Green axis flux vanishes for regular eta. These two
+boundary behaviors must not be interchanged.
+
+### Heat integration reduces the source singularity to a logarithm
+
+The factorized heat kernel and the resolvent give
+
+```text
+|rho_z(s,r,z)| <= M2 K_nu(T-s,r),
+K_nu(h,r)=2 integral_0^h da integral_(nu a)^infinity
+                      (4pi u)^(-2) exp(-r^2/(4u)) du
+ =[E1(x)+(1-exp(-x))/x]/(8pi^2 nu),
+x=r^2/(4nu h),      E1(x)=integral_x^infinity exp(-u)/u du.
+```
+
+Since `exp(-u)<=1/(1+u)` and `1-exp(-x)<=x`,
+
+```text
+K_nu(h,r)<=[1+log(1+4nu h/r^2)]/(8pi^2 nu),
+|integral_0^T integral_R5 f rho_z|<=3 M2 E0 H/(8pi nu).
+```
+
+The bound uses the actual evolving source, not its initial value. Heat
+integration weakens its spatial singularity enough for the kinetic-energy
+reserve to pay it over the full horizon.
+
+### The full transport correction also has a smooth-receiver bound
+
+Differentiate the explicit positive kernel before estimating. Uniformly
+on the prefix, with deliberately conservative constants,
+
+```text
+|A_r|<=B_r=2M1 sqrt(H/nu)/pi^2,
+|A_z|/r<=B_z=3M2 sqrt(H/nu)/(4pi^2),
+|A_z|<=C_z=M2 H/(2pi^2).
+```
+
+For verification write `F(x)=E1(x)+(1-exp(-x))/x`. Then
+`F'(x)=-(1-exp(-x))/x^2`. The radial bound is obtained from
+`|A_r|<=M1(2r K-r^2 K_r)`. Use
+`sqrt(x)E1(x)<=2`, `(1-exp(-x))/sqrt(x)<=1`, and
+`x E1(x)<=exp(-x)`. The first follows from
+`E1(x)<=log(1+1/x)<=2/sqrt(x)`; the logarithmic inequality follows by
+integrating `1/(1+y)<=1/sqrt(y)`. The other two follow from
+`1-exp(-x)<=min(x,1)` and the defining integral of E1.
+
+Now retain `eta_core=omega_theta/r-g` in physical measure:
+
+```text
+integral_R3 |eta_core v.grad A|
+ <=sqrt(2) B_r d + sqrt(2) B_z sqrt(E d)
+   +(B_r+C_z) Y sqrt(E).
+```
+
+Indeed `||omega_theta||_2<=sqrt(2d)`, `||u_r/r||_2<=sqrt(d)` and
+`||v||_2<=sqrt(E)`. These are physical derivative/energy estimates;
+no bound on a fictitious independent residual fluid is used. The original
+energy law yields `integral d<=E0/(2nu)` and
+`integral sqrt(E d)<=E0 sqrt(H/(2nu))`. Therefore the complete transport
+allowance is
+
+```text
+B_transport=pi sqrt(2) E0 [B_r/(2nu)+B_z sqrt(H/(2nu))]
+            +pi(B_r+C_z) Y sqrt(E0) H,
+|I|<=3M2 E0 H/(8pi nu)+B_transport.
+```
+
+This includes all mutually interacting meridional parents for this smooth
+averaged observation. The constants depend on E0, Y, nu, H, M1 and M2.
+If M1 and M2 come from an uncontrolled future receiver norm, it is only
+a conditional estimate, not an original-datum payment for deformation.
+
+### The remaining receiver obligation
+
+For the actual axis process `dZ=U dt+sqrt(2nu)dB`, `U=u_z|axis`, and
+`dJ=q_core(t,Z)J dt`, the J^4-weighted density from a smooth normalized
+initial density satisfies, under the usual stopped/decay hypotheses,
+
+```text
+m_t=nu m_zz-partial_z(U m)+4q_core m,
+E[J(T)^4]=1+4I.
+```
+
+The estimate above consequently gives a conditional averaged-moment
+bound. It does not establish datum-uniform M1 or M2 for that density.
+Nor does it bound the point-started moment uniformly: approximating a
+Dirac initial density makes its initial derivative bounds diverge.
+The physical compression-weight criterion needs stronger control than
+this averaged observation. The missing estimate is how the actual
+receiver's concentration evolves, with its full drift and potential.
+
+This obligation has explicit physical defects. Since `U_z=q_core+q_paid`,
+the equations for `n=m_z` and `p=m_zz` are
+
+```text
+n_t=nu n_zz-U n_z+2(q_core-q_paid)n+(3q_core_z-q_paid_z)m,
+p_t=nu p_zz-U p_z+(q_core-3q_paid)p
+    +(5q_core_z-3q_paid_z)n+(3q_core_zz-q_paid_zz)m.
+```
+
+The already paid integral of `|q_paid|` does not alone control these
+derivative sources. A weighted derivative identity avoids differentiating
+the parents: for positive m, `ell=log m` and
+`Fisher=integral m ell_z^2`, with finite integrals and vanishing boundary
+flux,
+
+```text
+Fisher'=-2nu integral m ell_zz^2
+        -4 integral q_core m ell_z^2
+        -2 integral (3q_core-q_paid)m ell_zz.
+```
+
+This retains the complete diffusion. Completing its square leaves
+`integral m(3q_core-q_paid)^2/(2nu)-4 integral q_core m ell_z^2`,
+which has no established favorable sign or original-datum payment.
+The identity supplies a concrete next history estimate; it does not
+bound Fisher or, by itself, the receiver's second derivative supremum.
+
+The old parents nevertheless have a finite payment in this identity.
+The same elliptic interpolation estimate used for M_H implies
+
+```text
+integral_0^T ||q_paid||_infinity^2
+ <=P2_H=4 C_BS^2 Y^2 sqrt(H/(2nu)).
+```
+
+Indeed `||q_paid||_infinity^2<=4 C_BS^2 Y ||grad g||_2`; apply the
+previous dissipation bound for g and Cauchy--Schwarz in time. For a fixed
+length L>0, use the joint receiver quantity and paid clock
+
+```text
+S=integral m+L^2 Fisher >= integral m,
+kappa(t)=L^2 ||q_paid(t)||_infinity^2/nu,
+K_H=L^2 P2_H/nu,
+C_core=integral m[4q_core(1-L^2 ell_z^2)
+                   -6L^2 q_core ell_zz-nu L^2 ell_zz^2].
+```
+
+Completing only the paid-parent square gives
+
+```text
+S'<=C_core+kappa S,
+d_t[exp(K_H-integral_0^t kappa) S]
+ <=exp(K_H-integral_0^t kappa) C_core.
+```
+
+The multiplier stays at least one. Its initial allowance is the explicit
+`exp(K_H)(1+L^2 Fisher(0))` for normalized m(0). Thus old-parent work is
+paid without a bound on its spatial derivatives. The exact remaining
+question is an original-datum upper bound on the time integral of this
+weighted, signed C_core, using the actual generated-parent equation.
+No such bound is proved here. This joint quantity is not assumed to be
+monotone, and its point-started limit requires additional work.
+
+### A heat reference avoids infinite Gaussian startup cost
+
+`receiver_heat_reference.py` tests a refinement with an explicit changing
+length. Start the actual receiver with a normalized Gaussian of variance
+eps^2 centered at z0, and retain its entire history. Define
+
+```text
+M=integral m,   F=Fisher,   k(t)=eps^2+2nu t,
+delta=ell_zz+1/k,   S=M+kF,   B=max(S,2M).
+```
+
+For every eps>0, `M(0)=1`, `F(0)=eps^-2` and `B(0)=2` exactly.
+The additional `k'F` term is included. With `c=q_core`, `p=q_paid`,
+the complete shifted rate is
+
+```text
+S'=(2nu/k)(2M-S)
+   +integral m[10c-4kc ell_z^2-6kc delta
+                -2p+2kp delta-2nu k delta^2].
+```
+
+The identity uses `integral m ell_zz=-F`. Spending only the old-parent
+square leaves
+
+```text
+C_k=integral m[10c-4kc ell_z^2-6kc delta-nu k delta^2],
+kappa=2||p||_infinity+(k/nu)||p||_infinity^2,
+S'<=(2nu/k)(2M-S)+C_k+kappa M.
+```
+
+On the S branch of B the relaxation term is nonpositive; on the 2M branch
+its rate is `8integral c m`. The maximum of these absolutely continuous
+quantities consequently satisfies, almost everywhere,
+
+```text
+B'<=D_k+kappa B,       D_k=max(C_k,8integral c m).
+```
+
+The clock is uniformly funded for `0<eps<=eps_max`:
+
+```text
+integral_0^T kappa <= K_star=4M_H+(eps_max^2/nu+2H)P2_H,
+W(t)=exp(K_star-integral_0^t kappa)>=1,
+W(T)B(T)<=2exp(K_star)+integral_0^T W D_k.
+```
+
+The actual old-parent estimates, viscosity and the original elapsed time
+are retained. No fresh Gaussian or initial allowance is introduced when
+histories are composed. An original-datum upper bound A on the last
+signed integral, uniform in center z0, eps and all available prefixes,
+would give `M(T)<=2exp(K_star)+A` uniformly. On each smooth prefix with
+bounded regular coefficients, continuity of the stopped moment in its
+initial position then passes this bound to the point-started limit.
+Smooth-prefix bounds justify that limit; they are not allowed to enter A.
+Construction, integrability and stopping assumptions for the receiver
+remain part of this analytic implication.
+
+The exact tests recover ordinary heat spreading with `B=2`, `delta=0`
+and zero D_k. They also check affine parent transport for either sign of
+its strain; this is a receiver calibration, not a finite-energy NS
+example. Whenever the actual generated component c is zero, `C_k<=0`
+and `D_k=0`, so the old parents are paid by the clock. For nonzero c the
+signed D_k is the explicit missing payment; the previous positive-burst
+examples give no reason to expect it to vanish. This reduction does not
+bound D_k. An axis moment also does not by itself construct the interior
+compression weight or establish general three-dimensional continuation.
+
+The earlier compact hidden-parent pair is a direct consistency test.
+With `q_core=t sigma+t^2 kappa/2+O(t^3)` and initial U=0, the receiver
+pairing expands as
+
+```text
+I=T^2 <m0,sigma>/2+T^3 <m0,kappa+2nu sigma_zz>/6+O(T^4),
+kappa=sigma_t-𝒯(v0.grad S0)+nu Delta5 sigma.
+```
+
+Outside the initial source support the last Laplacian vanishes. The full
+parent-dependent coefficient from the previous calculation is recovered;
+the new finite allowance bounds both parent phases rather than asserting
+their responses coincide. This Taylor check supplies no uniform remainder.
+
+Run `python3 -O labs/source_receiver_duality.py --quadrature`.
+Run `python3 -O labs/receiver_heat_reference.py` for the growing-length
+identities and exact Gaussian/affine receiver calibrations.
+Symbolic identities, physical gradient columns, kernel derivatives,
+time ordering and constants pass. Independent positive-kernel integration
+agrees with the closed expression to relative discrepancy below `4e-16`
+at the six tested scales; these are numerical checks, not error certificates.
+The PDE duality, semigroup identification, integral bounds, axis limiting
+arguments and stochastic density formula remain analytic. No new Lean
+certification is claimed for these physical estimates. Arbitrary-history
+funding and arbitrary-data R3/T3 regularity remain open.
