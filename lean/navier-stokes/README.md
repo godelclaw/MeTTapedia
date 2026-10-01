@@ -1721,6 +1721,17 @@ and payment survive interacting parents, with exact shear and full 3D-jet
 checks. They control the signed spatial mean; the gradient/pressure work
 and the sufficient physical stretching budget remain open.
 
+The [HJB curvature-completion test](labs/README.md#hjb-curvature-completion-and-the-physical-curl-quotient)
+then retains the tensor `K=A-grad m`. Its equation cancels the explicit
+pressure Hessian but retains `sum_l m_l Hess(u_l)`. Adding its positive
+joint-metric energy to the original tensor energy and a fixed multiple
+of the mean-action reserve fails the signed renewal supersolution test
+on actual viscous shears. Explicit Brownian-moment bounds give a
+positive-viscosity interval counterexample, analytically with exact checks.
+This symmetric curvature is invisible to the physical curl; its payment
+is not required for curl reconstruction. The directional frame geometry
+and arbitrary-history signed budget remain open.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

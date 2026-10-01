@@ -12264,3 +12264,194 @@ The physical PDE/control identification and interval estimates in this
 section are analytic. The new checker certifies exact finite identities,
 not a continuous stochastic theorem or a new Lean regularity result.
 Run `python3 -O labs/covector_bellman_bridge.py`.
+
+## HJB curvature completion and the physical curl quotient
+
+The [curvature-completion checker](hjb_curvature_completion.py) tests
+one explicit reserve following the physical covector/HJB construction.
+Its proposed source cancellation is exact; its proposed signed payment
+fails on an actual positive-viscosity unforced shear. This separates a
+geometric cost of the representation from physical vortex stretching.
+
+### The candidate and the retained source
+
+Keep the original stochastic tensor `A`, its joint metric
+`C=E[(F^T F) tensor (F^T F)]`, `W=C^-1`, and the physical covector
+`m=u-grad S`. Write `B=grad u`, `P=Hess p`, `E=A-B`, and
+
+```text
+K=E+Hess S=A-grad m,     T=sum_l m_l Hess(u_l).
+```
+
+For `D=partial_t+u.grad-nu Delta`, the complete physical equations give
+
+```text
+D E=-B^T E-EB+P-B^T B,
+D Hess S=-B^T Hess S-(Hess S)B+B^T B-P+T,
+D K=-B^T K-KB+T,        K(0)=0.
+```
+
+The pressure Hessian and quadratic parent matrix cancel, but T remains.
+All these tensors use the same fluid and original stochastic history.
+The checker verifies the resulting first and second complete time jets
+on both signs of an interacting 3D datum, including canonical pressure,
+viscosity, changing parents and every generated Fourier output.
+
+For a tensor Z set `q_Z=vec(Z)^T W vec(Z)` and let `Q_Z=mean q_Z`.
+The joint metric gives the complete production
+
+```text
+D q_K=2 vec(K)^T W vec(T)-2nu F_K,
+F_K=sum_j |partial_j vec(K)-C_j W vec(K)|_W^2>=0.
+```
+
+Here `C_j=partial_j C`, so the changing spatial metric remains in the
+diffusion cost.
+
+The existing original-tensor channel `Q_A` is nonincreasing after
+spatial integration. The tested nonnegative candidate adds curvature
+and the preceding mean-action reserve:
+
+```text
+R(t)=Q_A(t)+alpha Q_K(t)+beta(H-t)E_kin(t)/2,
+alpha>0, beta>=0 fixed, E_kin=mean |u|^2.
+```
+
+Its proposed Bellman inequality is `R'+q<=0`, with the actual signed
+continuation cost
+
+```text
+q(t)=2[G(t)-G(0)]-nu D_omega(t),
+G=mean omega^T B omega,   D_omega=mean |grad omega|^2.
+```
+
+Nonnegativity and a finite initial reserve would make this a sufficient
+payment of that cost. The claim quantified over all smooth unforced
+data, with the displayed fixed coefficients, is false.
+
+### Exact shear and its joint stochastic frame
+
+Take `u=a exp(-nu t)sin y e_1`, `a,nu>0`. This is a globally smooth
+unforced periodic flow with p=0 and G=0. The previous section gives S.
+Its original packet and curvature are exactly
+
+```text
+A_12=a exp(-nu t)cos y,
+A_22=-a^2/(4nu)[1-exp(-2nu t)
+                  +(exp(-2nu t)-exp(-4nu t))cos(2y)],
+K_22=-2S,
+```
+
+with all other entries zero. They satisfy their full positive-viscosity
+equations; in particular `T_22=-a^2 exp(-2nu t)sin^2 y` is not zero.
+
+At `t=1/a` put `epsilon=nu/a`. The exact common backward Brownian
+representation, in scaled time `0<=s<=1`, is
+
+```text
+Y_s=y+sqrt(2epsilon)B_s,
+b_epsilon=integral_0^1 exp[-epsilon(1-s)]cos(Y_s) ds,
+F_epsilon=[[1,-b_epsilon,0],[0,1,0],[0,0,1]],
+A/a=E[cos(Y_1) F_epsilon^T (e_1 tensor e_2) F_epsilon].
+```
+
+The same samples give C; replacing C by a product of independent
+averages is not part of this test. As epsilon tends to zero, uniformly
+in y, `b_epsilon` tends to `b_0=cos y`. In this coherent limit,
+
+```text
+q_A/a^2=cos^2 y,      q_K/a^2=sin^4 y,
+Q_A/a^2=1/2,         Q_K/a^2=3/8.
+```
+
+Initially `Q_A/a^2=1/2` and K=0. Curvature has grown, while the
+physical stretching has stayed exactly zero.
+
+### Explicit positive-viscosity bounds
+
+For `0<epsilon<=1`, Brownian Cauchy--Schwarz and the Lipschitz bound
+for cosine give, uniformly in y,
+
+```text
+E|b_epsilon-b_0| <= epsilon/2+(2sqrt(2)/3)sqrt(epsilon)
+                 <= (3/2)sqrt(epsilon),
+E|cos(Y_1)-cos y| <= sqrt(2epsilon).
+```
+
+For `|b|<=1`, let `G_b=F_b^T F_b`. Its eigenvalues lie between 1/3
+and 3: its two-dimensional block has determinant 1 and trace at most 3,
+and the third eigenvalue is 1. Also
+`||G_b-G_c||_F<=sqrt(6)|b-c|` for `|c|<=1`.
+Consequently C and its coherent limit have eigenvalues at least 1/9;
+their inverses have operator norm at most 9. The tensor-product
+difference and inverse identity give
+
+```text
+||C_epsilon-C_0||op <=24sqrt(epsilon),
+||W_epsilon-W_0||op <=1944sqrt(epsilon).
+```
+
+The original packet divided by a has Frobenius norm at most sqrt(2)
+and differs from its coherent limit by at most `4sqrt(epsilon)`.
+The curvature divided by a has norm at most 1. Its exact scalar heat
+formula, or the source `-exp(-2epsilon s)sin^2 y`, bounds its difference
+from `-sin^2 y e_2 tensor e_2` by `2epsilon`. Thus
+
+```text
+|Q_A/a^2-1/2| <=4000sqrt(epsilon),
+|Q_K/a^2-3/8| <=2000sqrt(epsilon).
+```
+
+For example, the first bound follows from
+`9*4*3+2*1944=3996<=4000`; the second uses
+`9*2*2+1944=1980<=2000`. These deliberately generous bounds retain
+the entire joint metric and its inverse. They do not require a
+time-Taylor approximation or a numerical stochastic ensemble.
+
+For `a>=max(nu,1/H)`, the integrated Bellman defect therefore satisfies
+
+```text
+[R(1/a)-R(0)+integral_0^(1/a) q(t)dt]/a^2
+ >=3alpha/8-(4000+2000alpha)sqrt(nu/a)-L/a,
+L=beta(H nu/2+1/4)+nu/2.
+```
+
+Here the physical viscous cost is included exactly:
+`integral q=-a^2[1-exp(-2nu/a)]/4`. The mean-action reserve's decrease
+is included as well. For every fixed alpha>0, beta>=0, nu>0 and H>0,
+the displayed lower bound is positive for sufficiently large a.
+One explicit choice `alpha=beta=nu=H=1`, `a=10^10`, gives the rational
+lower bound `2519999999/8000000000>1/8` for this normalized defect.
+The checker verifies its arithmetic, not the analytic Brownian estimates.
+
+This refutes the displayed fixed-coefficient supersolution, including
+the full physical dissipation credit. It does not refute coefficients
+adapted to the full initial datum, an additional allowance, a different
+functional, or regularity. The datum has large finite energy; this is
+not a unit-energy counterexample. All these shears are regular.
+
+### What the physical observation actually needs
+
+K is symmetric: its initial value is zero, its source T is symmetric,
+and its full evolution preserves symmetry. Hence
+`tensorCurl(grad m)=tensorCurl(A-K)=tensorCurl A=omega`. The
+existing same-frame metric preserves the symmetric/skew decomposition,
+so this curvature lies entirely in the symmetric channel. Its growing
+positive norm need not be charged in order to reconstruct physical curl.
+For the tested shear, every path satisfies `J^T e_3=e_3` and omega is
+parallel to e_3, so the actual curl-direction frame cost is exactly 1.
+The established invariant-direction conversion already pays that flow.
+
+Removing that unnecessary charge does not bound the directional frame
+moment `M=E[J J^T]`, with `J=F^-1`. The original physical conversion still requires
+control of the coupled curl geometry, such as the already stated
+`integral omega^T M omega` target, or the weaker signed renewal payment.
+Nor does this cancellation remove pressure's influence on u and its
+parents. The result directs a geometric Bellman reserve toward the
+physical observation rather than every derivative of its representation.
+
+The PDE/stochastic argument and interval counterexample in this section
+are analytic. The exact checker covers finite matrix algebra, full
+initial 3D jets, the all-time shear formulas and the bound constants.
+No Lean declarations or axioms are added. Run
+`python3 -O labs/hjb_curvature_completion.py`.
