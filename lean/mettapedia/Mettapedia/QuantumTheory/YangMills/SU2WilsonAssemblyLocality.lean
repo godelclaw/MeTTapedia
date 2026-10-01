@@ -142,6 +142,30 @@ theorem coarseRestriction_assemble (N : ℕ) (p : SplitField N) :
     MeasurableEquiv.piEquivPiSubtypeProd, Equiv.piEquivPiSubtypeProd_symm_apply,
     l.property, l.val.property]
 
+/-- A continuous function of the retained fine coordinates, lifted to the
+original field. No extra conditional averaging occurs in this operation. -/
+def fineLift (N : ℕ) (F : C(CoarseField N × InterfaceField N, ℝ)) :
+    C(FullField N, ℝ) :=
+  ⟨fun b ↦ F (fineCoordinates N b), F.continuous.comp (by
+    change Continuous (fun b : FullField N ↦
+      ((fun l : CoarseLink N ↦ b l.val.val), (fun l : InterfaceLink N ↦ b l.val.val)))
+    fun_prop)⟩
+
+theorem split_fineLift (N : ℕ) (F : C(CoarseField N × InterfaceField N, ℝ)) :
+    splitObservable N (fineLift N F) = lift (I := InternalField N) F := by
+  ext p
+  exact congrArg F (fineCoordinates_assemble N p)
+
+theorem secondProjected_fineLift (N : ℕ) (β : ℝ)
+    (F : C(CoarseField N × InterfaceField N, ℝ)) (b : FullField N) :
+    secondProjected N β (fineLift N F) b =
+      WilsonEliminationRoutes.action (secondRoute N β) F (coarseRestriction N b) := by
+  change project volume (firstDensity N β) (marginal_pos volume _ (density_pos N β))
+    (project volume (density N β) (density_pos N β) (splitObservable N (fineLift N F)))
+    (coarseRestriction N b) = _
+  rw [split_fineLift, project_lift]
+  rfl
+
 theorem split_firstLift (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) :
     splitObservable N (firstLift N β F) =
       lift (project volume (density N β) (density_pos N β) (splitObservable N F)) := by
@@ -209,6 +233,65 @@ theorem secondProjected_eq_conditional (N : ℕ) (β : ℝ) (F : C(FullField N, 
     (∫ ω : FullField N, (fullDensity N β * F) (pin (retainedSet 4) b ω)) /
       (∫ ω : FullField N, fullDensity N β (pin (retainedSet 4) b ω))
   rw [integral_pin_coarse, integral_pin_coarse]
+
+theorem firstRemainder_eq_covariance (N : ℕ) (β : ℝ)
+    (F G : C(FullField N, ℝ)) (b : FullField N) :
+    WilsonEliminationRoutes.remainder (firstRoute N β)
+      (splitObservable N F) (splitObservable N G) (fineCoordinates N b) =
+      covariance (Measure.pi fun _ : AssemblyLink N ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet 2) b)
+        (WilsonConditionalProjection.pinnedMark (retainedSet 2) b F)
+        (WilsonConditionalProjection.pinnedMark (retainedSet 2) b G) := by
+  change firstProjected N β (F * G) b - firstProjected N β F b * firstProjected N β G b = _
+  simp_rw [firstProjected_eq_conditional]
+  rfl
+
+theorem fineLift_firstAction (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) :
+    fineLift N (WilsonEliminationRoutes.action (firstRoute N β) (splitObservable N F)) =
+      firstLift N β F := rfl
+
+theorem fineLift_firstRemainder (N : ℕ) (β : ℝ) (F G : C(FullField N, ℝ)) :
+    fineLift N (WilsonEliminationRoutes.remainder (firstRoute N β)
+      (splitObservable N F) (splitObservable N G)) =
+      firstLift N β (F * G) - firstLift N β F * firstLift N β G := rfl
+
+/-- A covariance for the generated first density is exactly a covariance
+under the original Wilson law with the coarse boundary pinned. The lifted
+marks are pinned as well; they need not ignore the held coordinates. -/
+theorem secondRemainder_eq_covariance (N : ℕ) (β : ℝ)
+    (F G : C(CoarseField N × InterfaceField N, ℝ)) (b : FullField N) :
+    WilsonEliminationRoutes.remainder (secondRoute N β) F G (coarseRestriction N b) =
+      covariance (Measure.pi fun _ : AssemblyLink N ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet 4) b)
+        (WilsonConditionalProjection.pinnedMark (retainedSet 4) b (fineLift N F))
+        (WilsonConditionalProjection.pinnedMark (retainedSet 4) b (fineLift N G)) := by
+  change WilsonEliminationRoutes.action (secondRoute N β) (F * G) (coarseRestriction N b) -
+    WilsonEliminationRoutes.action (secondRoute N β) F (coarseRestriction N b) *
+      WilsonEliminationRoutes.action (secondRoute N β) G (coarseRestriction N b) = _
+  rw [← secondProjected_fineLift, ← secondProjected_fineLift, ← secondProjected_fineLift]
+  simp_rw [secondProjected_eq_conditional]
+  rfl
+
+theorem secondThirdRemainder_eq_cumulant (N : ℕ) (β : ℝ)
+    (F G H : C(CoarseField N × InterfaceField N, ℝ)) (b : FullField N) :
+    WilsonEliminationRoutes.thirdRemainder (secondRoute N β) F G H (coarseRestriction N b) =
+      thirdCumulant (Measure.pi fun _ : AssemblyLink N ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet 4) b)
+        (WilsonConditionalProjection.pinnedMark (retainedSet 4) b (fineLift N F))
+        (WilsonConditionalProjection.pinnedMark (retainedSet 4) b (fineLift N G))
+        (WilsonConditionalProjection.pinnedMark (retainedSet 4) b (fineLift N H)) := by
+  change WilsonEliminationRoutes.action (secondRoute N β) (F * G * H) (coarseRestriction N b) -
+    WilsonEliminationRoutes.action (secondRoute N β) (F * G) (coarseRestriction N b) *
+      WilsonEliminationRoutes.action (secondRoute N β) H (coarseRestriction N b) -
+    WilsonEliminationRoutes.action (secondRoute N β) (F * H) (coarseRestriction N b) *
+      WilsonEliminationRoutes.action (secondRoute N β) G (coarseRestriction N b) -
+    WilsonEliminationRoutes.action (secondRoute N β) (G * H) (coarseRestriction N b) *
+      WilsonEliminationRoutes.action (secondRoute N β) F (coarseRestriction N b) +
+    2 * (WilsonEliminationRoutes.action (secondRoute N β) F (coarseRestriction N b) *
+      WilsonEliminationRoutes.action (secondRoute N β) G (coarseRestriction N b) *
+      WilsonEliminationRoutes.action (secondRoute N β) H (coarseRestriction N b)) = _
+  simp_rw [← secondProjected_fineLift, secondProjected_eq_conditional]
+  rfl
 
 /-- An original mark already ignoring the held dummy variables is transported
 without an extra change to its value in the pinned Wilson expectation. -/
@@ -509,6 +592,253 @@ theorem firstProjected_locality (N : ℕ) (β : ℝ) (S : Finset (AssemblyLink N
   exact project_dependsOn (volume : Measure SU2) 1
     (SU2BoundaryResponse.model (volumeIndex N) univ)
     (SU2BoundaryResponse.model_continuous (volumeIndex N) univ) β 2 S F hF b b' h
+
+/-- The actual first projected collar mark stays within radius four, in
+original lattice units. This holds at every coupling. -/
+theorem firstLift_ball_locality (N : ℕ) (β : ℝ) (l : AssemblyLink N)
+    (F : C(FullField N, ℝ)) (hF : DependsOn (WilsonPatchGeometry.collar {l}) F) :
+    DependsOn (WilsonPatchGeometry.linkBall 4 l) (firstLift N β F) := by
+  exact (firstProjected_locality N β _ F hF).mono (by
+    simpa only [Nat.cast_ofNat, show (2 : ℝ) + 2 = 4 by norm_num] using
+      dependencyBoundary_collar_subset_ball (n := volumeIndex N) (by decide : 0 < 2) l)
+
+/-- The first fiber covariance has exact support in the union of the two
+enlarged collars, including overlapping and coincident source links. -/
+theorem firstRemainder_ball_locality (N : ℕ) (β : ℝ) (l m : AssemblyLink N)
+    (F G : C(FullField N, ℝ))
+    (hF : DependsOn (WilsonPatchGeometry.collar {l}) F)
+    (hG : DependsOn (WilsonPatchGeometry.collar {m}) G) :
+    DependsOn (WilsonPatchGeometry.linkBall 4 l ∪ WilsonPatchGeometry.linkBall 4 m)
+      (fineLift N (WilsonEliminationRoutes.remainder (firstRoute N β)
+        (splitObservable N F) (splitObservable N G))) := by
+  rw [fineLift_firstRemainder]
+  have hFG := firstProjected_locality N β
+    (WilsonPatchGeometry.collar {l} ∪ WilsonPatchGeometry.collar {m}) (F * G)
+    ((hF.mono subset_union_left).mul (hG.mono subset_union_right))
+  have hprod : DependsOn
+      (WilsonPatchGeometry.linkBall 4 l ∪ WilsonPatchGeometry.linkBall 4 m)
+      (firstLift N β (F * G)) := hFG.mono (by
+    simpa only [Nat.cast_ofNat, show (2 : ℝ) + 2 = 4 by norm_num] using
+      dependencyBoundary_collars_subset_balls (n := volumeIndex N) (by decide : 0 < 2) l m)
+  exact hprod.sub (((firstLift_ball_locality N β l F hF).mono subset_union_left).mul
+    ((firstLift_ball_locality N β m G hG).mono subset_union_right))
+
+/-- The mixed covariance in the actual two-step cumulant tower has spatial
+tree decay. One estimate separates the inner pair; the other separates the
+transported mean from that pair. The second law uses the generated density. -/
+theorem mixedCorrection_clustering {β B : ℝ} (hβ : 0 ≤ β)
+    (hβ0 : β ≤ StrongCouplingCrossing.beta0 4) (hB : 0 ≤ B) :
+    ∃ κ > 0, ∃ A ≥ 0, ∀ (N : ℕ) (i j k : AssemblyLink N)
+      (F G H : C(FullField N, ℝ)),
+      DependsOn (WilsonPatchGeometry.collar {i}) F →
+      DependsOn (WilsonPatchGeometry.collar {j}) G →
+      DependsOn (WilsonPatchGeometry.collar {k}) H →
+      (∀ ω, |F ω| ≤ B) → (∀ ω, |G ω| ≤ B) → (∀ ω, |H ω| ≤ B) →
+      ∀ b : CoarseField N,
+        |WilsonEliminationRoutes.remainder (secondRoute N β)
+          (WilsonEliminationRoutes.action (firstRoute N β) (splitObservable N F))
+          (WilsonEliminationRoutes.remainder (firstRoute N β)
+            (splitObservable N G) (splitObservable N H)) b| ≤
+          A * Real.exp (-(κ / 2) * WilsonBoundaryResponse.threeTreeLength i j k) := by
+  obtain ⟨κ₁, hκ₁, hc₁⟩ := WilsonLocalResponse.covariance_collar_clustering
+    (volume : Measure SU2) (1 : SU2) hβ hβ0
+  obtain ⟨κ₂, hκ₂, hc₂⟩ := WilsonLocalResponse.covariance_ball_union_clustering
+    (volume : Measure SU2) (1 : SU2) hβ hβ0
+  let A₁ := 2 * B * WilsonLocalResponse.covarianceEnvelope B κ₁
+  let A₂ := 6 * B ^ 3 * WilsonLocalResponse.ballResponseEnvelope 4 κ₂
+  have hA₁ : 0 ≤ A₁ := by dsimp [A₁, WilsonLocalResponse.covarianceEnvelope]; positivity
+  have hA₂ : 0 ≤ A₂ := by dsimp [A₂, WilsonLocalResponse.ballResponseEnvelope]; positivity
+  refine ⟨min κ₁ κ₂, lt_min hκ₁ hκ₂, A₁ + A₂, add_nonneg hA₁ hA₂, ?_⟩
+  intro N i j k F G H hFdep hGdep hHdep hF hG hH b
+  have hp := WilsonEliminationRoutes.action_contract (firstRoute N β)
+    (splitObservable N F) B (fun _ ↦ hF _)
+  have hpair : ∀ y,
+      |WilsonEliminationRoutes.remainder (firstRoute N β)
+        (splitObservable N G) (splitObservable N H) y| ≤
+        WilsonLocalResponse.covarianceEnvelope B κ₁ * Real.exp (-κ₁ * dist j k) := by
+    intro y
+    let b₀ := assemble N (y, fun _ ↦ 1)
+    have h := hc₁ ((SU2BoundaryResponse.model (volumeIndex N) univ).pinned (retainedSet 2) b₀)
+      (WilsonLocalResponse.continuous_pinned _
+        (SU2BoundaryResponse.model_continuous (volumeIndex N) univ) (retainedSet 2) b₀)
+      j k (WilsonConditionalProjection.pinnedMark (retainedSet 2) b₀ G)
+      (WilsonConditionalProjection.pinnedMark (retainedSet 2) b₀ H) B hB
+      (WilsonConditionalProjection.pinnedMark_local _ _ _ _ hGdep)
+      (WilsonConditionalProjection.pinnedMark_local _ _ _ _ hHdep)
+      (fun _ ↦ hG _) (fun _ ↦ hH _)
+    rw [← firstRemainder_eq_covariance] at h
+    simpa only [b₀, fineCoordinates_assemble] using h
+  have hinner := WilsonEliminationRoutes.abs_remainder_le (secondRoute N β) _ _ hB
+    (show 0 ≤ WilsonLocalResponse.covarianceEnvelope B κ₁ * Real.exp (-κ₁ * dist j k) by
+      unfold WilsonLocalResponse.covarianceEnvelope; positivity) hp hpair b
+  have hinner' : |WilsonEliminationRoutes.remainder (secondRoute N β)
+      (WilsonEliminationRoutes.action (firstRoute N β) (splitObservable N F))
+      (WilsonEliminationRoutes.remainder (firstRoute N β)
+        (splitObservable N G) (splitObservable N H)) b| ≤ A₁ * Real.exp (-κ₁ * dist j k) := by
+    exact hinner.trans_eq (by dsimp only [A₁]; ring)
+  let P := WilsonEliminationRoutes.action (firstRoute N β) (splitObservable N F)
+  let R := WilsonEliminationRoutes.remainder (firstRoute N β)
+    (splitObservable N G) (splitObservable N H)
+  have hR : ∀ y, |R y| ≤ 2 * B * B := fun y ↦
+    WilsonEliminationRoutes.abs_remainder_le (firstRoute N β) _ _ hB hB
+      (fun _ ↦ hG _) (fun _ ↦ hH _) y
+  let b₀ := assemble N ((b, fun _ ↦ 1), fun _ ↦ 1)
+  have houter := hc₂ ((SU2BoundaryResponse.model (volumeIndex N) univ).pinned (retainedSet 4) b₀)
+    (WilsonLocalResponse.continuous_pinned _
+      (SU2BoundaryResponse.model_continuous (volumeIndex N) univ) (retainedSet 4) b₀)
+    4 (by norm_num) i j k
+    (WilsonConditionalProjection.pinnedMark (retainedSet 4) b₀ (fineLift N P))
+    (WilsonConditionalProjection.pinnedMark (retainedSet 4) b₀ (fineLift N R))
+    B (2 * B * B) hB (by positivity)
+    (WilsonConditionalProjection.pinnedMark_local _ _ _ _ (by
+      rw [show fineLift N P = firstLift N β F from rfl]
+      exact firstLift_ball_locality N β i F hFdep))
+    (WilsonConditionalProjection.pinnedMark_local _ _ _ _
+      (firstRemainder_ball_locality N β j k G H hGdep hHdep))
+    (fun _ ↦ hp _) (fun _ ↦ hR _)
+  rw [← secondRemainder_eq_covariance N β P R b₀] at houter
+  have houter' : |WilsonEliminationRoutes.remainder (secondRoute N β) P R b| ≤
+      A₂ * Real.exp (-κ₂ * min (dist i j) (dist i k)) := by
+    have hb : coarseRestriction N b₀ = b := coarseRestriction_assemble N _
+    rw [hb] at houter
+    exact houter.trans_eq (by dsimp only [A₂]; ring)
+  have hcombine (a ρ δ : ℝ) (ha : a ≤ A₁ + A₂) (hρ : min κ₁ κ₂ ≤ ρ)
+      (hδ : 0 ≤ δ) (ht : WilsonBoundaryResponse.threeTreeLength i j k ≤ 2 * δ) :
+      a * Real.exp (-ρ * δ) ≤ (A₁ + A₂) *
+        Real.exp (-(min κ₁ κ₂ / 2) * WilsonBoundaryResponse.threeTreeLength i j k) := by
+    apply mul_le_mul ha _ (Real.exp_pos _).le (add_nonneg hA₁ hA₂)
+    apply Real.exp_le_exp.mpr
+    nlinarith [mul_nonneg (sub_nonneg.mpr hρ) hδ,
+      mul_nonneg (le_min hκ₁.le hκ₂.le) (sub_nonneg.mpr ht)]
+  rcases WilsonBoundaryResponse.threeTreeLength_pair_cut i j k with h | h
+  · exact hinner'.trans (hcombine A₁ κ₁ _ (by linarith) (min_le_left _ _) dist_nonneg h)
+  · exact houter'.trans (hcombine A₂ κ₂ _ (by linarith) (min_le_right _ _)
+      (le_min dist_nonneg dist_nonneg) h)
+
+/-- All three mixed arrays in `ResponseData.Contract.transport` have one
+volume-uniform tree-weighted budget for the actual Haar assembly. -/
+theorem uniform_mixedCorrection_bounds {β B : ℝ} (hβ : 0 ≤ β)
+    (hβ0 : β ≤ StrongCouplingCrossing.beta0 4) (hB : 0 ≤ B) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (N : ℕ) (F : AssemblyLink N → C(FullField N, ℝ)),
+      (∀ l, DependsOn (WilsonPatchGeometry.collar {l}) (F l)) →
+      (∀ l ω, |F l ω| ≤ B) → ∀ y : CoarseField N,
+      let D := (firstResponseState N β F).2
+      WilsonBoundaryResponse.weightedThirdSeminorm η
+        (fun i j k ↦ WilsonEliminationRoutes.remainder (secondRoute N β)
+          (D.first i) (D.pair j k) y) ≤ C ∧
+      WilsonBoundaryResponse.weightedThirdSeminorm η
+        (fun i j k ↦ WilsonEliminationRoutes.remainder (secondRoute N β)
+          (D.first j) (D.pair i k) y) ≤ C ∧
+      WilsonBoundaryResponse.weightedThirdSeminorm η
+        (fun i j k ↦ WilsonEliminationRoutes.remainder (secondRoute N β)
+          (D.first k) (D.pair i j) y) ≤ C := by
+  obtain ⟨κ, hκ, A, hA, hc⟩ := mixedCorrection_clustering hβ hβ0 hB
+  have hV : 0 ≤ StrongCouplingCrossing.exponentialVolumeBound 4 (κ / 8) := by
+    unfold StrongCouplingCrossing.exponentialVolumeBound; positivity
+  refine ⟨κ / 4, by positivity,
+    A * (StrongCouplingCrossing.exponentialVolumeBound 4 (κ / 8)) ^ 2, by positivity, ?_⟩
+  intro N F hlocal hF y
+  have hbound (H : AssemblyLink N → AssemblyLink N → AssemblyLink N → ℝ)
+      (hH : ∀ i j k, |H i j k| ≤
+        A * Real.exp (-(κ / 2) * WilsonBoundaryResponse.threeTreeLength i j k)) :
+      WilsonBoundaryResponse.weightedThirdSeminorm (κ / 4) H ≤
+        A * (StrongCouplingCrossing.exponentialVolumeBound 4 (κ / 8)) ^ 2 := by
+    apply WilsonBoundaryResponse.weightedThirdSeminorm_le_of_envelope
+      (κ / 4) (κ / 2) (by linarith) _ hA hV hH
+    intro i
+    simpa only [show (κ / 2 - κ / 4) / 2 = κ / 8 by ring] using
+      StrongCouplingCrossing.sum_exp_dist_le (by decide) (by positivity : 0 < κ / 8) i
+  have hcut (i j k : AssemblyLink N) := hc N i j k (F i) (F j) (F k)
+    (hlocal i) (hlocal j) (hlocal k) (hF i) (hF j) (hF k) y
+  refine ⟨hbound _ hcut, hbound _ ?_, hbound _ ?_⟩
+  · intro i j k
+    exact (hcut j i k).trans_eq (by rw [WilsonBoundaryResponse.threeTreeLength_swap j i k])
+  · intro i j k
+    exact (hcut k i j).trans_eq (by rw [WilsonBoundaryResponse.threeTreeLength_rotate k i j])
+
+/-- The new conditional second and third moments of the transported means
+also satisfy uniform budgets under the explicitly generated first density. -/
+theorem uniform_transported_response_bounds {β B : ℝ} (hβ : 0 ≤ β)
+    (hβ0 : β ≤ StrongCouplingCrossing.beta0 4) (hB : 0 ≤ B) :
+    ∃ η > 0, ∃ C₂ ≥ 0, ∃ C₃ ≥ 0,
+      ∀ (N : ℕ) (F : AssemblyLink N → C(FullField N, ℝ)),
+        (∀ l, DependsOn (WilsonPatchGeometry.collar {l}) (F l)) →
+        (∀ l ω, |F l ω| ≤ B) → ∀ y : CoarseField N,
+        let D := (firstResponseState N β F).2
+        WilsonBoundaryResponse.weightedResponseSeminorm η
+          (fun i j ↦ WilsonEliminationRoutes.remainder (secondRoute N β)
+            (D.first i) (D.first j) y) ≤ C₂ ∧
+        WilsonBoundaryResponse.weightedThirdSeminorm η
+          (fun i j k ↦ WilsonEliminationRoutes.thirdRemainder (secondRoute N β)
+            (D.first i) (D.first j) (D.first k) y) ≤ C₃ := by
+  obtain ⟨η, hη, C₂, hC₂, C₃, hC₃, hc⟩ :=
+    WilsonLocalResponse.uniform_ball_response_bounds (volume : Measure SU2) (1 : SU2)
+      hβ hβ0 hB (by norm_num : (0 : ℝ) ≤ 4)
+  refine ⟨η, hη, C₂, hC₂, C₃, hC₃, ?_⟩
+  intro N F hlocal hF y
+  let b := assemble N ((y, fun _ ↦ 1), fun _ ↦ 1)
+  let P := fun l ↦ WilsonEliminationRoutes.action (firstRoute N β) (splitObservable N (F l))
+  have hp (l : AssemblyLink N) := WilsonEliminationRoutes.action_contract (firstRoute N β)
+    (splitObservable N (F l)) B (fun _ ↦ hF l _)
+  have h := hc ((SU2BoundaryResponse.model (volumeIndex N) univ).pinned (retainedSet 4) b)
+    (WilsonLocalResponse.continuous_pinned _
+      (SU2BoundaryResponse.model_continuous (volumeIndex N) univ) (retainedSet 4) b)
+    (fun l ↦ WilsonConditionalProjection.pinnedMark (retainedSet 4) b (fineLift N (P l)))
+    (fun l ↦ WilsonConditionalProjection.pinnedMark_local _ _ _ _ (by
+      rw [show fineLift N (P l) = firstLift N β (F l) from rfl]
+      exact firstLift_ball_locality N β l (F l) (hlocal l)))
+    (fun l _ ↦ hp l _)
+  have hb : coarseRestriction N b = y := coarseRestriction_assemble N _
+  constructor
+  · convert h.1 using 1
+    congr 1
+    funext i j
+    exact ((secondRemainder_eq_covariance N β (P i) (P j) b).symm.trans
+      (congrArg (WilsonEliminationRoutes.remainder (secondRoute N β) (P i) (P j)) hb)).symm
+  · convert h.2 using 1
+    congr 1
+    funext i j k
+    exact ((secondThirdRemainder_eq_cumulant N β (P i) (P j) (P k) b).symm.trans
+      (congrArg (WilsonEliminationRoutes.thirdRemainder (secondRoute N β) (P i) (P j) (P k)) hb)).symm
+
+/-- The quantitative transport theorem instantiated with proved spatial
+estimates for both Haar steps, including all three mixed covariance arrays.
+Every rate and budget is chosen before the volume, marks and boundary data. -/
+theorem uniform_composed_responseContract {β B : ℝ} (hβ : 0 ≤ β)
+    (hβ0 : β ≤ StrongCouplingCrossing.beta0 4) (hB : 0 ≤ B) :
+    ∃ η > 0, ∃ C₂ ≥ 0, ∃ C₃ ≥ 0, ∃ D₂ ≥ 0, ∃ D₃ ≥ 0, ∃ E ≥ 0,
+      ∀ (N : ℕ) (F : AssemblyLink N → C(FullField N, ℝ)),
+        (∀ l, DependsOn (WilsonPatchGeometry.collar {l}) (F l)) →
+        (∀ l ω, |F l ω| ≤ B) →
+        WilsonEliminationRoutes.boundaryContract η B C₂ C₃ (firstResponseState N β F) ∧
+        WilsonEliminationRoutes.boundaryContract η B (C₂ + D₂) (C₃ + D₃ + 3 * E)
+          (secondResponseState N β F) := by
+  obtain ⟨η₀, hη₀, C₂, hC₂, C₃, hC₃, hfirst⟩ := uniform_responseContract hβ hβ0 hB
+  obtain ⟨η₁, hη₁, D₂, hD₂, D₃, hD₃, hnew⟩ := uniform_transported_response_bounds hβ hβ0 hB
+  obtain ⟨η₂, hη₂, E, hE, hmix⟩ := uniform_mixedCorrection_bounds hβ hβ0 hB
+  let η := min η₀ (min η₁ η₂)
+  have hη : 0 < η := lt_min hη₀ (lt_min hη₁ hη₂)
+  have hη₀' : η ≤ η₀ := min_le_left _ _
+  have hη₁' : η ≤ η₁ := (min_le_right _ _).trans (min_le_left _ _)
+  have hη₂' : η ≤ η₂ := (min_le_right _ _).trans (min_le_right _ _)
+  refine ⟨η, hη, C₂, hC₂, C₃, hC₃, D₂, hD₂, D₃, hD₃, E, hE, ?_⟩
+  intro N F hlocal hF
+  have hD := (hfirst N F hlocal hF).1.weaken_rate hη hη₀'
+  refine ⟨hD, ?_⟩
+  have hnext := hD.transport (secondRoute N β) (firstResponseState N β F).2
+    hD₂ hD₃ hE hE hE
+    (fun y ↦ (WilsonBoundaryResponse.weightedResponseSeminorm_mono_rate hη₁' _).trans
+      (hnew N F hlocal hF y).1)
+    (fun y ↦ (WilsonBoundaryResponse.weightedThirdSeminorm_mono_rate hη₁' _).trans
+      (hnew N F hlocal hF y).2)
+    (fun y ↦ (WilsonBoundaryResponse.weightedThirdSeminorm_mono_rate hη₂' _).trans
+      (hmix N F hlocal hF y).1)
+    (fun y ↦ (WilsonBoundaryResponse.weightedThirdSeminorm_mono_rate hη₂' _).trans
+      (hmix N F hlocal hF y).2.1)
+    (fun y ↦ (WilsonBoundaryResponse.weightedThirdSeminorm_mono_rate hη₂' _).trans
+      (hmix N F hlocal hF y).2.2)
+  rw [show C₃ + D₃ + E + E + E = C₃ + D₃ + 3 * E by ring] at hnext
+  exact hnext
 
 /-- Second-stage locality for the actual composed map, despite the generated
 interactions in the first marginal. -/

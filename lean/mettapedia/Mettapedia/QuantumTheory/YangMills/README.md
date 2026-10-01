@@ -196,15 +196,17 @@ spanning-tree length of the three links, the bound is
 Taking `η = κ/4` gives the tree-weighted row budget
 `9 · 256³ · exp(2304 + 2κ) · exponentialVolumeBound 4 (κ/8)²`.
 Both assembly levels are covered by `uniform_weightedThirdRow`, including
-coincident and nearby triples. These are score cumulants. The existing
-second derivative includes its action contact; the true third derivative
-equals `-β³ Cum₃` for three pairwise plaquette-separated patches. The full
-overlapping-patch third derivative still requires its contact terms.
-Writing `A_S` for a score and `J_ST = D_T A_S`, the remaining ordered
-third-derivative formula has the correction
+coincident and nearby triples. These are score cumulants. The true third
+derivative equals `-β³ Cum₃` for three pairwise plaquette-separated patches.
+For arbitrary patches, `thirdDerivative_eq_cumulant_contacts` in both
+`SU2BoundaryResponse` and `SU2WilsonEffectiveInteraction` proves the full
+ordered derivative at every real coupling. Writing `A_S` for a score and
+`J_ST = D_T A_S`, its correction is
 `β²[Cov(J_ST,A_V) + Cov(J_SV,A_T) + Cov(A_S,J_TV)] - β E[D_V J_ST]`.
-The direct third action contact `D_V J_ST` must be identified and bounded;
-the separated-patch theorem proves the relevant contacts vanish there.
+The direct action contact is `thirdContact`, with bound `4096 · |S|` and
+support inside the original plaquette collar. Ordered repeated-slot matrix
+insertions cover overlapping and coincident links. Its left and right
+disjointness lemmas recover the relevant contact cancellations.
 
 `ResponseData.Contract.transport` proves the quantitative rule
 `C₂' ≤ C₂ + D₂` and `C₃' ≤ C₃ + D₃ + E₁ + E₂ + E₃`, where the three `E`
@@ -212,7 +214,21 @@ budgets control the three mixed covariances. Direct and staged moment data
 agree exactly, with the generated first density explicit. Uniform bounds
 `B`, `2B²` and `6B³` hold for projected marks, covariance remainders and
 third remainders; each mixed correction in the actual two-stage route has
-bound `4B³`. Pointwise bounds alone do not bound their individual spatial sums.
+bound `4B³`. `SU2WilsonAssemblyLocality.uniform_mixedCorrection_bounds` now
+proves the three individual spatial sums are uniformly finite. Exact
+first-stage locality enlarges singleton collars only to radius-four balls.
+Inner pair decay and outer mean-versus-pair decay give the tree envelope
+`A · exp(-(κ/2)τ)`, with `κ = min κ₁ κ₂` and
+`A = 2B · covarianceEnvelope B κ₁ + 6B³ · ballResponseEnvelope 4 κ₂`.
+The weighted budget is `A · exponentialVolumeBound 4 (κ/8)²` at rate `κ/4`.
+`uniform_transported_response_bounds` supplies the new conditional second
+and third budgets under the generated first density.
+
+`uniform_composed_responseContract` instantiates the transport theorem with
+these proved estimates, yielding budgets `C₂ + D₂` and `C₃ + D₃ + 3E` at a
+common positive rate. `uniform_scoreCompositionContract` specializes this
+certificate to actual Wilson scores at both assembly levels. Every rate
+and constant precedes volume, boundary values and rotation frames.
 
 The old spatial budgets survive projection with factor one.
 `WilsonBlockElimination.one_le_project_uniform_bound` proves that constant
@@ -225,8 +241,8 @@ an injective coordinate map with `d_fine = s · d_coarse` changes the admissible
 exponent to `η_coarse = sη_fine`, without a volume factor. The current assembly
 uses the original link metric. Repeated RG steps additionally need the actual
 gauge-equivariant block map, its derivative and contact bounds, the relevant
-interaction extraction, and estimates for the generated mixed terms in the
-same rescaled norm.
+interaction extraction, and preservation of the analytic budgets after those
+operations in the same rescaled norm.
 
 A precise all-order target is a uniform bound
 `sup_l sum_(l₂,...,lᵣ) exp(η τᵣ) |Cumᵣ| ≤ A · r! · R^(-r)` for every `r ≥ 2`,

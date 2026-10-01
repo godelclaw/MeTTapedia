@@ -481,6 +481,225 @@ theorem contact_eq_zero (active : Finset (Plaquette 4 n)) (held S T : Finset (Li
   have hpT : p ∉ incident T := fun h ↦ disjoint_left.mp hST hp h
   simp [plaquetteContact, movingSlots_empty_of_not_incident held T p hpT]
 
+/-! ## Ordered third action contacts -/
+
+private theorem continuous_rotatedSlots {Y : Type*} [TopologicalSpace Y]
+    (p : Plaquette 4 n) (q : Link 4 n → SU2) (v : Y → Fin 4 → SU2)
+    (hv : Continuous v) :
+    Continuous (fun y ↦ fun i : Fin 4 ↦
+      rotationPerturbation (q (linkAt p i)) (v y i) (Real.pi / 2)) := by
+  apply continuous_pi
+  intro i
+  simpa only [rotationPerturbation, Function.comp_def] using
+    continuous_const.fun_mul ((continuous_apply i).comp hv)
+
+private theorem hasDerivAt_framedBoundarySlot (held V : Finset (Link 4 n))
+    (u b : Link 4 n → SU2) (t : ℝ) (p : Plaquette 4 n) (i : Fin 4)
+    (hi : linkAt p i ∈ held) (a : SU2) :
+    HasDerivAt (fun s ↦ (a * boundaryCurve V u b s (linkAt p i)).val)
+      (if i ∈ movingSlots held V p then
+        (a * rotationPerturbation (u (linkAt p i)) (b (linkAt p i))
+          (t + Real.pi / 2)).val else 0) t := by
+  by_cases hV : linkAt p i ∈ V
+  · simpa [boundaryCurve, movingSlots, hi, hV] using
+      hasDerivAt_su2_left_mul a
+        (hasDerivAt_rotationPerturbation (u (linkAt p i)) (b (linkAt p i)) t)
+  · simpa [boundaryCurve, movingSlots, hi, hV] using
+      hasDerivAt_const_matrix (a * b (linkAt p i)).val t
+
+/-- Differentiate the ordered `S,T` action contact along the outer `V`
+rotation. The repeated-slot insertions keep the order `q`, then `r`, then `u`.
+All four slots may belong to more than one patch. -/
+def plaquetteThirdContact (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2)
+    (t : ℝ) (p : Plaquette 4 n) (ω : Link 4 n → SU2) : ℝ :=
+  let x := fun i : Fin 4 ↦ boundaryCurve V u b t (linkAt p i)
+  let dx := fun i : Fin 4 ↦
+    rotationPerturbation (u (linkAt p i)) (b (linkAt p i)) (t + Real.pi / 2)
+  let Q := fun (v : Fin 4 → SU2) i ↦ rotationPerturbation (q (linkAt p i)) (v i) (Real.pi / 2)
+  let R := fun (v : Fin 4 → SU2) i ↦ rotationPerturbation (r (linkAt p i)) (v i) (Real.pi / 2)
+  if p ∈ active then SU2WilsonBlockIntegration.holonomyThirdContact
+    (plaquetteValues held (boundaryCurve V u b t) p ω)
+    (Q x) (R x) (Q (R x)) dx (Q dx) (R dx) (Q (R dx))
+    (movingSlots held S p) (movingSlots held T p) (movingSlots held V p) else 0
+
+theorem continuous_plaquetteContact_other (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (p : Plaquette 4 n) :
+    Continuous (fun z : ℝ × (Link 4 n → SU2) ↦
+      plaquetteContact active held S T q r (boundaryCurve V u b z.1) 0 p z.2) := by
+  by_cases hp : p ∈ active
+  · simp only [plaquetteContact, hp, ↓reduceIte, boundaryCurve_zero, zero_add]
+    have hx : Continuous (fun z : ℝ × (Link 4 n → SU2) ↦ fun i : Fin 4 ↦
+        boundaryCurve V u b z.1 (linkAt p i)) := by fun_prop
+    have hq := continuous_rotatedSlots p q _ hx
+    have hr := continuous_rotatedSlots p r _ hx
+    have hqr := continuous_rotatedSlots p q _ hr
+    simpa only [Function.comp_def] using
+      (SU2WilsonBlockIntegration.continuous_holonomyContact
+        (movingSlots held S p) (movingSlots held T p)).comp
+        (((continuous_plaquetteValues_curve held V u b p).prodMk hq).prodMk (hr.prodMk hqr))
+  · simp only [plaquetteContact, hp, ↓reduceIte]
+    exact continuous_const
+
+theorem continuous_plaquetteThirdContact (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (p : Plaquette 4 n) :
+    Continuous (fun z : ℝ × (Link 4 n → SU2) ↦
+      plaquetteThirdContact active held S T V q r u b z.1 p z.2) := by
+  by_cases hp : p ∈ active
+  · simp only [plaquetteThirdContact, hp, ↓reduceIte]
+    have hx : Continuous (fun z : ℝ × (Link 4 n → SU2) ↦ fun i : Fin 4 ↦
+        boundaryCurve V u b z.1 (linkAt p i)) := by fun_prop
+    have hdx : Continuous (fun z : ℝ × (Link 4 n → SU2) ↦ fun i : Fin 4 ↦
+        rotationPerturbation (u (linkAt p i)) (b (linkAt p i)) (z.1 + Real.pi / 2)) := by
+      apply continuous_pi
+      intro i
+      exact (continuous_rotationPerturbation _ _).comp (continuous_fst.add continuous_const)
+    exact SU2WilsonBlockIntegration.continuous_holonomyThirdContact _ _ _ _ _ _ _ _ _ _ _
+      (continuous_plaquetteValues_curve held V u b p)
+      (continuous_rotatedSlots p q _ hx) (continuous_rotatedSlots p r _ hx)
+      (continuous_rotatedSlots p q _ (continuous_rotatedSlots p r _ hx)) hdx
+      (continuous_rotatedSlots p q _ hdx) (continuous_rotatedSlots p r _ hdx)
+      (continuous_rotatedSlots p q _ (continuous_rotatedSlots p r _ hdx))
+  · simp only [plaquetteThirdContact, hp, ↓reduceIte]
+    exact continuous_const
+
+theorem hasDerivAt_plaquetteContact_other (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ)
+    (p : Plaquette 4 n) (ω : Link 4 n → SU2) :
+    HasDerivAt (fun s ↦ plaquetteContact active held S T q r (boundaryCurve V u b s) 0 p ω)
+      (plaquetteThirdContact active held S T V q r u b t p ω) t := by
+  by_cases hp : p ∈ active
+  · simp only [plaquetteContact, plaquetteThirdContact, hp, ↓reduceIte,
+      boundaryCurve_zero, zero_add]
+    apply SU2WilsonBlockIntegration.hasDerivAt_holonomyContact
+    · exact hasDerivAt_plaquetteValues held V u b t p ω
+    · intro i hi
+      simpa [rotationPerturbation, mul_assoc] using
+        hasDerivAt_framedBoundarySlot held V u b t p i (mem_filter.mp hi).2.1
+          (rotationPerturbation (q (linkAt p i)) 1 (Real.pi / 2))
+    · intro i hi
+      simpa [rotationPerturbation, mul_assoc] using
+        hasDerivAt_framedBoundarySlot held V u b t p i (mem_filter.mp hi).2.1
+          (rotationPerturbation (r (linkAt p i)) 1 (Real.pi / 2))
+    · intro i hi
+      simpa [rotationPerturbation, mul_assoc] using
+        hasDerivAt_framedBoundarySlot held V u b t p i (mem_filter.mp hi).2.1
+          (rotationPerturbation (q (linkAt p i)) 1 (Real.pi / 2) *
+            rotationPerturbation (r (linkAt p i)) 1 (Real.pi / 2))
+  · simp only [plaquetteContact, plaquetteThirdContact, hp, ↓reduceIte]
+    exact hasDerivAt_const t 0
+
+/-- The original action's complete ordered third derivative, before Haar
+averaging. Its support remains within the original incident plaquettes. -/
+def thirdContact (active : Finset (Plaquette 4 n)) (held S T V : Finset (Link 4 n))
+    (q r u b : Link 4 n → SU2) (t : ℝ) : C(Link 4 n → SU2, ℝ) :=
+  ⟨fun ω ↦ ∑ p ∈ incident S, plaquetteThirdContact active held S T V q r u b t p ω,
+    continuous_finsetSum _ fun p _ ↦ by
+      simpa only [Function.comp_def] using
+        (continuous_plaquetteThirdContact active held S T V q r u b p).comp
+          (show Continuous (fun ω : Link 4 n → SU2 ↦ (t, ω)) from
+            continuous_const.prodMk continuous_id)⟩
+
+theorem continuous_contact_other (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) :
+    Continuous (fun z : ℝ × (Link 4 n → SU2) ↦
+      contact active held S T q r (boundaryCurve V u b z.1) 0 z.2) :=
+  continuous_finsetSum _ fun p _ ↦ continuous_plaquetteContact_other active held S T V q r u b p
+
+theorem continuous_thirdContact (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) :
+    Continuous (fun z : ℝ × (Link 4 n → SU2) ↦ thirdContact active held S T V q r u b z.1 z.2) :=
+  continuous_finsetSum _ fun p _ ↦ continuous_plaquetteThirdContact active held S T V q r u b p
+
+theorem hasDerivAt_contact_thirdContact (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ)
+    (ω : Link 4 n → SU2) :
+    HasDerivAt (fun s ↦ contact active held S T q r (boundaryCurve V u b s) 0 ω)
+      (thirdContact active held S T V q r u b t ω) t :=
+  HasDerivAt.fun_sum (fun p _ ↦ hasDerivAt_plaquetteContact_other active held S T V q r u b t p ω)
+
+theorem abs_plaquetteThirdContact_le (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ)
+    (p : Plaquette 4 n) (ω : Link 4 n → SU2) :
+    |plaquetteThirdContact active held S T V q r u b t p ω| ≤ 64 := by
+  by_cases hp : p ∈ active
+  · simp only [plaquetteThirdContact, hp, ↓reduceIte]
+    apply (SU2WilsonBlockIntegration.abs_holonomyThirdContact_le _ _ _ _ _ _ _ _ _ _ _).trans
+    have hcard (P : Finset (Link 4 n)) : ((movingSlots held P p).card : ℝ) ≤ 4 := by
+      exact_mod_cast card_movingSlots_le held P p
+    have hprod := mul_le_mul (hcard S) (hcard T) (by positivity) (by norm_num)
+    have hprod' := mul_le_mul hprod (hcard V) (by positivity) (by norm_num)
+    norm_num at hprod'
+    exact hprod'
+  · simp [plaquetteThirdContact, hp]
+
+theorem abs_thirdContact_le (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ)
+    (ω : Link 4 n → SU2) : |thirdContact active held S T V q r u b t ω| ≤ 4096 * S.card := by
+  have hsum : |thirdContact active held S T V q r u b t ω| ≤ 64 * (incident S).card := by
+    apply (Finset.abs_sum_le_sum_abs _ _).trans
+    simpa only [Finset.sum_const, nsmul_eq_mul, mul_comm] using
+      Finset.sum_le_sum (s := incident S)
+        (fun p _ ↦ abs_plaquetteThirdContact_le active held S T V q r u b t p ω)
+  have hc : ((incident S).card : ℝ) ≤ S.card * 64 := by
+    exact_mod_cast WilsonPatchGeometry.card_incident_le S
+  linarith
+
+theorem contact_local (active : Finset (Plaquette 4 n)) (held S T : Finset (Link 4 n))
+    (q r b : Link 4 n → SU2) (t : ℝ) :
+    DependsOn (collar S) (contact active held S T q r b t) := by
+  intro ω ω' h
+  apply sum_congr rfl
+  intro p hp
+  unfold plaquetteContact
+  congr 2
+  funext i
+  have hi : linkAt p i ∈ collar S :=
+    mem_biUnion.mpr ⟨p, hp, mem_image.mpr ⟨i, mem_univ _, rfl⟩⟩
+  simp only [plaquetteValues, WilsonPinnedIntegral.pin, h _ hi]
+
+theorem thirdContact_local (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ) :
+    DependsOn (collar S) (thirdContact active held S T V q r u b t) := by
+  intro ω ω' h
+  apply sum_congr rfl
+  intro p hp
+  have hv : plaquetteValues held (boundaryCurve V u b t) p ω =
+      plaquetteValues held (boundaryCurve V u b t) p ω' := by
+    funext i
+    have hi : linkAt p i ∈ collar S :=
+      mem_biUnion.mpr ⟨p, hp, mem_image.mpr ⟨i, mem_univ _, rfl⟩⟩
+    simp only [plaquetteValues, WilsonPinnedIntegral.pin, h _ hi]
+  simp only [plaquetteThirdContact, hv]
+
+theorem thirdContact_pin (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (ω : Link 4 n → SU2) :
+    thirdContact active held S T V q r u b 0 (WilsonPinnedIntegral.pin held b ω) =
+      thirdContact active held S T V q r u b 0 ω := by
+  apply sum_congr rfl
+  intro p _
+  simp only [plaquetteThirdContact, boundaryCurve_zero, plaquetteValues_pin]
+
+theorem thirdContact_eq_zero_left (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ)
+    (hST : Disjoint (incident S) (incident T)) :
+    thirdContact active held S T V q r u b t = 0 := by
+  ext ω
+  have h := hasDerivAt_contact_thirdContact active held S T V q r u b t ω
+  simp_rw [contact_eq_zero active held S T q r _ 0 hST, ContinuousMap.zero_apply] at h
+  exact h.unique (hasDerivAt_const t 0)
+
+theorem thirdContact_eq_zero_right (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ)
+    (hSV : Disjoint (incident S) (incident V)) :
+    thirdContact active held S T V q r u b t = 0 := by
+  ext ω
+  apply sum_eq_zero
+  intro p hp
+  have hpV : p ∉ incident V := fun h ↦ disjoint_left.mp hSV hp h
+  simp [plaquetteThirdContact, movingSlots_empty_of_not_incident held V p hpV,
+    SU2WilsonBlockIntegration.holonomyThirdContact]
+
 /-- The original pinned Wilson density; held dummy variables integrate to one. -/
 abbrev boundaryDensity (β : ℝ) (active : Finset (Plaquette 4 n))
     (held : Finset (Link 4 n)) (b : Link 4 n → SU2) : C(Link 4 n → SU2, ℝ) :=
@@ -632,6 +851,53 @@ partition function, with the third patch applied to the outer background. -/
 def thirdDerivative (β : ℝ) (active : Finset (Plaquette 4 n))
     (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) : ℝ :=
   deriv (fun t ↦ mixedDerivative β active held S T q r (boundaryCurve V u b t)) 0
+
+/-- The complete ordered third logarithmic derivative of the original Haar
+integral. All three contact covariances and the direct third action contact
+remain present for overlapping, nearby and coincident patches. -/
+theorem thirdDerivative_eq_cumulant_contacts (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) :
+    thirdDerivative β active held S T V q r u b =
+      -β ^ 3 * WilsonBlockElimination.thirdCumulant
+        (Measure.pi fun _ ↦ (volume : Measure SU2)) (boundaryDensity β active held b)
+        (score active held S q b 0) (score active held T r b 0) (score active held V u b 0) +
+      β ^ 2 * (WilsonBlockElimination.covariance
+        (Measure.pi fun _ ↦ (volume : Measure SU2)) (boundaryDensity β active held b)
+        (contact active held S V q u b 0) (score active held T r b 0) +
+        WilsonBlockElimination.covariance
+          (Measure.pi fun _ ↦ (volume : Measure SU2)) (boundaryDensity β active held b)
+          (score active held S q b 0) (contact active held T V r u b 0) +
+        WilsonBlockElimination.covariance
+          (Measure.pi fun _ ↦ (volume : Measure SU2)) (boundaryDensity β active held b)
+          (contact active held S T q r b 0) (score active held V u b 0)) -
+      β * WilsonBlockElimination.expectation
+        (Measure.pi fun _ ↦ (volume : Measure SU2)) (boundaryDensity β active held b)
+        (thirdContact active held S T V q r u b 0) := by
+  have h := WilsonBoundaryResponse.hasDerivAt_logPartitionHessian
+    (Measure.pi fun _ ↦ (volume : Measure SU2)) β
+    (fun t ↦ boundaryDensity β active held (boundaryCurve V u b t))
+    (score active held V u b)
+    (fun t ↦ score active held S q (boundaryCurve V u b t) 0)
+    (fun t ↦ score active held T r (boundaryCurve V u b t) 0)
+    (fun t ↦ contact active held S T q r (boundaryCurve V u b t) 0)
+    (contact active held S V q u b) (contact active held T V r u b)
+    (thirdContact active held S T V q r u b)
+    (continuous_boundaryDensity_curve β active held V u b)
+    (continuous_score active held V u b)
+    (continuous_score_other active held S V q u b)
+    (continuous_score_other active held T V r u b)
+    (continuous_contact_other active held S T V q r u b)
+    (continuous_contact active held S V q u b)
+    (continuous_contact active held T V r u b)
+    (continuous_thirdContact active held S T V q r u b)
+    (hasDerivAt_boundaryDensity β active held V u b)
+    (hasDerivAt_score_contact active held S V q u b)
+    (hasDerivAt_score_contact active held T V r u b)
+    (hasDerivAt_contact_thirdContact active held S T V q r u b) 0
+    (fun ω ↦ realDensity_pos _ _ _ _)
+  unfold thirdDerivative
+  simp_rw [mixedDerivative_eq_covariance_sub_contact]
+  simpa only [boundaryCurve_zero] using h.deriv
 
 /-- Three plaquette-separated patches have a true third logarithmic response
 equal to the third connected Wilson score, with its original sign and beta

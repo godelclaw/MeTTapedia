@@ -434,6 +434,17 @@ structure Contract [Fintype ι] [PseudoMetricSpace ι]
   triple_bound : ∀ x, WilsonBoundaryResponse.weightedThirdSeminorm η
     (fun i j k ↦ D.triple i j k x) ≤ C₃
 
+/-- Rates from independently proved estimates can be weakened to one
+positive common rate without changing any budget. -/
+theorem Contract.weaken_rate [Fintype ι] [PseudoMetricSpace ι]
+    {η θ M C₂ C₃ : ℝ} {D : ResponseData a ι} (hD : Contract θ M C₂ C₃ D)
+    (hη : 0 < η) (hηθ : η ≤ θ) : Contract η M C₂ C₃ D := by
+  refine ⟨hη, hD.mean_nonneg, hD.pair_nonneg, hD.triple_nonneg, hD.first_bound, ?_, ?_⟩
+  · intro x
+    exact (WilsonBoundaryResponse.weightedResponseSeminorm_mono_rate hηθ _).trans (hD.pair_bound x)
+  · intro x
+    exact (WilsonBoundaryResponse.weightedThirdSeminorm_mono_rate hηθ _).trans (hD.triple_bound x)
+
 theorem initial_contract [Fintype ι] [PseudoMetricSpace ι]
     (F : ι → C(a.X, ℝ)) {η M : ℝ} (hη : 0 < η) (hM : 0 ≤ M)
     (hF : ∀ i x, |F i x| ≤ M) : Contract η M 0 0 (initial F) := by

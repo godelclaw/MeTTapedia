@@ -98,6 +98,35 @@ theorem dependencyBoundary_radius {s : ℕ} (hs : 0 < s) (S : Finset (Link d n))
     have hc := same_cell_dist_le hs j a hcell
     linarith
 
+/-- A plaquette collar enlarged by one cell elimination fits into a ball
+whose radius depends on the cell size, not on the surrounding volume. -/
+theorem dependencyBoundary_collar_subset_ball {s : ℕ} (hs : 0 < s) (l : Link d n) :
+    dependencyBoundary s (collar {l}) ⊆ linkBall ((s : ℝ) + 2) l := by
+  intro k hk
+  obtain ⟨a, ha, hka⟩ := dependencyBoundary_radius hs (collar {l}) hk
+  obtain ⟨b, hb, hab⟩ := collar_radius ha
+  have hbl : b = l := mem_singleton.mp hb
+  subst b
+  apply mem_linkBall.mpr
+  rw [dist_comm]
+  linarith [dist_triangle k a l]
+
+theorem dependencyBoundary_collars_subset_balls {s : ℕ} (hs : 0 < s)
+    (l m : Link d n) :
+    dependencyBoundary s (collar {l} ∪ collar {m}) ⊆
+      linkBall ((s : ℝ) + 2) l ∪ linkBall ((s : ℝ) + 2) m := by
+  intro k hk
+  obtain ⟨a, ha, hka⟩ := dependencyBoundary_radius hs (collar {l} ∪ collar {m}) hk
+  have hnear (x : Link d n) (hx : a ∈ collar {x}) : k ∈ linkBall ((s : ℝ) + 2) x := by
+    obtain ⟨b, hb, hab⟩ := collar_radius hx
+    have hbx : b = x := mem_singleton.mp hb
+    subst b
+    apply mem_linkBall.mpr
+    rw [dist_comm]
+    linarith [dist_triangle k a x]
+  exact (mem_union.mp ha).elim (fun h ↦ mem_union_left _ (hnear l h))
+    (fun h ↦ mem_union_right _ (hnear m h))
+
 #print axioms same_cell_dist_le
 #print axioms affectedInterior_closed
 #print axioms incident_support_covered

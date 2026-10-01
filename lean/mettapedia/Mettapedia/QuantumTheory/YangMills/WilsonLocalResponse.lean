@@ -43,6 +43,12 @@ theorem DependsOn.mul {X E : Type*} {S : Finset X} {F G : (X → E) → ℝ}
   change F ω * G ω = F ω' * G ω'
   rw [hF ω ω' h, hG ω ω' h]
 
+theorem DependsOn.sub {X E : Type*} {S : Finset X} {F G : (X → E) → ℝ}
+    (hF : DependsOn S F) (hG : DependsOn S G) : DependsOn S (fun ω ↦ F ω - G ω) := by
+  intro ω ω' h
+  change F ω - G ω = F ω' - G ω'
+  rw [hF ω ω' h, hG ω ω' h]
+
 variable {E : Type*} [TopologicalSpace E] [CompactSpace E] [MeasurableSpace E]
   [BorelSpace E] [SecondCountableTopology E] {d : ℕ}
 
@@ -174,6 +180,182 @@ theorem covariance_clustering_local (d : ℕ) (ν₀ : Measure E) [IsProbability
     (fun _ ↦ hF _) (fun _ ↦ hG _)
   rwa [localObservable_reconstruct base S F hFS,
     localObservable_reconstruct base T G hGT] at h
+
+/-- Explicit support-size and separation cost for one metric ball against
+the union of two balls in four dimensions. -/
+def ballResponseEnvelope (r κ : ℝ) : ℝ :=
+  Real.exp (9 * (Real.exp r * exponentialVolumeBound 4 1) + 2 * κ * r)
+
+/-- Spatial covariance after a local elimination may involve the boundaries
+of whole cells. The radius enters the prefactor explicitly and the decay
+rate is chosen before the radius, model, volume and marks. -/
+theorem covariance_ball_union_clustering (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (base : E) {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (M : Model 4 E) (hφ : ∀ p, Continuous (M.φ p))
+      (r : ℝ), 0 ≤ r → ∀ (l m k : Link 4 M.n)
+      (F G : C(Link 4 M.n → E, ℝ)) (CF CG : ℝ), 0 ≤ CF → 0 ≤ CG →
+      DependsOn (WilsonPatchGeometry.linkBall r l) F →
+      DependsOn (WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k) G →
+      (∀ ω, |F ω| ≤ CF) → (∀ ω, |G ω| ≤ CG) →
+      |covariance (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) F G| ≤
+        3 * CF * CG * ballResponseEnvelope r κ *
+          Real.exp (-κ * min (dist l m) (dist l k)) := by
+  obtain ⟨κ, hκ, hc⟩ := covariance_clustering_local 4 ν₀ base hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro M hφ r hr l m k F G CF CG hCF hCG hFdep hGdep hF hG
+  have h := hc M hφ (WilsonPatchGeometry.linkBall r l)
+    (WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k)
+    (WilsonPatchGeometry.linkBall_nonempty hr l) F G CF CG hFdep hGdep hF hG
+  have hcard (x : Link 4 M.n) := WilsonPatchGeometry.card_linkBall_le (by decide) r x
+  have hcardUnion :
+      ((WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k).card : ℝ) ≤
+        2 * (Real.exp r * exponentialVolumeBound 4 1) := by
+    have hle :
+        ((WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k).card : ℝ) ≤
+        (WilsonPatchGeometry.linkBall r m).card + (WilsonPatchGeometry.linkBall r k).card := by
+      exact_mod_cast card_union_le (WilsonPatchGeometry.linkBall r m) (WilsonPatchGeometry.linkBall r k)
+    linarith [hcard m, hcard k]
+  have hd := WilsonPatchGeometry.separation_linkBall_union hr l m k
+  have he : Real.exp (3 * (WilsonPatchGeometry.linkBall r l).card +
+      3 * (WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k).card) *
+      Real.exp (-κ * polymerDist (WilsonPatchGeometry.linkBall r l)
+        (WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k)) ≤
+      ballResponseEnvelope r κ * Real.exp (-κ * min (dist l m) (dist l k)) := by
+    unfold ballResponseEnvelope
+    rw [← Real.exp_add, ← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    nlinarith [hcard l, mul_nonneg hκ.le (sub_nonneg.mpr hd)]
+  exact h.trans (by
+    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left he
+      (show 0 ≤ 3 * CF * CG by positivity))
+
+theorem covariance_ball_clustering (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (base : E) {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (M : Model 4 E) (hφ : ∀ p, Continuous (M.φ p))
+      (r : ℝ), 0 ≤ r → ∀ (l m : Link 4 M.n)
+      (F G : C(Link 4 M.n → E, ℝ)) (CF CG : ℝ), 0 ≤ CF → 0 ≤ CG →
+      DependsOn (WilsonPatchGeometry.linkBall r l) F →
+      DependsOn (WilsonPatchGeometry.linkBall r m) G →
+      (∀ ω, |F ω| ≤ CF) → (∀ ω, |G ω| ≤ CG) →
+      |covariance (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) F G| ≤
+        3 * CF * CG * ballResponseEnvelope r κ * Real.exp (-κ * dist l m) := by
+  obtain ⟨κ, hκ, hc⟩ := covariance_ball_union_clustering ν₀ base hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro M hφ r hr l m F G CF CG hCF hCG hFdep hGdep hF hG
+  simpa only [union_self, min_self] using hc M hφ r hr l m m F G CF CG hCF hCG
+    hFdep (by simpa only [union_self] using hGdep) hF hG
+
+/-- Three bounded marks supported in metric balls have tree decay. This
+form accommodates the exact enlargement of support under cell integration. -/
+theorem thirdCumulant_ball_clustering (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (base : E) {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (M : Model 4 E) (hφ : ∀ p, Continuous (M.φ p))
+      (r : ℝ), 0 ≤ r → ∀ (l m k : Link 4 M.n)
+      (F G H : C(Link 4 M.n → E, ℝ)) (B : ℝ), 0 ≤ B →
+      DependsOn (WilsonPatchGeometry.linkBall r l) F →
+      DependsOn (WilsonPatchGeometry.linkBall r m) G →
+      DependsOn (WilsonPatchGeometry.linkBall r k) H →
+      (∀ ω, |F ω| ≤ B) → (∀ ω, |G ω| ≤ B) → (∀ ω, |H ω| ≤ B) →
+      |thirdCumulant (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) F G H| ≤
+        9 * B ^ 3 * ballResponseEnvelope r κ *
+          Real.exp (-(κ / 2) * threeTreeLength l m k) := by
+  obtain ⟨κ, hκ, hc⟩ := covariance_ball_union_clustering ν₀ base hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro M hφ r hr l m k F G H B hB hFdep hGdep hHdep hF hG hH
+  have hcut (a b c : Link 4 M.n) (A J K : C(Link 4 M.n → E, ℝ))
+      (hAdep : DependsOn (WilsonPatchGeometry.linkBall r a) A)
+      (hJdep : DependsOn (WilsonPatchGeometry.linkBall r b) J)
+      (hKdep : DependsOn (WilsonPatchGeometry.linkBall r c) K)
+      (hA : ∀ ω, |A ω| ≤ B) (hJ : ∀ ω, |J ω| ≤ B) (hK : ∀ ω, |K ω| ≤ B) :
+      |thirdCumulant (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) A J K| ≤
+        9 * B ^ 3 * ballResponseEnvelope r κ *
+          Real.exp (-κ * min (dist a b) (dist a c)) := by
+    have hJK := hc M hφ r hr a b c A (J * K) B (B * B) hB (mul_nonneg hB hB)
+      hAdep ((hJdep.mono subset_union_left).mul (hKdep.mono subset_union_right)) hA
+      (fun ω ↦ by
+        rw [ContinuousMap.mul_apply, abs_mul]
+        exact mul_le_mul (hJ ω) (hK ω) (abs_nonneg _) hB)
+    have hAJ := hc M hφ r hr a b c A J B B hB hB hAdep
+      (hJdep.mono subset_union_left) hA hJ
+    have hAK := hc M hφ r hr a b c A K B B hB hB hAdep
+      (hKdep.mono subset_union_right) hA hK
+    have hEJ := abs_expectation_le (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) J
+      (realDensity_pos M hφ β) hJ
+    have hEK := abs_expectation_le (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) K
+      (realDensity_pos M hφ β) hK
+    rw [thirdCumulant_eq_covariances]
+    have ht (x y z : ℝ) : |x - y - z| ≤ |x| + |y| + |z| := by
+      linarith [abs_sub (x - y) z, abs_sub x y]
+    apply (ht _ _ _).trans
+    simp only [abs_mul]
+    apply (add_le_add (add_le_add hJK (mul_le_mul hEJ hAK (abs_nonneg _) hB))
+      (mul_le_mul hEK hAJ (abs_nonneg _) hB)).trans_eq
+    ring
+  have hex (δ : ℝ) (hδ : threeTreeLength l m k ≤ 2 * δ) :
+      9 * B ^ 3 * ballResponseEnvelope r κ * Real.exp (-κ * δ) ≤
+        9 * B ^ 3 * ballResponseEnvelope r κ *
+          Real.exp (-(κ / 2) * threeTreeLength l m k) := by
+    apply mul_le_mul_of_nonneg_left _ (by unfold ballResponseEnvelope; positivity)
+    apply Real.exp_le_exp.mpr
+    nlinarith [mul_nonneg hκ.le (sub_nonneg.mpr hδ)]
+  rcases threeTreeLength_cut l m k with h | h | h
+  · exact (hcut l m k F G H hFdep hGdep hHdep hF hG hH).trans (hex _ h)
+  · rw [thirdCumulant_rotate]
+    exact (hcut m k l G H F hGdep hHdep hFdep hG hH hF).trans (hex _ h)
+  · rw [thirdCumulant_rotate, thirdCumulant_rotate]
+    exact (hcut k l m H F G hHdep hFdep hGdep hH hF hG).trans (hex _ h)
+
+/-- Volume-uniform second and third budgets for the enlarged supports.
+The radius is fixed before all models and marks, with its cost explicit. -/
+theorem uniform_ball_response_bounds (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (base : E) {β B r : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4)
+    (hB : 0 ≤ B) (hr : 0 ≤ r) :
+    ∃ η > 0, ∃ C₂ ≥ 0, ∃ C₃ ≥ 0,
+      ∀ (M : Model 4 E) (hφ : ∀ p, Continuous (M.φ p))
+        (F : Link 4 M.n → C(Link 4 M.n → E, ℝ)),
+        (∀ l, DependsOn (WilsonPatchGeometry.linkBall r l) (F l)) →
+        (∀ l ω, |F l ω| ≤ B) →
+        weightedResponseSeminorm η (fun l m ↦
+          covariance (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) (F l) (F m)) ≤ C₂ ∧
+        weightedThirdSeminorm η (fun l m k ↦
+          thirdCumulant (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) (F l) (F m) (F k)) ≤ C₃ := by
+  obtain ⟨κ₂, hκ₂, hc₂⟩ := covariance_ball_clustering ν₀ base hβ hβ0
+  obtain ⟨κ₃, hκ₃, hc₃⟩ := thirdCumulant_ball_clustering ν₀ base hβ hβ0
+  let η := min κ₂ (κ₃ / 2) / 2
+  have hη : 0 < η := by dsimp [η]; positivity
+  have hη₂ : η < κ₂ := by
+    have := min_le_left κ₂ (κ₃ / 2)
+    dsimp [η] at *
+    linarith
+  have hη₃ : η < κ₃ / 2 := by
+    have := min_le_right κ₂ (κ₃ / 2)
+    dsimp [η] at *
+    linarith
+  have hM₂ : 0 ≤ 3 * B ^ 2 * ballResponseEnvelope r κ₂ := by
+    unfold ballResponseEnvelope; positivity
+  have hM₃ : 0 ≤ 9 * B ^ 3 * ballResponseEnvelope r κ₃ := by
+    unfold ballResponseEnvelope; positivity
+  have hV₂ : 0 ≤ exponentialVolumeBound 4 (κ₂ - η) := by
+    unfold exponentialVolumeBound; positivity
+  have hV₃ : 0 ≤ exponentialVolumeBound 4 ((κ₃ / 2 - η) / 2) := by
+    unfold exponentialVolumeBound; positivity
+  refine ⟨η, hη, 3 * B ^ 2 * ballResponseEnvelope r κ₂ *
+    exponentialVolumeBound 4 (κ₂ - η), mul_nonneg hM₂ hV₂,
+    9 * B ^ 3 * ballResponseEnvelope r κ₃ *
+      (exponentialVolumeBound 4 ((κ₃ / 2 - η) / 2)) ^ 2, by positivity, ?_⟩
+  intro M hφ F hlocal hF
+  constructor
+  · apply weightedResponseSeminorm_le_of_envelope η κ₂ _ hM₂ hV₂
+    · intro l m
+      simpa only [pow_two, mul_assoc] using
+        hc₂ M hφ r hr l m (F l) (F m) B B hB hB (hlocal l) (hlocal m) (hF l) (hF m)
+    · intro l
+      exact sum_exp_dist_le (by decide) (sub_pos.mpr hη₂) l
+  · apply weightedThirdSeminorm_le_of_envelope η (κ₃ / 2) hη₃.le _ hM₃ hV₃
+      (fun l m k ↦ hc₃ M hφ r hr l m k (F l) (F m) (F k) B hB
+        (hlocal l) (hlocal m) (hlocal k) (hF l) (hF m) (hF k))
+    intro l
+    exact sum_exp_dist_le (by decide) (by linarith) l
 
 /-- Explicit three-collar prefactor in four dimensions. Each singleton
 collar has at most 256 links; the bound does not depend on the volume. -/

@@ -225,6 +225,67 @@ theorem hasDerivAt_holonomyScore (v u dv du : ℝ → Fin 4 → SU2)
   exact HasDerivAt.fun_sum (fun i hi ↦
     hasDerivAt_traceScore_insertion v u dv du T i t hdv (hdu i hi))
 
+/-- The ordered third action contact. The four new slot fields are the
+derivatives of the four fields in `holonomyContact`; coincident slots retain
+the order of the inserted group factors. -/
+def holonomyThirdContact (v a b c dv da db dc : Fin 4 → SU2)
+    (S T V : Finset (Fin 4)) : ℝ :=
+  ∑ i ∈ S, holonomyContact (Function.update v i (a i))
+    (Function.update b i (c i)) (Function.update dv i (da i))
+    (Function.update db i (dc i)) T V
+
+theorem continuous_holonomyThirdContact {Y : Type*} [TopologicalSpace Y]
+    (v a b c dv da db dc : Y → Fin 4 → SU2) (S T V : Finset (Fin 4))
+    (hv : Continuous v) (ha : Continuous a) (hb : Continuous b) (hc : Continuous c)
+    (hdv : Continuous dv) (hda : Continuous da) (hdb : Continuous db) (hdc : Continuous dc) :
+    Continuous (fun y ↦ holonomyThirdContact (v y) (a y) (b y) (c y)
+      (dv y) (da y) (db y) (dc y) S T V) := by
+  unfold holonomyThirdContact
+  apply continuous_finsetSum
+  intro i _
+  simpa only [Function.comp_def] using (continuous_holonomyContact T V).comp
+    (((hv.update i ((continuous_apply i).comp ha)).prodMk
+      (hb.update i ((continuous_apply i).comp hc))).prodMk
+      ((hdv.update i ((continuous_apply i).comp hda)).prodMk
+        (hdb.update i ((continuous_apply i).comp hdc))))
+
+theorem abs_holonomyThirdContact_le (v a b c dv da db dc : Fin 4 → SU2)
+    (S T V : Finset (Fin 4)) :
+    |holonomyThirdContact v a b c dv da db dc S T V| ≤
+      (S.card : ℝ) * T.card * V.card := by
+  apply (Finset.abs_sum_le_sum_abs _ _).trans
+  simpa only [Finset.sum_const, nsmul_eq_mul, mul_assoc] using
+    Finset.sum_le_sum (s := S) (fun i _ ↦ abs_holonomyContact_le _ _ _ _ T V)
+
+/-- Differentiate the complete ordered second contact, including changes to
+both inserted derivatives when patches act on the same link. -/
+theorem hasDerivAt_holonomyContact (v a b c dv da db dc : ℝ → Fin 4 → SU2)
+    (S T V : Finset (Fin 4)) (t : ℝ)
+    (hv : ∀ j, HasDerivAt (fun s ↦ (v s j).val)
+      (if j ∈ V then (dv t j).val else 0) t)
+    (ha : ∀ i ∈ S, HasDerivAt (fun s ↦ (a s i).val)
+      (if i ∈ V then (da t i).val else 0) t)
+    (hb : ∀ j ∈ T, HasDerivAt (fun s ↦ (b s j).val)
+      (if j ∈ V then (db t j).val else 0) t)
+    (hc : ∀ i ∈ S, HasDerivAt (fun s ↦ (c s i).val)
+      (if i ∈ V then (dc t i).val else 0) t) :
+    HasDerivAt (fun s ↦ holonomyContact (v s) (a s) (b s) (c s) S T)
+      (holonomyThirdContact (v t) (a t) (b t) (c t)
+        (dv t) (da t) (db t) (dc t) S T V) t := by
+  apply HasDerivAt.fun_sum
+  intro i hi
+  apply hasDerivAt_holonomyScore
+  · intro j
+    by_cases hji : j = i
+    · subst j
+      simpa only [Function.update_self] using ha i hi
+    · simpa only [Function.update_of_ne hji] using hv j
+  · intro j hj
+    by_cases hji : j = i
+    · subst j
+      simpa only [Function.update_self] using hc i hi
+    · simpa only [Function.update_of_ne hji] using hb j hj
+
 theorem continuous_plaquetteHolonomy (p : BlockPlaquette) :
     Continuous (fun U : BlockLinkField => plaquetteHolonomy U p) := by
   unfold plaquetteHolonomy

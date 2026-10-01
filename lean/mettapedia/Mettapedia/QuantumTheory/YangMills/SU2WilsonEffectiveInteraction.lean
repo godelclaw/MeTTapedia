@@ -11,16 +11,19 @@ responses decay uniformly in surrounding volume at strong coupling. The
 growing family changes genuine retained links at both levels.
 
 The weighted maximum-row seminorm bounds total second-order influence
-uniformly in volume at both levels, including nearby contacts. Three
-plaquette-separated patches have the exact third-cumulant derivative, and
-the coarse score cumulant is the actual GSLT route's third remainder.
+uniformly in volume at both levels, including nearby contacts. The full
+ordered third derivative retains every action contact and covariance
+correction, including coincident patches. The coarse score cumulant is the
+actual GSLT route's third remainder.
 All singleton score triples satisfy a volume-uniform tree-weighted budget.
 The actual Wilson scores also satisfy the boundary contract after each Haar
-step, with concrete witnesses for its OSLF reachability.
+step, with concrete witnesses for its OSLF reachability. The quantitative
+composition theorem is instantiated with spatial bounds for all three
+mixed arrays and the new conditional moments under the generated density.
 
 The seminorm uses the original lattice metric and the stated group rotation
-directions. A rescaled multiscale recursion needs further bounds on the
-transported covariance and cumulant marks in a compatible analytic norm.
+directions. A rescaled multiscale recursion needs analytic control after a
+genuine change of gauge-field coordinates and extraction of generated interactions.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -141,6 +144,35 @@ theorem thirdDerivative_eq_boundary (N : ℕ) (β : ℝ) (coarse : Bool)
       SU2BoundaryResponse.thirdDerivative β univ (retainedSet (mesh coarse)) S T V q r u b := by
   unfold thirdDerivative SU2BoundaryResponse.thirdDerivative
   simp_rw [mixedDerivative_eq_boundary]
+
+/-- The complete ordered third derivative at either actual assembly level,
+including the three contact covariances and the original third action contact. -/
+theorem thirdDerivative_eq_cumulant_contacts (N : ℕ) (β : ℝ) (coarse : Bool)
+    (S T V : Finset (AssemblyLink N)) (q r u b : FullField N) :
+    thirdDerivative N β coarse S T V q r u b =
+      -β ^ 3 * thirdCumulant (Measure.pi fun _ ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) S q b 0)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) T r b 0)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) V u b 0) +
+      β ^ 2 * (covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+        (SU2BoundaryResponse.contact univ (retainedSet (mesh coarse)) S V q u b 0)
+        (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) T r b 0) +
+        covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+          (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+          (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) S q b 0)
+          (SU2BoundaryResponse.contact univ (retainedSet (mesh coarse)) T V r u b 0) +
+        covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+          (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+          (SU2BoundaryResponse.contact univ (retainedSet (mesh coarse)) S T q r b 0)
+          (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) V u b 0)) -
+      β * expectation (Measure.pi fun _ ↦ (volume : Measure SU2))
+        (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+        (SU2BoundaryResponse.thirdContact univ (retainedSet (mesh coarse)) S T V q r u b 0) := by
+  rw [thirdDerivative_eq_boundary]
+  exact SU2BoundaryResponse.thirdDerivative_eq_cumulant_contacts β univ
+    (retainedSet (mesh coarse)) S T V q r u b
 
 /-- Both original generated weights have the exact separated three-score
 response, for every real beta and arbitrary frames and boundary values. -/
@@ -356,6 +388,25 @@ theorem uniform_scoreResponseContract {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤
   obtain ⟨η, hη, C₂, hC₂, C₃, hC₃, hc⟩ :=
     uniform_responseContract hβ hβ0 (show (0 : ℝ) ≤ 256 by norm_num)
   refine ⟨η, hη, C₂, hC₂, C₃, hC₃, ?_⟩
+  intro N coarse q b
+  exact hc N (scoreFamily N coarse q b)
+    (fun l ↦ SU2BoundaryResponse.score_local univ (retainedSet (mesh coarse)) {l} q b 0)
+    (fun l ↦ by simpa [scoreFamily] using
+      SU2BoundaryResponse.abs_score_le univ (retainedSet (mesh coarse)) {l} q b 0)
+
+/-- Quantitative composition for the actual Wilson scores. The source
+budgets, new conditional budgets and all three mixed costs are proved;
+none is an additional hypothesis on the generated measure. -/
+theorem uniform_scoreCompositionContract {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C₂ ≥ 0, ∃ C₃ ≥ 0, ∃ D₂ ≥ 0, ∃ D₃ ≥ 0, ∃ E ≥ 0,
+      ∀ (N : ℕ) (coarse : Bool) (q b : FullField N),
+        WilsonEliminationRoutes.boundaryContract η 256 C₂ C₃
+          (firstResponseState N β (scoreFamily N coarse q b)) ∧
+        WilsonEliminationRoutes.boundaryContract η 256 (C₂ + D₂) (C₃ + D₃ + 3 * E)
+          (secondResponseState N β (scoreFamily N coarse q b)) := by
+  obtain ⟨η, hη, C₂, hC₂, C₃, hC₃, D₂, hD₂, D₃, hD₃, E, hE, hc⟩ :=
+    uniform_composed_responseContract hβ hβ0 (show (0 : ℝ) ≤ 256 by norm_num)
+  refine ⟨η, hη, C₂, hC₂, C₃, hC₃, D₂, hD₂, D₃, hD₃, E, hE, ?_⟩
   intro N coarse q b
   exact hc N (scoreFamily N coarse q b)
     (fun l ↦ SU2BoundaryResponse.score_local univ (retainedSet (mesh coarse)) {l} q b 0)

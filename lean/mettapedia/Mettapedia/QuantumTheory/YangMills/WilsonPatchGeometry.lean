@@ -17,6 +17,71 @@ namespace Mettapedia.QuantumTheory.YangMills.WilsonPatchGeometry
 open StrongCouplingCrossing
 variable {d n : ℕ}
 
+/-- A finite metric ball in the original link geometry. Direction labels at
+the same site are all included, as required by the link pseudometric. -/
+def linkBall (r : ℝ) (l : Link d n) : Finset (Link d n) :=
+  univ.filter (fun k ↦ dist l k ≤ r)
+
+@[simp] theorem mem_linkBall {r : ℝ} {l k : Link d n} :
+    k ∈ linkBall r l ↔ dist l k ≤ r := by simp [linkBall]
+
+theorem linkBall_nonempty {r : ℝ} (hr : 0 ≤ r) (l : Link d n) :
+    (linkBall r l).Nonempty := ⟨l, by simpa using hr⟩
+
+/-- The exponential volume estimate gives an explicit finite ball bound,
+with no dependence on the torus side length. -/
+theorem card_linkBall_le (hd : 0 < d) (r : ℝ) (l : Link d n) :
+    ((linkBall r l).card : ℝ) ≤ Real.exp r * exponentialVolumeBound d 1 := by
+  calc
+    _ = ∑ k ∈ linkBall r l, (1 : ℝ) := by simp
+    _ ≤ ∑ k ∈ linkBall r l, Real.exp r * Real.exp (-dist l k) := by
+      apply sum_le_sum
+      intro k hk
+      rw [← Real.exp_add]
+      exact Real.one_le_exp (by linarith [mem_linkBall.mp hk])
+    _ ≤ ∑ k : Link d n, Real.exp r * Real.exp (-dist l k) :=
+      sum_le_sum_of_subset_of_nonneg (subset_univ _) (fun _ _ _ ↦ by positivity)
+    _ = Real.exp r * ∑ k : Link d n, Real.exp (-dist l k) := (mul_sum _ _ _).symm
+    _ ≤ Real.exp r * exponentialVolumeBound d 1 :=
+      mul_le_mul_of_nonneg_left (by simpa using sum_exp_dist_le hd (by norm_num : (0 : ℝ) < 1) l)
+        (Real.exp_pos _).le
+
+theorem separation_linkBall {r s : ℝ} (hr : 0 ≤ r) (hs : 0 ≤ s)
+    (l m : Link d n) :
+    dist l m - (r + s) ≤ polymerDist (linkBall r l) (linkBall s m) := by
+  have hn := linkBall_nonempty hs m
+  simp only [polymerDist, hn, ↓reduceDIte]
+  apply le_inf'
+  intro y hy
+  apply (Metric.le_infDist (linkBall_nonempty hr l).to_set).mpr
+  intro x hx
+  have hx' := mem_linkBall.mp hx
+  have hy' := mem_linkBall.mp hy
+  have h₁ := dist_triangle l x m
+  have h₂ := dist_triangle x y m
+  rw [dist_comm y m] at h₂
+  rw [dist_comm y x]
+  linarith
+
+theorem separation_linkBall_union {r : ℝ} (hr : 0 ≤ r) (l m k : Link d n) :
+    min (dist l m) (dist l k) - 2 * r ≤
+      polymerDist (linkBall r l) (linkBall r m ∪ linkBall r k) := by
+  have hn : (linkBall r m ∪ linkBall r k).Nonempty :=
+    (linkBall_nonempty hr m).mono subset_union_left
+  simp only [polymerDist, hn, ↓reduceDIte]
+  apply le_inf'
+  intro y hy
+  apply (Metric.le_infDist (linkBall_nonempty hr l).to_set).mpr
+  intro x hx
+  change min (dist l m) (dist l k) - 2 * r ≤ dist y x
+  rcases mem_union.mp hy with hy | hy
+  · have h := (separation_linkBall hr hr l m).trans
+      ((polymerDist_le_infDist hy).trans (Metric.infDist_le_dist_of_mem hx))
+    linarith [min_le_left (dist l m) (dist l k)]
+  · have h := (separation_linkBall hr hr l k).trans
+      ((polymerDist_le_infDist hy).trans (Metric.infDist_le_dist_of_mem hx))
+    linarith [min_le_right (dist l m) (dist l k)]
+
 /-- Exactly the plaquettes that touch the changed links. -/
 def incident (S : Finset (Link d n)) : Finset (Plaquette d n) :=
   univ.filter (fun p => ¬ Disjoint (support p) S)

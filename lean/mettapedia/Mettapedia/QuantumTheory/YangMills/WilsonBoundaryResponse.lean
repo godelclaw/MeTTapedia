@@ -217,6 +217,35 @@ theorem hasDerivAt_logPartitionScore (β : ℝ) (W A B J : ℝ → C(X, ℝ))
     (-β)).congr_deriv
   ring
 
+/-- The derivative of a genuine logarithmic Hessian retains three contact
+covariances and the direct third action contact. No disjointness of the
+underlying perturbations is required. -/
+theorem hasDerivAt_logPartitionHessian (β : ℝ)
+    (W V F G J B D L : ℝ → C(X, ℝ))
+    (hW : Continuous (fun z : ℝ × X ↦ W z.1 z.2))
+    (hV : Continuous (fun z : ℝ × X ↦ V z.1 z.2))
+    (hF : Continuous (fun z : ℝ × X ↦ F z.1 z.2))
+    (hG : Continuous (fun z : ℝ × X ↦ G z.1 z.2))
+    (hJ : Continuous (fun z : ℝ × X ↦ J z.1 z.2))
+    (hB : Continuous (fun z : ℝ × X ↦ B z.1 z.2))
+    (hD : Continuous (fun z : ℝ × X ↦ D z.1 z.2))
+    (hL : Continuous (fun z : ℝ × X ↦ L z.1 z.2))
+    (hdW : ∀ r x, HasDerivAt (fun s ↦ W s x) (-β * (W r x * V r x)) r)
+    (hdF : ∀ r x, HasDerivAt (fun s ↦ F s x) (B r x) r)
+    (hdG : ∀ r x, HasDerivAt (fun s ↦ G s x) (D r x) r)
+    (hdJ : ∀ r x, HasDerivAt (fun s ↦ J s x) (L r x) r)
+    (t : ℝ) (hpos : ∀ x, 0 < W t x) :
+    HasDerivAt (fun s ↦ β ^ 2 * covariance μ (W s) (F s) (G s) -
+      β * expectation μ (W s) (J s))
+      (-β ^ 3 * thirdCumulant μ (W t) (F t) (G t) (V t) +
+        β ^ 2 * (covariance μ (W t) (B t) (G t) +
+          covariance μ (W t) (F t) (D t) + covariance μ (W t) (J t) (V t)) -
+        β * expectation μ (W t) (L t)) t := by
+  have hcov := hasDerivAt_covariance μ β W V F G B D hW hV hF hG hB hD
+    hdW hdF hdG t hpos
+  have hcontact := hasDerivAt_expectation μ β W V J L hW hV hJ hL hdW hdJ t hpos
+  exact ((hcov.const_mul (β ^ 2)).sub (hcontact.const_mul β)).congr_deriv (by ring)
+
 end DifferentialResponse
 
 section SpatialResponse
@@ -255,6 +284,16 @@ theorem weightedResponseSeminorm_le (η : ℝ) (H : ι → ι → ℝ)
     {C : ℝ} (hC : 0 ≤ C) (h : ∀ i, weightedResponseRow η i H ≤ C) :
     weightedResponseSeminorm η H ≤ C :=
   Seminorm.finset_sup_apply_le hC (fun i _ ↦ h i)
+
+theorem weightedResponseSeminorm_mono_rate {η θ : ℝ} (hηθ : η ≤ θ)
+    (H : ι → ι → ℝ) : weightedResponseSeminorm η H ≤ weightedResponseSeminorm θ H := by
+  apply weightedResponseSeminorm_le _ _ (apply_nonneg _ _)
+  intro i
+  apply le_trans _ (weightedResponseRow_le θ i H)
+  apply Finset.sum_le_sum
+  intro j _
+  exact mul_le_mul_of_nonneg_right
+    (Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_right hηθ dist_nonneg)) (abs_nonneg _)
 
 /-- A pointwise exponential envelope becomes a bound on total influence
 once the exponentially weighted coordinate count has been bounded. -/
@@ -302,6 +341,24 @@ theorem threeTreeLength_rotate (i j k : ι) :
     threeTreeLength i j k = threeTreeLength j k i := by
   simp only [threeTreeLength, dist_comm j i, dist_comm k i]
   ac_rfl
+
+/-- Attach the root to the closer endpoint of an edge joining the other two
+coordinates. This is one of the three admissible spanning trees. -/
+theorem threeTreeLength_le_attach (i j k : ι) :
+    threeTreeLength i j k ≤ dist j k + min (dist i j) (dist i k) := by
+  rcases le_total (dist i j) (dist i k) with h | h
+  · rw [min_eq_left h]
+    exact (min_le_right _ _).trans ((min_le_left _ _).trans_eq (add_comm _ _))
+  · rw [min_eq_right h]
+    exact (min_le_right _ _).trans ((min_le_right _ _).trans_eq (add_comm _ _))
+
+theorem threeTreeLength_pair_cut (i j k : ι) :
+    threeTreeLength i j k ≤ 2 * dist j k ∨
+      threeTreeLength i j k ≤ 2 * min (dist i j) (dist i k) := by
+  have h := threeTreeLength_le_attach i j k
+  by_cases hcut : threeTreeLength i j k ≤ 2 * dist j k
+  · exact Or.inl hcut
+  · exact Or.inr (by linarith)
 
 /-- One of the three singleton-versus-pair cuts separates at least half
 the length of the shortest spanning tree. -/
@@ -374,6 +431,19 @@ theorem weightedThirdSeminorm_le (η : ℝ) (H : ι → ι → ι → ℝ)
     {C : ℝ} (hC : 0 ≤ C) (h : ∀ i, weightedThirdRow η i H ≤ C) :
     weightedThirdSeminorm η H ≤ C :=
   Seminorm.finset_sup_apply_le hC (fun i _ ↦ h i)
+
+theorem weightedThirdSeminorm_mono_rate {η θ : ℝ} (hηθ : η ≤ θ)
+    (H : ι → ι → ι → ℝ) : weightedThirdSeminorm η H ≤ weightedThirdSeminorm θ H := by
+  apply weightedThirdSeminorm_le _ _ (apply_nonneg _ _)
+  intro i
+  apply le_trans _ (weightedThirdRow_le θ i H)
+  apply Finset.sum_le_sum
+  intro j _
+  apply Finset.sum_le_sum
+  intro k _
+  exact mul_le_mul_of_nonneg_right
+    (Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_right hηθ (threeTreeLength_nonneg i j k)))
+    (abs_nonneg _)
 
 /-- Exponential decay in tree length and one-coordinate volume growth imply
 uniform summability of the whole rooted third response. -/
