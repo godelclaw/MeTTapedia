@@ -987,11 +987,10 @@ against the decoded core; a common flanking-corner law handles the geometric
 exclusions using the retained source context.
 
 This supplies the collision alternative without assuming a full embedded
-configuration. It does not yet prove that the nonfacial triangle separates
-the intended spherical map, or that either branch yields strict reduction
-and compatible colouring reconstruction. Inducedness, eleven-port boundary
-completion, repair and zero-charge classification remain open. No coverage
-entry or certificate dependency is removed.
+configuration. The minimal-map consumer below now excludes the collision
+branch using the established singleton-cut theorem. Inducedness, eleven-port
+boundary completion, repair and zero-charge classification remain open.
+No coverage entry or certificate dependency is removed.
 
 Replay with `lake build kernelExceptionalEmbedding`. The dependency audit
 checks the actual source consumer, facial transport, local injectivity and
@@ -999,3 +998,32 @@ collision laws, allowing only the standard axioms and excluding complete
 Four Colour endpoints and original catalogue rank certificates. See the
 [mathematical account](../../tools/fourcolor/near-linear/README.md#facial-transport-and-the-collision-alternative)
 and [measurements](../../tools/fourcolor/near-linear/embedding-measurements.json).
+
+## Exceptional core: collisions excluded in the actual minimal dual
+
+`ActualDualRotation` constructs the simple facial dual using the original
+darts, edge reversal and face permutation. Unique shared primal edges give
+its faithful simple-graph backing. The graph is exactly the quotient-face
+dual used by the coverage scaffold, with cyclic vertex rotations and
+triangular faces proved from the original cubic rotation.
+
+`MinimalExceptionalEmbedding.triangle_facial` consumes the existing
+singleton-cut classification: in a graph-backed vertex-minimal Tait
+counterexample, a dual triangle crosses three edges incident with one primal
+vertex. The new actual-rotation bridge makes that triangle facial in one of
+its two orientations. This contradicts the explicit nonfacial triangle
+produced by any exceptional core collision.
+
+`MinimalExceptionalEmbedding.source_core_injective` therefore derives an
+injective core homomorphism from two aligned actual exceptional occurrences.
+It uses their joint rotation and degree information; injectivity is not an
+input. The result is not yet an induced occurrence or a colouring repair.
+Extra edges, the eleven-port ring, source supply from final charge, and the
+complete repair contract remain separate obligations. Counts stay 633/629.
+
+Replay with `lake build kernelExceptionalDual`. Its twelve-root audit checks
+the source consumer, the actual rotation bridge and the singleton-cut proof
+chain, allowing only standard axioms and excluding complete Four Colour
+endpoints and original catalogue rank certificates. See the
+[account](../../tools/fourcolor/near-linear/README.md#collision-elimination-in-the-actual-minimal-dual)
+and [measurements](../../tools/fourcolor/near-linear/minimal-embedding-measurements.json).

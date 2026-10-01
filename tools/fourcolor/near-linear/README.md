@@ -289,12 +289,11 @@ exclusion by the two flanking corners. The four-pair source check remains a
 finite obligation. This is a concrete collision alternative, not a general
 first-collision theorem for arbitrary patch programs.
 
-No planarity assumption is needed for these new laws. Consequently the
-nonfacial triangle has **not** yet been proved separating. Connecting it to
-the intended spherical geometry, strict descent and colouring reconstruction
-remains an obligation. The injective branch still needs inducedness,
-eleven-port ring completion and the repair contract. The local-faciality
-corollary states its extra geometric hypothesis explicitly.
+No planarity assumption is needed for these laws. The next result supplies
+the local-faciality corollary's geometric hypothesis in the actual dual of
+a graph-backed minimal Tait counterexample, using an established separator
+theorem. The injective branch still needs inducedness, eleven-port ring
+completion and the repair contract.
 
 Run `lake build kernelExceptionalEmbedding` with the prepared dependencies.
 The source consumer's dependency audit requires both the constructed core
@@ -302,3 +301,59 @@ reading and the actual collision argument; it excludes complete Four Colour
 endpoints and original catalogue rank certificates. See
 [embedding-measurements.json](embedding-measurements.json).
 Coverage and certificate counts remain 633 and 629, respectively.
+
+## Collision elimination in the actual minimal dual
+
+`ActualDualRotation` gives the quotient-face dual its actual dart rotation.
+It reuses the primal darts, exchanges the vertex and face permutations, and
+proves that unique shared edges yield a faithful simple-graph backing.
+`MinimalExceptionalEmbedding.graph_eq_coverage_dual` identifies its adjacency
+with the graph used by the coverage scaffold. Thus the geometry is not
+attached to an unrelated triangulation with a similar graph.
+
+The existing `GoertzelV24MinimalDualTriangleClassification` proves that a
+dual triangle cuts off one primal vertex in a graph-backed vertex-minimal
+Tait counterexample. This follows from cyclic five-edge-connectivity and
+the actual three-edge separator, using the earlier small-cut reconstruction
+theory. The new bridge proves that every face incident with an edge at that
+cubic vertex is one of its three cyclic face readings. Those three readings
+form a facial triangle in the actual dual rotation. Consequently every dual
+triangle has one of the two facial orientations.
+
+```text
+two aligned actual exceptional occurrences
+                  |
+       exact core and retained turns
+                  |
+      injective OR nonfacial triangle
+           |                |
+           |        singleton-cut classification
+           |                |
+           |        actual triangle is facial
+           |                |
+           |          contradiction
+           |
+   injective eight-vertex core homomorphism
+```
+
+`MinimalExceptionalEmbedding.source_core_injective` is the checked source
+consumer. It constructs the joint reading, uses the explicit collision
+argument, and excludes the collision through the same actual rotation.
+The theorem does not assume core injectivity or a full D1774 occurrence.
+The uniform actual-dual and facial-triangle laws can be reused by other
+patches; the present consumer still uses the D1774 four-pair collision check.
+A general first-collision theorem for arbitrary construction programs remains
+open.
+
+This result assumes a graph-backed vertex-minimal Tait counterexample and
+the two actual exceptional occurrences. It neither supplies them from the
+paper's final-charge classification nor establishes inducedness, the full
+eleven-port ring, colouring repair or strict reduction. It removes no
+catalogue or certificate dependency from the complete assembly.
+
+Run `lake build kernelExceptionalDual`. The twelve-root audit requires the
+actual dual bridge, singleton separator and source collision theorem in the
+dependency closure. It admits only `propext`, `Classical.choice` and
+`Quot.sound`, and excludes complete Four Colour endpoints and original
+catalogue rank certificates. See
+[minimal-embedding-measurements.json](minimal-embedding-measurements.json).

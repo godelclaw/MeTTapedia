@@ -1,0 +1,90 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ActualDualRotation",
+      "source_sha256": "968da30a753a045bbf1a97beb4b16f0a8185ff2bdf278e7791c1aff7701a98f1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.03,
+      "olean_bytes": 447296,
+      "olean_sha256": "0df70efb525b2cc1548a7008e6a39919e03a16c33162936bbba93fc4980eef7c"
+    },
+    {
+      "module": "MettapediaFourColor.MinimalExceptionalEmbedding",
+      "source_sha256": "85f1da198d9608c1cc5d17eeb17bc513fefd59990ac2fdde6029374b9812f03a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.364,
+      "olean_bytes": 210944,
+      "olean_sha256": "df8bca8b3333d49aca92f7d0ac573ddf861fe51c16ec2b4e1ee8ccadc6d35005"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalDualAudit",
+      "source_sha256": "5901cf922d2c30067bc9353aee5be8c47c3da50a52ea4dcceabd80663cb715d7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.757,
+      "olean_bytes": 2608,
+      "olean_sha256": "20c89d76a6ab777562f3a8b4430ea218ab12a97f420b7e31aeb372fa6bb2f26e"
+    }
+  ],
+  "status": "Kernel replay, dependency audit, flat-coverage and complete-classical regressions, and full main lane build passed.",
+  "recorded_at": "2026-10-01T21:25:01.272137+00:00",
+  "base_revision": "170428e443c3307105e7d89c952174279f5bdf9d",
+  "replay_command": "lake build kernelExceptionalDual",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 12,
+    "declarations_in_dependency_closure": 24357,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false
+  },
+  "mathematical_scope": {
+    "actual_rotation": "The primal dart equivalence gives the simple facial dual its actual rotation, with adjacency exactly equal to the coverage graph.",
+    "uniform_geometry": "At a cubic vertex every incident face lies among the three cyclic face readings; these form a facial triangle in the actual dual rotation.",
+    "minimal_consumer": "The existing singleton-cut classification makes each dual triangle facial in a graph-backed vertex-minimal Tait counterexample.",
+    "source_consumer": "FourColor.MinimalExceptionalEmbedding.source_core_injective",
+    "result": "Two aligned actual exceptional source occurrences yield an injective eight-vertex D1774 core homomorphism, using the established nonfacial collision alternative.",
+    "domain": "Actual facial dual of a graph-backed vertex-minimal Tait counterexample; both source occurrences and alignment are inputs.",
+    "finite_checks_retained": [
+      "D1774 source decoding, turns and degrees",
+      "four residual unordered collision pairs"
+    ],
+    "open": [
+      "absence of extra ambient edges between core vertices",
+      "eleven-port boundary completion and compatible colouring repair",
+      "strict reduction and supply from zero-charge classification",
+      "published charge and source-representation bridges",
+      "general first-collision theorem for patch-construction programs",
+      "universal coverage and scheduling"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "source_fidelity": "exception-source-audit.json",
+  "obligations": "coverage-obligations.json",
+  "primary_reference": "https://arxiv.org/html/2603.24880v1#S9.SS1",
+  "regression": {
+    "classical_command": "lake build kernelExceptionalDual kernelFlatCoverage kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}

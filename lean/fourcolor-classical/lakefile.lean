@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check the actual dual rotation used by exceptional core geometry. -/
+target kernelExceptionalDual pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-dual-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "ActualDualRotation",
+        "MinimalExceptionalEmbedding", "ExceptionalDualAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check facial orientation, local injectivity and the collision alternative. -/
 target kernelExceptionalEmbedding pkg : Unit := do
   let env ← getAugmentedEnv
