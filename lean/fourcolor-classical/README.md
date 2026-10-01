@@ -919,9 +919,10 @@ joint pentagon readings, or an explicitly retained residual occurrence.
 colouring reconstruction to exclude the first alternative in a minimal
 counterexample. The residual and its full supported observations remain.
 
-The three local supply laws are still hypotheses. The exceptional pattern
-type, its placement relation and joint closing law still need exact source
-representations and proofs. The charge function is an explicit input whose
+The three local supply laws are still hypotheses. The source exceptional
+pattern and its specified second centre are now formalized below; promotion
+of its joint core reading to a certified reduction remains open.
+The charge function is an explicit input whose
 connection to the published discharging rules remains open, as does the
 required correspondence between the source triangulation and the dual.
 No complete coverage claim follows until these obligations and the
@@ -934,3 +935,40 @@ and original rank-certificate dependencies. This result changes neither
 the 633 coverage entries nor the 629 original certificate dependencies.
 See the [coverage obligation record](../../tools/fourcolor/near-linear/coverage-obligations.json)
 and [measurements](../../tools/fourcolor/near-linear/coverage-measurements.json).
+
+## Exceptional-pattern overlap geometry
+
+`ExceptionalPattern` decodes the pinned primary `getX` function into
+seventeen vertices, cyclic neighbour lists with gaps, and prescribed
+degrees. An occurrence preserves all listed edges and known rotation steps
+in actual ambient graph darts. The theorem `next_centered` in
+`ExceptionalOverlap` proves the source-specific next-centre obligation:
+vertex 14 has degree eight and lies at distance at most two from vertex 0.
+
+Two occurrences at that prescribed placement jointly force the extra
+degree-five corner of Figure 13. The proof uses the second centre's full
+degree-eight cyclic word, retaining the actual shared dart fixed by the
+first occurrence. Triangular face closure gives the extra edge.
+`ExceptionalCore.coreHom` and `core_degrees` identify all thirteen edges and
+eight prescribed degrees of the source D1774 internal graph, with support
+within radius three of the first centre. `JointReading` retains both source
+occurrences, their alignment and the exact core realization for subsequent
+boundary reconstruction. Its whole support includes both source occurrences
+and lies within radius four; the core alone lies within radius three.
+
+The theorem `ExceptionalCore.overlap_supply` fills the next-centre and
+joint closing fields for **core readings**, conditional on classification.
+The close field for **certified reductions** is still open: a graph
+homomorphism can identify distinct source vertices or acquire extra ambient
+edges, and this result does not construct the full eleven-port cyclic
+boundary or repair a colouring.
+Those obligations, the source zero-charge classification and the dual-graph
+bridge remain explicit. The ledger remains 633 coverage entries and 629
+original certificate dependencies.
+
+Run `lake build kernelExceptionalOverlap` with the prepared dependencies.
+Its dependency audit excludes complete Four Colour endpoints and original
+catalogue rank certificates. See the
+[source and proof explanation](../../tools/fourcolor/near-linear/README.md#the-exceptional-overlap-and-the-d1774-core),
+[source check](../../tools/fourcolor/near-linear/exception-source-audit.json)
+and [kernel measurements](../../tools/fourcolor/near-linear/exception-measurements.json).

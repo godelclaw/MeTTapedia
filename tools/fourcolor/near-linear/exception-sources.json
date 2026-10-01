@@ -1,0 +1,21 @@
+{
+  "primary_paper": "https://arxiv.org/html/2603.24880v1#S8.F12",
+  "computer_checks": {
+    "repository": "https://github.com/near-linear-4ct/computer-checks",
+    "revision": "6cb85666ce89cf8bd813132e4c5dd56053e367a5",
+    "file": "src/combine_cartwheel.cpp",
+    "whole_source_sha256": "45dad6568dca64b0c3c30857da306f07f4cfe0ec5e8b6eb9920acb7e2ad16c71",
+    "function": "getX",
+    "local_excerpt": "exception-getX.cpp",
+    "excerpt_sha256": "9171ea32a739c129695c904afb006fefc374f3c07e9404c1e0ee09e47870acc5"
+  },
+  "configuration": {
+    "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "file": "D/D1774.conf",
+    "local_file": "D1774.conf",
+    "sha256": "694db4afd81219890d3b84c453f2c2dbb55e1a8b5b60ac57577470e50013b196"
+  },
+  "encoding": "First row lists prescribed degrees. Subsequent rows list cyclic neighbours with source vertex i encoded as i+1 and the source gap -1 encoded as zero. No zero is interpreted as a vertex.",
+  "licence": "MIT, Copyright (c) 2026 Yuta Inoue; see LICENSE."
+}

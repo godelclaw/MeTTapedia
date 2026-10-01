@@ -1,5 +1,5 @@
 {
-  "status": "Conditional geometric coverage assembly proved; local supply and source bridges open.",
+  "status": "Conditional coverage assembly and source exceptional overlap geometry proved; classification, full occurrence and repair bridges open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -35,6 +35,34 @@
     {
       "declaration": "FourColor.FlatNeighborhoodCoverage.residual_in_minimal_from_overlap",
       "meaning": "On the actual quotient-face dual, the certified pentagonal-overlap alternative is excluded by strict reduction and colouring reconstruction. Any remaining alternative is a supported residual occurrence."
+    },
+    {
+      "declaration": "FourColor.ExceptionalPattern.source_valid",
+      "meaning": "The pinned getX rows decode with explicit gaps, prescribed degrees and cyclic steps; Occurrence preserves them in actual ambient darts."
+    },
+    {
+      "declaration": "FourColor.ExceptionalOverlap.next_centered",
+      "meaning": "An actual source exceptional occurrence supplies its specified degree-eight second centre within distance two."
+    },
+    {
+      "declaration": "FourColor.ExceptionalOverlap.closing_degree",
+      "meaning": "Two exceptional occurrences aligned at the specified centre force the same actual closing dart to end at a degree-five vertex."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCore.coreHom",
+      "meaning": "Triangular face closure supplies the closing edges; all thirteen D1774 core edges map to actual ambient edges."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCore.core_degrees",
+      "meaning": "The entire eight-vertex core reading has D1774 prescribed ambient degrees."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCore.overlap_supply",
+      "meaning": "The next-centre and joint-core-reading fields instantiate the existing coverage scaffold. Both source occurrences, their alignment and exact core realization are retained. Classification remains an input and the joint readings are not certified reductions."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCore.joint_support_near",
+      "meaning": "All observations retained by both source occurrences and the derived core lie within radius four. The conditional coverage scaffold retains that entire support."
     }
   ],
   "open": [
@@ -68,19 +96,13 @@
       "id": "exception_representation",
       "field": "X",
       "source": "Figure 12",
-      "obligation": "Decode the exceptional pattern as an actual embedded occurrence, retaining vertex identities, cyclic order, prescribed degrees and shared boundaries."
-    },
-    {
-      "id": "exception_next",
-      "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.next",
-      "source": "Lemma 8.4",
-      "obligation": "The actual exceptional occurrence supplies the specified degree-eight second centre within distance two and its geometric placement relation."
+      "obligation": "The exact source occurrence is now defined over actual graph darts. Derive such occurrences from the published zero-charge classification, with explicit handling of collisions and obstructing cycles."
     },
     {
       "id": "exception_joint_close",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
       "source": "Figure 13 and Lemma 8.4",
-      "obligation": "Two actual exceptional occurrences in the specified placement force a certified supported reduction or obstruction. Preserve all shared identities and colouring choices."
+      "obligation": "The two occurrences now force an actual degree-preserving D1774 core reading within radius three. Promote this to the full cyclic eleven-port occurrence or an obstruction, and prove compatible colouring repair and strict reduction. The close field for certified reductions remains open."
     },
     {
       "id": "residuals",
@@ -92,9 +114,13 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "exception_representation, exception_next and exception_joint_close",
-    "test": "Decode Figures 12 and 13 from pinned source programs or exact reconstructed inputs; check complete adjacency, cyclic stars, prescribed degrees and placement of the second centre before claiming the close branch.",
-    "acceptance": "An actual embedded occurrence theorem consumed by eight_of_overlap through its stated placement contract, or a checked obstruction identifying the exact missing condition."
+    "target": "D1774 core-to-boundary promotion and repair",
+    "test": "First certify the inner facial triangles in the retained joint reading. Use the source local-injectivity and small-diameter obstruction arguments (Lemmas 9.1-9.2) to analyze core collisions, then complete the eleven-port boundary. Test the full D1774 repair domain before selecting a shared family law or retained base.",
+    "acceptance": "A checked full occurrence or explicit obstructing-cycle alternative, followed by a source-faithful repair consumer; core homomorphisms alone do not earn reduction or coverage credit.",
+    "primary_lemmas": [
+      "9.1",
+      "9.2"
+    ]
   },
   "counts": {
     "coverage_entries": 633,
@@ -104,7 +130,7 @@
   },
   "limits": [
     "No inhabitant of all local supply fields is claimed.",
-    "No complete translation of the source exceptional pattern is claimed.",
+    "The source getX pattern is decoded and joint core geometry is proved; its supply from flatness and the full D1774 cyclic boundary occurrence are still open.",
     "No scheduling, executable global recolouring or near-linear runtime is proved.",
     "The existing joint diamond profile certificate remains in the reduction consumer."
   ]

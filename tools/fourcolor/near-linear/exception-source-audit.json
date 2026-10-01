@@ -1,0 +1,47 @@
+{
+  "evidence": "Independent source-fidelity and finite core correspondence check; not reducibility.",
+  "computer_checks_revision": "6cb85666ce89cf8bd813132e4c5dd56053e367a5",
+  "configuration_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "exception_vertices": 17,
+  "exception_edges": 34,
+  "configuration": {
+    "name": "D1774",
+    "vertices": 19,
+    "ring": 11,
+    "core_vertices": 8,
+    "edges": 43,
+    "prescribed_core_degrees": [
+      8,
+      5,
+      5,
+      7,
+      5,
+      5,
+      5,
+      5
+    ]
+  },
+  "core_edges": 13,
+  "core_to_exception_labels": [
+    14,
+    3,
+    16,
+    5,
+    13,
+    15,
+    4,
+    17
+  ],
+  "new_corner_label": 17,
+  "lean_source_sha256": {
+    "ExceptionalPattern.lean": "9de5bb2bfe5f015952bcb305e08962ac6df92bacfbaf8f7a41e7ed91deb5248d",
+    "ExceptionalCore.lean": "1c395f827bfa988471a4d68c68b7cfe94a84f8a7d1db546b3d8a10bf3d42b520"
+  },
+  "verifier_sha256": "c826840565de15a6132532b3c6656b0d2c7d2bab0dd8d687633f627f71a722e3",
+  "shared_parser_sha256": "6d18cbf85974f18bf70599aa43e4c7a78a9c63be953961bdad1e0823c34c2349",
+  "remaining": [
+    "collision and inducedness analysis",
+    "full cyclic boundary occurrence",
+    "colouring repair"
+  ]
+}

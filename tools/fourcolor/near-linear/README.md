@@ -164,8 +164,9 @@ and a joint closing argument for both occurrences.
 The concrete consumer runs on the actual quotient-face dual and excludes
 the already certified pentagonal-overlap outcome from a minimal
 counterexample. Other outcomes remain explicit residual witnesses. The
-charge input and exceptional occurrences have not yet been identified with
-the full source discharging calculation and Figure 12. The proof does not
+charge input has not yet been identified with the full source discharging
+calculation. The source exceptional pattern is now decoded as described
+below, while its supply from flatness remains open. The proof does not
 assume that every pair of flat cartwheels is a diamond.
 
 The [obligation record](coverage-obligations.json) lists the exact open fields
@@ -173,3 +174,72 @@ and their source references. The [measurement record](coverage-measurements.json
 records the kernel replay and dependency audit. From the prepared classical
 package, replay with `lake build kernelFlatCoverage`. No classical coverage
 or certificate dependency is removed by this conditional assembly.
+
+## The exceptional overlap and the D1774 core
+
+The exact `getX` function from the pinned primary
+[computer checks](https://github.com/near-linear-4ct/computer-checks/tree/6cb85666ce89cf8bd813132e4c5dd56053e367a5)
+encodes Figure 12: seventeen vertices, cyclic neighbour lists with explicit
+gaps, and prescribed degrees. The unaltered excerpt and `D1774.conf` are
+retained with hashes in [exception-sources.json](exception-sources.json).
+The shared [MIT notice](LICENSE) applies to both source repositories.
+
+`ExceptionalPattern.Occurrence` reads that data into an actual simple graph
+with a vertex rotation, preserving every listed edge, prescribed degree and
+known cyclic step. Gaps impose no step. Vertex collisions are permitted at
+this stage and remain an explicit geometric obligation.
+
+The next-centre field is now proved for this source pattern. Source vertex
+14 has degree eight and lies within two edges of vertex 0. If a second
+exceptional occurrence is centred at that actual vertex, the cyclic word
+around its centre forces the neighbour two positions before any degree-seven
+neighbour to have degree five. The first occurrence fixes the intervening
+dart. Triangular face closure supplies the additional edge, so the two
+occurrences force the corner used in Figure 13.
+
+```text
+first exact X occurrence
+        |
+specified second degree-eight centre within distance two
+        |
+second X occurrence at that same vertex
+        |
+shared rotation forces the extra degree-five corner
+        |
+all 13 D1774 core edges and all 8 prescribed degrees
+        |
+full boundary occurrence and compatible repair [OPEN]
+```
+
+`ExceptionalCore.coreHom` transports all core edges; `core_degrees` proves
+the prescribed ambient degrees. Their entire support lies within radius
+three of the first centre. `JointReading` retains both source occurrences,
+their alignment, and the core's exact realization, so their cyclic-order
+information remains available for boundary reconstruction. All retained
+observations, including the second source occurrence, lie within radius four;
+the support used by the scaffold includes them all.
+`overlap_supply` instantiates the existing
+degree-eight scaffold with these joint readings: its next-centre and joint
+core-reading fields are proved, while classification remains a hypothesis.
+It does **not** instantiate the scaffold with certified reductions. Moving
+from a core reading to the full eleven-port occurrence requires collision
+and inducedness analysis, boundary completion with cyclic order, and a colouring-repair
+contract. The zero-charge classification and actual-dual bridge also remain
+open. No coverage or certificate dependency is removed here.
+
+Replay the independent source comparison and the Lean proof audit with:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_exception_sources.py
+```
+
+From the prepared classical package:
+
+```sh
+lake build kernelExceptionalOverlap
+```
+
+See [exception-source-audit.json](exception-source-audit.json) and
+[exception-measurements.json](exception-measurements.json). The dependency
+audit excludes complete Four Colour endpoints and original catalogue rank
+certificates; the source data are decoded and checked in Lean.

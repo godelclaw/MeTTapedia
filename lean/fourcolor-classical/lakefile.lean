@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check the pinned exceptional pattern and its actual graph interpretation. -/
+target kernelExceptionalOverlap pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-overlap-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ExceptionalPattern", "ExceptionalOverlap", "ExceptionalCore", "ExceptionalOverlapAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check the conditional flat-neighbourhood coverage assembly. -/
 target kernelFlatCoverage pkg : Unit := do
   let env ← getAugmentedEnv

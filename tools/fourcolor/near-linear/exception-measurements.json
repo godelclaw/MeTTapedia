@@ -1,0 +1,94 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ExceptionalPattern",
+      "source_sha256": "9de5bb2bfe5f015952bcb305e08962ac6df92bacfbaf8f7a41e7ed91deb5248d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 78.804,
+      "olean_bytes": 449864,
+      "olean_sha256": "be7a29aa06b73af140bd31d1bdcd0bb33bd4cf671e154a11562ee4988b36c6d0"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalOverlap",
+      "source_sha256": "42178b525d488b62db0ff468fa440fbcc7ccd2b543e8080efc642dabe52b3414",
+      "exit_code": 0,
+      "frontend_wall_seconds": 15.819,
+      "olean_bytes": 104680,
+      "olean_sha256": "e6b666ce1b3ad1a3e1f1146cb340036c9d9b2cd5fc0846178b60f215879d01cd"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalCore",
+      "source_sha256": "1c395f827bfa988471a4d68c68b7cfe94a84f8a7d1db546b3d8a10bf3d42b520",
+      "exit_code": 0,
+      "frontend_wall_seconds": 16.127,
+      "olean_bytes": 370960,
+      "olean_sha256": "a63e62e8d93b7a8fc4fb2299120a5060ed83bf1106c3a273848ddfd91e2e158f"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalOverlapAudit",
+      "source_sha256": "05e356d9710f928b054b0a74b0c70051837c10a9112767a4168f85ac0b279a27",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.705,
+      "olean_bytes": 3608,
+      "olean_sha256": "184f6a6cae0a41006a5efc0899c40cacb505976335ab690aa53331d6e826dea8"
+    }
+  ],
+  "status": "Kernel replay, dependency audit, flat-coverage and complete-classical regressions, and full main lane build passed.",
+  "recorded_at": "2026-10-01T20:37:09.583302+00:00",
+  "base_revision": "051dd210ed8fc3ff0aa1cf3b0f42f0574f3c4b47",
+  "replay_command": "lake build kernelExceptionalOverlap",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 19,
+    "declarations_in_dependency_closure": 7756,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false
+  },
+  "mathematical_scope": {
+    "source": "Pinned getX: 17 vertices, 34 edges, cyclic rows with explicit gaps and prescribed degrees; actual graph darts with preserved known turns.",
+    "second_centre": "Source vertex 14 has degree eight and lies within distance two of source vertex zero.",
+    "joint_geometry": "An aligned second occurrence forces the same actual closing dart to have degree-five endpoint; triangular face closure supplies both closing edges.",
+    "core": "All thirteen D1774 core edges and all eight prescribed ambient degrees are preserved. This is not an injective or induced occurrence claim.",
+    "core_support_radius": 3,
+    "joint_observation_support_radius": 4,
+    "consumer": "The existing degree-eight scaffold has next-centre and joint-closing fields proved for JointReading outcomes, retaining both source occurrences, their alignment and exact core realization. Classification remains a hypothesis.",
+    "open": [
+      "zero-charge classification and charge semantics",
+      "source-triangulation/dual bridge",
+      "orientation-preserving full D1774 occurrence, collision and inducedness analysis",
+      "eleven-port boundary completion and compatible repair",
+      "strict reduction, residuals and global coverage"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "source_fidelity": "exception-source-audit.json",
+  "obligations": "coverage-obligations.json",
+  "primary_reference": "https://arxiv.org/html/2603.24880v1#S8",
+  "regression": {
+    "classical_command": "lake build kernelFlatCoverage kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}
