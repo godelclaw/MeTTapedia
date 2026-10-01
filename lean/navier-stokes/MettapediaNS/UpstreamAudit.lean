@@ -35,6 +35,7 @@ import MettapediaNS.PressureImpulseHistory
 import MettapediaNS.RetainedParentCompletion
 import MettapediaNS.CovectorParentHistory
 import MettapediaNS.JointCoframePressure
+import MettapediaNS.JointCoframeCompletion
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1118,3 +1119,17 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.pressureCommutator_integrable
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.integral_actual_pressure_commutator
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.integral_constant_pressure_eq_zero
+
+/-! Nonnegative pressure-endpoint completion with its retained deformation. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedGradient
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedSource
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedGradientRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completed_gradient_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedSquare
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedSquare_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedWork
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completedProduction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.completed_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframeCompletion.actual_skew_reconstruction

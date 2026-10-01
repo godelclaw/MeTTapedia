@@ -8786,3 +8786,86 @@ production monotonicity or unforced regularity.
 Next: pay the evolving signed commutator and physical conversion
 together from original resources. A one-signed pressure rule and a
 separately estimated impulse force square do not supply that theorem.
+
+### Nonnegative pressure-endpoint completion
+
+The signed commutator receiver is
+`T_j=sum_i partial_i(BQ)_ij=sum_ik B_ik partial_i Q_kj`.
+Since `D I=grad p`, the actual compatible history satisfies, under its
+spatial/time regularity and integrability,
+
+```text
+integral_0^t integral C
+  =integral T(t).I(t)-integral T(0).I(0)
+   -integral_0^t integral I.(partial_t+u.grad+nu Delta)T.
+```
+
+The PLUS sign on adjoint diffusion and both endpoints are essential.
+This analytic transfer gives a receiver, not a finite payment. With
+`J=integral T.I`, spatial integration by parts gives
+`J=-integral tr(B Q A)`. The transpose in this contraction differs
+from the original parent cross moment. For positive symmetric Q,
+
+```text
+Z=B+A^T=B_H+A^T-A,
+integral tr(ZQZ^T)=integral q_B-2J+integral tr(A^T Q A)>=0.
+```
+
+The added transposed-gradient square is not the already paid original
+parent channel, or the impulse's unweighted energy. Its payment cannot
+be assumed. This concrete nonnegative correction cancels the explicit
+Hessian because P is symmetric, but leaves a complete source:
+
+```text
+D Z=-B^2-B^T A^T=-Z B+S,
+S=A^T B-B^T A^T,
+Dtr(ZQZ^T)=2tr(ZQ S^T)-2nu F_Z,
+2(B-B^T)=(B_H-B_H^T)+(Z-Z^T).
+```
+
+`MettapediaNS.JointCoframeCompletion` certifies the literal retained-
+parent rate, nonnegative square and diffusion, the full supplied-metric
+production, and reconstruction of the actual antisymmetric gradient.
+Construction of the coframe and physical-time comparison remain
+analytic. Ordinary antisymmetric reconstruction does not provide
+coercivity of an anisotropic metric; that physical conversion still
+needs a bound.
+
+```sh
+python3 -O labs/joint_coframe_completion.py
+```
+
+The complete unforced time test retains both original parents, pressure,
+the same coframe, all convolution outputs and full diffusion. Its first
+two completed-gradient rate jets cancel the canonical Hessian exactly.
+The full metric generator and its first time derivative, nonnegative
+completion and actual antisymmetric reconstruction agree pointwise.
+Independent endpoint/adjoint contractions retain the plus diffusion.
+Spatial means are normalized on the `2*pi` torus.
+
+Initially the source is zero, but the same genuine 3D datum at nu=1/10
+has source derivative `S_t=P B-B^T P`, which is antisymmetric, and
+
+```text
+(mean tr(ZQ S^T))'(0)=296646304/10405395 >0,
+(mean tr(ZQZ^T))'(0)=-103042048/5780775 <0,
+(mean tr(ZQZ^T))''(0)=144403648/1819125.
+```
+
+Under analytic smooth short-prefix realization, the strict positive
+first source-work jet rejects a universal nonpositive source-work rule.
+The complete initial production remains dissipative; no positive total-
+production interval, recurrent growth, arbitrary-history bound or
+regularity refutation is asserted. Cancelling pressure moves its effect
+into the original impulse's changing deformation. That retained source
+and physical metric conversion are the next coupled history obligations.
+
+For forcing, `D I=grad p-f` gives the additional source
+`grad f-(grad f)^T` in the completed gradient. It is exactly the
+rotational force gradient; a pressure-gradient force cancels here.
+The checker retains a fixed solenoidal force
+`f=-Delta u0-alpha u0`, with `alpha=mean|grad u0|^2/mean|u0|^2`.
+Its initial kinetic work is zero while its completed rotational work
+is strictly positive. The full initial velocity/impulse generator
+retains that term. This is a local forced filter, not the imported
+singular construction or a zero-work assertion for later times.

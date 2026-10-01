@@ -1037,6 +1037,16 @@ short-prefix identification. A finite original-datum signed commutator
 payment and conversion to physical vorticity remain open. See the
 [joint derivation and complete tests](labs/README.md#joint-coframe-pressure-and-the-retained-cross-moment).
 
+The companion `JointCoframeCompletion` certifies a nonnegative completion
+`Z=B+A^T`. The actual canonical Hessian cancels from its rate, leaving
+`D Z=-Z B+(A^T B-B^T A^T)`. Its full supplied-coframe production retains
+that original impulse deformation and negative covariant diffusion.
+The actual antisymmetric gradient is reconstructed jointly from B_H and Z.
+Exact unforced time jets give a positive first derivative of the retained
+source work. Thus cancelling the explicit pressure does not make the new
+source dissipative. A coupled history payment and physical conversion
+remain open; see the [completion test](labs/README.md#nonnegative-pressure-endpoint-completion).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
