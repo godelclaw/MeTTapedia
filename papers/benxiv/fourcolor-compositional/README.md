@@ -3,7 +3,7 @@
 Updated 1 October 2026. Original complete assembly: `b99eaf006`.
 The current assembly additionally consumes a shared joint-profile certificate
 for the diamond cores and a general boundary-split law transferring repair from
-configuration 2 to configuration 1.
+configuration 2 to configuration 1, and configuration 6 to configuration 3.
 
 The open-piece idea in Goertzel and Fable's compositional note now has a
 kernel-checked realization: graph constructions carry actual colouring
@@ -22,6 +22,38 @@ Start with the [completed theorem][complete], the [integration guide][package],
 and the [compression ledger][ledger]. This guide connects them to the original
 plan. The [long companion][companion] preserves the detailed development and
 earlier attempts; its older sections are historical snapshots.
+
+The [shared-tip double diamond](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondConfigurations.lean)
+is a direct component example. Configurations 3 and 6 contain two diamonds
+sharing one tip. Each piece retains its possible centre and tip colours; one
+joint choice identifies the shared tip colour. The resulting equivalence
+preserves every constraint on the exterior and reconstructs actual colourings.
+
+For a fixed proper exterior colouring `b`, the component relation is
+`R(b) ↔ ∃ c, R_left(b, c) ∧ R_right(b, c)`: both witnesses must use the
+same shared tip colour `c`. This is generally a relation between choices,
+rather than a unique output for every input. A separate repair law supplies
+successful choices from the permitted smaller-graph inputs.
+
+```mermaid
+flowchart LR
+  L[First diamond choices] --> J[Agree on the shared tip colour]
+  R[Second diamond choices] --> J
+  J --> G[Assemble the whole graph colouring]
+  G --> H[Interpret the actual reference hypermap]
+```
+
+The [GSLT interpretation](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondCompositionGSLT.lean)
+proves exact compatible histories through these two operations for both
+configurations. Forgetting tip agreement fails on a kernel-checked proper
+boundary: the first diamond forces colour 3 and the second forces colour 0.
+The [embedded split transfer](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondSplitRepair.lean)
+then derives configuration 3's repair from configuration 6's existing base
+certificate. The complete endpoint audit excludes configuration 3's original
+certificate. Four original dependencies are now replaced, leaving 629;
+the 633 coverage entries remain. No additional colouring-rank table is added.
+A finite check confirms that the retained configuration 6 base covers every
+proper nine-port input; no net saving in primitive checks or artifact size is claimed.
 
 For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
 semantic bounds, a general reflection theorem, and an audited replacement in
@@ -205,7 +237,7 @@ connectivity and size by the Brooks bridge below. Occurrence coverage of the
 intended target class remains open. The face-cover condition is substantive: a program diagnostic rejects the
 dodecahedron. Source vertex and target edge colours remain different constraints.
 No additional catalogue entry or original certificate dependency is removed;
-the retained counts are 633 and 630.
+the retained counts are 633 and 629.
 
 A [source-domain obstruction and successful alternative](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainExample.lean)
 now makes that distinction concrete. Actual nonhexagonal target faces recover
@@ -269,7 +301,7 @@ still admit successful source choices, while the source summary loses some
 actual colourings. The general corner law retains them all. It removes no
 coverage configuration: a sound smaller embedded operation, recognition
 and occurrence coverage remain necessary to replace classical obligations.
-The baseline still retains 633 coverage configurations and 630 original
+The baseline still retains 633 coverage configurations and 629 original
 configuration certificates.
 
 The [separated-forest collapse](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestCollapse.lean)
@@ -490,7 +522,7 @@ inputs and 300 nontrivial repairs. This establishes family geometry,
 reconstruction and termination through one structural law. Broader
 occurrence remains open. The reverse colouring routes retain the compatible
 witnesses constructed by the law. No smaller unavoidable catalogue follows;
-the complete assembly still uses 633 configurations and 630 original
+the complete assembly still uses 633 configurations and 629 original
 certificate dependencies.
 
 The [prism rung consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PrismRungReduction.lean)
@@ -523,7 +555,7 @@ This gives a concrete map between representations that transfers one
 successful structural argument across an unbounded family. To change the
 coverage catalogue, a further theorem must recognize such reducible pieces
 inside the relevant larger maps and prove that the new family laws cover
-the displaced obligations. The 633 coverage entries and 630 original
+the displaced obligations. The 633 coverage entries and 629 original
 certificate dependencies remain unchanged.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
@@ -776,8 +808,9 @@ The complete dependency chain is:
 
 ```mermaid
 flowchart TD
-  C[630 reference reducibility certificates] --> R[Select compatible disk and exterior colourings]
-  J[Shared finite profile repair for diamond cores] --> B[Boundary split transfers configuration 2 repair to configuration 1]
+  C[629 reference reducibility certificates] --> R[Select compatible disk and exterior colourings]
+  J[Shared finite profile repair for diamond cores] --> B[One split law supplies configurations 1 and 3]
+  C --> B
   B --> R
   J --> R
   R --> G[Glue an actual ambient colouring]
@@ -915,8 +948,8 @@ They specify hypotheses that a shorter proof must supply or replace.
 | Independent discharging checks at arities 9–11 | 11,363 → 11,132: 231 replaced |
 | Separate finite input identities or classifications | 218, counted separately |
 | Discharging-rule labels retained | 32 |
-| Reference configuration certificate dependencies retained / replaced | 630 / 3 |
-| Uniform repair transport | One split law: configuration 2 supplies its own repair and configuration 1's; one arbitrary-width matching codec reconstructs all chromogram answers through the same physical components |
+| Reference configuration certificate dependencies retained / replaced | 629 / 4 |
+| Uniform repair transport | One split law: configuration 2 supplies configuration 1's repair, and configuration 6 supplies configuration 3's; one arbitrary-width matching codec reconstructs all chromogram answers through the same physical components |
 | Uniform contextual family | All three diamond repairs extend through arbitrarily many retained-edge ears, with actual GSLT witnesses |
 | Geometric corridor reduction | Any recognized tube with at least three rows and width `k ≥ 2` loses two rows with a cyclic seam shift: net `4k` vertices, map class preserved, all smaller colourings reconstruct with fixed exterior colours |
 | Two-row free-wire reduction | At every width `k ≥ 3`, a rotation-compatible two-row slab with five- or six-dart end faces disappears entirely: net `4k` vertices, map class preserved, every smaller colouring reconstructs with the exterior fixed. Connected shores and opposite return are derived; broader geometric supply and coverage remain open |

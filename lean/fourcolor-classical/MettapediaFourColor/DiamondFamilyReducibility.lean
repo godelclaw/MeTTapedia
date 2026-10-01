@@ -1,4 +1,5 @@
 import MettapediaFourColor.DiamondProfileReducibility
+import MettapediaFourColor.TwoDiamondSplitRepair
 import FourColor.Reduce.All
 
 /-!
@@ -6,7 +7,8 @@ import FourColor.Reduce.All
 
 The joint-profile certificate supplies configurations 2 and 4. Boundary-split
 transfer from configuration 2 supplies configuration 1. The original certificates
-for these three configurations are absent; the other 630 are retained.
+for these three configurations are absent. Configuration 3 inherits repair
+from configuration 6 through the same split law; 629 original certificates remain.
 The range below is rebuilt from individual inputs, so the final proof does
 not depend on the original first block or its superseded certificate.
 
@@ -24,6 +26,10 @@ theorem configuration1 : ReducibleInRange 0 1 theConfigs :=
 theorem configuration2 : ReducibleInRange 1 2 theConfigs :=
   reducible_range_one (cfs := theConfigs) (i := 1) DiamondProfileReducibility.reducible002
 
+/-- The shared-tip double diamond inherits repair through its actual insertion. -/
+theorem configuration3 : ReducibleInRange 2 3 theConfigs :=
+  reducible_range_one (cfs := theConfigs) (i := 2) TwoDiamondSplitRepair.reducible003
+
 /-- Configuration 4 is supplied by the coupled insertion boundary law. -/
 theorem configuration4 : ReducibleInRange 3 4 theConfigs :=
   reducible_range_one (cfs := theConfigs) (i := 3) DiamondProfileReducibility.reducible004
@@ -38,7 +44,7 @@ theorem first_block : ReducibleInRange 0 40 theConfigs :=
             configuration1
             configuration2)
           (cat_reducible_range
-            Bulk.Cfg002.reducible
+            configuration3
             (cat_reducible_range
               configuration4
               Bulk.Cfg004.reducible)))
@@ -110,7 +116,7 @@ theorem first_block : ReducibleInRange 0 40 theConfigs :=
               Bulk.Cfg038.reducible
               Bulk.Cfg039.reducible))))))
 
-/-- All configurations, with three original certificate dependencies replaced. -/
+/-- All configurations, with four original certificate dependencies replaced. -/
 theorem reducible_all : ReducibleInRange 0 633 theConfigs :=
   (cat_reducible_range
     (cat_reducible_range

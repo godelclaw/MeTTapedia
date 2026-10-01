@@ -1,5 +1,18 @@
 # Classical Four Colour sources and compression baseline
 
+The latest [shared-tip double-diamond receipt](two-diamond-measurements.json)
+records exact kernel semantics for configurations 3 and 6 and the repair
+transfer from 6 to 3. The complete audit now retains 629 original certificates
+and all 633 coverage configurations. No new rank table is added.
+
+`python3 tools/fourcolor/classical/two_diamond_shared_tip_probe.py --check`
+replays the original construction programs, whole-graph colourings, joint tip
+choices and normalized Kempe closure. Dropping shared-tip agreement falsely
+accepts 246 and 672 boundary assignments in the two members. This replay is
+program evidence; the complete graph/ring correspondence, witness reconstruction,
+one proper rejected boundary, and actual certificate replacement have separate
+kernel proofs. Historical receipts retain their checkpoint counts.
+
 The [proof-plan guide](../../../papers/benxiv/fourcolor-compositional/README.md)
 connects these source and measurement records to the compositional argument
 and its current research questions.
@@ -68,7 +81,7 @@ fewer vertices in the whole map. It supplies neither local injectivity nor
 exterior connectivity as hypotheses. The certificate checks geometry;
 the shared all-width colouring law is reused. Separation at other widths
 and global coverage remain open, and the complete assembly still retains 633
-configurations and 630 original certificate dependencies.
+configurations and 629 original certificate dependencies.
 
 ```sh
 python3 tools/fourcolor/classical/pentagonal_padded_cap_probe.py
@@ -139,7 +152,7 @@ positions and 360 identity seam labels at all twenty saved starts. It is
 independent program evidence, not a kernel occurrence certificate.
 Initial cycle supply, nonsimple closing lobes and pentagonal-stop reduction
 remain open; the complete assembly still retains 633 configurations and
-630 original configuration certificates.
+629 original configuration certificates.
 
 ```sh
 python3 tools/fourcolor/classical/residual_coverage_probe.py
@@ -294,7 +307,7 @@ The general kernel theorem is stronger than this finite diagnostic.
 
 Face-cover occurrence, the small exceptional target domain, and a strict
 Tait-to-Tait reduction remain separate. No coverage configuration or original
-configuration certificate is removed; counts remain 633 and 630.
+configuration certificate is removed; counts remain 633 and 629.
 
 ## Exact open-patch corner elimination
 
@@ -478,7 +491,7 @@ and 78 admit no single source-component repair. One such case has the
 recorded two-step repair. These finite counts do not establish universal
 availability or exclude other physical target-edge operations. No strict
 smaller embedded operation or coverage saving is claimed; the catalogue
-and original-certificate counts remain 633 and 630.
+and original-certificate counts remain 633 and 629.
 
 ## Geometric availability at alternating source pins
 
@@ -510,7 +523,7 @@ evidence; no kernel fixture adapter is asserted here.
 This advances availability on the alternating domain. The 996 adjacent
 controls remain outside its hypotheses. A strictly smaller embedded
 operation and occurrence coverage are still needed for a catalogue saving.
-The catalogue and original-certificate counts remain 633 and 630.
+The catalogue and original-certificate counts remain 633 and 629.
 
 ## Adjacent source pairs with a derived order
 
@@ -608,7 +621,7 @@ The finite splice recognitions remain program evidence; the kernel theta
 fixture checks the geometric domain and calibration rather than a splice.
 The ladder and prism-rung consumers below now establish one unbounded
 geometric family and recursive ladder closure. Broader occurrence coverage
-remains open. Catalogue and original-certificate counts remain 633 and 630.
+remains open. Catalogue and original-certificate counts remain 633 and 629.
 
 ## Physical face-phase normalization and strict reconstruction
 
@@ -695,7 +708,7 @@ sewings. Exhaustive normalized inputs at four small widths give 340 target
 colourings, including 300 nontrivial physical repairs. These checks are
 separate from the all-width kernel proof. Broader occurrence remains open.
 This family is not yet a dependency replacement in the completed classical
-assembly: 633 coverage configurations and 630 original certificate
+assembly: 633 coverage configurations and 629 original certificate
 dependencies remain.
 
 ## Actual prism-rung recognition at every width
@@ -1564,7 +1577,7 @@ soundness theorem; projected classifications, target references and ranks
 remain explicit finite data. Actual terminal graph witnesses use the shared diamond
 summary. Ordered-ring transport and the reference contract decoder connect
 the result to strict reduction in the complete proof. The complete endpoint
-audit excludes the original configuration 1, 2 and 4 certificates; 630 original
+audit excludes the original configuration 1, 2, 3 and 4 certificates; 629 original
 certificates and all 633 configurations remain. Short records avoid repeatedly
 decoding the whole data stream during kernel evaluation. This encoding change
 is separate from mathematical compression, and no byte or runtime saving over
@@ -1597,7 +1610,7 @@ five-port bound at that checkpoint was 446,403 rows; that step established
 geometric alignment. The physical strip reduction below now improves the
 bound to four. The facial adapter
 derives rotation compatibility from face incidences and alternating retained
-degrees. The complete proof still retains 633 configurations and 630 original
+degrees. The complete proof still retains 633 configurations and 629 original
 configuration certificates. See the [tube guide](../../../papers/benxiv/fourcolor-compositional/tube-example/README.md#recognizing-compatible-seams-in-actual-graphs)
 for the exact hypotheses and remaining recognition/coverage obligations.
 
@@ -2110,7 +2123,7 @@ below now supplies both.
 declarations. The audit excludes the complete Four Colour endpoints, original
 catalogue certificates and older independent colouring checks. The existing
 six-port diamond and corona audits also pass after the generic dart-transport
-extension. Global totals remain 633 configurations and 630 original certificate
+extension. Global totals remain 633 configurations and 629 original certificate
 dependencies; this recognition introduces no colour certificate.
 
 ```sh
@@ -2148,7 +2161,7 @@ supplying that initial colouring is proved in the following section.
 
 `uniform-kempe-measurements.json` records twenty audited roots, exact artifact
 hashes and separately measured classification and catalogue changes. The
-complete proof still retains 633 configurations and 630 original certificates.
+complete proof still retains 633 configurations and 629 original certificates.
 The audit excludes complete Four Colour endpoints, original certificates and
 the removed finite matching/arc translations from the new theorem chains.
 
@@ -2183,7 +2196,7 @@ therefore excludes the actual face pattern under its derived normal form.
 28,102 dependency declarations, artifact hashes, module timings and the
 regression gates. No complete Four Colour endpoint or original catalogue
 certificate occurs in these theorem chains. The 633 retained configurations
-and 630 original certificate dependencies are unchanged.
+and 629 original certificate dependencies are unchanged.
 
 ```sh
 python3 tools/fourcolor/classical/mixed_diamond_reduction_probe.py
@@ -2289,7 +2302,7 @@ twelve vertices, eighteen edges and six faces, preserving Euler characteristic.
 28,002 dependency declarations, standard axioms only. The complete Four Colour
 endpoints, original configuration certificates and superseded independent
 diamond repairs are excluded from the new theorem dependencies.
-The complete baseline still retains 633 configurations and 630 original
+The complete baseline still retains 633 configurations and 629 original
 configuration certificates. Recognition from a face pattern and broader
 coverage remain separate obligations.
 
@@ -2378,7 +2391,7 @@ disconnected pair deletion. The measurement receipt records this program
 evidence separately from the kernel theorem, source domain and consumers.
 Recognized inverse sources and global coverage remain open. Forward spherical
 geometry is established below. Catalogue and original-certificate counts
-remain 633 and 630.
+remain 633 and 629.
 
 ## Dual-and-truncate face geometry
 
@@ -2425,4 +2438,4 @@ source geometry and cut domains are not yet kernel-certified.
 The forward geometric theorem is proved. Inverse recognition and occurrence
 coverage remain open. This changes source vertex colouring to target edge
 colouring; it does not establish an unconditional Tait-to-Tait reduction.
-Catalogue and original-certificate counts remain 633 and 630.
+Catalogue and original-certificate counts remain 633 and 629.

@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.TwoDiamondBoundaryElimination
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapPhysicalAudit
 import Mettapedia.GraphTheory.FourColor.PaddedCycleCapRecognitionAudit

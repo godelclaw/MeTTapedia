@@ -1,8 +1,17 @@
 # FourColor
 
+[Two-diamond boundary elimination](TwoDiamondBoundaryElimination.lean)
+composes two existing diamond summaries by retaining one shared tip colour.
+It reconstructs complete witnesses for arbitrary exterior graphs, attachments
+and colour alphabets, and preserves every predicate on the joint exterior.
+Actual configurations 3 and 6 consume this equivalence in the classical
+package. Their embedded split transfer additionally replaces configuration 3's
+independent repair dependency; the latest complete audit retains 629 original
+certificates and 633 coverage entries.
+
 This is the canonical modern Lean home for the godelclaw Four Color work.
 
-## Current proof plan — 30 September 2026
+## Current proof plan — 1 October 2026
 
 Start with the [compositional proof-plan guide](../../../../../papers/benxiv/fourcolor-compositional/README.md).
 It connects Goertzel and Fable's original three-level argument to the current
@@ -13,10 +22,11 @@ now proves four-colourability for finite simple graphs with noncrossing plane
 drawings and supplies compatible GSLT colouring witnesses for exact
 constructions of every bridgeless spherical cubic source map. The checked
 root is [MettapediaFourColor.Complete](../../../../fourcolor-classical/MettapediaFourColor/Complete.lean).
-All 633 catalogue entries remain. The complete proof retains 630 reference
+All 633 catalogue entries remain. The complete proof retains 629 reference
 configuration certificate dependencies. A shared finite joint-profile repair
 supplies configurations 2 and 4, and a general boundary-split law transfers
-repair from configuration 2 to configuration 1. Shared proofs also replace
+repair from configuration 2 to configuration 1 and configuration 6 to
+configuration 3. Shared proofs also replace
 231 independent discharging computations.
 
 This completes the classical reconstruction. The diamond cores now share
@@ -204,7 +214,7 @@ the five larger residual sources and exact target adapters. Their source
 geometry and cut domains are not yet kernel-certified. The target-only
 inverse recognition below establishes source geometry on its stated face-cover
 domain. Inheriting the source colouring domain and proving occurrence coverage
-remain open. The complete assembly retains 633 configurations and 630 original
+remain open. The complete assembly retains 633 configurations and 629 original
 configuration certificates.
 
 The [face-cover frame](DualTruncateFaceCoverFrame.lean) now selects a cyclic
@@ -306,7 +316,7 @@ source-colouring suppliers and diagnostic corner data from the general law.
 The [receipt](../../../../../tools/fourcolor/classical/dual-truncate-open-patch-measurements.json)
 separates it from program replay of 336 source-selected patches and 353,283
 actual witnesses. A smaller embedded replacement and occurrence coverage
-remain open; catalogue and original certificate counts remain 633 and 630.
+remain open; catalogue and original certificate counts remain 633 and 629.
 
 The [separated-forest law](DualTruncateForestCollapse.lean) proves one
 geometric condition under which the source-colour summary retains every
@@ -373,7 +383,7 @@ An independent replay identifies the selected region as one path and finds
 four successful swaps among eight port-touching components. Universal
 availability of a suitable repair, strict graph reduction and occurrence
 coverage are still open. The catalogue remains at 633 configurations and
-630 original certificate dependencies.
+629 original certificate dependencies.
 
 The [source-to-edge transport](DualTruncateKempeTransport.lean) now derives
 the physical edge mask from any saturated partial source region, preserving
@@ -422,7 +432,7 @@ reconstructs all 302 alternating partial exteriors on five small sources;
 251 use the first-pin branch and 51 the second. Those finite geometric
 instances are program checks, not new kernel-certified fixture adapters.
 Adjacent pin order, a strict smaller operation and occurrence coverage
-remain open. Catalogue and original-certificate counts remain 633 and 630.
+remain open. Catalogue and original-certificate counts remain 633 and 629.
 
 The [adjacent-pair adapter](AdjacentSourceBoundaryRepair.lean) now derives
 that boundary order from the two local rotations, instead of accepting an
@@ -459,7 +469,7 @@ smaller source witnesses on thirteen interfaces. These finite geometric
 instances remain program checks. The theorem does not extract a source
 witness from an arbitrary smaller target Tait colouring; recognition,
 recursive closure and global occurrence remain separate obligations.
-Catalogue and original-certificate counts remain 633 and 630.
+Catalogue and original-certificate counts remain 633 and 629.
 
 The [target-witness diagnostic](../../../../../tools/fourcolor/classical/adjacent-source-target-kempe-probe.json)
 now enumerates 2,920 normalized target colourings on ten smaller prism
@@ -503,7 +513,7 @@ repair fixture. Independent replay checks 1,488 inputs, including 1,350
 nontrivial repairs; up to six components occur in these small examples.
 The all-width prism consumer below supplies one literal geometric family.
 Broader occurrence and coverage remain separate obligations. Catalogue and
-original-certificate counts remain 633 and 630.
+original-certificate counts remain 633 and 629.
 
 The [literal capped-ladder family](CappedLadderRotation.lean) now gives a
 complete recursive consumer. At every width `m ≥ 1`, exact face classification

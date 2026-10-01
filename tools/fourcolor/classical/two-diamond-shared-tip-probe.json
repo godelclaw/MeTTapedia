@@ -1,0 +1,464 @@
+{
+  "evidence": "Exploratory program checks, not kernel theorems.",
+  "source_sha256": "7a05039e76944dd51616721039edb872ccb2f1a6d90fa8b93ef4834095760966",
+  "members": [
+    {
+      "configuration": 3,
+      "ring": 8,
+      "adjacency": {
+        "8": [
+          3,
+          7,
+          9,
+          10,
+          12,
+          13
+        ],
+        "9": [
+          6,
+          7,
+          8,
+          10,
+          11
+        ],
+        "10": [
+          3,
+          4,
+          8,
+          9,
+          11
+        ],
+        "11": [
+          4,
+          5,
+          6,
+          9,
+          10
+        ],
+        "3": [
+          2,
+          4,
+          8,
+          10,
+          12
+        ],
+        "4": [
+          3,
+          5,
+          10,
+          11
+        ],
+        "12": [
+          2,
+          3,
+          8,
+          13,
+          14
+        ],
+        "13": [
+          0,
+          7,
+          8,
+          12,
+          14
+        ],
+        "7": [
+          0,
+          6,
+          8,
+          9,
+          13
+        ],
+        "6": [
+          5,
+          7,
+          9,
+          11
+        ],
+        "5": [
+          4,
+          6,
+          11
+        ],
+        "14": [
+          0,
+          1,
+          2,
+          12,
+          13
+        ],
+        "2": [
+          1,
+          3,
+          12,
+          14
+        ],
+        "0": [
+          1,
+          7,
+          13,
+          14
+        ],
+        "1": [
+          0,
+          2,
+          14
+        ]
+      },
+      "attachments": [
+        [
+          3,
+          7
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5,
+          6
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "contract_edges": [
+        [
+          9,
+          8
+        ]
+      ],
+      "joint_test": {
+        "boundary_assignments": 1641,
+        "whole_colorings": 1296,
+        "extending_boundaries": 666,
+        "independent_false_positives": 246,
+        "first_lost_shared_choice": {
+          "boundary": [
+            0,
+            1,
+            0,
+            2,
+            0,
+            2,
+            1,
+            2
+          ],
+          "left_shared": 3,
+          "right_shared": 0,
+          "left_witness": [
+            0,
+            1,
+            3
+          ],
+          "right_witness": [
+            1,
+            3,
+            2
+          ]
+        }
+      },
+      "ordinary_traces": 666,
+      "closed_obstruction": 0,
+      "closure_stages": [
+        975,
+        753,
+        525,
+        414,
+        348,
+        216,
+        60,
+        0
+      ],
+      "contract_traces": 606,
+      "blocked_contract_traces": 0,
+      "first_obstruction": null
+    },
+    {
+      "configuration": 6,
+      "ring": 9,
+      "adjacency": {
+        "10": [
+          0,
+          7,
+          8,
+          9,
+          11,
+          12
+        ],
+        "9": [
+          3,
+          7,
+          10,
+          11,
+          13,
+          14
+        ],
+        "11": [
+          2,
+          3,
+          9,
+          10,
+          12
+        ],
+        "12": [
+          0,
+          1,
+          2,
+          10,
+          11
+        ],
+        "3": [
+          2,
+          4,
+          9,
+          11,
+          13
+        ],
+        "2": [
+          1,
+          3,
+          11,
+          12
+        ],
+        "13": [
+          3,
+          4,
+          9,
+          14,
+          15
+        ],
+        "14": [
+          6,
+          7,
+          9,
+          13,
+          15
+        ],
+        "7": [
+          6,
+          8,
+          9,
+          10,
+          14
+        ],
+        "15": [
+          4,
+          5,
+          6,
+          13,
+          14
+        ],
+        "4": [
+          3,
+          5,
+          13,
+          15
+        ],
+        "6": [
+          5,
+          7,
+          14,
+          15
+        ],
+        "5": [
+          4,
+          6,
+          15
+        ],
+        "0": [
+          1,
+          8,
+          10,
+          12
+        ],
+        "8": [
+          0,
+          7,
+          10
+        ],
+        "1": [
+          0,
+          2,
+          12
+        ]
+      },
+      "attachments": [
+        [
+          3,
+          7
+        ],
+        [
+          0,
+          7,
+          8
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          4,
+          5,
+          6
+        ]
+      ],
+      "contract_edges": [
+        [
+          9,
+          10
+        ]
+      ],
+      "joint_test": {
+        "boundary_assignments": 4920,
+        "whole_colorings": 2448,
+        "extending_boundaries": 1596,
+        "independent_false_positives": 672,
+        "first_lost_shared_choice": {
+          "boundary": [
+            0,
+            1,
+            0,
+            2,
+            0,
+            1,
+            2,
+            1,
+            2
+          ],
+          "left_shared": 0,
+          "right_shared": 3,
+          "left_witness": [
+            3,
+            1,
+            2
+          ],
+          "right_witness": [
+            1,
+            0,
+            3
+          ]
+        }
+      },
+      "ordinary_traces": 1596,
+      "closed_obstruction": 0,
+      "closure_stages": [
+        3324,
+        2586,
+        2034,
+        1794,
+        1614,
+        1338,
+        930,
+        396,
+        42,
+        0
+      ],
+      "contract_traces": 1290,
+      "blocked_contract_traces": 0,
+      "first_obstruction": null
+    }
+  ],
+  "boundary_triangle_insertions": [
+    {
+      "triangle": [
+        2,
+        3,
+        12
+      ],
+      "sign": -1,
+      "offset": 2,
+      "core_permutation": [
+        0,
+        4,
+        5,
+        6,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "triangle": [
+        3,
+        4,
+        10
+      ],
+      "sign": 1,
+      "offset": 4,
+      "core_permutation": [
+        0,
+        2,
+        1,
+        3,
+        5,
+        4,
+        6
+      ]
+    },
+    {
+      "triangle": [
+        6,
+        7,
+        9
+      ],
+      "sign": -1,
+      "offset": 6,
+      "core_permutation": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "triangle": [
+        7,
+        0,
+        13
+      ],
+      "sign": 1,
+      "offset": 0,
+      "core_permutation": [
+        0,
+        5,
+        4,
+        6,
+        2,
+        1,
+        3
+      ]
+    }
+  ]
+}

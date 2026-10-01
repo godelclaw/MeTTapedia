@@ -32,6 +32,9 @@ run_cmd do
     ``FourColor.DiamondProfileReducibility.reducible002,
     ``FourColor.DiamondProfileReducibility.reducible004,
     ``FourColor.DiamondProfileReducibility.transferred001,
+    ``FourColor.TwoDiamondSplitRepair.reducible003,
+    ``FourColor.TwoDiamondSplitRepair.transferred_repair,
+    ``FourColor.TwoDiamondSplitRepair.reconstruct,
     ``FourColor.KempeBoundarySplit.repairs_collapse,
     ``FourColor.DiamondSplitRepair.reconstruct,
     ``FourColor.DiamondProfileCertificate.repair,
@@ -74,6 +77,9 @@ run_cmd do
       else if i == 1 then
         unless seen.contains ``FourColor.DiamondProfileReducibility.reducible002 do
           throwError m!"Configuration 2's profile repair is not consumed by {rootName}"
+      else if i == 2 then
+        unless seen.contains ``FourColor.TwoDiamondSplitRepair.reducible003 do
+          throwError m!"Configuration 3's shared-tip split repair is not consumed by {rootName}"
       else if i == 3 then
         unless seen.contains ``FourColor.DiamondProfileReducibility.reducible004 do
           throwError m!"Configuration 4's profile repair is not consumed by {rootName}"
@@ -82,6 +88,7 @@ run_cmd do
           throwError m!"Configuration {i} is not consumed by {rootName}"
     for name in seen.toList do
       if (`FourColor.Bulk.Cfg000).isPrefixOf name || (`FourColor.Bulk.Cfg001).isPrefixOf name ||
+          (`FourColor.Bulk.Cfg002).isPrefixOf name ||
           (`FourColor.Bulk.Cfg003).isPrefixOf name ||
           name == ``FourColor.DiamondSplitRepair.base_repair ||
           name == ``FourColor.DiamondBoundaryRepair.repair ||
@@ -260,8 +267,11 @@ run_cmd do
         unless allowed.contains axiomName do
           throwError m!"Unexpected axiom in {name}: {axiomName}"
   logInfo m!"Complete assembly: audited {count} imported public declarations."
-  logInfo "All three endpoint closures consume 630 reference certificates, joint-profile repair, \
+  logInfo "All three endpoint closures consume 629 reference certificates, joint-profile repair, \
     boundary-split transfer, and seven arity proofs."
-  logInfo "Original certificates for configurations 1, 2 and 4 are absent from all endpoint closures."
-  logInfo "All three endpoint closures consume the shared charge proofs and geometric reconstruction."
-  logInfo "All 236 superseded checker declarations and the original unconditional theorem are absent."
+  logInfo "Original certificates for configurations 1, 2, 3 and 4 are absent \
+    from all endpoint closures."
+  logInfo "All three endpoint closures consume the shared charge proofs \
+    and geometric reconstruction."
+  logInfo "All 236 superseded checker declarations and the original unconditional \
+    theorem are absent."

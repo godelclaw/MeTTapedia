@@ -11,6 +11,15 @@ Werner's formalization. The dependency is pinned to
 `3db71e0a786a1f19be04c5266fe3d06fed216885`; `LICENSE` retains its MIT notice and
 upstream attribution.
 
+`TwoDiamondConfigurations` gives exact graph, ring and joint-boundary
+semantics for configurations 3 and 6. `TwoDiamondCompositionGSLT` reconstructs
+both diamonds with one shared tip colour, then interprets the reference map.
+`TwoDiamondSplitRepair` transfers configuration 6's existing nine-port repair
+to configuration 3 through an actual embedded boundary insertion.
+`TwoDiamondAudit` checks the witness and repair dependencies; `CompleteAudit`
+excludes the original certificates for configurations 1, 2, 3 and 4.
+The assembly retains 629 original certificates and all 633 coverage entries.
+
 `MettapediaFourColor.Complete` proves the finite planar-graph theorem and
 supplies compatible colouring witnesses along exact source constructions.
 It supplies all 633 reducibility obligations and consumes all seven discharging
@@ -45,7 +54,7 @@ catalogue certificate. The
 [worked argument](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#geometric-supply-from-pentagonal-neighbour-density)
 and [audit receipt](../../tools/fourcolor/classical/diamond-supply-measurements.json)
 separate this geometric coverage from the unchanged 633 configurations and
-630 original certificate dependencies of the complete assembly.
+629 original certificate dependencies of the complete assembly.
 
 A separate [uniform corridor reduction](../../papers/benxiv/fourcolor-compositional/tube-example/README.md#two-row-deletion-with-a-cyclic-seam-shift)
 now removes two rows from any recognized hexagonal tube with at least three
@@ -82,7 +91,7 @@ proves that the actual spherical prism splice is exactly this smaller family
 at every rim width at least three. Its arbitrary smaller target input repairs
 and reconstructs through the shared law, without a new colour table.
 Broader occurrence and complete-assembly integration remain open. These
-results change neither the 633 coverage configurations nor the 630 original
+results change neither the 633 coverage configurations nor the 629 original
 certificate dependencies.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
@@ -195,9 +204,10 @@ It then checks `DiamondFamilyReducibility`, `Complete` and `CompleteAudit`.
 The compositional theorem does
 not import the original unconditional theorem or the superseded arity-nine,
 arity-ten and arity-eleven presentations. Its audit follows the dependencies
-of the graph, construction and sweep endpoints, requiring 630 reference
+of the graph, construction and sweep endpoints, requiring 629 reference
 configuration certificates, the shared diamond profile repair, split transfer
-from configuration 2 to configuration 1, all seven arity proofs,
+from configuration 2 to configuration 1 and configuration 6 to configuration 3,
+all seven arity proofs,
 the 66 named shared hubcaps, the
 periodic and reflected hubcap lemmas, and the actual geometric reconstruction.
 It rejects the original configuration-1, configuration-2 and configuration-4
@@ -460,7 +470,7 @@ checks 27,238 declarations and excludes those older checks, original catalogue
 certificates and complete Four Colour endpoints. Its
 [receipt](../../tools/fourcolor/classical/pentagonal-diamond-measurements.json)
 separates this application-level sharing from catalogue compression: all 633
-configurations and 630 original certificate dependencies remain.
+configurations and 629 original certificate dependencies remain.
 
 The [independent replay](../../tools/fourcolor/classical/pentagonal-diamond-probe.json)
 finds 318 matching central faces across 75 of the same 137 maps, compared
@@ -504,7 +514,7 @@ actual recognition, seven-port exterior closure, whole-map count, shared
 configuration-2 repair and the common map-preservation theorem now also used
 by the six-port reductions. Its [receipt](../../tools/fourcolor/classical/mixed-diamond-reduction-measurements.json)
 records the exact assumptions, artifact hashes and bounded geometry replay.
-Broader-family coverage and the 633/630 catalogue counts are unchanged.
+Broader-family coverage and the 633/629 catalogue counts are unchanged.
 
 [DiamondCoupledWiring](MettapediaFourColor/DiamondCoupledWiring.lean) now gives
 configuration 4's required joint contract an exact operational realization:
@@ -719,7 +729,8 @@ checks. The unconditional endpoints consume all 231 replacements.
 All 633 configurations and all 32 discharging-rule labels remain. The shared
 joint-profile certificate supplies configuration 2 and configuration 4;
 configuration 1 inherits repair from 2 through the general split law.
-There are 630 original reference certificate dependencies. The common finite
+The same law transfers configuration 6's retained base repair to configuration 3.
+There are 629 original reference certificate dependencies. The common finite
 profile explanation retains cover data. A uniform broader core reduction and
 new geometric coverage remain open.
 

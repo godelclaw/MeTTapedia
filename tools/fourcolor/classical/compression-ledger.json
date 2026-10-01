@@ -17,7 +17,7 @@
   },
   "credited_compression": {
     "catalogue_entries_removed": 0,
-    "configuration_checks_replaced_by_new_uniform_lemmas": 1,
+    "configuration_checks_replaced_by_new_uniform_lemmas": 2,
     "discharging_rules_removed": 0,
     "certificate_bytes_saved": 0,
     "kernel_seconds_saved": 0,
@@ -28,10 +28,10 @@
     "arity11_coverage_checker_obligations_replaced": 62,
     "arity9_coverage_checker_obligations_replaced": 87,
     "configuration_certificate_dependencies_replaced_by_boundary_repair": 2,
-    "configuration_certificate_dependencies_replaced_by_family_transfer": 1,
-    "configuration_certificate_dependencies_replaced_total": 3,
+    "configuration_certificate_dependencies_replaced_by_family_transfer": 2,
+    "configuration_certificate_dependencies_replaced_total": 4,
     "uniform_boundary_split_transfer_schemes": 1,
-    "uniform_schemes_replacing_multiple_target_certificates": 0,
+    "uniform_schemes_replacing_multiple_target_certificates": 1,
     "finite_joint_profile_certificate_schemes": 1,
     "finite_joint_profile_trace_representatives": 236,
     "finite_joint_profile_answer_references": 291,
@@ -2301,9 +2301,68 @@
       },
       "scope": "One exact representation map transports the existing capped-ladder argument to an actual unbounded simple-source family. Arbitrary smaller target inputs are repaired through the shared phase law before coupled source insertion. The initial cross field is fixed during normalization; insertion may repair the original exterior. No complete colouring endpoint, saved colour word or finite family base is used by the arbitrary-input roots. Counts and arbitrary recolouring histories are not transported.",
       "next_obligation": "Broader embedded occurrence and joint boundary contracts; integration into geometric coverage and the complete assembly."
+    },
+    {
+      "name": "exact shared-tip double-diamond composition and embedded boundary-split repair transfer",
+      "record": "two-diamond-measurements.json",
+      "status": "Kernel checked and consumed by complete endpoints",
+      "configurations": [
+        3,
+        6
+      ],
+      "boundary_lengths": [
+        8,
+        9
+      ],
+      "uniform_theorems": [
+        "Mettapedia.GraphTheory.FourColor.TwoDiamondBoundaryElimination.coloringEquiv",
+        "Mettapedia.GraphTheory.FourColor.TwoDiamondBoundaryElimination.context_iff",
+        "FourColor.KempeBoundarySplit.repairs_collapse"
+      ],
+      "consumers": [
+        "FourColor.TwoDiamondConfigurations.summaryTrace003",
+        "FourColor.TwoDiamondConfigurations.summaryTrace006",
+        "FourColor.TwoDiamondCompositionGSLT.every_coloring",
+        "FourColor.TwoDiamondSplitRepair.transferred_repair",
+        "FourColor.TwoDiamondSplitRepair.reducible003"
+      ],
+      "joint_shared_tip_retained": true,
+      "exact_original_maps_and_rings_kernel_checked": true,
+      "actual_embedded_insertion_and_cyclic_stars_kernel_checked": true,
+      "genuine_colouring_reconstruction": true,
+      "uniform_split_law_target_pairs": [
+        [
+          2,
+          1
+        ],
+        [
+          6,
+          3
+        ]
+      ],
+      "retained_base_certificate": "FourColor.Bulk.Cfg005",
+      "removed_certificate_dependency": "FourColor.Bulk.Cfg002",
+      "new_rank_certificate_tables": 0,
+      "additional_finite_base_input_codes_checked": 6561,
+      "independent_false_positives_without_tip_agreement": [
+        246,
+        672
+      ],
+      "kernel_proper_boundary_obstruction": true,
+      "program_replay": "python3 tools/fourcolor/classical/two_diamond_shared_tip_probe.py --check",
+      "original_configuration_certificate_dependencies_removed": 1,
+      "total_original_configuration_certificate_dependencies_replaced": 4,
+      "configurations_retained": 633,
+      "original_configuration_certificates_retained": 629,
+      "catalogue_entries_removed": 0,
+      "new_coverage_theorems": 0,
+      "integrated_into_complete_four_color_assembly": true,
+      "executable_kempe_move_sequence": false,
+      "scope": "For arbitrary exterior graphs, attachments and colour types, two diamond witnesses agreeing at their shared tip are equivalent to complete graph colourings. Exact consumers are configurations 3 and 6. The existing split law then derives configuration 3 repair from the retained configuration 6 base, with genuine graph restriction and actual ordered-ring collapse.",
+      "limits": "Configuration 6 keeps its original rank planes and checker. The new 6561-code input-coverage check uses those planes. This is another exact target for the existing uniform transfer law; it is not a base-free repair for an unbounded double-diamond family, new physical recolouring histories, or geometric coverage. No net saving in primitive checks, kernel time or artifact size is credited."
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -2626,6 +2685,32 @@
         "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
       },
       "complete_measurements": "complete-assembly-measurements.json"
+    },
+    {
+      "reference_obligations": [
+        "FourColor.Bulk.Cfg002.reducible"
+      ],
+      "before": 1,
+      "after": 0,
+      "replaced": 1,
+      "retained_base": "FourColor.Bulk.Cfg005",
+      "uniform_theorems": [
+        "FourColor.KempeBoundarySplit.repairs_collapse"
+      ],
+      "consumers": [
+        "FourColor.TwoDiamondSplitRepair.reducible003"
+      ],
+      "evidence": "kernel checked",
+      "measurements": "two-diamond-measurements.json",
+      "integrated_into_full_reducibility": true,
+      "complete_consumers": {
+        "assembly": "FourColor.CompositionalComplete.fourColorTheorem",
+        "graph": "FourColor.CompositionalComplete.colorable_of_planeDrawing",
+        "source_construction": "FourColor.CompositionalComplete.supported_source_construction",
+        "source_sweep": "FourColor.CompositionalComplete.supported_source_sweep"
+      },
+      "additional_check": "6561 existing base rank-mask input codes; no new rank table.",
+      "catalogue_entries_removed": 0
     }
   ],
   "complete_assembly": {
@@ -2651,11 +2736,12 @@
       "Quot.sound"
     ],
     "joint_diamond_repair_measurement": "diamond-joint-repair-measurements.json",
-    "reference_configuration_certificate_dependencies": 630,
+    "reference_configuration_certificate_dependencies": 629,
     "configuration_boundary_repair_dependencies": 2,
     "superseded_configuration_certificate_dependencies_absent": [
       "FourColor.Bulk.Cfg000",
       "FourColor.Bulk.Cfg001",
+      "FourColor.Bulk.Cfg002",
       "FourColor.Bulk.Cfg003"
     ],
     "diamond_boundary_summary_measurement": "diamond-summary-measurements.json",
@@ -2664,14 +2750,18 @@
       "FourColor.DiamondProfile.good_supports",
       "Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.reconstruct"
     ],
-    "configuration_family_transfer_dependencies": 1,
+    "configuration_family_transfer_dependencies": 2,
     "diamond_split_repair_measurement": "diamond-split-measurements.json",
     "required_split_dependencies": [
       "FourColor.KempeBoundarySplit.repairs_collapse",
       "FourColor.DiamondProfileReducibility.transferred001",
       "FourColor.DiamondProfileReducibility.repair002",
       "FourColor.DiamondSplitRepair.reconstruct",
-      "FourColor.DiamondProfileReducibility.reducible001"
+      "FourColor.DiamondProfileReducibility.reducible001",
+      "FourColor.TwoDiamondSplitRepair.base_repair",
+      "FourColor.TwoDiamondSplitRepair.reconstruct",
+      "FourColor.TwoDiamondSplitRepair.transferred_repair",
+      "FourColor.TwoDiamondSplitRepair.reducible003"
     ],
     "diamond_profile_measurement": "diamond-profile-measurements.json",
     "required_profile_dependencies": [
@@ -2689,6 +2779,7 @@
     "local_profile_dependencies_absent": [
       "FourColor.coversRec",
       "FourColor.coversRec_sound"
-    ]
+    ],
+    "shared_tip_double_diamond_measurement": "two-diamond-measurements.json"
   }
 }
