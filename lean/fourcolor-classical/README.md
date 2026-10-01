@@ -76,9 +76,14 @@ stays in the spherical map class and removes six expanded vertices per step.
 Arbitrary smaller target witnesses admit the proved physical repair and
 joint reconstruction; compatible reverse paths terminate by a width rank.
 The [audit receipt](../../tools/fourcolor/classical/capped-ladder-measurements.json)
-separates this all-width result from the still-open prism-splice correspondence,
-broader occurrence and complete-assembly integration. It changes neither the
-633 coverage configurations nor the 630 original certificate dependencies.
+records this all-width recursive result. A further
+[prism rung law](../../tools/fourcolor/classical/prism-rung-measurements.json)
+proves that the actual spherical prism splice is exactly this smaller family
+at every rim width at least three. Its arbitrary smaller target input repairs
+and reconstructs through the shared law, without a new colour table.
+Broader occurrence and complete-assembly integration remain open. These
+results change neither the 633 coverage configurations nor the 630 original
+certificate dependencies.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned

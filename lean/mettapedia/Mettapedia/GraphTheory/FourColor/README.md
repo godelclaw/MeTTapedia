@@ -501,9 +501,9 @@ three individual Kempe swaps. The [receipt](../../../../../tools/fourcolor/class
 records thirty-two audited roots and a separate nontrivial parallel-edge
 repair fixture. Independent replay checks 1,488 inputs, including 1,350
 nontrivial repairs; up to six components occur in these small examples.
-Unbounded literal prism-splice recognition and broader geometric coverage
-remain separate obligations. Catalogue and original-certificate counts
-remain 633 and 630.
+The all-width prism consumer below supplies one literal geometric family.
+Broader occurrence and coverage remain separate obligations. Catalogue and
+original-certificate counts remain 633 and 630.
 
 The [literal capped-ladder family](CappedLadderRotation.lean) now gives a
 complete recursive consumer. At every width `m ≥ 1`, exact face classification
@@ -523,9 +523,30 @@ also support every complete faithful construction sweep of the expanded
 maps. The [receipt](../../../../../tools/fourcolor/classical/capped-ladder-measurements.json)
 records forty-seven audited roots and independent replay of 340 smaller
 target inputs, including 300 nontrivial repairs. No classical colouring
-endpoint or saved colour table supplies the family proof. The all-width
-correspondence from a prism's actual rung splice to this ladder, occurrence
-in broader maps and catalogue integration remain open.
+endpoint or saved colour table supplies the family proof. Occurrence in
+broader maps and catalogue integration remain open.
+
+The [actual prism rung family](PrismRungReduction.lean) now connects the
+literal ladder to an embedded operation at every rim width `n ≥ 3`. Original
+face classification proves the spherical, two-sided geometry of the
+`2n`-vertex prism. Deleting an actual rung pair and sewing its four exposed
+darts gives exactly the capped ladder of width `n-1`: an exact equivalence
+commutes with the edge flip, vertex rotation and incidence, retaining the
+parallel edge identities. The smaller geometry supplies the shared phase
+law. Every smaller expanded target Tait input admits its three region
+stages and joint original-source reconstruction, with exactly six fewer
+expanded vertices in the reduction direction. Cross colours stay fixed
+during normalization; the subsequent coupled insertion may recolour a
+component of the original exterior.
+
+The [receipt](../../../../../tools/fourcolor/classical/prism-rung-measurements.json)
+records thirty-four audited roots and independent replay of 1,650 retained
+darts across twenty-two widths. The 336 small target inputs include 297
+nontrivial physical repairs and 88 original-exterior component repairs.
+The all-width proof uses neither a classical colouring endpoint nor a
+family colour table. This is geometric recognition of one family, followed
+by an existing compositional witness law; it does not establish occurrence
+in arbitrary spherical maps or remove a catalogue dependency.
 
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay

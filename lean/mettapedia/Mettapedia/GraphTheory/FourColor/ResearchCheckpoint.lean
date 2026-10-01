@@ -26,6 +26,7 @@ import Mettapedia.GraphTheory.FourColor.AdjacentSourceSpliceAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateSpanningFaceAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateFacePhaseAudit
 import Mettapedia.GraphTheory.FourColor.CappedLadderAudit
+import Mettapedia.GraphTheory.FourColor.PrismRungAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand

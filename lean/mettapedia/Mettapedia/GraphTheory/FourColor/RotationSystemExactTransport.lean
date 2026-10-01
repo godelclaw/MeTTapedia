@@ -15,6 +15,8 @@ namespace Mettapedia.GraphTheory.FourColor.RotationSystemExactTransport
 open GoertzelV24FaceDualConnectedness GoertzelV24FaceOrbitIncidence
 open GoertzelV24RotationEdgeBridge GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24OrbitCountCongr
+open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24OrbitFaceCurvatureBulk
 
 noncomputable section
 variable {V E W F : Type*} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
@@ -98,6 +100,28 @@ theorem phi_commute (x : S.D) : d (S.phi x) = T.phi (d x) := by
   simp only [RotationSystem.phi_apply, hr, ha]
 
 include ha hr in
+/-- Exact transport retains the relation of belonging to one actual face. -/
+theorem sameFace_iff (x y : S.D) :
+    S.phi.SameCycle x y ↔ T.phi.SameCycle (d x) (d y) := by
+  have hc : (d.symm.trans S.phi).trans d = T.phi := by
+    apply Equiv.ext
+    intro z
+    exact (phi_commute S T d ha hr (d.symm z)).trans
+      (congrArg T.phi (d.apply_symm_apply z))
+  rw [← hc,sameCycle_conjEquiv_iff]
+
+include ha hr in
+/-- Both sides of every edge still belong to distinct faces after relabelling. -/
+theorem twoSided (h : OrbitFacesTwoSided S) : OrbitFacesTwoSided T := by
+  intro b hb
+  obtain ⟨x,rfl⟩ := d.surjective b
+  apply h x
+  apply Quotient.sound
+  apply (sameFace_iff S T d ha hr x (S.alpha x)).mpr
+  rw [ha]
+  exact Quotient.exact hb
+
+include ha hr in
 /-- Exact dart transport preserves each actual face length. -/
 theorem faceOrbit_card (x : S.D) : (S.faceOrbit x).card = (T.faceOrbit (d x)).card := by
   have hc : (d.symm.trans S.phi).trans d = T.phi := by
@@ -121,18 +145,23 @@ def faceEquiv : OrbitFace S ≃ OrbitFace T := by
     rw [← hc, sameCycle_conjEquiv_iff])
 
 include d v ha hv hr in
+/-- The sphere equation and cubic degrees depend only on exact dart,
+vertex, edge and facial correspondence. -/
+theorem spherical (h : OrbitSphericalCubicMapData S) : OrbitSphericalCubicMapData T where
+  cubic := cubic S T d v hv h.cubic
+  euler := by
+    have he : Fintype.card E = Fintype.card F := by
+      have hd := Fintype.card_congr d
+      rw [S.card_darts_eq_twice_card_edges,T.card_darts_eq_twice_card_edges] at hd
+      omega
+    rw [← Fintype.card_congr v,← he,← Fintype.card_congr (faceEquiv S T d ha hr)]
+    exact h.euler
+
+include d v ha hv hr in
 /-- All four geometric fields follow from the same exact relabelling. -/
 theorem mapClass (h : BridgelessSphericalCubicMapData S) :
     BridgelessSphericalCubicMapData T where
-  spherical := {
-    cubic := cubic S T d v hv h.spherical.cubic
-    euler := by
-      have he : Fintype.card E = Fintype.card F := by
-        have hd := Fintype.card_congr d
-        rw [S.card_darts_eq_twice_card_edges, T.card_darts_eq_twice_card_edges] at hd
-        omega
-      rw [← Fintype.card_congr v, ← he, ← Fintype.card_congr (faceEquiv S T d ha hr)]
-      exact h.spherical.euler }
+  spherical := spherical S T d v ha hv hr h.spherical
   primalConnected := (primalIso S T d v ha hv).connected_iff.mp h.primalConnected
   vertexRotationCyclic := rotationCyclic S T d v hv hr h.vertexRotationCyclic
   edgeBridgeFree := bridgeFree S T d v ha hv h.edgeBridgeFree

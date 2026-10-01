@@ -459,8 +459,9 @@ records thirty-two audited roots and a nontrivial literal parallel-edge
 repair. Independent replay checks every intermediate field on 1,488 inputs,
 including 1,350 that change, with up to six individual components in this
 census. This is a uniform argument with a stated geometric supply condition.
-Unbounded literal prism recognition and universal geometric supply remain
-open; no additional catalogue entry is removed.
+The all-width prism consumer below supplies one literal geometric family.
+Universal geometric supply remains open; no additional catalogue entry is
+removed.
 
 The [capped-ladder family](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CappedLadderFamilyGSLT.lean)
 now closes a complete recursive example of this recipe. One graph operation
@@ -486,12 +487,44 @@ The [receipt](../../../tools/fourcolor/classical/capped-ladder-measurements.json
 records forty-seven audited roots, excluding classical colouring endpoints
 and saved colour words. Independent replay includes 340 smaller target
 inputs and 300 nontrivial repairs. This establishes family geometry,
-reconstruction and termination through one structural law. Connecting an
-actual prism rung splice to this family at all widths is still open, as is
-broader occurrence. The reverse colouring routes retain the compatible
+reconstruction and termination through one structural law. Broader
+occurrence remains open. The reverse colouring routes retain the compatible
 witnesses constructed by the law. No smaller unavoidable catalogue follows;
 the complete assembly still uses 633 configurations and 630 original
 certificate dependencies.
+
+The [prism rung consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/PrismRungReduction.lean)
+now establishes that correspondence for every rim width `n ≥ 3`. The
+original prism's actual faces prove its spherical geometry. Removing one
+rung pair and sewing the four exposed darts yields precisely the capped
+ladder of width `n-1`, including its distinct parallel edge identities.
+One exact representation map preserves incidence, edge flips and cyclic
+rotations, so the ladder's geometry and colouring argument apply directly.
+
+```text
+actual n-prism rung removal
+  → exact capped-ladder representation at width n-1
+  → arbitrary smaller target input and shared physical phase repair
+  → coupled insertion with compatible exterior choices
+  → actual original target colouring and supported GSLT sweeps
+
+reduction direction: 6n expanded vertices → 6n-6 expanded vertices
+```
+
+The [receipt](../../../tools/fourcolor/classical/prism-rung-measurements.json)
+records thirty-four audited roots, independent dart replay at twenty-two
+widths and 336 small target inputs. Of these, 297 require physical phase
+repair and 88 require a component swap in the original exterior before
+joint insertion. The cross field is fixed during the three normalization
+stages; the entire exterior need not remain fixed through insertion.
+No classical colouring theorem or saved family colour table is used.
+
+This gives a concrete map between representations that transfers one
+successful structural argument across an unbounded family. To change the
+coverage catalogue, a further theorem must recognize such reducible pieces
+inside the relevant larger maps and prove that the new family laws cover
+the displaced obligations. The 633 coverage entries and 630 original
+certificate dependencies remain unchanged.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

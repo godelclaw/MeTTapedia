@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "base_revision": "55ea06ed386c7c7d5714ca95346dd1eb179bbed2",
+  "status": "all-width actual family kernel checked with independent finite physical replay",
+  "family_domain": "For every rim width n >= 3, the actual canonical rung splice of the spherical n-prism and its expanded target. The smaller source is exactly the capped ladder of width n-1, including parallel edge identities.",
+  "parameterization": "The Lean coordinate width m satisfies m >= 2 and n = m+1.",
+  "original_source_vertices": "2n",
+  "original_source_edges": "3n",
+  "original_source_faces": "n+2",
+  "original_expanded_vertices": "6n",
+  "smaller_source_vertices": "2n-2",
+  "smaller_source_edges": "3n-3",
+  "smaller_source_faces": "n+1",
+  "smaller_expanded_vertices": "6n-6",
+  "strict_operation": "Delete the actual original rung pair and sew its four exposed half-edges in the canonical opposite pairing. Retain every original intact half-edge and its cyclic vertex order.",
+  "source_vertices_removed": 2,
+  "expanded_vertices_removed": 6,
+  "original_and_smaller_geometry_kernel_certified": true,
+  "all_width_prism_splice_correspondence_kernel_certified": true,
+  "exact_vertex_incidence_preserved": true,
+  "exact_edge_flip_preserved": true,
+  "exact_cyclic_vertex_rotation_preserved": true,
+  "parallel_edge_identities_retained": true,
+  "smaller_source_has_spanning_face": true,
+  "actual_original_deleted_exterior_connected": true,
+  "arbitrary_smaller_target_tait_witnesses_accepted": true,
+  "source_witness_input_required_for_geometric_consumer": false,
+  "physical_history_from_arbitrary_smaller_input": true,
+  "region_stages_per_route": 3,
+  "constant_bound_on_individual_component_swaps": false,
+  "cross_edge_colours_preserved_during_normalization": true,
+  "initial_polygon_colours_may_change": true,
+  "original_exterior_component_recolouring_permitted_during_insertion": true,
+  "actual_terminal_source_image": true,
+  "actual_original_target_tait_reconstructed": true,
+  "complete_faithful_gslt_sweeps_supported": true,
+  "colouring_counts_preserved": false,
+  "arbitrary_recolouring_histories_transferred": false,
+  "prism_recursive_gslt_path_assembled_here": false,
+  "smaller_literal_family_has_independent_terminating_construction": "capped-ladder-measurements.json",
+  "uniform_theorems": [
+    "PrismRungCoordinates.dartEquiv",
+    "PrismRungCoordinates.ordered_pair",
+    "PrismRungSplice.spliceDartEquiv",
+    "PrismRungSplice.vertex_commute",
+    "PrismRungSplice.rho_commute",
+    "PrismRungSplice.underlying_alpha",
+    "PrismRungSplice.alpha_commute",
+    "PrismRungSplice.spanningFace",
+    "PrismRungSplice.retained_connected",
+    "PrismRungGeometry.face_sameCycle_iff",
+    "PrismRungGeometry.graph_spherical",
+    "PrismRungGeometry.graph_twoSided",
+    "PrismRungReduction.target_counts",
+    "PrismRungReduction.operational_reconstruction",
+    "PrismRungReduction.every_complete_sweep"
+  ],
+  "reusable_transport": [
+    "RotationSystemExactTransport.sameFace_iff",
+    "RotationSystemExactTransport.twoSided",
+    "RotationSystemExactTransport.spherical"
+  ],
+  "audit": {
+    "roots": 34,
+    "dependency_declarations": 24016,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoints_absent": true,
+    "brooks_suppliers_absent": true,
+    "saved_source_colour_words_absent": true,
+    "finite_family_base_absent_from_all_roots": true,
+    "unrelated_finite_fixtures_absent": true
+  },
+  "kernel_gate": {
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "passed": true,
+    "incremental_build": true,
+    "completed_jobs": 11190
+  },
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/prism_rung_probe.py --check",
+    "record": "prism-rung-probe.json",
+    "geometry_rim_widths": [
+      3,
+      24
+    ],
+    "geometry_widths": 22,
+    "retained_dart_checks": 1650,
+    "normalized_target_inputs": 336,
+    "nontrivial_physical_repairs": 297,
+    "original_exterior_component_repairs": 88,
+    "all_phase_intermediate_fields_tait": true,
+    "cross_edge_colours_preserved_during_normalization": true,
+    "actual_reconstructed_original_target_tait": true,
+    "global_renaming_used_for_repair": false
+  },
+  "catalogue_entries_removed": 0,
+  "original_configuration_certificate_dependencies_removed": 0,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "integrated_into_complete_four_color_assembly": false,
+  "remaining": "Broader embedded occurrence and joint boundary contracts; integration into geometric coverage and the complete assembly. No occurrence theorem for arbitrary spherical maps is inferred from this literal family.",
+  "source_sha256": {
+    "PrismRungCoordinates.lean": "1b5dc5fd75a11276367ff65b91951d6defb0dfa0de03c412e3697cae94d22da6",
+    "PrismRungSplice.lean": "8e19660ea1ad10631beeb2cf1ea0fc766d0a97c4bca6a192c4a520a24cb696d8",
+    "PrismRungGeometry.lean": "1107f3bbcabbc165f594247bc543589e1999336a9928644404376ef032e25928",
+    "PrismRungReduction.lean": "014218da55eb095632b043d626999e54594bc050bb8475fea80c3aff374332ce",
+    "PrismRungAudit.lean": "fd28e38080138fc14ccfb9363fc8bc4ee1d7a8bbb379e2408750c378bbe9e91f",
+    "RotationSystemExactTransport.lean": "b1c3e5ee7b863130b9f93298d0a37f4d139d5c173fac9863dda0c376e6096019",
+    "ResearchCheckpoint.lean": "56d36710a9ede6a7a85c586284756a24ac21e025eb2a4e9ea1607a9c9be5a3c2"
+  },
+  "checker_sha256": {
+    "prism_rung_probe.py": "c4297ae89c3d7a7cd2988c79b66a3a13a0581b54577f6067bd947e4cfd392411",
+    "capped_ladder_probe.py": "13001817e53acf240724b3065149db2c1ec7c93a0526e3ae3dc87e80c0a14c9f",
+    "adjacent_source_target_kempe_probe.py": "fbce0021deddb3a2bf3272feef5d436cf98848376c841d7d2bad8855604a46d9",
+    "adjacent_source_splice_probe.py": "ec1516c2412e7aa07006b34f939def06faaa5c466fd2a2b777d5105a86c05ede",
+    "source_alternating_boundary_probe.py": "62d4c7c73995669985641feb44cec51e8fcf6417fe003b7964d36c86155f132c",
+    "two_cell_source_repair_probe.py": "2d5021cde2508640bb081e56d5b2f3a7d390e0c2699a5f0b70617e6cfd9140d1",
+    "dual_truncate_open_patch_probe.py": "177757e261bbc240ad6c3ffca2c5263f510e8bae65d984bc59453b73255dbe3f",
+    "dual_truncate_geometry_probe.py": "e1b0759456429ab4bf5377119ebc5aaffe6d8f3b516c7064ce8fe671c3ff84a3"
+  },
+  "affected_geometry_consumer_gate": {
+    "project": "lean/fourcolor-classical",
+    "targets": [
+      "MettapediaFourColor.JointDiamondReductionAudit",
+      "MettapediaFourColor.PentagonalLobeTreeReductionAudit",
+      "MettapediaFourColor.PentagonalLobeEmbeddedReductionAudit"
+    ],
+    "passed": true,
+    "completed_jobs": 3958
+  }
+}

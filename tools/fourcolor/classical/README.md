@@ -606,8 +606,9 @@ properness, cross-edge equality and the induced coherent target witness.
 The four interfaces without such a face are outside this mechanism.
 The finite splice recognitions remain program evidence; the kernel theta
 fixture checks the geometric domain and calibration rather than a splice.
-Unbounded literal recognition, recursive closure and occurrence coverage
-remain open. Catalogue and original-certificate counts remain 633 and 630.
+The ladder and prism-rung consumers below now establish one unbounded
+geometric family and recursive ladder closure. Broader occurrence coverage
+remains open. Catalogue and original-certificate counts remain 633 and 630.
 
 ## Physical face-phase normalization and strict reconstruction
 
@@ -649,8 +650,9 @@ splice outputs, including 1,350 nontrivial repairs. All intermediate fields
 are proper; all original cross colours survive; the final field equals the
 shared source image. The region masks are independently decomposed into
 actual bichromatic components: up to six occur per history in this census.
-The finite splice geometries remain program evidence. Literal unbounded
-prism recognition and broader coverage are the next obligations.
+The earlier finite splice geometries remain program evidence. The all-width
+prism-rung consumer below supplies one kernel-certified geometric family;
+broader coverage remains open.
 No further configuration or certificate dependency is removed.
 
 ## A complete recursive ladder family
@@ -691,10 +693,52 @@ python3 tools/fourcolor/classical/capped_ladder_probe.py --check
 Independent replay checks twelve geometric widths and 468 retained-dart
 sewings. Exhaustive normalized inputs at four small widths give 340 target
 colourings, including 300 nontrivial physical repairs. These checks are
-separate from the all-width kernel proof. The exact all-width prism-rung
-correspondence and broader occurrence remain open. This family is not yet
-a dependency replacement in the completed classical assembly: 633 coverage
-configurations and 630 original certificate dependencies remain.
+separate from the all-width kernel proof. Broader occurrence remains open.
+This family is not yet a dependency replacement in the completed classical
+assembly: 633 coverage configurations and 630 original certificate
+dependencies remain.
+
+## Actual prism-rung recognition at every width
+
+`PrismRungCoordinates` constructs the actual simple spherical prism with two
+oppositely ordered rims and literal rung edges. `PrismRungGeometry` classifies
+its actual faces at every rim width `n ≥ 3`, proving connectedness, the
+spherical equation and two-sided edges. `PrismRungSplice` identifies the
+canonical rung deletion and four-dart sewing with the capped ladder of width
+`n-1`. Its exact dart and vertex equivalences commute with incidence, edge
+flips and vertex rotations. Parallel edges remain distinct throughout.
+
+`PrismRungReduction` consumes the transported smaller geometry and connected
+original exterior in the existing arbitrary-input phase repair and coupled
+reconstruction. Every smaller target Tait input admits three region stages;
+exactly six expanded vertices disappear. The cross field stays fixed during
+normalization. Coupled insertion may switch a component in the original
+exterior before restoring the two removed vertices. Complete faithful
+construction sweeps receive the reconstructed colouring witnesses.
+
+The [receipt](prism-rung-measurements.json) records thirty-four audited roots
+and 24,016 dependency declarations. Complete classical endpoints, generic
+Brooks suppliers, saved source colour words and finite family bases are
+absent from these roots.
+
+```sh
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.PrismRungAudit
+```
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/classical/prism_rung_probe.py --check
+```
+
+Independent replay checks 1,650 retained darts at twenty-two rim widths and
+336 normalized target inputs at three small widths. There are 297 nontrivial
+physical repairs and 88 original-exterior component repairs. The all-width
+theorem is separate from this finite census. It supplies an exact transfer
+of a shared structural argument to one actual embedded family, with no new
+colour table. Broader occurrence, coverage and complete-assembly integration
+remain open; no further configuration or certificate dependency is removed.
 
 ## Target colouring choices on parallel seams
 
