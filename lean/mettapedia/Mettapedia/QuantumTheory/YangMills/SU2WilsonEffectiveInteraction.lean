@@ -14,6 +14,9 @@ The weighted maximum-row seminorm bounds total second-order influence
 uniformly in volume at both levels, including nearby contacts. Three
 plaquette-separated patches have the exact third-cumulant derivative, and
 the coarse score cumulant is the actual GSLT route's third remainder.
+All singleton score triples satisfy a volume-uniform tree-weighted budget.
+The actual Wilson scores also satisfy the boundary contract after each Haar
+step, with concrete witnesses for its OSLF reachability.
 
 The seminorm uses the original lattice metric and the stated group rotation
 directions. A rescaled multiscale recursion needs further bounds on the
@@ -31,14 +34,7 @@ open StrongCouplingCrossing WilsonLocalResponse WilsonBlockElimination
 open WilsonSeparatedBoundaryResponse WilsonBoundaryChanges WilsonPatchGeometry
 open CompactTransferGap
 
-def fineCoordinates (N : ℕ) (b : FullField N) : CoarseField N × InterfaceField N :=
-  MeasurableEquiv.piEquivPiSubtypeProd (fun _ : FineLink N => SU2)
-    (fun l => Retained 4 l.val) (fineRestriction N b)
-
-theorem assemble_fineCoordinates (N : ℕ) (b : FullField N) :
-    assembleCoarse N (fineCoordinates N b) = fineRestriction N b :=
-  (MeasurableEquiv.piEquivPiSubtypeProd (fun _ : FineLink N => SU2)
-    (fun l => Retained 4 l.val)).symm_apply_apply _
+export SU2WilsonAssemblyLocality (fineCoordinates assemble_fineCoordinates)
 
 /-- `false` selects the first marginal and `true` the second marginal. -/
 def mesh (coarse : Bool) : ℕ := if coarse then 4 else 2
@@ -316,6 +312,75 @@ theorem uniform_weightedResponseRow {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ b
   refine ⟨η, hη, C, hC, ?_⟩
   intro N coarse q r b l
   exact (WilsonBoundaryResponse.weightedResponseRow_le η l _).trans (h N coarse q r b)
+
+/-- Actual singleton score cumulants at either assembly level. -/
+def scoreThirdArray (N : ℕ) (β : ℝ) (coarse : Bool) (q r u b : FullField N) :
+    AssemblyLink N → AssemblyLink N → AssemblyLink N → ℝ :=
+  SU2BoundaryResponse.scoreThirdArray β univ (retainedSet (mesh coarse)) q r u b
+
+/-- The same spatial exponent and third-cumulant budget work for both
+generated densities, before choosing volume, boundary data or frames. -/
+theorem uniform_weightedThirdSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (N : ℕ) (coarse : Bool) (q r u b : FullField N),
+      WilsonBoundaryResponse.weightedThirdSeminorm η
+        (scoreThirdArray N β coarse q r u b) ≤ C := by
+  obtain ⟨η, hη, C, hC, h⟩ := SU2BoundaryResponse.uniform_weightedThirdSeminorm hβ hβ0
+  exact ⟨η, hη, C, hC, fun N coarse q r u b ↦
+    h (volumeIndex N) univ (retainedSet (mesh coarse)) q r u b⟩
+
+theorem uniform_weightedThirdRow {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (N : ℕ) (coarse : Bool) (q r u b : FullField N)
+      (l : AssemblyLink N),
+      ∑ m, ∑ k, Real.exp (η * WilsonBoundaryResponse.threeTreeLength l m k) *
+        |scoreThirdArray N β coarse q r u b l m k| ≤ C := by
+  obtain ⟨η, hη, C, hC, h⟩ := uniform_weightedThirdSeminorm hβ hβ0
+  refine ⟨η, hη, C, hC, ?_⟩
+  intro N coarse q r u b l
+  exact (WilsonBoundaryResponse.weightedThirdRow_le η l _).trans (h N coarse q r u b)
+
+/-- Original Wilson scores used as fixed local probes in either exact Haar
+integration. At their prescribed boundary they are the derivative scores. -/
+def scoreFamily (N : ℕ) (coarse : Bool) (q b : FullField N) :
+    AssemblyLink N → C(FullField N, ℝ) := fun l ↦
+  SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) {l} q b 0
+
+/-- The actual Wilson score family inhabits the quantitative boundary
+contract after each Haar step. No analytic contract is an input hypothesis. -/
+theorem uniform_scoreResponseContract {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C₂ ≥ 0, ∃ C₃ ≥ 0,
+      ∀ (N : ℕ) (coarse : Bool) (q b : FullField N),
+        WilsonEliminationRoutes.boundaryContract η 256 C₂ C₃
+          (firstResponseState N β (scoreFamily N coarse q b)) ∧
+        WilsonEliminationRoutes.boundaryContract η 256 C₂ C₃
+          (secondResponseState N β (scoreFamily N coarse q b)) := by
+  obtain ⟨η, hη, C₂, hC₂, C₃, hC₃, hc⟩ :=
+    uniform_responseContract hβ hβ0 (show (0 : ℝ) ≤ 256 by norm_num)
+  refine ⟨η, hη, C₂, hC₂, C₃, hC₃, ?_⟩
+  intro N coarse q b
+  exact hc N (scoreFamily N coarse q b)
+    (fun l ↦ SU2BoundaryResponse.score_local univ (retainedSet (mesh coarse)) {l} q b 0)
+    (fun l ↦ by simpa [scoreFamily] using
+      SU2BoundaryResponse.abs_score_le univ (retainedSet (mesh coarse)) {l} q b 0)
+
+theorem uniform_scoreContract_reachable {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C₂ ≥ 0, ∃ C₃ ≥ 0,
+      ∀ (N : ℕ) (coarse : Bool) (q b : FullField N),
+        Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond
+          (WilsonEliminationRoutes.haarTheory (AssemblyLink N))
+          (WilsonEliminationRoutes.boundaryContract η 256 C₂ C₃)
+          (initialResponseState N β (scoreFamily N coarse q b)) ∧
+        Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond
+          (WilsonEliminationRoutes.haarTheory (AssemblyLink N))
+          (WilsonEliminationRoutes.boundaryContract η 256 C₂ C₃)
+          (firstResponseState N β (scoreFamily N coarse q b)) := by
+  obtain ⟨η, hη, C₂, hC₂, C₃, hC₃, hc⟩ :=
+    uniform_responseContract_reachable hβ hβ0 (show (0 : ℝ) ≤ 256 by norm_num)
+  refine ⟨η, hη, C₂, hC₂, C₃, hC₃, ?_⟩
+  intro N coarse q b
+  exact hc N (scoreFamily N coarse q b)
+    (fun l ↦ SU2BoundaryResponse.score_local univ (retainedSet (mesh coarse)) {l} q b 0)
+    (fun l ↦ by simpa [scoreFamily] using
+      SU2BoundaryResponse.abs_score_le univ (retainedSet (mesh coarse)) {l} q b 0)
 
 /-- Mixed finite change of the complete effective log weight. -/
 def mixedChange (N : ℕ) (β : ℝ) (coarse : Bool) (S T : Finset (AssemblyLink N))

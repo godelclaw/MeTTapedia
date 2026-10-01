@@ -21,16 +21,7 @@ open WilsonBoundaryChanges WilsonBlockElimination WilsonBoundaryResponse
 variable {E : Type*} [TopologicalSpace E] [CompactSpace E] [MeasurableSpace E]
   [BorelSpace E] [SecondCountableTopology E] {d n : ℕ}
 
-/-- Unused coordinates are filled only to evaluate an already proved local
-function; no statistical independence is inferred from this extension. -/
-def extend (base : E) (S : Finset (Link d n)) : C(S → E, Link d n → E) :=
-  ⟨extendConfiguration base S, by
-    apply continuous_pi
-    intro l
-    dsimp [extendConfiguration]
-    split_ifs
-    · exact continuous_apply _
-    · exact continuous_const⟩
+export WilsonLocalResponse (extend)
 
 /-- The actual boundary-change factor on its finite collar. -/
 def localChange (M : Model d E) (hφ : ∀ p, Continuous (M.φ p)) (base : E) (β : ℝ)

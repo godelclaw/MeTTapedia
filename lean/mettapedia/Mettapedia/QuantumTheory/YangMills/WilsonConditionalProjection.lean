@@ -31,6 +31,18 @@ def pinnedMark (held : Finset (Link d n)) (b : Link d n → E)
     dsimp [pin]
     split_ifs <;> fun_prop)⟩
 
+/-- Fixing boundary coordinates preserves an observable's original support. -/
+theorem pinnedMark_local (held S : Finset (Link d n)) (b : Link d n → E)
+    (F : C(Link d n → E, ℝ)) (hF : DependsOn S F) :
+    DependsOn S (pinnedMark held b F) := by
+  intro ω ω' h
+  apply hF
+  intro l hl
+  dsimp only [pin]
+  split_ifs
+  · rfl
+  · exact h l hl
+
 /-- The chosen subset of original plaquette factors at fixed boundary values. -/
 def partialDensity (M : Model d E) (hφ : ∀ p, Continuous (M.φ p)) (β : ℝ)
     (held : Finset (Link d M.n)) (b : Link d M.n → E)

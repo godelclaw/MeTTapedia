@@ -15,6 +15,8 @@ interior integration.
 Differentiating a marked expectation or covariance retains the action score
 and the direct mark derivatives. Spatial response arrays carry a weighted
 maximum-row seminorm, with an exponential-envelope summability criterion.
+Third responses use shortest-tree weights. Both norms have explicit
+summability and injective coordinate-rescaling laws.
 -/
 
 set_option autoImplicit false
@@ -277,6 +279,210 @@ theorem weightedResponseSeminorm_le_of_envelope (η κ : ℝ) (H : ι → ι →
     _ ≤ M * C := mul_le_mul_of_nonneg_left (hcount i) hM
 
 end SpatialResponse
+
+section SpatialThirdResponse
+
+variable {ι : Type*} [PseudoMetricSpace ι]
+
+/-- The length of the shortest spanning tree on three labelled coordinates.
+Repeated coordinates and zero pseudodistances are allowed. -/
+def threeTreeLength (i j k : ι) : ℝ :=
+  min (dist i j + dist i k) (min (dist i j + dist j k) (dist i k + dist j k))
+
+theorem threeTreeLength_nonneg (i j k : ι) : 0 ≤ threeTreeLength i j k := by
+  unfold threeTreeLength
+  positivity
+
+theorem threeTreeLength_swap (i j k : ι) :
+    threeTreeLength i j k = threeTreeLength j i k := by
+  simp only [threeTreeLength, dist_comm j i]
+  simp only [add_comm (dist j k), min_left_comm]
+
+theorem threeTreeLength_rotate (i j k : ι) :
+    threeTreeLength i j k = threeTreeLength j k i := by
+  simp only [threeTreeLength, dist_comm j i, dist_comm k i]
+  ac_rfl
+
+/-- One of the three singleton-versus-pair cuts separates at least half
+the length of the shortest spanning tree. -/
+theorem threeTreeLength_cut (i j k : ι) :
+    threeTreeLength i j k ≤ 2 * min (dist i j) (dist i k) ∨
+    threeTreeLength i j k ≤ 2 * min (dist j k) (dist j i) ∨
+    threeTreeLength i j k ≤ 2 * min (dist k i) (dist k j) := by
+  simp only [dist_comm j i, dist_comm k i, dist_comm k j]
+  have ha := min_le_left (dist i j + dist i k)
+    (min (dist i j + dist j k) (dist i k + dist j k))
+  have hb := (min_le_right (dist i j + dist i k)
+    (min (dist i j + dist j k) (dist i k + dist j k))).trans
+    (min_le_left _ _)
+  have hc := (min_le_right (dist i j + dist i k)
+    (min (dist i j + dist j k) (dist i k + dist j k))).trans
+    (min_le_right _ _)
+  change threeTreeLength i j k ≤ _ at ha hb hc
+  rcases le_total (dist i j) (dist i k) with h₁ | h₁ <;>
+    rcases le_total (dist i j) (dist j k) with h₂ | h₂ <;>
+    rcases le_total (dist i k) (dist j k) with h₃ | h₃ <;>
+    simp only [min_def] <;> split_ifs <;>
+    first | (left; linarith) | (right; left; linarith) | (right; right; linarith)
+
+/-- A tree joining the three coordinates controls half the two distances
+from any chosen root. This supplies a product summability bound. -/
+theorem half_star_le_threeTreeLength (i j k : ι) :
+    (dist i j + dist i k) / 2 ≤ threeTreeLength i j k := by
+  unfold threeTreeLength
+  refine le_min ?_ (le_min ?_ ?_)
+  · linarith [dist_nonneg (x := i) (y := j), dist_nonneg (x := i) (y := k)]
+  · have := dist_triangle i j k
+    linarith [dist_nonneg (x := j) (y := k)]
+  · have := dist_triangle i k j
+    rw [dist_comm k j] at this
+    linarith [dist_nonneg (x := j) (y := k)]
+
+variable [Fintype ι]
+
+/-- Weighted total third response at a fixed root, with the shortest-tree
+weight. This retains all coincident and nearby coordinate triples. -/
+def weightedThirdRow (η : ℝ) (i : ι) : Seminorm ℝ (ι → ι → ι → ℝ) :=
+  Seminorm.of (fun H ↦ ∑ j, ∑ k, Real.exp (η * threeTreeLength i j k) * |H i j k|)
+    (fun H G ↦ by
+      calc
+        _ ≤ ∑ j, ∑ k, Real.exp (η * threeTreeLength i j k) *
+            (|H i j k| + |G i j k|) :=
+          Finset.sum_le_sum (fun j _ ↦ Finset.sum_le_sum (fun k _ ↦
+            mul_le_mul_of_nonneg_left (abs_add_le _ _) (Real.exp_pos _).le))
+        _ = _ := by simp only [mul_add, Finset.sum_add_distrib])
+    (fun a H ↦ by
+      simp only [Pi.smul_apply, smul_eq_mul, abs_mul, Real.norm_eq_abs, Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      apply Finset.sum_congr rfl
+      intro k _
+      ring)
+
+@[simp] theorem weightedThirdRow_apply (η : ℝ) (i : ι) (H : ι → ι → ι → ℝ) :
+    weightedThirdRow η i H =
+      ∑ j, ∑ k, Real.exp (η * threeTreeLength i j k) * |H i j k| := rfl
+
+def weightedThirdSeminorm (η : ℝ) : Seminorm ℝ (ι → ι → ι → ℝ) :=
+  Finset.univ.sup (weightedThirdRow η)
+
+theorem weightedThirdRow_le (η : ℝ) (i : ι) (H : ι → ι → ι → ℝ) :
+    weightedThirdRow η i H ≤ weightedThirdSeminorm η H :=
+  Seminorm.le_finset_sup_apply (Finset.mem_univ i)
+
+theorem weightedThirdSeminorm_le (η : ℝ) (H : ι → ι → ι → ℝ)
+    {C : ℝ} (hC : 0 ≤ C) (h : ∀ i, weightedThirdRow η i H ≤ C) :
+    weightedThirdSeminorm η H ≤ C :=
+  Seminorm.finset_sup_apply_le hC (fun i _ ↦ h i)
+
+/-- Exponential decay in tree length and one-coordinate volume growth imply
+uniform summability of the whole rooted third response. -/
+theorem weightedThirdSeminorm_le_of_envelope (η κ : ℝ) (hηκ : η ≤ κ)
+    (H : ι → ι → ι → ℝ) {M C : ℝ} (hM : 0 ≤ M) (hC : 0 ≤ C)
+    (hH : ∀ i j k, |H i j k| ≤ M * Real.exp (-κ * threeTreeLength i j k))
+    (hcount : ∀ i : ι, ∑ j, Real.exp (-((κ - η) / 2) * dist i j) ≤ C) :
+    weightedThirdSeminorm η H ≤ M * C ^ 2 := by
+  apply weightedThirdSeminorm_le η H (by positivity)
+  intro i
+  calc
+    _ ≤ ∑ j, ∑ k, M * (Real.exp (-((κ - η) / 2) * dist i j) *
+        Real.exp (-((κ - η) / 2) * dist i k)) := by
+      apply Finset.sum_le_sum
+      intro j _
+      apply Finset.sum_le_sum
+      intro k _
+      apply (mul_le_mul_of_nonneg_left (hH i j k) (Real.exp_pos _).le).trans
+      rw [← mul_assoc, mul_comm (Real.exp _) M, mul_assoc]
+      apply mul_le_mul_of_nonneg_left _ hM
+      rw [← Real.exp_add, ← Real.exp_add]
+      apply Real.exp_le_exp.mpr
+      have htree := half_star_le_threeTreeLength i j k
+      nlinarith [mul_nonneg (sub_nonneg.mpr hηκ)
+        (sub_nonneg.mpr htree)]
+    _ = M * (∑ j, Real.exp (-((κ - η) / 2) * dist i j)) ^ 2 := by
+      simp only [pow_two, Finset.mul_sum, Finset.sum_mul, mul_assoc]
+      congr 1
+      funext j
+      congr 1
+      funext k
+      ring
+    _ ≤ M * C ^ 2 := mul_le_mul_of_nonneg_left
+      (pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _ ↦ (Real.exp_pos _).le))
+        (hcount i) 2) hM
+
+end SpatialThirdResponse
+
+section CoordinateRescaling
+
+variable {ι ξ : Type*} [Fintype ι] [Fintype ξ]
+  [PseudoMetricSpace ι] [PseudoMetricSpace ξ]
+
+private theorem sum_reindex_le (e : ι → ξ) (he : Function.Injective e)
+    (f : ξ → ℝ) (hf : ∀ x, 0 ≤ f x) : ∑ i, f (e i) ≤ ∑ x, f x := by
+  classical
+  exact Finset.sum_le_sum_of_injOn e (fun _ _ _ _ h ↦ he h)
+    (Finset.subset_univ _) (fun _ _ ↦ le_rfl) (fun x _ _ ↦ hf x)
+
+/-- Tree length scales exactly when the underlying coordinate distances do.
+This assumption must be proved for the chosen geometric block map. -/
+theorem threeTreeLength_reindex (e : ι → ξ) {s : ℝ} (hs : 0 ≤ s)
+    (hd : ∀ i j, dist (e i) (e j) = s * dist i j) (i j k : ι) :
+    threeTreeLength (e i) (e j) (e k) = s * threeTreeLength i j k := by
+  simp only [threeTreeLength, hd, mul_min_of_nonneg _ _ hs, mul_add]
+
+/-- Restricting to injectively selected coordinates costs no volume factor.
+If fine distances are `s` times coarse distances, the admissible coarse
+exponential weight is `s * η`. -/
+theorem weightedResponseSeminorm_reindex_le (e : ι → ξ) (he : Function.Injective e)
+    (s η : ℝ) (hd : ∀ i j, dist (e i) (e j) = s * dist i j)
+    (H : ξ → ξ → ℝ) :
+    weightedResponseSeminorm (s * η) (fun i j ↦ H (e i) (e j)) ≤
+      weightedResponseSeminorm η H := by
+  apply weightedResponseSeminorm_le _ _ (apply_nonneg _ _)
+  intro i
+  calc
+    _ = ∑ j, Real.exp (η * dist (e i) (e j)) * |H (e i) (e j)| := by
+      simp only [weightedResponseRow_apply, hd]
+      congr 1
+      funext j
+      congr 2
+      ring
+    _ ≤ ∑ j, Real.exp (η * dist (e i) j) * |H (e i) j| :=
+      sum_reindex_le e he (fun j : ξ ↦ Real.exp (η * dist (e i) j) * |H (e i) j|)
+        (fun _ ↦ by positivity)
+    _ ≤ weightedResponseSeminorm η H := weightedResponseRow_le η (e i) H
+
+/-- The same exact metric rescaling holds for the tree-weighted third norm.
+This does not supply the Jacobian of a nonlinear gauge-field block map. -/
+theorem weightedThirdSeminorm_reindex_le (e : ι → ξ) (he : Function.Injective e)
+    (s η : ℝ) (hs : 0 ≤ s) (hd : ∀ i j, dist (e i) (e j) = s * dist i j)
+    (H : ξ → ξ → ξ → ℝ) :
+    weightedThirdSeminorm (s * η) (fun i j k ↦ H (e i) (e j) (e k)) ≤
+      weightedThirdSeminorm η H := by
+  apply weightedThirdSeminorm_le _ _ (apply_nonneg _ _)
+  intro i
+  calc
+    _ = ∑ j, ∑ k, Real.exp (η * threeTreeLength (e i) (e j) (e k)) *
+        |H (e i) (e j) (e k)| := by
+      simp only [weightedThirdRow_apply, threeTreeLength_reindex e hs hd]
+      congr 1
+      funext j
+      congr 1
+      funext k
+      congr 2
+      ring
+    _ ≤ ∑ j, ∑ k, Real.exp (η * threeTreeLength (e i) (e j) k) *
+        |H (e i) (e j) k| :=
+      Finset.sum_le_sum (fun j _ ↦ sum_reindex_le e he
+        (fun k : ξ ↦ Real.exp (η * threeTreeLength (e i) (e j) k) * |H (e i) (e j) k|)
+        (fun _ ↦ by positivity))
+    _ ≤ ∑ j, ∑ k, Real.exp (η * threeTreeLength (e i) j k) * |H (e i) j k| :=
+      sum_reindex_le e he
+        (fun j : ξ ↦ ∑ k, Real.exp (η * threeTreeLength (e i) j k) * |H (e i) j k|)
+        (fun _ ↦ Finset.sum_nonneg (fun _ _ ↦ by positivity))
+    _ ≤ weightedThirdSeminorm η H := weightedThirdRow_le η (e i) H
+
+end CoordinateRescaling
 
 #print axioms mixedResponse_eq_log_expectations
 #print axioms abs_mixedResponse_le_covariance

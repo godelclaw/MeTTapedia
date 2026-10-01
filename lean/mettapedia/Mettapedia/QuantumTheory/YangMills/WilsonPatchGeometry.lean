@@ -78,6 +78,26 @@ theorem separation_collar {S T : Finset (Link d n)}
   rw [dist_comm b y] at htriangle
   linarith
 
+/-- A single collar remains separated from the union of two collars, with
+the same two-unit loss as for two patches. -/
+theorem separation_collar_union {S T U : Finset (Link d n)}
+    (hS : (collar S).Nonempty) (hT : (collar T).Nonempty)
+    (hU : (collar U).Nonempty) :
+    min (polymerDist S T) (polymerDist S U) - 2 ≤
+      polymerDist (collar S) (collar T ∪ collar U) := by
+  have hTU : (collar T ∪ collar U).Nonempty := hT.mono subset_union_left
+  simp only [polymerDist, hTU, ↓reduceDIte]
+  apply le_inf'
+  intro y hy
+  apply (Metric.le_infDist hS.to_set).mpr
+  intro x hx
+  change min (polymerDist S T) (polymerDist S U) - 2 ≤ dist y x
+  rcases mem_union.mp hy with hy | hy
+  · have h := (separation_collar hS hT).trans (polymerDist_le_dist hx hy)
+    linarith [min_le_left (polymerDist S T) (polymerDist S U)]
+  · have h := (separation_collar hS hU).trans (polymerDist_le_dist hx hy)
+    linarith [min_le_right (polymerDist S T) (polymerDist S U)]
+
 /-- Sufficient geometric separation prevents a plaquette from meeting both
 changed patches; hence there is no elementary mixed boundary factor. -/
 theorem disjoint_incident_of_separation {S T : Finset (Link d n)}

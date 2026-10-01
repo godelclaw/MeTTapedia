@@ -18,19 +18,11 @@ open WilsonBlockElimination
 
 variable {X E : Type*} [Fintype X] [DecidableEq X] [MeasurableSpace E]
 
-/-- Coordinate dependence of a real observable. -/
-def DependsOn (S : Finset X) (F : (X → E) → ℝ) : Prop :=
-  ∀ ω ω', (∀ x ∈ S, ω x = ω' x) → F ω = F ω'
+export WilsonLocalResponse (DependsOn DependsOff)
 
-/-- Dependence only on coordinates outside the specified set. -/
-def DependsOff (S : Finset X) (F : (X → E) → ℝ) : Prop :=
-  ∀ ω ω', (∀ x, x ∉ S → ω x = ω' x) → F ω = F ω'
-
-theorem DependsOn.mul {S : Finset X} {F G : (X → E) → ℝ}
-    (hF : DependsOn S F) (hG : DependsOn S G) : DependsOn S (fun ω => F ω * G ω) := by
-  intro ω ω' h
-  change F ω * G ω = F ω' * G ω'
-  rw [hF ω ω' h, hG ω ω' h]
+namespace DependsOn
+export WilsonLocalResponse.DependsOn (mul mono)
+end DependsOn
 
 /-- Real-valued product factorization, with dependence conditions referring
 to the original coordinates, rather than supplied independence hypotheses. -/

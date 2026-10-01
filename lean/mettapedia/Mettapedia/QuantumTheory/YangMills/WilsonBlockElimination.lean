@@ -68,6 +68,27 @@ def covariance (W F G : C(X, ℝ)) : ℝ :=
 def thirdCumulant (W F G H : C(X, ℝ)) : ℝ :=
   thirdMoment (expectation μ W) F G H
 
+theorem thirdCumulant_swap (W F G H : C(X, ℝ)) :
+    thirdCumulant μ W F G H = thirdCumulant μ W G F H := by
+  simp only [thirdCumulant, thirdMoment, smul_eq_mul, mul_comm G F]
+  ring
+
+theorem thirdCumulant_rotate (W F G H : C(X, ℝ)) :
+    thirdCumulant μ W F G H = thirdCumulant μ W G H F := by
+  have hp : F * G * H = G * H * F := by ring
+  simp only [thirdCumulant, thirdMoment, smul_eq_mul, hp, mul_comm H F, mul_comm G F]
+  ring
+
+/-- Isolating one mark reduces third cumulance to three covariances. This
+form transfers two-set spatial mixing to a three-point tree estimate. -/
+theorem thirdCumulant_eq_covariances (W F G H : C(X, ℝ)) :
+    thirdCumulant μ W F G H = covariance μ W F (G * H) -
+      expectation μ W G * covariance μ W F H -
+      expectation μ W H * covariance μ W F G := by
+  simp only [thirdCumulant, thirdMoment, covariance, smul_eq_mul,
+    mul_assoc F G H, mul_comm G H, mul_comm H F, mul_comm G F]
+  ring
+
 @[simp] theorem expectation_zero (W : C(X, ℝ)) : expectation μ W 0 = 0 := by
   simp [expectation]
 
@@ -209,6 +230,22 @@ theorem abs_project_le (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
 theorem integral_marginal (W : C(B × I, ℝ)) :
     (∫ b, marginal ν W b ∂μ) = ∫ p, W p ∂μ.prod ν :=
   (integral_prod _ (IntegralKernel.integrable_continuous_fun (μ.prod ν) W.continuous)).symm
+
+/-- Every actual normalized integration fixes constant marks. -/
+@[simp] theorem project_one (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p) :
+    project ν W hW (1 : C(B × I, ℝ)) = 1 := by
+  ext b
+  exact expectation_one ν (W.curry b) (fun i ↦ hW (b, i))
+
+/-- The uniform norm contraction factor of raw mark transport cannot be
+strictly smaller than one: the constant observable already saturates it.
+An RG contraction therefore needs a suitable centered or extracted sector. -/
+theorem one_le_project_uniform_bound (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
+    (b : B) {q : ℝ}
+    (hq : ∀ F : C(B × I, ℝ), (∀ p, |F p| ≤ 1) → |project ν W hW F b| ≤ q) :
+    1 ≤ q := by
+  have h := hq 1 (fun _ ↦ by simp)
+  simpa only [project_one, ContinuousMap.one_apply, abs_one] using h
 
 /-- Exact one-observable transport. -/
 theorem expectation_project (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)

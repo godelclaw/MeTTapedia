@@ -135,7 +135,23 @@ theorem partition_staged (N : ℕ) (β : ℝ) :
   rw [secondDensity, integral_marginal, firstDensity, integral_marginal]
   exact integral_assemble N (fullDensity N β)
 
-/-- Exact two-step GSLT route, using the already proved admissible operators. -/
+/-- The first Haar elimination, integrating the fine block interiors. -/
+def firstRoute (N : ℕ) (β : ℝ) : Route WilsonEliminationRoutes.Step
+    (WilsonEliminationRoutes.source (volume.prod volume) volume (density N β) (density_pos N β))
+    (WilsonEliminationRoutes.target (volume.prod volume) volume (density N β) (density_pos N β)) :=
+  .cons (WilsonEliminationRoutes.elimination (volume.prod volume) volume
+    (density N β) (density_pos N β)) (.refl _)
+
+/-- The second Haar elimination uses the complete generated first density. -/
+def secondRoute (N : ℕ) (β : ℝ) : Route WilsonEliminationRoutes.Step
+    (WilsonEliminationRoutes.source volume volume (firstDensity N β)
+      (marginal_pos volume (density N β) (density_pos N β)))
+    (WilsonEliminationRoutes.target volume volume (firstDensity N β)
+      (marginal_pos volume (density N β) (density_pos N β))) :=
+  .cons (WilsonEliminationRoutes.elimination volume volume (firstDensity N β)
+    (marginal_pos volume (density N β) (density_pos N β))) (.refl _)
+
+/-- Exact two-step GSLT route, using the proved weighted integral operators. -/
 def route (N : ℕ) (β : ℝ) : Route WilsonEliminationRoutes.Step
     (WilsonEliminationRoutes.source (volume.prod volume) volume (density N β) (density_pos N β))
     (WilsonEliminationRoutes.target volume volume (firstDensity N β)
@@ -145,8 +161,57 @@ def route (N : ℕ) (β : ℝ) : Route WilsonEliminationRoutes.Step
     (.cons (WilsonEliminationRoutes.elimination volume volume (firstDensity N β)
       (marginal_pos volume (density N β) (density_pos N β))) (.refl _))
 
+theorem route_eq_append (N : ℕ) (β : ℝ) :
+    route N β = (firstRoute N β).append (secondRoute N β) := rfl
+
 def splitObservable (N : ℕ) (F : C(FullField N, ℝ)) : C(SplitField N, ℝ) :=
   ⟨fun p => F (assemble N p), F.continuous.comp (continuous_assemble N)⟩
+
+/-- Actual initial weighted state and raw moments of the local marks. -/
+def initialResponseState (N : ℕ) (β : ℝ) (F : AssemblyLink N → C(FullField N, ℝ)) :
+    WilsonEliminationRoutes.BoundaryState (AssemblyLink N) :=
+  ⟨WilsonEliminationRoutes.source (volume.prod volume) volume (density N β) (density_pos N β),
+    WilsonEliminationRoutes.ResponseData.initial (fun l ↦ splitObservable N (F l))⟩
+
+/-- The first generated density and all three orders of projected moments. -/
+def firstResponseState (N : ℕ) (β : ℝ) (F : AssemblyLink N → C(FullField N, ℝ)) :
+    WilsonEliminationRoutes.BoundaryState (AssemblyLink N) :=
+  ⟨_, (initialResponseState N β F).2.transport (firstRoute N β)⟩
+
+/-- The second generated density, retaining moments from the first step. -/
+def secondResponseState (N : ℕ) (β : ℝ) (F : AssemblyLink N → C(FullField N, ℝ)) :
+    WilsonEliminationRoutes.BoundaryState (AssemblyLink N) :=
+  ⟨_, (firstResponseState N β F).2.transport (secondRoute N β)⟩
+
+theorem initialResponse_transition (N : ℕ) (β : ℝ)
+    (F : AssemblyLink N → C(FullField N, ℝ)) :
+    WilsonEliminationRoutes.HaarTransition (AssemblyLink N)
+      (initialResponseState N β F) (firstResponseState N β F) :=
+  .integrate (volume.prod volume) volume (density N β) (density_pos N β) _
+
+theorem firstResponse_transition (N : ℕ) (β : ℝ)
+    (F : AssemblyLink N → C(FullField N, ℝ)) :
+    WilsonEliminationRoutes.HaarTransition (AssemblyLink N)
+      (firstResponseState N β F) (secondResponseState N β F) :=
+  .integrate volume volume (firstDensity N β)
+    (marginal_pos volume (density N β) (density_pos N β)) _
+
+/-- Direct and staged transport agree for the complete boundary moment data. -/
+theorem secondResponseState_data (N : ℕ) (β : ℝ)
+    (F : AssemblyLink N → C(FullField N, ℝ)) :
+    (secondResponseState N β F).2 =
+      (initialResponseState N β F).2.transport (route N β) := rfl
+
+/-- Both boundary states retain the original partition normalization. -/
+theorem responseState_partitions (N : ℕ) (β : ℝ)
+    (F : AssemblyLink N → C(FullField N, ℝ)) :
+    (firstResponseState N β F).1.partition = (initialResponseState N β F).1.partition ∧
+    (secondResponseState N β F).1.partition = (initialResponseState N β F).1.partition := by
+  constructor
+  · exact integral_marginal (volume.prod volume) volume (density N β)
+  · change (∫ b, marginal volume (marginal volume (density N β)) b ∂volume) = _
+    rw [integral_marginal, integral_marginal]
+    rfl
 
 theorem expectation_split (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) :
     expectation ((volume.prod volume).prod volume) (density N β) (splitObservable N F) =

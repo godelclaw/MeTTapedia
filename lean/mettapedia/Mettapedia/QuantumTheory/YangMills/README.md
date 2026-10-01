@@ -170,3 +170,71 @@ then establish its policy-indexed relation census, sparse rank/conditioning
 certificates, and analytic dual jets in the same norm. The recombination-side
 mathematics remains the weighted connected-cumulant/tree/KP estimate for the
 actual Wilson activities in that same norm.
+
+## Quantitative Wilson boundary contracts
+
+`WilsonEliminationRoutes.lean` carries the actual positive density, reference
+probability law, partition normalization and continuous moment functions
+through order three. Concrete product integrations define `HaarTransition`;
+spatial bounds are separate OSLF predicates. The native diamond asserts the
+existence of a successor satisfying the predicate. Its right adjoint is
+predecessor-universal, as specified by `haarBox_contract_iff`.
+
+`SU2WilsonAssemblyLocality.uniform_responseContract` proves one common
+second/third response contract for both actual Haar stages and every bounded
+singleton-collar-local mark family. Its constants precede the volume, marks
+and retained boundary values. `uniform_responseContract_reachable` supplies
+the concrete integration witnesses. `SU2WilsonEffectiveInteraction` specializes
+these statements to original Wilson scores in `uniform_scoreResponseContract`
+and `uniform_scoreContract_reachable`.
+
+For `0 ≤ β ≤ beta0 4`, `SU2BoundaryResponse.uniform_scoreThirdArray_envelope`
+gives a positive rate `κ`, uniform before all volumes, plaquette masks, pinned
+values and three independent rotation frames. If `τ` is the minimum
+spanning-tree length of the three links, the bound is
+`|Cum₃| ≤ 9 · 256³ · exp(2304 + 2κ) · exp(-(κ/2)τ)`.
+Taking `η = κ/4` gives the tree-weighted row budget
+`9 · 256³ · exp(2304 + 2κ) · exponentialVolumeBound 4 (κ/8)²`.
+Both assembly levels are covered by `uniform_weightedThirdRow`, including
+coincident and nearby triples. These are score cumulants. The existing
+second derivative includes its action contact; the true third derivative
+equals `-β³ Cum₃` for three pairwise plaquette-separated patches. The full
+overlapping-patch third derivative still requires its contact terms.
+Writing `A_S` for a score and `J_ST = D_T A_S`, the remaining ordered
+third-derivative formula has the correction
+`β²[Cov(J_ST,A_V) + Cov(J_SV,A_T) + Cov(A_S,J_TV)] - β E[D_V J_ST]`.
+The direct third action contact `D_V J_ST` must be identified and bounded;
+the separated-patch theorem proves the relevant contacts vanish there.
+
+`ResponseData.Contract.transport` proves the quantitative rule
+`C₂' ≤ C₂ + D₂` and `C₃' ≤ C₃ + D₃ + E₁ + E₂ + E₃`, where the three `E`
+budgets control the three mixed covariances. Direct and staged moment data
+agree exactly, with the generated first density explicit. Uniform bounds
+`B`, `2B²` and `6B³` hold for projected marks, covariance remainders and
+third remainders; each mixed correction in the actual two-stage route has
+bound `4B³`. Pointwise bounds alone do not bound their individual spatial sums.
+
+The old spatial budgets survive projection with factor one.
+`WilsonBlockElimination.one_le_project_uniform_bound` proves that constant
+marks prevent a smaller uniform factor on the full observable space.
+Consequently these results do not yet instantiate
+`RGBootstrap.IsRGContractionGain` or the physical `AffineRGStepBound`.
+
+The coordinate-rescaling lemmas in `WilsonBoundaryResponse.lean` prove that
+an injective coordinate map with `d_fine = s · d_coarse` changes the admissible
+exponent to `η_coarse = sη_fine`, without a volume factor. The current assembly
+uses the original link metric. Repeated RG steps additionally need the actual
+gauge-equivariant block map, its derivative and contact bounds, the relevant
+interaction extraction, and estimates for the generated mixed terms in the
+same rescaled norm.
+
+A precise all-order target is a uniform bound
+`sup_l sum_(l₂,...,lᵣ) exp(η τᵣ) |Cumᵣ| ≤ A · r! · R^(-r)` for every `r ≥ 2`,
+with positive `η,R` before volume and boundary data, together with the
+corresponding differentiated contact bounds and exact partition-indexed
+conditioning identities: sum over every partition of the source marks the
+outer cumulant of the conditional cumulants associated to its blocks, using
+the generated marginal for the outer law. Proving preservation after extraction
+and rescaling
+with gain below one remains open. The weak-to-strong trajectory and the
+continuum construction remain further obligations.

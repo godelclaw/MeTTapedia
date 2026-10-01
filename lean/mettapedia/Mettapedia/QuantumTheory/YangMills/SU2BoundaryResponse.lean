@@ -800,6 +800,61 @@ theorem uniform_weightedResponseSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β 
   rw [show κ - κ / 2 = κ / 2 by ring]
   exact sum_exp_dist_le (by decide) (by positivity) l
 
+/-- Third connected responses of the actual singleton Wilson scores, under
+the original fixed-boundary Haar density. The three frames are independent. -/
+def scoreThirdArray (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) :
+    Link 4 n → Link 4 n → Link 4 n → ℝ := fun l m k ↦
+  WilsonBlockElimination.thirdCumulant (Measure.pi fun _ ↦ (volume : Measure SU2))
+    (boundaryDensity β active held b) (score active held {l} q b 0)
+    (score active held {m} r b 0) (score active held {k} u b 0)
+
+/-- Tree decay includes all triples, with no separation assumption. The
+rate is chosen before the volume, pinned values, plaquette mask and frames. -/
+theorem uniform_scoreThirdArray_envelope {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (n : ℕ) (active : Finset (Plaquette 4 n))
+      (held : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (l m k : Link 4 n),
+      |scoreThirdArray β active held q r u b l m k| ≤
+        thirdCumulantEnvelope 256 κ *
+          Real.exp (-(κ / 2) * WilsonBoundaryResponse.threeTreeLength l m k) := by
+  obtain ⟨κ, hκ, hc⟩ := thirdCumulant_collar_clustering
+    (volume : Measure SU2) (1 : SU2) hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro n active held q r u b l m k
+  exact hc ((model n active).pinned held b)
+    (continuous_pinned (model n active) (model_continuous n active) held b)
+    l m k (score active held {l} q b 0) (score active held {m} r b 0)
+    (score active held {k} u b 0) 256 (by norm_num)
+    (score_local active held {l} q b 0) (score_local active held {m} r b 0)
+    (score_local active held {k} u b 0)
+    (by simpa using abs_score_le active held {l} q b 0)
+    (by simpa using abs_score_le active held {m} r b 0)
+    (by simpa using abs_score_le active held {k} u b 0)
+
+/-- A finite total third-response budget, uniform over every boundary datum
+and every volume. The chosen exponent is one quarter of the clustering rate. -/
+theorem uniform_weightedThirdSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (n : ℕ) (active : Finset (Plaquette 4 n))
+      (held : Finset (Link 4 n)) (q r u b : Link 4 n → SU2),
+      WilsonBoundaryResponse.weightedThirdSeminorm η
+        (scoreThirdArray β active held q r u b) ≤ C := by
+  obtain ⟨κ, hκ, hc⟩ := uniform_scoreThirdArray_envelope hβ hβ0
+  have hM : 0 ≤ thirdCumulantEnvelope 256 κ := by
+    unfold thirdCumulantEnvelope
+    positivity
+  have hV : 0 ≤ exponentialVolumeBound 4 (κ / 8) := by
+    unfold exponentialVolumeBound
+    positivity
+  refine ⟨κ / 4, by positivity,
+    thirdCumulantEnvelope 256 κ * (exponentialVolumeBound 4 (κ / 8)) ^ 2,
+    by positivity, ?_⟩
+  intro n active held q r u b
+  apply WilsonBoundaryResponse.weightedThirdSeminorm_le_of_envelope
+    (κ / 4) (κ / 2) (by linarith) _ hM hV (hc n active held q r u b)
+  intro l
+  rw [show (κ / 2 - κ / 4) / 2 = κ / 8 by ring]
+  exact sum_exp_dist_le (by decide) (by positivity) l
+
 /-- Four original boundary partition functions on the same SU(2) lattice. -/
 def response (β : ℝ) (n : ℕ) (active : Finset (Plaquette 4 n))
     (held S T : Finset (Link 4 n)) (b a c : Link 4 n → SU2) : ℝ :=
