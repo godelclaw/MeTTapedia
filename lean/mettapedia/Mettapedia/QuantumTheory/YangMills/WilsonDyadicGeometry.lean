@@ -1,12 +1,15 @@
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
 
 /-!
-# Nested separators of a four-dimensional Wilson assembly
+# Nested separators and scale-two Wilson geometry
 
 At mesh `s`, retain links lying in a coordinate face of the mesh: a transverse
 coordinate is divisible by `s`. All other links are internal. Any internal
 links in one plaquette have the same cell index. Thus distinct cells share
 only retained links, and a plaquette cannot directly couple their interiors.
+
+Scale-two blocking has a different target lattice: its side is half the
+fine side, and a coarse link is the ordered product of two fine links.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -81,6 +84,162 @@ theorem internal_support_same_cell (s : ℕ) (p : Plaquette d n)
   obtain ⟨i, _, rfl⟩ := mem_image.mp hl
   obtain ⟨j, _, rfl⟩ := mem_image.mp hk
   exact (internal_link_cell s p i hil).trans (internal_link_cell s p j hik).symm
+
+/-! ## Genuine scale-two links -/
+
+/-- A coarse torus of side `n+3` is blocked from side `2(n+3)`. -/
+abbrev doubleIndex (n : ℕ) := 2 * n + 3
+
+/-- Doubling a cyclic coordinate is an injective additive map into the
+torus with twice the period. -/
+def doubleCoordinate (n : ℕ) : ZMod (n + 3) →+ ZMod (doubleIndex n + 3) :=
+  ZMod.lift (n + 3)
+    ⟨AddMonoidHom.mk' (fun j : ℤ ↦ (2 : ZMod (doubleIndex n + 3)) * j)
+      (by intro a b; simp [mul_add]), by
+        change (2 : ZMod (doubleIndex n + 3)) * ((n + 3 : ℕ) : ZMod (doubleIndex n + 3)) = 0
+        calc
+          _ = ((doubleIndex n + 3 : ℕ) : ZMod (doubleIndex n + 3)) := by
+            simp only [doubleIndex, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
+            ring
+          _ = 0 := ZMod.natCast_self _⟩
+
+@[simp] theorem doubleCoordinate_intCast (n : ℕ) (j : ℤ) :
+    doubleCoordinate n (j : ZMod (n + 3)) = (2 * j : ℤ) := by
+  simp [doubleCoordinate]
+
+theorem doubleCoordinate_apply (n : ℕ) (z : ZMod (n + 3)) :
+    doubleCoordinate n z = ((2 * z.val : ℕ) : ZMod (doubleIndex n + 3)) := by
+  simpa using doubleCoordinate_intCast n (z.val : ℤ)
+
+@[simp] theorem val_doubleCoordinate (n : ℕ) (z : ZMod (n + 3)) :
+    (doubleCoordinate n z).val = 2 * z.val := by
+  rw [doubleCoordinate_apply, ZMod.val_natCast,
+    Nat.mod_eq_of_lt (by have h := z.val_lt; dsimp [doubleIndex]; omega)]
+
+theorem doubleCoordinate_injective (n : ℕ) : Function.Injective (doubleCoordinate n) := by
+  intro x y h
+  have hv := congrArg ZMod.val h
+  simp only [val_doubleCoordinate] at hv
+  exact ZMod.val_injective (n + 3) (by omega)
+
+/-- Coarse sites sit at the even sites of the fine lattice. -/
+def doubleSite (x : Site d n) : Site d (doubleIndex n) := fun i ↦ doubleCoordinate n (x i)
+
+@[simp] theorem doubleSite_add (x y : Site d n) :
+    doubleSite (x + y) = doubleSite x + doubleSite y := by
+  funext i
+  exact map_add _ _ _
+
+theorem doubleSite_injective : Function.Injective (doubleSite (d := d) (n := n)) := by
+  intro x y h
+  funext i
+  exact doubleCoordinate_injective n (congrFun h i)
+
+@[simp] theorem doubleSite_step (μ : Fin d) :
+    doubleSite (step (n := n) μ) = step μ + step μ := by
+  funext i
+  by_cases h : i = μ
+  · subst i
+    simpa [doubleSite, step, one_add_one_eq_two] using doubleCoordinate_intCast n 1
+  · simp [doubleSite, step, h]
+
+/-- The two consecutive positively oriented fine links in a coarse link. -/
+def blockEdge (l : Link d n) (b : Fin 2) : Link d (doubleIndex n) :=
+  (doubleSite l.1 + b.val • step l.2, l.2)
+
+@[simp] theorem blockEdge_zero (l : Link d n) :
+    blockEdge l 0 = (doubleSite l.1, l.2) := by simp [blockEdge]
+
+@[simp] theorem blockEdge_one (l : Link d n) :
+    blockEdge l 1 = (doubleSite l.1 + step l.2, l.2) := by simp [blockEdge]
+
+theorem blockEdge_endpoint (l : Link d n) :
+    (blockEdge l 1).1 + step l.2 = doubleSite (l.1 + step l.2) := by
+  simp [add_assoc]
+
+theorem val_blockEdge_direction (l : Link d n) (b : Fin 2) :
+    ((blockEdge l b).1 l.2).val = 2 * (l.1 l.2).val + b.val := by
+  have he : (blockEdge l b).1 l.2 =
+      ((2 * (l.1 l.2).val + b.val : ℕ) : ZMod (doubleIndex n + 3)) := by
+    simp [blockEdge, doubleSite, step, doubleCoordinate_apply, nsmul_eq_mul]
+  rw [he, ZMod.val_natCast]
+  apply Nat.mod_eq_of_lt
+  have hz := (l.1 l.2).val_lt
+  have hb := b.isLt
+  dsimp [doubleIndex]
+  omega
+
+/-- No fine edge is reused by two coarse paths, including across the
+periodic seam. This supplies independent product-Haar block coordinates. -/
+theorem blockEdge_injective : Function.Injective
+    (fun p : Link d n × Fin 2 ↦ blockEdge p.1 p.2) := by
+  rintro ⟨⟨x, μ⟩, b⟩ ⟨⟨y, ν⟩, c⟩ h
+  have hdir : μ = ν := congrArg Prod.snd h
+  subst ν
+  have hv := congrArg (fun l : Link d (doubleIndex n) ↦ (l.1 μ).val) h
+  change ((blockEdge (x, μ) b).1 μ).val = ((blockEdge (y, μ) c).1 μ).val at hv
+  rw [val_blockEdge_direction, val_blockEdge_direction] at hv
+  have hbc : b = c := Fin.ext (by have hb := b.isLt; have hc := c.isLt; omega)
+  subst c
+  have hx := congrArg Prod.fst h
+  change doubleSite x + b.val • step μ = doubleSite y + b.val • step μ at hx
+  have hxy := doubleSite_injective (add_right_cancel hx)
+  subst y
+  rfl
+
+/-- Circle distances scale exactly with the lattice spacing and period. -/
+theorem norm_doubleCoordinate (z : ZMod (n + 3)) :
+    ‖coordinateCircle (doubleIndex n) (doubleCoordinate n z)‖ =
+      2 * ‖coordinateCircle n z‖ := by
+  have hp : (doubleIndex n : ℝ) + 3 = 2 * ((n : ℝ) + 3) := by
+    simp only [doubleIndex, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
+    ring
+  rw [coordinateCircle_apply, val_doubleCoordinate, coordinateCircle_apply, hp]
+  simpa only [Nat.cast_mul, Nat.cast_ofNat, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+    using AddCircle.norm_coe_mul (n + 3 : ℝ) (z.val : ℝ) 2
+
+/-- The original sup-circle metric becomes twice the coarse metric on
+even base points. Link directions retain their zero-distance multiplicity. -/
+theorem dist_blockEdge_zero (l k : Link d n) :
+    dist (blockEdge l 0) (blockEdge k 0) = 2 * dist l k := by
+  have hc (i : Fin d) :
+      dist (position (blockEdge l 0) i) (position (blockEdge k 0) i) =
+        2 * dist (position l i) (position k i) := by
+    simpa only [position, blockEdge_zero, doubleSite, dist_eq_norm, ← map_sub]
+      using norm_doubleCoordinate (l.1 i - k.1 i)
+  rw [dist_link_eq, dist_link_eq]
+  apply le_antisymm
+  · apply (dist_pi_le_iff (by positivity : 0 ≤ 2 * dist (position l) (position k))).mpr
+    intro i
+    rw [hc]
+    exact mul_le_mul_of_nonneg_left (dist_le_pi_dist (position l) (position k) i) (by norm_num)
+  · have h : dist (position l) (position k) ≤
+        dist (position (blockEdge l 0)) (position (blockEdge k 0)) / 2 := by
+      apply (dist_pi_le_iff (by positivity)).mpr
+      intro i
+      have hi := dist_le_pi_dist (position (blockEdge l 0)) (position (blockEdge k 0)) i
+      rw [hc] at hi
+      linarith
+    linarith
+
+/-- Noncommutative link multiplication keeps path order. -/
+def blockField {E : Type*} [Mul E] (U : Link d (doubleIndex n) → E) : Link d n → E :=
+  fun l ↦ U (blockEdge l 0) * U (blockEdge l 1)
+
+/-- The lattice gauge action at the initial and final vertices of a link. -/
+def gaugeAct {E : Type*} [Group E] (g : Site d n → E) (U : Link d n → E) : Link d n → E :=
+  fun l ↦ g l.1 * U l * (g (l.1 + step l.2))⁻¹
+
+/-- Gauge factors at the intermediate fine vertex cancel without commuting
+any group elements. The retained gauge is restriction to the even sites. -/
+theorem blockField_gaugeAct {E : Type*} [Group E]
+    (g : Site d (doubleIndex n) → E) (U : Link d (doubleIndex n) → E) :
+    blockField (gaugeAct g U) = gaugeAct (fun x ↦ g (doubleSite x)) (blockField U) := by
+  funext l
+  simp only [blockField, gaugeAct, blockEdge_zero, blockEdge_one]
+  rw [← blockEdge_endpoint l]
+  simp only [blockEdge_one]
+  group
 
 #print axioms coarse_retained_fine
 #print axioms internal_link_cell

@@ -23,6 +23,15 @@ variable {d n : ℕ}
 /-- Exactly the retained links of the specified mesh. -/
 def retainedSet (s : ℕ) : Finset (Link d n) := univ.filter (Retained s)
 
+theorem retainedSet_subset_of_dvd {s t : ℕ} (hst : s ∣ t) :
+    retainedSet (d := d) (n := n) t ⊆ retainedSet s := by
+  intro l hl
+  exact mem_filter.mpr ⟨mem_univ _, retained_of_dvd hst l (mem_filter.mp hl).2⟩
+
+theorem dyadic_retained_nested (j : ℕ) :
+    retainedSet (d := d) (n := n) (2 ^ (j + 1 + 1)) ⊆ retainedSet (2 ^ (j + 1)) :=
+  retainedSet_subset_of_dvd (pow_dvd_pow 2 (Nat.le_succ _))
+
 theorem dependency_subset_retained (s : ℕ) (S : Finset (Link d n)) :
     dependencyBoundary s S ⊆ retainedSet s := by
   intro l hl

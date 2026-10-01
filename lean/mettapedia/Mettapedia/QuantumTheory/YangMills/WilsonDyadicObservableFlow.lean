@@ -21,21 +21,14 @@ open WilsonPinnedIntegral WilsonDyadicLocality WilsonDyadicProjection WilsonProd
 variable {E : Type*} [TopologicalSpace E] [CompactSpace E] [MeasurableSpace E]
   [BorelSpace E] [SecondCountableTopology E] {d n : ℕ}
 
-def pinMap (held : Finset (Link d n)) : C((Link d n → E) × (Link d n → E), Link d n → E) :=
-  ⟨fun p => pin held p.1 p.2, by
-    apply continuous_pi
-    intro l
-    dsimp [pin]
-    split_ifs <;> fun_prop⟩
+export WilsonPinnedIntegral (pinMap)
 
 /-- The actual conditional integral as a continuous boundary mark, lifted to
 the original coordinate space by ignoring unretained coordinates. -/
 def projectMap (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
     (M : Model d E) (hφ : ∀ p, Continuous (M.φ p)) (β : ℝ)
     (held : Finset (Link d M.n)) (F : C(Link d M.n → E, ℝ)) : C(Link d M.n → E, ℝ) :=
-  WilsonBlockElimination.project (Measure.pi fun _ : Link d M.n => ν₀)
-    ((realDensity M hφ β).comp (pinMap held))
-    (fun _ => realDensity_pos M hφ β _) (F.comp (pinMap held))
+  weightedProject ν₀ (realDensity M hφ β) (realDensity_pos M hφ β) held F
 
 theorem projectMap_apply (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
     (M : Model d E) (hφ : ∀ p, Continuous (M.φ p)) (β : ℝ)
@@ -49,6 +42,38 @@ def observableSequence (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
   | 0 => F
   | j + 1 => projectMap ν₀ M hφ β (retainedSet (2^(j+1)))
       (observableSequence ν₀ M hφ β F j)
+
+/-- Any finite dyadic prefix is exactly the direct original-law conditional
+integral at its final separator. This is not a change of lattice scale. -/
+theorem observableSequence_eq_direct (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (M : Model d E) (hφ : ∀ p, Continuous (M.φ p)) (β : ℝ)
+    (F : C(Link d M.n → E, ℝ)) :
+    ∀ j, observableSequence ν₀ M hφ β F (j + 1) =
+      projectMap ν₀ M hφ β (retainedSet (2 ^ (j + 1))) F := by
+  intro j
+  induction j with
+  | zero => rfl
+  | succ j ih =>
+    change projectMap ν₀ M hφ β (retainedSet (2 ^ (j + 1 + 1)))
+      (observableSequence ν₀ M hφ β F (j + 1)) = _
+    rw [ih]
+    exact weightedProject_nested_original ν₀ _ (realDensity_pos M hφ β)
+      (dyadic_retained_nested j) F
+
+/-- The older original-law sequence agrees with integration under the
+successive generated densities, at every finite depth. -/
+theorem observableSequence_eq_generated (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (M : Model d E) (hφ : ∀ p, Continuous (M.φ p)) (β : ℝ)
+    (F : C(Link d M.n → E, ℝ)) (j : ℕ) :
+    observableSequence ν₀ M hφ β F j =
+      markSequence ν₀ (realDensity M hφ β) (realDensity_pos M hφ β)
+        (fun k ↦ retainedSet (2 ^ (k + 1))) F j := by
+  cases j with
+  | zero => rfl
+  | succ j =>
+    rw [observableSequence_eq_direct,
+      markSequence_eq_direct ν₀ _ (realDensity_pos M hφ β) _ dyadic_retained_nested F j]
+    rfl
 
 /-- The support recurrence is proved for these explicitly defined integral
 operators at every stage, with no support-growth hypothesis on a black box. -/
@@ -84,6 +109,73 @@ end WilsonDyadicObservableFlow
 
 namespace SU2WilsonAssemblyLocality
 open SU2WilsonAssembly SU2WilsonBlockPilot WilsonDyadicObservableFlow WilsonDyadicProjection
+
+/-- Repeated marginalization of one strong-coupling Wilson law preserves
+the original-label second/third moment contract uniformly in elimination
+depth. Exact direct integration avoids accumulating absolute stage budgets.
+The metric and marks are still those of the original lattice. -/
+theorem uniform_nestedResponseContract {β B : ℝ} (hβ : 0 ≤ β)
+    (hβ0 : β ≤ StrongCouplingCrossing.beta0 4) (hB : 0 ≤ B) :
+    ∃ η > 0, ∃ C₂ ≥ 0, ∃ C₃ ≥ 0,
+      ∀ (M : InhomogeneousWilsonCrossing.Model 4 SU2)
+        (hφ : ∀ p, Continuous (M.φ p))
+        (held : ℕ → Finset (StrongCouplingCrossing.Link 4 M.n)),
+        (∀ j, held (j + 1) ⊆ held j) →
+        ∀ (F : StrongCouplingCrossing.Link 4 M.n →
+          C(StrongCouplingCrossing.Link 4 M.n → SU2, ℝ)),
+        (∀ l, WilsonLocalResponse.DependsOn (WilsonPatchGeometry.collar {l}) (F l)) →
+        (∀ l ω, |F l ω| ≤ B) → ∀ j,
+        WilsonEliminationRoutes.boundaryContract η B C₂ C₃
+          (WilsonProjectionComposition.coordinateResponseState (volume : Measure SU2)
+            (WilsonLocalResponse.realDensity M hφ β) (WilsonLocalResponse.realDensity_pos M hφ β)
+            held F j) := by
+  obtain ⟨η, hη, C₂, hC₂, C₃, hC₃, hc⟩ :=
+    WilsonLocalResponse.uniform_collar_response_bounds (volume : Measure SU2) (1 : SU2)
+      hβ hβ0 hB
+  refine ⟨η, hη, C₂, hC₂, C₃, hC₃, ?_⟩
+  intro M hφ held hnested F hlocal hF j
+  refine ⟨hη, hB, hC₂, hC₃, ?_, ?_, ?_⟩
+  · intro l b
+    exact WilsonEliminationRoutes.action_contract
+      (WilsonProjectionComposition.coordinateRoute (volume : Measure SU2)
+        (WilsonLocalResponse.realDensity M hφ β) (WilsonLocalResponse.realDensity_pos M hφ β)
+        held j) (F l) B (hF l) b
+  · intro b
+    cases j with
+    | zero =>
+      change WilsonBoundaryResponse.weightedResponseSeminorm η
+        (fun i k ↦ (WilsonEliminationRoutes.ResponseData.initial F).pair i k b) ≤ C₂
+      simp only [WilsonEliminationRoutes.ResponseData.pair_initial, ContinuousMap.zero_apply]
+      change WilsonBoundaryResponse.weightedResponseSeminorm η 0 ≤ C₂
+      simpa only [map_zero] using hC₂
+    | succ j =>
+      have h := hc (M.pinned (held j) b) (WilsonLocalResponse.continuous_pinned M hφ (held j) b)
+        (fun l ↦ WilsonConditionalProjection.pinnedMark (held j) b (F l))
+        (fun l ↦ WilsonConditionalProjection.pinnedMark_local _ _ _ _ (hlocal l))
+        (fun l _ ↦ hF l _)
+      convert h.1 using 1
+      congr 1
+      funext i k
+      rw [WilsonProjectionComposition.coordinateResponseState_pair _ _ _ held hnested F j i k]
+      rfl
+  · intro b
+    cases j with
+    | zero =>
+      change WilsonBoundaryResponse.weightedThirdSeminorm η
+        (fun i k l ↦ (WilsonEliminationRoutes.ResponseData.initial F).triple i k l b) ≤ C₃
+      simp only [WilsonEliminationRoutes.ResponseData.triple_initial, ContinuousMap.zero_apply]
+      change WilsonBoundaryResponse.weightedThirdSeminorm η 0 ≤ C₃
+      simpa only [map_zero] using hC₃
+    | succ j =>
+      have h := hc (M.pinned (held j) b) (WilsonLocalResponse.continuous_pinned M hφ (held j) b)
+        (fun l ↦ WilsonConditionalProjection.pinnedMark (held j) b (F l))
+        (fun l ↦ WilsonConditionalProjection.pinnedMark_local _ _ _ _ (hlocal l))
+        (fun l _ ↦ hF l _)
+      convert h.2 using 1
+      congr 1
+      funext i k l
+      rw [WilsonProjectionComposition.coordinateResponseState_triple _ _ _ held hnested F j i k l]
+      rfl
 
 /-- The first generic dyadic operator is the assembly's actual first mark. -/
 theorem observableSequence_one (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) :

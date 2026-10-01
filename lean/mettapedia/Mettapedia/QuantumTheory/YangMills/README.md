@@ -230,6 +230,24 @@ common positive rate. `uniform_scoreCompositionContract` specializes this
 certificate to actual Wilson scores at both assembly levels. Every rate
 and constant precedes volume, boundary values and rotation frames.
 
+`WilsonPinnedIntegral` proves exact density and mark transport through every
+finite nested sequence of retained coordinate sets. The generated density is
+averaged at each step; direct and staged normalized integrals agree, and the
+partition is preserved. `WilsonProjectionComposition.coordinateRoute` realizes
+these maps as existing GSLT routes. In `WilsonDyadicObservableFlow`,
+`uniform_nestedResponseContract` bounds the stored original-label pair and
+third moments independently of elimination depth, using one direct pinned
+Wilson law. Its constants precede the volume, retained sets, mark family,
+boundary values and depth. This theorem keeps the original lattice metric;
+it does not identify stored moments with derivatives of coarse link products.
+
+`WilsonDyadicGeometry.blockField` defines an actual scale-two map from side
+`2(n+3)` to side `n+3`: every coarse link is the ordered product of its two
+fine links. `blockField_gaugeAct` proves gauge equivariance;
+`blockEdge_injective` proves these pairs share no fine edges, including at
+the periodic seam. `dist_blockEdge_zero` proves exact factor-two rescaling
+of the circle sup metric at the even base points.
+
 The old spatial budgets survive projection with factor one.
 `WilsonBlockElimination.one_le_project_uniform_bound` proves that constant
 marks prevent a smaller uniform factor on the full observable space.

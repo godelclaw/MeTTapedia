@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.WilsonEliminationRoutes
+import Mettapedia.QuantumTheory.YangMills.WilsonPinnedIntegral
 
 /-!
 # Composition of normalized Wilson projections
@@ -128,6 +129,122 @@ theorem fiberThirdCumulant_staged (ν : Measure I) (ρ : Measure J)
   rw [ht]
   exact thirdMoment_comp (projectLinear ρ W hW)
     (projectLinear ν (marginal ρ W) (marginal_pos ρ W hW)) F G H
+
+section Coordinates
+open WilsonPinnedIntegral WilsonEliminationRoutes Mettapedia.GSLT.Ultrainfinite
+variable {X E : Type} [Fintype X] [DecidableEq X]
+  [TopologicalSpace E] [CompactSpace E] [MeasurableSpace E] [BorelSpace E]
+  [SecondCountableTopology E]
+
+/-- A finite-coordinate weighted state on the original lattice. Eliminated
+coordinates remain only as normalized dummy probability factors. -/
+abbrev coordinateState (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) : State :=
+  ⟨X → E, inferInstance, inferInstance, inferInstance, inferInstance,
+    Measure.pi (fun _ : X ↦ ν₀), inferInstance, W, hW⟩
+
+/-- The actual conditional integral supplies a GSLT route step; expectation
+preservation and the uniform bound are theorems about that integral. -/
+def coordinateStep (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : Finset X) :
+    Step (coordinateState ν₀ W hW)
+      (coordinateState ν₀ (average ν₀ held W) (average_pos ν₀ held W hW)) where
+  project := weightedProjectLinear ν₀ W hW held
+  expectation := expectation_weightedProject ν₀ W hW held
+  contract := fun F _ hF ↦ abs_weightedProject_le ν₀ W hW held F hF
+
+/-- The complete sequence of generated states. No interaction is discarded. -/
+abbrev coordinateStateSequence (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X) (j : ℕ) : State :=
+  coordinateState ν₀ (densitySequence ν₀ W held j) (densitySequence_pos ν₀ W hW held j)
+
+/-- Any finite prefix is a route of the existing weighted integration
+machinery. Nesting is an assumption on direct-versus-staged equality only. -/
+def coordinateRoute (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X) :
+    (j : ℕ) → Route Step (coordinateStateSequence ν₀ W hW held 0)
+      (coordinateStateSequence ν₀ W hW held j)
+  | 0 => .refl _
+  | j + 1 => (coordinateRoute ν₀ W hW held j).append
+      (.cons (coordinateStep ν₀ (densitySequence ν₀ W held j)
+        (densitySequence_pos ν₀ W hW held j) (held j)) (.refl _))
+
+theorem action_coordinateRoute (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X)
+    (F : C(X → E, ℝ)) :
+    ∀ j, action (coordinateRoute ν₀ W hW held j) F = markSequence ν₀ W hW held F j := by
+  intro j
+  induction j with
+  | zero => rfl
+  | succ j ih =>
+    exact (action_append (coordinateRoute ν₀ W hW held j)
+      (.cons (coordinateStep ν₀ (densitySequence ν₀ W held j)
+        (densitySequence_pos ν₀ W hW held j) (held j)) (.refl _)) F).trans
+      (congrArg (weightedProject ν₀ (densitySequence ν₀ W held j)
+        (densitySequence_pos ν₀ W hW held j) (held j)) ih)
+
+/-- Direct integration equals every finite nested route, for every
+continuous observable and therefore every finite product of such marks. -/
+theorem action_coordinateRoute_eq_direct (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X)
+    (hnested : ∀ j, held (j + 1) ⊆ held j) (F : C(X → E, ℝ)) (j : ℕ) :
+    action (coordinateRoute ν₀ W hW held (j + 1)) F =
+      weightedProject ν₀ W hW (held j) F := by
+  rw [action_coordinateRoute, markSequence_eq_direct ν₀ W hW held hnested F j]
+
+/-- Partition normalization is unchanged at every elimination depth,
+including when the held sequence is not nested. -/
+theorem coordinateStateSequence_partition (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X) :
+    ∀ j, (coordinateStateSequence ν₀ W hW held j).partition =
+      (coordinateState ν₀ W hW).partition := by
+  intro j
+  induction j with
+  | zero => rfl
+  | succ j ih =>
+    exact (integral_average ν₀ (held j) (densitySequence ν₀ W held j)).trans ih
+
+/-- Original marked moments transported through the full finite route.
+These are stored moments indexed by original labels, not derivatives in
+new coarse-link coordinates. -/
+abbrev coordinateResponseState {ι : Type} (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X)
+    (F : ι → C(X → E, ℝ)) (j : ℕ) : BoundaryState ι :=
+  ⟨coordinateStateSequence ν₀ W hW held j,
+    (ResponseData.initial F).transport (coordinateRoute ν₀ W hW held j)⟩
+
+theorem coordinateResponseState_pair {ι : Type} (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X)
+    (hnested : ∀ j, held (j + 1) ⊆ held j) (F : ι → C(X → E, ℝ)) (j : ℕ) (i k : ι) :
+    (coordinateResponseState ν₀ W hW held F (j + 1)).2.pair i k =
+      fiberCovariance (Measure.pi fun _ : X ↦ ν₀) (W.comp (pinMap (held j)))
+        (fun p ↦ hW _) ((F i).comp (pinMap (held j))) ((F k).comp (pinMap (held j))) := by
+  change action (coordinateRoute ν₀ W hW held (j + 1)) (F i * F k) -
+    action (coordinateRoute ν₀ W hW held (j + 1)) (F i) *
+      action (coordinateRoute ν₀ W hW held (j + 1)) (F k) = _
+  rw [action_coordinateRoute_eq_direct ν₀ W hW held hnested (F i * F k) j,
+    action_coordinateRoute_eq_direct ν₀ W hW held hnested (F i) j,
+    action_coordinateRoute_eq_direct ν₀ W hW held hnested (F k) j]
+  rfl
+
+theorem coordinateResponseState_triple {ι : Type} (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) (held : ℕ → Finset X)
+    (hnested : ∀ j, held (j + 1) ⊆ held j) (F : ι → C(X → E, ℝ))
+    (j : ℕ) (i k l : ι) :
+    (coordinateResponseState ν₀ W hW held F (j + 1)).2.triple i k l =
+      fiberThirdCumulant (Measure.pi fun _ : X ↦ ν₀) (W.comp (pinMap (held j)))
+        (fun p ↦ hW _) ((F i).comp (pinMap (held j))) ((F k).comp (pinMap (held j)))
+        ((F l).comp (pinMap (held j))) := by
+  change thirdMoment (action (coordinateRoute ν₀ W hW held (j + 1))) (F i) (F k) (F l) = _
+  have hP : action (coordinateRoute ν₀ W hW held (j + 1)) =
+      weightedProjectLinear ν₀ W hW (held j) := by
+    ext U b
+    exact congrArg (fun V : C(X → E, ℝ) ↦ V b)
+      (action_coordinateRoute_eq_direct ν₀ W hW held hnested U j)
+  rw [hP]
+  rfl
+
+end Coordinates
 
 #print axioms project_staged
 #print axioms fiberCovariance_staged
