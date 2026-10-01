@@ -345,6 +345,53 @@ theorem, and removes no classical configuration or certificate. The next
 structural task is to prove when actual geometry forces or permits repair
 of the cyclic differences while preserving the required visible choices.
 
+## Exact separated-forest source choices
+
+The [forest receipt](dual-truncate-forest-measurements.json) records a
+uniform geometric answer to that collapse question. In a simple cubic
+source with cyclic vertex rotations, select an induced forest such that
+each exterior source vertex has at most one selected neighbour. The
+supplied exterior is locally Tait and its visible polygon corners agree
+with one source value at each exterior source vertex. Selected source
+values are not prescribed. Every genuine extension then has coherent
+corners and corresponds to exactly one proper source assignment fixing
+those exterior values. The inverse map reconstructs the same target
+colouring, so support, witnesses and counts are all preserved.
+
+The proof uses a general finite-forest lemma. Nonzero cyclic differences
+agree across source edges and sum to zero at each vertex, preventing a
+leaf in their support. Separation exposes every exterior source corner,
+so the paired observations force differences there to zero. The remaining
+support lies in the selected forest and must be empty. No bound on forest
+size and no complete source-colouring supplier enter the family proof.
+
+The kernel consumer has ten selected target vertices, fourteen exterior
+vertices and eleven internal edge variables: six polygon variables and
+five forced cross variables. Only two source variables are retained,
+with exactly three compatible assignments. Selected input values are zero;
+the actual exterior alone is supplied. The inverse maps and every complete
+GSLT construction sweep are audited together with the uniform law.
+
+```sh
+python3 tools/fourcolor/classical/dual_truncate_forest_probe.py --check
+```
+
+The [independent replay](dual-truncate-forest-probe.json) checks 56 qualifying
+patches and all 352 extensions of their supplied exteriors. It includes
+every qualifying source subset of the cube and triangular prism, longer
+paths in four circular prisms, and five patches in the sixty-vertex
+dodecahedral expansion. The largest tested path retains ten source
+variables for a forty-two-vertex target patch. Larger fixtures remain
+program checks, separate from the kernel-certified two-cell consumer.
+The earlier three-cell cube example is excluded: an exterior source vertex
+has two selected neighbours, and the broader corner relation is necessary
+to retain all its witnesses.
+
+This proves exact compression of the colouring constraints on the stated
+family. It does not yet construct a smaller embedded replacement or show
+that every target contains such a patch. No configuration or original
+certificate is removed from the complete classical assembly.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

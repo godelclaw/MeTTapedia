@@ -308,6 +308,31 @@ separates it from program replay of 336 source-selected patches and 353,283
 actual witnesses. A smaller embedded replacement and occurrence coverage
 remain open; catalogue and original certificate counts remain 633 and 630.
 
+The [separated-forest law](DualTruncateForestCollapse.lean) proves one
+geometric condition under which the source-colour summary retains every
+actual witness. The source is simple and cubic with genuine cyclic
+rotations; selected source vertices induce a forest, and each exterior
+source vertex has at most one selected neighbour. Paired exterior corner
+observations and local exterior Tait conditions supply the boundary
+contract, without supplying any selected source colours. Cyclic differences
+sum to zero at each vertex and agree across source edges. Their nonzero
+support would have no leaf, so it cannot survive inside the finite forest.
+
+The resulting inverse maps preserve the entire fixed-exterior colouring
+fibre and its count at every family size. The
+[two-cell consumer](DualTruncateForestExample.lean) selects ten actual cube
+expansion vertices and fixes the fourteen-vertex exterior. Two source
+variables replace eleven interior edge-colour variables and represent all
+three compatible colourings. The supplied selected source values are zero.
+Its construction witness composes through every complete GSLT sweep.
+The [29-root audit and receipt](../../../../../tools/fourcolor/classical/dual-truncate-forest-measurements.json)
+exclude complete colouring suppliers and diagnostic corner words. An
+independent replay covers 56 patches and 352 witnesses, including longer
+prism paths and patches in the sixty-vertex dodecahedral expansion. Those
+larger fixtures are program checks. This is exact constraint compression;
+a smaller embedded replacement and occurrence coverage still need proof.
+No additional catalogue entry or classical certificate is removed.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

@@ -16,6 +16,7 @@ import Mettapedia.GraphTheory.FourColor.DualTruncateInverseAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateSourceDomainAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateBrooksAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatchAudit
+import Mettapedia.GraphTheory.FourColor.DualTruncateForestAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand

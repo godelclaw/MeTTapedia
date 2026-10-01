@@ -272,6 +272,28 @@ and occurrence coverage remain necessary to replace classical obligations.
 The baseline still retains 633 coverage configurations and 630 original
 configuration certificates.
 
+The [separated-forest collapse](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestCollapse.lean)
+now proves a geometric case of the missing coherence step. Selected source
+vertices form a forest, and each exterior source vertex has at most one
+selected neighbour. The actual source is simple and cubic with cyclic
+rotations. Paired visible exterior observations force all exterior corner
+differences to vanish. Any remaining nonzero differences would form a
+leafless support inside a finite forest, which is impossible. One shared
+proof therefore gives inverse maps between actual target extensions and
+proper source choices, fixing the exterior and preserving all witnesses
+and counts. No colouring of the selected source interior is assumed.
+
+The [two-cell example](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestExample.lean)
+compresses eleven internal edge variables in a ten-vertex target patch to
+two source variables, with exactly three compatible colourings. Its
+fourteen-vertex exterior stays fixed and its witness composes on every
+complete GSLT sweep. A [29-root audit and replay receipt](../../../tools/fourcolor/classical/dual-truncate-forest-measurements.json)
+separates the kernel proof from 56 independently checked patches, including
+longer paths and a sixty-vertex dodecahedral expansion. This establishes
+exact family semantics, rather than a uniform guarantee that arbitrary
+boundary values extend. The next obligations are a smaller actual embedded
+operation and an occurrence consumer. Catalogue counts remain unchanged.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

@@ -1,0 +1,152 @@
+{
+  "status": "PASS",
+  "kernel_theorems": {
+    "finite_forest_cannot_support_a_leafless_network": "Mettapedia.GraphTheory.FiniteForestBranching.eq_bot",
+    "cyclic_difference_conservation": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.difference_sum_zero",
+    "source_edge_difference_agreement": "Mettapedia.GraphTheory.FourColor.DualTruncateCornerCoherence.difference_alpha",
+    "nonzero_support_elimination": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.difference_zero_of_forest",
+    "actual_exterior_corner_visibility": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.outside_visible",
+    "geometry_forces_corner_coherence": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.coherent",
+    "derived_source_witness": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.source_witness",
+    "exact_corner_source_equivalence": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.cornerSourceEquiv",
+    "exact_actual_extension_source_equivalence": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.extensionSourceEquiv",
+    "count_preservation": "Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse.extension_source_count",
+    "same_actual_witness_reconstructed": "Mettapedia.GraphTheory.FourColor.DualTruncateForestExample.reconstruct_same",
+    "kernel_consumer_count": "Mettapedia.GraphTheory.FourColor.DualTruncateForestExample.extension_count_three",
+    "every_complete_GSLT_sweep": "Mettapedia.GraphTheory.FourColor.DualTruncateForestExample.every_complete_sweep"
+  },
+  "domain": "Finite simple cubic source rotation system with genuine cyclic vertex rotations; selected source vertices induce a forest; each exterior source vertex has at most one selected neighbour",
+  "exterior_contract": "Actual exterior locally Tait; every visible polygon corner agrees with one colour for its exterior source vertex; selected source values are unused",
+  "full_source_colouring_supplied": false,
+  "arbitrary_boundary_extension_guaranteed": false,
+  "all_actual_extension_witnesses_preserved": true,
+  "support_preserved_exactly": true,
+  "counts_preserved_exactly": true,
+  "full_exterior_fixed": true,
+  "cut_edge_colours_fixed": true,
+  "executable_recolouring_history_preserved": false,
+  "number_of_family_members_bounded": false,
+  "new_smaller_embedded_graph_operation": false,
+  "new_uniform_Tait_to_Tait_strict_reduction": false,
+  "global_coverage_proved": false,
+  "kernel_example": {
+    "source_vertices": 8,
+    "target_vertices": 24,
+    "selected_source_variables": 2,
+    "patch_vertices": 10,
+    "exterior_vertices": 14,
+    "internal_edge_variables": 11,
+    "internal_polygon_variables": 6,
+    "internal_cross_variables": 5,
+    "retained_source_variables": 2,
+    "compatible_witnesses": 3,
+    "selected_input_values_zero": true,
+    "kernel_certified": true
+  },
+  "audit": {
+    "module": "Mettapedia.GraphTheory.FourColor.DualTruncateForestAudit",
+    "roots": 29,
+    "combined_dependency_closure": 11040,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoint_absent": true,
+    "source_colour_words_absent": true,
+    "complete_source_suppliers_absent": true,
+    "diagnostic_corner_words_absent": true,
+    "finite_exterior_values_absent_from_general_theorems": true
+  },
+  "independent_program_replay": {
+    "command": "python3 tools/fourcolor/classical/dual_truncate_forest_probe.py --check",
+    "record": "dual-truncate-forest-probe.json",
+    "kernel_certified": false,
+    "checked_patches": 56,
+    "checked_witnesses": 352,
+    "largest_prism_path_source_variables": 10,
+    "largest_prism_path_target_patch_vertices": 42,
+    "dodecahedral_expansion_target_vertices": 60,
+    "cube_three_cell_excluded_by_separation": true
+  },
+  "build": {
+    "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "exit": 0,
+    "jobs": 11152,
+    "started_utc": "2026-10-01T02:50:24+00:00",
+    "completed_utc": "2026-10-01T02:50:35+00:00",
+    "elapsed_seconds": 11.0,
+    "maximum_sampled_lean_rss_mib": 6894,
+    "timing_scope": "Incremental full gate after the new family and audit modules were compiled",
+    "family_build": {
+      "command": "lake build Mettapedia.GraphTheory.FourColor.DualTruncateForestCollapse",
+      "exit": 0,
+      "jobs": 3471,
+      "started_utc": "2026-10-01T02:34:19+00:00",
+      "completed_utc": "2026-10-01T02:34:25+00:00",
+      "elapsed_seconds": 6.0
+    },
+    "example_build": {
+      "command": "lake build Mettapedia.GraphTheory.FourColor.DualTruncateForestExample",
+      "exit": 0,
+      "jobs": 3769,
+      "started_utc": "2026-10-01T02:45:35+00:00",
+      "completed_utc": "2026-10-01T02:45:41+00:00",
+      "elapsed_seconds": 6.0
+    },
+    "audit_build": {
+      "command": "lake build Mettapedia.GraphTheory.FourColor.DualTruncateForestAudit",
+      "exit": 0,
+      "jobs": 3770,
+      "started_utc": "2026-10-01T02:47:02+00:00",
+      "completed_utc": "2026-10-01T02:47:12+00:00",
+      "elapsed_seconds": 10.0
+    },
+    "files": [
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FiniteForestBranching.lean",
+        "source_sha256": "f8dd288ea676832e67100c8afe914b9fca4b42dbd2a0be98d74fb760d325d007",
+        "source_bytes": 1456,
+        "olean_bytes": 66344,
+        "olean_sha256": "f91137daa138a5a3d372df4b5935546a69d28aee054bc631369e303e5770cbfe"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestCollapse.lean",
+        "source_sha256": "072e088ca8136edf4c7b2d6b51681fc093db8b90b76ff0ab3b6ccc44e9031bca",
+        "source_bytes": 15109,
+        "olean_bytes": 440936,
+        "olean_sha256": "bbd08c7544e82fea6256fc3e0f12bf794db1722e5bc9d70ead81ffe6263a0715"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestExample.lean",
+        "source_sha256": "d69e36420b5d4c7475a7ece71366409e09dd6dcfc99b26e956dc1bae81c2248d",
+        "source_bytes": 6851,
+        "olean_bytes": 303816,
+        "olean_sha256": "bf677889604f1e359562068aedf5b64d2156457bb34a5d4b2242a123a5be0909"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestAudit.lean",
+        "source_sha256": "eb035a8e05066fdca0694cdc91074d6d8f8dadf82eb18376af41fc96239bb878",
+        "source_bytes": 6026,
+        "olean_bytes": 3544,
+        "olean_sha256": "5c84afcd0e1694557e608c232caa2cb25d4f359795c38ba547ef878066d01516"
+      }
+    ],
+    "source_bytes": 29442,
+    "olean_bytes": 814640
+  },
+  "compression": {
+    "coverage_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "shared_discharging_replacements_retained": 231,
+    "new_coverage_configurations_removed": 0,
+    "new_original_certificates_replaced": 0,
+    "new_uniform_exact_source_collapse_schemes": 1,
+    "example_internal_colour_variables_before": 11,
+    "example_retained_internal_colour_variables": 2,
+    "example_graph_vertices_removed": 0,
+    "integrated_into_research_checkpoint": true,
+    "integrated_into_complete_classical_assembly": false
+  },
+  "next_obligation": "Construct and count a smaller actual embedded operation with the same needed joint exterior contract. Prove its recognition and occurrence coverage, or a precise obstruction to the proposed operation. Exact source-choice compression alone is not a strict graph reduction."
+}

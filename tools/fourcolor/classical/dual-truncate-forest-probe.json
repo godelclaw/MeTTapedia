@@ -1,0 +1,1760 @@
+{
+  "all_actual_witnesses_retained": true,
+  "checked_patches": 56,
+  "checked_witnesses": 352,
+  "classical_endpoint_used": false,
+  "counts_preserved": true,
+  "cube_three_cell_excluded_by_separation": true,
+  "executable_recolouring_history_preserved": false,
+  "exterior_input_has_zero_selected_values": true,
+  "generated_maps": [
+    {
+      "cyclic_neighbours": "1,6,5;0,2,7;1,3,8;2,4,9;3,5,10;4,0,11;11,0,7;6,1,8;7,2,9;8,3,10;9,4,11;5,6,10",
+      "name": "circular-prism-6"
+    },
+    {
+      "cyclic_neighbours": "1,8,7;0,2,9;1,3,10;2,4,11;3,5,12;4,6,13;5,7,14;6,0,15;15,0,9;8,1,10;9,2,11;10,3,12;11,4,13;12,5,14;13,6,15;7,8,14",
+      "name": "circular-prism-8"
+    },
+    {
+      "cyclic_neighbours": "1,10,9;0,2,11;1,3,12;2,4,13;3,5,14;4,6,15;5,7,16;6,8,17;7,9,18;8,0,19;19,0,11;10,1,12;11,2,13;12,3,14;13,4,15;14,5,16;15,6,17;16,7,18;17,8,19;9,10,18",
+      "name": "circular-prism-10"
+    },
+    {
+      "cyclic_neighbours": "1,12,11;0,2,13;1,3,14;2,4,15;3,5,16;4,6,17;5,7,18;6,8,19;7,9,20;8,10,21;9,11,22;10,0,23;23,0,13;12,1,14;13,2,15;14,3,16;15,4,17;16,5,18;17,6,19;18,7,20;19,8,21;20,9,22;21,10,23;11,12,22",
+      "name": "circular-prism-12"
+    },
+    {
+      "cyclic_neighbours": "1,10,19;0,2,8;1,3,6;2,19,4;3,17,5;4,15,6;5,7,2;6,14,8;7,9,1;8,13,10;9,11,0;10,12,18;11,13,16;12,9,14;13,7,15;14,5,16;15,17,12;16,4,18;17,19,11;18,3,0",
+      "kernel_certified_fixture": false,
+      "name": "dodecahedral-source",
+      "source_face_lengths": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "target_vertices": 60
+    }
+  ],
+  "global_coverage_proved": false,
+  "input_sha256": {
+    "lean/mettapedia/Mettapedia/GraphTheory/FiniteForestBranching.lean": "f8dd288ea676832e67100c8afe914b9fca4b42dbd2a0be98d74fb760d325d007",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerCoherence.lean": "0b3fa9f8464fc137adc71d9ac8943d9039a11dc971d7079e9ed1d6e3159b7ef0",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerSemantics.lean": "4667c77a2a7b04bba803ffe9215cf7dcf9271ed8f1e1526d38a32946ef8880e0",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCoupledExample.lean": "580a732e010f002d1d20cbbc939f70cd1894fecd420ea94b1ee81696f2172637",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestAudit.lean": "eb035a8e05066fdca0694cdc91074d6d8f8dadf82eb18376af41fc96239bb878",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestCollapse.lean": "072e088ca8136edf4c7b2d6b51681fc093db8b90b76ff0ab3b6ccc44e9031bca",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestExample.lean": "d69e36420b5d4c7475a7ece71366409e09dd6dcfc99b26e956dc1bae81c2248d",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatch.lean": "40bc07300c2ed6055663a0f4c94fc7a6cedc7eb43f45d8a6e7350e883fec0ae2",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateOpenPatchExample.lean": "0c9cccb0548cb88b3823cb53b0ed37ff2fef1192bc177b974c084e264e755ddc",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateSourceDomainExample.lean": "20ff10579b99232b5384f478040a4b181684d33fed9aea6c7d6cfc742f21778b",
+    "tools/fourcolor/classical/alternating_cycle_probe.py": "857f6f2f93c9bbd0edea1a2a65e6f59893f0f8f5aac53980295995432949567e",
+    "tools/fourcolor/classical/dual_truncate_forest_probe.py": "725aedeffc734a23e27fcb2087120dfd5edb07574ab3be9ed4ab66a61789b6c5",
+    "tools/fourcolor/classical/dual_truncate_geometry_probe.py": "e1b0759456429ab4bf5377119ebc5aaffe6d8f3b516c7064ce8fe671c3ff84a3",
+    "tools/fourcolor/classical/dual_truncate_open_patch_probe.py": "177757e261bbc240ad6c3ffca2c5263f510e8bae65d984bc59453b73255dbe3f"
+  },
+  "kernel_certified_replay": false,
+  "kernel_two_cell_consumer": {
+    "actual_witnesses": 3,
+    "all_witnesses_coherent": true,
+    "exterior_source_values": [
+      0,
+      0,
+      2,
+      1,
+      1,
+      2,
+      1,
+      2
+    ],
+    "fixed_exterior_vertices": 14,
+    "internal_edge_variables": 11,
+    "name": "cube",
+    "ports": 8,
+    "retained_source_variables": 2,
+    "selected": [
+      0,
+      1
+    ],
+    "source_witnesses": 3,
+    "target_patch_vertices": 10,
+    "target_vertices": 24
+  },
+  "new_catalogue_entries_removed": 0,
+  "new_smaller_embedded_graph_operation": false,
+  "results": [
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 24,
+      "internal_edge_variables": 0,
+      "name": "cube",
+      "ports": 0,
+      "retained_source_variables": 0,
+      "selected": [],
+      "source_witnesses": 1,
+      "target_patch_vertices": 0,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        0
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        1
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        1
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        0,
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        2
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        0,
+        0,
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        1,
+        2
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        0,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        3
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        0,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        3
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        0,
+        0,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        2,
+        3
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        0,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        4
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        1,
+        0,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        4
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 4,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        0,
+        1,
+        0,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 12,
+      "name": "cube",
+      "ports": 12,
+      "retained_source_variables": 2,
+      "selected": [
+        2,
+        4
+      ],
+      "source_witnesses": 4,
+      "target_patch_vertices": 12,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        1,
+        0,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        5
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        0,
+        2,
+        1,
+        1,
+        0,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        1,
+        5
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 4,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        0,
+        1,
+        0,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 12,
+      "name": "cube",
+      "ports": 12,
+      "retained_source_variables": 2,
+      "selected": [
+        3,
+        5
+      ],
+      "source_witnesses": 4,
+      "target_patch_vertices": 12,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        0,
+        0,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        4,
+        5
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        0,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        6
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 4,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        1,
+        1,
+        2,
+        0,
+        2
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 12,
+      "name": "cube",
+      "ports": 12,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        6
+      ],
+      "source_witnesses": 4,
+      "target_patch_vertices": 12,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        0,
+        1,
+        1,
+        2,
+        0,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        2,
+        6
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        1,
+        0,
+        0,
+        2
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        5,
+        6
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        0
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 6,
+      "name": "cube",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        7
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 4,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        0
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 12,
+      "name": "cube",
+      "ports": 12,
+      "retained_source_variables": 2,
+      "selected": [
+        1,
+        7
+      ],
+      "source_witnesses": 4,
+      "target_patch_vertices": 12,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        3,
+        7
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        0,
+        2,
+        1,
+        0
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        4,
+        7
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        0,
+        0
+      ],
+      "fixed_exterior_vertices": 14,
+      "internal_edge_variables": 11,
+      "name": "cube",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        6,
+        7
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 24
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        2,
+        3,
+        2,
+        3,
+        1
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 0,
+      "name": "triangular-prism",
+      "ports": 0,
+      "retained_source_variables": 0,
+      "selected": [],
+      "source_witnesses": 1,
+      "target_patch_vertices": 0,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        2,
+        3,
+        2,
+        3,
+        1
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 6,
+      "name": "triangular-prism",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        0
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 6,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        0,
+        3,
+        2,
+        3,
+        1
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 6,
+      "name": "triangular-prism",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        1
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 6,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        2,
+        0,
+        2,
+        3,
+        1
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 6,
+      "name": "triangular-prism",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        2
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 6,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        2,
+        3,
+        0,
+        3,
+        1
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 6,
+      "name": "triangular-prism",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        3
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 6,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        2,
+        3,
+        0,
+        3,
+        1
+      ],
+      "fixed_exterior_vertices": 8,
+      "internal_edge_variables": 11,
+      "name": "triangular-prism",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        3
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 10,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        2,
+        3,
+        2,
+        0,
+        1
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 6,
+      "name": "triangular-prism",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        4
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 6,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        0,
+        3,
+        2,
+        0,
+        1
+      ],
+      "fixed_exterior_vertices": 8,
+      "internal_edge_variables": 11,
+      "name": "triangular-prism",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        1,
+        4
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 10,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        2,
+        3,
+        2,
+        3,
+        0
+      ],
+      "fixed_exterior_vertices": 12,
+      "internal_edge_variables": 6,
+      "name": "triangular-prism",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        5
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 6,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        1,
+        2,
+        0,
+        2,
+        3,
+        0
+      ],
+      "fixed_exterior_vertices": 8,
+      "internal_edge_variables": 11,
+      "name": "triangular-prism",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        2,
+        5
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 10,
+      "target_vertices": 18
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 30,
+      "internal_edge_variables": 6,
+      "name": "circular-prism-6",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        0
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 36
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 26,
+      "internal_edge_variables": 11,
+      "name": "circular-prism-6",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        1
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 36
+    },
+    {
+      "actual_witnesses": 5,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 22,
+      "internal_edge_variables": 16,
+      "name": "circular-prism-6",
+      "ports": 10,
+      "retained_source_variables": 3,
+      "selected": [
+        0,
+        1,
+        2
+      ],
+      "source_witnesses": 5,
+      "target_patch_vertices": 14,
+      "target_vertices": 36
+    },
+    {
+      "actual_witnesses": 8,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 18,
+      "internal_edge_variables": 21,
+      "name": "circular-prism-6",
+      "ports": 12,
+      "retained_source_variables": 4,
+      "selected": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "source_witnesses": 8,
+      "target_patch_vertices": 18,
+      "target_vertices": 36
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 42,
+      "internal_edge_variables": 6,
+      "name": "circular-prism-8",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        0
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 48
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 38,
+      "internal_edge_variables": 11,
+      "name": "circular-prism-8",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        1
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 48
+    },
+    {
+      "actual_witnesses": 5,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 34,
+      "internal_edge_variables": 16,
+      "name": "circular-prism-8",
+      "ports": 10,
+      "retained_source_variables": 3,
+      "selected": [
+        0,
+        1,
+        2
+      ],
+      "source_witnesses": 5,
+      "target_patch_vertices": 14,
+      "target_vertices": 48
+    },
+    {
+      "actual_witnesses": 21,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 22,
+      "internal_edge_variables": 31,
+      "name": "circular-prism-8",
+      "ports": 16,
+      "retained_source_variables": 6,
+      "selected": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source_witnesses": 21,
+      "target_patch_vertices": 26,
+      "target_vertices": 48
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 54,
+      "internal_edge_variables": 6,
+      "name": "circular-prism-10",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        0
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 50,
+      "internal_edge_variables": 11,
+      "name": "circular-prism-10",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        1
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 5,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 46,
+      "internal_edge_variables": 16,
+      "name": "circular-prism-10",
+      "ports": 10,
+      "retained_source_variables": 3,
+      "selected": [
+        0,
+        1,
+        2
+      ],
+      "source_witnesses": 5,
+      "target_patch_vertices": 14,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 55,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 26,
+      "internal_edge_variables": 41,
+      "name": "circular-prism-10",
+      "ports": 20,
+      "retained_source_variables": 8,
+      "selected": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "source_witnesses": 55,
+      "target_patch_vertices": 34,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 2,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 66,
+      "internal_edge_variables": 6,
+      "name": "circular-prism-12",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        0
+      ],
+      "source_witnesses": 2,
+      "target_patch_vertices": 6,
+      "target_vertices": 72
+    },
+    {
+      "actual_witnesses": 3,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 62,
+      "internal_edge_variables": 11,
+      "name": "circular-prism-12",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        1
+      ],
+      "source_witnesses": 3,
+      "target_patch_vertices": 10,
+      "target_vertices": 72
+    },
+    {
+      "actual_witnesses": 5,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 58,
+      "internal_edge_variables": 16,
+      "name": "circular-prism-12",
+      "ports": 10,
+      "retained_source_variables": 3,
+      "selected": [
+        0,
+        1,
+        2
+      ],
+      "source_witnesses": 5,
+      "target_patch_vertices": 14,
+      "target_vertices": 72
+    },
+    {
+      "actual_witnesses": 144,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      "fixed_exterior_vertices": 30,
+      "internal_edge_variables": 51,
+      "name": "circular-prism-12",
+      "ports": 24,
+      "retained_source_variables": 10,
+      "selected": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "source_witnesses": 144,
+      "target_patch_vertices": 42,
+      "target_vertices": 72
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        2,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        3,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3,
+        1,
+        3,
+        2,
+        3
+      ],
+      "fixed_exterior_vertices": 54,
+      "internal_edge_variables": 6,
+      "name": "dodecahedral-source",
+      "ports": 6,
+      "retained_source_variables": 1,
+      "selected": [
+        0
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 6,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        3,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3,
+        1,
+        3,
+        2,
+        3
+      ],
+      "fixed_exterior_vertices": 50,
+      "internal_edge_variables": 11,
+      "name": "dodecahedral-source",
+      "ports": 8,
+      "retained_source_variables": 2,
+      "selected": [
+        0,
+        1
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 10,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        2,
+        3,
+        1,
+        3,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3,
+        1,
+        3,
+        2,
+        3
+      ],
+      "fixed_exterior_vertices": 46,
+      "internal_edge_variables": 16,
+      "name": "dodecahedral-source",
+      "ports": 10,
+      "retained_source_variables": 3,
+      "selected": [
+        0,
+        1,
+        2
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 14,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        3,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3,
+        1,
+        3,
+        2,
+        3
+      ],
+      "fixed_exterior_vertices": 38,
+      "internal_edge_variables": 26,
+      "name": "dodecahedral-source",
+      "ports": 14,
+      "retained_source_variables": 5,
+      "selected": [
+        0,
+        1,
+        2,
+        5,
+        6
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 22,
+      "target_vertices": 60
+    },
+    {
+      "actual_witnesses": 1,
+      "all_witnesses_coherent": true,
+      "exterior_source_values": [
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        3,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        0,
+        1,
+        3,
+        2,
+        3
+      ],
+      "fixed_exterior_vertices": 34,
+      "internal_edge_variables": 31,
+      "name": "dodecahedral-source",
+      "ports": 16,
+      "retained_source_variables": 6,
+      "selected": [
+        0,
+        1,
+        2,
+        5,
+        6,
+        15
+      ],
+      "source_witnesses": 1,
+      "target_patch_vertices": 26,
+      "target_vertices": 60
+    }
+  ],
+  "status": "independent exact separated-forest replay"
+}
