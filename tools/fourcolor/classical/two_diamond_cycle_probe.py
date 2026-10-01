@@ -175,6 +175,180 @@ def repair_test():
                                    "compatible_face_colouring": list(witness)}}
 
 
+def disconnected_tree_exterior_test(old, new):
+    """A disconnected exterior survives even spherical girth-five geometry.
+
+    This does not assert internal six-connectivity or the full normal form.
+    The explicit graph prevents silently adding exterior connectivity as a
+    consequence of the weaker source hypotheses.
+    """
+    witnesses = []
+    tested = 0
+    for signs in product((1, -1), repeat=4):
+        vertex = [0, 1, 2, 3, 0, 1, 1, 0, 2, 3, 3, 2]
+        rho, alpha = list(range(12)), [1, 0, 3, 2]
+        for v, triple in enumerate(((0, 4, 7), (1, 5, 6), (2, 8, 11), (3, 9, 10))):
+            for j, d in enumerate(triple):
+                rho[d] = triple[(j+signs[v]) % 3]
+        outside = geometry(4, 4, 8, vertex, rho, alpha)
+        assert {(vertex[d], vertex[alpha[d]]) for d in (0, 2)} == {(0, 1), (2, 3)}
+        for shift in range(8):
+            tested += 1
+            seam = [(i+shift) % 8 for i in range(8)]
+            before, after = sew(outside, old, seam), sew(outside, new, seam)
+            assert before["euler"] == after["euler"]
+            assert before["vertices"] == after["vertices"]+12
+            if before["euler"] != 2:
+                continue
+            vertices = vertex + [4+v for v in old["vertex"]]
+            rotation = rho + [12+d for d in old["rho"]]
+            flip = alpha + [-1]*8 + [12+d for d in old["alpha"]] + [-1]*8
+            for i, j in enumerate(seam):
+                flip[4+i], flip[64+j] = 64+j, 4+i
+            faces = cycles([rotation[flip[d]] for d in range(72)])
+            edges = [(vertices[d], vertices[flip[d]]) for d in range(72) if d < flip[d]]
+            assert len({tuple(sorted(e)) for e in edges}) == len(edges) == 36
+            assert all(u != v for u, v in edges)
+            adj = [set() for _ in range(24)]
+            for u, v in edges:
+                adj[u].add(v)
+                adj[v].add(u)
+            assert all(len(ns) == 3 for ns in adj)
+            girth = 25
+            for u, v in edges:
+                distance, queue = {u: 0}, [u]
+                for w in queue:
+                    for x in adj[w]:
+                        if {w, x} == {u, v}:
+                            continue
+                        if x not in distance:
+                            distance[x] = distance[w]+1
+                            queue.append(x)
+                girth = min(girth, distance.get(v, 24)+1)
+            if girth >= 5:
+                assert girth == 5
+                assert sorted(map(len, faces)) == [5]*12+[6]*2
+                witnesses.append({"signs": list(signs), "shift": shift,
+                    "outside": outside, "seam": seam, "before": before, "after": after,
+                    "girth": girth, "face_lengths": sorted(map(len, faces)),
+                    "edges": [list(e) for e in edges]})
+    assert tested == 128 and len(witnesses) == 2
+    return {"scope": "Program counterexamples to exterior connectivity under spherical, simple, "
+                     "cubic, bridgeless, girth-five hypotheses; full normal form is not asserted.",
+            "orientation_and_seam_cases": tested, "witnesses": witnesses,
+            "first_witness_small_cyclic_cuts": small_cyclic_cut_test(witnesses[0]["edges"], 24),
+            "capped_exterior_potentials": capped_exterior_potential_test(witnesses[0])}
+
+
+def capped_exterior_potential_test(witness):
+    """Test exact flow/face transport through an eight-valent boundary hub.
+
+    The hub is conserved, not properly Tait-coloured. All four remaining
+    vertices retain their actual cubic colouring constraints.
+    """
+    outside, seam = witness["outside"], witness["seam"]
+    rho = outside["rho"] + [12+(i+1) % 8 for i in range(8)]
+    alpha = outside["alpha"] + [-1]*16
+    for i, j in enumerate(seam):
+        alpha[4+i], alpha[12+j] = 12+j, 4+i
+    phi = [rho[alpha[d]] for d in range(20)]
+    faces = cycles(phi)
+    face_of = {d: f for f, ds in enumerate(faces) for d in ds}
+    assert 5-10+len(faces) == 2
+    cases = 0
+    for first, second in product((1, 2, 3), repeat=2):
+        for choices in product((0, 1), repeat=4):
+            colour = [first, first, second, second] + [0]*16
+            for v in range(4):
+                ports = [d for d in range(4, 12) if outside["vertex"][d] == v]
+                other = [c for c in (1, 2, 3) if c != colour[v]]
+                for j, d in enumerate(ports):
+                    colour[d] = other[j ^ choices[v]]
+            for i in range(8):
+                colour[12+i] = colour[alpha[12+i]]
+            for orbit in cycles(rho):
+                total = 0
+                for d in orbit:
+                    total ^= colour[d]
+                assert total == 0
+            neighbours = [[] for _ in faces]
+            for d in range(20):
+                assert colour[d] == colour[alpha[d]] != 0
+                neighbours[face_of[d]].append((face_of[alpha[d]], colour[d]))
+            potential, queue = {0: 0}, [0]
+            for f in queue:
+                for g, c in neighbours[f]:
+                    if g not in potential:
+                        potential[g] = potential[f] ^ c
+                        queue.append(g)
+                    assert potential[f] ^ potential[g] == c
+            assert len(potential) == len(faces)
+            k = [potential[face_of[d]] for d in range(20)]
+            assert all(k[phi[d]] == k[d] for d in range(20))
+            assert all(k[d] ^ k[alpha[d]] == colour[d] for d in range(20))
+            # The mirrored reference node follows rho. Its ring trace is
+            # exactly the physical word in the original positive port order.
+            trace = [k[12+i] ^ k[rho[12+i]] for i in range(8)]
+            assert trace == [colour[4+seam.index(i)] for i in range(8)]
+            cases += 1
+    assert cases == 144
+    return {"evidence": "Independent bounded test of the proposed capped-remainder bridge.",
+            "exterior_colourings": cases, "capped_vertices": 5, "capped_edges": 10,
+            "capped_faces": len(faces), "hub_degree": 8,
+            "exact_edge_and_ordered_trace_round_trips": cases}
+
+
+def small_cyclic_cut_test(edges, n):
+    """Enumerate every nontrivial vertex bipartition, fixing vertex 0 outside.
+
+    This tests the two cut conditions of CubicDualInternallySixConnected,
+    independently of Lean. Cycle detection allows disconnected shores.
+    """
+    adj = [0]*n
+    for u, v in edges:
+        adj[u] |= 1 << v
+        adj[v] |= 1 << u
+    assert all(ns.bit_count() == 3 for ns in adj)
+    full = (1 << n)-1
+
+    def cyclic(mask):
+        unseen = mask
+        while unseen:
+            component = front = unseen & -unseen
+            while front:
+                bit = front & -front
+                front ^= bit
+                v = bit.bit_length()-1
+                new = adj[v] & mask & ~component
+                front |= new
+                component |= new
+            internal_edges = sum((adj[v] & component).bit_count()
+                                 for v in range(n) if component >> v & 1)//2
+            if internal_edges >= component.bit_count():
+                return True
+            unseen &= ~component
+        return False
+
+    mask = cut = 0
+    counts = Counter()
+    for i in range(1, 1 << (n-1)):
+        bit = (i & -i) << 1
+        v = bit.bit_length()-1
+        delta = 3-2*(adj[v] & mask).bit_count()
+        cut += -delta if mask & bit else delta
+        mask ^= bit
+        if cut <= 5 and cyclic(mask) and cyclic(full ^ mask):
+            shore = min(mask.bit_count(), n-mask.bit_count())
+            counts[(cut, shore)] += 1
+            assert cut == 5 and shore <= 5, (mask, cut, shore)
+    assert counts == {(5, 5): 12}
+    return {"evidence": "Independent program check, not a kernel theorem or decoder bridge.",
+            "vertex_bipartitions": (1 << (n-1))-1,
+            "cyclic_cuts_of_size_at_most_four": 0,
+            "cyclic_five_cuts": 12,
+            "every_cyclic_five_cut_has_five_vertex_shore": True}
+
+
 def run():
     old, new = source_piece(), cycle_exterior([8], reverse_ports=True)
     assert old["euler_mass"] == new["euler_mass"] == 4
@@ -196,6 +370,7 @@ def run():
              CLASSICAL / "TwoDiamondIntrinsic.lean", CLASSICAL / "TwoDiamondCycleReplacement.lean",
              CLASSICAL / "TwoDiamondConfigurations.lean", CLASSICAL / "TwoDiamondSplitRepair.lean",
              ROOT / "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleCapGeometry.lean",
+             ROOT / "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicDualInternalSixConnectivity.lean",
              ROOT / "lean/externals/fourcolor/FourColor/Configurations.lean"]
     paths = sorted(set(paths) | {Path(module.__file__).resolve()
         for module in sys.modules.values() if getattr(module, "__file__", None)
@@ -206,6 +381,7 @@ def run():
             "replacement_piece": {k: new[k] for k in
                                   ("vertices", "internal", "ports", "first_return_arcs", "open_faces", "euler_mass")},
             "sewings": cases, "literal_exterior_repair": repair_test(),
+            "disconnected_tree_exteriors": disconnected_tree_exterior_test(old, new),
             "summary": {"seam_cases": len(cases),
                         "spherical_cases": sum(c["before"]["euler"] == 2 for c in cases),
                         "disconnected_spherical_cases": sum(c["before"]["euler"] == 2 and

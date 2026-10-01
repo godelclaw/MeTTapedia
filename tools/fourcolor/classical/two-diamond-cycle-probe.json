@@ -1353,6 +1353,582 @@
       ]
     }
   },
+  "disconnected_tree_exteriors": {
+    "scope": "Program counterexamples to exterior connectivity under spherical, simple, cubic, bridgeless, girth-five hypotheses; full normal form is not asserted.",
+    "orientation_and_seam_cases": 128,
+    "witnesses": [
+      {
+        "signs": [
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "shift": 1,
+        "outside": {
+          "vertices": 4,
+          "internal": 4,
+          "ports": 8,
+          "vertex": [
+            0,
+            1,
+            2,
+            3,
+            0,
+            1,
+            1,
+            0,
+            2,
+            3,
+            3,
+            2
+          ],
+          "rho": [
+            4,
+            6,
+            8,
+            10,
+            7,
+            1,
+            5,
+            0,
+            11,
+            3,
+            9,
+            2
+          ],
+          "alpha": [
+            1,
+            0,
+            3,
+            2
+          ],
+          "first_return_arcs": [
+            [
+              4,
+              7
+            ],
+            [
+              5,
+              1,
+              4
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              7,
+              0,
+              6
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              9,
+              3,
+              8
+            ],
+            [
+              10,
+              9
+            ],
+            [
+              11,
+              2,
+              10
+            ]
+          ],
+          "open_faces": 2,
+          "euler_mass": 8
+        },
+        "seam": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          0
+        ],
+        "before": {
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridgeless": true
+        },
+        "after": {
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridgeless": true
+        },
+        "girth": 5,
+        "face_lengths": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          6,
+          6
+        ],
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            8
+          ],
+          [
+            1,
+            20
+          ],
+          [
+            0,
+            12
+          ],
+          [
+            2,
+            11
+          ],
+          [
+            3,
+            13
+          ],
+          [
+            3,
+            7
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            4
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            6
+          ],
+          [
+            11,
+            12
+          ],
+          [
+            13,
+            14
+          ],
+          [
+            14,
+            11
+          ],
+          [
+            7,
+            15
+          ],
+          [
+            15,
+            16
+          ],
+          [
+            16,
+            13
+          ],
+          [
+            10,
+            17
+          ],
+          [
+            17,
+            15
+          ],
+          [
+            8,
+            18
+          ],
+          [
+            18,
+            17
+          ],
+          [
+            12,
+            19
+          ],
+          [
+            19,
+            20
+          ],
+          [
+            20,
+            21
+          ],
+          [
+            21,
+            18
+          ],
+          [
+            14,
+            22
+          ],
+          [
+            22,
+            19
+          ],
+          [
+            22,
+            23
+          ],
+          [
+            23,
+            21
+          ],
+          [
+            23,
+            16
+          ]
+        ]
+      },
+      {
+        "signs": [
+          1,
+          -1,
+          1,
+          -1
+        ],
+        "shift": 5,
+        "outside": {
+          "vertices": 4,
+          "internal": 4,
+          "ports": 8,
+          "vertex": [
+            0,
+            1,
+            2,
+            3,
+            0,
+            1,
+            1,
+            0,
+            2,
+            3,
+            3,
+            2
+          ],
+          "rho": [
+            4,
+            6,
+            8,
+            10,
+            7,
+            1,
+            5,
+            0,
+            11,
+            3,
+            9,
+            2
+          ],
+          "alpha": [
+            1,
+            0,
+            3,
+            2
+          ],
+          "first_return_arcs": [
+            [
+              4,
+              7
+            ],
+            [
+              5,
+              1,
+              4
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              7,
+              0,
+              6
+            ],
+            [
+              8,
+              11
+            ],
+            [
+              9,
+              3,
+              8
+            ],
+            [
+              10,
+              9
+            ],
+            [
+              11,
+              2,
+              10
+            ]
+          ],
+          "open_faces": 2,
+          "euler_mass": 8
+        },
+        "seam": [
+          5,
+          6,
+          7,
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "before": {
+          "vertices": 24,
+          "edges": 36,
+          "faces": 14,
+          "euler": 2,
+          "connected": true,
+          "bridgeless": true
+        },
+        "after": {
+          "vertices": 12,
+          "edges": 18,
+          "faces": 8,
+          "euler": 2,
+          "connected": true,
+          "bridgeless": true
+        },
+        "girth": 5,
+        "face_lengths": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          6,
+          6
+        ],
+        "edges": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            0,
+            11
+          ],
+          [
+            1,
+            13
+          ],
+          [
+            1,
+            7
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            20
+          ],
+          [
+            2,
+            12
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            4
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            10,
+            6
+          ],
+          [
+            11,
+            12
+          ],
+          [
+            13,
+            14
+          ],
+          [
+            14,
+            11
+          ],
+          [
+            7,
+            15
+          ],
+          [
+            15,
+            16
+          ],
+          [
+            16,
+            13
+          ],
+          [
+            10,
+            17
+          ],
+          [
+            17,
+            15
+          ],
+          [
+            8,
+            18
+          ],
+          [
+            18,
+            17
+          ],
+          [
+            12,
+            19
+          ],
+          [
+            19,
+            20
+          ],
+          [
+            20,
+            21
+          ],
+          [
+            21,
+            18
+          ],
+          [
+            14,
+            22
+          ],
+          [
+            22,
+            19
+          ],
+          [
+            22,
+            23
+          ],
+          [
+            23,
+            21
+          ],
+          [
+            23,
+            16
+          ]
+        ]
+      }
+    ],
+    "first_witness_small_cyclic_cuts": {
+      "evidence": "Independent program check, not a kernel theorem or decoder bridge.",
+      "vertex_bipartitions": 8388607,
+      "cyclic_cuts_of_size_at_most_four": 0,
+      "cyclic_five_cuts": 12,
+      "every_cyclic_five_cut_has_five_vertex_shore": true
+    },
+    "capped_exterior_potentials": {
+      "evidence": "Independent bounded test of the proposed capped-remainder bridge.",
+      "exterior_colourings": 144,
+      "capped_vertices": 5,
+      "capped_edges": 10,
+      "capped_faces": 7,
+      "hub_degree": 8,
+      "exact_edge_and_ordered_trace_round_trips": 144
+    }
+  },
   "summary": {
     "seam_cases": 48,
     "spherical_cases": 24,
@@ -1366,6 +1942,7 @@
     "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondIntrinsic.lean": "e591add80fcc917db3ba6f4eb85317cfd0d145963294a0ff147db8a1e98aec0c",
     "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondSplitRepair.lean": "40f47c9fc96431e5b4a71c3d84995de98ed67a6064dc25537fe590f228949459",
     "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondTangle.lean": "71e670cc1d6528599f171dad5de0baddd0b8825daea16e4c1309aa81a3472e27",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicDualInternalSixConnectivity.lean": "3e26981232e9c792f5e0ce9719dcecc425406e80f9e805660232d44a531ab6e4",
     "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleCapGeometry.lean": "c6d8a3fb3720bf7a3bb72aee6de91f70fcdd9c79c905b9295dfd2715fccfea2c",
     "tools/fourcolor/classical/configuration_map_isomorphism.py": "0a13ca6e636f79ce8a38ab6b40ee406f0ce68d6cbe6748c9a37e6253fbaf6fe8",
     "tools/fourcolor/classical/diamond_coloring_alternatives.py": "0075009196d573a65d0516ccba101b6c81528678c4babadda86c00372bdc2970",
@@ -1375,7 +1952,7 @@
     "tools/fourcolor/classical/probe_diamond_joint_repair.py": "2969b597a97e6a562cf844aeb2bf402583fb3d401ad6beb74bfe1f678139257c",
     "tools/fourcolor/classical/probe_diamond_kempe.py": "754bf3477e722bb6591209f359c4ff9333fc6563f28b9290a50992f7fd7d5b7d",
     "tools/fourcolor/classical/probe_diamond_star.py": "37178eb5716ba2e5d51746a662c03f562c0159018d3e5386f3a606c729c9b75d",
-    "tools/fourcolor/classical/two_diamond_cycle_probe.py": "d08eeed0cc2cecd479789f025bb59b1a531c9bf70dade8792956d3c8ac04eb91",
+    "tools/fourcolor/classical/two_diamond_cycle_probe.py": "d971242a8d835bf2c90821c21096cc852f67ace3b5f479fb5f9d98291d4f91bf",
     "tools/fourcolor/classical/two_diamond_shared_tip_probe.py": "9507b6220573eafc89c0a5f2440cf1f6f8d311cdfe8eca5e6a2bbaeba5733a8e"
   }
 }

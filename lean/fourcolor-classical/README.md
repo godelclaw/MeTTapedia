@@ -35,6 +35,22 @@ records its scope. The local audit target is
 `lake build MettapediaFourColor.TwoDiamondCycleAudit`; it is separate from
 the complete assembly and changes none of its certificate or coverage counts.
 
+`SourceTaitInverse` connects physical edge colourings back to reference face
+colourings. A conserved nonzero edge field on a two-sided spherical rotation
+map with connected primal and facial dual has a face potential with exactly
+those edge differences. The underlying `RotationConservedFacePotential`
+theorem needs no cubicity; any two
+potentials differ by one global colour shift, and fixing one face makes the
+potential unique. In the cubic case, the existing face-to-edge interpretation
+returns every supplied edge colour exactly. `TwoDiamondCycleFaceTransport`
+uses this round trip on the actual smaller cycle replacement, retaining both
+pieces' witnesses and the whole seam equation even for disconnected exteriors.
+`SourceTaitInverseAudit` excludes complete colouring endpoints and all
+configuration colour certificates. This representation bridge does not yet
+derive exterior closure or replace a further catalogue dependency.
+The [transport receipt](../../tools/fourcolor/classical/source-tait-inverse-measurements.json)
+records its nine-root audit, source/artifact hashes and program evidence.
+
 `MettapediaFourColor.Complete` proves the finite planar-graph theorem and
 supplies compatible colouring witnesses along exact source constructions.
 It supplies all 633 reducibility obligations and consumes all seven discharging

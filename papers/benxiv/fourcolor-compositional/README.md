@@ -81,6 +81,31 @@ component switches. That test does not establish closure for arbitrary
 exteriors. This geometric step changes neither the 629 original certificates
 nor the 633 coverage entries in the complete assembly.
 
+The [exact face/edge bridge](../../../lean/fourcolor-classical/MettapediaFourColor/SourceTaitInverse.lean)
+connects this physical construction to the reference's colouring language.
+Conservation at every vertex puts both coordinates of a Klein edge field in
+the literal cycle space. The spherical facial-boundary theorem supplies face
+potentials whose differences recover every original edge colour. The
+potentials have only one common colour-shift freedom; fixing one face makes
+them unique. The [smaller-map consumer](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondCycleFaceTransport.lean)
+preserves both component witnesses and all their shared seam colours through
+the round trip. It uses no complete colouring theorem or configuration colour
+certificate. This is exact transport of supplied witnesses, not a proof that
+arbitrary boundary choices extend.
+The [transport receipt](../../../tools/fourcolor/classical/source-tait-inverse-measurements.json)
+records the nine-root dependency audit and both passing build gates.
+
+The remaining closure bridge must handle disconnected exteriors. A replayable
+24-vertex simple spherical cubic bridgeless map of girth five has this source
+disk with two exterior components; its faces are twelve pentagons and two
+hexagons. This is independent program evidence against inferring exterior
+connectivity from those hypotheses. An exhaustive check of all 8,388,607 vertex
+bipartitions also finds no cyclic cut below five; all twelve cyclic five-cuts
+isolate five vertices. This tests the library's cubic-dual internal-six cut
+conditions, without supplying a kernel theorem or a decoder bridge. The next
+target is exact transport of the planar remainder's boundary
+trace, including its cyclic order, into the physical exterior repair theorem.
+
 For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
 semantic bounds, a general reflection theorem, and an audited replacement in
 the finished proof. It illustrates discharging compression; the diamond example

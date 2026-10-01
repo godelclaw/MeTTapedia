@@ -36,6 +36,33 @@ depth or closure of arbitrary exteriors. Actual occurrence recognition and
 geometric coverage remain open. This step removes no further certificate
 dependency or coverage entry; the complete assembly remains at 629 and 633.
 
+The same replay now checks 128 orientation/seam choices for an exterior made
+of two disjoint two-vertex trees. Two choices give simple spherical cubic
+bridgeless 24-vertex maps of girth five, with twelve pentagons and two hexagons.
+Thus exterior connectivity does not follow from these ambient hypotheses.
+For the first example, all 8,388,607 vertex bipartitions are also checked:
+there is no cyclic cut below five, and each of the twelve cyclic five-cuts
+has a five-vertex shore. These are the cut conditions used by
+`CubicDualInternallySixConnected`; the result remains independent program
+evidence, with no claimed kernel theorem or decoder bridge.
+All 144 proper colourings of this exterior also pass the proposed capping
+test: a degree-eight boundary vertex conserves the joint edge field, and
+face-potential integration recovers every edge colour and the positively
+ordered mirrored-reference ring trace. This is a bounded test of the next
+closure adapter, not a proof of that adapter at arbitrary size.
+
+`MettapediaFourColor.SourceTaitInverseAudit` separately checks exact transport
+from conserved edge fields to reference face colourings, uniqueness up to a
+common shift, and the edge-preserving round trip on the smaller diamond map.
+The latter retains its exterior, cycle and joint seam witnesses. All these
+roots exclude configuration colour certificates and complete Four Colour
+endpoints. Exterior closure, new occurrence recognition and catalogue coverage
+remain outside this representation result.
+The [transport measurements](source-tait-inverse-measurements.json) record
+the nine-root, 20,634-declaration audit, both build gates and the extended
+program replay. The older disk-replacement receipt retains its historical
+probe hashes and now names their source revision explicitly.
+
 The [proof-plan guide](../../../papers/benxiv/fourcolor-compositional/README.md)
 connects these source and measurement records to the compositional argument
 and its current research questions.

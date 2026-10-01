@@ -9,6 +9,17 @@ package. Their embedded split transfer additionally replaces configuration 3's
 independent repair dependency; the latest complete audit retains 629 original
 certificates and 633 coverage entries.
 
+[Conserved face potentials](RotationConservedFacePotential.lean) give the
+inverse representation bridge: a conserved Klein edge field on a two-sided
+spherical rotation multigraph with connected primal and facial dual comes
+from face potentials. Every literal edge is recovered, including parallel
+edges. Potentials differ by
+one common shift; fixing one face makes them unique. The classical package
+uses this theorem to transport an existing Tait colouring to reference face
+colours and back, preserving the entire supplied colouring and the joint seam
+witnesses of the smaller shared-tip diamond replacement. This does not supply
+an initial colouring or the remaining exterior-closure theorem.
+
 This is the canonical modern Lean home for the godelclaw Four Color work.
 
 ## Current proof plan — 1 October 2026

@@ -124,7 +124,9 @@
       },
       "maximum_component_switches": 2,
       "repaired_colourings": 258
-    }
+    },
+    "source_revision": "faa96083bc4faac5d63eac5c0be669d034a6b8a8",
+    "historical_snapshot": "The recorded hashes describe this checkpoint revision; the extended replay is measured separately in source-tait-inverse-measurements.json."
   },
   "credited": {
     "catalogue_entries_removed": 0,

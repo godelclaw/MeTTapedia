@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "status": "kernel checked exact representation transport with an actual replacement consumer",
+  "completed_utc": "2026-10-01T17:03:16.241552+00:00",
+  "base_revision": "faa96083bc4faac5d63eac5c0be669d034a6b8a8",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "classical_gate": "lake build MettapediaFourColor.SourceTaitInverseAudit",
+  "classical_working_directory": "lean/fourcolor-classical",
+  "classical_gate_jobs": 3689,
+  "main_gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+  "main_working_directory": "lean/mettapedia",
+  "main_gate_jobs": 11192,
+  "local_modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.RotationConservedFacePotential",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/RotationConservedFacePotential.lean",
+      "source_sha256": "b8f7b9a3572435213b395d5fef3a012aeb03ae0e5329981126e3bf8dc34b2e66",
+      "olean_bytes": 161952,
+      "olean_sha256": "e263049bfd533c1aa21913b9f26f526a6d2ad6a614cb4a316b46bc011cb69529",
+      "frontend_wall_seconds_rounded": 3.1
+    },
+    {
+      "module": "MettapediaFourColor.SourceTaitInverse",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/SourceTaitInverse.lean",
+      "source_sha256": "6b1eca817aaa3f8a03b68415832d7421a1f8b1120938aef53474662607ac3bc3",
+      "olean_bytes": 116176,
+      "olean_sha256": "440fd7a04e893cc438232d77d5b3174d6ff8bb6c14e33fa363c0c2db8e10e072",
+      "frontend_wall_seconds_rounded": 3.2
+    },
+    {
+      "module": "MettapediaFourColor.TwoDiamondCycleFaceTransport",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondCycleFaceTransport.lean",
+      "source_sha256": "c6341380d56137b7b648d0c0a406b09593f9834d86254a30ac143c53ced491f5",
+      "olean_bytes": 271800,
+      "olean_sha256": "c90f6f6f11e4b72c66f7964d6a62d2da125f0b82376195a3e60ffdf1e2a5dd01",
+      "frontend_wall_seconds_rounded": 3.7
+    },
+    {
+      "module": "MettapediaFourColor.SourceTaitInverseAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/SourceTaitInverseAudit.lean",
+      "source_sha256": "1a13f6daa3e416fc602a19daba6594a9c1315ceb29817b51fddc1288525d6876",
+      "olean_bytes": 3368,
+      "olean_sha256": "825297f452ee8d147abbdc4e701e2c13661b4d39fb91254553a66b88a3c2c092",
+      "frontend_wall_seconds_rounded": 7.4
+    }
+  ],
+  "proof_audit": {
+    "roots": 9,
+    "dependency_declarations": 20634,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "forbidden_namespaces": [
+      "FourColor.Bulk",
+      "FourColor.fourColorTheorem",
+      "FourColor.ClassicalAssembly",
+      "FourColor.CompositionalComplete",
+      "FourColor.reducible_all",
+      "FourColor.reducible_block_0"
+    ],
+    "consumer": "FourColor.TwoDiamondCycleReplacement.smaller_joint_face_witness",
+    "conservation_integration": "Mettapedia.GraphTheory.FourColor.RotationConservedFacePotential.exists_facePotential",
+    "exact_edge_round_trip": "FourColor.SourceConstruction.tait_round_trip",
+    "uniqueness": "Mettapedia.GraphTheory.FourColor.RotationConservedFacePotential.potential_unique_at_root"
+  },
+  "program_replay": {
+    "command": "python3 tools/fourcolor/classical/two_diamond_cycle_probe.py --check",
+    "record": "two-diamond-cycle-probe.json",
+    "record_sha256": "65941bb17a0a26aa4d6e0606a503c880bce8f76f4b1868efcb79750bc6053c2b",
+    "checker_sha256": "d971242a8d835bf2c90821c21096cc852f67ace3b5f479fb5f9d98291d4f91bf",
+    "evidence": "Independent program evidence, not a kernel theorem or a certified decoder equivalence.",
+    "disconnected_exterior_orientation_and_seam_cases": 128,
+    "disconnected_exterior_witnesses": 2,
+    "first_witness_vertices": 24,
+    "small_cyclic_cuts": {
+      "evidence": "Independent program check, not a kernel theorem or decoder bridge.",
+      "vertex_bipartitions": 8388607,
+      "cyclic_cuts_of_size_at_most_four": 0,
+      "cyclic_five_cuts": 12,
+      "every_cyclic_five_cut_has_five_vertex_shore": true
+    },
+    "capped_exterior_potentials": {
+      "evidence": "Independent bounded test of the proposed capped-remainder bridge.",
+      "exterior_colourings": 144,
+      "capped_vertices": 5,
+      "capped_edges": 10,
+      "capped_faces": 7,
+      "hub_degree": 8,
+      "exact_edge_and_ordered_trace_round_trips": 144
+    }
+  },
+  "credited": {
+    "catalogue_entries_removed": 0,
+    "reference_certificate_dependencies_replaced": 0,
+    "new_coverage_theorems": 0,
+    "kernel_seconds_saved": 0,
+    "artifact_bytes_saved": 0
+  },
+  "complete_assembly": {
+    "consumes_this_representation_step": false,
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 629,
+    "source_or_artifact_changes_by_this_step": false
+  },
+  "scope": "On a two-sided spherical rotation multigraph with connected primal and facial dual, any conserved Klein-valued literal edge field integrates to a face potential. Potentials differ by one global shift; one fixed face makes them unique. Nonzero fields give proper reference face colourings. A supplied Tait colouring round-trips exactly on every edge. The actual smaller shared-tip cycle replacement consumer retains its complete exterior, cycle, joint seam and mirrored-reference witness, without assuming connected exterior.",
+  "limits": "This theorem transports an existing colouring; it does not supply an initial colouring, an executable transport algorithm, an exact counting theorem, arbitrary exterior Kempe closure, occurrence recognition or geometric coverage. The degree-eight capped-exterior adapter is tested on 144 colourings but is not yet a general kernel theorem. No additional complete-assembly dependency or coverage entry is removed.",
+  "remaining": "Construct the ordered boundary hub, prove its planar quasicubic geometry, and establish exact RingTrace equivalence with physical exterior traces. Then consume reference Kempe closure in the strict diamond reconstruction.",
+  "resource_measurements": {
+    "metric": "Sampled maximum RSS of one Lean process, not aggregate memory.",
+    "local_max_single_lean_rss_mib": 1744
+  }
+}
