@@ -1,0 +1,100 @@
+{
+  "evidence": "Independent source-fidelity check. Lean checks geometry and repair separately.",
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "entries": [
+    {
+      "configuration": "D0370",
+      "vertices": 21,
+      "ring": 12,
+      "core_vertices": 9,
+      "edges": 48,
+      "prescribed_core_degrees": [
+        7,
+        6,
+        7,
+        5,
+        5,
+        5,
+        5,
+        6,
+        5
+      ]
+    },
+    {
+      "configuration": "D0464",
+      "vertices": 22,
+      "ring": 13,
+      "core_vertices": 9,
+      "edges": 50,
+      "prescribed_core_degrees": [
+        6,
+        7,
+        5,
+        5,
+        6,
+        7,
+        6,
+        5,
+        5
+      ]
+    },
+    {
+      "configuration": "D0465",
+      "vertices": 22,
+      "ring": 13,
+      "core_vertices": 9,
+      "edges": 50,
+      "prescribed_core_degrees": [
+        6,
+        7,
+        7,
+        5,
+        5,
+        6,
+        5,
+        5,
+        6
+      ]
+    },
+    {
+      "configuration": "D0604",
+      "vertices": 23,
+      "ring": 14,
+      "core_vertices": 9,
+      "edges": 52,
+      "prescribed_core_degrees": [
+        7,
+        6,
+        6,
+        6,
+        5,
+        7,
+        5,
+        5,
+        6
+      ]
+    },
+    {
+      "configuration": "D3202",
+      "vertices": 22,
+      "ring": 13,
+      "core_vertices": 9,
+      "edges": 50,
+      "prescribed_core_degrees": [
+        7,
+        5,
+        6,
+        5,
+        6,
+        7,
+        5,
+        6,
+        5
+      ]
+    }
+  ],
+  "lean_source_sha256": "c59dae0912d132b7e630802594189adb06c14f7bd6cdef324143552088f5385c",
+  "verifier_sha256": "26caa88f6589e2306c64df5f81d4edf8c2b970dace973330efa48e98b42f2e75",
+  "shared_parser_sha256": "6d18cbf85974f18bf70599aa43e4c7a78a9c63be953961bdad1e0823c34c2349"
+}

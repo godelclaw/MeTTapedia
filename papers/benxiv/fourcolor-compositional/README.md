@@ -1147,6 +1147,42 @@ contraction, further uniform core descent and geometric coverage remain
 research obligations. These ear consumers retain the earlier core proofs;
 the new profile proof is integrated into the complete endpoint separately.
 
+## A shared repair in the newer catalogue
+
+The [near-linear catalogue bridge](../../../tools/fourcolor/near-linear/README.md)
+provides a concrete example of a structural law organizing several published
+configurations. One retained classical certificate, configuration 225, supplies
+`D0604`. A single joint boundary-triangle law then supplies `D0464`, `D0465`,
+`D3202` and `D0370`. Each application checks the actual complete graph, cyclic
+orders and ordered boundary; the source rows and prescribed degrees are also
+validated.
+
+```text
+  one retained repair certificate
+                 |
+     joint triangle reconstruction
+                 |
+      five actual catalogue entries
+                 |
+   compatible GSLT colouring histories
+```
+
+There is also a consistency test across two decompositions: starting with the
+same colouring of `D0370`, either insertion order gives the same complete
+colouring of `D0604`, including the inserted vertices. One repaired witness
+therefore supports both construction histories. Independent Kempe-repair
+outcomes need not coincide.
+
+This advances the proposed compositional explanation: four local repair
+obligations use one common structural argument and its retained base. The
+certificate, finite representation checks and new base-coverage mask check
+remain explicit. It does not yet remove any of the 633 classical coverage
+entries or 629 original certificate dependencies. For this family, the next
+bridge is to actual occurrences, a strict smaller-map operation and compatible
+exterior reconstruction, followed by geometric supply. The newer paper's
+coverage and coordinated-repair running time are not established by these
+local results.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

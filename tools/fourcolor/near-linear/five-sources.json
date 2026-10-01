@@ -1,0 +1,34 @@
+{
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "paper": "https://arxiv.org/abs/2603.24880",
+  "license": "MIT; see LICENSE",
+  "files": {
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+    },
+    "D0370.conf": {
+      "upstream_path": "D/D0370.conf",
+      "sha256": "d1b23c29360a559337db70d4955038f10a0a6c970d4c9a26e6a2e5494ab5a248"
+    },
+    "D0464.conf": {
+      "upstream_path": "D/D0464.conf",
+      "sha256": "0a1957855a78796691d058469ecdaa5266f5d7ac8b13b2aded5d2a119c874f65"
+    },
+    "D0465.conf": {
+      "upstream_path": "D/D0465.conf",
+      "sha256": "cc3f3bf6c7cd2a3a6e7dcf5733193f8095b913dba9f2279508609f01c3592d10"
+    },
+    "D0604.conf": {
+      "upstream_path": "D/D0604.conf",
+      "sha256": "4a29ac47ac434191f54959253e958858088f5c907b9a9d60e64b5b096c8aa042"
+    },
+    "D3202.conf": {
+      "upstream_path": "D/D3202.conf",
+      "sha256": "02e5fe0e7596df850d93fdcf8fab9d78ab4918fddd4e155031568c6550a4a050"
+    }
+  },
+  "retained_reference_configuration": 225,
+  "scope": "Five finite family members with exact graph and joint-repair transport; no new global coverage or runtime claim."
+}

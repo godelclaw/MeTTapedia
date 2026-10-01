@@ -1,10 +1,10 @@
 # Near-linear Four Colour catalogue bridges
 
-The two configuration files are unmodified inputs from
+The configuration files are unmodified inputs from
 [near-linear-4ct/reducible-configurations](https://github.com/near-linear-4ct/reducible-configurations),
 pinned to `c2ce7a96e35256201526e2abb51a39d04a588b53`.
 Their MIT notice is retained in [LICENSE](LICENSE); [sources.json](sources.json)
-records the individual hashes. The associated paper is
+and [five-sources.json](five-sources.json) record the individual hashes. The associated paper is
 [The Four Color Theorem with Linearly Many Reducible Configurations and Near-Linear Time Coloring](https://arxiv.org/abs/2603.24880).
 
 The Lean bridge identifies `D0000` and `D0001` with the existing diamond
@@ -42,3 +42,66 @@ adds no catalogue compression credit and changes neither the 633 coverage
 entries nor the 629 original certificate dependencies in the complete assembly.
 It does not verify the rest of the new catalogue, its geometric supply theorem,
 its simultaneous repairs or its near-linear running time.
+
+## A five-entry repair family
+
+One retained classical certificate now supplies the repair contracts for five
+entries from the repeated nine-vertex core. Arrows below transfer repair:
+
+```text
+           D0604 = classical configuration 225
+              /           |           \
+           D0464        D0465        D3202
+              \           /
+                  D0370
+```
+
+The actual graph construction runs in the opposite direction. Each step
+inserts a vertex in a boundary triangle, replacing one boundary edge by two
+edges while retaining their joint colouring relation. The general theorem
+`BoundaryTriangleRepair.repair` restricts a repaired upper colouring to a
+proper colouring of the lower graph. It applies to any graph and boundary
+tail satisfying its repair premise; the five catalogue instances check the
+complete graph isomorphisms, cyclic neighbour orders and ordered boundaries.
+The five source inputs and prescribed internal degrees are checked separately.
+
+`NearLinearFiveBase.reference_repair` proves that the existing configuration-225
+rank certificate covers the whole proper fourteen-port domain after colour
+permutations. This retains that finite certificate and adds one kernel-checked
+mask comparison. `NearLinearFiveRepair` then supplies all five repair contracts
+using the same split-and-reconstruction law. No independent rank certificate
+is needed for the four lower entries. Their rings have lengths 12 and 13;
+the upper ring has length 14.
+
+`NearLinearFiveGSLT.coloring_square` proves that both insertion orders from
+`D0370` to `D0604` produce the same complete colouring, including both newly
+inserted vertices. `compatible_histories` starts with one actual repaired
+`D0370` witness and supplies both GSLT histories with that common endpoint.
+This is commutation for a fixed starting colouring; it does not equate the
+results of independent Kempe repairs or extract exterior Kempe moves.
+
+Replay source fidelity from the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_five_sources.py
+```
+
+With the audited reference artifacts and configuration-family dependencies
+prepared as in the [package guide](../../../lean/fourcolor-classical/README.md),
+run from `lean/fourcolor-classical`:
+
+```sh
+lake build kernelNearLinearFamily
+```
+
+The six-module replay includes `NearLinearFiveAudit`. It excludes all complete
+Four Colour endpoints and every original rank certificate except configuration
+225. See [five-source-audit.json](five-source-audit.json) and
+[five-measurements.json](five-measurements.json) for exact hashes and costs.
+
+This is shared local repair reasoning for a finite five-entry family. It
+changes neither the 633 coverage entries nor the 629 original certificate
+dependencies of the complete classical assembly. The geometric occurrence,
+strict smaller-map construction and reconstruction against an actual exterior
+remain to be connected for this family. Recognition, coverage, coordinated
+batch repairs and the newer algorithm's running time are separate obligations.

@@ -1,0 +1,222 @@
+{
+  "schema": 1,
+  "status": "six-module kernel replay, dependency audit, source-fidelity check and complete baseline regression passed",
+  "recorded_at": "2026-10-01T19:21:14.772628+00:00",
+  "base_revision": "4560954170c2e25880e5d4d057f35a1f8bf48702",
+  "source_pin": "five-sources.json",
+  "source_fidelity": "five-source-audit.json",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "family_replay": {
+    "command": "lake build kernelNearLinearFamily",
+    "working_directory": "lean/fourcolor-classical",
+    "exit_code": 0,
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.BoundaryTriangleRepair",
+        "source_sha256": "ee9a78539073573b87b33f590aea072c7beee4ccf930b5a410f871ad12392dc2",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.576,
+        "olean_bytes": 115560,
+        "olean_sha256": "0f14aebf321304113646835cd4efdac6ea68795f9fd0df17f7c431a8ded9f669"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearFiveData",
+        "source_sha256": "c59dae0912d132b7e630802594189adb06c14f7bd6cdef324143552088f5385c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 128.162,
+        "olean_bytes": 1244080,
+        "olean_sha256": "60333391c6e2ffa7517dfb897a5020f8a4126c1f237eda97c1f73e3ba7908d97"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearFiveBase",
+        "source_sha256": "dec6c4496b87e81e6cd9fa89eacdc78bafb4197b58d419a74b2a12b9500bd87d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.762,
+        "olean_bytes": 91048,
+        "olean_sha256": "a1cb98e30e803513a4061b6393fe7916335ca90230c2e97e1509872afced3f9d"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearFiveRepair",
+        "source_sha256": "ead914a227ea9eccbb9b9c5c86b6ff49e33824230b5e57409e7a6d5167ced09c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.629,
+        "olean_bytes": 54208,
+        "olean_sha256": "6394611e92076a2ff3ca629dd01acca4598b4e088809aebea7c5ec0ea3f60340"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearFiveGSLT",
+        "source_sha256": "d3d7e8f980746bba3be3db64568d03e2ea32ad217ce0c0ca060b65c3aa70884b",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.877,
+        "olean_bytes": 593680,
+        "olean_sha256": "9f5c8920c519c6db91ddc8fecf07cb13b1f1474d24c5609b2f739e01ff0f8458"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearFiveAudit",
+        "source_sha256": "b28e54e349213db69c27849ca6c2bb04f6114f1c200baa6c4807b984f9ba3b59",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.866,
+        "olean_bytes": 2600,
+        "olean_sha256": "e46b01f39be530576ba33347b1adf53cbca95e4247e881efd9471c90892f863e"
+      }
+    ],
+    "frontend_seconds_total": 152.872,
+    "receipt_sha256": "654fc79972610e41f774b92693f71304bc06c1f67d4c222f6ebffa22c1f908e0"
+  },
+  "proof_audit": {
+    "roots": 51,
+    "dependency_declarations": 14490,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_colouring_endpoints_forbidden": true,
+    "only_original_rank_certificate_allowed": "FourColor.Bulk.Cfg224",
+    "classical_configuration_number": 225,
+    "new_rank_certificates": 0
+  },
+  "geometry": {
+    "source_entries": [
+      "D0370",
+      "D0464",
+      "D0465",
+      "D0604",
+      "D3202"
+    ],
+    "core_vertices": 9,
+    "ring_lengths": [
+      12,
+      13,
+      14
+    ],
+    "complete_graph_isomorphisms": 5,
+    "cyclic_star_correspondences": 5,
+    "source_core_rows_preserved": true,
+    "prescribed_degrees_checked": true,
+    "boundary_order": "reverse source ring, with exact rotations at each operation",
+    "reference_base_correspondence": "D0604 to classical configuration 225, complete numbered map and face presentation; reference internal stars reverse the source stars"
+  },
+  "repair": {
+    "general_law": "FourColor.BoundaryTriangleRepair.repair",
+    "members_with_proved_contract": 5,
+    "lower_members_using_structural_transfer": 4,
+    "retained_base_certificates": 1,
+    "additional_base_mask_comparisons": 1,
+    "domain": "All proper zero-sum boundary traces and every Kempe-closed exterior trace relation containing the supplied initial trace.",
+    "conclusion": "An actual colouring of the source graph whose entire ordered boundary trace belongs to that exterior relation."
+  },
+  "construction_histories": {
+    "consumer": "FourColor.NearLinearFiveGSLT.compatible_histories",
+    "full_colouring_commutation": "FourColor.NearLinearFiveGSLT.coloring_square",
+    "routes": [
+      [
+        "D0370",
+        "D0464",
+        "D0604"
+      ],
+      [
+        "D0370",
+        "D0465",
+        "D0604"
+      ]
+    ],
+    "same_initial_witness": true,
+    "same_complete_final_witness": true,
+    "retained_vertex_colours_preserved": true,
+    "independent_kempe_repairs_proved_confluent": false,
+    "executable_exterior_kempe_history": false
+  },
+  "credited": {
+    "local_shared_repair_family": 1,
+    "lower_entry_repair_contracts_derived_structurally": 4,
+    "additional_complete_assembly_certificate_dependencies_replaced": 0,
+    "catalogue_entries_removed": 0,
+    "new_coverage_theorems": 0,
+    "kernel_seconds_saved": 0,
+    "artifact_bytes_saved": 0
+  },
+  "complete_assembly": {
+    "consumes_new_family": false,
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 629,
+    "shared_discharging_computations": 231
+  },
+  "main_gate": {
+    "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "working_directory": "lean/mettapedia",
+    "exit_code": 0,
+    "jobs": 11195
+  },
+  "prior_family_receipt": {
+    "modules": 39,
+    "current_source_and_artifact_hashes_verified": true,
+    "receipt_sha256": "efb23693ab616e77c02fff2b90bb3c0207bea50db38c390c4c1a15a80b0ffebe"
+  },
+  "complete_replay": {
+    "command": "lake build kernelComplete",
+    "working_directory": "lean/fourcolor-classical",
+    "exit_code": 0,
+    "prepared_dependencies": 126,
+    "all_current_source_and_artifact_hashes_verified": true,
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.ReferenceBaselineAudit",
+        "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.836,
+        "olean_bytes": 3320,
+        "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e"
+      },
+      {
+        "module": "MettapediaFourColor.DiamondFamilyReducibility",
+        "source_sha256": "6a5a1eb129358975165f6bc29823ba0f45b89b9f51a5206421d9becfbe0fefe5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.64,
+        "olean_bytes": 38408,
+        "olean_sha256": "e00d325ba3e9a6ba2f123873686b22b052c7b67c6ad97cd4d4a88518fd6959b6"
+      },
+      {
+        "module": "MettapediaFourColor.Complete",
+        "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.996,
+        "olean_bytes": 39288,
+        "olean_sha256": "fce0dd591168e2d7bf9463281c20f1fad4ff9bb96a9e4f106248346d79971ccf"
+      },
+      {
+        "module": "MettapediaFourColor.CompleteAudit",
+        "source_sha256": "1bb5c3857b5583eec4d70c774875d19672fe3dc4c8476e9e30e93b0d02322e51",
+        "exit_code": 0,
+        "frontend_wall_seconds": 19.98,
+        "olean_bytes": 5816,
+        "olean_sha256": "8c285f2f82829cf6262059014b12415c8055f183194972c36e79864b814b5848"
+      }
+    ],
+    "receipt_sha256": "3d0ebc77f4e23cc11437679e020ff052f2506f4023694e6810ffbf83b675f1f0"
+  },
+  "limits": [
+    "This is a finite five-entry family; the general triangle repair law is uniform, but no unbounded source-catalogue family is claimed.",
+    "The configuration-225 rank certificate, one proper-trace mask comparison and finite source classifications remain.",
+    "The 2026 catalogue certificates were not imported and then removed from an integrated 2026 proof; four local contracts are established by structural descent instead.",
+    "No new actual-source strict reduction, occurrence theorem, global coverage, batch scheduling or near-linear runtime theorem is supplied.",
+    "No count-preservation or confluence of independently selected repairs follows from the construction square."
+  ],
+  "next_obligation": "Realize the family in actual embedded maps, construct a strictly smaller replacement and reconstruct against the genuine exterior; then establish useful occurrence and supply theorems."
+}

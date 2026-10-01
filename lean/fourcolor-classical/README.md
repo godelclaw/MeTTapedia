@@ -837,3 +837,32 @@ A compression result must identify the uniform lemma, the configurations or
 checks it replaces, and the kernel-checked consumer. Removing configurations
 from the unavoidable set additionally requires a new coverage proof. Certificate
 sharing and a smaller unavoidable set are recorded separately.
+
+## Near-linear catalogue family
+
+The [near-linear source bridge](../../tools/fourcolor/near-linear/README.md)
+now includes a five-entry family with a shared nine-vertex internal core.
+`BoundaryTriangleRepair.repair` transfers repair through an actual boundary
+triangle subdivision, using joint edge colours to reconstruct a proper
+colouring after deleting the inserted vertex. Five exact source operations
+consume this one law, with complete adjacency, cyclic orders and ordered
+boundary correspondence checked in `NearLinearFiveData`.
+
+`NearLinearFiveBase` retains configuration 225's rank certificate and checks
+that its colour-permutation closure covers every proper fourteen-port trace.
+This supplies `D0604`; `NearLinearFiveRepair` derives `D0464`, `D0465`, `D3202`
+and `D0370` without further independent rank certificates. The two construction
+paths from `D0370` to `D0604` commute on entire colourings, and
+`NearLinearFiveGSLT.compatible_histories` constructs both histories from one
+repaired witness. It does not assert confluence of independently chosen Kempe
+repairs.
+
+After preparing the reference and family artifacts described above,
+`lake build kernelNearLinearFamily` replays all six new modules, ending with
+the dependency and axiom audit. The audit forbids every other configuration
+certificate and complete colouring endpoints. The
+[measurement record](../../tools/fourcolor/near-linear/five-measurements.json)
+separates this local family result from complete-assembly compression.
+All 633 classical coverage entries and 629 original certificate dependencies
+remain. Actual-source occurrence, geometric reduction and coverage for this
+new family remain open.

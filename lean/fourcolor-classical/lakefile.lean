@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check the near-linear family through prepared, audited reference artifacts. -/
+target kernelNearLinearFamily pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/near-linear-family-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "BoundaryTriangleRepair", "NearLinearFiveData", "NearLinearFiveBase",
+        "NearLinearFiveRepair", "NearLinearFiveGSLT", "NearLinearFiveAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check exact graph semantics for families of reference configurations. -/
 target kernelConfigurationFamilies pkg : Unit := do
   let env ← getAugmentedEnv

@@ -38,7 +38,11 @@ def main():
     parser.add_argument("--library-output", type=Path)
     parser.add_argument("--lean", default="lean")
     parser.add_argument("--lake", default="lake")
+    parser.add_argument("--modules", nargs="+", default=MODULES,
+                        help="Local MettapediaFourColor modules in dependency order")
     args = parser.parse_args()
+    if any(not name.isidentifier() for name in args.modules):
+        raise SystemExit("Module names must be simple identifiers")
     reference, mettapedia, package, output = (p.resolve() for p in
         (args.reference, args.mettapedia, args.package, args.output))
     artifacts = (args.reference_artifacts or Path(os.environ.get(
@@ -61,7 +65,7 @@ def main():
     report = dict(reference_revision=REFERENCE_REVISION, compiler_options=OPTIONS,
                   native_code_generation=False, completed=False, modules=[])
     receipt = output / "family-results.json"
-    for name in MODULES:
+    for name in args.modules:
         module = "MettapediaFourColor." + name
         relative = Path(module.replace(".", "/") + ".lean")
         source = sources / relative
