@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "status": "Kernel-checked physical exterior preservation, compatible endpoint repair, exact whole-map reconstruction and GSLT sweep support; independent actual-component replay",
+  "proof_roots": 28,
+  "dependency_closure": 7588,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "complete_four_color_endpoint_used": false,
+  "complete_source_colouring_certificate_used": false,
+  "finite_graph_data_in_uniform_laws": false,
+  "uniform_laws": [
+    "RotationPatchKempe.switched_proper",
+    "SourcePatchKempe.switched_exterior",
+    "TwoCellBoundaryChoice.repair_one_pin"
+  ],
+  "scope": "The physical-side preservation law applies to every actual retained vertex side and saturated edge mask. The source law applies to partial exterior colourings and saturated source vertex masks. The colour law retains both endpoint choices. The worked sixty-vertex reconstruction is a particular consumer, not a universal availability, strict reduction or coverage theorem.",
+  "kernel_example": {
+    "original_target_vertices": 60,
+    "patch_vertices": 10,
+    "exterior_vertices": 50,
+    "actual_edges_switched": 17,
+    "original_extension_exists": false,
+    "switched_extension_exists": true,
+    "original_boundary": "BBRRBBRR",
+    "switched_boundary": "BBRRBBPP",
+    "exterior_properness_preserved": true,
+    "all_actual_exterior_edges_reconstructed": true,
+    "every_complete_gslt_sweep_supported": true,
+    "component_connectivity_kernel_certified": false
+  },
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/two_cell_physical_repair_probe.py --check",
+    "record": "two-cell-physical-repair-probe.json",
+    "actual_one_component_swaps_checked": 8,
+    "successful_swaps": 4,
+    "selected_component_edges": 17,
+    "selected_component_exterior_vertices": 16,
+    "component_is_path": true
+  },
+  "source_bytes": 28719,
+  "olean_bytes": 789184,
+  "source_sha256": {
+    "RotationPatchKempe.lean": "9114bcd8421091c9d449f6c164e3b00f8e788cb99b03a5904405c77ed77d7fc3",
+    "SourcePatchKempe.lean": "09fea6f327538e61cce1ceb2ec6545f758c1d68a16d84fb44e8e954c1be48776",
+    "TwoCellBoundaryChoiceRepair.lean": "59460805e1d1f9d29bb25658f84295d36592c9686994b37abbc5ee27c7e026e6",
+    "TwoCellPhysicalKempeRepair.lean": "30445ce4e2805ad4de9ea6929f26105bad6c5604b04fa1fbfe797b3ccee9ff73",
+    "TwoCellPhysicalKempeRepairAudit.lean": "12bc936af47077f8f148cb047c8c59e2731e300ce442fcf72b99d1b0c7f85e4d"
+  },
+  "new_uniform_strict_reductions": 0,
+  "independent_reducibility_checks_replaced": 0,
+  "catalogue_entries_removed": 0,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "next_obligation": "Prove a uniform geometric condition supplying the successful coupled pin repair and its actual physical edge effect. Construct a compatible smaller embedded operation with strict decrease, then recognition and occurrence coverage."
+}

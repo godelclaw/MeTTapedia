@@ -355,6 +355,26 @@ different joint contract. Successful recolouring, other decompositions and
 stronger geometric hypotheses remain available; no catalogue saving is
 credited to this obstruction.
 
+The [physical repair](TwoCellPhysicalKempeRepair.lean) now gives a successful
+history for that same obstructed exterior. A saturated red-purple region
+of seventeen original edges changes the cut word from `BBRRBBRR` to
+`BBRRBBPP`. The two source choices become red and purple, and reconstruct a
+proper colouring of the original sixty-vertex map while fixing every edge
+incident to the exterior at its **new** value. Every faithful complete GSLT
+sweep supports this reconstructed witness.
+
+The [one-pin law](TwoCellBoundaryChoiceRepair.lean) supplies both choices
+uniformly over the colour alphabet. The [physical-side law](RotationPatchKempe.lean)
+reuses the common-web switch theorem on genuine retained incidences; the
+[partial-source law](SourcePatchKempe.lean) supplies exterior constraints
+without a complete source-colouring input. Their [audit and receipt](../../../../../tools/fourcolor/classical/two-cell-physical-repair-measurements.json)
+exclude classical endpoints and complete source-colouring suppliers.
+An independent replay identifies the selected region as one path and finds
+four successful swaps among eight port-touching components. Universal
+availability of a suitable repair, strict graph reduction and occurrence
+coverage are still open. The catalogue remains at 633 configurations and
+630 original certificate dependencies.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

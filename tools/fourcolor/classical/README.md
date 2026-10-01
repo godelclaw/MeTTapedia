@@ -422,6 +422,31 @@ matching closure therefore does not provide a universal repair argument;
 actual geometric input, a different operation or exterior recolouring is
 still needed. No catalogue or certificate saving is credited.
 
+## Successful physical two-cell repair
+
+The [repair receipt](two-cell-physical-repair-measurements.json) records a
+successful actual history for the same sixty-vertex example. Lean certifies
+the saturated seventeen-edge red-purple region and its preservation of the
+fifty-vertex exterior, changes the joint cut word to `BBRRBBPP`, and derives
+the two compatible interior choices. Reconstruction supplies an original-map
+Tait colouring and compatible witnesses for every complete GSLT sweep.
+The audit checks 28 roots and excludes both the classical endpoint and a
+complete source-colouring certificate. Its three uniform laws contain no
+finite graph data.
+
+```sh
+python3 tools/fourcolor/classical/two_cell_physical_repair_probe.py --check
+```
+
+The [independent component replay](two-cell-physical-repair-probe.json)
+checks all eight port-touching one-component swaps; four reconstruct through
+the patch. It also certifies the selected region's sixteen exterior vertices
+and seventeen-edge path. Lean checks saturation and exact reconstruction;
+component connectivity and the complete eight-swap census are program
+checks. This is an actual successful choice after a fixed-exterior failure,
+not a guarantee for every exterior or Kempe class. It introduces no smaller
+embedded operation and removes no catalogue entry or certificate dependency.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

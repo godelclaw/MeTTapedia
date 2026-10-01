@@ -315,6 +315,31 @@ to preserve the joint seam relation or justify an exterior recolouring.
 The failure of this supplied exterior does not exclude a successful choice
 for the map, and does not establish coverage for any smaller catalogue.
 
+The [physical two-cell repair](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellPhysicalKempeRepair.lean)
+now completes a successful compositional history for that exact example:
+
+```text
+proper exterior with clashing joint choices
+              |
+       actual red-purple swap
+              |
+new joint boundary word BBRRBBPP
+              |
+       compatible red/purple choices
+              |
+genuine whole-map colouring and GSLT witnesses
+```
+
+Seventeen original edges change; all fifty exterior vertices remain proper.
+The uniform colour law explains why the changed pin frees the coupled seam,
+and reconstruction matches the physical operation on every exterior edge.
+The [receipt](../../../tools/fourcolor/classical/two-cell-physical-repair-measurements.json)
+separates the kernel proof from the independent census of eight component
+swaps, four of which work. No complete colouring table supplies the witness.
+This establishes a successful example of the proposed mechanism. Extending
+it to all relevant exteriors, constructing the smaller operation and proving
+its occurrence are still needed before any coverage configuration is removed.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two
