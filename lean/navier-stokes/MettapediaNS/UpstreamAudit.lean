@@ -34,6 +34,7 @@ import MettapediaNS.SignedViscousPressure
 import MettapediaNS.PressureImpulseHistory
 import MettapediaNS.RetainedParentCompletion
 import MettapediaNS.CovectorParentHistory
+import MettapediaNS.JointCoframePressure
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1100,3 +1101,20 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.passive_metric_nonpos
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.metricSquare_initial_identity
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.actual_vorticity_le
+
+/-! Joint reconstruction and the literal canonical pressure commutator. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.parentCross
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actual_square_reconstruction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actualGradientRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actual_gradient_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actualPressureWork
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actual_pressure_reconstruction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actual_vorticity_conversion
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actualMetricProduction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actual_metric_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.spatialMetric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.pressureCommutator
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.actualPressureWork_integrable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.pressureCommutator_integrable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.integral_actual_pressure_commutator
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCoframePressure.integral_constant_pressure_eq_zero

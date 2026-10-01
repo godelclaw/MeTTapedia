@@ -1013,6 +1013,30 @@ a negative coefficient. This rejects only the forward-frame shortcut.
 Neither a full-datum history allowance nor unforced regularity is refuted.
 See the [covector derivation and tests](labs/README.md#covector-parent-history-and-pressure-generated-frame-diffusion).
 
+### Joint reconstruction isolates the changing-metric pressure work
+
+`JointCoframePressure` reconstructs the actual fluid gradient before
+estimating the two parents separately. Its metric square retains their
+signed cross moment. The literal canonical NS gradient production is
+`-2tr(B Q P^T)-2nu F_B`, with the same complete covariant diffusion.
+
+For solenoidal whole-space smooth L² fields, pressure-Hessian symmetry
+and integration by parts give
+`integral tr(B Q P^T)=-integral sum B_ik (partial_i Q_kj) (grad p)_j`.
+The certified spatial class is a constant matrix plus a smooth L² matrix
+correction; the scalar pressure need not be L². Every spatially constant
+matrix cancels, including anisotropic ones. No evolving coframe
+construction or physical-time allowance is assumed by this identity.
+
+The companion exact test retains full unforced pressure, coframe and
+cross-moment time jets. The integrated pressure work starts at zero but
+has a strictly negative first derivative on genuine 3D data, while the
+initial total production retains negative diffusion. A universally
+dissipative pressure sign therefore fails, conditional on the analytic
+short-prefix identification. A finite original-datum signed commutator
+payment and conversion to physical vorticity remain open. See the
+[joint derivation and complete tests](labs/README.md#joint-coframe-pressure-and-the-retained-cross-moment).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

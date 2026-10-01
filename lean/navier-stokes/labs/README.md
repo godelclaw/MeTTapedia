@@ -8649,3 +8649,140 @@ and physical vorticity together when paying the weighted pressure response
 and conversion. A decreasing normalized gradient or a nonnegative gap
 does not supply that coupled finite-horizon payment. The original signed
 renewal/continuation target remains open.
+
+## Joint coframe pressure and the retained cross moment
+
+The actual gradient is `B=B_H-A`, where `B_H=grad H` is the original
+passive parent, `I=H-u` is the original pressure impulse and `A=grad I`.
+Use the same inverse coframe as above, `Q=N^-1`, throughout the history.
+Combining the parents before estimating their pressure work gives
+
+```text
+q_B=tr(B Q B^T)=q_H+q_I-2tr(B_H Q A^T),
+Dq_B=-2tr(B Q P^T)-2nu F_B,
+F_B=sum_l tr[(partial_l B-B Q N_l)Q
+             (partial_l B-B Q N_l)^T]>=0.
+```
+
+The cross term retains the same canonical pressure and joint covariant
+diffusion. This avoids introducing the separate impulse parent's
+weighted force-square cost as a new payment at this stage. It does not
+establish a history bound for the combined observable.
+
+`MettapediaNS.JointCoframePressure` certifies actual gradient-square and
+pressure-work reconstruction, the literal canonical NS gradient rate,
+its supplied-metric production and actual-vorticity comparison with a
+conversion input. The metric rate and derivatives are those of
+`TransportedFrameMetric`; construction of N and the physical-time chain
+rule remain analytic obligations. Neither N nor Q is a freely selectable
+control. The exact local derivative test independently differentiates
+`tr(B N^-1 B^T)`, retaining all first and second spatial derivatives of
+B and N. The diffusion cost is `40697/512`, pressure work is `-25/4`,
+and full generator is `-8697/2560` in that rational fixture. These
+matrices test the algebra, not a constructed fluid trajectory.
+
+### The actual pressure cancels for every constant metric
+
+Let `g=grad p`, with the canonical pressure of the full smooth solenoidal
+velocity. Its Hessian `P` is symmetric. With `B_ik=partial_k u_i`, put
+
+```text
+Z_i=sum_kj B_ik Q_kj g_j,
+C=sum_ikj B_ik (partial_i Q_kj) g_j.
+```
+
+Solenoidality gives `sum_i partial_i B_ik=0`. Consequently
+
+```text
+div Z=tr(B Q P^T)+C,
+W_B=integral tr(B Q P^T)=-integral C.
+```
+
+Every anisotropic constant matrix cancels: `partial_i Q=0` implies
+`W_B=0` without positivity, isotropy or a smallness assumption. The
+certified whole-space class is `Q=Q0+w`, where Q0 is constant and every
+entry of w is a smooth scalar field with all L² jets. Integrability
+follows from smooth field products. Integration by parts uses the
+pressure gradient, so the scalar potential need not belong to L².
+Applying this class to the evolving stochastic coframe requires its
+field regularity identification. The torus checker independently
+verifies the full flux divergence.
+
+Under a compatible smooth time realization and the requisite spatial
+integrability, the integrated balance is therefore
+
+```text
+integral q_B(t)+2nu integral_0^t integral F_B
+  =integral |grad u0|^2+2 integral_0^t integral C.
+```
+
+This time balance is analytic; the spatial cancellation and algebraic
+generator are kernel-certified. A finite signed allowance for C must
+come from the original full datum, viscosity and horizon. The initial
+label, both parents and the metric cannot be reset at a later seam.
+A bounded q_B also needs quantitative conversion in physical gradient
+or vorticity directions to control an ordinary continuation criterion.
+Both coupled obligations remain open.
+
+A forced gradient equation additionally contains `grad f`; its metric
+production contains `2tr(B Q (grad f)^T)`. Zero instantaneous kinetic
+work does not remove this term. An internal region must retain its
+surrounding fluid and compatibility, rather than treating an effective
+force as an independent prescribed control. This cancellation neither
+embeds the imported forced singularity into an unforced flow nor proves
+that its organization cannot recur internally.
+
+### Complete unforced jets reject a universal pressure sign
+
+```sh
+python3 -O labs/joint_coframe_pressure.py
+```
+
+The Gaussian-rational Fourier test uses the existing genuinely 3D
+`interacting_datum()` on the `2*pi` torus, with `nu=1/10`. Every
+convolution output is retained. Reported spatial integrals in this test
+are normalized torus means. Both unforced NS tangents are solenoidal;
+the canonical pressure is retained through second order. Initial
+`N(0)=Q(0)=I`; both coframe jets use the full same actual drift:
+
+```text
+Q_t(0)=B+B^T=S, N_t(0)=-S,
+N_tt(0)=nu Delta N_t-u.grad N_t-B_t^T-B_t
+        -B^T N_t-N_t B,
+Q_tt(0)=-N_tt+2N_t^2.
+```
+
+The integrated pressure jets are
+
+```text
+W_B(0)=0,
+W_B'(0)=-156013232/10405395 <0,
+W_B''(0)=416637952/52026975.
+```
+
+Independent commutator contractions agree with both time derivatives.
+B_t, B_tt, P_t and P_tt remain in the pointwise work. Constant metric
+cancellation removes their relevant integrated contributions. A spatial
+test metric `I+S/100` has coefficient-certified lower eigenvalue
+`181523/250250` and pressure work `-39003308/260134875`; that metric
+is not asserted to occur at a finite time in the actual history.
+
+The actual time test retains the complete pointwise generator and its
+first derivative, including drift_t, viscosity and every metric
+derivative. Initial integrated total production is
+`-103042048/5780775`, with covariant diffusion `103042048/1156155`.
+Its second derivative is `13618068064/260134875`; this does not certify
+a positive-production time window. Both parent squares and their cross
+moment reconstruct the actual square at all three tested time orders.
+
+On a smooth local NS/coframe realization the strict negative pressure
+derivative implies W_B<0 on some short interval despite positive
+viscosity. This rejects only `W_B>=0` for every actual history. Smooth
+coframe construction and the Taylor argument are analytic here; no
+numerical endpoint or closed finite-mode evolution is certified. The
+test does not refute a finite signed full-datum payment, complete metric-
+production monotonicity or unforced regularity.
+
+Next: pay the evolving signed commutator and physical conversion
+together from original resources. A one-signed pressure rule and a
+separately estimated impulse force square do not supply that theorem.
