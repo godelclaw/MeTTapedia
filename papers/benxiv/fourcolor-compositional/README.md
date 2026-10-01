@@ -23,6 +23,24 @@ and the [compression ledger][ledger]. This guide connects them to the original
 plan. The [long companion][companion] preserves the detailed development and
 earlier attempts; its older sections are historical snapshots.
 
+The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
+additional source of family and coverage arguments. The first
+[kernel-checked bridge](../../../lean/fourcolor-classical/MettapediaFourColor/NearLinearDiamondRepair.lean)
+identifies its catalogue entries `D0000` and `D0001` with our existing diamond
+configurations, including their complete embedded graphs and ordered rings.
+Relabelling commutes with the same boundary insertion, and both entries inherit
+the shared repair rather than new independent rank certificates. The repaired
+second-entry witness has a compatible GSLT insertion history. The shared finite
+profile remains; the dependency audit excludes all original configuration
+certificates and complete Four Colour endpoints.
+This establishes reuse across presentations, with no further reduction of the
+629 original dependencies or 633 coverage entries in the existing assembly.
+The next compression question is whether boundary variations of a larger common
+core admit one structural repair law. The newer paper's flat-region coverage
+and coordinated Kempe repairs are separate obligations; neither follows from
+the two-entry bridge. Source pins, attribution and the exact audit scope are in
+the [receipt](../../../tools/fourcolor/near-linear/diamond-measurements.json).
+
 The [shared-tip double diamond](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondConfigurations.lean)
 is a direct component example. Configurations 3 and 6 contain two diamonds
 sharing one tip. Each piece retains its possible centre and tip colours; one

@@ -11,6 +11,27 @@ Werner's formalization. The dependency is pinned to
 `3db71e0a786a1f19be04c5266fe3d06fed216885`; `LICENSE` retains its MIT notice and
 upstream attribution.
 
+The [near-linear catalogue bridge](MettapediaFourColor/NearLinearDiamondRepair.lean)
+reuses this mathematics for `D0000` and `D0001` from the
+[2026 catalogue](https://github.com/near-linear-4ct/reducible-configurations).
+The two source files and their MIT notice are pinned in
+[`tools/fourcolor/near-linear`](../../tools/fourcolor/near-linear).
+Kernel checks establish the decoding, complete graph isomorphisms, every
+cyclic neighbour list, prescribed internal degrees and ordered rings.
+The source-to-source boundary insertion commutes with the reference insertion.
+Both entries inherit the existing profile and split repair against every
+Kempe-closed exterior relation; an actual repaired colouring of the second
+entry also retains its GSLT insertion history.
+The 23-root audit excludes every original configuration certificate and
+complete Four Colour endpoint. The finite shared profile remains.
+Replay with `lake build MettapediaFourColor.NearLinearDiamondAudit`; source
+fidelity is checked by `python3 ../../tools/fourcolor/near-linear/audit_diamond_sources.py`.
+This is exact reuse for already-covered configurations. It removes no further
+dependency from the 633-entry assembly and does not verify the newer coverage
+or simultaneous-repair algorithm. The
+[receipt](../../tools/fourcolor/near-linear/diamond-measurements.json)
+records these boundaries explicitly.
+
 `TwoDiamondConfigurations` gives exact graph, ring and joint-boundary
 semantics for configurations 3 and 6. `TwoDiamondCompositionGSLT` reconstructs
 both diamonds with one shared tip colour, then interprets the reference map.

@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "status": "bridge kernel checked; family and complete baseline replays passed",
+  "base_revision": "a14fc803ccd1468fc993afcc00f0f9b495f34209",
+  "source_pin": "sources.json",
+  "source_fidelity": "diamond-source-audit.json",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "local_modules": [
+    {
+      "module": "MettapediaFourColor.BoundaryRepairTransport",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/BoundaryRepairTransport.lean",
+      "source_sha256": "64f1e091a7b39a111466113078a308612fc8dbe32a2d7fcb02580310a4798867",
+      "olean_sha256": "a393bc960bc6349691ea347a54eb6f6d37c68f54a60ba03d446ed0a3b96698e4",
+      "olean_bytes": 89520
+    },
+    {
+      "module": "MettapediaFourColor.NearLinearDiamondData",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/NearLinearDiamondData.lean",
+      "source_sha256": "5efa12015c78c4e4d9458ab6eb77ed6379d1759ae07f2be0ca033fd6d862ae68",
+      "olean_sha256": "8c81f8351def73c786db8157e2b3c5bd4023f754719a2c32c17cc32194dc89b2",
+      "olean_bytes": 469864
+    },
+    {
+      "module": "MettapediaFourColor.NearLinearDiamondRepair",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/NearLinearDiamondRepair.lean",
+      "source_sha256": "c19a5b519e26238fc34b5a5ba70650862b7bd4eee3131ff7bc26a81a7cfd42b8",
+      "olean_sha256": "937ab0f6183c280b06d1b81df65b4c9d5845414148c41486aa4ee901e38918f4",
+      "olean_bytes": 166120
+    },
+    {
+      "module": "MettapediaFourColor.NearLinearDiamondAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/NearLinearDiamondAudit.lean",
+      "source_sha256": "193eb154341be33023ad6f9133719189035280bdb1018467f86c136d1dc046df",
+      "olean_sha256": "626014854f906cb0fad9689cc5594181605aba5b43f02690cf785ed326326eb3",
+      "olean_bytes": 3376
+    }
+  ],
+  "classical_gate": {
+    "command": "lake build MettapediaFourColor.NearLinearDiamondAudit",
+    "working_directory": "lean/fourcolor-classical",
+    "exit_code": 0,
+    "jobs": 3327
+  },
+  "main_gate": {
+    "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "working_directory": "lean/mettapedia",
+    "exit_code": 0,
+    "jobs": 11195
+  },
+  "proof_audit": {
+    "roots": 23,
+    "dependency_declarations": 8816,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "all_original_configuration_certificates_forbidden": true,
+    "complete_colouring_endpoints_forbidden": true,
+    "retained_finite_certificate": "DiamondProfileCertificate"
+  },
+  "new_source_entries": [
+    "D0000",
+    "D0001"
+  ],
+  "existing_configuration_numbers": [
+    1,
+    2
+  ],
+  "checked_geometry": [
+    "source number rows and prescribed degrees",
+    "full graph isomorphisms",
+    "every cyclic neighbor list",
+    "ordered boundary alignment",
+    "boundary-triangle insertion",
+    "commutation of insertion and relabelling"
+  ],
+  "semantics": "Actual colouring equivalences preserve arbitrary joint boundary observations. Both ordered source trace relations inherit Repairs against every Kempe-closed exterior relation. The second repaired witness has a compatible existing GSLT insertion history.",
+  "credited": {
+    "catalogue_entries_removed": 0,
+    "additional_reference_certificate_dependencies_replaced": 0,
+    "new_uniform_repair_families": 0,
+    "new_coverage_theorems": 0,
+    "kernel_seconds_saved": 0,
+    "artifact_bytes_saved": 0
+  },
+  "complete_assembly": {
+    "consumes_new_bridge": false,
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 629,
+    "shared_discharging_computations": 231
+  },
+  "limits": [
+    "The two source entries were already covered by the existing diamond mathematics.",
+    "The shared finite profile remains; this is not a case-free repair theorem.",
+    "A construction history is not an executable exterior Kempe-recolouring history.",
+    "The remaining 2026 catalogue, coverage, coordinated repairs and runtime are not verified."
+  ],
+  "next_obligation": "Identify exact boundary-insertion relations within a larger repeated core and prove a shared repair transfer with its actual embedded correspondence.",
+  "recorded_at": "2026-10-01T18:40:08.604722+00:00",
+  "family_replay": {
+    "command": "lake build kernelConfigurationFamilies",
+    "working_directory": "lean/fourcolor-classical",
+    "exit_code": 0,
+    "modules": 39,
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "receipt_sha256": "efb23693ab616e77c02fff2b90bb3c0207bea50db38c390c4c1a15a80b0ffebe"
+  },
+  "complete_replay": {
+    "command": "lake build kernelComplete",
+    "working_directory": "lean/fourcolor-classical",
+    "exit_code": 0,
+    "prepared_dependencies": 126,
+    "all_current_source_and_artifact_hashes_verified": true,
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.ReferenceBaselineAudit",
+        "source_sha256": "95412f4aa82f40309bf66a1bdba19cadd026320e3742a178e64e794e72882c6f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.221,
+        "olean_bytes": 3320,
+        "olean_sha256": "67bb9d1c136c6fc217aa56556ba5bd89420ba2545c946ef822644e69dde36e1e"
+      },
+      {
+        "module": "MettapediaFourColor.DiamondFamilyReducibility",
+        "source_sha256": "6a5a1eb129358975165f6bc29823ba0f45b89b9f51a5206421d9becfbe0fefe5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.014,
+        "olean_bytes": 38408,
+        "olean_sha256": "e00d325ba3e9a6ba2f123873686b22b052c7b67c6ad97cd4d4a88518fd6959b6"
+      },
+      {
+        "module": "MettapediaFourColor.Complete",
+        "source_sha256": "66b569b5289330beb78bc9356ab8f80958de681d5da4cb32fe023cbbf840cd86",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.385,
+        "olean_bytes": 39288,
+        "olean_sha256": "fce0dd591168e2d7bf9463281c20f1fad4ff9bb96a9e4f106248346d79971ccf"
+      },
+      {
+        "module": "MettapediaFourColor.CompleteAudit",
+        "source_sha256": "1bb5c3857b5583eec4d70c774875d19672fe3dc4c8476e9e30e93b0d02322e51",
+        "exit_code": 0,
+        "frontend_wall_seconds": 21.306,
+        "olean_bytes": 5816,
+        "olean_sha256": "8c285f2f82829cf6262059014b12415c8055f183194972c36e79864b814b5848"
+      }
+    ],
+    "receipt_sha256": "5dac4730df9915a2b79a0ca9d8e21a678b6d6094302f3872731feef6f0388b79"
+  }
+}

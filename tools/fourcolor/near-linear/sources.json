@@ -1,0 +1,21 @@
+{
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "paper": "https://arxiv.org/abs/2603.24880",
+  "license": "MIT; see LICENSE",
+  "files": {
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+    },
+    "D0000.conf": {
+      "upstream_path": "D/D0000.conf",
+      "sha256": "d849e1d37b84fe8f37def9fbf292ead6de3a11c1d34c08b07d576d5dfaa022be"
+    },
+    "D0001.conf": {
+      "upstream_path": "D/D0001.conf",
+      "sha256": "5a25f39fbc901852feb35f6ca4ad3416a5c555e808d6f0624257c2bfb8f97119"
+    }
+  },
+  "scope": "Two source configurations only. No claim to verify the complete 2026 catalogue, coverage argument or runtime."
+}

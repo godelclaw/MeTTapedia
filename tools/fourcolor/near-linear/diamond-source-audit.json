@@ -1,0 +1,37 @@
+{
+  "evidence": "Independent source-fidelity check; reducibility is checked separately in Lean.",
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_files_verified": 3,
+  "configuration_source_rows_verified": 2,
+  "entries": [
+    {
+      "configuration": "D0000",
+      "vertices": 10,
+      "ring": 6,
+      "core_vertices": 4,
+      "edges": 21,
+      "prescribed_core_degrees": [
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "configuration": "D0001",
+      "vertices": 11,
+      "ring": 7,
+      "core_vertices": 4,
+      "edges": 23,
+      "prescribed_core_degrees": [
+        5,
+        6,
+        5,
+        5
+      ]
+    }
+  ],
+  "lean_source_sha256": "5efa12015c78c4e4d9458ab6eb77ed6379d1759ae07f2be0ca033fd6d862ae68",
+  "verifier_sha256": "6d18cbf85974f18bf70599aa43e4c7a78a9c63be953961bdad1e0823c34c2349"
+}
