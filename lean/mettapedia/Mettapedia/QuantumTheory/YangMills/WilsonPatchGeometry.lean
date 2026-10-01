@@ -100,6 +100,24 @@ theorem singleton_zero_collar_nonempty (x : Site 4 n) :
   refine ⟨(x, 0), mem_biUnion.mpr ⟨p, ?_, hp⟩⟩
   exact mem_incident.mpr ⟨(x, 0), mem_singleton_self _, hp⟩
 
+/-- Every link direction in four dimensions has an incident plaquette. -/
+theorem singleton_collar_nonempty (l : Link 4 n) :
+    (collar ({l} : Finset (Link 4 n))).Nonempty := by
+  rcases l with ⟨x, μ⟩
+  by_cases hμ : μ = 0
+  · subst μ
+    exact singleton_zero_collar_nonempty x
+  · have hpos : (0 : Fin 4) < μ := Fin.pos_iff_ne_zero.mpr hμ
+    let p : Plaquette 4 n := (x, ⟨(0, μ), hpos⟩)
+    have hp : (x, μ) ∈ support p :=
+      mem_image.mpr ⟨3, mem_univ _, by simp [p, linkAt]⟩
+    refine ⟨(x, μ), mem_biUnion.mpr ⟨p, ?_, hp⟩⟩
+    exact mem_incident.mpr ⟨(x, μ), mem_singleton_self _, hp⟩
+
+@[simp] theorem polymerDist_singletons (l m : Link d n) :
+    polymerDist ({l} : Finset (Link d n)) {m} = dist l m := by
+  simp [polymerDist, Metric.infDist_singleton, dist_comm]
+
 #print axioms card_collar_le
 #print axioms collar_radius
 #print axioms separation_collar

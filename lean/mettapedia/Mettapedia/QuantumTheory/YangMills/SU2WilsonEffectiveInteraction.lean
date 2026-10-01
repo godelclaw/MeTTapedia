@@ -224,6 +224,42 @@ theorem uniform_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0
   rw [mixedDerivative_eq_boundary]
   exact h (volumeIndex N) univ (retainedSet (mesh coarse)) S T q r b
 
+/-- Single-link second responses of the actual generated log weight. -/
+def responseArray (N : ℕ) (β : ℝ) (coarse : Bool) (q r b : FullField N) :
+    AssemblyLink N → AssemblyLink N → ℝ :=
+  fun l m ↦ mixedDerivative N β coarse {l} {m} q r b
+
+theorem responseArray_eq_boundary (N : ℕ) (β : ℝ) (coarse : Bool)
+    (q r b : FullField N) :
+    responseArray N β coarse q r b = SU2BoundaryResponse.responseArray β univ
+      (retainedSet (mesh coarse)) q r b := by
+  funext l m
+  exact mixedDerivative_eq_boundary N β coarse {l} {m} q r b
+
+/-- Both exact assembly levels satisfy the same bound on total weighted
+boundary influence. Constants precede the level, spatial volume, boundary
+values and frames; nearby and diagonal contacts are included. -/
+theorem uniform_weightedResponseSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (N : ℕ) (coarse : Bool) (q r b : FullField N),
+      WilsonBoundaryResponse.weightedResponseSeminorm η
+        (responseArray N β coarse q r b) ≤ C := by
+  obtain ⟨η, hη, C, hC, h⟩ := SU2BoundaryResponse.uniform_weightedResponseSeminorm hβ hβ0
+  refine ⟨η, hη, C, hC, ?_⟩
+  intro N coarse q r b
+  rw [responseArray_eq_boundary]
+  exact h (volumeIndex N) univ (retainedSet (mesh coarse)) q r b
+
+/-- The weighted influence of any individual retained or unretained link is
+bounded by the same volume-independent constant at either assembly level. -/
+theorem uniform_weightedResponseRow {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (N : ℕ) (coarse : Bool) (q r b : FullField N)
+      (l : AssemblyLink N),
+      ∑ m, Real.exp (η * dist l m) * |responseArray N β coarse q r b l m| ≤ C := by
+  obtain ⟨η, hη, C, hC, h⟩ := uniform_weightedResponseSeminorm hβ hβ0
+  refine ⟨η, hη, C, hC, ?_⟩
+  intro N coarse q r b l
+  exact (WilsonBoundaryResponse.weightedResponseRow_le η l _).trans (h N coarse q r b)
+
 /-- Mixed finite change of the complete effective log weight. -/
 def mixedChange (N : ℕ) (β : ℝ) (coarse : Bool) (S T : Finset (AssemblyLink N))
     (b a c : FullField N) : ℝ :=
@@ -318,6 +354,8 @@ theorem tendsto_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0
 #print axioms mixedDerivative_eq_covariance_sub_contact
 #print axioms mixedDerivative_staged_with_contact
 #print axioms uniform_mixedDerivative
+#print axioms uniform_weightedResponseSeminorm
+#print axioms uniform_weightedResponseRow
 #print axioms tendsto_mixedDerivative
 #print axioms uniform_mixedChange
 #print axioms growing_patches_retained

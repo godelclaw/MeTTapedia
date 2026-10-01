@@ -1,6 +1,8 @@
 import Mettapedia.Combinatorics.PolymerGas.PlaquetteSmallness
 import Mettapedia.QuantumTheory.YangMills.CrossingInput
 import Mathlib.Analysis.Normed.Group.AddCircle
+import Mathlib.Data.ZMod.ValMinAbs
+import Mathlib.Analysis.SpecificLimits.Normed
 
 /-!
 # Strong-coupling crossing for finite torus plaquette measures
@@ -77,6 +79,52 @@ theorem coordinateCircle_apply (n : ℕ) (z : ZMod (n + 3)) :
   have h := coordinateCircle_intCast n (z.val : ℤ)
   simpa using h
 
+/-- The circle distance is the absolute value of the centered integer
+representative, including the half-period endpoint on even tori. -/
+theorem norm_coordinateCircle_eq (n : ℕ) (z : ZMod (n + 3)) :
+    ‖coordinateCircle n z‖ = (z.valMinAbs.natAbs : ℝ) := by
+  conv_lhs => rw [← ZMod.coe_valMinAbs z, coordinateCircle_intCast]
+  have h := z.valMinAbs_mem_Ioc
+  have hlo : -(n + 3 : ℝ) < (z.valMinAbs : ℝ) * 2 := by exact_mod_cast h.1
+  have hhi : (z.valMinAbs : ℝ) * 2 ≤ n + 3 := by exact_mod_cast h.2
+  have hn : ‖((z.valMinAbs : ℝ) : AddCircle (n + 3 : ℝ))‖ = |(z.valMinAbs : ℝ)| := by
+    apply (AddCircle.norm_coe_eq_abs_iff (n + 3 : ℝ) (by positivity)).mpr
+    rw [abs_of_pos (by positivity : (0 : ℝ) < n + 3)]
+    exact abs_le.mpr ⟨by linarith, by linarith⟩
+  simpa only [Nat.cast_natAbs, Int.cast_abs] using hn
+
+/-- A cyclic coordinate contributes no more than the full integer geometric
+series. The constant is independent of the period and of the base point. -/
+theorem sum_exp_coordinate_le (n : ℕ) {a : ℝ} (ha : 0 < a)
+    (x : ZMod (n + 3)) :
+    ∑ z : ZMod (n + 3), Real.exp (-a * ‖coordinateCircle n (z - x)‖) ≤
+      2 * (1 - Real.exp (-a))⁻¹ := by
+  let f : ℤ → ℝ := fun j ↦ Real.exp (-a * (j.natAbs : ℝ))
+  have hN : Summable (fun k : ℕ ↦ Real.exp (-a * (k : ℝ))) := by
+    simpa only [mul_comm] using
+      (Real.summable_exp_nat_mul_iff.mpr (neg_lt_zero.mpr ha))
+  have hp : Summable (fun k : ℕ ↦ f (k : ℤ)) := by simpa [f] using hN
+  have hm : Summable (fun k : ℕ ↦ f (-(k : ℤ))) := by simpa [f] using hN
+  have hf : Summable f := hp.of_nat_of_neg hm
+  have hg : ∑' k : ℕ, Real.exp (-a * (k : ℝ)) = (1 - Real.exp (-a))⁻¹ := by
+    simp_rw [mul_comm (-a), Real.exp_nat_mul]
+    apply tsum_geometric_of_norm_lt_one
+    rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+    exact Real.exp_lt_one_iff.mpr (neg_lt_zero.mpr ha)
+  have ht : ∑' j : ℤ, f j ≤ 2 * (1 - Real.exp (-a))⁻¹ := by
+    rw [hp.tsum_of_nat_of_neg hm]
+    simp only [f, Int.natAbs_natCast, Int.natAbs_neg, Int.natAbs_zero, Nat.cast_zero,
+      mul_zero, Real.exp_zero, hg]
+    linarith
+  have hs : ∑ z : ZMod (n + 3), f z.valMinAbs ≤ ∑' j : ℤ, f j := by
+    rw [← Finset.sum_image (fun _ _ _ _ h ↦ ZMod.injective_valMinAbs h)]
+    exact hf.sum_le_tsum _ (fun _ _ ↦ (Real.exp_pos _).le)
+  have he := (Equiv.subRight x).sum_comp
+    (fun z : ZMod (n + 3) ↦ Real.exp (-a * ‖coordinateCircle n z‖))
+  change (∑ z : ZMod (n + 3), Real.exp (-a * ‖coordinateCircle n (z - x)‖)) = _ at he
+  rw [he]
+  simpa only [f, norm_coordinateCircle_eq] using hs.trans ht
+
 /-- The circle embedding retains all cyclic coordinates. -/
 theorem coordinateCircle_injective (n : ℕ) : Function.Injective (coordinateCircle n) := by
   have : Fact (0 < (n + 3 : ℝ)) := ⟨by positivity⟩
@@ -106,6 +154,59 @@ instance linkPseudoMetricSpace (d n : ℕ) : PseudoMetricSpace (Link d n) :=
 
 @[simp] theorem dist_link_eq {d n : ℕ} (l m : Link d n) :
     dist l m = dist (position l) (position m) := rfl
+
+/-- The sum of the coordinate distances is at most dimension times the sup
+distance used by the crossing input. -/
+theorem sum_coordinate_norm_le {d n : ℕ} (l m : Link d n) :
+    ∑ i, ‖coordinateCircle n (m.1 i - l.1 i)‖ ≤ (d : ℝ) * dist l m := by
+  have h := Finset.sum_le_sum (s := (univ : Finset (Fin d)))
+    (fun i _ ↦ dist_le_pi_dist (position m) (position l) i)
+  rw [dist_link_eq, dist_comm (position l) (position m)]
+  conv_lhs at h => simp only [position, dist_eq_norm, ← map_sub]
+  simpa only [position, ← map_sub, dist_eq_norm, Finset.sum_const, card_univ,
+    Fintype.card_fin, nsmul_eq_mul] using h
+
+/-- An explicit exponential-volume constant for the circle sup metric. -/
+def exponentialVolumeBound (d : ℕ) (a : ℝ) : ℝ :=
+  (d : ℝ) * (2 * (1 - Real.exp (-(a / d)))⁻¹) ^ d
+
+/-- Exponentially weighted link counts are uniformly bounded over all torus
+side lengths. Directions at the same base point retain their multiplicity. -/
+theorem sum_exp_dist_le {d n : ℕ} (hd : 0 < d) {a : ℝ} (ha : 0 < a)
+    (l : Link d n) :
+    ∑ m : Link d n, Real.exp (-a * dist l m) ≤ exponentialVolumeBound d a := by
+  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
+  have had : 0 < a / (d : ℝ) := div_pos ha hd'
+  have hpoint (m : Link d n) : Real.exp (-a * dist l m) ≤
+      ∏ i, Real.exp (-(a / d) * ‖coordinateCircle n (m.1 i - l.1 i)‖) := by
+    rw [← Real.exp_sum]
+    apply Real.exp_le_exp.mpr
+    have hmean : (∑ i, ‖coordinateCircle n (m.1 i - l.1 i)‖) / d ≤ dist l m :=
+      (div_le_iff₀ hd').mpr (by simpa only [mul_comm] using sum_coordinate_norm_le l m)
+    have h := mul_le_mul_of_nonpos_left hmean (neg_nonpos.mpr ha.le)
+    refine h.trans_eq ?_
+    rw [Finset.sum_div, Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i _
+    ring
+  apply (Finset.sum_le_sum (fun m _ ↦ hpoint m)).trans
+  rw [Fintype.sum_prod_type]
+  simp only [Finset.sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul]
+  rw [← Finset.mul_sum]
+  rw [← Fintype.prod_sum (fun i z ↦
+    Real.exp (-(a / d) * ‖coordinateCircle n (z - l.1 i)‖))]
+  apply mul_le_mul_of_nonneg_left _ hd'.le
+  change (∏ i : Fin d, ∑ z : ZMod (n + 3),
+    Real.exp (-(a / d) * ‖coordinateCircle n (z - l.1 i)‖)) ≤
+      (2 * (1 - Real.exp (-(a / d)))⁻¹) ^ d
+  have hc : (2 * (1 - Real.exp (-(a / d)))⁻¹) ^ d =
+      ∏ _i : Fin d, (2 * (1 - Real.exp (-(a / d)))⁻¹) := by simp
+  rw [hc]
+  apply Finset.prod_le_prod
+  · intro i _
+    exact Finset.sum_nonneg (fun _ _ ↦ (Real.exp_pos _).le)
+  · intro i _
+    exact sum_exp_coordinate_le n had (l.1 i)
 
 /-- The only zero-distance links are those sharing their base point. -/
 theorem dist_link_eq_zero_iff {d n : ℕ} (l m : Link d n) :
@@ -387,6 +488,8 @@ theorem wilson_clustering (d : ℕ) (ν₀ : Measure E) [IsProbabilityMeasure ν
 end Potential
 
 #print axioms dist_link_eq_zero_iff
+#print axioms norm_coordinateCircle_eq
+#print axioms sum_exp_dist_le
 #print axioms diam_support_le
 #print axioms card_incident_le
 #print axioms degree_plaquetteGraph_le

@@ -626,6 +626,109 @@ theorem uniform_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0
   have hp : 0 ≤ 3 * β ^ 2 * (256 * (S.card : ℝ)) * (256 * T.card) := by positivity
   simpa only [mul_assoc, mul_left_comm, mul_comm] using mul_le_mul_of_nonneg_left he hp
 
+/-- An unconditional bound for the actual Haar Hessian, retaining contacts
+for overlapping patches. It holds for every real coupling. -/
+theorem abs_mixedDerivative_le (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held S T : Finset (Link 4 n)) (q r b : Link 4 n → SU2) :
+    |mixedDerivative β active held S T q r b| ≤
+      2 * β ^ 2 * (256 * S.card) * (256 * T.card) + |β| * (1024 * S.card) := by
+  have hW : ∀ ω, 0 < boundaryDensity β active held b ω := fun ω ↦ by
+    rw [boundaryDensity_eq_exp]
+    exact Real.exp_pos _
+  have hc := WilsonBlockElimination.abs_covariance_le
+    (Measure.pi fun _ : Link 4 n ↦ (volume : Measure SU2))
+    (boundaryDensity β active held b) (score active held S q b 0)
+    (score active held T r b 0) hW (by positivity) (by positivity)
+    (abs_score_le active held S q b 0) (abs_score_le active held T r b 0)
+  have hj := WilsonBlockElimination.abs_expectation_le
+    (Measure.pi fun _ : Link 4 n ↦ (volume : Measure SU2))
+    (boundaryDensity β active held b) (contact active held S T q r b 0) hW
+    (abs_contact_le active held S T q r b 0)
+  rw [mixedDerivative_eq_covariance_sub_contact]
+  apply (abs_sub _ _).trans
+  simp only [abs_mul, abs_of_nonneg (sq_nonneg β)]
+  exact (add_le_add (mul_le_mul_of_nonneg_left hc (sq_nonneg β))
+    (mul_le_mul_of_nonneg_left hj (abs_nonneg β))).trans_eq (by ring)
+
+/-- Actual iterated single-link derivatives along the two prescribed frame
+fields. Links outside the held set still appear, with their actual response. -/
+def responseArray (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held : Finset (Link 4 n)) (q r b : Link 4 n → SU2) : Link 4 n → Link 4 n → ℝ :=
+  fun l m ↦ mixedDerivative β active held {l} {m} q r b
+
+/-- The nearby-pair bound includes the diagonal action contact. -/
+def nearResponseBound (β : ℝ) : ℝ := 2 * β ^ 2 * 256 ^ 2 + |β| * 1024
+
+/-- One envelope covers nearby contacts and separated connected responses. -/
+def responseEnvelopeBound (β κ : ℝ) : ℝ :=
+  3 * β ^ 2 * 256 ^ 2 * Real.exp (1536 + 2 * κ) +
+    nearResponseBound β * Real.exp κ
+
+theorem responseEnvelopeBound_nonneg (β κ : ℝ) : 0 ≤ responseEnvelopeBound β κ := by
+  unfold responseEnvelopeBound nearResponseBound
+  positivity
+
+/-- A single exponential envelope holds for all link pairs, including nearby
+and coincident pairs. The rate precedes volume, boundary data and frames. -/
+theorem uniform_responseArray_envelope {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (n : ℕ) (active : Finset (Plaquette 4 n))
+      (held : Finset (Link 4 n)) (q r b : Link 4 n → SU2) (l m : Link 4 n),
+      |responseArray β active held q r b l m| ≤
+        responseEnvelopeBound β κ * Real.exp (-κ * dist l m) := by
+  obtain ⟨κ, hκ, h⟩ := uniform_mixedDerivative hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro n active held q r b l m
+  have hnear : 0 ≤ nearResponseBound β := by unfold nearResponseBound; positivity
+  have hfar : 0 ≤ 3 * β ^ 2 * 256 ^ 2 * Real.exp (1536 + 2 * κ) := by positivity
+  by_cases hsep : 1 < dist l m
+  · have hh := h n active held {l} {m} q r b (singleton_collar_nonempty l)
+      (singleton_collar_nonempty m) (by simpa only [polymerDist_singletons] using hsep)
+    have hbase : |responseArray β active held q r b l m| ≤
+        (3 * β ^ 2 * 256 ^ 2 * Real.exp (1536 + 2 * κ)) *
+          Real.exp (-κ * dist l m) := by
+      simpa only [responseArray, card_singleton, Nat.cast_one, mul_one,
+        one_add_one_eq_two, show (768 : ℝ) * 2 = 1536 by norm_num,
+        polymerDist_singletons, pow_two, mul_assoc] using hh
+    apply hbase.trans
+    apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+    exact le_add_of_nonneg_right (mul_nonneg hnear (Real.exp_pos _).le)
+  · have hh := abs_mixedDerivative_le β active held {l} {m} q r b
+    have hbase : |responseArray β active held q r b l m| ≤ nearResponseBound β := by
+      simpa only [responseArray, nearResponseBound, card_singleton, Nat.cast_one,
+        mul_one, pow_two, mul_assoc] using hh
+    have he : 1 ≤ Real.exp κ * Real.exp (-κ * dist l m) := by
+      rw [← Real.exp_add]
+      apply Real.one_le_exp_iff.mpr
+      have hd : dist l m ≤ 1 := le_of_not_gt hsep
+      nlinarith
+    apply hbase.trans
+    have hp := mul_le_mul_of_nonneg_left he hnear
+    dsimp only [responseEnvelopeBound]
+    nlinarith [mul_nonneg hfar (Real.exp_pos (-κ * dist l m)).le]
+
+/-- Total boundary influence is uniformly summable at strong coupling.
+The same constants cover every volume, plaquette mask, held set, background
+and choice of the two link rotation frames. -/
+theorem uniform_weightedResponseSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (n : ℕ) (active : Finset (Plaquette 4 n))
+      (held : Finset (Link 4 n)) (q r b : Link 4 n → SU2),
+      WilsonBoundaryResponse.weightedResponseSeminorm η
+        (responseArray β active held q r b) ≤ C := by
+  obtain ⟨κ, hκ, h⟩ := uniform_responseArray_envelope hβ hβ0
+  have hcount : 0 ≤ exponentialVolumeBound 4 (κ / 2) := by
+    unfold exponentialVolumeBound
+    positivity
+  refine ⟨κ / 2, by positivity,
+    responseEnvelopeBound β κ * exponentialVolumeBound 4 (κ / 2),
+    mul_nonneg (responseEnvelopeBound_nonneg β κ) hcount, ?_⟩
+  intro n active held q r b
+  apply WilsonBoundaryResponse.weightedResponseSeminorm_le_of_envelope
+    (κ / 2) κ _ (responseEnvelopeBound_nonneg β κ) hcount
+    (h n active held q r b)
+  intro l
+  rw [show κ - κ / 2 = κ / 2 by ring]
+  exact sum_exp_dist_le (by decide) (by positivity) l
+
 /-- Four original boundary partition functions on the same SU(2) lattice. -/
 def response (β : ℝ) (n : ℕ) (active : Finset (Plaquette 4 n))
     (held S T : Finset (Link 4 n)) (b a c : Link 4 n → SU2) : ℝ :=
@@ -816,6 +919,8 @@ theorem normal_link_not_held (n : ℕ) :
 #print axioms mixedDerivative_eq_covariance_sub_contact
 #print axioms mixedDerivative_eq_covariance
 #print axioms uniform_mixedDerivative
+#print axioms uniform_responseArray_envelope
+#print axioms uniform_weightedResponseSeminorm
 #print axioms tendsto_growing_mixedDerivative
 #print axioms growing_separation
 #print axioms growing_family_bound

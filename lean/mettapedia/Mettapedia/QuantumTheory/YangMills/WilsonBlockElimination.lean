@@ -91,6 +91,22 @@ theorem abs_expectation_le (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x)
       (fun x => mul_le_mul_of_nonneg_left (hF x) (hW x).le)
     _ = C * ∫ x, W x ∂μ := by rw [integral_mul_const, mul_comm]
 
+/-- A contact-free bound requiring no spatial separation; useful at the
+diagonal as well as at nearby coordinates. -/
+theorem abs_covariance_le (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    {CF CG : ℝ} (hCF : 0 ≤ CF) (hCG : 0 ≤ CG)
+    (hF : ∀ x, |F x| ≤ CF) (hG : ∀ x, |G x| ≤ CG) :
+    |covariance μ W F G| ≤ 2 * CF * CG := by
+  have hFG : |expectation μ W (F * G)| ≤ CF * CG :=
+    abs_expectation_le μ W (F * G) hW (fun x ↦ by
+      rw [ContinuousMap.mul_apply, abs_mul]
+      exact mul_le_mul (hF x) (hG x) (abs_nonneg _) hCF)
+  have hp : |expectation μ W F * expectation μ W G| ≤ CF * CG := by
+    rw [abs_mul]
+    exact mul_le_mul (abs_expectation_le μ W F hW hF)
+      (abs_expectation_le μ W G hW hG) (abs_nonneg _) hCF
+  exact (abs_sub _ _).trans (by nlinarith)
+
 end Weighted
 
 section Elimination

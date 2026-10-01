@@ -1,6 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.WilsonSeparator
 import Mettapedia.Analysis.CompactMeanContinuousRate
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
+import Mathlib.Analysis.Normed.Module.Seminorm.Basic
 
 /-!
 # Boundary free-energy response from an actual connected correlation
@@ -184,10 +185,73 @@ theorem hasDerivAt_logPartitionScore (β : ℝ) (W A B J : ℝ → C(X, ℝ))
 
 end DifferentialResponse
 
+section SpatialResponse
+
+variable {ι : Type*} [Fintype ι] [PseudoMetricSpace ι]
+
+/-- The total absolute influence on one coordinate, with a spatial
+exponential weight. This is a seminorm on response arrays. -/
+def weightedResponseRow (η : ℝ) (i : ι) : Seminorm ℝ (ι → ι → ℝ) :=
+  Seminorm.of (fun H ↦ ∑ j, Real.exp (η * dist i j) * |H i j|)
+    (fun H G ↦ by
+      calc
+        _ ≤ ∑ j, Real.exp (η * dist i j) * (|H i j| + |G i j|) :=
+          Finset.sum_le_sum (fun j _ ↦
+            mul_le_mul_of_nonneg_left (abs_add_le (H i j) (G i j)) (Real.exp_pos _).le)
+        _ = _ := by simp only [mul_add, Finset.sum_add_distrib])
+    (fun a H ↦ by
+      simp only [Pi.smul_apply, smul_eq_mul, abs_mul, Real.norm_eq_abs, Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      ring)
+
+@[simp] theorem weightedResponseRow_apply (η : ℝ) (i : ι) (H : ι → ι → ℝ) :
+    weightedResponseRow η i H = ∑ j, Real.exp (η * dist i j) * |H i j| := rfl
+
+/-- Maximum weighted row sum. The finite supremum is zero on an empty
+coordinate set and has the usual seminorm laws. -/
+def weightedResponseSeminorm (η : ℝ) : Seminorm ℝ (ι → ι → ℝ) :=
+  Finset.univ.sup (weightedResponseRow η)
+
+theorem weightedResponseRow_le (η : ℝ) (i : ι) (H : ι → ι → ℝ) :
+    weightedResponseRow η i H ≤ weightedResponseSeminorm η H :=
+  Seminorm.le_finset_sup_apply (Finset.mem_univ i)
+
+theorem weightedResponseSeminorm_le (η : ℝ) (H : ι → ι → ℝ)
+    {C : ℝ} (hC : 0 ≤ C) (h : ∀ i, weightedResponseRow η i H ≤ C) :
+    weightedResponseSeminorm η H ≤ C :=
+  Seminorm.finset_sup_apply_le hC (fun i _ ↦ h i)
+
+/-- A pointwise exponential envelope becomes a bound on total influence
+once the exponentially weighted coordinate count has been bounded. -/
+theorem weightedResponseSeminorm_le_of_envelope (η κ : ℝ) (H : ι → ι → ℝ)
+    {M C : ℝ} (hM : 0 ≤ M) (hC : 0 ≤ C)
+    (hH : ∀ i j, |H i j| ≤ M * Real.exp (-κ * dist i j))
+    (hcount : ∀ i : ι, ∑ j, Real.exp (-(κ - η) * dist i j) ≤ C) :
+    weightedResponseSeminorm η H ≤ M * C := by
+  apply weightedResponseSeminorm_le η H (mul_nonneg hM hC)
+  intro i
+  calc
+    _ ≤ ∑ j, Real.exp (η * dist i j) * (M * Real.exp (-κ * dist i j)) :=
+      Finset.sum_le_sum (fun j _ ↦
+        mul_le_mul_of_nonneg_left (hH i j) (Real.exp_pos _).le)
+    _ = M * ∑ j, Real.exp (-(κ - η) * dist i j) := by
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [← mul_assoc, mul_comm (Real.exp _) M, mul_assoc, ← Real.exp_add]
+      congr 2
+      ring
+    _ ≤ M * C := mul_le_mul_of_nonneg_left (hcount i) hM
+
+end SpatialResponse
+
 #print axioms mixedResponse_eq_log_expectations
 #print axioms abs_mixedResponse_le_covariance
 #print axioms hasDerivAt_logPartition
 #print axioms hasDerivAt_expectation
 #print axioms hasDerivAt_logPartitionScore
+#print axioms weightedResponseSeminorm
+#print axioms weightedResponseSeminorm_le_of_envelope
 
 end Mettapedia.QuantumTheory.YangMills.WilsonBoundaryResponse
