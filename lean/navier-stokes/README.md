@@ -1792,8 +1792,8 @@ The [circulation source reserve](labs/README.md#circulation-pays-source-historie
 provides a different payment on every available smooth axisymmetric
 whole-space prefix. If `C4(0)=integral (r u_theta(0))^4 dx` is finite,
 `C4/(3nu)` pays the complete history of `r^6 S^2` in the lifted measure.
-Outside a fixed axis tube of radius rho it pays the unweighted source
-and the full Hessian of its nonlocal elliptic response, with cost
+With a smooth cutoff zero inside radius rho and one beyond 2rho, it pays
+the filtered source and the full Hessian of its nonlocal response, with cost
 `C4(0)/(3nu rho^6)`. Removing that radius weight restores signed radial
 compression; shrinking rho also adds a positive payment defect. Exact
 Gaussian tests separate decreasing circulation stock from growing
@@ -1807,9 +1807,9 @@ initial weighted cost from the original datum remains open; auxiliary
 sampling drifts do not become forces on the fluid.
 The same source payment and the actual scalar vorticity propagator also
 bound accumulated `u_r/r` from all initial meridional vorticity and all
-subsequent outside-tube sources. Both history components travel under
-the full interacting velocity. The remaining component comes from
-inside-tube generation and retains its nonlocal response. A finite,
+subsequent sources generated at r>=2rho. Both history components travel
+under the full interacting velocity. The remaining component comes from
+generation in r<=2rho and retains its nonlocal response. A finite,
 datum-controlled exponential factor removes the paid radial history from
 the conditional HJB weight without restarting its allowance.
 

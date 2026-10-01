@@ -83,7 +83,7 @@ def source_and_response():
             'response':'||Hess_5*(-L5)^-1*S_rho||_5^2=||S_rho||_5^2',
             'current_forecast':'||J_rho/r^3||_5^2<=C4(0)/(4*rho^6)',
             'moving_tube':'R_prime+||S_rho||_5^2<=-6*(rho_prime/rho)*R',
-            'scope':'source cutoff is radial, between zero and one, and zero for r<rho; Fourier-to-norm and interval arguments analytic'}
+            'scope':'radial cutoff between zero and one, zero for r<=rho and one for r>=2rho; Fourier-to-norm and interval arguments analytic'}
 
 
 def compression_potential():
