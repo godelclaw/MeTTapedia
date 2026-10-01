@@ -1732,6 +1732,20 @@ This symmetric curvature is invisible to the physical curl; its payment
 is not required for curl reconstruction. The directional frame geometry
 and arbitrary-history signed budget remain open.
 
+The [rotational curl reserve](labs/README.md#a-rotational-curl-reserve-and-its-internal-source)
+uses classical axisymmetric no-swirl estimates to pay a physical,
+spatially changing direction. A bound c on `|u_r/r|`, fixed by the original
+vorticity quotient, makes `Z(t)(exp(2c(H-t))-1)` pay absolute stretching
+on every smooth prefix. The existing `PlanarParentReserve` theorem supplies
+the scalar payment; the geometric PDE and continuation application are
+analytic. Swirl restores the internal source `partial_z((u_theta/r)^2)`;
+asymmetry and moving geometric choices have additional exact defects.
+Even with swirl, pairing that source with the meridional streamfunction
+is paid by the actual swirl kinetic energy, with signed transfer retained
+across every seam. The continuation cost needs a higher derivative
+pairing. The checker retains these distinctions and tests smooth
+whole-space data. Payment for arbitrary interacting histories remains open.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

@@ -12455,3 +12455,236 @@ are analytic. The exact checker covers finite matrix algebra, full
 initial 3D jets, the all-time shear formulas and the bound constants.
 No Lean declarations or axioms are added. Run
 `python3 -O labs/hjb_curvature_completion.py`.
+
+## A rotational curl reserve and its internal source
+
+The [rotational curl checker](rotational_curl_reserve.py) works with a
+physical vorticity observation rather than the symmetric HJB curvature.
+Its positive calibration uses classical axisymmetric analysis, with a
+reserve supplied by the existing `PlanarParentReserve` scalar theorem.
+The NS identification and stochastic argument here are analytic.
+
+### Changing direction with a paid geometric normalization
+
+Let u be an actual smooth, decaying, axisymmetric unforced evolution on
+R3 with nu>0, initially without swirl. Symmetry and zero swirl persist on its smooth
+lifespan. Write
+
+```text
+u=u_r e_r+u_z e_z,     omega=omega_theta e_theta,
+eta=omega_theta/r,    L5=partial_rr+(3/r)partial_r+partial_zz.
+```
+
+The direction e_theta varies in space. The equation
+`eta_t+u_r eta_r+u_z eta_z=nu L5 eta` removes its stretching without
+assuming that the parents evolve independently. For smooth axisymmetric
+data the quotient extends evenly to r=0. Assume the initial N and L below
+are finite, and sufficient decay for the integrals; smooth Schwartz
+initial data provide one such class. The classical bounds give
+
+```text
+N(t)=integral |eta| r dr dz <= N(0),
+L(t)=||eta||_infinity <= L(0),
+||u_r/r||_infinity <= C_B N(t)^(1/3) L(t)^(2/3).
+```
+
+Here N equals `||omega_theta||_(L1(dr dz))`, not its L1 norm in physical
+three-dimensional volume. A factor 2pi converts N to the physical L1
+norm of eta. The estimates and the universal constant C_B are from
+[Gallay--Sverak, Proposition 2.6 and Section 5](https://www.numdam.org/article/CML_2015__7_2_67_0.pdf).
+This is a use of the established no-swirl theory, not a new regularity
+result for that class.
+
+For example the smooth whole-space streamfunction
+`psi=r^2 exp(-r^2-z^2)` gives
+
+```text
+u_r=2rz exp(-r^2-z^2),
+u_z=2(1-r^2)exp(-r^2-z^2),
+eta=2(5-2r^2-2z^2)exp(-r^2-z^2),
+u_r eta_r+u_z eta_z=(16(r^2+z^2)-56)z exp(-2r^2-2z^2).
+```
+
+Its nonlinear vorticity transport is nonzero. The argument applies along
+its evolving solution, not just to the displayed initial field.
+
+Set `c=C_B N(0)^(1/3)L(0)^(2/3)`, finite from the original datum. For a
+prescribed horizon H, let Z be the full physical enstrophy, D its ordinary
+vorticity dissipation, and G the full cubic stretching. In this class,
+
+```text
+G=integral (u_r/r) omega_theta^2 dx,    |G|<=c Z,
+Z'=2G-2nu D,
+R(t)=Z(t)[exp(2c(H-t))-1]>=0,          0<=t<=H.
+```
+
+Taking `r=c(H-t)`, `E=Z`, `q=c`, `r'=-c` in the existing
+`PlanarParentReserve.unforced_receiver_payment` gives
+
+```text
+R'+2|G|+2nu[exp(2c(H-t))-1]D <= 0.
+```
+
+Thus `2 integral_a^b |G| <= R(a)-R(b)` on every compatible interval.
+Neither the horizon nor the initial resource is reset at a seam.
+In particular the signed-renewal consumer has the finite original-datum
+allowance `K=R(0)+2H|G(0)|`. The direct BKM estimate is also immediate:
+`||omega(t)||_infinity <= ||omega(0)||_infinity exp(ct)`.
+Both connections are analytic here. Applying the scalar Lean theorem
+does not certify the cylindrical PDE, Biot--Savart estimate or physical
+continuation hypotheses in Lean.
+
+### Stochastic meaning and the correct volume
+
+For a fixed actual smooth prefix, the backward diffusion representing eta
+has the radial/axial generator `nu L5-u_r partial_r-u_z partial_z`, with
+the fluid coefficients evaluated at backward physical time. Equivalently
+lift r to the radius of four Cartesian coordinates and use ordinary
+five-dimensional Brownian motion. Then eta is the expectation of its
+original value along those paths. This gives the maximum bound without
+any freedom to replace the parents by an independently chosen control.
+
+The lifted drift is not incompressible in five dimensions: its divergence
+is `2u_r/r`. The physical measure corresponds to the weight `r^-2` there.
+Off the axis this weight is harmonic and the weighted drift divergence
+vanishes. At the axis, the integration by parts must keep its boundary
+term. For a smooth convex chi with chi(0)=0, decay at infinity gives
+
+```text
+integral chi'(eta) L5 eta r dr dz
+ = -integral chi''(eta)|grad_(r,z) eta|^2 r dr dz
+   -2 integral chi(eta(0,z)) dz.
+```
+
+Convex approximations to absolute value give the L1 contraction. Treating
+the lifted drift as solenoidal, or discarding the singular-axis issue
+before this calculation, would not justify that bound.
+
+### What returns when swirl or asymmetry is admitted
+
+On an axisymmetric evolution with swirl, set `b=u_theta/r` and
+`Gamma=r u_theta`. The full equations retain
+
+```text
+(partial_t+u_r partial_r+u_z partial_z-nu L5)eta = partial_z(b^2),
+(partial_t+u_r partial_r+u_z partial_z-nu L5)b = -2(u_r/r)b,
+Gamma_t+u_r Gamma_r+u_z Gamma_z
+  = nu(Gamma_rr-Gamma_r/r+Gamma_zz).
+```
+
+The meridional fluid creates and transports swirl gradients, and those
+gradients create meridional vorticity. These are coupled unforced
+equations. A force adds `(curl f)_theta/r` to the eta equation and
+`r f_theta` to the Gamma equation. Pressure cancels from curl; it is
+still part of the actual velocity evolution.
+
+The smooth Schwartz initial datum
+`u=A(-y,x,0)exp(-|x|^2)` has eta=0 but
+
+```text
+eta_t(0,r,z)=-4z A^2 exp(-2r^2-2z^2).
+```
+
+Thus the observer is not source-free even on actual unforced solutions
+with bounded angular momentum. This strict derivative gives nonzero eta
+on a short local solution interval; it is not a blowup example.
+
+The source cannot have an unweighted time-integrated supremum allowance
+uniform over all smooth data with bounded energy and bounded Gamma.
+Indeed use the exact NS scaling `u_lambda(t,x)=lambda u(lambda^2 t,lambda x)`
+on a fixed local solution from the preceding datum. Initial energy scales
+as `lambda^-1`, `||Gamma||_infinity` is invariant, and the source scales
+as `lambda^5`. Its positive integral over a fixed base interval, rescaled
+to length `tau/lambda^2`, grows as `lambda^3`. This refutes that particular
+uniform source allowance, not an arbitrary function of the full datum
+or an allowance allowed to diverge as energy tends to zero. In contrast,
+`integral ||u_r/r||_infinity dt` is scaling invariant. The source test
+therefore does not refute a circulation-based payment of that different,
+critical observation.
+
+There is a signed source pairing that is paid even when swirl and
+meridional motion interact. Let chi be the scaled meridional
+streamfunction, fixed by the actual velocity:
+
+```text
+u_r=-r partial_z chi,  u_z=2chi+r partial_r chi,  -L5 chi=eta.
+```
+
+Writing `S=partial_z(b^2)`, integration by parts in z identifies
+
+```text
+T=integral r^2 chi S dx = integral (u_r/r)u_theta^2 dx.
+R_swirl=||u_theta||_2^2/2,
+D_swirl=integral (|grad_(r,z)u_theta|^2+u_theta^2/r^2) dx,
+R_swirl'+T+nu D_swirl=0.
+```
+
+The final identity follows from the actual angular velocity equation.
+Consequently `integral_a^b T <= R_swirl(a)-R_swirl(b)`, and the cost from
+time zero is at most `R_swirl(0)`, the original swirl kinetic energy.
+This is the standard kinetic transfer expressed as a payment of the
+geometric source, not a new energy law. It allows both directions of
+exchange and retains the complete evolving meridional parents. Inward
+transfer can replenish the reserve only while T is negative; the same
+signed cost is retained across each seam. No positive-part or absolute
+transfer estimate follows.
+
+This supplies a concrete paid pairing of the internal source on all
+smooth axisymmetric prefixes with the stated decay. It pairs S with
+chi, whereas the azimuthal enstrophy balance below pairs it with
+`eta=-L5 chi`. The latter asks for two additional spatial derivatives.
+The kinetic payment does not automatically pay that higher pairing or
+the full continuation cost.
+
+For a general three-dimensional smooth solenoidal field, the exact
+observer equation on r>0 is
+
+```text
+[partial_t+u_r partial_r+b partial_theta+u_z partial_z
+ -nu(partial_rr+3/r partial_r+1/r^2 partial_theta_theta+partial_zz)]eta
+ = partial_z(b^2)
+   +[(partial_theta u_z) partial_r b
+      -(partial_theta u_r) partial_z b]/r
+   +eta partial_theta b
+   +(2nu/r^3)partial_theta omega_r.
+```
+
+The checker derives this from the complete vector Laplacian and
+convection, retaining the moving cylindrical basis. These angular terms
+cannot be deleted by calling the flow incompressible. Also a fixed-axis
+quotient can itself be singular for smooth general data: for
+`u=(0,-2z,2y)exp(-|x|^2)`, eta along `(0,y,0)` behaves as `-4/y`.
+Rotating the observer with the flow adds its own rate. For
+`eta=k.omega/|k|^2`, its contribution with omega held fixed is
+`(k_t.omega-2eta k.k_t)/|k|^2`.
+
+### The remaining physical payment
+
+There is an exact destination for the new costs. Write
+`Z_theta=integral omega_theta^2 dx`,
+`D_theta=integral (|grad_(r,z)omega_theta|^2+omega_theta^2/r^2) dx`,
+`G_theta=integral (u_r/r)omega_theta^2 dx`, and
+`C_theta=integral r omega_theta partial_z(b^2) dx`.
+The axisymmetric balance is
+`Z_theta'=2G_theta-2nu D_theta+2C_theta`.
+If an evolving bound c(t) is used in `r(t)=c(t)(H-t)`, the same existing
+reserve theorem retains both costs:
+
+```text
+R_theta'+2|G_theta|+2nu(exp(2r)-1)D_theta
+ <= 2(exp(2r)-1)C_theta + 2Z_theta exp(2r)(H-t)c'(t),
+provided |G_theta|<=c(t)Z_theta, c(t)>=0, t<=H.
+```
+
+Bounding these terms from the full original fluid is open. With swirl,
+`Z_theta` is only one vorticity component: the other components also need
+payment before the full continuation theorem applies. For arbitrary
+flows one must additionally pay the angular terms, handle chart/axis
+regularity, and retain the cost of evolving geometric choices. The
+no-swirl calculation does not supply these missing estimates.
+
+Run `python3 -O labs/rotational_curl_reserve.py`. The checker verifies exact
+differential identities, the signed kinetic-transfer pairing, Gaussian
+data, scaling and scalar reserve algebra. The maximum principle,
+stochastic representation, norm estimates and interval arguments are
+analytic; no new Lean declaration is claimed.
