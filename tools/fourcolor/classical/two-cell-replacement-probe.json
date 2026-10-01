@@ -1,0 +1,5392 @@
+{
+  "abstract_kempe_necessary_conditions": {
+    "bad_model": [
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        3,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        3,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        3,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        3,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        2,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        3,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        2,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        2,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        2,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        3,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        3,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        3,
+        2,
+        1,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        3,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        3,
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        3,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        1,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        1,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        2,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        2,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        3,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        3,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        1,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        1,
+        2,
+        1,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        1,
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        2,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        2,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        3,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        3,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        3,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        3,
+        2,
+        2,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        3,
+        2,
+        3,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        3,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        1,
+        2,
+        3,
+        3,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        3,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        3,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        3,
+        2,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        3,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        3,
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        3,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        1,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        1,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        2,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        2,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        2,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        2,
+        2,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        2,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        3,
+        3,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        2,
+        3,
+        3,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        1,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        1,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        1,
+        2,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        1,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        1,
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        1,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        2,
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        2,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        2,
+        2,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        2,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        2,
+        3,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        2,
+        3,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        2,
+        3,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        3,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        3,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        3,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        3,
+        2,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        3,
+        2,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        3,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        1,
+        3,
+        3,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        1,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        1,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        3,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        3,
+        2,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        3,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        1,
+        3,
+        3,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        1,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        1,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        1,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        2,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        2,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        2,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        3,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        3,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        3,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        2,
+        3,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        1,
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        1,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        1,
+        2,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        1,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        1,
+        3,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        1,
+        3,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        1,
+        3,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        2,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        2,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        2,
+        2,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        2,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        2,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        3,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        3,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        3,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        3,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        3,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        3,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        1,
+        2,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        1,
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        1,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        2,
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        2,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        2,
+        2,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        2,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        2,
+        3,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        3,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        3,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        3,
+        2,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        1,
+        3,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        1,
+        2,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        1,
+        2,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        1,
+        3,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        1,
+        3,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        1,
+        3,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        2,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        2,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        2,
+        2,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        2,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        2,
+        3,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        3,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        3,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        3,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        3,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        3,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        2,
+        3,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        1,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        1,
+        3,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        1,
+        3,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        2,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        2,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        3,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        2,
+        3,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        3,
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        3,
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        3,
+        2,
+        3,
+        1
+      ],
+      [
+        1,
+        2,
+        3,
+        3,
+        3,
+        3,
+        2,
+        1
+      ]
+    ],
+    "consistent_bad_orbits": 213,
+    "deletion_rounds": [
+      {
+        "remaining": 213,
+        "removed": 6
+      }
+    ],
+    "good_orbits": 55,
+    "initial_bad_orbits": 219,
+    "paired_cycle_bad_orbits": [
+      [
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    ],
+    "parity_orbits": 274,
+    "physical_exterior_realizing_entire_model_supplied": false,
+    "scope": "Necessary parity, colour-permutation and noncrossing component-union conditions admit a nonempty model avoiding the patch. No claim of physical realizability, or impossibility under stronger geometry, is made."
+  },
+  "candidate_census": {
+    "actual_internal_edges": 11,
+    "actual_paired_profiles": 69,
+    "actual_patch_vertices": 10,
+    "actual_profiles": 327,
+    "actual_witnesses": 366,
+    "candidates": [
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 8,
+        "kind": "cycle",
+        "name": "cycle8",
+        "paired_support": 45,
+        "rejected": 198,
+        "rejected_paired": 12,
+        "support": 255
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree0",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree1",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree2",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree3",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree4",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree5",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree6",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree7",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree8",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree9",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree10",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree11",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree12",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree13",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          3,
+          2,
+          1,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree14",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          3,
+          2,
+          1,
+          3,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree15",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          3,
+          1,
+          2,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree16",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          3,
+          1,
+          1,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree17",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          3,
+          1,
+          2,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree18",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree19",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree20",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree21",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree22",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree23",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          3,
+          1,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree24",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree25",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree26",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree27",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree28",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree29",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          3,
+          2,
+          3,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree30",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree31",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree32",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree33",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree34",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree35",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree36",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree37",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree38",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          3,
+          3,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree39",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree40",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree41",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree42",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree43",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree44",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree45",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree46",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree47",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree48",
+        "paired_support": 24,
+        "rejected": 168,
+        "rejected_paired": 6,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree49",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree50",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree51",
+        "paired_support": 24,
+        "rejected": 168,
+        "rejected_paired": 6,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree52",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree53",
+        "paired_support": 12,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree54",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree55",
+        "paired_support": 24,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree56",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree57",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree58",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree59",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree60",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree61",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree62",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree63",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree64",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree65",
+        "paired_support": 0,
+        "rejected": 186,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree66",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree67",
+        "paired_support": 24,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree68",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree69",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          1,
+          3,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree70",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          3,
+          1,
+          3,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree71",
+        "paired_support": 12,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree72",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree73",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree74",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree75",
+        "paired_support": 24,
+        "rejected": 168,
+        "rejected_paired": 6,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree76",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree77",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree78",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree79",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree80",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree81",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree82",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree83",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree84",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree85",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree86",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree87",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree88",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree89",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree90",
+        "paired_support": 24,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree91",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree92",
+        "paired_support": 12,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree93",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree94",
+        "paired_support": 24,
+        "rejected": 60,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree95",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          3,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree96",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree97",
+        "paired_support": 24,
+        "rejected": 162,
+        "rejected_paired": 6,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree98",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree99",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree100",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree101",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree102",
+        "paired_support": 0,
+        "rejected": 120,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree103",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree104",
+        "paired_support": 12,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree105",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree106",
+        "paired_support": 6,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree107",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree108",
+        "paired_support": 12,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree109",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          3,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree110",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree111",
+        "paired_support": 24,
+        "rejected": 168,
+        "rejected_paired": 6,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree112",
+        "paired_support": 0,
+        "rejected": 168,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree113",
+        "paired_support": 12,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree114",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          3,
+          1,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree115",
+        "paired_support": 6,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree116",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree117",
+        "paired_support": 12,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree118",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree119",
+        "paired_support": 0,
+        "rejected": 120,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          3,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree120",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree121",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          2,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree122",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree123",
+        "paired_support": 0,
+        "rejected": 174,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree124",
+        "paired_support": 24,
+        "rejected": 162,
+        "rejected_paired": 6,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree125",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree126",
+        "paired_support": 0,
+        "rejected": 162,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          3,
+          2,
+          1,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree127",
+        "paired_support": 24,
+        "rejected": 60,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree128",
+        "paired_support": 0,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          3,
+          2,
+          1,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree129",
+        "paired_support": 12,
+        "rejected": 144,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree130",
+        "paired_support": 0,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 6,
+        "kind": "rooted plane cubic tree",
+        "name": "tree131",
+        "paired_support": 24,
+        "rejected": 126,
+        "rejected_paired": 0,
+        "support": 192
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires0",
+        "paired_support": 81,
+        "rejected": 12,
+        "rejected_paired": 12,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          3,
+          3,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires1",
+        "paired_support": 27,
+        "rejected": 12,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires2",
+        "paired_support": 27,
+        "rejected": 60,
+        "rejected_paired": 6,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires3",
+        "paired_support": 9,
+        "rejected": 60,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires4",
+        "paired_support": 27,
+        "rejected": 60,
+        "rejected_paired": 6,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          2,
+          1,
+          1,
+          1,
+          3,
+          3
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires5",
+        "paired_support": 27,
+        "rejected": 12,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires6",
+        "paired_support": 9,
+        "rejected": 12,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires7",
+        "paired_support": 9,
+        "rejected": 60,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          2,
+          2
+        ],
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires8",
+        "paired_support": 27,
+        "rejected": 60,
+        "rejected_paired": 6,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires9",
+        "paired_support": 3,
+        "rejected": 60,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires10",
+        "paired_support": 9,
+        "rejected": 60,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          3,
+          3,
+          1
+        ],
+        "first_rejected_paired": null,
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires11",
+        "paired_support": 9,
+        "rejected": 60,
+        "rejected_paired": 0,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires12",
+        "paired_support": 27,
+        "rejected": 60,
+        "rejected_paired": 6,
+        "support": 81
+      },
+      {
+        "first_rejected": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "first_rejected_paired": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1
+        ],
+        "interior_vertices": 0,
+        "kind": "noncrossing perfect wire pairing",
+        "name": "wires13",
+        "paired_support": 9,
+        "rejected": 78,
+        "rejected_paired": 6,
+        "support": 81
+      }
+    ],
+    "candidates_checked": 147,
+    "paired_domain": 81,
+    "scope": "Only the listed cycle, rooted plane trees and wire pairings were tested; paired-domain inclusion is insufficient for arbitrary smaller-map colourings.",
+    "sound_over_full_boundary_domain": 0
+  },
+  "closed_obstruction": {
+    "boundary_source_vertices": [
+      2,
+      2,
+      8,
+      8,
+      10,
+      10,
+      19,
+      19
+    ],
+    "boundary_word": [
+      2,
+      2,
+      1,
+      1,
+      2,
+      2,
+      1,
+      1
+    ],
+    "closed_smaller_map_kernel_certified": false,
+    "cycle_edge_colours": [
+      1,
+      3,
+      2,
+      3,
+      1,
+      3,
+      2,
+      3
+    ],
+    "exterior_source_values": [
+      0,
+      0,
+      2,
+      3,
+      1,
+      2,
+      1,
+      2,
+      1,
+      3,
+      2,
+      1,
+      3,
+      1,
+      3,
+      1,
+      2,
+      3,
+      2,
+      1
+    ],
+    "fixed_exterior_vertices": 50,
+    "minimal_counterexample_hypotheses_supplied": false,
+    "original_face_lengths": [
+      6,
+      6,
+      5,
+      5,
+      6,
+      6,
+      6,
+      5,
+      6,
+      6,
+      6,
+      5,
+      6,
+      6,
+      6,
+      5,
+      6,
+      6,
+      5,
+      6,
+      5,
+      6,
+      5,
+      6,
+      6,
+      5,
+      6,
+      5,
+      6,
+      6,
+      5,
+      5
+    ],
+    "original_fixed_exterior_extensions": 0,
+    "original_has_only_pentagonal_and_hexagonal_faces": true,
+    "original_vertices": 60,
+    "patch_vertices": 10,
+    "replacement_vertices": 8,
+    "scope": "This direct cycle replacement cannot reconstruct this supplied exterior. Recolouring and other decompositions remain available.",
+    "smaller_face_lengths": [
+      6,
+      6,
+      4,
+      6,
+      6,
+      5,
+      6,
+      6,
+      4,
+      6,
+      6,
+      5,
+      6,
+      5,
+      6,
+      6,
+      5,
+      6,
+      5,
+      6,
+      5,
+      6,
+      6,
+      5,
+      6,
+      5,
+      6,
+      6,
+      5,
+      5,
+      8
+    ],
+    "smaller_spherical_cubic_connected_bridgeless": true,
+    "smaller_tait_witness": true,
+    "smaller_vertices": 58,
+    "source_cyclic_neighbours": "1,10,19;0,2,8;1,3,6;2,19,4;3,17,5;4,15,6;5,7,2;6,14,8;7,9,1;8,13,10;9,11,0;10,12,18;11,13,16;12,9,14;13,7,15;14,5,16;15,17,12;16,4,18;17,19,11;18,3,0"
+  },
+  "global_coverage_proved": false,
+  "input_sha256": {
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CubicRotationByteCertificate.lean": "0f72c493da891b4d314dfc944c1698390224111d7fd51d0b2ecc920f64b0aa1b",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/CycleCapTangle.lean": "04591d41e1b5f62528cab69fe5d231563af76b5e7e108620a2fbac8ffec9f989",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateCornerSemantics.lean": "4667c77a2a7b04bba803ffe9215cf7dcf9271ed8f1e1526d38a32946ef8880e0",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateForestCollapse.lean": "072e088ca8136edf4c7b2d6b51681fc093db8b90b76ff0ab3b6ccc44e9031bca",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellBoundaryChoice.lean": "c762c7ff4db7a6ab1f62530a99613cc3aff8f172e3b0f1a139bd188363063395",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellCycleObstruction.lean": "6a60e9d228ce488c964a7b972d6ffac0b21a1762ed05d4f28a6485e284f1c7a0",
+    "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellCycleObstructionAudit.lean": "2a5a0555e9738f86b9c785fb306c98327eb84ea419f1f01738d38a85b12f6031",
+    "tools/fourcolor/classical/dual_truncate_forest_probe.py": "725aedeffc734a23e27fcb2087120dfd5edb07574ab3be9ed4ab66a61789b6c5",
+    "tools/fourcolor/classical/dual_truncate_geometry_probe.py": "e1b0759456429ab4bf5377119ebc5aaffe6d8f3b516c7064ce8fe671c3ff84a3",
+    "tools/fourcolor/classical/dual_truncate_open_patch_probe.py": "177757e261bbc240ad6c3ffca2c5263f510e8bae65d984bc59453b73255dbe3f",
+    "tools/fourcolor/classical/two_cell_replacement_probe.py": "5f06c43cc574a97e87b56eb9f24e961035d6fa81798f42d0247fa4d530425f31"
+  },
+  "kernel_certified_replay": false,
+  "new_catalogue_entries_removed": 0,
+  "new_uniform_strict_reduction": false,
+  "status": "independent exact two-cell replacement replay"
+}

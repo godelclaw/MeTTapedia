@@ -294,6 +294,27 @@ exact family semantics, rather than a uniform guarantee that arbitrary
 boundary values extend. The next obligations are a smaller actual embedded
 operation and an occurrence consumer. Catalogue counts remain unchanged.
 
+The [two-cell joint-choice law](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellBoundaryChoice.lean)
+identifies the next coupling requirement. When each insertion has two
+distinct exterior colours, its own colour is forced. The two insertions
+can fit together only when their forced colours differ. A repeated
+exterior pair instead leaves room for repair. This is one condition for
+the entire colour alphabet, rather than a list of graph colourings.
+
+The [sixty-vertex example](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellCycleObstruction.lean)
+proves that a spherical cubic map with only pentagonal and hexagonal faces
+can have a proper fifty-vertex exterior which does not extend through its
+ten-vertex two-cell patch. An eight-cycle accepts the same ordered cut
+word. The complete fifty-eight-vertex replacement and its colouring are
+checked independently by a program; the kernel checks the original
+geometry, exact ports, exterior, rejection and literal cycle acceptance.
+The [receipt](../../../tools/fourcolor/classical/two-cell-replacement-measurements.json)
+also records a bounded candidate census and an abstract Kempe countermodel,
+with their scope kept separate. The lesson for the compositional plan is
+to preserve the joint seam relation or justify an exterior recolouring.
+The failure of this supplied exterior does not exclude a successful choice
+for the map, and does not establish coverage for any smaller catalogue.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

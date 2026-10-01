@@ -333,6 +333,28 @@ larger fixtures are program checks. This is exact constraint compression;
 a smaller embedded replacement and occurrence coverage still need proof.
 No additional catalogue entry or classical certificate is removed.
 
+The [joint two-cell law](TwoCellBoundaryChoice.lean) now states the exact
+colour condition at two adjacent source vertices. If their exterior pairs
+are `(a,b)` and `(c,d)`, the endpoint choices exist exactly when a pair repeats
+a colour or `a+b ≠ c+d`. Distinct pairs force their third colours, which must
+still differ across the shared seam. The literal eight-cycle accepts a
+paired word for which these choices clash.
+
+An [actual sixty-vertex consumer](TwoCellCycleObstruction.lean) realizes that
+obstruction with a genuine spherical, connected, bridgeless cubic target
+having only pentagonal and hexagonal faces. Its ten-vertex two-cell patch
+has eight ordered cut ports and a proper fifty-vertex exterior, but no
+colouring extends that fixed exterior. The proposed cycle accepts its cut
+word. The [audit and receipt](../../../../../tools/fourcolor/classical/two-cell-replacement-measurements.json)
+separate this kernel result from the independent program's complete
+fifty-eight-vertex replacement and colouring. The program also tests 147
+specified cycle, tree and wire candidates; none works on the full boundary
+domain. Its abstract Kempe countermodel is not a realized physical exterior.
+Direct cycle reconstruction therefore needs a repair of the exterior or a
+different joint contract. Successful recolouring, other decompositions and
+stronger geometric hypotheses remain available; no catalogue saving is
+credited to this obstruction.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

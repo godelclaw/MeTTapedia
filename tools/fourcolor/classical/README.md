@@ -392,6 +392,36 @@ family. It does not yet construct a smaller embedded replacement or show
 that every target contains such a patch. No configuration or original
 certificate is removed from the complete classical assembly.
 
+## Two-cell joint seam obstruction
+
+The follow-up [two-cell receipt](two-cell-replacement-measurements.json)
+records the uniform joint-choice condition and a kernel-checked actual
+sixty-vertex exterior which violates it. The ten-vertex patch has eight
+ordered cut ports; the literal eight-cycle accepts its supplied word.
+The original map is spherical, cubic, connected and bridgeless, with only
+pentagonal and hexagonal faces. No extension of this fixed exterior exists.
+
+```sh
+python3 tools/fourcolor/classical/two_cell_replacement_probe.py --check
+```
+
+This [independent replay](two-cell-replacement-probe.json) closes the cycle
+replacement into a fifty-eight-vertex map and checks its geometry and
+actual colouring. Those closed replacement claims are program checks,
+distinct from the kernel's original-map and literal-cycle claims. It also
+enumerates one eight-cycle, 132 rooted plane cubic trees and fourteen
+noncrossing wire pairings; none has its entire boundary support contained
+in the original patch's support. This is a bounded list, not all smaller
+pieces. Under paired observations some candidates have empty support, so
+their vacuous inclusion is not a successful reduction.
+
+The replay retains 213 abstract bad colour orbits consistent with the
+tested parity, relabelling and noncrossing component-union conditions.
+No physical exterior realizing that complete model is supplied. Bare
+matching closure therefore does not provide a universal repair argument;
+actual geometric input, a different operation or exterior recolouring is
+still needed. No catalogue or certificate saving is credited.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

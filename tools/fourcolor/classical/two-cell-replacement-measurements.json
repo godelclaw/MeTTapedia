@@ -1,0 +1,134 @@
+{
+  "status": "PASS",
+  "kernel_theorems": {
+    "uniform_joint_choice_criterion": "Mettapedia.GraphTheory.FourColor.TwoCellBoundaryChoice.choices_iff",
+    "equal_forced_colours_reject_joint_choice": "Mettapedia.GraphTheory.FourColor.TwoCellBoundaryChoice.equal_forced_colours",
+    "actual_eight_cycle_accepts_blocked_paired_word": "Mettapedia.GraphTheory.FourColor.TwoCellBoundaryChoice.cycle_accepts",
+    "original_map_class": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.target_mapClass",
+    "original_pentagonal_and_hexagonal_faces": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.target_face_lengths",
+    "actual_partial_exterior_locally_tait": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.exterior_stars",
+    "actual_perimeter_vertices": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.outer_ring_vertices",
+    "actual_internal_edges_perimeter_and_chord": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.patch_internal_edges",
+    "complete_actual_cut": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.ports_are_actual_cut",
+    "port_order_from_perimeter": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.ports_follow_ring",
+    "actual_boundary_word": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.boundary_colours",
+    "literal_cycle_accepts_actual_boundary": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.cycle_accepts_actual_boundary",
+    "all_actual_original_extensions_rejected": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstruction.no_fixed_exterior_extension"
+  },
+  "colour_law": {
+    "domain": "Four nonzero exterior colours in the three-colour alphabet",
+    "criterion": "a = b or c = d or a + b != c + d",
+    "retained_information": "The joint choices at both endpoints and their shared edge",
+    "graph_colouring_table_supplied": false,
+    "complete_source_colouring_supplied": false
+  },
+  "kernel_example": {
+    "source_vertices": 20,
+    "original_target_vertices": 60,
+    "patch_vertices": 10,
+    "fixed_exterior_vertices": 50,
+    "ordered_cut_ports": 8,
+    "original_fixed_exterior_extension_count": 0,
+    "original_map_class": "spherical, cubic, connected, bridgeless",
+    "original_face_lengths": [
+      5,
+      6
+    ],
+    "selected_source_values_zero": true,
+    "partial_exterior_is_complete_colour_supplier": false,
+    "literal_cycle_vertices": 8,
+    "literal_cycle_acceptance": true,
+    "closed_smaller_map_kernel_certified": false,
+    "minimal_counterexample_hypotheses_supplied": false
+  },
+  "scope": "Direct eight-cycle reconstruction fixing this supplied exterior fails. Successful recolouring, alternative decompositions, stronger geometry and another compatible choice for the original map remain available. The complete smaller closed map is an independent program check.",
+  "audit": {
+    "module": "Mettapedia.GraphTheory.FourColor.TwoCellCycleObstructionAudit",
+    "roots": 36,
+    "combined_dependency_closure": 11958,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoint_absent": true,
+    "complete_source_colouring_suppliers_absent": true,
+    "finite_exterior_data_absent_from_uniform_colour_law": true
+  },
+  "independent_program_replay": {
+    "command": "python3 tools/fourcolor/classical/two_cell_replacement_probe.py --check",
+    "record": "two-cell-replacement-probe.json",
+    "kernel_certified": false,
+    "closed_smaller_vertices": 58,
+    "closed_smaller_spherical_cubic_connected_bridgeless": true,
+    "closed_smaller_tait_witness": true,
+    "listed_candidates_checked": 147,
+    "cycle_candidates": 1,
+    "rooted_plane_cubic_tree_candidates": 132,
+    "noncrossing_perfect_wire_pairing_candidates": 14,
+    "sound_candidates_over_full_boundary_domain": 0,
+    "all_possible_smaller_pieces_tested": false,
+    "actual_patch_witnesses": 366,
+    "actual_boundary_profiles": 327,
+    "paired_boundary_domain": 81,
+    "actual_paired_boundary_profiles": 69,
+    "abstract_consistent_bad_orbits": 213,
+    "physical_exterior_realizing_entire_abstract_model_supplied": false
+  },
+  "build": {
+    "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "exit": 0,
+    "jobs": 11155,
+    "started_utc": "2026-10-01T03:54:44+00:00",
+    "completed_utc": "2026-10-01T03:54:54+00:00",
+    "elapsed_seconds": 10.0,
+    "timing_scope": "Incremental full gate after the new colour law, actual consumer and dependency audit compiled",
+    "audit_build": {
+      "command": "lake build Mettapedia.GraphTheory.FourColor.TwoCellCycleObstructionAudit",
+      "exit": 0,
+      "jobs": 3768,
+      "started_utc": "2026-10-01T03:51:20+00:00",
+      "completed_utc": "2026-10-01T03:53:18+00:00",
+      "elapsed_seconds": 118.0,
+      "consumer_compilation_seconds": 107.0,
+      "maximum_sampled_lean_rss_mib": 16291
+    },
+    "files": [
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellBoundaryChoice.lean",
+        "source_sha256": "c762c7ff4db7a6ab1f62530a99613cc3aff8f172e3b0f1a139bd188363063395",
+        "source_bytes": 3114,
+        "olean_bytes": 576688,
+        "olean_sha256": "29da842c177b40e56470313bc17dc6b569bea015893265a45ebb61c8ab802f49"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellCycleObstruction.lean",
+        "source_sha256": "6a60e9d228ce488c964a7b972d6ffac0b21a1762ed05d4f28a6485e284f1c7a0",
+        "source_bytes": 15039,
+        "olean_bytes": 1163104,
+        "olean_sha256": "380df1dd7a811c3ec24f198e5d2462deddf42839bb0857ed70064ce8cbb4bb6b"
+      },
+      {
+        "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellCycleObstructionAudit.lean",
+        "source_sha256": "2a5a0555e9738f86b9c785fb306c98327eb84ea419f1f01738d38a85b12f6031",
+        "source_bytes": 5396,
+        "olean_bytes": 3512,
+        "olean_sha256": "60d4f173d61d8a4711a9cf7206a12089ed002a149b4c3f2037df79b4dfd9b8d4"
+      }
+    ],
+    "source_bytes": 23549,
+    "olean_bytes": 1743304
+  },
+  "compression": {
+    "coverage_configurations_retained": 633,
+    "original_configuration_certificates_retained": 630,
+    "shared_discharging_replacements_retained": 231,
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_replaced": 0,
+    "new_uniform_joint_choice_schemes": 1,
+    "new_uniform_strict_reductions": 0,
+    "integrated_into_research_checkpoint": true,
+    "integrated_into_complete_classical_assembly": false
+  },
+  "next_obligation": "Prove a different joint reconstruction contract or a justified physical exterior repair. Test actual Kempe components and retained seam observations before proposing a uniform repair; abstract noncrossing matching closure and source-variable elimination alone do not supply the required smaller graph operation or occurrence coverage."
+}
