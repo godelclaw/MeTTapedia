@@ -105,3 +105,48 @@ dependencies of the complete classical assembly. The geometric occurrence,
 strict smaller-map construction and reconstruction against an actual exterior
 remain to be connected for this family. Recognition, coverage, coordinated
 batch repairs and the newer algorithm's running time are separate obligations.
+
+## Recognizing a diamond through an overlap
+
+`OverlappingPentagonalSectors` isolates the cyclic mechanism suggested by
+[Figure 11](https://arxiv.org/html/2603.24880v1#S8.F11). In the dual cubic map,
+two views anchored at an actual edge read the same pentagonal face from
+consecutive boundary darts. Its neighbouring faces have cyclic positions
+
+```text
+first centre -> second centre -> B -> D -> A -> first centre
+```
+
+One view reads `A` and `D` backwards; the other reads `B` and `D` forwards.
+Five-step closure proves that the two readings of `D` are the same dart,
+so every observation of it agrees. If `A`, `B` and `D` are pentagonal too,
+the shared face and these three neighbours supply the existing diamond
+occurrence. The two centre-face lengths and the rest of the graph are
+unrestricted. The corresponding positions differ on a six-cycle; the
+pentagonal hypothesis has mathematical content.
+
+The theorem `strict_reduction` consumes the existing geometric recognition
+and joint diamond repair. In a connected bridgeless spherical cubic map
+with minimum face length five, cyclic edge connectivity at least five and
+two-sided faces, it replaces twelve vertices by four, preserves the smaller
+map's class, and reconstructs a source colouring from a smaller colouring.
+`not_in_minimal` derives the ambient conditions from minimality.
+
+This is a local recognition law for an already proved reduction, with no
+new rank certificate. It is not a decoding of the complete Figure 11
+cartwheels, a classification of degree-eight zero-charge pairs, or a proof
+that every such pair has these readings. The all-flat supply theorem still
+requires that classification and its residual cases. No classical coverage
+entry or complete-assembly certificate dependency is removed here.
+
+With the existing geometric dependencies prepared, run from
+`lean/fourcolor-classical`:
+
+```sh
+lake build kernelOverlapSupply
+```
+
+The dependency audit checks nine roots, requires the geometric reduction
+consumer, and excludes complete colouring endpoints and original catalogue
+rank certificates. The joint diamond profile certificate is still retained
+by that consumer. See [overlap-measurements.json](overlap-measurements.json).

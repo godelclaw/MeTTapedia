@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check overlap recognition and its strict-reduction consumer. -/
+target kernelOverlapSupply pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/overlap-supply-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "OverlappingPentagonalSectors", "OverlappingPentagonalSectorsAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check the near-linear family through prepared, audited reference artifacts. -/
 target kernelNearLinearFamily pkg : Unit := do
   let env ← getAugmentedEnv

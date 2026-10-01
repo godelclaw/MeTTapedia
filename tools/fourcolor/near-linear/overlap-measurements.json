@@ -1,0 +1,78 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.OverlappingPentagonalSectors",
+      "source_sha256": "ac760cd699e1642a71e1d8c69629d11b974bcc27138e340e4925c202c121d828",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.198,
+      "olean_bytes": 385792,
+      "olean_sha256": "c4d864f5aa526db0ec781cebbf44516206b27d3083bdb15bb736c6880c0600af"
+    },
+    {
+      "module": "MettapediaFourColor.OverlappingPentagonalSectorsAudit",
+      "source_sha256": "31cd1896b5c699c1556c7c52097668ab9af850440dc969868db1ec31efb936b3",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.728,
+      "olean_bytes": 2608,
+      "olean_sha256": "021ca85ff0aa429ea5448d1fba50fe9c1021e4454cd586c2850472bf4cc5b1f7"
+    }
+  ],
+  "status": "Kernel replay, nine-root dependency audit, classical regression and main lane gate passed",
+  "recorded_at": "2026-10-01T19:41:14.591359+00:00",
+  "base_revision": "f25a013ca0761b0fb4b8ca6799266490701ff3d8",
+  "replay_command": "lake build kernelOverlapSupply",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 9,
+    "declarations_in_dependency_closure": 27264,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false,
+    "existing_joint_diamond_profile_certificate_retained": true
+  },
+  "regression": {
+    "classical_command": "lake build kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  },
+  "mathematical_scope": {
+    "overlap": "Actual edge-derived roots and equality of the two outer darts, using a shared face of length five.",
+    "recognition": "Three neighbouring pentagonal readings distributed across the two sectors produce the already certified four-face diamond pattern.",
+    "reduction": "Twelve vertices removed, four introduced, net loss eight; ambient class and source colouring reconstruction follow through the existing geometric consumer.",
+    "ambient_conditions": [
+      "connected bridgeless spherical cubic map with cyclic vertex rotations",
+      "minimum face length five",
+      "cyclic edge connectivity at least five",
+      "two-sided faces"
+    ],
+    "unrestricted": [
+      "sizes of the two seam-incident centre faces",
+      "size and shape of the remaining exterior"
+    ],
+    "control": "The analogous two index positions differ in a six-cycle; no ambient-map counterexample is asserted."
+  },
+  "limits": [
+    "No complete input decoding of the Figure 11 cartwheels.",
+    "No classification or exhaustive recognition of all final-zero-charge degree-eight overlaps.",
+    "The four-face reduction family was already proved; this result supplies an overlap-based recognition law.",
+    "No new coverage entry, rank certificate, or complete-assembly dependency is removed.",
+    "No new scheduling or near-linear running-time theorem."
+  ],
+  "primary_reference": "https://arxiv.org/html/2603.24880v1#S8.F11"
+}

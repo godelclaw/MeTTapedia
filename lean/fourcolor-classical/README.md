@@ -866,3 +866,17 @@ separates this local family result from complete-assembly compression.
 All 633 classical coverage entries and 629 original certificate dependencies
 remain. Actual-source occurrence, geometric reduction and coverage for this
 new family remain open.
+
+`OverlappingPentagonalSectors` addresses local geometric recognition. Two
+views across one actual edge have consecutive roots on a shared pentagon.
+Its cyclic closure identifies their outer-corner darts. Three neighbouring
+pentagon readings distributed across those views then feed the existing
+physical diamond reduction, removing eight vertices with genuine colouring
+reconstruction. The centre-face lengths and the remaining map are unrestricted;
+the strict-reduction theorem retains the existing ambient normal-form conditions.
+
+`lake build kernelOverlapSupply` checks this recognition theorem and its
+dependency audit. It adds no reduction family or classical coverage saving:
+classification of the newer paper's flat overlapping cartwheels remains open.
+The [overlap explanation and measurements](../../tools/fourcolor/near-linear/README.md#recognizing-a-diamond-through-an-overlap)
+state the exact scope and retained joint-profile certificate.
