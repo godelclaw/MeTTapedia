@@ -243,3 +243,62 @@ See [exception-source-audit.json](exception-source-audit.json) and
 [exception-measurements.json](exception-measurements.json). The dependency
 audit excludes complete Four Colour endpoints and original catalogue rank
 certificates; the source data are decoded and checked in Lean.
+
+
+## Facial transport and the collision alternative
+
+`ExceptionalCoreOrientation` checks all eighteen directed core corners
+against the full pinned cyclic neighbour rows. Fifteen come directly from
+the first exceptional occurrence. The remaining three follow from one
+closing corner and the generic facial-triangle rotation law. No boundary
+neighbours are removed before testing consecutive turns.
+
+`ExceptionalCoreLocalInjectivity.corner_chain_injective` proves a uniform
+rule: consecutive facial corners follow powers of the actual vertex
+rotation, and a chain no longer than the ambient degree cannot repeat a
+neighbour. Its source consumer proves local injectivity at every D1774 core
+vertex, using the prescribed degrees forced by the joint occurrence.
+
+`ExceptionalCoreCollision.source_core_alternative` now has two checked
+outcomes for two actual exceptional occurrences aligned at the prescribed
+second centre:
+
+```text
+actual aligned occurrences
+        |
+all core edges, degrees and facial corners
+        |
+local injectivity
+        |
+        +-- injective orientation-preserving core reading
+        |
+        +-- nonfacial triangle within radius two of the first centre
+```
+
+The finite collision partition leaves only four unordered pairs of core
+vertices. Each closes an actual three-edge path. Three cases use the same
+central edge: its two facial third vertices have degree eight, whereas the
+collided endpoint has degree five. The fourth case uses adjacency to exclude
+one facial third vertex and a degree mismatch to exclude the other. The
+triangle carries an actual `SimpleGraph.Walk.IsCycle` proof of length three.
+The retained source context is essential to these exclusions; the internal
+core graph alone does not retain all the necessary observations.
+
+The reusable laws concern facial transport, injective corner chains and
+exclusion by the two flanking corners. The four-pair source check remains a
+finite obligation. This is a concrete collision alternative, not a general
+first-collision theorem for arbitrary patch programs.
+
+No planarity assumption is needed for these new laws. Consequently the
+nonfacial triangle has **not** yet been proved separating. Connecting it to
+the intended spherical geometry, strict descent and colouring reconstruction
+remains an obligation. The injective branch still needs inducedness,
+eleven-port ring completion and the repair contract. The local-faciality
+corollary states its extra geometric hypothesis explicitly.
+
+Run `lake build kernelExceptionalEmbedding` with the prepared dependencies.
+The source consumer's dependency audit requires both the constructed core
+reading and the actual collision argument; it excludes complete Four Colour
+endpoints and original catalogue rank certificates. See
+[embedding-measurements.json](embedding-measurements.json).
+Coverage and certificate counts remain 633 and 629, respectively.

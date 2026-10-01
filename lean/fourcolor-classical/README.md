@@ -972,3 +972,30 @@ catalogue rank certificates. See the
 [source and proof explanation](../../tools/fourcolor/near-linear/README.md#the-exceptional-overlap-and-the-d1774-core),
 [source check](../../tools/fourcolor/near-linear/exception-source-audit.json)
 and [kernel measurements](../../tools/fourcolor/near-linear/exception-measurements.json).
+
+
+## Exceptional core: orientation, injectivity and collisions
+
+`ExceptionalCoreOrientation` transports every source core corner to an
+actual facial corner. `ExceptionalCoreLocalInjectivity` derives local
+injectivity from consecutive rotation powers and the actual ambient degree.
+`ExceptionalCoreCollision.source_core_alternative` consumes two aligned
+source occurrences and proves: the core reading is injective, or there is
+an actual nonfacial triangle within radius two of the first centre. Its
+three-edge walk is a cycle. Four possible unordered collisions are checked
+against the decoded core; a common flanking-corner law handles the geometric
+exclusions using the retained source context.
+
+This supplies the collision alternative without assuming a full embedded
+configuration. It does not yet prove that the nonfacial triangle separates
+the intended spherical map, or that either branch yields strict reduction
+and compatible colouring reconstruction. Inducedness, eleven-port boundary
+completion, repair and zero-charge classification remain open. No coverage
+entry or certificate dependency is removed.
+
+Replay with `lake build kernelExceptionalEmbedding`. The dependency audit
+checks the actual source consumer, facial transport, local injectivity and
+collision laws, allowing only the standard axioms and excluding complete
+Four Colour endpoints and original catalogue rank certificates. See the
+[mathematical account](../../tools/fourcolor/near-linear/README.md#facial-transport-and-the-collision-alternative)
+and [measurements](../../tools/fourcolor/near-linear/embedding-measurements.json).

@@ -1,0 +1,105 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ExceptionalCoreOrientation",
+      "source_sha256": "77ca3bc019020bfede38a6b47d6c177526f24036a9f719c18cb94eff07a77031",
+      "exit_code": 0,
+      "frontend_wall_seconds": 12.578,
+      "olean_bytes": 163776,
+      "olean_sha256": "a233d70f69cfe567a393bd481a8fc13f559fb6fa54e38fc51ee8d64d65590bdd"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalCoreLocalInjectivity",
+      "source_sha256": "54283de76764d074c5999d7f7a68185400a69e4a561197b376473e3c2fcf9ad1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.259,
+      "olean_bytes": 175512,
+      "olean_sha256": "83a977ba6a243f3ca6218fff2fd6a4126cb79ea32d15e0236100707dc13e150c"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalCoreCollision",
+      "source_sha256": "7773d7aa073ce32723f7107e0f30c7f8b830213d290c36935dd50a1f6f4475e2",
+      "exit_code": 0,
+      "frontend_wall_seconds": 60.615,
+      "olean_bytes": 286208,
+      "olean_sha256": "6056b2290acf29c7a4dd90572a962bed2afea8e22ddfb423e4279fb75514b847"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalEmbeddingAudit",
+      "source_sha256": "5bb47a59adcaf3d3d5469ec2be3bdbb09ce7c365786cada5afee2ba17324afde",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.295,
+      "olean_bytes": 4392,
+      "olean_sha256": "5abf393368309380f2a352368346019dbe1691b3f242b520fa7478f603668da2"
+    }
+  ],
+  "status": "Kernel replay, dependency audit, flat-coverage and complete-classical regressions, and full main lane build passed.",
+  "recorded_at": "2026-10-01T21:03:45.758757+00:00",
+  "base_revision": "5f426149d7ec3e3509f4d86dde7b8869ef80d5b0",
+  "replay_command": "lake build kernelExceptionalEmbedding",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 15,
+    "declarations_in_dependency_closure": 7972,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false
+  },
+  "mathematical_scope": {
+    "core_orientation": "All eighteen consecutive core turns in the full pinned cyclic rows map to actual facial corners; fifteen source turns and three closing-triangle turns.",
+    "local_injectivity": "Uniform consecutive-corner chain law for all lengths within actual ambient degree, applied at every core vertex.",
+    "collision_partition": "Four residual unordered pairs: (1,2), (1,5), (1,7), (2,4), using zero-based core labels. All other distinct pairs are adjacent or share a core neighbour.",
+    "collision_alternative": "The exact core map is injective or a nonfacial triangle exists. Its edges form an actual cycle of length three; both facial orientations are excluded using retained source observations.",
+    "actual_consumer": "FourColor.ExceptionalCoreCollision.source_core_alternative",
+    "collision_vertex_radius": 2,
+    "geometric_assumptions": "Actual simple graph with finite vertex type, cyclic vertex rotations, triangular face closure and two aligned source exceptional occurrences. No planarity assumption is used in the new laws.",
+    "uniform_laws": [
+      "facial triangle rotation",
+      "injective consecutive corner chains",
+      "nonfacial triangle from distinct flanking corners"
+    ],
+    "finite_checks_retained": [
+      "full-source core turn partition",
+      "source star specification and consecutiveness",
+      "four residual collision pairs",
+      "source adjacency, turn and degree comparisons"
+    ],
+    "open": [
+      "nonfacial triangle to spherical separator and strict reconstruction",
+      "inducedness, eleven-port ring completion and compatible repair",
+      "general first-collision theorem for patch-construction programs",
+      "source triangulation-to-dual and final-charge bridges",
+      "zero-charge classification and universal coverage"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "source_fidelity": "exception-source-audit.json",
+  "obligations": "coverage-obligations.json",
+  "primary_reference": "https://arxiv.org/html/2603.24880v1#S9.SS1",
+  "regression": {
+    "classical_command": "lake build kernelFlatCoverage kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}

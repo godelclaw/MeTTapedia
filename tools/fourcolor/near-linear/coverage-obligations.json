@@ -1,5 +1,5 @@
 {
-  "status": "Conditional coverage assembly and source exceptional overlap geometry proved; classification, full occurrence and repair bridges open.",
+  "status": "Conditional coverage assembly, exact exceptional overlap, facial core transport, local injectivity and injective-or-nonfacial-triangle alternative proved; separation, induced occurrence, classification and repair bridges open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -63,6 +63,26 @@
     {
       "declaration": "FourColor.ExceptionalCore.joint_support_near",
       "meaning": "All observations retained by both source occurrences and the derived core lie within radius four. The conditional coverage scaffold retains that entire support."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCoreOrientation.joint_preserves_turns",
+      "meaning": "All eighteen core turns in full source cyclic rows become actual facial corners; the new triangle uses triangular closure."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCoreLocalInjectivity.corner_chain_injective",
+      "meaning": "A consecutive facial corner chain no longer than the ambient degree has distinct neighbours."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCoreLocalInjectivity.joint_neighbor_injective",
+      "meaning": "The actual D1774 core map is injective on every core neighbourhood."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCoreCollision.source_core_alternative",
+      "meaning": "Two actual aligned source occurrences give an injective orientation-preserving core or a nonfacial triangle whose vertices are within radius two of the first centre."
+    },
+    {
+      "declaration": "FourColor.ExceptionalCoreCollision.NonfacialTriangle.walk_isCycle",
+      "meaning": "The collision triangle is an actual three-edge cycle, not merely a closed walk."
     }
   ],
   "open": [
@@ -102,7 +122,7 @@
       "id": "exception_joint_close",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
       "source": "Figure 13 and Lemma 8.4",
-      "obligation": "The two occurrences now force an actual degree-preserving D1774 core reading within radius three. Promote this to the full cyclic eleven-port occurrence or an obstruction, and prove compatible colouring repair and strict reduction. The close field for certified reductions remains open."
+      "obligation": "Both occurrences force an orientation-preserving, locally injective core reading. Collisions now yield an actual nonfacial three-cycle. Prove the spherical separator/reconstruction bridge for that outcome; in the injective branch prove inducedness and complete the cyclic eleven-port boundary, compatible repair and strict reduction. The close field for certified reductions remains open."
     },
     {
       "id": "residuals",
@@ -114,12 +134,12 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "D1774 core-to-boundary promotion and repair",
-    "test": "First certify the inner facial triangles in the retained joint reading. Use the source local-injectivity and small-diameter obstruction arguments (Lemmas 9.1-9.2) to analyze core collisions, then complete the eleven-port boundary. Test the full D1774 repair domain before selecting a shared family law or retained base.",
-    "acceptance": "A checked full occurrence or explicit obstructing-cycle alternative, followed by a source-faithful repair consumer; core homomorphisms alone do not earn reduction or coverage credit.",
+    "target": "Nonfacial-triangle separation and full D1774 boundary promotion",
+    "test": "Connect the actual length-three cycle and its excluded facial orientations to the intended spherical map geometry and a useful separator. In the injective branch test extra core edges and source cyclic ring completion before selecting the repair law.",
+    "acceptance": "A separator with actual smaller-map reconstruction, or a checked full induced occurrence; a bare nonfacial cycle does not earn reduction or coverage credit.",
     "primary_lemmas": [
-      "9.1",
-      "9.2"
+      "9.2",
+      "3.1"
     ]
   },
   "counts": {

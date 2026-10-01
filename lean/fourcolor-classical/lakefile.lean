@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check facial orientation, local injectivity and the collision alternative. -/
+target kernelExceptionalEmbedding pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-embedding-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ExceptionalCoreOrientation", "ExceptionalCoreLocalInjectivity", "ExceptionalCoreCollision", "ExceptionalEmbeddingAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check the pinned exceptional pattern and its actual graph interpretation. -/
 target kernelExceptionalOverlap pkg : Unit := do
   let env ← getAugmentedEnv
