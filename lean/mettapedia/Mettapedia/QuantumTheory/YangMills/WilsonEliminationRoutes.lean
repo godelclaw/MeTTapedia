@@ -4,10 +4,12 @@ import Mettapedia.QuantumTheory.YangMills.WilsonSeparator
 # Compositional weighted elimination with marked observables
 
 A state carries its actual positive density and reference probability law.
-An admissible elimination is a linear conditional-expectation operator that
+An admissible elimination is a linear operator on marked observables that
 preserves normalized expectation and contracts uniform bounds. The existing
 GSLT route syntax composes these operators. Its two-observable defect is kept
-as a function on the final boundary, with an exact concatenation law.
+as a function on the final boundary, with an exact concatenation law. The
+third-order remainder also composes exactly, with three covariance
+corrections between projected marks and pairwise remainders.
 
 Retaining a coordinate is deterministic and need not have a continuous kernel
 with respect to product Haar measure. The operator semantics therefore does
@@ -21,6 +23,8 @@ open scoped Topology
 namespace Mettapedia.QuantumTheory.YangMills.WilsonEliminationRoutes
 open WilsonBlockElimination WilsonSeparator CompactTransferGap
 open Mettapedia.GSLT.Ultrainfinite
+
+export WilsonBlockElimination (projectLinear)
 
 /-- A concrete weighted configuration space. -/
 structure State where
@@ -118,6 +122,42 @@ theorem remainder_append_bound {a b c : State} (r : Route Step a b) (s : Route S
   rw [remainder_append]
   exact (abs_add_le _ _).trans (add_le_add (action_contract s _ ε₁ h₁ z) (h₂ z))
 
+/-- The third-order transport remainder retained by a whole elimination route. -/
+def thirdRemainder {a b : State} (r : Route Step a b) (F G H : C(a.X, ℝ)) : C(b.X, ℝ) :=
+  thirdMoment (action r) F G H
+
+/-- Concatenation transports the first third-order remainder and retains
+three mixed corrections coupling projected means to pairwise remainders. -/
+theorem thirdRemainder_append {a b c : State} (r : Route Step a b) (s : Route Step b c)
+    (F G H : C(a.X, ℝ)) :
+    thirdRemainder (r.append s) F G H =
+      thirdRemainder s (action r F) (action r G) (action r H) +
+      action s (thirdRemainder r F G H) +
+      remainder s (action r F) (remainder r G H) +
+      remainder s (action r G) (remainder r F H) +
+      remainder s (action r H) (remainder r F G) := by
+  have ht : action (r.append s) = (action s).comp (action r) := by
+    apply LinearMap.ext
+    intro U
+    exact action_append r s U
+  simp only [thirdRemainder, ht]
+  exact thirdMoment_comp (action r) (action s) F G H
+
+/-- Total third cumulance under the route's original and generated laws. -/
+theorem thirdCumulant_action {a b : State} (r : Route Step a b) (F G H : C(a.X, ℝ)) :
+    thirdCumulant a.μ a.W F G H =
+      thirdCumulant b.μ b.W (action r F) (action r G) (action r H) +
+      expectation b.μ b.W (thirdRemainder r F G H) +
+      covariance b.μ b.W (action r F) (remainder r G H) +
+      covariance b.μ b.W (action r G) (remainder r F H) +
+      covariance b.μ b.W (action r H) (remainder r F G) := by
+  have ht : expectation a.μ a.W = (expectationLinear b.μ b.W).comp (action r) := by
+    funext U
+    exact (expectation_action r U).symm
+  change thirdMoment (expectation a.μ a.W) F G H = _
+  rw [ht]
+  exact thirdMoment_comp (action r) (expectationLinear b.μ b.W) F G H
+
 section Concrete
 variable {B I : Type} [TopologicalSpace B] [CompactSpace B]
   [MeasurableSpace B] [BorelSpace B] [SecondCountableTopology B]
@@ -125,16 +165,6 @@ variable {B I : Type} [TopologicalSpace B] [CompactSpace B]
   [BorelSpace I] [SecondCountableTopology I]
   (μ : Measure B) (ν : Measure I) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
   (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
-
-/-- Actual integration over the interior, as a linear map on marks. -/
-def projectLinear : C(B × I, ℝ) →ₗ[ℝ] C(B, ℝ) where
-  toFun := project ν W hW
-  map_add' F G := by
-    ext b
-    exact expectation_add ν (W.curry b) (F.curry b) (G.curry b)
-  map_smul' c F := by
-    ext b
-    exact expectation_const_mul ν (W.curry b) (F.curry b) c
 
 def source : State :=
   ⟨B × I, inferInstance, inferInstance, inferInstance, inferInstance,
@@ -162,5 +192,7 @@ end Concrete
 #print axioms covariance_action
 #print axioms remainder_append_bound
 #print axioms elimination
+#print axioms thirdRemainder_append
+#print axioms thirdCumulant_action
 
 end Mettapedia.QuantumTheory.YangMills.WilsonEliminationRoutes

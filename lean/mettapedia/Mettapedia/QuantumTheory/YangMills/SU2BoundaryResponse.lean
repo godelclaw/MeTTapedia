@@ -587,6 +587,77 @@ theorem mixedDerivative_eq_covariance (β : ℝ) (active : Finset (Plaquette 4 n
     contact_eq_zero active held S T q r b 0 hST, WilsonBlockElimination.expectation_zero,
     mul_zero, sub_zero]
 
+/-- The covariance of two original Wilson scores as a third patch moves.
+Both score marks and the density follow their actual boundary curves. -/
+def scoreCovariance (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ) : ℝ :=
+  WilsonBlockElimination.covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+    (boundaryDensity β active held (boundaryCurve V u b t))
+    (score active held S q (boundaryCurve V u b t) 0)
+    (score active held T r (boundaryCurve V u b t) 0)
+
+/-- Covariance differentiation for actual Wilson score marks, with both
+original action contacts retained. All derivative hypotheses are discharged
+by the compact Haar plaquette calculus, for every real beta. -/
+theorem hasDerivAt_scoreCovariance (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) (t : ℝ) :
+    HasDerivAt (scoreCovariance β active held S T V q r u b)
+      (WilsonBlockElimination.covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+          (boundaryDensity β active held (boundaryCurve V u b t))
+          (contact active held S V q u b t) (score active held T r (boundaryCurve V u b t) 0) +
+        WilsonBlockElimination.covariance (Measure.pi fun _ ↦ (volume : Measure SU2))
+          (boundaryDensity β active held (boundaryCurve V u b t))
+          (score active held S q (boundaryCurve V u b t) 0) (contact active held T V r u b t) -
+        β * WilsonBlockElimination.thirdCumulant (Measure.pi fun _ ↦ (volume : Measure SU2))
+          (boundaryDensity β active held (boundaryCurve V u b t))
+          (score active held S q (boundaryCurve V u b t) 0)
+          (score active held T r (boundaryCurve V u b t) 0) (score active held V u b t)) t :=
+  WilsonBoundaryResponse.hasDerivAt_covariance
+    (Measure.pi fun _ : Link 4 n ↦ (volume : Measure SU2)) β
+    (fun s ↦ boundaryDensity β active held (boundaryCurve V u b s)) (score active held V u b)
+    (fun s ↦ score active held S q (boundaryCurve V u b s) 0)
+    (fun s ↦ score active held T r (boundaryCurve V u b s) 0)
+    (contact active held S V q u b) (contact active held T V r u b)
+    (continuous_boundaryDensity_curve β active held V u b) (continuous_score active held V u b)
+    (continuous_score_other active held S V q u b) (continuous_score_other active held T V r u b)
+    (continuous_contact active held S V q u b) (continuous_contact active held T V r u b)
+    (hasDerivAt_boundaryDensity β active held V u b)
+    (hasDerivAt_score_contact active held S V q u b)
+    (hasDerivAt_score_contact active held T V r u b) t (fun ω ↦ by
+      rw [boundaryDensity_eq_exp]
+      exact Real.exp_pos _)
+
+/-- The genuine iterated three-patch derivative of the original Haar log
+partition function, with the third patch applied to the outer background. -/
+def thirdDerivative (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2) : ℝ :=
+  deriv (fun t ↦ mixedDerivative β active held S T q r (boundaryCurve V u b t)) 0
+
+/-- Three plaquette-separated patches have a true third logarithmic response
+equal to the third connected Wilson score, with its original sign and beta
+power. This identity holds for every real coupling. -/
+theorem thirdDerivative_eq_cumulant (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held S T V : Finset (Link 4 n)) (q r u b : Link 4 n → SU2)
+    (hST : Disjoint (incident S) (incident T))
+    (hSV : Disjoint (incident S) (incident V))
+    (hTV : Disjoint (incident T) (incident V)) :
+    thirdDerivative β active held S T V q r u b =
+      -β ^ 3 * WilsonBlockElimination.thirdCumulant
+        (Measure.pi fun _ ↦ (volume : Measure SU2)) (boundaryDensity β active held b)
+        (score active held S q b 0) (score active held T r b 0) (score active held V u b 0) := by
+  have ht (t : ℝ) : mixedDerivative β active held S T q r (boundaryCurve V u b t) =
+      β ^ 2 * scoreCovariance β active held S T V q r u b t :=
+    mixedDerivative_eq_covariance β active held S T q r (boundaryCurve V u b t) hST
+  unfold thirdDerivative
+  simp_rw [ht]
+  have hd := (hasDerivAt_scoreCovariance β active held S T V q r u b 0).const_mul (β ^ 2)
+  rw [hd.deriv]
+  rw [contact_eq_zero active held S V q u b 0 hSV,
+    contact_eq_zero active held T V r u b 0 hTV]
+  simp only [boundaryCurve_zero, WilsonBlockElimination.covariance, zero_mul, mul_zero,
+    WilsonBlockElimination.expectation_zero, sub_zero, zero_add]
+  ring
+
 /-- Strong-coupling decay of the true mixed derivative. The rate precedes all
 volumes, pinning, plaquette masks, background fields and rotation directions.
 The explicit prefactor contains no ambient-volume term. -/
@@ -919,6 +990,8 @@ theorem normal_link_not_held (n : ℕ) :
 #print axioms mixedDerivative_eq_covariance_sub_contact
 #print axioms mixedDerivative_eq_covariance
 #print axioms uniform_mixedDerivative
+#print axioms hasDerivAt_scoreCovariance
+#print axioms thirdDerivative_eq_cumulant
 #print axioms uniform_responseArray_envelope
 #print axioms uniform_weightedResponseSeminorm
 #print axioms tendsto_growing_mixedDerivative

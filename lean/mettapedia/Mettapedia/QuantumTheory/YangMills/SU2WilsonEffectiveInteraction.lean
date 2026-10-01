@@ -9,6 +9,15 @@ partition functions. Their first and mixed derivatives retain the original
 action scores, contact term and staged conditional covariance. Separated
 responses decay uniformly in surrounding volume at strong coupling. The
 growing family changes genuine retained links at both levels.
+
+The weighted maximum-row seminorm bounds total second-order influence
+uniformly in volume at both levels, including nearby contacts. Three
+plaquette-separated patches have the exact third-cumulant derivative, and
+the coarse score cumulant is the actual GSLT route's third remainder.
+
+The seminorm uses the original lattice metric and the stated group rotation
+directions. A rescaled multiscale recursion needs further bounds on the
+transported covariance and cumulant marks in a compatible analytic norm.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -124,6 +133,54 @@ theorem mixedDerivative_eq_covariance_sub_contact (N : ℕ) (β : ℝ) (coarse :
   rw [mixedDerivative_eq_boundary]
   exact SU2BoundaryResponse.mixedDerivative_eq_covariance_sub_contact β univ
     (retainedSet (mesh coarse)) S T q r b
+
+/-- The genuine three-patch derivative of either generated log weight. -/
+def thirdDerivative (N : ℕ) (β : ℝ) (coarse : Bool) (S T V : Finset (AssemblyLink N))
+    (q r u b : FullField N) : ℝ :=
+  deriv (fun t ↦ mixedDerivative N β coarse S T q r (SU2BoundaryResponse.boundaryCurve V u b t)) 0
+
+theorem thirdDerivative_eq_boundary (N : ℕ) (β : ℝ) (coarse : Bool)
+    (S T V : Finset (AssemblyLink N)) (q r u b : FullField N) :
+    thirdDerivative N β coarse S T V q r u b =
+      SU2BoundaryResponse.thirdDerivative β univ (retainedSet (mesh coarse)) S T V q r u b := by
+  unfold thirdDerivative SU2BoundaryResponse.thirdDerivative
+  simp_rw [mixedDerivative_eq_boundary]
+
+/-- Both original generated weights have the exact separated three-score
+response, for every real beta and arbitrary frames and boundary values. -/
+theorem thirdDerivative_eq_cumulant (N : ℕ) (β : ℝ) (coarse : Bool)
+    (S T V : Finset (AssemblyLink N)) (q r u b : FullField N)
+    (hST : Disjoint (incident S) (incident T))
+    (hSV : Disjoint (incident S) (incident V))
+    (hTV : Disjoint (incident T) (incident V)) :
+    thirdDerivative N β coarse S T V q r u b = -β ^ 3 * thirdCumulant
+      (Measure.pi fun _ ↦ (volume : Measure SU2))
+      (SU2BoundaryResponse.boundaryDensity β univ (retainedSet (mesh coarse)) b)
+      (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) S q b 0)
+      (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) T r b 0)
+      (SU2BoundaryResponse.score univ (retainedSet (mesh coarse)) V u b 0) := by
+  rw [thirdDerivative_eq_boundary]
+  exact SU2BoundaryResponse.thirdDerivative_eq_cumulant β univ (retainedSet (mesh coarse))
+    S T V q r u b hST hSV hTV
+
+/-- Original score third cumulance is identified with the actual coarse
+GSLT remainder. The three marks are pinned at that same coarse boundary. -/
+theorem scoreThirdCumulant_eq_route (N : ℕ) (β : ℝ)
+    (S T V : Finset (AssemblyLink N)) (q r u b : FullField N) :
+    thirdCumulant (Measure.pi fun _ ↦ (volume : Measure SU2))
+      (SU2BoundaryResponse.boundaryDensity β univ (retainedSet 4) b)
+      (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0)
+      (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0)
+      (SU2BoundaryResponse.score univ (retainedSet 4) V u b 0) =
+      WilsonEliminationRoutes.thirdRemainder (route N β)
+        (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) S q b 0))
+        (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) T r b 0))
+        (splitObservable N (SU2BoundaryResponse.score univ (retainedSet 4) V u b 0))
+        (coarseRestriction N b) :=
+  conditional_thirdCumulant_remainder N β _ _ _ b
+    (SU2BoundaryResponse.score_pin univ (retainedSet 4) S q b)
+    (SU2BoundaryResponse.score_pin univ (retainedSet 4) T r b)
+    (SU2BoundaryResponse.score_pin univ (retainedSet 4) V u b)
 
 /-- For arbitrary patches the actual coarse Hessian consists of the route's
 conditional covariance and its transported original-action contact mark. -/
@@ -353,6 +410,8 @@ theorem tendsto_mixedDerivative {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0
 #print axioms mixedDerivative_staged
 #print axioms mixedDerivative_eq_covariance_sub_contact
 #print axioms mixedDerivative_staged_with_contact
+#print axioms thirdDerivative_eq_cumulant
+#print axioms scoreThirdCumulant_eq_route
 #print axioms uniform_mixedDerivative
 #print axioms uniform_weightedResponseSeminorm
 #print axioms uniform_weightedResponseRow

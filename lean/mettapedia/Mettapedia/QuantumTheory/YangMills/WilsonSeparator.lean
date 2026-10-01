@@ -19,6 +19,8 @@ namespace Mettapedia.QuantumTheory.YangMills.WilsonSeparator
 
 open WilsonBlockElimination CompactTransferGap
 
+export WilsonBlockElimination (expectation_const_mul)
+
 section Perturbation
 
 variable {X : Type*} [TopologicalSpace X] [CompactSpace X]
@@ -30,13 +32,6 @@ theorem expectation_const (W : C(X, ℝ)) (hW : ∀ x, 0 < W x) (c : ℝ) :
   simp only [expectation, ContinuousMap.const_apply]
   rw [integral_mul_const]
   exact mul_div_cancel_left₀ c (partition_pos μ W hW).ne'
-
-omit [CompactSpace X] [BorelSpace X] [IsProbabilityMeasure μ] in
-theorem expectation_const_mul (W F : C(X, ℝ)) (c : ℝ) :
-    expectation μ W (ContinuousMap.const X c * F) = c * expectation μ W F := by
-  simp only [expectation, ContinuousMap.mul_apply, ContinuousMap.const_apply]
-  simp_rw [mul_left_comm (W _) c]
-  rw [integral_const_mul, mul_div_assoc]
 
 theorem expectation_mono (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
     (hFG : ∀ x, F x ≤ G x) : expectation μ W F ≤ expectation μ W G := by

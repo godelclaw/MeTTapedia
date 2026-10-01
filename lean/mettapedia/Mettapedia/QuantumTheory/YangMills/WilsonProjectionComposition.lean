@@ -7,6 +7,10 @@ The intermediate marginal cancels against the normalization of the first
 projected mark. Fubini then identifies successive projections with the
 single projection integrating both interior groups. All generated weights
 remain present in this identity.
+
+Conditional covariances and third cumulants obey their exact tower laws.
+Third order retains the transported inner cumulant and all three mixed
+covariances; these terms remain continuous marks for subsequent integration.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -94,7 +98,39 @@ theorem mixedScore_staged (ν : Measure I) (ρ : Measure J)
   simp only [ContinuousMap.add_apply]
   ring
 
+omit [MeasurableSpace B] [BorelSpace B] in
+/-- Exact third-cumulant transport under the same two weighted projections.
+The three covariances couple a first projected score to the conditional
+covariance of the other two; every generated density remains present. -/
+theorem fiberThirdCumulant_staged (ν : Measure I) (ρ : Measure J)
+    [IsProbabilityMeasure ν] [IsProbabilityMeasure ρ]
+    (W : C((B × I) × J, ℝ)) (hW : ∀ p, 0 < W p)
+    (F G H : C((B × I) × J, ℝ)) :
+    fiberThirdCumulant (ν.prod ρ) (reassociate W) (fun _ ↦ hW _)
+      (reassociate F) (reassociate G) (reassociate H) =
+      fiberThirdCumulant ν (marginal ρ W) (marginal_pos ρ W hW)
+        (project ρ W hW F) (project ρ W hW G) (project ρ W hW H) +
+      project ν (marginal ρ W) (marginal_pos ρ W hW) (fiberThirdCumulant ρ W hW F G H) +
+      fiberCovariance ν (marginal ρ W) (marginal_pos ρ W hW)
+        (project ρ W hW F) (fiberCovariance ρ W hW G H) +
+      fiberCovariance ν (marginal ρ W) (marginal_pos ρ W hW)
+        (project ρ W hW G) (fiberCovariance ρ W hW F H) +
+      fiberCovariance ν (marginal ρ W) (marginal_pos ρ W hW)
+        (project ρ W hW H) (fiberCovariance ρ W hW F G) := by
+  have ht : (fun U : C((B × I) × J, ℝ) ↦
+      project (ν.prod ρ) (reassociate W) (fun _ ↦ hW _) (reassociate U)) =
+      (projectLinear ν (marginal ρ W) (marginal_pos ρ W hW)).comp
+        (projectLinear ρ W hW) := by
+    funext U
+    exact (project_staged ν ρ W hW U).symm
+  change thirdMoment (fun U : C((B × I) × J, ℝ) ↦
+      project (ν.prod ρ) (reassociate W) (fun _ ↦ hW _) (reassociate U)) F G H = _
+  rw [ht]
+  exact thirdMoment_comp (projectLinear ρ W hW)
+    (projectLinear ν (marginal ρ W) (marginal_pos ρ W hW)) F G H
+
 #print axioms project_staged
 #print axioms fiberCovariance_staged
 #print axioms mixedScore_staged
+#print axioms fiberThirdCumulant_staged
 end Mettapedia.QuantumTheory.YangMills.WilsonProjectionComposition

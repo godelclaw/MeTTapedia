@@ -11,9 +11,9 @@ the weight is strictly positive. In particular all displayed integrals are
 integrable and every normalization denominator is positive.
 
 The conditional covariance is kept as a continuous boundary observable, so its
-contribution can be transported through further eliminations. A quantitative
-bound on this contribution gives a bound on the error in transporting the
-correlation by the two separately projected observables.
+contribution can be transported through further eliminations. Third cumulants
+use one common moment polynomial, including its five-term composition law.
+Weighted expectation and interior projection are linear maps on marks.
 
 `KernelRoute.action` gives continuous-kernel integral semantics to the existing
 GSLT route type. Concatenation composes the weighted operators. The concrete
@@ -30,6 +30,26 @@ namespace Mettapedia.QuantumTheory.YangMills.WilsonBlockElimination
 
 open CompactTransferGap
 
+/-- The third connected-moment polynomial of a normalized moment map. The
+definition also makes sense for linear projections with function-valued output. -/
+def thirdMoment {A B : Type*} [CommRing A] [CommRing B] [Module ℝ B]
+    (P : A → B) (F G H : A) : B :=
+  P (F * G * H) - P (F * G) * P H - P (F * H) * P G - P (G * H) * P F +
+    (2 : ℝ) • (P F * P G * P H)
+
+/-- The algebraic law of total third cumulance. Linearity retains the
+conditional third moment and all three conditional-covariance corrections. -/
+theorem thirdMoment_comp {A B D : Type*} [CommRing A] [CommRing B] [CommRing D]
+    [Module ℝ A] [Module ℝ B] [Module ℝ D]
+    (P : A →ₗ[ℝ] B) (Q : B →ₗ[ℝ] D) (F G H : A) :
+    thirdMoment (Q.comp P) F G H =
+      thirdMoment Q (P F) (P G) (P H) + Q (thirdMoment P F G H) +
+      (Q (P F * (P (G * H) - P G * P H)) - Q (P F) * Q (P (G * H) - P G * P H)) +
+      (Q (P G * (P (F * H) - P F * P H)) - Q (P G) * Q (P (F * H) - P F * P H)) +
+      (Q (P H * (P (F * G) - P F * P G)) - Q (P H) * Q (P (F * G) - P F * P G)) := by
+  simp only [thirdMoment, LinearMap.comp_apply, mul_sub, map_sub, map_add, two_smul ℝ]
+  ring
+
 section Weighted
 
 variable {X : Type*} [TopologicalSpace X] [CompactSpace X]
@@ -43,6 +63,10 @@ def expectation (W F : C(X, ℝ)) : ℝ :=
 /-- Connected two-point function under the same density. -/
 def covariance (W F G : C(X, ℝ)) : ℝ :=
   expectation μ W (F * G) - expectation μ W F * expectation μ W G
+
+/-- Third connected correlation under the same normalized positive density. -/
+def thirdCumulant (W F G H : C(X, ℝ)) : ℝ :=
+  thirdMoment (expectation μ W) F G H
 
 @[simp] theorem expectation_zero (W : C(X, ℝ)) : expectation μ W 0 = 0 := by
   simp [expectation]
@@ -73,6 +97,19 @@ theorem expectation_one (W : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
   simp only [expectation, ContinuousMap.one_apply, mul_one]
   exact div_self (partition_pos μ W hW).ne'
 
+omit [CompactSpace X] [BorelSpace X] [IsProbabilityMeasure μ] in
+theorem expectation_const_mul (W F : C(X, ℝ)) (c : ℝ) :
+    expectation μ W (ContinuousMap.const X c * F) = c * expectation μ W F := by
+  simp only [expectation, ContinuousMap.mul_apply, ContinuousMap.const_apply]
+  simp_rw [mul_left_comm (W _) c]
+  rw [integral_const_mul, mul_div_assoc]
+
+/-- The weighted expectation as a linear map on continuous marks. -/
+def expectationLinear (W : C(X, ℝ)) : C(X, ℝ) →ₗ[ℝ] ℝ where
+  toFun := expectation μ W
+  map_add' := expectation_add μ W
+  map_smul' c F := expectation_const_mul μ W F c
+
 /-- A uniform observable bound survives normalization by a positive weight. -/
 theorem abs_expectation_le (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x)
     {C : ℝ} (hF : ∀ x, |F x| ≤ C) : |expectation μ W F| ≤ C := by
@@ -102,9 +139,9 @@ theorem abs_covariance_le (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
       rw [ContinuousMap.mul_apply, abs_mul]
       exact mul_le_mul (hF x) (hG x) (abs_nonneg _) hCF)
   have hp : |expectation μ W F * expectation μ W G| ≤ CF * CG := by
-    rw [abs_mul]
-    exact mul_le_mul (abs_expectation_le μ W F hW hF)
-      (abs_expectation_le μ W G hW hG) (abs_nonneg _) hCF
+    rw [abs_mul, mul_comm |expectation μ W F|, mul_comm CF]
+    exact mul_le_mul (abs_expectation_le μ W G hW hG)
+      (abs_expectation_le μ W F hW hF) (abs_nonneg _) hCG
   exact (abs_sub _ _).trans (by nlinarith)
 
 end Weighted
@@ -131,6 +168,17 @@ def project (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p) (F : C(B × I, ℝ)) : C(
     (marginal ν (W * F)).continuous.div (marginal ν W).continuous
       (fun b => (marginal_pos ν W hW b).ne')⟩
 
+/-- Actual normalized interior integration, linear in the transported mark. -/
+def projectLinear (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p) :
+    C(B × I, ℝ) →ₗ[ℝ] C(B, ℝ) where
+  toFun := project ν W hW
+  map_add' F G := by
+    ext b
+    exact expectation_add ν (W.curry b) (F.curry b) (G.curry b)
+  map_smul' c F := by
+    ext b
+    exact expectation_const_mul ν (W.curry b) (F.curry b) c
+
 /-- View a boundary observable as an observable of the full block. -/
 def lift (F : C(B, ℝ)) : C(B × I, ℝ) := ⟨fun p => F p.1, by fun_prop⟩
 
@@ -138,6 +186,11 @@ def lift (F : C(B, ℝ)) : C(B × I, ℝ) := ⟨fun p => F p.1, by fun_prop⟩
 def fiberCovariance (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
     (F G : C(B × I, ℝ)) : C(B, ℝ) :=
   project ν W hW (F * G) - project ν W hW F * project ν W hW G
+
+/-- The conditional third cumulant remains a continuous boundary mark. -/
+def fiberThirdCumulant (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
+    (F G H : C(B × I, ℝ)) : C(B, ℝ) :=
+  thirdMoment (project ν W hW) F G H
 
 omit [MeasurableSpace B] [BorelSpace B] [SecondCountableTopology I] in
 /-- A projected observable is the normalized expectation in its actual fiber. -/

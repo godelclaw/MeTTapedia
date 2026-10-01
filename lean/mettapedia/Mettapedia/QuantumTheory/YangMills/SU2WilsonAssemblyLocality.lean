@@ -254,6 +254,58 @@ theorem route_remainder_staged (N : ℕ) (β : ℝ) (F G : C(FullField N, ℝ)) 
   rw [hdirect, WilsonProjectionComposition.fiberCovariance_staged]
   rfl
 
+/-- Conditional third cumulance at the coarse boundary is the actual
+GSLT route's third remainder, against its original generated densities. -/
+theorem conditional_thirdCumulant_remainder (N : ℕ) (β : ℝ)
+    (F G H : C(FullField N, ℝ)) (b : FullField N)
+    (hF : ∀ ω, F (pin (retainedSet 4) b ω) = F ω)
+    (hG : ∀ ω, G (pin (retainedSet 4) b ω) = G ω)
+    (hH : ∀ ω, H (pin (retainedSet 4) b ω) = H ω) :
+    thirdCumulant (Measure.pi fun _ : AssemblyLink N ↦ (volume : Measure SU2))
+      (SU2BoundaryResponse.boundaryDensity β univ (retainedSet 4) b) F G H =
+      WilsonEliminationRoutes.thirdRemainder (route N β)
+        (splitObservable N F) (splitObservable N G) (splitObservable N H)
+        (coarseRestriction N b) := by
+  have hp (A B : C(FullField N, ℝ))
+      (hA : ∀ ω, A (pin (retainedSet 4) b ω) = A ω)
+      (hB : ∀ ω, B (pin (retainedSet 4) b ω) = B ω) :
+      ∀ ω, (A * B) (pin (retainedSet 4) b ω) = (A * B) ω := by
+    intro ω
+    simp only [ContinuousMap.mul_apply, hA, hB]
+  rw [thirdCumulant, thirdMoment,
+    ← secondProjected_eq_pinnedExpectation N β (F * G * H) b (hp (F * G) H (hp F G hF hG) hH),
+    ← secondProjected_eq_pinnedExpectation N β (F * G) b (hp F G hF hG),
+    ← secondProjected_eq_pinnedExpectation N β (F * H) b (hp F H hF hH),
+    ← secondProjected_eq_pinnedExpectation N β (G * H) b (hp G H hG hH),
+    ← secondProjected_eq_pinnedExpectation N β F b hF,
+    ← secondProjected_eq_pinnedExpectation N β G b hG,
+    ← secondProjected_eq_pinnedExpectation N β H b hH]
+  rfl
+
+/-- The full five-term tower for the actual two-stage Haar route. The
+normalized second projection uses the generated first density throughout. -/
+theorem route_thirdRemainder_staged (N : ℕ) (β : ℝ) (F G H : C(FullField N, ℝ)) :
+    let P := project (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+    let Q := project (volume : Measure (InterfaceField N)) (firstDensity N β)
+      (marginal_pos volume (density N β) (density_pos N β))
+    let R := fiberCovariance (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+    let F₀ := splitObservable N F
+    let G₀ := splitObservable N G
+    let H₀ := splitObservable N H
+    WilsonEliminationRoutes.thirdRemainder (route N β) F₀ G₀ H₀ =
+      fiberThirdCumulant (volume : Measure (InterfaceField N)) (firstDensity N β)
+        (marginal_pos volume (density N β) (density_pos N β)) (P F₀) (P G₀) (P H₀) +
+      Q (fiberThirdCumulant (volume : Measure (InternalField N)) (density N β) (density_pos N β)
+        F₀ G₀ H₀) +
+      (Q (P F₀ * R G₀ H₀) - Q (P F₀) * Q (R G₀ H₀)) +
+      (Q (P G₀ * R F₀ H₀) - Q (P G₀) * Q (R F₀ H₀)) +
+      (Q (P H₀ * R F₀ G₀) - Q (P H₀) * Q (R F₀ G₀)) := by
+  exact thirdMoment_comp
+    (projectLinear (volume : Measure (InternalField N)) (density N β) (density_pos N β))
+    (projectLinear (volume : Measure (InterfaceField N)) (firstDensity N β)
+      (marginal_pos volume (density N β) (density_pos N β)))
+    (splitObservable N F) (splitObservable N G) (splitObservable N H)
+
 /-- First-stage locality derived from the original Wilson plaquettes. -/
 theorem firstProjected_locality (N : ℕ) (β : ℝ) (S : Finset (AssemblyLink N))
     (F : C(FullField N, ℝ)) (hF : DependsOn S F) :
@@ -309,6 +361,8 @@ theorem plaquetteObservable_local (N : ℕ) (p : AssemblyPlaquette N) :
 #print axioms firstProjected_eq_conditional
 #print axioms conditional_covariance_remainder
 #print axioms route_remainder_staged
+#print axioms conditional_thirdCumulant_remainder
+#print axioms route_thirdRemainder_staged
 #print axioms secondProjected_eq_conditional
 #print axioms firstProjected_locality
 #print axioms secondProjected_locality
