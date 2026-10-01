@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "status": "Kernel-checked actual 03|12 smaller source splice and coupled whole-target reconstruction on an explicit smaller source-witness domain",
+  "proof_roots": 17,
+  "dependency_closure": 23652,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "complete_four_color_endpoint_used": false,
+  "complete_source_colouring_supplier_used": false,
+  "finite_graph_data_in_uniform_laws": false,
+  "uniform_source_size_bound": null,
+  "boundary_ports": 4,
+  "joint_insertion_choices": 2,
+  "geometric_hypotheses": [
+    "Actual simple-graph dart rotation",
+    "Adjacent cubic source pair with four distinct exterior pins",
+    "Spherical cubic Euler data and cyclic vertex rotations",
+    "Distinct facial sides of every original edge",
+    "Connected original source and retained shore"
+  ],
+  "derived_geometric_fields": [
+    "Actual local boundary order and planar complementary-shore inversion",
+    "Actual noncrossing 03|12 half-dart splice retaining parallel edges",
+    "Smaller spherical cubic source and bridgeless spherical cubic expanded target",
+    "Exact decrease: two source vertices and six expanded target vertices"
+  ],
+  "colouring_hypotheses": [
+    "An explicit proper nonzero three-colouring of the actual smaller source"
+  ],
+  "kernel_conclusions": [
+    "Extracted old exterior is genuinely proper",
+    "Both new seams impose opposite-pin inequalities",
+    "The joint contract leaves either direct insertion or exactly alternating pins",
+    "Geometry supplies the alternating separating repair",
+    "Genuine whole original source and target colourings reconstruct",
+    "Extracted initial exterior observations agree with actual smaller target stars",
+    "A saturated actual exterior target-edge operation agrees exactly with reconstruction",
+    "Every complete faithful GSLT sweep supports compatible witnesses"
+  ],
+  "strict_smaller_operation_proved": true,
+  "source_vertices_removed": 2,
+  "target_vertices_removed": 6,
+  "arbitrary_smaller_target_tait_witness_preimage_proved": false,
+  "recursive_reduction_domain_closure_proved": false,
+  "preserves_colouring_counts_asserted": false,
+  "preserves_every_recolouring_history_asserted": false,
+  "universal_occurrence_coverage_proved": false,
+  "kernel_finite_geometric_fixtures": 0,
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/adjacent_source_splice_probe.py --check",
+    "record": "adjacent-source-splice-probe.json",
+    "maps": 5,
+    "interfaces": 13,
+    "witnesses": 2680,
+    "totals": {
+      "first_pin": 502,
+      "direct": 2076,
+      "second_pin": 102
+    },
+    "parallel_edge_identities_retained": true,
+    "actual_source_and_target_euler_checked": true,
+    "concrete_geometry_kernel_certified": false
+  },
+  "measurements": [
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceSplice.lean",
+      "source_bytes": 22771,
+      "source_sha256": "898d16f070d877cbd01211f1b7e30d251f73e73efe929aed695447b386cd36de",
+      "artifact_bytes": 1263032,
+      "artifact_sha256": "79bd22fcfc27a25b5eb0114e46a73d17752571b92f6ee4cdf783e4669048b6d3"
+    },
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceSpliceAudit.lean",
+      "source_bytes": 5519,
+      "source_sha256": "334aec4474952068b71fcc873ceeb65bca68965f0a1daa66f443cb51742a7f7c",
+      "artifact_bytes": 3568,
+      "artifact_sha256": "97600cfe29f0273a0de4eaf52ad267facae8bd0a7eba2b066b74e5599f6897a8"
+    }
+  ],
+  "source_bytes": 28290,
+  "olean_bytes": 1266600,
+  "frontend_seconds_in_targeted_runs": {
+    "AdjacentSourceSplice.lean": 5.5,
+    "AdjacentSourceSpliceAudit.lean": 13.0
+  },
+  "frontend_scope": "Targeted proof and audit runs; imported prerequisite frontend costs excluded.",
+  "full_gate_jobs": 11170,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "discharging_computations_replaced": 231,
+  "catalogue_entries_removed": 0,
+  "original_configuration_certificate_dependencies_removed": 0,
+  "integrated_into_complete_four_color_assembly": false,
+  "scope": "The uniform implication proves an actual strict smaller operation and reconstruction for source-image witnesses. Concrete finite geometric instances remain independent program checks. Arbitrary smaller target witness extraction, recursive domain closure, geometric occurrence and catalogue replacement remain open."
+}

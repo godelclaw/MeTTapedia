@@ -22,6 +22,7 @@ import Mettapedia.GraphTheory.FourColor.TwoCellPhysicalKempeRepairAudit
 import Mettapedia.GraphTheory.FourColor.TwoCellSourceRepairAudit
 import Mettapedia.GraphTheory.FourColor.SourceAlternatingBoundaryRepairAudit
 import Mettapedia.GraphTheory.FourColor.AdjacentSourceBoundaryRepairAudit
+import Mettapedia.GraphTheory.FourColor.AdjacentSourceSpliceAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand

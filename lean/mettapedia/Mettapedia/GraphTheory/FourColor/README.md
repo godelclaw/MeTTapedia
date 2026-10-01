@@ -441,6 +441,26 @@ sources are independently replayed; their geometric hypotheses remain
 program checks. No strictly smaller operation or catalogue saving is
 credited.
 
+The [03|12 source splice](AdjacentSourceSplice.lean) now completes a
+smaller operation on an explicit source-witness domain. Deleting the two
+source vertices and joining their actual exposed darts preserves a
+spherical cubic rotation, including parallel-edge identities. Its expanded
+target is bridgeless spherical cubic and has exactly six fewer vertices.
+A proper three-colouring of the smaller source supplies the old exterior
+and both new seam inequalities. One fixed-alphabet law leaves either a
+direct joint insertion or the alternating arrangement; the derived planar
+geometry supplies a separating repair in the latter case. Whole original
+source and target colourings, exact physical exterior reconstruction and
+every complete faithful GSLT sweep consume the same repair.
+The [audit and receipt](../../../../../tools/fourcolor/classical/adjacent-source-splice-measurements.json)
+check seventeen roots and exclude classical endpoints, complete-colouring
+suppliers and graph fixtures. An independent replay reconstructs 2,680
+smaller source witnesses on thirteen interfaces. These finite geometric
+instances remain program checks. The theorem does not extract a source
+witness from an arbitrary smaller target Tait colouring; recognition,
+recursive closure and global occurrence remain separate obligations.
+Catalogue and original-certificate counts remain 633 and 630.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

@@ -538,6 +538,36 @@ Colouring existence, counts and execution histories are not identified.
 Strict reduction and occurrence coverage remain separate. This tranche
 removes no catalogue entries or original configuration certificates.
 
+## Actual 03|12 source splice and joint reconstruction
+
+`AdjacentSourceSplice` deletes two adjacent source vertices and pairs their
+exposed half-darts across the two omitted vertices. The literal splice
+retains parallel edges, preserves spherical cubic geometry and gives a
+bridgeless spherical cubic expanded target with exactly six fewer vertices.
+A supplied proper smaller source three-colouring restricts to a proper old
+exterior. Its new seam inequalities force either direct coupled insertion
+or the alternating pattern handled by embedded separation. Whole original
+source and target witnesses, exact physical exterior agreement and every
+complete faithful GSLT sweep reconstruct from that input.
+
+```sh
+python3 tools/fourcolor/classical/adjacent_source_splice_probe.py --check
+```
+
+The [receipt](adjacent-source-splice-measurements.json) records seventeen
+kernel-audited roots and their exact dependency requirements. Classical
+endpoints, whole-colouring suppliers and finite graph fixtures are excluded.
+The [independent replay](adjacent-source-splice-probe.json) checks literal
+smaller source and target face cycles, parallel seams and exact cardinalities
+on thirteen interfaces from five sources. It reconstructs all 2,680 smaller
+source witnesses normalized at the first pin: 2,076 direct insertions,
+502 first-pin repairs and 102 second-pin repairs. Finite geometric instances
+remain program checks. The uniform theorem accepts an explicit smaller
+source witness; it does not establish that every smaller target Tait
+colouring has such a preimage. Counts, all recolouring histories, recursive
+domain closure and global coverage remain separate. No further catalogue
+entry or original configuration certificate is removed.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

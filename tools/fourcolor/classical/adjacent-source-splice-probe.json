@@ -1,0 +1,1318 @@
+{
+  "schema": 1,
+  "evidence": "independent program replay",
+  "domain": [
+    {
+      "map": "triangular-prism",
+      "omitted": [
+        0,
+        3
+      ],
+      "pins": [
+        1,
+        2,
+        5,
+        4
+      ],
+      "counts": {
+        "first_pin": 2,
+        "direct": 4
+      },
+      "source_before": 6,
+      "source_after": 4,
+      "target_before": 18,
+      "target_after": 12,
+      "parallel_source_edges": 2,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            0,
+            2,
+            1
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            1
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        },
+        "direct": {
+          "word": [
+            1,
+            2,
+            1,
+            3
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            0,
+            3,
+            1
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            3,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        1
+      ],
+      "pins": [
+        3,
+        4,
+        5,
+        2
+      ],
+      "counts": {
+        "direct": 18
+      },
+      "source_before": 8,
+      "source_after": 6,
+      "target_before": 24,
+      "target_after": 18,
+      "parallel_source_edges": 2,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            1,
+            1,
+            2,
+            1,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        3
+      ],
+      "pins": [
+        4,
+        1,
+        2,
+        7
+      ],
+      "counts": {
+        "direct": 18
+      },
+      "source_before": 8,
+      "source_after": 6,
+      "target_before": 24,
+      "target_after": 18,
+      "parallel_source_edges": 2,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            0,
+            1,
+            2,
+            1,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        4
+      ],
+      "pins": [
+        1,
+        3,
+        7,
+        5
+      ],
+      "counts": {
+        "direct": 18
+      },
+      "source_before": 8,
+      "source_after": 6,
+      "target_before": 24,
+      "target_after": 18,
+      "parallel_source_edges": 2,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            1,
+            0,
+            2,
+            1,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "map": "pentagonal-prism",
+      "omitted": [
+        0,
+        1
+      ],
+      "pins": [
+        4,
+        5,
+        6,
+        2
+      ],
+      "counts": {
+        "direct": 16,
+        "second_pin": 2,
+        "first_pin": 2
+      },
+      "source_before": 10,
+      "source_after": 8,
+      "target_before": 30,
+      "target_after": 24,
+      "parallel_source_edges": 1,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            3,
+            1,
+            1,
+            2,
+            1,
+            2,
+            3
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "second_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            3,
+            1,
+            2,
+            1,
+            3,
+            1,
+            3
+          ],
+          "pair": [
+            2,
+            3
+          ],
+          "mask": [
+            5,
+            9
+          ],
+          "interior": [
+            2,
+            3
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            3,
+            1,
+            2,
+            1,
+            3,
+            2,
+            3
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            3,
+            4,
+            9
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "pentagonal-prism",
+      "omitted": [
+        0,
+        4
+      ],
+      "pins": [
+        5,
+        1,
+        3,
+        9
+      ],
+      "counts": {
+        "direct": 16,
+        "second_pin": 2,
+        "first_pin": 2
+      },
+      "source_before": 10,
+      "source_after": 8,
+      "target_before": 30,
+      "target_after": 24,
+      "parallel_source_edges": 1,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            3,
+            2,
+            0,
+            1,
+            2,
+            1,
+            3,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "second_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            2,
+            3,
+            1,
+            0,
+            1,
+            3,
+            1,
+            3,
+            2
+          ],
+          "pair": [
+            2,
+            3
+          ],
+          "mask": [
+            1,
+            2,
+            6
+          ],
+          "interior": [
+            2,
+            3
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            2,
+            3,
+            1,
+            0,
+            1,
+            3,
+            2,
+            3,
+            2
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            5,
+            6
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "pentagonal-prism",
+      "omitted": [
+        0,
+        5
+      ],
+      "pins": [
+        1,
+        4,
+        9,
+        6
+      ],
+      "counts": {
+        "direct": 40,
+        "first_pin": 12,
+        "second_pin": 2
+      },
+      "source_before": 10,
+      "source_after": 8,
+      "target_before": 30,
+      "target_after": 24,
+      "parallel_source_edges": 2,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            3,
+            1,
+            0,
+            2,
+            3,
+            1,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            1,
+            2,
+            0,
+            2,
+            1,
+            2,
+            1
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            1
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        },
+        "second_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            3,
+            1,
+            2,
+            0,
+            2,
+            1,
+            3,
+            1
+          ],
+          "pair": [
+            2,
+            3
+          ],
+          "mask": [
+            4
+          ],
+          "interior": [
+            2,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "hexagonal-prism",
+      "omitted": [
+        0,
+        1
+      ],
+      "pins": [
+        5,
+        6,
+        7,
+        2
+      ],
+      "counts": {
+        "direct": 120,
+        "first_pin": 6
+      },
+      "source_before": 12,
+      "source_after": 10,
+      "target_before": 36,
+      "target_after": 30,
+      "parallel_source_edges": 1,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            1,
+            2,
+            1,
+            1,
+            2,
+            1,
+            2,
+            1,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            1,
+            2,
+            1,
+            2,
+            1,
+            3,
+            2,
+            1,
+            3
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            5,
+            10,
+            11
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "hexagonal-prism",
+      "omitted": [
+        0,
+        5
+      ],
+      "pins": [
+        6,
+        1,
+        4,
+        11
+      ],
+      "counts": {
+        "direct": 120,
+        "first_pin": 6
+      },
+      "source_before": 12,
+      "source_after": 10,
+      "target_before": 36,
+      "target_after": 30,
+      "parallel_source_edges": 1,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            1,
+            2,
+            0,
+            1,
+            2,
+            1,
+            2,
+            1,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            2,
+            1,
+            2,
+            1,
+            0,
+            1,
+            3,
+            2,
+            1,
+            3,
+            2
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            6,
+            7
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "hexagonal-prism",
+      "omitted": [
+        0,
+        6
+      ],
+      "pins": [
+        1,
+        5,
+        11,
+        7
+      ],
+      "counts": {
+        "direct": 146,
+        "first_pin": 16
+      },
+      "source_before": 12,
+      "source_after": 10,
+      "target_before": 36,
+      "target_after": 30,
+      "parallel_source_edges": 2,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            1,
+            2,
+            1,
+            0,
+            2,
+            1,
+            2,
+            1,
+            2
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            1,
+            3,
+            2,
+            0,
+            2,
+            1,
+            3,
+            2,
+            1
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            1
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "dodecahedron",
+      "omitted": [
+        0,
+        1
+      ],
+      "pins": [
+        19,
+        10,
+        8,
+        2
+      ],
+      "counts": {
+        "direct": 520,
+        "first_pin": 152,
+        "second_pin": 32
+      },
+      "source_before": 20,
+      "source_after": 18,
+      "target_before": 60,
+      "target_after": 54,
+      "parallel_source_edges": 0,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            3,
+            1,
+            2,
+            1,
+            3,
+            2,
+            3,
+            1,
+            2,
+            3,
+            1,
+            2,
+            3,
+            1,
+            2,
+            3,
+            1
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            3,
+            1,
+            2,
+            1,
+            2,
+            1,
+            3,
+            2,
+            1,
+            3,
+            1,
+            3,
+            1,
+            2,
+            3,
+            2,
+            1
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            3,
+            4,
+            17,
+            19
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        },
+        "second_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            0,
+            2,
+            3,
+            1,
+            2,
+            1,
+            3,
+            1,
+            3,
+            2,
+            1,
+            3,
+            1,
+            2,
+            3,
+            1,
+            3,
+            2,
+            1
+          ],
+          "pair": [
+            2,
+            3
+          ],
+          "mask": [
+            9,
+            10
+          ],
+          "interior": [
+            2,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "dodecahedron",
+      "omitted": [
+        0,
+        10
+      ],
+      "pins": [
+        1,
+        19,
+        11,
+        9
+      ],
+      "counts": {
+        "direct": 520,
+        "first_pin": 152,
+        "second_pin": 32
+      },
+      "source_before": 20,
+      "source_after": 18,
+      "target_before": 60,
+      "target_after": 54,
+      "parallel_source_edges": 0,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            3,
+            1,
+            2,
+            3,
+            1,
+            3,
+            2,
+            0,
+            2,
+            1,
+            3,
+            2,
+            1,
+            3,
+            2,
+            3,
+            1
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            1,
+            2,
+            1,
+            3,
+            1,
+            3,
+            2,
+            0,
+            1,
+            2,
+            1,
+            3,
+            2,
+            3,
+            1,
+            3,
+            2
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            1,
+            5,
+            6,
+            7,
+            8,
+            13,
+            14
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        },
+        "second_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            2,
+            1,
+            3,
+            1,
+            3,
+            1,
+            3,
+            2,
+            0,
+            1,
+            2,
+            1,
+            3,
+            2,
+            3,
+            1,
+            3,
+            2
+          ],
+          "pair": [
+            2,
+            3
+          ],
+          "mask": [
+            18,
+            19
+          ],
+          "interior": [
+            2,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "map": "dodecahedron",
+      "omitted": [
+        0,
+        19
+      ],
+      "pins": [
+        10,
+        1,
+        3,
+        18
+      ],
+      "counts": {
+        "direct": 520,
+        "first_pin": 152,
+        "second_pin": 32
+      },
+      "source_before": 20,
+      "source_after": 18,
+      "target_before": 60,
+      "target_after": 54,
+      "parallel_source_edges": 0,
+      "source_spherical": true,
+      "target_spherical": true,
+      "samples": {
+        "direct": {
+          "word": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "exterior": [
+            0,
+            1,
+            3,
+            2,
+            1,
+            2,
+            1,
+            2,
+            3,
+            2,
+            1,
+            3,
+            1,
+            3,
+            1,
+            3,
+            2,
+            3,
+            2,
+            0
+          ],
+          "pair": [],
+          "mask": [],
+          "interior": [
+            2,
+            1
+          ]
+        },
+        "first_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            2,
+            3,
+            1,
+            2,
+            1,
+            2,
+            1,
+            3,
+            2,
+            1,
+            3,
+            1,
+            3,
+            2,
+            3,
+            2,
+            1,
+            2,
+            0
+          ],
+          "pair": [
+            1,
+            3
+          ],
+          "mask": [
+            10,
+            11,
+            12,
+            13
+          ],
+          "interior": [
+            1,
+            3
+          ]
+        },
+        "second_pin": {
+          "word": [
+            1,
+            2,
+            1,
+            2
+          ],
+          "exterior": [
+            0,
+            2,
+            3,
+            1,
+            2,
+            3,
+            1,
+            2,
+            1,
+            3,
+            1,
+            3,
+            1,
+            2,
+            3,
+            1,
+            3,
+            1,
+            2,
+            0
+          ],
+          "pair": [
+            2,
+            3
+          ],
+          "mask": [
+            1,
+            2
+          ],
+          "interior": [
+            2,
+            3
+          ]
+        }
+      }
+    }
+  ],
+  "maps": 5,
+  "interfaces": 13,
+  "totals": {
+    "first_pin": 502,
+    "direct": 2076,
+    "second_pin": 102
+  },
+  "witnesses": 2680,
+  "kernel_finite_geometric_fixtures": 0,
+  "source_sha256": {
+    "AdjacentSourceSplice.lean": "898d16f070d877cbd01211f1b7e30d251f73e73efe929aed695447b386cd36de",
+    "AdjacentSourceSpliceAudit.lean": "334aec4474952068b71fcc873ceeb65bca68965f0a1daa66f443cb51742a7f7c",
+    "AdjacentSourceBoundaryRepair.lean": "921648253b700f0bd568af50050593d3f994c077dc6f3b502f903632fb9d9a97",
+    "SourceAlternatingBoundaryRepair.lean": "a222156107a7a092777b84dbe726783199dbb6c766016c1f89abfa06d2bbc2f0",
+    "GoertzelV24AdjacentPairPlanarReduction.lean": "b5edcc6930fe098703fee20ccbd89b6cdbb830e88c629fea373ae47ae8fe212a",
+    "DualTruncateSourceDomainExample.lean": "20ff10579b99232b5384f478040a4b181684d33fed9aea6c7d6cfc742f21778b",
+    "TwoCellCycleObstruction.lean": "6a60e9d228ce488c964a7b972d6ffac0b21a1762ed05d4f28a6485e284f1c7a0"
+  },
+  "checker_sha256": {
+    "adjacent_source_splice_probe.py": "ec1516c2412e7aa07006b34f939def06faaa5c466fd2a2b777d5105a86c05ede",
+    "source_alternating_boundary_probe.py": "62d4c7c73995669985641feb44cec51e8fcf6417fe003b7964d36c86155f132c",
+    "two_cell_source_repair_probe.py": "2d5021cde2508640bb081e56d5b2f3a7d390e0c2699a5f0b70617e6cfd9140d1"
+  },
+  "catalogue_entries_removed": 0,
+  "scope": "All smaller source witnesses normalized to colour 1 at the first pin on these thirteen interfaces; actual parallel seams retained. The uniform Lean implication is separate from these finite program checks. No arbitrary target-witness extraction or global coverage claimed."
+}

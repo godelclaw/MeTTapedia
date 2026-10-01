@@ -388,6 +388,23 @@ separates the kernel theorem from thirteen program-checked geometric
 instances. A smaller embedded operation and occurrence coverage are still
 needed before this bridge reduces the unavoidable catalogue.
 
+The [03|12 splice and reconstruction](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceSplice.lean)
+now connects that bridge to an actual smaller map. Two source vertices are
+removed; all parallel-edge identities and cyclic rotations survive. The
+expanded target remains bridgeless spherical cubic and loses exactly six
+vertices. A proper three-colouring of the smaller source imposes two joint
+seam inequalities. Those leave a direct insertion or exactly the alternating
+boundary arrangement; the geometric repair then reconstructs both removed
+vertices together, an actual target colouring, its physical exterior and
+every complete faithful GSLT sweep. This is one uniform argument without a
+source-size bound or a table of graph colourings. The
+[receipt](../../../tools/fourcolor/classical/adjacent-source-splice-measurements.json)
+records seventeen audited roots and an independent replay of 2,680 smaller
+source witnesses. The witness domain is significant: the input is a proper
+smaller source three-colouring, not an arbitrary smaller target Tait
+colouring. Recognition and closure of the reduction domain, occurrence
+coverage and catalogue replacement remain open; the catalogue stays at 633.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two
