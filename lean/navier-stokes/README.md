@@ -1313,6 +1313,68 @@ its coupled pressure and parents; neither normalization nor a fresh resource
 at a composition boundary supplies that payment. See the
 [full channel and source checks](labs/README.md#same-frame-tensor-channels-and-the-physical-compatibility-source).
 
+### Complete pressure cotangent and a paid history with nonzero pressure
+
+`MettapediaNS.JointPressureCotangent` retains all nine tensor coordinates
+and all three spatial connections. For `e=vec(E)`, `W_j=-W K_j`,
+`r_j=partial_j e-K_j e` and `Z=unflatten(W e)`, the exact receiver is
+
+```text
+(div Z)_i=sum_j (W r_j)_(i,j),
+R(W)_il=sum_j W_(i,j),(l,j),
+2 v.div Z <= nu F_E + nu^-1 v^T R(W)v,  nu>0.
+```
+
+Lean certifies the complete receiver identity, its agreement with the
+existing diffusion cost, the positive induced pressure metric, and the
+completed-square absorption. Taking `v=-grad p` and weakly integrating
+by parts pays half the original `2nu F_E` diffusion. It leaves the literal
+cost `Gamma=integral grad p^T R(W)grad p`. Weak integration and continuous
+stochastic identification remain analytic. This is not an unweighted
+Helmholtz contraction. Even for one frame, `W=H tensor H` gives
+`R(W)=tr(H)H`, so volume preservation alone cannot remove its anisotropy.
+
+There is a positive analytic consumer on the normalized period-2*pi torus:
+
+```text
+u=a exp(-2nu t)(sin x cos y,-cos x sin y,0),
+p=(a^2/4)exp(-4nu t)(cos 2x+cos 2y),  a>=0, nu>0.
+```
+
+The full nonlinear advection is cancelled by this pressure, and the
+remaining velocity evolves by heat. Its complete parent integral is
+`D=a/(2nu)`, fixed by the original datum. Original stochastic frames
+give `exp(-4D)I<=W<=exp(4D)I`, and
+`mean(|grad p|^2)=a^4 exp(-8nu t)/4`. Together with the complete quadratic
+parent source, these imply
+
+```text
+mean(q_E(T))+nu integral_0^T mean(F_E) <= K,
+K=exp(2a/nu)[3a^4/(32nu^2)+(a^3/nu)(exp(a/nu)+2/3)].
+```
+
+The remaining allowance `R_TG(t)` is explicitly nonnegative and decreasing.
+For every `s<=t`, the cost `mean(q_E(t))-mean(q_E(s))+nu integral_s^t F_E`
+is at most `R_TG(s)-R_TG(t)`; its original labels and reserve are not reset
+at seams. The original `q_A` payment and frame comparison also give the
+physical bound `mean(|grad u|^2)<=2exp(4D)(a^2+K)`. These stochastic and
+space-time inequalities are analytic; the lab checks their scalar
+identities and the literal all-time unforced velocity and pressure.
+This class has nonzero pressure but no reciprocally amplifying parent.
+Obtaining a datum-fixed metric/source payment for arbitrary parents remains
+open; assuming a bound on their unknown future strain would not resolve it.
+
+Weighted pressure orthogonality also requires care. For the original metric,
+`J_p=mean(vec(B)^T W vec(P))` starts at zero, but
+`J_p'(0)=4 mean(S^2:P)`, with `S=(B+B^T)/2`. Complete canonical 3D jets give
+`-391507472/10405395`; an asymmetric annular planar swirl gives the opposite
+sign after smooth approximation. Thus neither ordinary pressure
+orthogonality nor a universal favorable sign discards the weighted work.
+This is a physical-gradient pressure test, distinct from the defect source
+work above. The smooth passage is analytic, with no certified uniform
+window, recurrence, singularity or whole-space lift. See the
+[full cotangent and paid-history calculation](labs/README.md#joint-pressure-cotangent-and-a-complete-paid-history).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

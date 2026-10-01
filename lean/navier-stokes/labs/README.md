@@ -9931,3 +9931,231 @@ horizon. The symmetric original-gradient packet still retains parent
 information, but its norm has no free cross-channel transfer. A successful
 correction must use actual pressure/velocity coupling and complete
 histories, with no reset of spent resources at a composition boundary.
+
+## Joint pressure cotangent and a complete paid history
+
+`joint_pressure_cotangent.py` checks a concrete pressure payment for the
+original tensor, with a full-pressure analytic consumer and an adversarial
+sign test. Use normalized spatial mean on the period-2*pi torus. Keep the
+original stochastic inverse frame `F`, `J=F^-1`,
+`C=E[(F^T F) tensor (F^T F)]`, `W=C^-1`,
+`A=E[F^T(grad u_0)(alpha)F]`, `B=grad u`, `P=Hess p` and `E=A-B`.
+Both copies of each frame and its original label gradient stay on the same
+sample. No independent tensor average or new initial history is used.
+
+### Diffusion pays the receiver; the induced pressure cost remains
+
+Write `e=vec(E)`, `K_j=C_j W`, `r_j=partial_j e-K_j e` and
+`F_E=sum_j r_j^T W r_j`. Since `W_j=-W K_j`, the complete product rule gives
+
+```text
+Z=unflatten(W e),
+partial_j vec(Z)=W r_j,
+(div Z)_i=sum_j (W r_j)_(i,j),
+R(W)_il=sum_j W_(i,j),(l,j).
+```
+
+For `slot_j(v)=vec(v tensor e_j)`,
+
+```text
+v.div Z=sum_j r_j^T W slot_j(v),
+v^T R(W)v=sum_j slot_j(v)^T W slot_j(v),
+sum_j |nu r_j-slot_j(v)|_W^2
+ =nu^2 F_E-2nu v.div Z+v^T R(W)v >=0.
+```
+
+For `nu>0`, this proves
+`2v.div Z<=nu F_E+nu^-1 v^T R(W)v`.
+`MettapediaNS.JointPressureCotangent` certifies these identities, positivity
+of the induced metric, and agreement with the existing full tensor diffusion.
+It also proves that a supplied bound `W<=kappa I` implies
+`v^T R(W)v<=3kappa |v|^2`. Deriving that supplied bound for an evolving
+fluid is a separate physical obligation.
+
+Weak integration by parts, with `v=-grad p`, yields
+
+```text
+2 mean(vec(E)^T W vec(P))=-2 mean(div Z.grad p)
+ <=nu mean(F_E)+nu^-1 Gamma,
+Gamma=mean(grad p^T R(W)grad p),
+d_t mean(q_E)+nu mean(F_E)
+ <=nu^-1 Gamma-2 mean(vec(E)^T W vec(B^T B)).
+```
+
+This keeps the changing metric derivative and every spatial direction.
+The weak integration and actual stochastic construction are analytic here;
+the finite absorption is kernel-certified. Gamma is an induced pressure
+cost, not an unweighted projection contraction or an established finite
+history allowance. The quadratic source remains signed.
+
+For a coherent single frame, `H=(F^T F)^-1` gives
+`W=H tensor H` and `R(W)=tr(H)H`. At
+`F=diag(lambda,lambda^-1,1)`, the extra factor is
+`lambda^2+1+lambda^-2`, unbounded as lambda grows. The exact lab retains
+three noncommuting rational samples and three determinant-preserving frame
+tangents; it also checks this single-frame identity. The latter is only a
+kinematic obstruction to a uniform one-index metric comparison, not an
+actual NS history counterexample or a refutation of full-datum payment.
+
+### An original-history reserve for Taylor--Green
+
+The exact unforced periodic flow, for `a>=0,nu>0`, is
+
+```text
+u=a exp(-2nu t)(sin x cos y,-cos x sin y,0),
+p=(a^2/4)exp(-4nu t)(cos 2x+cos 2y).
+```
+
+The checker verifies incompressibility, mean-zero canonical pressure,
+`(u.grad)u+grad p=0`, `Delta u=-2u` and the full all-time NS equation.
+Pressure and all parents are included. With
+`d=a exp(-2nu t)cos x cos y` and
+`h=a exp(-2nu t)sin x sin y`,
+`B=[[d,-h,0],[h,-d,0],[0,0,0]]`. Its singular values are `|d+h|,|d-h|,0`,
+bounded by `a exp(-2nu t)` because `d+/-h=a exp(-2nu t)cos(x-/+y)`.
+The normalized physical quantities are exactly
+
+```text
+mean(|u|^2)=(a^2/2)exp(-4nu t),
+mean(|grad u|^2)=a^2 exp(-4nu t),
+mean(|grad p|^2)=(a^4/4)exp(-8nu t).
+```
+
+Analytic stochastic transport now has a finite resource fixed by the
+original datum, rather than a bound assumed on an unknown future flow:
+
+```text
+D=integral_0^infinity a exp(-2nu s)ds=a/(2nu),
+||F||_op,||J||_op<=exp(D),
+exp(-4D)I<=C,W<=exp(4D)I,
+R(W)<=3exp(4D)I.
+```
+
+These bounds apply pathwise to the original smooth stochastic flow; averaging
+the same-frame quadratic forms and inversion preserve the stated comparison.
+The uniform all-time derivative bound is available from the explicit flow.
+It is not a proved arbitrary-flow estimate. The pressure leg is therefore paid:
+
+```text
+nu^-1 integral_0^infinity Gamma <=3exp(4D)a^4/(32nu^2).
+```
+
+The complete other source is paid too. The original label gradient has
+Frobenius norm at most `sqrt(2)a`, so
+
+```text
+|A|<=sqrt(2)a exp(2D),
+|E|<=sqrt(2)a[exp(2D)+exp(-2nu t)],
+|B^T B|<=sqrt(2)a^2 exp(-4nu t),
+|2 mean(vec(E)^T W vec(B^T B))|
+ <=4a^3 exp(4D)[exp(2D)+exp(-2nu t)]exp(-4nu t).
+```
+
+Thus, from `E(0)=0`, full production and spatial integration give
+
+```text
+mean(q_E(T))+nu integral_0^T mean(F_E) <=K,
+K=exp(4D)[3a^4/(32nu^2)+(a^3/nu)(exp(2D)+2/3)].
+```
+
+More precisely, the remaining reserve is
+
+```text
+R_TG(t)=exp(4D)[3a^4 exp(-8nu t)/(32nu^2)
+          +(a^3/nu)exp(2D)exp(-4nu t)
+          +(2a^3/(3nu))exp(-6nu t)].
+```
+
+It is nonnegative, starts at K, tends to zero, and its negative derivative
+equals the complete upper source payment. Every original compatible
+interval therefore satisfies
+
+```text
+mean(q_E(t))-mean(q_E(s))+nu integral_s^t mean(F_E)
+ <=R_TG(s)-R_TG(t),  s<=t.
+```
+
+The original labels, D and original amplitude are retained through seams.
+Summing compatible intervals cancels intermediate reserves and grants no
+new allowance. The scalar derivative and all-time integrals are checked
+exactly. Stochastic identification, metric differentiation and spatial
+integration are analytic, not certified by this scalar checker.
+
+There is an actual physical consumer. The original source-free payment
+gives `mean(q_A)<=mean(|grad u_0|^2)=a^2`; metric comparison and `B=A-E`
+give `mean(|grad u|^2)<=2exp(4D)(a^2+K)`.
+This recovers a finite enstrophy bound by the proposed history mechanism,
+although the explicit flow already has the sharper exact bound above.
+Unlike the earlier triangular shear example, the full pressure is nonzero.
+It has no reciprocally amplifying parent: advection is an exact gradient
+and the remaining velocity is caloric. Extending this source/geometry
+payment to arbitrary mutually amplifying parents is open. Assuming their
+unknown future strain integral to be finite would supply the missing
+regularity control rather than prove it.
+
+### Weighted pressure does not have a universal favorable sign
+
+Ordinary incompressibility gives `mean(B:P)=0` at every time. For the
+original metric, however,
+
+```text
+J_p(t)=mean(vec(B)^T W vec(P)),
+W(0)=I, W_t(0)=(B+B^T) tensor I+I tensor(B+B^T),
+J_p(0)=0, J_p'(0)=4mean(S^2:P),  S=(B+B^T)/2.
+```
+
+The complete canonical Fourier tangent retains the evolving B and P:
+their two unweighted legs integrate to zero; the metric leg remains.
+The genuinely 3D interacting datum gives `-391507472/10405395`, at each
+of the two checked positive viscosities. Every generated mode is retained.
+The full weak receiver identity is independently checked. This is weighted
+physical-gradient pressure work, distinct from the defect source pairing.
+
+For the opposite sign, put a planar annular swirl `u_0=V(r)e_theta`,
+independent of z, strictly inside radius pi of the periodic cell.
+Its pressure satisfies `p_r=V^2/r`, `Delta_h p=2V'V/r`, and
+`S^2=(V'-V/r)^2 I_h/4`. Therefore
+
+```text
+J_p'(0)=(1/pi) I,
+I=integral (V'-V/r)^2 V'V dr.
+```
+
+The piecewise linear tent on `[1,1+delta,3]`, rising from zero to one and
+falling back to zero, has
+
+```text
+I=delta^-4[log(1+delta)-delta/(1+delta)]
+  +9(2-delta)^-4[log(3/(1+delta))-3/(1+delta)+1].
+```
+
+The exact primitive for `V=alpha r+beta` is
+`alpha beta^2(alpha log r-beta/r)`. At delta=1/10, elementary rational
+log bounds give `I>=2996550/75449>39`; at delta=1 they give `I<=-1/2`.
+The checker verifies the physical polar source, quartic invariant,
+primitive, both ramp integrals and rational bounds.
+
+Smooth radial mollification, supported away from zero and inside radius pi,
+converges in `W^(1,4)` and preserves the strict sign. The quartic functional
+is continuous there; equivalently, the canonical pressure Hessian is an
+L2 bounded transform of the quadratic source. Smooth local unforced
+existence and original-metric differentiability then give the corresponding
+strict short-time weighted-work signs. This passage is analytic; no explicit
+mollifier width, uniform interval, continuum enclosure or Lean time theorem
+is claimed. It refutes a universal zero or nonpositive weighted pressure
+work, not a signed full-datum allowance, indefinite renewal or regularity.
+These are periodic data; their nonzero lifts are not R3 finite-energy data.
+
+Run all exact checks, which remain active under optimization:
+
+```sh
+python3 -O labs/joint_pressure_cotangent.py
+```
+
+The named remaining estimate is a finite original-datum payment for Gamma
+and the complete signed parent source, together with the physical geometric
+comparison, or a weaker coupled correction controlling the established
+curl/enstrophy criterion. Payment of q_E alone is not that criterion. It must retain
+original histories, pressure, changing geometry and every parent. The paid
+class demonstrates a mechanism; it does not extend its datum-fixed frame
+bound to arbitrary continuations.

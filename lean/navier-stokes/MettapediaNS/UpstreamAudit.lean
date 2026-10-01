@@ -42,6 +42,7 @@ import MettapediaNS.CovectorReceiverGeometry
 import MettapediaNS.JointReceiverTensor
 import MettapediaNS.JointCurlGeometry
 import MettapediaNS.JointTensorSymmetry
+import MettapediaNS.JointPressureCotangent
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1305,3 +1306,21 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradient_defect_source_symmetric
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.gradient_defect_production
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointTensorSymmetry.actual_gradient_defect_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.slotLift
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressureReceiver
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressureMetric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.residualCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressureCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.receiver_work
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressure_cost_eq_slots
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.residualCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressureCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressureMetric_posSemidef
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.scaled_pressure_young
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressure_absorption
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.covariant_flux
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.defect_receiver
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.slot_norm
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressureCost_le_uniform
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.defect_diffusion_cost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointPressureCotangent.pressure_metric_kronecker
