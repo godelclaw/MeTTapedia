@@ -430,9 +430,37 @@ records twenty-one audited roots, a separate literal parallel-edge geometry
 example, and 1,488 independently checked target witnesses on six small
 recognized splice interfaces. The other four tested interfaces lack this
 face condition. This develops compatible-choice reconstruction without
-new finite colouring tables. A physical recolouring history from the input,
-unbounded literal recognition, recursive closure and universal geometric
-supply remain open; no catalogue entry is removed.
+new finite colouring tables.
+
+The next [uniform law](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateFacePhaseKempe.lean)
+turns that witness map into physical execution. When the input and source
+choice agree on all cross edges, their corner difference is constant around
+each source face. A nonzero difference identifies a whole two-colour
+polygon. Switching all polygons with that difference fixes it, while every
+cross edge stays unchanged. Three region stages produce the exact source
+image. They can contain many components, so the number of individual swaps
+can grow with the graph.
+
+This is one concrete compositional recipe:
+
+```text
+arbitrary smaller target colouring
+  → spanning-face calibration of one shared source choice
+  → three actual cross-preserving face-region stages
+  → coherent source witness extracted from the terminal field
+  → coupled splice reconstruction of the original colouring
+```
+
+The [strict consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentSourceFacePhaseReduction.lean)
+proves the legal history, embedding class, six-vertex decrease and colouring
+reconstruction together; complete faithful GSLT sweeps receive witnesses.
+The [receipt](../../../tools/fourcolor/classical/adjacent-source-face-phase-measurements.json)
+records thirty-two audited roots and a nontrivial literal parallel-edge
+repair. Independent replay checks every intermediate field on 1,488 inputs,
+including 1,350 that change, with up to six individual components in this
+census. This is a uniform argument with a stated geometric supply condition.
+Unbounded literal recognition, recursive closure and universal geometric
+supply remain open; no additional catalogue entry is removed.
 
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive

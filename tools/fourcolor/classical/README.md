@@ -578,7 +578,7 @@ uses the existing spherical cycle-space theorem to recover every literal
 edge difference, including parallel edges. The spanning face fixes one
 joint phase, so the reconstructed source values are all nonzero.
 Re-expansion preserves all cross-edge observations; polygon colours may
-change, and no physical history from the arbitrary input is supplied.
+change. This calibration theorem alone supplies no physical history.
 
 `AdjacentSourceSpanningFaceReduction` consumes this witness in the actual
 six-vertex splice reduction, whole-map reconstruction and faithful GSLT
@@ -608,6 +608,50 @@ The finite splice recognitions remain program evidence; the kernel theta
 fixture checks the geometric domain and calibration rather than a splice.
 Unbounded literal recognition, recursive closure and occurrence coverage
 remain open. Catalogue and original-certificate counts remain 633 and 630.
+
+## Physical face-phase normalization and strict reconstruction
+
+`DualTruncateFacePhaseKempe` proves that an actual target Tait witness and
+a proper source choice with the same literal cross field differ by a
+constant phase on each face. A nonzero phase selects a saturated polygon
+region for its colour pair. Three region stages clear all phases, preserving
+every cross edge and actual intermediate Tait properness. Each stage can
+contain several connected Kempe components; no constant bound on the number
+of individual component swaps is asserted.
+
+`DualTruncateFacePhaseGSLT` retains the common source choice, pair labels,
+intermediate fields and exact physical update. Cross-field conservation
+composes along every authored route. `AdjacentSourceFacePhaseReduction`
+uses spanning-face calibration to initialize that history from an arbitrary
+smaller target input, extracts the repaired terminal source witness, and
+consumes it in actual coupled splice reconstruction and construction sweeps.
+Its operational theorem includes the legal history, target map class,
+six-vertex decrease and full original Tait witness.
+
+The [receipt](adjacent-source-face-phase-measurements.json) records thirty-two
+audited roots and one nontrivial theta repair with all parallel edge identities
+retained. The uniform proof has no dependency on that finite fixture, complete
+classical endpoints, source colour tables or generic Brooks suppliers.
+
+```sh
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.DualTruncateFacePhaseAudit
+```
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/classical/adjacent_source_face_phase_probe.py --check
+```
+
+Independent replay checks all 1,488 inputs on the six recognized spanning-face
+splice outputs, including 1,350 nontrivial repairs. All intermediate fields
+are proper; all original cross colours survive; the final field equals the
+shared source image. The region masks are independently decomposed into
+actual bichromatic components: up to six occur per history in this census.
+The finite splice geometries remain program evidence. Literal unbounded
+recognition, recursive domain closure and coverage are the next obligations.
+No further configuration or certificate dependency is removed.
 
 ## Target colouring choices on parallel seams
 

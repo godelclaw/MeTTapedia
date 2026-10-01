@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "evidence": "independent exhaustive finite program replay",
+  "records": [
+    {
+      "map": "triangular-prism",
+      "omitted": [
+        0,
+        3
+      ],
+      "inputs": 16,
+      "repaired_inputs": 13,
+      "source_vertices": 4,
+      "target_vertices": 12,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "nonempty_region_stages": {
+        "0": 3,
+        "1": 11,
+        "2": 2
+      },
+      "individual_components": {
+        "0": 3,
+        "1": 7,
+        "2": 5,
+        "3": 1
+      },
+      "all_intermediate_fields_tait": true,
+      "all_cross_edges_preserved": true,
+      "exact_terminal_source_image": true,
+      "global_renaming_used": false,
+      "witness_fields_sha256": "84461793f7e7d9e3f670459fe570040c4c0ca7a4629f03cdf0d64cf503474aa7"
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        1
+      ],
+      "inputs": 64,
+      "repaired_inputs": 55,
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "nonempty_region_stages": {
+        "0": 9,
+        "1": 41,
+        "2": 14
+      },
+      "individual_components": {
+        "0": 9,
+        "1": 24,
+        "2": 22,
+        "3": 8,
+        "4": 1
+      },
+      "all_intermediate_fields_tait": true,
+      "all_cross_edges_preserved": true,
+      "exact_terminal_source_image": true,
+      "global_renaming_used": false,
+      "witness_fields_sha256": "37be280e37ae40d2c951136ed8a5de24c6294322bca48eb6eaa3fb77e9aeeedc"
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        3
+      ],
+      "inputs": 64,
+      "repaired_inputs": 55,
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "nonempty_region_stages": {
+        "0": 9,
+        "1": 41,
+        "2": 14
+      },
+      "individual_components": {
+        "0": 9,
+        "1": 24,
+        "2": 22,
+        "3": 8,
+        "4": 1
+      },
+      "all_intermediate_fields_tait": true,
+      "all_cross_edges_preserved": true,
+      "exact_terminal_source_image": true,
+      "global_renaming_used": false,
+      "witness_fields_sha256": "8051b4edd751d59bae13382bcb09b2b040f5fe9c18c5cb9f35e8d556a9ffcd48"
+    },
+    {
+      "map": "cube",
+      "omitted": [
+        0,
+        4
+      ],
+      "inputs": 64,
+      "repaired_inputs": 55,
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "nonempty_region_stages": {
+        "0": 9,
+        "1": 41,
+        "2": 14
+      },
+      "individual_components": {
+        "0": 9,
+        "1": 24,
+        "2": 22,
+        "3": 8,
+        "4": 1
+      },
+      "all_intermediate_fields_tait": true,
+      "all_cross_edges_preserved": true,
+      "exact_terminal_source_image": true,
+      "global_renaming_used": false,
+      "witness_fields_sha256": "6d443dbe630fa0c6791783568e60ad2931ae7a0b31a96fe2fafb8a4f6c7b44f8"
+    },
+    {
+      "map": "pentagonal-prism",
+      "omitted": [
+        0,
+        5
+      ],
+      "inputs": 256,
+      "repaired_inputs": 229,
+      "source_vertices": 8,
+      "target_vertices": 24,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "nonempty_region_stages": {
+        "0": 27,
+        "1": 151,
+        "2": 76,
+        "3": 2
+      },
+      "individual_components": {
+        "0": 27,
+        "1": 81,
+        "2": 90,
+        "3": 46,
+        "4": 11,
+        "5": 1
+      },
+      "all_intermediate_fields_tait": true,
+      "all_cross_edges_preserved": true,
+      "exact_terminal_source_image": true,
+      "global_renaming_used": false,
+      "witness_fields_sha256": "7df6b889d91e3b4a7d2c2626b406db656cc5620eca0d0ce82ce5a57140fc256d"
+    },
+    {
+      "map": "hexagonal-prism",
+      "omitted": [
+        0,
+        6
+      ],
+      "inputs": 1024,
+      "repaired_inputs": 943,
+      "source_vertices": 10,
+      "target_vertices": 30,
+      "parallel_source_edges": 2,
+      "parallel_target_edges": 2,
+      "nonempty_region_stages": {
+        "0": 81,
+        "1": 549,
+        "2": 372,
+        "3": 22
+      },
+      "individual_components": {
+        "0": 81,
+        "1": 270,
+        "2": 351,
+        "3": 228,
+        "4": 79,
+        "5": 14,
+        "6": 1
+      },
+      "all_intermediate_fields_tait": true,
+      "all_cross_edges_preserved": true,
+      "exact_terminal_source_image": true,
+      "global_renaming_used": false,
+      "witness_fields_sha256": "b98d2488a0a60674d0bcec4b2f6bb32ac1d28d076538455573b5712e76c8bd84"
+    }
+  ],
+  "recognized_interfaces": 6,
+  "normalized_target_inputs": 1488,
+  "changed_inputs": 1350,
+  "region_stages_per_route": 3,
+  "maximum_individual_components": 6,
+  "kernel_repair_fixtures": 1,
+  "kernel_splice_fixtures": 0,
+  "catalogue_entries_removed": 0,
+  "source_sha256": {
+    "DualTruncateFacePhaseKempe.lean": "fbe9331d3346504427eb6d3cd88bf75827f70b38f85ea21c9570665d7bb90afe",
+    "DualTruncateFacePhaseGSLT.lean": "c6225e35fed1e6079318943864a62055d86e5a55bf5f51611cea0698718bc534",
+    "AdjacentSourceFacePhaseReduction.lean": "8c24db451b0d82752f34bf0276f636a3b895b78a6c838fe8c2fb7fea66bdb72a",
+    "DualTruncateFacePhaseExample.lean": "4b1b6d7cac32036b331684931b74160ed7180d4d58d1b97432ba853b15be9e95",
+    "DualTruncateFacePhaseAudit.lean": "85bb125135230875e549b413e6d3d342a00c1bcc3e46ac61cea21fafa491479b"
+  },
+  "checker_sha256": {
+    "adjacent_source_face_phase_probe.py": "9e0d150d09075cc4b3c636691aada3587a9a9835ebe9a5ea7eba3562d5c070b8",
+    "adjacent_source_target_kempe_probe.py": "fbce0021deddb3a2bf3272feef5d436cf98848376c841d7d2bad8855604a46d9",
+    "adjacent_source_splice_probe.py": "ec1516c2412e7aa07006b34f939def06faaa5c466fd2a2b777d5105a86c05ede",
+    "source_alternating_boundary_probe.py": "62d4c7c73995669985641feb44cec51e8fcf6417fe003b7964d36c86155f132c",
+    "two_cell_source_repair_probe.py": "2d5021cde2508640bb081e56d5b2f3a7d390e0c2699a5f0b70617e6cfd9140d1",
+    "dual_truncate_open_patch_probe.py": "177757e261bbc240ad6c3ffca2c5263f510e8bae65d984bc59453b73255dbe3f",
+    "dual_truncate_geometry_probe.py": "e1b0759456429ab4bf5377119ebc5aaffe6d8f3b516c7064ce8fe671c3ff84a3"
+  },
+  "scope": "Exact physical normalization on six recognized splice interfaces, with all cross observations fixed. Three region stages may require more than three individual component switches. This finite replay is separate from the general Lean proof and its nontrivial theta repair fixture; it supplies no recursive or universal coverage."
+}

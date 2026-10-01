@@ -485,10 +485,25 @@ check twenty-one roots, exclude complete colouring suppliers and audit a
 separate literal theta geometry consumer. An independent exhaustive replay
 calibrates 1,488 normalized target witnesses on six recognized splice
 interfaces. Four other interfaces have no spanning face and remain outside
-this mechanism. A physical Kempe history from the arbitrary input,
-recognition of an unbounded literal splice family, recursive closure and
-geometric coverage remain separate obligations. The catalogue and original
-certificate counts remain 633 and 630.
+this mechanism.
+
+The [physical face-phase law](DualTruncateFacePhaseKempe.lean) now supplies
+the missing repair history. For any source rotation and a proper source
+choice sharing the input's cross field, the corner error is constant around
+each face. Three saturated polygon-region switches clear its three possible
+nonzero values. Every intermediate field is an actual target Tait witness;
+every cross edge remains fixed. The [authored GSLT route](DualTruncateFacePhaseGSLT.lean)
+retains the shared choice and actual fields. The [strict consumer](AdjacentSourceFacePhaseReduction.lean)
+extracts the source witness from the repaired terminal field and reconstructs
+the original map, with the full six-vertex decrease and faithful construction
+sweeps. A stage may contain many connected components: it is not a bound of
+three individual Kempe swaps. The [receipt](../../../../../tools/fourcolor/classical/adjacent-source-face-phase-measurements.json)
+records thirty-two audited roots and a separate nontrivial parallel-edge
+repair fixture. Independent replay checks 1,488 inputs, including 1,350
+nontrivial repairs; up to six components occur in these small examples.
+Unbounded literal splice recognition, recursive closure and geometric
+coverage remain separate obligations. Catalogue and original-certificate
+counts remain 633 and 630.
 
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay

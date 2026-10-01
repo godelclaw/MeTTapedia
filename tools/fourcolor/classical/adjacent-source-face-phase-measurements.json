@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "base_revision": "773830c6f202dade2dcb27a1a2317510dab1ec6a",
+  "status": "kernel checked with independent finite physical replay",
+  "general_theorem_scope": "Any actual finite source rotation system with a target Tait witness and a proper nonzero source choice sharing every literal cross-edge colour.",
+  "geometric_consumer_scope": "An actual adjacent source splice whose smaller connected spherical source has two-sided faces, cyclic cubic rotations and one actual face touching every source vertex.",
+  "normalization_requires_compatible_source_choice": true,
+  "geometric_consumer_requires_source_witness_input": false,
+  "arbitrary_smaller_target_tait_witnesses_accepted": true,
+  "all_cross_edge_colours_preserved_at_every_stage": true,
+  "actual_intermediate_target_tait_witnesses": true,
+  "exact_terminal_source_image": true,
+  "region_stages_per_route": 3,
+  "constant_bound_on_individual_component_swaps": false,
+  "colouring_counts_preserved": false,
+  "uniform_theorems": [
+    "DualTruncateFacePhaseKempe.error_phi",
+    "DualTruncateFacePhaseKempe.physical_region",
+    "DualTruncateFacePhaseKempe.exact_effect",
+    "DualTruncateFacePhaseKempe.normalize_exact",
+    "DualTruncateFacePhaseGSLT.physical_history",
+    "DualTruncateFacePhaseGSLT.route_cross_preserved"
+  ],
+  "actual_consumers": [
+    "AdjacentSourceFacePhaseReduction.initial",
+    "AdjacentSourceFacePhaseReduction.repairedSource",
+    "AdjacentSourceFacePhaseReduction.operational_reconstruction",
+    "AdjacentSourceFacePhaseReduction.every_complete_sweep"
+  ],
+  "source_vertices_removed": 2,
+  "target_vertices_removed": 6,
+  "audit": {
+    "roots": 32,
+    "dependency_declarations": 23192,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_classical_endpoints_absent": true,
+    "brooks_suppliers_absent": true,
+    "source_colour_words_absent": true,
+    "finite_fixtures_absent_from_general_roots": true
+  },
+  "kernel_gate": {
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "passed": true,
+    "completed_jobs": 11181
+  },
+  "kernel_repair_fixtures": 1,
+  "kernel_splice_fixtures": 0,
+  "kernel_fixture": "An actual noncoherent target colouring of the literal parallel-edge theta source, with properness, joint compatibility, necessity of repair, exact normalization and cross preservation proved.",
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/adjacent_source_face_phase_probe.py --check",
+    "record": "adjacent-source-face-phase-probe.json",
+    "recognized_interfaces": 6,
+    "normalized_target_inputs": 1488,
+    "nontrivial_repairs": 1350,
+    "region_stages_per_route": 3,
+    "maximum_individual_components_in_census": 6,
+    "all_intermediate_fields_tait": true,
+    "all_cross_edges_preserved": true,
+    "exact_terminal_source_image": true,
+    "parallel_edge_identities_retained": true,
+    "global_renaming_used": false,
+    "splice_geometry_kernel_certified": false
+  },
+  "catalogue_entries_removed": 0,
+  "original_configuration_certificate_dependencies_removed": 0,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "integrated_into_complete_four_color_assembly": false,
+  "remaining": "Literal unbounded rung-splice recognition; recursive domain closure; compatible broader side-splice contract; geometric occurrence and catalogue replacement.",
+  "source_sha256": {
+    "DualTruncateFacePhaseKempe.lean": "fbe9331d3346504427eb6d3cd88bf75827f70b38f85ea21c9570665d7bb90afe",
+    "DualTruncateFacePhaseGSLT.lean": "c6225e35fed1e6079318943864a62055d86e5a55bf5f51611cea0698718bc534",
+    "AdjacentSourceFacePhaseReduction.lean": "8c24db451b0d82752f34bf0276f636a3b895b78a6c838fe8c2fb7fea66bdb72a",
+    "DualTruncateFacePhaseExample.lean": "4b1b6d7cac32036b331684931b74160ed7180d4d58d1b97432ba853b15be9e95",
+    "DualTruncateFacePhaseAudit.lean": "85bb125135230875e549b413e6d3d342a00c1bcc3e46ac61cea21fafa491479b",
+    "ResearchCheckpoint.lean": "f93c0fabbb38621fb9ad2ba1d18cd98ea1856a13c78249d6a67e68df0e18bf7e"
+  }
+}
