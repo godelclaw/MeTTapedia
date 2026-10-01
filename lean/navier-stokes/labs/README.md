@@ -8426,3 +8426,226 @@ production sign. Thus pressure transfer does not remove the initial parent
 burst on this fixture. These are spatial numerical diagnostics, not a
 continuum sign certificate or a counterexample to a finite full-datum
 history allowance. The latter remains the open estimate.
+
+## Covector-parent history and pressure-generated frame diffusion
+
+The retained parents share the actual unforced NS drift:
+
+```text
+D=partial_t+u.grad-nu Delta,  B=grad u,
+B_H=grad H, A=grad I, I=H-u,
+D B_H=-B_H B, D A=P-AB, P=Hess p.
+```
+
+Their rows, viewed as columns, transport with deformation `-B^T`.
+They are covectors. The forward frame used for vorticity is therefore not
+automatically their correct metric. The existing `TransportedFrameMetric`
+algebra can be reused with this covector deformation.
+
+### The inverse-flow coframe and the paid original parent
+
+On an existing compact smooth prefix, use the common translation-noise
+stochastic flow with the actual drift. If J is its forward Jacobian,
+evaluated at the corresponding inverse label, the two uncentered moments are
+
+```text
+M=E[J J^T],         D M=B M+M B^T,       M(0)=I,
+N=E[J^-T J^-1],     D N=-B^T N-NB,      N(0)=I,
+Q=N^-1,            N_j=partial_j N.
+```
+
+These moments belong to the same physical flow. They are not independently
+selectable controls, and neither is the pressure-compensated velocity
+covariance C of the earlier reserve. Their stochastic construction,
+positivity and PDE identification remain analytic. Smooth-prefix bounds
+justify the local operations; a future stretching modulus cannot serve as
+an original-datum continuation bound.
+
+For a literal parent gradient V with `DV=-VB+S`, the inverse identity is
+
+```text
+D tr(V Q V^T)=2tr(V Q S^T)-2nu F_V,
+F_V=sum_j tr[(partial_j V-V Q N_j) Q
+             (partial_j V-V Q N_j)^T]>=0.
+```
+
+All metric derivatives remain in the square. Consequently
+
+```text
+q_H=tr(B_H Q B_H^T),    D q_H=-2nu F_H,
+q_I=tr(A Q A^T),        D q_I=2tr(A Q P^T)-2nu F_I.
+```
+
+Parabolic comparison on the smooth prefix gives
+`q_H(t,x)<=sup_x |grad u_0(x)|^2`. Under the usual spatial integrability,
+incompressibility gives the complete signed payment
+
+```text
+integral q_H(t)+2nu integral_0^t integral F_H
+  =integral |grad u_0|^2.
+```
+
+The right side retains the ORIGINAL datum. A stochastic matrix
+Cauchy--Schwarz gives the same directional comparison by retaining the
+joint inverse label and gradient of the original velocity. The tensor and
+PDE/time constructions and comparison are analytic, not kernel-certified
+assembly. This normalized passive-parent payment also holds for a forced
+drift; it does not by itself separate forced from unforced renewal.
+
+`MettapediaNS.CovectorParentHistory` certifies the literal gradient of the
+passive RHS, the original impulse's canonical-pressure rate, and the
+inverse-metric production on those actual rows and their actual spatial
+derivatives. Its sign theorem exposes the metric rate and compatibility
+inputs. The ordinary-vorticity consumer keeps a conversion bound explicit;
+that bound is not a conclusion of the metric identity.
+
+The full joint production still contains `2tr(A Q P^T)`. The preceding
+unweighted impulse payment `spent<=4E0` does not pay this changing
+Hessian receiver automatically. The frame can also lose ordinary coercivity.
+Neither weighted pressure history nor that physical conversion has a
+uniform arbitrary-data bound here. Their coupled payment remains the
+regularity obligation. An auxiliary stochastic optimizer is not identified
+with a freely adjustable force on the fluid.
+
+### Transfer of the Hessian receiver to the paid derivative square
+
+Let `C_j=partial_j A-A Q N_j`. Differentiating the actual inverse metric
+gives the exact spatial relation
+
+```text
+partial_j(AQ)=C_j Q,
+R=div(AQ)=sum_j C_j Q e_j,
+W=integral tr(A Q P^T)=-integral R.grad p.
+```
+
+The integration by parts uses the full canonical pressure force and the
+same smooth-prefix integrability as the impulse equation. Every metric
+derivative remains in R. Positivity of Q and completion of all squares give
+
+```text
+nu F_I+nu^-1 tr(Q)|g|^2-2 R.g
+ =nu^-1 sum_j tr[(nu C_j-g e_j^T) Q (nu C_j-g e_j^T)^T]>=0.
+```
+
+Applying this to `g=-grad p` pays the changing receiver from diffusion:
+
+```text
+2W<=nu integral F_I+nu^-1 integral tr(Q)|grad p|^2,
+(integral q_I)' +nu integral F_I
+  <=nu^-1 integral tr(Q)|grad p|^2.
+```
+
+This is an analytic physical receiver-transfer estimate, with exact
+matrix-derivative and evolving Fourier checks. It is not a kernel-certified
+weak/PDE assembly. The remaining pressure-force cost is lower in spatial
+derivative order than the Hessian receiver, but its finite history payment
+from the original full datum is OPEN. The previously paid signed impulse
+work does not bound it automatically. It cannot be supplied as an unknown
+future-solution input to an arbitrary-data continuation proof.
+
+### Why inversion cannot be performed after averaging
+
+If one instead pairs the parent with the forward moment M, the exact
+production is
+
+```text
+D tr(B_H M B_H^T)
+ =-2nu sum_j tr(E_j M E_j^T)-4nu sum_j tr(B_H M_j E_j^T),
+E_j=partial_j B_H, M_j=partial_j M.
+```
+
+Deformation cancels, but the second term has no fixed sign. For the
+compatible actual moments the reciprocal gap is
+
+```text
+G=M-Q,
+D G=B G+G B^T+2nu sum_j Q N_j Q N_j Q,   G(0)=0.
+```
+
+The source is nonnegative. A matrix comparison, or the shared-flow
+second-moment construction, gives `G>=0`. Diffusion can make it nonzero:
+M is not generally `N^-1`. Averaging and inversion cannot be interchanged
+merely because every sample preserves volume. The analytic gap equation
+retains this evolving covariance defect; it does not bound its size from
+the original datum or supply the missing coercivity.
+
+### An actual unforced pressure-generated short history
+
+Choose a smooth compact radial swirl with a rigid core around zero,
+`u_0=b(e_z cross x)` there, and a distant disjoint smooth compact radial
+swirl centered at `L e_z`, with axis e_z and `E=integral |u_remote|^2>0`. Take b>0,
+nu>0 and L large enough to separate the supports. Both fields are
+solenoidal, finite-energy whole-space data. Their canonical pressures add
+at time zero because their velocity supports are disjoint.
+
+The central pressure is locally `b^2(2x^2+2y^2+z^2)/5`, up to a constant.
+The remote pressure is the exact harmonic exterior quadrupole
+`-E(3(z-L)^2-|x-L e_z|^2)/(8pi|x-L e_z|^5)`, as in the earlier pressure
+boundary calculation. With `P_j=partial_j Hess p_0(0)` and
+`c=15E/(2pi L^6)`, its complete third tensor is
+
+```text
+P_x=[[0,0,c],[0,0,0],[c,0,0]],
+P_y=[[0,0,0],[0,0,c],[0,c,0]],
+P_z=diag(c,c,-2c).
+```
+
+Start the actual local unforced NS solution, the original passive history
+and both frames. Their initial data are flat in the core, and the complete
+actual velocity tangent is `u_1=nu Delta u_0-B_0 u_0-grad p_0`.
+Differentiating the passive equation retains this pressure-induced drift:
+
+```text
+partial_t grad H(0)=-B_0^2,
+partial_tt grad H(0)=2B_0^3+B_0 Hess p_0,
+E_j(t,0)=t^2 B_0 P_j/2+O(t^3),
+M_j(t,0)=-t^2 P_j+O(t^3),
+N_j(t,0)=+t^2 P_j+O(t^3).
+```
+
+Here `B_0=b spin_z` and `sum_j|B_0 P_j|^2=4b^2c^2`. The full production
+formulas therefore give
+
+```text
+D tr(B_H M B_H^T)(t,0)=+6nu b^2c^2 t^4+O(t^5),
+D q_H(t,0)           =-2nu b^2c^2 t^4+O(t^5),
+tr[B_H(M-Q)B_H^T](t,0)=(8/5)nu b^2c^2 t^5+O(t^6).
+```
+
+Thus the proposed pointwise nonpositive forward-frame generator fails on
+an ACTUAL unforced short history. The correct inverse covector square has
+the proper sign. Smooth local realization and the Taylor remainder imply
+some positive short interval; no numerical endpoint is certified. This is
+an analytic counterexample with exact jet checks, not a Lean-certified
+counterexample. It refutes only that forward-frame generator assertion,
+not a finite full-datum history allowance, regularity, or the repaired
+stochastic route. It shows a finite internal pressure effect; it does not
+show that surrounding fluid can sustain a forced blowup indefinitely.
+
+### Reproducible checks and the next history obligation
+
+```sh
+python3 -O labs/covector_parent_history.py
+```
+
+Independent rational differentiation of complete quadratic forms verifies
+both metric generators, their spatial cross terms and the weighted impulse
+source. The central/remote test independently differentiates the canonical
+pressure and the full first NS and second passive/frame jets. A separate
+rational 3D Fourier fixture retains every convolution output, the actual
+second NS tangent and the third frame jets. The reciprocal gap has a
+nonzero mean trace third jet `412168192/5780775`. No finite closed-mode
+evolution, continuum numerical enclosure or arbitrary-history bound is
+asserted by these checks.
+
+The receiver transfer independently differentiates `A(x)N(x)^-1`, retains
+all three Young squares, and checks integration by parts through two actual
+unforced time jets. Both evolving canonical pressure and coframe derivatives
+are retained. These verify the transfer on the tested jets; a full original
+history payment for its remaining pressure-force cost is not asserted.
+
+Next: retain the inverse-flow coframe, impulse, original gradient labels
+and physical vorticity together when paying the weighted pressure response
+and conversion. A decreasing normalized gradient or a nonnegative gap
+does not supply that coupled finite-horizon payment. The original signed
+renewal/continuation target remains open.

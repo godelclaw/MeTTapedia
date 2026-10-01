@@ -982,6 +982,37 @@ renewal allowance. Exact Fourier tests retain both signs of that deformation
 and a favorable direct pressure contribution. See the
 [joint derivation and tests](labs/README.md#retained-parent-completion-with-the-actual-vorticity-geometry).
 
+### A paid covector-parent channel and its physical conversion
+
+The retained gradients transport as covectors. `CovectorParentHistory`
+certifies their literal whole-space gradient rates and applies the existing
+inverse-frame cancellation to the original passive and pressure-impulse
+rows, retaining the canonical pressure Hessian and every derivative.
+
+The analytic inverse-flow coframe obeys `D N=-B^T N-NB`, `N(0)=I`.
+For `Q=N^-1`, the normalized passive-parent gradient has negative-square
+production and a finite payment from the original gradient datum. The
+impulse gradient additionally retains the signed work `2tr(A Q P^T)`.
+Construction of N, inverse differentiation and physical-time comparison
+remain analytic; the weighted impulse work and ordinary-vorticity
+conversion are not bounded by the certified algebra.
+
+An analytic integration-by-parts transfer expresses the impulse-pressure
+receiver through that same covariant derivative. Diffusion absorbs it,
+leaving `nu^-1 integral tr(Q)|grad p|^2`. Exact evolving Fourier jets
+retain the pressure and metric derivatives in this transfer. A finite
+original-datum bound on the remaining weighted pressure-force history
+is still required; it is not an assumed continuation resource.
+
+Using the forward frame instead leaves an indefinite diffusion term.
+A compact central swirl and a distant disjoint swirl give an analytic
+unforced short-history counterexample to its proposed nonpositive
+generator. Exact canonical-pressure and parent/frame time jets verify
+the positive fourth-order coefficient; the correct inverse coframe has
+a negative coefficient. This rejects only the forward-frame shortcut.
+Neither a full-datum history allowance nor unforced regularity is refuted.
+See the [covector derivation and tests](labs/README.md#covector-parent-history-and-pressure-generated-frame-diffusion).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

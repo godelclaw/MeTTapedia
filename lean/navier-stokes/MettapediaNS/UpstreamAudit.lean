@@ -33,6 +33,7 @@ import MettapediaNS.JointReceiverDiffusion
 import MettapediaNS.SignedViscousPressure
 import MettapediaNS.PressureImpulseHistory
 import MettapediaNS.RetainedParentCompletion
+import MettapediaNS.CovectorParentHistory
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1080,3 +1081,22 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.source_pressure_paid
 #print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.vorticity_normSq_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.RetainedParentCompletion.actual_vorticity_coercivity
+
+/-! Literal covector parents, complete metric diffusion and physical conversion. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.gradientMatrix
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.materialGradientRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.passive_gradient_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.impulseGradientRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.impulse_gradient_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.metricSquare
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.metricCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.passiveMetricProduction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.impulseMetricProduction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.pressureWork
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.passive_metric_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.impulse_metric_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.metricSquare_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.metricCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.passive_metric_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.metricSquare_initial_identity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CovectorParentHistory.actual_vorticity_le
