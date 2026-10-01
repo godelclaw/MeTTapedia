@@ -1675,6 +1675,28 @@ inequality, and exact complete Fourier checks exhibit an increasing
 parent reserve under internal, unforced transfer. Paying those sources
 together with the unresolved field is the remaining physical obligation.
 
+The [full-energy parent reserve](labs/README.md#full-energy-bellman-payment-and-the-high-strain-remainder)
+pays bounded strain observations even when hidden fluid repeatedly
+feeds them. For the complete energy `E=||u||_2^2`, dissipation
+`d=||grad u||_2^2` and an observation `q<=C sqrt(d)`, the finite-horizon
+reserve is `R=C sqrt((H-t)E/(2nu))`. Its Bellman square completion gives
+`R'+q<=0`. `MettapediaNS.FullEnergyParentReserve` proves the exact
+whole-space NS kinetic rate and payment on every compatible subinterval,
+using a fixed positive energy cushion at zero energy. No future bound on
+the parent or its hidden suppliers is assumed. The spatial observer
+identification is analytic: a Fourier selection of at most `M` modes has
+`C=sqrt(M)`, even when its frequencies and geometry change with the history,
+and heat smoothing at length `ell` on R3 has `C=(8pi)^(-3/4)ell^(-3/2)`.
+
+This pays the low-strain part of the full vorticity equation; it does not
+pay the high-strain remainder. The latter is retained in an explicit
+weighted enstrophy inequality. Exact Fourier data show that the growth
+of the observer constant with resolution is unavoidable in the stated
+pointwise norm bound. Changing resolution adds its own reserve derivative.
+An adaptive anisotropic hidden-energy correction also fails an exact
+test because its evolving coefficients introduce positive quartic work.
+Both observations guide the outstanding geometric high-strain estimate.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

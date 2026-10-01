@@ -48,6 +48,7 @@ import MettapediaNS.JointCubicRenewal
 import MettapediaNS.PairCycleHistory
 import MettapediaNS.AnisotropicCycleHistory
 import MettapediaNS.PlanarParentReserve
+import MettapediaNS.FullEnergyParentReserve
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1424,3 +1425,19 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.unforced_receiver_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.unforced_absolute_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.loss
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.reserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.reserve_sq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.bellman_gap
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.observation_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.moving_observation_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.moving_observation_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_kinetic_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.energyReserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_observation_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_initial_allowance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.weighted_enstrophy_rate

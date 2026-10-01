@@ -11690,3 +11690,220 @@ theorem. Scalar calculus, absorption and common-reserve interval payment
 are Lean-certified under their displayed hypotheses. The periodic
 functional inequalities, stochastic representation, full PDE passage
 and zero-set argument above remain analytic.
+
+## Full-energy Bellman payment and the high-strain remainder
+
+The [joint-accounting checker](joint_parent_reserve.py) tests a positive
+hidden-energy correction to the planar reserve and verifies a separate
+Bellman payment from the complete kinetic energy. The latter applies
+to arbitrary unforced 3D flows on their smooth prefixes, for observations
+with a fixed finite norm bound. It does not supply the unresolved
+high-strain estimate or global regularity.
+
+### A tested adaptive hidden-energy correction
+
+Use the preceding mean/fluctuation split and its planar function
+`V(Z,Y,E)=E(exp(2r(Z,Y))-1)`. For the mean frequencies in the explicit
+fixture, define positive weights and the joint state functional
+
+```text
+c_h = 5 V_Z + 25 V_Y, c_z = V_E,
+K_h = mean |a_h|^2, K_z = mean |a_z|^2,
+Phi = V + c_h K_h + c_z K_z >= 0.
+```
+
+The numbers `5` and `1` are the fixed original squared parent and
+receiver frequencies. At this mean field the velocity cotangent of
+`V` is `(2c_h v,2c_z theta)`, so its Reynolds work matches the negative
+mean-strain work in the hidden energy. This is a motivated cancellation,
+not a choice of independent forces. However, the pressure work and
+the derivatives of `c_h,c_z` remain.
+
+Take the preceding two-hidden-mode fixture with `nu=8`, put
+`x=epsilon^2`, and write `S=exp(2r)` at its initial mean. Exact full NS
+derivatives give
+
+```text
+Z=1/2, Y=5/2, E=2, r=sqrt(5/2)exp(1/2),
+Z'=-40+4sigma x, Y'=-200+20sigma x, E'=-32,
+K_h=2x, K_z=x/2,
+K_h'=-(80+7sigma/10)x, K_z'=-(16+sigma/10)x.
+```
+
+The separate horizontal and vertical pressure works are `sigma x/10`
+and `-sigma x/10`. Their sum is zero in unweighted kinetic energy,
+but their weighted sum need not vanish. The cubic hidden self-work
+is zero on this particular initial support, verified by the full source.
+Differentiating both adaptive weights produces the quartic coefficient
+
+```text
+[epsilon^4] Phi' = sigma S r (1280r+328).
+```
+
+For `sigma=+1`, `epsilon=4`, the entire derivative is positive, including
+diffusion, pressure and lower orders. Substitution `r=1+r1`, `S=1+S1`
+leaves a polynomial with strictly positive rational coefficients; the
+actual values satisfy `r>1`, `S>1`. No floating transcendental evaluation
+is needed. Local smooth existence turns this into a positive interval
+for an actual unforced flow. Thus this specific positive joint correction
+is not a decreasing reserve. Finite bursts, a further correction and a
+full-datum allowance are not refuted. Freezing the weights would have
+removed the decisive quartic term incorrectly.
+
+### Payment from the complete energy account
+
+Let `Ekin(t)=||u(t)||_2^2`, `d(t)=||grad u(t)||_2^2`, and fix a prescribed
+horizon `H`. On every actual smooth unforced prefix,
+`Ekin'=-2nu d`. Unlike the observed parent's energy, this complete energy
+already includes transfers to and from every hidden supplier.
+For a nonnegative constant `C` define, when `t<H`,
+
+```text
+R(t) = C sqrt((H-t)Ekin(t)/(2nu)).
+```
+
+With `h=H-t`, `E=Ekin(t)>0`, its exact loss has the square completion
+
+```text
+-R' - C sqrt(d)
+ = C [sqrt(E)-sqrt(2nu h d)]^2 / [2 sqrt(2nu h E)] >= 0.
+```
+
+Consequently every nonnegative observation satisfying `q<=C sqrt(d)`
+obeys `integral_a^b q <= R(a)-R(b)`. The horizon and complete endpoint
+energy are shared across composition seams; neither is restarted.
+
+This is the value function of the relaxed scalar control problem
+`E'=-2nu d`, `d>=0`, with reward `C sqrt(d)` and horizon `H`:
+
+```text
+R_t + sup_{d>=0} [-2nu d R_E + C sqrt(d)] = 0,
+d_opt = E/[2nu(H-t)].
+```
+
+Along the optimizer, energy decreases linearly to zero and dissipation
+is constant, attaining the Cauchy--Schwarz bound. The relaxation forgets
+fluid constraints, so it provides an upper bound on the actual fluid
+observation. Its control is a scalar dissipation rate, not a freely
+applied fluid force; no fluid realization of every relaxed optimizer
+or general Schroedinger-bridge identification is asserted.
+
+`MettapediaNS.FullEnergyParentReserve` certifies the square completion
+and derives the exact kinetic rate from `NSEvolution` on R3, including
+the imported pressure and transport cancellations. Its
+`actual_interval_payment` proves the payment on every `0<=a<=b<=T`,
+`b<H`, without an assumed future energy or dissipation bound.
+The native derivative uses `Ekin+epsilon` for any fixed `epsilon>0`,
+so it remains valid at zero energy. `actual_initial_allowance` gives the
+original bound with that cushion. Letting it decrease to zero gives the
+displayed sharp allowance analytically by continuity. The periodic
+analogue uses its actual normalized kinetic balance and is analytic here.
+
+### Which geometric observations are paid
+
+On the normalized periodic domain let `B_t` select at most `M` Fourier
+modes of the actual velocity, with conjugate symmetry when a real field
+is needed. Parseval and finite Cauchy--Schwarz give
+
+```text
+||grad B_t u(t)||_infty,F <= sqrt(M) ||grad u(t)||_2.
+```
+
+The selection may depend on the complete history and may move to
+different frequencies. Only its uniform mode count is fixed. More
+generally, a multiplier with `sum_k |m_t(k)|^2<=C^2` has this bound with
+constant `C`. Measurability of the sampled observation is required for
+integration. No derivative of the selector is used: this bounds an
+instantaneous strain observation of the full evolving field, rather
+than asserting an autonomous equation for the selected velocity.
+
+On R3, heat smoothing at length `ell>0` gives another literal observer:
+`u_ell=G_{ell^2}*u`. The Gaussian's L2 norm is
+`(8pi)^(-3/4)ell^(-3/2)`, hence
+
+```text
+||grad u_ell(t)||_infty,F
+ <= (8pi)^(-3/4)ell^(-3/2) ||grad u(t)||_2.
+```
+
+These spatial identifications are analytic; the native Lean history
+theorem pays their common right-hand side. The supremum bound also
+holds along any actual stochastic trajectory of the full velocity.
+It does not replace that trajectory's drift by the selected velocity
+or discard the deformation generated by the remaining strain.
+
+The scale or multiplicity dependence cannot be erased. For the symmetric
+box of modes with each positive coordinate in `[N,2N]`, together with
+their negatives, set
+
+```text
+u_hat(k) = -i (k1/|k|^2) [e1-(k1/|k|^2)k].
+```
+
+This datum is real and divergence free, and exactly attains
+
+```text
+partial_1 u_1(0) = ||grad u||_2^2 = S_N,
+S_N = sum_k [k1^2/|k|^2][1-k1^2/|k|^2]
+    >= (11/144) * 2(N+1)^3.
+```
+
+Indeed `k1^2/|k|^2` lies between `1/12` and `2/3`; on that interval
+`x(1-x)>=11/144`. Thus the optimal point-strain constant is at least
+`sqrt(S_N)`, growing as `N^(3/2)`. Exact fixtures at `N=1,2,4,8` check
+the dual norm and its attainment. The construction proves the general
+lower bound analytically; it is not a blowup example or a refutation
+of a different full-datum history estimate.
+
+Increasing observational resolution also changes the reserve. For a
+differentiable `C(t)`, the certified scalar identity retains
+
+```text
+R'+q <= C'(t) sqrt((H-t)Ekin(t)/(2nu)).
+```
+
+For shrinking heat length, this extra bill is
+`-(3/2)(ell'/ell)R`. A growing mode count or shrinking length cannot
+be paid by silently resetting a fixed-resolution reserve. Changing
+the selected frequencies at fixed mode count does not incur this
+particular cost; its uniform observer norm remains the same.
+
+### The precise remaining continuation estimate
+
+Keep the full physical vorticity as receiver, and split only the strain:
+`grad u=grad B_t u+(grad u-grad B_t u)`. Let `G_low` and `G_high` be
+their respective integrals against `omega tensor omega`. If
+`X=||omega||_2^2=||grad u||_2^2` and `D=||grad omega||_2^2`, then
+
+```text
+X'=2G_low+2G_high-2nu D,    |G_low|<=q X,
+(exp(2R)X)' <= 2exp(2R)G_high-2nu exp(2R)D.
+```
+
+`weighted_enstrophy_rate` certifies this scalar comparison. Since the
+receiver is the full curl, no time derivative of a filtered receiver
+or projector-transport commutator was omitted. The remaining production
+uses the actual evolving field, with its pressure-dependent mode history.
+
+A sufficient open target is to choose the observer and constants from
+the full initial datum, viscosity and horizon, and prove for every
+available smooth prefix `tau<H` that
+
+```text
+2 integral_0^tau exp(2R)G_high
+ <= (2-delta)nu integral_0^tau exp(2R)D + K,
+delta>0, K finite and fixed before the prefixes.
+```
+
+Then `X(tau)<=exp(2R(0))X(0)+K`, supplying the existing enstrophy
+continuation criterion. This is a sufficient estimate, not a proved
+geometric depletion or recurrent-cascade bound. The fixed-observer
+payment cannot exclude forced blowup by itself: it uses only the
+complete energy loss law. A complete unforced argument must still
+control the remaining high-strain work using the exact evolution.
+
+Run the exact checker with `python3 -O labs/joint_parent_reserve.py`.
+There is no numerical time discretization in this checkpoint. The
+adaptive-metric counterexample and spatial observer identifications are
+analytic with exact algebraic checks. The actual whole-space energy
+history payment and the scalar high-strain comparison are Lean-certified.
