@@ -168,15 +168,22 @@ def weighted_pair(u, v, order):
                        dot(a, v.get(k, ({}, {}, {})))) for k, a in u.items()))
 
 
-def amplitude_fields(amplitudes, order=7):
+def amplitude_fields(amplitudes, order=7, radii=(1, 1, 1)):
+    require(len(radii) == 3 and all(isinstance(r, int) and r > 0 for r in radii),
+            'positive integer parent frequencies')
     initial = {}
     for i, j in enumerate((1, 2, 0)):
-        k = tuple(1 if ell == j else 0 for ell in range(3))
-        a = tuple({(1, 0): -Q(amplitudes[i], 2)} if i == ell and amplitudes[i] else {}
+        k = tuple(radii[i] if ell == j else 0 for ell in range(3))
+        a = tuple({(radii[i]**2, 0): -Q(amplitudes[i], 2)} if i == ell and amplitudes[i] else {}
                   for ell in range(3))
         if any(a):
             initial[k] = a
             initial[tuple(-q for q in k)] = vector_scale(-1, a)
+    return evolve_amplitudes(initial, order)
+
+
+def evolve_amplitudes(initial, order):
+    """Complete recurrence for real odd Fourier data with their heat rates."""
     U, N, P = [{}, initial], [{}, {}], [{}, {}]
     for m in range(2, order+1):
         source, pressure = project(field_add(advection(U[i], U[m-i]) for i in range(1, m)))
@@ -391,6 +398,60 @@ class PairFlow(ReturnFlow):
         return values, float(np.sum((self.k2*density)[high])/max(values[1], 1e-300))
 
 
+def cellular_pair_check():
+    """A paid 2.5D family with phase-dependent mixed renewal.
+
+    u_h=exp(-nu*t)*(a*sin(y),b*sin(x)) has explicit canonical pressure.
+    Its vertical scalar starts at c*(cos(x)+sigma*cos(y)). The complete
+    mixed stretching derivative is a*b*c^2*sigma/2. Smooth physical
+    interval realization and the all-time allowance are analytic in README.
+    """
+    def datum(a, b, c, sigma):
+        u = [{}, {}, {}]
+        for i, axis, amp, sine in ((0, 1, a, True), (1, 0, b, True),
+                                   (2, 0, c, False), (2, 1, sigma*c, False)):
+            k = tuple(int(j == axis) for j in range(3))
+            v = f.QQ_I(0, -amp)/2 if sine else f.QQ_I(amp)/2
+            u[i][k], u[i][tuple(-q for q in k)] = v, f.QQ_I(v.x, -v.y)
+        return u
+
+    def observation(u, nu):
+        U, P = velocity_time_jets(u, nu, 1)
+        w, w1 = f.curl(U[0]), f.curl(U[1])
+        B, B1 = f.jac(U[0]), f.jac(U[1])
+        G = f.dot(w, f.matvec(B, w)).get(f.ORIGIN, f.ZERO)
+        derivative = f.add(f.dot(w1, f.matvec(B, w)), f.dot(w, f.matvec(B1, w)),
+                           f.dot(w, f.matvec(B, w1))).get(f.ORIGIN, f.ZERO)
+        # The two horizontal components evolve by heat; nonlinear
+        # advection cancels their complete pressure gradient exactly.
+        require(all(U[1][i] == f.scale(f.QQ_I(-nu), u[i]) for i in (0, 1)),
+                'actual horizontal NS equations are the explicit heat history')
+        return G, derivative, P[0]
+
+    reports = []
+    for a, b, c in ((1, 1, 1), (2, 3, 5), (-2, 3, 5)):
+        for sigma in (-1, 1):
+            for nu in (Q(0), Q(1, 5), Q(1)):
+                u = datum(a, b, c, sigma)
+                G, derivative, pressure = observation(u, nu)
+                pairs = [observation([{} if i == omit else v for i, v in enumerate(u)], nu)
+                         for omit in range(3)]
+                mixed = derivative-sum((v[1] for v in pairs), f.ZERO)
+                require(not G and all(not v[0] for v in pairs), 'zero original cubic means')
+                require(derivative == f.QQ_I(Q(c*c*(a+sigma*b)**2, 4)),
+                        'actual full stretching derivative')
+                require(mixed == f.QQ_I(Q(a*b*c*c*sigma, 2)),
+                        'complete mixed cellular derivative')
+                expected_pressure = {k: f.QQ_I(Q(a*b, 4))
+                                     for k in ((1,1,0),(1,-1,0),(-1,1,0),(-1,-1,0))}
+                require(pressure == expected_pressure, 'explicit canonical cellular pressure')
+                reports.append({'amplitudes':[a,b,c], 'sigma':sigma, 'nu':str(nu),
+                                'full_derivative':str(derivative.x),
+                                'mixed_derivative':str(mixed.x)})
+    return {'tests':reports,
+            'scope':'exact canonical initial derivative; globally smooth 2.5D realization and reserve analytic'}
+
+
 def prefix_operator_check():
     """Check the new numerical observer against the complete exact PDE."""
     nu, h = Q(1, 5), Q(1, 7)
@@ -461,9 +522,53 @@ def prefix(n, nu, dt, final):
             'scope': 'complete dealiased Galerkin flows; no continuum enclosure'}
 
 
+def unequal_prefix(amps, n=32, nu=.2, dt=.0025, final=2):
+    """Complete full and three pair flows, with one shared physical clock."""
+    require(len(amps) == 3 and all(math.isfinite(a) for a in amps), "finite parent amplitudes")
+    require(n >= 12 and n % 2 == 0 and nu > 0 and dt > 0 and final > 0,
+            "valid unequal-parent prefix parameters")
+    flows = [PairFlow(n, nu, amps)] + [
+        PairFlow(n, nu, tuple(amps[i] if i != omit else 0 for i in range(3)))
+        for omit in range(3)]
+    states = [f.initial.copy() for f in flows]
+    ledgers = [np.zeros(2) for _ in flows]
+    initial = [f.observation(u)[0][1] for f, u in zip(flows, states)]
+    samples, t, next_t, steps, start = [], 0., 0., 0, time.monotonic()
+    while True:
+        if t >= next_t-1e-12 or t >= final-1e-12:
+            values, tails = zip(*(f.observation(u) for f, u in zip(flows, states)))
+            mixed = values[0]-sum(values[1:])
+            heat = math.exp(-2*nu*t)
+            zsingle = sum(a*a for a in amps)/2
+            # Singles have zero stretching. Their exact heat histories
+            # restore inclusion-exclusion for the quadratic observers.
+            mixed[1:] += zsingle*heat
+            cost = ledgers[0]-sum(ledgers[1:])
+            cost[1] += zsingle*(1-heat)
+            errors = [v[1]-z-l[0]+l[1] for v, z, l in zip(values, initial, ledgers)]
+            samples.append({'t': t, 'mixed': mixed.tolist(), 'cumulative': cost.tolist(),
+                            'mixed_ledger_error': float(mixed[1]-cost[0]+cost[1]),
+                            'ledger_errors': errors, 'tail_fractions': tails})
+            next_t += .25
+            if t >= final-1e-12:
+                break
+        h = min(dt, final-t, next_t-t)
+        for i, f in enumerate(flows):
+            states[i], dl = f.step(states[i], h)
+            ledgers[i] += dl
+        t += h
+        steps += 1
+        require(steps < 2*(math.ceil(final/dt)+math.ceil(final/.25)+1), 'clock progresses')
+    return {'amplitudes': amps, 'n': n, 'nu': nu, 'dt': dt, 'final': final,
+            'samples': samples, 'steps': steps, 'seconds': time.monotonic()-start,
+            'scope': 'numerical prefixes only; no continuum enclosure'}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--prefix', action='store_true')
+    parser.add_argument('--unequal-prefix', action='store_true')
+    parser.add_argument('--amplitudes', type=float, nargs=3, default=(1, 1, 5))
     parser.add_argument('--n', type=int, default=32)
     parser.add_argument('--nu', type=float, default=.2)
     parser.add_argument('--dt', type=float, default=.0125)
@@ -471,7 +576,8 @@ def main():
     args = parser.parse_args()
     start = time.monotonic()
     report = {'complete_coefficients': complete_coefficients(), 'generic_radius': generic_radius(),
-              'independent_profile_jets': profile_jets(), 'prefix_operator': prefix_operator_check()}
+              'independent_profile_jets': profile_jets(), 'prefix_operator': prefix_operator_check(),
+              'cellular_pair_check': cellular_pair_check()}
     clock_probe = prefix(12, .2, .0125, .25)
     require(len(clock_probe['samples']) == 2 and abs(clock_probe['samples'][-1]['t']-.25) < 1e-14,
             'physical diagnostic clock reaches the prescribed horizon')
@@ -481,6 +587,8 @@ def main():
     report['clock_probe'] = {'final': clock_probe['samples'][-1]['t'], 'maximum_ledger_error': clock_error}
     if args.prefix:
         report['prefix'] = prefix(args.n, args.nu, args.dt, args.final)
+    if args.unequal_prefix:
+        report['unequal_prefix'] = unequal_prefix(args.amplitudes, args.n, args.nu, args.dt, args.final)
     report['seconds'] = time.monotonic()-start
     print(json.dumps(report, indent=2))
 

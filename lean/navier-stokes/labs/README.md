@@ -11098,8 +11098,373 @@ or a claim for arbitrary original data. Its first test is the complete
 signed cumulative ledger, followed by larger Reynolds ratios and different
 profiles and scales. A failed zero-allowance bound would require a finite
 original-datum correction rather than a fresh allowance at every renewal.
+The subsequent unequal-parent tests below give positive cumulative mixed
+cost, so that extension of the zero-allowance candidate is not supported.
 
 The current tests require that a proposed correction retain changing geometry,
 pressure, diffusion and previously spent resources. They neither realize
 the imported forced blowup construction internally nor exclude every
 possible unforced analogue of its mechanism.
+
+## First reciprocal history at arbitrary parent scales
+
+`anisotropic_pair_history.py` extends the preceding complete sixth-degree
+history to unequal parent frequencies and separated profiles. The physical
+observation is still the difference between the full cubic stretching and
+the three complete two-parent stretchings. It is not the cubic of a
+subtracted velocity, and no generated modes are discarded.
+
+For initial velocity
+
+```text
+u0 = alpha (sin(p y), sin(q z), sin(r x)),
+a=p^2, b=q^2, c=r^2, S=a+b+c, tau=nu*t,
+```
+
+the first mixed stretching coefficient is
+`alpha^6/nu^3 * gamma6(a,b,c,tau)`. Frequencies are positive integers on
+the normalized `2*pi` torus; the scalar formula and sign hold for every
+positive real `a,b,c`. The coefficient includes all compatible generation
+trees at this amplitude order. It does not represent the full solution
+at finite amplitude.
+
+### The signed formula
+
+Put `k=2S/3` and define the degree-three Taylor remainder
+
+```text
+R(k,d,t) = (1-kt) exp(dt) - 1 - (d-k)t
+           - (d^2-2kd)t^2/2 - (d^3-3kd^2)t^3/6,
+w(a,b,c) = 3ab^2 / (32c^2 S).
+
+gamma6 = exp(-2St) [ -abc*t^3/4
+          + w(a,b,c) R(k,2c,t)
+          + w(b,c,a) R(k,2a,t)
+          + w(c,a,b) R(k,2b,t) ].
+```
+
+The fourth derivative of `R` is
+`d^3(d-4k-kdt)exp(dt)`. It is nonpositive when
+`k,d,t>=0` and `d<=4k`. The first four initial values through derivative
+three are zero, so successive integration gives `R<=0`.
+Every weight above is positive and every rate satisfies that condition.
+Therefore
+
+```text
+gamma6(a,b,c,t) <= -(abc/4) t^3 exp(-2St),
+gamma6(a,b,c,t) < 0 for t>0,
+2 integral_0^infinity gamma6 <= -3abc/(16S^4) < 0.
+```
+
+The finite-time sign, quantitative rate bound, all-interval payment,
+finite nonnegative sums and agreement with the preceding unit-frequency
+formula are kernel-certified in `MettapediaNS.AnisotropicCycleHistory`.
+The improper-integral evaluation displayed here is analytic. The scalar
+proof does not assert its identification with a continuous PDE solution.
+
+### Complete physical calculation and independent checks
+
+The symbolic recurrence works over exact rational functions in `a,b,c`.
+In base Fourier coordinates let `v_i=r_i u_i`, with
+`(r_1^2,r_2^2,r_3^2)=(c,a,b)`. Advection has the ordinary integer-wavevector
+form; the Leray projection uses `diag(c,a,b)` and physical energy uses
+`diag(1/c,1/a,1/b)`. The mixed coefficient is multiplied by `abc` to
+restore unit physical initial amplitudes. This uses the fact that its
+amplitude degree is exactly two in each parent, as also checked in the
+independent physical recurrence.
+
+All Duhamel coefficients through degree five are retained, with exact
+resonant heat convolutions. The generic counts are
+`6,12,26,48,98` velocity modes and `0,0,8,24,68` pressure modes.
+The checker verifies solenoidality, reality, the complete projected
+equations, zero original generated data, the kinetic balance and the
+enstrophy balance. Subtracting the three separately evolved pairs gives
+the formula above and the signed identity `Z6'+2D6=2gamma6`.
+`D6` is a difference of dissipation histories and may have either sign.
+
+Independent rational runs evaluate literal `mean(omega^T grad(u) omega)`
+and check both energy ledgers. They include equal-frequency resonances,
+cyclic reorderings and well-separated frequencies `(1,2,17)`, `(1,17,2)`
+and `(1,19,20)`. Examples of exact all-time integrals are
+
+| Parent frequencies | `2 integral gamma6` |
+| --- | --- |
+| `(1,1,1)` | `-5/1152` |
+| `(1,1,2)` | `-13/11520` |
+| `(1,2,3)` | `-922149/2596921600` |
+| `(1,3,2)` | `-848061/2596921600` |
+| `(2,2,2)` | `-5/4608` |
+
+Reversing the cyclic scale order changes the response; its sign survives.
+The final formula has only positive-denominator factors for positive
+`a,b,c`. Continuity of the finite Duhamel recurrence covers coincident
+rates; the rational tests also compute those resonances directly.
+
+The integrated magnitude has the sharp scale-uniform bound
+
+```text
+0 < -2 integral_0^infinity gamma6(a,b,c,t) dt
+  <= 5 / [1152 min(a,b,c)].
+```
+
+For `a,b,c>=1`, write the exact twice-integral as `N/D`, with `N<0`
+and `D>0`. Substitution `a=1+x,b=1+y,c=1+z` in `5D+1152N`
+gives a polynomial with 273 nonnegative coefficients and zero constant
+term. The checker verifies that exact identity. Homogeneity of degree
+minus one extends it to every positive scale triple. Equality holds at
+equal scales. This finite polynomial and improper-integral argument is
+analytic/exact-symbolic here, not an additional Lean theorem.
+
+### General separated profiles
+
+Let `f,g,h` be real, mean-zero, smooth one-dimensional periodic profiles.
+Write `F_p^2=4|f_hat(p)|^2`, and similarly for `G_q,H_r`, for positive
+frequencies. For initial data `alpha*(f(y),g(z),h(x))`, the sixth mixed
+coefficient is
+
+```text
+gamma6[f,g,h](t)
+  = sum_(p,q,r>=1) F_p^2 G_q^2 H_r^2 gamma6(p^2,q^2,r^2,t) <= 0.
+```
+
+The quantitative bound also separates into the three original heat
+histories. With normalized one-dimensional measure, let
+`L_f(t)=||d/dy exp(t*d_y^2)f||_2^2`, and likewise for `g,h`.
+Since `sum p^2 F_p^2 exp(-2p^2t)=2L_f(t)`, it gives
+
+```text
+gamma6[f,g,h](t) <= -2t^3 L_f(t)L_g(t)L_h(t).
+```
+
+This is an explicit first-cycle depletion measured by the heat-evolved
+parent gradients. It does not replace those parents by heat flows in the
+full nonlinear problem: their complete generated corrections are already
+included at this coefficient order, and the later orders remain to be paid.
+
+The integrated magnitude bound gives, for profiles on the `2*pi` torus,
+
+```text
+0 <= -2 integral_0^infinity gamma6[f,g,h]
+  <= (5/144) ||f||_2^2 ||g||_2^2 ||h||_2^2.
+```
+
+For physical initial amplitude `alpha` and viscosity `nu`, multiply this
+allowance by `alpha^6/nu^4`. It bounds this complete first interaction
+order from the original parent energies. It supplies no energy-only
+allowance for the complete nonlinear flow or for arbitrary 3D data.
+
+Pair subtraction cancels terms that omit an original parent. Each
+remaining spatial mean needs at least two inputs on each coordinate
+axis: one nonzero Fourier input cannot have zero net frequency there.
+At total degree six there are exactly two on each axis, and their
+frequencies must be opposite. Their phases therefore cancel, leaving
+the nonnegative squared spectral amplitudes above. No separate amplitude
+parity is assumed for general multiharmonic profiles; it can fail at
+higher orders.
+
+This gives the identity first for Fourier polynomials. For smooth
+profiles, truncate in a fixed Sobolev space above the algebra and
+first-derivative embedding threshold. Each finite-order Duhamel map
+and the cubic observation are continuous on every finite time window.
+The polynomial identities pass to the smooth limit. All terms in the
+displayed spectral sum have the same sign, and the truncation limit is
+the continuous finite-order coefficient. These PDE and limiting
+arguments are analytic here, not Lean-certified.
+
+The exact fixture
+
+```text
+f = sin(y) + sin(2y)/2,
+g = 2sin(z) - sin(3z)/3,
+h = 3sin(x)/2 - 2sin(2x)
+```
+
+retains `12,48,156,424,1028` velocity modes through degree five.
+The literal complete cubic history equals the predicted eight-triple
+spectral sum exactly, including its whole viscous time dependence.
+Its twice-integrated coefficient is
+`-93960318393654866177/1481606133104691449856`.
+
+Run the symbolic, rational and multiharmonic checks with
+
+```sh
+python3 -O labs/anisotropic_pair_history.py
+python3 -O labs/paired_stretching_history.py
+```
+
+### What this pays, and what it leaves open
+
+This proves a uniform favorable first interaction law across an unbounded
+family of scales and profiles. It uses viscosity, the exact projection,
+evolving generated modes and their common original clock. It strengthens
+the geometric-history mechanism without assuming pancakes remain frozen
+or that scales remain comparable.
+
+It does not prove all-order mixed depletion. Even the unit-frequency
+eighth coefficient has positive integrated stretching, as checked above.
+The next physical obligation remains a reserve or cumulative comparison
+for the complete reciprocal history, allowing later positive bursts and
+tracking their earlier payment. Its constants must be fixed by the full
+original datum and viscosity. Summability or another nonlinear control of
+all higher orders is missing. Extending a cyclic-family result to arbitrary
+divergence-free data is a further obligation, and these periodic examples
+alone supply no whole-space finite-energy theorem.
+
+## Positive mixed renewal with a finite original allowance
+
+There are two distinct checks here: a numerical test within the preceding
+three-axis cyclic class, and an analytic example in a different, globally
+smooth 2.5D class. Neither refutes a finite full-datum continuation budget.
+
+### Unequal cyclic parents: numerical cumulative sign reversal
+
+`paired_stretching_history.py --unequal-prefix` evolves the full flow and
+each of its three pairs separately. No equal-amplitude symmetry is used
+to replace all pairs by three copies of one. For
+
+```text
+u0 = (sin y, sin z, 5sin x), nu=1/5,
+```
+
+the cumulative mixed stretching first becomes negative, then positive.
+At time two the refinements give
+
+| Grid | Time step | `2 integral_0^2 Delta G` |
+| --- | --- | --- |
+| `24^3` | `0.005` | `0.06094765143463` |
+| `32^3` | `0.005` | `0.06099241335379` |
+| `32^3` | `0.0025` | `0.06099241384804` |
+| `48^3` | `0.0025` | `0.06099249989219` |
+
+The last spatial difference is about `8.60e-8`, and the time-step
+difference at `32^3` is about `4.94e-10`. At `48^3` the largest sampled
+enstrophy fraction above 80% of the dealiased cutoff is `1.18e-11`;
+the final mixed enstrophy ledger residual is `3.13e-10`.
+These are refined numerical signs, not a continuum error enclosure.
+
+Weaker parents `(epsilon sin y, epsilon sin z, 5sin x)` give positive
+cumulative cost as well. At `32^3`, step `0.005`, time two, the cost divided
+by `epsilon^4` is `0.1866641904` for `epsilon=1/2` and `0.2388825922` for
+`epsilon=1/4`. These observations do not prove the sign of the limiting
+coefficient at zero epsilon. They identify a concrete perturbative test
+around a known decaying shear for further analytic work.
+
+```sh
+python3 -O labs/paired_stretching_history.py --unequal-prefix \
+  --amplitudes 1 1 5 --n 48 --nu 0.2 --dt 0.0025 --final 2
+```
+
+The favorable sixth-degree law above is intact. Higher complete
+interactions can reverse the cumulative sign in these numerical full
+histories. This tests the unequal-parent extension of the comparison;
+it does not settle the equal-amplitude special case or any bound with a
+finite full-datum allowance.
+
+### An analytic, globally smooth paid example
+
+On the same torus, take real `a,b,c`, viscosity `nu>0`, and `sigma=+1` or
+`-1`. Set
+
+```text
+u_h(t) = exp(-nu*t) (a sin y, b sin x),
+p(t) = ab exp(-2nu*t) cos x cos y,
+w0 = c(cos x + sigma cos y),
+w_t + u_h.grad(w) = nu*Delta(w),
+u = (u_h,w), independent of z.
+```
+
+The horizontal advection cancels the displayed pressure gradient exactly;
+the horizontal components obey their heat equations. The vertical
+component solves a linear advection-diffusion equation with smooth,
+explicitly decaying drift. Higher Sobolev energy estimates, or its
+stochastic representation, give a smooth solution for every time.
+This constructs actual unforced 3D NS flows, in the restricted 2.5D class.
+
+Use the three original parents
+`(a sin y,0,0)`, `(0,b sin x,0)`, `(0,0,w0)` and their complete pair flows.
+The full horizontal pair has zero stretching, while the other two pairs
+advect the same scalar by a single shear. For each full or pair flow,
+
+```text
+G(t) = -exp(-nu*t) mean[(a cos y+b cos x) w_x w_y],
+```
+
+with the omitted horizontal amplitude set to zero for a pair. Their
+initial cubic means vanish. Differentiating the actual equations gives
+
+```text
+G_full'(0) = c^2(a+sigma*b)^2/4,
+sum_pairs G_pair'(0) = c^2(a^2+b^2)/4,
+Delta G'(0) = sigma*ab*c^2/2,
+2 integral_0^t Delta G = sigma*ab*c^2*t^2/2 + O(t^3).
+```
+
+Thus `a,b>0`, `c!=0`, `sigma=+1` gives strictly positive mixed cumulative
+stretching on an actual short time interval, for every positive viscosity.
+It refutes a zero-allowance comparison over arbitrary parent geometries.
+It is not an analytic counterexample within the preceding three-axis
+separated-profile class: here the vertical receiver depends on both `x`
+and `y`. For `a=b` and `sigma=-1`, that receiver follows the horizontal
+streamfunction and simply diffuses. The plus phase crosses the streamlines
+and is deformed. Both phase choices have the same initial energy and
+horizontal pressure; their joint placement changes the stretching.
+
+The lab checks the complete pressure, horizontal NS right-hand side and
+literal vorticity-stretching derivative in 18 exact rational fixtures,
+including both phases, a reversed parent sign and three viscosities.
+The general identities follow by differentiating the displayed scalar
+equation and integrating periodic derivatives. The derivative's viscous
+terms cancel because the original cubic means are zero. The time-interval
+and global-solution arguments here are analytic, not Lean-certified.
+
+### The original datum pays every compatible interval
+
+Put `L=|a|+|b|` and `Z_w=mean(|grad w|^2)`. The exact scalar energy identity,
+the strain bound and periodic Poincare give
+
+```text
+Z_w' + 2nu mean(|Delta w|^2) = 2G,
+2|G| <= L exp(-nu*t) Z_w,
+Z_w(t) <= c^2 exp[(L/nu)(1-exp(-nu*t))-2nu*t].
+```
+
+In particular the full gradient energy obeys
+
+```text
+Z_full(t) <= [(a^2+b^2)/2 + c^2 exp(L/nu)] exp(-2nu*t).
+```
+
+This is an explicit all-time continuation bound for the stated family,
+with no smallness assumption on its amplitudes. The stochastic flow uses
+the prescribed physical horizontal drift and diffusivity; it introduces
+no force or independently chosen fluid control.
+More explicitly, for fixed terminal time `t` and position `x`, solve
+`dX_s=-u_h(t-s,X_s)ds+sqrt(2nu)dW_s`, `X_0=x`, on `0<=s<=t`.
+Then `w(t,x)=E[w0(X_t)]`. This is the backward representation of the
+actual scalar equation. The energy bound is obtained from that equation,
+not by identifying an independently optimized bridge with NS.
+
+For a compatible mixed-history interval use
+
+```text
+K = c^2/(3nu) [ L exp(L/nu)
+                + |a| exp(|a|/nu) + |b| exp(|b|/nu) ],
+R(t) = K exp(-3nu*t).
+```
+
+The full-flow and two single-shear bounds give `-R'(t)>=2|Delta G(t)|`.
+Consequently `R>=0` and
+`2 integral_s^t Delta G <= R(s)-R(t)` for every `0<=s<=t`.
+This is one decreasing reserve fixed by the original data, not a new
+allowance granted after every seam. It pays the positive burst above.
+The same estimates allow any smooth mean-zero vertical initial pattern:
+replace `c^2` throughout the bounds and reserve by its original gradient
+energy `Z_w(0)`. The special two-mode pattern is used only to exhibit
+the two opposite signs exactly.
+
+The decisive special property is explicit control of the complete
+horizontal parent strain: its integral is at most `L/(2nu)`. The parents
+do interact through advection and pressure, but their joint horizontal
+motion decays autonomously. Parents whose joint strain can be amplified
+again are still the open case. This paid example and the favorable
+coefficient law guide that question without settling it.

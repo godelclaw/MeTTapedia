@@ -46,6 +46,7 @@ import MettapediaNS.JointPressureCotangent
 import MettapediaNS.JointSourceHistory
 import MettapediaNS.JointCubicRenewal
 import MettapediaNS.PairCycleHistory
+import MettapediaNS.AnisotropicCycleHistory
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1395,3 +1396,14 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_enstrophy_zero
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_viscous_ledger
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_enstrophy_at_two_pos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.remainder
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.remainder_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.weight
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.weight_pos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixthStretch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixth_le_cubic
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixth_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixth_neg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixth_interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixth_unit
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.finite_profile_nonpos

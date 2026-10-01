@@ -1607,6 +1607,51 @@ for that target. Neither gives the arbitrary-data continuation allowance
 or a realization of the imported forced blowup construction.
 See [the full viscous-loop calculation and comparison tests](labs/README.md#complete-pair-stretching-and-viscous-reciprocal-loops).
 
+The [anisotropic history calculation](labs/anisotropic_pair_history.py)
+extends the entire first mixed amplitude history to arbitrary positive
+parent frequencies, with their cyclic ordering retained. For squared
+frequencies `a,b,c>0`, its rate satisfies the quantitative bound
+
+```text
+gamma6(a,b,c,tau) <= -(abc/4) tau^3 exp[-2(a+b+c)tau] <= 0.
+```
+
+This is an all-time coefficient estimate, not just an initial-time jet.
+The exact symbolic recurrence keeps canonical pressure and every generated
+mode, and independent rational recurrences check literal curl stretching,
+both energy ledgers and unequal-scale resonances.
+`MettapediaNS.AnisotropicCycleHistory` certifies the scalar bound, payment
+on every nonnegative interval, agreement with the unit-frequency formula,
+and preservation under finite nonnegative spectral sums.
+
+For mean-zero separated profiles `(f(y),g(z),h(x))`, Fourier phase balance
+expresses this first mixed history as such a sum. Consequently its sign
+persists for arbitrary smooth separated profiles; that physical
+identification and the smooth limit are analytic, with an exact complete
+multiharmonic fixture. Higher reciprocal orders can be positive, so the
+result does not yet pay the full nonlinear history, even within this
+family. See [the scale-uniform formula and its physical scope](labs/README.md#first-reciprocal-history-at-arbitrary-parent-scales).
+
+There is also a complete analytic example of paid positive renewal.
+The horizontal cellular field `exp(-nu*t)*(a sin y,b sin x)` has explicit
+pressure and transports a vertical component initially
+`c*(cos x+sigma cos y)`. For `sigma=+1`, `a,b>0` and `c!=0`, its full stretching
+minus the three complete pair stretchings has derivative `abc^2/2` at
+time zero. The actual cumulative difference is therefore positive on a
+short interval. These unforced 2.5D flows are globally smooth and admit
+an explicit decreasing reserve fixed by the original amplitudes and
+viscosity. The opposite receiver phase reverses the initial mixed sign
+while preserving initial energy and horizontal pressure.
+
+This analytically refutes a zero-allowance comparison over arbitrary
+parent geometries while exhibiting the finite payment that a repaired
+history budget needs. The complete parent strain here decays autonomously;
+renewal of that parent strain remains open. In the distinct three-axis
+cyclic class, refined numerical tests of amplitudes `(1,1,5)` also give
+positive cumulative mixed stretching. Those numerical signs have no
+continuum enclosure. See [the exact cellular calculation, original
+reserve and numerical refinements](labs/README.md#positive-mixed-renewal-with-a-finite-original-allowance).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
