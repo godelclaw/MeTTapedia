@@ -1553,6 +1553,60 @@ question. No internal realization or exclusion of the imported forced
 blowup construction is established here.
 See [the return interval, three-parent test and paid neighborhood](labs/README.md#returned-parent-work-and-a-paid-reciprocal-neighborhood).
 
+### Complete reciprocal stretching histories and higher loops
+
+The [paired-stretching lab](labs/paired_stretching_history.py) compares the
+actual cubic stretching of a three-parent evolution with the sum of its
+three complete two-parent evolutions. It includes all interference terms,
+canonical pressure and generated modes. This observable differs from the
+self-stretching of the velocity remainder after pair subtraction.
+
+For original cyclic sine data, the first mixed time jet is negative even
+though its original-parent kinetic-return correction is positive. An
+independent generic radius calculation extends this depletion across
+scales. The mean-zero profile version has first mixed third derivative
+`-12 ||f'||_2^2 ||g'||_2^2 ||h'||_2^2` for data `(f(y),g(z),h(x)`.
+This generalization uses Fourier phase and amplitude-degree balance; it
+is analytic, with complete finite-profile checks, not a Lean PDE theorem.
+
+The first complete viscous amplitude loop also stays favorable. For
+`u0=alpha*(sin y,sin z,sin x)`, write `tau=nu*t`. Its sixth-degree mixed
+stretching is `alpha^6/nu^3` times
+
+```text
+gamma6(tau) = (3/32) exp(-4tau) [1-2tau+(2tau^2-1)exp(-2tau)] <= 0.
+```
+
+`MettapediaNS.PairCycleHistory` certifies this explicit rate, its common
+primitive, payment on every compatible interval, and the complete signed
+enstrophy/dissipation balance. The identification with continuous NS
+amplitude derivatives remains analytic. A single coefficient supplies no
+bound on the full nonlinear remainder. The next, eighth-degree loop has
+positive complete integrated stretching, so termwise favorable loop signs
+cannot supply the missing payment. Each tested coefficient has a finite
+original-amplitude reserve; convergence and payment of the full sequence
+remain open.
+
+The signed diffusion difference changes the comparison. The sixth-degree
+enstrophy difference is positive at `tau=2`, despite nonpositive stretching
+throughout that coefficient history. Lean certifies the scalar inequality.
+A finite-time analytic solution-map expansion gives actual small-data
+examples violating the stronger pairwise enstrophy ordering; that passage
+is analytic here. Numerical full nonlinear histories at `nu=1/5` also
+change the mixed stretching sign near `t=5.5`, with spatial/time refinement.
+They are Galerkin evidence, not continuum sign enclosures.
+
+The remaining target is a reserve for the complete signed renewal sequence,
+retaining its pressure, geometry, diffusion and spent initial resources.
+The original cubic label has zero mean for these cyclic data and their
+pair limits. Thus the mixed joined chi/E renewal cost is precisely
+`2 integral Delta G`; this is a physical calibration of the existing
+continuation observable, rather than a kinetic-work surrogate.
+The exact first loop and the finite coefficient reserves are calibrations
+for that target. Neither gives the arbitrary-data continuation allowance
+or a realization of the imported forced blowup construction.
+See [the full viscous-loop calculation and comparison tests](labs/README.md#complete-pair-stretching-and-viscous-reciprocal-loops).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

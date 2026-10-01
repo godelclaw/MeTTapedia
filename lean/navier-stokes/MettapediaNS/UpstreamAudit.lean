@@ -45,6 +45,7 @@ import MettapediaNS.JointTensorSymmetry
 import MettapediaNS.JointPressureCotangent
 import MettapediaNS.JointSourceHistory
 import MettapediaNS.JointCubicRenewal
+import MettapediaNS.PairCycleHistory
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1371,3 +1372,26 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.original_renewal_balance
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.signed_renewal_energy_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.hasNSEvolution_of_signed_renewal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.heat
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.rateShape
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthStretch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthEnstrophy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthDissipation
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthPrimitive
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.heat_pos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.heat_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.rateShape_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.rateShape_rate_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.rateShape_antitone
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.rateShape_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthStretch_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthPrimitive_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthPrimitive_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthPrimitive_antitone
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixthPrimitive_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_integral
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_enstrophy_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_enstrophy_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_viscous_ledger
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PairCycleHistory.sixth_enstrophy_at_two_pos

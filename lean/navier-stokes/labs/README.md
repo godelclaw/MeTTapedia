@@ -10843,3 +10843,263 @@ renewal when mutually affecting parents leave every controlled reference
 neighborhood, keeping original storage and spent resources across all
 seams. No internal realization or impossibility theorem for the imported
 forced blowup candidate follows from these periodic examples.
+
+## Complete pair stretching and viscous reciprocal loops
+
+[`paired_stretching_history.py`](paired_stretching_history.py) compares
+complete unforced histories beginning with three cyclic parents. For
+an observable O, define its mixed difference by inclusion-exclusion:
+
+```text
+Delta O = O(U123) - O(U12) - O(U23) - O(U31)
+                  + O(U1) + O(U2) + O(U3).
+```
+
+Each Uij is the actual nonlinear evolution with its two original parents,
+including the generated modes. Each single evolution is a heat-decaying
+shear. The single terms vanish for cubic stretching but must remain for
+enstrophy and dissipation. This is a difference of physical functionals,
+including their interference, not the self-stretching of the pair-subtracted
+velocity remainder. The latter already has independent sign obstructions.
+
+Use normalized volume on the torus of period 2pi, and let
+
+```text
+Z = mean |grad u|^2 = mean |omega|^2,
+D = mean |Delta u|^2 = mean |grad omega|^2,
+G = mean omega^T grad(u) omega = <grad u,grad N(u)>,
+Z' + 2nu D = 2G,          E' + 2nu Z = 0.
+```
+
+Here N is the complete Leray-corrected nonlinear source. Every exact
+coefficient check retains all outputs. An independent actual-curl cubic
+calculation checks G, alongside both physical balances. The complete
+generated pressure is retained before taking observations. Neither a
+pressure-free evolution nor an independently controlled parent is used.
+
+### First mixed jet across scales and profiles
+
+For `u0=(a sin(r0 y),b sin(r1 z),c sin(r2 x))` with positive integer
+radii, complete canonical time jets give
+
+```text
+Delta G(0) = Delta G'(0) = Delta G''(0) = 0,
+Delta G'''(0) = -(3/2)(a b c r0 r1 r2)^2.
+```
+
+The generic radius coefficient is checked separately with symbolic
+rational functions. All earlier Leray projections remain. Only the final
+pressure gradient can be discarded from that independent scalar
+calculation, because its initial receiver is divergence-free. A separate
+Gaussian-rational check retains that final pressure too.
+
+Translation by half a period changes any one original sine parent's sign
+without changing a mean observer. The observer is therefore even in each
+amplitude. A mixed term using all three parents needs at least six
+amplitude factors. Three time derivatives of cubic stretching have degree
+at most six; viscosity lowers that degree. Thus only the displayed
+sixth-degree term survives in the mixed third jet, at every viscosity.
+
+The same phase balance extends the coefficient to mean-zero separated
+profiles `u0=(f(y),g(z),h(x))`:
+
+```text
+Delta G'''(0) = -12 ||f'||_2^2 ||g'||_2^2 ||h'||_2^2.
+```
+
+At degree six there are exactly two Fourier inputs on each axis; spatial
+mean forces their frequencies to be opposite. The generic radius symbol
+therefore sums by Parseval into the three derivative norms. Finite Fourier
+profiles suffice first; rapid Fourier decay extends the identity to smooth
+profiles. This reasoning is analytic, not a Lean smooth-profile theorem.
+The independent test uses
+
+```text
+f(y)=sin y+(1/2)cos(2y),
+g(z)=2sin z-(1/3)cos(3z),
+h(x)=(3/2)cos x-2sin(2x).
+```
+
+Their derivative norm squares are `1,5/2,73/8`; the mixed third derivative
+is `-1095/4` at both `nu=0` and `nu=1/5`. The fourth velocity jet retains
+over a thousand output modes and its canonical pressure source has 856
+modes. A favorable initial jet does not establish a uniform time window.
+
+### Complete viscous coefficient history
+
+Now set `u0=alpha*(sin y,sin z,sin x)`, `nu>0`, and `tau=nu*t`.
+Write `u=nu*sum_m (alpha/nu)^m U_m(tau)`. The finite amplitude derivatives
+are determined by the full Duhamel recurrence
+
+```text
+U1(tau)=exp(tau Delta) U1(0),
+Um(tau)=integral_0^tau exp[(tau-r)Delta]
+                         sum_(i+j=m) -P div(Ui tensor Uj)(r) dr.
+```
+
+The checker integrates this recurrence exactly as exponential polynomials,
+including resonant heat rates. It retains 264 velocity outputs and 212
+pressure outputs at degree seven. There is no time discretization or
+frequency truncation in these coefficients. Identifying them with
+continuous solution-map derivatives is analytic; they are not an exact
+finite-amplitude evolution or a bound on its remainder.
+
+The first mixed stretching coefficient has degree six:
+
+```text
+Delta G(t;alpha) = alpha^6/nu^3 gamma6(nu*t) + O_(nu,t)(alpha^8),
+gamma6(tau)=(3/32)exp(-4tau) H(tau),
+H(tau)=1-2tau+(2tau^2-1)exp(-2tau).
+```
+
+Since `exp(2tau)>=1+2tau`, its derivative obeys
+
+```text
+H'=-2+2exp(-2tau)(1+2tau-2tau^2) <= -4tau^2 exp(-2tau) <= 0.
+```
+
+Together with `H(0)=0`, this proves `gamma6<=0` throughout the entire
+nonnegative viscous clock. Its primitive from the original time is
+
+```text
+I6(tau)=-5/2304
+       +(3tau/64-3/256)exp(-4tau)
+       +(1/72-tau/96-tau^2/32)exp(-6tau),
+I6(0)=0,        I6'=gamma6,
+2 integral_0^infinity gamma6 = -5/1152.
+```
+
+`MettapediaNS.PairCycleHistory` kernel-checks these explicit scalar
+derivatives, the sign for every nonnegative time, and payment on every
+interval `0<=s<=t` using `I6(t)-I6(s)`. It does not certify the continuous
+Fourier identification or the full NS remainder. The improper integral
+value above is an analytic consequence of the checked primitive and
+exponential decay; the exact checker also evaluates it rationally.
+
+### The complete signed diffusion comparison
+
+The sixth-degree mixed enstrophy and dissipation coefficients are
+
+```text
+Z6=(9/256)exp(-2tau)+(3tau/16-3tau^2/8)exp(-4tau)
+   +(-9/256-21tau/64-9tau^2/32)exp(-6tau),
+D6=(9/256)exp(-2tau)+(9tau/16-3tau^2/4)exp(-4tau)
+   +(-9/256-45tau/64-21tau^2/32)exp(-6tau),
+Z6' + 2D6 = 2gamma6.
+```
+
+Lean certifies this exact balance, `Z6(0)=0`, and `Z6(2)>0`. The last
+inequality can be checked using `exp(4)>=40`:
+
+```text
+Z6(2)=exp(-4)[9/256-(9/8)exp(-4)-(465/256)exp(-8)] > 0.
+```
+
+D6 is a difference of complete dissipations. Its sign cannot be borrowed
+from the nonnegativity of each flow's dissipation. Negative stretching
+alone therefore does not order the full enstrophy histories.
+
+This also supplies an analytic counterexample to the stronger assertion
+`Z(U123)<=sum_pairs Z(Uij)-sum_singles Z(Ui)` for actual small unforced
+data. At fixed `nu>0` and time `2/nu`, the mixed difference is
+`alpha^6/nu^4 Z6(2)+O_nu(alpha^8)>0` for sufficiently small nonzero alpha.
+To justify the passage without a future solution bound, use the mild NS
+equation on `C([0,2/nu],H^s)`, `s>5/2`. The heat-gradient estimate and
+the Sobolev product bound give a bilinear norm at most
+`2 C_s sqrt(T/nu)`. The Duhamel coefficients obey the Catalan majorant
+`||Um||<=Catalan_(m-1) L^(m-1)||U1||^m`, for this finite window and
+`L=2 C_s sqrt(T/nu)`. A sufficiently small original amplitude gives
+absolute convergence and an analytic solution map. Mean quadratic/cubic
+observers are continuous there. Inclusion-exclusion and translation
+symmetry remove degrees two and four and all odd degrees. This proves the
+fixed-time remainder assertion. Standard small-data regularity additionally
+permits choosing these examples globally regular. This continuous argument
+is analytic here, not a new Lean existence or solution-map theorem.
+
+### The next loop has positive work and a finite initial allowance
+
+The complete eighth-degree mixed stretching coefficient gamma8 has
+
+```text
+gamma8^(j)(0)=0 for j<5,        gamma8^(5)(0)=473/20,
+2 integral_0^infinity gamma8 = 541543/737280000 > 0.
+```
+
+The first complete loop depletes stretching; the next cannot be paid
+by assigning each loop a nonpositive sign. This is an exact coefficient
+calculation, not a statement that the full stretching difference is
+positive for small alpha. Summing the higher coefficients requires an
+additional bound.
+
+Each computed coefficient has an original-amplitude absolute reserve.
+If `gamma_m(tau)=sum c_(lambda,j) tau^j exp(-lambda*tau)`, define
+
+```text
+Rm(tau)=2 sum |c_(lambda,j)| exp(-lambda*tau)
+                  sum_(ell=0..j) j! tau^ell / [ell! lambda^(j-ell+1)],
+Rm>=0,       -Rm'=2 sum |c_(lambda,j)| tau^j exp(-lambda*tau)
+                          >=2|gamma_m(tau)|.
+```
+
+The checker verifies both the exact tail derivative and the finite initial
+value. Physical reserves scale as `alpha^m nu^(2-m) Rm(nu*t)`. In
+particular `R6(0)=121/1152`, `R8(0)=33767731/245760000`. The same reserve
+cancels across every compatible seam; a later segment does not receive
+another original allowance. These finite coefficient reserves can overpay
+signed cancellations. Convergence and finite payment of the entire
+renewal sequence, outside small-data perturbation theory, remain open.
+
+### Full nonlinear prefixes test the sign beyond the first loop
+
+For the full datum `(sin y,sin z,sin x)`, `nu=1/5`, complete dealiased
+prefixes change the mixed stretching sign. At `t=5.5`,
+
+| Grid | Time step | G(full)-3G(pair) |
+| --- | --- | --- |
+| 24^3 | 0.0125 | 0.0019440249184904 |
+| 32^3 | 0.0125 | 0.0019440249184858 |
+| 32^3 | 0.00625 | 0.0019440249186963 |
+| 48^3 | 0.00625 | 0.0019440249186963 |
+
+The full stretching at this time is about `0.00309980`; a single pair
+contributes about `0.000385259`. The pair flow is evolved throughout,
+including its scalar gradients. The doubled-time resolution ledger error
+is below `7.9e-11`; the 48-grid high-frequency enstrophy fraction over the
+bounded prefix is below `1e-19`. A separate exact Fourier probe checks the
+canonical RHS and literal curl observer used by the numerical tool.
+These are convergence diagnostics, not validated continuum error bounds.
+No continuum sign theorem or arbitrary-data payment is inferred from them.
+
+```sh
+python3 -O labs/paired_stretching_history.py
+python3 labs/paired_stretching_history.py --prefix --n 32 --nu 0.2 --dt 0.00625 --final 6
+```
+
+The named open estimate remains the signed physical renewal budget of
+`JointCubicRenewal`, with a reserve fixed by the full original datum,
+viscosity and prescribed horizon before all compatible prefixes. These
+cyclic data have zero mean original cubic label, as do their pair limits.
+Mass conservation of the passive label identifies the mixed joined
+chi/E renewal cost with `2 integral Delta G`. This periodic calibration
+therefore retains the literal physical stretching required by continuation;
+it supplies no whole-space finite-energy lift by itself.
+
+A bounded next candidate is cumulative mixed depletion for the cyclic
+class: `2 integral_0^t Delta G<=0` for every smooth prefix. Pointwise
+sign reversal alone does not refute this history assertion. If proved,
+the already paid triangular pair histories and the full enstrophy balance
+would give a finite original-datum enstrophy bound for the cyclic class,
+even with strong mutual feedback. For equal amplitude alpha, the pair
+allowance `alpha^4/(6nu^2)` would give the explicit bound
+`Z(full)<=3alpha^2/2+alpha^4/(2nu^2)` on every smooth prefix. This is the
+actual periodic enstrophy continuation consumer. The history assertion
+is an open candidate, not a theorem
+or a claim for arbitrary original data. Its first test is the complete
+signed cumulative ledger, followed by larger Reynolds ratios and different
+profiles and scales. A failed zero-allowance bound would require a finite
+original-datum correction rather than a fresh allowance at every renewal.
+
+The current tests require that a proposed correction retain changing geometry,
+pressure, diffusion and previously spent resources. They neither realize
+the imported forced blowup construction internally nor exclude every
+possible unforced analogue of its mechanism.
