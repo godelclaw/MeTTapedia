@@ -10305,3 +10305,221 @@ Run the exact checks, including the independent symbolic formulas:
 ```sh
 python3 -O labs/joint_source_history.py
 ```
+
+## Directional cubic renewal and original labels
+
+`cubic_parent_renewal.py` retains the actual vorticity observation in the
+original stochastic-gradient history. The normalized torus has period
+`2*pi`. Write `D=partial_t+u.grad-nu Delta`, `B=grad u`, `P=Hess p`,
+`DA=-B^T A-A B`, `D omega=B omega`, and `E=A-B`. The product
+`H=omega^T A omega` has the complete local rate
+
+```text
+D H=-2nu J_A,
+J_A=sum_k[(partial_k omega)^T A(partial_k omega)
+   +(partial_k omega)^T(partial_k A)omega
+   +omega^T(partial_k A)(partial_k omega)].
+```
+
+Let `h` be the passive scalar with original label
+`h0=omega0^T B0 omega0`, and set `chi=h-H`. Then
+
+```text
+D chi=2nu J_A,
+omega^T B omega=h-chi-omega^T E omega,
+D(chi+omega^T E omega)=omega^T(P-B^T B)omega+2nu J_B.
+```
+
+The last identity cancels the original-packet derivatives between the
+two histories. The actual pressure and every physical mixed derivative
+remain. `J_A` and `J_B` are signed; neither is asserted to be a positive
+diffusion square. Same-path matrices satisfy
+`(J w0)^T(F^T V0 F)(J w0)=w0^T V0 w0`, for `FJ=I`. Averaging that same
+path preserves the passive label, while multiplying the three separate
+means gives H and introduces chi. Continuous stochastic identification,
+construction of h and its conserved spatial mass are analytic here.
+Passive advection--diffusion also has its original unsigned L1 allowance;
+this does not by itself pay chi or E.
+
+`MettapediaNS.JointCubicRenewal` certifies the finite complete production,
+same-path cancellation, the retained physical-gradient rate and a
+conditional continuation consumer. For actual smooth solenoidal whole-space
+evolutions it proves the literal order-one energy balance. With
+`g0=integral omega0^T B0 omega0` and prescribed horizon T, a sufficient
+missing estimate is
+
+```text
+-2 integral_0^tau integral(chi+omega^T E omega)
+  <= (2-delta)nu integral_0^tau integral |grad omega|^2 + K(u0,nu,T),
+0<delta<=2,  tau<=T.
+```
+
+It gives
+`||omega(tau)||_2^2+delta nu integral_0^tau ||grad omega||_2^2`
+`<=||omega0||_2^2+2T|g0|+K`. The kernel version uses the actual
+`orderEnergy 1/2` and the literal physical stretching-mass difference.
+The equivalent curl interpretation and realization by h, chi, E are
+analytic. With delta=1, the theorem quantifies one K before every solution
+prefix from the same datum and invokes existing whole-space continuation.
+No bound on K is supplied. This is an explicit history form of the open
+crux, not a reduction of its difficulty or a proved reserve. It does not
+require independently bounding every weighted Hessian or every frame
+direction. At seams the original h and both histories remain; resetting
+them changes the physical reconstruction.
+
+The complete canonical Fourier jets independently evolve A and h, retain
+actual curl, and check the pointwise product law and pressure-parent
+Riccati observation. No outputs are truncated. For
+`u0=(a sin y,b sin z,c sin x)`, put `S22=a^2 b^2+a^2 c^2+b^2 c^2`.
+Independent generic trigonometric-polynomial integration gives
+
+```text
+mean(h0)=mean(H)'(0)=mean(chi)'(0)=0,
+mean(H)''(0)=-nu S22/2,  mean(chi)''(0)=nu S22/2,
+mean(omega^T E omega)'(0)=-S22/4,
+mean(omega^T E omega)''(0)=3nu S22/2,
+mean(omega^T B omega)'(0)=S22/4,
+mean(omega^T B omega)''(0)=-2nu S22.
+```
+
+Thus covariance and compatibility have different orders and signs already
+at birth. Positive-viscosity fixtures include equal and unequal signed
+parents, a two-parent triangular boundary and a single-parent boundary.
+The signed spatial mean of the original label is zero in these fixtures,
+but its unsigned mass and the signed physical histories are not generally
+zero. The two-parent triangular and single-parent fixtures have their
+complete initial cubic label identically zero; this is checked pointwise.
+
+A mixed-scale test isolates the covariance sign. For the actual real
+solenoidal polynomial v in `signed_viscous_pressure.interacting_datum`,
+`mean(omega_v^T grad(v) omega_v)=-384/65` and `mean(J_grad(v))=-384/13`.
+For `u_n=v(x)-v(nx)/n`, the checked scales n=5,7,11 have
+
+```text
+mean(h0)=0,
+mean(J_B0)=384(n^2-1)/13,
+mean(chi)'(0)=768nu(n^2-1)/13.
+```
+
+Replacing u_n by -u_n reverses that derivative while leaving the zero
+signed initial mass unchanged. The full canonical unforced initial
+tangent is checked at n=5,nu=1/10, including its pressure and physical
+compatibility. Its negative covariance derivative is `-9216/65`.
+This excludes a universal favorable covariance sign and a zero payment
+from the initial signed cubic mass alone. Unsigned initial labels and
+the full original datum remain available. The fixed-datum short-time
+passage is analytic; no uniform window, indefinite renewal, failure of
+a full-datum allowance or singularity is claimed. These periodic fields
+are not whole-space finite-energy lifts.
+
+An explicit diagnostic force `f=curl u` has zero instantaneous kinetic
+work on v but a nonzero extra cubic source
+`(curl f)^T A omega+omega^T A(curl f)`. Its exact mean is `-128/195`.
+This retains the physical curl-source leg. It is not the imported forced
+blowup construction and proves no internal realization by hidden fluid.
+
+There are two paid analytic calibrations for the joined physical budget.
+For the previously established stochastic triangular class
+`u=(a exp(-nu t) sin y,0,v)`, `v0=b sin x`, the original derivative
+bounds give
+
+```text
+|v_x|<=b exp(-nu t),
+|v_y|<=ab exp(-nu t)(1-exp(-nu t))/nu,
+|mean(omega^T B omega)|<=a^2 b^2 exp(-3nu t)(1-exp(-nu t))/nu.
+```
+
+Here `g0=0`. Every joined history interval is paid by the same decreasing
+nonnegative reserve
+
+```text
+K_mix=a^2 b^2/(6nu^2),
+R_mix(t)=K_mix[4exp(-3nu t)-3exp(-4nu t)],
+2 integral_s^t mean(omega^T B omega)<=R_mix(s)-R_mix(t).
+```
+
+Consequently `mean|omega(t)|^2+2nu integral_0^t mean|grad omega|^2`
+`<=mean|omega0|^2+K_mix`. The checker verifies the exact scalar reserve
+identities; the stochastic derivative bounds and complete spatial/time
+payment are analytic. This payment uses actual stretching and the coupled
+history identity, without independently estimating chi, E or every frame
+direction. The vertical field does not feed its horizontal parent.
+
+The same triangular class refutes payment from the complete original
+cubic label alone, including its unsigned mass. Set a=b=A and hold
+`nu>0` and a prescribed positive horizon fixed. Every datum
+`u0=(A sin y,0,A sin x)` has `h0=0` pointwise. In turnover variables
+`sigma=A t`, `kappa=nu/A`, its vertical component is `A w_kappa`, where
+
+```text
+partial_sigma w_kappa+exp(-kappa sigma)sin y partial_x w_kappa
+  =kappa Delta w_kappa,  w_kappa(0)=sin x.
+w_0=sin(x-sigma sin y).
+```
+
+The limiting field has normalized enstrophy `1+sigma^2/4` and complete
+vorticity-gradient mass `1+3sigma^2/4+3sigma^4/16`. The lab checks those
+exact integrals and the full viscous difference equation. Actual
+positive-viscosity convergence is analytic: for `z=w_kappa-w_0`,
+
+```text
+partial_sigma z+exp(-kappa sigma)sin y partial_x z-kappa Delta z
+  =(1-exp(-kappa sigma))sin y partial_x w_0+kappa Delta w_0,  z(0)=0.
+```
+
+On any fixed interval `[0,S]`, its forcing has H2 norm at most
+`kappa C(S)`, with
+`C(S)=sup_[0,S](sigma ||sin y partial_x w_0||_H2+||Delta w_0||_H2)`.
+This finite constant uses only the explicit limiting profile. The
+commutators of the six derivatives `1,x,y,xx,xy,yy` give
+`Y'<=4Y+kappa^2 C(S)^2` for their squared L2 norm sum Y. Hence
+`||z||_H2<=kappa C(S)sqrt(exp(4S)-1)/2`. The horizontal shear also
+converges at rate kappa. Consequently, at the actual time t=S/A,
+
+```text
+mean|omega(t)|^2=A^2[1+S^2/4+O_S(nu/A)].
+```
+
+At S=1 and sufficiently large A this gives an enstrophy increase of at
+least `A^2/8`, within any prescribed positive horizon. Because g0=0,
+the exact enstrophy balance makes the half-dissipation renewal excess
+
+```text
+-2 integral_0^t mean(chi+omega^T E omega)
+  -nu integral_0^t mean|grad omega|^2
+ =mean|omega(t)|^2-mean|omega0|^2
+   +nu integral_0^t mean|grad omega|^2 >= A^2/8.
+```
+
+Thus a finite K depending only on the common label h0=0, viscosity and
+horizon fails on actual unforced, globally regular flows. A reserve must
+retain more of the original datum than its cubic label. Initial enstrophy
+is A^2 here, and `K_mix=A^4/(6nu^2)` pays the entire class. No
+full-datum bound, indefinite renewal or singularity is refuted. This is
+a periodic triangular analytic argument, not a whole-space lift or a
+Lean-certified convergence theorem; the checker certifies its exact
+residual and limiting identities. It uses a linear parabolic difference
+estimate, not an unproved uniform NS Taylor window.
+
+For a smooth mean-zero periodic divergence-free Beltrami eigenfield
+`curl V=kappa V`, the full unforced evolution is `u=exp(-nu kappa^2 t)V` and
+`p=-|u|^2/2`, up to a time-only gauge. Actual vorticity is `omega=kappa u`.
+Its pointwise stretching is the divergence of
+`kappa^2 u |u|^2/2`, so its spatial mean, g0 and joined renewal vanish
+at every time. Thus this entire class has `K=0` for the joined budget,
+even with nonzero pressure and genuinely three-dimensional pointwise
+stretching. The checker verifies the full ABC example
+`V=(a sin z+c cos y,b sin x+a cos z,c sin y+b cos x)` and its original
+packet/passive-label jets. At a=1,b=2,c=3,nu=1/10 the complete jets give
+`mean(chi)''(0)=49/5` and `mean(omega^T E omega)''(0)=-49/5`, while
+the joined renewal vanishes. The individual legs are not discarded.
+The all-time equations and divergence identity
+are exact; the continuous stochastic identification and periodic spatial
+integration are analytic. Monochromatic parents decay by heat. The
+arbitrary mutually amplifying-parent estimate remains open.
+
+Run the complete exact and independent symbolic checks:
+
+```sh
+python3 -O labs/cubic_parent_renewal.py
+```

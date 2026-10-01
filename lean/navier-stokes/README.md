@@ -1422,6 +1422,85 @@ does not identify an arbitrary-fluid Schrödinger-bridge optimizer, supply an
 independent physical force, or assume a bound on unknown future strain.
 See [the complete source and history tests](labs/README.md#causal-joint-source-history-and-reciprocal-pressure-generation).
 
+### Directional cubic renewal and a signed physical continuation target
+
+`MettapediaNS.JointCubicRenewal` observes the original gradient packet only
+in the actual vorticity direction. Write `H=omega^T A omega`, retain
+`E=A-grad u`, and let `h` solve passive advection--diffusion with original
+label `h0=omega0^T grad(u0) omega0`. The dual rates of A and omega cancel
+strain before estimating. Lean certifies the finite complete production:
+
+```text
+D H = -2nu sum_k [(partial_k omega)^T A(partial_k omega)
+       +(partial_k omega)^T(partial_k A)omega
+       +omega^T(partial_k A)(partial_k omega)].
+chi=h-H,
+omega^T grad(u) omega=h-chi-omega^T E omega.
+```
+
+The mixed diffusion is signed. Combining its covariance history with the
+compatibility history cancels the original-packet derivatives; it retains
+the actual directional source `omega^T(Hess p-B^T B)omega` and the complete
+physical-gradient diffusion. Same-path transport of the cubic label is
+also kernel-certified before averaging. The product of three averaged
+fields does not preserve that label. Passive-scalar construction, the
+continuous original stochastic identification and spatial mass conservation
+remain analytic obligations, not new stochastic Lean theorems.
+
+For actual whole-space smooth unforced evolutions, the module identifies
+the continuous stretching mass and proves the exact order-one balance.
+It states the following sufficient signed renewal estimate, for every
+smooth prefix tau of a prescribed horizon T:
+
+```text
+-2 integral_0^tau integral(chi+omega^T E omega)
+  <= (2-delta)nu integral_0^tau integral |grad omega|^2+K(u0,nu,T),
+0<delta<=2.
+```
+
+The kernel theorem uses the literal order-two dissipation and the physical
+stretching-mass difference for renewal. With delta=1 and the budget fixed
+before all solution prefixes, it supplies the existing whole-space
+continuation criterion. The equivalent curl/diffusion interpretation and
+the realization by h, chi and E are analytic here. The budget itself is
+OPEN: the identity rewrites the remaining crux, not a proof of its payment.
+Unlike the source-norm benchmark, this formulation need not separately pay
+the full weighted Hessian norm or a uniform metric comparison. It retains
+the actual vorticity geometry and both signed histories jointly.
+
+The [exact cubic-renewal lab](labs/cubic_parent_renewal.py) checks all
+canonical NS outputs and mixed derivatives. Two different scales can have
+zero initial signed cubic mass but either sign of covariance production
+at every positive viscosity. This excludes a universal favorable covariance
+sign or payment from that signed mass alone. The unsigned original label
+mass remains finite for the stated smooth class and does not vanish merely
+because signed mass cancels. A datum-paid bound on coupled renewal is not
+refuted. Reciprocal-parent tests also retain the generated pressure and the
+compatibility work. A zero-kinetic-work diagnostic force contributes an
+explicit curl-source leg; it is not the imported blowup example or an
+internally realized force. No uniform time window, indefinite renewal,
+singularity or whole-space finite-energy lift follows from these tests.
+The joined budget has paid analytic consumers. The established triangular
+mixing class has the all-time allowance `a^2 b^2/(6nu^2)` and decreasing
+reserve `a^2 b^2[4exp(-3nu t)-3exp(-4nu t)]/(6nu^2)`. For any mean-zero
+periodic divergence-free monochromatic Beltrami field, the full heat-decaying NS evolution
+has zero mean stretching and hence zero joined renewal allowance, despite
+nonzero pressure and possible three-dimensional pointwise stretching.
+The original-frame interpretation remains analytic. Neither class
+supplies a bound for arbitrary mutually amplifying parents.
+The complete original cubic label is also insufficient as the only initial
+resource. Periodic triangular data `u0=(A sin y,0,A sin x)` have `h0=0`
+pointwise for every A. At fixed positive viscosity, a linear parabolic
+difference estimate at one turnover gives an enstrophy increase of at
+least `A^2/8` for sufficiently large A. The half-dissipation renewal excess
+is larger still. Thus no finite allowance depending only on this common
+label, viscosity and a prescribed positive horizon covers these data.
+Their full initial resources grow with A, and the full-datum mixing
+allowance above pays them. This is an analytic periodic result; the lab
+checks the exact limiting equations and integrals, not the convergence
+proof. No full-datum reserve or regularity claim is refuted.
+See [the full directional calculation](labs/README.md#directional-cubic-renewal-and-original-labels).
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

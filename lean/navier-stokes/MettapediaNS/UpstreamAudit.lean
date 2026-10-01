@@ -44,6 +44,7 @@ import MettapediaNS.JointCurlGeometry
 import MettapediaNS.JointTensorSymmetry
 import MettapediaNS.JointPressureCotangent
 import MettapediaNS.JointSourceHistory
+import MettapediaNS.JointCubicRenewal
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1340,3 +1341,33 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.reserve_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.square_increment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.JointSourceHistory.fresh_square_strictly_underpays
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.cubicObservation
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.cubicDerivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.mixedDiffusion
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.cubicProduction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.dual_strain_cancellation
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.original_cubic_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.forced_cubic_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.physical_stretching_reconstruction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.cubicCovariance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.original_history_reconstruction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.mixed_diffusion_sub
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.defect_cubic_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.compensated_renewal_production
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.physical_cubic_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.actual_cubic_gradient_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.same_path_cubic
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.stretchingMass
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.actual_cubic_observation
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.stretching_integrable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.originalLabelMass
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.originalLabelMass_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.signed_label_le_original
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.stretching_mass_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.stretchingPath
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.stretchingPath_apply
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.renewalPath
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.renewalPath_apply
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.original_renewal_balance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.signed_renewal_energy_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.JointCubicRenewal.hasNSEvolution_of_signed_renewal
