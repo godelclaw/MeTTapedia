@@ -150,3 +150,26 @@ The dependency audit checks nine roots, requires the geometric reduction
 consumer, and excludes complete colouring endpoints and original catalogue
 rank certificates. The joint diamond profile certificate is still retained
 by that consumer. See [overlap-measurements.json](overlap-measurements.json).
+
+## Coverage assembly and remaining local obligations
+
+The [formal coverage assembly](../../../lean/fourcolor-classical/README.md#conditional-flat-neighbourhood-coverage-assembly)
+now separates the radius and case argument from the still-open geometric
+classification. `LocalCoverageAssembly.radius_twelve` composes three local
+supply laws, transporting one complete supported occurrence through every
+change of centre. `eight_of_overlap` further decomposes the degree-eight law
+into classification, a specified second centre in an exceptional occurrence,
+and a joint closing argument for both occurrences.
+
+The concrete consumer runs on the actual quotient-face dual and excludes
+the already certified pentagonal-overlap outcome from a minimal
+counterexample. Other outcomes remain explicit residual witnesses. The
+charge input and exceptional occurrences have not yet been identified with
+the full source discharging calculation and Figure 12. The proof does not
+assume that every pair of flat cartwheels is a diamond.
+
+The [obligation record](coverage-obligations.json) lists the exact open fields
+and their source references. The [measurement record](coverage-measurements.json)
+records the kernel replay and dependency audit. From the prepared classical
+package, replay with `lake build kernelFlatCoverage`. No classical coverage
+or certificate dependency is removed by this conditional assembly.

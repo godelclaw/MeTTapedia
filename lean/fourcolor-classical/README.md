@@ -880,3 +880,57 @@ dependency audit. It adds no reduction family or classical coverage saving:
 classification of the newer paper's flat overlapping cartwheels remains open.
 The [overlap explanation and measurements](../../tools/fourcolor/near-linear/README.md#recognizing-a-diamond-through-an-overlap)
 state the exact scope and retained joint-profile certificate.
+
+## Conditional flat-neighbourhood coverage assembly
+
+`LocalCoverageAssembly.radius_twelve` proves the radius and case argument
+of [Theorem 6.7(iii)](https://arxiv.org/html/2603.24880v1#S8), conditional on
+three explicit local supply laws. These correspond to Lemmas 8.2, 8.7 and
+8.4 of Inoue, Kawarabayashi, Miyashita, Mohar, Thomassen and Thorup.
+Every outcome retains the same occurrence witness and its whole support
+when a centre moves. Degrees are actual graph degrees; finite balls use
+extended graph distance, including in disconnected graphs.
+
+```text
+all degrees in B2 at most 6 --------------------> local supply in B2
+otherwise find degree 7 or 8 within distance 2
+                   |
+             degree 7 or 8
+                   |
+       local supply, or degree 8 within distance 5
+                   |
+             local supply within B5
+                   |
+      transport the same witness: 2 + 5 + 5 = 12
+```
+
+`EightOverlapSupply` exposes the harder degree-eight branch: local
+classification gives a supported outcome or an exceptional occurrence;
+that occurrence supplies a particular second centre within distance two.
+Classification at that centre either succeeds directly or supplies a
+second exceptional occurrence. The joint closing law must consume both
+occurrences and their placement. `eight_of_overlap` proves that these
+obligations imply degree-eight supply within radius five.
+
+`FlatNeighborhoodCoverage` instantiates this assembly on the actual
+quotient-face dual. An outcome is either an overlap seam with the proved
+joint pentagon readings, or an explicitly retained residual occurrence.
+`residual_in_minimal_from_overlap` uses the existing strict reduction and
+colouring reconstruction to exclude the first alternative in a minimal
+counterexample. The residual and its full supported observations remain.
+
+The three local supply laws are still hypotheses. The exceptional pattern
+type, its placement relation and joint closing law still need exact source
+representations and proofs. The charge function is an explicit input whose
+connection to the published discharging rules remains open, as does the
+required correspondence between the source triangulation and the dual.
+No complete coverage claim follows until these obligations and the
+residual exclusions are discharged.
+
+Run `lake build kernelFlatCoverage` after preparing the existing overlap
+dependencies. The dependency audit requires the radius argument, exceptional
+overlap argument and actual reduction consumer, and rejects complete theorem
+and original rank-certificate dependencies. This result changes neither
+the 633 coverage entries nor the 629 original certificate dependencies.
+See the [coverage obligation record](../../tools/fourcolor/near-linear/coverage-obligations.json)
+and [measurements](../../tools/fourcolor/near-linear/coverage-measurements.json).

@@ -1,0 +1,111 @@
+{
+  "status": "Conditional geometric coverage assembly proved; local supply and source bridges open.",
+  "source": {
+    "paper": "https://arxiv.org/abs/2603.24880",
+    "version": "v1",
+    "assembly": "Theorem 6.7(iii)",
+    "local_lemmas": [
+      "8.2",
+      "8.7",
+      "8.4"
+    ],
+    "degree_eight_overlap": [
+      "8.3",
+      "8.4",
+      "Figures 12 and 13"
+    ]
+  },
+  "proved": [
+    {
+      "declaration": "FourColor.LocalCoverageAssembly.ball_recenter",
+      "meaning": "A ball of radius b around a vertex at distance at most a lies within radius a+b of the original centre."
+    },
+    {
+      "declaration": "FourColor.LocalCoverageAssembly.Occurs.recenter",
+      "meaning": "Preserves the same occurrence witness, validity and entire support while changing centre."
+    },
+    {
+      "declaration": "FourColor.LocalCoverageAssembly.eight_of_overlap",
+      "meaning": "Classification, a specified second centre and a joint exceptional-pattern closing law imply degree-eight supply in radius five."
+    },
+    {
+      "declaration": "FourColor.LocalCoverageAssembly.radius_twelve",
+      "meaning": "Local supply for low, seven and eight degrees implies radius-twelve supply, requiring zero predicate within radius ten and degree at most eight within radius twelve."
+    },
+    {
+      "declaration": "FourColor.FlatNeighborhoodCoverage.residual_in_minimal_from_overlap",
+      "meaning": "On the actual quotient-face dual, the certified pentagonal-overlap alternative is excluded by strict reduction and colouring reconstruction. Any remaining alternative is a supported residual occurrence."
+    }
+  ],
+  "open": [
+    {
+      "id": "source_dual_bridge",
+      "obligation": "Relate the intended embedded triangulation to the actual quotient-face dual; prove the degree, neighbourhood, embedding and source-configuration correspondences used by each local law. Face length is not silently identified with simple dual degree."
+    },
+    {
+      "id": "charge_semantics",
+      "obligation": "Define the published final charge and certify its calculation and transport; the present charge function is an explicit input."
+    },
+    {
+      "id": "low",
+      "field": "FourColor.LocalCoverageAssembly.LocalSupply.low",
+      "source": "Lemma 8.2 and Figure 10",
+      "obligation": "Actual degree-at-most-six radius-two neighbourhood supplies a supported certified reduction or obstructing-cycle outcome."
+    },
+    {
+      "id": "seven",
+      "field": "FourColor.LocalCoverageAssembly.LocalSupply.seven",
+      "source": "Lemmas 8.5-8.7",
+      "obligation": "Actual degree-seven centre with charge zero on radius three and degree at most seven on radius five supplies a supported outcome in radius five."
+    },
+    {
+      "id": "eight_classification",
+      "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.classify",
+      "source": "Lemma 8.3",
+      "obligation": "Certify adjacent 8-8, sole higher neighbour 8-7 and closest 7-8-7 cases, including the justified selection of those cases and all degenerate alternatives, producing a supported outcome or an actual exceptional occurrence."
+    },
+    {
+      "id": "exception_representation",
+      "field": "X",
+      "source": "Figure 12",
+      "obligation": "Decode the exceptional pattern as an actual embedded occurrence, retaining vertex identities, cyclic order, prescribed degrees and shared boundaries."
+    },
+    {
+      "id": "exception_next",
+      "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.next",
+      "source": "Lemma 8.4",
+      "obligation": "The actual exceptional occurrence supplies the specified degree-eight second centre within distance two and its geometric placement relation."
+    },
+    {
+      "id": "exception_joint_close",
+      "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
+      "source": "Figure 13 and Lemma 8.4",
+      "obligation": "Two actual exceptional occurrences in the specified placement force a certified supported reduction or obstruction. Preserve all shared identities and colouring choices."
+    },
+    {
+      "id": "residuals",
+      "obligation": "Define and handle every retained residual outcome, including obstructing cycles and other reduction families. The existing overlap theorem handles only its own joint pentagon readings."
+    },
+    {
+      "id": "global_coverage",
+      "obligation": "Connect the completed flat branch to the other charge and degree cases, occurrence supply, termination and full intended graph class."
+    }
+  ],
+  "next_bounded_attack": {
+    "target": "exception_representation, exception_next and exception_joint_close",
+    "test": "Decode Figures 12 and 13 from pinned source programs or exact reconstructed inputs; check complete adjacency, cyclic stars, prescribed degrees and placement of the second centre before claiming the close branch.",
+    "acceptance": "An actual embedded occurrence theorem consumed by eight_of_overlap through its stated placement contract, or a checked obstruction identifying the exact missing condition."
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "coverage_entries_removed_here": 0,
+    "certificate_dependencies_replaced_here": 0
+  },
+  "limits": [
+    "No inhabitant of all local supply fields is claimed.",
+    "No complete translation of the source exceptional pattern is claimed.",
+    "No scheduling, executable global recolouring or near-linear runtime is proved.",
+    "The existing joint diamond profile certificate remains in the reduction consumer."
+  ]
+}

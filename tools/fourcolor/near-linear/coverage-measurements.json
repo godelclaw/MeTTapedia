@@ -1,0 +1,78 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.LocalCoverageAssembly",
+      "source_sha256": "f26f61da7819e9129b5870e01f3ee8ebbaf875878b709a99456e535446dede21",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.986,
+      "olean_bytes": 209296,
+      "olean_sha256": "95875e9ae9c165cebc8152f0269a16c03e83f9a6b6b2497ba2dc86749a1fbe49"
+    },
+    {
+      "module": "MettapediaFourColor.FlatNeighborhoodCoverage",
+      "source_sha256": "0a6d2d448a328a1f7d16beb95076dec7c6176ef7e64a26efbf4e618f5626e111",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.036,
+      "olean_bytes": 128552,
+      "olean_sha256": "1178f7ee59e4548020f8a58dacd06b3154d538d7878ba04c7b1e4990331e78d2"
+    },
+    {
+      "module": "MettapediaFourColor.FlatNeighborhoodCoverageAudit",
+      "source_sha256": "7632dc6a3c5892f3188b3dcc1674b3af767735cc118e85c082400b38650f9960",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.743,
+      "olean_bytes": 2608,
+      "olean_sha256": "c286bc584beea61c48bcd381c1319795b75e4872c7e940cc3cb061a675a6ee6f"
+    }
+  ],
+  "status": "Kernel replay, eleven-root dependency audit, classical regression and full lane build passed.",
+  "recorded_at": "2026-10-01T20:00:39.043581+00:00",
+  "base_revision": "eaed925d684b0b634fb44f3fc731a7ea6a71324e",
+  "replay_command": "lake build kernelFlatCoverage",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 11,
+    "declarations_in_dependency_closure": 27325,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false,
+    "existing_joint_diamond_profile_certificate_retained": true
+  },
+  "mathematical_scope": {
+    "conditional_assembly": "Actual graph distances and degrees; local supply at radii two and five composes within radius twelve without changing an occurrence witness.",
+    "charge_radius": 10,
+    "degree_radius": 12,
+    "exceptional_overlap": "Two classifications with the second centre within distance two, retaining the first occurrence and its placement in the closing contract.",
+    "consumer": "The actual quotient-face dual; the existing pentagonal-overlap strict reduction excludes one supported outcome from a minimal counterexample and leaves a genuine residual occurrence.",
+    "missing": "Local classification, exact exceptional-pattern source representation, charge and dual-graph bridges, residual handling and global coverage."
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "obligation_record": "coverage-obligations.json",
+  "primary_reference": "https://arxiv.org/html/2603.24880v1#S8",
+  "regression": {
+    "classical_command": "lake build kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}
