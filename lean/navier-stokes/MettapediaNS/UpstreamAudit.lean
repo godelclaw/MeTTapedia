@@ -47,6 +47,7 @@ import MettapediaNS.JointSourceHistory
 import MettapediaNS.JointCubicRenewal
 import MettapediaNS.PairCycleHistory
 import MettapediaNS.AnisotropicCycleHistory
+import MettapediaNS.PlanarParentReserve
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1407,3 +1408,19 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixth_interval_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.sixth_unit
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AnisotropicCycleHistory.finite_profile_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.parentReserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.rateFactor
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.parentRate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.feedback
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.parentReserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.parentReserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.feedback_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.parent_payment_with_feedback
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.unforced_parent_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.receiverReserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.receiverReserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.receiverReserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.receiver_payment_with_feedback
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.unforced_receiver_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.unforced_absolute_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PlanarParentReserve.interval_payment

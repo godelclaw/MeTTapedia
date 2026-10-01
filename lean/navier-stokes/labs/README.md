@@ -11465,6 +11465,228 @@ the two opposite signs exactly.
 The decisive special property is explicit control of the complete
 horizontal parent strain: its integral is at most `L/(2nu)`. The parents
 do interact through advection and pressure, but their joint horizontal
-motion decays autonomously. Parents whose joint strain can be amplified
-again are still the open case. This paid example and the favorable
-coefficient law guide that question without settling it.
+motion decays autonomously. The next section removes this restriction
+within the planar class, while keeping three-dimensional feedback as
+an explicit open source cost.
+
+## A strain-paying reserve for interacting planar parents
+
+The [exact checker](planar_parent_reserve.py) and
+`MettapediaNS.PlanarParentReserve` connect a nonlinear parent reserve to
+the actual mean/fluctuation split of NS. The positive result applies to
+all smooth planar parents, rather than only Laplacian eigenfields.
+The reserve's failure under genuine three-dimensional feedback identifies
+a specific signed source bill; it does not refute an allowance depending
+on the full initial fluid.
+
+All spatial integrals here are normalized means on the `2*pi` torus.
+Let `v=(v1,v2)` be a smooth mean-zero two-dimensional NS velocity,
+`omega=partial_x v2-partial_y v1`, and put
+
+```text
+Z = ||omega||_2^2,  Y = ||grad omega||_2^2,  W = ||Delta omega||_2^2,
+q = ||grad v||_{L-infinity,Frobenius},  nu > 0.
+```
+
+Mean zero is preserved; a constant mean velocity can also be removed
+by a Galilean translation. Poincare gives `0<=Z<=Y<=W`.
+Vorticity has no stretching source in this planar equation:
+
+```text
+Z' = -2nu Y,
+Y' = -2nu W + 2T,
+T = -mean sum_ij (partial_i omega)(partial_i v_j)(partial_j omega).
+```
+
+The following elementary estimates fix generous constants explicitly:
+
+```text
+||f||_4^2 <= 16 ||f||_2 ||grad f||_2       (mean-zero vector f on T2),
+q <= 4 sqrt(W),
+2|T| <= nu W + (256/nu) ZY.
+```
+
+For the first inequality, the one-dimensional fundamental theorem gives
+`sup_x |f(x,y)|^2 <= mean_x |f|^2 + 4pi mean_x |f||partial_x f|`,
+and similarly in `y`. Multiply these two bounds and average to get
+`||f||_4^2 <= ||f||_2^2 + 4pi ||f||_2 ||grad f||_2`.
+Poincare and `1+4pi<16` finish the estimate. This argument applies to
+`f=grad omega`, for which `||grad f||_2^2=W` by Parseval.
+For the second inequality, the Fourier multiplier from `omega` to
+`grad v` has Frobenius norm one. Cauchy--Schwarz bounds its absolute
+Fourier sum by `sqrt(sum_{k!=0}|k|^-4) sqrt(W)`. There are `8n` lattice
+points with `max(|k1|,|k2|)=n`; hence the sum is at most
+`8 sum n^-3 <= 12 < 16`. Finally `||grad v||_2=sqrt(Z)` and Young's
+inequality give the bound on `T`. No future norm is assumed.
+
+### A nonlinear original-state reserve
+
+Define
+
+```text
+r(Z,Y) = (8/nu) sqrt(Y) exp(64 Z/nu^2) >= 0.
+```
+
+Where `Y>0`, the actual chain rule and the preceding physical estimates
+give
+
+```text
+r'/r = Y'/(2Y) + 64 Z'/nu^2
+      <= -nu W/(2Y) - (128/nu)(Y-Z),
+-r' >= 4 exp(64 Z/nu^2) W/sqrt(Y) >= 4 sqrt(W) >= q.
+```
+
+Thus the same original reserve pays every compatible interval:
+`integral_s^t q <= r(s)-r(t) <= r(s)`. No independent heat evolution,
+fixed parent orientation or smallness assumption enters this estimate.
+The exponential factor spends the parent vorticity norm to pay possible
+growth of its gradient; it does not assume that `Y` decreases.
+If `Y` reaches zero, the unforced planar velocity is zero and remains
+zero. The estimate extends by continuity to that endpoint and beyond.
+It first applies on every smooth prefix. The finite strain integral
+then supplies ordinary smooth continuation of the planar parent.
+
+The checker includes
+`psi=cos x+(1/2)cos(2y)+(1/3)cos(x+2y)`, `v=(-psi_y,psi_x)`.
+Its initial values are `Z=35/9`, `Y=139/9`, `W=605/9`, and `T=1`.
+At `nu=1/100`, `Y'=59/90>0`. The parent vorticity advection is nonzero;
+this is not an autonomously heat-decaying flow. The reserve still pays.
+
+### Composition with the vertical receiver
+
+Let `theta` solve the actual scalar equation
+`theta_t+v.grad theta=nu Delta theta` from arbitrary smooth mean-zero
+data. Then `u=(v1,v2,theta)`, independent of `z`, solves unforced 3D NS
+with the parent's canonical pressure. The vertical component does not
+feed the parent because its vertical derivatives vanish identically.
+Set
+
+```text
+E = ||grad theta||_2^2, D = ||Delta theta||_2^2,
+G = -mean sum_ij (partial_i theta)(partial_i v_j)(partial_j theta).
+E' = 2G - 2nu D,     |G| <= q E.
+V = E (exp(2r)-1) >= 0.
+```
+
+`G` is also the full physical cubic vorticity stretching of this 2.5D
+flow: the horizontal parent enstrophy equation has no cubic production.
+Direct differentiation, keeping the diffusion, gives
+
+```text
+V' + 2|G| + 2nu (exp(2r)-1)D <= 0,
+2 integral_s^t |G| <= V(s)-V(t).
+```
+
+This is a compositional payment, using the parent's remaining reserve
+and the receiver's actual gradient energy. It is never reset at a seam.
+Also `(E exp(2r))' <= -2nu E exp(2r)`, since `D>=E`. Consequently
+
+```text
+||grad u(t)||_2^2 <= [Z(0)+E(0)exp(2r(0))] exp(-2nu t).
+```
+
+The constants can be large but are finite from the original smooth data
+and viscosity. Global smooth realization follows by the planar strain
+bound and the linear scalar equation. These are analytic statements;
+they are not whole-space finite-energy consequences of a periodic lift.
+
+The physical stochastic representation uses the actual parent drift:
+for fixed `t,x`, solve `dX_s=-v(t-s,X_s)ds+sqrt(2nu)dB_s`, `X_0=x`.
+Then `omega(t,x)=E[omega0(X_t)]` and `theta(t,x)=E[theta0(X_t)]`.
+The same backward process transports both labels. Its spatial Jacobian
+is bounded by `exp(integral_0^t q)<=exp(r(0))`. This identifies the
+stochastic histories for this class. Differentiating the scalar formula
+therefore gives the additional direct continuation bound
+
+```text
+||curl u(t)||_infty <= ||omega0||_infty
+                      + ||grad theta0||_infty exp(r(0)).
+```
+
+It holds on every smooth prefix with one original-datum constant, so its
+finite-horizon time integral satisfies the vorticity continuation
+criterion. This is an analytic physical bridge, not an optimization over
+independent fluid forces or a general Schroedinger-bridge identification.
+
+### The complete three-dimensional replenishment defect
+
+For any smooth 3D periodic NS prefix, average in `z`, write
+`bar u=(v1,v2,theta)` and `a=u-bar u`. The Reynolds tensor and sources are
+
+```text
+R_ij = average_z(a_i a_j),
+F_h = -div_h R_hh,  F_theta = -div_h R_zh,
+F = curl_h F_h.
+```
+
+The parent momentum retains `-grad_h average_z p`; taking its curl
+removes that gradient exactly. The mean equations are
+
+```text
+omega_t+v.grad omega = nu Delta omega+F,
+theta_t+v.grad theta = nu Delta theta+F_theta.
+A = <omega,F>, B = <grad omega,grad F>, C = <grad theta,grad F_theta>.
+Z'=-2nu Y+2A,   Y'<=-nu W+(256/nu)ZY+2B,
+E'=2G-2nu D+2C.
+```
+
+The same functions now satisfy, wherever `Y>0`,
+
+```text
+J = r [B/Y+128 A/nu^2],
+r'+q <= J,
+V'+2|G|+2nu(exp(2r)-1)D
+  <= 2(exp(2r)-1)C + 2E exp(2r)J.
+```
+
+The signed `A`, `B` and `C` are literal actual-fluid work, not freely
+chosen controls. Norms of smooth parent fields make `r` locally
+absolutely continuous. On the zero-vorticity set its derivative is zero
+almost everywhere; the source formulas may be defined as zero there.
+The pointwise positive-`Y` theorem and this analytic almost-everywhere
+passage must be distinguished.
+
+The unresolved field also retains its complete enstrophy ledger. If
+`E_a=||grad a||_2^2`, `D_a=||Delta a||_2^2` and `G_full` is the actual
+full 3D stretching, orthogonality of the mean split gives
+
+```text
+E_a'/2 + nu D_a = G_full-G-A-C.
+```
+
+There is no assumption that this term or the replenishment bill has a
+favorable sign. A sufficient global reserve still needs to pay their
+joint history from the full original datum. The mean reserve by itself
+does not control `E_a` or the full 3D continuation criterion.
+
+An exact initial fixture makes the failure of unconditional decrease
+visible. Take horizontal parent coefficients at `p=(1,2,0)` equal to
+`i*(-1/5,1/10,0)`, vertical receiver `2sin x`, and hidden cosine modes
+`epsilon*(1,-1,0)cos(x+y+z)` and
+`sigma*epsilon*(1,1,1)cos(-y+z)`, `sigma=+1` or `-1`.
+All fields are real and solenoidal. The full canonical NS source gives
+
+```text
+Z=1/2, Y=5/2, W=25/2, E=2, T=0, C=0,
+A=2 sigma epsilon^2, B=10 sigma epsilon^2,
+J/r=sigma epsilon^2 (4+256/nu^2).
+```
+
+At `nu=1/5`, `epsilon=1`, the actual `r'/r` is `4803` for the plus
+phase and `-8005` for the minus phase. Thus the same unforced initial
+energy can produce opposite reserve derivatives; the plus phase really
+increases the candidate parent reserve on a smooth short-time interval.
+This refutes dropping `J`, not a corrected joint reserve. Adding
+`2sin(x+2y)` to the receiver gives the independent nonzero term
+`C=-(5/2)sigma` and `E=12`. The checker verifies both source terms,
+the exact mean PDE, full and fluctuation enstrophy balances, and equal
+opposite kinetic transfers between mean and hidden modes.
+
+The checker has 36 Gaussian-rational fixtures and symbolic derivative
+identities; it runs with `python3 -O labs/planar_parent_reserve.py`.
+Every nonlinear output is retained. These are exact initial PDE checks,
+not a finite-mode evolution, numerical history enclosure or a recurrence
+theorem. Scalar calculus, absorption and common-reserve interval payment
+are Lean-certified under their displayed hypotheses. The periodic
+functional inequalities, stochastic representation, full PDE passage
+and zero-set argument above remain analytic.

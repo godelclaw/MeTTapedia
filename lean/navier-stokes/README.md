@@ -1652,6 +1652,29 @@ positive cumulative mixed stretching. Those numerical signs have no
 continuum enclosure. See [the exact cellular calculation, original
 reserve and numerical refinements](labs/README.md#positive-mixed-renewal-with-a-finite-original-allowance).
 
+The next [planar parent reserve](labs/README.md#a-strain-paying-reserve-for-interacting-planar-parents)
+allows arbitrary smooth mean-zero horizontal two-dimensional NS data,
+including nonlinear parent interactions and initial gradient growth.
+Writing `Z=||omega||_2^2` and `Y=||grad omega||_2^2` on the normalized
+`2*pi` torus, its explicit original-state reserve is
+
+```text
+r = (8/nu) sqrt(Y) exp(64 Z/nu^2),     -r' >= ||grad v||_infty.
+V = ||grad theta||_2^2 (exp(2r)-1),   -V' >= 2 |G_theta|.
+```
+
+Here `theta` is an arbitrary advected vertical component, and the full
+flow remains independent of the vertical coordinate. The continuum
+identification and periodic Sobolev estimates are analytic.
+`MettapediaNS.PlanarParentReserve` certifies the scalar derivative,
+absorption, receiver composition and interval-payment inequalities with
+their explicit hypotheses. The reserve is not an arbitrary 3D Lyapunov
+function: the averaged equations of a general 3D flow introduce actual
+Reynolds sources. Both signed source works remain in the formal
+inequality, and exact complete Fourier checks exhibit an increasing
+parent reserve under internal, unforced transfer. Paying those sources
+together with the unresolved field is the remaining physical obligation.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
