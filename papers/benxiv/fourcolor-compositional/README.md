@@ -134,6 +134,20 @@ Kempe-move program or give exact colouring counts. The next geometric target
 is to recognize this disk from actual source face incidences and transport
 the reduction back to that source; universal coverage remains open.
 
+The [actual-occurrence consumer](../../../lean/fourcolor-classical/MettapediaFourColor/TwoDiamondOccurrenceReduction.lean)
+now completes the source-transport part. Given an exact identification with
+a literal vertex shore, it constructs the actual complementary exterior and
+seam, applies the cycle reduction and reconstructs a colouring of the source.
+The [generic occurrence adapter](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleVertexOccurrence.lean)
+proves that reassembly preserves vertices, edge pairs and rotations; every
+assembled colouring transports pointwise. The complete operation removes
+twelve vertices and excludes such an occurrence from a vertex-minimal
+counterexample. It imposes no exterior-connectivity or extra normal-form
+hypothesis. Its [audit receipt](../../../tools/fourcolor/classical/two-diamond-occurrence-measurements.json)
+retains only the configuration-6 base in repair. The next obligation is to
+derive the exact occurrence from useful face incidences, then prove supply
+in a justified residual class. No further catalogue entry is removed.
+
 For one complete example, see [ten charge checks from three representatives](reflection-example/README.md):
 semantic bounds, a general reflection theorem, and an audited replacement in
 the finished proof. It illustrates discharging compression; the diamond example

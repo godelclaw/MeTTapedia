@@ -1,5 +1,17 @@
 # Classical Four Colour sources and compression baseline
 
+The [actual-occurrence receipt](two-diamond-occurrence-measurements.json)
+connects the shared-tip reduction to a supplied exact vertex shore of an
+actual source graph. It proves a twelve-vertex decrease, preservation of
+the required map class and reconstruction back to the source. The generic
+reassembly adapter retains every vertex, edge pair and rotation; the same
+adapter transports supplied colourings pointwise. The twelve-root audit
+permits only configuration 6's retained base in repair and excludes complete
+colouring endpoints. An exact occurrence excludes a vertex-minimal
+counterexample, but the theorem does not yet derive that occurrence from a
+face pattern or supply coverage. Counts remain 633 coverage entries and
+629 original configuration certificates.
+
 The [boundary-hub reconstruction receipt](two-diamond-hub-measurements.json)
 records the exact removal of the shared-tip disk's exterior-closure hypothesis.
 The actual twenty-vertex disk is replaced by its eight-cycle, losing twelve

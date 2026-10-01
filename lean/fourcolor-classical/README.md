@@ -32,6 +32,18 @@ It permits disconnected exteriors and may recolour them. The repair still
 uses configuration 6's retained base certificate. Recognition of the disk in
 an arbitrary source and geometric coverage remain separate obligations.
 
+`TwoDiamondOccurrenceReduction` now transports this reduction to an actual
+source graph supplied with an exact vertex-shore occurrence. The reusable
+`OpenTangleVertexOccurrence` adapter constructs the complementary exterior,
+preserves source vertices, rotations and edge pairs, and transports every
+assembled colouring pointwise back to the source. The smaller map has twelve
+fewer vertices, and every supplied smaller colouring reconstructs. Such an
+occurrence therefore excludes a source from the vertex-minimal counterexample
+class. No exterior-connectivity or extra normal-form premise is needed.
+Deriving the occurrence from a face pattern, finding one and proving global
+coverage remain separate. Replay the twelve-root dependency and axiom audit
+with `lake build MettapediaFourColor.TwoDiamondOccurrenceAudit`.
+
 `TwoDiamondBoundaryHub` replaces the disk by one ordered eight-valent hub
 for reference Kempe semantics. Equal face returns preserve literal exterior
 cofaciality; the spherical source gives a planar plain quasicubic reference

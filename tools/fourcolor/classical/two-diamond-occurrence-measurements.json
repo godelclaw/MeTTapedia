@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "status": "kernel checked actual-source occurrence reduction",
+  "completed_utc": "2026-10-01T17:54:53.478181+00:00",
+  "base_fourcolor_revision": "0d08088a470a1c51c2c997e709e888e3adef3aae",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "toolchain": "leanprover/lean4:v4.34.0-rc2",
+  "local_modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleVertexOccurrence",
+      "source": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/OpenTangleVertexOccurrence.lean",
+      "source_sha256": "8abf9b58309e3170ba3a42e386d0bba3d3b4879af717efa9c563da5b90a79fd9",
+      "olean_bytes": 391096,
+      "olean_sha256": "09d0bc5742364a926e4272620611a769f5ff4861c045b8ddd6385c6895b5d9a3"
+    },
+    {
+      "module": "MettapediaFourColor.TwoDiamondOccurrenceReduction",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondOccurrenceReduction.lean",
+      "source_sha256": "710267c2e7ef246c0a2e32efaed339b1469cedd0036775560fc97ce3fdcf1a85",
+      "olean_bytes": 203808,
+      "olean_sha256": "24e197a6d8066006eb1030d123eb9c4252eceebbe940b10d85b87399506a464d"
+    },
+    {
+      "module": "MettapediaFourColor.TwoDiamondOccurrenceAudit",
+      "source": "lean/fourcolor-classical/MettapediaFourColor/TwoDiamondOccurrenceAudit.lean",
+      "source_sha256": "77df9f69f5972944c32c3d9cd272142ea99b2b9566f20cb8a1d4bd582cfa8b9a",
+      "olean_bytes": 3456,
+      "olean_sha256": "91bc06eef6062cb2b41418d1ad2d90e20af25a76cd2fdbb2ff09894766cd7120"
+    }
+  ],
+  "classical_gate": {
+    "command": "lake build MettapediaFourColor.TwoDiamondOccurrenceAudit",
+    "working_directory": "lean/fourcolor-classical",
+    "exit_code": 0,
+    "jobs": 3694
+  },
+  "main_gate": {
+    "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "working_directory": "lean/mettapedia",
+    "exit_code": 0,
+    "jobs": 11195
+  },
+  "complete_assembly_validation": {
+    "reused_checked_receipt": "two-diamond-hub-measurements.json",
+    "prepared_dependency_source_and_artifact_hashes_rechecked": 126,
+    "complete_endpoint_source_and_artifact_hashes_rechecked": 4,
+    "all_unchanged": true,
+    "new_replay_performed": false
+  },
+  "proof_audit": {
+    "roots": 12,
+    "dependency_declarations": 25308,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "geometry_and_transport_forbid_all_bulk_certificates": true,
+    "reconstruction_retained_configuration": "FourColor.Bulk.Cfg005.hgood",
+    "other_configuration_certificates_forbidden": true,
+    "complete_colouring_endpoints_forbidden": true,
+    "requires_actual_source_transport": true,
+    "requires_minimality_supplier": true
+  },
+  "geometry": {
+    "source_piece_vertices": 20,
+    "replacement_vertices": 8,
+    "ordered_boundary_ports": 8,
+    "whole_source_vertex_loss": 12,
+    "disconnected_exteriors_allowed": true,
+    "extra_minimum_face_or_internal_six_hypotheses": false
+  },
+  "generic_result": "OpenTangleVertexOccurrence reassembles any supplied exact open-piece vertex-shore occurrence with a chosen boundary port. Its dart and vertex equivalences preserve edge pairing, incidence and rotations. It transports the full geometric map class, every supplied colouring pointwise, colourability in both directions and the complete vertex count.",
+  "source_consumer": "For a finite simple source graph with spherical cubic connected bridgeless rotation data and an exact twenty-vertex shared-tip occurrence, construct its actual exterior and seam, replace the piece by the eight-cycle, prove twelve fewer vertices and reconstruct every supplied smaller-map colouring. An exact occurrence is therefore excluded from the graph-backed vertex-minimal counterexample class.",
+  "credited": {
+    "catalogue_entries_removed": 0,
+    "reference_certificate_dependencies_replaced": 0,
+    "new_coverage_theorems": 0,
+    "kernel_seconds_saved": 0,
+    "artifact_bytes_saved": 0
+  },
+  "complete_assembly": {
+    "consumes_new_occurrence_reduction": false,
+    "configurations_retained": 633,
+    "original_configuration_certificate_dependencies_retained": 629,
+    "shared_discharging_computations": 231
+  },
+  "limits": "The exact occurrence is supplied. No recognizer from face incidences, universal occurrence finder or coverage theorem is established. Reconstruction may recolour the exterior and retains configuration 6. No executable Kempe history or count preservation is claimed. The generic pointwise transport applies to a supplied assembled colouring, not directly to the smaller colouring before repair.",
+  "remaining": "Derive the exact occurrence from a useful actual face pattern, then establish supply in a justified residual class and replace consumed coverage obligations."
+}

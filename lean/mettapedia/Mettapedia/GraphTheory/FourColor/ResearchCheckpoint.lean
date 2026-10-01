@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.OpenTangleVertexOccurrence
 import Mettapedia.GraphTheory.FourColor.TwoDiamondBoundaryElimination
 import Mettapedia.GraphTheory.FourColor.RotationConservedFacePotential
 import Mettapedia.GraphTheory.FourColor.OpenTangleBoundaryHub
