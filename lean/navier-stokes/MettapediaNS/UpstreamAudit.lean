@@ -31,6 +31,7 @@ import MettapediaNS.WholeSpacePressureProduction
 import MettapediaNS.SelectedPressureCotangent
 import MettapediaNS.JointReceiverDiffusion
 import MettapediaNS.SignedViscousPressure
+import MettapediaNS.PressureImpulseHistory
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
 import MettapediaNS.WholeSpaceUnforcedEnergy
@@ -1028,3 +1029,34 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.soft_excess_le_augmented
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.initialized_augmentedExcess
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SignedViscousPressure.massEnvelope_of_augmented_excess
+
+/-! Literal passive PDE, paid signed pressure history and retained seam state. -/
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.passiveRhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.impulse
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.gradientCost
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.gradientCost_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.passiveRhs_toLp
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.impulse_rhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.passive_energy_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.gradientCost_sub_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.gradientCost_continuous
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.impulseField
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.impulse_continuous
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.impulse_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.impulse_hasDerivWithinAt
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.passive_balance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.velocity_balance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.impulse_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.pressureWork
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.pressureWork_continuous
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.pressure_work_balance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.signed_pressure_work_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.spent
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.spent_eq_pressureWork
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.spent_bounds
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.reserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.spent_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.pressure_work_between
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PressureImpulseHistory.PassiveHistory.pressure_work_between_paid

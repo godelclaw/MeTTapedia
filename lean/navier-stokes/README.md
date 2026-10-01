@@ -912,9 +912,48 @@ where the generator has an additional force-production leg.
 The [signed source checker](labs/signed_viscous_pressure.py) retains every
 3D Fourier parent/output and a nonzero selector flux. Optional independent
 quadratures use the actual soft selector and full initial PDE generator,
-not an initialized history or a continuum enclosure. See the
+with an optional datum-fixed threshold above the initial envelope. They
+do not construct a time history or a continuum enclosure. See the
 [complete derivation](labs/README.md#signed-viscous-pressure-flux-and-a-reserve-financed-by-the-full-datum)
 for the precise costs, finite initial deposit and remaining signed estimate.
+
+### A paid pressure-impulse history on the actual fluid drift
+
+`PressureImpulseHistory` uses an actual unforced whole-space `NSEvolution`
+and a componentwise passive history `H` transported and diffused by that
+velocity, with `H(0)=u_0`. The auxiliary structure contains its literal PDE
+and smoothness, without an assumed energy estimate. For `I=H-u`, Lean proves
+
+```text
+(partial_t+u.grad-nu Delta)I=grad p,      I(0)=0,
+spent(t)=||I(t)||_2^2+2nu integral_0^t ||grad I||_2^2
+        =2 integral_0^t <I,grad p>,
+0<=spent(t)<=4||u_0||_2^2.
+```
+
+The nonnegative reserve `4||u_0||_2^2-spent(t)` pays the signed work on
+each later interval, retaining `H`, `I` and the original initial label.
+Signed payments may decrease; positive variations are not controlled.
+Construction of this auxiliary PDE history and its stochastic realization
+are analytic, not kernel-certified existence results.
+
+The analytic backward stochastic formula identifies the transported
+memory `C` with covariance of the PRESSURE-COMPENSATED terminal velocity.
+Covariance of the raw terminal velocity is different. The joint summary
+retains the cross moment between the initial velocity and its pressure
+impulse, as checked on full evolving 3D NS time jets. For forced flow the
+compensation contains `grad p-f`; the force impulse cannot be erased even
+when its instantaneous kinetic work vanishes.
+
+This supplies a paid physical history channel, rather than a bound on
+critical stretching. Its named geometric consumer is the response of a
+changing pressure-Hessian receiver `N`: with `A=grad I`, the analytic identity
+`P=(partial_t+u.grad-nu Delta)A+AB` retains the full adjoint response
+`N B^T-(partial_t+u.grad+nu Delta)N` and its endpoints. Controlling that
+response from the original full datum remains open. Neither a
+Schrodinger-bridge optimizer nor the full nonlinear reserve is identified
+with the paid impulse alone. See the
+[history derivation and bounded tests](labs/README.md#pressure-compensated-history-a-paid-channel-and-its-geometric-consumer).
 
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |

@@ -4,8 +4,9 @@
 Every polynomial initial PDE output is resolved on independent periodic
 grids. The nonpolynomial observable is integrated by quadrature. This is
 not a time evolution, continuum enclosure or nonlinear history bound.
-The fixed b=40 tests the all-active spatial consumer, not initialization
-above the initial supremum.
+The default b=40 tests the all-active spatial consumer. The optional
+initialized case uses an analytic Fourier bound above the full initial
+supremum, with zero initial soft excess.
 """
 
 import json
@@ -52,7 +53,25 @@ class Grid:
         return result.real
 
 
-def check(n, amplitude, sign, nu=.1, b=40):
+def datum_threshold(amplitude):
+    """A fixed analytic Fourier bound, independent of the quadrature grid."""
+    import pressure_history_source as f
+    u = [f.scale(amplitude, q) for q in interacting_datum()]
+    B = f.jac(u)
+    P = f.hess(f.tensor_pressure(f.tensor(u, u)))
+
+    def square_bound(M):
+        return sum(sum(abs(a.x)+abs(a.y) for a in q.values())**2
+                   for row in M for q in row)
+
+    r, pressure_square = square_bound(B), square_bound(P)
+    # sigma=1, and Phi_infinity=1+48sqrt(2)<100. The complete
+    # branch upper bound is uniform in the positive vorticity regularizer.
+    bound = 100+256*(r*r+r+2*pressure_square)
+    return int(bound)+1
+
+
+def check(n, amplitude, sign, nu=.1, b=40, initialized=False):
     g = Grid(n)
     u = np.stack([sign*amplitude*g.field(q) for q in interacting_datum()], axis=-1)
     B = g.jac(u)
@@ -68,10 +87,15 @@ def check(n, amplitude, sign, nu=.1, b=40):
     PG = g.jac(qgrad)
     Ct = 2*nu*G
     Phi, _, _, _, _, _, _, _, _ = slots(B, P)
-    if np.min(Phi) <= b:
+    if initialized:
+        b = datum_threshold(amplitude)
+        if np.max(Phi) >= b:
+            raise ArithmeticError('datum-fixed above-initial threshold required')
+    elif np.min(Phi) <= b:
         raise ArithmeticError('all-active consumer required')
-    a = 1-b*b/Phi**2
-    beta = 2*b*(1-b/Phi)
+    active = Phi > b
+    a = np.where(active, 1-b*b/Phi**2, 0)
+    beta = np.where(active, 2*b*(1-b/Phi), 0)
     DPhi = np.zeros(g.k2.shape)
     J = np.zeros_like(DPhi)
     parent = np.zeros_like(DPhi)
@@ -81,10 +105,10 @@ def check(n, amplitude, sign, nu=.1, b=40):
         E, L = g.deriv(B, j), g.deriv(P, j)
         dPsi, ddPsi = Prefix.observable(B, P, (E, L))
         dPhi = dPsi+2*dot(P, L)
-        da = 2*b*b*dPhi/Phi**3
+        da = np.where(active, 2*b*b*dPhi/Phi**3, 0)
         grad_a.append(da)
         DPhi += nu*(ddPsi+2*dot(L, L))
-        J += nu*2*b*b*dPhi*dPhi/Phi**3
+        J += np.where(active, nu*2*b*b*dPhi*dPhi/Phi**3, 0)
         parent += r*dot(E, E)
         crossed += np.trace(E@E, axis1=-2, axis2=-1)
     grad_a = np.stack(grad_a, axis=-1)
@@ -132,6 +156,8 @@ def check(n, amplitude, sign, nu=.1, b=40):
     if abs(source) > .75*native+tol or direct+.25*native > reaction-capacity+tol:
         raise ArithmeticError('augmented full generator payment')
     return {'grid': n, 'amplitude': amplitude, 'velocity_sign': sign, 'test_threshold': b,
+            'initialized_above_initial_envelope': initialized,
+            'initial_envelope_sample_max': float(np.max(Phi)),
             'source_gradient_cost': float(source_cost), 'source_divergence_cost': float(div_cost),
             'local_parent_cost': float(parent_cost), 'unselected_diffusion': float(nativeD),
             'selected_diffusion': float(selectedD), 'selector_diffusion': float(Jmean),
@@ -144,8 +170,9 @@ def check(n, amplitude, sign, nu=.1, b=40):
             'relative_identity_errors': errors}
 
 
-def diagnose():
-    cases = [check(n, 1, sign) for n in (96, 128) for sign in (-1, 1)]
+def diagnose(initialized=False):
+    cases = [check(n, 1, sign, initialized=initialized)
+             for n in (96, 128) for sign in (-1, 1)]
     coarse = {(q['amplitude'], q['velocity_sign']): q for q in cases if q['grid'] == 96}
     comparisons = []
     if not (min(q['complete_signed_nonlinear_work'] for q in cases) < -1 and
@@ -162,8 +189,9 @@ def diagnose():
             raise ArithmeticError(('independent quadrature mismatch', changes))
         comparisons.append({'amplitude': q['amplitude'], 'velocity_sign': q['velocity_sign'],
                             'relative_changes': changes})
-    return {'cases': cases, 'independent_quadratures': comparisons,
-            'scope': 'actual initial PDE generator; no initialized history or continuum enclosure'}
+    scope = ('datum-fixed above-initial threshold; actual initial generator, not a time history'
+             if initialized else 'actual initial PDE generator; no initialized history or continuum enclosure')
+    return {'cases': cases, 'independent_quadratures': comparisons, 'scope': scope}
 
 
 if __name__ == '__main__':

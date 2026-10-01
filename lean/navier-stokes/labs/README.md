@@ -8015,3 +8015,198 @@ derivative is approximately `+212910.63`. Thus even this corrected reserve
 need not decrease at an active state. The initial resources are finite,
 and the test uses a threshold BELOW the initial envelope. Neither an
 initialized full-datum allowance nor arbitrary-data regularity is refuted.
+
+## Pressure-compensated history: a paid channel and its geometric consumer
+
+The previous correction pays the explicit viscous pressure channel while
+retaining the full nonlinear reaction. A second positive component now pays
+one genuine pressure history on the actual fluid drift. This payment comes
+from incompressible transport and viscosity, with the original initial label
+retained at every seam. It does not yet control the weighted geometric
+receiver or the arbitrary-data continuation criterion.
+
+### Literal passive transport and its signed pressure reserve
+
+On an existing smooth unforced NS prefix, put
+
+```text
+D=partial_t+u.grad-nu Delta,
+Du=-grad p,      div u=0,
+DH=0,           H(0)=u_0,
+I=H-u,          DI=grad p,           I(0)=0.
+```
+
+The passive vector `H` need not be solenoidal. Only the actual fluid drift
+must be incompressible. The auxiliary linear parabolic equation can be
+constructed on each existing smooth prefix; the bound below requires no
+constant depending on its unknown future derivatives. That construction
+and its stochastic representation are analytic here, not Lean existence
+theorems.
+
+`MettapediaNS.PressureImpulseHistory.PassiveHistory` contains the literal
+passive PDE, continuity of all spatial L2 jets, and its original initial
+value. There is no energy estimate or desired conclusion in its fields.
+Lean derives both complete energy balances from those equations:
+
+```text
+||H(t)||_2^2+2nu integral_0^t ||grad H||_2^2=E_0,
+||u(t)||_2^2+2nu integral_0^t ||grad u||_2^2=E_0,
+E_0=||u_0||_2^2.
+```
+
+The squared triangle inequality, applied to the terminal fields and their
+actual accumulated gradients, gives the kernel-certified history payment
+for `nu>=0`:
+
+```text
+spent(t)=||I(t)||_2^2+2nu integral_0^t ||grad I||_2^2 <=4E_0,
+spent(t)=2 integral_0^t <I,grad p>,
+0<=spent(t)<=4E_0,
+reserve(t)=4E_0-spent(t)>=0.
+```
+
+For positive viscosity this includes
+`integral_0^t ||grad I||_2^2<=2E_0/nu`. The actual segment law is
+
+```text
+spent(s)+2 integral_s^t <I,grad p>=spent(t),
+2 integral_s^t <I,grad p> <=reserve(s).
+```
+
+It retains `H(s)`, `I(s)` and the original datum. Restarting `H` from `u(s)`
+would change the history and would not prove this same statement. The
+signed cumulative payment can decrease; this result does not bound the
+sum of positive bursts or the absolute pressure work. It neither bounds
+the pressure Hessian nor supplies the critical geometric reserve.
+
+### The actual backward stochastic identification
+
+Starting from `(t,x)`, use the backward diffusion
+
+```text
+dX_s=-u(t-s,X_s)ds+sqrt(2nu)dW_s,
+Y_s=u(t-s,X_s),
+J_s=integral_0^s grad p(t-r,X_r)dr,
+M_s=Y_s-J_s.
+```
+
+The actual NS equation makes `M_s` a martingale, with stochastic derivative
+`sqrt(2nu) B(t-s,X_s)dW_s`. Thus the existing memory satisfying
+`DC=2nu BB^T`, `C(0)=0`, is analytically identified as
+
+```text
+C(t,x)=Cov(M_t)=E integral_0^t 2nu BB^T(t-s,X_s)ds.
+```
+
+This is covariance of the pressure-compensated terminal velocity. It is
+generally different from covariance of `u_0(X_t)` alone. The compensation
+is an auxiliary path observable; it is not an additional force applied to
+the fluid and does not choose a stochastic-control optimizer.
+
+The joint terminal moments make the necessary boundary information explicit:
+
+```text
+U_0=u_0(X_t),       H=E U_0,           I=E J_t,
+L=E[U_0 tensor U_0],
+K_cross=E[U_0 tensor J_t],
+Q_imp=E[J_t tensor J_t],
+u tensor u+C=L-K_cross-K_cross^T+Q_imp.
+```
+
+Their equations retain the common fluid drift and pressure:
+
+```text
+DL=0,
+DK_cross=H tensor grad p,
+DQ_imp=I tensor grad p+grad p tensor I,
+D(Q_imp-I tensor I)=2nu (grad I)(grad I)^T,
+integral tr(Q_imp)=spent(t)<=4E_0.
+```
+
+The impulse variance is positive diffusive memory. Dropping the cross moment
+changes the augmented stress seen by the pressure observer. These joint
+moments identify a concrete compatibility obligation for a boundary summary;
+no nonlinear boundary-reconstruction theorem is asserted here.
+
+For forced flow, `Du=-grad p+f`. The martingale compensation and impulse
+equation therefore contain `grad p-f`, and the kinetic balance contains
+force work. Even vanishing instantaneous kinetic work does not remove the
+force impulse. The finite diagnostic uses a fixed Eulerian solenoidal
+`f=curl u_0`, with zero kinetic work only at the tested initial state.
+It is not the imported blowup construction or its internal unforced
+realization.
+
+### The receiver response still needed by the geometric reserve
+
+The paid impulse gradient has a named consumer. Put `A=grad I`, retaining
+row convention `B_ij=partial_j u_i`. Differentiating its actual equation gives
+
+```text
+DA=P-AB,       P=Hess p.
+```
+
+For a smooth time-dependent tensor receiver `N` with the required spatial
+integrability and vanishing boundary terms, integration by parts gives
+
+```text
+integral_0^t integral N:P
+ = [integral N:A]_0^t
+   +integral_0^t integral A:
+       [N B^T-(partial_t+u.grad+nu Delta)N].
+```
+
+The complete adjoint response includes receiver diffusion with the displayed
+sign, transport, its time derivative, and parent deformation. Endpoints
+must also be paid. This identity is analytic here; the exact checker
+verifies the differentiated impulse equation on the full actual initial
+time jets.
+
+For the evolving geometric receiver, these response terms include pressure,
+memory, selector changes and interacting parents. A finite bound for them
+from the original full datum is OPEN. The paid unweighted impulse cannot
+replace that theorem. The still-sufficient target remains
+
+```text
+integral_0^tau (N_total-C_capacity)
+ <= integral_0^tau D_total/8+A(u_0,nu,H),       tau<=H,
+```
+
+with the full reactions defined in the preceding section and a finite
+allowance fixed before the unknown future history. No Schrodinger-bridge
+optimizer identification or arbitrary-data regularity theorem is proved.
+
+### Exact jets and initialization-sensitive diagnostics
+
+```sh
+python3 -O labs/pressure_impulse_history.py
+python3 -O labs/pressure_impulse_history.py --initialized-quadrature
+```
+
+The exact checker uses rational Fourier coefficients on genuinely
+interacting 3D data, both velocity signs and two amplitudes. It retains all
+outputs, the first two actual NS/passive time derivatives, pressure's own
+time derivative, and the nonzero joint cross moment. It checks the passive
+and unforced energy derivatives, augmented stress through second order,
+and the positive impulse-variance source through third order. Replacing
+the compensated covariance by raw terminal-velocity covariance gives a
+nonzero exact discrepancy. These are finite initial jets, not constructed
+continuum trajectories or kernel-certified stochastic identities.
+
+The optional independent 96 and 128 spatial grids use a datum-fixed analytic
+Fourier bound ABOVE the complete initial envelope, with `C(0)=0` and initial
+soft excess zero. For amplitude one the bound is `b=23625733`, independent
+of the grid and unknown future. The sampled initial envelope maxima are
+about `1.215e6`, well below that bound. The augmented reserve nevertheless
+has full initial derivative approximately `+189384.56` for one velocity
+sign, with complete nonlinear work approximately `+1326842.27`.
+The opposite sign gives a negative initial derivative. The selected
+diffusion and initial capacity payment vanish because the selector is
+inactive; the unselected correction and its full PDE production remain.
+
+The largest scaled generator residual is `2.96e-9`, and the independent
+reported comparisons agree within `4.37e-10`. These are numerical spatial
+diagnostics, not continuum enclosures. They warn against assuming immediate
+monotonicity even with the intended initialization. An initial burst is
+compatible with a finite full-datum allowance; neither that allowance nor
+arbitrary-data regularity is refuted. The changing-receiver and recurrent
+parent estimates remain the decisive obligations.
