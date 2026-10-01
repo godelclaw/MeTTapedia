@@ -19,6 +19,7 @@ import Mettapedia.GraphTheory.FourColor.DualTruncateOpenPatchAudit
 import Mettapedia.GraphTheory.FourColor.DualTruncateForestAudit
 import Mettapedia.GraphTheory.FourColor.TwoCellCycleObstructionAudit
 import Mettapedia.GraphTheory.FourColor.TwoCellPhysicalKempeRepairAudit
+import Mettapedia.GraphTheory.FourColor.TwoCellSourceRepairAudit
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.BoundaryTriangleAlternatives
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand

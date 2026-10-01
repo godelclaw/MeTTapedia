@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "status": "Kernel-checked uniform partial-source to actual-edge transport and coupled two-insertion reconstruction; three actual consumers and independent finite availability census",
+  "proof_roots": 28,
+  "dependency_closure": 8448,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "complete_four_color_endpoint_used": false,
+  "complete_source_colouring_certificate_used": false,
+  "finite_graph_data_in_uniform_laws": false,
+  "uniform_laws": [
+    "TwoCellSourceRepair.Frame.complete",
+    "TwoCellSourceRepair.Frame.reconstructed_extends",
+    "TwoCellSourceRepair.repaired_joint_choices",
+    "TwoCellSourceRepair.repairedSource",
+    "DualTruncateKempeTransport.physical_region",
+    "DualTruncateKempeTransport.exact_effect",
+    "DualTruncateKempeTransport.physical_region_after",
+    "DualTruncateKempeTransport.exact_effect_after"
+  ],
+  "scope": "An actual two-insertion incidence frame plus a proper partial source exterior and separated active pin reconstructs both choices jointly. An actual source region induces the exact saturated exterior-edge operation at every source size. Availability of the region, a smaller embedded operation and occurrence coverage are not theorem inputs silently inferred from planarity.",
+  "kernel_consumers": [
+    {
+      "name": "Prism",
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "source_switches": 1,
+      "original_joint_choices": false,
+      "conditional_one_pin_law_used": true,
+      "whole_map_reconstructed": true,
+      "exact_physical_exterior_reconstructed": true,
+      "pentagonal_hexagonal_subclass": false
+    },
+    {
+      "name": "Dodeca.Single",
+      "source_vertices": 20,
+      "target_vertices": 60,
+      "source_switches": 1,
+      "conditional_one_pin_law_used": true,
+      "whole_map_reconstructed": true,
+      "exact_physical_exterior_reconstructed": true,
+      "pentagonal_hexagonal_subclass": true
+    },
+    {
+      "name": "Dodeca.History",
+      "source_vertices": 20,
+      "target_vertices": 60,
+      "source_switches": 2,
+      "original_joint_choices": false,
+      "source_pin_history": [
+        "RBBR",
+        "PBBP",
+        "BBBP"
+      ],
+      "second_region_checked_after_first_step": true,
+      "second_physical_step_uses_first_field": true,
+      "whole_map_reconstructed": true,
+      "exact_physical_exterior_reconstructed": true,
+      "every_complete_gslt_sweep_supported": true,
+      "pentagonal_hexagonal_subclass": true
+    }
+  ],
+  "component_connectivity_kernel_certified": false,
+  "independent_replay": {
+    "command": "python3 tools/fourcolor/classical/two_cell_source_repair_probe.py --check",
+    "record": "two-cell-source-repair-probe.json",
+    "maps": 5,
+    "partial_exteriors_checked": 1298,
+    "perimeter_order_from_actual_patch": true,
+    "totals": {
+      "alternating": {
+        "tested": 302,
+        "third_pair_failure": 0,
+        "any_single_failure": 0
+      },
+      "adjacent": {
+        "tested": 996,
+        "third_pair_failure": 354,
+        "any_single_failure": 78
+      }
+    },
+    "physical_edges_switched_by_consumer": [
+      [
+        5
+      ],
+      [
+        17
+      ],
+      [
+        12,
+        9
+      ]
+    ],
+    "scope": "A particular partial source exterior has no repair by one source bichromatic component swap, but the recorded two-step source history repairs it. This does not exclude other physical target-edge swaps or histories."
+  },
+  "source_bytes": 39710,
+  "olean_bytes": 9296144,
+  "source_sha256": {
+    "DualTruncateKempeTransport.lean": "8166154c8649b920b556f0cc6f178ebcccf700b9654fcaedc031c54b009c2529",
+    "TwoCellSourceRepair.lean": "42c37af5d3665e0bd9e8543a3f4f2d05503a1cccef0bef81c85ad97c70595acc",
+    "TwoCellSourceRepairExamples.lean": "1d4f84f0020ef7f55835b36db3fe4ae586ffc87dcc8a17e0eb08ec1491f64a59",
+    "TwoCellSourceRepairAudit.lean": "a29d26860e1dedbcc5eb4e42d94bd49729aa8a8ce85f4d6a49c6a813926eef08"
+  },
+  "olean_sha256": {
+    "DualTruncateKempeTransport.olean": "9cf586eff3a3ddc44953ec4320ac6083344a6f4e4c99068870c0040c91adc227",
+    "TwoCellSourceRepair.olean": "4377fe6b054fae21c23a33f4d1a91ec11b24daf01da0c802e26fd553ff42c443",
+    "TwoCellSourceRepairExamples.olean": "e63cb74a532b14245d9d52825aca7e57ca8fb3e3d67de651abaf8c04b39c21b1",
+    "TwoCellSourceRepairAudit.olean": "4c7d008e76b34b785bb8d9bff191bcdb4e752926b695146e22961be6ff14e0b8"
+  },
+  "kernel_measurements": {
+    "transport_frontend_seconds": 18.0,
+    "shared_constructor_frontend_seconds": 3.5,
+    "consumer_frontend_seconds": 6.4,
+    "audit_run_reference": "TwoCellSourceRepairAudit: 28 roots, 8448 declarations",
+    "total_cost_reduction_claimed": false,
+    "full_gate_jobs": 11164,
+    "audit_frontend_seconds": 8.0
+  },
+  "new_uniform_strict_reductions": 0,
+  "independent_reducibility_checks_replaced": 0,
+  "catalogue_entries_removed": 0,
+  "configurations_retained": 633,
+  "original_configuration_certificates_retained": 630,
+  "next_obligation": "Prove availability of a suitable repair on an independently justified geometric domain. For alternating perimeter pins, test and prove whether cubic degree forbids simultaneous crossing third-colour connections. For adjacent pins, retain a genuine history or choose another operation; one-step availability is false in the tested source domain. Establish a smaller embedded operation, termination and occurrence coverage before catalogue savings."
+}

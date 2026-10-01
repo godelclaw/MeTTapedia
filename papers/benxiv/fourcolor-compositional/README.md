@@ -340,6 +340,23 @@ This establishes a successful example of the proposed mechanism. Extending
 it to all relevant exteriors, constructing the smaller operation and proving
 its occurrence are still needed before any coverage configuration is removed.
 
+The [shared two-insertion constructor](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellSourceRepair.lean)
+now reconstructs the example and an eighteen-vertex prism expansion from
+the same incidence-and-pin contract. An [exact representation bridge](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/DualTruncateKempeTransport.lean)
+derives a physical edge switch from the source vertex switch, with every
+exterior observation retained. The joint contract and reconstructed interior
+witnesses are the information carried between the representations.
+
+A [second sixty-vertex exterior](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/TwoCellSourceRepairExamples.lean)
+has a two-step repair: `RBBR → PBBP → BBBP` at its four source pins. The
+second source region and physical operation use the state left by the first.
+The [receipt](../../../tools/fourcolor/classical/two-cell-source-repair-measurements.json)
+distinguishes the kernel reconstruction from the program's finite component
+availability census. One-step failure for that source operation does not
+exclude a successful history. Availability in all relevant exteriors and
+strict reduction remain geometric obligations. No further catalogue saving
+is credited to these consumers.
+
 A smaller interface now connects the pentagonal stopping-lobe work directly
 to the shared diamond proof. A central pentagon with three consecutive
 pentagonal neighbours gives an actual twelve-vertex core; the other two

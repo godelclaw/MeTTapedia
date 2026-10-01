@@ -447,6 +447,39 @@ checks. This is an actual successful choice after a fixed-exterior failure,
 not a guarantee for every exterior or Kempe class. It introduces no smaller
 embedded operation and removes no catalogue entry or certificate dependency.
 
+## Uniform source transport and coupled reconstruction
+
+The [family receipt](two-cell-source-repair-measurements.json) records exact
+partial-source-to-physical-edge transport and a shared two-insertion
+constructor. The constructor uses actual incidences, a proper partial
+exterior and a separated source pin. It supplies the two coupled choices;
+a complete source colouring is not an input. The physical mask is derived
+uniformly from the source region, and successive steps retain the preceding
+field's exterior observations.
+
+Three kernel consumers reconstruct targets with 18, 60 and 60 vertices.
+The last uses two successive switches, with the second region checked in
+the first step's state. The audit checks 28 roots and excludes complete
+colour-word suppliers and classical endpoints; uniform laws contain no
+finite graph data. The prism consumer is outside the pentagonal/hexagonal
+subclass. The [independent replay](two-cell-source-repair-probe.json) checks
+the physical edge effects and actual component connectivity separately.
+
+```sh
+python3 tools/fourcolor/classical/two_cell_source_repair_probe.py --check
+```
+
+The replay also checks 1,298 canonical blocked partial source exteriors on
+five small embedded cubic sources, using up to the first three source edges
+with distinct exterior pins. Perimeter order is read from the actual patch.
+All 302 alternating-perimeter cases have a separating third-colour source
+component. Of 996 adjacent-perimeter cases, 354 fail that separation test
+and 78 admit no single source-component repair. One such case has the
+recorded two-step repair. These finite counts do not establish universal
+availability or exclude other physical target-edge operations. No strict
+smaller embedded operation or coverage saving is claimed; the catalogue
+and original-certificate counts remain 633 and 630.
+
 ## Complete endpoints
 
 `FourColor.CompositionalComplete.colorable_of_planeDrawing` proves

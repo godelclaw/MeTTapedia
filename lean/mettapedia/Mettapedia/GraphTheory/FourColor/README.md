@@ -375,6 +375,32 @@ availability of a suitable repair, strict graph reduction and occurrence
 coverage are still open. The catalogue remains at 633 configurations and
 630 original certificate dependencies.
 
+The [source-to-edge transport](DualTruncateKempeTransport.lean) now derives
+the physical edge mask from any saturated partial source region, preserving
+every exterior and cut observation exactly. Later steps may act on the
+physical field produced by earlier steps. The [shared insertion law](TwoCellSourceRepair.lean)
+uses an actual two-vertex incidence frame and a separated active pin to
+construct both source choices jointly. It is independent of source size and
+contains no finite graph data.
+
+The [consumers](TwoCellSourceRepairExamples.lean) reconstruct an eighteen-vertex
+prism expansion and the sixty-vertex example with this shared law. Another
+sixty-vertex partial exterior needs two successive source switches in the
+recorded history: its pin words change from `RBBR` to `PBBP`, then `BBBP`.
+The second switch uses the state left by the first. Exact physical effects
+and whole-map reconstruction are kernel proofs; the audit excludes complete
+source-colouring certificates and classical endpoints. The prism belongs
+to the broad spherical cubic domain, not the pentagonal/hexagonal subclass.
+
+The [receipt](../../../../../tools/fourcolor/classical/two-cell-source-repair-measurements.json)
+separates these proofs from an independent availability census of 1,298
+partial source exteriors. All 302 alternating-perimeter cases admit one
+separating third-colour component in that test; 78 of 996 adjacent-perimeter
+cases admit no single source-component repair. The recorded two-step example
+repairs one of those cases. This does not exclude other physical target-edge
+operations. Universal availability, a smaller embedded operation and
+occurrence coverage remain open; no catalogue entry is removed.
+
 Every alternating trajectory now supplies a [simple cycle segment](AlternatingWalkLobes.lean)
 with exact facial separation and connected shores. Its internal steps stay
 alternating; the closing transition is unrestricted. An independently checked

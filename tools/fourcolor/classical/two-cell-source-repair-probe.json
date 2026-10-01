@@ -1,0 +1,630 @@
+{
+  "schema": 1,
+  "evidence": "independent program replay",
+  "examples": [
+    {
+      "map": "triangular-prism",
+      "source_vertices": 6,
+      "target_vertices": 18,
+      "partial_source_values": [
+        0,
+        1,
+        2,
+        0,
+        2,
+        1
+      ],
+      "pins": [
+        1,
+        2,
+        5,
+        4
+      ],
+      "original_joint_choices": 0,
+      "history": [
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "vertices": [
+            2
+          ],
+          "actual_edges_switched": 5,
+          "exact_exterior_effect": true,
+          "saturated_physical_region": true,
+          "pins_after": [
+            1,
+            3,
+            1,
+            2
+          ]
+        }
+      ],
+      "joint_choices": [
+        [
+          2,
+          3
+        ]
+      ],
+      "whole_map_reconstructed": true,
+      "final_exterior_reconstructed": true
+    },
+    {
+      "map": "dodecahedral-source",
+      "source_vertices": 20,
+      "target_vertices": 60,
+      "partial_source_values": [
+        0,
+        0,
+        2,
+        3,
+        1,
+        2,
+        1,
+        2,
+        1,
+        3,
+        2,
+        1,
+        3,
+        1,
+        3,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "pins": [
+        10,
+        19,
+        2,
+        8
+      ],
+      "original_joint_choices": 0,
+      "history": [
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "vertices": [
+            3,
+            4,
+            17,
+            19
+          ],
+          "actual_edges_switched": 17,
+          "exact_exterior_effect": true,
+          "saturated_physical_region": true,
+          "pins_after": [
+            2,
+            3,
+            2,
+            1
+          ]
+        }
+      ],
+      "joint_choices": [
+        [
+          1,
+          3
+        ]
+      ],
+      "whole_map_reconstructed": true,
+      "final_exterior_reconstructed": true
+    },
+    {
+      "map": "dodecahedral-source",
+      "source_vertices": 20,
+      "target_vertices": 60,
+      "partial_source_values": [
+        0,
+        0,
+        2,
+        3,
+        1,
+        2,
+        1,
+        2,
+        1,
+        3,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        3,
+        2,
+        1,
+        2
+      ],
+      "pins": [
+        10,
+        19,
+        2,
+        8
+      ],
+      "original_joint_choices": 0,
+      "history": [
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "vertices": [
+            8,
+            9,
+            10
+          ],
+          "actual_edges_switched": 12,
+          "exact_exterior_effect": true,
+          "saturated_physical_region": true,
+          "pins_after": [
+            3,
+            2,
+            2,
+            3
+          ]
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "vertices": [
+            10,
+            11
+          ],
+          "actual_edges_switched": 9,
+          "exact_exterior_effect": true,
+          "saturated_physical_region": true,
+          "pins_after": [
+            2,
+            2,
+            2,
+            3
+          ]
+        }
+      ],
+      "joint_choices": [
+        [
+          3,
+          1
+        ]
+      ],
+      "whole_map_reconstructed": true,
+      "final_exterior_reconstructed": true
+    }
+  ],
+  "availability": [
+    {
+      "map": "triangular-prism",
+      "edge": [
+        0,
+        3
+      ],
+      "pins": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "perimeter": [
+        1,
+        4,
+        5,
+        2
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 1,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "cube",
+      "edge": [
+        0,
+        1
+      ],
+      "pins": [
+        3,
+        4,
+        2,
+        5
+      ],
+      "perimeter": [
+        2,
+        5,
+        4,
+        3
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "cube",
+      "edge": [
+        0,
+        3
+      ],
+      "pins": [
+        1,
+        4,
+        2,
+        7
+      ],
+      "perimeter": [
+        1,
+        4,
+        7,
+        2
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "cube",
+      "edge": [
+        0,
+        4
+      ],
+      "pins": [
+        1,
+        3,
+        5,
+        7
+      ],
+      "perimeter": [
+        1,
+        5,
+        7,
+        3
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "pentagonal-prism",
+      "edge": [
+        0,
+        1
+      ],
+      "pins": [
+        4,
+        5,
+        2,
+        6
+      ],
+      "perimeter": [
+        2,
+        6,
+        5,
+        4
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 2,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "pentagonal-prism",
+      "edge": [
+        0,
+        4
+      ],
+      "pins": [
+        1,
+        5,
+        3,
+        9
+      ],
+      "perimeter": [
+        1,
+        5,
+        9,
+        3
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 2,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "pentagonal-prism",
+      "edge": [
+        0,
+        5
+      ],
+      "pins": [
+        1,
+        4,
+        6,
+        9
+      ],
+      "perimeter": [
+        1,
+        6,
+        9,
+        4
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 7,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "hexagonal-prism",
+      "edge": [
+        0,
+        1
+      ],
+      "pins": [
+        5,
+        6,
+        2,
+        7
+      ],
+      "perimeter": [
+        2,
+        7,
+        6,
+        5
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 3,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "hexagonal-prism",
+      "edge": [
+        0,
+        5
+      ],
+      "pins": [
+        1,
+        6,
+        4,
+        11
+      ],
+      "perimeter": [
+        1,
+        6,
+        11,
+        4
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 3,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "hexagonal-prism",
+      "edge": [
+        0,
+        6
+      ],
+      "pins": [
+        1,
+        5,
+        7,
+        11
+      ],
+      "perimeter": [
+        1,
+        7,
+        11,
+        5
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 8,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 0,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        }
+      }
+    },
+    {
+      "map": "dodecahedral-source",
+      "edge": [
+        0,
+        1
+      ],
+      "pins": [
+        10,
+        19,
+        2,
+        8
+      ],
+      "perimeter": [
+        2,
+        8,
+        10,
+        19
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 92,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 332,
+          "third_pair_failure": 118,
+          "any_single_failure": 26
+        }
+      }
+    },
+    {
+      "map": "dodecahedral-source",
+      "edge": [
+        0,
+        10
+      ],
+      "pins": [
+        1,
+        19,
+        9,
+        11
+      ],
+      "perimeter": [
+        1,
+        9,
+        11,
+        19
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 92,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 332,
+          "third_pair_failure": 118,
+          "any_single_failure": 26
+        }
+      }
+    },
+    {
+      "map": "dodecahedral-source",
+      "edge": [
+        0,
+        19
+      ],
+      "pins": [
+        1,
+        10,
+        3,
+        18
+      ],
+      "perimeter": [
+        1,
+        10,
+        18,
+        3
+      ],
+      "counts": {
+        "alternating": {
+          "tested": 92,
+          "third_pair_failure": 0,
+          "any_single_failure": 0
+        },
+        "adjacent": {
+          "tested": 332,
+          "third_pair_failure": 118,
+          "any_single_failure": 26
+        }
+      }
+    }
+  ],
+  "totals": {
+    "alternating": {
+      "tested": 302,
+      "third_pair_failure": 0,
+      "any_single_failure": 0
+    },
+    "adjacent": {
+      "tested": 996,
+      "third_pair_failure": 354,
+      "any_single_failure": 78
+    }
+  },
+  "obstruction_scope": "A particular partial source exterior has no repair by one source bichromatic component swap, but the recorded two-step source history repairs it. This does not exclude other physical target-edge swaps or histories.",
+  "new_strict_reduction": false,
+  "new_coverage": false,
+  "catalogue_entries_removed": 0,
+  "source_sha256": {
+    "DualTruncateKempeTransport.lean": "8166154c8649b920b556f0cc6f178ebcccf700b9654fcaedc031c54b009c2529",
+    "TwoCellSourceRepair.lean": "42c37af5d3665e0bd9e8543a3f4f2d05503a1cccef0bef81c85ad97c70595acc",
+    "TwoCellSourceRepairExamples.lean": "1d4f84f0020ef7f55835b36db3fe4ae586ffc87dcc8a17e0eb08ec1491f64a59",
+    "TwoCellCycleObstruction.lean": "6a60e9d228ce488c964a7b972d6ffac0b21a1762ed05d4f28a6485e284f1c7a0",
+    "DualTruncateSourceDomainExample.lean": "20ff10579b99232b5384f478040a4b181684d33fed9aea6c7d6cfc742f21778b"
+  }
+}

@@ -1831,6 +1831,94 @@
       },
       "scope": "One successful physical history repairs the same exterior previously proved nonextendible when fixed. It does not assert success in every exterior or Kempe class. No smaller operation, new catalogue coverage or certificate saving follows.",
       "next_obligation": "Prove a uniform geometric condition supplying the successful coupled pin repair and its actual physical edge effect. Construct a compatible smaller embedded operation with strict decrease, then recognition and occurrence coverage."
+    },
+    {
+      "name": "uniform two-cell source-to-edge transport and coupled reconstruction",
+      "record": "two-cell-source-repair-measurements.json",
+      "status": "Kernel-checked uniform partial-source to actual-edge transport and coupled two-insertion reconstruction; three actual consumers and independent finite availability census",
+      "evidence": "28 audited roots, 8448 dependency declarations; standard axioms only. Uniform transport and insertion laws exclude finite graph data. Three consumers exclude complete classical endpoints and source-colouring certificate suppliers.",
+      "strict_family_reduction": false,
+      "independent_reducibility_checks_replaced": 0,
+      "catalogue_entries_removed": 0,
+      "original_configuration_certificate_dependencies_removed": 0,
+      "configurations_retained": 633,
+      "original_configuration_certificates_retained": 630,
+      "integrated_into_complete_four_color_assembly": false,
+      "kernel_consumers": [
+        {
+          "name": "Prism",
+          "source_vertices": 6,
+          "target_vertices": 18,
+          "source_switches": 1,
+          "original_joint_choices": false,
+          "conditional_one_pin_law_used": true,
+          "whole_map_reconstructed": true,
+          "exact_physical_exterior_reconstructed": true,
+          "pentagonal_hexagonal_subclass": false
+        },
+        {
+          "name": "Dodeca.Single",
+          "source_vertices": 20,
+          "target_vertices": 60,
+          "source_switches": 1,
+          "conditional_one_pin_law_used": true,
+          "whole_map_reconstructed": true,
+          "exact_physical_exterior_reconstructed": true,
+          "pentagonal_hexagonal_subclass": true
+        },
+        {
+          "name": "Dodeca.History",
+          "source_vertices": 20,
+          "target_vertices": 60,
+          "source_switches": 2,
+          "original_joint_choices": false,
+          "source_pin_history": [
+            "RBBR",
+            "PBBP",
+            "BBBP"
+          ],
+          "second_region_checked_after_first_step": true,
+          "second_physical_step_uses_first_field": true,
+          "whole_map_reconstructed": true,
+          "exact_physical_exterior_reconstructed": true,
+          "every_complete_gslt_sweep_supported": true,
+          "pentagonal_hexagonal_subclass": true
+        }
+      ],
+      "independent_replay": {
+        "command": "python3 tools/fourcolor/classical/two_cell_source_repair_probe.py --check",
+        "record": "two-cell-source-repair-probe.json",
+        "maps": 5,
+        "partial_exteriors_checked": 1298,
+        "perimeter_order_from_actual_patch": true,
+        "totals": {
+          "alternating": {
+            "tested": 302,
+            "third_pair_failure": 0,
+            "any_single_failure": 0
+          },
+          "adjacent": {
+            "tested": 996,
+            "third_pair_failure": 354,
+            "any_single_failure": 78
+          }
+        },
+        "physical_edges_switched_by_consumer": [
+          [
+            5
+          ],
+          [
+            17
+          ],
+          [
+            12,
+            9
+          ]
+        ],
+        "scope": "A particular partial source exterior has no repair by one source bichromatic component swap, but the recorded two-step source history repairs it. This does not exclude other physical target-edge swaps or histories."
+      },
+      "scope": "An actual two-insertion incidence frame plus a proper partial source exterior and separated active pin reconstructs both choices jointly. An actual source region induces the exact saturated exterior-edge operation at every source size. Availability of the region, a smaller embedded operation and occurrence coverage are not theorem inputs silently inferred from planarity.",
+      "next_obligation": "Prove availability of a suitable repair on an independently justified geometric domain. For alternating perimeter pins, test and prove whether cubic degree forbids simultaneous crossing third-colour connections. For adjacent pins, retain a genuine history or choose another operation; one-step availability is false in the tested source domain. Establish a smaller embedded operation, termination and occurrence coverage before catalogue savings."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 630 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The common core proof is not credited as a case-free uniform theorem replacing multiple target certificates. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed.",
