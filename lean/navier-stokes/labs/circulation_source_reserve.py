@@ -113,6 +113,27 @@ def compression_potential():
             'scope':'conditional physical source criterion, not construction of a globally funded weight or control of full stretching'}
 
 
+def transported_history():
+    nu = s.symbols('nu', positive=True)
+    chi, g, source = [s.Function(n)(r,z) for n in ('chi','g','source')]
+    v = velocity(chi)
+    g_rate = nu*lap5(g)-v.dot(grad(g))+source
+    h = g*g/2
+    flux = v*h-nu*grad(h)-s.Matrix([2*nu*h/r,0])
+    zero(g*g_rate+div3(flux)+nu*grad(g).dot(grad(g))-g*source,
+         'transported source history has the physical L2 balance and full axis flux')
+    m, ap, ac, wp, wc, wct, adv, lap = s.symbols('m ap ac wp wc wct adv lap', real=True)
+    full_rate = -6*m*wp*wc+wp*(wct+adv+nu*lap)-6*(ap+ac)*wp*wc
+    zero(full_rate-wp*(wct+adv+nu*lap-6*ac*wc-6*(m+ap)*wc),
+         'paid history factors out without resetting the compression reserve')
+    return {'passive_equation':'g_t+v.grad(g)=nu*L5(g)+S_rho, g(0)=eta(0), with the actual full v',
+            'physical_energy':'(1/2)*d_t||g||_2^2+nu*||grad(g)||_2^2+2*pi*nu*integral g(0,z)^2 dz=integral g*S_rho dx',
+            'source_norm':'||S_rho||_(L2_t L2_x)^2<=C4(0)/(3*nu*rho^8)',
+            'strain_history':'integral_0^H||a_paid||_infinity dt<=C_BS*H^(3/4)*(2*nu)^(-1/4)*(||eta(0)||_2+sqrt(H*C4(0)/(3*nu*rho^8)))',
+            'remaining_parent':'eta-g, initially zero and driven only by (1-zeta_rho)*S under the same full drift',
+            'scope':'linear history split of an actual solution, not two independent NS solutions; energy, interpolation and integration analytic'}
+
+
 def gaussian_test():
     b = s.exp(-r*r-2*z*z)
     chi = z*(1-3*r*r+4*z*z)*b/2
@@ -199,5 +220,6 @@ def scaling_test():
 if __name__ == '__main__':
     print(json.dumps({'identities':entropy_identities(),'source_response':source_and_response(),
                       'compression_potential':compression_potential(),
+                      'transported_history':transported_history(),
                       'physical_tests':gaussian_test(),'scope_defects':forcing_and_angular_defect(),
                       'scaling':scaling_test()},indent=2))

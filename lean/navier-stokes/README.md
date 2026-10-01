@@ -1805,6 +1805,13 @@ a sufficient compression potential: `W>=1` and
 Hamiltonian, with actual fluid coefficients held fixed. Bounding its
 initial weighted cost from the original datum remains open; auxiliary
 sampling drifts do not become forces on the fluid.
+The same source payment and the actual scalar vorticity propagator also
+bound accumulated `u_r/r` from all initial meridional vorticity and all
+subsequent outside-tube sources. Both history components travel under
+the full interacting velocity. The remaining component comes from
+inside-tube generation and retains its nonlocal response. A finite,
+datum-controlled exponential factor removes the paid radial history from
+the conditional HJB weight without restarting its allowance.
 
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
