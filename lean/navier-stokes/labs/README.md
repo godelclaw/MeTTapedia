@@ -20763,3 +20763,225 @@ complete cubic and dissipation splittings, viscosity, and the positive
 first unpaid return. Exact scalar checks retain every compensation
 term. The fixtures are independent algebra checks, not simulated
 continuum trajectories or a proof of (171).
+
+## A joint parent weight pays transfers that fixed quadratic weights cannot
+
+`shear_fluctuation_reserve.py` tests a certificate for the open fluctuation
+budget (171), then supplies a working replacement on the same physical
+shear class. This is a limitation of a specified certificate class, not
+an obstruction to a full-datum history allowance. The positive result
+reuses the triangular mixing mechanism; mutual parent renewal remains open.
+
+### Tested certificate and complete physical transfers
+
+Fix nu>0 and a continuous nonnegative quadratic Fourier-multiplier storage
+R(w)=<w,Lw> on smooth fields, differentiable along smooth NS histories
+(polynomially growing weights suffice). The multiplier may depend on frequency
+and polarization, but is fixed independently of datum and amplitude.
+The proposed certificate, at EVERY smooth unforced state, is
+
+```text
+R' + 2g(w) <= (nu/2)D, w=u-average_z u, D=||grad^2u||2^2.  (174)
+```
+
+It would give (171) with K=R(w(0)). A datum-dependent certificate needed
+only on its reachable states is a weaker assertion, not tested here.
+On the normalized period-2pi torus, set
+
+```text
+p=(1,0,1), q_n=(n,0,n+1), lambda_n=|q_n|^2=2n^2+2n+1,
+u=a sin(x+z)(1,0,-1)
+       +[b cos(q_n.x)+c cos(q_(n+1).x)] e_y, n>=0.        (175)
+```
+
+These are smooth real solenoidal data with zero vertical mean and
+constant canonical pressure. Their COMPLETE source N(u)=-P[(u.grad)u] is
+
+```text
+N(u)=[-ab cos(q_(n-1).x)+ab cos(q_(n+1).x)
+       -ac cos(q_n.x)+ac cos(q_(n+2).x)] e_y/2.
+```
+
+The definition q_j=(j,0,j+1) also applies at j=-1. In particular n=0
+generates a vertical mean. The outer outputs do not pair with the
+initial field in a quadratic derivative, but remain in the PDE source.
+The nonlinear kinetic rates at the two occupied receiver modes are
+-abc/2 and +abc/2. The parent has zero nonlinear rate, while
+
+```text
+Z'_nonlinear=abc(lambda_(n+1)-lambda_n)/2,
+g(u)=abc(n+1).                                           (176)
+```
+
+Let rho_n>=0 be the multiplier weight on e_y at q_n. The cubic part
+of the left side of (174) is
+
+```text
+(abc/2)[(rho_(n+1)+lambda_(n+1))-(rho_n+lambda_n)].
+```
+
+Scale all amplitudes by a common positive factor and reverse one sign.
+Viscosity and the right side of (174) grow quadratically; this term
+grows cubically. Thus universal payment forces
+
+```text
+rho_(n+1)+lambda_(n+1)=rho_n+lambda_n, every n.
+rho_N>=0 then implies rho_0>=2N(N+1).                     (177)
+```
+
+No finite rho_0 satisfies every N. For any proposed multiplier, an
+adjacent unequal pair supplies a phase and finite amplitude giving a
+strict violation on an actual positive-viscosity NS initial tangent.
+Local smooth evolution preserves a strict differential violation on
+a short interval. This does NOT refute an integrated budget with
+additional initial slack, a datum-dependent reachable-state certificate,
+or a nonquadratic/adaptive reserve.
+
+On a finite chain, rho_n=lambda_N-lambda_n balances internal edges.
+Its increasing initial price and the next unmatched edge explain why
+discarding outputs could falsely suggest uniform payment. No closed
+Galerkin evolution is asserted. The finite-chain conclusion uses only
+its N adjacent equalities.
+
+### A constructive repair on the full receiver system
+
+Take the actual triangular NS class
+
+```text
+u=a(t)sin(x+z)(1,0,-1)+theta(t,x,z)e_y,
+a(t)=a0 exp(-2nu t),
+theta_t+a(t)sin(x+z)(theta_x-theta_z)=nu Delta_(x,z)theta.
+```
+
+For ANY smooth periodic initial theta, autonomous shear and a linear
+parabolic receiver give a global smooth unforced flow. All generated
+modes remain; no amplitude or bandwidth restriction is imposed.
+Pressure is constant and this receiver cannot feed its parent.
+This rotates the earlier triangular mechanism to test the precise
+vertical-fluctuation residual (171).
+
+Put alpha=|a|, Z=||grad u||2^2 and D=||grad^2u||2^2. The parent gradient
+has operator norm at most 2alpha. The scalar gradient balance gives
+
+```text
+alpha'=-2nu alpha, Z'<=4alpha Z-2nu D,
+2g(w)<=4alpha Z, w=u-average_z u.                         (178)
+```
+
+For the last estimate, w has the same parent and receiver
+phi=theta-average_z theta. Its cubic stretching is scalar-gradient
+work against that parent, and orthogonality gives ||grad phi||2^2<=Z.
+This spatial identity does not assert that phi obeys the autonomous
+receiver equation: theta retains its generated vertical mean.
+
+The nonnegative reserve and enstrophy envelope are
+
+```text
+R=(exp(2alpha/nu)-1)Z, S=exp(2alpha/nu)Z,
+R'+2g(w)+2nu(exp(2alpha/nu)-1)D<=0,
+S'+2nu exp(2alpha/nu)D<=0.                                (179)
+```
+
+Integration on any interval of this SAME history yields
+
+```text
+R(t)+2 integral_s^t g(w)
+     +2nu integral_s^t (exp(2alpha/nu)-1)D <= R(s),
+Z(t)<=exp(2|a0|/nu)Z(0),
+2 integral_0^t g(w)<=K=(exp(2|a0|/nu)-1)Z(0).
+```
+
+Thus (171) is paid even without its extra nu D/2 allowance. The reserve
+is quadratic in the receiver for a fixed parent, but nonquadratic in
+the joint state. Its bound is uniform in time and the number of generated
+modes. The same R passes through every seam without a new allowance.
+
+The stochastic passive-scalar representation uses the actual backward
+shear drift and Brownian diffusivity 2nu. The accumulated parent gradient
+is at most |a0|/nu; its squared deformation factor is the exponential in
+(179). The PDE derivation supplies payment directly and introduces no
+stochastic control force.
+
+There is also an exact Bellman interpretation. In the nonnegative two-state relaxation
+alpha'=-2nu alpha, Z'<=4alpha Z-2nu D, D>=0, allow a nonnegative cost
+q<=4alpha Z. The function R is the infinite-horizon value of this
+relaxation: its derivative bounds every admissible cost history, and
+D=0, Z'=4alpha Z, q=4alpha Z attains
+integral q=Z(0)(exp(2alpha(0)/nu)-1). For a remaining horizon h, the value is
+
+```text
+V_h(alpha,Z)=[exp((2alpha/nu)(1-exp(-2nu h)))-1]Z.
+```
+
+These maximizing relaxed trajectories need not be realizable NS flows.
+Their role is domination: actual triangular trajectories satisfy the
+relaxed inequalities, and the physical bound in (178) even holds with
+2|g(w)| on the left. Thus this is a finite, explicitly solved control
+relaxation identified with a physical cost bound. It does not establish
+such an identification for arbitrary mutually interacting parents.
+
+### The exact mutual-renewal defect
+
+If a nonnegative observed amplitude and the full receiver instead obey
+
+```text
+alpha'=-2nu alpha+F, Z'<=4alpha Z-2nu D+L,
+2g(w)<=4alpha Z+extra,
+```
+
+the SAME reserve satisfies
+
+```text
+R'+2g(w)+2nu(exp(2alpha/nu)-1)D
+ <= (exp(2alpha/nu)-1)L
+    +(2/nu)exp(2alpha/nu)F Z+extra.                      (180)
+```
+
+For an NS Fourier parent, F comes from its complete nonlinear equation;
+L and extra retain other interactions. These are not freely adjustable
+controls. An absolute amplitude uses the actual signed source away from
+zero and the appropriate one-sided/absolutely-continuous treatment at
+zeros. No bound or favorable sign for these defects is asserted.
+
+The compulsory seed r0 from (173) tests this distinction. Observe the
+unit-norm parent cos(x+z)(1,0,-1), with coefficient a'=-2nu a+F. The
+complete source gives, independently of positive viscosity,
+
+```text
+a(0)=1/10, F(0)=0, F'(0)=-22019/546000,
+(d/dt)g(u-average_z u)|0=6252773/5460000>0.                (181)
+```
+
+Viscous contributions to these nonlinear derivatives vanish by phases
+and support. This parent initially depletes while fluctuation stretching
+grows: discarding receiver defects and checking only parent return would
+be invalid. These are actual initial jets, not a later-history payment.
+The next obligation is to control the COMPLETE right side of (180),
+or replace the single parent with a jointly funded observation.
+
+### Control-method reuse and verification
+
+Quadratic and polynomial Lyapunov searches for fluid dynamics are
+established; see [Kalur, Seiler and Hemati](https://arxiv.org/abs/2004.05440)
+and [Goulart and Chernyshenko](https://arxiv.org/abs/1101.1043).
+The former demonstrates quadratic constraints on a reduced transition
+model; the latter develops polynomial searches with treatment of
+unresolved fluid modes. Neither supplies an arbitrary-data regularity
+theorem here. This calculation names an infinite-mode certificate
+obligation and an explicit physical nonlinear calibration.
+
+`MettapediaNS.ShearFluctuationReserve` certifies eight scalar/sequence
+theorems: positivity, differentiation, complete defect payment, its
+decaying-parent specialization and price, plus the weight recurrence,
+finite-chain cost and infinite nonnegative-weight obstruction. The
+Fourier realization and PDE estimates remain analytic. Interval payment
+and seam calculus reuse `ReferenceStretchingReserve`; physically
+compatible endpoints and the same remaining stock are required.
+
+Run `python3 -O labs/shear_fluctuation_reserve.py`. Four exact Fourier
+fixtures retain canonical pressure, every output, viscosity and both
+transfer signs. Polynomial identities establish the spectral formulas
+for every index; finite samples alone are not that proof. The original
+three-dimensional seed and scalar renewal defects are checked separately.
+The smooth-flow obstruction, global triangular solution and actual
+interval payment are analytic, not newly Lean-certified.

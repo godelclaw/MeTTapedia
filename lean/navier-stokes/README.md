@@ -36,6 +36,21 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [parent-weighted fluctuation reserve](labs/README.md#a-joint-parent-weight-pays-transfers-that-fixed-quadratic-weights-cannot)
+tests a concrete certificate for the remaining signed stretching.
+A fixed nonnegative quadratic Fourier storage cannot pay its universal
+differential budget: exact shear transfers force a lowest-mode weight
+of at least `2N(N+1)` across N receiver steps. This does not exclude
+datum-dependent or nonlinear history certificates.
+On the full triangular shear/passive-scalar class, the joint weight
+`(exp(2|a|/nu)-1)Z` instead pays fluctuation stretching on every interval,
+without a bandwidth restriction or resetting its allowance. Its derivative
+retains both parent-renewal and receiver defects in a generalization.
+Eight scalar/sequence theorems are kernel-certified in
+`MettapediaNS.ShearFluctuationReserve`; the physical realization and
+interval estimates remain analytic. Mutual renewal in arbitrary flows
+is still open.
+
 ### Mathematical sources and concrete reuse
 
 The cycle and history work uses established fluid dynamics and model
