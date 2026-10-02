@@ -22684,3 +22684,290 @@ The Schwartz localization, Riemann-sum passage, local PDE intervals and
 uniform rescaled-time argument are analytic. They are not newly
 Lean-certified, and the finite checker does not prove them. No Lean
 declarations or axioms change.
+
+
+## Normalized storage and an actual first-generation obstruction
+
+`normalized_receiver.py` tests whether normalizing the auxiliary source
+stock repairs (234). The first weight fails immediately. A common-weight
+repair pays a whole family of initial states, but the actual flow can leave
+that payment region. The latter conclusion is an analytic whole-space
+history argument, supported by exact finite Fourier fixtures. It is not an
+arbitrary-data regularity result or a construction of indefinite renewal.
+
+### Two weights and their complete physical derivatives
+
+Write A=-Delta, w=Pi u, h=Pi N(u), n=Pi N(w), Z=||grad w||2^2,
+H=H_nu(w) and C=C_nu(w) as in (195). The heat-square pairing gives
+H^2<=2ZC. The proposed square-root normalization is
+
+```text
+theta=sqrt[Z/(Z+8C)],
+W_sqrt=Z/2+theta H+theta^2 C,
+theta'=4theta(C Z'-Z C')/[Z(Z+8C)].                 (239)
+```
+
+For u0=100r, nu=1, with r the seed of `cellular_parent_refeeding.py`,
+g(r)=H(r)=0. Nevertheless the complete initial excess
+W_sqrt'+2g-(1/2)D(full u) is greater than D(full u)=315500.
+An exact squared-rational comparison certifies this strict radical
+inequality. The forecast derivative carries theta while the negative
+source loss carries theta^2; the initial test exposes this mismatch.
+
+Instead use the SAME weight for forecast and source stock. For beta>=8,
+
+```text
+chi=Z/(Z+beta C),
+W_beta=Z/2+chi(H+C),
+Z/4<=W_beta<=7Z/8,
+chi'=beta(C Z'-Z C')/(Z+beta C)^2.                  (240)
+```
+
+Indeed |chi H|/Z<=sqrt(2C/Z)/(1+beta C/Z)<=1/sqrt(2beta),
+and 0<=chi C/Z<=1/beta. These inequalities also give a continuous
+extension W_beta=0 at Z=0. Differentiability there is not asserted or
+used below. All tested histories have Z>0.
+
+The physical rates, including the surrounding fluid, are
+
+```text
+Z'=-2nu D_w+2<Aw,h>,
+H'=-2g(w)+D H_nu(w)[h],
+C'=-||n||2^2/nu+D C_nu(w)[h],
+
+W_beta'=[1/2+beta C(H+C)/(Z+beta C)^2]Z'
+       +chi H'+Z(Z-beta H)C'/(Z+beta C)^2.          (241)
+```
+
+Equivalently W_beta'=Z'/2+chi(H'+C')+chi'(H+C).
+The checker tests both forms and independently obtains Z', H', C' by
+exact polynomial polarization in the full physical NS direction.
+Its fixture has both an existing and an evolving vertical mean.
+The weight changes the observation; it applies no force to the fluid.
+
+### A positive initial certificate at all amplitudes
+
+Take a mean-free periodic seed with vertical frequencies only +1 and -1.
+Then g=H=D C_nu(w)[Pi N(w)]=0 initially, by odd-degree frequency parity.
+Set C1=C_1(w), R=D H_1(w)[Pi N(w)], N2=||Pi N(w)||2^2 and c=C1/Z.
+For u0=a w(ell x), a nonzero, integer ell>=1, put r0=(a/(nu ell))^2.
+The complete half-dissipation excess, divided by nu a^2 ell^4 and
+multiplied by (1+beta c r0)^2, is
+
+```text
+ -(3/2)D
+ +r0 [R-N2-3beta cD]
+ +r0^2 [beta cR-beta(3beta/2+2)c^2D].                (242)
+```
+
+Thus the strict inequalities R-N2-24cD<0 and R<14cD imply strict
+initial payment for EVERY amplitude, positive viscosity, integer
+dilation and beta>=8. They hold exactly for r and for each of the
+three planar belts of lengths 2, 16 and 32 in (218). The values of
+RZ/(C1 D) are respectively about 3.050, 0.447, 0.00859 and 0.00216.
+The claim covers all scalings of these four seeds, not every belt length.
+Continuity gives a positive payment interval for each actual smooth
+solution. No common duration or invariant payment region follows.
+
+### Zero initial stretching that the full fluid regenerates
+
+For the following whole-space construction, replace Pi by the identity
+EVERYWHERE in (240)--(242), including the nonlinear source capacity.
+This full-source convention retains every generated output. The seed is
+
+```text
+r(x)=(1/10) sum_(k,v) v cos(k.x),
+(k,v)=((1,0,1),(1,-2,-1)), ((1,-1,1),(-4,-2,2)),
+      ((2,0,1),(-3,-5,6)), ((2,-1,1),(4,10,2)).
+```
+
+Each polarization is transverse. The full pressure-projected nonlinearity
+N(r)=-P div(r tensor r) obeys the exact identities
+
+```text
+g(r)=H_1(r)=D Ctilde_1(r)[N(r)]=0,
+Dg(r)[-Ar]=0,
+Dg(r)[N(r)]=892051/1092000>0.                       (243)
+```
+
+The full-source initial certificate (242) also holds, with
+RZ/(Ctilde_1 D) approximately 0.303. The field's own evolution therefore
+generates positive stretching from a state with zero stretching and
+strict initial payment. This uses all NS outputs, not a closed mode model.
+
+Localize this seed by U_L=curl[phi(x/L)curl(-Delta)^-1 r], with the
+bandlimited nonnegative Schwartz envelope used above. Choose L so that
+the vertical packet width delta is less than 1/5. No sum of three or
+five packets centered at vertical frequencies +1 and -1 can equal zero.
+Consequently the three odd-degree zeros in (243) persist EXACTLY on R3,
+as does Dg(U_L)[-AU_L]=0. The quartic packet limit instead gives
+
+```text
+L^-3 Dg(U_L)[N(U_L)]
+       ->(892051/1092000) integral phi^4 dmu>0.
+```
+
+The divergence-form Leray multiplier at zero intermediate output is
+O(|k|), as in (235). Nonzero inputs retain the heat denominator gap.
+Dominated convergence applies to the quartic coefficients R, N2 and
+Ctilde_1, with common leading envelope factor integral phi^4; Z and D
+have factor integral phi^2. Thus both strict inequalities for (242)
+survive for sufficiently large L. Normalize the resulting fixed U to
+E(U)=1. Homogeneity preserves these strict signs and the zero identities
+in (243), rather than its original periodic numerical coefficient.
+
+### The payment fails on the actual positive-viscosity history
+
+Fix nu>0 and beta>=8. Let V^epsilon solve the full unforced R3 equation
+from this U with viscosity epsilon, including the local Euler solution
+V^0. On a common short interval, high Sobolev transport estimates give
+bounds uniform for 0<=epsilon<=1. The difference equation, with forcing
+epsilon Delta V^0 and zero initial difference, gives convergence
+V^epsilon->V^0 in any fixed required Sobolev norm after taking enough
+initial derivatives. This is only a local smooth inviscid-limit argument;
+it assumes neither global Euler regularity nor global NS regularity.
+For the classical smooth inviscid-limit framework see
+[Constantin (1986)](https://doi.org/10.1007/BF01211598).
+
+By (243), g(V^0(0))=0 and its derivative is strictly positive. Choose
+a fixed sufficiently small tau*>0 such that
+DeltaZ=Z(V^0(tau*))-Z(U)>0, using Z'=2g for Euler.
+Also reduce the interval so that Ctilde_1(V^epsilon) is bounded below
+by a fixed positive constant. Continuity of this functional follows
+from Sobolev products for heat times below one; above one,
+||N(exp(r Delta)v)||2 is O(r^(-5/4)) on bounded L2 sets, giving an
+integrable squared tail. H_1 is continuous by the analogous heat
+pairing. These controls retain the newly generated low frequencies.
+
+For large lambda put epsilon=nu/sqrt(lambda) and
+
+```text
+u_lambda(t,x)=lambda^(3/2)
+                 V^epsilon(lambda^(5/2)t,lambda x),
+t_lambda=tau* lambda^(-5/2).
+```
+
+These are actual smooth, finite-energy, unforced solutions with positive
+viscosity nu, E(u_lambda(0))=1 and g(u_lambda(0))=0. Their initial
+payment is strict: concentration changes r0 in (242) to lambda/nu^2,
+with normalization factor nu lambda^4. No geometry is frozen later.
+
+On the common rescaled interval the complete scaling laws give
+
+```text
+lambda^-2 W_(beta,nu)(u_lambda(t))
+          ->(1/2+1/beta) Z(V^0(tau)),
+2lambda^-2 integral_0^t_lambda g(u_lambda)dt -> DeltaZ,
+lambda^-2 nu integral_0^t_lambda D(u_lambda)dt ->0.
+```
+
+Here chi C/lambda^2->Z/beta and chi H/lambda^2->0. The strictly
+positive capacity lower bound justifies both limits. If F is any fixed
+C1 function of current kinetic energy, chosen before the datum, its
+endpoint change is O(nu lambda^(-1/2)); it cannot alter the limit.
+Therefore
+
+```text
+lambda^-2 { [W_(beta,nu)+F(E)](t_lambda)
+             -[W_(beta,nu)+F(E)](0)
+  +2 integral_0^t_lambda [g(u_lambda(t))-g(u_lambda(0))]dt
+  -(nu/2) integral_0^t_lambda D(u_lambda)dt }
+       ->(3/2+1/beta) DeltaZ>0.                    (244)
+```
+
+Every fixed beta>=8 fails this integrated storage payment, even though
+its initial rate pays. A fixed F also preserves strict initial payment
+for sufficiently large lambda, since its initial derivative is only
+order lambda^2, while the negative initial margin is order nu lambda^4.
+For any prescribed positive horizon, these intervals eventually lie
+inside it. The theorem here concerns the full R3 storage; no periodic
+Pi history limit is claimed by this argument.
+
+### A reserve from the original heat history pays this burst
+
+There is a concrete positive repair on the SAME actual histories. Retain
+h(t)=exp(nu t Delta)u0, fixed from the original datum, and put
+
+```text
+B_(u0,nu)(t)=Ctilde_nu(h(t))
+           =(1/nu) integral_t^infinity ||N(exp(nu s Delta)u0)||2^2 ds,
+B_(u0,nu)'(t)=-||N(h(t))||2^2/nu,
+J_beta(t)=W_(beta,nu)(u(t))+B_(u0,nu)(t)>=0.         (245)
+```
+
+This is an auxiliary observer trajectory, not a replacement for the actual
+NS solution. B decreases and cannot acquire credit from newly generated
+fluid structure. At a later segment it retains the original heat age;
+restarting it from the actual segment endpoint would be a different rule.
+
+For the concentrating histories above, write C1=Ctilde_1(V^epsilon)
+and H1=H_1(V^epsilon). In the rescaled variables,
+
+```text
+lambda^-2 W_(beta,nu)(u_lambda)
+        =Z/2+Z(epsilon H1+C1)/(epsilon^2 Z+beta C1).
+```
+
+The uniform Sobolev bounds and positive lower bound for C1 give a constant
+M, independent of sufficiently large lambda, such that the actual
+W'+2g-(nu/2)D is at most M lambda^(9/2) on the entire controlled interval.
+This uses the complete derivative, including the weight derivative. The
+heat-functional derivatives are uniformly bounded by the same product
+estimates and integrable tails used above.
+
+Meanwhile N(U) is nonzero, by (243). Since
+h_lambda(t)=lambda^(3/2)[exp(epsilon tau Delta)U](lambda x),
+continuity gives a fixed m>0 with ||N(exp(epsilon tau Delta)U)||2^2>=m
+for 0<=tau<=tau* and sufficiently small epsilon. Thus throughout this
+actual positive-viscosity interval,
+
+```text
+J_beta'+2[g(u_lambda(t))-g(u_lambda(0))]-(nu/2)D
+       <=M lambda^(9/2)-(m/nu)lambda^5<=0           (246)
+```
+
+for sufficiently large lambda. The constants come from the fixed smooth
+U and its uniform local existence estimates, not from an assumed global
+bound on an unknown solution. Equations (245)--(246) give a nonnegative,
+original-datum reserve that pays the complete first generated burst which
+violates (244).
+
+This payment lasts through tau* lambda^(-5/2), where the original heat
+age is only epsilon tau*. It does not control later interacting parents,
+or prove payment through a full diffusion time of order 1/(nu lambda^2).
+The latter corresponds to rescaled time of order 1/epsilon, outside the
+common local interval used in this argument.
+
+### What the obstruction requires of a repair
+
+Equation (244) is a finite first-generation burst of order lambda^2.
+The ORIGINAL source capacity is already of order lambda^3/nu^2.
+Equations (245)--(246) explicitly spend that credit on the first burst.
+This calculation does not refute a datum-dependent allowance K, the signed-renewal
+continuation criterion, or global regularity. Nor does it construct
+unlimited recurrent amplification. It rejects the stated normalized
+monotone storage rule and shows why initial payment alone is insufficient.
+
+A history repair must keep track of that larger initial resource and
+justify how it is spent as new geometry appears. Recomputing a fresh
+capacity from each evolved state would allow the credit itself to grow;
+calling it the same original reserve would not establish a payment.
+The fixed-resolution bound (229) continues to pay its coarse component.
+The finer coupled-history estimate remains open.
+
+### Verification
+
+Run `python3 -O labs/normalized_receiver.py`. Exact checks include the
+square-root failure, complete changing-weight derivatives, independent
+physical-tangent polarization, the initial polynomial at several scales,
+its coefficient certificates for four seed families, the full-source
+positive stretching derivative (243), and the exact original-heat-bank
+loss at three distinct heat ages. Two finite curl envelopes at
+lengths 32 and 128 preserve all odd-degree zeros and positive generation;
+the relative errors from their fourth-moment limit are approximately
+0.000237 and 0.0000148. Signs are checked with rational arithmetic.
+
+The Schwartz localization, uniform smooth local existence, inviscid
+limit and positive-viscosity solution-history argument are analytic.
+The checker does not certify these infinite-dimensional steps, and no
+Lean declarations or axioms change.
