@@ -457,3 +457,72 @@ theorem sum_weighted_norm_log_coefficients_le (w : UnionWeight V)
 end ContinuousActivities
 
 end Mettapedia.Combinatorics.PolymerGas
+
+/-! ## Connected support of the complete logarithmic coefficients -/
+
+namespace Mettapedia.Combinatorics.PolymerGas
+open scoped Classical
+variable {V : Type*} [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+open SubsetExpansion
+variable [Fintype V]
+
+theorem coefficient_logPartition_eq_zero_of_not_connected (a : V → ℝ)
+    (hpos : ∀ T, 0 < partitionFunction G a T) (S : Finset V)
+    (hS : ¬(G.induce (S : Set V)).Connected) :
+    coefficient (fun T => Real.log (partitionFunction G a T)) S = 0 := by
+  by_cases hs : S.Nonempty
+  · obtain ⟨p, hp⟩ := hs
+    let c := (G.induce (S : Set V)).connectedComponentMk ⟨p, hp⟩
+    let A := componentVertices G S c
+    let B := S \ A
+    have hAS : A ⊆ S := fun v hv => ((mem_componentVertices G S c v).mp hv).choose
+    have hpA : p ∈ A := (mem_componentVertices G S c p).mpr ⟨hp, rfl⟩
+    have hSA : ¬S ⊆ A := by
+      intro h
+      have he : A = S := Subset.antisymm hAS h
+      exact hS (he ▸ componentVertices_connected G S c)
+    have hSB : ¬S ⊆ B := fun h => (mem_sdiff.mp (h hp)).2 hpA
+    have hAB : A ∪ B = S := union_sdiff_of_subset hAS
+    have hd : Disjoint A B := disjoint_sdiff_self_right
+    have hn : ∀ u ∈ A, ∀ v ∈ B, ¬G.Adj u v := by
+      intro u hu v hv huv
+      obtain ⟨huS, huc⟩ := (mem_componentVertices G S c u).mp hu
+      have hvS := (mem_sdiff.mp hv).1
+      have he := SimpleGraph.ConnectedComponent.sound
+        (show (G.induce (S : Set V)).Adj ⟨u, huS⟩ ⟨v, hvS⟩ from huv).reachable
+      have hvA : v ∈ A := (mem_componentVertices G S c v).mpr ⟨hvS, he.symm.trans huc⟩
+      exact (mem_sdiff.mp hv).2 hvA
+    let F : Finset V → ℝ := fun T => Real.log (partitionFunction G a T)
+    have hf : (fun T => F (T ∩ S)) = (fun T => F (T ∩ A)) + (fun T => F (T ∩ B)) := by
+      funext T
+      change Real.log (partitionFunction G a (T ∩ S)) =
+        Real.log (partitionFunction G a (T ∩ A)) + Real.log (partitionFunction G a (T ∩ B))
+      rw [← hAB, inter_union_distrib_left,
+        partitionFunction_union_of_no_edges G a _ _
+          (hd.mono (inter_subset_right) (inter_subset_right))
+          (fun u hu v hv => hn u (mem_inter.mp hu).2 v (mem_inter.mp hv).2),
+        Real.log_mul (hpos _).ne' (hpos _).ne']
+    have hc := congrFun (congrArg coefficient hf) S
+    simp only [coefficient_add, Pi.add_apply, coefficient_restrict,
+      if_pos (Subset.refl S), if_neg hSA, if_neg hSB, add_zero] at hc
+    exact hc
+  · have he : S = ∅ := not_nonempty_iff_eq_empty.mp hs
+    subst S
+    simpa only [zeta, powerset_empty, sum_singleton, partitionFunction_empty, Real.log_one] using
+      zeta_coefficient (fun T => Real.log (partitionFunction G a T)) ∅
+
+theorem coefficient_activatedLogPartition_eq_zero_of_not_connected (a : V → ℝ)
+    (hpos : ∀ T, 0 < partitionFunction G a T) (Λ S : Finset V)
+    (hS : ¬(G.induce (S : Set V)).Connected) :
+    coefficient (activatedLogPartition G a Λ) S = 0 := by
+  have he : activatedLogPartition G a Λ =
+      (fun T => Real.log (partitionFunction G a (T ∩ Λ))) := by
+    funext T
+    simp only [activatedLogPartition, inter_comm]
+  rw [he, coefficient_restrict (fun T => Real.log (partitionFunction G a T)) Λ]
+  dsimp only
+  split_ifs
+  · exact coefficient_logPartition_eq_zero_of_not_connected G a hpos S hS
+  · rfl
+
+end Mettapedia.Combinatorics.PolymerGas

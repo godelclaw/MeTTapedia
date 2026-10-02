@@ -1,5 +1,6 @@
 import Mettapedia.Combinatorics.PolymerGas.Decay
 import Mettapedia.Combinatorics.PolymerGas.Measure
+import Mettapedia.Combinatorics.PolymerGas.ConnectedDecomposition
 import Mathlib.Topology.MetricSpace.HausdorffDistance
 
 /-!
@@ -314,5 +315,183 @@ end MeetingSums
 #print axioms polymerDist_le_add_polymerDiam
 #print axioms polymerDist_ge_of_meeting
 #print axioms koteckyPreiss_of_blockSum
+
+end Mettapedia.Combinatorics.PolymerGas
+
+/-! ## Metric tree networks spanning interaction supports -/
+
+namespace Mettapedia.Combinatorics.PolymerGas
+open scoped Classical
+variable {X Y : Type*} [PseudoMetricSpace X] [DecidableEq X]
+
+/-- A finite metric tree network with a length budget. Repeated vertex labels
+and additional Steiner vertices are allowed; the abstract joining network is a tree. -/
+inductive TreeNetwork : Finset X → ℝ → Prop
+  | empty : TreeNetwork ∅ 0
+  | leaf (x : X) : TreeNetwork {x} 0
+  | join {S T : Finset X} {s t : ℝ} (hS : TreeNetwork S s) (hT : TreeNetwork T t)
+      (x y : X) (hx : x ∈ S) (hy : y ∈ T) : TreeNetwork (S ∪ T) (s+t+dist x y)
+  | enlarge {S : Finset X} {s t : ℝ} (hS : TreeNetwork S s) (hst : s ≤ t) : TreeNetwork S t
+
+namespace TreeNetwork
+
+theorem nonneg {S : Finset X} {r : ℝ} (h : TreeNetwork S r) : 0 ≤ r := by
+  induction h with
+  | empty => rfl
+  | leaf => rfl
+  | join hS hT x y hx hy hs ht => positivity
+  | enlarge h hst ih => exact ih.trans hst
+
+theorem exists_cover (S : Finset X) : ∃ r, TreeNetwork S r := by
+  induction S using Finset.induction_on with
+  | empty => exact ⟨0, .empty⟩
+  | @insert x S hx ih =>
+    obtain ⟨r, hr⟩ := ih
+    by_cases hs : S.Nonempty
+    · obtain ⟨y, hy⟩ := hs
+      exact ⟨_, by simpa using TreeNetwork.join (.leaf x) hr x y (by simp) hy⟩
+    · rw [Finset.not_nonempty_iff_eq_empty.mp hs, insert_empty_eq]
+      exact ⟨0, .leaf x⟩
+
+theorem dist_le {S : Finset X} {r : ℝ} (h : TreeNetwork S r)
+    {x y : X} (hx : x ∈ S) (hy : y ∈ S) : dist x y ≤ r := by
+  induction h generalizing x y with
+  | empty => simp at hx
+  | leaf z => simp only [mem_singleton] at hx hy; subst x; subst y; simp
+  | @join S T s t hS hT a b ha hb hs ht =>
+    have hnS := hS.nonneg
+    have hnT := hT.nonneg
+    rcases mem_union.mp hx with hx | hx <;> rcases mem_union.mp hy with hy | hy
+    · have := hs hx hy; have := dist_nonneg (x := a) (y := b); linarith
+    · have h := dist_triangle4 x a b y
+      have h1 := hs hx ha
+      have h2 := ht hb hy
+      linarith
+    · have h := dist_triangle4 x b a y
+      have h1 := ht hx hb
+      have h2 := hs ha hy
+      rw [dist_comm b a] at h
+      linarith
+    · have := ht hx hy; have := dist_nonneg (x := a) (y := b); linarith
+  | enlarge h hst ih => exact (ih hx hy).trans hst
+
+theorem star (x : X) (S : Finset X) : TreeNetwork (insert x S) (∑ y ∈ S, dist x y) := by
+  induction S using Finset.induction_on with
+  | empty => simpa using TreeNetwork.leaf x
+  | @insert y S hy ih =>
+    have h := TreeNetwork.join ih (.leaf y) x y (mem_insert_self _ _) (by simp)
+    simpa [sum_insert hy, add_comm, add_left_comm, add_assoc, union_singleton, insert_comm] using h
+
+end TreeNetwork
+
+/-- Infimum of lengths of finite metric tree networks spanning the support.
+The network may use other vertices of the ambient metric space. -/
+def treeLength (S : Finset X) : ℝ := sInf {r | ∃ T : Finset X, S ⊆ T ∧ TreeNetwork T r}
+
+theorem treeLength_bddBelow (S : Finset X) :
+    BddBelow {r | ∃ T : Finset X, S ⊆ T ∧ TreeNetwork T r} :=
+  ⟨0, fun _ ⟨_, _, h⟩ ↦ h.nonneg⟩
+
+theorem treeLength_set_nonempty (S : Finset X) :
+    ({r | ∃ T : Finset X, S ⊆ T ∧ TreeNetwork T r} : Set ℝ).Nonempty := by
+  obtain ⟨r, hr⟩ := TreeNetwork.exists_cover S
+  exact ⟨r, S, Subset.refl S, hr⟩
+
+theorem treeLength_nonneg (S : Finset X) : 0 ≤ treeLength S :=
+  le_csInf (treeLength_set_nonempty S) (fun _ ⟨_, _, h⟩ ↦ h.nonneg)
+
+theorem treeLength_le_of_network {S T : Finset X} {r : ℝ}
+    (hST : S ⊆ T) (hT : TreeNetwork T r) : treeLength S ≤ r :=
+  csInf_le (treeLength_bddBelow S) ⟨T, hST, hT⟩
+
+@[simp] theorem treeLength_empty : treeLength (∅ : Finset X) = 0 :=
+  le_antisymm (treeLength_le_of_network (Subset.refl _) .empty) (treeLength_nonneg _)
+
+@[simp] theorem treeLength_singleton (x : X) : treeLength ({x} : Finset X) = 0 :=
+  le_antisymm (treeLength_le_of_network (Subset.refl _) (.leaf x)) (treeLength_nonneg _)
+
+theorem treeLength_mono {S T : Finset X} (hST : S ⊆ T) : treeLength S ≤ treeLength T := by
+  apply le_csInf (treeLength_set_nonempty T)
+  rintro r ⟨U, hTU, hU⟩
+  exact treeLength_le_of_network (hST.trans hTU) hU
+
+theorem dist_le_treeLength {S : Finset X} {x y : X} (hx : x ∈ S) (hy : y ∈ S) :
+    dist x y ≤ treeLength S := by
+  apply le_csInf (treeLength_set_nonempty S)
+  rintro r ⟨T, hST, hT⟩
+  exact hT.dist_le (hST hx) (hST hy)
+
+theorem polymerDiam_le_treeLength (S : Finset X) : polymerDiam S ≤ treeLength S := by
+  apply Metric.diam_le_of_forall_dist_le (treeLength_nonneg S)
+  intro x hx y hy
+  exact dist_le_treeLength hx hy
+
+theorem treeLength_le_card_mul_diam (S : Finset X) : treeLength S ≤ S.card * polymerDiam S := by
+  by_cases hS : S.Nonempty
+  · obtain ⟨x, hx⟩ := hS
+    calc
+      treeLength S ≤ ∑ y ∈ S, dist x y := treeLength_le_of_network (subset_insert _ _) (TreeNetwork.star x S)
+      _ ≤ ∑ _ ∈ S, polymerDiam S := sum_le_sum (fun y hy => dist_le_polymerDiam hx hy)
+      _ = _ := by simp
+  · simp [not_nonempty_iff_eq_empty.mp hS]
+
+theorem exists_treeNetwork_lt (S : Finset X) {r : ℝ} (hr : treeLength S < r) :
+    ∃ T s, S ⊆ T ∧ TreeNetwork T s ∧ s < r := by
+  obtain ⟨s, ⟨T, hST, ht⟩, hs⟩ := exists_lt_of_csInf_lt (treeLength_set_nonempty S) hr
+  exact ⟨T, s, hST, ht, hs⟩
+
+theorem treeLength_union_le {S T : Finset X} (hST : ¬Disjoint S T) :
+    treeLength (S ∪ T) ≤ treeLength S + treeLength T := by
+  obtain ⟨x, hxS, hxT⟩ := not_disjoint_iff.mp hST
+  apply le_of_forall_pos_le_add
+  intro ε hε
+  obtain ⟨S', s, hS, hs, hslt⟩ := exists_treeNetwork_lt S (by linarith : treeLength S < treeLength S + ε/2)
+  obtain ⟨T', t, hT, ht, htlt⟩ := exists_treeNetwork_lt T (by linarith : treeLength T < treeLength T + ε/2)
+  have h := treeLength_le_of_network (union_subset_union hS hT)
+    (TreeNetwork.join hs ht x x (hS hxS) (hT hxT))
+  simp only [dist_self, add_zero] at h
+  linarith
+
+section ConnectedFamilies
+variable {V : Type*} [Fintype V] [DecidableEq V]
+
+
+theorem treeLength_biUnion_le_of_connected (G : SimpleGraph V) (supp : V → Finset X)
+    (hmeet : ∀ u v, G.Adj u v → ¬Disjoint (supp u) (supp v)) (C : Finset V)
+    (hC : (G.induce (C : Set V)).Connected) :
+    treeLength (C.biUnion supp) ≤ ∑ p ∈ C, treeLength (supp p) := by
+  apply connected_finset_induction G (P := fun C => treeLength (C.biUnion supp) ≤ ∑ p ∈ C, treeLength (supp p)) ?_ ?_ C hC
+  · intro p
+    simp
+  · intro C p hp hc hpc ih
+    obtain ⟨u, hu, hpu⟩ := hpc
+    have hi : ¬Disjoint (supp p) (C.biUnion supp) := by
+      obtain ⟨x, hx, hxu⟩ := not_disjoint_iff.mp (hmeet p u hpu)
+      exact not_disjoint_iff.mpr ⟨x, hx, mem_biUnion.mpr ⟨u, hu, hxu⟩⟩
+    rw [biUnion_insert, sum_insert hp]
+    have h := treeLength_union_le hi
+    linarith
+
+end ConnectedFamilies
+
+variable [PseudoMetricSpace Y] [DecidableEq Y]
+
+theorem TreeNetwork.map {S : Finset X} {r : ℝ} (h : TreeNetwork S r)
+    (f : X → Y) (hf : ∀ x y, dist (f x) (f y) ≤ dist x y) : TreeNetwork (S.image f) r := by
+  induction h with
+  | empty => simpa using (TreeNetwork.empty : TreeNetwork (∅ : Finset Y) 0)
+  | leaf x => simpa using TreeNetwork.leaf (f x)
+  | @join S T s t hS hT x y hx hy hs ht =>
+    rw [Finset.image_union]
+    exact (TreeNetwork.join hs ht (f x) (f y) (mem_image_of_mem f hx) (mem_image_of_mem f hy)).enlarge
+      (by linarith [hf x y])
+  | enlarge h hst ih => exact ih.enlarge hst
+
+theorem treeLength_image_le (f : X → Y) (hf : ∀ x y, dist (f x) (f y) ≤ dist x y)
+    (S : Finset X) : treeLength (S.image f) ≤ treeLength S := by
+  apply le_csInf (treeLength_set_nonempty S)
+  rintro r ⟨T, hST, hT⟩
+  exact treeLength_le_of_network (image_subset_image hST) (hT.map f hf)
+
 
 end Mettapedia.Combinatorics.PolymerGas

@@ -220,3 +220,47 @@ theorem componentFamily_erase_touches {C : Finset V} {p : V}
 #print axioms sum_componentFamilies
 
 end Mettapedia.Combinatorics.PolymerGas
+
+/-! ## Induction on connected finite families -/
+
+namespace Mettapedia.Combinatorics.PolymerGas
+open scoped Classical
+variable {V : Type*} [Fintype V] [DecidableEq V]
+
+/-- Build a connected finite family by adjoining vertices along graph edges. -/
+theorem connected_finset_induction (G : SimpleGraph V) {P : Finset V → Prop}
+    (hsingle : ∀ v, P {v})
+    (hinsert : ∀ (C : Finset V) (v : V), v ∉ C →
+      (G.induce (C : Set V)).Connected → (∃ u ∈ C, G.Adj v u) → P C → P (insert v C))
+    (C : Finset V) : (G.induce (C : Set V)).Connected → P C := by
+  refine Finset.strongInductionOn C ?_
+  intro C ih hc
+  have : Nonempty C := hc.nonempty
+  obtain ⟨v⟩ := this
+  by_cases hcard : C.card = 1
+  · obtain ⟨u, hu⟩ := card_eq_one.mp hcard
+    rw [hu]
+    exact hsingle u
+  · have hpos : 0 < C.card := card_pos.mpr ⟨v, v.property⟩
+    have : Nontrivial C := Fintype.one_lt_card_iff_nontrivial.mp (by
+      rw [Fintype.card_coe]; omega)
+    obtain ⟨v, hv⟩ := hc.exists_preconnected_induce_compl_singleton_of_finite
+    obtain ⟨u, hvu⟩ := hc.preconnected.exists_adj_of_nontrivial v
+    have huv : u.val ≠ v.val := fun h => hvu.ne (Subtype.ext h.symm)
+    have hu : u.val ∈ C.erase v.val := mem_erase.mpr ⟨huv, u.property⟩
+    have : Nonempty (C.erase v.val : Finset V) := ⟨⟨u.val, hu⟩⟩
+    let f : ((G.induce (C : Set V)).induce {v}ᶜ) →g G.induce (C.erase v.val : Set V) :=
+      { toFun := fun x => ⟨x.val.val, mem_erase.mpr
+          ⟨fun h => x.property (Subtype.ext h), x.val.property⟩⟩
+        map_rel' := fun h => h }
+    have hf : Function.Surjective f := by
+      rintro ⟨x, hx⟩
+      refine ⟨⟨⟨x, (mem_erase.mp hx).2⟩, ?_⟩, rfl⟩
+      intro he
+      exact (mem_erase.mp hx).1 (congrArg Subtype.val he)
+    have he : (G.induce (C.erase v.val : Set V)).Connected := ⟨hv.map f hf⟩
+    have hp := ih (C.erase v.val) (erase_ssubset v.property) he
+    have h := hinsert (C.erase v.val) v.val (by simp) he ⟨u.val, hu, hvu⟩ hp
+    simpa only [insert_erase v.property] using h
+
+end Mettapedia.Combinatorics.PolymerGas

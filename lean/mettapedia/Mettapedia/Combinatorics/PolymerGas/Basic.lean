@@ -512,3 +512,49 @@ theorem log_partitionFunction_erase_le {a : V → ℝ} {c : V → ℝ}
 #print axioms koteckyPreiss
 
 end Mettapedia.Combinatorics.PolymerGas
+
+/-! ## Exact factorization across disconnected regions -/
+
+namespace Mettapedia.Combinatorics.PolymerGas
+open scoped Classical
+variable {V : Type*} [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+
+/-- Regions with no common vertex or incompatibility edge have factorized partitions. -/
+theorem partitionFunction_union_of_no_edges {R : Type*} [CommSemiring R] (w : V → R)
+    (A B : Finset V) (hd : Disjoint A B)
+    (hn : ∀ a ∈ A, ∀ b ∈ B, ¬G.Adj a b) :
+    partitionFunction G w (A ∪ B) = partitionFunction G w A * partitionFunction G w B := by
+  revert B
+  refine Finset.strongInductionOn A ?_
+  intro A ih B hd hn
+  by_cases hA : A.Nonempty
+  · obtain ⟨v, hv⟩ := hA
+    let A' := A.erase v
+    have hs : A' ⊂ A := erase_ssubset hv
+    have hvB : v ∉ B := fun h => disjoint_left.mp hd hv h
+    have hAB : Disjoint A' B := hd.mono_left (erase_subset _ _)
+    have hno : ∀ a ∈ A', ∀ b ∈ B, ¬G.Adj a b := fun a ha => hn a (erase_subset _ _ ha)
+    have hcompat : compatibleWith G (A' ∪ B) v = compatibleWith G A' v ∪ B := by
+      simp only [compatibleWith, filter_union]
+      rw [filter_eq_self.mpr (fun b hb => hn v hv b hb)]
+    have hZ := ih A' hs B hAB hno
+    have hZ' := ih (compatibleWith G A' v)
+      (Finset.ssubset_of_subset_of_ssubset (filter_subset _ _) hs) B
+      (hAB.mono_left (filter_subset _ _))
+      (fun a ha => hno a (filter_subset _ _ ha))
+    have hve : v ∉ A' := by simp [A']
+    calc
+      partitionFunction G w (A ∪ B) = partitionFunction G w (insert v (A' ∪ B)) := by
+        congr 1
+        rw [← insert_union, show insert v A' = A from insert_erase hv]
+      _ = partitionFunction G w (A' ∪ B) + w v * partitionFunction G w (compatibleWith G (A' ∪ B) v) :=
+        partitionFunction_insert w (by simp [hve, hvB])
+      _ = (partitionFunction G w A' + w v * partitionFunction G w (compatibleWith G A' v)) * partitionFunction G w B := by
+        rw [hcompat, hZ, hZ']
+        ring
+      _ = partitionFunction G w A * partitionFunction G w B := by
+        rw [← partitionFunction_insert w hve, insert_erase hv]
+  · simp [not_nonempty_iff_eq_empty.mp hA]
+
+
+end Mettapedia.Combinatorics.PolymerGas

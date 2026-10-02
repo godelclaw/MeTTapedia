@@ -364,3 +364,70 @@ theorem dist_scaleAnchor (j : ℕ) (l k : Link d n) :
 #print axioms internal_link_cell
 #print axioms internal_support_same_cell
 end Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry
+
+/-! ## Nonexpanding projection to coarse cells -/
+
+namespace Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry
+open StrongCouplingCrossing
+/-- Round a fine cyclic coordinate down to its scale-two cell. -/
+def halfCoordinate (n : ℕ) (z : ZMod (doubleIndex n + 3)) : ZMod (n+3) := ((z.val / 2 : ℕ) : ZMod (n+3))
+
+@[simp] theorem val_halfCoordinate (n : ℕ) (z : ZMod (doubleIndex n+3)) :
+    (halfCoordinate n z).val = z.val / 2 := by
+  rw [halfCoordinate, ZMod.val_natCast, Nat.mod_eq_of_lt]
+  have hz := z.val_lt
+  dsimp [doubleIndex] at hz
+  omega
+
+theorem dist_halfCoordinate_le_of_le (n : ℕ) (a b : ZMod (doubleIndex n+3))
+    (hba : b.val ≤ a.val) :
+    dist (coordinateCircle n (halfCoordinate n a)) (coordinateCircle n (halfCoordinate n b)) ≤
+      dist (coordinateCircle (doubleIndex n) a) (coordinateCircle (doubleIndex n) b) := by
+  have hab : (halfCoordinate n b).val ≤ (halfCoordinate n a).val := by
+    simp only [val_halfCoordinate]
+    exact Nat.div_le_div_right hba
+  simp only [dist_eq_norm, ← map_sub, norm_coordinateCircle_eq,
+    ZMod.valMinAbs_natAbs_eq_min, ZMod.val_sub hab, ZMod.val_sub hba, val_halfCoordinate]
+  apply Nat.cast_le.mpr
+  apply min_le_min
+  · omega
+  · have ha := a.val_lt
+    have hb := b.val_lt
+    dsimp [doubleIndex] at *
+    omega
+
+theorem dist_halfCoordinate_le (n : ℕ) (a b : ZMod (doubleIndex n+3)) :
+    dist (coordinateCircle n (halfCoordinate n a)) (coordinateCircle n (halfCoordinate n b)) ≤
+      dist (coordinateCircle (doubleIndex n) a) (coordinateCircle (doubleIndex n) b) := by
+  rcases le_total b.val a.val with h | h
+  · exact dist_halfCoordinate_le_of_le n a b h
+  · simpa only [dist_comm] using dist_halfCoordinate_le_of_le n b a h
+
+def halfLink {d n : ℕ} (l : Link d (doubleIndex n)) : Link d n :=
+  (fun i => halfCoordinate n (l.1 i), l.2)
+
+theorem dist_halfLink_le {d n : ℕ} (l k : Link d (doubleIndex n)) :
+    dist (halfLink l) (halfLink k) ≤ dist l k := by
+  rw [dist_link_eq]
+  apply (dist_pi_le_iff dist_nonneg).mpr
+  intro i
+  exact (dist_halfCoordinate_le n (l.1 i) (k.1 i)).trans
+    (dist_le_pi_dist (position l) (position k) i)
+
+@[simp] theorem halfLink_blockEdge {d n : ℕ} (l : Link d n) (b : Fin 2) :
+    halfLink (blockEdge l b) = l := by
+  apply Prod.ext
+  · funext i
+    change halfCoordinate n ((blockEdge l b).1 i) = l.1 i
+    apply ZMod.val_injective
+    rw [val_halfCoordinate]
+    by_cases hi : i = l.2
+    · subst i
+      rw [val_blockEdge_direction]
+      have hb := b.isLt
+      omega
+    · simp [blockEdge, step, hi, doubleSite, val_doubleCoordinate]
+  · rfl
+
+
+end Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry
