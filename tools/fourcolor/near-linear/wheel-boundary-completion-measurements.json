@@ -1,0 +1,122 @@
+{
+  "status": "kernel-certified shared boundary completion, with actual one-five and two-five wheel consumers",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.WheelBoundaryCompletion",
+      "source_sha256": "537cc8ac79d6e1179bd2ea1edbc4133a5c154043f3d5773eb7329d419d1050f5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.539,
+      "olean_bytes": 950168,
+      "olean_sha256": "98bc4d889e3076ce6f57790d8d07728ae28a128987cdd9b62e192cbb15c8dd43"
+    },
+    {
+      "module": "MettapediaFourColor.D3009BoundaryLayout",
+      "source_sha256": "5e831f66984dca3dc8bda0979a1d4328a03faa7a99e6eb02af58f9d5fb80a359",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.135,
+      "olean_bytes": 20872,
+      "olean_sha256": "bb7a715ca2c78ff7e7ef5f9a73c4eebc1020be619ccafb6dc9a10231d040c219"
+    },
+    {
+      "module": "MettapediaFourColor.WheelBoundaryLayouts",
+      "source_sha256": "adf6d50954df20217ffdea482ca68ac25db335e08ac4745fc7ae767ce0863e5c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 115.918,
+      "olean_bytes": 114648,
+      "olean_sha256": "d6b7d5e09a25081a58ad83b8ca4c166dda4bc74b64b288ff32321ff26b1f763f"
+    },
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelOccurrence",
+      "source_sha256": "02a1e5d08fe33640ddc35946c514570cf4344ee87c449c63517d352748127f2f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.764,
+      "olean_bytes": 220200,
+      "olean_sha256": "dd212ee6fc3522689ae17c2c62a5be957af583722dcfe5fb61f662d8c3e59288"
+    },
+    {
+      "module": "MettapediaFourColor.ActualWheelOccurrence",
+      "source_sha256": "d19301287a4d8578867fb471d205104623cd6efb48a4cc479c6f7699933bf828",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.294,
+      "olean_bytes": 179768,
+      "olean_sha256": "fff9de98f03d716eef616fa1354d56c26eb8035b5326c811e2f494bb94e50056"
+    },
+    {
+      "module": "MettapediaFourColor.WheelOccurrenceAudit",
+      "source_sha256": "f3fc7a31dd7a76aef2f46f6ffa62ec330ad9143506b1b7815fdadcba418e15c1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 9.173,
+      "olean_bytes": 2600,
+      "olean_sha256": "73ca5bc2601c0486a1164980ac11c81d2af00f6d7567958edc0e8789c1d26141"
+    },
+    {
+      "module": "MettapediaFourColor.SecondFanWheelOccurrence",
+      "source_sha256": "847383a7a0b9a05c42817ea31cc2a9195be878ad7d82d7b686a5d62a301282b8",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.588,
+      "olean_bytes": 385904,
+      "olean_sha256": "ba5a2d23f2388680cd174f5de83de6aba82ab125b8df4f989ebded896d79ee75"
+    },
+    {
+      "module": "MettapediaFourColor.WheelBoundaryCompletionAudit",
+      "source_sha256": "b2f06f4c3075de1bda5145e0ea34f188716e6fad0bff45304dfc92827d942277",
+      "exit_code": 0,
+      "frontend_wall_seconds": 10.18,
+      "olean_bytes": 2608,
+      "olean_sha256": "c253b2fbbd35765e4947b57d688336ea2d9a4c7e58390dfe8ba089c61decafeb"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 11,
+    "declarations": 26223,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates": 0,
+    "wheel_repair_certificates": 0
+  },
+  "uniform_geometry": {
+    "core": "one degree-seven centre and its seven cyclic neighbours",
+    "layout_parameters": "ordered full core stars, boundary ownership and shared seam positions",
+    "proof": "Triangular closure equates the two readings of each seam. Induced core, facial triangles and chorded four-cycles exclude all remaining vertex collisions.",
+    "layout_instances": 7,
+    "original_boundary_ports": 13,
+    "two_five_boundary_ports": 12,
+    "two_five_positions": 6
+  },
+  "actual_consumers": {
+    "domain": "finite graph-backed vertex-minimal Tait counterexample, in its minimal facial dual",
+    "original": "ActualWheelOccurrence.occurrence now uses WheelBoundaryCompletion.complete, preserving its existing source labels and repair-disk consumer.",
+    "two_five": "TwoFiveWheelOccurrence.supplied selects the second-five position from the actual neighbour orbit; constructs all twenty distinct source vertices and twelve ports while retaining the same centre and both marked fives.",
+    "second_fan": "SecondFanWheelOccurrence.alternatives supplies a new high neighbour or an actual complete one-five or two-five wheel. The two-five branch retains the exact two-five/one-tip/no-extra-transfer observations."
+  },
+  "preserved": [
+    "All source edges and ordered full core stars.",
+    "The same actual centre and marked neighbours.",
+    "Injectivity on the entire source, including distinct boundary ports.",
+    "Every source vertex lies within radius two of its centre."
+  ],
+  "scope": "Additional ambient edges between boundary vertices are permitted. Geometric supply does not assume a wheel colouring-repair theorem.",
+  "checks": [
+    "lake build kernelWheelBoundaryCompletion",
+    "lake build kernelWheelEmbedding",
+    "lake build kernelSecondFan kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_checks_saved": 336,
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0
+  },
+  "open": [
+    "Complete the full D3009 repair replay; it remains an explicit premise of the preceding family repair transfer.",
+    "Construct the twelve-port injective repair disk and valid singleton contract, then reconstruct through strict vertex minimality.",
+    "Supply the remaining profiles and complete geometric coverage for the intended graph class."
+  ]
+}

@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay joint geometric completion across wheel layouts. -/
+target kernelWheelBoundaryCompletion pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-boundary-completion",
+        "--library-output", ".lake/build/lib/lean", "--modules", "WheelBoundaryCompletion", "D3009BoundaryLayout", "WheelBoundaryLayouts",
+        "TwoFiveWheelOccurrence",
+        "ActualWheelOccurrence", "WheelOccurrenceAudit", "SecondFanWheelOccurrence", "WheelBoundaryCompletionAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay one boundary-collapse operation at every second-five position. -/
 target kernelTwoFiveWheel pkg : Unit := do
   let env ← getAugmentedEnv
@@ -110,7 +125,8 @@ target kernelWheelNeighborhood pkg : Unit := do
         "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
         "--package", ".", "--output", ".lake/wheel-neighborhood-audit",
         "--library-output", ".lake/build/lib/lean", "--modules",
-        "WheelNeighborhood", "D3009Wheel", "D3009Boundary", "ActualWheelOccurrence",
+        "WheelNeighborhood", "D3009Wheel", "D3009Boundary",
+        "WheelBoundaryCompletion", "D3009BoundaryLayout", "ActualWheelOccurrence",
         "WheelOccurrenceAudit"]
       cwd := pkg.dir
       env := env }

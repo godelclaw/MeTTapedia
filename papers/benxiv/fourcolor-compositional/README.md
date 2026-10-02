@@ -44,8 +44,19 @@ per-position repair certificates. The
 [colouring equivalence](../../../lean/fourcolor-classical/MettapediaFourColor/TwoFiveWheelColouring.lean)
 retains the joint exterior and composes two GSLT sector witnesses through
 the same centre and both seam colours. This is a direct use of compositional
-repair to explain a family. Its occurrence and reconstruction in the actual
-ambient map remain to be proved; no unavoidable-set entry is removed.
+repair to explain a family.
+
+The [shared geometric completion](../../../lean/fourcolor-classical/MettapediaFourColor/WheelBoundaryCompletion.lean)
+now constructs the original wheel and all six targets inside the actual
+minimal facial dual. Each boundary vertex is read from a complete rim star;
+triangular closure identifies the shared corners, and short-cycle laws
+exclude collisions. The second five is selected from the actual neighbour
+orbit, retaining both marked neighbours and the same centre. Thus the
+[second-fan classification](../../../lean/fourcolor-classical/MettapediaFourColor/SecondFanWheelOccurrence.lean)
+supplies a new high neighbour or a complete one-five or two-five wheel,
+with the exact charge observations retained. The two-five disk and strict
+ambient colouring reconstruction remain open; no unavoidable-set entry is
+removed.
 
 A completed geometric test concerns two overlapping exceptional neighbourhoods
 in the newer catalogue. Their shared rotation forces the D1774 core. Its

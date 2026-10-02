@@ -17,7 +17,18 @@ stars, prescribed degrees and ordered ports. No per-position repair table
 is added. Actual colourings are equivalent to joint cyclic choices, and
 `TwoFiveWheelColouring.repaired_sectors` produces two compatible GSLT
 sector witnesses for the same exterior. The full D3009 repair remains an
-explicit premise; actual ambient occurrence and reconstruction are open.
+explicit premise. Actual occurrence is now supplied by the shared
+[boundary-completion theorem](MettapediaFourColor/WheelBoundaryCompletion.lean).
+`TwoFiveWheelOccurrence.supplied` selects the second-five position from the
+actual neighbour orbit and constructs twenty distinct vertices, twelve
+ordered ports, all source edges and full core rotations within radius two.
+The original D3009 occurrence now uses the same geometric proof.
+`SecondFanWheelOccurrence.alternatives` consumes this on the actual flat
+second centre, retaining its marked last five and exact charge observations.
+No full repair is needed for this geometric classification. The two-five
+injective disk, valid contract and strict ambient reconstruction remain open.
+Replay `lake build kernelWheelBoundaryCompletion`; see the
+[geometric receipt](../../tools/fourcolor/near-linear/wheel-boundary-completion-measurements.json).
 Replay `lake build kernelTwoFiveWheel`; see the
 [receipt](../../tools/fourcolor/near-linear/two-five-wheel-measurements.json).
 The earlier [three finite experiments](../../tools/fourcolor/near-linear/two-five-wheel-probe.json)

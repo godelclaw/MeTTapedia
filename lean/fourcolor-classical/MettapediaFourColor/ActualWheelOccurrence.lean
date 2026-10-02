@@ -1,4 +1,4 @@
-import MettapediaFourColor.D3009Boundary
+import MettapediaFourColor.D3009BoundaryLayout
 import MettapediaFourColor.ExceptionalCoreInduced
 import MettapediaFourColor.ExactFanResidual
 
@@ -24,6 +24,7 @@ open ChainFanRecognition (walk)
 noncomputable section
 attribute [local instance] Classical.propDecidable
 set_option backward.isDefEq.respectTransparency false
+set_option maxRecDepth 32768
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
@@ -44,17 +45,13 @@ def occurrence (d : (graph original minimal).Dart)
     intro i j h
     exact (D3009Wheel.edge_iff _ d tri cyc seven
       (fun _ _ _ => MinimalExceptionalEmbedding.triangle_facial original minimal) i j).mp h
-  refine {
-    hom := D3009Boundary.hom r tri cyc
-    degree_eq := ?_
-    turn := D3009Boundary.full_turn r tri cyc
-    injective := D3009Boundary.vertex_injective r tri cyc inj reflect
-      (fun _ _ _ => MinimalExceptionalEmbedding.triangle_facial original minimal)
-      (fun _ _ _ _ => ExceptionalCoreInduced.four_cycle_chord original minimal)
-    near := D3009Boundary.vertex_near r }
-  intro i
-  change (graph original minimal).degree (D3009Boundary.vertex r (i.natAdd 13)) = _
-  rw [D3009Boundary.vertex_core, r.degree_eq]
+  let shared : WheelBoundaryCompletion.Reading D3009BoundaryLayout.layout
+      (rotation original minimal) := ⟨r.map, r.degree_eq, r.face⟩
+  let completed := WheelBoundaryCompletion.complete shared tri cyc inj reflect
+    (fun _ _ _ => MinimalExceptionalEmbedding.triangle_facial original minimal)
+    (fun _ _ _ _ => ExceptionalCoreInduced.four_cycle_chord original minimal)
+  exact ⟨completed.hom, completed.degree_eq, completed.turn,
+    completed.injective, completed.near⟩
 
 theorem center (d : (graph original minimal).Dart)
     (seven : (graph original minimal).degree d.fst = 7)

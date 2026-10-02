@@ -3894,7 +3894,7 @@
     "two_five_experiment": "All three cyclic separations close in Python with 22,144 states each. These are discovery results; the new kernel-certified collapse transfer uses the single D3009 repair premise instead of their separate certificates.",
     "open": [
       "Complete the separately running D3009 finite replay.",
-      "Construct the actual ambient two-five occurrence and its strict colouring reconstruction; boundary repair transfer for all six positions is proved.",
+      "Construct the two-five injective repair disk, valid contract and strict ambient colouring reconstruction; actual occurrence and boundary repair transfer for all six positions are proved.",
       "Supply the shared fan and subsequent joint-centre reductions throughout the intended flat neighbourhood class."
     ]
   },
@@ -3922,8 +3922,30 @@
     "retained_finite_obligations": "Six exact graph/degree/cyclic-order/boundary alignments. Full source repair remains an explicit premise.",
     "open": [
       "Complete the live D3009 finite repair replay.",
-      "Actual two-five occurrence and ambient strict reconstruction.",
+      "Two-five injective repair disk, valid contract and strict ambient reconstruction; actual occurrence is now supplied by shared boundary completion.",
       "Geometric supply and coverage throughout the intended flat class."
+    ]
+  },
+  "wheel_boundary_completion": {
+    "record": "../near-linear/wheel-boundary-completion-measurements.json",
+    "status": "Kernel-certified shared geometric completion with actual consumers for both wheel families.",
+    "uniform_argument": "Complete rim stars own outer ports; triangular closure identifies shared seams; induced core, facial triangles and four-cycle chords exclude every collision.",
+    "finite_layouts": 7,
+    "source_ports": [
+      13,
+      12
+    ],
+    "two_five_positions": 6,
+    "actual_consumer": "SecondFanWheelOccurrence.alternatives retains the same actual flat second centre and marked five; supplies a high neighbour or a complete one-five or two-five occurrence with exact charge observations.",
+    "original_integration": "ActualWheelOccurrence.occurrence now uses WheelBoundaryCompletion.complete; its existing repair-disk consumer remains available.",
+    "hypotheses": "Finite graph-backed vertex-minimal Tait counterexample; required actual seven-valent degree profile. No wheel repair is assumed for geometric supply.",
+    "scope": "All source vertices, edges and full core cyclic stars are preserved. Ports are distinct and all vertices lie within radius two of the same centre. Additional ambient boundary edges are permitted.",
+    "new_coverage_entries_removed": 0,
+    "new_configuration_certificate_dependencies_removed": 0,
+    "open": [
+      "Complete the full D3009 repair replay.",
+      "Construct the twelve-port repair disk and valid singleton contract; reconstruct through strict vertex minimality.",
+      "Supply the remaining degree profiles and close geometric coverage."
     ]
   }
 }

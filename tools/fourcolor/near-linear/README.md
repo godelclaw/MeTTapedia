@@ -1417,5 +1417,37 @@ executable Kempe-recolouring algorithm.
 
 Replay `lake build kernelTwoFiveWheel`; the
 [receipt](two-five-wheel-measurements.json) records the fourteen-root audit.
-Actual two-five occurrence and ambient strict reconstruction remain open.
+Actual two-five occurrence is supplied by the shared geometric theorem
+below; ambient strict reconstruction remains open.
 Coverage and original configuration certificate counts stay 633 /629.
+
+
+## One geometric completion for both wheel families
+
+`WheelBoundaryCompletion` separates finite source rows and outer-port
+ownership from the geometric argument. Triangular closure equates the
+readings of a shared seam. Inducedness of the wheel core excludes a port
+from returning into the core. A collision between different outer ports
+produces a four-cycle; its chord and a facial triangle contradict the
+owned positions. This proves injectivity rather than requiring it.
+
+`D3009BoundaryLayout` and `WheelBoundaryLayouts` supply the finite laws for
+D3009 and all six twelve-port targets. `ActualWheelOccurrence.occurrence` consumes the
+shared theorem for D3009. `TwoFiveWheelOccurrence.supplied` selects the
+second-five position from the actual cyclic neighbour orbit and constructs
+the corresponding source, preserving all edges, full core stars and both
+marked neighbours. Every source vertex lies within radius two of the same
+centre. Additional ambient edges between boundary vertices are permitted.
+
+`SecondFanWheelOccurrence.alternatives` combines the charge classifier with
+these occurrences without assuming a colouring repair. Its outcomes are a
+new high neighbour, the original one-five wheel, or a complete two-five
+wheel carrying the exact two-five/one-tip/no-extra-transfer observations.
+The target repair is already a consequence of the full D3009 repair by the
+preceding collapse theorem. The remaining local step is its injective disk,
+valid contract and strict ambient colouring reconstruction.
+
+Replay `lake build kernelWheelBoundaryCompletion`; see the
+[receipt](wheel-boundary-completion-measurements.json). The general geometric
+argument has actual consumers in both families. Coverage and original
+certificate counts remain 633 /629.
