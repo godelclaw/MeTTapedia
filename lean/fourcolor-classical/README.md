@@ -1306,3 +1306,31 @@ This adds a joint constraint for classification; it does not prove that all
 flat centres contain this pair. The complete proof retains 633 coverage
 entries and 629 original configuration certificate dependencies. See the
 [measurements](../../tools/fourcolor/near-linear/rule-pair-charge-measurements.json).
+
+## A paired budget retains both sender choices
+
+`RulePairBudget.joint_bound` covers both degrees allowed for the second
+sender. The first edge supplies at least four net units. A degree-six second
+sender supplies at least three through the glued rule; a degree-five sender
+supplies at least four through the two-unit rule `001` and its triangle
+subpattern. The joint bound is therefore seven or eight, respectively.
+Actual cyclic order proves the senders distinct before the contributions
+are added. `Subpattern` transports complete edges and turns to the smaller
+rules while retaining their actual vertex readings and degree requirements.
+
+`ActualRulePairBudget` obtains the surviving profile through the two diamond
+reductions, then applies the common seven-unit bound. Its `flat_remainder`
+shows that at most thirteen net units remain outside the pair at a flat
+degree-eight centre. Every other signed transfer remains in the sum.
+The supplied pair is still a hypothesis; no global occurrence supply is
+assumed or proved here.
+
+`RulePairBudgetExample` checks both sender branches in the same finite
+rotation and consumes the uniform theorem. Total flat charge for the
+degree-six example is independently computed, not certified by this example
+module; the degree-five example is not flat. Run `lake build kernelRulePairBudget`
+after the preceding rule-pair artifacts. The twenty-root audit requires both
+diamond reconstructions and excludes original catalogue certificates, D1774
+repair and complete Four Colour endpoints. Coverage remains 633 entries and
+629 original certificate dependencies. See the
+[paired-budget measurements](../../tools/fourcolor/near-linear/rule-pair-budget-measurements.json).

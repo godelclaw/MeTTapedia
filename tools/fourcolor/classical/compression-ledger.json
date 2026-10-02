@@ -3359,7 +3359,7 @@
     "original_configuration_certificate_dependencies_replaced": 0,
     "classification_checks_removed_from_complete_assembly": 0,
     "limits": [
-      "Cyclicity, triangularity and three complete local rule-pair instances in the 42-vertex rotation are Lean certified. Its flat charge, spherical construction and exhaustive profile census remain independent program checks.",
+      "Cyclicity, triangularity and four complete local rule-pair instances in the 42-vertex rotation are Lean certified. Its flat charge, spherical construction and exhaustive profile census remain independent program checks.",
       "No complete flat-pair classification, new reduction family or algorithmic runtime bound."
     ]
   },
@@ -3397,6 +3397,31 @@
       "The rule pair is not proved to occur at every flat centre.",
       "The lower bound is not by itself a contradiction to flatness.",
       "No complete profile classification or scheduling/runtime theorem is supplied."
+    ]
+  },
+  "near_linear_paired_rule_budget": {
+    "status": "Kernel-certified paired signed budget with actual minimal-map consumer and both sender branches.",
+    "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "joint_lower_bounds": {
+      "second_sender_degree_five": 8,
+      "second_sender_degree_six": 7
+    },
+    "flat_eight_remaining_supply_upper_bound": 13,
+    "actual_distinctness": "Derived from vertexwise cyclic order and receiver degree greater than two.",
+    "actual_consumer": "Both existing diamond reductions derive the surviving degree profile; the paired budget covers both second-sender degrees.",
+    "retained_certificates": [
+      "DiamondProfileReducibility.repair001",
+      "DiamondProfileReducibility.repair002"
+    ],
+    "measurement": "../near-linear/rule-pair-budget-measurements.json",
+    "coverage_entries_removed": 0,
+    "original_configuration_certificate_dependencies_replaced": 0,
+    "classification_checks_removed_from_complete_assembly": 0,
+    "limits": [
+      "The generic rule law requires the supplied geometric profile. The minimal-map consumer derives part of that profile, not universal occurrence supply.",
+      "The remainder keeps every other signed transfer. Its upper bound is not a contradiction to flatness.",
+      "The two examples certify local geometry, readings and lower bounds. Exact charges, total flatness and remainders are independent program evidence; the degree-five example has positive final charge.",
+      "No complete neighbourhood classification, reduced catalogue or scheduling/runtime bound follows."
     ]
   }
 }

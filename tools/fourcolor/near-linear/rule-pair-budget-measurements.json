@@ -1,0 +1,177 @@
+{
+  "status": "Kernel-certified paired signed budget with actual minimal-map consumer and both sender branches.",
+  "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "theorems": [
+    "FourColor.RulePairBudget.restrict",
+    "FourColor.RulePairBudget.distinct_senders",
+    "FourColor.RulePairBudget.joint_bound",
+    "FourColor.RulePairBudget.flat_pair_remainder",
+    "FourColor.ActualRulePairBudget.paired_budget",
+    "FourColor.ActualRulePairBudget.flat_remainder"
+  ],
+  "hypotheses": [
+    "Full aligned checks for rule003_2 and rule004_1 in an actual finite vertexwise cyclic rotation.",
+    "First sender and shared vertex degree five, remaining outer corner degree six, receiver degree at least seven.",
+    "The actual minimal-map consumer derives shared and outer degrees through the two existing strict diamond reductions."
+  ],
+  "conclusions": [
+    "The actual incoming senders are distinct.",
+    "Joint net supply is at least eight when the second sender has degree five, and at least seven otherwise; source guards allow only degrees five and six.",
+    "At a flat degree-eight receiver, all vertices other than the two senders jointly supply at most thirteen net units."
+  ],
+  "audit": {
+    "roots": 20,
+    "dependency_declarations": 29632,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_certificates": [
+      "DiamondProfileReducibility.repair001",
+      "DiamondProfileReducibility.repair002"
+    ],
+    "original_configuration_certificates": false,
+    "D1774_repair": false,
+    "complete_four_colour_endpoints": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RulePairBudget",
+        "source_sha256": "23319815e7170673115eb905eda1b91bbf2c7929c1248b6fbde5f0c51f19bc2f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 28.831,
+        "olean_bytes": 1419784,
+        "olean_sha256": "4aec45c20e1fe44c59914368782b9693494ce72b24839e36a8002731967dd8c3"
+      },
+      {
+        "module": "MettapediaFourColor.ActualRulePairBudget",
+        "source_sha256": "0ff278dc5e7b1d81bbbc819658617598b05c1783da88a2dc8e4210d458dad9b3",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.148,
+        "olean_bytes": 69240,
+        "olean_sha256": "a757f7de06923425735ecfffe6599a8f311292b7ca3af35b990ba96abf49948e"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairBudgetExample",
+        "source_sha256": "0beac4b87bc95cf50ea751ddac07ac8820dfb57176bc11815d930e56c0fcdcd0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 11.158,
+        "olean_bytes": 194328,
+        "olean_sha256": "44575a734f5e5c1855332784238b4a4fa061d9191b61d4b2402731612a936e36"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairBudgetAudit",
+        "source_sha256": "3d3932be1ac3c27b09803588e601d6f5f0dbe0c4da5eb43827042f80d4d8aca9",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.56,
+        "olean_bytes": 2720,
+        "olean_sha256": "1cf457ea1d6ff78ed635a22c52753effe65e80858eb95cdc83bfabd4043d178d"
+      }
+    ]
+  },
+  "source_fidelity": {
+    "fixture_sha256": "561452dc9d6dcca39f83d7fc06035a1b5ad4d4b8ae0de56390f5d6cdb37b4c68",
+    "rotation_source_sha256": "c0ac126d6e25221aa2d7e8febf20b6c849ba3cf188b2d899dce3f3092cdcc20c",
+    "source_fidelity": "All 42 cyclic stars exactly match the saved oriented faces.",
+    "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "paired_budget_examples": [
+      {
+        "root": [
+          4,
+          16
+        ],
+        "left_images": [
+          4,
+          16,
+          6,
+          30
+        ],
+        "right_images": [
+          37,
+          16,
+          6,
+          31,
+          30
+        ],
+        "outer_degree": 6,
+        "second_root": [
+          37,
+          16
+        ],
+        "second_sender_degree": 5,
+        "certified_joint_lower_bound": 8,
+        "program_net_first": 5,
+        "program_net_second": 4,
+        "program_remaining_supply": 15,
+        "program_final_charge": 4
+      },
+      {
+        "root": [
+          7,
+          11
+        ],
+        "left_images": [
+          7,
+          11,
+          36,
+          27
+        ],
+        "right_images": [
+          9,
+          11,
+          36,
+          39,
+          27
+        ],
+        "outer_degree": 6,
+        "second_root": [
+          9,
+          11
+        ],
+        "second_sender_degree": 6,
+        "certified_joint_lower_bound": 7,
+        "program_net_first": 4,
+        "program_net_second": 3,
+        "program_remaining_supply": 13,
+        "program_final_charge": 0
+      }
+    ]
+  },
+  "source_check_command": "python3 tools/fourcolor/near-linear/audit_rule_pair_example.py",
+  "source_check_sha256": "f52bd5a620507b43062f4880946c5a78b5bf914d20ff16b87fdf13943f7503e5",
+  "regression_checks": [
+    {
+      "command": "lake build kernelFlatCoverage kernelComplete",
+      "exit_code": 0
+    },
+    {
+      "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "exit_code": 0
+    }
+  ],
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "coverage_entries_removed_here": 0,
+    "existing_assembly_certificate_dependencies_replaced_here": 0,
+    "classification_checks_removed_from_complete_assembly_here": 0
+  },
+  "limits": [
+    "The generic rule law requires the supplied geometric profile. The minimal-map consumer derives part of that profile, not universal occurrence supply.",
+    "The remainder keeps every other signed transfer. Its upper bound is not a contradiction to flatness.",
+    "The two examples certify local geometry, readings and lower bounds. Exact charges, total flatness and remainders are independent program evidence; the degree-five example has positive final charge.",
+    "No complete neighbourhood classification, reduced catalogue or scheduling/runtime bound follows."
+  ]
+}

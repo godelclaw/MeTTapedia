@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Combine distinct incoming rule occurrences in a signed star budget. -/
+target kernelRulePairBudget pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-pair-budget-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RulePairBudget", "ActualRulePairBudget", "RulePairBudgetExample", "RulePairBudgetAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Reconstruct a third charge rule from two compatible actual readings. -/
 target kernelRulePairCharge pkg : Unit := do
   let env ← getAugmentedEnv

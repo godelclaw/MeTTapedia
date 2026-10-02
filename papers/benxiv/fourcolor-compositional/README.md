@@ -1352,6 +1352,25 @@ and [measurement record](../../../tools/fourcolor/near-linear/rule-pair-charge-m
 separate the general proof, actual-map consumer, finite instance and remaining
 classification work.
 
+## Shared choices constrain the whole receiver budget
+
+The paired rule argument now retains both possible degrees of the second
+sender. Two distinct incoming edges contribute at least seven net units;
+the degree-five branch gives eight. Their distinctness follows from actual
+cyclic order. At a flat degree-eight receiver, whose total net supply is
+twenty, the rest of the graph consequently supplies at most thirteen.
+
+Both branches have checked local instances and use the same structural law.
+The actual minimal-map consumer first excludes the two reducible profiles
+by reconstructing their colourings. This illustrates how reduction and
+charge arguments compose: excluding a repairable geometry constrains the
+remaining shared observations, which constrain the signed budget. The next
+step is to classify complete neighbourhoods using those constraints. The
+paired bound alone does not guarantee an occurrence or contradict flatness.
+The [paired-budget account](../../../lean/fourcolor-classical/README.md#a-paired-budget-retains-both-sender-choices)
+and [measurements](../../../tools/fourcolor/near-linear/rule-pair-budget-measurements.json)
+record the exact hypotheses and unchanged coverage counts.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

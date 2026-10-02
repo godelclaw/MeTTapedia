@@ -107,6 +107,31 @@ def audit():
     rest_net = sum(sent(w, 11) - sent(11, w) for w in neighbors if w != 9)
     assert second_net == 3 and rest_net == 17
     assert 10 * (6 - len(neighbors[11])) + second_net + rest_net == 0
+    paired = []
+    for item in collisions:
+        u, v = item['root']
+        if item['outer_degree'] != 6 or len(neighbors[v]) < 7:
+            continue
+        w = prevs[v, prevs[v, u]]
+        assert u != w
+        second_degree = len(neighbors[w])
+        assert second_degree in (5, 6)
+        lower = 8 if second_degree == 5 else 7
+        first_net = sent(u, v) - sent(v, u)
+        other_net = sent(w, v) - sent(v, w)
+        assert first_net >= 4 and first_net + other_net >= lower
+        remainder = sum(sent(z, v) - sent(v, z) for z in neighbors if z not in (u, w))
+        paired.append({
+            **item, 'second_root': [w, v], 'second_sender_degree': second_degree,
+            'certified_joint_lower_bound': lower,
+            'program_net_first': first_net, 'program_net_second': other_net,
+            'program_remaining_supply': remainder,
+            'program_final_charge': 10 * (6 - len(neighbors[v])) + first_net + other_net + remainder})
+    assert {tuple(item['root']) for item in paired} == {(7, 11), (4, 16)}
+    assert {item['second_sender_degree'] for item in paired} == {5, 6}
+    five_example = next(item for item in paired if item['second_sender_degree'] == 5)
+    assert five_example['left_images'] == [4, 16, 6, 30]
+    assert five_example['right_images'] == [37, 16, 6, 31, 30]
     observed = set()
     for centre in fixture['pair']:
         for neighbor in neighbors[centre]:
@@ -149,7 +174,8 @@ def audit():
             'program_remaining_supply': rest_net,
             'program_final_charge': 0,
             'scope': 'RulePairChargeExample checks the two original readings and degree guards; the uniform gluing theorem supplies the third rule and the charge bound.'},
-        'scope': 'Lean certifies the cyclic/triangular rotation and complete rule checks with degree guards for both examples; shared structural theorems supply the mixed and pentagonal patterns. Flat charge, spherical flip history and the exhaustive collision scan remain program evidence.',
+        'paired_budget_examples': paired,
+        'scope': 'Lean certifies the cyclic/triangular rotation and complete local readings for the mixed, pentagonal and two residual instances. Uniform laws give reductions or charge lower bounds. Total charge, exact remainders, spherical flip history and the exhaustive collision scan remain program evidence.',
         'discarded_candidate': {
             'straddling_core': straddling_core,
             'vertices_not_in_any_positive_incident_rule_reading': unobserved,
