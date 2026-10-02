@@ -16,6 +16,33 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Certify all pinned oriented-rule data and their local geometric paths. -/
+target kernelNearLinearRuleData pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/near-linear-rule-data-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "NearLinearRuleData"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Connect prepared rule data to actual charge and exceptional coverage. -/
+target kernelNearLinearCharge pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/near-linear-charge-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "NearLinearCharge", "ExceptionalFlatCharge", "NearLinearChargeAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Reconstruct from local kernel faithfulness and actual disk injection. -/
 target kernelInjectiveEmbeddedRepair pkg : Unit := do
   let env ← getAugmentedEnv

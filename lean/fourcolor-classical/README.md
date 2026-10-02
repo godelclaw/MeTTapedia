@@ -1200,3 +1200,24 @@ endpoints, original rank certificates and the global embedding/minimality
 shortcuts. See the
 [account](../../tools/fourcolor/near-linear/README.md#actual-exceptional-closing-law-through-local-embedding)
 and [measurements](../../tools/fourcolor/near-linear/exceptional-exterior-measurements.json).
+
+## Actual discharging rules and flat-neighbourhood pruning
+
+`NearLinearRuleData` decodes all 84 oriented rules at the pinned source
+revision, preserving degree intervals and cyclic gaps. `NearLinearCharge`
+interprets them as actual graph occurrences. Every observed vertex lies
+within radius two of both endpoints, and each rule requires a degree-five
+vertex. Thus any flat centre of degree above six has a degree-five vertex
+within radius two. Two distinct flat degree-eight centres have combined
+external net charge exactly forty; their mutual transfer cancels.
+
+`ExceptionalFlatCharge.overlap_supply` consumes the five-free exclusion in
+the actual minimal-map domain and retains classification of the surviving
+cases as an explicit input. It reuses the completed exceptional closing law.
+No new configuration or coverage dependency is removed.
+
+Run `lake build kernelNearLinearRuleData`, then
+`lake build kernelNearLinearCharge` with the exceptional exterior artifacts
+prepared. Source fidelity is independently checked by
+`tools/fourcolor/near-linear/audit_discharging_sources.py` from the repository
+root. See the [source and charge account](../../tools/fourcolor/near-linear/README.md#actual-discharge-and-a-first-classification-prune).

@@ -689,3 +689,65 @@ repair is retained in the final local consumer and absent from the generic and
 geometric roots. Coverage remains 633 entries / 629 original configuration
 certificate dependencies. See
 [exceptional-exterior-measurements.json](exceptional-exterior-measurements.json).
+
+## Actual discharge and a first classification prune
+
+The complete 84 oriented rules (43 rules with their required reflections) are
+retained unmodified in [discharging-rules](discharging-rules), pinned to
+`d85bfe09e9584d675fdf33a1da61067575ec4883` of
+[the discharging-rule repository](https://github.com/near-linear-4ct/discharging-rules).
+The MIT notice is in [LICENSE](LICENSE), and individual source hashes are in
+[discharging-sources.json](discharging-sources.json).
+
+`NearLinearRuleData` checks the headers, all 638 vertex rows, complete
+adjacency, explicit cyclic gaps, degree intervals and marked endpoints. Each
+vertex observed by a rule has a path of length at most two from either
+endpoint, whose intermediate vertex has prescribed degree at most eight.
+Every rule has a prescribed degree-five vertex, and every sender has degree
+at most eight.
+
+`NearLinearCharge.Occurrence` interprets these observations in actual graph
+darts, retaining all known rotation steps. Occurrences may identify distant
+vertices. An applicable rule is counted once, using existence of a reading;
+the charge does not count alternate witnesses. Starting charge is
+`10 * (6 - degree)`, followed by incoming minus outgoing rule amounts.
+This is the mathematical rule semantics, not a proof that the C++ search
+implements or exhausts it.
+
+The resulting uniform laws establish:
+
+- No degree-five vertex within radius two means no charge crosses any edge
+  incident to the centre. Its final charge equals its initial charge.
+- A flat centre of degree seven or eight therefore has a degree-five vertex
+  within radius two.
+- A rule application retains one degree-five witness close to both endpoints.
+- Two distinct flat degree-eight centres require exactly forty units of net
+  external charge. Their shared transfers cancel, with the same outside
+  vertices retained in the boundary sum.
+
+`ExceptionalFlatCharge.overlap_supply` applies the first prune in the actual
+graph-backed minimality domain and reuses the completed exceptional-pair
+repair. Classification of the remaining neighbourhoods still has to be
+proved. There is no claim here of cartwheel completeness, a smaller catalogue,
+new reducibility, or a near-linear running time. The ledger remains 633
+coverage entries and 629 original configuration certificate dependencies.
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_discharging_sources.py
+```
+
+With the exceptional exterior artifacts prepared, from
+`lean/fourcolor-classical`, run sequentially:
+
+```sh
+lake build kernelNearLinearRuleData
+lake build kernelNearLinearCharge
+```
+
+See [source fidelity](discharging-source-audit.json) and
+[kernel measurements](charge-measurements.json). The charge audit excludes
+complete Four Colour endpoints and original configuration rank certificates.
+The D1774 finite repair occurs only in the consumer of the existing closing
+law; it is absent from the rule and charge proofs.

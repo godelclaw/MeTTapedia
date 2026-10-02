@@ -1,5 +1,5 @@
 {
-  "status": "The actual exceptional closing branch is kernel checked in the graph-backed vertex-minimal domain: one explicit preembedding, locally faithful core, injected disk, genuine singleton contract colouring and compatible D1774 repair exclude the aligned X pair. Zero-charge classification, other degree/residual cases and coverage remain open.",
+  "status": "The actual exceptional closing branch is kernel checked in the graph-backed vertex-minimal domain. Complete oriented-rule charge semantics and five-free pruning connect the zero predicate to actual graph observations. Surviving zero-charge classification, other degree/residual cases and coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -287,6 +287,34 @@
     {
       "declaration": "FourColor.ExceptionalLocalRepair.overlap_supply",
       "meaning": "The second-centre and joint closing fields are supplied on the actual minimal dual. Classification from zero charge remains an explicit argument."
+    },
+    {
+      "declaration": "FourColor.NearLinearRuleData.source_valid",
+      "meaning": "All 84 pinned oriented rules decode with full degree bounds, marked endpoints and cyclic gaps."
+    },
+    {
+      "declaration": "FourColor.NearLinearRuleData.local_paths",
+      "meaning": "Every observation of every source rule has a length-at-most-two path from either endpoint, with any intermediate vertex bounded by degree eight."
+    },
+    {
+      "declaration": "FourColor.NearLinearCharge.Occurrence.five_near",
+      "meaning": "An actual rule application retains one actual degree-five vertex within radius two of both endpoints."
+    },
+    {
+      "declaration": "FourColor.NearLinearCharge.finalCharge_eq_initial_of_no_five",
+      "meaning": "A centre with no degree-five vertex within radius two has no incident incoming or outgoing rule charge."
+    },
+    {
+      "declaration": "FourColor.NearLinearCharge.flat_has_five",
+      "meaning": "A flat centre of degree above six has an actual degree-five vertex in radius two."
+    },
+    {
+      "declaration": "FourColor.NearLinearCharge.flat_eight_pair_budget",
+      "meaning": "Two distinct flat degree-eight centres have exact net external supply forty; their mutual transfers cancel."
+    },
+    {
+      "declaration": "FourColor.ExceptionalFlatCharge.overlap_supply",
+      "meaning": "The five-free branch is eliminated in the actual minimal dual, and the completed exceptional closing law is reused. Classification of surviving cases remains an input."
     }
   ],
   "open": [
@@ -296,7 +324,7 @@
     },
     {
       "id": "charge_semantics",
-      "obligation": "Define the published final charge and certify its calculation and transport; the present charge function is an explicit input."
+      "obligation": "The complete pinned rule data and actual homomorphic-occurrence charge are now defined and checked. Still certify an executable occurrence matcher, completeness of cartwheel bounds/classification, and exact transport to the published free-cartwheel representations."
     },
     {
       "id": "low",
@@ -314,7 +342,7 @@
       "id": "eight_classification",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.classify",
       "source": "Lemma 8.3",
-      "obligation": "Certify adjacent 8-8, sole higher neighbour 8-7 and closest 7-8-7 cases, including the justified selection of those cases and all degenerate alternatives, producing a supported outcome or an actual exceptional occurrence."
+      "obligation": "The five-free branch is excluded by actual rule semantics. Certify surviving adjacent 8-8, sole higher neighbour 8-7 and closest 7-8-7 cases, including justified case selection and degenerate alternatives, producing a supported outcome or an actual exceptional occurrence. The exact 8-8 external charge budget is forty."
     },
     {
       "id": "exception_representation",
@@ -332,12 +360,13 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Source-faithful zero-charge classification for the degree-eight branch",
-    "test": "Pin the published charge rules and adjacent 8-8 neighbourhood classification used by Lemma 8.3. Reproduce the smallest source cases and preserve cyclic gaps, full degrees and shared vertices; identify the exact conditions yielding a supported reduction or the existing exceptional X occurrence. Use the now-closed exceptional-pair branch as the consumer.",
-    "acceptance": "A checked charge/representation bridge or a certified subclass producing the exact classify output, with residual cases stated explicitly. No supplied X occurrence disguised as a classification theorem and no complete Four Colour endpoint.",
+    "target": "A shared boundary certificate for a surviving adjacent 8-8 neighbourhood",
+    "test": "Retain the same actual outside vertices and rule observations for both centres. Build a source-faithful finite matcher or refinement certificate for the smallest surviving source pair, checking whether forty units of net external supply force a supported known reduction. Use all rule degree bounds and cyclic gaps; do not assume independently generated cartwheels glue.",
+    "acceptance": "A checked nonempty source subclass with joint charge bound and actual reduction consumer, or a replayable obstruction identifying the missing geometry. No full classification or catalogue reduction is credited for the current prune.",
     "primary_lemmas": [
-      "8.3",
-      "8.4"
+      "8.3(i)",
+      "9.8",
+      "11.1"
     ]
   },
   "counts": {

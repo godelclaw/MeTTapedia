@@ -1,0 +1,14 @@
+{
+  "evidence": "Independent complete source-fidelity check; Lean certifies the mathematics.",
+  "repository": "https://github.com/near-linear-4ct/discharging-rules",
+  "revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "oriented_rules": 84,
+  "underlying_rules": 43,
+  "vertex_rows": 638,
+  "all_rules_have_five": true,
+  "maximum_sender_degree": 8,
+  "all_observations_have_bounded_radius_two_paths_from_both_endpoints": true,
+  "lean_source_sha256": "07032fc7f6ca6da84433925673f44b48a6b0273044e8cdc88944182559e76b05",
+  "verifier_sha256": "cdaf6aa2b62db44d60faecbfa5226c6da438007a39b6201e4006338132ae7fc6",
+  "scope": "No cartwheel enumeration, unavoidability or runtime is certified by this program."
+}

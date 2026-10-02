@@ -1,0 +1,112 @@
+{
+  "checked_utc": "2026-10-02T08:06:05.034188+00:00",
+  "scope": "Complete pinned oriented-rule data, actual charge semantics, degree-five-free pruning and shared pair balance. Classification of surviving neighbourhoods remains open.",
+  "source_fidelity": {
+    "evidence": "Independent complete source-fidelity check; Lean certifies the mathematics.",
+    "repository": "https://github.com/near-linear-4ct/discharging-rules",
+    "revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "oriented_rules": 84,
+    "underlying_rules": 43,
+    "vertex_rows": 638,
+    "all_rules_have_five": true,
+    "maximum_sender_degree": 8,
+    "all_observations_have_bounded_radius_two_paths_from_both_endpoints": true,
+    "lean_source_sha256": "07032fc7f6ca6da84433925673f44b48a6b0273044e8cdc88944182559e76b05",
+    "verifier_sha256": "cdaf6aa2b62db44d60faecbfa5226c6da438007a39b6201e4006338132ae7fc6",
+    "scope": "No cartwheel enumeration, unavoidability or runtime is certified by this program."
+  },
+  "rule_data_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.NearLinearRuleData",
+        "source_sha256": "07032fc7f6ca6da84433925673f44b48a6b0273044e8cdc88944182559e76b05",
+        "exit_code": 0,
+        "frontend_wall_seconds": 598.76,
+        "olean_bytes": 6547864,
+        "olean_sha256": "4cb71839b5f794ce4f1af86a804b283182fa0769ba7e0ff3d79bc4d29bc8260d"
+      }
+    ]
+  },
+  "charge_consumer_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.NearLinearCharge",
+        "source_sha256": "87ccfa557c57a7368798d84409f26d7afafa018032b67cb5045ab1991058f0e9",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.88,
+        "olean_bytes": 425832,
+        "olean_sha256": "6f10c603052cc4862a3a62f6577e0c095c6098e2aa62da8f12bf0b5dd85eccb3"
+      },
+      {
+        "module": "MettapediaFourColor.ExceptionalFlatCharge",
+        "source_sha256": "7cb0bd6926b8e9e3d8489ff539452f65800f9aa049498804cdc4982cc230d714",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.695,
+        "olean_bytes": 97072,
+        "olean_sha256": "051fc51c3bee4490702e7a861ba8acd3aa94441052011bcf678d957043f67dca"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearChargeAudit",
+        "source_sha256": "b5f388c4d9eaabde5cbce4a860e2fae8f146c33a843566adfb2029f0106da5d1",
+        "exit_code": 0,
+        "frontend_wall_seconds": 8.152,
+        "olean_bytes": 2600,
+        "olean_sha256": "05601406ed8e8f769e1a2fff3c493bba895bc8a8688043bf3aa134b7bae56e95"
+      }
+    ]
+  },
+  "audit": {
+    "roots": 22,
+    "dependency_declarations": 31183,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_endpoints": false,
+    "original_configuration_certificates": false,
+    "exceptional_finite_repair": "Retained only in the existing exceptional-closing consumer; absent from charge and rule roots."
+  },
+  "regressions": [
+    "lake build kernelNearLinearCharge kernelFlatCoverage kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "data_cost": {
+    "frontend_wall_seconds": 598.76,
+    "olean_bytes": 6547864,
+    "note": "Finite data artifacts are prepared separately before the charge consumer replay."
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "entries_removed_here": 0,
+    "certificate_dependencies_replaced_here": 0
+  },
+  "remaining": [
+    "Executable rule matching and its correctness.",
+    "Complete source cartwheel classification and preservation of shared vertices and cyclic gaps.",
+    "Adjacent 8-8, 8-7 and closest 7-8-7 classification, beyond the five-free exclusion.",
+    "Other degree cases, residual obstructions and global coverage."
+  ],
+  "main_lane_jobs": 11195
+}

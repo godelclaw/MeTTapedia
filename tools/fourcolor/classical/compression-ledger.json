@@ -3291,5 +3291,28 @@
       "FourColor.coversRec_sound"
     ],
     "shared_tip_double_diamond_measurement": "two-diamond-measurements.json"
+  },
+  "near_linear_charge_pruning": {
+    "status": "Complete source rules and actual charge semantics, with a uniform necessary condition for flat centres and exact pair balance.",
+    "source_rules": 84,
+    "source_vertex_rows": 638,
+    "rule_source_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "proved": [
+      "Every rule observation lies in radius two of either endpoint.",
+      "Every applicable rule supplies one shared degree-five vertex close to both endpoints.",
+      "Flat degree-seven/eight centres have a degree-five vertex in radius two.",
+      "Two distinct flat degree-eight centres need exact external net charge forty.",
+      "Actual exceptional coverage consumes the five-free exclusion; surviving classification remains an input."
+    ],
+    "measurement": "../near-linear/charge-measurements.json",
+    "coverage_entries_removed": 0,
+    "original_configuration_certificate_dependencies_replaced": 0,
+    "classification_checks_removed_from_complete_assembly": 0,
+    "finite_rule_data_checks_retained": true,
+    "limits": [
+      "No complete 8-8 classification.",
+      "No new reduction or unavoidability result.",
+      "No proof of C++ enumeration completeness or near-linear runtime."
+    ]
   }
 }

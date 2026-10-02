@@ -1238,6 +1238,30 @@ exterior reconstruction, followed by geometric supply. The newer paper's
 coverage and coordinated-repair running time are not established by these
 local results.
 
+## Charge constraints on overlapping flat neighbourhoods
+
+The complete 84 oriented discharging rules from the newer paper now have
+explicit actual-graph semantics. Each application retains the full rule's
+edges, degree intervals and cyclic steps. Charge counts each applicable rule
+once, independently of how many occurrence witnesses describe it.
+
+All rule observations lie within two steps of either endpoint, and every
+rule requires a degree-five vertex. Consequently a flat centre of degree
+seven or eight must have a degree-five vertex within radius two. This removes
+the five-free branch from the classification still needed by the exceptional
+closing theorem.
+
+For two distinct flat degree-eight centres, charge exchanged between them
+cancels exactly. Their combined external net supply must be forty. The
+boundary sum retains the same outside vertices in both centre calculations;
+independent local upper bounds need not capture that shared constraint.
+
+These results provide exact pruning conditions for the remaining cartwheel
+classification. They do not supply an exceptional pattern from zero charge,
+or remove a coverage configuration. The classical ledger remains 633 coverage
+entries and 629 original certificate dependencies. See the
+[rule and charge account](../../../tools/fourcolor/near-linear/README.md#actual-discharge-and-a-first-classification-prune).
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

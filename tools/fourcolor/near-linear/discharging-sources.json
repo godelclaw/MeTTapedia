@@ -1,0 +1,344 @@
+{
+  "repository": "https://github.com/near-linear-4ct/discharging-rules",
+  "revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "license": "LICENSE",
+  "encoding": "Sorted filenames, one flat string per rule. Preserve every integer and row, replacing only boundary gap -1 by 0. Upper-degree 0 retains its separate infinity meaning.",
+  "files": [
+    {
+      "file": "rule001.rule",
+      "sha256": "98591d65af7e213bdf4a828be8a092808f565a54ad49f5c1680f4f03b29e0551"
+    },
+    {
+      "file": "rule002_1.rule",
+      "sha256": "a7f62222d07b2335f9de0c4810b7f8670842df6e770271321eafa1fd03d76c62"
+    },
+    {
+      "file": "rule002_2.rule",
+      "sha256": "599863678bfb1388bed4a9cc4143a1c0e4c44835f17e29d4b4ad40f7782f0197"
+    },
+    {
+      "file": "rule003_1.rule",
+      "sha256": "926480b321b5fac8d5dcb09c5625e3bc4949bd028ce12c0bd927af0ce4382470"
+    },
+    {
+      "file": "rule003_2.rule",
+      "sha256": "9eec5bc8d3a2003157743a401f58a3189ad043a87e3b6c8eea3c21fd4a67fdfd"
+    },
+    {
+      "file": "rule004_1.rule",
+      "sha256": "e50cffaae6292a532af646aec10c8a9ac07601878c9707be9b7914ccc043df23"
+    },
+    {
+      "file": "rule004_2.rule",
+      "sha256": "5d048083faa5a4068e2d9d013b70a5b3ba54fc7a3050649bfd8a90e924d3dcd0"
+    },
+    {
+      "file": "rule005_1.rule",
+      "sha256": "d29bd0f9e87f78207161e99e5c4efc9f94a64a887697cffc9cfc698931d0b774"
+    },
+    {
+      "file": "rule005_2.rule",
+      "sha256": "13ec4c63a32f7265821da66439e8e449557f2fdd4e959b9d75995e8f012ee461"
+    },
+    {
+      "file": "rule006_1.rule",
+      "sha256": "4d036b04533c5877ee99e5caa6d951dd48d145d3d56a30307d4dcbf957c8ac5a"
+    },
+    {
+      "file": "rule006_2.rule",
+      "sha256": "84ba47abb8b4ffed24f4801e394876291cbf1b28aacaac0548bea5327a01b4d7"
+    },
+    {
+      "file": "rule007_1.rule",
+      "sha256": "65f63e17a9775755b79ba899e74d4782bf8d0ed98195fd07b5db91d46decb6e0"
+    },
+    {
+      "file": "rule007_2.rule",
+      "sha256": "4717791627c3cddd6bcb861c6c583b214f8853ad8d94df37e5a374434880312c"
+    },
+    {
+      "file": "rule008_1.rule",
+      "sha256": "7bc995bd80aeb8750fa9a690dd11995e05fdaa1276b7db093901a95453faa945"
+    },
+    {
+      "file": "rule008_2.rule",
+      "sha256": "71e2a38164d49db3cae86b30aea43fde07b9a6b42e2dd2e3d21e3b1115295c03"
+    },
+    {
+      "file": "rule009_1.rule",
+      "sha256": "ef6ac5a5632c599cc054b86da32874e2d4a0bfacc018e29299d9fc86ef2ab172"
+    },
+    {
+      "file": "rule009_2.rule",
+      "sha256": "3c0c1a12fb6b4ae3ed32502392647d88148ae174ae4184a87df11eabb382b7ec"
+    },
+    {
+      "file": "rule010_1.rule",
+      "sha256": "6c9a84e3f0043f05c47d94159419fd4104c02dac6d69aa9bf19e9f8066512593"
+    },
+    {
+      "file": "rule010_2.rule",
+      "sha256": "0641a461ce8d6ef8d8fd9be0b4da47646747dc70b77197ba59197e31c7c1a1ee"
+    },
+    {
+      "file": "rule011_1.rule",
+      "sha256": "22f9b29a109eba21efcb73c3c4fa3721b51dae164c01284abf3802f68736e85b"
+    },
+    {
+      "file": "rule011_2.rule",
+      "sha256": "5ce15daecae63b633c32724dce2f997a0be1d59139758c5a78d93714a6e92fc9"
+    },
+    {
+      "file": "rule012_1.rule",
+      "sha256": "a595aa50b5b65a3fd89b74da6def0f1c539a4f948e5bed3dfdc47c60034ff13e"
+    },
+    {
+      "file": "rule012_2.rule",
+      "sha256": "6e3da926050f5bc85242dfd1ba6eedce2e87fa0c217b37f9ba67e70a82a72e7e"
+    },
+    {
+      "file": "rule013_1.rule",
+      "sha256": "7475bda11b9d2f6db07e8a1320cce91cac37a7e63b105095fbcb0b3778e96e4a"
+    },
+    {
+      "file": "rule013_2.rule",
+      "sha256": "be0671e4cc434ca4783e01e606c4ce492516c4d6bd87fa593c5e8f76e39768dc"
+    },
+    {
+      "file": "rule014_1.rule",
+      "sha256": "0f704ff03ff8cc887906378f381a533908194d5bb823fc331120922df3ca83fb"
+    },
+    {
+      "file": "rule014_2.rule",
+      "sha256": "03683c5b263c68f0a350bc190d773f81599afaae9519bfd407766cf9afea88f0"
+    },
+    {
+      "file": "rule015_1.rule",
+      "sha256": "d45a6a487bdff05227ed5a61ee61e5580f84a313211e34acb9258d0feedad2e7"
+    },
+    {
+      "file": "rule015_2.rule",
+      "sha256": "e1c0e7006dcfcfbf72f87b22de5cb70c7ee8af267c08f0185c85940a59496e5b"
+    },
+    {
+      "file": "rule016_1.rule",
+      "sha256": "80ca68d30f463f8258d58b4c75bf6bca35f5a1f00550f67688d39d0fa7534c25"
+    },
+    {
+      "file": "rule016_2.rule",
+      "sha256": "b7e8d9cbe93a6383605439fa1c1bd583a070f9b97cd7f7f60ea44de2b960cdf6"
+    },
+    {
+      "file": "rule017_1.rule",
+      "sha256": "3a99b0b83ca0de9d2a2d204ab90bb48db6daab1f767258d90477ed895deb6ca0"
+    },
+    {
+      "file": "rule017_2.rule",
+      "sha256": "2d64f406f3b6afb4eaf60b3664dc354b74a2d79596f1482d66f1b30de7a79741"
+    },
+    {
+      "file": "rule018_1.rule",
+      "sha256": "fbfc2e05748088e01f4485d6217f054173ec6ea48e6dfd4521a1640e5d44453a"
+    },
+    {
+      "file": "rule018_2.rule",
+      "sha256": "412e795afc661f4d59f3df436faa9e9e8e169ddcee78bdff7523afdbf588d13b"
+    },
+    {
+      "file": "rule019_1.rule",
+      "sha256": "c2eb991e010d0ce47ac3e0488669060402baefc5dde9f80a7026cee06a0a2d61"
+    },
+    {
+      "file": "rule019_2.rule",
+      "sha256": "c6712e0a0f886bf50921ac0f06f107837e457b97a91dc7ddf2f87ab3c3819d34"
+    },
+    {
+      "file": "rule020_1.rule",
+      "sha256": "398828fedde504ba89d580d69221172d7c46c4871e5f8006dd03de6b18ebc0ab"
+    },
+    {
+      "file": "rule020_2.rule",
+      "sha256": "108f0407a0d44555975d191006fd6c312eca02bb9d6e784ebbb2730adb12fb07"
+    },
+    {
+      "file": "rule021_1.rule",
+      "sha256": "bd68a3f1d7d41fdc5dda665cd58682e9bbb4b63b318562d556e49fe41443fdac"
+    },
+    {
+      "file": "rule021_2.rule",
+      "sha256": "b5b75500330cd5b0ae546cd9eb5bd8d56fff2e3f028c0ca095ee6eac2a170422"
+    },
+    {
+      "file": "rule022_1.rule",
+      "sha256": "8c51e8f3b8aab262441037960850542eb02df873292368f124625164e231bdf3"
+    },
+    {
+      "file": "rule022_2.rule",
+      "sha256": "78f6d885c27fe05fbc87deb10b27c618197d6176ae4ceca4a9dda8e59070d97b"
+    },
+    {
+      "file": "rule023_1.rule",
+      "sha256": "419390a63f224eb156d4d0508b211ed6ad5c011255dfbfc162b35ee213eff41f"
+    },
+    {
+      "file": "rule023_2.rule",
+      "sha256": "52b5dc8c756652c7751f9991cbdf0cabe98990f001fc497b9fa12154f85e032c"
+    },
+    {
+      "file": "rule024_1.rule",
+      "sha256": "da9b2e288ea70ca4efa1b9db622c00ce1b390e37cd9320918906171a1d34014f"
+    },
+    {
+      "file": "rule024_2.rule",
+      "sha256": "65f3cd5a0e8a4718169c0649e1f507ebab52436bfdc18facf000a0b7e25dc865"
+    },
+    {
+      "file": "rule025_1.rule",
+      "sha256": "18d600a17e83a2b7033dc580877b1168dc635fb628dd44bd7e6baa35f937eeb4"
+    },
+    {
+      "file": "rule025_2.rule",
+      "sha256": "dbf068255b15d0445ff202d987b200d35b484878337d09cef4dd85b29253de85"
+    },
+    {
+      "file": "rule026_1.rule",
+      "sha256": "ecb987577eecf9d52b9579b938fae63bd93bf5a0641dff2517469ceb90a23796"
+    },
+    {
+      "file": "rule026_2.rule",
+      "sha256": "e66adfbf87e2ea94d56b4ac3190d50ea2396dbb3f3e16c37c9dfc95c5bb85db3"
+    },
+    {
+      "file": "rule027_1.rule",
+      "sha256": "40692157bbd6f59a78b978e89d2a760d3a34baff3bbe2ab83b0f647c61d988cc"
+    },
+    {
+      "file": "rule027_2.rule",
+      "sha256": "86ea283aeeaa34588f435bbe18af4883e784db40987b49e306bf55ecaa64e77e"
+    },
+    {
+      "file": "rule028_1.rule",
+      "sha256": "8d4b0357a3fc6f18c6404d4894b0a5eaade1a776724e360059a744b872a0421a"
+    },
+    {
+      "file": "rule028_2.rule",
+      "sha256": "fa3146751ec2a47277649290762c572e58a345d9692d8bb6d1d78beb85a55b44"
+    },
+    {
+      "file": "rule029_1.rule",
+      "sha256": "59a07c8196b0d3e5f672cb09cc5fea573ea649c34e7a20cb4e462d0d9eb498bf"
+    },
+    {
+      "file": "rule029_2.rule",
+      "sha256": "85073a02fc47ffdd653ca8201decd1b4f747c21a1dc9f908433a29cee3543d1b"
+    },
+    {
+      "file": "rule030_1.rule",
+      "sha256": "da25f82b32b168a9b56ffd85df409f56d6455b7736f46904753e6011aeabcc57"
+    },
+    {
+      "file": "rule030_2.rule",
+      "sha256": "e53d5fdcf07bebabb76512700e64f9dfca2e42a8e0a88caa3d44f93a8cbbd787"
+    },
+    {
+      "file": "rule031_1.rule",
+      "sha256": "c42c03229a04d07a771f5f68adbd61312f9f055728226839879786a8a6798026"
+    },
+    {
+      "file": "rule031_2.rule",
+      "sha256": "3aebef388b87edebd88a54bbe43e2a22f879a161619001149dfd651bb48aa8af"
+    },
+    {
+      "file": "rule032_1.rule",
+      "sha256": "8e02ad8fdb54e3f154d8312ea447e2afe7d381d0aae2bb5effc7e1b47239fea0"
+    },
+    {
+      "file": "rule032_2.rule",
+      "sha256": "3d8240e83dd90793eb9515c1db03643c1db741840b6629f39ebba59366d250be"
+    },
+    {
+      "file": "rule033_1.rule",
+      "sha256": "7655755e2ce9a5f4ce1c5a52d30178ccdf2109c8be4ae28c98b574f54ed2d02d"
+    },
+    {
+      "file": "rule033_2.rule",
+      "sha256": "5a83d958c552d30db676f13a7be89fa0bc0e3dabad51df81282af5df08e6ed65"
+    },
+    {
+      "file": "rule034_1.rule",
+      "sha256": "c502d1d452b8eb4a2f79f894408cfa6c181d54a531558540192e2368a0e0e5c2"
+    },
+    {
+      "file": "rule034_2.rule",
+      "sha256": "7aba6731bca0bb9185dfedec038eb4aab008b38f16a953c8f3ff0a2bc621385a"
+    },
+    {
+      "file": "rule035_1.rule",
+      "sha256": "39f05c11844b16c10a09f6220ccc5a8bf59e8e4c239b01241bc18959af864762"
+    },
+    {
+      "file": "rule035_2.rule",
+      "sha256": "4e23381e6bb23711100d9890cd550a5bba80ae0c457905b6b671fb70e0604245"
+    },
+    {
+      "file": "rule036_1.rule",
+      "sha256": "a68be5240744f714813ce65fb0b3c05ba98b6ae6f8ce73ed2f7afba40a504ac2"
+    },
+    {
+      "file": "rule036_2.rule",
+      "sha256": "1c7c83d65230b417a4458af841d0d0cf4a246d86e201d0400c4cfa3bd8a3cdb9"
+    },
+    {
+      "file": "rule037_1.rule",
+      "sha256": "89641c9f3e557114eeee58fd5e0f90e314806d5bc20d3fe64e5ac31cbf599e47"
+    },
+    {
+      "file": "rule037_2.rule",
+      "sha256": "1f5f0f9574523eeeb7d891897f98ae0d15caa017f30273278f63fa22b9a2ace4"
+    },
+    {
+      "file": "rule038_1.rule",
+      "sha256": "fec62512dba75f9d0a032c75163e6b0735e3d5aefde4bc8ca6d4d580e326110d"
+    },
+    {
+      "file": "rule038_2.rule",
+      "sha256": "96fdfdf22b6bf0c017c56d15336a6d079aea6e9d9c9a1c82f1aebc192606a540"
+    },
+    {
+      "file": "rule039_1.rule",
+      "sha256": "6da540fe963caf696b5f40c1831946c5e2d72aad9a9eb7c875de7160449498ed"
+    },
+    {
+      "file": "rule039_2.rule",
+      "sha256": "f28e9291848b1dc8842d54d67644e3275390c5a97853cc9f72498d18435eea96"
+    },
+    {
+      "file": "rule040.rule",
+      "sha256": "48ea2d28ad910b5078008d17e5efb0a1699149a8692b1b50eba75b481390dff8"
+    },
+    {
+      "file": "rule041_1.rule",
+      "sha256": "78d90942646f3631a0562e188af8996d054a4939458742d17d37f0d45ff874ae"
+    },
+    {
+      "file": "rule041_2.rule",
+      "sha256": "6c6d41221e2b39e8c54e1e35db46c6a6ce4c83651a0f794b72dccbfa41655c23"
+    },
+    {
+      "file": "rule042_1.rule",
+      "sha256": "f01199dcc4b540c04b98d61c48a54d87d53180a69eda62391a5fe20b8b9658e1"
+    },
+    {
+      "file": "rule042_2.rule",
+      "sha256": "db9f5128728444e124c72c5ff6b07162b0061c918a43018ea5cabee867611a9a"
+    },
+    {
+      "file": "rule043_1.rule",
+      "sha256": "fe308fb8ad5b0658bc5bf8df6e5d7d9dbe20df1dd4855e760be88da6c4da4ad5"
+    },
+    {
+      "file": "rule043_2.rule",
+      "sha256": "970a52728b5d7abd5ee32a1a0067707ba0edc371dcda0c897e8c6e83f4f69a42"
+    }
+  ]
+}
