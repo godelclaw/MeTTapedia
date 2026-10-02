@@ -15025,3 +15025,226 @@ The PDE duality, semigroup identification, integral bounds, axis limiting
 arguments and stochastic density formula remain analytic. No new Lean
 certification is claimed for these physical estimates. Arbitrary-history
 funding and arbitrary-data R3/T3 regularity remain open.
+
+## Positive return from a swirl to its own source
+
+`swirl_self_return.py` tests the following possible sign shortcut:
+an initially pure swirl always generates meridional strain that makes a
+nonpositive contribution to its own quartic source. This statement is false
+for smooth finite-energy unforced whole-space data. The calculation concerns
+this nonlinear contribution, not the complete viscous derivative, the
+deformation receiver's D_k, or indefinite renewal.
+
+Write `b=u_theta/r`, `eta=omega_theta/r`, `a=u_r/r`, and `s=-2a`.
+For initially pure swirl, meridional velocity and eta vanish. The actual
+unforced curl equation and canonical elliptic reconstruction give
+
+```text
+eta_t(0)=partial_z(b0^2),
+L5=partial_rr+(3/r)partial_r+partial_zz,  K5=(-L5)^-1,
+s_t(0)=sigma=2partial_zz K5 f=-2 A f,  f=b0^2,
+A=-partial_zz K5,  multiplier m(rho,xi)=xi^2/(rho^2+xi^2).
+```
+
+Here rho is the horizontal Fourier radius in R4. The initial viscous
+contribution to eta_t is zero for every nu>0. Pressure is retained through
+the elliptic reconstruction, rather than omitted from the velocity equation.
+For the local smooth axisymmetric solution with sufficient decay,
+
+```text
+B4=integral_R3 b^4,
+B4'=N-12nu integral_R3 b^2 |grad b|^2-4pi nu integral_axis b^4,
+N=4integral_R3 s b^4,
+N(0)=0,  N'(0)=4I,  I=integral_R3 f^2 sigma.
+```
+
+Thus I>0 gives a positive actual nonlinear contribution N on some short
+interval. It does not imply B4'>0. No uniform interval length is claimed.
+
+### Exact radial family
+
+For `0<beta<=1`, set `alpha=beta^2`, `y=r^2`, and
+
+```text
+P_alpha(y)=-48+(32+alpha)y-4y^2,
+Q_alpha(y)=(P_alpha(y)-20)^2+21,
+q=r^6 exp(-r^2),
+h=r^4 exp(-r^2) P_alpha(r^2),
+F=r^4 exp(-r^2) Q_alpha(r^2).
+```
+
+The exact identities
+
+```text
+h=(beta^2-Delta_R4)q,
+Q-P=(P-41/2)^2+3/4,   Q+P=(P-39/2)^2+163/4
+```
+
+give `F>|h|` for r>0. First consider the axially periodic profile
+`f=F+h cos(beta z)`. This intermediate profile is not the final
+whole-space datum. Its strain acceleration is `-2beta^2 q cos(beta z)`.
+Before taking any absolute values, the axial average of f^2 sigma is
+`-2beta^2 F h q`. The physical radial moment is exactly
+
+```text
+J(alpha)=integral_0^infinity r F h q dr
+ =2240(90alpha^3-288alpha^2+1485alpha-5222)/19683 < 0.
+```
+
+Its degree-three Bernstein coefficients on [0,1] are
+`(-11697280,-10588480,-9694720,-8814400)/19683`, all negative.
+This uses the physical measure r dr, not the lifted measure r^3 dr.
+The positive return retains its beta^2 suppression as axial variation slows.
+
+### Finite-energy localization and its quantitative error
+
+Let `chi(Z)=exp(-Z^2)`, `chi_L(z)=chi(z/L)`, and use the literal datum
+
+```text
+f_L=chi_L(F+h cos(beta z)),
+b0,L=r^2 exp(-(r^2+z^2/L^2)/2) sqrt(Q_alpha+P_alpha cos(beta z)),
+u0,L=(-x2 b0,L, x1 b0,L, 0).
+```
+
+The radicand is uniformly positive. This is a real smooth Schwartz
+divergence-free velocity, regular on the axis, with finite energy and
+zero initial meridional velocity. Define `sigma_L=-2A f_L` and
+`I_L=integral_R3 f_L^2 sigma_L`. The reference acceleration is
+`sigma_app=-2beta^2 chi_L q cos(beta z)`.
+
+The multiplier satisfies, for rho>0 and beta>0,
+
+```text
+m(rho,xi)<=|xi|/(2rho),
+|m(rho,xi)-m(rho,beta)|<=|xi-beta|/beta.
+```
+
+For the second bound put e=|xi| and use
+`(rho^2+e^2)(rho^2+beta^2)-rho^2(e+beta)^2=(rho^2-e beta)^2`.
+The same bound around -beta controls the other cosine mode. Plancherel
+and `||chi_L'||_2=L^-1/2||chi'||_2` now give
+
+```text
+||A f_L-beta^2 chi_L q cos(beta z)||_L2(R5)
+ <=L^-1/2 ||chi'||_2 [ ||rF||_L2(R4)/2+||h||_L2(R4)/beta ].
+```
+
+The zero-mode estimate uses `|| |D_h|^-1 F||_2<=||rF||_2`.
+For completeness, `div(x/r^2)=2/r^2` in R4 implies
+`||phi/r||_2<=||grad phi||_2` by integration by parts and Cauchy--Schwarz;
+duality proves the stated inverse-derivative bound. Approximation extends
+these bounds to the present Gaussian profiles.
+
+The measure identity `dx3=dy5/(pi r^2)` and `F>=|h|` imply
+
+```text
+||f_L^2/r^2||_L2(R5)
+ <=4 sqrt(L) ||chi^2||_2 ||r^-2 F^2||_L2(R4).
+```
+
+There is no singular-axis integrability assumption hidden here: F vanishes
+to order four in r. Cauchy--Schwarz therefore bounds the normalized physical
+pairing error by a constant times 1/L. Exact Gaussian axial integration gives
+
+```text
+I_infinity=-4pi beta^2 J(beta^2) sqrt(pi/3)>0,
+I_L/L -> I_infinity                 (fixed beta>0).
+```
+
+Here are explicit constants for beta=1. All integrals below have variable y:
+
+```text
+X=integral y^7 exp(-4y) Q^4 =191912289955843275/2097152,
+R=integral y^6 exp(-2y) Q^2 =3882780,
+D=integral y^5 exp(-2y) P^2 =6075/16,
+A0=(1/2)integral y^7 exp(-3y) Q^2 =4395411160/59049,
+J=-8814400/19683.
+```
+
+The corresponding radial norms are `pi sqrt(X)`, `pi sqrt(R)` and
+`pi sqrt(D)`. The roots `sqrt(X)`, `sqrt(R)` and `sqrt(D)` are bounded
+by 302508, 1971 and 20.
+Since `||chi^2||_2 ||chi'||_2=sqrt(pi)/2^(3/4)`, the normalized multiplier
+pairing error divided by I_infinity is at most C1/L, where
+
+```text
+C1=4*302508*(1971/2+20)/|J|=2993506710651/1101800.
+```
+
+To bound axial averaging, set `B0=integral r q h^2 dr<=A0` and
+`v=beta^2 L^2/12`. The reference pairing differs from its limit by
+
+```text
+-4pi beta^2 sqrt(pi/3) *
+ [exp(-v) A0+exp(-4v) J+(3exp(-v)+exp(-9v)) B0/4].
+```
+
+Since `|J|<=A0` and `exp(-v)<=1/v`, its relative magnitude for beta=1
+is bounded by `C2/L^2`, with `C2=36A0/|J|=47093691/7870`.
+For the explicit integer `L=2^24`, exact rational comparisons give
+
+```text
+C1/L<1/4,   C2/L^2<1/4,
+I_L/L >= I_infinity/2 > 0.
+```
+
+For every other fixed beta in (0,1], the same estimates have finite
+constants and give positivity for sufficiently large L. This asserts
+arbitrarily slow axial variation, not exact support in a Fourier cone or
+a limit uniform as beta tends to zero.
+
+The initial energy is also explicit:
+`E=2pi^(3/2)L[EF+12beta^2 exp(-beta^2 L^2/4)]`, where
+`EF=(1/2)integral y^3 exp(-y)Q_alpha(y)dy` and EF=3339 at beta=1.
+Replacing u0 by `u0/sqrt(E)` gives energy one and multiplies I_L by
+E^-3. Its sign persists at the same prescribed viscosity. This normalization
+does not make the positive return large or defeat a finite datum allowance.
+
+Run `python3 -O labs/swirl_self_return.py --quadrature`. The algebra,
+Cartesian initial curl, inverse relation, positivity certificates, moments,
+localization constants and heat-kernel identities are exact symbolic checks.
+Optional quadrature evaluates the localized heat resolvent independently
+of the localization bound; it has no certified numerical error estimate.
+The Fourier/Hardy estimates, reconstruction, local solution and short-time
+implication are analytic, not Lean-certified.
+
+### The favorable energy exchange and the concentration defect
+
+There is a favorable sign at the kinetic-energy weight. For the same
+initially pure swirl define `R_z=partial_z(-Delta5)^(-1/2)`, so
+`A=R_z^* R_z`. At time zero,
+
+```text
+I_energy=integral_R3 r^2 f sigma
+        =-(2/pi) integral_R5 f A f
+        =-(2/pi) ||R_z f||_L2(R5)^2 <= 0.
+```
+
+This is the initial derivative of the nonlinear swirl-energy contribution
+`integral_R3 s r^2 b^2`. The opposite work goes into the meridional kinetic
+energy. In fact `||partial_t v_mer(0)||_L2(R3)^2=||R_z f||_L2(R5)^2/pi`:
+the meridional reconstruction satisfies
+`||v_mer||_L2(R3)^2=||grad K5 eta||_L2(R5)^2/pi`, by radial integration
+by parts. Thus the initially zero meridional energy has second derivative
+`-I_energy`. The nonlinear exchange conserves total kinetic energy even
+while a higher concentration measure receives a positive contribution.
+
+The distinction has an exact operator expression. For the constructed
+profile, `w=f/r^2` is smooth, bounded and nonnegative, and
+
+```text
+I=-(2/pi) <w f,A f>_L2(R5)
+ =-(2/pi) [ ||sqrt(w) R_z f||_2^2
+            + <[R_z,w]f,R_z f>_L2(R5) ],
+[R_z,w]f=R_z(w f)-w R_z f.
+```
+
+The first term is favorable. The spatially varying concentration weight
+introduces the commutator; the positive example shows it can outweigh
+that favorable term. This identity is an initial-data diagnostic, not a
+closed evolution law for a new reserve. An evolving version must also
+retain transport, diffusion, and the derivative of its weight. Controlling
+those terms over full generated-parent histories is the remaining physical
+obligation. The example rules out discarding the concentration defect on
+sign grounds; it leaves quantitative geometric depletion and finite
+full-datum payment open.

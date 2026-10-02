@@ -1891,6 +1891,21 @@ cost whose uniform payment would control the point-started axis moment;
 that payment and the further interior-weight construction remain open.
 This is a partial physical bound, not an arbitrary-data continuation result.
 
+The [pure-swirl return test](labs/README.md#positive-return-from-a-swirl-to-its-own-source)
+excludes an unconditional nonpositive sign for generated nonlinear feedback.
+An explicit smooth finite-energy whole-space datum starts with no meridional
+velocity. Its actual unforced evolution generates strain whose contribution
+to the quartic swirl balance becomes positive on a short interval, for every
+fixed positive viscosity. Exact radial moments and an analytic localization
+error bound establish the sign; the functional analysis and time evolution
+are not Lean-certified. Arbitrarily slow axial variation retains a positive
+return with a quadratic depletion factor. This does not establish growth of
+the complete viscous norm or repeated renewal, and it does not directly
+evaluate the deformation receiver's signed cost. The kinetic-energy-weighted
+return has a favorable sign; an exact commutator isolates the additional
+cost introduced by the quartic concentration weight. Controlling that cost
+along the evolution, including diffusion, remains the target.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
