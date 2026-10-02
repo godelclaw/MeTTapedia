@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay one boundary-collapse operation at every second-five position. -/
+target kernelTwoFiveWheel pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/two-five-wheel-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "TwoFiveWheelData", "TwoFiveWheelRepair",
+        "TwoFiveWheelColouring", "TwoFiveWheelAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the exact second-free-centre residual. -/
 target kernelSecondFan pkg : Unit := do
   let env ← getAugmentedEnv

@@ -10,9 +10,18 @@ contributes. The single-five branch consumes the same explicit D3009 repair
 contract below. `lake build kernelSecondFan` checks the classification and
 its six-root audit; see the
 [receipt](../../tools/fourcolor/near-linear/second-fan-measurements.json).
-The [three two-five wheel tests](../../tools/fourcolor/near-linear/two-five-wheel-probe.json)
-close in Python, with 22,144 boundary states per separation. These are
-discovery results; their Lean repairs and actual embeddings remain open.
+The [two-five family](MettapediaFourColor/TwoFiveWheelRepair.lean) now consumes
+that same source repair through one boundary-triangle collapse. All six
+placements of the second five have checked complete adjacency, cyclic
+stars, prescribed degrees and ordered ports. No per-position repair table
+is added. Actual colourings are equivalent to joint cyclic choices, and
+`TwoFiveWheelColouring.repaired_sectors` produces two compatible GSLT
+sector witnesses for the same exterior. The full D3009 repair remains an
+explicit premise; actual ambient occurrence and reconstruction are open.
+Replay `lake build kernelTwoFiveWheel`; see the
+[receipt](../../tools/fourcolor/near-linear/two-five-wheel-measurements.json).
+The earlier [three finite experiments](../../tools/fourcolor/near-linear/two-five-wheel-probe.json)
+remain discovery evidence rather than premises of this transfer.
 
 The [wheel occurrence](MettapediaFourColor/ActualWheelOccurrence.lean) now
 constructs the complete D3009 source from its degree profile in the actual

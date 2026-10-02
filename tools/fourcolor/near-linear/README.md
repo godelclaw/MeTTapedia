@@ -1395,3 +1395,27 @@ The full repair law remains an explicit hypothesis. The nine-state seed
 certificate alone does not discharge it. Replay `lake build kernelWheelEmbedding`;
 the [receipt](wheel-embedding-measurements.json) records ten audited roots and
 standard axioms only. No coverage entry or original certificate is removed.
+
+
+## One collapse transfers repair to every two-five wheel
+
+`TwoFiveWheelData` removes the private outer fan vertex at any of the six
+degree-six positions of D3009. Reinsertion is exactly a boundary-triangle
+subdivision, with all graph edges, cyclic stars, degrees and ordered ports
+checked. Each target has twelve boundary vertices and the same eight core
+vertices, with two rim degrees five and all remaining rim degrees six.
+
+`TwoFiveWheelRepair.transfer` applies the existing boundary split and
+reconstruction theorem to all six positions. Its sole repair premise is
+the full thirteen-port D3009 law; the separately running finite replay
+has not yet discharged that premise. None of the three Python closure
+experiments is used by the proof, and no target repair certificate is added.
+`TwoFiveWheelColouring.repaired_sectors` retains the same Kempe-closed
+exterior relation and obtains two GSLT sectors with shared centre and
+seam colours. This establishes compatible existence, not a counted or
+executable Kempe-recolouring algorithm.
+
+Replay `lake build kernelTwoFiveWheel`; the
+[receipt](two-five-wheel-measurements.json) records the fourteen-root audit.
+Actual two-five occurrence and ambient strict reconstruction remain open.
+Coverage and original configuration certificate counts stay 633 /629.

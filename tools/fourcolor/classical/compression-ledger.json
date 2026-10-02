@@ -3891,11 +3891,39 @@
     "conditional_consumer": "The same D3009 source repair excludes the single-five alternative through actual embedded reconstruction.",
     "new_coverage_entries_removed": 0,
     "new_configuration_certificate_dependencies_removed": 0,
-    "two_five_experiment": "All three cyclic separations close in Python with 22,144 states each; no Lean two-five repair or embedded occurrence is claimed.",
+    "two_five_experiment": "All three cyclic separations close in Python with 22,144 states each. These are discovery results; the new kernel-certified collapse transfer uses the single D3009 repair premise instead of their separate certificates.",
     "open": [
       "Complete the separately running D3009 finite replay.",
-      "Certify reconstruction for the two-five profile and its ambient occurrence.",
+      "Construct the actual ambient two-five occurrence and its strict colouring reconstruction; boundary repair transfer for all six positions is proved.",
       "Supply the shared fan and subsequent joint-centre reductions throughout the intended flat neighbourhood class."
+    ]
+  },
+  "two_five_wheel_transfer": {
+    "record": "../near-linear/two-five-wheel-measurements.json",
+    "status": "Kernel-certified six-position family transfer, conditional on full D3009 repair; no target repair certificate.",
+    "source": "D3009, 21 vertices and 13 ordered boundary ports",
+    "targets": "All six placements of the second degree-five rim vertex: 20 vertices, 12 ports, one degree-seven centre, two rim degrees five, five rim degrees six.",
+    "operation": "The source is exactly a boundary-triangle subdivision of each target. Existing boundary split and reconstruction descend through the same operation.",
+    "preserved": [
+      "complete graph adjacency",
+      "full cyclic stars",
+      "prescribed rim degrees",
+      "ordered boundary",
+      "actual colouring witnesses",
+      "same Kempe-closed joint exterior",
+      "common centre and both GSLT sector seams"
+    ],
+    "new_repair_schemes": 0,
+    "existing_uniform_repair_schemes_reused": 1,
+    "parameter_positions": 6,
+    "additional_target_repair_certificates": 0,
+    "new_coverage_entries_removed": 0,
+    "new_configuration_certificate_dependencies_removed": 0,
+    "retained_finite_obligations": "Six exact graph/degree/cyclic-order/boundary alignments. Full source repair remains an explicit premise.",
+    "open": [
+      "Complete the live D3009 finite repair replay.",
+      "Actual two-five occurrence and ambient strict reconstruction.",
+      "Geometric supply and coverage throughout the intended flat class."
     ]
   }
 }

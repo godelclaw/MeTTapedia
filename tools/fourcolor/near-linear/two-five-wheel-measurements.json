@@ -1,0 +1,89 @@
+{
+  "status": "kernel-certified six-position repair transfer; full D3009 repair remains an explicit premise",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelData",
+      "source_sha256": "818e7a7f5a67774e66a0aceaffe07ef6357deb7b1ef18859a9f3337da2d7d535",
+      "exit_code": 0,
+      "frontend_wall_seconds": 75.192,
+      "olean_bytes": 303200,
+      "olean_sha256": "7b2424a289ffe648e9ac8225b599bacbe09db780ca654e338b527100bf858eee"
+    },
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelRepair",
+      "source_sha256": "9079c837298e7f6603f41963ce5e79cb5cf8b6f6054f0c965fc2b6869e76c966",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.429,
+      "olean_bytes": 43096,
+      "olean_sha256": "86d3c93076f6ed138b391c7cf094ed84a5dd0576043df1d05572cc451fa9f70b"
+    },
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelColouring",
+      "source_sha256": "465eea6f9903704213ddf2bb33fa8f83fbe85ab622c08cceecddcbff344bf03e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 16.675,
+      "olean_bytes": 192072,
+      "olean_sha256": "03ceb62275e1a28dd733fcfce6d821ff9cb96db3f3f2c597ddc2cd7507cb0393"
+    },
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelAudit",
+      "source_sha256": "dc451ad25582c2bd881bfc081f3d44d03494c2560b2e350fa4859bce44188b0e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.498,
+      "olean_bytes": 2600,
+      "olean_sha256": "bce00d00b58fcd753f5108b650dad6916902b125f5fa4065478d87e1f070eaba"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 14,
+    "declarations": 4747,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates": 0
+  },
+  "source": {
+    "catalogue": "D3009",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "vertices": 21,
+    "boundary_ports": 13
+  },
+  "family": {
+    "parameter": "Fin 6, the position of the second five relative to the marked five",
+    "positions": 6,
+    "vertices_per_target": 20,
+    "boundary_ports_per_target": 12,
+    "core_vertices": 8,
+    "centre_degree": 7,
+    "rim_degrees": "two five, five six",
+    "additional_repair_certificates": 0
+  },
+  "operation": "The same boundary-triangle collapse at every position. Complete graph isomorphism back to the source, full cyclic-star transport, prescribed degree profile and ordered-boundary alignment are kernel checked.",
+  "repair": "TwoFiveWheelRepair.transfer descends the full source repair through BoundaryTriangleRepair.repair. It preserves compatibility with every Kempe-closed joint exterior containing the starting proper zero-sum trace.",
+  "compositional_consumer": "TwoFiveWheelColouring.repaired_sectors supplies an actual boundary colouring and two compatible GSLT sector histories with one shared centre colour and both seam colours.",
+  "not_claimed": [
+    "Actual ambient two-five occurrence or strict ambient reduction.",
+    "An executable Kempe recolouring sequence or counting formula.",
+    "A new repair certificate for each family member.",
+    "Additional classical certificate or coverage dependencies removed."
+  ],
+  "checks": [
+    "lake build kernelTwoFiveWheel",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_checks_saved": 336,
+    "new_coverage_entries_removed": 0
+  },
+  "open": [
+    "Complete the live full D3009 finite replay and remove the explicit premise.",
+    "Recognize the two-five profile as the same actual injective embedded disk and reconstruct through a valid strict ambient reduction.",
+    "Geometric supply and coverage for the remaining flat neighbourhoods."
+  ]
+}

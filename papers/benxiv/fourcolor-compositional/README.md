@@ -32,10 +32,20 @@ gives a further high neighbour, a single-five wheel, or an exact two-five
 profile. That last profile spends its entire charge budget: one outer
 five-tip and no extra transfers. The geometry is proved independently of
 repair. The single-five consumer still requires the full D3009 repair
-contract, whose finite checks are being certified separately. All three
-two-five wheel separations pass an independent finite repair experiment;
-their Lean reconstruction remains open. This narrows the next local
-coverage obligation without removing an entry from the unavoidable set.
+contract, whose finite checks are being certified separately.
+
+The next family now reuses that same source repair. A
+[boundary-triangle collapse](../../../lean/fourcolor-classical/MettapediaFourColor/TwoFiveWheelRepair.lean)
+changes any one of the six degree-six rim vertices to degree five. Lean
+checks the entire graph, cyclic stars and ordered boundary for all six
+positions; the one repair-transfer theorem covers every placement.
+The source's full repair remains an explicit premise, with no additional
+per-position repair certificates. The
+[colouring equivalence](../../../lean/fourcolor-classical/MettapediaFourColor/TwoFiveWheelColouring.lean)
+retains the joint exterior and composes two GSLT sector witnesses through
+the same centre and both seam colours. This is a direct use of compositional
+repair to explain a family. Its occurrence and reconstruction in the actual
+ambient map remain to be proved; no unavoidable-set entry is removed.
 
 A completed geometric test concerns two overlapping exceptional neighbourhoods
 in the newer catalogue. Their shared rotation forces the D1774 core. Its
