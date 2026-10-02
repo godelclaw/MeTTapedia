@@ -23713,3 +23713,280 @@ parents after their original suppliers decay, without being replenished
 when histories compose. The explicit release map
 V -> epsilon^2 N(V)/(4nu), retaining pressure and the return channel,
 provides a controlled physical test of such a rule.
+
+## Descendant capacity renewal and a fixed-band force payment
+
+Keeping the full source capacity of a generated descendant repairs the
+sign at some states, but does not give a universal decreasing reserve.
+The actual release mechanism (262)--(268) produces descendants whose
+enstrophy and full source capacity BOTH increase after viscosity is
+included. One input phase reversal changes both signs while preserving
+every initial modal energy. Exact algebra is in
+`descendant_capacity_transfer.py`; the actual-history interpretation
+uses the analytic release theorem above.
+
+There is also an unconditional payment for a specific part of the
+effective forcing: high-frequency parents feeding a fixed lower band.
+It reuses kinetic-energy dissipation and Fourier Cauchy--Schwarz, and
+applies to every available smooth unforced prefix without a perturbative
+assumption. Its loss when the observed band moves to finer scales is
+explicit. This payment and the capacity obstruction concern different
+observations; neither is the missing arbitrary-data continuation bound.
+
+### The proposed transfer and an actual sign reversal
+
+The tested repair retains the generated capacity without normalizing it:
+
+```text
+J_(beta,sigma)=a[W_beta(b)+sigma Ctilde_nu(b)+F],
+beta>=8, sigma>=0,
+Q_(beta,sigma)=DW_beta(b)[b_t]+2g(b)-(nu/2)D_b
+             -kappa[W_beta(b)+F]-f
+             +sigma[DCtilde_nu(b)[b_t]-kappa Ctilde_nu(b)].    (270)
+```
+
+Here b=u-h starts at zero, h is the ORIGINAL heat field, and a,F,kappa,f
+remain those of (254)--(256). Parameters beta and sigma are constant
+along a history; changing them would introduce additional derivatives.
+The initial value is still a(0)F(0), without new credit at a later release.
+Sigma=1 is the full-capacity repair, while sigma=0 includes the previous
+normalized trial.
+
+Keep the four waves from (262), but take two horizontal envelopes
+
+```text
+V_g: coefficients (3,1,3,-3),
+V_d: coefficients (3,1,3, 3),
+V=sum_j c_j (-(k_j)_2,(k_j)_1,0) cos(k_j.x),
+w_g=N(V_g), w_d=N(V_d).                            (271)
+```
+
+Only the fourth wave changes phase by pi. Both envelopes have energy 46
+and identical modal energies at every wavevector. Consequently their
+original heat trajectories have identical quadratic Fourier energy
+curves, including every homogeneous Sobolev energy. The same is true
+of the modulated initial data epsilon N cos(Nx_3)V for large N. Their
+pointwise geometry and nonlinear source capacities need not agree.
+
+The exact generated quantities at nu=1 are:
+
+| Observation | Growing phase w_g | Depleting phase w_d |
+| --- | ---: | ---: |
+| Z | 846 | 657 |
+| D | 10620 | 7623 |
+| g | 1755/28 | -585/476 |
+| Ctilde_1 | 827.76864... | 1168.77554... |
+| DCtilde_1(w)[N(w)] | 1976.97835... | -3791.94282... |
+
+The signs use exact rational arithmetic, not the displayed decimals.
+Set epsilon=32, so the released fields are b_g=256w_g and b_d=256w_d.
+Along the FULL unforced tangent -Ab+N(b), exact calculation gives
+
+```text
+at b_g:
+ Z'=4978114560/7>0,
+ C'=DCtilde_1(b_g)[-Ab_g+N(b_g)]>2*10^15,
+ Q_free,8=DW_8(b_g)[-Ab_g+N(b_g)]+2g(b_g)-D_b/2>2*10^9;
+at b_d:
+ g(b_d)<0, Z'<0, C'<0.                            (272)
+```
+
+Thus viscosity has already been subtracted in both comparisons. This
+is stronger than a sign computation for the Euler part alone. The
+analytic release and subsequent local smoothing give two actual
+unforced histories on which these strict signs persist after the
+original heat parents are arbitrarily small. They are short smooth
+intervals, not assertions of persistent growth or singularity.
+
+### A whole family of pointwise repairs fails
+
+The growing phase defeats every constant beta>=8 and sigma>=0, not just
+the choices in (272). For any physical tangent write Z,H,C for the full
+enstrophy, signed heat forecast and full source capacity, with their
+complete derivatives Z',H',C'. Put r=2g-(nu/2)D. Direct differentiation gives
+
+```text
+(Z+beta C)^2[W_beta'+r]=A0+beta A1+beta^2 A2,
+A0=Z^2(Z'/2+H'+C'+r),
+A1=C Z'(Z+H+C)+Z C H'-Z H C'+2r Z C,
+A2=C^2(Z'/2+r).                                   (273)
+```
+
+Every coefficient A0,A1,A2 is strictly positive at b_g. The checker
+computes them exactly, including the negative term -Z H C' and every
+changing-weight contribution. Hence the free defect is positive for
+all beta>=8. The complete capacity derivative C' is positive too.
+
+To retain the original parent cooling in an ACTUAL history, replace
+the three rates in (273) by Z'-kappa Z, H'-kappa H, C'-kappa C,
+and r by r-kappa F-f. This is exact because W_beta is homogeneous of
+degree one under simultaneous scaling of Z,H,C. After release these
+three coefficients converge to their strictly positive values at a
+small positive time in the evolution from b_g. Also C'-kappa C stays
+positive. For each fixed ell>0, sufficiently large finite N therefore
+gives a single actual smooth interval on which
+
+```text
+Q_(beta,sigma)>0 for ALL constant beta>=8 and sigma>=0.
+```
+
+The interval can be chosen simultaneously for all these parameters:
+strict positivity of the three numerator coefficients and C'-kappa C
+is an open condition involving finitely many continuous observations.
+Thus selecting beta or sigma from the initial datum does not repair
+this family if they remain constant during the history. The assertion
+does not rule out a datum-dependent ell, evolving parameters with their
+full derivative costs, a different history reserve, or an integrated
+allowance that tolerates finite positive defects.
+
+At this descendant the source capacity is a growing forecast of its
+own future heat-source work. It is not a conserved stock left over from
+the original parents. A nonnegative function can grow as the geometry
+changes; nonnegativity alone does not make it a payable reserve.
+
+### A positive bound for high parents feeding a fixed output band
+
+Let u be ANY smooth unforced incompressible NS prefix, nu>0, and fix
+M,Lambda>0. Let Q_(>=Lambda) be the orthogonal Fourier projection on
+frequencies of magnitude at least Lambda and P_(<=M) the low-output
+projection. Include the complete Leray pressure projection in
+
+```text
+v=Q_(>=Lambda)u,
+F_(M,Lambda)=P_(<=M)N(v), q_(M,Lambda)=||F_(M,Lambda)||2,
+E=||u||2^2, Z=||grad u||2^2.
+```
+
+On the normalized torus put K_M^2=sum_(0<|k|<=M)|k|^2. The convolution
+formula, the norm-one Leray projection and Cauchy--Schwarz give
+
+```text
+|N(v)_k|<=|k| sum_p |v_p| |v_(k-p)|<=|k| ||v||2^2,
+q_(M,Lambda)<=K_M ||v||2^2<=K_M Z/Lambda^2.         (274)
+```
+
+No sharp Fourier projection is asserted bounded on L-infinity. The
+input projection is used only in L2 and its gradient energy. All high
+input pairs, their phases and their pressure contributions remain.
+The zero output vanishes by divergence form. For example K_5^2=7650.
+
+On R3, use the unitary Fourier transform. The convolution factor is
+(2pi)^(-3/2), and integration over the output ball gives the same bound
+with K_M=M^(5/2)/(sqrt(10)pi). Indeed
+(2pi)^(-3) integral_(|k|<=M)|k|^2 dk=M^5/(10pi^2).
+There is no whole-space minimum-frequency assumption.
+
+The actual kinetic identity E'=-2nu Z now supplies the nonnegative
+reserve and every compatible interval payment
+
+```text
+R_(M,Lambda)(t)=K_M E(t)/(2nu Lambda^2),
+R_(M,Lambda)' + q_(M,Lambda)<=0,
+R_(M,Lambda)(b)+integral_a^b q_(M,Lambda)
+                         <=R_(M,Lambda)(a).        (275)
+```
+
+The initial price is finite, depends only on the original kinetic
+energy, viscosity and the fixed observation cutoffs, and is independent
+of the horizon. Parents may be regenerated and exchange energy with
+the remaining fluid; (275) still holds because it uses their current
+contribution to the FULL dissipation. No renewal resets the energy.
+Adjacent intervals use the same intermediate R, so the payments telescope.
+Pairing the force with any compatible time-dependent L2 observer of norm
+at most one is also absolutely paid by q. An observer of uncontrolled
+norm would require its own bound.
+
+This specializes the existing full-energy ledger. Its whole-space
+kinetic identity is already Lean-certified as
+`FullEnergyParentReserve.actual_kinetic_rate`; the Fourier identification
+(274) and this particular reserve's application are analytic here.
+No new generic ledger or assumed NS history is introduced.
+
+The scaling matches the release example: its initial energy is
+epsilon^2 N^2 ||V||2^2/2, while its parent frequencies are asymptotic
+to N. Thus the fixed-band price stays of order epsilon^2/nu, consistent
+with the finite released amplitude epsilon^2/(4nu). Growth after release
+is a separate interaction among the slower descendants.
+
+### The remaining scale and history cost
+
+Bound (275) does not pay arbitrary vorticity stretching. It pays the
+L2 size of one fixed-band force. If the observation follows finer
+scales, write rho=K_M/Lambda^2. Whenever rho is differentiable,
+
+```text
+R=rho E/(2nu),
+R'+q<=rho' E/(2nu).                              (276)
+```
+
+Positive jumps in rho cost E Delta rho/(2nu) as well. On R3, when M and
+Lambda grow proportionally, rho grows like M^(1/2), rather than decaying.
+The periodic lattice constants have the same large-scale order.
+Neither energy nor the fixed-band payment controls this refining cost,
+the receiver's growing derivative norms, or the remaining interactions.
+These are reasons to retain geometry and complete histories, not to
+interpret a bounded force impulse as a general regularity criterion.
+
+### Direct payment inside the generated-stretching target
+
+The force estimate also pays a named part of the OPEN budget (257).
+Keep its actual b=u-h and original weight a. Define
+
+```text
+T_(M,Lambda)(b)=<P_(<=M)Ab,P_(<=M)N(Q_(>=Lambda)b)>,
+g_rem(b)=g(b)-T_(M,Lambda)(b),
+E_h=||h||2^2, Z_h=||grad h||2^2, E0=||u0||2^2.
+```
+
+Although b has effective forcing, the two actual fields u and h satisfy
+E_u'=-2nu Z_u and E_h'=-2nu Z_h. Also
+||b||2<=2sqrt(E0) and Z_b<=2(Z_u+Z_h). Therefore
+
+```text
+|T_(M,Lambda)|
+ <=2M^2 sqrt(E0) K_M Z_b/Lambda^2
+ <=4M^2 sqrt(E0) K_M (Z_u+Z_h)/Lambda^2,
+R_paid=a(t) [2M^2 sqrt(E0) K_M/(nu Lambda^2)] (E_u+E_h),
+R_paid'+a |T_(M,Lambda)|<=-kappa R_paid<=0,
+R_paid(0)=4a(0)M^2 K_M E0^(3/2)/(nu Lambda^2).       (277)
+```
+
+Here the low-band observer was bounded by M^2||b||2; its derivative
+cost was not silently discarded. All parameters and the initial a(0)
+are fixed by the original datum, viscosity and chosen cutoffs. This is
+an all-prefix physical bound, on either domain, not a reachability
+assumption for arbitrary states or an energy identity falsely imposed
+on the forced remainder. The energies of u AND its original heat
+reference pay together. The same heat age persists at every seam.
+
+Consequently it suffices to prove
+
+```text
+2 integral_0^t a g_rem <= nu integral_0^t a D_b + K_rem(u0,nu,H).
+                                                               (278)
+```
+
+Then (257) follows with K=K_rem+2R_paid(0), and its gradient-energy
+continuation consumer is unchanged. The residual g_rem retains all
+other input pairs and output bands, including every interaction between
+the released descendants. It has not been replaced by a closed system
+of selected modes. At both released seeds (271), Q_(>=7)w=0, so
+T_(5,7)=0 and g_rem=g: the adverse descendant remains wholly in the
+unpaid core. On comparable moving cutoffs the prefactor
+M^2 K_M/Lambda^2 grows like M^(5/2); this stronger observation still
+needs a genuine scale/history mechanism.
+
+The next physical task is to control renewal at the moving receiving
+scale, after subtracting the work actually paid by (277).
+The phase pair (271) and its full tangent are mandatory tests: matching
+modal energies cannot identify the direction of later stretching, and
+carrying a growing source forecast alone does not pay it.
+
+Run `python3 -O labs/descendant_capacity_transfer.py`. The checker
+verifies the matched spectra, both full physical descendant tangents,
+the positive coefficient certificate for every beta, exact cooling of
+the three observer slots, the full kinetic identity, three rational
+fixed-band force bounds and the exact residual in (278). The analytic
+release, all-prefix integral payment and whole-space Fourier estimate
+are not Lean-certified by these checks. No Lean declarations or axioms change. The arbitrary-data
+signed history estimate and global regularity remain open.

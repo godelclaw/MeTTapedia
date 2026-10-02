@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [descendant-capacity test and fixed-band payment](labs/README.md#descendant-capacity-renewal-and-a-fixed-band-force-payment)
+show that one input phase reversal, preserving every modal energy, can
+reverse a released descendant's stretching and capacity-renewal signs.
+An actual unforced history defeats every constant normalization beta>=8
+and every added nonnegative constant multiple of the source capacity,
+at a fixed original-parent parameter. Separately, kinetic dissipation
+pays the total low-band force supplied by all high-frequency parents
+on every smooth prefix, with a finite original-energy reserve. Using
+the full fluid and its original heat reference together also pays a
+named portion of the generated-stretching target. The cost of following
+finer receiving scales remains explicit and unpaid.
+These physical results are analytic with exact algebra checks; the
+arbitrary-data continuation estimate remains open.
+
 The [oscillatory-parent release](labs/README.md#an-oscillatory-parent-releases-a-self-stretching-descendant)
 constructs actual smooth unforced periodic histories whose fast initial
 motion leaves a slower, self-stretching descendant. The initial-layer
