@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [descendant geometry and all-scale absorption](labs/README.md#descendant-source-geometry-and-all-scale-separated-absorption)
+identify source deformation as the main positive renewal in the released
+adverse phase; covariance reinforces it, and the complete capacity growth
+initially accelerates. Separately, an original-data frequency rule absorbs
+an unbounded family of sufficiently separated interactions into one eighth
+of the remainder's viscous dissipation. It combines disjointly with the
+fixed-band payment below and leaves an explicit, smaller core-history
+estimate for the same continuation theorem. The released adverse examples
+remain in that core. These results are analytic with exact algebra checks;
+no arbitrary-data regularity or new Lean certification is claimed.
+
 The [descendant-capacity test and fixed-band payment](labs/README.md#descendant-capacity-renewal-and-a-fixed-band-force-payment)
 show that one input phase reversal, preserving every modal energy, can
 reverse a released descendant's stretching and capacity-renewal signs.

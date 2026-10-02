@@ -23990,3 +23990,238 @@ fixed-band force bounds and the exact residual in (278). The analytic
 release, all-prefix integral payment and whole-space Fourier estimate
 are not Lean-certified by these checks. No Lean declarations or axioms change. The arbitrary-data
 signed history estimate and global regularity remain open.
+
+## Descendant source geometry and all-scale separated absorption
+
+`descendant_geometry_separation.py` identifies the adverse renewal in
+(271) using the COMPLETE source capacity, including the vertical mean.
+It also checks an analytic bound absorbing an unbounded collection of
+sufficiently separated frequency interactions into viscosity. Both results
+serve the remaining generated-stretching budget. Neither assumes that a
+favorable initial geometry persists or that a truncated set of modes
+obeys an independent fluid equation.
+
+The frequency argument uses standard convolution, Bernstein-type bounds
+and viscous absorption. Frequency separation is also central to
+[Cheskidov and Shvydkoy's dissipation-range regularity criteria](https://arxiv.org/abs/1102.1944).
+Their solution-dependent dissipation wavenumber and regularity theorem
+are not asserted to be the datum-fixed triad selector constructed below.
+The present bounds are derived explicitly for this lane's remainder and
+continuation consumer; no new arbitrary-data regularity criterion is claimed.
+
+### What renews the descendant's source capacity
+
+Use the full Leray projection, without the vertical-mean removal Pi of
+(207). For a smooth solenoidal field w put H_r=exp(r Delta),
+
+```text
+v_r=H_r w, n_r=N(v_r), z_r=H_r N(w), c_r=z_r-n_r,
+C1(w)=integral_0^infinity ||n_r||2^2 dr,
+G(w)=-2 integral_0^infinity <n_r,(n_r.grad)v_r> dr,
+M1(w)=-2 integral_0^infinity <n_r,(c_r.grad)v_r> dr,
+M2(w)=-2 integral_0^infinity <n_r,(v_r.grad)c_r> dr.
+
+DC1(w)[N(w)]=G(w)+M1(w)+M2(w).                       (279)
+```
+
+The omitted source-transport term is exactly zero, since div v_r=0.
+All other terms remain. Here G observes source deformation, not directly
+vorticity deformation. The covariance is still the SAME-displacement
+Gaussian covariance of the current field. With
+Tau_r=H_r(w tensor w)-v_r tensor v_r and
+K_r=P[(v_r.grad)n_r-(grad v_r)^T n_r],
+c_r=-P div Tau_r and M1+M2=2 integral <Tau_r,grad K_r>.
+Its isotropic part contributes only pressure. These identities remain
+valid with the generated vertical mean; removing that mean would change
+the observer and the quantities being compared.
+
+For the two raw descendants w_g,w_d from (271), exact rational arithmetic
+gives the following rounded values:
+
+| Work in (279) | Growing phase | Depleting phase |
+| --- | ---: | ---: |
+| Source deformation G | 1670.484765... | -3254.705347... |
+| Covariance deformation M1 | 249.272706... | -122.294405... |
+| Covariance transport M2 | 57.220886... | -414.943077... |
+| Complete nonlinear renewal | 1976.978357... | -3791.942828... |
+
+More than four fifths of the adverse renewal comes from G; both covariance
+terms reinforce it. Consequently a correction that only removes covariance
+work would leave positive source-deformation work in this example.
+The full projected tensor pairing independently checks the split.
+
+The next actual derivative is retained too. Let w(t) solve unforced NS
+with viscosity mu=1/256 from either raw seed. C1 remains the fixed
+auxiliary observer above, not C_mu. Write d=-mu Aw+N(w),
+e=-mu Ad+DN(w)[d], and differentiate every slot. In particular
+
+```text
+C1'=-mu ||N(w)||2^2+G+M1+M2,
+C1''=-2mu <N(w),DN(w)[d]>+DG(w)[d]+D(M1+M2)(w)[d].   (280)
+```
+
+At the growing seed, DG[d]=5662.649635...,
+D(M1+M2)[d]=11403.402929..., C1'=1869.462238...,
+and C1''=16794.143027... are all strictly positive. Viscosity and the
+source-square derivative have been included. At the depleting seed,
+C1'<0 and C1''<0, although its covariance contribution is changing upward.
+An independent differentiation of the complete heat square gives
+C1''=2 integral(||n_r'||2^2+<n_r,n_r''>), with
+n_r''=B(H_r e,v_r)+B(v_r,H_r e)+2B(H_r d,H_r d),
+and checks the same exact rational answer.
+
+Smooth local evolution preserves the growing seed's strict signs on a
+positive interval. Rescaling b(t)=256w(256t) gives viscosity one, as in
+(272), and preserves their signs. The preceding analytic release theorem
+then transfers them to actual descendants of oscillatory parents after a
+small fixed positive smoothing time. Thus source-capacity growth need not
+immediately decelerate after release. No sign is extrapolated beyond the
+local interval, and neither indefinite renewal nor a singularity follows.
+
+### A fixed rule paying complete separated triads at every scale
+
+Consider either normalized period-2pi T3 or R3 with the unitary Fourier
+transform. Fix nu>0, an original datum of energy E0>0, and 0<delta<1/2.
+For the ACTUAL b=u-H_(nu t)u0, the two energy inequalities give
+||b||2<=B0=2sqrt(E0) on every available smooth prefix.
+Define constants and a parent-dependent radius by
+
+```text
+c_domain=sqrt(27) on T3,   c_domain=1/(sqrt(10)pi) on R3,
+m(p)=[delta nu/(3 c_domain B0)]^(2/5) |p|^(4/5).
+
+S={ triads k+p+q=0: the smallest magnitude L is positive,
+     L<=P/2 and L<=m(P), where P is the middle magnitude }. (281)
+```
+
+Here m(P) means the same radial function evaluated at magnitude P.
+Every parameter is fixed from the original datum and viscosity, before
+observing the future solution. The selector is invariant under EVERY
+permutation and simultaneous negation of the three frequencies. Thus it
+keeps all three receiving roles of a selected interaction, including
+feedback into the two higher-frequency modes. It selects triads from
+arbitrarily large frequencies, not a finite cutoff. The required relative
+separation becomes stronger at increasing frequency.
+
+Let N_S(b) retain precisely these pairs in the COMPLETE Fourier formula
+for N(b), including its Leray multiplier, and put T_S=<Ab,N_S(b)>.
+The mask sees the triple formed by a pair and its negative output. Then,
+with D_b=||Ab||2^2,
+
+```text
+                         |T_S| <= delta nu D_b.             (282)
+```
+
+First, the symmetry of the mask preserves the vorticity-stretching
+identity: T_S is exactly the similarly selected integral of
+omega_i omega_j partial_j b_i, where omega=curl b. To verify this, move
+one curl from Ab onto N_S, use the symmetrized curl identity for the
+advective nonlinearity, and cancel the selected transport term. The
+transport cancellation interchanges the two vorticity inputs while
+keeping the transporting velocity fixed. The sum of their derivative
+frequencies is the negative velocity frequency, whose contraction
+vanishes by incompressibility. Permutation invariance keeps both terms
+in the same selected region. Leray pressure disappears legitimately
+under curl. This argument would not justify an arbitrary nonsymmetric
+selection of receiving roles. The checker independently evaluates both
+masked cubic expressions on all three carrier fixtures.
+
+For the remaining summation, each vorticity-stretching term is bounded
+by |k||p||q| |b_hat(k)||b_hat(p)||b_hat(q)|, with the Fourier convolution
+normalization. Partition the sum according to which frequency is the
+smallest. Each of the three parts has the same upper bound. In the part
+where k is smallest, apply
+
+```text
+2 |p||q| |b_hat(p)||b_hat(q)|
+                    <= |p|^2 |b_hat(p)|^2+|q|^2 |b_hat(q)|^2.
+```
+
+Symmetry between p and q makes the two contributions equal. For each
+fixed p, enlarge the permitted k to the ball 0<|k|<=m(p).
+Cauchy--Schwarz bounds the sum or integral of |k| |b_hat(k)| by
+c_domain B0 m(p)^(5/2). Thus the three choices together give
+
+```text
+|T_S| <= 3 c_domain B0 sum_p |p|^2 |b_hat(p)|^2 m(p)^(5/2)
+       = delta nu sum_p |p|^4 |b_hat(p)|^2.
+```
+
+On the torus, for M>=1, the number of lattice points in the ball is at
+most (2 floor(M)+1)^3<=27M^3, so sum |k|^2<=27M^5.
+For M<1 there is no nonzero lattice point. On R3 the unitary convolution
+factor gives
+(2pi)^(-3) integral_(|k|<=M) |k|^2 dk=M^5/(10pi^2).
+These are the constants used in (281). There is no factor for the number
+of scales and no unbounded sharp projection acting on L-infinity.
+Absolute convergence follows from the same bound for smooth fields with
+finite D_b. In particular this estimate retains the interchanges needed
+to account for the complete interaction, not just its low-output term.
+
+This is a spatial estimate, so it does not pretend that b satisfies an
+unforced energy equation. Only its L2 envelope comes from the two actual
+energy inequalities. The changing field and every internal parent are
+retained in T_S. Since the selector is fixed, following a history creates
+no derivative or seam cost for this observation. The case E0=0 has the
+zero solution and is handled separately, without dividing by B0.
+
+For exact torus computation put B2=B0^2. The fractional-power condition
+in (281) is equivalently
+
+```text
+59049 B2^2 (L^2)^5 <= (delta nu)^4 (P^2)^4,
+4L^2<=P^2,   L>0.
+```
+
+Here 59049=3^4*(sqrt(27))^4. Thus the checker selects every pair using
+rational arithmetic. Fixtures with carriers64,128,256 retain nonzero
+paid work, pressure and all remaining outputs. They check the inequality,
+the masked vorticity identity and exact source reconstruction; the
+summation argument, not those finite fixtures, proves the unbounded-family
+statement.
+
+### Disjoint payments and the smaller continuation obligation
+
+Fix also M,Lambda as in (277). Let F be its pair region
+|k|<=M, |p|,|q|>=Lambda. Use F\S for the fixed-band payment and S for
+viscous absorption, so an interaction is never removed twice. Define
+
+```text
+T_fixed=<Ab,N_(F\S)(b)>,
+g_core=g(b)-T_S-T_fixed.                              (283)
+```
+
+The proof of (274) also applies to a coefficientwise selection of any
+subset of those input pairs: its absolute convolution is no larger.
+Consequently (277) pays a|T_fixed| with the SAME R_paid and its SAME
+original allowance. Both selected sources are only observations of the
+full equation; the residual includes every pair not assigned to them.
+
+Take delta=1/8. The next sufficient target is now
+
+```text
+2 integral_0^t a g_core
+       <= (3nu/4) integral_0^t a D_b + K_core(u0,nu,H).       (284)
+```
+
+Adding (282) spends the remaining nu/4, and adding the fixed-band payment
+gives (257) with K=K_core+2R_paid(0). The existing gradient-energy
+continuation consumer is unchanged. This accounts for the entire
+viscosity allocation; it does not spend the same dissipation twice.
+K_core must still be finite from the original datum, viscosity and
+horizon, uniformly over every available smooth prefix.
+
+For both released seeds256w_g,256w_d, with their own energy as E0, the
+checker finds no selected pair in either region at M=5,Lambda=7.
+Increasing the energy envelope only shrinks S. Their adverse stretching
+therefore remains in the core, including when the original oscillatory
+parent datum has the larger energy needed for the release construction.
+The new bound does not resolve renewal among these comparable scales.
+
+Run `python3 -O labs/descendant_geometry_separation.py`. It checks the
+full geometry/covariance split, mean retention, independent second
+physical derivative, exact pair selection, nonzero absorption fixtures,
+disjoint source reconstruction and the retained adverse core. All new
+physical statements are analytic, not Lean-certified by the finite
+checks. No Lean declarations or axioms change. Arbitrary-data regularity
+and the uniform core-history estimate (284) remain open.
