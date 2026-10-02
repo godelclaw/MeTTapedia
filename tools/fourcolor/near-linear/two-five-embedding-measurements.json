@@ -1,0 +1,96 @@
+{
+  "status": "kernel-certified six-position strict reconstruction, conditional on one complete D3009 boundary repair",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelConstruction",
+      "source_sha256": "193617a95365ec3a7c62f68309b4cedbca9085f1bcd1ffe3a872f6c92e30c390",
+      "exit_code": 0,
+      "frontend_wall_seconds": 191.953,
+      "olean_bytes": 461368,
+      "olean_sha256": "862a4decc45415f4a236740a02bd3850dfe9d7de80a23c2ccdccf757d7a79074"
+    },
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelPreembedding",
+      "source_sha256": "0898e45dc64bb0b47fdf384d33b6ce0f541431b70fb9c3e928dca84782b2ce0a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 135.624,
+      "olean_bytes": 269944,
+      "olean_sha256": "ee500e3310f6eec3ee379c64f89a21ade9627c9f0d6a205de994ae8cd4804995"
+    },
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelRepairGeometry",
+      "source_sha256": "79a20a36e2060ea35d1f0b3bf6d5cebc59b660f27aa1180020474b5b5f4198bb",
+      "exit_code": 0,
+      "frontend_wall_seconds": 9.147,
+      "olean_bytes": 233032,
+      "olean_sha256": "4636a100ccabe80a76ca4cd8fb5a7748ffdcaac0409447f1f81acf82e70ed488"
+    },
+    {
+      "module": "MettapediaFourColor.TwoFiveWheelEmbeddingAudit",
+      "source_sha256": "0b8fa69e32f10e25685eca773a054aeebfab520c3738230326c45fd5ffb6ebb4",
+      "exit_code": 0,
+      "frontend_wall_seconds": 11.326,
+      "olean_bytes": 2608,
+      "olean_sha256": "911caacc0df50223cb95d1c1224e93136c1ddb2e0470fec8c3f7de52fb510ad1"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 12,
+    "declarations": 30405,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates": 0,
+    "wheel_repair_certificates": 0
+  },
+  "family": {
+    "positions": 6,
+    "darts_per_source": 90,
+    "dual_vertices_per_source": 20,
+    "boundary_ports": 12,
+    "centre_degree": 7,
+    "rim_degrees": "two five, five six",
+    "additional_target_repair_certificates": 0
+  },
+  "source_construction": "Ten Y steps and eight H steps, with position-dependent rotations. Every complete dart permutation, graph adjacency, cyclic star and ordered boundary trace is certified against the actual source graph.",
+  "disk": "One parameterized proof preserves each complete core star and its arity. The actual vertex injection supplies a faithful kernel, and the shared kernel-to-disk theorem supplies an injective repair disk.",
+  "contract": {
+    "numbered_dart": 65,
+    "source_dual_endpoints": [
+      12,
+      13
+    ],
+    "meaning": "same degree-seven centre and original marked degree-five neighbour",
+    "validity": "off the perimeter in both orientations and with distinct endpoint nodes, checked at all six positions"
+  },
+  "strict_reconstruction": "ActualDualContract.singleton_colorable uses graph-backed vertex minimality and the established strict two-vertex deletion in the original cubic source. InjectiveEmbeddedRepair.colorable reconstructs the ambient colouring through the same disk and joint exterior; no exterior augmentation is introduced.",
+  "remaining_local_premise": "D3009RepairGeometry.SourceRepair, the complete thirteen-port repair contract. TwoFiveWheelRepair.transfer supplies all target repairs from this one premise.",
+  "actual_consumer": "TwoFiveWheelRepairGeometry.second_high_neighbor excludes both wheel alternatives of the actual second-fan classifier, retaining the same flat degree-seven centre and giving a high neighbour distinct from the original receiver within radius three of that receiver.",
+  "retained_finite_obligations": [
+    "Six exact source constructions, complete graph/cyclic-order/boundary alignments.",
+    "Source-star position and cycle checks.",
+    "Six finite valid-contract checks.",
+    "The full D3009 repair is a premise, not a passed finite certificate in this record."
+  ],
+  "checks": [
+    "lake build kernelTwoFiveConstruction",
+    "lake build kernelTwoFiveEmbedding kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_checks_saved": 336,
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0
+  },
+  "open": [
+    "Complete all D3009 repair-record shards and the aggregate theorem; all input shards have passed separately.",
+    "Supply that theorem to these conditional consumers.",
+    "Close the remaining geometric classification and coverage branches."
+  ]
+}

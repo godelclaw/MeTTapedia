@@ -54,8 +54,17 @@ exclude collisions. The second five is selected from the actual neighbour
 orbit, retaining both marked neighbours and the same centre. Thus the
 [second-fan classification](../../../lean/fourcolor-classical/MettapediaFourColor/SecondFanWheelOccurrence.lean)
 supplies a new high neighbour or a complete one-five or two-five wheel,
-with the exact charge observations retained. The two-five disk and strict
-ambient colouring reconstruction remain open; no unavoidable-set entry is
+with the exact charge observations retained.
+
+The [common reconstruction](../../../lean/fourcolor-classical/MettapediaFourColor/TwoFiveWheelRepairGeometry.lean)
+now completes the geometric bridge for all six targets. Exact Y/H programs
+supply the source disks, the recognised occurrences supply their injective
+ambient readings, and the same marked contract uses strict two-vertex
+descent. One source repair then reconstructs each ambient colouring. Thus
+both wheel alternatives at the second flat centre are excluded by the same
+full D3009 repair premise, leaving an actual new high neighbour.
+This premise is still undergoing finite certification; broader occurrence
+supply and universal coverage remain open. No unavoidable-set entry is
 removed.
 
 A completed geometric test concerns two overlapping exceptional neighbourhoods

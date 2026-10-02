@@ -1418,7 +1418,8 @@ executable Kempe-recolouring algorithm.
 Replay `lake build kernelTwoFiveWheel`; the
 [receipt](two-five-wheel-measurements.json) records the fourteen-root audit.
 Actual two-five occurrence is supplied by the shared geometric theorem
-below; ambient strict reconstruction remains open.
+below; the subsequent disk theorem supplies ambient reconstruction conditional
+on the same full source repair.
 Coverage and original configuration certificate counts stay 633 /629.
 
 
@@ -1444,10 +1445,40 @@ these occurrences without assuming a colouring repair. Its outcomes are a
 new high neighbour, the original one-five wheel, or a complete two-five
 wheel carrying the exact two-five/one-tip/no-extra-transfer observations.
 The target repair is already a consequence of the full D3009 repair by the
-preceding collapse theorem. The remaining local step is its injective disk,
-valid contract and strict ambient colouring reconstruction.
+preceding collapse theorem. The disk and strict reconstruction are supplied
+by the following common construction argument, with that repair premise explicit.
 
 Replay `lake build kernelWheelBoundaryCompletion`; see the
 [receipt](wheel-boundary-completion-measurements.json). The general geometric
 argument has actual consumers in both families. Coverage and original
 certificate counts remain 633 /629.
+
+
+## One strict reconstruction argument for the six two-five placements
+
+`TwoFiveWheelConstruction` checks exact Y/H programs for every target.
+Each source has ninety darts, twenty dual vertices and twelve boundary ports.
+The complete edge/node/face permutations agree with the programs; the full
+cyclic stars and ordered colouring traces agree with `TwoFiveWheelData`.
+
+`TwoFiveWheelPreembedding` reads every source dart through the previously
+proved actual occurrence. Its complete cyclic stars establish the same
+preembedding and faithful kernel at every second-five position. The shared
+kernel-to-disk theorem then gives injectivity of the repair disk.
+
+`TwoFiveWheelRepairGeometry` checks the centre-to-marked-five contract at
+all six positions. Existing graph-backed vertex minimality supplies its
+initial colouring by strict two-vertex descent. The family repair transfer
+then reconstructs a genuine ambient colouring, compatible with the same
+exterior. The full thirteen-port D3009 repair is an explicit premise; no
+additional target repair certificate is needed.
+
+The actual consumer `second_high_neighbor` applies this to the shared fan.
+Both single-five and two-five wheel outcomes are excluded, leaving a new
+high neighbour within radius three of the original receiver. It retains
+the same flat second centre throughout. Universal coverage is still open.
+
+Replay `lake build kernelTwoFiveConstruction`, then
+`lake build kernelTwoFiveEmbedding`; the
+[receipt](two-five-embedding-measurements.json) records the finite source
+checks, disk/reconstruction audit and unchanged catalogue counts.

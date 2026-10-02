@@ -25,8 +25,19 @@ ordered ports, all source edges and full core rotations within radius two.
 The original D3009 occurrence now uses the same geometric proof.
 `SecondFanWheelOccurrence.alternatives` consumes this on the actual flat
 second centre, retaining its marked last five and exact charge observations.
-No full repair is needed for this geometric classification. The two-five
-injective disk, valid contract and strict ambient reconstruction remain open.
+No full repair is needed for this geometric classification.
+The [six source programs](MettapediaFourColor/TwoFiveWheelConstruction.lean)
+now preserve all ninety darts, source cyclic orders and boundary traces.
+One [disk proof](MettapediaFourColor/TwoFiveWheelPreembedding.lean) and
+[reconstruction theorem](MettapediaFourColor/TwoFiveWheelRepairGeometry.lean)
+cover all six positions. A valid centre-to-marked-five singleton contract
+uses strict two-vertex descent in the actual ambient map; the same source
+repair reconstructs its colouring. `second_high_neighbor` excludes both
+wheel alternatives of the second-fan classifier, conditional on that one
+full D3009 repair. No separate target repair certificate is introduced.
+Replay `lake build kernelTwoFiveConstruction`, then
+`lake build kernelTwoFiveEmbedding`; see the
+[reconstruction receipt](../../tools/fourcolor/near-linear/two-five-embedding-measurements.json).
 Replay `lake build kernelWheelBoundaryCompletion`; see the
 [geometric receipt](../../tools/fourcolor/near-linear/wheel-boundary-completion-measurements.json).
 Replay `lake build kernelTwoFiveWheel`; see the

@@ -16,6 +16,32 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay common disk embedding and strict reconstruction for two-five wheels. -/
+target kernelTwoFiveEmbedding pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/two-five-embedding",
+        "--library-output", ".lake/build/lib/lean", "--modules", "TwoFiveWheelPreembedding", "TwoFiveWheelRepairGeometry", "TwoFiveWheelEmbeddingAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay exact source construction for the six two-five wheels. -/
+target kernelTwoFiveConstruction pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/two-five-construction",
+        "--library-output", ".lake/build/lib/lean", "--modules", "TwoFiveWheelConstruction"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay joint geometric completion across wheel layouts. -/
 target kernelWheelBoundaryCompletion pkg : Unit := do
   let env ← getAugmentedEnv
