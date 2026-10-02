@@ -1,0 +1,40 @@
+{
+  "base_fixture": "chain-boundary-example.json",
+  "base_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "extra_flips": [
+    [
+      72,
+      73,
+      6,
+      123
+    ],
+    [
+      148,
+      139,
+      30,
+      75
+    ]
+  ],
+  "vertices": 162,
+  "root": [
+    122,
+    76
+  ],
+  "receiver_degree": 7,
+  "receiver_charge": 8,
+  "window": [
+    72,
+    124,
+    122,
+    33,
+    146
+  ],
+  "window_incoming": [
+    2,
+    3,
+    4,
+    4,
+    3
+  ],
+  "scope": "The finite example satisfies the positive-charge hypotheses. It is not a minimal counterexample."
+}

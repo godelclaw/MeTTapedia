@@ -3734,5 +3734,37 @@
     "additional_original_certificate_dependencies_removed": 0,
     "integrated_into_complete_coverage_assembly": false,
     "scope": "A guarded local supply theorem. A flat degree-at-most-eight ball supplies a distinct flat degree-seven/eight centre. No universal initial fan supply, closing of all overlaps, termination, algorithmic bound or extra assembly compression is claimed."
+  },
+  "joint_rule_fan_charge": {
+    "record": "../near-linear/rule-fan-charge-measurements.json",
+    "status": "Kernel-certified shared signed-charge budget and one actual non-return branch.",
+    "uniform_charge_arguments": 1,
+    "source_rules_used_for_lower_bound": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "full_signed_rule_set_size": 84,
+    "receiver_degree": 7,
+    "incoming_lower_bounds": [
+      1,
+      3,
+      4,
+      3,
+      1
+    ],
+    "incoming_lower_bound_total": 12,
+    "final_charge_lower_bound": 2,
+    "actual_third_centre_radius": 3,
+    "third_centre_adjacent_to_second": true,
+    "third_centre_distinct_from_both_previous": true,
+    "new_rank_certificates": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "integrated_into_complete_coverage_assembly": false,
+    "scope": "A flat degree-seven first-free neighbour with second-free degree five forces a third high-degree centre. No longer-cycle exclusion, degree-eight closure, scheduling or universal coverage is claimed."
   }
 }

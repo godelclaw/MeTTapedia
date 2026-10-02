@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the signed charge budget of a two-sided facial fan. -/
+target kernelRuleFanCharge pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-fan-charge-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RuleFanCharge", "ActualRuleFanCharge", "RuleFanChargeExample", "RuleFanChargeAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Combine two exact charge-rule views with three geometric reduction consumers. -/
 target kernelRuleFanSupply pkg : Unit := do
   let env ← getAugmentedEnv

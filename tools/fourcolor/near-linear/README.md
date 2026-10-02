@@ -1080,3 +1080,44 @@ obligation is to exploit the overlapping views at the supplied centre,
 retaining shared vertices and detecting repeated centres. No universal
 coverage or termination theorem is claimed, and the assembly counts stay
 633 coverage entries and 629 original configuration certificates.
+
+## Signed charge supplies an alternative to returning
+
+The earlier joint fan can return to its original receiver when continued
+through the same six-valent sender. Flatness supplies more information than
+the degree word alone. [RuleFanCharge](../../../lean/fourcolor-classical/MettapediaFourColor/RuleFanCharge.lean)
+proves that two consecutive fives on each side of a six-to-high edge force
+three incoming contributions of at least `3,4,3`. The same facial triangles
+construct the related rule occurrences, preserving their shared vertices.
+
+At a degree-seven receiver with only degree-five/six neighbours, the two
+flanking triangles add one unit each. Cyclicity makes these five senders
+distinct. The complete 84-rule semantics gives zero reverse transfer and
+nonnegative remaining contributions. Thus the final charge is at least
+`-10 + 1 + 3 + 4 + 3 + 1 = 2`.
+
+Consequently, if its neighbours all have degree at least five, a flat seven
+receiving this fan must have a high-degree neighbour.
+[ActualRuleFanCharge.third_center](../../../lean/fourcolor-classical/MettapediaFourColor/ActualRuleFanCharge.lean)
+applies this to the previous source-rule profile when the first free vertex
+is a flat seven and the second free vertex is five. The actual minimal-map
+facial triangle theorem excludes an edge back to the original receiver.
+The new high centre is adjacent to the second, distinct from both previous
+centres, and within radius three of the first.
+
+The [finite example](rule-fan-charge-example.json) uses two legal edge flips
+of the retained 162-vertex triangulation. Lean verifies its cyclic geometry,
+the low-neighbour hypothesis and the positive conclusion using the general
+theorem. The [independent replay](rule-fan-charge-audit.json) computes exact
+charge eight and agrees on all 1,176 incident rule checks. Replay with:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_rule_fan_charge.py --output tools/fourcolor/near-linear/rule-fan-charge-audit.json
+```
+
+`lake build kernelRuleFanCharge` checks the general law, actual consumer,
+finite example and dependency audit. The [receipt](rule-fan-charge-measurements.json)
+records the scope and costs. This branch uses no original configuration
+rank certificate. It neither excludes longer centre cycles nor closes the
+degree-eight or second-free-degree-six branches. Coverage remains 633
+entries with 629 original certificate dependencies.

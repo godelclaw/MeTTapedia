@@ -1,5 +1,5 @@
 {
-  "status": "Actual exceptional closing, exact rule matching, diamond and chain reductions, and a joint rule-fan second-centre supply are kernel checked. Surviving zero-charge classification and global coverage remain open.",
+  "status": "Actual exceptional closing, source-rule matching, family reductions, joint fan supply and a signed-charge non-return branch are kernel checked. Surviving zero-charge classification and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -419,6 +419,22 @@
     {
       "declaration": "FourColor.ActualRuleFanSupply.next_flat_center",
       "meaning": "When the receiver radius-two ball has zero charge and degrees at most eight, the supplied distinct centre has degree seven or eight and zero charge."
+    },
+    {
+      "declaration": "FourColor.RuleFanCharge.three_senders",
+      "meaning": "Four five-valent neighbours on the two sides of a six-to-high edge supply at least 3,4,3 units along three actual incoming edges. The same facial witnesses construct both oriented rules."
+    },
+    {
+      "declaration": "FourColor.RuleFanCharge.positive_of_low",
+      "meaning": "At a seven-valent receiver, if every neighbour has degree five or six, the fan supplies five distinct incoming edges with total at least twelve and no outgoing transfer. Its final charge is at least two."
+    },
+    {
+      "declaration": "FourColor.RuleFanCharge.flat_has_high_neighbor",
+      "meaning": "A flat seven-valent receiver of the two-sided fan whose neighbours have degree at least five must have an adjacent vertex of degree at least seven."
+    },
+    {
+      "declaration": "FourColor.ActualRuleFanCharge.third_center",
+      "meaning": "For the existing same-root rule fan, a flat first-free degree-seven vertex with second-free degree five forces a third high-degree centre adjacent to it, distinct from both earlier centres, within radius three of the original receiver. Actual minimal-map faciality excludes the returning chord."
     }
   ],
   "open": [
@@ -464,11 +480,10 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Use the forced second centre to close a justified overlapping flat-profile branch",
-    "test": "Retain the same-root rule fan and its actual degree-seven/eight continuation. Inspect the exact source-rule profile at the second centre, tracking shared rotation and common vertices. Test whether the overlap forces a supported reduction or another strictly stronger profile constraint; explicitly detect repeated centres.",
-    "acceptance": "A certified second-centre overlap consumer or a replayable residual identifying the missing shared observation. Do not treat a walk among higher-degree centres as descent, or infer universal supply from the guarded fan theorem.",
-    "prior_result": "Rules 002_2 and 003_2 with the proved guards force a distinct higher-degree centre within radius two; all low continuations consume one of three actual reconstructions. All three source-rule branches have kernel-certified finite examples.",
-    "limit": "Initial rule-fan supply from every relevant zero-charge neighbourhood, a complete closing classification, and global coverage remain open."
+    "missing_theorem": "A larger explicitly justified class of surviving fan overlaps supplies a supported reduction or compatible high-centre geometry that can be consumed by the flat-neighbourhood classification.",
+    "test": "Retain exact signed rule occurrences and all shared vertices at the newly adjacent high centre. First test the degree-eight receiver and the second-free degree-six profiles; preserve longer centre cycles explicitly.",
+    "acceptance": "An actual checked reduction/classification consumer or a replayable residual pinpointing a missing observation. No inference of global progress from local non-return.",
+    "limits": "The proved twelve-unit budget exceeds the degree-seven deficit of ten but not the degree-eight deficit of twenty. No termination, initial profile supply or universal coverage follows."
   },
   "counts": {
     "coverage_entries": 633,
@@ -510,6 +525,8 @@
       "FourColor.Bulk.Cfg006"
     ],
     "new_certificates": 0,
-    "universal_supply_or_termination": false
+    "universal_supply_or_termination": false,
+    "third_centre_record": "rule-fan-charge-measurements.json",
+    "third_centre_domain": "First free degree seven and flat; second free degree five. Other first/second-free profiles remain open."
   }
 }

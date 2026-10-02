@@ -1,0 +1,313 @@
+{
+  "evidence": "Independent exact program check; positive lower bound separately kernel checked.",
+  "fixture": "rule-fan-charge-example.json",
+  "fixture_sha256": "1999e83c66095a2e6d3df1ffd61b73bcd426e62eddf2a217d6495a7f467c6001",
+  "base_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "extra_flips": [
+    [
+      72,
+      73,
+      6,
+      123
+    ],
+    [
+      148,
+      139,
+      30,
+      75
+    ]
+  ],
+  "vertices": 162,
+  "sender_cycle": [
+    76,
+    124,
+    121,
+    68,
+    70,
+    33
+  ],
+  "window": [
+    72,
+    124,
+    122,
+    33,
+    146
+  ],
+  "incoming": [
+    2,
+    3,
+    4,
+    4,
+    3
+  ],
+  "final_charge": 8,
+  "independent_rule_checks": 1176,
+  "disagreements": 0,
+  "observations": [
+    {
+      "edge": [
+        6,
+        76
+      ],
+      "sent": 1,
+      "matches": [
+        {
+          "index": 12,
+          "images": [
+            6,
+            76,
+            148,
+            75,
+            30,
+            144,
+            146
+          ],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "edge": [
+        76,
+        6
+      ],
+      "sent": 0,
+      "matches": []
+    },
+    {
+      "edge": [
+        33,
+        76
+      ],
+      "sent": 4,
+      "matches": [
+        {
+          "index": 0,
+          "images": [
+            33,
+            76
+          ],
+          "amount": 2
+        },
+        {
+          "index": 2,
+          "images": [
+            33,
+            76,
+            146
+          ],
+          "amount": 1
+        },
+        {
+          "index": 4,
+          "images": [
+            33,
+            76,
+            122,
+            70
+          ],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "edge": [
+        76,
+        33
+      ],
+      "sent": 0,
+      "matches": []
+    },
+    {
+      "edge": [
+        72,
+        76
+      ],
+      "sent": 2,
+      "matches": [
+        {
+          "index": 2,
+          "images": [
+            72,
+            76,
+            124
+          ],
+          "amount": 1
+        },
+        {
+          "index": 5,
+          "images": [
+            72,
+            76,
+            124,
+            19,
+            121
+          ],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "edge": [
+        76,
+        72
+      ],
+      "sent": 0,
+      "matches": []
+    },
+    {
+      "edge": [
+        122,
+        76
+      ],
+      "sent": 4,
+      "matches": [
+        {
+          "index": 1,
+          "images": [
+            122,
+            76,
+            124
+          ],
+          "amount": 1
+        },
+        {
+          "index": 2,
+          "images": [
+            122,
+            76,
+            33
+          ],
+          "amount": 1
+        },
+        {
+          "index": 3,
+          "images": [
+            122,
+            76,
+            33,
+            70
+          ],
+          "amount": 1
+        },
+        {
+          "index": 4,
+          "images": [
+            122,
+            76,
+            124,
+            121
+          ],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "edge": [
+        76,
+        122
+      ],
+      "sent": 0,
+      "matches": []
+    },
+    {
+      "edge": [
+        124,
+        76
+      ],
+      "sent": 3,
+      "matches": [
+        {
+          "index": 0,
+          "images": [
+            124,
+            76
+          ],
+          "amount": 2
+        },
+        {
+          "index": 3,
+          "images": [
+            124,
+            76,
+            122,
+            121
+          ],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "edge": [
+        76,
+        124
+      ],
+      "sent": 0,
+      "matches": []
+    },
+    {
+      "edge": [
+        146,
+        76
+      ],
+      "sent": 3,
+      "matches": [
+        {
+          "index": 0,
+          "images": [
+            146,
+            76
+          ],
+          "amount": 2
+        },
+        {
+          "index": 1,
+          "images": [
+            146,
+            76,
+            33
+          ],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "edge": [
+        76,
+        146
+      ],
+      "sent": 0,
+      "matches": []
+    },
+    {
+      "edge": [
+        148,
+        76
+      ],
+      "sent": 1,
+      "matches": [
+        {
+          "index": 1,
+          "images": [
+            148,
+            76,
+            146
+          ],
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "edge": [
+        76,
+        148
+      ],
+      "sent": 0,
+      "matches": []
+    }
+  ],
+  "lean_example_sha256": "8a063f1dd652aa037204416dcb54c8041856876e2ce7934f51e9b91f6a4b4844",
+  "verifier_sha256": "61625cfdee8dbb7b5f47c813925451ccb0bb63129d8224ca677eb74a03c6d1ba",
+  "scope": "Finite positive-charge example; no minimal-counterexample or universal-coverage claim."
+}

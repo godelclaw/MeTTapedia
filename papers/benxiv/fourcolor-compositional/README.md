@@ -1534,6 +1534,49 @@ are still required. The [receipt](../../../tools/fourcolor/near-linear/rule-fan-
 retains the shared diamond profile and the classical configuration-7 base
 certificate. Coverage and complete-assembly certificate counts are unchanged.
 
+## Using charge to continue a shared fan
+
+The previous fan-supply theorem alone does not make a walk of centres
+progress: two centres may point back to one another through the same
+six-valent sender. One branch now has a stronger conclusion from the actual
+signed discharging rules.
+
+```text
+same-root rules give [receiver,5,5,a,b,5] around a six
+                         |
+                   a is a flat seven, b is five
+                         |
+          three shared senders contribute at least 3+4+3
+                         |
+       if all neighbours of a are low, two more units follow
+                         |
+             charge(a) >= -10 + 12 = 2, contradicting flatness
+                         |
+                a has an adjacent high-degree neighbour
+                         |
+     minimal-map faciality excludes the original receiver
+                         |
+           a third distinct centre, within radius three
+```
+
+The [signed fan law](../../../lean/fourcolor-classical/MettapediaFourColor/RuleFanCharge.lean)
+reuses facial witnesses to construct several compatible rule occurrences.
+It counts each rule once per edge, proves the five senders distinct, and
+retains all reverse transfers. The [actual-map consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ActualRuleFanCharge.lean)
+uses the previously established facial triangle theorem to exclude return.
+No new configuration certificate is involved. A finite example satisfies
+the positive-charge hypotheses and consumes the general theorem; its exact
+charge is independently computed as eight.
+
+This advances the geometric coverage route by deriving a stronger overlap
+constraint from shared information. It does not establish termination of
+arbitrary centre walks. The degree-eight receiver has a deficit of twenty,
+so twelve incoming units alone do not close that case. Other free-degree
+profiles, initial profile supply and global coverage also remain open.
+The [receipt](../../../tools/fourcolor/near-linear/rule-fan-charge-measurements.json)
+keeps this progress separate from catalogue compression: the complete
+assembly still retains 633 coverage entries and 629 original certificates.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

@@ -1,5 +1,17 @@
 # Classical Four Colour and compositional reconstruction
 
+The latest local coverage step is the
+[shared fan charge law](MettapediaFourColor/RuleFanCharge.lean) and its
+[actual third-centre consumer](MettapediaFourColor/ActualRuleFanCharge.lean).
+A flat degree-seven continuation has an alternative to returning through
+the same six-valent fan: a twelve-unit incoming bound forces an adjacent
+high centre, and minimal-map faciality excludes the original receiver. The
+precise degree guards and remaining branches are recorded in the
+[receipt](../../tools/fourcolor/near-linear/rule-fan-charge-measurements.json).
+With the preceding artifacts prepared, `lake build kernelRuleFanCharge`
+replays the general theorem, actual consumer, finite positive-charge example
+and dependency audit. This adds no catalogue or certificate-count saving.
+
 For the connection to Goertzel and Fable's original plan, the reusable results,
 and the remaining compression work, see the
 [compositional proof-plan guide](../../papers/benxiv/fourcolor-compositional/README.md).

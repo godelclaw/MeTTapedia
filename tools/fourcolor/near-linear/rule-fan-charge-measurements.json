@@ -1,0 +1,132 @@
+{
+  "status": "Kernel-certified shared fan charge and an actual third-centre continuation.",
+  "source_manifest": "discharging-sources.json",
+  "previous_supply": "rule-fan-supply-measurements.json",
+  "general_law": {
+    "module": "MettapediaFourColor.RuleFanCharge",
+    "domain": "Finite simple graph with a triangular vertexwise cyclic dart rotation; exact pinned 84-rule charge semantics.",
+    "fan": "A six-valent sender has two consecutive degree-five neighbours on each side of its edge to a receiver of degree at least seven.",
+    "three_incoming_lower_bounds": [
+      3,
+      4,
+      3
+    ],
+    "degree_seven_guard": "All neighbours of the receiver have degree five or six.",
+    "five_distinct_sender_lower_bounds": [
+      1,
+      3,
+      4,
+      3,
+      1
+    ],
+    "initial_charge": -10,
+    "final_charge_lower_bound": 2,
+    "reverse_charge": "Zero on every outgoing edge under the low-neighbour guard; all remaining incoming terms are nonnegative.",
+    "flat_consequence": "If every neighbour has degree at least five, a flat degree-seven receiver of the fan has an adjacent vertex of degree at least seven."
+  },
+  "actual_consumer": {
+    "theorem": "FourColor.ActualRuleFanCharge.third_center",
+    "domain": "Actual facial dual of a GraphBackedVertexMinimalTaitCounterexample.",
+    "source_rules": [
+      "rule002_2.rule (index 2)",
+      "rule003_2.rule (index 4)"
+    ],
+    "root": "Both rules are matched on the same actual directed edge.",
+    "guards": "Sender six, next neighbour five, first free neighbour a seven and flat, second free neighbour b five.",
+    "conclusion": "A third high-degree centre adjacent to a, distinct from a and the original receiver, within radius three of the original receiver.",
+    "non_return_reason": "An edge back to the original receiver would be a nonfacial triangle, excluded by the actual minimal-map facial triangle theorem.",
+    "radius_scope": "The radius-three conclusion locates the third centre. It does not assert that every source-rule observation is within that radius.",
+    "termination_claimed": false
+  },
+  "finite_example": {
+    "record": "rule-fan-charge-example.json",
+    "program_audit": "rule-fan-charge-audit.json",
+    "vertices": 162,
+    "base": "chain-boundary-example.json",
+    "legal_flips": 2,
+    "kernel_conclusion": "The complete cyclic triangular geometry satisfies the fan and low-neighbour guards; the general theorem gives final charge at least two.",
+    "exact_charge_program": 8,
+    "independent_rule_checks": 1176,
+    "minimality_claimed": false
+  },
+  "audit": {
+    "roots": 16,
+    "dependency_declarations": 26518,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "original_rank_certificate_dependencies": false,
+    "full_four_colour_endpoint_dependency": false,
+    "exceptional_D1774_certificate_dependency": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RuleFanCharge",
+        "source_sha256": "8187ca9c74a5b31fbd23ee9c93e0fa3d8ca92d3c90b8ae3709fadb36aeba7f2c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 39.52,
+        "olean_bytes": 1134720,
+        "olean_sha256": "8d9f0dde8d6ce9b9cd6c3f8fd140190dfdb90c782b288301c248f60137fdd8cf"
+      },
+      {
+        "module": "MettapediaFourColor.ActualRuleFanCharge",
+        "source_sha256": "0cd1560a0159c3fadb479305734980b68286bc402f2b7d076369e532c680afc7",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.475,
+        "olean_bytes": 215632,
+        "olean_sha256": "b5f3d998467bbb8db1d9f929e09a988c056e77d1bb7f3b9aa097425d7a3ad539"
+      },
+      {
+        "module": "MettapediaFourColor.RuleFanChargeExample",
+        "source_sha256": "8a063f1dd652aa037204416dcb54c8041856876e2ce7934f51e9b91f6a4b4844",
+        "exit_code": 0,
+        "frontend_wall_seconds": 350.793,
+        "olean_bytes": 7367816,
+        "olean_sha256": "b222b1effeb0d39c8a342f780291e764d3d727cb15933af1636554dcd9de7dc0"
+      },
+      {
+        "module": "MettapediaFourColor.RuleFanChargeAudit",
+        "source_sha256": "bde2dc1eb96d6b33dab80870a8ff93eaab836a05d18b57b74c62c5b35d39e382",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.939,
+        "olean_bytes": 3720,
+        "olean_sha256": "45596043ab64a84b3c47fe600086580117e22e59e35ca50f85538e5e91824ead"
+      }
+    ]
+  },
+  "commands": [
+    "lake build kernelRuleFanCharge",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_rule_fan_charge.py --output tools/fourcolor/near-linear/rule-fan-charge-audit.json"
+  ],
+  "compression": {
+    "coverage_entries_retained": 633,
+    "original_configuration_certificates_retained": 629,
+    "new_rank_certificates": 0,
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "uniform_signed_charge_arguments": 1,
+    "integrated_into_complete_coverage_assembly": false
+  },
+  "remaining": [
+    "Degree-eight continuations require more than the twelve-unit bound: their initial deficit is twenty.",
+    "The second-free degree-six and other free-degree profiles remain open.",
+    "The new centre must be classified with its actual shared signed transfers.",
+    "Initial fan supply, longer-cycle control, termination and universal family coverage remain open."
+  ]
+}
