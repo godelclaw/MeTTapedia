@@ -36,6 +36,44 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+### Mathematical sources and concrete reuse
+
+The cycle and history work uses established fluid dynamics and model
+reduction alongside the existing formal library. The following are
+mathematical sources, not additional Lean axioms or automatically imported
+formal proofs.
+
+| Source | Reused idea and present consumer | Scope still requiring proof |
+| --- | --- | --- |
+| [Gibson, Halcrow and Cvitanovic, *Visualizing the geometry of state space in plane Couette flow*](https://arxiv.org/abs/0705.3957) | Describe dynamics using coherent states and actual connecting trajectories. The [reciprocal cycle construction](labs/README.md#actual-three-dimensional-pattern-cycles-with-reciprocal-feedback) uses separated pattern observations with full-history tracking. | Their Couette setting has moving walls and energy input. Its recurrent solutions are not unforced periodic-torus examples; the local construction has approximate finite returns. |
+| [*Exterior and vector calculus views of incompressible Navier-Stokes port-Hamiltonian models*](https://doi.org/10.1016/j.ifacol.2021.11.074) | Make energy exchange and viscous loss explicit at an interface. Equation (127) in the reciprocal-cycle lab identifies equal and opposite powers for an actual modal parent and its full remainder. | The modal split is derived directly; a spatial traction/velocity port realization or a complete port-Hamiltonian formalization is not supplied. Energy exchange alone does not control stretching. |
+| [Lohmayer and Leyendecker, *Exergetic Port-Hamiltonian Systems: Navier-Stokes-Fourier Fluid*](https://arxiv.org/abs/2204.05135) | Typed graphical interfaces and composition with energy accounting inform the organization of solution components. Existing `BoundaryBellman` composition retains the intermediate witness and spent reserve. | This thermodynamic model includes additional state variables. Its full semantics is not identified with the incompressible NS history category here. |
+| [Chorin, Hald and Kupferman, *Optimal prediction and the Mori-Zwanzig representation of irreversible processes*](https://math.huji.ac.il/~razk/Publications/PDF/CHK00.pdf) | Eliminating hidden variables leaves memory and an initial hidden-state contribution. Equation (131) retains these through an exact nonlinear Duhamel constraint. | This is not a closed Mori-Zwanzig memory kernel or an imported orthogonal-dynamics theorem; kernel construction, approximation error and any statistical assumptions remain separate. |
+| [Constantin and Iyer, *A stochastic Lagrangian representation of the 3-dimensional incompressible Navier-Stokes equations*](https://arxiv.org/abs/math/0511067) | Stochastic trajectories and covector reconstruction connect viscous dynamics to physical velocity. The existing `CovectorFluidBridge` treats its projected equation under explicit hypotheses. | The complete probabilistic construction and arbitrary-data stretching payment are not consequences of the reconstruction algebra alone. |
+
+The operative interface is a compatible history, not just a named flow
+pattern. For the new cellular family, the observed parent coefficient
+alpha and hidden field h obey the full NS equations together; the powers
+`alpha F` and `-alpha F` cancel, and one original reserve pays every
+later interval of `|F|`. Opposite hidden phases give the same observed
+initial parent and energy but opposite transfer. Thus a reduced model
+must retain joint information or prove an upper bound valid for every
+compatible hidden history.
+
+This already has concrete formal support: `FilteredHistory` retains
+hidden coefficient histories for diagonal Fourier multipliers;
+`LinearBoundaryReduction.System.feedback_elimination` preserves an
+internally generated load after linear elimination;
+`BoundaryBellman.CostedRelation.Bounds.comp` and `Bounds.iterate`
+compose certified costs; and `WholeSpaceHistoryBridge.Segment.comp`
+glues actual whole-space solutions with matching full endpoint data.
+None of these is a nonlinear Schur inverse, a closed fluid memory kernel,
+or an identification of the new periodic rank-one projection with the
+existing diagonal Fourier theorem. Those mathematical distinctions remain
+part of the interface specification.
+
+### Existing formal reduction
+
 The imported [linear Schur reduction](../mettapedia/Mettapedia/GSLT/Dynamics/README.md)
 retains the affine contribution of internal forcing. Its constrained extension
 also retains the equation generating that forcing from the reconstructed
@@ -2155,6 +2193,18 @@ reserve calculus. It also checks separately that an actual whole-space
 evolution with positive interior gradient energy cannot return exactly
 to its original full velocity. None of these statements excludes a
 concentrating cascade with mutually replenishing parents.
+
+The [reciprocal extension](labs/README.md#actual-three-dimensional-pattern-cycles-with-reciprocal-feedback)
+now constructs actual global three-dimensional flows following those
+finite cycles, with a nonzero internal transfer into the parent. A
+Sobolev stability estimate controls the complete evolution from a small
+but nonzero 3D perturbation of the original reference. The parent may
+receive work; the hidden field pays its opposite, and a single original
+reserve bounds all subsequent absolute replenishment. This proves an
+analytic perturbative class, with potentially very small thresholds.
+It does not require the parent to remain autonomous or reset its budget.
+The full-cycle PDE construction remains analytic; the exact checker
+retains canonical pressure and every generated initial output.
 
 The [geometric cascade ledger](labs/README.md#a-finite-energy-finite-time-cascade-ledger-with-unbounded-stretching)
 formally separates that remaining question from energy conservation.

@@ -19354,3 +19354,215 @@ or existence of an evolution realizing them has been established here.
 The result refutes the abstract implication from finite energy and finite
 time to bounded accumulated stretching. The physical crux is whether the
 actual geometry and compatible parent histories permit such a sequence.
+
+## Actual three-dimensional pattern cycles with reciprocal feedback
+
+`reciprocal_pattern_cycles.py` extends (110)--(117) to genuinely
+three-dimensional data with nonzero hidden-to-parent transfer. For every
+nu>0, finite N>=1, m>=2 and `0<eta<sin(pi/m)/2`, it gives one actual
+global smooth unforced periodic solution tracking N complete approximate
+m-state whole-pattern cycles to error eta. The initial datum depends on
+N and eta. The PDE construction, estimates and continuation below are
+ANALYTIC, not new Lean theorems or numerical flow enclosures.
+
+### Reference and full nonlinear stability
+
+Use normalized period-2pi T3, the original annular seed w0, and the
+actual reference `U=(a sin y,-a sin x,A w(t,x,y))` from (110).
+Write `||f||Hm^2=sum_(|alpha|<=m)||partial^alpha f||2^2`.
+Its complete scalar transport commutator is
+
+```text
+[partial^alpha,v.grad]w
+ =sum_(0<beta<=alpha) binom(alpha,beta)
+       (partial^beta v).grad partial^(alpha-beta)w.
+```
+
+Only x,y derivatives occur. Each derivative of a nonzero component of v
+has supremum at most one. Pair the differentiated equations with their
+respective derivatives of w. Principal transport cancels; each remaining
+product is bounded by `||w||H4^2`. There are two vector components, j+1
+multi-indices at order j, and binomial sum `2^j-1`. Mean zero gives
+Poincare for every term in the diffusion. Consequently
+
+```text
+C4=2 sum_(j=1..4)(j+1)(2^j-1)=228,
+||w(t)||H4<=||w0||H4 exp[-nu t+228 sigma(t)],
+||U(t)||H4<=Q exp(-nu t),
+Q=A sqrt(5+||w0||H4^2 exp(456 A/nu)).                    (121)
+```
+
+The horizontal squared H4 norm is exactly `5a(t)^2`. Regularizing
+vanishing norms justifies the scalar comparison. Q is finite from the
+original seed and amplitude, with no unknown future target norm.
+
+Let u solve the full NS equation from `U(0)+d0`. Its difference d=u-U
+satisfies the actual equation
+
+```text
+d_t+U.grad d+d.grad U+d.grad d+grad(p_u-p_U)=nu Delta d,
+div d=0.                                                (122)
+```
+
+Every differentiated pressure term is orthogonal to its solenoidal test.
+It remains in the evolution. The H3 commutator estimate, H3 embedding
+into W1,infinity and the H4 reference give a fixed torus/norm constant
+C3>0 such that, with `Y=||d||H3^2`,
+
+```text
+Y'+2nu D4<=C3 ||U||H4 Y+C3 Y^(3/2),
+D4=sum_(|alpha|<=3)||grad partial^alpha d||2^2>=Y.
+```
+
+This reuses the standard continuous stability argument in the
+[paid reciprocal neighborhood](#returned-parent-work-and-a-paid-reciprocal-neighborhood).
+Set `M=C3 Q/nu` and require `sqrt(Y0)exp(M/2)<=nu/(2C3)`.
+Inside `sqrt(Y)<nu/C3`, absorb the complete self term with nu D4 to obtain
+
+```text
+Y(t)<=Y0 exp[M(1-exp(-nu t))-nu t].                       (123)
+```
+
+This stays strictly inside the bootstrap region. Smooth local existence
+and H3 continuation therefore construct one global smooth unforced NS
+solution with all generated modes retained.
+The constants are fixed Sobolev constants and original-data quantities.
+
+Apply (112)--(115) first with error eta/2, choosing the annular seed and
+A from N and eta; `S=N P0`, `A>=2nu S`. For a fixed embedding constant
+`||d||infinity<=Cemb ||d||H3`, impose also
+
+```text
+sqrt(Y0)exp(M/2)<=eta A/(2Cemb).                         (124)
+```
+
+Then (123) and the reference tracking theorem give
+`sup_(0<=sigma<=S)||u(t(sigma))/A-Ustar(sigma)||infinity<=eta`.
+Both A and `t(sigma)=-log(1-nu sigma/A)/nu` remain the ORIGINAL ones.
+This is a sampling/comparison clock, not an assertion that perturbed
+material trajectories follow the reference streamlines. The samples
+`sigma=jP0/m`, j=0,...,mN, give N cycles with adjacent actual states
+separated by at least `2sin(pi/m)-2eta>0`. Each return has error at most
+eta from its corresponding ideal state. No clock or normalization is
+reset. Exact recurrence or an infinite concentrating cascade is not claimed.
+
+### An explicit internal transfer and a reserve for its whole history
+
+The nonzero, real, mean-zero solenoidal perturbation
+
+```text
+d0=epsilon[(1,0,-1)cos(x+z)+s(1,1,0)cos(x-y+z)], s=+1 or -1,
+Y0=30epsilon^2,
+0<sqrt(30)|epsilon|exp(M/2)
+ <=min(nu/(2C3),eta A/(2Cemb))                           (125)
+```
+
+satisfies both thresholds. Such an epsilon exists after N, eta, w0 and
+A are fixed. The threshold may be extremely small; no practical-sized
+perturbation or numerical evaluation of that threshold is asserted.
+
+For `v=(sin y,-sin x,0)`, `||v||2=1`, put `alpha=<u,v>`. The projected
+equation along the ENTIRE actual history is
+
+```text
+alpha'+nu alpha=F,
+F=<d tensor d,grad v>=mean (cos y-cos x)d_x d_y,
+|F|<=||d||2^2<=Y,
+F(0)=s epsilon^2/4.                                    (126)
+```
+
+Here `Delta v=-v` and `(v.grad)v=grad(cos x cos y)`. Both cross terms
+with the horizontal reference cancel by incompressibility; its vertical
+component cannot contract a derivative of v. These identities hold for
+the arbitrary evolving vertical reference. Canonical pressure cancels
+only in this solenoidal projection. For s=+1, positive nonlinear parent
+work persists on a nonempty interval by smoothness. Positivity throughout
+a complete turn or growth overcoming viscosity is not asserted.
+
+Let `h=u-alpha v`, the full orthogonal remainder, distinct from d.
+Since `<h,v>=0` and `Delta v=-v`, the actual kinetic identities are
+
+```text
+(alpha^2/2)'=-nu alpha^2+alpha F,
+(||h||2^2/2)'=-nu||grad h||2^2-alpha F.                  (127)
+```
+
+The powers `alpha F` and `-alpha F` cancel exactly. This is a modal
+energy-exchange interface, not a newly identified spatial boundary port.
+The supplying fluid follows its full equation and pays the transfer.
+
+Equation (123) gives a nonnegative reserve on every available interval:
+
+```text
+B(t)=Y(t)exp(M exp(-nu t))/nu,
+B'+|F|<=0,
+integral_s^t |F|<=B(s)-B(t),
+integral_0^infinity |F|<=30epsilon^2 exp(M)/nu.           (128)
+```
+
+For `beta=alpha-a`, `beta'+nu beta=F`, beta(0)=0. Absolute continuity
+gives `(|beta|)'+nu|beta|<=|F|` almost everywhere, including its zero-set
+interpretation. Therefore
+
+```text
+R(t)=a(t)/nu+|beta(t)|/nu+B(t)/nu>=0,
+R'+|alpha|<=0,
+R(0)=A/nu+30epsilon^2 exp(M)/nu^2.                       (129)
+```
+
+This pays the parent amplitude while allowing replenishment. Duhamel also
+gives `|alpha(t)-a(t)|<=Y0 exp(M)t exp(-nu t)`.
+
+The full field has a continuation payment: set `K=Q+sqrt(Y0)exp(M/2)`.
+Then `||u(t)||H3<=K exp(-nu t/2)`. For a fixed Sobolev constant Cg,
+the actual cubic production `g=mean omega^T grad(u) omega` satisfies
+
+```text
+R_g(t)=4 Cg K^3 exp(-3nu t/2)/(3nu),
+2 integral_s^t |g|<=R_g(s)-R_g(t).                       (130)
+```
+
+The finite-horizon signed renewal allowance may be
+`R_g(0)+2|g(0)|H`. These are actual globally paid three-dimensional
+cycles in a perturbative neighborhood. The arbitrary-data history
+estimate and an infinite-cascade realization remain open.
+
+### Composition and the hidden phase
+
+The opposite phases in (125) have the same alpha(0), total initial energy,
+Y0, reference and cycle-error allowance, but opposite F(0). The observed
+pattern label and these scalar resources do not determine the next
+parent derivative. Exact reconstruction must preserve a compatible
+hidden history; a bounding summary may instead preserve a proved envelope.
+
+For `P u=<u,v>v` and `N(u)=-Leray[(u.grad)u]`, P commutes with Delta.
+The full remainder consequently satisfies
+
+```text
+h(t)=exp(nu t Delta)h0
+ +integral_0^t exp(nu(t-s)Delta)(I-P)N(alpha(s)v+h(s)) ds,
+F(t)=mean (cos y-cos x)h_x(t)h_y(t).                    (131)
+```
+
+The SAME h must supply F and both endpoints. This nonlinear Volterra
+constraint cannot be replaced by freely prescribed forcing. The related
+`FilteredHistory.hidden_mode_history` is Lean-certified for diagonal
+Fourier multipliers; this rank-one P is not asserted to be that instance.
+
+Adjacent physical segments retain full u at the seam, original reference,
+time and constants. Equation (128) then telescopes. This is a concrete
+analytic consumer of `BoundaryBellman.CostedRelation.Bounds.comp` and
+`Bounds.iterate`, together with `PlanarParentReserve.interval_payment`.
+Their generic composition algebra is already in Lean; this periodic
+physical instantiation is not newly formalized. The actual-solution
+gluing in `WholeSpaceHistoryBridge.Segment.comp` has whole-space scope.
+
+Run `python3 -O labs/reciprocal_pattern_cycles.py`. Twelve exact rational
+fixtures cover both phases, two parameter choices and three unrelated
+vertical receivers. An independent symbolic physical-space integral
+checks generic F(0). Every canonical output, including new modes, is
+retained. The checks verify full kinetic transfer, H3/H4 sizes and the
+reserve/envelope algebra. Smooth PDE existence, bootstrap, continuation
+and the full-cycle comparison above remain analytic.
+The rational fixture amplitudes test algebra and are not asserted to meet
+the conservative global stability threshold (125).
