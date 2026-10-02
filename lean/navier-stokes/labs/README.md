@@ -16935,3 +16935,174 @@ mechanism for spending it during parent generation. The original signed
 history target remains open; this result does not supply that mechanism.
 Run `python3 -O labs/funded_critical_history.py` for the exact scaling,
 Gaussian packing arithmetic, entropy limit and signed-budget bookkeeping.
+
+## A critical allowance for the original caloric parent history
+
+`critical_caloric_allowance.py` supplies a nonzero initial allowance for
+one complete source/receiver history and retains its exact difference from
+the actual fluid. The allowance is critical under NS scaling and covers
+all positive times, rather than one local Taylor interval. The remaining
+source deformation, receiver deformation and parent transport are explicit
+and unpaid. This is an analytic partial payment, not an arbitrary-data
+regularity theorem or a new Lean-certified PDE statement.
+
+### The prepared history retains its original source and clock
+
+Fix nu>0, p=5/2 and the original swirl quotient b0 in Lp(R5), with the
+smoothness and decay used in the actual-flow application. Set
+
+```text
+M0=int_R5 |b0|^p,
+B(t)=exp(nu t Delta5)b0,
+A5=-partial_zz(-Delta5)^(-1),
+q1(t)=-2 A5 int_0^t exp(nu(t-s)Delta5)[beta B(s)^2] ds.
+```
+
+For the physical core split beta=1-zeta_rho is its original smooth radial
+cutoff. The bound itself only needs a fixed measurable 0<=beta<=1.
+The parent q1 contains the complete time history of this diffusing source,
+followed by the canonical pressure reconstruction. It is not a new
+independently prescribed strain or an actual nonlinear solution by itself.
+
+Let C_R be a fixed L(5/2)(R5) norm bound for A5. Its Fourier symbol is
+xi_z^2/|xi|^2; the standard Riesz-transform Lp bound makes C_R finite.
+The Gaussian heat kernel and Young's inequality give
+
+```text
+||exp(t Delta5)||_(L(5/4)->L(5/2)) <= A/t,
+||exp(t Delta5)||_(L(5/2)->L5) <= Bc/sqrt(t),
+A=(4pi)^(-1)(5/3)^(-3/2),
+Bc=(4pi)^(-1/2)(5/4)^(-2).
+```
+
+Split the parent time integral at t/2. On [0,t/2], put the heat smoothing
+on the output and use `||B(s)^2||_(5/4)<=M0^(4/5)`. On [t/2,t], use
+Lp contraction on the output and smooth the source instead:
+`||B(s)^2||_(5/2)<=Bc^2 M0^(4/5)/(nu s)`. The two integrals are
+`int_0^(t/2) (t-s)^(-1) ds=int_(t/2)^t s^(-1) ds=log 2`.
+Thus neither endpoint is estimated by a nonintegrable time kernel, and
+
+```text
+sup_(t>0) ||q1(t)||_(5/2) <= (Cq/nu) M0^(4/5),
+Cq=2 C_R log(2) [A+Bc^2].                                  (33)
+```
+
+This bound includes the pressure operator. Replacing its multiplier by a
+positive heat kernel without an Lp operator estimate is not used.
+
+### A finite reserve for the entire prepared work
+
+The heat entropy and five-dimensional Sobolev estimates are
+
+```text
+d_t int |B|^p +nu p(p-1)int |B|^(p-2)|grad B|^2=0,
+||B||_(25/6)^(5/2) <=(25/16)C5 int |B|^(1/2)|grad B|^2.
+```
+
+They apply to sign-changing B as well, by the usual convex chain rule.
+Integrating gives
+
+```text
+int_0^infinity ||B(t)||_(25/6)^(5/2) dt
+ <=(5 C5/(12nu))M0.
+```
+
+Holder with exponents 5/2 and 5/3, followed by (33), now proves
+
+```text
+(3/2)int_0^infinity int_R5 |q1(t)| |B(t)|^(5/2) dt
+ <= K_cal :=(5 C5 Cq/(8nu^2)) M0^(9/5).                     (34)
+```
+
+In particular define a nonnegative remaining stock of this prepared
+history by
+
+```text
+R_cal(t)=(3/2)int_t^infinity int_R5 |q1(s)| |B(s)|^(5/2) ds.
+```
+
+Its future integral uses only the explicit heat evolution of the ORIGINAL
+datum; (34) proves finiteness independently of any unknown future fluid
+norm. It is not a supremum over uncontrolled future NS solutions.
+For every compatible subinterval [a,b] and every actual paid-parent factor
+0<w<=1,
+
+```text
+(3/2)int_a^b w(t)<q1(t),|B(t)|^(5/2)> dt
+ <=R_cal(a)-R_cal(b),
+R_cal(0)<=K_cal.
+```
+
+The same B, q1 and original clock persist at every seam. Restarting B from
+the current actual b, or setting q1 to zero there, would be a different
+history and would require a new payment. Under NS spatial concentration,
+with beta_lambda(y)=beta(lambda y), or with beta=1 throughout,
+R_cal,lambda(t)=R_cal(lambda^2 t): the initial stock is invariant and
+its spending time changes at the physical viscous scale. The numerical
+upper bound K_cal is independent of beta and remains invariant even when
+a fixed physical cutoff is used, although that cutoff does not obey the
+displayed exact covariance. The prepared stock retains spatial-scale
+information absent from the coarse corrections tested above.
+
+### Exact identification of the unpaid physical remainder
+
+For the actual unforced solution use the existing core history
+
+```text
+(partial_t+v.grad-nu Delta5)eta_core=partial_z(beta b^2),
+eta_core(0)=0,   q_core=2partial_z(-Delta5)^(-1)eta_core.
+```
+
+Eulerian Duhamel gives q_core=q1+qR, where
+
+```text
+qR(t)=2partial_z(-Delta5)^(-1) int_0^t exp(nu(t-s)Delta5)
+        [partial_z(beta(b(s)^2-B(s)^2))-v(s).grad eta_core(s)] ds.
+```
+
+The last term is the NONconservative full advection as written. If it is
+integrated by parts, `div5 v=-q` must be retained; physical
+three-dimensional incompressibility does not set that divergence to zero.
+All generated parents and their pressure reconstruction remain in qR.
+
+With F=|b|^(5/2), F0=|B|^(5/2), the signed physical production is exactly
+
+```text
+Pcrit_core=<q1,F0>+P_receiver+P_remainder,
+P_receiver=<q1,F-F0>,   P_remainder=<qR,F>.                  (35)
+```
+
+Only the first term has been paid by (34). Both other terms may have either
+sign. The precise remaining sufficient estimate is an original-datum bound
+on every available prefix T<=H:
+
+```text
+int_0^T w[(3/2)(P_receiver+P_remainder)-(15nu/8)Dcrit]
+ <=K_rem(u0,nu,H,rho).                                     (36)
+```
+
+It would supply the previous full core allowance K=K_cal+K_rem and hence
+the already stated axisymmetric continuation consequence. Equation (36)
+is OPEN. In particular (34) does not control how the actual flow repeatedly
+deforms its source, receiver or generated parents.
+
+There is a second, restricted way to use (33). With the ACTUAL receiver,
+Sobolev gives
+
+```text
+(3/2)|<q1,|b|^(5/2)>|
+ <=(75 C5 Cq/(32nu))M0^(4/5)Dcrit.
+```
+
+If `M0^(4/5)<=2nu^2/(5C5Cq)`, this is at most `(15nu/16)Dcrit`, so
+this entire parent contribution is absorbed without replacing the actual
+receiver by heat. The remainder qR is still unpaid; this observation alone
+is not a small-data global theorem.
+
+The original-datum allowance in (34) grows as M0^(9/5). It is compatible
+with the many-packet lower bound above, where M0 grows linearly in the
+packet count. No bound solely from energy, circulation or scalar entropy
+is being substituted for this critical initial resource.
+Run `python3 -O labs/critical_caloric_allowance.py` for exponent, time-integral,
+constant and decomposition checks. The heat/Riesz estimates, nonnegative
+reserve construction and actual PDE Duhamel passage remain analytic.
