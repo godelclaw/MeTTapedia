@@ -16385,3 +16385,266 @@ quadratures give `n_tt(0)` approximately
 `0.0003070871013`. It supports the kernel calculation and has no certified
 quadrature error; it is not a numerical evolution. Propagator positivity,
 PDE existence, physical interval and continuation claims remain analytic.
+
+## Critical parent exchange and the initial allowance it requires
+
+`critical_parent_exchange.py` tests a reserve containing both swirl and
+its actual meridional parents at the critical exponent. Its diffusion is
+positive and controls the continuation clock. The complete nonlinear
+exchange leaves explicit pressure and transport defects. A localized pure
+swirl shows that a reserve dominating the critical moment cannot be
+automatically nonincreasing if it assigns no extra allowance to any
+initially pure swirl. This concerns zero allowance, not the open signed
+full-datum budget or indefinite renewal.
+
+### Retaining the actual parent energy at the critical exponent
+
+For a smooth axisymmetric whole-space evolution with the stated
+integrability, set
+
+```text
+L=(-Delta5)^(-1/2),  h=L eta,  chi=L h,
+R_z=partial_z L,    q=2R_z h,
+X=b^2+h^2,         Phi=X^(p/2),  W=X^((p-2)/2),
+R_p=integral_R5 Phi,             p=5/2.
+```
+
+The fractional operators use their homogeneous Fourier multipliers and
+the canonical decaying reconstruction. They retain the signed actual eta;
+h is not an independently chosen parent. Plancherel and the earlier radial
+energy identity give
+
+```text
+integral_R5 (b^2+h^2)=pi ||u||_L2(R3)^2.
+```
+
+The nonlinear reserve R_(5/2) dominates M, is nonnegative and has invariant
+NS spatial scaling. It is finite initially from physical data. For example,
+with E_m the meridional kinetic square and Z_m its vorticity square,
+
+```text
+integral_R5 |h0|^(5/2)
+ <= C5^(5/8) (pi E_m(0))^(5/8) (pi Z_m(0))^(5/8),
+R_(5/2)(0)<=2^(1/4)[M(0)+integral_R5 |h0|^(5/2)].
+```
+
+Here five-dimensional Sobolev bounds h in L(10/3), interpolation gives
+L(5/2), and `||grad h||_2=||eta||_2`. The reserve uses a nonlinear moment
+of the joint lifted amplitude. Its h component is nonlocal in physical
+space; the quadratic integral, rather than its pointwise density, is
+identified with the physical meridional kinetic energy.
+
+### The full evolving-weight identity
+
+Use the commutator convention `[A,B]=AB-BA`. Applying L to the actual
+parent equation gives
+
+```text
+h_t+v.grad h-nu Delta5 h=L partial_z(b^2)-C,
+C=[L,v.grad]eta.
+```
+
+The actual streamfunction satisfies `div5(v chi)=0`. Consequently
+
+```text
+<h,C>=-(1/2)integral q h^2.
+```
+
+Indeed `<h,L(v.grad eta)>=<chi,v.grad eta>=0` by integration by parts,
+whereas `<h,v.grad h>=(1/2)integral q h^2`. This is the meridional
+kinetic cancellation and uses the physical relation between v and eta.
+
+At a nonconstant W define
+
+```text
+T_W=<W h,C>+(1/2)integral q W h^2,
+Q_p=((p-2)/2)integral q Phi
+       -p<b^2,[R_z,W]h>-p T_W.
+```
+
+The complete chain rule yields
+
+```text
+R_p' +nu D_p=Q_p,
+D_p=integral p W(|grad b|^2+|grad h|^2)
+        +p(p-2)X^((p-4)/2)|b grad b+h grad h|^2.               (21)
+```
+
+The second integrand is defined by continuity at X=0. For p>=2 the
+diffusion is nonnegative. The derivation differentiates Phi in both
+evolving components; W is not frozen, and no additional time-weight term
+has been dropped. Source transfer is paired using
+`R_z(W h)=W q/2+[R_z,W]h`. At p=2, W=1, T_1=0 and Q_2=0, recovering
+literal unforced kinetic-energy dissipation. At p=5/2, neither the two
+commutator terms nor the remaining `(1/4)integral q Phi` has a claimed
+favorable sign.
+
+Since `D_(5/2)>=(5/2)Dcrit` and `R_(5/2)>=M`, a bound K fixed from
+the original datum, nu and H, valid on every available prefix T<=H,
+
+```text
+integral_0^T Q_(5/2)<=(nu/2)integral_0^T D_(5/2)+K
+```
+
+would imply
+
+```text
+integral_0^T S^2
+ <=(5C5/(4nu)) [R_(5/2)(0)+K]^(12/5).                        (22)
+```
+
+This is another explicit sufficient axisymmetric consumer. The signed
+Q allowance is open. The original critical-moment history target remains
+available; (21) does not establish that this alternative is easier.
+
+### Pure swirl can replenish the critical moment itself
+
+An exact profile tests the missing allowance at its starting state. Put
+
+```text
+y=r^2, p0(y)=-120+49y-4y^2, Q(y)=(p0(y)-30)^2+31,
+qrad=r^10 exp(-r^2),  hrad=r^8 exp(-r^2)p0,
+F=r^8 exp(-r^2)Q^4.
+```
+
+Here `(1-Delta_R4)qrad=hrad`. Also Q>=31 and Q>|p0|, so
+`|hrad|/F<=31^-3`. The temporary axially periodic source is
+`f=F+hrad cos z`, b=sqrt(f). Its generated initial strain is
+`sigma=q_t(0)=-2qrad cos z`.
+
+For the critical receiver `b^(5/2)=f^(5/4)`, the phase average is
+controlled by the exact radial moment
+
+```text
+J=integral_0^infinity r^3 qrad F^(1/4) hrad dr
+ =(1/2)integral_0^infinity y^11 exp(-9y/4) Q(y)p0(y) dy
+ =-1500298173892001792000/205891132094649.
+```
+
+Let A be the same polynomial integral with each coefficient of Qp0
+replaced by its absolute value; this bounds the integral with |hrad|.
+Taylor expansion of `(1+x)^(5/4)` through degree two, with
+`|x|<=epsilon0=31^-3`, gives a phase-averaged remainder bounded by
+`(15/512)epsilon0^2 A`. The quadratic term times cos z averages to zero.
+The complete negative phase margin is therefore at least
+
+```text
+m=-(5/8)J-(15/512)epsilon0^2 A
+ =832198796201609419506581504000/182729137619258227902969 >0.   (23)
+```
+
+The bound uses `|(d^3/dx^3)(1+x)^(5/4)|/6
+ <=(5/128)(1-epsilon0)^(-7/4)<5/64` and the mean of cos^4, which is 3/8.
+Thus it retains the entire fractional power, not only its linearization.
+
+### Whole-space localization and the actual viscous interval
+
+Localize with
+
+```text
+f_L=exp(-z^2/L^2)(F+hrad cos z),
+b0=sqrt(f_L),  u0=(-x2 b0,x1 b0,0).
+```
+
+Each finite L gives a smooth Schwartz divergence-free pure swirl. With
+`A5=-partial_zz(-Delta5)^(-1)`, partial Fourier transformation in z gives
+the operator family `A_xi=xi^2(-Delta_R4+xi^2)^(-1)`. It is bounded by
+one on L2(R4), strongly continuous at xi=0 with A_0=0, and continuous
+at xi=1 and -1. For the fixed radial profiles, dominated convergence
+on the three Fourier packets at 0,1,-1 proves
+
+```text
+||A5 f_L-exp(-z^2/L^2)qrad cos z||_L2(R5)/sqrt(L) ->0.
+```
+
+The L2 norm of `f_L^(5/4)/sqrt(L)` stays bounded. Cauchy--Schwarz and
+periodic averaging therefore give, for the actual full-space response,
+
+```text
+I_L=integral_R5 b0^(5/2) q_t(0),
+lim_(L->infinity) I_L/L >=4pi^2 sqrt(4pi/9) m>0.              (24)
+```
+
+The Gaussian exponent is 9/4: it includes both the receiver's 5/4 and
+the strain's additional factor one. This proves I_L>0 for all sufficiently
+large finite L. It is an analytic localization argument, not an explicit
+numerical bound on the necessary L.
+
+Fix one such finite datum and any viscosity nu>0. Amplify its velocity
+by A and write `u_A(t)=A v_epsilon(A t)`, `epsilon=nu/A`. Uniform local
+high Sobolev estimates for `epsilon in [0,1]` give C2 time dependence
+of b into L(5/2)(R5). To see the lifted integrability, its L2 norm is
+sqrt(pi) times the physical swirl L2 norm, and its supremum is controlled by a
+physical velocity derivative; the same applies to its first two time
+derivatives. One further velocity time-jet bound supplies a common time
+modulus for these quantities. The L(5/2) power functional is C2. Thus the
+following Taylor expansion has a remainder uniform in epsilon:
+
+```text
+M_epsilon'(0)=-(15epsilon/4)Dcrit,0,
+M_epsilon''(0)=(3/2)I_L+O(epsilon^2),
+M_epsilon(k epsilon)-M0
+ =epsilon^2[(3/4)I_L k^2-(15/4)Dcrit,0 k]+o(epsilon^2).
+```
+
+At the initial pure swirl the velocity's nonlinear meridional acceleration
+produces I_L, while b_t(0)=epsilon Delta5 b0. This accounts for all viscous
+terms in the initial jet. No third-derivative bound is assumed for the
+fractional-power functional. Choose `k=10Dcrit,0/I_L`; the positive
+coefficient becomes `75Dcrit,0^2/(2I_L)`. Hence for sufficiently large A,
+at the actual time `t=k nu/A^2`,
+
+```text
+M(u_A(t))>M(u_A(0)).                                        (25)
+```
+
+This is a finite actual-unforced burst. It asserts no indefinite renewal
+or blowup and does not defeat a full-datum allowance.
+
+There is also a fixed rescaled interval. The same uniform continuity
+gives tau_*>0 and epsilon_*>0 such that
+`M_epsilon''>=(3/4)I_L` on `[0,tau_*]` for `epsilon<=epsilon_*`.
+If also `epsilon<=I_L tau_*/(20Dcrit,0)`, integrating this inequality twice
+gives
+
+```text
+M_epsilon(tau_*)-M0 >=(3/16)I_L tau_*^2,
+M(u_A(tau_*/A))-M(u_A(0)) >=c_* A^(5/2),
+c_*=(3/16)I_L tau_*^2>0.                                    (26)
+```
+
+The constants here are fixed from the unamplified profile; viscosity is
+fixed and positive in the actual flow. For all sufficiently large A,
+the interval lies below any prescribed positive horizon. This gives a
+quantitative necessary allowance of the same amplitude order as M(u_A(0)).
+
+### What the reserve must include initially
+
+Suppose a proposed state or compatible-history reserve dominates M and
+equals M initially on every pure-swirl datum. If it were nonincreasing
+along every unforced evolution, (25) would imply
+
+```text
+M(u_A(t))<=R(u_A(t))<=R(u_A(0))=M(u_A(0)),
+```
+
+a contradiction. In particular R_(5/2) from (21) fails automatic
+monotonicity, since its parent h is initially zero. The conclusion also
+applies to any other nonnegative parent correction vanishing on every
+pure swirl, regardless of its particular norm.
+
+A successful dominating reserve must give some of these initial states
+an additional allowance for future parent generation, or use a separately
+funded signed history cost. This is consistent with an initially allocated
+Bellman reserve. By (26), its initial excess on this family must be at
+least `c_* A^(5/2)`. This does not refute a finite allowance proportional
+to the initial critical moment, show that the necessary allowance is
+infinite, or justify further zero-allowance variants of the same test.
+
+Run `python3 -O labs/critical_parent_exchange.py --quadrature`. Exact checks
+cover kinetic compatibility, convex diffusion, exchange algebra, rational
+phase margins and viscous scaling. Optional radial orders 32/64/96 with
+512 phase samples give the negative phase pairing approximately
+`-4554282.397419`; this is supporting quadrature, not an error certificate.
+The fractional-operator identities, localization, actual interval and
+continuation implications remain analytic. No new Lean theorem is claimed.

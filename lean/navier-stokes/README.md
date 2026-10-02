@@ -1979,6 +1979,21 @@ short interval while its axial ordering has already failed.
 These physical statements are analytic with symbolic checks; the general
 three-dimensional/periodic history estimate remains open.
 
+The [critical parent-energy test](labs/README.md#critical-parent-exchange-and-the-initial-allowance-it-requires)
+adds the actual meridional kinetic channel at the critical exponent.
+Its complete identity has positive diffusion and explicitly retains the
+pressure-weight and transport commutators; at exponent two it recovers
+ordinary kinetic dissipation. A smooth localized pure swirl increases the
+critical moment on actual unforced intervals at fixed positive viscosity.
+Thus a dominating reserve that assigns no extra initial allowance to pure
+swirl cannot be nonincreasing, even if it includes nonnegative energy of
+subsequently generated parents. A fixed rescaled interval requires an
+initial excess at least a fixed positive constant times A^(5/2) when the
+datum's velocity is amplified by A.
+This is a finite burst of the same amplitude order as the initial critical
+moment, not an obstruction to a finite full-datum allowance or a claim of
+indefinite renewal. The signed critical history budgets remain open.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
