@@ -1,3 +1,4 @@
+import MettapediaNS.WholeSpaceParentFeedback
 import MettapediaNS.ShearFluctuationReserve
 import MettapediaNS.GeneratedMeanEnstrophy
 import MettapediaNS.ReferenceStretchingReserve
@@ -1570,3 +1571,14 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ShearFluctuationReserve.adjusted_weight_constant
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ShearFluctuationReserve.finite_chain_cost
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ShearFluctuationReserve.no_nonnegative_balanced_weights
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.advection_skew_pair
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.source_le_energy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.orderEnergy_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_observed_rhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_amplitude_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_feedback_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.kineticReserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.kineticReserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_feedback_interval
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_initial_allowance

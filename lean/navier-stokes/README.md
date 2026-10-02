@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [fixed-parent feedback payment](labs/README.md#paying-the-weighted-feedback-into-a-fixed-smooth-parent)
+now covers repeated nonlinear replenishment of an observed parent in an
+arbitrary smooth unforced history. For a fixed smooth solenoidal test field,
+its full internal source is bounded by kinetic energy. The square of that
+energy pays the source multiplied by enstrophy and the bounded exponential
+weight of the parent reserve. Eleven theorems in
+`MettapediaNS.WholeSpaceParentFeedback` include the actual whole-space
+source equation and interval payment. The periodic realization and its
+combination with the preceding shear reserve are analytic.
+Unobserved stretching and changing-observer costs remain open; this payment
+does not exclude the imported forced construction or prove global regularity.
+
 The [parent-weighted fluctuation reserve](labs/README.md#a-joint-parent-weight-pays-transfers-that-fixed-quadratic-weights-cannot)
 tests a concrete certificate for the remaining signed stretching.
 A fixed nonnegative quadratic Fourier storage cannot pay its universal

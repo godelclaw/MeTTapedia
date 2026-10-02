@@ -20985,3 +20985,187 @@ for every index; finite samples alone are not that proof. The original
 three-dimensional seed and scalar renewal defects are checked separately.
 The smooth-flow obstruction, global triangular solution and actual
 interval payment are analytic, not newly Lean-certified.
+
+## Paying the weighted feedback into a fixed smooth parent
+
+`parent_feedback_payment.py` checks the physical source in (180).
+Its weighted parent-renewal term has a finite absolute payment for
+arbitrary smooth unforced histories and a fixed smooth observation.
+No independent decay, smallness, finite Fourier support of the fluid,
+or favorable transfer sign is needed. The remaining receiver terms
+are not paid by this result.
+
+### The source belongs to the complete fluid
+
+Let u be an actual smooth unforced solution, nu>0, and let psi be a
+FIXED smooth divergence-free test velocity with finite L2 norm and
+known bound K>=||grad psi||_infinity,op. On R3 use the smooth L2 class
+of the imported evolution, with psi in the solenoidal L2 subspace.
+On the torus use normalized measure. Set
+
+```text
+E=||u||2^2, Z=||grad u||2^2, a=<u,psi>,
+F=<-P[(u.grad)u],psi>
+ =-<(u.grad)u,psi>=<u,(u.grad)psi>.
+a'=nu<Delta u,psi>+F,
+|F|<=K E, |a|<=B=||psi||2 sqrt(E(0)).                    (182)
+```
+
+Transport skew symmetry proves the source identity. The pressure
+pairing vanishes because psi is solenoidal, not because the fluid's
+pressure is zero. The source includes all hidden parents and outputs.
+The amplitude cap uses the actual unforced kinetic-energy inequality.
+For a Laplacian eigenmode on the torus, the viscous term is exactly
+-nu lambda a. No L2 Laplacian eigenmode is asserted on R3.
+
+`WholeSpaceParentFeedback.actual_observed_rhs` certifies this source's
+place in the actual whole-space NS equation. The advection skew identity,
+source bound and original-data amplitude cap are kernel-certified too.
+The source bound itself holds for any smooth test; interpreting it as
+the entire projected nonlinear force uses the stated solenoidal condition.
+
+### One finite reserve pays every replenishment
+
+Fix c>=0, including the c=2/nu cotangent of (180). Define the constant
+A and the nonnegative remaining stock J by
+
+```text
+A=c K exp(cB), J(t)=A E(t)^2/(4nu).
+q(t)=c exp(c|a(t)|)|F(t)| Z(t)<=A E(t)Z(t),
+E'=-2nu Z, J'=-A E Z,
+J(t)+integral_s^t q<=J(s).                              (183)
+```
+
+In particular integral_0^t q<=A E(0)^2/(4nu), uniformly over every
+available smooth prefix and independently of elapsed time. A, c, psi
+and the original datum are unchanged across all seams. Refeeding does
+not renew this allowance. Its construction is regular at E=0; no
+inverse-energy derivative or positive energy cushion is needed.
+
+The mechanism is explicit: a smooth observation cannot see more
+nonlinear force than K times the full energy, and the same full energy
+decreases at a rate 2nu Z. Multiplication by Z therefore becomes the
+derivative of its square. This is a payment for a particular weighted
+force channel, not a general bound on vortex stretching.
+
+`actual_feedback_interval` proves (183) on R3 for every subinterval
+0<=s<=t<=T of an actual `NSEvolution`, with the weighted source
+interval-integrable. This is a technical regularity hypothesis on a
+smooth compact prefix, not a future size bound. The initial-allowance
+corollary supplies the displayed original stock. The analogous periodic
+calculation uses its actual normalized energy law and is analytic here.
+
+### Correction of the parent reserve with actual receiver terms retained
+
+For the fixed normalized periodic parent psi=sin(x+z)(1,0,-1), take
+a=<u,psi>, alpha=|a|, c=2/nu and v=exp(c alpha). Its eigenvalue is 2
+and K=2 is a gradient bound. Let w=u-average_z u and define the signed
+unobserved-strain work, separately for f=u and f=w, by
+
+```text
+G_f=integral curl(f)^T grad(f-a psi) curl(f).
+```
+
+The parent has zero vertical mean, so its coefficient is the same
+whether observed in u or w. Exact splitting and the operator bound give
+
+```text
+Z'<=4alpha Z-2nu D+2G_u,
+2g(w)<=4alpha Z+2G_w,
+alpha'=-2nu alpha+sgn(a)F   almost everywhere.            (184)
+```
+
+Consequently the corrected nonnegative reserve is
+
+```text
+J_total=(v-1)Z+exp(2sqrt(E(0))/nu) E^2/nu^2,
+J_total'+2g(w)+2nu(v-1)D<=2(v-1)G_u+2G_w.               (185)
+```
+
+This pays the ENTIRE exponential parent-source term in (180), even
+with repeated feeding from arbitrary other modes. The absolute-value
+source payment handles both signs and amplitude zeros. G_u and G_w
+retain full curl receivers and all unobserved strain; they are not
+self-stretching of a closed, independently evolving remainder.
+
+The precise sufficient remaining history estimate for this correction is
+
+```text
+2 integral_0^t [(v-1)G_u+G_w] <= (nu/2)integral_0^t D+K_receiver,
+```
+
+with finite K_receiver fixed by the full original datum, viscosity and
+horizon. It would imply (171) with K=J_total(0)+K_receiver. THIS REMAINS
+OPEN. No monotonicity of J_total or payment of the receiver terms is
+asserted. Rewriting them as defects has not bounded them.
+
+### Adversarial phases, scale, and observer changes
+
+Use the actual trigonometric datum r0 from (173), its COMPLETE source
+N0=N(r0), and the fixed unit parent psi=cos(x+z)(1,0,-1). For
+u_delta=r0+delta N0, direct rational calculation gives
+
+```text
+<u_delta,psi>=1/10,
+||u_delta||2^2=||r0||2^2+delta^2||N0||2^2,
+F(u_delta)=-delta*22019/546000.                          (186)
+```
+
+The opposite signs of delta give identical parent amplitude, energy
+and enstrophy but opposite internal feeding. These are actual smooth
+NS initial data, not an assertion that r0+delta N0 is a time-discretized
+solution. Their canonical pressure is nonzero. Both signs satisfy the
+same source/payment bounds with every generated mode retained.
+
+Dilate periodic coordinates by an integer ell>=1. For the normalized
+single harmonic, K_ell=2ell, lambda_ell=2ell^2 and
+c_ell=2/(nu ell) give c_ell nu lambda_ell=4ell. Thus
+
+```text
+A_ell=(4/nu)exp(2sqrt(E(0))/(nu ell))
+      <=(4/nu)exp(2sqrt(E(0))/nu).                       (187)
+```
+
+This particular ONE-harmonic feedback payment does not deteriorate
+with its frequency. It does not eliminate the cost of changing the
+observation or controlling arbitrarily many simultaneous parents.
+A fixed finite family can sum its source payments, retaining the sum
+of coefficients and the same full energy. No bound for that sum over
+an unrestricted family is supplied.
+
+If an observation price A(t) changes, differentiation of its stock adds
+A'(t)E(t)^2/(4nu). A changing test field also contributes <u,psi_t>
+to the observed equation; changing c and changing the parent reserve
+introduce their own derivative or jump terms. The fixed-observer theorem
+does not pay these by silently replacing its initial parameters.
+
+### Forced scope and verification
+
+For externally forced flow, E'=-2nu Z+2<u,f> changes the energy-square
+identity to
+
+```text
+J'+A E Z=(A/nu)E<u,f>.                                 (188)
+```
+
+The observed equation additionally contains <f,psi>, which is not the
+quadratic source F in (182). A fixed-parent nonlinear source payment
+can also hold in a forced evolution if suitable full-energy/dissipation
+bounds are available. It therefore does not distinguish or exclude the
+imported forced blowup construction. The unobserved high-strain history
+and possible changes of observation remain essential.
+
+`MettapediaNS.WholeSpaceParentFeedback` certifies eleven theorems,
+including physical whole-space transport/source identification, the
+native energy-square derivative and weighted-source interval payment.
+It reuses the imported transport cancellation, gradient advection bound,
+kinetic law and existing interval integration. The periodic adapter,
+combined receiver estimate (185), scale interpretation and changing-test
+discussion are analytic, not new Lean declarations.
+
+Run `python3 -O labs/parent_feedback_payment.py`. Six exact fixtures
+use both hidden phases at frequencies 1,3,11; they retain pressure,
+all source outputs, viscosity and the separate full enstrophy equation.
+Symbolic checks cover the correction, external kinetic work and seams.
+No finite Fourier truncation, simulated trajectory or new regularity
+claim is used.
