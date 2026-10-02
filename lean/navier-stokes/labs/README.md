@@ -17831,3 +17831,330 @@ fractional-integration exponents, scalar coefficients and complete
 balance algebra. The operator bounds, actual history estimates and
 continuation implication remain analytic. Paying the prepared parent
 and restoring the quadratic cancellation do not establish (58).
+
+## Critical parent transport and nodal costs
+
+`critical_parent_transport.py` tests the complete critical transport
+remaining in (56). Two smooth, finite-energy, axisymmetric no-swirl
+examples distinguish a finite physical history cost from an artificial
+singularity in a proposed estimate. The fractional-operator identification,
+local NS evolution and interval arguments below are analytic. The script
+checks differential identities and exact rational beta moments, with
+optional independent quadrature; it does not certify these PDE arguments
+in Lean.
+
+### The precise weight-difference identity
+
+Retain `h=eta-eta1`, `a=Lh`, `chi_a=La`, canonical v_a and
+`q_a=2partial_z chi_a=2R_z a`. For a smooth spatial weight w, integration
+by parts using `div5(v_a chi_a)=0` gives
+
+```text
+T_w^a=<[L,w]a,v_a.grad h>
+       +int (a^2/2-h chi_a) v_a.grad w.                   (60)
+```
+
+To check the boundary terms, put chi=chi_a and v=v_a. The exact local
+identity is
+
+```text
+w chi v.grad h-w a v.grad a+(q_a/2)w a^2
+ =(a^2/2-h chi)v.grad w
+   +div5[v(w chi h-w a^2/2)].
+```
+
+Self-adjointness of L supplies `L(wa)=w chi+[L,w]a` before applying
+this identity. In kernel form `[L,w]a(x)` retains
+`K(x-y)(w(y)-w(x))a(y)`. For the other commutator in Q_self, the kernel
+is `partial_z K(x-y)(w(y)-w(x))a(y)`. Both use the SAME actual weight.
+Formula (60) does not grant permission to estimate its terms separately
+without retaining their integrability and cancellation.
+
+For `w=X^((p-2)/2)`, `X=b^2+a^2`, the second part of the complete
+diffusion is exactly
+
+```text
+p(p-2)int X^((p-4)/2)|b grad b+a grad a|^2
+ =(p/(p-2))int X^((4-p)/2)|grad w|^2.
+```
+
+At p=5/2 it controls `5int X^(3/4)|grad w|^2`, not the unweighted
+gradient norm. The identity is first read where X>0, then through the
+original convex-density formula or regularization at zeros.
+
+### A rational unforced parent with positive critical production
+
+Let `s=r^2+z^2` and set the initial swirl b0=0. Define
+
+```text
+chi=z/(1+s)^3,
+h=eta=-Delta5 chi=6z(7-s)/(1+s)^5,
+a=L h=6z/(1+s)^4,
+v=(-r partial_z chi, 2chi+r partial_r chi).
+```
+
+This is a smooth, divergence-free three-dimensional meridional velocity,
+with finite energy and all Sobolev derivatives. It has an actual unforced
+local NS evolution. Zero swirl persists, so every prepared-parent term
+in (56) vanishes and `Omega=1`. The remaining equation is
+
+```text
+a_t=nu Delta5 a-L(v.grad h),
+R_p'+nu D_p=Q_self=-p int |a|^(p-2)a L(v.grad h).           (61)
+```
+
+The full fractional operator in this formula can be evaluated exactly.
+The family `F_tau=(tau^2+s)^(-2)` is its decaying harmonic extension:
+`(partial_tau^2+Delta5)F_tau=0`. Fourier transformation in space, with
+the decaying branch, gives `Lambda F_tau=-partial_tau F_tau`. Hence
+
+```text
+L[(tau^2+s)^(-3)]=(1/(4tau))(tau^2+s)^(-2),
+L[(tau^2+s)^(-k-1)]
+ =-(1/(2k tau))partial_tau L[(tau^2+s)^(-k)].
+```
+
+Commuting L with axial derivatives evaluates odd numerator powers through
+
+```text
+z^m(tau^2+s)^(-k)
+ =[(m-1)z^(m-2)(tau^2+s)^(-k+1)
+    -partial_z(z^(m-1)(tau^2+s)^(-k+1))]/(2(k-1)).
+```
+
+Only exponents within this recursion's range are used. The checker
+prints the resulting rational coefficients for `L(v.grad h)`. With
+the full five-dimensional measure, the required moments are
+
+```text
+int_R5 |z|^m(1+r^2+z^2)^(-k)
+ =pi^2 Gamma((m+1)/2) Gamma(k-(m+5)/2)/Gamma(k),
+m>-1, k>(m+5)/2.
+```
+
+At p=5/2 exact evaluation gives
+
+```text
+Q =130880331 sqrt(3) pi^3/1446867107840 >0,
+D =3928275 sqrt(3) pi^3/11534336 >0,
+R_p(0)=1989 sqrt(3) pi^3/262144,
+Q/D=855427/3220672000.                                   (62)
+```
+
+These values retain the complete signed exchange. The strain piece is
+`110925 sqrt(3)pi^3/536870912`, whereas the transport correction is
+`-10503909 sqrt(3)pi^3/90429194240`. The latter helps, but does not
+cancel the former. At p=2 the same exact moments give zero nonlinear
+production, as required by kinetic compatibility.
+
+Multiplying this initial velocity by A>0 multiplies Q by A^(7/2) and D
+by A^(5/2). For every prescribed nu>0, take A=4000nu. Then
+
+```text
+Q(A)/(nu D(A))-1=50259/805168>0.
+```
+
+The actual critical moment therefore increases on a short initial
+interval, by local smooth well-posedness and continuity of its derivative.
+This refutes universal instantaneous absorption `Q_self<=nu D_p/2`
+and (58) with K_full=0, even after all prepared payments vanish.
+It does not refute (58) with a nonzero original-datum allowance.
+
+These examples have `omega_theta` integrable in `dr dz`, and belong to
+the globally regular no-swirl class covered by
+[Gallay--Sverak, Theorem 1.1](https://www.numdam.org/article/CML_2015__7_2_67_0.pdf).
+Positive viscosity follows from their viscosity-one normalization by
+rescaling. The present calculation is not a new regularity result for
+that class. In particular, b and the continuation clock S are identically
+zero, despite the growth of the auxiliary parent norm.
+
+### A separate Young estimate has infinite cost on a regular history
+
+Consider another no-swirl initial datum with s=r^2+z^2:
+
+```text
+chi=(1+s)^(-2)-(125/16)(4+s)^(-2),
+a=Lambda chi=4(1+s)^(-3)-(125/2)(4+s)^(-3),
+h=-Delta5 chi, v=(-r chi_z,2chi+r chi_r).
+```
+
+The same harmonic-extension identities identify the fractional parent.
+On the sphere s=1,
+
+```text
+a=0, partial_s a=-9/20, chi=-1/16, h=1/20,
+a^2/2-h chi=1/320, v.grad s=4z chi=-z/4.                 (63)
+```
+
+Choose a patch with z near 1/2, away from the axis. The zero of a is
+transverse, the transport crosses it, and the flux
+`B_flux=(a^2/2-h chi)v` stays nonzero. Applying Young separately to
+`B_flux.grad w` against the weighted diffusion in (60) introduces a
+positive multiple of
+
+```text
+J_bad=int |B_flux|^2/X^(3/4),  X=a^2.                    (64)
+```
+
+If d is signed normal distance to this nodal patch, then `|a|` is
+comparable to |d|. The integrand in (64) is bounded below by
+`c|d|^(-3/2)`, so J_bad is infinite. This is not infinite physical
+production: the original gradient term is locally of order
+`|d|^(-1/2)`, and the diffusion of order `|d|^(1/2)`, both integrable.
+The complete initial signed Q_self is zero by axial reflection:
+a, h and chi are even in z, whereas `L(v.grad h)` is odd.
+
+The same obstruction holds if only the normal component of B_flux is
+charged: it equals `-1/5120` at s=1, z=1/2. Using the FULL diffusion
+only changes the constant. When b=0 it is
+`D_p=15int |a|^(3/2)|grad w|^2`, so the same singular weight remains.
+
+The obstruction also holds over a physical time interval. Smooth local
+evolution gives continuous first spatial derivatives of a; the implicit
+function theorem preserves the transverse nodal patch for sufficiently
+small positive times. Continuity keeps chi, h and B_flux nonzero there.
+Thus J_bad(t) is infinite at every time in that interval, while the
+actual smooth solution and its signed critical balance remain finite.
+No assertion that the initial reflection makes Q_self zero at later
+times is needed.
+
+Replacing the weight by `(delta^2+a^2)^(1/4)` does not give a uniform
+separated estimate. A normal strip of width proportional to delta has
+
+```text
+int_patch |B_flux|^2/(delta^2+a^2)^(3/4)
+ >=c delta^(-1/2).                                      (65)
+```
+
+Even the optimal local Young coefficient using the complete regularized
+Hessian has this divergence. With `X_delta=delta^2+a^2`, its ratio is
+
+```text
+|partial_a w_delta|^2 / partial_aa Phi_delta
+ =a^2/[10 X_delta^(3/4)(delta^2+3a^2/2)].
+```
+
+On `delta<=|a|<=2delta` this is bounded below by a fixed positive
+multiple of delta^(-3/2). That strip has width comparable to delta.
+
+For an integrable regularized density, subtract its constant delta^(5/2)
+from `(delta^2+a^2)^(5/4)`; this does not alter the local diffusion issue.
+Alternatively add actual initial swirl
+`b0=epsilon exp(-r^2-z^2)`. The data converge smoothly to the no-swirl
+datum. Uniform local existence, the linear b equation along the actual
+velocity, and the same transverse-node argument give a common short
+interval with `|b|<=C epsilon`. The separated cost is then bounded below
+by `c epsilon^(-1/2)` throughout that interval. The actual complete
+production and diffusion remain uniformly finite there. This last
+argument is local; it claims no global regularity for the perturbed data.
+
+The rational initial velocities are rapidly enough decaying for all
+displayed integrals but are not asserted Schwartz. If Schwartz data are
+required, multiply chi by a smooth radial cutoff at large radius before
+reconstructing v. The velocity remains exactly solenoidal. Convergence
+of chi in high Sobolev norms in R5 gives convergence of a=Lambda chi
+on compact sets with first derivatives. It preserves the transverse
+node and the nonzero factors in (63). The strict production margin in
+(62) also survives sufficiently distant cutoff: the nonlinear source
+converges in L(5/3), L maps it into L(5/2), and the displayed diffusion
+is continuous under this smooth Sobolev convergence. These localization
+arguments are analytic, not numerical cutoff certificates.
+
+### Consequence for the remaining history estimate
+
+The complete observer derivative retains a useful positive estimate.
+For p>=2, the convex Hessian gives the exact identity
+
+```text
+((p-1)/p)D_p-int (|grad(wb)|^2+|grad(wa)|^2)/w
+ =(p-2)int (w/X)|b grad a-a grad b|^2 >=0.                (66)
+```
+
+Each integrand is defined by its continuous expression at X=0 when
+p>2. To verify it, write `Z=(b,a)` and
+`d(wZ)=w[I+(p-2)ZZ^T/X]dZ`; the rank-one projection has eigenvalues
+zero and one. Summing the identity over spatial derivatives proves
+(66). At p=5/2 the full observer-gradient cost is at most `(3/5)D_p`.
+In contrast to grad w by itself, grad(wa) and grad(wb) have no inverse
+amplitude singularity at the nodes in (63). The nonnegative remainder
+measures variation of the two-component state direction; it is not
+identified here with a three-dimensional vorticity-coherence criterion.
+
+The exact identity (60) is valid, but its separated Young cost cannot
+fund the critical reserve on arbitrary compatible histories. A uniform
+estimate must keep the nonlocal term and the weight-gradient term
+together, or change the tested observation. The derivative of the
+original convex density, `partial_a Phi=pwa`, remains regular at a
+node; splitting off grad w can destroy that useful feature.
+
+One exact expression that keeps this derivative intact is, with psi=wa,
+
+```text
+Q_self/p=int wb(q_a b-v_a.grad b)-int b^2 R_z psi
+          +int h[v_a.grad L psi-q_a L psi].              (67)
+```
+
+It follows directly from the actual b and a equations, self-adjointness
+of L, skew-adjointness of R_z, and `div5 v_a=-q_a`. In particular
+`grad L psi` is the vector Riesz transform of psi. Formula (67) retains
+every nonlocal parent and does not introduce J_bad. Estimate (66) pays
+the gradients of its regular observers; it does not yet control the
+nonlocal coefficients or establish the physical-time absorption in (58).
+
+There is also a conservative flux form with a finite diffusion estimate.
+All vectors in the following display are Cartesian vectors on R5, and L
+acts on each Cartesian component. Put chi=chi_a, v=v_a, and
+
+```text
+T=e_z |grad chi|^2-2partial_z chi grad chi,
+div5 T=-2partial_z chi Delta5 chi=q_a h,
+J_b=-v b, J_a=e_z L(b^2)-L(v h+T).
+```
+
+Then `div5 J_b=q_a b-v.grad b` and
+`div5 J_a=R_z(b^2)-L(v.grad h)`. Thus the SAME complete defect is
+
+```text
+Q_self=-p int [grad(wb).J_b+grad(wa).J_a].               (68)
+```
+
+In particular the lifted drift's nonzero divergence has not been
+discarded. When evaluating L on a radial vector, its Cartesian basis
+also has to be retained; applying the scalar radial operator only to
+the radial component would change (68).
+
+Define `B_flux_cost=int w(|J_b|^2+|J_a|^2)`. Cauchy--Schwarz, (66),
+and Young give the concrete instantaneous bound
+
+```text
+|Q_self| <=sqrt(p(p-1)D_p B_flux_cost)
+         <=(nu/2)D_p+(15/(8nu))B_flux_cost, p=5/2.       (69)
+```
+
+This cost has no inverse-amplitude singularity at the nodes in (63).
+It is finite for the smooth, decaying fields here: L maps the relevant
+flux inputs from L(10/7) to L2 and w is bounded. For the datum in (62),
+its exact value is `7147841286819 sqrt(3)pi^3/37039797960704000`.
+The independently reconstructed flux divergence and its pairing in
+(68) agree exactly with (61)--(62).
+
+Under NS spatial scaling, B_flux_cost scales like lambda^2, so its
+time integral is critical. Nothing here bounds that integral from the
+original datum. Formula (68) retains the signed history; using only
+(69) can lose useful compensation. This finite diagnostic bound must
+not be treated as a proved initial payment or as a replacement of the
+open signed history estimate by an already funded absolute-value budget.
+
+The direct swirl-observed budget remains an alternative to the joint
+parent budget. A parent norm can grow even when that continuation
+observation is identically zero. Neither this extra burden nor the
+failure of (64) refutes a finite full-datum signed allowance, a corrected
+joint reserve, or unforced regularity.
+
+Run `python3 -O labs/critical_parent_transport.py --quadrature`. The
+48/96/192-point quadratures reproduce Q and D in (62). An independent
+Riesz-potential integral on the axis at z=0.4 agrees with the rational
+formula with absolute errors about `1.08e-8`, `5.29e-11` and `1.97e-13`.
+Those quadratures have no certified error bound. The exact moment and
+nodal algebra, analytic physical interval arguments, and open full-datum
+history estimate retain their separate status.

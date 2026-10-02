@@ -2069,6 +2069,22 @@ commutators and the full diffusion. Its signed absorption estimate remains
 open. These are analytic results in the smooth, decaying axisymmetric
 whole-space class, with exact algebra checks and no new Lean declarations.
 
+The [critical-parent transport test](labs/README.md#critical-parent-transport-and-nodal-costs)
+keeps the complete signed defect. An explicit smooth unforced no-swirl
+datum has positive critical production exceeding diffusion after amplitude
+rescaling, although its quadratic kinetic cancellation holds. A second
+regular datum shows that separately applying Young's inequality to the
+weight-gradient term creates an infinite auxiliary cost at parent nodes.
+The actual signed work remains finite; smoothing the weight does not give
+a uniform bound for that separated cost. These analytic tests exclude
+direct absorption and that particular split estimate, not a finite
+full-datum history allowance. The continuation observation is swirl, so
+growth of a parent norm alone must not be mistaken for dangerous renewal.
+The full convex observer retains a positive repair: its weighted gradient
+cost is at most three fifths of the complete diffusion. An exact form of
+the signed defect keeps this regular observer intact, with its nonlocal
+coefficients and time-integrated payment still open.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
