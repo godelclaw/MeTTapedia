@@ -2206,6 +2206,16 @@ It does not require the parent to remain autonomous or reset its budget.
 The full-cycle PDE construction remains analytic; the exact checker
 retains canonical pressure and every generated initial output.
 
+The [transfer reversal](labs/README.md#reversing-internal-transfer-along-an-actual-cyclic-history)
+then identifies both directions of internal energy exchange along one
+such actual history. A complete degree-eight Fourier residual estimate,
+including viscosity, the evolving receiver and nonlinear feedback, proves
+positive initial parent transfer and negative transfer later in the first
+turn. The parent remains positive, so its nonlinear energy-exchange power
+also reverses. This strengthens the initial-time phase comparison to an
+analytic interval result. It requires small receiver and perturbation
+amplitudes and does not assert that every turn repeats the reversal.
+
 The [geometric cascade ledger](labs/README.md#a-finite-energy-finite-time-cascade-ledger-with-unbounded-stretching)
 formally separates that remaining question from energy conservation.
 It has summable positive energy costs and durations, a decreasing reserve
