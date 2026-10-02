@@ -21544,3 +21544,211 @@ both matched phases, the strict failure ratio, the exact discriminant,
 and direct full-source viscosity/frequency scaling. The all-amplitude
 conclusion follows analytically from that discriminant, not sampling.
 There are no new Lean declarations or axioms in this checkpoint.
+
+## Source-square payment through an actual refeeding history
+
+`receiver_history_payment.py` and `MettapediaNS.EnergyCubeReceiverReserve`
+extend the preceding local calculation to a specified actual interval.
+The SAME reserve J_nu from (198) pays the receiver stretching through
+the full feed--return--feed event of (140). Strengthening original-data
+smallness also makes it pay through any prescribed finite number of
+the previously constructed approximate pattern cycles. All nonlinear
+outputs, the generated mean and the original remaining reserve persist.
+This is a controlled-neighborhood result, not arbitrary-data regularity.
+
+### Bounding the complete nonlinear derivative
+
+Use the same normalized period-2pi torus and notation as (195)--(198).
+In this section H^j denotes the Fourier Bessel norm
+`sum_k (1+|k|^2)^j |u_k|^2`, followed by a square root. Write
+
+```text
+B=||u||H3, W=||Pi u||H3, h=Pi N(u), H=||h||H1,
+C=32, gamma=1/100000000, E=||u||2^2, Z=||grad u||2^2.
+```
+
+The constant C can be fixed independently of the field or frequency
+support. Here is one explicit justification. Cubical lattice shell n>=1
+has 24n^2+2 points. Integral comparison gives
+`sum_(n>=1)n^(-p)<=1+1/(p-1)` for p>1. Therefore
+
+```text
+sum_k (1+|k|^2)^(-3) <=1+24(4/3)+2(6/5)<36,
+sum_k |k|^2(1+|k|^2)^(-3) <=24(2)+2(4/3)<64.
+```
+
+Fourier Cauchy--Schwarz bounds velocity supremum by 6 times its H3
+norm and both gradient Frobenius supremum and curl supremum by 8 times
+that norm. For the ordered product Bcal(v,q)=-P[(v.grad)q], differentiating
+once and using the H1 contraction of P gives
+`||Bcal(v,q)||H1 <=(6+8+6)||v||H3||q||H3`.
+The same bounds give
+`||Bcal(v,h)+Bcal(h,v)||2<=2C||v||H3||h||H1`.
+Thus C=32 suffices for all these estimates without an L-infinity bound
+on the Leray projection.
+
+Each of the three slots in the variation of g is bounded by
+`C||v||H3^2||h||H1`: use gradient supremum in the outer-curl slots,
+and curl supremum in the middle-gradient slot. Both w=Pi u and h have
+zero vertical mean, so their H3 and H1 heat norms decay at least as
+exp(-nu s). Consequently
+
+```text
+|D H_nu(w)[h]| <= (2C/nu) W^2 H,
+|D C_nu(w)[h]| <= (C^2/nu^2) W^3 H.                    (201)
+```
+
+The first bound integrates the three differentiated cubic slots with
+decay exp(-3nu s). The second pairs the quadratic source with both
+differentiated parent slots and integrates exp(-4nu s), retaining the
+outer 1/nu in C_nu. The tangent h is the COMPLETE nonlinear source,
+including all interactions with M=average_z u.
+
+Since Pi N(M)=0, the H1 product bound gives
+`H<=C(2||M||H3+W)W<=3CBW`. Dropping only the two nonpositive terms
+in (196), and using ||Aw||2<=W, now yields
+
+```text
+d_t V_nu(w)+2g(w)
+ <=W H [1+CW/nu]^2
+ <=3CB W^2 [1+CW/nu]^2.                               (202)
+```
+
+This controls the full evolution defect. It does not require a sign
+for the transfer, frozen geometry, or mean motion remaining zero.
+
+### A region in which one energy-cube reserve pays
+
+Fix an ORIGINAL amplitude A>0. Suppose on an actual smooth interval
+
+```text
+A>=256nu, B<=5A, CW<=nu, E>=A^2/9, Z>=A^2/9.           (203)
+```
+
+Then (202) is at most 60A nu^2: first use (1+CW/nu)^2<=4,
+then CW^2<=(CW)^2<=nu^2, since C>=1. Meanwhile the energy-cube
+loss in (198) obeys
+
+```text
+6gamma E^2 Z/nu^3 >=(2gamma/243)A^6/nu^3 >=60A nu^2.
+```
+
+The last inequality follows from
+`(2/(243*100000000))*256^5>60`. Thus, throughout that interval,
+
+```text
+d_t[J_nu(u(t))]+2g(Pi u(t))<=0,
+J_nu(u(t))+2 integral_s^t g(Pi u)<=J_nu(u(s)).           (204)
+```
+
+Nonnegativity follows from
+the heat square and full energy, independent of (203). Further, the
+initial heat integrals have explicit bounds
+
+```text
+|H_nu(w0)| <=(2C/(3nu))W0^3,
+C_nu(w0) <=(C^2/(4nu^2))W0^4,
+J_nu(u0) <=(17/12)W0^2+gamma E0^3/nu^4.               (205)
+```
+
+For the last line use CW0<=nu, Z(w0)<=W0^2 and
+1/2+2/3+1/4=17/12. This is a finite initial-data allowance; it contains
+the receiver H3 size and is not an energy-only arbitrary-data estimate.
+Its signed integral controls the remaining cost in (171) on the stated
+interval. The construction's separate H3 stability theorem already
+supplies existence in this restricted class.
+
+### The actual flow stays in this region for the required interval
+
+Retain the earlier reference U=(a v,A rho theta),
+v=(sin y,-sin x,0), a=A exp(-nu t), the original clock sigma and the
+actual difference d=u-U. The new name theta denotes the earlier annular
+passive scalar, to distinguish it from w=Pi u. Fix a finite clock
+horizon S>=3/4 and define FROM THE ORIGINAL DATA
+
+```text
+Ktheta(S)=||theta0||H4,multi exp(228S),
+Q=A sqrt(5+rho^2||theta0||H4,multi^2 exp(456A/nu)),
+M=C3 Q/nu, Delta=sqrt(Y0) exp(M/2).
+```
+
+Here Y0=||d0||H3,multi^2, as in (123). Retain the existing global
+stability condition Delta<=nu/(2C3) and additionally choose
+
+```text
+3rho Ktheta(S)<=1, Delta<=nu/96,
+A/nu>=max(256,2S).                                    (206)
+```
+
+These are restrictions on the original construction, not assumed future
+norm bounds. Equation (123) gives ||d(t)||H3,multi<=Delta. Comparing the
+Fourier symbols gives `||d||H3<=sqrt(6)||d||H3,multi<=3Delta`; the same
+comparison bounds the reference scalar's H3 norm by 3Ktheta(S).
+The reference is vertically independent, so
+
+```text
+W=||Pi d||H3<=3Delta<=nu/32,
+||U||H3 <=sqrt(8)A+3A rho Ktheta(S)<=4A,
+B<=4A+3Delta<=5A.
+```
+
+For 0<=sigma<=S, a=A-nu sigma>=A/2. With alpha=<u,v>,
+`alpha>=a-||d||2>=A/2-Delta>A/3`.
+Since ||v||2=||grad v||2=1 and -Delta v=v, projection gives BOTH
+`E>=alpha^2` and `Z>=alpha^2`. This proves every part of (203) on
+the full physical interval
+
+```text
+0<=t<=t(S)=-log(1-nu S/A)/nu.
+```
+
+In particular, take S=3/4 and retain (139), (148)--(150) for the
+four-mode refeeding seed. The same actual flow has parent power signs
+positive, negative, positive, and excess-stretching signs negative,
+positive, positive. Equation (204) pays its receiver stretching across
+all three observations and the intervening generated geometry.
+It does not infer self-stretching's sign from either of those sign words.
+
+For any prescribed finite N pattern cycles, take S=N P0 and retain
+the original pattern-tracking conditions. First choose the annular seed;
+then rho>0 small enough for (206) and the preceding transfer/stretching
+requirements; next choose finite A for the Reynolds and pattern bounds;
+finally choose epsilon>0 small enough for (206), stability and tracking.
+For the four-mode seed Y0=(259/2)epsilon^2. Every threshold is positive
+after its parents are fixed, so these choices are compatible. The same
+gamma and the same J pay throughout all N approximate pattern cycles.
+The required perturbation may be extremely small and the initial
+allowance very large; no practical numerical threshold is claimed.
+Only the first feed--return--feed word is certified; it is not asserted
+to repeat on every later turn.
+
+No estimate in this argument resets the clock, the full field or the
+reserve. On adjacent intervals (204) telescopes at their common actual
+endpoint. Equal pattern labels without that endpoint compatibility are
+insufficient. The existing costed-history composition interface applies
+to these actual witnesses with the retained stock.
+
+### Formal boundary and next physical obligation
+
+`EnergyCubeReceiverReserve` certifies eight theorems: nonnegativity,
+the energy-cube derivative, the receiver bound, dominant-parent payment,
+their combination, the explicit heat allowance comparison, interval
+payment and the actual whole-space energy-cube derivative. The last
+uses the imported unforced NSEvolution kinetic law. It is not a
+whole-space identification of the periodic receiver functional.
+
+The Sobolev estimates (201)--(202), heat-integral identification, regional
+hypotheses from actual periodic solutions, and cycle application are
+analytic. `receiver_history_payment.py` checks the lattice constants,
+norm-conversion polynomial, exact scalar identities and two complete
+Fourier fixtures with nonzero generated mean. Its fixtures are smooth
+initial data, not claimed points of the refeeding trajectory. The actual
+interval proof uses (123), not a sampled simulation or those fixtures.
+
+The next arbitrary-history obligation is to replace CW<=nu and the
+reference-dependent H3 envelope by a bound derived from the evolving
+geometric depletion and full original resources. The original reference
+is not constructed for arbitrary initial data. This step shows that the
+reserve survives actual internal replenishment in the controlled class;
+it does not establish that all possible repeated renewal is paid or
+exclude the imported forced construction.

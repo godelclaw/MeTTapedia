@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [receiver-history payment](labs/README.md#source-square-payment-through-an-actual-refeeding-history)
+now carries the same energy-cube reserve through the entire constructed
+feed--return--feed interval, including the generated mean. It also pays
+through any prescribed finite number of the constructed approximate pattern
+cycles after strengthening the original perturbation threshold. A quantitative
+H3 estimate controls the complete reserve derivative, and the allowance is
+fixed from the original data. Eight theorems in
+`MettapediaNS.EnergyCubeReceiverReserve` certify the scalar payment,
+interval composition and actual whole-space energy-cube derivative.
+The periodic Sobolev identification and cycle application remain analytic.
+The controlled neighborhood is essential; its replacement for arbitrary
+interacting flows remains open.
+
 The [source-square receiver test](labs/README.md#nonnegative-source-storage-and-an-energy-cube-repair)
 completes the signed heat correction to a globally nonnegative storage.
 The storage still fails its proposed universal payment: exact hidden-phase

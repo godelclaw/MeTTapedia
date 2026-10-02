@@ -1,3 +1,4 @@
+import MettapediaNS.EnergyCubeReceiverReserve
 import MettapediaNS.WholeSpaceParentFeedback
 import MettapediaNS.ShearFluctuationReserve
 import MettapediaNS.GeneratedMeanEnstrophy
@@ -1582,3 +1583,11 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_reserve_derivative
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_feedback_interval
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceParentFeedback.actual_initial_allowance
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.reserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.receiver_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.dominant_parent_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.receiver_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.heat_allowance_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.actual_reserve_derivative
