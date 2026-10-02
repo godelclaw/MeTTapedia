@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [signed-reaction calculation](labs/README.md#signed-reaction-renewal-and-gradient-correction)
+retains the complete pressure and diffusion in the remaining stretching
+reward. A positive gradient correction reverses the highest-derivative
+diffusion term and cancels one strain contraction. A universal bound by
+the original maximum fails: a family of smooth unforced data exceeds its
+initial global corrected maximum for every fixed coefficient. A second
+family isolates genuine pressure-driven creation of stretching, with zero initial stretching and
+vorticity gradient at the receiver. Lean certifies six scalar ingredients
+of the first family's whole-domain bound. Physical identification and
+positive-time evolution remain analytic; a full-datum renewal allowance
+is not refuted or established by these finite bursts.
+
 The [joint sampling law](labs/README.md#joint-history-change-of-measure-and-velocity-payment)
 keeps the metric loss and its sampling drift together. An exact change
 of control removes both at the cost of one bounded endpoint term,

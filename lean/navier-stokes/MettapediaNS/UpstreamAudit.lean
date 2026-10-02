@@ -6,6 +6,7 @@ import MettapediaNS.ReferenceStretchingReserve
 import MettapediaNS.GeometricCascadeLedger
 import MettapediaNS.WholeSpaceEnergyReturn
 import MettapediaNS.CellularCycleReserve
+import MettapediaNS.SignedReactionRenewal
 import NavierStokes.R3.HeatKernelCommutator
 import NavierStokes.ViscousPropagator
 import NavierStokes.PeriodicViscosityUniqueness
@@ -186,6 +187,12 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.optimal_sampling_drift
 #print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.sampling_control_shift
 #print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.sampling_cost_shift
+#print axioms MettapediaNS.SignedReactionRenewal.denominator_pos
+#print axioms MettapediaNS.SignedReactionRenewal.gradientShape_nonneg
+#print axioms MettapediaNS.SignedReactionRenewal.gradientShape_le_maximumGap
+#print axioms MettapediaNS.SignedReactionRenewal.correctedRate_le_amplitude
+#print axioms MettapediaNS.SignedReactionRenewal.correctedRate_at_origin
+#print axioms MettapediaNS.SignedReactionRenewal.parameters_with_positive_initial_rate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_lower_certificate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_upper_certificate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_bounds

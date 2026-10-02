@@ -26658,3 +26658,222 @@ change of measure, energy-based occupation estimate and positive-time
 realization are analytic. The remaining continuation obligation is the
 signed-stretching exponential moment in (363), or the existing signed
 renewal budget; neither has been bounded for arbitrary initial data.
+
+## Signed-reaction renewal and gradient correction
+
+`signed_reaction_renewal.py` follows the ordinary reaction left by the
+joint change of measure. The bounded test is a derivative correction:
+can adding a nonnegative multiple of the vorticity-gradient cost produce
+a rate whose original maximum bounds every later smooth prefix? A second
+test asks whether the complete pressure and diffusion source in that
+rate has a favorable sign. Both assertions below are refuted for every
+fixed nonnegative coefficient. An additional finite allowance from the
+full original datum is retained as an open possibility.
+
+If the proposed maximum bound held, then v<=q_kappa would bound the
+exponential moment in (363) by `exp[H max(0,sup_x q_kappa(0,x))]` on every
+available prefix up to H. This is the intended continuation consumer
+for the bounded test; the counterexample prevents that particular use.
+
+The calculation reuses the material stretching-vector identity already
+certified in `LocalMaterialStretching`. Related directional dynamics
+appear in [Galanti--Gibbon--Heritage, *Vorticity alignment results for the
+three-dimensional Euler and Navier--Stokes equations*, Section 3](https://arxiv.org/abs/chao-dyn/9709003).
+That work retains pressure and viscous direction derivatives; alignment
+by itself does not supply their missing history bound. The identities
+below apply a fixed positive regularization to the actual scalar reward,
+including its negative gradient term. They do not assert a new classical
+stretching-vector identity.
+
+### The full reaction has a diffusion-renewal term
+
+Work on any available smooth unforced periodic prefix, or on a smooth
+whole-space prefix where the displayed derivatives exist. Let
+
+```text
+D=partial_t+u.grad-nu Delta,  B=grad u,  P=Hess p,
+omega=curl u,  zeta=B omega,  g=omega.zeta,
+J=sum_j |partial_j omega|^2,  H=sum_jk |partial_j partial_k omega|^2,
+s=|omega|^2+delta,  delta>0 fixed from the ORIGINAL datum,
+v=2(g-nu J)/s,  L_s=D-2nu grad(log s).grad.
+```
+
+The pressure is always the actual NS pressure. Write
+
+```text
+A=sum_j (partial_j omega).((partial_j B)omega),
+T=sum_j (partial_j omega).B(partial_j omega),
+C=sum_jk B_kj (partial_j omega).(partial_k omega).
+```
+
+In these contractions B and its derivative may equivalently be replaced
+by their symmetric parts. The spin derivative cancels in A because
+omega is the actual curl, rather than an independent transported vector.
+The complete laws are
+
+```text
+Dg=|zeta|^2-omega.P omega-2nu T-4nu A,
+DJ=2(A+T-C)-2nu H,   Ds=v s,
+
+L_s v+v^2 = [2(|zeta|^2-omega.P omega)
+                -4nu(3A+2T-C)+4nu^2 H]/s.              (368)
+```
+
+The last square is positive. This does not mean that viscosity creates
+vorticity: v already subtracts its gradient loss, and removing some of
+that loss can increase v. For example the exact shear
+`u=(2 exp(-nu t) sin y,0,0)` has no stretching anywhere. With nu=1,
+delta=4, at t=0,y=pi/2 its v is -2 and its time derivative is 4.
+The reward is becoming less negative. Treating every positive derivative
+of this reward as geometric amplification would misidentify this example.
+
+### What the derivative correction pays, and what remains
+
+For fixed kappa>=0, set
+
+```text
+q_kappa=2(g+kappa nu J)/s >= v.
+
+L_s q_kappa+v q_kappa
+ = [2(|zeta|^2-omega.P omega)
+      +4nu((kappa-2)A+(kappa-1)T-kappa C)
+      -4kappa nu^2 H]/s.                               (369)
+```
+
+The same identity also holds for kappa=-1, when q_kappa=v.
+At kappa=1 the T contraction cancels, leaving
+
+```text
+L_s q_1+v q_1
+ = [2(|zeta|^2-omega.P omega)-4nu(A+C)-4nu^2 H]/s.        (370)
+```
+
+This supplies a favorable highest-derivative square without dropping
+pressure or a transport commutator. It does not sign the whole source.
+The operator L_s is a quotient identity, not a newly paid sampling law.
+In particular, the full control cost in (363)--(365) cannot be discarded
+when trying to use (370) along controlled histories.
+
+### An actual global-maximum test for every coefficient
+
+Take a>0 and the smooth divergence-free periodic datum
+
+```text
+u0=a(-sin x cos z-2 sin y, 2 sin x, cos x sin z),
+delta=16a^2=||omega0||_infinity^2,
+p0=a^2(cos 2x+cos 2z)/4-4a^2 cos x cos y.               (371)
+```
+
+The pressure has zero mean and satisfies `-Delta p0=tr(B0^2)`.
+Set X=cos x,Y=cos y,Z=cos z. Then
+
+```text
+d=(1-X^2)(1-Z^2)+(X+Y)^2+4,
+j=2+Z^2-Y^2-2X^2 Z^2,
+h=d-2XZ(X+Y)^2,
+s0=4a^2 d,  J0=4a^2 j,
+q_kappa(0)=[2a XZ(X+Y)^2+2kappa nu j]/d.
+```
+
+On the entire cube `X^2,Y^2,Z^2<=1`, one has d>0 and `0<=j<=h`.
+There are two explicit nonnegative certificates for h-j. With
+`w=(X+Y)^2` and `t=(1-X^2)(1-Z^2)`, they are
+
+```text
+w<=1: h-j=t+(1-w)+(1-Z^2)+Y^2+2X^2 Z^2+2(1-XZ)w,
+w>=1: h-j=3t+(X-Y)^2+(X-Z)^2+(2-X^2-Y^2)+2(1-XZ)(w-1).
+```
+
+Consequently, if `a>=2kappa nu`, the GLOBAL initial maximum of q_kappa
+is a, attained at the origin. The complete unforced tangent
+`u_t=nu Delta u-Bu-grad p` gives, at that same point,
+
+```text
+q_kappa(0,0)=a,
+partial_t q_kappa(0,0)=a(a-3nu), independently of kappa. (372)
+```
+
+For every prescribed nu>0 and kappa>=0, choose
+`a=(2kappa+4)nu`. Smooth local NS existence and the strict derivative in
+(372) give a positive interval on which
+`q_kappa(t,0)>sup_x q_kappa(0,x)`.
+This refutes the proposed original-maximum bound on actual unforced
+histories, not only on freely assigned coefficient jets.
+The quantifiers are `for every fixed kappa, there exists a datum`.
+They do not refute choosing a different coefficient from each full datum.
+
+There is an important interpretation limit: at the origin the ordinary
+longitudinal strain `alpha=g/|omega|^2` has
+`alpha(0)=a, alpha_t(0)=-2nu a`. Thus its initial rate is decreasing.
+The increasing ratio in (372) includes activation of the fixed
+regularizer as vorticity grows. It is a valid obstruction for q_kappa,
+but not an example of increasing alpha or endlessly renewed stretching.
+An initial allowance beyond the original maximum remains possible.
+
+`MettapediaNS.SignedReactionRenewal` certifies six scalar results:
+positivity of d, nonnegativity of j, j<=h, the whole-domain upper bound,
+its attained value, and admissible parameters with positive stated rate.
+Those Lean statements do not identify the polynomial with an NS field
+or construct its subsequent evolution. Those steps remain analytic.
+
+### A separate test creates genuine longitudinal strain
+
+To distinguish physical pressure renewal from that normalization effect,
+use the two opposing cellular strains in
+
+```text
+u0=a(-sin x cos z-2 sin y,
+      2 sin x+sin y cos z,
+      (cos x-cos y) sin z),
+delta=16a^2=||omega0||_infinity^2,
+p0=a^2(cos 2x+cos 2y+2cos 2z)/4
+      -a^2 cos x cos y(9/2+cos 2z/6).                  (373)
+```
+
+The canonical pressure again satisfies its complete Poisson equation.
+The initial vorticity maximum follows from
+
+```text
+|omega0|^2/(4a^2)=(2-X^2-Y^2)(1-Z^2)+(X+Y)^2,
+4-|omega0|^2/(4a^2)=2(1-XY)+(2-X^2-Y^2)Z^2>=0.
+```
+
+At the origin, u0=zeta0=grad omega0=0, while omega0=4a e_z and
+`P_zz=-4a^2/3`. The complete NS tangent gives
+
+```text
+alpha(0,0)=q_kappa(0,0)=0,
+alpha_t(0,0)=(q_kappa)_t(0,0)=4a^2/3>0,
+partial_t |omega|^2(0,0)=-32nu a^2,
+(L_s q_kappa+v q_kappa)(0,0)=4a^2/3-3kappa nu^2.
+```
+
+Thus longitudinal strain is genuinely created by the fluid's internal
+pressure even while its vorticity initially decays there. For any fixed
+kappa the last expression is positive at large enough a; the proposed
+nonpositive source in (369), even just where q_kappa>=0, is false.
+Local smoothness yields a positive interval of positive alpha and
+q_kappa at this receiver. It neither repeats the construction along
+one history nor supplies an arbitrarily long renewal mechanism.
+
+### Checks and remaining payment
+
+The checker uses independently differentiated quotient, time and
+spatial jets, rather than substituting only the proposed evolution law.
+It keeps the canonical pressure, every Fourier convolution output and
+the curl of the full NS velocity tangent. Fixtures include (371),
+(373), the exact shear and both inherited parent velocities from (362).
+The inherited tests use delta=10^12 as a coefficient check; this value
+is not asserted to dominate the original finite-frequency release's
+vorticity. Both explicit initial-data families use their true original
+maximum. No frame or parent history is restarted.
+
+Run `python3 -O labs/signed_reaction_renewal.py`. The scalar certificates
+are Lean-checked, and the symbolic and exact Fourier checks pass. General
+PDE identities, local existence and the positive-time implications are
+analytic. This step pays no arbitrary-data continuation estimate.
+It identifies the pressure and mixed-gradient work that a history
+reserve must accommodate after the favorable correction in (370),
+and rules out that correction's proposed original-maximum principle. The full
+initial datum can still pay both finite bursts; control of repeated
+renewal, using that same datum throughout, remains open.
