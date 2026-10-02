@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [metric-loss Bellman estimate](labs/README.md#metric-loss-bellman-payment-and-the-actual-sampling-density)
+pays the transported-metric part of directional conversion along every
+available smooth unforced history, using an original-data regularizer.
+It leaves a quarter of the sampling-control penalty for the ordinary
+stretching reaction. An exact density transformation also bounds the
+uncontrolled receiver by a killed incompressible diffusion; the whole-space
+estimate reuses Hess-Childs--Raquepas--Rowan's concentration theorem.
+The remaining stretching and terminal concentration are not paid by these
+results. The physical and stochastic arguments are analytic, supported
+by exact fixtures; no new Lean theorem or arbitrary-data bound is claimed.
+
 The [vorticity-direction payment](labs/README.md#vorticity-direction-payment-and-the-concentration-obstruction)
 reuses Qian's classical vorticity--energy reserve, retaining its geometric
 diffusion and nonnegative strain remainder. It pays spatial variation of

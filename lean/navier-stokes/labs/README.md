@@ -26073,7 +26073,10 @@ identities. The second line is the time-dependent version of (346a);
 its extra density drift is retained. The density is generally compressible
 even though u is incompressible. Its mass remains one, so
 `R_(delta,psi)(0)<=||rho_delta(0)||_infinity`, an initial-data resource.
-There is no uniform bound here on its spatial derivatives or concentration.
+There is no uniform bound here on its spatial derivatives. The following
+[metric-loss calculation](#metric-loss-bellman-payment-and-the-actual-sampling-density)
+bounds its concentration at positive time separation from the terminal
+observation; it does not give a bound uniform as that separation vanishes.
 Nor has `V_delta k_delta` been dominated by the paid costs. The two signed
 terms on the right and that domination are the precise remaining
 obligations for this receiver. Taking terminal densities toward point
@@ -26150,3 +26153,267 @@ forced bill, directional frame expansion, compact-core vector potential,
 actual initial curl tangent and concentration exponents. General PDE
 identities, integral estimates and positive-time realization here are
 analytic, not newly Lean-certified. No Lean declarations or axioms change.
+
+## Metric-loss Bellman payment and the actual sampling density
+
+`metric_loss_bellman.py` checks two exact transformations of the physical
+conversion equation (347). They give an analytic Bellman payment for its
+nonnegative transported-metric loss, and a concentration estimate for its
+uncontrolled backward receiver. They do not pay the remaining ordinary
+stretching or prove arbitrary-data continuation.
+
+### Actual histories and an original-data choice
+
+Fix positive viscosity and a smooth unforced NS solution on an available
+compact time interval, on the fixed periodic domain or on R3. In the latter
+case assume the bounded spatial derivatives needed for the classical
+comparison and stochastic arguments on this interval. These are local
+smooth-prefix hypotheses, not bounds assumed uniformly up to an unknown
+singular time. Every estimate below has constants independent of the sizes
+of those future derivatives. Start the actual transported tensor at the
+original initial time:
+
+```text
+D=partial_t+u.grad-nu Delta,  B=grad u,
+DM=BM+MB^T,  M(0)=I,  Q=M^(-1),
+e=omega.Q omega,
+W=sum_j |partial_j omega-(partial_j M)Q omega|_Q^2 >=0,
+De=-2nu W.
+```
+
+Positive definiteness of M follows on each such prefix from its linear
+matrix evolution. The metric identity is the earlier physical derivation
+whose algebra is certified in `TransportedFrameMetric.production_eq`;
+the complete physical and stochastic construction here remains analytic.
+
+Write `Omega0=||omega(0)||_infinity` and choose ONCE
+`delta>0`, `delta>=Omega0^2`. The choice uses the original datum, not its
+future evolution. Put
+
+```text
+h=e+delta,  a=2nu W/h >=0,
+w=u-2nu grad log h,
+L=partial_t+w.grad-nu Delta.
+Dh=-a h,  delta<=h<=delta+Omega0^2<=2delta.                  (350)
+```
+
+The lower bound uses e>=0; the upper bound is the scalar maximum principle.
+Let b be the passive scalar with `Db=0`, `b(0)=h(0)`. Comparison gives
+`h<=b<=2delta`. Hence the original-history ratio g satisfies
+
+```text
+g=b/h,  1<=g<=2,  g(0)=1,  Lg=a g.
+D(h f)=h(Lf-a f)  for every smooth scalar f.                (351)
+```
+
+The passive scalar and M retain their original initial data at every
+later join. No new fluid is chosen and no parent is removed in (350)--(351).
+
+### A finite Bellman allowance with control cost left over
+
+Set `F=2g-1` and `Phi=(3/4)log F`. Direct differentiation gives
+
+```text
+1<=F<=3,  Phi(0)=0,  0<=Phi<=(3/4)log 3,
+LF-(4/3)a F=(2/3)a(2-g)>=0,
+LPhi-(4nu/3)|grad Phi|^2-a=a(2-g)/(2F)>=0.                 (352)
+```
+
+This is an explicit supersolution, rather than a value function defined
+by an unbounded supremum over unknown solutions. For a fixed endpoint
+`(t,x)`, use the auxiliary backward sampling process
+
+```text
+dY_s=[-w(t-s,Y_s)+beta_s]ds+sqrt(2nu)dB_s,  Y_0=x.
+```
+
+For bounded adapted controls beta on this fixed smooth prefix, Ito's
+formula and completion of a square yield, for `0<=s0<=t`,
+
+```text
+E[Phi(s0,Y_(t-s0))
+   +integral_0^(t-s0) (a(t-s,Y_s)-3|beta_s|^2/(16nu)) ds]
+ <=Phi(t,x)<=(3/4)log 3.                                  (353)
+```
+
+Indeed the drift of `Phi(t-s,Y_s)` is
+`-LPhi+beta.grad Phi<=-a+3|beta|^2/(16nu)`. Bounded coefficients
+on the fixed prefix justify the stochastic integral, with spatial
+localization if needed. This proves the stated inequality for the
+specified controls; no assertion about arbitrary singular controls is
+needed. Conditional versions of (353) telescope along compatible
+subintervals, retaining the intermediate Phi. The rightmost constant is
+used for the complete history, not assigned afresh to each subinterval.
+
+Equivalently, with beta zero, F is a supersolution for the positive
+reaction `(4/3)a`, so Feynman--Kac comparison gives
+`E exp[(4/3) integral_0^t a(t-s,Y_s) ds]<=F(t,x)<=3`.
+The stochastic control square completion is the classical entropy-control
+mechanism; see Lehec, [Representation formula for the entropy and functional
+inequalities](https://arxiv.org/abs/1006.3028), Section 2.4. Equations
+(350)--(353) identify its specific physical coefficients here. The control
+changes how histories are sampled; it is not an external force on NS.
+
+For clarity about the remaining consumer, let
+
+```text
+k=(|omega|^2+delta)/h,  G=log k,
+v=(2 omega.B omega-2nu |grad omega|^2)/(|omega|^2+delta).
+Lk=(a+v)k,  LG=a+v+nu |grad G|^2,  G(0)=0.
+```
+
+The usual verification on a fixed smooth prefix represents G as the
+supremum of `E integral(a+v-|beta|^2/(4nu))`. Equality follows from the
+bounded feedback `beta=2nu grad G` under the stated prefix hypotheses;
+the upper inequality for each competing control follows by Ito's
+formula. Splitting its penalty ONCE in (353) gives
+
+```text
+G(t,x)<=(3/4)log 3
+ +sup_beta E integral_0^t [v(t-s,Y_s)-|beta_s|^2/(16nu)] ds. (354)
+```
+
+Thus the entire metric-loss reaction a is paid while leaving one quarter
+of the original control penalty for v. This is not a payment for v.
+Removing a instead by the product gauge recovers
+`D(hk)=v(hk)` with `hk=|omega|^2+delta`: precisely the ordinary
+vorticity equation. This agrees with the existing
+`TransportedFrameDirection.gauge_barrier_iff`; the gauge alone does not
+improve that physical equation. A bound on the remaining supremum from
+the full datum would be sufficient: `|omega|^2+delta<=2delta exp G`.
+Such a bound on every prefix up to a prescribed horizon is still open.
+
+### The receiver is a bounded weight times a killed fluid diffusion
+
+For the actual UNCONTROLLED adjoint in (347a), put `psi=h phi`.
+Its full equation transforms exactly as follows:
+
+```text
+psi_t+div(w psi)+nu Delta psi=0
+  <=> phi_t+u.grad phi+nu Delta phi=a phi.                  (355)
+```
+
+After reversing time, phi is a positive scalar density transported by
+the incompressible drift `-u(t-s)`, diffused with viscosity nu, and
+killed at the nonnegative rate a. Dropping that killing gives an upper
+bound. If psi has a nonnegative terminal value of mass one, then phi's
+terminal mass is at most `1/delta`; multiplication by `h<=2delta`
+costs at most a factor two. In kernel form, the receiver from a terminal
+point x is `h(s,y)/h(t,x)` times this killed incompressible kernel.
+This is a comparison with the actual advected kernel, not a pointwise
+comparison with a Gaussian centered at x.
+
+For R3, Hess-Childs, Raquepas and Rowan,
+[Divergence-free drifts decrease concentration](https://arxiv.org/abs/2503.16723),
+prove a sharp concentration comparison for bounded measurable,
+time-dependent divergence-free drifts. Their Theorem 1.7 and Corollary
+1.10 in arXiv v1 apply in particular to a point mass and give the heat
+kernel's L-infinity upper bound. Applying that result to the reversed
+physical drift, rescaling viscosity, and then integrating over terminal
+data gives
+
+```text
+||psi(s)||_infinity <=2[4pi nu(t-s)]^(-3/2),  0<=s<t.       (356)
+```
+
+The drift may be extended by zero outside the finite interval to fit
+the cited theorem. The estimate is independent of its amplitude.
+The same paper's Theorem 1.14 shows that its sharp concentration comparison
+fails on the torus. We do not import that claim into the periodic case.
+On a fixed torus, the weaker bound
+`||psi(s)||_infinity<=2 C_T[1+(nu(t-s))^(-3/2)]` suffices here.
+It follows from the torus Nash inequality, the passive-scalar energy
+identity `d||f||_2^2/ds=-2nu||grad f||_2^2`, and duality on two consecutive
+half-intervals. For short times the Nash inequality gives the L1-to-L2
+factor `(nu s)^(-3/4)`; the reversed divergence-free adjoint supplies
+the L2-to-L-infinity factor. L-infinity contraction extends the estimate
+to long times. All constants depend only on the fixed torus.
+
+These are bounds for beta=0. Arbitrary sampling controls need not be
+incompressible, so (356) is not asserted for the controlled laws in (354).
+Nor does (356) bound spatial derivatives of psi.
+
+One direct connection to the previous physical reserve is now available.
+Under its R3 integrability hypotheses, for a fixed delay `0<epsilon<t`,
+
+```text
+integral_0^(t-epsilon) <psi(s),nu A_delta+J_delta> ds
+ <=2(4pi nu epsilon)^(-3/2) R0.                            (357)
+```
+
+This follows by applying (356) to its nonnegative paid density and using
+the global reserve. The periodic counterpart uses the torus constant
+above. It controls the receiver's observation of the earlier history;
+the coefficient diverges as epsilon tends to zero. It neither bounds
+the two derivative-dependent terms in (347a) nor dominates v by the
+paid geometric density. Terminal concentration and the remaining signed
+strain are concrete unpaid obligations.
+
+The same density estimate also bounds an earlier portion of the ordinary
+stretching directly from kinetic energy, without requiring initial
+vorticity in L1. Let `E0=||u0||_2^2`. Since psi has mass one,
+`||psi(s)||_2<=sqrt(2)[4pi nu(t-s)]^(-3/4)`. Using
+`v_+<=2|grad u|` and `integral_0^t ||grad u||_2^2<=E0/(2nu)` gives
+
+```text
+integral_0^(t-epsilon) <psi(s),v_+(s)> ds
+ <=4(4pi nu)^(-3/4) sqrt(E0/(2nu))
+                  sqrt(epsilon^(-1/2)-t^(-1/2)).           (357a)
+```
+
+Here Cauchy--Schwarz in time integrates `(t-s)^(-3/2)` exactly.
+This bound diverges as epsilon^(-1/4). It controls a first moment under
+the uncontrolled sampling law, not the controlled supremum in (354)
+or an exponential moment of the full stretching. Thus even this direct
+energy payment leaves two explicit tasks: the last time interval and
+the cost of changing the sampling law.
+
+### Physical tests and the forcing distinction
+
+The exact unforced periodic shear `u=(A exp(-nu t)sin y,0,0)` has
+`e=|omega|^2=A^2 exp(-2nu t)cos^2 y` in its original frame. Writing
+`q=exp(-2nu t)` and `c=cos y`, the passive scalar is
+
+```text
+h=delta+A^2 q c^2,
+b=delta+(A^2/2)[1+q^2(2c^2-1)],
+b-h=(A^2/2)(1-q)[1-q(2c^2-1)]>=0,
+a=2nu A^2 q(1-c^2)/h,  v=-a,  k=1.                       (358)
+```
+
+The checker differentiates this complete history, including (352),
+independently. Metric loss is genuinely present, but its cancellation
+with ordinary vorticity diffusion leaves the full conversion constant.
+
+The actual periodic initial datum used earlier,
+`u0=(-a0 sin x cos z-b0 sin y,b0 sin x,a0 cos x sin z)`, has
+at the origin, in its original frame,
+
+```text
+metric-loss rate a=0,
+ordinary reaction v=8a0 b0^2/(4b0^2+delta)>0               (359)
+```
+
+for positive a0,b0. Its whole-domain vorticity satisfies
+`||omega0||_infinity^2<=4(a0^2+b0^2)`. Choosing delta equal to that
+upper bound preserves (359), giving `v=2a0 b0^2/(a0^2+2b0^2)>0`.
+The calculation uses the curl of the actual NS initial tangent, including
+transport and viscosity, not a prescribed time evolution of u0. This
+rules out pointwise absorption `v<=C a`, even with the required datum
+choice. It does not rule out a full-history allowance for v.
+
+With external force f the metric identity instead reads
+`Dh=-2nu W+2 omega.Q curl f`. The extra source spoils the unforced
+comparison (350) unless it is separately controlled; it also remains
+in the quotient and density transformations. No payment of forced
+blowup histories follows. Internally generated motion is already part
+of u and B in these equations; its ordinary stretching remains in v.
+
+Run `python3 -O labs/metric_loss_bellman.py`. Independent spatial/time
+jets check both gauges, the adjoint transformation and the retained
+reaction. Exact checks also cover the control square, the penalty split,
+the complete shear history and the physical initial obstruction.
+Comparison, Ito verification, kernel estimates and the continuation
+implication here are analytic, not new Lean-certified results. The
+general arbitrary-history bound remains open; no Lean declaration or
+axiom changes.
