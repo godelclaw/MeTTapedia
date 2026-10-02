@@ -27100,3 +27100,240 @@ Its source is constrained by actual unforced NS; it cannot be replaced
 by an arbitrary control or presumed nonpositive from its zero initial
 impulse. The favorable correction in (370) and the covariance reserve
 (338) remain available, with their unproved conversions explicit.
+
+## Pressure-impulse flux and the receiver's entropy
+
+`impulse_receiver_flux.py` follows the exact remainder (379). It identifies
+the spatial flux that a magnitude-only payment would omit, retains that
+flux in a controlled density balance, and tests the proposed payment on
+an actual unforced history. The general PDE, stochastic and interval
+arguments below are analytic, with exact algebra and initial-jet checks.
+No new Lean declarations or global regularity claim are made.
+
+### The complete directional flux
+
+Keep the SAME original passive H, pressure impulse I=H-u, positive
+original-data delta, and s=|omega|^2+delta from (374)--(379). Define
+
+```text
+n=omega/sqrt(s),       W=grad omega/sqrt(s),
+d=I.n,                R=Id-2n tensor n,
+a=2d n,
+r_I=-2n.(grad I)n-2nu|W|^2.
+```
+
+Here |n|<=1 and tr W=0, since div omega=0. The softened direction n
+is generally NOT divergence free. In particular,
+
+```text
+grad n=W-n tensor(W^T n),
+div n=-n.Wn,
+r_I=-div a+2(RI).Wn-2nu|W|^2.                         (380)
+```
+
+Thus integration by parts changes the derivative observation into a
+spatial flux and a directional gradient cost; it does not erase the
+flux. R is a contraction, and is an actual reflection only when |n|=1.
+All quantities remain on the same actual fluid history.
+
+For any smooth real test function psi, set
+
+```text
+V=|n|^2 (|RI|^2+16d^2)/nu.
+```
+
+Completing the full spatial squares gives the POINTWISE identity
+
+```text
+2r_I psi^2-nu|grad psi|^2+2div(a psi^2)
+ =V psi^2
+  -4nu|psi W-psi (RI tensor n)/(2nu)|^2
+  -nu|grad psi-4psi d n/nu|^2.                         (381)
+```
+
+The matrix norm is Frobenius. On the torus the divergence integrates
+to zero. On a subregion its boundary contribution is retained with
+outward normal; it cannot be dropped when joining spatial components.
+Whole-space integration requires the stated terms to be integrable and
+the boundary flux to vanish, for example with compactly supported psi.
+
+Writing z=|n|^2, its magnitude bound has an exact nonnegative witness:
+
+```text
+17|I|^2-nu V
+ =(1-z)(4z^2+16z+17)|I|^2
+    +z(12+4z)(z|I|^2-d^2) >=0.
+```
+
+The last factor is a Gram determinant. Consequently V<=17|I|^2/nu.
+The unsimplified V keeps directional information: when I.n=0 it is
+|n|^2|I|^2/nu. This observation alone does not bound its future sampling.
+
+### Actual controlled sampling and its density cost
+
+For a fixed available smooth periodic prefix and endpoint time t, let
+rho(r,y)>0 be the probability density of backward sampling with drift
+`-u(t-r,y)+gamma(r,y)`, where gamma is a smooth Markov sampling control.
+Use normalized torus volume and a smooth positive initial density rho0.
+The fluid itself remains unforced. The density satisfies
+
+```text
+partial_r rho=nu Delta rho-div[(-u+gamma)rho],
+psi=sqrt(rho),          Ent(r)=integral rho log rho,
+Ent'=-4nu integral|grad psi|^2
+                         +2integral psi gamma.grad psi.
+```
+
+Incompressibility cancels the actual velocity from this entropy rate.
+It does not cancel the sampling control or make rho spatially uniform.
+Adding half this rate to (381) and completing one further square gives
+
+```text
+integral rho[2r_I-|gamma|^2/(4nu)]+Ent'/2
+ =integral rho V
+  -4nu integral|psi W-psi (RI tensor n)/(2nu)|^2
+  -nu integral|grad psi-4psi d n/nu|^2
+  -1/(4nu) integral|psi gamma-2nu grad psi|^2.           (382)
+```
+
+The fluid fields are evaluated at (t-r,y), while rho and gamma use
+(r,y). The identity retains their joint dependence. It does not replace
+the receiver by an independent density or replace actual pressure by a
+free fluid control. The spatial identity itself also holds in a forced
+flow, but its full physical reaction includes the additional curl-force
+term recorded after (379). Thus this identity alone does not distinguish
+forced and unforced renewal. Integrating for 0<=r<=t and dropping only
+squares gives
+
+```text
+E integral_0^t [2r_I-|gamma|^2/(4nu)]
+ <=[Ent(0)-Ent(t)]/2+E integral_0^t V.                 (383)
+```
+
+On the normalized torus Ent(t)>=0. For compatible time segments the
+entropy endpoints telescope, as do the potential endpoints in (377).
+The original I and the incoming probability density must both be
+retained. Their scalar costs alone do not authorize a new composition.
+
+For example, if rho<=L on the whole sampling interval, the existing
+passive and kinetic energy laws give ||I||_2^2<=4E0,
+E0=||u0||_2^2. Then (383) is at most
+`Ent(0)/2+68 L E0 t/nu`. This is a CONDITIONAL density bound; L is not
+asserted to be controlled from arbitrary original fluid data.
+For uncontrolled uniform sampling, rho=1 stays uniform and the sharper
+direct completion of (380) gives
+`integral_0^t integral 2r_I<=4E0 t/nu`. This pays a spatial average,
+not its exponential moment or a pointwise continuation criterion.
+
+Two obligations therefore remain in (383): control of the sampled V,
+and a bound uniform as the initial receiver approaches a point. A
+Dirac initial density has no finite Ent(0). Smooth densities of width
+ell generally have entropy of order 3log(1/ell). This calculation does
+not supply a uniform endpoint bound as ell tends to zero, even if the
+bulk integral is finite. The analogous whole-space identity retains
+both entropy endpoints when justified; there is no blanket nonnegative
+lower bound for differential entropy on R3.
+
+There is an exact relative-entropy alternative. Let q be the uncontrolled
+physical sampling density with the SAME initial density and actual drift
+-u, and put `h=grad log(rho/q)`, `k=grad log q`. Then
+`Ent_rel=integral rho log(rho/q)` starts at zero and is nonnegative.
+Its rate is `-nu integral rho|h|^2+integral rho gamma.h`. The full identity
+becomes
+
+```text
+integral rho[2r_I-|gamma|^2/(4nu)]+Ent_rel'/2
+ =integral rho[V+4d n.k]
+  -4nu integral rho|W-(RI tensor n)/(2nu)|^2
+  -nu/4 integral rho|h-8d n/nu|^2
+  -1/(4nu) integral rho|gamma-nu h|^2.                 (383a)
+```
+
+Thus comparison with the physical kernel removes the common initial
+entropy, but retains its score through `4(I.n)n.grad log q`. It does
+not remove the concentrating receiver for free. Both laws use the same
+fluid, and q is independent of the sampling control, not of u.
+The identity is proved here for smooth positive initial densities; a
+point-receiver conclusion needs uniform control of the complete right
+side as those densities concentrate. Neither that control nor the
+required passage is asserted. This identifies an alternative to paying
+an infinite absolute-entropy endpoint, without hiding its replacement cost.
+
+### Zero impulse at the receiver can coexist with positive stretching
+
+Use the actual periodic pressure-start datum (373) with nu=1, a=4,
+delta=256. It is odd under complete spatial inversion. Uniqueness of
+the smooth NS solution preserves that symmetry, as does the original
+passive equation. Consequently, throughout their common smooth interval,
+
+```text
+u(t,0)=H(t,0)=I(t,0)=0,
+grad omega(t,0)=0,
+a(t,0)=0,              V(t,0)=0,
+r_I(t,0)=-div a(t,0)=(64/3)t+O(t^2)>0.               (384)
+```
+
+The vector flux vanishes at the centre, but its divergence does not.
+This rules out `r_I<=C|I|^2/nu` there for any finite C, even with C
+chosen from the full datum, and also rules out adding a nonnegative
+multiple of |grad omega|^2/s to that right side. It does not rule out a
+startup allowance, a spatially resolved reserve, or a history payment.
+
+The actual stochastic histories give a stronger test than the pointwise
+derivative. Let
+
+```text
+F(t,x)=E_(P_u from(t,x)) exp[2 integral_0^t r_I],
+G_C(t,x)=E_(P_u from(t,x)) exp[(C/nu) integral_0^t |I|^2],
+C>=0 fixed.
+```
+
+On the smooth periodic prefix these are classical Feynman--Kac solutions
+`DF=2r_I F`, `DG_C=(C|I|^2/nu)G_C`, both initially one. The complete
+initial jets at the centre give
+
+```text
+r_I(0,0)=0,       partial_t r_I(0,0)=64/3,
+Delta r_I(0,0)=-3,
+log F(t,0)=(55/3)t^2+O(t^3),
+log G_C(t,0)=(11008 C/9)t^4+O_C(t^5).                (385)
+```
+
+The negative Laplacian contribution is included: Brownian sampling is
+not frozen at the symmetry centre. For the second expansion, I(0)=0,
+I_t(0)=grad p0, grad p0(0)=0, and the actual pressure Hessian is
+`P0=diag(176/3,176/3,-64/3)`. Thus G_C's first three time derivatives
+at the centre vanish, and its fourth is `4C|P0|^2`; taking log does
+not change the displayed leading coefficient. Local smoothness gives
+the stated remainders for each fixed C.
+
+For every finite C, F(t,0)>G_C(t,0) for all sufficiently small positive
+t. Therefore paying the remaining exponential moment solely from this
+sampled impulse-magnitude potential fails, even when its coefficient
+is selected from the original datum. The finite full-datum allowance
+K in (379) remains open: these short bursts can be paid by an additional
+initial reserve. Neither indefinite renewal nor blowup is constructed.
+
+### Verification and the next physical obligation
+
+The checker verifies the general flux identity using tr W=0 while
+retaining div n, both spatial squares, and the complete entropy/control
+square, including the relative-entropy kernel-score term. It independently
+computes the physical and Feynman--Kac initial rates on both previous
+datum families and the full original simple and
+resonant carriers. Actual canonical pressure and its time derivative,
+the original passive parent, and the changing velocity drift are kept.
+
+A two-jet polynomial is also used as a nonzero-impulse spatial identity
+test. It is explicitly a kinematic probe, not a claimed solution at its
+evaluation parameter. Odd symmetry of the actual family uses PDE
+uniqueness; finite jet checks alone do not prove symmetry for all time.
+The exact all-time decaying shear has I=0 and retains only its favorable
+vorticity diffusion.
+
+Run `python3 -O labs/impulse_receiver_flux.py`. No Lean declarations
+change. The positive identity gives a concrete receiver-concentration
+obligation for the pressure-impulse history. To close (379), its density
+and orientation costs must be paid uniformly for point receivers from
+the full original fluid; neither zero initial impulse nor a magnitude
+summary at a receiver provides that payment.

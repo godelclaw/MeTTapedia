@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-impulse receiver calculation](labs/README.md#pressure-impulse-flux-and-the-receivers-entropy)
+retains the exact spatial flux of the remaining stretching. Its bulk
+derivative terms combine with diffusion into squares; a controlled
+receiver retains an additional entropy cost and an orientation-weighted
+impulse magnitude. An actual unforced history defeats paying its
+remaining exponential moment solely from sampled impulse magnitude:
+the former starts at order t^2, the latter at order t^4. Point-receiver
+concentration and the full-datum allowance remain open. These are
+analytic identities and interval arguments with exact checks; no new
+Lean declarations are added.
+
 The [passive-parent Bellman payment](labs/README.md#passive-parent-gradient-payment-and-the-pressure-impulse-remainder)
 pays the gradient of the original velocity transported passively along
 the actual fluid, including its sampling-control cost. Its allowance
