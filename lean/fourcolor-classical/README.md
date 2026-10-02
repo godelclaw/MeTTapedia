@@ -1,5 +1,19 @@
 # Classical Four Colour and compositional reconstruction
 
+The [second side of the shared fan](MettapediaFourColor/SecondFanResidual.lean)
+now has an exact geometric classification. At a flat degree-seven second
+free centre, either a new high neighbour occurs within radius three, or
+there are precisely one or two degree-five neighbours. The original marked
+five is retained. In the two-five branch, all other neighbours have degree
+six, exactly one outer tip has degree five, and no extra source-rule match
+contributes. The single-five branch consumes the same explicit D3009 repair
+contract below. `lake build kernelSecondFan` checks the classification and
+its six-root audit; see the
+[receipt](../../tools/fourcolor/near-linear/second-fan-measurements.json).
+The [three two-five wheel tests](../../tools/fourcolor/near-linear/two-five-wheel-probe.json)
+close in Python, with 22,144 boundary states per separation. These are
+discovery results; their Lean repairs and actual embeddings remain open.
+
 The [wheel occurrence](MettapediaFourColor/ActualWheelOccurrence.lean) now
 constructs the complete D3009 source from its degree profile in the actual
 minimal facial dual: one seven-valent centre, one five-valent neighbour and

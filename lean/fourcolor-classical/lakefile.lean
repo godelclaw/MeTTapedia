@@ -16,6 +16,19 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the exact second-free-centre residual. -/
+target kernelSecondFan pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/second-fan-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "SecondFanResidual", "SecondFanAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the actual wheel occurrence as the same injective repair disk. -/
 target kernelWheelEmbedding pkg : Unit := do
   let env ← getAugmentedEnv

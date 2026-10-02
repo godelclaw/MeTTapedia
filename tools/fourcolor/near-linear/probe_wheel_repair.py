@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Finite exploration of single-five wheels; this is not a Lean certificate.
+"""Finite exploration of five/six-rim wheels; this is not a Lean certificate.
 
 The centre has degree n, one rim vertex has degree five and the others six.
 The ring has length 2*n-1. At n=7 the literal pinned D3009 source is used.
 Every terminal witness is checked against all actual graph edges. Closure
 quantifies over every noncrossing pairing and every union of whole chords,
 modulo global interchange of the two active colours.
+The optional two-five test uses all three separations around a seven-rim
+wheel and constructs the full twelve-port graph directly.
 """
 
 import argparse
@@ -77,8 +79,8 @@ def witness(word, outer):
 
 
 def answers(word, fixed, chords, slots):
-    # Complementary subsets differ by a global colour permutation. In
-    # particular a thirteen-port ring can require a three-chord answer.
+    # Complementary subsets differ by a global colour permutation. Selected
+    # larger answers do not establish that fewer chords could not suffice.
     for count in range(1, max(1, len(chords) // 2) + 1):
         for chosen in itertools.combinations(chords, count):
             changed = list(word)
@@ -88,10 +90,42 @@ def answers(word, fixed, chords, slots):
             yield canonical(changed)
 
 
-def run(n, deadline=None):
+def profile_wheel(n, fives):
+    """A wheel with specified five-rim positions and all other rim degrees six.
+
+    Each wedge has one shared outer corner. A six-rim position has one
+    further outer vertex between its two corners. The construction retains
+    all boundary and interior edges; it makes no ambient embedding claim.
+    """
+    fives = set(fives)
+    if n < 3 or not fives <= set(range(n)):
+        raise ValueError("invalid wheel profile")
+    fans, corners, size = [], [], 0
+    for i in range(n):
+        if i in fives:
+            fans.append(None)
+        else:
+            fans.append(size)
+            size += 1
+        corners.append(size)
+        size += 1
+    outer = [[corners[i-1]] + ([] if fans[i] is None else [fans[i]]) + [corners[i]]
+             for i in range(n)]
+    center, rim = size, list(range(size + 1, size + n + 1))
+    edges = {(center, i) for i in rim}
+    edges.update(tuple(sorted((rim[i], rim[(i + 1) % n]))) for i in range(n))
+    edges.update(tuple(sorted((rim[i], b))) for i, row in enumerate(outer) for b in row)
+    edges.update(tuple(sorted((i, (i + 1) % size))) for i in range(size))
+    assert len(edges) == 3*n + 2*size
+    for i, v in enumerate(rim):
+        assert sum(v in edge for edge in edges) == (5 if i in fives else 6)
+    return outer, center, rim, sorted(edges)
+
+
+def run(n, deadline=None, *, fives=None):
     started = time.monotonic()
-    r = 2 * n - 1
-    outer, center, rim, edges = wheel(n)
+    outer, center, rim, edges = wheel(n) if fives is None else profile_wheel(n, fives)
+    r = center
     words = traces(r)
     known = set()
     for word in words:
@@ -131,6 +165,8 @@ def run(n, deadline=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--widths", nargs="+", type=int, default=[5, 6, 7])
+    parser.add_argument("--two-fives", action="store_true",
+                        help="test the three two-five positions on a seven-rim wheel")
     parser.add_argument("--seconds", type=float, help="optional total exploration deadline")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
@@ -139,10 +175,14 @@ def main():
         "status": "independent program experiment, not a Lean repair certificate",
         "source_revision": SOURCE_REVISION,
         "D3009_sha256": SOURCE_SHA256,
+        "D3009_input_used": not args.two_fives and 7 in args.widths,
         "canonicalization": "nonzero xor-zero traces modulo global edge-colour permutations",
         "closure": "all noncrossing pairings, whole-chord subsets modulo complement",
         "scope": "no uniform D-repair, actual exterior reconstruction, or coverage claim",
-        "results": [run(n, deadline) for n in args.widths],
+        "domain": "two-five seven-rim wheels" if args.two_fives else "single-five wheels",
+        "results": [dict(run(7, deadline, fives={0, gap}), separation=gap)
+                    for gap in (1, 2, 3)] if args.two_fives else
+                   [run(n, deadline) for n in args.widths],
     }
     text = json.dumps(report, indent=2) + "\n"
     if args.output:

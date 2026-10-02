@@ -1,5 +1,16 @@
 # Near-linear Four Colour catalogue bridges
 
+The [second-fan classification](second-fan-measurements.json) retains the
+other side of the same six-star: a flat seven either supplies a new high
+neighbour, has the single-five D3009 profile, or has exactly two fives with
+one outer five-tip and zero extra charge. The classification is checked
+without a repair hypothesis; a separate consumer excludes the single-five
+branch using the explicit D3009 repair contract. The
+[two-five experiment](two-five-wheel-probe.json) checks all three separations
+on the seven-rim wheel. Each closes all 22,144 boundary states in Python;
+no new Lean repair or coverage saving follows from that experiment alone.
+Replay it with `python3 tools/fourcolor/near-linear/probe_wheel_repair.py --two-fives`.
+
 The [three-triangle chain](../../../lean/fourcolor-classical/MettapediaFourColor/NearLinearChainRepair.lean)
 now has a shared repair: `D0006` is exactly classical configuration 7, and
 `D0004` inherits its repair through one boundary-triangle subdivision. The

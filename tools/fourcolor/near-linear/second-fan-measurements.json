@@ -1,0 +1,71 @@
+{
+  "status": "kernel-certified geometric classification; the D3009 consumer still requires its explicit full repair contract",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.SecondFanResidual",
+      "source_sha256": "da5c82d4f466581e5bb6467f085fc6f47543e3518a846e359bb2a210565d78ed",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.49,
+      "olean_bytes": 651176,
+      "olean_sha256": "3729dc974a6071f799e4c8714f44ae5a6f4136a37134d4e790d0232b97345a4d"
+    },
+    {
+      "module": "MettapediaFourColor.SecondFanAudit",
+      "source_sha256": "3fa5da7e5497962e1518b8dfaca290ccd718b92f7f44ecbef3589c2d1659a58b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.411,
+      "olean_bytes": 2600,
+      "olean_sha256": "59b4a35a6c8a44c30a821c2ef9ff59d17c59fc234d10e7a3b929640b8458361a"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 6,
+    "declarations": 30118,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates": 0
+  },
+  "domain": "The second free position of one actual Fixed six-star has degree seven and zero final charge.",
+  "unconditional_alternatives": [
+    "A high neighbour distinct from the original receiver, within radius three.",
+    "The original last five is its unique degree-five neighbour; all six other neighbours have degree six.",
+    "Exactly two actual degree-five neighbours; all others degree six; exactly one marked outer five-tip and zero extra source-rule matches."
+  ],
+  "conditional_consumer": "The same D3009 source repair excludes the single-five alternative through actual embedded reconstruction.",
+  "geometric_information": "The marked last five and the further five remain actual distinct vertices. The first free degree is unrestricted. Nonconsecutive positions in the original six-star cannot be adjacent.",
+  "checks": [
+    "lake build kernelSecondFan kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "experiment": {
+    "record": "two-five-wheel-probe.json",
+    "status": "independent Python closure, not a Lean repair or embedded occurrence",
+    "separations": [
+      1,
+      2,
+      3
+    ],
+    "states_per_case": 22144,
+    "survivors": [
+      0,
+      0,
+      0
+    ],
+    "checked_edges_per_terminal": 45
+  },
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_checks_saved": 336,
+    "new_coverage_entries_removed": 0
+  },
+  "open": [
+    "Complete the separately running D3009 finite replay.",
+    "Certify reconstruction for the two-five profile and its ambient occurrence.",
+    "Supply the shared fan and subsequent joint-centre reductions throughout the intended flat neighbourhood class."
+  ]
+}

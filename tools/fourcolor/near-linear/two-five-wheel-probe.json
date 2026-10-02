@@ -1,0 +1,120 @@
+{
+  "status": "independent program experiment, not a Lean repair certificate",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "D3009_sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+  "canonicalization": "nonzero xor-zero traces modulo global edge-colour permutations",
+  "closure": "all noncrossing pairings, whole-chord subsets modulo complement",
+  "scope": "no uniform D-repair, actual exterior reconstruction, or coverage claim",
+  "domain": "two-five seven-rim wheels",
+  "results": [
+    {
+      "width": 7,
+      "ring": 12,
+      "states": 22144,
+      "stages": [
+        3310,
+        6914,
+        8931,
+        11503,
+        14767,
+        18521,
+        21454,
+        22142,
+        22144
+      ],
+      "complete": true,
+      "survivors": 0,
+      "first_nonextending": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "first_survivor": null,
+      "edges_checked_per_terminal": 45,
+      "seconds": 9.28,
+      "separation": 1
+    },
+    {
+      "width": 7,
+      "ring": 12,
+      "states": 22144,
+      "stages": [
+        3582,
+        5827,
+        7672,
+        10260,
+        13522,
+        17098,
+        20382,
+        22120,
+        22144
+      ],
+      "complete": true,
+      "survivors": 0,
+      "first_nonextending": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "first_survivor": null,
+      "edges_checked_per_terminal": 45,
+      "seconds": 9.87,
+      "separation": 2
+    },
+    {
+      "width": 7,
+      "ring": 12,
+      "states": 22144,
+      "stages": [
+        3595,
+        5436,
+        7349,
+        9533,
+        12601,
+        16278,
+        19722,
+        22050,
+        22144
+      ],
+      "complete": true,
+      "survivors": 0,
+      "first_nonextending": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "first_survivor": null,
+      "edges_checked_per_terminal": 45,
+      "seconds": 10.16,
+      "separation": 3
+    }
+  ],
+  "D3009_input_used": false
+}

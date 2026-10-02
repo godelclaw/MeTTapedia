@@ -23,6 +23,20 @@ and the [compression ledger][ledger]. This guide connects them to the original
 plan. The [long companion][companion] preserves the detailed development and
 earlier attempts; its older sections are historical snapshots.
 
+The latest geometric classification handles both free positions
+in the retained six-star. A flat degree-seven first free centre supplies
+the existing single-five wheel or a new high neighbour. At a flat degree-seven
+second free centre, the
+[new theorem](../../../lean/fourcolor-classical/MettapediaFourColor/SecondFanResidual.lean)
+gives a further high neighbour, a single-five wheel, or an exact two-five
+profile. That last profile spends its entire charge budget: one outer
+five-tip and no extra transfers. The geometry is proved independently of
+repair. The single-five consumer still requires the full D3009 repair
+contract, whose finite checks are being certified separately. All three
+two-five wheel separations pass an independent finite repair experiment;
+their Lean reconstruction remains open. This narrows the next local
+coverage obligation without removing an entry from the unavoidable set.
+
 A completed geometric test concerns two overlapping exceptional neighbourhoods
 in the newer catalogue. Their shared rotation forces the D1774 core. Its
 [collision alternative](../../../lean/fourcolor-classical/MettapediaFourColor/ExceptionalCoreCollision.lean)

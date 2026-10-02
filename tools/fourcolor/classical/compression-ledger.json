@@ -3879,5 +3879,23 @@
     "member_checks_removed": 0,
     "new_uniform_repair_schemes": 0,
     "open": "Full D3009 boundary repair certification, then unconditional residual integration and broader coverage."
+  },
+  "second_free_fan_classification": {
+    "record": "../near-linear/second-fan-measurements.json",
+    "status": "kernel-certified geometric classification; the D3009 consumer still requires its explicit full repair contract",
+    "unconditional_alternatives": [
+      "A high neighbour distinct from the original receiver, within radius three.",
+      "The original last five is its unique degree-five neighbour; all six other neighbours have degree six.",
+      "Exactly two actual degree-five neighbours; all others degree six; exactly one marked outer five-tip and zero extra source-rule matches."
+    ],
+    "conditional_consumer": "The same D3009 source repair excludes the single-five alternative through actual embedded reconstruction.",
+    "new_coverage_entries_removed": 0,
+    "new_configuration_certificate_dependencies_removed": 0,
+    "two_five_experiment": "All three cyclic separations close in Python with 22,144 states each; no Lean two-five repair or embedded occurrence is claimed.",
+    "open": [
+      "Complete the separately running D3009 finite replay.",
+      "Certify reconstruction for the two-five profile and its ambient occurrence.",
+      "Supply the shared fan and subsequent joint-centre reductions throughout the intended flat neighbourhood class."
+    ]
   }
 }
