@@ -1,0 +1,161 @@
+{
+  "status": "Kernel-certified uniform cyclic charge bound, exact shared-fan residual classification and two finite positive consumers.",
+  "source_manifest": "discharging-sources.json",
+  "previous_fan_charge": "rule-fan-charge-measurements.json",
+  "general_law": {
+    "theorem": "FourColor.CyclicCharge.lower",
+    "domain": "Finite simple graph with triangular dart rotation; receiver degree at least seven; every receiver neighbour has degree five or six. Single-cycle vertex rotation and planarity are not needed for this charge inequality.",
+    "formula": "finalCharge(v) >= 10*(6-degree(v)) + 4*k + 2*m",
+    "k": "Number of actual degree-five neighbours.",
+    "m": "Number of oriented receiver wedges whose opposite facial tip has degree five; different wedges may share a tip.",
+    "rule_ids": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "full_signed_rule_set_size": 84,
+    "counting": "One use per oriented rule and incident edge; the rotation permutation reindexes the actual shared witnesses.",
+    "reverse_transfer": "Zero under the low-neighbour guard; all unused incoming rules are nonnegative.",
+    "flat_budget": "2*k+m <= 5*(degree(v)-6)"
+  },
+  "fan_consumer": {
+    "theorem": "FourColor.CyclicFanContinuation.fan_tips",
+    "shared_star": "[H,5,5,a,b,5] around a six-valent sender",
+    "tip_lower_bound": 2,
+    "flat_seven_low_neighbours": "k <= 1",
+    "flat_eight_low_neighbours": "k <= 4",
+    "second_free_degree_guard": "No separate degree assumption on b; the low-neighbour condition is explicit."
+  },
+  "actual_consumer": {
+    "theorem": "FourColor.ActualCyclicFanContinuation.of_checks",
+    "domain": "Actual facial dual of a GraphBackedVertexMinimalTaitCounterexample.",
+    "source_rules": [
+      "rule002_2.rule (index2)",
+      "rule003_2.rule (index4)"
+    ],
+    "root_alignment": "Exact matches at the same actual directed sender-to-receiver edge.",
+    "guards": "Sender six, next neighbour five, first free neighbour a seven and flat.",
+    "outcomes": [
+      "A third centre of degree at least seven, adjacent to a, distinct from a and H, within radius three of H.",
+      "The retained second neighbour of the sender is the only degree-five neighbour of a; all other neighbours of a have degree six."
+    ],
+    "faciality": "A chord between opposite positions of the six-valent sender star is excluded independently of their degrees.",
+    "termination_claimed": false
+  },
+  "finite_evidence": {
+    "inputs": "cyclic-charge-examples.json",
+    "program_audit": "cyclic-charge-audit.json",
+    "base_vertices": 162,
+    "kernel_positive_examples": [
+      {
+        "vertex": 69,
+        "degree": 8,
+        "fives": 5,
+        "tips": 1,
+        "final_charge_lower": 2
+      },
+      {
+        "vertex": 150,
+        "degree": 7,
+        "fives": 4,
+        "tips": 1,
+        "final_charge_lower": 8
+      }
+    ],
+    "independent_rule_checks": 7392,
+    "matcher_disagreements": 0,
+    "residual": {
+      "extra_legal_flips": 2,
+      "original_centre": 150,
+      "original_charge": 9,
+      "second_centre": 143,
+      "second_charge": 0,
+      "unique_five": 95,
+      "other_neighbours_degree": 6,
+      "evidence": "Exact program check; no Lean flatness certificate for this modified graph.",
+      "interpretation": "The single-five profile is nonempty under the local fan and second-flatness conditions. The original centre is not flat; no jointly flat or minimal-counterexample obstruction is claimed."
+    }
+  },
+  "audit": {
+    "roots": 17,
+    "dependency_declarations": 25765,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "original_rank_certificate_dependencies": false,
+    "full_four_colour_endpoint_dependency": false,
+    "exceptional_D1774_certificate_dependency": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.CyclicCharge",
+        "source_sha256": "563a3afee8ca246d29c91a14e26474b44de20e4a37214205f119fe6958bb0877",
+        "exit_code": 0,
+        "frontend_wall_seconds": 7.68,
+        "olean_bytes": 557712,
+        "olean_sha256": "5f663a26675812db9e37e0200bb5b440f26c365b6c03279e13efe9ee0b4ec1f9"
+      },
+      {
+        "module": "MettapediaFourColor.CyclicFanContinuation",
+        "source_sha256": "24ca4f35777718e2289a53b9f0f8ac7ef05d88d1b057b5dfd2eabb25e7898605",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.657,
+        "olean_bytes": 404336,
+        "olean_sha256": "f5c1f3aef7ab0fd65e0aa1a8706663cd0962d55f988e3da5375c533cf8f3487f"
+      },
+      {
+        "module": "MettapediaFourColor.CyclicChargeExample",
+        "source_sha256": "d6c1a210164506544fc3e0c4787f1bfb58986a0e1358b32933d06a6c4cca4cc5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 11.726,
+        "olean_bytes": 55928,
+        "olean_sha256": "3024e403ef65d4328a91847038170c40b927069a9f4a8e8d7653b58557eae7df"
+      },
+      {
+        "module": "MettapediaFourColor.CyclicChargeAudit",
+        "source_sha256": "6b510d5dff6dcd953ff88450430d8d5eb2168d652610e62eaae1dd4bc2168f5d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.627,
+        "olean_bytes": 2600,
+        "olean_sha256": "054d9974ee8b5a09bbcf873a0b27d8c4e04a91e168bdae905f2332f564b3ae9a"
+      }
+    ]
+  },
+  "commands": [
+    "lake build kernelCyclicCharge",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_cyclic_charge.py --output tools/fourcolor/near-linear/cyclic-charge-audit.json"
+  ],
+  "compression": {
+    "coverage_entries_retained": 633,
+    "original_configuration_certificates_retained": 629,
+    "new_rank_certificates": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "uniform_signed_charge_arguments": 1,
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "integrated_into_complete_coverage_assembly": false
+  },
+  "remaining": [
+    "Close the single-five residual using joint flatness or a certified reduction.",
+    "Classify degree-eight continuations beyond the k<=4 constraint.",
+    "Prove initial source-profile supply and the remaining geometric closing laws.",
+    "Establish global coverage, termination and compatible colouring reconstruction."
+  ]
+}

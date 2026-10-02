@@ -3766,5 +3766,23 @@
     "additional_original_certificate_dependencies_removed": 0,
     "integrated_into_complete_coverage_assembly": false,
     "scope": "A flat degree-seven first-free neighbour with second-free degree five forces a third high-degree centre. No longer-cycle exclusion, degree-eight closure, scheduling or universal coverage is claimed."
+  },
+  "cyclic_rule_charge": {
+    "record": "../near-linear/cyclic-charge-measurements.json",
+    "status": "Kernel-certified cyclic charge inequality and actual shared-fan residual classification.",
+    "uniform_charge_arguments": 1,
+    "formula": "T(v) >= 10(6-degree(v)) + 4*k + 2*m",
+    "counts": "k counts five-valent neighbours; m counts receiver wedges with a five-valent opposite tip.",
+    "actual_seven_outcomes": [
+      "Third distinct adjacent high centre within radius three",
+      "Only the retained shared neighbour is five; all other neighbours are six"
+    ],
+    "low_neighbour_eight_fives_bound": 4,
+    "new_rank_certificates": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "integrated_into_complete_coverage_assembly": false,
+    "scope": "No closing of the residual, joint-flatness classification, termination or universal coverage is claimed."
   }
 }

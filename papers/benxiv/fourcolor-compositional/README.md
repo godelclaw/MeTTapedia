@@ -1577,6 +1577,52 @@ The [receipt](../../../tools/fourcolor/near-linear/rule-fan-charge-measurements.
 keeps this progress separate from catalogue compression: the complete
 assembly still retains 633 coverage entries and 629 original certificates.
 
+## One counting law for complete receiver neighbourhoods
+
+The [cyclic charge theorem](../../../lean/fourcolor-classical/MettapediaFourColor/CyclicCharge.lean)
+extends the fan budget to a whole neighbourhood. At any receiver of degree
+`d >= 7` whose neighbours all have degree five or six, let `k` be the
+number of degree-five neighbours. Let `m` count wedges between consecutive
+neighbours whose outer facial tip has degree five. Then
+
+```text
+final charge >= 10(6-d) + 4k + 2m
+flatness therefore requires 2k + m <= 5(d-6)
+```
+
+Each five gives its direct two-unit transfer and forces one unit from each
+adjacent sender. Each counted outer triangle supplies two oriented rule
+occurrences using the same vertices. Reindexing the actual rotation adds
+them without duplicating a rule on an edge. The bound retains the full
+84-rule signed semantics: reverse transfers vanish under the stated degree
+guard, and unused incoming transfers are nonnegative. Different wedges may
+share an outer tip; the count is of wedges, not distinct tip vertices.
+
+The original shared fan supplies two such tips. At its flat degree-seven
+continuation, the [actual-map theorem](../../../lean/fourcolor-classical/MettapediaFourColor/CyclicFanContinuation.lean)
+now proves this alternative without specifying the other free degree:
+
+```text
+third distinct high centre, adjacent and within radius three
+                          OR
+the retained shared vertex is the only five;
+all six other neighbours are six
+```
+
+At degree eight, the same low-neighbour argument bounds the number of fives
+by four. Neither residual is yet eliminated. Lean examples at degrees seven
+and eight consume the common law. A separate exact program check realizes
+the single-five residual: its second centre is flat, but its original
+centre has charge nine. Thus it does not refute a joint-flatness or
+minimal-counterexample theorem. The next obligation is to use both views'
+flatness or find a certified reduction in that residual.
+
+The [receipt](../../../tools/fourcolor/near-linear/cyclic-charge-measurements.json)
+records the 17-root audit and finite checks. This is one uniform charge
+argument and a stronger local classification. The complete assembly still
+retains 633 coverage entries and 629 original certificates; universal
+profile supply and termination remain open.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

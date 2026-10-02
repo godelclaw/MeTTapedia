@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay a uniform cyclic charge budget from shared facial triangles. -/
+target kernelCyclicCharge pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/cyclic-charge-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "CyclicCharge", "CyclicFanContinuation", "CyclicChargeExample", "CyclicChargeAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the signed charge budget of a two-sided facial fan. -/
 target kernelRuleFanCharge pkg : Unit := do
   let env ← getAugmentedEnv

@@ -1,0 +1,62 @@
+{
+  "fixture": "chain-boundary-example.json",
+  "fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "centres": [
+    {
+      "vertex": 11,
+      "degree": 7,
+      "fives": 5,
+      "tips": 1,
+      "lower": 12,
+      "charge": 13
+    },
+    {
+      "vertex": 56,
+      "degree": 8,
+      "fives": 2,
+      "tips": 2,
+      "lower": -8,
+      "charge": -4
+    },
+    {
+      "vertex": 150,
+      "degree": 7,
+      "fives": 4,
+      "tips": 1,
+      "lower": 8,
+      "charge": 9
+    },
+    {
+      "vertex": 69,
+      "degree": 8,
+      "fives": 5,
+      "tips": 1,
+      "lower": 2,
+      "charge": 4
+    }
+  ],
+  "residual": {
+    "flips": [
+      [
+        140,
+        88,
+        141,
+        27
+      ],
+      [
+        159,
+        157,
+        80,
+        40
+      ]
+    ],
+    "root": [
+      92,
+      150
+    ],
+    "second_centre": 143,
+    "original_charge": 9,
+    "second_charge": 0,
+    "unique_five": 95
+  }
+}

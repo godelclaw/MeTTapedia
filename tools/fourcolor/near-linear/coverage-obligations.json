@@ -1,5 +1,5 @@
 {
-  "status": "Actual exceptional closing, source-rule matching, family reductions, joint fan supply and a signed-charge non-return branch are kernel checked. Surviving zero-charge classification and global coverage remain open.",
+  "status": "Actual exceptional closing, family reductions, joint source-rule fan supply, and uniform cyclic charge with an exact degree-seven residual are kernel checked. Residual joint-flatness classification and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -435,6 +435,22 @@
     {
       "declaration": "FourColor.ActualRuleFanCharge.third_center",
       "meaning": "For the existing same-root rule fan, a flat first-free degree-seven vertex with second-free degree five forces a third high-degree centre adjacent to it, distinct from both earlier centres, within radius three of the original receiver. Actual minimal-map faciality excludes the returning chord."
+    },
+    {
+      "declaration": "FourColor.CyclicCharge.lower",
+      "meaning": "Exact full signed charge at a high receiver with low neighbours is bounded below by10(6-degree)+4*k+2*m, from shared triangular rule occurrences and cyclic reindexing."
+    },
+    {
+      "declaration": "FourColor.CyclicFanContinuation.seven_bound",
+      "meaning": "The two retained outer tips of the source fan constrain a flat seven with low neighbours to at most one five."
+    },
+    {
+      "declaration": "FourColor.CyclicFanContinuation.eight_bound",
+      "meaning": "The same two tips constrain a flat eight with low neighbours to at most four fives."
+    },
+    {
+      "declaration": "FourColor.ActualCyclicFanContinuation.of_checks",
+      "meaning": "Actual aligned source rules supply either an adjacent third high centre distinct from both earlier centres, within radius three, or a seven-centre whose only five is the retained shared neighbour and whose other six neighbours are six."
     }
   ],
   "open": [
@@ -480,10 +496,10 @@
     }
   ],
   "next_bounded_attack": {
-    "missing_theorem": "A larger explicitly justified class of surviving fan overlaps supplies a supported reduction or compatible high-centre geometry that can be consumed by the flat-neighbourhood classification.",
-    "test": "Retain exact signed rule occurrences and all shared vertices at the newly adjacent high centre. First test the degree-eight receiver and the second-free degree-six profiles; preserve longer centre cycles explicitly.",
-    "acceptance": "An actual checked reduction/classification consumer or a replayable residual pinpointing a missing observation. No inference of global progress from local non-return.",
-    "limits": "The proved twelve-unit budget exceeds the degree-seven deficit of ten but not the degree-eight deficit of twenty. No termination, initial profile supply or universal coverage follows."
+    "missing_theorem": "Close the single-five/six-sixes residual using both centres\u2019 flatness and shared rule geometry, or recognize an actual supported reduction there.",
+    "test": "Replay the saved residual first. Its second centre has charge zero, original centre charge nine. Seek a jointly flat example preserving the exact fan, then inspect complete rule contributions and known reduction occurrences. Retain higher-centre cycles explicitly.",
+    "acceptance": "A kernel-checked residual closing/recognition consumer, or a replayable jointly flat residual naming the missing condition. No exclusion inferred solely from the five-rule lower bound.",
+    "limits": "Degree-eight low-neighbour continuations can retain four fives. Initial profile supply, remaining joint classification, termination and universal coverage are open."
   },
   "counts": {
     "coverage_entries": 633,
@@ -528,5 +544,6 @@
     "universal_supply_or_termination": false,
     "third_centre_record": "rule-fan-charge-measurements.json",
     "third_centre_domain": "First free degree seven and flat; second free degree five. Other first/second-free profiles remain open."
-  }
+  },
+  "cyclic_charge_record": "cyclic-charge-measurements.json"
 }

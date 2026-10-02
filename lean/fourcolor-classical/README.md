@@ -1,8 +1,23 @@
 # Classical Four Colour and compositional reconstruction
 
 The latest local coverage step is the
+[uniform cyclic charge law](MettapediaFourColor/CyclicCharge.lean): at a
+receiver of degree `d >= 7` with only degree-five/six neighbours, the final
+charge is at least `10(6-d) + 4k + 2m`. Here `k` counts degree-five
+neighbours and `m` counts wedges with a degree-five outer tip. Its
+[actual-map consumer](MettapediaFourColor/CyclicFanContinuation.lean)
+shows that a flat seven in the shared source-rule fan either has a third
+high centre or has exactly the retained shared five and six other
+degree-six neighbours. This includes the second-free degree-six branch.
+`lake build kernelCyclicCharge` replays the general law, geometric consumer,
+finite examples at degrees seven and eight, and dependency audit. The
+[receipt](../../tools/fourcolor/near-linear/cyclic-charge-measurements.json)
+separates this classification progress from unchanged catalogue counts.
+
+The preceding
 [shared fan charge law](MettapediaFourColor/RuleFanCharge.lean) and its
-[actual third-centre consumer](MettapediaFourColor/ActualRuleFanCharge.lean).
+[actual third-centre consumer](MettapediaFourColor/ActualRuleFanCharge.lean)
+close the second-free degree-five branch.
 A flat degree-seven continuation has an alternative to returning through
 the same six-valent fan: a twelve-unit incoming bound forces an adjacent
 high centre, and minimal-map faciality excludes the original receiver. The

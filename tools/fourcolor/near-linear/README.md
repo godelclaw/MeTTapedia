@@ -1052,6 +1052,42 @@ from the surviving joint charge profiles, or retain and characterize a
 counterexample to that proposed local supply claim. Coverage remains 633
 entries with 629 original certificate dependencies.
 
+## A uniform cyclic charge budget
+
+[CyclicCharge](../../../lean/fourcolor-classical/MettapediaFourColor/CyclicCharge.lean)
+proves `T(v) >= 10(6-d) + 4k + 2m` for any receiver of degree `d >= 7`
+whose neighbours all have degree five or six. The count `k` is the number
+of five-valent neighbours. The count `m` is over receiver wedges with a
+five-valent opposite facial tip; tips need not be distinct. The proof
+constructs the first five oriented source rules from actual shared
+triangles, reindexes the rotation, and retains all remaining signed terms.
+
+[CyclicFanContinuation](../../../lean/fourcolor-classical/MettapediaFourColor/CyclicFanContinuation.lean)
+uses both known outer tips of the same-root rules002_2/003_2 fan. At a flat
+seven with only low neighbours, at most one neighbour is five. The actual
+minimal-map consumer identifies that five with the retained shared vertex:
+either an adjacent third high centre exists, distinct from the previous
+two and within radius three, or all other neighbours are six. At a flat
+eight with only low neighbours, the same argument bounds the fives by four.
+
+The [finite input](cyclic-charge-examples.json) and
+[independent audit](cyclic-charge-audit.json) check four receiver profiles
+against all incident source rules, using two independent matchers. Two
+positive examples consume the general law in Lean. The input also records
+two legal flips producing the single-five residual with zero charge. Its
+original centre has positive charge nine, so it is not a jointly flat or
+minimal-counterexample instance. Its flatness is program evidence only.
+
+Replay with `lake build kernelCyclicCharge` and:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_cyclic_charge.py --output tools/fourcolor/near-linear/cyclic-charge-audit.json
+```
+
+The [receipt](cyclic-charge-measurements.json) keeps classification and
+compression separate. The single-five residual, joint-flatness closure,
+initial supply and global coverage remain open; counts stay 633 / 629.
+
 ## Joint rule-fan coverage branch
 
 Rules `002_2` and `003_2`, matched on the same directed edge, jointly fix

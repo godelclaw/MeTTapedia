@@ -1,0 +1,1735 @@
+{
+  "evidence": "Independent exact program checks; the uniform lower bound is Lean proved.",
+  "source_manifest": "discharging-sources.json",
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "fixture": "chain-boundary-example.json",
+  "fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "manifest_sha256": "20632f907558b7d46843bc8b43a74d4dd09c3789f76da32e1f299c5d19737b35",
+  "verifier_sha256": "0dc918b86c074bfb667875af6910ccf19bcbd35df3bc981c056d9fb06df7c5ed",
+  "lean_source_sha256": {
+    "CyclicCharge": "563a3afee8ca246d29c91a14e26474b44de20e4a37214205f119fe6958bb0877",
+    "CyclicFanContinuation": "24ca4f35777718e2289a53b9f0f8ac7ef05d88d1b057b5dfd2eabb25e7898605",
+    "CyclicChargeExample": "d6c1a210164506544fc3e0c4787f1bfb58986a0e1358b32933d06a6c4cca4cc5"
+  },
+  "independent_rule_checks": 7392,
+  "disagreements": 0,
+  "examples": [
+    {
+      "vertex": 11,
+      "degree": 7,
+      "fives": 5,
+      "tips": 1,
+      "lower": 12,
+      "charge": 13,
+      "five_vertices": [
+        97,
+        98,
+        99,
+        100,
+        116
+      ],
+      "counted_wedges": [
+        {
+          "sender": 97,
+          "other": 99,
+          "tip": 115
+        }
+      ],
+      "first_five_rule_supply": 22,
+      "incident_rules": [
+        {
+          "edge": [
+            97,
+            11
+          ],
+          "sent": 5,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                97,
+                11
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                97,
+                11,
+                99
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                97,
+                11,
+                116
+              ]
+            },
+            {
+              "index": 4,
+              "amount": 1,
+              "vertices": [
+                97,
+                11,
+                99,
+                115
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            11,
+            97
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            98,
+            11
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                98,
+                11
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            11,
+            98
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            99,
+            11
+          ],
+          "sent": 4,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                99,
+                11
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                99,
+                11,
+                97
+              ]
+            },
+            {
+              "index": 3,
+              "amount": 1,
+              "vertices": [
+                99,
+                11,
+                97,
+                115
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            11,
+            99
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            100,
+            11
+          ],
+          "sent": 4,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                100,
+                11
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                100,
+                11,
+                116
+              ]
+            },
+            {
+              "index": 5,
+              "amount": 1,
+              "vertices": [
+                100,
+                11,
+                101,
+                38,
+                161
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            11,
+            100
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            101,
+            11
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                101,
+                11,
+                100
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                101,
+                11,
+                98
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            11,
+            101
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            116,
+            11
+          ],
+          "sent": 4,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                116,
+                11
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                116,
+                11,
+                97
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                116,
+                11,
+                100
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            11,
+            116
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            151,
+            11
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                151,
+                11,
+                98
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                151,
+                11,
+                99
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            11,
+            151
+          ],
+          "sent": 0,
+          "matches": []
+        }
+      ]
+    },
+    {
+      "vertex": 56,
+      "degree": 8,
+      "fives": 2,
+      "tips": 2,
+      "lower": -8,
+      "charge": -4,
+      "five_vertices": [
+        23,
+        131
+      ],
+      "counted_wedges": [
+        {
+          "sender": 87,
+          "other": 127,
+          "tip": 133
+        },
+        {
+          "sender": 131,
+          "other": 24,
+          "tip": 134
+        }
+      ],
+      "first_five_rule_supply": 12,
+      "incident_rules": [
+        {
+          "edge": [
+            2,
+            56
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            56,
+            2
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            23,
+            56
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                23,
+                56
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                23,
+                56,
+                131
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            56,
+            23
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            24,
+            56
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                24,
+                56,
+                131
+              ]
+            },
+            {
+              "index": 3,
+              "amount": 1,
+              "vertices": [
+                24,
+                56,
+                131,
+                134
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            56,
+            24
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            53,
+            56
+          ],
+          "sent": 1,
+          "matches": [
+            {
+              "index": 8,
+              "amount": 1,
+              "vertices": [
+                53,
+                56,
+                127,
+                21,
+                129,
+                133
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            56,
+            53
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            55,
+            56
+          ],
+          "sent": 1,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                55,
+                56,
+                23
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            56,
+            55
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            87,
+            56
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 4,
+              "amount": 1,
+              "vertices": [
+                87,
+                56,
+                127,
+                133
+              ]
+            },
+            {
+              "index": 8,
+              "amount": 1,
+              "vertices": [
+                87,
+                56,
+                24,
+                9,
+                90,
+                134
+              ]
+            },
+            {
+              "index": 11,
+              "amount": 1,
+              "vertices": [
+                87,
+                56,
+                24,
+                9,
+                90,
+                134,
+                131
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            56,
+            87
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            127,
+            56
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 3,
+              "amount": 1,
+              "vertices": [
+                127,
+                56,
+                87,
+                133
+              ]
+            },
+            {
+              "index": 6,
+              "amount": 1,
+              "vertices": [
+                127,
+                56,
+                53,
+                21,
+                128
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            56,
+            127
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            131,
+            56
+          ],
+          "sent": 4,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                131,
+                56
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                131,
+                56,
+                23
+              ]
+            },
+            {
+              "index": 4,
+              "amount": 1,
+              "vertices": [
+                131,
+                56,
+                24,
+                134
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            56,
+            131
+          ],
+          "sent": 0,
+          "matches": []
+        }
+      ]
+    },
+    {
+      "vertex": 150,
+      "degree": 7,
+      "fives": 4,
+      "tips": 1,
+      "lower": 8,
+      "charge": 9,
+      "five_vertices": [
+        10,
+        31,
+        93,
+        152
+      ],
+      "counted_wedges": [
+        {
+          "sender": 92,
+          "other": 10,
+          "tip": 95
+        }
+      ],
+      "first_five_rule_supply": 18,
+      "incident_rules": [
+        {
+          "edge": [
+            10,
+            150
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                10,
+                150
+              ]
+            },
+            {
+              "index": 3,
+              "amount": 1,
+              "vertices": [
+                10,
+                150,
+                92,
+                95
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            150,
+            10
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            31,
+            150
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                31,
+                150
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                31,
+                150,
+                93
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            150,
+            31
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            92,
+            150
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                92,
+                150,
+                10
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                92,
+                150,
+                93
+              ]
+            },
+            {
+              "index": 4,
+              "amount": 1,
+              "vertices": [
+                92,
+                150,
+                10,
+                95
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            150,
+            92
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            93,
+            150
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                93,
+                150
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                93,
+                150,
+                31
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            150,
+            93
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            96,
+            150
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                96,
+                150,
+                152
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                96,
+                150,
+                10
+              ]
+            },
+            {
+              "index": 5,
+              "amount": 1,
+              "vertices": [
+                96,
+                150,
+                10,
+                94,
+                95
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            150,
+            96
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            149,
+            150
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                149,
+                150,
+                31
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                149,
+                150,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            150,
+            149
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            152,
+            150
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                152,
+                150
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            150,
+            152
+          ],
+          "sent": 0,
+          "matches": []
+        }
+      ]
+    },
+    {
+      "vertex": 69,
+      "degree": 8,
+      "fives": 5,
+      "tips": 1,
+      "lower": 2,
+      "charge": 4,
+      "five_vertices": [
+        29,
+        33,
+        70,
+        146,
+        147
+      ],
+      "counted_wedges": [
+        {
+          "sender": 71,
+          "other": 5,
+          "tip": 67
+        }
+      ],
+      "first_five_rule_supply": 22,
+      "incident_rules": [
+        {
+          "edge": [
+            5,
+            69
+          ],
+          "sent": 4,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                5,
+                69,
+                70
+              ]
+            },
+            {
+              "index": 3,
+              "amount": 1,
+              "vertices": [
+                5,
+                69,
+                71,
+                67
+              ]
+            },
+            {
+              "index": 5,
+              "amount": 1,
+              "vertices": [
+                5,
+                69,
+                71,
+                67,
+                108
+              ]
+            },
+            {
+              "index": 10,
+              "amount": 1,
+              "vertices": [
+                5,
+                69,
+                68,
+                70,
+                33,
+                122
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            5
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            29,
+            69
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                29,
+                69
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                29,
+                69,
+                147
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            29
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            33,
+            69
+          ],
+          "sent": 4,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                33,
+                69
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                33,
+                69,
+                146
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                33,
+                69,
+                70
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            33
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            70,
+            69
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                70,
+                69
+              ]
+            },
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                70,
+                69,
+                33
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            70
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            71,
+            69
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                71,
+                69,
+                147
+              ]
+            },
+            {
+              "index": 4,
+              "amount": 1,
+              "vertices": [
+                71,
+                69,
+                5,
+                67
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            71
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            144,
+            69
+          ],
+          "sent": 2,
+          "matches": [
+            {
+              "index": 1,
+              "amount": 1,
+              "vertices": [
+                144,
+                69,
+                29
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                144,
+                69,
+                146
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            144
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            146,
+            69
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                146,
+                69
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                146,
+                69,
+                33
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            146
+          ],
+          "sent": 0,
+          "matches": []
+        },
+        {
+          "edge": [
+            147,
+            69
+          ],
+          "sent": 3,
+          "matches": [
+            {
+              "index": 0,
+              "amount": 2,
+              "vertices": [
+                147,
+                69
+              ]
+            },
+            {
+              "index": 2,
+              "amount": 1,
+              "vertices": [
+                147,
+                69,
+                29
+              ]
+            }
+          ]
+        },
+        {
+          "edge": [
+            69,
+            147
+          ],
+          "sent": 0,
+          "matches": []
+        }
+      ]
+    }
+  ],
+  "residual": {
+    "flips": [
+      [
+        140,
+        88,
+        141,
+        27
+      ],
+      [
+        159,
+        157,
+        80,
+        40
+      ]
+    ],
+    "sender_cycle": [
+      150,
+      10,
+      95,
+      143,
+      28,
+      93
+    ],
+    "centres": [
+      {
+        "vertex": 150,
+        "charge": 9,
+        "incident_rules": [
+          {
+            "edge": [
+              10,
+              150
+            ],
+            "sent": 3,
+            "matches": [
+              {
+                "index": 0,
+                "amount": 2,
+                "vertices": [
+                  10,
+                  150
+                ]
+              },
+              {
+                "index": 3,
+                "amount": 1,
+                "vertices": [
+                  10,
+                  150,
+                  92,
+                  95
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              150,
+              10
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              31,
+              150
+            ],
+            "sent": 3,
+            "matches": [
+              {
+                "index": 0,
+                "amount": 2,
+                "vertices": [
+                  31,
+                  150
+                ]
+              },
+              {
+                "index": 1,
+                "amount": 1,
+                "vertices": [
+                  31,
+                  150,
+                  93
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              150,
+              31
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              92,
+              150
+            ],
+            "sent": 3,
+            "matches": [
+              {
+                "index": 1,
+                "amount": 1,
+                "vertices": [
+                  92,
+                  150,
+                  10
+                ]
+              },
+              {
+                "index": 2,
+                "amount": 1,
+                "vertices": [
+                  92,
+                  150,
+                  93
+                ]
+              },
+              {
+                "index": 4,
+                "amount": 1,
+                "vertices": [
+                  92,
+                  150,
+                  10,
+                  95
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              150,
+              92
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              93,
+              150
+            ],
+            "sent": 3,
+            "matches": [
+              {
+                "index": 0,
+                "amount": 2,
+                "vertices": [
+                  93,
+                  150
+                ]
+              },
+              {
+                "index": 2,
+                "amount": 1,
+                "vertices": [
+                  93,
+                  150,
+                  31
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              150,
+              93
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              96,
+              150
+            ],
+            "sent": 3,
+            "matches": [
+              {
+                "index": 1,
+                "amount": 1,
+                "vertices": [
+                  96,
+                  150,
+                  152
+                ]
+              },
+              {
+                "index": 2,
+                "amount": 1,
+                "vertices": [
+                  96,
+                  150,
+                  10
+                ]
+              },
+              {
+                "index": 5,
+                "amount": 1,
+                "vertices": [
+                  96,
+                  150,
+                  10,
+                  94,
+                  95
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              150,
+              96
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              149,
+              150
+            ],
+            "sent": 2,
+            "matches": [
+              {
+                "index": 1,
+                "amount": 1,
+                "vertices": [
+                  149,
+                  150,
+                  31
+                ]
+              },
+              {
+                "index": 2,
+                "amount": 1,
+                "vertices": [
+                  149,
+                  150,
+                  152
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              150,
+              149
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              152,
+              150
+            ],
+            "sent": 2,
+            "matches": [
+              {
+                "index": 0,
+                "amount": 2,
+                "vertices": [
+                  152,
+                  150
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              150,
+              152
+            ],
+            "sent": 0,
+            "matches": []
+          }
+        ]
+      },
+      {
+        "vertex": 143,
+        "charge": 0,
+        "incident_rules": [
+          {
+            "edge": [
+              28,
+              143
+            ],
+            "sent": 1,
+            "matches": [
+              {
+                "index": 3,
+                "amount": 1,
+                "vertices": [
+                  28,
+                  143,
+                  92,
+                  93
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              143,
+              28
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              40,
+              143
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              143,
+              40
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              92,
+              143
+            ],
+            "sent": 3,
+            "matches": [
+              {
+                "index": 2,
+                "amount": 1,
+                "vertices": [
+                  92,
+                  143,
+                  95
+                ]
+              },
+              {
+                "index": 3,
+                "amount": 1,
+                "vertices": [
+                  92,
+                  143,
+                  95,
+                  10
+                ]
+              },
+              {
+                "index": 4,
+                "amount": 1,
+                "vertices": [
+                  92,
+                  143,
+                  28,
+                  93
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              143,
+              92
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              95,
+              143
+            ],
+            "sent": 4,
+            "matches": [
+              {
+                "index": 0,
+                "amount": 2,
+                "vertices": [
+                  95,
+                  143
+                ]
+              },
+              {
+                "index": 4,
+                "amount": 1,
+                "vertices": [
+                  95,
+                  143,
+                  92,
+                  10
+                ]
+              },
+              {
+                "index": 5,
+                "amount": 1,
+                "vertices": [
+                  95,
+                  143,
+                  159,
+                  94,
+                  37
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              143,
+              95
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              140,
+              143
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              143,
+              140
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              141,
+              143
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              143,
+              141
+            ],
+            "sent": 0,
+            "matches": []
+          },
+          {
+            "edge": [
+              159,
+              143
+            ],
+            "sent": 2,
+            "matches": [
+              {
+                "index": 1,
+                "amount": 1,
+                "vertices": [
+                  159,
+                  143,
+                  95
+                ]
+              },
+              {
+                "index": 6,
+                "amount": 1,
+                "vertices": [
+                  159,
+                  143,
+                  95,
+                  94,
+                  10
+                ]
+              }
+            ]
+          },
+          {
+            "edge": [
+              143,
+              159
+            ],
+            "sent": 0,
+            "matches": []
+          }
+        ]
+      }
+    ],
+    "scope": "Program evidence only. Second centre flat; original centre positive. No minimality or joint-flatness claim."
+  },
+  "scope": "Finite checks. No minimality, flat-neighbourhood coverage or termination claim."
+}
