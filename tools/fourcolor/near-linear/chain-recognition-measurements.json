@@ -1,0 +1,149 @@
+{
+  "status": "Kernel-certified recognition and actual chain reduction from a consecutive degree word.",
+  "previous_reduction": "chain-reduction-measurements.json",
+  "source_manifest": "chain-sources.json",
+  "recognition": {
+    "consumer": "FourColor.ChainFanRecognition.not_in_minimal",
+    "domain": "Actual dual of a GraphBackedVertexMinimalTaitCounterexample",
+    "input": "An actual directed edge at a degree-six centre, whose first four cyclic neighbours have degrees 5,6,5,5.",
+    "core_vertices": 5,
+    "core_triangles": 3,
+    "source_vertices": 13,
+    "boundary_ports": 8,
+    "observation_radius": 2,
+    "boundary_labels_may_coincide": true,
+    "supplied_core_injectivity": false,
+    "supplied_inducedness": false,
+    "supplied_boundary_completion": false,
+    "supplied_starting_colouring": false,
+    "supplied_exterior_closure": false
+  },
+  "shared_geometry": [
+    "FacialPatchInduced.corner_chain_successor excludes extra core edges.",
+    "FacialStarCompletion.across_edge identifies the two readings of each shared boundary corner.",
+    "Cyclic rotations supply all source stars; inducedness prevents boundary capture by the core."
+  ],
+  "reconstruction": {
+    "consumer": "FourColor.ActualChainReduction.not_in_minimal",
+    "repair": "FourColor.NearLinearChainRepair.repair0004",
+    "retained_base": "FourColor.Bulk.Cfg006 (classical configuration 7)",
+    "strict_descent": "Existing adjacent-pair deletion of two primal vertices; not deletion of the entire core."
+  },
+  "example": {
+    "vertices": 42,
+    "directed_start": [
+      39,
+      28
+    ],
+    "proved": [
+      "the consecutive degree word",
+      "the resulting five core images",
+      "all thirteen reconstructed source images agree with the retained occurrence"
+    ],
+    "not_proved_here": [
+      "global planarity or flatness of the example",
+      "minimality of the example",
+      "universal occurrence supply"
+    ]
+  },
+  "audit": {
+    "roots": 26,
+    "dependency_declarations": 31140,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "other_original_rank_certificates": false,
+    "full_four_colour_endpoint": false,
+    "exceptional_D1774_certificate": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.ChainCoreReading",
+        "source_sha256": "bea224021280345eb729f5647b4adb0b0aa41a4085449546684ae939abfd8d63",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.187,
+        "olean_bytes": 257216,
+        "olean_sha256": "9cf3210167b98305e7ea365550723ee854e4c836ba5d9eb0a2768b4c07206e87"
+      },
+      {
+        "module": "MettapediaFourColor.ChainCoreCompletion",
+        "source_sha256": "0bec69e8afd740b50d2149e24cdec64537c974c9f485ddabaf0078ccb70dee83",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.771,
+        "olean_bytes": 496592,
+        "olean_sha256": "25a42804d3e72cf3ffc1928cdd5ca272f29c506b04202a74e011868a3c0d7ab6"
+      },
+      {
+        "module": "MettapediaFourColor.ChainCoreOccurrence",
+        "source_sha256": "bf269bae01a3468e94775a771da64fab87997f8732b9d6f5fc31ab99045bd5e2",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.243,
+        "olean_bytes": 298888,
+        "olean_sha256": "c13327cfe2bb957022d67c77b03f804f1dc1b26126ac3b55ebf444752df35e48"
+      },
+      {
+        "module": "MettapediaFourColor.ActualChainRecognition",
+        "source_sha256": "7c3edc19979e14083c7b9f081341f2401feeac48d04d390ea64d9a60db5d6ade",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.388,
+        "olean_bytes": 46344,
+        "olean_sha256": "103315a87fb0f1c9306223b12562e7015ce5792fe483ddb2473e208097cdc255"
+      },
+      {
+        "module": "MettapediaFourColor.ChainFanRecognition",
+        "source_sha256": "205a86d7968ada5ec63168cb27c612518d7dd667eee112eececb6e729b99c833",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.955,
+        "olean_bytes": 183232,
+        "olean_sha256": "cd4bec64dcaca0f59d5c339ed7ac559e5d678f378b812cc7237b7a9c64b3b4e7"
+      },
+      {
+        "module": "MettapediaFourColor.ChainRecognitionExample",
+        "source_sha256": "fd23cb631f4b9abc2c1f5caa1ad2766013d937c0b6f6b0e0cb150a1423459ebc",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.576,
+        "olean_bytes": 102240,
+        "olean_sha256": "4fa04719f14456be2f466ae1659be922fb71a07f79775c34a1bd6779e7555436"
+      },
+      {
+        "module": "MettapediaFourColor.ChainRecognitionAudit",
+        "source_sha256": "15bb59f7e8f597bc7cb07c1270cde7416c89acdf8b4a64dcc46583dc34daffff",
+        "exit_code": 0,
+        "frontend_wall_seconds": 11.027,
+        "olean_bytes": 2720,
+        "olean_sha256": "2e4cdd81845fbd271154bc45c57094e585bde816fc6f99e0f86653602a4bef47"
+      }
+    ]
+  },
+  "commands": [
+    "lake build kernelChainRecognition",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "compression": {
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "new_rank_tables": 0,
+    "new_uniform_repair_schemes": 0,
+    "additional_coverage_entries_removed": 0,
+    "additional_assembly_certificate_dependencies_removed": 0
+  },
+  "remaining": [
+    "Derive this degree word or another certified reduction from the surviving joint charge profiles.",
+    "Complete residual neighbourhood classification.",
+    "Prove global coverage, termination and reconstruction for the intended compact family system."
+  ]
+}

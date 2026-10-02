@@ -47,7 +47,8 @@ run_cmd do
     ``FourColor.DiamondBoundarySummary.reference002,
     ``Mettapedia.GraphTheory.FourColor.DiamondBoundaryElimination.reconstruct,
     ``FourColor.CompositionalComplete.reducibility,
-    ``FourColor.exclude5, ``FourColor.exclude6, ``FourColor.exclude7,
+    ``FourColor.exclude5, ``FourColor.exclude6, ``FourColor.Sector7Coverage.exclude7,
+    ``FourColor.Sector7Region.step, ``FourColor.Sector7Region.fit,
     ``FourColor.exclude8, ``FourColor.Orbit9.exclude9, ``FourColor.Orbit10.exclude10,
     ``FourColor.Orbit11.exclude11, ``FourColor.ClassicalAssembly.no_embedded_reduction,
     ``FourColor.PeriodicHubcap.fit, ``FourColor.ReflectedHubcap.succeeds,
@@ -66,6 +67,25 @@ run_cmd do
     for name in common do
       unless seen.contains name do
         throwError m!"Required dependency {name} is missing from {rootName}"
+    for i in List.range 7 do
+      let name := Name.str `FourColor.Sector7Region s!"m{i}"
+      unless seen.contains name do
+        throwError m!"Shared regional bound {name} is missing from {rootName}"
+    for name in [``FourColor.exclude7, ``FourColor.s7_step5880,
+        ``FourColor.s7_step5882, ``FourColor.s7_step5919, ``FourColor.s7_step5937,
+        ``FourColor.s7_step5941, ``FourColor.s7_step6044, ``FourColor.s7_step6045,
+        ``FourColor.s7_step6046] do
+      if seen.contains name then
+        throwError m!"Superseded degree-seven ancestor in {rootName}: {name}"
+    for i in [5844, 5845, 5847, 5851, 5852, 5854, 5858, 5859,
+        5861, 5866, 5867, 5869, 5873, 5874, 5876, 5879] do
+      let fit := Name.str `FourColor s!"f7_{i}"
+      if seen.contains fit then
+        throwError m!"Superseded regional fit in {rootName}: {fit}"
+      for j in List.range 7 do
+        let check := Name.str `FourColor s!"c7_{i}_{j + 1}"
+        if seen.contains check then
+          throwError m!"Superseded regional check in {rootName}: {check}"
     for i in List.range 633 do
       let digits := toString i
       let suffix := String.ofList (List.replicate (3 - digits.length) '0') ++ digits
@@ -273,5 +293,7 @@ run_cmd do
     from all endpoint closures."
   logInfo "All three endpoint closures consume the shared charge proofs \
     and geometric reconstruction."
+  logInfo "All three endpoint closures replace 112 original degree-seven member \
+    checks and 16 fits with seven regional checks and one fit."
   logInfo "All 236 superseded checker declarations and the original unconditional \
     theorem are absent."

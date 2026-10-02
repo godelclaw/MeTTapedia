@@ -16,6 +16,36 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the shared degree-seven region and its rebuilt coverage endpoint. -/
+target kernelSector7 pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/sector7-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "Sector7Region", "Sector7Coverage", "Sector7Audit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Recognize the chain from its embedded three-triangle core. -/
+target kernelChainRecognition pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/chain-recognition-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ChainCoreReading", "ChainCoreCompletion", "ChainCoreOccurrence",
+        "ActualChainRecognition", "ChainFanRecognition", "ChainRecognitionExample",
+        "ChainRecognitionAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Reconstruct the chain from a genuine local occurrence and minimality. -/
 target kernelChainReduction pkg : Unit := do
   let env ← getAugmentedEnv

@@ -1,16 +1,17 @@
 import MettapediaFourColor.Orbit9Assembly
 import FourColor.Present5
 import FourColor.Present6
-import FourColor.Present7
+import MettapediaFourColor.Sector7Coverage
 import FourColor.Present8
 import MettapediaFourColor.DiamondFamilyReducibility
 
 /-!
 # The classical Four Colour theorem with compositional reconstruction
 
-The reference supplies 632 reducibility certificates and four discharging
-presentations. A joint boundary repair law supplies configuration 4.
-Three presentations consume the shared charge bounds.
+The reference supplies 629 reducibility certificates; shared diamond and
+boundary-split repair laws supply configurations 1 through 4. Three
+presentations consume the shared charge bounds, and the degree-seven
+presentation uses a single regional hubcap in place of sixteen fits.
 The minimal-counterexample argument rebuilds an actual colouring through
 the GSLT witness relation. The resulting theorem colours finite plane
 drawings and supplies compatible choices for exact source constructions.
@@ -34,19 +35,19 @@ theorem reducibility : Reducibility := by
 theorem no_minimalCounterExample {D : Type} [Finite D] (G : Hypermap D) :
     ¬ G.MinimalCounterExample :=
   Orbit9Assembly.no_minimalCounterExample_of_checks reducibility
-    exclude5 exclude6 exclude7 exclude8 G
+    exclude5 exclude6 Sector7Coverage.exclude7 exclude8 G
 
 /-- Every simple map of the real plane admits four colours. -/
 theorem fourColorTheorem : FourColorTheorem :=
   Orbit9Assembly.fourColorTheorem_of_checks reducibility
-    exclude5 exclude6 exclude7 exclude8
+    exclude5 exclude6 Sector7Coverage.exclude7 exclude8
 
 /-- A finite graph with a noncrossing drawing has a Mathlib four-colouring.
 Disconnected graphs, isolated vertices and the empty graph are included. -/
 theorem colorable_of_planeDrawing {V : Type*} [Finite V] {G : SimpleGraph V}
     (drawing : PlaneDrawing G) : G.Colorable 4 :=
   Orbit9Assembly.colorable_of_planeDrawing reducibility
-    exclude5 exclude6 exclude7 exclude8 drawing
+    exclude5 exclude6 Sector7Coverage.exclude7 exclude8 drawing
 
 open Mettapedia.GraphTheory.FourColor
 open GoertzelV24TwoEdgeCutMinimality
@@ -66,7 +67,7 @@ theorem supported_source_construction (hclass : BridgelessSphericalCubicMapData 
       VertexConstructionGSLT.colouring.Supports (VertexConstructionGSLT.route trace)
         Fin.elim0 Fin.elim0 :=
   Orbit9Assembly.supported_source_construction_of_checks reducibility
-    exclude5 exclude6 exclude7 exclude8 hclass
+    exclude5 exclude6 Sector7Coverage.exclude7 exclude8 hclass
 
 /-- Any complete valid vertex sweep admits compatible choices. This asserts
 existence of a successful choice, without requiring all partial choices to extend. -/

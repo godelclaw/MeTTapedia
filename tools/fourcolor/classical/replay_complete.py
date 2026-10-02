@@ -18,7 +18,8 @@ import time
 
 from replay_adapters import OPTIONS, REFERENCE_REVISION, capture
 
-MODULES = ["ReferenceBaselineAudit", "DiamondFamilyReducibility", "Complete", "CompleteAudit"]
+MODULES = ["ReferenceBaselineAudit", "DiamondFamilyReducibility", "Sector7Region",
+           "Sector7Coverage", "Sector7Audit", "Complete", "CompleteAudit"]
 
 
 def digest(path):

@@ -283,7 +283,8 @@ lake build kernelComplete
 ```
 
 The target first audits the uncompressed reference in a separate Lean process.
-It then checks `DiamondFamilyReducibility`, `Complete` and `CompleteAudit`.
+It then checks `DiamondFamilyReducibility`, the three `Sector7` modules,
+`Complete` and `CompleteAudit`.
 The compositional theorem does
 not import the original unconditional theorem or the superseded arity-nine,
 arity-ten and arity-eleven presentations. Its audit follows the dependencies
@@ -310,6 +311,16 @@ The [summary record](../../tools/fourcolor/classical/diamond-summary-measurement
 records the common elimination law and its integrated reconstruction.
 The [split repair record](../../tools/fourcolor/classical/diamond-split-measurements.json)
 records the subsequent configuration-2-to-1 transfer and dependency replacement.
+The [degree-seven regional receipt](../../tools/fourcolor/classical/sector7-region-measurements.json)
+records the replacement of sixteen hubcap fits by one. `Sector7Region`
+checks the seven signed bounds `4,5,3,-2,-1,0,1` on `p7_5836r`;
+`Sector7Coverage` rebuilds eight ancestors while reusing unchanged branches.
+The complete endpoint audit requires all seven new bounds and excludes the
+112 original member checks, sixteen fits and superseded ancestors from its
+proof dependencies. The old declarations remain imported by shared modules.
+This saves 105 member-check obligations; the recursive checker and all
+catalogue soundness obligations remain. Replay the local comparison with
+`lake build kernelSector7`.
 The reference replay, shared-presentation builds and final adapter audit are
 distinct measurements; imported dependencies are reused by the final gate.
 
@@ -808,6 +819,11 @@ The complete assembly additionally consumes the arity-nine sharing, where
 8,212 independent checks become 8,125. Across arities nine through eleven,
 11,363 checks become 11,132, with 218 separate finite identity or classification
 checks. The unconditional endpoints consume all 231 replacements.
+
+The degree-seven regional replacement separately changes 112 member checks
+to seven, bringing the complete proof's net saving to 336. Its sixteen fit
+theorems become one. These are counts of proof obligations, not primitive
+recursive checker operations or a measured whole-build speedup.
 
 All 633 configurations and all 32 discharging-rule labels remain. The shared
 joint-profile certificate supplies configuration 2 and configuration 4;
@@ -1422,4 +1438,32 @@ and `ChainReductionAudit` distinguish this completed local consumer from the
 remaining occurrence-supply theorem. The only original rank certificate is
 configuration 7. No new table or uniform repair scheme is introduced, and the
 complete assembly still retains 633 coverage entries and 629 original
-certificate dependencies.
+configuration certificate dependencies.
+
+## Recognizing the chain from a degree word
+
+`ChainFanRecognition.not_in_minimal` recognizes the chain on the actual dual
+from a degree-six centre with four consecutive neighbour degrees `5,6,5,5`.
+The rotation walk supplies its three core triangles. `ChainCoreReading`
+derives core injectivity and excludes extra core edges using the facial
+triangle property of the minimal domain. `ChainCoreCompletion` extends the
+five core stars and identifies both readings of every shared outer corner.
+Its thirteen source images, including the eight boundary ports, lie within
+radius two of the original centre.
+
+`ChainCoreOccurrence` derives the full occurrence contract, allowing boundary
+ports to coincide outside the core. `ActualChainRecognition` passes this
+constructed occurrence to `ActualChainReduction`, which supplies the initial
+colouring from strict two-vertex descent and reconstructs the original
+colouring through the shared repair. No caller-supplied injectivity,
+boundary completion, starting colouring or exterior closure is needed.
+
+`ChainRecognitionExample` starts at directed edge `(39,28)` of the retained
+42-vertex graph. The degree word, all five core images and all thirteen
+reconstructed source images are checked. Replay with
+`lake build kernelChainRecognition`; its 26-root audit retains only classical
+configuration 7 as a rank certificate and excludes complete Four Colour
+endpoints. The [receipt](../../tools/fourcolor/near-linear/chain-recognition-measurements.json)
+records the exact hypotheses. Deriving this degree word or another reduction
+from every surviving joint charge profile remains open. This recognition
+result removes no catalogue entry or additional original certificate.

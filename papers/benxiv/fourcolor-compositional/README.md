@@ -132,12 +132,22 @@ then reconstruct a colouring. No exterior-closure or initial-colouring
 hypothesis is left to the caller. The 42-vertex example supplies the geometric
 occurrence contract, including the complete rotation, in Lean.
 
-This completes the local consumer for a supplied occurrence. Recognizing
-such occurrences from charge and overlap constraints, and covering the
-remaining neighbourhood profiles, are still open. The
+This completes the local consumer for a supplied occurrence. The
 [reduction receipt](../../../tools/fourcolor/near-linear/chain-reduction-measurements.json)
 retains configuration 7 as the single base certificate and records no change
 to the complete assembly's coverage or certificate counts.
+
+Recognition now starts from a short degree word: a degree-six centre with
+four consecutive neighbours of degrees `5,6,5,5`. The
+[recognition theorem](../../../lean/fourcolor-classical/MettapediaFourColor/ChainFanRecognition.lean)
+constructs the three-triangle core, proves it has no identifications or
+extra core edges in the minimal domain, and grows the same eight-port
+boundary. The complete observation lies within radius two. Its actual
+reduction then reconstructs a colouring using the same retained base.
+The [recognition receipt](../../../tools/fourcolor/near-linear/chain-recognition-measurements.json)
+includes an exact recovery of the retained 42-vertex example. The next
+coverage obligation is to derive this degree word or a certified alternative
+from every surviving joint charge profile.
 
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first
@@ -1117,7 +1127,7 @@ choices by calling the system a fibration.
 | **Goertzel/Fable: corridors, Count and pumping** | Exact gluing, support composition, physical splicing and finite reflection at a supplied width are reusable. Global corridor or bounded-width supply was not established by the proposed defect argument. |
 | **Literal constructions and geometry** | Source traces actually construct the given map. Facial sweeps, contour boundaries, curvature laws and tube replacements connect semantic operations to embedded graphs. |
 | **GSLT witnesses and representation transport** | Colouring choices compose along routes, survive certified replacements and transfer between graph layouts. A MeTTa premise-engine application uses the same theorem. |
-| **Classical reconstruction and compression** | The complete theorem now consumes the classical catalogue through witness reconstruction. Shared discharging lemmas replace 231 independent computations in that complete proof. |
+| **Classical reconstruction and compression** | The complete theorem consumes the classical catalogue through witness reconstruction. Shared charge arguments save 336 independent member-check obligations: 231 at arities 9–11 and 105 in a degree-seven region. |
 
 This changes the original playbook's last two phases. The transfer engine
 remains useful, but universal corridor supply is no longer a premise of the
@@ -1173,6 +1183,7 @@ They specify hypotheses that a shorter proof must supply or replace.
 | --- | --- |
 | Catalogue entries retained / removed | 633 / 0 |
 | Independent discharging checks at arities 9–11 | 11,363 → 11,132: 231 replaced |
+| Degree-seven regional member checks | 112 → 7: 105 fewer, integrated into the complete endpoints; sixteen fits become one |
 | Separate finite input identities or classifications | 218, counted separately |
 | Discharging-rule labels retained | 32 |
 | Reference configuration certificate dependencies retained / replaced | 629 / 4 |
@@ -1206,6 +1217,17 @@ certificates from the complete endpoint dependencies. Shared reference modules s
 old declarations;
 runtime and artifact-size savings are not claimed. Declaration counts and
 independent-computation savings are different metrics.
+
+The [degree-seven regional replacement](../../../lean/fourcolor-classical/MettapediaFourColor/Sector7Region.lean)
+adds 105 fewer member-check obligations, for 336 saved across the complete
+assembly. Seven signed bounds hold on the whole retained region, so its
+sixteen separate hubcaps can be replaced before splitting that region.
+Eight rebuilt ancestors connect this local result to the complete theorem.
+The existing recursive checker and configuration certificates remain;
+this is proved regional reuse, without a claim of a new uniform repair law
+or fewer coverage configurations. The
+[receipt](../../../tools/fourcolor/classical/sector7-region-measurements.json)
+records the exact removed dependencies.
 
 The split transfer establishes a first pair sharing one base repair. The
 joint-profile certificate now gives a common finite core explanation including
