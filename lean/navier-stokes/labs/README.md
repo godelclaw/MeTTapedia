@@ -22150,3 +22150,302 @@ trial functional checks its derivative against the complete NS tangent,
 including the newly generated mean. The polynomial identity is exact,
 not a finite-difference approximation. The PDE, heat-integral and local
 interval arguments remain analytic; no Lean declarations or axioms change.
+
+## Filtered-source histories paid from full energy
+
+`coarse_receiver_history.py` accompanies a fixed-resolution payment for
+every available smooth unforced periodic history. No smallness, planar
+polarization or favorable sign of the hidden transfer is assumed. A
+nonnegative full-energy reserve pays the complete coarse nonlinear source
+renewal. This removes a named part of (214), but its coefficient diverges
+as the heat cutoff tends to zero. The remaining fine-scale estimate is
+not supplied by the construction.
+
+### Actual source evolution and its moving adjoint
+
+Work on normalized period-2pi T3. Fix nu>0 and a smooth unforced solution
+prefix u. Retain Pi, Q=Pi P, w=Pi u, h=Pi N(u), and E=||u||2^2,
+Z=||grad u||2^2. In this section the heat parameter is a SPATIAL parameter:
+write H_r=exp(r Delta), so H_r=S_(r/nu) in the previous convention.
+It is distinct from physical time t. Set
+
+```text
+v_r=H_r w, n_r=Pi N(v_r), z_r=H_r h,
+L_v y=-Q[(v.grad)y+(y.grad)v],
+L_v^* psi=Q[(v.grad)psi-(grad v)^T psi],
+G_r=sum_j Pi B(partial_j v_r,partial_j v_r),
+f_r=L_(v_r)(z_r-n_r)-2nu G_r.
+
+partial_t n_r=nu Delta n_r+L_(v_r)n_r+f_r.            (222)
+```
+
+This is an equation for the ACTUAL filtered nonlinear source. It follows
+by differentiating Pi N(v_r), with
+`partial_t v_r=nu Delta v_r+z_r`, and using the Laplacian product rule.
+In particular z_r-n_r is the covariance-plus-parent term r_s+p_s of
+(207), with s=r/nu. It is not a freely chosen control. Its covariance
+still obeys (210), including Xi and both nonlinear parents. Neither
+that constraint nor the product-diffusion term G_r is deleted here.
+
+For each fixed r>0 and prefix endpoint T, consider the backward linear
+adjoint with a smooth solenoidal, zero-vertical-mean terminal test:
+
+```text
+-partial_t psi_r=nu Delta psi_r+L_(v_r)^* psi_r.
+<psi_r(T),n_r(T)>-<psi_r(0),n_r(0)>
+ =integral_0^T [<L_(v_r)^*psi_r,z_r-n_r>
+                         -2nu<psi_r,G_r>] dt.        (223)
+```
+
+Both endpoints are retained. On a given smooth prefix the coefficients
+are smooth; reversing time gives a linear parabolic equation. No
+existence beyond that prefix is assumed. The Leray projection is part
+of the operator. It disappears only in its legitimate solenoidal
+pairing. This is the existing projected adjoint (160), applied to the
+filtered source equation, not a new reconstruction of the full NS flow.
+
+Define explicit lattice constants, summing over k in Z3 with k_z!=0:
+
+```text
+alpha_r^2=sum exp(-2r|k|^2),
+beta_r^2 =sum |k|^2 exp(-2r|k|^2),
+chi_r^2  =sum |k|^-2 exp(-2r|k|^2).                  (224)
+```
+
+All are finite for r>0. Fourier Cauchy--Schwarz gives
+`||grad v_r||F,infinity<=alpha_r sqrt(Z)`.
+In reversed physical time sigma, the exact adjoint norm identity is
+
+```text
+(1/2) partial_sigma ||psi_r||2^2
+ =-nu||grad psi_r||2^2-<psi_r,(grad v_r)^T psi_r>
+ <=alpha_r sqrt(Z) ||psi_r||2^2.
+```
+
+The coefficient is evaluated along the reversed actual history.
+For any physical a<=b within that history, the full energy identity
+`E'=-2nu Z` and Cauchy--Schwarz yield
+
+```text
+||psi_r(a)||2
+ <=exp(alpha_r sqrt((b-a)(E(a)-E(b))/(2nu)))
+       ||psi_r(b)||2
+ <=exp(alpha_r sqrt(H E(0)/(2nu))) ||psi_r(b)||2,
+       0<=a<=b<=H.                                  (225)
+```
+
+Thus this genuinely moving observer has a fixed-resolution growth price
+from original resources, without a future H4 bound or a small receiver.
+The estimate allows amplification. The exact shear
+`u=(A exp(-nu t) sin(z),0,0)` and the terminal test
+`psi=(cos(y)cos(z),-2sin(y)sin(2z),-cos(y)cos(2z))`
+have `||psi||2^2=3/2`, `||grad psi||2^2=27/4` and instantaneous reversed
+half-norm rate `-27nu/4+A exp(-r)/8`. At r=log(2), A=128nu this is
+`5nu/4>0`. Both fields belong to the receiver subspace. This shows why
+contractivity cannot replace the finite growth price.
+
+Composition does not restart the energy allowance. For interval lengths
+delta_j and energies actually spent e_j=E(t_j)-E(t_(j+1)),
+`sum sqrt(delta_j e_j)<=sqrt((sum delta_j)(sum e_j))`.
+The exponent in the product of adjoint bounds is therefore paid by the
+same original E. This is the dissipation-root observation already treated
+by `FullEnergyParentReserve`, used here to bound the physical adjoint.
+The remaining forcing f_r in (223) must still be paid.
+
+### Payment of the complete coarse renewal
+
+Choose a fixed rho>0 before evaluating future history. Define
+
+```text
+C_(nu,rho)(w)=(1/nu^2) integral_rho^infinity ||n_r||2^2 dr,
+K_r=L_(v_r)^* n_r,
+P_(nu,rho)(u)=(2/nu^2) integral_rho^infinity <K_r,H_r h> dr.
+
+partial_t C_(nu,rho)
+ =-||n_rho||2^2/nu+P_(nu,rho).                       (226)
+```
+
+C_(nu,rho) is precisely the coarse part of the previous C_nu, after the
+change of auxiliary variable r=nu s. The heat derivative in (226) spends
+its lower endpoint. The nonlinear part retains every generated mode.
+Self-adjointness and integration by parts give the additional exact form
+
+```text
+P_(nu,rho)=(2/nu^2) integral_rho^infinity
+                      <u tensor u,grad H_r K_r> dr. (227)
+```
+
+The u here is the FULL fluid, including the evolving mean. This identity
+does not freeze K_r or omit its dependence on the source: 2K_r is the
+gradient with respect to v_r of ||Pi N(v_r)||2^2 at the current state.
+No separate signed correction T is added or differentiated.
+
+Here is a quantitative bound with no unobserved norms. For
+`W_j(v)=sum |k|^j |v_hat(k)|`, projections Q contract each coefficient,
+and the complete convolutions give
+
+```text
+W_0(n)<=W_0(v)W_1(v),
+W_1(n)<=W_1(v)^2+W_0(v)W_2(v),
+||K||2<=W_0(K)<=2W_0(v)W_1(v)^2+W_0(v)^2W_2(v).
+
+W_0(v_r)<=alpha_r sqrt(E),
+W_0(v_r)<=chi_r sqrt(Z),
+W_1(v_r)<=alpha_r sqrt(Z),
+W_2(v_r)<=beta_r sqrt(Z).
+```
+
+Consequently, with explicit functions depending only on the heat scale,
+
+```text
+j(r)=2 alpha_r^3 beta_r+alpha_r chi_r beta_r^2,
+I_rho=integral_rho^infinity j(r) dr,
+||grad H_r K_r||F,infinity<=j(r) sqrt(E) Z,
+|P_(nu,rho)(u)|<=(2I_rho/nu^2) E^(3/2) Z.            (228)
+```
+
+The constants are finite. For an entirely elementary closed upper bound,
+put q=exp(-rho), R=q^2 and
+
+```text
+Lbar_rho=(1+R)^3(1+4R+R^2)/(1-R)^5.
+I_rho<=(3/4)Lbar_rho^2.
+```
+
+Indeed all three squared lattice constants are bounded by
+`sum_(k_z!=0)(1+|k|^2)exp(-2rho|k|^2)<=Lbar_rho`.
+Enlarging this last sum to all Z3, factor its three coordinates and use
+`exp(-2rho m^2)<=R^|m|` to sum the geometric series and its second moment.
+For r>=rho, each lattice constant decays by at least exp(-(r-rho));
+the four factors in j give the integral factor 1/4. At rho=log(2),
+`Lbar_rho=1375/81`. This closed bound is conservative; I_rho is the
+more precise constant used below.
+
+The required reserve now follows from the ACTUAL energy equation:
+
+```text
+R_(nu,rho)(E)=(2I_rho/(5nu^3)) E^(5/2)>=0,
+partial_t R_(nu,rho)=-(2I_rho/nu^2) E^(3/2) Z,
+partial_t R_(nu,rho)+|P_(nu,rho)|<=0.                 (229)
+```
+
+The fifth power is the fifth power of ||u||2, not of E. Its nonlinear
+derivative vanishes because all internal kinetic transfers cancel in E.
+The function E^(5/2) has a continuous derivative at E=0, so no singular
+zero-energy convention is needed. Integrating over ANY compatible
+subinterval [a,b] gives both payments
+
+```text
+integral_a^b |P_(nu,rho)|<=R_(nu,rho)(E(a))-R_(nu,rho)(E(b)),
+C_(nu,rho)(w(b))+R_(nu,rho)(E(b))
+ +(1/nu) integral_a^b ||n_rho||2^2
+ <=C_(nu,rho)(w(a))+R_(nu,rho)(E(a)).                 (230)
+```
+
+This is valid for arbitrary smooth periodic histories at the chosen
+fixed rho. There is no perturbative H3 assumption, preferred phase,
+invariant planar family or restriction on the number of returns.
+At a seam the full velocity must match and the same rho and reserve
+remain in use. The scalar energy does not reconstruct an interior fluid
+or certify compatibility of two arbitrary pattern labels.
+
+### The precise remainder and the price of refining resolution
+
+Let P_less be the same integral as P_(nu,rho), but over 0<r<rho.
+Retain the original nonnegative J of (198), with its unchanged gamma.
+Adding R_(nu,rho) to J removes only the coarse quintic work from (214):
+
+```text
+(J+R_(nu,rho))'+2g(w)
+ <=-nu D_w-||Pi N(w)||2^2/nu+<Aw,h>+D H_nu(w)[h]
+                  +P_less-6gamma E^2 Z/nu^3.        (231)
+```
+
+The sufficient remaining task is to bound this right side by
+`(nu/2)D(full u)`, or to pay its excess with a further nonnegative,
+original-data correction. The initial allowance has increased by the
+explicit finite R_(nu,rho)(E(0)). The small-r part is exactly where an
+additional geometric or history estimate is still needed. No part of
+the source endpoint loss is spent twice: the coarse boundary
+`-||n_rho||2^2/nu` cancels the opposite endpoint in the fine heat integral.
+
+Refining resolution is also an exact, testable operation. If rho=rho(t)
+is differentiable, the complete derivative of C_(nu,rho)+R_(nu,rho)
+has the extra terms
+
+```text
+-rho'(t) ||n_rho||2^2/nu^2
+ -(2rho'(t)/(5nu^3)) j(rho) E^(5/2).                 (232)
+```
+
+Both are nonnegative when rho decreases. In particular one cannot apply
+(230) with a new finer cutoff at each seam without paying this change.
+The actual I_rho tends to infinity as rho tends to zero: for small r,
+count lattice points with all three coordinates of order r^(-1/2).
+They give `alpha_r>=c r^(-3/4)` and `beta_r>=c r^(-5/4)`, hence
+`j(r)>=c r^(-7/2)` and a divergent integral. This is a limitation of
+the supplied bound, not a proof that the actual signed fine-scale work
+diverges or that a full-datum allowance is impossible.
+
+For a body force F, (226) additionally contains
+`(2/nu^2) integral_rho^infinity <K_r,H_r Pi P F> dr`, and (229)
+additionally contains `(2I_rho/nu^3) E^(3/2)<u,F>`.
+The theorem is unforced; a forced application must retain these terms.
+Its fixed-resolution scope alone does not exclude a forced singular
+construction or prove arbitrary-data unforced regularity.
+
+There is also an actual concentration test for a stronger possible claim
+about the adjoint, independently of the lattice upper bound. On R3 use
+the full Leray adjoint (160), without the periodic projection Pi. Choose
+a compactly supported smooth solenoidal U equal to `(-x,-y,2z)` on a
+ball: one construction is `curl(chi*(-yz,xz,0))`, with chi equal to one
+there. Choose a nonzero `Psi=curl(0,0,eta)` supported strictly inside that
+ball. Then `-<Psi,(grad U)^T Psi>=||Psi||2^2>0`.
+Normalize both L2 norms to one. By heat convergence in C1, some fixed
+rho_*>0 still gives
+`a_*=-<Psi,(grad H_(rho_*) U)^T Psi>>0`.
+
+Set U_lambda(x)=lambda^(3/2)U(lambda x),
+Psi_lambda(x)=lambda^(3/2)Psi(lambda x), and
+rho_lambda=rho_*/lambda^2. Both L2 norms remain one. Heat scaling and
+the solenoidal pressure pairing give the EXACT instantaneous adjoint rate
+
+```text
+<Psi_lambda,[nu Delta+L_(H_(rho_lambda)U_lambda)^*]Psi_lambda>
+ =lambda^(5/2) a_*-nu lambda^2 ||grad Psi||2^2.        (233)
+```
+
+It tends to positive infinity at every fixed nu>0. These are admissible
+smooth unforced initial velocities, not a constructed forcing or a
+finite-dimensional surrogate. Local smooth existence and continuity let
+one put the terminal test at a sufficiently short positive time and
+retain positive backward norm growth on the actual prefix. Thus a
+uniform INSTANTANEOUS adjoint-growth coefficient depending only on
+kinetic energy and nu cannot replace the scale price. This does not
+refute a full-datum bound, an integrated bound with transient cancellation,
+or (229). The latter keeps its prescribed positive cutoff; the family
+in (233) refines it with lambda. The compact-support and local-PDE
+argument is analytic, separate from the periodic Fourier fixtures.
+
+### Verification and relation to existing tools
+
+The projection and Gaussian-covariance framework is the one already
+derived in (207)--(214), reusing the filtering identities discussed by
+[Johnson](https://arxiv.org/abs/2102.06844). The present original-energy
+price follows directly from the displayed Fourier estimates and energy
+equation. The scalar dissipation-root reserve is already Lean-certified
+in `FullEnergyParentReserve`; its identification with this filtered
+adjoint and the new spatial estimates remain analytic.
+
+Run `python3 -O labs/coarse_receiver_history.py`. Exact rational heat
+weights check (222)--(223), the adjoint norm identity, the three forms
+of coarse renewal, lower-endpoint diffusion and the fine/coarse
+cancellation. The six full-source fixtures cover both hidden phases,
+a nonzero generated mean, nonunit viscosity and the three planar belts
+of (218). Independent exact quartic polarization checks the physical
+capacity derivative. The decaying-shear test verifies positive transient
+adjoint growth, and squared rational inequalities test the explicit
+payment bound. Every convolution and pressure output is retained.
+The checker does not prove the infinite lattice estimates, parabolic
+construction or arbitrary-history PDE conclusions. Those are analytic
+arguments above; no Lean declarations or axioms change.

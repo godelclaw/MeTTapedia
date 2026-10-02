@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [filtered-source history payment](labs/README.md#filtered-source-histories-paid-from-full-energy)
+pays the complete nonlinear renewal above any fixed positive heat cutoff,
+through every smooth unforced periodic history, without a perturbative
+smallness assumption. Its nonnegative reserve is an explicit multiple of
+the fifth power of the full velocity's L2 norm. The evolving source adjoint
+retains pressure, covariance and surrounding parents; its norm growth also
+has an original-energy bound at fixed resolution. Refining the resolution
+has two additional positive costs. The resulting estimate removes the
+coarse part of the quintic defect in (214), while the small-heat-time part
+remains open. These are analytic bounds with exact Fourier fixtures, not
+new Lean-certified physical theorems.
+
 The [covariance--Poisson correction test](labs/README.md#a-covariance-poisson-correction-and-its-complete-physical-defect)
 derives a signed correction whose two principal diffusion terms cancel
 the covariance work exactly. Its remaining covariance and observer
