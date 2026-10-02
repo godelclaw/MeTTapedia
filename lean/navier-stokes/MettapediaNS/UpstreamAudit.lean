@@ -1,3 +1,4 @@
+import MettapediaNS.ReferenceStretchingReserve
 import MettapediaNS.GeometricCascadeLedger
 import MettapediaNS.WholeSpaceEnergyReturn
 import MettapediaNS.CellularCycleReserve
@@ -1544,3 +1545,12 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.total_duration
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.prefix_stretching
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.stretching_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.reserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.payment_with_defects
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.unforced_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.observation_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.initial_zero_mean
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.terminal_zero_mean_weight
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.seam_payment

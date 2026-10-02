@@ -51,6 +51,7 @@ formal proofs.
 | [Chorin, Hald and Kupferman, *Optimal prediction and the Mori-Zwanzig representation of irreversible processes*](https://math.huji.ac.il/~razk/Publications/PDF/CHK00.pdf) | Eliminating hidden variables leaves memory and an initial hidden-state contribution. Equation (131) retains these through an exact nonlinear Duhamel constraint. | This is not a closed Mori-Zwanzig memory kernel or an imported orthogonal-dynamics theorem; kernel construction, approximation error and any statistical assumptions remain separate. |
 | [Constantin and Iyer, *A stochastic Lagrangian representation of the 3-dimensional incompressible Navier-Stokes equations*](https://arxiv.org/abs/math/0511067) | Stochastic trajectories and covector reconstruction connect viscous dynamics to physical velocity. The existing `CovectorFluidBridge` treats its projected equation under explicit hypotheses. | The complete probabilistic construction and arbitrary-data stretching payment are not consequences of the reconstruction algebra alone. |
 | [Morosi and Pizzocchero, *On approximate solutions of the incompressible Euler and Navier-Stokes equations*](https://arxiv.org/abs/1104.3832) | A posteriori residual and norm estimates connect approximations to actual solutions. The transfer-reversal examples use this validation principle with an explicitly derived nonlinear L2 comparison. | Their Sobolev control inequalities include an existence conclusion under their hypotheses. The local L2 transfer certificate instead uses the separately established global stability neighborhood; it does not establish arbitrary-data regularity or import their norm constants. |
+| [Bardos, Lopes Filho, Nussenzveig Lopes, Niu and Titi, *Stability of Two-dimensional Viscous Incompressible Flows Under Three-dimensional Perturbations and Inviscid Symmetry Breaking*](https://arxiv.org/abs/1201.2742) | Relative kinetic energy compares a full flow with a known symmetry-preserving reference. The [reference-stretching reserve](labs/README.md#reference-stretching-paid-without-perturbative-smallness) couples that energy to a negative-Sobolev observation of generated feedback. | Their cylinder boundary hypotheses and constants are not imported unchanged. The new smooth comparison is derived on the stated torus/whole-space domains and leaves pure perturbation self-stretching unpaid. |
 
 The operative interface is a compatible history, not just a named flow
 pattern. For the new cellular family, the observed parent coefficient
@@ -2254,6 +2255,21 @@ need not itself be a fluid. The analytic cost domination fits the existing
 full endpoint velocities remain required for physical gluing. The source
 allowance still relies on the proved small H3 neighborhood; that physical
 restriction, not the Bellman algebra, is the arbitrary-data obstruction.
+
+The [reference-stretching reserve](labs/README.md#reference-stretching-paid-without-perturbative-smallness)
+removes that smallness restriction for ALL mixed cubic stretching terms
+involving a known smooth reference U. The actual difference d=u-U retains
+every generated mode. Its relative kinetic energy pays the source of a
+negative-Sobolev observation, while viscosity pays the quadratic mixed
+terms. A backward two-state reserve bounds the absolute mixed stretching
+on every available smooth prefix, with no future target derivative bound.
+For a matched periodic vertical mean, the initial allowance is a known
+reference coefficient times the original relative kinetic energy.
+Pure g(d) remains unpaid, including its generated parents; this is not an
+arbitrary-data regularity theorem. `ReferenceStretchingReserve` certifies
+nine scalar reserve and composition ingredients. The PDE identification,
+negative-Sobolev estimate and absolutely-continuous norm calculus remain
+analytic.
 
 The [geometric cascade ledger](labs/README.md#a-finite-energy-finite-time-cascade-ledger-with-unbounded-stretching)
 formally separates that remaining question from energy conservation.
