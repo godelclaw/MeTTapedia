@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [concentrated receiver test](labs/README.md#concentration-and-the-limits-of-kinetic-energy-corrections)
+shows that the joint source storage cannot satisfy its proposed universal
+differential payment after adding any fixed continuously differentiable
+function of kinetic energy alone. Smooth unit-energy concentrating data
+have positive quintic renewal of order lambda^(11/2), exceeding the lower
+orders of viscosity, source loss and the energy correction. The construction
+retains pressure and generated mean outputs, and applies to actual short
+unforced histories. It leaves full-initial-datum allowances open: the
+initial source capacity itself grows with concentration. Localization and
+PDE claims are analytic; the accompanying Fourier checks are exact.
+
 The [filtered-source history payment](labs/README.md#filtered-source-histories-paid-from-full-energy)
 pays the complete nonlinear renewal above any fixed positive heat cutoff,
 through every smooth unforced periodic history, without a perturbative

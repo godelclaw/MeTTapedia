@@ -22449,3 +22449,238 @@ payment bound. Every convolution and pressure output is retained.
 The checker does not prove the infinite lattice estimates, parabolic
 construction or arbitrary-history PDE conclusions. Those are analytic
 arguments above; no Lean declarations or axioms change.
+
+## Concentration and the limits of kinetic-energy corrections
+
+`receiver_concentration.py` tests the unpaid fine part of (231). The
+result rules out a universal differential payment by the particular
+joint storage (195) plus any fixed C1 function of kinetic energy. It
+does not rule out a continuation allowance depending on the full initial
+datum, a different geometric storage, or an integrated history argument.
+The fixed-resolution payment (229) remains valid.
+
+### The assertion being tested
+
+Fix nu>0 and a nonnegative C1 function F of kinetic energy, chosen before
+the datum. F may depend on nu and a prescribed horizon or heat cutoff.
+The proposed assertion is that every smooth unforced periodic solution
+satisfies
+
+```text
+partial_t [V_nu(Pi u)+F(E(u))]+2g(Pi u)
+                       <=(nu/2)||Delta u||2^2.        (234)
+```
+
+The energy cube in (198), with ANY fixed coefficient, and its sum with
+the coarse reserve (229) are particular choices. The counterexample
+below has E(u0)=1 exactly. It gives arbitrarily large positive initial
+violations of (234), persisting on actual short smooth solution
+intervals. No forcing or closed finite-mode evolution is used.
+
+### A positive full-source coefficient
+
+Localization must retain outputs removed by the periodic vertical-mean
+projection: a localized packet around a zero-vertical-frequency output
+need not remain on the zero-frequency plane. First perform the calculation
+with the FULL advective Leray source. Use the spatial heat H_r=exp(r Delta)
+and put
+
+```text
+Ctilde_nu(U)=nu^-2 integral_0^infinity ||N(H_r U)||2^2 dr,
+Ptilde(U)=D Ctilde_1(U)[N(U)].
+```
+
+For the periodic matched data w_- and w_+ in (194), the exact full-source
+calculation gives
+
+```text
+Ptilde(w_-)=
+ 85124461354557274284120223753665783495727
+ /812632148219367449108260185060000000000000000 >0,
+Ptilde(w_+)=-Ptilde(w_-).                             (235)
+```
+
+Both have the same energy and full initial source capacity. Their actual
+nonlinear directions generate a vertical mean, and that mean is retained
+in (235). The checker independently verifies the nonnegative full heat
+square, the pure-heat endpoint loss, kinetic cancellation and an exact
+quartic polarization of the full physical derivative. This is the
+advective source capacity, not the earlier inverse-curl stretching
+capacity of `caloric_force.py`.
+
+### Solenoidal localization with a positive coefficient
+
+Use the same measure normalization on R3 as on the torus: dmu=(2pi)^-3 dx.
+Let A_per=curl(-Delta)^-1 w_- be a periodic vector potential. All its
+Fourier modes have nonzero vertical coordinate. Choose a nonzero
+nonnegative Schwartz function phi with compact Fourier support, and set
+
+```text
+U_L=curl[phi(x/L) A_per(x)].
+```
+
+Such a phi can be obtained by squaring the real inverse Fourier transform
+of a real even smooth compactly supported function. The field U_L is
+Schwartz and exactly solenoidal. For large L its Fourier support lies
+in finitely many narrow packets around the original centers, separated
+both from zero and from the plane xi_z=0. The envelope derivative in
+the curl is retained; its leading contribution is O(1/L).
+
+Expand the quintic functional Ptilde into its finite packet integrals.
+Nonresonant combinations vanish for large L. In a resonant term rescale
+the packet offsets by L. Away from zero the Leray multipliers converge
+to their central values. At a zero intermediate output, use divergence
+form: P(k) i k_j is bounded by |k| and extends continuously as zero
+there. Such zero-output source terms are lower order; no pressure
+singularity is discarded. The auxiliary heat denominator stays bounded
+away from zero because the pairing contains original nonzero input
+frequencies, including when N(U_L) has a low-frequency output.
+Thus the heat integrals have a common integrable exponential bound.
+Dominated convergence gives
+
+```text
+L^-3 Ptilde(U_L) -> Ptilde(w_-) integral phi^5 dmu >0,
+L^-3 ||U_L||2^2 -> ||w_-||2,per^2 integral phi^2 dmu >0.
+```
+
+Fix a sufficiently large L and normalize by the exact L2 norm. This
+gives a fixed Schwartz solenoidal U with E(U)=1, a vertical Fourier gap,
+and c_*=Ptilde(U)>0. Normalization preserves this strict sign. The checker
+tests a finite one-coordinate periodic envelope, including its curl
+correction and fifth moment; it does not certify this R3 packet limit.
+
+### Unit-energy concentration and the actual periodic receiver
+
+On R3 set U_lambda(x)=lambda^(3/2)U(lambda x). Its energy remains one.
+The complete scaling laws, with the volume factor included, are
+
+```text
+Z(U_lambda)=lambda^2 Z(U),
+D(U_lambda)=lambda^4 D(U),
+g(U_lambda)=lambda^(9/2)g(U),
+||N(U_lambda)||2^2=lambda^5 ||N(U)||2^2,
+D H_nu(U_lambda)[N(U_lambda)]
+                  =lambda^5 D H_1(U)[N(U)]/nu,
+Ctilde_nu(U_lambda)=lambda^3 Ctilde_1(U)/nu^2,
+D Ctilde_nu(U_lambda)[N(U_lambda)]
+                  =lambda^(11/2)c_*/nu^2.            (236)
+```
+
+These are concentration laws, not the fixed-amplitude harmonic dilations
+of (199). In particular the quartic source loss is only order lambda^5,
+whereas the positive quintic renewal has the larger exponent 11/2.
+
+For an actual datum on the original period-2pi torus, periodize:
+
+```text
+v_lambda(x)=lambda^(3/2) sum_(m in Z3) U(lambda(x+2pi m)),
+u_(0,lambda)=v_lambda/||v_lambda||2,per.
+```
+
+With Fourier transform Uhat(xi)=(2pi)^-3 integral U(x)exp(-i xi.x)dx,
+vhat_lambda(k)=lambda^-3/2 Uhat(k/lambda). Parseval and Riemann sums give
+||v_lambda||2,per ->1. The original vertical gap implies Pi u_(0,lambda)
+=u_(0,lambda) exactly. The data are finite Fourier polynomials because
+Uhat is compactly supported, but their NS evolution is never truncated.
+
+Riemann sums of the multilinear Fourier formulas give the same leading
+constants in (236). The projections on generated outputs require a
+separate check: the removed plane k_z=0 is codimension one in the
+rescaled sums, and its bounded integrands have vanishing normalized
+contribution. All initial frequencies have a uniform rescaled gap, so
+the heat-time domination used above applies here as well. Thus the
+actual receiver, with h=Pi N(u_(0,lambda)), satisfies
+
+```text
+D C_nu(u_(0,lambda))[h]
+          =lambda^(11/2)(c_*+o(1))/nu^2,
+D H_nu(u_(0,lambda))[h]=O(lambda^5/nu),
+||h||2^2=O(lambda^5),
+Z=O(lambda^2), D=O(lambda^4), g=O(lambda^(9/2)).       (237)
+```
+
+The generated mean is retained in the physical equation. Its projection
+in this initial receiver derivative is exactly the one in (196), not an
+assumption that the mean remains zero during evolution.
+
+Because E(u_(0,lambda))=1, the energy correction contributes exactly
+-2nu F'(1)Z, of order lambda^2. Substitution into (196) shows
+
+```text
+partial_t[V_nu(Pi u)+F(E)]+2g(Pi u)-(nu/2)D(u)
+          =lambda^(11/2)(c_*+o(1))/nu^2 >0            (238)
+```
+
+at the initial time for every sufficiently large lambda. For each such
+smooth datum, local unforced NS existence and continuity preserve the
+strict inequality on some positive interval. Integrating over a smaller
+interval violates (234)'s proposed storage payment with its original
+initial reserve. No interval uniform in lambda is asserted by this
+periodic argument.
+
+At any fixed rho>0 the coarse renewal is O(lambda^2), directly by (228).
+Hence the fine term P_less has the same positive lambda^(11/2) leading
+coefficient as (237). Adding the coarse energy reserve pays the part it
+was designed to pay; it cannot remove this concentrating fine remainder.
+
+### A whole-space burst and what it does not refute
+
+There is also a common rescaled-time interpretation on R3. Let V^epsilon
+solve the actual unforced equation from the fixed datum U with viscosity
+epsilon, and take epsilon=nu/sqrt(lambda). Standard local H^m energy
+estimates for m sufficiently large give a common interval [0,tau0] and
+uniform smooth bounds for 0<=epsilon<=1. This does not assume global Euler
+or NS regularity: the transport estimate and nonpositive viscous term
+give a local lifespan from ||U||_(H^m) alone. Higher initial regularity
+gives a uniform bound on the time derivative in the norms used here.
+
+Ptilde is continuous on these bounded smooth sets. On heat times below
+one this follows from Sobolev product estimates; above one, Fourier heat
+estimates bound its integrand by O(r^(-7/2)) times bounded energy and
+enstrophy. Reduce tau0 so that Ptilde(V^epsilon(tau))>=c_*/2 uniformly.
+Rescale the ACTUAL solution by
+
+```text
+u_lambda(t,x)=lambda^(3/2)
+                 V^(nu/sqrt(lambda))(lambda^(5/2)t,lambda x).
+```
+
+It has viscosity nu and unit initial energy. The leading renewal
+integrated to tau0 lambda^(-5/2) is at least
+c_*tau0 lambda^3/(2nu^2). The integrated quartic terms are
+O(lambda^(5/2)/nu), cubic stretching O(lambda^2), and viscous
+dissipation O(nu lambda^(3/2)). The energy loss is only
+O(nu lambda^(-1/2)), so any fixed C1 energy correction changes by that
+order near E=1. Consequently the integrated excess of the analogous
+full-space joint storage payment is positive and unbounded as lambda
+increases. This is an actual unforced burst, not a prescribed force.
+
+However, the ORIGINAL full-source capacity already has size
+lambda^3 Ctilde_1(U)/nu^2. The burst does not exceed every possible
+allowance based on the full datum. It refutes the particular monotone
+storage inequality, not the signed stretching criterion itself, and
+does not construct indefinite renewal or a singular NS solution.
+Allowing F to depend on concentration information from the original
+datum is outside the fixed-energy-correction claim (234).
+
+The next physical resource must therefore control the concentrating
+source geometry or its actual renewal history; positivity of the
+current heat square and a fixed kinetic-energy supplement do not
+supply that control. This retains the distinction between a finite
+burst and unbounded repeated renewal.
+
+### Verification
+
+Run `python3 -O labs/receiver_concentration.py`. The exact fixtures check
+the full-source coefficient, its opposite phase, all nonlinear outputs,
+the heat-square identity, endpoint diffusion, independent quartic
+polarization, concentration exponents with the volume factor, and the
+fine/coarse split. Periodic envelopes at lengths 32 and 128 have positive
+coefficients within respectively 0.000100 and 0.00000624 of their
+predicted fifth-moment limit in relative error. The actual comparisons
+are rational, not rounded floating-point sign tests.
+
+The Schwartz localization, Riemann-sum passage, local PDE intervals and
+uniform rescaled-time argument are analytic. They are not newly
+Lean-certified, and the finite checker does not prove them. No Lean
+declarations or axioms change.
