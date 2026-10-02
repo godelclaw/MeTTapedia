@@ -25813,3 +25813,340 @@ histories, exact shear moments, and all coefficient/weight derivative
 identities. The equal integrated rates of the ordered pair are consistent
 with its coordinate symmetry; their pointwise frame observations still
 need not agree. No Lean declarations or axioms change.
+
+## Vorticity-direction payment and the concentration obstruction
+
+`vorticity_direction_payment.py` retains the geometric diffusion in the
+classical vorticity--energy estimate of
+[Qian, *An estimate for the vorticity of the Navier--Stokes equation*,
+Theorem 1 and equations (11), (16)](https://www.numdam.org/item/10.1016/j.crma.2008.11.007.pdf).
+That paper proves monotonicity of
+`||omega||_1+||u||_2^2/(2sqrt(2)nu)` on the periodic domain. The calculation
+below keeps the nonnegative terms in its argument and compares their
+payment with the existing transported-frame conversion equation. It is
+reuse of a classical estimate, not a claim of a new regularity theorem.
+
+### A physical reserve without frame normalization
+
+Let u be an actual smooth unforced solution on an available compact time
+interval, `nu>0`, `B=grad u`, `S=(B+B^T)/2`, `omega=curl u`,
+`r=|omega|`, and `sigma=|S|_F`. The domain is the flat periodic torus,
+or R3 with finite energy, initially integrable vorticity and sufficient
+smoothness for the usual local strong solution and energy identity.
+On a smooth whole-space prefix, temporary bounded-gradient estimates for
+the linear vorticity equation preserve its L1 integrability. Spatial
+cutoffs then justify the integrations below; the resulting allowance
+does not contain that temporary bound. No transfer of (338) to R3 is
+being asserted here.
+
+Fix `delta>0`, constant in space and time, and put
+
+```text
+r_delta=sqrt(r^2+delta),
+A_delta=sum_j [|partial_j omega|^2/r_delta
+                  -(omega.partial_j omega)^2/r_delta^3],
+J_delta=(r-sqrt(2)sigma)^2/(2sqrt(2))
+                  +r sigma-omega.S omega/r_delta.             (342)
+```
+
+Both costs are nonnegative. The first follows from Cauchy--Schwarz;
+the second uses `|omega.S omega|<=sigma r^2` and `r<=r_delta`.
+The actual curl equation, including all internally generated parents, gives
+
+```text
+(partial_t+u.grad-nu Delta)r_delta
+                  =omega.S omega/r_delta-nu A_delta.
+```
+
+The pointwise identity `|B|_F^2=|S|_F^2+r^2/2` and the actual
+kinetic-energy equation give the stronger local balance
+
+```text
+rho_delta=r_delta-sqrt(delta)+|u|^2/(2sqrt(2)nu),
+partial_t rho_delta
+ +div[u rho_delta+p u/(sqrt(2)nu)]-nu Delta rho_delta
+                                  =-nu A_delta-J_delta.       (342a)
+```
+
+Pressure is retained as a flux. The nonnegative reserve
+
+```text
+R_delta(t)=integral (r_delta-sqrt(delta))
+                          +||u(t)||_2^2/(2sqrt(2)nu)
+```
+
+therefore has the exact balance
+
+```text
+R_delta' +nu integral A_delta+integral J_delta=0,
+R_delta(b)+integral_a^b integral(nu A_delta+J_delta)=R_delta(a).
+                                                               (343)
+```
+
+Indeed expanding the square in J_delta gives
+`r^2/(2sqrt(2))+sigma^2/sqrt(2)-omega.S omega/r_delta`;
+its spatial integral is `||omega||_2^2/sqrt(2)` minus the stretching
+production. This cancels the kinetic part of the reserve derivative.
+Every compatible segment spends the same account. There is no reset,
+smallness assumption, prescribed reference flow or future supremum in
+its initial allowance, which is at most
+
+```text
+R_0(0)=||omega0||_1+||u0||_2^2/(2sqrt(2)nu).
+```
+
+At a point with `r>0`, let `n=omega/r`. Direct differentiation gives
+
+```text
+A_delta= r^2/r_delta |grad n|^2
+                          +delta/r_delta^3 |grad r|^2.          (344)
+```
+
+Letting delta decrease to zero in (343), Fatou's lemma yields
+
+```text
+R_0(b)+nu integral_a^b integral_{r>0} r|grad n|^2
+                   +integral_a^b integral J_0 <=R_0(a),
+J_0=(r-sqrt(2)sigma)^2/(2sqrt(2))+r sigma-r n.S n,
+J_0=sigma^2/sqrt(2) at r=0.                                  (345)
+```
+
+Only an inequality is asserted in this limit. Diffusion concentrated at
+vorticity zeros can survive in (343) without appearing in the integral
+over `r>0` in (345). The paid geometric cost measures spatial variation
+of direction; it is not a bound on temporal rotation or accumulated
+pointwise stretching. The radial-gradient coefficient in (344) vanishes
+as delta tends to zero at nonzero vorticity.
+
+For an actual force f the right side of (343)'s differential balance is
+
+```text
+integral omega.curl f/r_delta + <u,f>/(sqrt(2)nu).              (346)
+```
+
+Thus kinetic work alone does not account for forcing in this estimate.
+Its vorticity source is retained separately. No special forced
+construction or its hypotheses are changed by this identity.
+
+A full-time calibration is the exact periodic solution
+`u=A exp(-nu k^2 t)(0,sin(kx),cos(kx))`, with integer `k>0`.
+Its nonlinearity and pressure gradient vanish, `omega=k u`,
+`r=Ak exp(-nu k^2 t)`, and `|grad n|^2=k^2`.
+Using normalized spatial measure, its all-time angular cost is `Ak`;
+its all-time J_0 cost is `A^2/(2sqrt(2)nu)`. Together they spend exactly
+the initial reserve. Keeping the same helix stationary requires the
+force `f=nu k^2 u`; the two terms in (346) then pay those costs exactly.
+This forced reference is not an unforced history or a blowup example.
+
+### An original-data bound on flux through a fixed observation boundary
+
+The local law also describes how surrounding unforced fluid supplies a
+region. Fix a smooth compactly supported cutoff `0<=psi<=1` on R3,
+constant in time, with
+`|grad psi|<=C1/ell` and `|Delta psi|<=C2/ell^2`, `ell>0` prescribed
+from the original datum. Integration of (342a) gives
+
+```text
+R_(delta,psi)=integral psi rho_delta,
+R_(delta,psi)' +integral psi(nu A_delta+J_delta)
+ =integral rho_delta[u.grad psi+nu Delta psi]
+                         +integral p u.grad psi/(sqrt(2)nu).   (346a)
+```
+
+These are actual transport, diffusion and pressure fluxes, not external
+forcing or free inputs at the interface. A spatially constant pressure
+gauge contributes zero because `div u=0`.
+
+Their total absolute contribution on ANY smooth prefix `T<=H` has an
+original-data bound. Write `E0=||u0||_2^2`, `R0=R_0(0)`, use the canonical
+whole-space pressure, and let fixed constants `C_P,C_G` satisfy the
+standard Riesz-transform and Sobolev interpolation estimates
+
+```text
+||p||_(3/2)<=C_P||u||_3^2,
+||u||_3^3<=C_G ||u||_2^(3/2)||grad u||_2^(3/2).
+```
+
+Set
+
+```text
+F_(ell,H)=C1/ell [E0 sqrt(H/(2nu))
+        +(1+2C_P)C_G/(2sqrt(2)nu)
+                    E0^(3/2) H^(1/4)/(2nu)^(3/4)]
+                         +nu C2 H R0/ell^2.                  (346b)
+```
+
+Then the integral from zero to T of
+
+```text
+integral [rho_delta |u.grad psi|+nu rho_delta |Delta psi|
+                              +|p u.grad psi|/(sqrt(2)nu)]
+```
+
+is at most F_(ell,H). To see this, use `rho_delta<=r+|u|^2/(2sqrt(2)nu)`,
+`integral r|u|<=||omega||_2||u||_2`,
+`integral |p||u|<=C_P||u||_3^3`,
+`integral_0^T ||omega||_2^2<=E0/(2nu)`, and Holder in time with
+exponents 2 and 4/3, respectively. Finally
+`R_delta(t)<=R_delta(0)<=R0` pays the cutoff diffusion term.
+This bounds absolute influx and outflux, including cancellations that
+would disappear from a signed net balance. Subdividing the SAME history
+at compatible seams does not replenish F_(ell,H).
+
+This is a fixed-boundary estimate, not a bound uniform as ell tends to
+zero. Its transport/pressure coefficient grows as ell^(-1) and its
+cutoff-diffusion coefficient as ell^(-2). A moving or shrinking boundary
+also introduces `integral rho_delta partial_t psi`. Paying the complete
+flux while refining the observation to a concentrating region remains
+open. This is the named spatial-history obligation left by the estimate;
+an incompressible exterior need not supply zero pressure work.
+
+### What remains in directional conversion
+
+Keep the original transported tensor `DM=BM+MB^T`, `M(0)=I`, where
+`D=partial_t+u.grad-nu Delta`. Set `Q=M^(-1)`,
+`e=omega.Q omega`, and
+`W=sum_j |partial_j omega-(partial_j M)Q omega|_Q^2`.
+The earlier metric identity gives `De=-2nu W`. For the fixed positive
+regularizer delta, the exact reaction for
+`k_delta=(r^2+delta)/(e+delta)` is
+
+```text
+(D-2nu grad log(e+delta).grad) k_delta=V_delta k_delta,
+V_delta=2 omega.B omega/(r^2+delta)
+          +2nu [W/(e+delta)-|grad omega|^2/(r^2+delta)].
+```
+
+The unregularized expression, used only as a diagnostic where `r>0`,
+makes the directional terms explicit. Write
+`h=n.Q n`, `a_j=partial_j log r`, and
+`d_j=partial_j n-(partial_j M)Q n`. Then
+
+```text
+V_0=2 n.B n+2nu sum_j [2a_j n.Q d_j/h
+                         +d_j.Q d_j/h-|partial_j n|^2].       (347)
+```
+
+The two pure `a_j^2` terms cancel, but the mixed magnitude/frame term
+remains. At the original frame `M=I`, all its spatial derivatives vanish
+and the entire diffusion difference cancels: `V_0=2 n.B n`.
+Thus (345) does not by itself absorb the conversion reaction, even
+though it pays a genuine geometric cost. The cost is also spatially
+integrated, whereas conversion follows a point or an auxiliary controlled
+sampling history. Bounding the relevant sampling density and the
+remaining mixed frame/strain terms is a further physical obligation.
+The pressure remains implicit in the actual evolution of B; taking curl
+does not remove that evolution or make B freely prescribable.
+
+The checker also evaluates (347) with the actual inherited tensors in
+the simple released-parent and resonant-parent/background fixtures.
+It retains the complete Fourier source and all frame gradients. At
+`x=y=z=pi/4` the simple released state has `n.B n=0`,
+`|grad n|^2=2`, but `W/e-|grad omega|^2/r^2=2560/121>0`.
+The resonant-background fixture has both positive directional strain
+and positive diffusion difference. These are reactions in (347), not
+claims about a material derivative with its Laplacian discarded. These
+are derivatives of the limiting released states, with their existing
+analytic original-parent realization; this test does not assert an
+additional uniform long-time result for them.
+
+For a direct connection to the existing conversion consumer, fix a
+smooth compact periodic prefix and put `w=u-2nu grad log(e+delta)`.
+Let psi be the nonnegative backward adjoint density with prescribed
+smooth terminal value of mass one:
+
+```text
+partial_t psi+div(w psi)+nu Delta psi=0.
+```
+
+The same density observes the actual quotient and the physical reserve:
+
+```text
+<psi(T),k_delta(T)>=1+integral_0^T <psi,V_delta k_delta>,
+R_(delta,psi)' +<psi,nu A_delta+J_delta>
+ =2nu integral rho_delta div[psi grad log(e+delta)]
+                         +integral p u.grad psi/(sqrt(2)nu).   (347a)
+```
+
+This follows by integration by parts in the two actual evolution
+identities. The second line is the time-dependent version of (346a);
+its extra density drift is retained. The density is generally compressible
+even though u is incompressible. Its mass remains one, so
+`R_(delta,psi)(0)<=||rho_delta(0)||_infinity`, an initial-data resource.
+There is no uniform bound here on its spatial derivatives or concentration.
+Nor has `V_delta k_delta` been dominated by the paid costs. The two signed
+terms on the right and that domination are the precise remaining
+obligations for this receiver. Taking terminal densities toward point
+observations requires uniform estimates; smooth-prefix duality alone
+does not provide them. This auxiliary adjoint is not a force on the fluid.
+
+### A precise concentration test on actual whole-space flows
+
+The following refutes a proposed universal linear conversion payment
+from R_0 alone. Fix positive `nu,delta,H`. Choose any `a,b>0` and the
+linear divergence-free field
+
+```text
+v=(-ax-by,bx,az),
+A=(v cross x)/3.
+```
+
+For a smooth radial cutoff chi equal to one on the unit ball and zero
+outside the ball of radius two, `u0=curl(chi A)` is a smooth compactly
+supported admissible velocity and equals v on the unit ball. Its actual
+local unforced NS solution has at `(0,0)`
+
+```text
+omega=(0,0,2b),  grad omega=0,  partial_t omega=(0,0,2ab),
+M=I,  partial_t M=B+B^T,
+partial_t e=0,
+partial_t log k_delta=8ab^2/(4b^2+delta)>0.                    (348)
+```
+
+The vorticity derivative follows by taking curl of the actual initial
+NS tangent. Pressure is the global pressure of the compact initial
+field, not a pressure assigned from the linear core; its curl vanishes.
+Smooth local existence and the smooth tensor equation supply an actual
+interval. Continuity, uniformly for regularizers in `[0,delta]` at this
+nonzero-vorticity point, gives fixed `tau>0,c>0` with
+`log k_eta(tau,0)>=c` for every `0<=eta<=delta`.
+
+Scale the complete actual solution and its original frame by
+
+```text
+u_lambda(t,x)=lambda u(lambda^2 t,lambda x),
+M_lambda(t,x)=M(lambda^2 t,lambda x),
+t_lambda=tau/lambda^2.
+```
+
+Viscosity is unchanged. Both `||omega0,lambda||_1` and
+`||u0,lambda||_2^2` are their original values divided by lambda. Hence
+
+```text
+R_0,lambda(0)=R_0(0)/lambda,
+log k_delta,lambda(t_lambda,0)
+                  =log k_(delta/lambda^4)(tau,0)>=c.           (349)
+```
+
+For sufficiently large lambda, `t_lambda<=H`. Therefore no finite
+constant `C(nu,delta,H)` can make
+`sup_(0<=t<=H, t in the smooth prefix) sup_x (log k_delta)_+
+ <=C(nu,delta,H) R_0(0)` hold for all such data. The same example rules
+out any replacement right side depending only on R_0 that tends to
+zero with R_0. It is an actual positive-time argument, not merely an
+arbitrary collection of local matrix jets.
+
+This does not refute a full-datum allowance, a different coercive reserve,
+or the sufficient time-integrated conversion criterion. In particular
+the time interval in (349) shrinks with concentration, and initial
+higher derivatives grow. It proves neither indefinite renewal nor
+unforced blowup. It identifies the concentration information omitted
+by this particular direct payment proposal.
+
+Run `python3 -O labs/vorticity_direction_payment.py`. The checker
+independently differentiates magnitude jets, retains radial and angular
+terms, checks the reserve's complete slack, the full-time helical flow,
+forced bill, directional frame expansion, compact-core vector potential,
+actual initial curl tangent and concentration exponents. General PDE
+identities, integral estimates and positive-time realization here are
+analytic, not newly Lean-certified. No Lean declarations or axioms change.

@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [vorticity-direction payment](labs/README.md#vorticity-direction-payment-and-the-concentration-obstruction)
+reuses Qian's classical vorticity--energy reserve, retaining its geometric
+diffusion and nonnegative strain remainder. It pays spatial variation of
+vorticity direction along every smooth unforced history, without a frame
+normalization. Its local balance retains the actual boundary pressure
+flux, whose total absolute cost is bounded at each fixed observation
+scale. The directional-conversion equation still retains strain and mixed
+frame derivatives. An actual concentrated whole-space family
+rules out a universal linear conversion payment from this reserve alone.
+The general estimates and positive-time argument are analytic, with exact
+fixtures; no new Lean theorem or arbitrary-data bound is claimed.
+
 The [joint covariance reserve](labs/README.md#a-joint-reserve-with-the-evolving-memory-retained)
 uses incompressibility and the classical div--curl estimate to retain
 pressure without losing derivatives. Mean-frame diffusion pays its gradient
