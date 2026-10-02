@@ -121,11 +121,12 @@ variable [Fintype X] (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
 /-- **Block independence.**  Under the product reference measure, the integral of
 a product of functions of pairwise disjoint blocks is the product of their
 integrals. -/
-theorem integral_prod_restrictTo_eq_prod (f : ∀ S : Finset X, (S → E) → ℂ)
-    (hf : ∀ S, Measurable (f S)) :
-    ∀ I : Finset (Finset X), (I : Set (Finset X)).PairwiseDisjoint id →
-      ∫ ω, ∏ S ∈ I, f S (restrictTo S ω) ∂(Measure.pi fun _ : X => ν₀) =
-        ∏ S ∈ I, ∫ ω, f S (restrictTo S ω) ∂(Measure.pi fun _ : X => ν₀) := by
+theorem integral_prod_supported_eq_prod {P 𝕜 : Type*} [DecidableEq P] [RCLike 𝕜]
+    (supp : P → Finset X) (f : ∀ p, (supp p → E) → 𝕜)
+    (hf : ∀ p, Measurable (f p)) :
+    ∀ I : Finset P, (I : Set P).PairwiseDisjoint supp →
+      ∫ ω, ∏ S ∈ I, f S (restrictTo (supp S) ω) ∂(Measure.pi fun _ : X => ν₀) =
+        ∏ S ∈ I, ∫ ω, f S (restrictTo (supp S) ω) ∂(Measure.pi fun _ : X => ν₀) := by
   intro I
   induction I using Finset.induction_on with
   | empty =>
@@ -133,34 +134,44 @@ theorem integral_prod_restrictTo_eq_prod (f : ∀ S : Finset X, (S → E) → �
     simp
   | insert S₀ I hS₀ ih =>
     intro hI
-    have hI' : (I : Set (Finset X)).PairwiseDisjoint id :=
+    have hI' : (I : Set P).PairwiseDisjoint supp :=
       hI.subset (by rw [coe_insert]; exact Set.subset_insert _ _)
-    have hdisj : ∀ S ∈ I, Disjoint S₀ S := fun S hS =>
+    have hdisj : ∀ S ∈ I, Disjoint (supp S₀) (supp S) := fun S hS =>
       hI (mem_insert_self S₀ I) (mem_insert_of_mem hS) fun h => hS₀ (h ▸ hS)
-    set T : Finset X := I.biUnion id with hTdef
-    have hS₀T : Disjoint S₀ T := by
+    set T : Finset X := I.biUnion supp with hTdef
+    have hS₀T : Disjoint (supp S₀) T := by
       rw [hTdef, Finset.disjoint_biUnion_right]
       exact fun S hS => hdisj S hS
-    let g : (T → E) → ℂ := fun v =>
+    let g : (T → E) → 𝕜 := fun v =>
       ∏ S ∈ I.attach, f S.1 fun i => v ⟨i.1, mem_biUnion.mpr ⟨S.1, S.2, i.2⟩⟩
     have hg : Measurable g :=
       Finset.measurable_prod _ fun S _ =>
         (hf S.1).comp (measurable_pi_lambda _ fun i => measurable_pi_apply _)
-    have hgI : ∀ ω : X → E, ∏ S ∈ I, f S (restrictTo S ω) = g (restrictTo T ω) := by
+    have hgI : ∀ ω : X → E, ∏ S ∈ I, f S (restrictTo (supp S) ω) = g (restrictTo T ω) := by
       intro ω
       rw [← Finset.prod_attach I]
       rfl
     have hcoord : iIndepFun (fun (i : X) (ω : X → E) => ω i) (Measure.pi fun _ : X => ν₀) :=
       iIndepFun_pi (X := fun _ => id) fun _ => aemeasurable_id
-    have hind : IndepFun (fun ω => f S₀ (restrictTo S₀ ω)) (fun ω => g (restrictTo T ω))
+    have hind : IndepFun (fun ω => f S₀ (restrictTo (supp S₀) ω)) (fun ω => g (restrictTo T ω))
         (Measure.pi fun _ : X => ν₀) :=
-      (hcoord.indepFun_finset S₀ T hS₀T fun i => measurable_pi_apply i).comp (hf S₀) hg
+      (hcoord.indepFun_finset (supp S₀) T hS₀T fun i => measurable_pi_apply i).comp (hf S₀) hg
     simp only [prod_insert hS₀]
     rw [← ih hI']
     simp_rw [hgI]
     exact hind.integral_fun_mul_eq_mul_integral
-      ((hf S₀).comp (measurable_restrictTo S₀)).aestronglyMeasurable
+      ((hf S₀).comp (measurable_restrictTo (supp S₀))).aestronglyMeasurable
       (hg.comp (measurable_restrictTo T)).aestronglyMeasurable
+
+
+/-- The support-labelled block independence theorem specialized to labels
+that are themselves finite supports. -/
+theorem integral_prod_restrictTo_eq_prod (f : ∀ S : Finset X, (S → E) → ℂ)
+    (hf : ∀ S, Measurable (f S)) :
+    ∀ I : Finset (Finset X), (I : Set (Finset X)).PairwiseDisjoint id →
+      ∫ ω, ∏ S ∈ I, f S (restrictTo S ω) ∂(Measure.pi fun _ : X => ν₀) =
+        ∏ S ∈ I, ∫ ω, f S (restrictTo S ω) ∂(Measure.pi fun _ : X => ν₀) :=
+  integral_prod_supported_eq_prod ν₀ id f hf
 
 /-- An extra block `Y` disjoint from pairwise disjoint blocks factors out. -/
 theorem integral_mul_prod_restrictTo (Y : Finset X) (H : (Y → E) → ℂ) (hH : Measurable H)

@@ -334,6 +334,7 @@ theorem realDensity_eq_wilsonInteraction (n : ℕ) (β : ℝ) (U : Link 4 n → 
   ring
 
 namespace ScaleTwo
+open PairedLinks Mettapedia.Combinatorics.PolymerGas
 
 /-- These are different lattices, with periods `2(n+3)` and `n+3`. -/
 abbrev FineConfig (n : ℕ) := Link 4 (doubleIndex n) → SU2
@@ -497,41 +498,57 @@ theorem fineDensity_gauge (n : ℕ) (β : ℝ)
     WilsonDyadicGeometry.holonomy_gaugeAct]
   exact congrArg (fun x : ℝ ↦ Real.exp (-β * x)) he
 
-/-- Gauge covariance of the chart and Haar invariance of all fluctuation
-variables give exact gauge invariance of the generated coarse density. -/
-theorem coarseDensity_gauge_restriction (n : ℕ) (β : ℝ)
-    (g : Site 4 (doubleIndex n) → SU2) (c : CoarseConfig n) :
-    coarseDensity n β (WilsonDyadicGeometry.gaugeAct (fun x ↦ g (doubleSite x)) c) =
-      coarseDensity n β c := by
+/-- Exact gauge transport for any continuous generated fine interaction,
+not only for the initial Wilson product. -/
+theorem blockedDensity_gauge_restriction (n : ℕ) (F : C(FineConfig n, ℝ))
+    (g : Site 4 (doubleIndex n) → SU2)
+    (hF : ∀ U, F (WilsonDyadicGeometry.gaugeAct g U) = F U) (c : CoarseConfig n) :
+    blockedDensity (volume : Measure SU2) (blockIndexEquiv 4 n) F
+      (WilsonDyadicGeometry.gaugeAct (fun x ↦ g (doubleSite x)) c) =
+    blockedDensity (volume : Measure SU2) (blockIndexEquiv 4 n) F c := by
   let gc := WilsonDyadicGeometry.gaugeAct (fun x ↦ g (doubleSite x)) c
   let H : C(Fluctuation n, ℝ) :=
-    ⟨fun f ↦ fineDensity n β (chart n (gc, f)),
-      (fineDensity n β).continuous.comp
-        ((PairedLinks.continuous_chart (E := SU2) (blockIndexEquiv 4 n)).comp
-          (continuous_const.prodMk continuous_id))⟩
+    ⟨fun f ↦ F (chart n (gc, f)), F.continuous.comp
+      ((continuous_chart (E := SU2) (blockIndexEquiv 4 n)).comp
+        (continuous_const.prodMk continuous_id))⟩
   have hm := measurePreserving_fluctuationGauge n g
   have hi := integral_map_of_stronglyMeasurable (μ := (volume : Measure (Fluctuation n)))
     hm.measurable H.continuous.stronglyMeasurable
   rw [hm.map_eq] at hi
-  change (∫ f, H f) = ∫ f, fineDensity n β (chart n (c, f))
+  change (∫ f, H f) = ∫ f, F (chart n (c, f))
   rw [hi]
   apply integral_congr_ae
   filter_upwards [] with f
-  change fineDensity n β (chart n (gc, fluctuationGauge n g f)) = _
-  rw [chart_gauge, fineDensity_gauge]
+  change F (chart n (gc, fluctuationGauge n g f)) = _
+  rw [chart_gauge, hF]
 
-/-- Every coarse gauge transformation extends to the even fine sites.
-No gauge fixing or change to the Wilson density is used. -/
-theorem coarseDensity_gauge (n : ℕ) (β : ℝ)
+theorem blockedDensity_gauge (n : ℕ) (F : C(FineConfig n, ℝ))
+    (hF : ∀ (g : Site 4 (doubleIndex n) → SU2) U,
+      F (WilsonDyadicGeometry.gaugeAct g U) = F U)
     (g : Site 4 n → SU2) (c : CoarseConfig n) :
-    coarseDensity n β (WilsonDyadicGeometry.gaugeAct g c) = coarseDensity n β c := by
+    blockedDensity (volume : Measure SU2) (blockIndexEquiv 4 n) F
+      (WilsonDyadicGeometry.gaugeAct g c) =
+    blockedDensity (volume : Measure SU2) (blockIndexEquiv 4 n) F c := by
   let gf : Site 4 (doubleIndex n) → SU2 :=
     Function.extend (doubleSite (d := 4) (n := n)) g (fun _ ↦ 1)
   have hg : (fun x ↦ gf (doubleSite x)) = g :=
     funext fun x ↦ doubleSite_injective.extend_apply g (fun _ ↦ 1) x
-  have h := coarseDensity_gauge_restriction n β gf c
+  have h := blockedDensity_gauge_restriction n F gf (hF gf) c
   rw [hg] at h
   exact h
+
+
+/-- Gauge covariance and Haar invariance specialize to the Wilson density. -/
+theorem coarseDensity_gauge_restriction (n : ℕ) (β : ℝ)
+    (g : Site 4 (doubleIndex n) → SU2) (c : CoarseConfig n) :
+    coarseDensity n β (WilsonDyadicGeometry.gaugeAct (fun x ↦ g (doubleSite x)) c) =
+      coarseDensity n β c := by
+  exact blockedDensity_gauge_restriction n (fineDensity n β) g (fineDensity_gauge n β g) c
+
+theorem coarseDensity_gauge (n : ℕ) (β : ℝ)
+    (g : Site 4 n → SU2) (c : CoarseConfig n) :
+    coarseDensity n β (WilsonDyadicGeometry.gaugeAct g c) = coarseDensity n β c := by
+  exact blockedDensity_gauge n (fineDensity n β) (fineDensity_gauge n β) g c
 
 
 variable {n : ℕ}
@@ -689,6 +706,86 @@ theorem blocked_wilsonInteraction_zero (n : ℕ) (β : ℝ) :
   change (-β) • WilsonBlockElimination.PairedLinks.blockedDensity
     (volume : Measure SU2) (WilsonDyadicGeometry.blockIndexEquiv 4 n) (plaquetteTrace p) = 0
   rw [blocked_plaquetteTrace_eq_zero, smul_zero]
+
+/-! The dependency geometry for integration uses the independent fluctuation
+coordinates. Both halves of a coarse link share one such coordinate. -/
+
+abbrev FluctuationLink (n : ℕ) := Link 4 n ⊕ UnusedLink 4 n
+
+instance fluctuationPseudoMetricSpace (n : ℕ) : PseudoMetricSpace (FluctuationLink n) :=
+  PseudoMetricSpace.induced (fluctuationRepresentative (blockIndexEquiv 4 n)) inferInstance
+
+def fluctuationPlaquetteSupport {n : ℕ} (p : Plaquette 4 (doubleIndex n)) : Finset (FluctuationLink n) :=
+  fluctuationSupport (blockIndexEquiv 4 n) (support p)
+
+theorem fluctuationPlaquetteSupport_nonempty {n : ℕ} (p : Plaquette 4 (doubleIndex n)) :
+    (fluctuationPlaquetteSupport p).Nonempty := fluctuationSupport_nonempty _ (support_nonempty p)
+
+theorem card_fluctuationPlaquetteSupport_le {n : ℕ} (p : Plaquette 4 (doubleIndex n)) :
+    (fluctuationPlaquetteSupport p).card ≤ 4 := (card_fluctuationSupport_le _ _).trans (card_support_le p)
+
+theorem dist_fluctuationRepresentative_le {n : ℕ} (x : Link 4 (doubleIndex n)) :
+    dist x (fluctuationRepresentative (blockIndexEquiv 4 n) (fluctuationIndex (blockIndexEquiv 4 n) x)) ≤ 1 := by
+  obtain ⟨s, rfl⟩ := (blockIndexEquiv 4 n).surjective x
+  rcases s with (i | i) | j
+  · change dist ((blockIndexEquiv 4 n) (.inl (.inl i)))
+      (fluctuationRepresentative (blockIndexEquiv 4 n)
+        (fluctuationIndex (blockIndexEquiv 4 n) ((blockIndexEquiv 4 n) (.inl (.inl i))))) ≤ 1
+    rw [fluctuationIndex_first]
+    simp only [fluctuationRepresentative, dist_self]
+    norm_num
+  · change dist ((blockIndexEquiv 4 n) (.inl (.inr i)))
+      (fluctuationRepresentative (blockIndexEquiv 4 n)
+        (fluctuationIndex (blockIndexEquiv 4 n) ((blockIndexEquiv 4 n) (.inl (.inr i))))) ≤ 1
+    rw [fluctuationIndex_second]
+    simp only [fluctuationRepresentative, blockIndexEquiv_first, blockIndexEquiv_second]
+    rw [dist_comm]
+    exact dist_blockEdge_halves_le i
+  · change dist ((blockIndexEquiv 4 n) (.inr j))
+      (fluctuationRepresentative (blockIndexEquiv 4 n)
+        (fluctuationIndex (blockIndexEquiv 4 n) ((blockIndexEquiv 4 n) (.inr j)))) ≤ 1
+    rw [fluctuationIndex_unused]
+    simp only [fluctuationRepresentative, dist_self]
+    norm_num
+
+theorem diam_fluctuationPlaquetteSupport_le {n : ℕ} (p : Plaquette 4 (doubleIndex n)) :
+    polymerDiam (fluctuationPlaquetteSupport p) ≤ 3 := by
+  have h := diam_fluctuationSupport_le (blockIndexEquiv 4 n) (by norm_num : (0 : ℝ) ≤ 1)
+    dist_fluctuationRepresentative_le (support p)
+  exact h.trans (by linarith [diam_support_le p])
+
+set_option maxHeartbeats 400000 in
+theorem card_incident_fluctuationPlaquetteSupport_le (n : ℕ) (y : FluctuationLink n) :
+    ((univ : Finset (Plaquette 4 (doubleIndex n))).filter
+      (fun p ↦ y ∈ fluctuationPlaquetteSupport p)).card ≤ 128 := by
+  have hD (x : Link 4 (doubleIndex n)) :
+      ((univ : Finset (Plaquette 4 (doubleIndex n))).filter (fun p ↦ x ∈ support p)).card ≤ 64 := by
+    exact card_incident_le 4 (doubleIndex n) x
+  have hh := card_incident_fluctuationSupport_le (Pl := Plaquette 4 (doubleIndex n))
+    (D := 64) (blockIndexEquiv 4 n) support hD y
+  convert hh using 1
+  congr 1
+  unfold fluctuationPlaquetteSupport
+  congr 1
+
+set_option maxHeartbeats 400000 in
+theorem degree_fluctuationPlaquetteGraph_le (n : ℕ) (p : Plaquette 4 (doubleIndex n)) :
+    (plaquetteGraph (fluctuationPlaquetteSupport (n := n))).degree p ≤ 512 := by
+  have hD (y : FluctuationLink n) :
+      ((univ : Finset (Plaquette 4 (doubleIndex n))).filter
+        (fun q ↦ y ∈ fluctuationPlaquetteSupport q)).card ≤ 128 :=
+    card_incident_fluctuationPlaquetteSupport_le n y
+  have hh := degree_plaquetteGraph_le_of_incidence (s := 4) (D := 128)
+    (fluctuationPlaquetteSupport (n := n)) card_fluctuationPlaquetteSupport_le
+    (fun y ↦ by
+      convert hD y using 1
+      congr 1
+      ext q
+      simp only [mem_filter]) p
+  convert hh using 1
+  congr 1
+  exact Subsingleton.elim _ _
+
 
 end ScaleTwo
 

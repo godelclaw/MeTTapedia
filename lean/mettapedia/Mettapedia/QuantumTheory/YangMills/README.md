@@ -310,9 +310,22 @@ plaquette trace at every real coupling.
 
 The full observable space still has norm-one projection because constants
 survive (`WilsonBlockElimination.one_le_project_uniform_bound`). The strict
-interaction estimate is for the linear Haar average. A uniform quadratic
-bound for the connected logarithmic remainder of the actual generated density
-is still needed before it supplies a nonlinear physical RG step bound.
+interaction estimate is for the linear Haar average. The nonlinear logarithm
+now has an all-order polymer majorant:
+`PolymerGas.sum_weighted_log_coefficients_le` bounds the weighted absolute
+subset-coefficient sum through each polymer by its Dobrushin removal weight.
+The proof uses the full exponential and logarithm series. Weighted site
+incidence controls connected families of arbitrary support size, without a
+maximum-degree assumption. Applying these bounds to the generated interaction
+norm remains the nonlinear contraction obligation.
+
+The paired chart has explicit independent fluctuation coordinates: its two
+fine halves share one coordinate. `ScaleTwo.fluctuationPlaquetteSupport` has
+diameter at most 3, site incidence at most 128 and overlap degree at most 512,
+uniformly in the torus size. `blockedDensity_gauge` transports gauge invariance
+for every continuous generated fine density. The labelled polymer integration
+identity keeps these dependency supports distinct from the retained coarse
+supports, which contain only complete fine pairs.
 
 The coordinate-rescaling lemmas in `WilsonBoundaryResponse.lean` prove that
 an injective coordinate map with `d_fine = s · d_coarse` changes the admissible

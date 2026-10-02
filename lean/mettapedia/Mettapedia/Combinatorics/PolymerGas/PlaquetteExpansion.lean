@@ -28,6 +28,32 @@ def plaquetteGraph (supp : Pl → Finset X) : SimpleGraph Pl where
 instance (supp : Pl → Finset X) : DecidableRel (plaquetteGraph supp).Adj :=
   fun _ _ => inferInstanceAs (Decidable (_ ≠ _ ∧ ¬ Disjoint _ _))
 
+omit [Fintype X] [Fintype Pl] [DecidableEq Pl] in
+/-- Distinct labelled supports are compatible exactly when they are
+pairwise disjoint. Labels with equal supports remain distinct polymers. -/
+theorem isCompatible_plaquetteGraph_iff (supp : Pl → Finset X) (Γ : Finset Pl) :
+    IsCompatible (plaquetteGraph supp) Γ ↔ (Γ : Set Pl).PairwiseDisjoint supp := by
+  constructor
+  · intro h p hp q hq hpq
+    by_contra hd
+    exact h p hp q hq ⟨hpq, hd⟩
+  · intro h p hp q hq hadj
+    exact hadj.2 (h hp hq hadj.1)
+
+omit [Fintype X] in
+/-- Support size and site incidence bound the overlap degree. -/
+theorem degree_plaquetteGraph_le_of_incidence (supp : Pl → Finset X) {s D : ℕ}
+    (hs : ∀ p, (supp p).card ≤ s)
+    (hD : ∀ x, ((univ : Finset Pl).filter (fun p ↦ x ∈ supp p)).card ≤ D) (p : Pl) :
+    (plaquetteGraph supp).degree p ≤ s * D := by
+  have hsub : (plaquetteGraph supp).neighborFinset p ⊆
+      (supp p).biUnion (fun x ↦ univ.filter (fun q : Pl ↦ x ∈ supp q)) := by
+    intro q hq
+    obtain ⟨x, hxp, hxq⟩ := not_disjoint_iff.mp (((plaquetteGraph supp).mem_neighborFinset p q).mp hq).2
+    exact mem_biUnion.mpr ⟨x, hxp, mem_filter.mpr ⟨mem_univ _, hxq⟩⟩
+  exact (card_le_card hsub).trans ((card_biUnion_le_card_mul _ _ _
+    (fun x _ ↦ hD x)).trans (Nat.mul_le_mul_right D (hs p)))
+
 /-- The links used by a plaquette set. -/
 def plaquetteSupport (supp : Pl → Finset X) (C : Finset Pl) : Finset X := C.biUnion supp
 
@@ -145,6 +171,34 @@ theorem prod_one_add_eq_partitionFunction (w : Pl → ℂ) :
       simp [hnot]
     _ = _ := by rw [componentFamilies, sum_filter]
 
+/-- The same exact expansion with connected label sets kept as polymer
+indices. This retains more support information than regrouping by their union. -/
+theorem prod_one_add_eq_labelled_partitionFunction {R : Type*} [CommSemiring R]
+    (supp : Pl → Finset X) (hne : ∀ p, (supp p).Nonempty) (w : Pl → R) :
+    (∏ p, (1 + w p)) = partitionFunction (plaquetteGraph (plaquetteSupport supp))
+      (fun C ↦ ∏ p ∈ C, w p) (connectedPlaquettes supp) := by
+  rw [← sum_componentFamilies (G := plaquetteGraph supp) w]
+  symm
+  unfold partitionFunction
+  calc
+    _ = ∑ Γ ∈ (connectedPlaquettes supp).powerset,
+        if IsComponentFamily (plaquetteGraph supp) Γ then
+          ∏ C ∈ Γ, ∏ p ∈ C, w p else 0 := by
+      apply sum_congr rfl
+      intro Γ hΓ
+      have hc : Γ ⊆ connectedPlaquettes supp := mem_powerset.mp hΓ
+      simp only [isCompatible_plaquetteGraph_iff, isComponentFamily_plaquette_iff supp hne, and_iff_right hc]
+    _ = ∑ Γ : Finset (Finset Pl),
+        if IsComponentFamily (plaquetteGraph supp) Γ then
+          ∏ C ∈ Γ, ∏ p ∈ C, w p else 0 := by
+      apply sum_subset (subset_univ _)
+      intro Γ _ hΓ
+      have hnot : ¬ IsComponentFamily (plaquetteGraph supp) Γ := by
+        intro hc
+        exact hΓ (mem_powerset.mpr ((isComponentFamily_plaquette_iff supp hne Γ).mp hc).1)
+      simp [hnot]
+    _ = _ := by rw [componentFamilies, sum_filter]
+
 /-- Extend a configuration by a fixed reference value outside its support. -/
 def extendConfiguration (base : E) (S : Finset X) (v : S → E) : X → E :=
   fun x => if h : x ∈ S then v ⟨x, h⟩ else base
@@ -243,6 +297,67 @@ theorem measurable_plaquetteActivity (base : E) (f : Pl → (X → E) → ℂ)
   exact (hf p).comp (measurable_extendConfiguration base S)
 
 end Measurability
+
+section Integration
+variable [MeasurableSpace E]
+variable (ν₀ : MeasureTheory.Measure E) [MeasureTheory.IsProbabilityMeasure ν₀]
+open MeasureTheory
+
+/-- Independent labelled local functions factor under the product law.
+The full-configuration formulation keeps labels distinct from supports. -/
+theorem integral_prod_of_disjoint_supports {P 𝕜 : Type*} [DecidableEq P] [RCLike 𝕜]
+    (base : E) (supp : P → Finset X) (f : P → (X → E) → 𝕜)
+    (hf : ∀ p, Measurable (f p))
+    (hlocal : ∀ p U V, (∀ x ∈ supp p, U x = V x) → f p U = f p V)
+    (I : Finset P) (hI : (I : Set P).PairwiseDisjoint supp) :
+    (∫ U, ∏ p ∈ I, f p U ∂Measure.pi (fun _ : X ↦ ν₀)) =
+      ∏ p ∈ I, ∫ U, f p U ∂Measure.pi (fun _ : X ↦ ν₀) := by
+  let g : ∀ p, (supp p → E) → 𝕜 := fun p v ↦ f p (extendConfiguration base (supp p) v)
+  have hg p : Measurable (g p) := (hf p).comp (measurable_extendConfiguration base (supp p))
+  have he p U : g p (restrictTo (supp p) U) = f p U := by
+    apply hlocal
+    intro x hx
+    simp [extendConfiguration, restrictTo, hx]
+  have h := integral_prod_supported_eq_prod ν₀ supp g hg I hI
+  simpa only [he] using h
+
+/-- Integrating the exact connected-family expansion factors precisely the
+families with disjoint dependency supports. Integrability is explicit. -/
+theorem integral_prod_one_add_eq_labelledPartition (base : E)
+    (supp : Pl → Finset X) (hne : ∀ p, (supp p).Nonempty)
+    (f : Pl → (X → E) → ℝ) (hf : ∀ p, Measurable (f p))
+    (hlocal : ∀ p U V, (∀ x ∈ supp p, U x = V x) → f p U = f p V)
+    (hint : ∀ Γ : Finset (Finset Pl), Integrable (fun U ↦ ∏ C ∈ Γ, ∏ p ∈ C, f p U)
+      (Measure.pi fun _ : X ↦ ν₀)) :
+    (∫ U, ∏ p, (1 + f p U) ∂Measure.pi (fun _ : X ↦ ν₀)) =
+      partitionFunction (plaquetteGraph (plaquetteSupport supp))
+        (fun C ↦ ∫ U, ∏ p ∈ C, f p U ∂Measure.pi (fun _ : X ↦ ν₀))
+        (connectedPlaquettes supp) := by
+  have he U := prod_one_add_eq_labelled_partitionFunction supp hne (fun p ↦ f p U)
+  simp_rw [he]
+  unfold partitionFunction
+  rw [integral_finsetSum _ (fun Γ _ ↦ by
+    by_cases hΓ : IsCompatible (plaquetteGraph (plaquetteSupport supp)) Γ
+    · simpa only [if_pos hΓ] using hint Γ
+    · simp only [if_neg hΓ]
+      exact integrable_zero (X → E) ℝ (Measure.pi fun _ : X ↦ ν₀))]
+  apply sum_congr rfl
+  intro Γ hΓ
+  by_cases hc : IsCompatible (plaquetteGraph (plaquetteSupport supp)) Γ
+  · simp only [if_pos hc]
+    apply integral_prod_of_disjoint_supports ν₀ base (plaquetteSupport supp)
+      (fun C U ↦ ∏ p ∈ C, f p U)
+    · intro C
+      exact Finset.measurable_prod _ (fun p _ ↦ hf p)
+    · intro C U V huv
+      apply prod_congr rfl
+      intro p hp
+      exact hlocal p U V (fun x hx ↦ huv x (mem_biUnion.mpr ⟨p, hp, hx⟩))
+    · exact (isCompatible_plaquetteGraph_iff _ Γ).mp hc
+  · simp only [if_neg hc, integral_zero]
+
+end Integration
+
 
 #print axioms prod_one_add_eq_partitionFunction
 #print axioms prod_one_add_eq_polymerDensity

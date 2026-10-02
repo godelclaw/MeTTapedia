@@ -940,6 +940,186 @@ end Continuous
 end Group
 end PairedLinks
 
+/-! ## Independent fluctuation coordinates of a paired-link chart -/
+
+namespace PairedLinks
+open Finset
+open scoped Classical
+variable {X I J E : Type*}
+
+def fluctuationIndex (e : ((I ⊕ I) ⊕ J) ≃ X) (x : X) : I ⊕ J :=
+  match e.symm x with
+  | .inl (.inl i) => .inl i
+  | .inl (.inr i) => .inl i
+  | .inr j => .inr j
+
+@[simp] theorem fluctuationIndex_first (e : ((I ⊕ I) ⊕ J) ≃ X) (i : I) :
+    fluctuationIndex e (e (.inl (.inl i))) = .inl i := by simp [fluctuationIndex]
+@[simp] theorem fluctuationIndex_second (e : ((I ⊕ I) ⊕ J) ≃ X) (i : I) :
+    fluctuationIndex e (e (.inl (.inr i))) = .inl i := by simp [fluctuationIndex]
+@[simp] theorem fluctuationIndex_unused (e : ((I ⊕ I) ⊕ J) ≃ X) (j : J) :
+    fluctuationIndex e (e (.inr j)) = .inr j := by simp [fluctuationIndex]
+
+def fluctuationRepresentative (e : ((I ⊕ I) ⊕ J) ≃ X) : I ⊕ J → X
+  | .inl i => e (.inl (.inl i))
+  | .inr j => e (.inr j)
+
+@[simp] theorem fluctuationIndex_representative (e : ((I ⊕ I) ⊕ J) ≃ X) (y : I ⊕ J) :
+    fluctuationIndex e (fluctuationRepresentative e y) = y := by cases y <;> simp [fluctuationRepresentative]
+
+theorem fluctuationRepresentative_injective (e : ((I ⊕ I) ⊕ J) ≃ X) :
+    Function.Injective (fluctuationRepresentative e) :=
+  Function.LeftInverse.injective (fluctuationIndex_representative e)
+
+def fluctuationSupport (e : ((I ⊕ I) ⊕ J) ≃ X) (S : Finset X) : Finset (I ⊕ J) :=
+  S.image (fluctuationIndex e)
+
+theorem card_fluctuationSupport_le (e : ((I ⊕ I) ⊕ J) ≃ X) (S : Finset X) :
+    (fluctuationSupport e S).card ≤ S.card := card_image_le
+
+theorem fluctuationSupport_nonempty (e : ((I ⊕ I) ⊕ J) ≃ X) {S : Finset X}
+    (hS : S.Nonempty) : (fluctuationSupport e S).Nonempty := hS.image _
+
+@[simp] theorem mem_fluctuationSupport_inl (e : ((I ⊕ I) ⊕ J) ≃ X) (S : Finset X) (i : I) :
+    .inl i ∈ fluctuationSupport e S ↔ e (.inl (.inl i)) ∈ S ∨ e (.inl (.inr i)) ∈ S := by
+  constructor
+  · intro h
+    obtain ⟨x, hx, hi⟩ := mem_image.mp h
+    obtain ⟨s, rfl⟩ := e.surjective x
+    rcases s with (j | j) | k
+    · simp only [fluctuationIndex_first, Sum.inl.injEq] at hi
+      subst j
+      exact Or.inl hx
+    · simp only [fluctuationIndex_second, Sum.inl.injEq] at hi
+      subst j
+      exact Or.inr hx
+    · simp only [fluctuationIndex_unused, Sum.inr_ne_inl] at hi
+  · intro h
+    rcases h with h | h
+    · exact mem_image.mpr ⟨_, h, fluctuationIndex_first e i⟩
+    · exact mem_image.mpr ⟨_, h, fluctuationIndex_second e i⟩
+
+@[simp] theorem mem_fluctuationSupport_inr (e : ((I ⊕ I) ⊕ J) ≃ X) (S : Finset X) (j : J) :
+    .inr j ∈ fluctuationSupport e S ↔ e (.inr j) ∈ S := by
+  constructor
+  · intro h
+    obtain ⟨x, hx, hj⟩ := mem_image.mp h
+    obtain ⟨s, rfl⟩ := e.surjective x
+    rcases s with (i | i) | k
+    · simp only [fluctuationIndex_first, Sum.inl_ne_inr] at hj
+    · simp only [fluctuationIndex_second, Sum.inl_ne_inr] at hj
+    · simp only [fluctuationIndex_unused, Sum.inr.injEq] at hj
+      subst k
+      exact hx
+  · intro h
+    exact mem_image.mpr ⟨_, h, fluctuationIndex_unused e j⟩
+
+section Incidence
+variable {Pl : Type*} [Fintype Pl] [DecidableEq X] [DecidableEq I] [DecidableEq J]
+
+theorem card_incident_fluctuationSupport_le (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (supp : Pl → Finset X) {D : ℕ}
+    (hD : ∀ x, ((univ : Finset Pl).filter (fun p ↦ x ∈ supp p)).card ≤ D)
+    (y : I ⊕ J) :
+    ((univ : Finset Pl).filter (fun p ↦ y ∈ fluctuationSupport e (supp p))).card ≤ 2*D := by
+  rcases y with i | j
+  · have he : (univ.filter (fun p : Pl ↦ Sum.inl i ∈ fluctuationSupport e (supp p))) =
+        (univ.filter (fun p : Pl ↦ e (.inl (.inl i)) ∈ supp p)) ∪
+        (univ.filter (fun p : Pl ↦ e (.inl (.inr i)) ∈ supp p)) := by
+      ext p
+      simp
+    rw [he]
+    have h := card_union_le
+      (univ.filter (fun p : Pl ↦ e (.inl (.inl i)) ∈ supp p))
+      (univ.filter (fun p : Pl ↦ e (.inl (.inr i)) ∈ supp p))
+    have h0 := hD (e (.inl (.inl i)))
+    have h1 := hD (e (.inl (.inr i)))
+    omega
+  · simp only [mem_fluctuationSupport_inr]
+    exact (hD (e (.inr j))).trans (by omega)
+
+end Incidence
+
+variable [Group E] [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]
+
+def fluctuationChart (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E) (f : I ⊕ J → E) : X → E :=
+  chart e (c, (fun i ↦ f (.inl i), fun j ↦ f (.inr j)))
+
+@[simp] theorem fluctuationChart_first (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E)
+    (f : I ⊕ J → E) (i : I) : fluctuationChart e c f (e (.inl (.inl i))) = f (.inl i) :=
+  chart_first e _ i
+@[simp] theorem fluctuationChart_second (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E)
+    (f : I ⊕ J → E) (i : I) : fluctuationChart e c f (e (.inl (.inr i))) = (f (.inl i))⁻¹ * c i :=
+  chart_second e _ i
+@[simp] theorem fluctuationChart_unused (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E)
+    (f : I ⊕ J → E) (j : J) : fluctuationChart e c f (e (.inr j)) = f (.inr j) :=
+  chart_unused e _ j
+
+theorem fluctuationChart_agree (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E)
+    {S : Finset X} {f g : I ⊕ J → E} (h : ∀ y ∈ fluctuationSupport e S, f y = g y) :
+    ∀ x ∈ S, fluctuationChart e c f x = fluctuationChart e c g x := by
+  intro x hx
+  obtain ⟨s, rfl⟩ := e.surjective x
+  rcases s with (i | i) | j
+  · simp only [fluctuationChart_first]
+    exact h _ ((mem_fluctuationSupport_inl e S i).mpr (Or.inl hx))
+  · simp only [fluctuationChart_second]
+    rw [h _ ((mem_fluctuationSupport_inl e S i).mpr (Or.inr hx))]
+  · simp only [fluctuationChart_unused]
+    exact h _ ((mem_fluctuationSupport_inr e S j).mpr hx)
+
+end PairedLinks
+
+namespace PairedLinks
+open Finset
+open scoped Classical
+open Mettapedia.Combinatorics.PolymerGas
+variable {X I J E : Type*}
+
+theorem diam_fluctuationSupport_le [PseudoMetricSpace X]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) {r : ℝ} (hr : 0 ≤ r)
+    (hshift : ∀ x, dist x (fluctuationRepresentative e (fluctuationIndex e x)) ≤ r)
+    (S : Finset X) :
+    letI : PseudoMetricSpace (I ⊕ J) := PseudoMetricSpace.induced (fluctuationRepresentative e) inferInstance
+    polymerDiam (fluctuationSupport e S) ≤ polymerDiam S + 2*r := by
+  letI : PseudoMetricSpace (I ⊕ J) := PseudoMetricSpace.induced (fluctuationRepresentative e) inferInstance
+  apply Metric.diam_le_of_forall_dist_le (by unfold polymerDiam; positivity)
+  intro x hx y hy
+  obtain ⟨u, hu, rfl⟩ := mem_image.mp hx
+  obtain ⟨v, hv, rfl⟩ := mem_image.mp hy
+  change dist (fluctuationRepresentative e (fluctuationIndex e u))
+    (fluctuationRepresentative e (fluctuationIndex e v)) ≤ _
+  have h := dist_triangle4 (fluctuationRepresentative e (fluctuationIndex e u)) u v
+    (fluctuationRepresentative e (fluctuationIndex e v))
+  rw [dist_comm (fluctuationRepresentative e (fluctuationIndex e u)) u] at h
+  linarith [hshift u, hshift v, dist_le_polymerDiam hu hv]
+
+variable [Group E] [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]
+  [TopologicalSpace E] [IsTopologicalGroup E]
+
+@[fun_prop] theorem continuous_fluctuationChart (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E) :
+    Continuous (fluctuationChart e c) := by
+  apply (continuous_chart e).comp
+  fun_prop
+
+variable [CompactSpace E] [BorelSpace E] [SecondCountableTopology E]
+  [Fintype X] [Fintype I] [Fintype J]
+
+theorem integral_fluctuationChart (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E) (F : C(X → E, ℝ)) :
+    (∫ f : I ⊕ J → E, F (fluctuationChart e c f) ∂Measure.pi (fun _ ↦ ν)) =
+      blockedDensity ν e F c := by
+  let H : C((I → E) × (J → E), ℝ) :=
+    ⟨fun f ↦ F (chart e (c,f)), F.continuous.comp
+      ((continuous_chart e).comp (continuous_const.prodMk continuous_id))⟩
+  have hm := measurePreserving_sumPiEquivProdPi (fun _ : I ⊕ J ↦ ν)
+  have hi := integral_map_of_stronglyMeasurable (μ := Measure.pi (fun _ : I ⊕ J ↦ ν))
+    hm.measurable H.continuous.stronglyMeasurable
+  rw [hm.map_eq] at hi
+  exact hi.symm
+
+end PairedLinks
+
 #print axioms expectation_project
 #print axioms expectation_boundary_context
 #print axioms marginal_staged
