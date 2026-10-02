@@ -102,6 +102,10 @@ def positive_return():
          'negative return moment for every squared axial frequency in [0,1]')
     require(all(x<0 for x in bern), 'negative Bernstein coefficients')
     base = moment(y**7,y,s.Rational(5,2))
+    Z = s.symbols('Z', real=True)
+    chi = s.exp(-Z*Z)
+    zero(chi**s.Rational(3,2)*chi-s.exp(-s.Rational(5,2)*Z*Z),
+         'localized stock-strain pairing retains both Gaussian factors')
     margin = s.factor(-3*J.subs(a,1)/2-base/4)
     zero(margin-s.Rational(423678011904,244140625), 'positive exact Taylor margin')
     require(margin>0, 'cubic stock has positive internally generated feedback')

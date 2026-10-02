@@ -15754,7 +15754,7 @@ integer bounds are `41847079250,90535142,14`, respectively, giving
 
 The remaining phase averaging has error at most `Cavg/L`. Indeed, a
 zero-mean periodic function has a primitive bounded by four pi times
-its supremum; integration against `exp(-3Z^2/2)`, whose derivative has
+its supremum; integration against `exp(-5Z^2/2)`, whose derivative has
 L1 norm two, gives this estimate. Here it suffices to take
 
 ```text
@@ -15762,7 +15762,9 @@ Cavg=192*(1/2)integral_0^infinity y^7 exp(-5y/2)Q_1(y)^3 dy
  =347013594597589887614976/762939453125.
 ```
 
-The phase-averaged limit includes the factor `sqrt(2pi/3)>1`. For the
+The pairing contains `chi^(3/2)` from the stock and one more chi from
+the strain response. Its phase-averaged limit therefore includes the
+factor `sqrt(2pi/5)>1`. For the
 explicit finite length `L=2^55`, exact rational comparisons give
 `(Cmult+Cavg)/L<m/2`. Thus `I_L/(2pi^2 L)>=m/2>0`.
 These deliberately loose constants certify a finite-energy witness;
