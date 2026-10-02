@@ -1,0 +1,116 @@
+{
+  "fixture": "chain-boundary-example.json",
+  "fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "rule_index": 5,
+  "rule_file": "rule004_1.rule",
+  "examples": [
+    {
+      "branch": "chain",
+      "root": [
+        0,
+        44
+      ],
+      "images": [
+        0,
+        44,
+        45,
+        42,
+        103
+      ],
+      "companion": 102,
+      "outer_degree": 6
+    },
+    {
+      "branch": "mixed",
+      "root": [
+        138,
+        65
+      ],
+      "images": [
+        138,
+        65,
+        62,
+        25,
+        137
+      ],
+      "companion": 136,
+      "outer_degree": 5
+    }
+  ],
+  "joint_flat_example": {
+    "flips": [
+      [
+        140,
+        88,
+        141,
+        27
+      ],
+      [
+        159,
+        157,
+        80,
+        40
+      ],
+      [
+        32,
+        41,
+        98,
+        152
+      ],
+      [
+        32,
+        98,
+        151,
+        152
+      ],
+      [
+        65,
+        142,
+        31,
+        138
+      ]
+    ],
+    "fan_root": [
+      92,
+      150
+    ],
+    "fan_cycle": [
+      150,
+      10,
+      95,
+      143,
+      28,
+      93
+    ],
+    "centres": [
+      150,
+      143
+    ],
+    "charges": [
+      0,
+      0
+    ],
+    "extra_rule_root": [
+      95,
+      143
+    ],
+    "extra_rule_images": [
+      95,
+      143,
+      159,
+      94,
+      37
+    ],
+    "chain_root": [
+      94,
+      37
+    ],
+    "chain_vertices": [
+      37,
+      159,
+      95,
+      10
+    ],
+    "interpretation": "Joint flatness alone permits this profile, but the extra rule supplies an existing D0004 reduction. Not a minimal-counterexample witness."
+  }
+}

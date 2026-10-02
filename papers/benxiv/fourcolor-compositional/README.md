@@ -1623,6 +1623,53 @@ argument and a stronger local classification. The complete assembly still
 retains 633 coverage entries and 629 original certificates; universal
 profile supply and termination remain open.
 
+## An extra transfer exposes an existing repair
+
+The cyclic budget leaves a precise degree-seven residual: one retained
+five-valent neighbour and six six-valent neighbours. Joint flatness alone
+does not remove it. Three further legal flips of the earlier example make
+both centres flat, while retaining the same source fan and this profile.
+The resulting example contains an eight-port chain.
+
+The reusable step is a source-rule closing law in
+[ExtraChargeReduction.lean](../../../lean/fourcolor-classical/MettapediaFourColor/ExtraChargeReduction.lean).
+Read rule `004_1` on its actual directed edge. Suppose its sender has degree
+five, its shared neighbour has degree six, and the sender's second
+successor has degree five. Closing the sender's five-step rotation supplies
+the missing facial triangle at the outer vertex:
+
+```text
+one complete source rule + retained five-valent companion
+                            |
+             close the actual five-step star
+                            |
+                shared outer facial triangle
+                     /                 \
+             outer degree 5       outer degree 6
+                     |                 |
+                mixed diamond     word 5,6,5,5
+                     |                 |
+                existing compatible colouring reconstructions
+```
+
+The same argument recognizes the two repairs without choosing independent
+boundary colourings. The actual-map consumer uses the existing strict
+reductions and reconstructs the original colouring. In the preceding
+single-five residual, the companion is supplied by the original shared fan,
+and the shared degree-six hypothesis follows from the residual profile.
+Consequently that extra source-rule check must be false in a minimal map.
+This is a restriction on the remaining actual observations, not a claim
+that all other incoming charge is absent.
+
+Two finite examples consume the common theorem, one in each outer-degree
+branch. The eight-port example also constructs the full boundary occurrence.
+The modified jointly flat example and its exact signed transfers are
+independently program checked. The existing classical configuration-7
+certificate and shared diamond profile remain in the reconstruction path.
+No new catalogue entry or assembly dependency has been removed. See the
+[receipt](../../../tools/fourcolor/near-linear/extra-charge-measurements.json)
+for proof scope and replay costs.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

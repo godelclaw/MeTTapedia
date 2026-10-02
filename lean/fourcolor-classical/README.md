@@ -1,6 +1,17 @@
 # Classical Four Colour and compositional reconstruction
 
-The latest local coverage step is the
+The latest local reduction bridge is
+[ExtraChargeReduction](MettapediaFourColor/ExtraChargeReduction.lean).
+An exact `004_1` source-rule occurrence and a retained degree-five companion
+close one missing triangle. The outer degree then selects the existing
+mixed-diamond or eight-port-chain repair. Its actual-map consumer rules out
+this extra charge in the single-five residual below. Other extra inflows
+remain open. `lake build kernelExtraCharge` replays both finite branches,
+their complete source readings, the reduction consumer and its dependency
+audit. The [receipt](../../tools/fourcolor/near-linear/extra-charge-measurements.json)
+retains the existing configuration-7 certificate and unchanged catalogue counts.
+
+The preceding local coverage step is the
 [uniform cyclic charge law](MettapediaFourColor/CyclicCharge.lean): at a
 receiver of degree `d >= 7` with only degree-five/six neighbours, the final
 charge is at least `10(6-d) + 4k + 2m`. Here `k` counts degree-five

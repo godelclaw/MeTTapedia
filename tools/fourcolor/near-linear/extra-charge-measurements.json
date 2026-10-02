@@ -1,0 +1,132 @@
+{
+  "status": "Kernel-certified source-rule closure, actual-map reduction consumer and strengthened single-five residual.",
+  "source_manifest": "discharging-sources.json",
+  "previous_classification": "cyclic-charge-measurements.json",
+  "uniform_argument": {
+    "theorem": "FourColor.ExtraChargeReduction.alternatives",
+    "input": "One complete oriented rule004_1 reading (index5), sender degree5, shared degree6, and degree5 at the second actual successor of the marked sender edge.",
+    "geometry": "Finite simple graph with triangular, vertexwise cyclic dart rotation. Close the five-step sender star and retain the same outer triangle.",
+    "outer_degree_five": "Mixed diamond with five-valent centre, six-valent opposite vertex and two five-valent flanks.",
+    "outer_degree_six": "Consecutive degree word [5,6,5,5] around a six-valent centre, recognized as D0004.",
+    "receiver_degree_upper_bound": null,
+    "independent_boundary_choices": false,
+    "new_uniform_repair_scheme": false
+  },
+  "actual_map_consumer": {
+    "theorem": "FourColor.ActualExtraChargeReduction.not_occurrence",
+    "domain": "Actual facial dual of a GraphBackedVertexMinimalTaitCounterexample.",
+    "reconstruction": "Existing mixed-diamond and chain strict reductions, including a smaller-map colouring, compatible exterior repair and reconstruction.",
+    "retained_rank_certificate": "FourColor.Bulk.Cfg006 (classical configuration7)",
+    "retained_joint_profile": true
+  },
+  "classification_consumer": {
+    "theorem": "FourColor.ActualExtraChargeReduction.flat_alternatives",
+    "input": "The retained same-root fan, first free vertex degree7 and flat.",
+    "output": "Third distinct high centre within radius3, or the previous single-five profile with rule004_1 absent at the specified shared-five-to-first-free edge.",
+    "other_extra_rules_excluded": false,
+    "termination_proved": false
+  },
+  "finite_evidence": {
+    "inputs": "extra-charge-examples.json",
+    "program_audit": "extra-charge-audit.json",
+    "base_vertices": 162,
+    "kernel_example_roots": [
+      [
+        0,
+        44
+      ],
+      [
+        138,
+        65
+      ]
+    ],
+    "joint_flat_program_example": {
+      "centres": [
+        150,
+        143
+      ],
+      "charges": [
+        0,
+        0
+      ],
+      "additional_flips_after_previous_residual": 3,
+      "existing_reduction": "D0004 with centre94 and consecutive neighbours37,159,95,10",
+      "interpretation": "Joint flatness alone permits the residual, but this example lies in the new reduction branch. No minimality or universal negative claim."
+    },
+    "independent_rule_comparisons": 2357,
+    "disagreements": 0
+  },
+  "audit": {
+    "status": "passed",
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "roots": 14,
+    "dependency_declarations": 35038,
+    "retained_original_rank_certificate": "FourColor.Bulk.Cfg006",
+    "other_original_rank_certificates": false,
+    "full_four_colour_endpoint_dependency": false,
+    "exceptional_D1774_certificate_dependency": false
+  },
+  "commands": [
+    "lake build kernelExtraCharge",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_extra_charge.py --output tools/fourcolor/near-linear/extra-charge-audit.json"
+  ],
+  "compression": {
+    "coverage_entries_retained": 633,
+    "original_configuration_certificates_retained": 629,
+    "new_original_rank_certificates": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "shared_source_rule_closing_arguments": 1,
+    "additional_coverage_entries_removed": 0,
+    "additional_assembly_dependencies_removed": 0,
+    "integrated_into_complete_coverage_assembly": false
+  },
+  "remaining": [
+    "Classify the residual when rule004_1 is absent, including other additional rule transfers.",
+    "Handle degree-eight continuations and justified initial source-profile supply.",
+    "Prove global coverage and terminating compatible reconstruction."
+  ],
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.ExtraChargeReduction",
+        "source_sha256": "6580bb53f273a1e3df49ae282832221f761dd72e996da35cfe3cd78ab2a51478",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.959,
+        "olean_bytes": 491736,
+        "olean_sha256": "8f659f89b1df3bf1ac7ab5c3a44a475cdd29bae11f3e6c5a6599dc2f31a8e19c"
+      },
+      {
+        "module": "MettapediaFourColor.ExtraChargeExample",
+        "source_sha256": "25784f722219d0698e0a04c252ac397174246f445e59f9a720bfa044c0fc4a00",
+        "exit_code": 0,
+        "frontend_wall_seconds": 12.583,
+        "olean_bytes": 166320,
+        "olean_sha256": "2b2b07e14ad55c296ca18bc8c905ebf1678a2def506c1f9047e7a33ba8feee8e"
+      },
+      {
+        "module": "MettapediaFourColor.ExtraChargeAudit",
+        "source_sha256": "734446bf443386ee52153b0e1833d2ac5989d64259cf0862ca8b344bf57ed3ac",
+        "exit_code": 0,
+        "frontend_wall_seconds": 14.12,
+        "olean_bytes": 2600,
+        "olean_sha256": "2ba1cd8d8f2f941c6e817430b5a37106ad856c3bb4c20098385814a33ad4bdb6"
+      }
+    ]
+  }
+}

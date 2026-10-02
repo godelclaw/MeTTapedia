@@ -1,0 +1,563 @@
+{
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "source_manifest": "discharging-sources.json",
+  "fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "manifest_sha256": "8651d45111a373509c41fb48e0541b2b0de1d191f4b506114bae6c71654257bc",
+  "verifier_sha256": "a3e59a29f041e1a402e00819b46ecd7ea65b9d8f6fcfc9753f017809dfe204d0",
+  "lean_source_sha256": {
+    "ExtraChargeReduction": "6580bb53f273a1e3df49ae282832221f761dd72e996da35cfe3cd78ab2a51478",
+    "ExtraChargeExample": "25784f722219d0698e0a04c252ac397174246f445e59f9a720bfa044c0fc4a00"
+  },
+  "examples": [
+    {
+      "branch": "chain",
+      "root": [
+        0,
+        44
+      ],
+      "images": [
+        0,
+        44,
+        45,
+        42,
+        103
+      ],
+      "companion": 102,
+      "outer_degree": 6,
+      "outer_neighbour_word": [
+        103,
+        45,
+        0,
+        102
+      ]
+    },
+    {
+      "branch": "mixed",
+      "root": [
+        138,
+        65
+      ],
+      "images": [
+        138,
+        65,
+        62,
+        25,
+        137
+      ],
+      "companion": 136,
+      "outer_degree": 5,
+      "outer_neighbour_word": [
+        137,
+        62,
+        138,
+        136
+      ]
+    }
+  ],
+  "joint_flat_example": [
+    {
+      "vertex": 150,
+      "charge": 0,
+      "transfers": [
+        {
+          "edge": [
+            10,
+            150
+          ],
+          "amount": 3,
+          "rules": [
+            [
+              0,
+              2,
+              [
+                10,
+                150
+              ]
+            ],
+            [
+              3,
+              1,
+              [
+                10,
+                150,
+                92,
+                95
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            150,
+            10
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            31,
+            150
+          ],
+          "amount": 2,
+          "rules": [
+            [
+              1,
+              1,
+              [
+                31,
+                150,
+                93
+              ]
+            ],
+            [
+              5,
+              1,
+              [
+                31,
+                150,
+                149,
+                65,
+                66
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            150,
+            31
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            92,
+            150
+          ],
+          "amount": 3,
+          "rules": [
+            [
+              1,
+              1,
+              [
+                92,
+                150,
+                10
+              ]
+            ],
+            [
+              2,
+              1,
+              [
+                92,
+                150,
+                93
+              ]
+            ],
+            [
+              4,
+              1,
+              [
+                92,
+                150,
+                10,
+                95
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            150,
+            92
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            93,
+            150
+          ],
+          "amount": 2,
+          "rules": [
+            [
+              0,
+              2,
+              [
+                93,
+                150
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            150,
+            93
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            96,
+            150
+          ],
+          "amount": 2,
+          "rules": [
+            [
+              2,
+              1,
+              [
+                96,
+                150,
+                10
+              ]
+            ],
+            [
+              5,
+              1,
+              [
+                96,
+                150,
+                10,
+                94,
+                95
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            150,
+            96
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            149,
+            150
+          ],
+          "amount": 1,
+          "rules": [
+            [
+              12,
+              1,
+              [
+                149,
+                150,
+                31,
+                65,
+                138,
+                142,
+                93
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            150,
+            149
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            152,
+            150
+          ],
+          "amount": 1,
+          "rules": [
+            [
+              15,
+              1,
+              [
+                152,
+                150,
+                96,
+                41,
+                98
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            150,
+            152
+          ],
+          "amount": 4,
+          "rules": [
+            [
+              14,
+              1,
+              [
+                150,
+                152,
+                96,
+                10
+              ]
+            ],
+            [
+              15,
+              1,
+              [
+                150,
+                152,
+                149,
+                31,
+                93
+              ]
+            ],
+            [
+              36,
+              1,
+              [
+                150,
+                152,
+                96,
+                10,
+                92,
+                93,
+                31
+              ]
+            ],
+            [
+              40,
+              1,
+              [
+                150,
+                152,
+                96,
+                41,
+                98,
+                10,
+                151
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "vertex": 143,
+      "charge": 0,
+      "transfers": [
+        {
+          "edge": [
+            28,
+            143
+          ],
+          "amount": 1,
+          "rules": [
+            [
+              3,
+              1,
+              [
+                28,
+                143,
+                92,
+                93
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            143,
+            28
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            40,
+            143
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            143,
+            40
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            92,
+            143
+          ],
+          "amount": 3,
+          "rules": [
+            [
+              2,
+              1,
+              [
+                92,
+                143,
+                95
+              ]
+            ],
+            [
+              3,
+              1,
+              [
+                92,
+                143,
+                95,
+                10
+              ]
+            ],
+            [
+              4,
+              1,
+              [
+                92,
+                143,
+                28,
+                93
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            143,
+            92
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            95,
+            143
+          ],
+          "amount": 4,
+          "rules": [
+            [
+              0,
+              2,
+              [
+                95,
+                143
+              ]
+            ],
+            [
+              4,
+              1,
+              [
+                95,
+                143,
+                92,
+                10
+              ]
+            ],
+            [
+              5,
+              1,
+              [
+                95,
+                143,
+                159,
+                94,
+                37
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            143,
+            95
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            140,
+            143
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            143,
+            140
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            141,
+            143
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            143,
+            141
+          ],
+          "amount": 0,
+          "rules": []
+        },
+        {
+          "edge": [
+            159,
+            143
+          ],
+          "amount": 2,
+          "rules": [
+            [
+              1,
+              1,
+              [
+                159,
+                143,
+                95
+              ]
+            ],
+            [
+              6,
+              1,
+              [
+                159,
+                143,
+                95,
+                94,
+                10
+              ]
+            ]
+          ]
+        },
+        {
+          "edge": [
+            143,
+            159
+          ],
+          "amount": 0,
+          "rules": []
+        }
+      ]
+    }
+  ],
+  "independent_rule_comparisons": 2357,
+  "disagreements": 0,
+  "scope": "Exact program evidence. Two base examples also consume the Lean closure. Joint flatness and the modified spherical example are program checked; no minimal-counterexample or universal coverage claim."
+}

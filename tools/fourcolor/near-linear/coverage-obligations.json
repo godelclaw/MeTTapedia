@@ -1,5 +1,5 @@
 {
-  "status": "Actual exceptional closing, family reductions, joint source-rule fan supply, and uniform cyclic charge with an exact degree-seven residual are kernel checked. Residual joint-flatness classification and global coverage remain open.",
+  "status": "Actual exceptional closing, shared family reductions, cyclic charge and source-rule closure are kernel checked. The single-five residual excludes a certified extra-rule reduction branch; other inflows and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -451,6 +451,22 @@
     {
       "declaration": "FourColor.ActualCyclicFanContinuation.of_checks",
       "meaning": "Actual aligned source rules supply either an adjacent third high centre distinct from both earlier centres, within radius three, or a seven-centre whose only five is the retained shared neighbour and whose other six neighbours are six."
+    },
+    {
+      "declaration": "FourColor.ExtraChargeReduction.closing",
+      "meaning": "A complete rule004_1 reading at a five-valent sender closes its missing outer facial triangle using the same actual second successor."
+    },
+    {
+      "declaration": "FourColor.ExtraChargeReduction.alternatives",
+      "meaning": "With shared degree6 and second-successor degree5, the same closure yields a mixed diamond or consecutive word5,6,5,5 for the eight-port chain."
+    },
+    {
+      "declaration": "FourColor.ActualExtraChargeReduction.not_occurrence",
+      "meaning": "Both alternatives consume existing smaller-map colourings and compatible reconstruction in the actual minimal-map class; the existing configuration7 certificate remains."
+    },
+    {
+      "declaration": "FourColor.ActualExtraChargeReduction.flat_alternatives",
+      "meaning": "The previous flat-seven classification retains the same third-centre alternative; its single-five residual now excludes rule004_1 on the specified shared-five-to-first-free edge."
     }
   ],
   "open": [
@@ -496,10 +512,10 @@
     }
   ],
   "next_bounded_attack": {
-    "missing_theorem": "Close the single-five/six-sixes residual using both centres\u2019 flatness and shared rule geometry, or recognize an actual supported reduction there.",
-    "test": "Replay the saved residual first. Its second centre has charge zero, original centre charge nine. Seek a jointly flat example preserving the exact fan, then inspect complete rule contributions and known reduction occurrences. Retain higher-centre cycles explicitly.",
-    "acceptance": "A kernel-checked residual closing/recognition consumer, or a replayable jointly flat residual naming the missing condition. No exclusion inferred solely from the five-rule lower bound.",
-    "limits": "Degree-eight low-neighbour continuations can retain four fives. Initial profile supply, remaining joint classification, termination and universal coverage are open."
+    "target": "Classify the remaining actual inflows in the flat-seven single-five residual, now with rule004_1 excluded at the retained shared-five edge.",
+    "bounded_test": "Preserve both actual centres, the complete same-root fan and all signed rule matches. Test alternative outer tips and rule004_2 or larger source-rule unions; use the new forbidden branch as a proved constraint.",
+    "acceptance": "A supported actual-map reduction or a precise reproducible residual that identifies necessary additional geometry. Prove classification or supply before crediting coverage.",
+    "evidence": "Joint flatness alone admits a replayable example, but that example contains D0004 via the new closure law. Bounded failure to find a no-extra-rule example is not a proof."
   },
   "counts": {
     "coverage_entries": 633,
@@ -545,5 +561,6 @@
     "third_centre_record": "rule-fan-charge-measurements.json",
     "third_centre_domain": "First free degree seven and flat; second free degree five. Other first/second-free profiles remain open."
   },
-  "cyclic_charge_record": "cyclic-charge-measurements.json"
+  "cyclic_charge_record": "cyclic-charge-measurements.json",
+  "extra_charge_record": "extra-charge-measurements.json"
 }

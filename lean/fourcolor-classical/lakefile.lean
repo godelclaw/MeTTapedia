@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay a source-rule closing law and its actual colouring reductions. -/
+target kernelExtraCharge pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/extra-charge-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ExtraChargeReduction", "ExtraChargeExample", "ExtraChargeAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay a uniform cyclic charge budget from shared facial triangles. -/
 target kernelCyclicCharge pkg : Unit := do
   let env ← getAugmentedEnv

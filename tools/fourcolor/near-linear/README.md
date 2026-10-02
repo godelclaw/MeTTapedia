@@ -1157,3 +1157,38 @@ records the scope and costs. This branch uses no original configuration
 rank certificate. It neither excludes longer centre cycles nor closes the
 degree-eight or second-free-degree-six branches. Coverage remains 633
 entries with 629 original certificate dependencies.
+
+
+## An extra source rule supplies a reduction
+
+`ExtraChargeReduction.closing` completes the actual five-valent sender star
+of rule `004_1` (index 5). With a six-valent shared neighbour and a
+five-valent second successor of the sender, the outer triangle gives either
+a mixed diamond or the eight-port `D0004` chain. One geometric law handles
+both outer degrees. `ActualExtraChargeReduction.not_occurrence` consumes
+the existing strict reductions and compatible colouring reconstructions;
+no starting colouring or exterior-closure assumption is supplied by its caller.
+
+`ActualExtraChargeReduction.flat_alternatives` strengthens the preceding
+single-five classification. In its residual branch, this particular extra
+rule is absent at the shared-five-to-first-free edge. Other additional
+incoming rules remain possible and must still be classified.
+
+The [input record](extra-charge-examples.json) has two finite consumers of
+the general theorem, with both complete source-rule readings kernel checked.
+The chain branch constructs its full boundary occurrence. The same record
+replays five legal flips from the retained 162-vertex sphere: both centres
+then have charge zero, the original shared fan survives, and the extra rule
+exposes the existing chain. Thus joint flatness alone permits the degree
+profile; the matched source rule explains a repair inside that example.
+
+Run `lake build kernelExtraCharge` in `lean/fourcolor-classical` for the formal
+result. Run
+`python3 tools/fourcolor/near-linear/audit_extra_charge.py --output tools/fourcolor/near-linear/extra-charge-audit.json`
+from the repository root for its independent finite evidence. The latter
+compares 2,357 rule readings with an independent propagation checker.
+The [measurement record](extra-charge-measurements.json) distinguishes the
+Lean results from program-checked flatness and sphericality. The chain
+reconstruction retains classical configuration 7 and the shared profile.
+Counts remain 633 coverage entries and 629 original certificates; no new
+assembly dependency or coverage entry is removed.

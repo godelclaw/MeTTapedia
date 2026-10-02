@@ -3784,5 +3784,21 @@
     "additional_original_certificate_dependencies_removed": 0,
     "integrated_into_complete_coverage_assembly": false,
     "scope": "No closing of the residual, joint-flatness classification, termination or universal coverage is claimed."
+  },
+  "extra_charge_reduction": {
+    "record": "../near-linear/extra-charge-measurements.json",
+    "status": "Kernel-certified source-rule closure and actual reduction consumer.",
+    "shared_closing_arguments": 1,
+    "existing_repair_consumers": [
+      "mixed diamond",
+      "D0004 eight-port chain"
+    ],
+    "retained_original_rank_certificate": "FourColor.Bulk.Cfg006 (configuration7)",
+    "new_rank_certificates": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "integrated_into_complete_coverage_assembly": false,
+    "scope": "Strengthens the flat-seven residual by excluding one actual extra-rule check; other charge and coverage branches remain open."
   }
 }
