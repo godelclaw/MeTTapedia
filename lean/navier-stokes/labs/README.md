@@ -15823,3 +15823,343 @@ radial/phase quadrature checks the periodic average independently and is
 numerical evidence, not a localization or PDE error certificate. The
 signed Q budget, its generalization beyond axisymmetry, and the full
 arbitrary-data regularity goal remain open.
+
+## Swirl-channel transfer, spatial composition, and a critical source moment
+
+`swirl_channel_reserve.py` tests whether retaining swirl kinetic energy
+repairs the preceding global product. It then identifies an additive
+critical moment with a sufficient diffusion budget. A separate family
+shows that the funded entropy/action reserve alone does not uniformly
+bound even the physical swirl continuation norm. These are analytic
+arguments with exact algebraic checks, not new Lean theorems.
+
+### Keeping the actual transfer between velocity components
+
+Continue in the smooth axisymmetric unforced whole-space setting and use
+the same five-dimensional measure. Define
+
+```text
+Z=integral_R5 b^2=pi E_theta, E_theta=||u_theta||_L2(R3)^2,
+S=integral_R5 |b|^3,
+P_j=integral_R5 q|b|^j, D_j=integral_R5 |b|^(j-2)|grad b|^2,
+q=-2u_r/r.
+```
+
+The exact equations are `Z'=P_2-2nu D_2`, `S'=2P_3-6nu D_3`.
+In particular, replacing total energy by swirl energy does not simply
+replace one nonincreasing scalar by another: P_2 is the signed transfer
+between swirl and meridional motion. The candidate
+`R_theta=(E_theta S)^(6/5)` has, up to the constant `pi^(-6/5)`, the rate
+
+```text
+d_t (Z S)^(6/5)
+ =(6/5)(Z S)^(1/5)
+   [S P_2+2Z P_3-2nu S D_2-6nu Z D_3].                       (6)
+```
+
+For initially pure swirl, let `sigma=q_t(0)=-2A b0^2`, with
+`A=-partial_zz(-Delta5)^-1=R_z^*R_z`. Then
+
+```text
+T=P_2'(0)=integral b0^2 sigma=-2||R_z(b0^2)||_2^2<=0,
+I=P_3'(0)=integral b0^3 sigma,
+J=S0 T+2Z0 I.
+```
+
+The preceding localized example has nonnegative b0 and I>0. Negative
+transfer T is now retained, but it does not make the global product
+monotone for all such data.
+
+### A distant weak source exposes a global-product defect
+
+Fix that localized source b_* and its finite constants `Z_*,S_*,T_*,I_*`,
+with I_*>0. Let `g(X)=exp(-|X|^2/2)` on R5 and add
+
+```text
+g_lambda,R(X)=lambda^2 g(lambda(X-R e_z)),
+b0=b_*+g_lambda,R,                    0<lambda<=1.
+```
+
+This is the initial source of one literal Schwartz pure-swirl velocity.
+It is not a superposition of independently evolved NS solutions. For
+each fixed lambda, take the spatial separation R sufficiently large.
+Schwartz translation decoupling and the bounded translation-invariant
+L2 multiplier A give the limits
+
+```text
+Z0 -> Z_*+lambda^-1 Zg,  S0 -> S_*+lambda Sg,
+T  -> T_*+lambda^3 Tg,   I  -> I_*+lambda^5 Ig,
+Zg=pi^(5/2),                  Sg=(2pi/3)^(5/2),
+Tg=-(2/5)(pi/2)^(5/2),        Ig=-(2/5)(2pi/5)^(5/2).
+```
+
+The Gaussian return constants use rotational symmetry in five
+dimensions: a pairing of radial functions with A is one fifth of their
+ordinary pairing. For the decoupling, `b0^2` converges in L2 to the sum
+of the separated squares, and `b0^3` to the sum of the separated cubes.
+Cross pairings with A tend to zero by weak convergence of translations
+in L2. Thus the nonlocal pressure response is retained in the limit.
+
+Let
+
+```text
+J_lambda=(S_*+lambda Sg)(T_*+lambda^3 Tg)
+          +2(Z_*+lambda^-1 Zg)(I_*+lambda^5 Ig).
+```
+
+Then `lambda J_lambda -> 2 Zg I_*>0`. This gives finite parameters:
+with
+`C=(S_*+Sg)(|T_*|+|Tg|)+2(Z_*+Zg)|Ig|`, one has
+`J_lambda>=2Zg I_*/lambda-C` for `0<lambda<=1`. Choose
+`lambda=Zg I_*/(C+2Zg I_*)`, then a sufficiently large finite separation R.
+The resulting actual datum has `J=S0 T+2Z0 I>0`.
+
+This is the precise aggregation defect: weak distant swirl contributes
+large kinetic energy, almost no cubic stock or return, and multiplies
+the active region's positive I in the global product. The observation
+does not rule out a spatially compatible payment.
+
+### The separate-channel product also rebounds with positive viscosity
+
+Fix this composite datum and viscosity nu>0. As before, amplify its
+velocity by A and write the actual unforced solution as
+`u_A(t)=A v_epsilon(A t)`, `epsilon=nu/A`. Uniform local Sobolev estimates
+for `epsilon in [0,1]` give, at `tau=k epsilon`,
+
+```text
+Z=Z0+epsilon^2(T k^2/2-2D2,0 k)+O(epsilon^3),
+S=S0+epsilon^2(I k^2-6D3,0 k)+O(epsilon^3),
+ZS-Z0S0=epsilon^2(J k^2/2-L k)+O(epsilon^3),
+L=2S0 D2,0+6Z0 D3,0.
+```
+
+All quantities here belong to the complete composite evolution. Set
+`k=4L/J`; the positive leading coefficient is `4L^2/J`. At the actual
+time `t=k nu/A^2`, for sufficiently large A, R_theta exceeds its initial
+value. Both diffusive losses and the signed swirl-to-parent transfer have
+been included. This refutes automatic monotonicity of this global product,
+not a full-datum history allowance, regularity, or indefinite renewal.
+The product itself increases, so a different positive outer power does
+not repair its unconditional monotonicity.
+
+### An additive moment that has a sufficient diffusion budget
+
+The next physical target avoids multiplication of independent global
+resources. Define, using the actual b rather than its passive envelope,
+
+```text
+M=integral_R5 |b|^(5/2)=pi integral_R3 |u_theta|^(5/2)/sqrt(r),
+Dcrit=integral_R5 |b|^(1/2)|grad b|^2,
+Pcrit=integral_R5 q|b|^(5/2).
+```
+
+M is finite for the stated data, adds across disjoint spatial regions,
+and is unchanged by NS spatial scaling: b acquires a factor lambda^2,
+while the five-dimensional measure acquires lambda^-5. These two powers
+select the exponent 5/2. Its complete balance is
+
+```text
+M'=(3/2)Pcrit-(15nu/4)Dcrit.                                  (7)
+```
+
+The absolute power is C2, so this identity also applies to sign-changing
+smooth b with the stated integrability. No nonpositive sign for Pcrit,
+automatic monotonicity of M, or history payment is assumed.
+
+There is a direct continuation implication for a signed absorption bound.
+Apply five-dimensional Sobolev to `|b|^(5/4)`, using the same constant C5,
+and interpolate L3 between L(5/2) and L(25/6):
+
+```text
+||b||_(25/6)^(5/2) <= (25/16)C5 Dcrit,
+||b||_3 <= ||b||_(5/2)^(7/12) ||b||_(25/6)^(5/12),
+S^2 <= (25/16)C5 M^(7/5) Dcrit.                              (8)
+```
+
+Suppose a finite allowance K(u0,nu,H), fixed from the original datum,
+satisfies, for every available smooth prefix T<=H,
+
+```text
+(3/2)integral_0^T Pcrit <= (15nu/8)integral_0^T Dcrit+K.        (9)
+```
+
+Putting `N0=M(0)+K`, equations (7)--(8) give
+
+```text
+M(T)+(15nu/8)integral_0^T Dcrit <= N0,
+integral_0^T S^2 <= (5C5/(6nu))*N0^(12/5).                   (10)
+```
+
+With finite initial circulation maximum G0, the preceding physical swirl
+comparison converts (10) to the L8_t L4_x continuation criterion. This
+is an analytic conditional implication. **The signed estimate (9) is
+unproved.** Its allowance must apply to the full compatible history;
+it cannot be renewed each time a region or time interval is summarized.
+The general three-dimensional and periodic obligations also remain open.
+
+This target treats the earlier single concentrated Gaussian correctly:
+for `b0=g+lambda^2 g(lambda X)`, convexity gives
+`M(0)<=2^(5/2)integral g^(5/2)`, uniformly in lambda. Concentration by
+NS rescaling does not create fictitious critical resources. This fact
+alone proves no control of the subsequent dynamics.
+
+### The previously paid parent histories can be removed
+
+The earlier transported-history split applies throughout the meridional
+space, not just on the axis. For an original fixed radial cutoff rho,
+write `eta=g+eta_core`, where g contains the initial eta and all source
+histories created outside the cutoff, and eta_core starts at zero with
+source `partial_z[(1-zeta_rho)b^2]`. Both solve their linear equations
+along the same actual interacting drift. Elliptic reconstruction gives
+`q=q_paid+q_core`, with the original-datum bound
+
+```text
+integral_0^T ||q_paid||_infinity <= A_H=2M_H,
+M_H=C_BS H^(3/4)(2nu)^(-1/4)Y,
+Y=||eta(0)||_L2(R3)+sqrt(H C4(0)/(3nu rho^8)),
+C4(0)=integral_R3 (r u_theta(0))^4.
+```
+
+These are the analytic estimates in the transported-history section;
+they retain the later motion of each created source. Put
+
+```text
+a(t)=||q_paid(t)||_infinity,
+w(t)=exp[-(3/2)integral_0^t a],
+Pcrit_core=integral_R5 q_core |b|^(5/2).
+```
+
+Since the paid pairing is at most a M, the full balance (7) implies
+
+```text
+(w M)' +(15nu/8)w Dcrit
+ <= w[(3/2)Pcrit_core-(15nu/8)Dcrit].                         (11)
+```
+
+The factor satisfies `exp(-3A_H/2)<=w<=1`. If the signed right-hand
+side of (11) has an original-datum integrated allowance K, equations
+(8) and (11) give the explicit conditional clock bound
+
+```text
+integral_0^T S^2
+ <= (5C5/(6nu))*exp(36M_H/5)*(M(0)+K)^(12/5).                (12)
+```
+
+This removes the entire already-paid parent class from the new target.
+It leaves a signed production estimate for parents born near the axis,
+including their subsequent transport and nonlocal action. The source
+split and w continue from the original time zero at every seam; neither
+is restarted. No bound on the right-hand side of (11) is established.
+
+### Many actual bursts with bounded source entropy and action
+
+The distinction from the funded entropy reserve can also be tested on
+the physical continuation norm. For an integer N>=2, put `lambda=N^2`
+and take the literal nonnegative source
+
+```text
+b0,N(X)=g(X)+sum_(j=1)^N lambda^2 g(lambda(X-j e_z)),
+u0,N=(-x2 b0,N,x1 b0,N,0).
+```
+
+Every datum is a finite Schwartz pure swirl. Write `u_base=(-x2 g,x1 g,0)`
+in physical three-dimensional space. Each translated narrow velocity is
+`lambda u_base(lambda(x-j e_z))`, whose L2 norm is
+`lambda^-1/2 ||u_base||_2`. The triangle inequality and `lambda=N^2`
+therefore give `E0,N<=4pi^(3/2)`.
+
+Circulation has a uniform bound as well. The radial maximum of
+`lambda^2 r^2 exp(-lambda^2 r^2/2)` is `2/e`. For lambda>=1, choosing
+the nearest point of the axial lattice gives
+
+```text
+sum_j exp(-lambda^2(z-j)^2/2)
+ <=1+2 sum_(k>=1) exp(-k^2/8)
+ <=1+2sqrt(2pi)<7.
+```
+
+Including the broad background yields `G0,N<=16/e`.
+The five-dimensional source mass is exactly
+`M1,N=(2pi)^(5/2)(1+N^-5)`. Normalize the source to rho0,N as in the
+entropy construction, with the fixed reference N(0,I5). Its Gaussian
+mixture includes the means j e_z; they must not be discarded. Convexity
+of relative entropy gives
+
+```text
+KL(rho0,N || N(0,I5))
+ <=lambda^-3 [5N log(lambda)+(1/2)sum_(j=1)^N j^2]
+ <=10 log(N)/N^5+1/(2N^3) <=2/e+1/2.
+```
+
+For each fixed nu,H, the previously constructed actual-source entropy
+reserve consequently has the same upper bound for every N:
+
+```text
+R_entropy(0)<=2/e+1/2+4sqrt(2)H/(e nu).                       (13)
+```
+
+Its complete path-action and relative-Fisher payments remain valid on
+every available smooth prefix. Nevertheless, both continuation clocks
+below are unbounded over this family on actual unforced intervals.
+
+Here is a uniform interval argument. Rescale the complete solution by
+
+```text
+v_N(tau,y)=lambda^-1 u_N(tau/lambda^2,y/lambda),
+v_N(0,y)=lambda^-1 u_base(y/lambda)
+         +sum_(j=1)^N u_base(y-lambda j e_z).
+```
+
+The viscosity is unchanged. Gaussian lattice sums, also for every fixed
+derivative order, give uniform C_b^m bounds for this entire initial field,
+independent of N. Smooth bounded uniformly continuous data admit a common
+local mild evolution in C_b^1: the L1 norm of the heat--Leray divergence
+kernel is at most `C(nu t)^(-1/2)`. Its nonlocal part is an integral of
+third heat derivatives, whose L1 norm is bounded by `C s^(-3/2)`.
+The resulting Picard estimate and the uniform C_b^2 initial bound give
+`||v_N(tau)-v_N(0)||_C1<=C sqrt(tau)` on a common positive interval.
+For each finite N, this is the actual smooth finite-energy NS solution
+by local uniqueness. No independent packet trajectories are glued.
+
+On each of the N disjoint rescaled annuli
+`1<=r<=2`, `|z-lambda j|<=1`, the initial source is at least `exp(-5/2)`.
+Choose a common tau0(nu)>0 small enough that the evolving b there stays
+above `c0=exp(-5/2)/2`. Division by r costs at most one on these annuli.
+For `0<=tau<=tau0`, direct integration gives
+
+```text
+integral_R5 |b(v_N)|^3 >= a3 N,     a3=15pi^2 c0^3,
+||v_N,theta||_L4(R3)^4 >= a4 N,     a4=42pi c0^4.
+```
+
+Both spatial quantities acquire a factor lambda on returning to the
+physical solution; time acquires `lambda^-2`. Hence
+
+```text
+integral_0^(tau0/lambda^2) S_N(t)^2 dt >=tau0 a3^2 N^2,
+integral_0^(tau0/lambda^2) ||u_N,theta(t)||_4^8 dt >=tau0 a4^2 N^2.   (14)
+```
+
+These intervals lie below any prescribed H>0 for all sufficiently large N.
+Thus no finite uniform bound for these clocks follows from the displayed
+common upper bounds on source entropy/action, initial energy, circulation
+and source mass alone, at fixed viscosity and horizon. This statement
+concerns bounds from those upper bounds; it does not exclude arbitrary
+encodings of the datum in exact scalar values or a full-datum allowance.
+It is a family of regular short evolutions, not blowup of a single datum.
+The concentrated packets are initially prepared and act simultaneously;
+this does not establish repeated renewal from one packet.
+
+The new moment records what is missing. Positivity and the power law give
+`M(0)>=N integral g^(5/2)`. It is also at most a constant times N+1:
+after rescaling, the packet sum is bounded by seven and its L1 mass is
+N times the Gaussian mass; the background contributes a fixed critical
+moment. Thus multiplicity is present in the original critical resource
+even when (13) stays bounded. The signed production needed to control
+its subsequent renewal remains the physical question in (9).
+
+Run `python3 -O labs/swirl_channel_reserve.py`. The balances, scales,
+Gaussian constants, algebraic separation bound, viscous rebound coefficient
+and conditional clock constants pass exact checks. Translation decoupling,
+uniform local existence, entropy convexity and continuation are analytic.
+No new Lean certification or unconditional regularity is claimed.

@@ -1946,6 +1946,23 @@ localization constants and scaling pass symbolic checks. These results are
 analytic, not new Lean theorems, and do not supply general 3D/periodic
 continuation or refute a full-datum allowance for repeated renewal.
 
+The [separate-channel test](labs/README.md#swirl-channel-transfer-spatial-composition-and-a-critical-source-moment)
+retains the signed transfer from swirl kinetic energy to meridional motion.
+Its global product with the cubic stock still fails automatic monotonicity:
+a distant weak source changes the product's weighting of active feedback,
+and a controlled actual interval retains the failure at positive viscosity.
+The spatially additive critical moment `M=integral_R5 |u_theta/r|^(5/2)`
+has a precise alternative signed diffusion budget sufficient for the
+axisymmetric continuation clock. The earlier paid-parent history removes
+all initial meridional parents and outside-created sources with one
+original-horizon factor; signed renewal by the remaining parents is open.
+An independent family of many initially concentrated swirl packets has
+uniformly bounded source entropy/action allowances but unbounded physical `L8_t L4_x` swirl
+norms on actual short intervals. Its initial critical moment records the
+growing multiplicity. These are analytic arguments with exact algebraic
+checks; they neither establish indefinite renewal nor rule out full-datum
+regularity, and no new Lean certification is claimed.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
