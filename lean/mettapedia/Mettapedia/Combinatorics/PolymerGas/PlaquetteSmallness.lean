@@ -22,6 +22,35 @@ section Supported
 
 variable {X P : Type*} [Fintype X] [DecidableEq X] [Fintype P] [DecidableEq P]
 
+/-- Nonnegative weights whose union support meets a site can be charged to
+one incident source label, retaining all overcounting. -/
+theorem sum_union_support_incident_le (supp : P → Finset X) {f : Finset P → ℝ}
+    (hf : ∀ S, 0 ≤ f S) (x : X) :
+    ∑ S ∈ univ.filter (fun S : Finset P ↦ x ∈ S.biUnion supp), f S ≤
+      ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+        ∑ S ∈ univ.filter (fun S : Finset P ↦ p ∈ S), f S := by
+  let A := univ.filter (fun p ↦ x ∈ supp p)
+  calc
+    _ ≤ ∑ S : Finset P, ∑ p ∈ A, if p ∈ S then f S else 0 := by
+      rw [sum_filter]
+      apply sum_le_sum
+      intro S hS
+      by_cases hx : x ∈ S.biUnion supp
+      · rw [if_pos hx]
+        obtain ⟨p, hp, hxp⟩ := mem_biUnion.mp hx
+        have hpa : p ∈ A := mem_filter.mpr ⟨mem_univ _, hxp⟩
+        simpa only [if_pos hp] using
+          single_le_sum (s := A) (f := fun q ↦ if q ∈ S then f S else 0)
+            (fun q _ ↦ by split_ifs <;> simp_all) hpa
+      · simp only [if_neg hx]
+        exact sum_nonneg (fun p _ ↦ by split_ifs <;> simp_all)
+    _ = _ := by
+      rw [sum_comm]
+      apply sum_congr rfl
+      intro p hp
+      rw [sum_filter]
+
+
 /-- A nonnegative sum over labels meeting a set is bounded by its site
 incidences, with multiplicities retained. -/
 theorem sum_supported_meeting_le (supp : P → Finset X) {f : P → ℝ}

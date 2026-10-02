@@ -336,6 +336,28 @@ structure UnionWeight (V : Type*) [DecidableEq V] where
 
 instance : CoeFun (UnionWeight V) (fun _ => Finset V → ℝ) := ⟨UnionWeight.toFun⟩
 
+section SupportWeights
+variable {X : Type*} [DecidableEq X]
+
+/-- Exponential cardinality of the union support is submultiplicative,
+including for overlapping label families. -/
+def supportCardinalityWeight (supp : V → Finset X) (a : ℝ) (ha : 0 ≤ a) : UnionWeight V where
+  toFun S := Real.exp (a * (S.biUnion supp).card)
+  one_le S := Real.one_le_exp (by positivity)
+  empty := by simp
+  union_le S T := by
+    simp only [Finset.union_biUnion]
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    have h : (((S.biUnion supp) ∪ (T.biUnion supp)).card : ℝ) ≤
+        (S.biUnion supp).card + (T.biUnion supp).card := by exact_mod_cast card_union_le _ _
+    nlinarith
+
+@[simp] theorem supportCardinalityWeight_apply (supp : V → Finset X) (a : ℝ) (ha : 0 ≤ a)
+    (S : Finset V) : supportCardinalityWeight supp a ha S = Real.exp (a * (S.biUnion supp).card) := rfl
+
+end SupportWeights
+
 def Majorizes (w : UnionWeight V) (F G : Finset V → ℝ) : Prop :=
   ∀ S, w S * |coefficient F S| ≤ coefficient G S
 

@@ -787,6 +787,53 @@ theorem degree_fluctuationPlaquetteGraph_le (n : ℕ) (p : Plaquette 4 (doubleIn
   exact Subsingleton.elim _ _
 
 
+
+open StrongCouplingCrossing WilsonBlockElimination WilsonConditionalProjection.PairedHaar
+open WilsonDyadicGeometry SU2WilsonBlockPilot
+open Mettapedia.Combinatorics.PolymerGas
+variable {n : ℕ} {P : Type*} [Fintype P] [DecidableEq P]
+  (supp : P → Finset (Link 4 (doubleIndex n))) (Φ : P → C(FineConfig n, ℝ))
+
+theorem clusterActivity_gauge
+    (hΦ : ∀ p (g : Site 4 (doubleIndex n) → SU2) U, Φ p (gaugeAct g U) = Φ p U)
+    (C : Finset P) (g : Site 4 n → SU2) (c : CoarseConfig n) :
+    clusterActivity volume (blockIndexEquiv 4 n) supp Φ C (gaugeAct g c) =
+      clusterActivity volume (blockIndexEquiv 4 n) supp Φ C c := by
+  classical
+  unfold clusterActivity
+  split_ifs
+  · apply blockedDensity_gauge
+    intro gf U
+    simp only [ContinuousMap.prod_apply, interactionFactor, ContinuousMap.coe_mk]
+    apply prod_congr rfl
+    intro p hp
+    rw [hΦ]
+  · rfl
+
+
+
+theorem effectiveInteraction_gauge
+    (Φ : Finset (Link 4 (doubleIndex n)) → C(FineConfig n, ℝ))
+    (hsmall : interactionNorm 8 Φ ≤ 1/2)
+    (hΦ : ∀ S (g : Site 4 (doubleIndex n) → SU2) U, Φ S (gaugeAct g U) = Φ S U)
+    (T : Finset (Link 4 n)) (g : Site 4 n → SU2) (c : CoarseConfig n) :
+    effectiveInteraction volume (blockIndexEquiv 4 n) Φ hsmall T (gaugeAct g c) =
+      effectiveInteraction volume (blockIndexEquiv 4 n) Φ hsmall T c := by
+  apply effectiveInteraction_eval_eq
+  intro C
+  exact clusterActivity_gauge (fun S : {S : Finset (Link 4 (doubleIndex n)) // S.Nonempty} ↦ S.val)
+    (fun S ↦ Φ S.val) (fun S ↦ hΦ S.val) C g c
+
+theorem wilsonInteraction_gauge (n : ℕ) (β : ℝ) (S : Finset (Link 4 n))
+    (g : Site 4 n → SU2) (U : Link 4 n → SU2) :
+    wilsonInteraction n β S (gaugeAct g U) = wilsonInteraction n β S U := by
+  simp only [wilsonInteraction, regroupInteraction, ContinuousMap.sum_apply,
+    ContinuousMap.smul_apply, smul_eq_mul]
+  apply sum_congr rfl
+  intro p hp
+  rw [plaquetteTrace_gauge]
+
+
 end ScaleTwo
 
 #print axioms integral_assemble

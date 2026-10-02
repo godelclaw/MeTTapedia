@@ -1038,6 +1038,32 @@ theorem card_incident_fluctuationSupport_le (e : ((I ⊕ I) ⊕ J) ≃ X)
   · simp only [mem_fluctuationSupport_inr]
     exact (hD (e (.inr j))).trans (by omega)
 
+/-- A fluctuation coordinate touches at most the two fine halves, so its
+weighted incidence budget is at most twice the fine-site budget. -/
+theorem sum_incident_fluctuationSupport_le (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (supp : Pl → Finset X) {f : Pl → ℝ} (hf : ∀ p, 0 ≤ f p)
+    {B : ℝ} (hB : 0 ≤ B)
+    (h : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), f p ≤ B) (y : I ⊕ J) :
+    ∑ p ∈ univ.filter (fun p ↦ y ∈ fluctuationSupport e (supp p)), f p ≤ 2*B := by
+  cases y with
+  | inl i =>
+    have h0 := h (e (.inl (.inl i)))
+    have h1 := h (e (.inl (.inr i)))
+    simp only [sum_filter] at h0 h1
+    simp only [sum_filter, mem_fluctuationSupport_inl]
+    calc
+      _ ≤ ∑ p : Pl, ((if e (.inl (.inl i)) ∈ supp p then f p else 0) +
+          (if e (.inl (.inr i)) ∈ supp p then f p else 0)) := by
+        apply sum_le_sum
+        intro p hp
+        by_cases h0 : e (.inl (.inl i)) ∈ supp p <;>
+          by_cases h1 : e (.inl (.inr i)) ∈ supp p <;> simp [h0, h1, hf p]
+      _ ≤ _ := by rw [sum_add_distrib]; linarith
+  | inr j =>
+    simp only [mem_fluctuationSupport_inr]
+    exact (h (e (.inr j))).trans (by linarith)
+
+
 end Incidence
 
 variable [Group E] [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]

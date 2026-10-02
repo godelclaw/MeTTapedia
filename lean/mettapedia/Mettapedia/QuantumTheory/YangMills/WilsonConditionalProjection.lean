@@ -1,5 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.WilsonProductLocality
 import Mettapedia.QuantumTheory.YangMills.WilsonDyadicLocality
+import Mettapedia.Combinatorics.PolymerGas.PlaquetteSmallness
 
 /-!
 # Conditional Wilson projection depends only on the geometric boundary
@@ -13,8 +14,13 @@ plaquette supports, with no coupling restriction.
 For ordered two-link blocking, the unweighted Haar projection of a local
 interaction depends only on pairs fully contained in its support. Regrouping
 by these retained supports gives a strict, volume-independent contraction in
-the exponential support-cardinality norm. This linear statement does not
-assert a nonlinear bound for the logarithm of the generated density.
+the exponential support-cardinality norm. The full nonlinear logarithm is
+controlled by connected conditional activities and an all-order polymer
+majorant. At input radius at most `1/2`, exact vacuum extraction produces a
+centered local family whose norm with weight `exp(8 |S|)` is at most
+`4 exp(-2)` times the input radius. The constants are independent of volume.
+These are uniform norms of interaction functions; derivative seminorms and
+spatial-diameter weights require their own estimates.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -594,6 +600,845 @@ theorem strict_linear_gain (ν : Measure E) [IsProbabilityMeasure ν]
     blockedInteraction_local ν e Φ hlocal, blockedInteraction_centered ν e Φ hcenter,
     blockedInteraction_empty_eq_zero ν e Φ hlocal hcenter,
     sum_blockedInteraction ν e Φ, interactionNorm_blocked_le ν e Φ a ha.le⟩
+
+end PairedHaar
+
+/-! ## Uniform connected-family budgets for the block chart -/
+
+namespace PairedHaar
+open WilsonBlockElimination.PairedLinks
+open Mettapedia.Combinatorics.PolymerGas
+variable {X I J P : Type*} [Fintype X] [Fintype I] [Fintype J] [Fintype P]
+  [DecidableEq X] [DecidableEq I] [DecidableEq J] [DecidableEq P]
+variable (e : ((I ⊕ I) ⊕ J) ≃ X) (supp : P → Finset X) (v : P → ℝ)
+
+def clusterMajorant (C : Finset P) : ℝ :=
+  if C ∈ connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p)) then
+    ∏ p ∈ C, v p * Real.exp (4 * (supp p).card) else 0
+
+theorem clusterMajorant_nonneg (hv : ∀ p, 0 ≤ v p) (C : Finset P) :
+    0 ≤ clusterMajorant e supp v C := by
+  unfold clusterMajorant
+  split_ifs
+  · exact prod_nonneg fun p _ ↦ mul_nonneg (hv p) (Real.exp_pos _).le
+  · rfl
+
+theorem exp_card_fluctuationUnion_le (C : Finset P) :
+    Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) ≤
+      ∏ p ∈ C, Real.exp ((supp p).card : ℝ) := by
+  rw [← Real.exp_sum]
+  apply Real.exp_le_exp.mpr
+  have hc : (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card ≤
+      ∑ p ∈ C, (supp p).card :=
+    (card_biUnion_le).trans (sum_le_sum (fun p _ ↦ card_fluctuationSupport_le e (supp p)))
+  exact_mod_cast hc
+
+theorem clusterMajorant_dressed_le (hv : ∀ p, 0 ≤ v p) (C : Finset P) :
+    clusterMajorant e supp v C *
+      Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) ≤
+    if C ∈ connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p)) then
+      ∏ p ∈ C, v p * Real.exp (5 * (supp p).card) else 0 := by
+  unfold clusterMajorant
+  split_ifs
+  · calc
+      _ ≤ (∏ p ∈ C, v p * Real.exp (4 * (supp p).card)) *
+          ∏ p ∈ C, Real.exp ((supp p).card : ℝ) :=
+        mul_le_mul_of_nonneg_left (exp_card_fluctuationUnion_le e supp C)
+          (prod_nonneg fun p _ ↦ mul_nonneg (hv p) (Real.exp_pos _).le)
+      _ = _ := by
+        rw [← prod_mul_distrib]
+        apply prod_congr rfl
+        intro p hp
+        rw [mul_assoc, ← Real.exp_add]
+        congr 2
+        ring
+  · simp
+
+/-- Two units of the input cardinality weight pay for the exponential
+connected-family reserve. This inequality is independent of the lattice size. -/
+theorem weighted_root_budget (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) (x : X) :
+    ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      (v p * Real.exp (5 * (supp p).card)) * Real.exp ((fluctuationSupport e (supp p)).card : ℝ) ≤
+      Real.exp (-2) * r := by
+  calc
+    _ ≤ ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), Real.exp (6 * (supp p).card) * v p := by
+      apply sum_le_sum
+      intro p hp
+      have hc : ((fluctuationSupport e (supp p)).card : ℝ) ≤ (supp p).card := by
+        exact_mod_cast card_fluctuationSupport_le e (supp p)
+      rw [mul_assoc, ← Real.exp_add, mul_comm (Real.exp _) (v p)]
+      apply mul_le_mul_of_nonneg_left _ (hv p)
+      apply Real.exp_le_exp.mpr
+      linarith
+    _ ≤ Real.exp (-2) * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+        Real.exp (8 * (supp p).card) * v p := by
+      simpa only [show (6 : ℝ)-8 = -2 by norm_num] using
+        sum_card_weight_reserve_le supp hne hv (show (6 : ℝ) ≤ 8 by norm_num) x
+    _ ≤ _ := mul_le_mul_of_nonneg_left (hrow x) (Real.exp_pos _).le
+
+theorem exp_reserve_lt_one : 4 * Real.exp (-2) < 1 := by
+  have h1 : 2 < Real.exp 1 := by linarith [Real.add_one_lt_exp (by norm_num : (1 : ℝ) ≠ 0)]
+  have h2 : 4 < Real.exp 2 := by
+    rw [show (2 : ℝ) = 1+1 by norm_num, Real.exp_add]
+    nlinarith
+  rw [Real.exp_neg, ← div_eq_mul_inv]
+  exact (div_lt_one (Real.exp_pos 2)).mpr h2
+
+
+theorem weighted_fluctuation_budget (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) (y : I ⊕ J) :
+    ∑ p ∈ univ.filter (fun p ↦ y ∈ fluctuationSupport e (supp p)),
+      (v p * Real.exp (5 * (supp p).card)) * Real.exp ((fluctuationSupport e (supp p)).card : ℝ) ≤
+      2 * (Real.exp (-2) * r) :=
+  sum_incident_fluctuationSupport_le e supp
+    (fun p ↦ mul_nonneg (mul_nonneg (hv p) (Real.exp_pos _).le) (Real.exp_pos _).le)
+    (mul_nonneg (Real.exp_pos _).le hr) (weighted_root_budget e supp v hne hv hrow) y
+
+theorem connected_majorant_smallness (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) (y : I ⊕ J) :
+    ∑ p ∈ univ.filter (fun p ↦ y ∈ fluctuationSupport e (supp p)),
+      (v p * Real.exp (5 * (supp p).card)) * Real.exp (1 * (fluctuationSupport e (supp p)).card : ℝ) ≤ 1 := by
+  simp only [one_mul]
+  refine (weighted_fluctuation_budget e supp v hne hv hr hrow y).trans ?_
+  have he := exp_reserve_lt_one
+  have hm := mul_le_mul_of_nonneg_left hr1 (Real.exp_pos (-2)).le
+  nlinarith [Real.exp_pos (-2)]
+
+theorem clusterMajorant_site_budget (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) (y : I ⊕ J) :
+    ∑ C ∈ univ.filter (fun C ↦ y ∈ plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C),
+      clusterMajorant e supp v C *
+        Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) ≤
+      2 * (Real.exp (-2) * r) := by
+  let ds : P → Finset (I ⊕ J) := fun p ↦ fluctuationSupport e (supp p)
+  let w : P → ℝ := fun p ↦ v p * Real.exp (5 * (supp p).card)
+  calc
+    _ ≤ ∑ C ∈ univ.filter (fun C ↦ y ∈ plaquetteSupport ds C),
+        if C ∈ connectedPlaquettes ds then ∏ p ∈ C, w p else 0 :=
+      sum_le_sum (fun C _ ↦ clusterMajorant_dressed_le e supp v hv C)
+    _ = ∑ C ∈ (connectedPlaquettes ds).filter (fun C ↦ y ∈ plaquetteSupport ds C),
+        ∏ p ∈ C, w p := by
+      rw [← sum_filter]
+      congr 1
+      ext C
+      simp [and_comm]
+    _ ≤ ∑ p ∈ univ.filter (fun p ↦ y ∈ ds p), w p * Real.exp (1 * (ds p).card) :=
+      sum_connected_weight_through_site_le ds (fun p ↦ mul_nonneg (hv p) (Real.exp_pos _).le)
+        (connected_majorant_smallness e supp v hne hv hr hr1 hrow) y
+    _ ≤ _ := by
+      simpa only [one_mul] using weighted_fluctuation_budget e supp v hne hv hr hrow y
+
+theorem clusterMajorant_through_fine_site (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) (x : X) :
+    ∑ C ∈ univ.filter (fun C ↦ x ∈ plaquetteSupport supp C),
+      clusterMajorant e supp v C *
+        Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) ≤
+      Real.exp (-2) * r := by
+  let ds : P → Finset (I ⊕ J) := fun p ↦ fluctuationSupport e (supp p)
+  let w : P → ℝ := fun p ↦ v p * Real.exp (5 * (supp p).card)
+  let incident : Finset P := univ.filter (fun p ↦ x ∈ supp p)
+  have he (C : Finset P) : x ∈ plaquetteSupport supp C ↔ ¬ Disjoint C incident := by
+    simp only [plaquetteSupport, mem_biUnion, not_disjoint_iff, incident, mem_filter,
+      mem_univ, true_and]
+  calc
+    _ ≤ ∑ C ∈ univ.filter (fun C ↦ x ∈ plaquetteSupport supp C),
+        if C ∈ connectedPlaquettes ds then ∏ p ∈ C, w p else 0 :=
+      sum_le_sum (fun C _ ↦ clusterMajorant_dressed_le e supp v hv C)
+    _ = ∑ C ∈ (connectedPlaquettes ds).filter (fun C ↦ ¬ Disjoint C incident),
+        ∏ p ∈ C, w p := by
+      rw [← sum_filter]
+      congr 1
+      ext C
+      simp [he, and_comm]
+    _ ≤ ∑ p ∈ incident, w p * Real.exp (1 * (ds p).card) :=
+      sum_connected_weight_meeting_labels_le ds (fun p ↦ mul_nonneg (hv p) (Real.exp_pos _).le)
+        (connected_majorant_smallness e supp v hne hv hr hr1 hrow) incident
+    _ ≤ _ := by simpa only [one_mul] using weighted_root_budget e supp v hne hv hrow x
+
+theorem clusterMajorant_koteckyPreiss (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) :
+    KoteckyPreissCondition (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+      (fun C ↦ ((-clusterMajorant e supp v C : ℝ) : ℂ))
+      (fun C ↦ (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card) := by
+  apply koteckyPreissCondition_of_supported_site_sum
+  · intro C hC
+    by_cases hc : C ∈ connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p))
+    · have hn := plaquetteSupport_nonempty (fun p ↦ fluctuationSupport e (supp p))
+        (fun p ↦ fluctuationSupport_nonempty e (hne p)) (mem_filter.mp hc).2
+      exact (hn.ne_empty hC).elim
+    · simp [clusterMajorant, hc]
+  · intro y
+    simp only [Complex.norm_real, Real.norm_eq_abs, abs_neg,
+      abs_of_nonneg (clusterMajorant_nonneg e supp v hv _)]
+    refine (clusterMajorant_site_budget e supp v hne hv hr hr1 hrow y).trans ?_
+    have he := exp_reserve_lt_one
+    have hm := mul_le_mul_of_nonneg_left hr1 (Real.exp_pos (-2)).le
+    nlinarith [Real.exp_pos (-2)]
+
+end PairedHaar
+
+/-! ## Actual conditional activities and their exact partition -/
+
+namespace PairedHaar
+open WilsonBlockElimination WilsonBlockElimination.PairedLinks WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas Mettapedia.Combinatorics.PolymerGas.SubsetExpansion
+variable {X I J P E : Type*}
+  [Fintype X] [Fintype I] [Fintype J] [Fintype P]
+  [DecidableEq X] [DecidableEq I] [DecidableEq J] [DecidableEq P]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+def interactionFactor (F : C(X → E, ℝ)) : C(X → E, ℝ) :=
+  ⟨fun U ↦ Real.exp (F U) - 1, (Real.continuous_exp.comp F.continuous).sub continuous_const⟩
+
+theorem interactionFactor_norm_le (F : C(X → E, ℝ)) (hF : ‖F‖ ≤ 1) :
+    ‖interactionFactor F‖ ≤ 2 * ‖F‖ := by
+  apply (ContinuousMap.norm_le _ (by positivity)).mpr
+  intro U
+  have hb : |F U| ≤ ‖F‖ := F.norm_coe_le_norm U
+  exact (Real.abs_exp_sub_one_le (hb.trans hF)).trans (by linarith)
+
+theorem interactionFactor_local (S : Finset X) (F : C(X → E, ℝ)) (hF : DependsOn S F) :
+    DependsOn S (interactionFactor F) := by
+  intro U V huv
+  change Real.exp (F U) - 1 = Real.exp (F V) - 1
+  rw [hF U V huv]
+
+variable (ν : Measure E) [IsProbabilityMeasure ν]
+  (e : ((I ⊕ I) ⊕ J) ≃ X) (supp : P → Finset X) (Φ : P → C(X → E, ℝ))
+
+def clusterActivity (C : Finset P) : C(I → E, ℝ) :=
+  if C ∈ connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p)) then
+    blockedDensity ν e (∏ p ∈ C, interactionFactor (Φ p)) else 0
+
+theorem clusterActivity_local [Measure.IsMulLeftInvariant ν]
+    (hΦ : ∀ p, DependsOn (supp p) (Φ p)) (C : Finset P) :
+    DependsOn (retainedSupport e (plaquetteSupport supp C)) (clusterActivity ν e supp Φ C) := by
+  unfold clusterActivity
+  split_ifs
+  · apply blockedDensity_local
+    intro U V huv
+    simp only [ContinuousMap.prod_apply]
+    apply prod_congr rfl
+    intro p hp
+    exact interactionFactor_local (supp p) (Φ p) (hΦ p) U V
+      (fun x hx ↦ huv x (mem_biUnion.mpr ⟨p, hp, hx⟩))
+  · intro U V huv
+    rfl
+
+theorem clusterActivity_norm_le (hΦ : ∀ p, ‖Φ p‖ ≤ 1) (C : Finset P) :
+    ‖clusterActivity ν e supp Φ C‖ ≤
+      if C ∈ connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p)) then
+        ∏ p ∈ C, 2 * ‖Φ p‖ else 0 := by
+  unfold clusterActivity
+  split_ifs
+  · exact (norm_blockedDensity_le ν e _).trans ((Finset.norm_prod_le _ _).trans
+      (prod_le_prod (fun p _ ↦ norm_nonneg _) (fun p _ ↦ interactionFactor_norm_le (Φ p) (hΦ p))))
+  · simp
+
+
+def interactionDensity : C(X → E, ℝ) :=
+  ⟨fun U ↦ Real.exp (∑ p, Φ p U), by fun_prop⟩
+
+theorem interactionDensity_pos (U : X → E) : 0 < interactionDensity Φ U := Real.exp_pos _
+
+theorem clusterActivity_partitionFunction
+    (hne : ∀ p, (supp p).Nonempty) (hΦ : ∀ p, DependsOn (supp p) (Φ p)) :
+    blockedDensity ν e (interactionDensity Φ) =
+      partitionFunction (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+        (clusterActivity ν e supp Φ) (connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p))) := by
+  ext c
+  rw [partitionFunction_continuous_apply]
+  let ds : P → Finset (I ⊕ J) := fun p ↦ fluctuationSupport e (supp p)
+  let f : P → (I ⊕ J → E) → ℝ := fun p u ↦ interactionFactor (Φ p) (fluctuationChart e c u)
+  have hfc p : Continuous (f p) := (interactionFactor (Φ p)).continuous.comp
+    (continuous_fluctuationChart e c)
+  have hfl p U V (huv : ∀ y ∈ ds p, U y = V y) : f p U = f p V :=
+    interactionFactor_local (supp p) (Φ p) (hΦ p) _ _ (fluctuationChart_agree e c huv)
+  have hi := integral_prod_one_add_eq_labelledPartition ν (1 : E) ds
+    (fun p ↦ fluctuationSupport_nonempty e (hne p)) f (fun p ↦ (hfc p).measurable) hfl
+    (fun Γ ↦ CompactTransferGap.IntegralKernel.integrable_continuous_fun
+      (Measure.pi fun _ : I ⊕ J ↦ ν) (by
+        apply continuous_finset_prod
+        intro C hC
+        exact continuous_finset_prod _ (fun p _ ↦ hfc p)))
+  rw [← integral_fluctuationChart ν e c (interactionDensity Φ)]
+  calc
+    _ = ∫ u, ∏ p, (1 + f p u) ∂Measure.pi (fun _ : I ⊕ J ↦ ν) := by
+      apply integral_congr_ae
+      filter_upwards [] with u
+      change Real.exp (∑ p, Φ p (fluctuationChart e c u)) = _
+      rw [Real.exp_sum]
+      apply prod_congr rfl
+      intro p hp
+      dsimp [f, interactionFactor]
+      ring
+    _ = _ := by
+      rw [hi]
+      apply partitionFunction_congr
+      intro C hC
+      change C ∈ connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p)) at hC
+      have hh := integral_fluctuationChart ν e c (∏ p ∈ C, interactionFactor (Φ p))
+      simpa only [ContinuousMap.prod_apply, clusterActivity, if_pos hC, f] using hh
+
+end PairedHaar
+
+/-! ## Exact centering and vacuum extraction -/
+
+namespace PairedHaar
+open WilsonBlockElimination WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas Mettapedia.Combinatorics.PolymerGas.SubsetExpansion
+variable {V X E : Type*} [Fintype V] [DecidableEq V] [Fintype X] [DecidableEq X]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+theorem coefficient_local (supp : V → Finset X) (F : Finset V → C(X → E, ℝ))
+    (hF : ∀ S, DependsOn (S.biUnion supp) (F S)) (S : Finset V) :
+    DependsOn (S.biUnion supp) (coefficient (A := C(X → E, ℝ)) F S) := by
+  induction S using Finset.strongInductionOn with
+  | _ S ih =>
+    intro U W huw
+    rw [coefficient]
+    simp only [ContinuousMap.sub_apply, ContinuousMap.sum_apply]
+    rw [hF S U W huw]
+    congr 1
+    apply sum_congr rfl
+    intro T hT
+    have hsub : T.val ⊆ S := mem_powerset.mp (mem_erase.mp T.property).2
+    have hstrict : T.val ⊂ S := (ssubset_iff_subset_ne).mpr ⟨hsub, (mem_erase.mp T.property).1⟩
+    exact ih T.val hstrict U W (fun x hx ↦ huw x (biUnion_subset_biUnion_of_subset_left supp hsub hx))
+
+theorem haarCentered_local (ν : Measure E) [IsProbabilityMeasure ν]
+    (S : Finset X) (F : C(X → E, ℝ)) (hF : DependsOn S F) :
+    DependsOn S (centered (Measure.pi fun _ : X ↦ ν) 1 F) := by
+  intro U W huw
+  simp only [centered, ContinuousMap.sub_apply, ContinuousMap.smul_apply, ContinuousMap.one_apply]
+  rw [hF U W huw]
+
+theorem norm_haarCentered_le (ν : Measure E) [IsProbabilityMeasure ν] (F : C(X → E, ℝ)) :
+    ‖centered (Measure.pi fun _ : X ↦ ν) 1 F‖ ≤ 2 * ‖F‖ := by
+  apply (ContinuousMap.norm_le _ (by positivity)).mpr
+  intro U
+  exact abs_centered_le _ 1 F (fun _ ↦ by norm_num) (fun U ↦ F.norm_coe_le_norm U) U
+
+theorem integral_haarCentered_zero (ν : Measure E) [IsProbabilityMeasure ν] (F : C(X → E, ℝ)) :
+    (∫ U, centered (Measure.pi fun _ : X ↦ ν) 1 F U ∂Measure.pi (fun _ : X ↦ ν)) = 0 := by
+  have h := expectation_centered (Measure.pi fun _ : X ↦ ν) 1 F (fun _ ↦ by norm_num)
+  simpa [WilsonBlockElimination.expectation] using h
+
+variable (ν : Measure E) [IsProbabilityMeasure ν]
+  (supp : V → Finset X) (F : Finset V → C(X → E, ℝ))
+
+def extractedInteraction : Finset X → C(X → E, ℝ) :=
+  regroupInteraction (fun S ↦ S.biUnion supp)
+    (fun S ↦ centered (Measure.pi fun _ : X ↦ ν) 1 (coefficient F S))
+
+def extractedVacuum : ℝ :=
+  ∑ S : Finset V, expectation (Measure.pi fun _ : X ↦ ν) 1 (coefficient F S)
+
+theorem extractedInteraction_local (hF : ∀ S, DependsOn (S.biUnion supp) (F S)) (T : Finset X) :
+    DependsOn T (extractedInteraction ν supp F T) :=
+  regroupInteraction_local _ _ (fun S ↦ haarCentered_local ν _ _ (coefficient_local supp F hF S)) T
+
+theorem extractedInteraction_centered (T : Finset X) :
+    (∫ U, extractedInteraction ν supp F T U ∂Measure.pi (fun _ : X ↦ ν)) = 0 := by
+  simp only [extractedInteraction, regroupInteraction, ContinuousMap.sum_apply]
+  rw [integral_finsetSum _ (fun S _ ↦ CompactTransferGap.IntegralKernel.integrable_continuous_fun _
+    (centered (Measure.pi fun _ : X ↦ ν) 1 (coefficient F S)).continuous)]
+  simp only [integral_haarCentered_zero, sum_const_zero]
+
+theorem extractedInteraction_empty_eq_zero (hF : ∀ S, DependsOn (S.biUnion supp) (F S)) :
+    extractedInteraction ν supp F ∅ = 0 := by
+  ext U
+  have he (W : X → E) : extractedInteraction ν supp F ∅ W = extractedInteraction ν supp F ∅ U :=
+    extractedInteraction_local ν supp F hF ∅ W U (by simp)
+  have hi := extractedInteraction_centered ν supp F ∅
+  simp_rw [he] at hi
+  simpa using hi
+
+theorem extractedInteraction_reconstruct :
+    (∑ T, extractedInteraction ν supp F T) + extractedVacuum ν F • 1 = F univ := by
+  rw [extractedInteraction, sum_regroupInteraction]
+  simp only [centered, sum_sub_distrib]
+  rw [← Finset.sum_smul]
+  have he : ∑ S : Finset V, coefficient F S = F univ := by
+    simpa only [zeta, powerset_univ] using zeta_coefficient F univ
+  rw [he]
+  simp only [extractedVacuum, sub_add_cancel]
+
+theorem extractedInteraction_row_le (a : ℝ) {c : V → ℝ}
+    (hbudget : ∀ p, ∑ S ∈ univ.filter (fun S : Finset V ↦ p ∈ S),
+      Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖ ≤ c p) (x : X) :
+    interactionRow a x (extractedInteraction ν supp F) ≤
+      2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), c p := by
+  calc
+    _ ≤ ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
+        Real.exp (a * (S.biUnion supp).card) *
+          ‖centered (Measure.pi fun _ : X ↦ ν) 1 (coefficient F S)‖ :=
+      interactionRow_regroup_le _ _ a x
+    _ ≤ ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
+        2 * (Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖) := by
+      apply sum_le_sum
+      intro S hS
+      nlinarith [mul_le_mul_of_nonneg_left (norm_haarCentered_le ν (coefficient F S)) (Real.exp_pos (a * (S.biUnion supp).card)).le]
+    _ = 2 * ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
+        Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖ := by rw [mul_sum]
+    _ ≤ 2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+        ∑ S ∈ univ.filter (fun S : Finset V ↦ p ∈ S),
+          Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖ :=
+      mul_le_mul_of_nonneg_left (sum_union_support_incident_le supp (fun S ↦ by positivity) x) (by norm_num)
+    _ ≤ _ := mul_le_mul_of_nonneg_left (sum_le_sum (fun p _ ↦ hbudget p)) (by norm_num)
+
+end PairedHaar
+
+/-! ## A nonlinear contraction for the full generated interaction -/
+
+namespace PairedHaar
+open WilsonBlockElimination WilsonBlockElimination.PairedLinks WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas Mettapedia.Combinatorics.PolymerGas.SubsetExpansion
+variable {X I J P E : Type*}
+  [Fintype X] [Fintype I] [Fintype J] [Fintype P]
+  [DecidableEq X] [DecidableEq I] [DecidableEq J] [DecidableEq P]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+variable (ν : Measure E) [IsProbabilityMeasure ν]
+  (e : ((I ⊕ I) ⊕ J) ≃ X) (supp : P → Finset X) (Φ : P → C(X → E, ℝ))
+
+def clusterRetainedSupport (C : Finset P) : Finset I := retainedSupport e (plaquetteSupport supp C)
+
+def clusterRemovalWeight (v : P → ℝ) (C : Finset P) : ℝ :=
+  Real.log (1 + clusterMajorant e supp v C *
+    Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ))
+
+theorem clusterMajorant_dobrushin {v : P → ℝ}
+    (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) :
+    DobrushinCondition (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+      (fun C ↦ ((-clusterMajorant e supp v C : ℝ) : ℂ)) (clusterRemovalWeight e supp v) := by
+  have h := dobrushinCondition_of_koteckyPreiss (clusterMajorant_koteckyPreiss e supp v hne hv hr hr1 hrow)
+  unfold clusterRemovalWeight
+  simpa only [Complex.norm_real, Real.norm_eq_abs, abs_neg,
+    abs_of_nonneg (clusterMajorant_nonneg e supp v hv _)] using h
+
+theorem weighted_clusterActivity_norm_le (hΦ : ∀ p, ‖Φ p‖ ≤ 1) (C : Finset P) :
+    Real.exp (8 * (clusterRetainedSupport e supp C).card) * ‖clusterActivity ν e supp Φ C‖ ≤
+      clusterMajorant e supp (fun p ↦ 2 * ‖Φ p‖) C := by
+  by_cases hc : C ∈ connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p))
+  · have hn := clusterActivity_norm_le ν e supp Φ hΦ C
+    rw [if_pos hc] at hn
+    have hb : 2 * (clusterRetainedSupport e supp C).card ≤ ∑ p ∈ C, (supp p).card :=
+      (twice_card_retainedSupport_le e _).trans card_biUnion_le
+    have he : Real.exp (8 * (clusterRetainedSupport e supp C).card) ≤
+        ∏ p ∈ C, Real.exp (4 * (supp p).card) := by
+      rw [← Real.exp_sum, ← mul_sum]
+      apply Real.exp_le_exp.mpr
+      have hb' : (2 : ℝ) * (clusterRetainedSupport e supp C).card ≤ ∑ p ∈ C, ((supp p).card : ℝ) := by
+        exact_mod_cast hb
+      linarith
+    calc
+      _ ≤ (∏ p ∈ C, Real.exp (4 * (supp p).card)) * (∏ p ∈ C, 2 * ‖Φ p‖) :=
+        mul_le_mul he hn (norm_nonneg _) (prod_nonneg (fun _ _ ↦ (Real.exp_pos _).le))
+      _ = _ := by
+        simp only [clusterMajorant, if_pos hc, prod_mul_distrib]
+        ring
+  · simp [clusterActivity, clusterMajorant, hc]
+
+theorem component_norm_le_of_row (hne : ∀ p, (supp p).Nonempty) {R : ℝ}
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * ‖Φ p‖ ≤ R) (p : P) : ‖Φ p‖ ≤ R := by
+  obtain ⟨x, hx⟩ := hne p
+  have hp : p ∈ univ.filter (fun p ↦ x ∈ supp p) := mem_filter.mpr ⟨mem_univ _, hx⟩
+  calc
+    _ ≤ Real.exp (8 * (supp p).card) * ‖Φ p‖ :=
+      le_mul_of_one_le_left (norm_nonneg _) (Real.one_le_exp (by positivity))
+    _ ≤ ∑ q ∈ univ.filter (fun q ↦ x ∈ supp q), Real.exp (8 * (supp q).card) * ‖Φ q‖ :=
+      single_le_sum (s := univ.filter (fun q : P ↦ x ∈ supp q))
+        (f := fun q ↦ Real.exp (8 * (supp q).card) * ‖Φ q‖) (fun q _ ↦ by positivity) hp
+    _ ≤ R := hrow x
+
+theorem clusterActivity_shadow_dobrushin (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * ‖Φ p‖ ≤ R) :
+    DobrushinCondition (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+      (fun C ↦ ((-clusterMajorant e supp (fun p ↦ 2 * ‖Φ p‖) C : ℝ) : ℂ))
+      (clusterRemovalWeight e supp (fun p ↦ 2 * ‖Φ p‖)) := by
+  apply clusterMajorant_dobrushin e supp hne (fun p ↦ by positivity)
+    (r := 2*R) (by positivity) (by linarith)
+  intro x
+  calc
+    _ = 2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), Real.exp (8 * (supp p).card) * ‖Φ p‖ := by
+      rw [mul_sum]
+      apply sum_congr rfl
+      intro p hp
+      ring
+    _ ≤ _ := mul_le_mul_of_nonneg_left (hrow x) (by norm_num)
+
+theorem clusterActivity_partition_pos (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * ‖Φ p‖ ≤ R)
+    (Λ : Finset (Finset P)) (c : I → E) :
+    0 < partitionFunction (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+      (fun C ↦ clusterActivity ν e supp Φ C c) Λ := by
+  apply partitionFunction_pos_of_dobrushin
+  apply (clusterActivity_shadow_dobrushin e supp Φ hne hR hR1 hrow).mono_activity
+  intro C
+  have hρ := clusterMajorant_nonneg e supp (fun p ↦ 2 * ‖Φ p‖) (fun p ↦ by positivity) C
+  simp only [Complex.norm_real, Real.norm_eq_abs, abs_neg, abs_of_nonneg hρ]
+  have hn : ∀ p, ‖Φ p‖ ≤ 1 := fun p ↦
+    (component_norm_le_of_row supp Φ hne hrow p).trans (by linarith)
+  calc
+    _ ≤ ‖clusterActivity ν e supp Φ C‖ := (clusterActivity ν e supp Φ C).norm_coe_le_norm c
+    _ ≤ Real.exp (8 * (clusterRetainedSupport e supp C).card) * ‖clusterActivity ν e supp Φ C‖ :=
+      le_mul_of_one_le_left (norm_nonneg _) (Real.one_le_exp (by positivity))
+    _ ≤ _ := weighted_clusterActivity_norm_le ν e supp Φ hn C
+
+def clusterLogFamily
+    (hpos : ∀ Λ c, 0 < partitionFunction
+      (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+      (fun C ↦ clusterActivity ν e supp Φ C c) Λ) (A : Finset (Finset P)) : C(I → E, ℝ) :=
+  let Z : C(I → E, ℝ) := partitionFunction
+    (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+    (clusterActivity ν e supp Φ) ((connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p))) ∩ A)
+  ⟨fun c ↦ Real.log (Z c), Z.continuous.log (fun c ↦ by
+    rw [partitionFunction_continuous_apply]
+    exact (hpos _ c).ne')⟩
+
+theorem clusterLogFamily_local [Measure.IsMulLeftInvariant ν]
+    (hΦ : ∀ p, DependsOn (supp p) (Φ p))
+    (hpos : ∀ Λ c, 0 < partitionFunction
+      (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+      (fun C ↦ clusterActivity ν e supp Φ C c) Λ) (A : Finset (Finset P)) :
+    DependsOn (A.biUnion (clusterRetainedSupport e supp)) (clusterLogFamily ν e supp Φ hpos A) := by
+  intro U W huw
+  simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply]
+  apply congrArg Real.log
+  apply partitionFunction_congr
+  intro C hC
+  exact clusterActivity_local ν e supp Φ hΦ C U W
+    (fun x hx ↦ huw x (mem_biUnion.mpr ⟨C, (mem_inter.mp hC).2, hx⟩))
+
+
+variable (hpos : ∀ Λ c, 0 < partitionFunction
+  (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+  (fun C ↦ clusterActivity ν e supp Φ C c) Λ)
+
+theorem clusterLogFamily_root_budget (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * ‖Φ p‖ ≤ R) (C : Finset P) :
+    ∑ A ∈ univ.filter (fun A : Finset (Finset P) ↦ C ∈ A),
+      Real.exp (8 * (A.biUnion (clusterRetainedSupport e supp)).card) *
+        ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ ≤
+      clusterRemovalWeight e supp (fun p ↦ 2 * ‖Φ p‖) C := by
+  let w := supportCardinalityWeight (clusterRetainedSupport e supp) 8 (by norm_num)
+  apply sum_weighted_norm_log_coefficients_le
+    (Λ := connectedPlaquettes (fun p ↦ fluctuationSupport e (supp p)))
+    _ w (clusterActivity ν e supp Φ)
+    (fun C ↦ clusterMajorant_nonneg e supp _ (fun p ↦ by positivity) C)
+    (clusterActivity_shadow_dobrushin e supp Φ hne hR hR1 hrow)
+  · intro D c
+    have hn : ∀ p, ‖Φ p‖ ≤ 1 := fun p ↦
+      (component_norm_le_of_row supp Φ hne hrow p).trans (by linarith)
+    have hb := weighted_clusterActivity_norm_le ν e supp Φ hn D
+    have hc := mul_le_mul_of_nonneg_left ((clusterActivity ν e supp Φ D).norm_coe_le_norm c)
+      (Real.exp_pos (8 * (clusterRetainedSupport e supp D).card)).le
+    simpa [w, supportCardinalityWeight] using hc.trans hb
+  · intro A c
+    simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply,
+      activatedLogPartition]
+
+theorem sum_clusterRemoval_retained_le (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * ‖Φ p‖ ≤ R) (i : I) :
+    ∑ C ∈ univ.filter (fun C ↦ i ∈ clusterRetainedSupport e supp C),
+      clusterRemovalWeight e supp (fun p ↦ 2 * ‖Φ p‖) C ≤ 2 * Real.exp (-2) * R := by
+  let v : P → ℝ := fun p ↦ 2 * ‖Φ p‖
+  have hv p : 0 ≤ v p := by dsimp [v]; positivity
+  have hr : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ 2*R := by
+    intro x
+    calc
+      _ = 2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), Real.exp (8 * (supp p).card) * ‖Φ p‖ := by
+        rw [mul_sum]
+        apply sum_congr rfl
+        intro p hp
+        dsimp [v]
+        ring
+      _ ≤ _ := mul_le_mul_of_nonneg_left (hrow x) (by norm_num)
+  calc
+    _ ≤ ∑ C ∈ univ.filter (fun C ↦ i ∈ clusterRetainedSupport e supp C),
+        clusterMajorant e supp v C *
+          Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) := by
+      apply sum_le_sum
+      intro C hC
+      have hn : 0 ≤ clusterMajorant e supp v C *
+          Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) :=
+        mul_nonneg (clusterMajorant_nonneg e supp v hv C) (Real.exp_pos _).le
+      have h := Real.log_le_sub_one_of_pos (show 0 < 1 + clusterMajorant e supp v C *
+        Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) by linarith)
+      exact (show Real.log _ ≤ _ from h).trans_eq (by ring)
+    _ ≤ ∑ C ∈ univ.filter (fun C ↦ e (.inl (.inl i)) ∈ plaquetteSupport supp C),
+        clusterMajorant e supp v C *
+          Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) := by
+      apply sum_le_sum_of_subset_of_nonneg
+      · intro C hC
+        exact mem_filter.mpr ⟨mem_univ _, ((mem_retainedSupport e _ i).mp (mem_filter.mp hC).2).1⟩
+      · intro C hC hnot
+        exact mul_nonneg (clusterMajorant_nonneg e supp v hv C) (Real.exp_pos _).le
+    _ ≤ Real.exp (-2) * (2*R) := clusterMajorant_through_fine_site e supp v hne hv
+      (by positivity) (by linarith) hr (e (.inl (.inl i)))
+    _ = _ := by ring
+
+def nonlinearInteraction : Finset I → C(I → E, ℝ) :=
+  extractedInteraction ν (clusterRetainedSupport e supp) (clusterLogFamily ν e supp Φ hpos)
+
+def nonlinearVacuum : ℝ := extractedVacuum ν (clusterLogFamily ν e supp Φ hpos)
+
+theorem nonlinearInteraction_norm_le (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * ‖Φ p‖ ≤ R) :
+    interactionNorm 8 (nonlinearInteraction ν e supp Φ hpos) ≤ (4 * Real.exp (-2)) * R := by
+  apply interactionNorm_le _ _ (by positivity)
+  intro i
+  calc
+    _ ≤ 2 * ∑ C ∈ univ.filter (fun C ↦ i ∈ clusterRetainedSupport e supp C),
+        clusterRemovalWeight e supp (fun p ↦ 2 * ‖Φ p‖) C :=
+      extractedInteraction_row_le ν _ _ 8 (clusterLogFamily_root_budget ν e supp Φ hpos hne hR hR1 hrow) i
+    _ ≤ 2 * (2 * Real.exp (-2) * R) :=
+      mul_le_mul_of_nonneg_left (sum_clusterRemoval_retained_le e supp Φ hne hR hR1 hrow i) (by norm_num)
+    _ = _ := by ring
+
+theorem nonlinearInteraction_local [Measure.IsMulLeftInvariant ν]
+    (hΦ : ∀ p, DependsOn (supp p) (Φ p)) (T : Finset I) :
+    DependsOn T (nonlinearInteraction ν e supp Φ hpos T) :=
+  extractedInteraction_local ν _ _ (clusterLogFamily_local ν e supp Φ hΦ hpos) T
+
+theorem nonlinearInteraction_centered (T : Finset I) :
+    (∫ U, nonlinearInteraction ν e supp Φ hpos T U ∂Measure.pi (fun _ : I ↦ ν)) = 0 :=
+  extractedInteraction_centered ν _ _ T
+
+theorem nonlinearInteraction_empty_eq_zero [Measure.IsMulLeftInvariant ν]
+    (hΦ : ∀ p, DependsOn (supp p) (Φ p)) : nonlinearInteraction ν e supp Φ hpos ∅ = 0 :=
+  extractedInteraction_empty_eq_zero ν _ _ (clusterLogFamily_local ν e supp Φ hΦ hpos)
+
+theorem nonlinearInteraction_reconstruct
+    (hne : ∀ p, (supp p).Nonempty) (hΦ : ∀ p, DependsOn (supp p) (Φ p)) (c : I → E) :
+    blockedDensity ν e (interactionDensity Φ) c =
+      Real.exp (nonlinearVacuum ν e supp Φ hpos + ∑ T, nonlinearInteraction ν e supp Φ hpos T c) := by
+  have h := congrArg (fun F : C(I → E, ℝ) ↦ F c)
+    (extractedInteraction_reconstruct ν (clusterRetainedSupport e supp) (clusterLogFamily ν e supp Φ hpos))
+  simp only [ContinuousMap.add_apply, ContinuousMap.sum_apply, ContinuousMap.smul_apply,
+    ContinuousMap.one_apply, smul_eq_mul, mul_one] at h
+  have hlog : clusterLogFamily ν e supp Φ hpos univ c =
+      Real.log (blockedDensity ν e (interactionDensity Φ) c) := by
+    simp only [clusterLogFamily, inter_univ, ContinuousMap.coe_mk]
+    rw [← clusterActivity_partitionFunction ν e supp Φ hne hΦ]
+  rw [hlog] at h
+  have he : nonlinearVacuum ν e supp Φ hpos + ∑ T, nonlinearInteraction ν e supp Φ hpos T c =
+      Real.log (blockedDensity ν e (interactionDensity Φ) c) := by
+    change extractedVacuum ν _ + ∑ T, extractedInteraction ν _ _ T c = _
+    linarith
+  rw [he, Real.exp_log (blockedDensity_pos ν e _ (interactionDensity_pos Φ) c)]
+
+/-- The nonlinear block map includes the full connected logarithm. Vacuum
+extraction and centering retain the complete density, with a strict gain in
+one fixed support-cardinality norm. -/
+theorem nonlinear_block_contraction [Measure.IsMulLeftInvariant ν]
+    (hne : ∀ p, (supp p).Nonempty) (hΦ : ∀ p, DependsOn (supp p) (Φ p))
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      Real.exp (8 * (supp p).card) * ‖Φ p‖ ≤ R) :
+    ∃ (Ψ : Finset I → C(I → E, ℝ)) (vacuum : ℝ),
+      (∀ T, DependsOn T (Ψ T)) ∧ (∀ T, (∫ c, Ψ T c ∂Measure.pi (fun _ : I ↦ ν)) = 0) ∧
+      Ψ ∅ = 0 ∧
+      (∀ c, blockedDensity ν e (interactionDensity Φ) c = Real.exp (vacuum + ∑ T, Ψ T c)) ∧
+      interactionNorm 8 Ψ ≤ (4 * Real.exp (-2)) * R := by
+  let hp := clusterActivity_partition_pos ν e supp Φ hne hR hR1 hrow
+  exact ⟨nonlinearInteraction ν e supp Φ hp, nonlinearVacuum ν e supp Φ hp,
+    nonlinearInteraction_local ν e supp Φ hp hΦ,
+    nonlinearInteraction_centered ν e supp Φ hp,
+    nonlinearInteraction_empty_eq_zero ν e supp Φ hp hΦ,
+    nonlinearInteraction_reconstruct ν e supp Φ hp hne hΦ,
+    nonlinearInteraction_norm_le ν e supp Φ hp hne hR hR1 hrow⟩
+
+end PairedHaar
+
+/-! ## Canonical extraction for support-indexed interactions -/
+
+namespace PairedHaar
+open WilsonBlockElimination WilsonBlockElimination.PairedLinks WilsonLocalResponse
+variable {X I J E A : Type*} [Fintype X] [Fintype I] [Fintype J]
+  [DecidableEq X] [DecidableEq I] [DecidableEq J]
+
+theorem sum_nonemptySupports [AddCommMonoid A] (f : Finset X → A) (hf : f ∅ = 0) :
+    (∑ S : {S : Finset X // S.Nonempty}, f S.val) = ∑ S, f S := by
+  rw [← Finset.sum_subtype (univ.filter (fun S : Finset X ↦ S.Nonempty)) (by simp) f]
+  apply sum_subset (subset_univ _)
+  intro S hS hn
+  have he : S = ∅ := by simpa using hn
+  simpa only [he] using hf
+
+variable [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+theorem interactionRow_nonempty (a : ℝ) (Φ : Finset X → C(X → E, ℝ)) (x : X) :
+    (∑ S ∈ univ.filter (fun S : {S : Finset X // S.Nonempty} ↦ x ∈ S.val),
+      Real.exp (a * S.val.card) * ‖Φ S.val‖) = interactionRow a x Φ := by
+  simp only [sum_filter, interactionRow_apply]
+  exact sum_nonemptySupports (fun S ↦ if x ∈ S then Real.exp (a * S.card) * ‖Φ S‖ else 0) (by simp)
+
+theorem interactionDensity_nonempty (Φ : Finset X → C(X → E, ℝ)) (hzero : Φ ∅ = 0) :
+    interactionDensity (fun S : {S : Finset X // S.Nonempty} ↦ Φ S.val) = interactionDensity Φ := by
+  ext U
+  apply congrArg Real.exp
+  exact sum_nonemptySupports (fun S ↦ Φ S U) (by simp only [hzero, ContinuousMap.zero_apply])
+
+theorem nonlinear_block_contraction_of_norm (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (Φ : Finset X → C(X → E, ℝ)) (hΦ : ∀ S, DependsOn S (Φ S)) (hzero : Φ ∅ = 0)
+    (hsmall : interactionNorm 8 Φ ≤ 1/2) :
+    ∃ (Ψ : Finset I → C(I → E, ℝ)) (vacuum : ℝ),
+      (∀ T, DependsOn T (Ψ T)) ∧ (∀ T, (∫ c, Ψ T c ∂Measure.pi (fun _ : I ↦ ν)) = 0) ∧
+      Ψ ∅ = 0 ∧
+      (∀ c, blockedDensity ν e (interactionDensity Φ) c = Real.exp (vacuum + ∑ T, Ψ T c)) ∧
+      interactionNorm 8 Ψ ≤ (4 * Real.exp (-2)) * interactionNorm 8 Φ := by
+  obtain ⟨Ψ, vacuum, hl, hc, hz, he, hn⟩ := nonlinear_block_contraction ν e
+    (fun S : {S : Finset X // S.Nonempty} ↦ S.val) (fun S ↦ Φ S.val)
+    (fun S ↦ S.property) (fun S ↦ hΦ S.val)
+    (R := interactionNorm 8 Φ) (by positivity) hsmall (fun x ↦ by
+      rw [interactionRow_nonempty]
+      exact interactionRow_le 8 x Φ)
+  refine ⟨Ψ, vacuum, hl, hc, hz, ?_, hn⟩
+  simpa only [interactionDensity_nonempty Φ hzero] using he
+
+
+variable (ν : Measure E) [IsProbabilityMeasure ν]
+  (e : ((I ⊕ I) ⊕ J) ≃ X) (Φ : Finset X → C(X → E, ℝ))
+  (hsmall : interactionNorm 8 Φ ≤ 1/2)
+
+include hsmall in
+theorem nonempty_partition_pos : ∀ Λ c, 0 < Mettapedia.Combinatorics.PolymerGas.partitionFunction
+    (Mettapedia.Combinatorics.PolymerGas.plaquetteGraph
+      (Mettapedia.Combinatorics.PolymerGas.plaquetteSupport
+        (fun S : {S : Finset X // S.Nonempty} ↦ fluctuationSupport e S.val)))
+    (fun C ↦ clusterActivity ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+      (fun S ↦ Φ S.val) C c) Λ :=
+  clusterActivity_partition_pos ν e _ _ (fun S ↦ S.property)
+    (R := interactionNorm 8 Φ) (by positivity) hsmall (fun x ↦ by
+      rw [interactionRow_nonempty]
+      exact interactionRow_le 8 x Φ)
+
+/-- The full logarithm, regrouped by retained coarse support and Haar-centered. -/
+def effectiveInteraction : Finset I → C(I → E, ℝ) :=
+  nonlinearInteraction ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+    (fun S ↦ Φ S.val) (nonempty_partition_pos ν e Φ hsmall)
+
+def effectiveVacuum : ℝ :=
+  nonlinearVacuum ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+    (fun S ↦ Φ S.val) (nonempty_partition_pos ν e Φ hsmall)
+
+theorem effectiveInteraction_norm_le :
+    interactionNorm 8 (effectiveInteraction ν e Φ hsmall) ≤
+      (4 * Real.exp (-2)) * interactionNorm 8 Φ :=
+  nonlinearInteraction_norm_le ν e _ _ _ (fun S ↦ S.property)
+    (R := interactionNorm 8 Φ) (by positivity) hsmall (fun x ↦ by
+      rw [interactionRow_nonempty]
+      exact interactionRow_le 8 x Φ)
+
+theorem effectiveInteraction_local [Measure.IsMulLeftInvariant ν]
+    (hΦ : ∀ S, DependsOn S (Φ S)) (T : Finset I) :
+    DependsOn T (effectiveInteraction ν e Φ hsmall T) :=
+  nonlinearInteraction_local ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+    (fun S ↦ Φ S.val) (nonempty_partition_pos ν e Φ hsmall) (fun S ↦ hΦ S.val) T
+
+theorem effectiveInteraction_centered (T : Finset I) :
+    (∫ c, effectiveInteraction ν e Φ hsmall T c ∂Measure.pi (fun _ : I ↦ ν)) = 0 :=
+  nonlinearInteraction_centered ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+    (fun S ↦ Φ S.val) (nonempty_partition_pos ν e Φ hsmall) T
+
+theorem effectiveInteraction_empty_eq_zero [Measure.IsMulLeftInvariant ν]
+    (hΦ : ∀ S, DependsOn S (Φ S)) : effectiveInteraction ν e Φ hsmall ∅ = 0 :=
+  nonlinearInteraction_empty_eq_zero ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+    (fun S ↦ Φ S.val) (nonempty_partition_pos ν e Φ hsmall) (fun S ↦ hΦ S.val)
+
+theorem effectiveInteraction_reconstruct
+    (hΦ : ∀ S, DependsOn S (Φ S)) (hzero : Φ ∅ = 0) (c : I → E) :
+    blockedDensity ν e (interactionDensity Φ) c =
+      Real.exp (effectiveVacuum ν e Φ hsmall + ∑ T, effectiveInteraction ν e Φ hsmall T c) := by
+  have h := nonlinearInteraction_reconstruct ν e
+    (fun S : {S : Finset X // S.Nonempty} ↦ S.val) (fun S ↦ Φ S.val)
+    (nonempty_partition_pos ν e Φ hsmall) (fun S ↦ S.property) (fun S ↦ hΦ S.val) c
+  simpa only [effectiveInteraction, effectiveVacuum, interactionDensity_nonempty Φ hzero] using h
+
+end PairedHaar
+
+/-! ## Symmetry of the extracted interaction -/
+
+namespace PairedHaar
+open WilsonBlockElimination WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas Mettapedia.Combinatorics.PolymerGas.SubsetExpansion
+variable {V X E : Type*} [Fintype V] [DecidableEq V] [Fintype X] [DecidableEq X]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+theorem coefficient_eval_eq (F : Finset V → C(X → E, ℝ)) (U W : X → E)
+    (hF : ∀ S, F S U = F S W) (S : Finset V) : coefficient F S U = coefficient F S W := by
+  let ev (U : X → E) : C(X → E, ℝ) →+ ℝ :=
+    { toFun := fun F ↦ F U, map_zero' := rfl, map_add' := fun _ _ ↦ rfl }
+  have h := congrFun (coefficient_map (ev U) F) S
+  have h' := congrFun (coefficient_map (ev W) F) S
+  change _ = coefficient F S U at h
+  change _ = coefficient F S W at h'
+  rw [← h, ← h']
+  congr 1
+  exact funext hF
+
+theorem extractedInteraction_eval_eq (ν : Measure E) [IsProbabilityMeasure ν]
+    (supp : V → Finset X) (F : Finset V → C(X → E, ℝ)) (U W : X → E)
+    (hF : ∀ S, F S U = F S W) (T : Finset X) :
+    extractedInteraction ν supp F T U = extractedInteraction ν supp F T W := by
+  simp only [extractedInteraction, regroupInteraction, ContinuousMap.sum_apply,
+    centered, ContinuousMap.sub_apply, ContinuousMap.smul_apply, ContinuousMap.one_apply]
+  apply sum_congr rfl
+  intro S hS
+  rw [coefficient_eval_eq F U W hF S]
+
+
+variable {I J : Type*} [Fintype I] [Fintype J] [DecidableEq I] [DecidableEq J]
+
+theorem effectiveInteraction_eval_eq (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (Φ : Finset X → C(X → E, ℝ))
+    (hsmall : interactionNorm 8 Φ ≤ 1/2) (U W : I → E)
+    (hA : ∀ C, clusterActivity ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+      (fun S ↦ Φ S.val) C U = clusterActivity ν e (fun S : {S : Finset X // S.Nonempty} ↦ S.val)
+      (fun S ↦ Φ S.val) C W) (T : Finset I) :
+    effectiveInteraction ν e Φ hsmall T U = effectiveInteraction ν e Φ hsmall T W := by
+  unfold effectiveInteraction nonlinearInteraction
+  apply extractedInteraction_eval_eq
+  intro A
+  simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply]
+  apply congrArg Real.log
+  apply partitionFunction_congr
+  intro C hC
+  exact hA C
 
 end PairedHaar
 

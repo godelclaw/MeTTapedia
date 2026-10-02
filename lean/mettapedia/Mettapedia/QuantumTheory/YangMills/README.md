@@ -309,17 +309,29 @@ with Haar mean zero, whose normalized projection is the nonzero coarse
 plaquette trace at every real coupling.
 
 The full observable space still has norm-one projection because constants
-survive (`WilsonBlockElimination.one_le_project_uniform_bound`). The strict
-interaction estimate is for the linear Haar average. The nonlinear logarithm
-now has an all-order polymer majorant:
+survive (`WilsonBlockElimination.one_le_project_uniform_bound`). The nonlinear logarithm
+has an all-order polymer majorant:
 `PolymerGas.sum_weighted_log_coefficients_le` bounds the weighted absolute
 subset-coefficient sum through each polymer by its Dobrushin removal weight.
 The proof uses the full exponential and logarithm series.
 `sum_weighted_norm_log_coefficients_le` controls the sum of uniform norms for
 continuous activities, using one boundary-independent negative-activity
 majorant. Weighted site incidence controls connected families of arbitrary support size, without a
-maximum-degree assumption. Applying these bounds to the generated interaction
-norm remains the nonlinear contraction obligation.
+maximum-degree assumption. `PairedHaar.nonlinear_block_contraction` applies these estimates to the actual
+conditional Haar activities. For arbitrary finite nonempty supports and
+continuous local interactions with per-link `exp(8 |S|)` budget `R <= 1/2`,
+it constructs the full generated interaction `Psi` and an explicit vacuum
+constant, reconstructs the blocked density exactly as `exp(vacuum + sum Psi)`,
+and proves `interactionNorm 8 Psi <= 4 exp(-2) R`, with `4 exp(-2) < 1`.
+Every output term is local and Haar-centered, and its empty-support term is
+zero. `effectiveInteraction` is the canonical support-indexed version of the
+same construction. These constants precede all volumes and boundary values.
+This is a norm of complete continuous interaction functions with an exponential
+support-cardinality weight; it does not assert a diameter weight or control
+boundary derivatives. The proof sums the full exponential and logarithm series.
+`ScaleTwo.effectiveInteraction_gauge` proves that each extracted term retains
+gauge invariance for the actual ordered SU(2) block map. Iterating this
+one-step certificate on successive coarse lattices remains to be connected.
 
 The paired chart has explicit independent fluctuation coordinates: its two
 fine halves share one coordinate. `ScaleTwo.fluctuationPlaquetteSupport` has
