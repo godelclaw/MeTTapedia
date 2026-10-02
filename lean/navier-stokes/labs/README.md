@@ -21945,3 +21945,208 @@ retained. The analytic identities apply to arbitrary smooth periodic fields
 and smooth NS prefixes; the strict-sign witnesses and their local PDE
 interpretation do not establish arbitrary-horizon control. No Lean
 modules, declarations or axioms change in this checkpoint.
+
+## A covariance--Poisson correction and its complete physical defect
+
+`covariance_poisson_corrector.py` tests an explicit correction for the
+work isolated in (208)--(214). The two principal diffusion terms pay that
+work exactly, but the complete derivative can increase the cost by more
+than viscosity and the fixed energy cube pay. This occurs for actual
+smooth unforced initial data with purely horizontal velocity and an
+entire spectrum inside a thin horizontal belt. The original J remains
+unchanged; the correction below is a tested, rejected universal extension.
+
+### Candidate and exact cancellation
+
+Retain every definition in (207)--(214), including the full h=Pi N(u).
+Write A=-Delta, with A^-1 on nonzero modes, and define the bilinear
+projected observer
+
+```text
+L(v,n)=Q[(v.grad)n-(grad v)^T n],   K_s=L(v_s,n_s),
+T_nu(w)=(1/nu^2) integral_0^infinity
+               <Tau_s,sym grad A^-1 K_s> ds,
+Jtrial(u)=J_nu(u)+T_nu(Pi u).                           (215)
+```
+
+K_s has zero vertical mean, so its inverse Laplacian is well defined.
+Smoothness and exponential decay of v_s and n_s justify these integrals
+and their derivatives. The nondecaying spatially constant part of Tau
+pairs to zero with a gradient. The isotropic part also has zero pairing.
+T is a signed homogeneous quintic, not an independently nonnegative stock.
+The candidate requires both a nonnegative total Jtrial and its sufficient
+payment inequality along each actual history.
+
+The operator L is the projected adjoint of the linearization of N,
+already appearing in (160), here with v_s as its velocity and n_s as
+its test field. A^-1 is a fixed elliptic operator; it is not the inverse
+of the full physical evolution or an adjoint trajectory propagator.
+
+Define, with B(a,b)=-P[(a.grad)b],
+
+```text
+G_s=sum_j Pi B(partial_j v_s,partial_j v_s),
+O_s=sum_j L(partial_j v_s,partial_j n_s)+L(v_s,G_s),
+z_s=S_s h,
+m_s=-Q[(z_s.grad)v_s+(v_s.grad)z_s],
+Kdot_N=L(z_s,n_s)+L(v_s,m_s),
+Xi_s=Cov_s(h,w)+Cov_s(w,h).
+```
+
+The actual covariance equation is (210). The observer's physical
+viscous derivative and nonlinear derivative are, respectively,
+
+```text
+Kdot_heat=nu Delta K_s-2nu O_s,    Kdot_nonlinear=Kdot_N. (216)
+```
+
+This follows from the Laplacian product rule and
+`D n_s(w)[nu Delta w]=nu Delta n_s-2nu G_s`.
+In particular the product-gradient terms in O_s cannot be discarded.
+For a tensor U and vector V abbreviate
+`[U,V]=integral_0^infinity <U,sym grad A^-1 V> ds`.
+Differentiating the COMPLETE T gives
+
+```text
+T_nu'(t)+Ccov = Bcov+Bobs+Qcov+Qobs,
+Bcov=-(2/nu)[Gamma,K],    Bobs=-(2/nu)[Tau,O],
+Qcov=(1/nu^2)[Xi,K],      Qobs=(1/nu^2)[Tau,Kdot_N].     (217)
+```
+
+Each principal Laplacian contributes `-Ccov/2`, since
+`Delta A^-1 K=-K`, derivatives commute and the domain is periodic.
+The two remaining viscous terms and two nonlinear terms in (217) are
+exact. The adjoint changes with the source and the velocity; it is not
+frozen while the covariance evolves. All pressure and generated mean
+motion enter through the same physical h.
+
+For the matched minus phase (194), at nu=1,
+`Bcov=-0.0000552365758...` and `Bobs=-0.0000286018641...`.
+The matched plus phase reverses both signs. Although Gamma is positive
+semidefinite, its pairing with the inverse-Laplacian strain is not
+one-signed. On both of these earlier test data the sum Qcov+Qobs is
+negative. That favorable restricted evidence does not persist for all
+planar configurations.
+
+### A complete budget failure inside positive storage
+
+Let the four horizontal wave vectors and real coefficients be
+
+```text
+p_1=(1,0), p_2=(1,-1), p_3=(2,0), p_4=(2,-1),
+c=(4/5,3/5,-1/5,2/5).
+```
+
+For an integer ell>=1 define the real field by its positive Fourier
+coefficients at `k_j=(ell p_j,1)`:
+
+```text
+w_hat_ell(k_j)=c_j*(-(p_j)_y, (p_j)_x, 0),
+w_hat_ell(-k_j)=w_hat_ell(k_j),
+all other coefficients zero.                          (218)
+```
+
+Thus w_ell is solenoidal, has zero vertical mean and zero vertical
+velocity, and every input satisfies `|k_z|/|k|<=1/ell`.
+The Fourier coefficients, not the cosine amplitudes, are c_j times the
+stated vectors. No nonlinear outputs are truncated after choosing these
+initial data. In particular the full nonlinearity generates a mean and
+an actual positive initial derivative of full vorticity stretching.
+
+At the tested ell=2,16,32, let h_ell=Pi N(w_ell) and define
+
+```text
+E_ell=||w_ell||2^2, Z_ell=||grad w_ell||2^2,
+D_ell=||A w_ell||2^2,
+b_ell=D H_1(w_ell)[h_ell]-||h_ell||2^2<0,
+r_ell=D T_1(w_ell)[h_ell]>0,
+q_ell=6gamma E_ell^2 Z_ell, gamma=1/100000000.           (219)
+```
+
+Since every input has vertical frequency +/-1, the degree-three and
+relevant degree-five scalar observations vanish. Exact arithmetic
+confirms `g=H=T=0`, `D C_1[h_ell]=0`, and `D T_1[-A w_ell]=0`.
+For the actual solution starting at u0=a w_ell, a>0, nu>0, the initial
+complete corrected cost is therefore as follows. The powers of viscosity
+follow from auxiliary heat-time rescaling: T_nu(a w)=a^5 T_1(w)/nu^3,
+and its nonlinear derivative scales as a^6/nu^3.
+
+```text
+Jtrial'(0)+2g(w0)
+ =-nu a^2 D_ell+(a^4/nu)b_ell
+                    +(a^6/nu^3)(r_ell-q_ell).         (220)
+```
+
+The initial trial reserve is strictly positive: T=0 and the original
+J is its nonnegative source square plus positive full-energy cube.
+Representative coefficient values are below; signs and ratios are
+certified with the exact fractions printed by the checker.
+
+| ell | r_ell | q_ell | sign of r_ell-q_ell |
+| --- | --- | --- | --- |
+| 2 | 0.003329380483... | 0.0000754397184 | positive |
+| 16 | 0.013726589878... | 0.00445053001728 | positive |
+| 32 | 0.013907566446... | 0.0177841385472 | negative |
+
+For ell=16,
+`E=116/25`, `Z=86132/25`, `D=85631092/25` and
+`b=-1844296720901247052794036224/9081619947966623687004375`.
+Taking a=256nu gives the strict exact bound
+
+```text
+[Jtrial'(0)+2g(w0)] / [(nu/2)||A u0||2^2] > 13.        (221)
+```
+
+For ell=2, a=64nu instead gives a ratio greater than 88. These conclusions
+hold for every positive viscosity by (220); they are not inviscid tests.
+The checker additionally computes the full physical tangent at nonunit
+viscosity for ell=16. The original full stretching has
+`Dg(w_16)[N(w_16)]=54618599424/333720625>0`; this is an actual generated
+stretching example, not just an artificial covariance tensor.
+
+Smooth local existence and continuity now give a positive interval on
+which Jtrial stays positive but
+
+```text
+Jtrial(u(t))+2 integral_0^t g(Pi u)
+  <= Jtrial(u0)+(nu/2) integral_0^t ||A u||2^2
+```
+
+fails for every sufficiently small t>0 in that interval. The evolving
+mean remains in the full solution. Clipping a negative trial reserve
+cannot remove this example because the trial reserve is positive there.
+
+The failure is caused by the NEW correction: deleting r_ell from (220)
+leaves the original J with strictly negative initial cost for all a,nu
+on these same three profiles. Likewise, the thinner tested profile
+ell=32 has r_ell<q_ell and hence strictly negative corrected initial cost
+for every amplitude and viscosity. Neither conclusion supplies a time
+interval uniform in the parameters, invariance of these profiles, or an
+arbitrary-history result. The example does not refute all sufficiently
+thin geometries, an increased energy-cube coefficient, a datum-dependent
+allowance or another coupled correction.
+
+### Consequence for history control and verification
+
+The accepted identity (217) retains a useful principal cancellation.
+The rejected assertion is universal half-dissipation payment by the
+UNIT correction (215) with the fixed gamma in (198). It is not valid
+to retain its cancellation while omitting Xi or the evolving observer.
+The existing J and controlled-history theorem (201)--(206) are unchanged.
+
+A further repair must control the complete covariance--adjoint coupling.
+The existing projected adjoint (160) is the starting operator; its known
+reference norm price (161) cannot be applied to an arbitrary unknown
+future velocity. Using a time-dependent physical adjoint would retain
+additional history and requires an original-datum bound on its growth.
+Defining that price from the unknown future does not discharge (214).
+
+Run `python3 -O labs/covariance_poisson_corrector.py`. It checks the two
+principal halves, the explicit product-gradient observer defect, both
+matched phases, a full datum with generated mean, three planar belt
+profiles, direct amplitude/viscosity scaling, and the positive-storage
+failure. An independent exact central polarization of the degree-six
+trial functional checks its derivative against the complete NS tangent,
+including the newly generated mean. The polynomial identity is exact,
+not a finite-difference approximation. The PDE, heat-integral and local
+interval arguments remain analytic; no Lean declarations or axioms change.

@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [covariance--Poisson correction test](labs/README.md#a-covariance-poisson-correction-and-its-complete-physical-defect)
+derives a signed correction whose two principal diffusion terms cancel
+the covariance work exactly. Its remaining covariance and observer
+derivatives do not have a universal favorable sign. Explicit horizontal
+input data in a frequency belt of relative width at most `1/16` violate
+the corrected half-dissipation payment while the total trial reserve is
+strictly positive. The original reserve pays at those initial states.
+This rejects the proposed unit correction with the stated energy-cube
+coefficient; it does not alter the earlier controlled-history result.
+The full derivative and strict margins have exact rational fixtures;
+their smooth-interval interpretation remains analytic.
+
 The [source-transport and covariance decomposition](labs/README.md#source-transport-cancellation-and-the-evolving-covariance-interface)
 identifies the signed terms left in the receiver reserve's highest nonlinear
 derivative. Source transport cancels exactly; source deformation, heat
