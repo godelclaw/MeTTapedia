@@ -23199,3 +23199,242 @@ smooth state; only the analytic expansion (253) identifies actual
 solution intervals. The heat contraction, Sobolev estimates, integration
 and continuation implication are analytic. No Lean declarations or axioms
 change, and the central history estimate (252) remains open.
+
+## A single original-heat reserve for all time
+
+`heat_parent_lifetime.py` sharpens (250): the original heat parents have
+one finite allowance for their ENTIRE lifetime. The weight and allowance
+no longer grow with the prescribed horizon. This is a bound for the
+original-parent and mixed terms, not payment of the generated remainder's
+self-stretching. The setting and full-source definitions remain those of
+(247): smooth unforced NS on R3 or the 2pi-periodic cube, nu>0, h the
+original heat solution, b=u-h, and b(0)=0.
+
+### The original parent has finite accumulated strain
+
+Choose nonnegative original-data envelopes Gbar,Lbar such that
+
+```text
+||grad h(t)||infinity<=Gbar(t),
+||grad^2 h(t)||infinity<=Lbar(t),
+Gamma(t)=integral_t^infinity Gbar(s)ds<infinity,
+Lambda(t)=integral_t^infinity Lbar(s)ds<infinity.     (254)
+```
+
+These are available without knowing any future NS solution. On the torus,
+write u_k for the normalized Fourier coefficients of u0. One choice is
+
+```text
+Gbar(t)=sum_(k!=0) |k| |u_k| exp(-nu t |k|^2),
+Lbar(t)=sum_(k!=0) |k|^2 |u_k| exp(-nu t |k|^2),
+Gamma(t)=nu^-1 sum_(k!=0) |u_k| exp(-nu t |k|^2)/|k|,
+Lambda(t)=nu^-1 sum_(k!=0) |u_k| exp(-nu t |k|^2).
+```
+
+Vector and frequency norms here are Euclidean; pointwise derivative norms
+are Frobenius. Smoothness makes every displayed sum finite. On R3 use
+(2pi)^-3 times the corresponding integrals of |u0_hat(k)|. At zero
+frequency the Gamma integral is finite by Cauchy--Schwarz, since
+integral_(|k|<1) |k|^-2 dk is finite in three dimensions. At high frequency,
+H2 regularity suffices for the two tail integrals; the stronger smooth
+hypotheses also make the pointwise envelopes finite at t=0.
+Thus neither a spectral gap nor a positive minimum whole-space frequency
+has been assumed. The periodic constant mean contributes to neither
+parent derivative envelope.
+
+Let n(t)=N(h(t)), B(t)=Ctilde_nu(h(t)) as in (245), and define
+
+```text
+S0=integral_0^infinity ||n(s)||2 ds<infinity,
+E_star=min(4E0, exp(2Gamma(0)) S0^2).                (255)
+```
+
+S0 is also finite from the original datum. On R3, for any fixed tau>0,
+heat contraction and the Gaussian kernel give
+
+```text
+S0<=tau U0 sqrt(Z0)+4c3 E0 nu^(-5/4) tau^(-1/4),
+c3=(8pi)^(-3/4)(2e)^(-1/2),
+U0=||u0||infinity, Z0=||grad u0||2^2.
+```
+
+Indeed ||N(h)||2<=||h||infinity||grad h||2. Before tau use the initial
+norms; after tau use ||h||infinity<=(8pi nu t)^(-3/4)sqrt(E0) and
+||grad h||2<=(2e nu t)^(-1/2)sqrt(E0). The latter follows by maximizing
+r exp(-nu t r^2). The resulting t^(-5/4) is integrable at infinity.
+On the normalized torus, with mean mu and
+F0=sum_(k!=0)|u_k|, one may instead use
+S0<=sqrt(Z0)(|mu|+F0/2)/nu. This follows from the separate exponential
+decay of the nonconstant velocity and its gradient.
+
+The kinetic comparison preceding (250) now gives E_b(t)<=E_star on every
+available prefix. This uses the whole original heat history; S0 is not
+an integral over an unknown future nonlinear solution.
+Using the larger 4E0 in place of E_star is also valid, but loses the
+zero-source normalization of the sharper allowance.
+
+### An explicit remaining reserve
+
+Fix ell>0 once. Define
+
+```text
+kappa(t)=4Gbar(t)+ell Lbar(t),
+a(t)=exp[4Gamma(t)+ell Lambda(t)]>=1,
+F(t)=E_star Lambda(t)/ell+2B(t)>=0,
+f(t)=E_star Lbar(t)/ell+2||n(t)||2^2/nu,
+J(t)=a(t)[Y(t)+F(t)], Y=||grad b||2^2.              (256)
+```
+
+Here a'=-kappa a and F'=-f. Substituting (249) and E_b<=E_star gives
+
+```text
+J'+(3nu/2)a D_b <= 2a g(b)-kappa a F,
+J(t)+(3nu/2)integral_0^t a D_b
+       +integral_0^t kappa a F
+ <= J(0)+2integral_0^t a g(b),                     (257)
+J(0)=exp[4Gamma(0)+ell Lambda(0)]
+       [E_star Lambda(0)/ell+2Ctilde_nu(u0)]<infinity.
+```
+
+The extra -kappa a F is the cooling of still-unspent credit. Dropping it
+is allowed in an upper bound; changing the weight while forgetting its
+derivative is not. Every object on the right of the formula for J(0)
+is determined by u0 and nu. There is no prescribed horizon in that price.
+Moreover a(t) tends to1 and F(t) tends to0 as t tends to infinity.
+If N(h) is identically zero, S0=B=E_star=F=0, and the kinetic comparison
+gives b=0; nonzero original strain alone does not create a charge.
+
+The same a,F and original heat age persist across adjacent actual solution
+segments. The storage difference telescopes, and the three time integrals
+in (257) add. The equation for b still contains N(b), both mixed terms,
+and the original source n; it has not become an arbitrary forced fluid.
+
+For every prescribed H, a bound
+
+```text
+2 integral_0^t a g(b)<=nu integral_0^t a D_b+K(u0,nu,H)
+```
+
+on every available prefix with t<=H implies Y(t)<=J(0)+K. This supplies
+the same gradient-energy continuation target as (252), now with the
+horizon-independent original-parent allowance J(0). The required bound
+on generated self-stretching is STILL OPEN. Finiteness of S0 and J(0)
+does not imply it: finite forcing costs alone do not establish arbitrary
+three-dimensional regularity.
+
+### A delayed source, zero at the initial instant
+
+The whole original heat history is essential even in a globally smooth
+triangular example. On the normalized periodic cube, take arbitrary real
+amplitudes A,B and
+
+```text
+u0=(A sin y, -A sin x, B[(cos x+cos y)^2-1]).        (258)
+```
+
+The vertical component is constant along the initial horizontal
+streamlines. The horizontal nonlinearity is a pressure gradient, so
+N(u0)=0 exactly. Nevertheless, write q=exp(-nu t). The two horizontal
+components of h have heat rate1, while its vertical component has rates2
+and4. Direct calculation gives
+
+```text
+n(t)=(0,0,2AB q^3(q^2-1) sin x sin y(cos x-cos y)),
+||n(t)||2^2=(A^2 B^2/2)q^6(1-q^2)^2,
+B(t)=A^2 B^2/(2nu^2)[q^6/6-q^8/4+q^10/10],
+Ctilde_nu(u0)=A^2 B^2/(120nu^2),
+S0=sqrt(2)|AB|/(15nu).                            (259)
+```
+
+For AB!=0, the later source and total source capacity are strictly positive
+although the initial source is zero. Thus a reserve that declared this
+whole history free merely because N(u0)=0 would discard a real interaction.
+The source is created by unequal viscous heat rates; it is not supplied by
+an external forcing term.
+
+In particular n'(0)=-4nu AB sin x sin y(cos x-cos y) in the vertical
+component. Since b(0)=b_t(0)=0, the actual equation gives b_tt(0)=n'(0).
+Thus the generated remainder starts at second order in physical time,
+even though the initial projected nonlinearity vanishes.
+
+The ACTUAL NS solution has horizontal velocity
+v_H(t)=Aq(sin y,-sin x), pressure -A^2 q^2 cos x cos y, and a vertical
+component theta solving
+
+```text
+theta_t+v_H.grad theta=nu Delta theta,
+theta(0)=B[(cos x+cos y)^2-1].
+```
+
+This smooth linear advection--diffusion problem gives the solution for
+all time; no smallness restriction on A or B is required. Its usual
+backward stochastic representation gives the actual vertical remainder:
+
+```text
+dX_s=-v_H(t-s,X_s)ds+sqrt(2nu)dW_s, X_0=x,
+b_z(t,x)=E[integral_0^t n_z(t-s,X_s)ds].
+```
+
+No auxiliary fluid force or freely chosen drift is used here. The
+remainder b is vertical and independent of z, so
+N(b)=g(b)=0 throughout the ACTUAL history. Its horizontal parent stays
+independent of theta, while theta may change shape and develop gradients.
+
+In this class the mixed estimate is sharper: only the horizontal strain
+acts on grad b. Its symmetric operator norm is at most |A|q. Thus set
+
+```text
+a_tri(t)=exp(2|A|q/nu),
+J_tri(t)=a_tri(t)[Y(t)+2B(t)].
+```
+
+The same Young estimate for the source pairing gives
+
+```text
+J_tri'+(3nu/2)a_tri D_b <= -4|A|q a_tri B(t)<=0,
+Y(t)<=(A^2 B^2/(60nu^2))exp(2|A|/nu)               (260)
+```
+
+for the entire actual history. The kinetic comparison additionally gives
+||b(t)||2^2<=2A^2 B^2/(225nu^2). This is a concrete all-time consumer of
+the original-source reserve, not a new general regularity class. It uses
+the same autonomous-horizontal-parent structure as the earlier mixing
+examples. Allowing the generated components to feed back into that
+parent, and paying their subsequent self-stretching, remains the central
+obligation for arbitrary three-dimensional data.
+
+### Current trial and verification
+
+The next tested storage replaces Y in (256) by the already defined
+normalized W_8(b). Its COMPLETE payment defect, divided by a, is
+
+```text
+Q_trial=DW_8(b)[-nu Ab+N(b)+L_h b+n]
+        +2g(b)-(nu/2)D_b-kappa[W_8(b)+F]-f.         (261)
+```
+
+A universal nonpositive sign along actual prefixes would imply the needed
+history bound with K=J_trial(0). That sign has not been established.
+Off-trajectory identities or passing numerical histories cannot establish
+it. Every derivative of the normalization and both mixed interactions
+must be retained when testing (261).
+
+For the ENTIRE actual triangular class (258), the remainder has zero
+self-source at every auxiliary heat age, so H_nu(b)=Ctilde_nu(b)=0 and
+W_8(b)=Y/2, including its continuous value at zero. Equation (249) then
+gives Q_trial<=-(5nu/4)D_b-f/2-kappa F<=0 for all time. Thus this trial
+does have an actual-history consumer at arbitrary amplitudes. Its
+extension to remainders with mutually interacting parents is open.
+
+Run `python3 -O labs/heat_parent_lifetime.py`. Exact checks verify the
+parent-tail derivatives, original-source spending, full coupled remainder
+estimate including the -kappa a F term, and the complete normalized-trial
+derivative on two finite states, using the valid 4E0 kinetic envelope.
+Independent polynomial polarization checks the three observer derivatives.
+The checks also verify (259) at three heat ages and its initial derivative
+by independent polarization of the full nonlinearity,
+for two parameter choices, retaining every Fourier output and pressure
+projection. A nonconstant planar heat solution checks that an identically
+zero heat source gives zero source-funded allowance. The actual-history,
+heat-integrability, stochastic and all-time estimates are analytic, not
+Lean-certified by these finite checks. No Lean declarations or axioms change.

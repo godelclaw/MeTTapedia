@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [finite heat-parent lifetime](labs/README.md#a-single-original-heat-reserve-for-all-time)
+replaces the horizon-growing weight by one finite original-data allowance
+for the original heat source and all mixed interactions. It applies on
+every available smooth prefix on either domain; generated self-stretching
+remains open. An exact triangular example starts with zero projected
+nonlinearity, but unequal heat rates generate a later source. Its entire
+remainder history is paid explicitly for arbitrary amplitudes. The reserve
+therefore measures the original heat history, not just its initial source.
+These PDE results are analytic with exact Fourier fixtures, not new Lean
+declarations or an arbitrary-data regularity proof.
+
 The [original-heat remainder estimate](labs/README.md#original-heat-parents-and-the-generated-remainders-critical-cost)
 pays the original heat field and its cross-interactions over any prescribed
 finite horizon, using only the full initial datum and viscosity. It applies
