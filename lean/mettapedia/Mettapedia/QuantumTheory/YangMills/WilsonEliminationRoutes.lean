@@ -14,7 +14,7 @@ corrections between projected marks and pairwise remainders.
 
 Raw moment data carry a separate quantitative boundary contract. Projection
 preserves weighted budgets with factor one, and composition charges the new
-conditional moments and each mixed correction. Concrete product integrations
+conditional moments and each mixed correction. Concrete product integrations and ordered-link Haar blocking
 generate an abstract GSLT whose OSLF predicates express these contracts.
 
 Retaining a coordinate is deterministic and need not have a continuous kernel
@@ -336,6 +336,45 @@ theorem elimination_remainder (F G : C(B × I, ℝ)) :
 
 end Concrete
 
+section Coordinates
+variable {X E : Type} [Fintype X] [DecidableEq X]
+  [TopologicalSpace E] [CompactSpace E] [MeasurableSpace E] [BorelSpace E]
+  [SecondCountableTopology E]
+
+/-- A finite-coordinate weighted state on the original lattice. Eliminated
+coordinates remain only as normalized dummy probability factors. -/
+abbrev coordinateState (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (W : C(X → E, ℝ)) (hW : ∀ ω, 0 < W ω) : State :=
+  ⟨X → E, inferInstance, inferInstance, inferInstance, inferInstance,
+    Measure.pi (fun _ : X ↦ ν₀), inferInstance, W, hW⟩
+
+theorem coordinateState_congr (ν : Measure E) [IsProbabilityMeasure ν]
+    (W W' : C(X → E, ℝ)) (hW : ∀ U, 0 < W U) (hW' : ∀ U, 0 < W' U)
+    (h : W = W') : coordinateState ν W hW = coordinateState ν W' hW' := by
+  subst W'
+  rfl
+
+end Coordinates
+
+section PairedCoordinates
+variable {X I J E : Type} [Fintype X] [Fintype I] [Fintype J]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+/-- A genuine change to coarse product coordinates is an actual weighted
+GSLT step. Its target carries the entire generated marginal density. -/
+def blockedStep (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U) :
+    Step (coordinateState ν W hW)
+      (coordinateState ν (PairedLinks.blockedDensity ν e W)
+        (PairedLinks.blockedDensity_pos ν e W hW)) where
+  project := PairedLinks.blockedProjectLinear ν e W hW
+  expectation := PairedLinks.expectation_blockedProject ν e W hW
+  contract := fun F _ hF ↦ PairedLinks.abs_blockedProject_le ν e W hW F hF
+
+end PairedCoordinates
+
 /-! ## Quantitative boundary data
 
 Raw first, second and third moments remain continuous boundary observables.
@@ -509,6 +548,16 @@ inductive HaarTransition (ι : Type) : BoundaryState ι → BoundaryState ι →
       (D : ResponseData (source μ ν W hW) ι) :
       HaarTransition ι ⟨source μ ν W hW, D⟩
         ⟨target μ ν W hW, D.transport (.cons (elimination μ ν W hW) (.refl _))⟩
+
+  | paired {X I J E : Type} [Fintype X] [Fintype I] [Fintype J] [DecidableEq X]
+      [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+      [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+      (ν : Measure E) [IsProbabilityMeasure ν] [Measure.IsMulLeftInvariant ν]
+      (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+      (D : ResponseData (coordinateState ν W hW) ι) :
+      HaarTransition ι ⟨coordinateState ν W hW, D⟩
+        ⟨coordinateState ν (PairedLinks.blockedDensity ν e W) (PairedLinks.blockedDensity_pos ν e W hW),
+          D.transport (.cons (blockedStep ν e W hW) (.refl _))⟩
 
 /-- The rewrite relation consists exactly of the concrete Haar/product
 integration constructors, while analytic contracts remain native predicates. -/

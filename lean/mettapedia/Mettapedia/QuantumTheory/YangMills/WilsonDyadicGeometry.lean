@@ -10,6 +10,8 @@ only retained links, and a plaquette cannot directly couple their interiors.
 
 Scale-two blocking has a different target lattice: its side is half the
 fine side, and a coarse link is the ordered product of two fine links.
+After `j` changes the fine period and even-anchor distances are multiplied
+by exactly `2^j`.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -89,6 +91,19 @@ theorem internal_support_same_cell (s : ℕ) (p : Plaquette d n)
 
 /-- A coarse torus of side `n+3` is blocked from side `2(n+3)`. -/
 abbrev doubleIndex (n : ℕ) := 2 * n + 3
+
+/-- Fine index for a prescribed finite number of genuine lattice rescalings. -/
+def scaleIndex (n : ℕ) : ℕ → ℕ
+  | 0 => n
+  | j + 1 => doubleIndex (scaleIndex n j)
+
+theorem scaleIndex_side (n j : ℕ) : scaleIndex n j + 3 = 2^j * (n+3) := by
+  induction j with
+  | zero => simp [scaleIndex]
+  | succ j ih =>
+    simp only [scaleIndex, doubleIndex, pow_succ]
+    nlinarith
+
 
 /-- Doubling a cyclic coordinate is an injective additive map into the
 torus with twice the period. -/
@@ -327,6 +342,23 @@ theorem no_blockPair_in_support (p : Plaquette d (doubleIndex n)) (l : Link d n)
   have he := congrArg ZMod.val (he0.trans he1.symm)
   rw [val_blockEdge_direction, val_blockEdge_direction] at he
   norm_num at he
+
+/-- The even-anchor embedding after a prescribed number of scale changes. -/
+def scaleAnchor : (j : ℕ) → Link d n → Link d (scaleIndex n j)
+  | 0, l => l
+  | j + 1, l => blockEdge (scaleAnchor j l) 0
+
+theorem dist_scaleAnchor (j : ℕ) (l k : Link d n) :
+    dist (scaleAnchor j l) (scaleAnchor j k) = (2 : ℝ)^j * dist l k := by
+  induction j with
+  | zero =>
+    change dist l k = (2 : ℝ)^0 * dist l k
+    rw [pow_zero, one_mul]
+  | succ j ih =>
+    change dist (blockEdge (scaleAnchor j l) 0) (blockEdge (scaleAnchor j k) 0) = _
+    rw [dist_blockEdge_zero, ih, pow_succ]
+    ring
+
 
 #print axioms coarse_retained_fine
 #print axioms internal_link_cell

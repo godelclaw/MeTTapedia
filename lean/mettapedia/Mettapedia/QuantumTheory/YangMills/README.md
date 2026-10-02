@@ -330,8 +330,37 @@ This is a norm of complete continuous interaction functions with an exponential
 support-cardinality weight; it does not assert a diameter weight or control
 boundary derivatives. The proof sums the full exponential and logarithm series.
 `ScaleTwo.effectiveInteraction_gauge` proves that each extracted term retains
-gauge invariance for the actual ordered SU(2) block map. Iterating this
-one-step certificate on successive coarse lattices remains to be connected.
+gauge invariance for the actual ordered SU(2) block map.
+
+`ScaleTwo.InteractionState` carries the full local interaction, its vacuum
+constant, Haar centering, gauge symmetry and the invariant radius `1/2`.
+Its `density_block` theorem identifies the next state's density with the actual
+conditional Haar integral. In `WilsonDyadicObservableFlow`, `iterate n j`
+performs `j` such steps from torus side `2^j (n+3)` to side `n+3`, proving
+`R_j <= (4 exp(-2))^j R_0`. The input Wilson norm is at most
+`64 |beta| exp(32)`, so `|beta| <= 1/(128 exp(32))` supplies the invariant radius
+for every volume and depth. `strongIterationBeta` is the positive minimum of
+this threshold and the existing `beta0 4`; `strong_coupling_iteration_bound`
+provides both obligations on that interval. Constants precede volume and depth.
+
+`ScaleFiber` is the explicit product of all Haar fluctuations in the finite
+chain. `density_iterate_direct` and `action_route_eq_direct` identify the
+staged generated density and marks with one integral over that product under
+the original density. The partition is unchanged. Every continuous mark,
+including every finite product of marks, retains its original expectation.
+`retainedWilsonLoop_nonzero` proves that a nonzero coarse plaquette trace
+survives every finite chain through its ordered-product pullback, which is
+gauge invariant and Haar-centered.
+
+`radiusSequence_step` instantiates `AffineRGStepBound` with the actual
+interaction norms, gain `4 exp(-2)`, and zero error. The sequence is explicitly
+padded by zero after its finite lattice chain ends; it does not posit further
+scales on a fixed finite torus. `haarDiamond_interactionContract` supplies a
+successor satisfying the strict bound in the existing OSLF forward modality.
+The paired-Haar rewrite constructor itself contains no smallness condition.
+This is a contraction of complete interaction functions with exact vacuum
+extraction; no finite-coordinate dimension-16 extraction certificate or
+analytic comparison with such a certificate is assumed.
 
 The paired chart has explicit independent fluctuation coordinates: its two
 fine halves share one coordinate. `ScaleTwo.fluctuationPlaquetteSupport` has
@@ -345,9 +374,10 @@ The coordinate-rescaling lemmas in `WilsonBoundaryResponse.lean` prove that
 an injective coordinate map with `d_fine = s · d_coarse` changes the admissible
 exponent to `η_coarse = sη_fine`, without a volume factor. The current assembly
 uses the original link metric. The concrete scale-two map and its first
-three ordered response identities are now proved. Repeated scale changes
-still require the relevant interaction extraction and preservation of the
-analytic budgets under the generated product constraints in the same rescaled norm.
+three ordered response identities are now proved. Finite repeated scale changes
+now preserve the full interaction-function contract with a strict gain. Preservation of spatially weighted derivative
+budgets under the successive generated product constraints is a separate
+obligation.
 
 A precise all-order target is a uniform bound
 `sup_l sum_(l₂,...,lᵣ) exp(η τᵣ) |Cumᵣ| ≤ A · r! · R^(-r)` for every `r ≥ 2`,
@@ -355,7 +385,7 @@ with positive `η,R` before volume and boundary data, together with the
 corresponding differentiated contact bounds and exact partition-indexed
 conditioning identities: sum over every partition of the source marks the
 outer cumulant of the conditional cumulants associated to its blocks, using
-the generated marginal for the outer law. Proving preservation after extraction
-and rescaling
-with gain below one remains open. The weak-to-strong trajectory and the
-continuum construction remain further obligations.
+the generated marginal for the outer law. For this stronger all-order derivative
+contract, preservation after extraction and rescaling with gain below one remains open. It does not follow
+from the complete interaction-function norm bound. The weak-to-strong
+trajectory and the continuum construction remain further obligations.

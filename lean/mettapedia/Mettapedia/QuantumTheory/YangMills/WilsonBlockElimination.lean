@@ -1146,6 +1146,24 @@ theorem integral_fluctuationChart (ν : Measure E) [IsProbabilityMeasure ν]
 
 end PairedLinks
 
+namespace PairedLinks
+variable {X I J E : Type*} [Fintype X] [Fintype I] [Fintype J]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+
+theorem blockedDensity_mul_project (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(X → E, ℝ)) :
+    blockedDensity ν e (W * F) = blockedDensity ν e W * blockedProject ν e W hW F := by
+  ext c
+  let N := blockedDensity ν e (W * F) c
+  let Z := blockedDensity ν e W c
+  have hZ : Z ≠ 0 := (blockedDensity_pos ν e W hW c).ne'
+  change N = Z * (N / Z)
+  exact ((div_mul_cancel₀ N hZ).symm).trans (mul_comm _ _)
+
+end PairedLinks
+
 #print axioms expectation_project
 #print axioms expectation_boundary_context
 #print axioms marginal_staged

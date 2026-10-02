@@ -1,13 +1,24 @@
+import Mettapedia.QuantumTheory.YangMills.RGBootstrap
 import Mettapedia.QuantumTheory.YangMills.SU2WilsonAssemblyLocality
 
 /-!
-# Observable locality along arbitrary dyadic conditional projections
+# Exact observable transport and contracting SU(2) scale iteration
 
-Each operator is the actual normalized Wilson integral with its specified
-retained coordinates. Iterating these continuous operators derives the
-support recurrence for the resulting marks. For the SU(2) assembly, the
-first two operators are identified with its staged elimination route,
-including the generated intermediate density.
+Original-lattice dyadic projections first derive a support recurrence and
+agree with direct nested marginalization under the generated Wilson weights.
+
+The scale-two construction changes the lattice itself. Starting at side
+`2^j (n+3)`, each actual Haar step extracts the complete local interaction and
+its vacuum constant. In the support-cardinality norm with weight `exp(8 |S|)`,
+the radius contracts by `4 exp(-2)` inside `R <= 1/2`. The SU(2) Wilson family
+enters this region at an explicit positive coupling threshold.
+
+The complete fluctuation product gives a direct integral equal to the staged
+density and every transported continuous observable. Partitions, gauge
+invariance and nonzero coarse Wilson loops are preserved. The actual radii
+instantiate the scalar RG bootstrap; the native OSLF forward predicate has a
+concrete Haar successor with the proved gain. These function-norm estimates
+do not assert higher derivative or spatial-diameter bounds.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -206,3 +217,445 @@ theorem observableSequence_two (N : ℕ) (β : ℝ) (F : C(FullField N, ℝ)) (b
 #print axioms observableSequence_two
 end SU2WilsonAssemblyLocality
 end Mettapedia.QuantumTheory.YangMills
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonConditionalProjection.PairedHaar
+open WilsonDyadicGeometry SU2WilsonBlockPilot WilsonLocalResponse
+open Mettapedia.GSLT.Ultrainfinite WilsonEliminationRoutes
+
+namespace InteractionState
+
+def iterate (n : ℕ) : (j : ℕ) → InteractionState (scaleIndex n j) → InteractionState n
+  | 0, A => A
+  | j + 1, A => iterate n j A.block
+
+theorem norm_iterate_le (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)),
+    interactionNorm 8 (iterate n j A).terms ≤
+      (4 * Real.exp (-2))^j * interactionNorm 8 A.terms := by
+  intro j
+  induction j with
+  | zero =>
+    intro A
+    change interactionNorm 8 A.terms ≤ (4 * Real.exp (-2))^0 * interactionNorm 8 A.terms
+    rw [pow_zero, one_mul]
+  | succ j ih =>
+    intro A
+    calc
+      _ ≤ (4 * Real.exp (-2))^j * interactionNorm 8 A.block.terms := ih A.block
+      _ ≤ (4 * Real.exp (-2))^j * ((4 * Real.exp (-2)) * interactionNorm 8 A.terms) :=
+        mul_le_mul_of_nonneg_left A.norm_block_le (by positivity)
+      _ = _ := by rw [pow_succ]; ring
+
+/-- Every step is the conditional Haar integral for the previous generated law. -/
+def route (n : ℕ) : (j : ℕ) → (A : InteractionState (scaleIndex n j)) →
+    Route Step A.weightedState (iterate n j A).weightedState
+  | 0, _A => .refl _
+  | j + 1, A => .cons A.step (route n j A.block)
+
+theorem expectation_iterate (n j : ℕ) (A : InteractionState (scaleIndex n j))
+    (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) :
+    expectation volume (iterate n j A).density (action (route n j A) F) =
+      expectation volume A.density F := expectation_action (route n j A) F
+
+theorem partition_iterate (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)),
+    (∫ U, (iterate n j A).density U) = ∫ U, A.density U := by
+  intro j
+  induction j with
+  | zero => intro A; rfl
+  | succ j ih =>
+    intro A
+    change (∫ U, (iterate n j (block (n := scaleIndex n j) A)).density U) = _
+    rw [ih]
+    have he := density_block (n := scaleIndex n j) A
+    exact (congrArg (fun W : C(Link 4 (scaleIndex n j) → SU2, ℝ) ↦ ∫ U, W U) he).trans
+      (PairedLinks.integral_blockedDensity volume (blockIndexEquiv 4 (scaleIndex n j)) A.density)
+
+end InteractionState
+
+/-- The input and every generated interaction are actual SU(2) Wilson/Haar
+functions. Constants are fixed before the torus and number of scale changes. -/
+theorem wilson_iteration_bound (n j : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta) :
+    interactionNorm 8 (InteractionState.iterate n j (wilsonState (scaleIndex n j) β hβ)).terms ≤
+      (4 * Real.exp (-2))^j * (64 * |β| * Real.exp 32) :=
+  (InteractionState.norm_iterate_le n j _).trans
+    (mul_le_mul_of_nonneg_left (by simpa only [wilsonState, show (4 : ℝ)*8 = 32 by norm_num]
+      using wilsonInteraction_norm_le (scaleIndex n j) β 8 (by norm_num)) (by positivity))
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonDyadicGeometry SU2WilsonBlockPilot
+
+/-- All fluctuation variables of a finite scale chain, without repeated integration. -/
+def ScaleFiber (n : ℕ) : ℕ → Type
+  | 0 => PUnit
+  | j + 1 => ScaleFiber n j × Fluctuation (scaleIndex n j)
+
+instance scaleFiberTopology (n : ℕ) : (j : ℕ) → TopologicalSpace (ScaleFiber n j)
+  | 0 => inferInstanceAs (TopologicalSpace PUnit)
+  | j + 1 => by
+    letI := scaleFiberTopology n j
+    exact inferInstanceAs (TopologicalSpace (ScaleFiber n j × Fluctuation (scaleIndex n j)))
+
+instance scaleFiberMeasurable (n : ℕ) : (j : ℕ) → MeasurableSpace (ScaleFiber n j)
+  | 0 => inferInstanceAs (MeasurableSpace PUnit)
+  | j + 1 => by
+    letI := scaleFiberMeasurable n j
+    exact inferInstanceAs (MeasurableSpace (ScaleFiber n j × Fluctuation (scaleIndex n j)))
+
+instance scaleFiberCompact (n : ℕ) : (j : ℕ) → CompactSpace (ScaleFiber n j)
+  | 0 => inferInstanceAs (CompactSpace PUnit)
+  | j + 1 => by
+    let := scaleFiberCompact n j
+    exact inferInstanceAs (CompactSpace (ScaleFiber n j × Fluctuation (scaleIndex n j)))
+
+instance scaleFiberSecondCountable (n : ℕ) : (j : ℕ) → SecondCountableTopology (ScaleFiber n j)
+  | 0 => inferInstanceAs (SecondCountableTopology PUnit)
+  | j + 1 => by
+    let := scaleFiberSecondCountable n j
+    exact inferInstanceAs (SecondCountableTopology (ScaleFiber n j × Fluctuation (scaleIndex n j)))
+
+instance scaleFiberBorel (n : ℕ) : (j : ℕ) → BorelSpace (ScaleFiber n j)
+  | 0 => inferInstanceAs (BorelSpace PUnit)
+  | j + 1 => by
+    let := scaleFiberBorel n j
+    exact inferInstanceAs (BorelSpace (ScaleFiber n j × Fluctuation (scaleIndex n j)))
+
+def scaleFiberMeasure (n : ℕ) : (j : ℕ) → Measure (ScaleFiber n j)
+  | 0 => Measure.dirac PUnit.unit
+  | j + 1 => (scaleFiberMeasure n j).prod volume
+
+instance scaleFiberProbability (n : ℕ) : (j : ℕ) → IsProbabilityMeasure (scaleFiberMeasure n j)
+  | 0 => inferInstanceAs (IsProbabilityMeasure (Measure.dirac PUnit.unit))
+  | j + 1 => by
+    let := scaleFiberProbability n j
+    exact inferInstanceAs (IsProbabilityMeasure ((scaleFiberMeasure n j).prod (volume : Measure (Fluctuation (scaleIndex n j)))))
+
+/-- Ordered reconstruction of the original fine configuration from the final
+coarse links and all independent Haar fluctuations. -/
+def scaleAssemble (n : ℕ) : (j : ℕ) → (Link 4 n → SU2) → ScaleFiber n j → (Link 4 (scaleIndex n j) → SU2)
+  | 0, c, _ => c
+  | j + 1, c, f => chart (scaleIndex n j) (scaleAssemble n j c f.1, f.2)
+
+theorem continuous_scaleAssemble (n : ℕ) : ∀ j,
+    Continuous (fun p : (Link 4 n → SU2) × ScaleFiber n j ↦ scaleAssemble n j p.1 p.2) := by
+  intro j
+  induction j with
+  | zero => exact continuous_fst
+  | succ j ih =>
+    change Continuous (fun p : (Link 4 n → SU2) × (ScaleFiber n j × Fluctuation (scaleIndex n j)) ↦
+      chart (scaleIndex n j) (scaleAssemble n j p.1 p.2.1, p.2.2))
+    exact (PairedLinks.continuous_chart (blockIndexEquiv 4 (scaleIndex n j))).comp
+      ((ih.comp (continuous_fst.prodMk continuous_snd.fst)).prodMk continuous_snd.snd)
+
+/-- A single integral over the complete product of all scale fluctuations. -/
+def directDensity (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) : C(Link 4 n → SU2, ℝ) :=
+  CompactTransferGap.ProductMeasure.partialIntegral (scaleFiberMeasure n j)
+    (W.comp ⟨fun p ↦ scaleAssemble n j p.1 p.2, continuous_scaleAssemble n j⟩)
+
+theorem directDensity_zero (n : ℕ) (W : C(Link 4 (scaleIndex n 0) → SU2, ℝ)) :
+    directDensity n 0 W = W := by
+  ext c
+  change (∫ f : PUnit, W c ∂Measure.dirac PUnit.unit) = W c
+  simp
+
+theorem directDensity_succ (n j : ℕ) (W : C(Link 4 (scaleIndex n (j+1)) → SU2, ℝ)) :
+    directDensity n (j+1) W = directDensity n j
+      (PairedLinks.blockedDensity volume (blockIndexEquiv 4 (scaleIndex n j)) W) := by
+  ext c
+  change (∫ f : ScaleFiber n j × Fluctuation (scaleIndex n j),
+    W (chart (scaleIndex n j) (scaleAssemble n j c f.1, f.2))
+      ∂(scaleFiberMeasure n j).prod volume) = _
+  have hc : Continuous (fun f : ScaleFiber n j × Fluctuation (scaleIndex n j) ↦
+      W (chart (scaleIndex n j) (scaleAssemble n j c f.1, f.2))) := by
+    exact W.continuous.comp ((PairedLinks.continuous_chart (blockIndexEquiv 4 (scaleIndex n j))).comp
+      (((continuous_scaleAssemble n j).comp (continuous_const.prodMk continuous_fst)).prodMk continuous_snd))
+  rw [integral_prod _ (CompactTransferGap.IntegralKernel.integrable_continuous_fun _ hc)]
+  rfl
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonDyadicGeometry SU2WilsonBlockPilot
+open WilsonEliminationRoutes
+
+def scaleAssembleMap (n j : ℕ) : C((Link 4 n → SU2) × ScaleFiber n j, Link 4 (scaleIndex n j) → SU2) :=
+  ⟨fun p ↦ scaleAssemble n j p.1 p.2, continuous_scaleAssemble n j⟩
+
+theorem directDensity_pos (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    (hW : ∀ U, 0 < W U) (c : Link 4 n → SU2) : 0 < directDensity n j W c :=
+  marginal_pos (scaleFiberMeasure n j) (W.comp (scaleAssembleMap n j)) (fun _ ↦ hW _) c
+
+def directProject (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    (hW : ∀ U, 0 < W U) (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) : C(Link 4 n → SU2, ℝ) :=
+  project (scaleFiberMeasure n j) (W.comp (scaleAssembleMap n j)) (fun _ ↦ hW _)
+    (F.comp (scaleAssembleMap n j))
+
+theorem directProject_apply (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    (hW : ∀ U, 0 < W U) (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (c : Link 4 n → SU2) :
+    directProject n j W hW F c = directDensity n j (W * F) c / directDensity n j W c := rfl
+
+namespace InteractionState
+
+theorem density_iterate_direct (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)),
+    (iterate n j A).density = directDensity n j A.density := by
+  intro j
+  induction j with
+  | zero => intro A; exact (directDensity_zero n A.density).symm
+  | succ j ih =>
+    intro A
+    change (iterate n j (block (n := scaleIndex n j) A)).density = _
+    rw [ih]
+    have he := density_block (n := scaleIndex n j) A
+    exact (congrArg (directDensity n j) he).trans (directDensity_succ n j A.density).symm
+
+theorem density_mul_action_direct (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j))
+    (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)),
+    directDensity n j (A.density * F) = (iterate n j A).density * action (route n j A) F := by
+  intro j
+  induction j with
+  | zero => intro A F; exact directDensity_zero n (A.density * F)
+  | succ j ih =>
+    intro A F
+    rw [directDensity_succ]
+    have he : PairedLinks.blockedDensity volume (blockIndexEquiv 4 (scaleIndex n j))
+        (A.density * F) = (block (n := scaleIndex n j) A).density * A.step.project F := by
+      have hb := density_block (n := scaleIndex n j) A
+      rw [hb]
+      exact PairedLinks.blockedDensity_mul_project volume (blockIndexEquiv 4 (scaleIndex n j))
+        A.density A.density_pos F
+    rw [he]
+    exact ih A.block (A.step.project F)
+
+/-- The complete staged conditional observable is exactly one conditional
+integral over all scale fluctuations under the original fine density. -/
+theorem action_route_eq_direct (n j : ℕ) (A : InteractionState (scaleIndex n j))
+    (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) :
+    action (route n j A) F = directProject n j A.density A.density_pos F := by
+  ext c
+  rw [directProject_apply, density_mul_action_direct, ← density_iterate_direct]
+  simp only [ContinuousMap.mul_apply]
+  exact (mul_div_cancel_left₀ _ ((iterate n j A).density_pos c).ne').symm
+
+end InteractionState
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonConditionalProjection.PairedHaar
+open WilsonDyadicGeometry SU2WilsonBlockPilot WilsonLocalResponse
+open Mettapedia.GSLT.Ultrainfinite WilsonEliminationRoutes
+
+namespace InteractionState
+
+/-- Actual successive radii, padded by zero after the prescribed finite
+chain ends. No extra lattice scale is asserted after that endpoint. -/
+def radiusSequence (n : ℕ) : (j : ℕ) → InteractionState (scaleIndex n j) → ℕ → ℝ
+  | 0, A, 0 => interactionNorm 8 A.terms
+  | 0, _, _ + 1 => 0
+  | _j + 1, A, 0 => interactionNorm 8 A.terms
+  | j + 1, A, k + 1 => radiusSequence n j A.block k
+
+theorem radiusSequence_zero (n j : ℕ) (A : InteractionState (scaleIndex n j)) :
+    radiusSequence n j A 0 = interactionNorm 8 A.terms := by cases j <;> rfl
+
+theorem radiusSequence_final (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)),
+    radiusSequence n j A j = interactionNorm 8 (iterate n j A).terms := by
+  intro j
+  induction j with
+  | zero => intro A; rfl
+  | succ j ih => intro A; exact ih A.block
+
+theorem radiusSequence_nonneg (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)) k,
+    0 ≤ radiusSequence n j A k := by
+  intro j
+  induction j with
+  | zero => intro A k; cases k <;> simp only [radiusSequence] <;> positivity
+  | succ j ih =>
+    intro A k
+    cases k with
+    | zero => change 0 ≤ interactionNorm 8 A.terms; positivity
+    | succ k => exact ih A.block k
+
+theorem radiusSequence_step (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)),
+    AffineRGStepBound (4 * Real.exp (-2)) 0 (radiusSequence n j A) := by
+  intro j
+  induction j with
+  | zero =>
+    intro A k
+    cases k <;> simp only [radiusSequence, add_zero, mul_zero] <;> positivity
+  | succ j ih =>
+    intro A k
+    cases k with
+    | zero =>
+      change radiusSequence n j A.block 0 ≤ (4 * Real.exp (-2)) * interactionNorm 8 A.terms + 0
+      rw [radiusSequence_zero, add_zero]
+      exact A.norm_block_le
+    | succ k => exact ih A.block k
+
+/-- The existing RG bootstrap is instantiated by the actual nonlinear
+Haar-extracted interactions, with zero error and a strict explicit gain. -/
+theorem radiusSequence_geometric (n j : ℕ) (A : InteractionState (scaleIndex n j)) (k : ℕ) :
+    radiusSequence n j A k ≤ (4 * Real.exp (-2))^k * interactionNorm 8 A.terms := by
+  have h := (radiusSequence_step n j A).bound_by_geometric_of_zero_error (by positivity) k
+  simpa only [radiusSequence_zero] using h
+
+end InteractionState
+
+theorem nonlinearGain_contraction : IsRGContractionGain (4 * Real.exp (-2)) :=
+  ⟨by positivity, exp_reserve_lt_one⟩
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonDyadicGeometry SU2WilsonBlockPilot
+open WilsonEliminationRoutes SU2BoundaryResponse
+
+/-- Pullback along the successive ordered coarse-link product maps. -/
+def scaleLift (n : ℕ) : (j : ℕ) → C(Link 4 n → SU2, ℝ) → C(Link 4 (scaleIndex n j) → SU2, ℝ)
+  | 0, F => F
+  | j + 1, F => (scaleLift n j F).comp (PairedLinks.blockMap (blockIndexEquiv 4 (scaleIndex n j)))
+
+theorem scaleLift_assemble (n : ℕ) : ∀ j (F : C(Link 4 n → SU2, ℝ)) c f,
+    scaleLift n j F (scaleAssemble n j c f) = F c := by
+  intro j
+  induction j with
+  | zero => intro F c f; rfl
+  | succ j ih =>
+    intro F c f
+    change scaleLift n j F (PairedLinks.block (blockIndexEquiv 4 (scaleIndex n j))
+      (PairedLinks.chart (blockIndexEquiv 4 (scaleIndex n j)) (scaleAssemble n j c f.1, f.2))) = F c
+    rw [PairedLinks.block_chart]
+    exact ih F c f.1
+
+theorem scaleLift_gauge (n : ℕ) : ∀ j (F : C(Link 4 n → SU2, ℝ)),
+    (∀ (g : Site 4 n → SU2) U, F (gaugeAct g U) = F U) →
+    ∀ (g : Site 4 (scaleIndex n j) → SU2) U,
+      scaleLift n j F (gaugeAct g U) = scaleLift n j F U := by
+  intro j
+  induction j with
+  | zero => intro F hF; exact hF
+  | succ j ih =>
+    intro F hF g U
+    change scaleLift n j F (PairedLinks.block (blockIndexEquiv 4 (scaleIndex n j)) (gaugeAct g U)) =
+      scaleLift n j F (PairedLinks.block (blockIndexEquiv 4 (scaleIndex n j)) U)
+    dsimp only [scaleIndex] at g U ⊢
+    rw [paired_block_eq, paired_block_eq, blockField_gaugeAct]
+    exact ih F hF _ _
+
+theorem directProject_scaleLift (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    (hW : ∀ U, 0 < W U) (F : C(Link 4 n → SU2, ℝ)) :
+    directProject n j W hW (scaleLift n j F) = F := by
+  ext c
+  change (∫ f, W (scaleAssemble n j c f) * scaleLift n j F (scaleAssemble n j c f)
+    ∂scaleFiberMeasure n j) / (∫ f, W (scaleAssemble n j c f) ∂scaleFiberMeasure n j) = F c
+  simp_rw [scaleLift_assemble]
+  rw [integral_mul_const]
+  exact mul_div_cancel_left₀ _ (directDensity_pos n j W hW c).ne'
+
+theorem action_scaleLift (n j : ℕ) (A : InteractionState (scaleIndex n j))
+    (F : C(Link 4 n → SU2, ℝ)) :
+    action (InteractionState.route n j A) (scaleLift n j F) = F := by
+  rw [InteractionState.action_route_eq_direct, directProject_scaleLift]
+
+/-- A gauge-invariant, nonzero Wilson loop survives every prescribed finite
+number of blocking steps exactly. The contracting interaction sector is
+compatible with nontrivial observables. -/
+theorem retainedWilsonLoop_nonzero (n j : ℕ) (A : InteractionState (scaleIndex n j))
+    (p : Plaquette 4 n) :
+    action (InteractionState.route n j A) (scaleLift n j (plaquetteTrace p)) ≠ 0 := by
+  rw [action_scaleLift]
+  intro h
+  have he := congrArg (fun F : C(Link 4 n → SU2, ℝ) ↦ F (fun _ ↦ 1)) h
+  norm_num only [plaquetteTrace_one, ContinuousMap.zero_apply] at he
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonConditionalProjection.PairedHaar
+open WilsonDyadicGeometry SU2WilsonBlockPilot WilsonLocalResponse
+open Mettapedia.GSLT.Ultrainfinite WilsonEliminationRoutes
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
+
+/-- An analytic predicate on the existing weighted states. The response data
+remain explicit; this predicate concerns the density's full interaction norm. -/
+def interactionContract {ι : Type} (R : ℝ) (s : BoundaryState ι) : Prop :=
+  ∃ (n : ℕ) (A : InteractionState n), A.weightedState = s.1 ∧ interactionNorm 8 A.terms ≤ R
+
+/-- The forward native modality has an actual successor with the proved
+strict norm gain. The transition itself contains no smallness assumption. -/
+theorem haarDiamond_interactionContract {ι : Type} {n : ℕ}
+    (A : InteractionState (doubleIndex n)) (D : ResponseData A.weightedState ι)
+    {R : ℝ} (hR : interactionNorm 8 A.terms ≤ R) :
+    gsltDiamond (haarTheory ι) (interactionContract ((4 * Real.exp (-2)) * R))
+      ⟨A.weightedState, D⟩ := by
+  apply (gsltDiamond_spec _ _ _).mpr
+  refine ⟨_, HaarTransition.paired volume (blockIndexEquiv 4 n) A.density A.density_pos D, ?_⟩
+  refine ⟨n, A.block, ?_, A.norm_block_le.trans (mul_le_mul_of_nonneg_left hR (by positivity))⟩
+  exact coordinateState_congr volume _ _ _ _ A.density_block
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open WilsonConditionalProjection.PairedHaar WilsonDyadicGeometry
+
+/-- The same explicit positive interval supplies both the established
+crossing threshold and the input radius of every finite scale iteration. -/
+theorem strong_coupling_iteration_bound {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ strongIterationBeta) :
+    β ≤ StrongCouplingCrossing.beta0 4 ∧ ∀ n j,
+      interactionNorm 8 (InteractionState.iterate n j
+        (wilsonState (scaleIndex n j) β (abs_le_iterationBeta hβ hβ0))).terms ≤
+          (4 * Real.exp (-2))^j * (64 * β * Real.exp 32) := by
+  refine ⟨hβ0.trans (min_le_right _ _), ?_⟩
+  intro n j
+  simpa only [abs_of_nonneg hβ] using wilson_iteration_bound n j β (abs_le_iterationBeta hβ hβ0)
+
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonDyadicGeometry SU2WilsonBlockPilot
+open WilsonEliminationRoutes WilsonLocalResponse SU2BoundaryResponse
+
+theorem integral_scaleLift (n : ℕ) : ∀ j (F : C(Link 4 n → SU2, ℝ)),
+    (∫ U, scaleLift n j F U) = ∫ c, F c := by
+  intro j
+  induction j with
+  | zero => intro F; rfl
+  | succ j ih =>
+    intro F
+    have hm := measurePreserving_blockField (scaleIndex n j)
+    have hi := integral_map_of_stronglyMeasurable (μ := (volume : Measure (FineConfig (scaleIndex n j))))
+      hm.measurable (scaleLift n j F).continuous.stronglyMeasurable
+    rw [hm.map_eq] at hi
+    calc
+      _ = ∫ U : FineConfig (scaleIndex n j), scaleLift n j F (blockField U) := by
+        change (∫ U : FineConfig (scaleIndex n j), scaleLift n j F
+          (PairedLinks.block (blockIndexEquiv 4 (scaleIndex n j)) U)) = _
+        simp only [paired_block_eq]
+      _ = _ := hi.symm.trans (ih F)
+
+theorem integral_retainedWilsonLoop_zero (n j : ℕ) (p : Plaquette 4 n) :
+    (∫ U, scaleLift n j (plaquetteTrace p) U) = 0 :=
+  (integral_scaleLift n j _).trans (integral_plaquetteTrace_zero p)
+
+/-- The actual full Wilson density, including its vacuum normalization,
+is integrated directly or by any prescribed finite chain with the same result. -/
+theorem wilson_density_iterate_direct (n j : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta) :
+    (InteractionState.iterate n j (wilsonState (scaleIndex n j) β hβ)).density =
+      directDensity n j (realDensity (model (scaleIndex n j) univ)
+        (model_continuous (scaleIndex n j) univ) β) := by
+  rw [InteractionState.density_iterate_direct, wilsonState_density]
+
+/-- Original Wilson expectations equal expectations under every generated
+law, for every continuous mark, including arbitrary finite products. -/
+theorem wilson_expectation_iterate (n j : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta)
+    (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) :
+    expectation volume (InteractionState.iterate n j (wilsonState (scaleIndex n j) β hβ)).density
+      (action (InteractionState.route n j (wilsonState (scaleIndex n j) β hβ)) F) =
+      expectation volume (realDensity (model (scaleIndex n j) univ)
+        (model_continuous (scaleIndex n j) univ) β) F := by
+  have h := InteractionState.expectation_iterate n j (wilsonState (scaleIndex n j) β hβ) F
+  simpa only [wilsonState_density] using h
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo

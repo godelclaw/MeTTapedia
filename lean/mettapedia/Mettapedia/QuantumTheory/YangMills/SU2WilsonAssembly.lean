@@ -5,7 +5,7 @@ import Mettapedia.QuantumTheory.YangMills.WilsonEliminationRoutes
 import Mettapedia.QuantumTheory.YangMills.WilsonProjectionComposition
 
 /-!
-# Exact two-level SU(2) Wilson block assembly
+# Exact SU(2) Wilson assembly and Haar rescaling
 
 The periodic four-dimensional lattice has side `4(N+2)`. Fine blocks have
 side two, and coarse blocks have side four. First integrate links interior
@@ -15,6 +15,13 @@ to coarse blocks. The remaining variables are the coarse separator links.
 Every elementary plaquette occurs once in the original Wilson product.
 The two marginalizations retain the entire induced boundary density and
 all marked-observable remainders. No Wilson-form truncation is made.
+
+The separate scale-two map replaces each disjoint ordered link pair by its
+product. Its positive generated density, gauge invariance and conditional
+observables are explicit. A small local-interaction state carries the full
+density and vacuum term; nonlinear extraction reconstructs the next density
+exactly and contracts its support-cardinality norm. The Wilson action enters
+the invariant radius at a positive volume-independent threshold.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -832,6 +839,137 @@ theorem wilsonInteraction_gauge (n : ℕ) (β : ℝ) (S : Finset (Link 4 n))
   apply sum_congr rfl
   intro p hp
   rw [plaquetteTrace_gauge]
+
+
+
+open StrongCouplingCrossing WilsonBlockElimination WilsonConditionalProjection.PairedHaar
+open WilsonDyadicGeometry SU2WilsonBlockPilot WilsonLocalResponse
+open Mettapedia.GSLT.Ultrainfinite WilsonEliminationRoutes
+
+/-- A full local interaction with a separate vacuum contribution. -/
+structure InteractionState (n : ℕ) where
+  terms : Finset (Link 4 n) → C(Link 4 n → SU2, ℝ)
+  locality : ∀ S, DependsOn S (terms S)
+  centered : ∀ S, (∫ U, terms S U) = 0
+  empty : terms ∅ = 0
+  gauge : ∀ S (g : Site 4 n → SU2) U, terms S (gaugeAct g U) = terms S U
+  small : interactionNorm 8 terms ≤ 1/2
+  vacuum : ℝ
+
+namespace InteractionState
+variable {n : ℕ}
+
+def density (A : InteractionState n) : C(Link 4 n → SU2, ℝ) :=
+  Real.exp A.vacuum • interactionDensity A.terms
+
+@[simp] theorem density_apply (A : InteractionState n) (U : Link 4 n → SU2) :
+    A.density U = Real.exp (A.vacuum + ∑ S, A.terms S U) := by
+  simp only [density, ContinuousMap.smul_apply, smul_eq_mul, interactionDensity,
+    ContinuousMap.coe_mk, Real.exp_add]
+
+theorem density_pos (A : InteractionState n) (U : Link 4 n → SU2) : 0 < A.density U := by
+  rw [density_apply]
+  positivity
+
+def block (A : InteractionState (doubleIndex n)) : InteractionState n where
+  terms := effectiveInteraction volume (blockIndexEquiv 4 n) A.terms A.small
+  locality := effectiveInteraction_local volume (blockIndexEquiv 4 n) A.terms A.small A.locality
+  centered := effectiveInteraction_centered volume (blockIndexEquiv 4 n) A.terms A.small
+  empty := effectiveInteraction_empty_eq_zero volume (blockIndexEquiv 4 n) A.terms A.small A.locality
+  gauge := effectiveInteraction_gauge A.terms A.small A.gauge
+  small := (effectiveInteraction_norm_le volume (blockIndexEquiv 4 n) A.terms A.small).trans (by
+    have hq : 0 ≤ 4 * Real.exp (-2) := by positivity
+    have h := mul_le_mul_of_nonneg_left A.small hq
+    have hq1 := exp_reserve_lt_one
+    linarith)
+  vacuum := A.vacuum + effectiveVacuum volume (blockIndexEquiv 4 n) A.terms A.small
+
+theorem norm_block_le (A : InteractionState (doubleIndex n)) :
+    interactionNorm 8 A.block.terms ≤ (4 * Real.exp (-2)) * interactionNorm 8 A.terms := by
+  simpa only [block] using effectiveInteraction_norm_le volume (blockIndexEquiv 4 n) A.terms A.small
+
+theorem density_block (A : InteractionState (doubleIndex n)) :
+    A.block.density = PairedLinks.blockedDensity volume (blockIndexEquiv 4 n) A.density := by
+  ext c
+  have he := effectiveInteraction_reconstruct volume (blockIndexEquiv 4 n)
+    A.terms A.small A.locality A.empty c
+  calc
+    _ = Real.exp A.vacuum * Real.exp (effectiveVacuum volume (blockIndexEquiv 4 n) A.terms A.small +
+        ∑ S, effectiveInteraction volume (blockIndexEquiv 4 n) A.terms A.small S c) := by
+      rw [density_apply]
+      simp only [block, add_assoc, Real.exp_add]
+    _ = Real.exp A.vacuum * PairedLinks.blockedDensity volume (blockIndexEquiv 4 n)
+        (interactionDensity A.terms) c := congrArg (Real.exp A.vacuum * ·) he.symm
+    _ = _ := by
+      change _ = ∫ f, Real.exp A.vacuum * interactionDensity A.terms (chart n (c, f))
+      rw [integral_const_mul]
+      rfl
+
+theorem density_gauge (A : InteractionState n) (g : Site 4 n → SU2) (U : Link 4 n → SU2) :
+    A.density (gaugeAct g U) = A.density U := by
+  rw [density_apply, density_apply]
+  congr 2
+  exact sum_congr rfl (fun S _ ↦ A.gauge S g U)
+
+abbrev weightedState (A : InteractionState n) : WilsonEliminationRoutes.State :=
+  WilsonProjectionComposition.coordinateState (volume : Measure SU2) A.density A.density_pos
+
+/-- The quantitative contraction is attached to the actual Haar integral. -/
+def step (A : InteractionState (doubleIndex n)) : Step A.weightedState A.block.weightedState where
+  project := PairedLinks.blockedProjectLinear volume (blockIndexEquiv 4 n) A.density A.density_pos
+  expectation := fun F ↦ by
+    change expectation volume A.block.density _ = expectation volume A.density F
+    rw [density_block]
+    exact PairedLinks.expectation_blockedProject volume (blockIndexEquiv 4 n) A.density A.density_pos F
+  contract := fun F _ hF ↦ PairedLinks.abs_blockedProject_le volume (blockIndexEquiv 4 n)
+    A.density A.density_pos F hF
+
+end InteractionState
+
+
+/-- A positive, volume-independent interval for the full nonlinear iteration. -/
+def iterationBeta : ℝ := 1 / (128 * Real.exp 32)
+
+theorem iterationBeta_pos : 0 < iterationBeta := by unfold iterationBeta; positivity
+
+theorem wilsonInteraction_empty (n : ℕ) (β : ℝ) : wilsonInteraction n β ∅ = 0 := by
+  ext U
+  have he (W : Link 4 n → SU2) : wilsonInteraction n β ∅ W = wilsonInteraction n β ∅ U :=
+    wilsonInteraction_local n β ∅ W U (by simp)
+  have hi := wilsonInteraction_centered n β ∅
+  simp_rw [he] at hi
+  simpa using hi
+
+def wilsonState (n : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta) : InteractionState n where
+  terms := wilsonInteraction n β
+  locality := wilsonInteraction_local n β
+  centered := wilsonInteraction_centered n β
+  empty := wilsonInteraction_empty n β
+  gauge := wilsonInteraction_gauge n β
+  small := wilsonInteraction_entry 8 (1/2) (by norm_num) n β (by
+    convert hβ using 1
+    unfold iterationBeta
+    norm_num
+    ring)
+  vacuum := -β * Fintype.card (Plaquette 4 n)
+
+theorem wilsonState_density (n : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta) :
+    (wilsonState n β hβ).density =
+      realDensity (SU2BoundaryResponse.model n univ) (SU2BoundaryResponse.model_continuous n univ) β := by
+  ext U
+  rw [InteractionState.density_apply, realDensity_eq_wilsonInteraction]
+  simp only [wilsonState, ContinuousMap.sum_apply]
+
+
+def strongIterationBeta : ℝ := min iterationBeta (StrongCouplingCrossing.beta0 4)
+
+theorem strongIterationBeta_pos : 0 < strongIterationBeta :=
+  lt_min iterationBeta_pos (StrongCouplingCrossing.beta0_pos 4)
+
+theorem abs_le_iterationBeta {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ strongIterationBeta) :
+    |β| ≤ iterationBeta := by
+  rw [abs_of_nonneg hβ]
+  exact hβ0.trans (min_le_left _ _)
 
 
 end ScaleTwo
