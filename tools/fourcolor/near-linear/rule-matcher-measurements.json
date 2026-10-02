@@ -1,0 +1,164 @@
+{
+  "checked_utc": "2026-10-02T08:38:58.818678+00:00",
+  "scope": "Exact rooted matching and charge equivalence for the complete pinned rule data. The concrete flat-pair example is independent program evidence only; classification remains open.",
+  "rule_source": {
+    "repository": "https://github.com/near-linear-4ct/discharging-rules",
+    "revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "oriented_rules": 84
+  },
+  "source_traces": {
+    "vertex_traces": 638,
+    "total_operations": 1780,
+    "maximum_operations_per_vertex": 7,
+    "generator": "generate_rule_traces.py",
+    "certified_by": "FourColor.RuleTraversalData.valid and length_le_seven"
+  },
+  "traversal_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RuleTraversal",
+        "source_sha256": "8542d6b1d66838547e273d305abb0c3446f42574ac50b1b3bc6ec9249442c195",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.055,
+        "olean_bytes": 262848,
+        "olean_sha256": "130c705e5c0946e6d9e89b2710cf5d0bbb9afc3874a6c97e75deac518c977a5d"
+      },
+      {
+        "module": "MettapediaFourColor.RuleTraversalData",
+        "source_sha256": "df2770292558860bf1dda1464fe0603e257747e8b1da69a3bb3f38a7a27e62c4",
+        "exit_code": 0,
+        "frontend_wall_seconds": 435.339,
+        "olean_bytes": 1876328,
+        "olean_sha256": "b4f40d9fb6eaefa1486f4a3411de492962b843ad210264a55322217132471324"
+      }
+    ]
+  },
+  "matcher_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RuleMatcher",
+        "source_sha256": "9f1701f5b4e7601923c27b83968511087d245258e26d8e801001994d26d426a4",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.205,
+        "olean_bytes": 303128,
+        "olean_sha256": "fb6ae23b80d6ae4fdc9920b54d5ae5a9b000443e486afc115e07f4f397eae554"
+      },
+      {
+        "module": "MettapediaFourColor.RuleMatcherAudit",
+        "source_sha256": "54c1cd3bf1cea3ee5015dfc0bcde8170c3fa0a3f385d5a92a54a19f96866f9d4",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.236,
+        "olean_bytes": 2592,
+        "olean_sha256": "f6c189e4330e06f073fbb15cc2eca5bc0ae993ddce1c806522223829da8d4470"
+      }
+    ]
+  },
+  "audit": {
+    "roots": 14,
+    "dependency_declarations": 4317,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_endpoints": false,
+    "reduction_certificates": false,
+    "classification_hypothesis": false
+  },
+  "exploratory_example": {
+    "file": "flat-pair-probe.json",
+    "sha256": "561452dc9d6dcca39f83d7fc06035a1b5ad4d4b8ae0de56390f5d6cdb37b4c68",
+    "lean_certified": false,
+    "vertices": 42,
+    "pair": [
+      11,
+      18
+    ],
+    "charges": {
+      "11": 0,
+      "18": 0
+    },
+    "net_external_supply": 40,
+    "independent_matcher_comparison": {
+      "rooted_tests": 20160,
+      "matching_occurrences": 391,
+      "disagreements": 0,
+      "method": "Compiled traces versus independent dart propagation."
+    },
+    "joint_core_probe": {
+      "ball_sizes": [
+        26,
+        26
+      ],
+      "union_size": 33,
+      "readings": {
+        "D0000.conf": {
+          "distinct_core_images": 3,
+          "cores_in_union_but_neither_ball": 0,
+          "joint_vertex_images_in_source_order": []
+        },
+        "D0001.conf": {
+          "distinct_core_images": 14,
+          "cores_in_union_but_neither_ball": 1,
+          "joint_vertex_images_in_source_order": [
+            [
+              31,
+              40,
+              7,
+              11,
+              9,
+              32,
+              41,
+              38,
+              39,
+              36,
+              27
+            ]
+          ]
+        }
+      },
+      "scope": "Complete core stars and ring edges, allowing boundary identifications. Not an induced embedded occurrence or a Lean reconstruction certificate. Other reducible pieces exist in the individual neighbourhoods."
+    }
+  },
+  "regressions": [
+    "lake build kernelRuleMatcher kernelFlatCoverage kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "entries_removed_here": 0,
+    "certificate_dependencies_replaced_here": 0
+  },
+  "remaining": [
+    "Actual Lean certification of a nonempty surviving flat-pair subclass and a charge-to-reduction implication.",
+    "Complete cartwheel refinement/combination semantics and enumeration completeness.",
+    "Other degree cases, residual obstructions and global coverage."
+  ],
+  "cost_scope": "The seven-operation bound concerns each vertex traversal, not full graph colouring runtime. Separate finite data artifacts are prepared before the generic matcher audit.",
+  "main_lane_jobs": 11195,
+  "program_sources_sha256": {
+    "generate_rule_traces.py": "86b776b9edae0a2b611571ced03f025b676b10535af06f2bd82ee9106a3dc4fa",
+    "probe_flat_pairs.py": "c066054da02804713d94688c0cea8ffd9e7b358ed3d310e70c663cedebb93764"
+  }
+}

@@ -751,3 +751,67 @@ See [source fidelity](discharging-source-audit.json) and
 complete Four Colour endpoints and original configuration rank certificates.
 The D1774 finite repair occurs only in the consumer of the existing closing
 law; it is absent from the rule and charge proofs.
+
+## Exact rooted matching and a concrete joint-view test
+
+`RuleTraversal` interprets a source construction as flips, vertex rotations
+and inverse rotations of an actual graph dart. Its transport theorem uses
+one occurrence throughout, including when distinct source vertices share an
+ambient image. `RuleTraversalData` certifies all 638 vertex traces for the 84
+pinned rules: each trace follows known source transitions, reaches its
+advertised vertex, and has length at most seven.
+
+`RuleMatcher.candidate_eq` proves that any rooted occurrence has exactly the
+candidate vertex images produced by those traces. `check_iff` then proves
+that checking the candidate's complete adjacency, degree bounds and known
+cyclic steps is equivalent to `NearLinearCharge.Applies`. Checking succeeds
+or fails without searching over vertex assignments. `chargeAt_eq` identifies
+the resulting computation with the existing occurrence-based final charge;
+`checked_pair_budget` consumes two computed flatness certificates and yields
+the exact forty-unit external boundary budget.
+
+The generator is untrusted. Lean checks its output against the original
+rule data. The matcher audit forbids reduction certificates, original
+configuration certificates and complete Four Colour endpoints. From prepared
+rule data, replay with:
+
+```sh
+python3 tools/fourcolor/near-linear/generate_rule_traces.py
+cd lean/fourcolor-classical
+lake build kernelRuleTraversal
+lake build kernelRuleMatcher
+```
+
+The [measurement record](rule-matcher-measurements.json) separates the finite
+traversal-data check from the generic proof and audit.
+
+The [saved flat-pair example](flat-pair-probe.json) is independent program
+evidence. Starting with an edge-subdivided icosahedron, 417 legal oriented
+edge flips produce a 42-vertex triangulation with adjacent degree-eight
+vertices 11 and 18. Both have final charge zero and their net external supply
+is forty. The two radius-two balls have 26 vertices each, with 33 in their
+union. The `D0001` core image `[38, 39, 36, 27]` lies in that union but neither
+individual ball; its full source vertex reading is retained in the report.
+Other reducible pieces already occur in the individual balls, so this is not
+an example proving that joint inspection is necessary.
+
+Two independent implementations agree on all 20,160 rule/root tests on this
+graph: compiled traces and breadth-first dart propagation. They identify 391
+rooted rule occurrences. The saved report retains the initial faces, every
+edge flip, final faces, source rule revision and actual rule images. Replay
+from the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/probe_flat_pairs.py \
+  --replay tools/fourcolor/near-linear/flat-pair-probe.json \
+  --output /tmp/flat-pair-replay.json
+cmp tools/fourcolor/near-linear/flat-pair-probe.json /tmp/flat-pair-replay.json
+```
+
+This example has not been certified in Lean. The core reading checks complete
+core stars and ring edges while allowing boundary identifications; a full
+embedded occurrence and reconstruction are additional obligations. Neither
+this example nor the generic matcher establishes cartwheel enumeration
+completeness, absence of obstructing cycles, or a charge-to-reduction law for
+all flat pairs. The coverage ledger remains 633 entries and 629 original
+configuration certificate dependencies.

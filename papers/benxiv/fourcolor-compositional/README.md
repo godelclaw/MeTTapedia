@@ -78,6 +78,24 @@ coverage entry. The
 and [receipt](../../../tools/fourcolor/near-linear/exceptional-exterior-measurements.json)
 record the exact scope.
 
+The remaining classification now has a certified executable foundation.
+[Rooted rule traversals](../../../lean/fourcolor-classical/MettapediaFourColor/RuleTraversal.lean)
+preserve the same actual occurrence through flips and rotations. All 84 source
+rules are reached by 638 checked vertex traces, each using at most seven dart
+operations. The [matcher](../../../lean/fourcolor-classical/MettapediaFourColor/RuleMatcher.lean)
+checks the resulting candidate's complete degrees, edges and cyclic steps;
+Lean proves this check equivalent to an actual rule occurrence, including
+possible ambient vertex identifications. Its computed charge equals the
+mathematical charge used by the coverage scaffold.
+
+A [replayable program example](../../../tools/fourcolor/near-linear/flat-pair-probe.json)
+has two adjacent flat degree-eight centres in a 42-vertex triangulation. A
+`D0001` core lies in the union of their radius-two balls but neither ball alone.
+This is a concrete test of joint observations, not a certified coverage theorem:
+the example is not yet checked in Lean, and other reducible pieces already
+occur in its individual balls. The next obligation is a proved implication
+from shared charge constraints to a supported reduction over a nonempty class.
+
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first
 [kernel-checked bridge](../../../lean/fourcolor-classical/MettapediaFourColor/NearLinearDiamondRepair.lean)

@@ -16,6 +16,33 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check the exact matcher using the prepared traversal certificates. -/
+target kernelRuleMatcher pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-matcher-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "RuleMatcher", "RuleMatcherAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Interpret checked rule traversals in actual graph darts. -/
+target kernelRuleTraversal pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-traversal-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RuleTraversal", "RuleTraversalData"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Certify all pinned oriented-rule data and their local geometric paths. -/
 target kernelNearLinearRuleData pkg : Unit := do
   let env ← getAugmentedEnv

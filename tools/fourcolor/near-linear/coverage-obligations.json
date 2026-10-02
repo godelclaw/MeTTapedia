@@ -1,5 +1,5 @@
 {
-  "status": "The actual exceptional closing branch is kernel checked in the graph-backed vertex-minimal domain. Complete oriented-rule charge semantics and five-free pruning connect the zero predicate to actual graph observations. Surviving zero-charge classification, other degree/residual cases and coverage remain open.",
+  "status": "The actual exceptional closing branch is kernel checked in graph-backed vertex minimality. All 84 oriented rules have checked rooted traversals, an exact executable occurrence matcher and charge equivalence. Surviving zero-charge classification, other degree/residual cases and coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -315,6 +315,34 @@
     {
       "declaration": "FourColor.ExceptionalFlatCharge.overlap_supply",
       "meaning": "The five-free branch is eliminated in the actual minimal dual, and the completed exceptional closing law is reused. Classification of surviving cases remains an input."
+    },
+    {
+      "declaration": "FourColor.RuleTraversal.trace_transport",
+      "meaning": "Each checked flip/rotation construction trace commutes with the same actual occurrence, preserving shared vertex identities."
+    },
+    {
+      "declaration": "FourColor.RuleTraversalData.valid",
+      "meaning": "All 638 vertex traces for the 84 source rules follow source edges and known cyclic steps and reach their declared vertices."
+    },
+    {
+      "declaration": "FourColor.RuleTraversalData.length_le_seven",
+      "meaning": "Every source vertex reading uses at most seven dart operations from the marked root."
+    },
+    {
+      "declaration": "FourColor.RuleMatcher.rooted_unique",
+      "meaning": "An actual root dart uniquely determines all rule vertex images, allowing ambient vertex collisions."
+    },
+    {
+      "declaration": "FourColor.RuleMatcher.check_iff",
+      "meaning": "The executable full candidate check is equivalent to an actual complete rule occurrence at that dart."
+    },
+    {
+      "declaration": "FourColor.RuleMatcher.chargeAt_eq",
+      "meaning": "Computed charge equals the existing existential occurrence-based charge, counting each oriented rule once."
+    },
+    {
+      "declaration": "FourColor.RuleMatcher.checked_pair_budget",
+      "meaning": "Computed flatness of two distinct degree-eight centres supplies the exact forty-unit external boundary obligation."
     }
   ],
   "open": [
@@ -324,7 +352,7 @@
     },
     {
       "id": "charge_semantics",
-      "obligation": "The complete pinned rule data and actual homomorphic-occurrence charge are now defined and checked. Still certify an executable occurrence matcher, completeness of cartwheel bounds/classification, and exact transport to the published free-cartwheel representations."
+      "obligation": "The complete rule data, rooted executable matcher and exact charge equivalence are proved. Still certify completeness of cartwheel bounds/classification and exact transport to the published free-cartwheel representations."
     },
     {
       "id": "low",
@@ -360,14 +388,16 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "A shared boundary certificate for a surviving adjacent 8-8 neighbourhood",
-    "test": "Retain the same actual outside vertices and rule observations for both centres. Build a source-faithful finite matcher or refinement certificate for the smallest surviving source pair, checking whether forty units of net external supply force a supported known reduction. Use all rule degree bounds and cyclic gaps; do not assume independently generated cartwheels glue.",
-    "acceptance": "A checked nonempty source subclass with joint charge bound and actual reduction consumer, or a replayable obstruction identifying the missing geometry. No full classification or catalogue reduction is credited for the current prune.",
+    "target": "A nonempty adjacent 8-8 class with a certified joint charge constraint and known reduction",
+    "test": "Use the exact rooted matcher to express the shared boundary constraints. The saved 42-vertex example has adjacent flat degree-eight centres and a D0001 core in the union of their radius-two balls but neither ball alone. Certify the relevant actual graph reading and seek a structural charge-to-reduction implication over an explicit domain; the example alone is not that implication.",
+    "acceptance": "A nonempty Lean-certified source subclass with an actual reduction consumer, or a replayable obstruction identifying missing geometry. Preserve the existing exceptional closing result and the source matcher. Do not count a verified example as full classification or a removed catalogue dependency.",
     "primary_lemmas": [
       "8.3(i)",
       "9.8",
       "11.1"
-    ]
+    ],
+    "exploratory_example": "flat-pair-probe.json",
+    "example_limits": "Independent integer/program check only. Other reducible pieces already occur in the individual balls. No minimal-counterexample or no-obstruction hypothesis is established by the example."
   },
   "counts": {
     "coverage_entries": 633,

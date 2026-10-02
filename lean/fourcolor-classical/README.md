@@ -1221,3 +1221,20 @@ Run `lake build kernelNearLinearRuleData`, then
 prepared. Source fidelity is independently checked by
 `tools/fourcolor/near-linear/audit_discharging_sources.py` from the repository
 root. See the [source and charge account](../../tools/fourcolor/near-linear/README.md#actual-discharge-and-a-first-classification-prune).
+
+## Exact matching of the discharging rules
+
+`RuleTraversal` transports source flip/rotation programs through actual
+occurrences. `RuleTraversalData` checks all 638 vertex traces for the 84
+pinned rules, each of length at most seven. `RuleMatcher` proves rooted
+uniqueness and soundness/completeness of the executable full candidate check.
+Its computed charge agrees with `NearLinearCharge.finalCharge` and feeds the
+exact shared boundary budget for two flat degree-eight centres.
+
+With `kernelNearLinearRuleData` prepared, run `lake build kernelRuleTraversal`
+once, then `lake build kernelRuleMatcher`. The latter replays the generic
+matcher and its dependency audit without repeating the finite trace check.
+The separate 42-vertex flat-pair example is program evidence only; it is not
+Lean-certified classification or coverage. See the
+[account](../../tools/fourcolor/near-linear/README.md#exact-rooted-matching-and-a-concrete-joint-view-test)
+and [measurements](../../tools/fourcolor/near-linear/rule-matcher-measurements.json).

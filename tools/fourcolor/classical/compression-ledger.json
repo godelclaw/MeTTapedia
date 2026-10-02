@@ -3314,5 +3314,27 @@
       "No new reduction or unavoidability result.",
       "No proof of C++ enumeration completeness or near-linear runtime."
     ]
+  },
+  "near_linear_exact_rule_matching": {
+    "status": "Rooted traversals and executable matching are kernel certified for all pinned rules; source-neighbourhood classification remains open.",
+    "source_rules": 84,
+    "vertex_traces": 638,
+    "trace_operations": 1780,
+    "maximum_operations_per_vertex": 7,
+    "proved": [
+      "Valid construction traces commute with actual occurrences.",
+      "A fixed actual dart uniquely determines all rule vertex images.",
+      "The executable check is equivalent to the complete actual rule occurrence.",
+      "Computed charge equals actual existential charge and supplies the joint pair budget."
+    ],
+    "measurement": "../near-linear/rule-matcher-measurements.json",
+    "exploratory_example": "../near-linear/flat-pair-probe.json",
+    "coverage_entries_removed": 0,
+    "original_configuration_certificate_dependencies_replaced": 0,
+    "classification_checks_removed_from_complete_assembly": 0,
+    "limits": [
+      "The 42-vertex example is independently program checked, not Lean certified.",
+      "No complete flat-pair classification, new reduction family or algorithmic runtime bound."
+    ]
   }
 }
