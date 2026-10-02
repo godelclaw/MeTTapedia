@@ -24694,3 +24694,305 @@ complete Gram matrices, exact positivity certificates, direct square
 derivatives, the local return-payment margin and Schur reconstruction.
 Python compilation and finite algebra do not certify the local PDE or
 release arguments. No Lean declarations or axioms change.
+
+## The frame inherited from an oscillatory parent
+
+`inherited_frame_release.py` follows the existing transported-frame
+observable through the ACTUAL parent-release construction (262)--(268).
+The mean frame can lose the visible fast shear while its second moment
+retains a nonzero covariance. This identifies the frame carried into the
+descendant and gives a finite strain allowance through the release.
+An explicit physical example then separates decreasing weighted vorticity
+from increasing ordinary vorticity. The uniform PDE estimates below are
+analytic; symbolic checks verify the profiles and physical derivatives.
+
+### Original initialization and retained covariance
+
+Fix nu>0, finite epsilon, and a horizontal divergence-free trigonometric
+V(x), with arbitrary dependence on x3, as in (262). Use the same actual
+unforced solution u_N with original datum epsilon N cos(Nx3)V.
+For D=partial_t+u_N.grad-nu Delta and B=grad u_N, construct the smooth
+matrix fields on its available smooth prefix by
+
+```text
+D F_N=B F_N,                  F_N(0)=I,
+D M_N=B M_N+M_N B^T,          M_N(0)=I.             (302)
+```
+
+These are the first- and second-frame moment equations used in the earlier
+transported-frame construction. Here their PDE solutions are constructed
+along the same u_N; the auxiliary fields do not change the fluid equation.
+Linear parabolic evolution gives existence on each smooth prefix.
+The matrix maximum principle preserves symmetry and positive definiteness
+of M_N. More explicitly, comparison with
+exp(-2 integral_0^t ||sym B||_infinity) I gives a positive lower bound
+on each such prefix. No bound up to an unknown singular time is assumed.
+
+The covariance Sigma_N=M_N-F_N F_N^T satisfies exactly
+
+```text
+D Sigma_N=B Sigma_N+Sigma_N B^T
+                       +2nu sum_j (partial_j F_N)(partial_j F_N)^T,
+Sigma_N(0)=0,   Sigma_N>=0.                        (303)
+```
+
+The source is positive semidefinite, so the same comparison proves the
+last assertion. Replacing M_N by the square of its mean would discard
+this diffusion-generated information. This use of the moment equations
+does not newly formalize a Brownian path construction in Lean.
+
+### The complete leading frame in the fast layer
+
+Use delta=1/N, tau=N^2 t and theta=Nx3. The lifted velocity U_N and
+derivatives D_N are exactly those of (263); u_N=N U_N on the diagonal.
+The lifted strain is B_N=D_N U_N, with component convention
+(B_N)_ij=(D_N)_j(U_N)_i. The lifted frame equations are
+
+```text
+(partial_tau+U_N.D_N-nu D_N^2) F_N^lift=B_N F_N^lift,
+(partial_tau+U_N.D_N-nu D_N^2) M_N^lift
+                           =B_N M_N^lift+M_N^lift B_N^T.
+```
+
+There is no amplitude rescaling for the frame. The leading velocity
+H0=epsilon exp(-nu tau)cos(theta)V is horizontal, so its leading fast
+transport vanishes and its strain is
+B0=-epsilon exp(-nu tau)sin(theta) V tensor e3.
+Treating x as a parameter, put
+
+```text
+q=exp(-nu tau),  b=-epsilon tau q sin(theta),
+I0=[1-(1+2nu tau)q^2]/(4nu^2),
+I2=[(2nu tau-1)q^2+q^4]/(4nu^2),
+c=epsilon^2[I0-I2 cos(2theta)],
+F0=I+b V tensor e3,
+M0=I+b(V tensor e3+e3 tensor V)+c V tensor V.      (304)
+```
+
+Direct differentiation gives F0_tau-nu F0_thetatheta=B0 F0 and
+M0_tau-nu M0_thetatheta=B0 M0+M0 B0^T, with both initial values I.
+All off-diagonal correlations remain. In particular
+
+```text
+M0-F0 F0^T=(c-b^2) V tensor V,
+(partial_tau-nu partial_theta^2)(c-b^2)=2nu b_theta^2>=0,
+det M0=1+(c-b^2)|V|^2.
+```
+
+Comparison gives c-b^2>=0. Also I2>=0, since
+(exp(4nu tau)I2)'=tau exp(2nu tau), and
+I0+I2=(1-q^2)^2/(4nu^2). Write beta=epsilon^2/(4nu^2).
+It follows that 0<=c<=beta and
+
+```text
+trace M0<=3+beta |V|^2,
+lambda_min(M0)>=1/(2+beta |V|^2),
+F0 -> I,     M0 -> M_*=I+beta V tensor V.           (305)
+```
+
+For the lower bound, in the plane spanned by V and e3 the determinant
+is at least one and the trace is at most 2+beta|V|^2; the orthogonal
+eigenvalue is one. The limit retains covariance even though the mean
+frame tends to I. These formulas reuse the earlier exact shear calculation
+with the full spatially varying parent envelope kept as a parameter.
+
+### Uniform comparison with the actual frame
+
+Fix a sufficiently large integer m, for example m>=8; norms in this
+paragraph are on T4. Constants depend on m, V, epsilon and nu, not N.
+The actual velocity estimate (267), applied at the needed higher derivative
+orders, and the complete approximation (264) give, for a fixed polynomial p,
+
+```text
+||B_N-B0||_(H^m)
+ <= C delta p(tau)exp(-nu tau/2)+C delta^2.
+```
+
+The nondecaying mean in R contributes only order delta^2 to B_N.
+The pressure-generated vertical motion is retained: its transport of
+F0 or M0 is order delta times an integrably decaying theta derivative.
+The slow transport of their limiting x-dependent parts is order delta^2.
+For either profile, substitution into its COMPLETE lifted equation has
+residual bounded by
+
+```text
+C delta p(tau)exp(-nu tau/2)+C delta^2.             (306)
+```
+
+To see all terms in (306), compare D_N^2 with partial_theta^2, giving
+2delta partial_3 partial_theta+delta^2 Delta_x. The order-delta term
+acts only on the decaying oscillatory channels. In U_N.D_N, horizontal
+transport carries delta, while U_N,3=O(delta); the latter again meets
+a decaying theta derivative. The remaining mean transport is order
+delta^2. Reaction errors are (B_N-B0)F0 or (B_N-B0)M0 and its transpose.
+The actual velocity error and its derivatives are O(delta^2) in the
+lifted norms. Products with the bounded smooth profiles have the same
+residual bound. In particular the vertical return channel is not set to zero.
+
+The two frame errors start at zero. The H^m energy estimate for their
+linear equations has coefficient bounded by
+C(||U_N||_(H^(m+1))+||B_N||_(H^m)). Its integral through
+tau_N=4log(N)/nu is bounded independently of N, by (266)--(267).
+The transport vector (delta U_1,delta U_2,delta U_3,U_3) on T4 is
+divergence-free. Diffusion gives a nonpositive quadratic contribution;
+the estimate uses no inverse ellipticity constant for D_N^2.
+Gronwall and the integrated residual therefore give
+
+```text
+sup_(0<=tau<=tau_N)
+ [||F_N^lift-F0||_(H^m)+||M_N^lift-M0||_(H^m)] <= C/N.
+```
+
+Pullback is bounded in C0 by Sobolev embedding on T4. At
+t_N=4log(N)/(nu N^2), this proves the physical limits
+
+```text
+||F_N(t_N)-I||_infinity+||M_N(t_N)-M_*||_infinity <= C/N,
+M_*=I+epsilon^2/(4nu^2) V tensor V.                 (307)
+```
+
+No convergence of physical spatial derivatives at t_N is claimed.
+On the whole fast interval, (305) and the uniform error also give,
+for sufficiently large N,
+
+```text
+[2(2+beta||V||_infinity^2)]^(-1) I <= M_N
+                              <= (4+beta||V||_infinity^2) I.
+```
+
+The actual integrated strain and vorticity have the sharper frequency-
+uniform allowance
+
+```text
+integral_0^(t_N) ||grad u_N||_infinity dt
+ <= |epsilon| ||V||_infinity/nu+C/N,
+integral_0^(t_N) ||curl u_N||_infinity dt
+ <= |epsilon| ||V||_infinity/nu+C/N.                (308)
+```
+
+The gradient norm here is the matrix operator norm. Indeed grad u_N=N^2 B_N
+on the diagonal, so the time rescaling cancels N^2. The leading strain
+has norm |epsilon|q|sin(theta)||V|; its curl vector has the same magnitude.
+Integrating the B_N-B0 bound contributes C/N in either norm.
+Thus the full nonlinear parent release has a finite BKM cost with no
+factor growing in N. Epsilon is not assumed small; the threshold on N
+may depend strongly on it. This pays the release interval, not all later
+descendant evolution or repeated releases.
+
+### The frame travels into the descendant without a reset
+
+Let U(s) be the smooth local NS solution from
+U(0)=epsilon^2 N(V)/(4nu). Evolve its frame equations (302) from
+F(0)=I and M(0)=M_*, the limits supplied by (307).
+This is the limiting post-release pair; the actual F_N,M_N still have
+their single original initialization at physical time zero.
+
+The velocity stability argument after (268) gives a common positive
+interval and uniform C0 convergence of u_N(t_N+s) to U(s).
+The same local mild estimates give
+||grad u_N(t_N+s)||_infinity<=C s^(-1/2) and a difference bound
+C N^(-1)s^(-1/2), after reducing the common interval if needed.
+These follow by differentiating the mild equation, moving the spatial
+derivative onto its product, and using the integrable convolution of
+(s-r)^(-1/2) with r^(-1/2). The initial C0 difference is O(1/N).
+
+For the linear frame equations, write advection in divergence form.
+Its heat-kernel factor is integrable, and the reaction coefficient
+grad u_N has the preceding integrable bound. The resulting mild
+contraction and difference estimates, together with (307), give uniform
+C0 convergence of the two frames to F,M. On intervals s>=s1>0,
+parabolic smoothing gives convergence in every fixed C^j norm, and the
+equations then give the required time derivatives. Positive definiteness
+is uniform there, either by matrix comparison or convergence to M>0.
+Only local existence at the fixed descendant is used.
+
+Consequently any strict finite-order comparison below at s=0 first
+persists to a small fixed positive s, then transfers to sufficiently
+large finite N. This order of choices avoids inferring derivative
+convergence from the C0 assertion at t_N.
+
+### Sharp conversion and actual growth after inheritance
+
+For the inherited tensor let Q_*=M_*^(-1). Its exact inverse is
+
+```text
+Q_*=I-beta V tensor V/(1+beta|V|^2),
+q=omega^T Q_* omega,
+1 <= |omega|^2/q <= 1+beta|V|^2       when omega!=0. (309)
+```
+
+The lower bound uses M_*>=I; the upper bound is its largest eigenvalue.
+For a fixed eta>0 the regularized quotient (|omega|^2+eta)/(q+eta)
+has the same upper bound and is defined at vorticity zeros. For the
+ACTUAL frame at t_N, the upper bound is at most
+1+beta||V||_infinity^2+C/N, regardless of the unresolved derivatives
+of u_N at precisely that time. Thus the regularized log conversion
+has a finite original-parent allowance through the layer. This is the
+initial value to retain when composing the existing logarithmic/HJB
+representation across the release. It is not reset to zero, and the
+later coupled potential in that representation remains unpaid.
+
+For an explicit family take coordinates (x,y,z) and
+
+```text
+V=cos(z)(cos(y),-cos(x),0),  phi=sin(x)sin(y),
+p=-phi/2-phi cos(2z)/6,
+w=N(V)=-(cos(2z)partial_x phi,
+          cos(2z)partial_y phi, sin(2z)phi)/3,
+zeta=curl w=sin(2z)(-sin(x)cos(y),cos(x)sin(y),0).
+```
+
+The checker verifies divergence, w=-(V.grad)V-grad p and the full
+pressure Poisson equation. On x=y=z=h, 0<h<pi/2, zeta is nonzero
+and parallel to V, so the directional factor for omega=epsilon^2 zeta/(4nu)
+is exactly 1+2beta cos(h)^4. Its spatial supremum is 1+2beta;
+the bound (309) is sharp. The supremum approaches a vorticity zero,
+but every nearby point used for the lower bound has nonzero vorticity.
+Large conversion is therefore possible in this inherited physical
+geometry, not just in an independently chosen matrix example.
+
+Set nu=1, epsilon=16, so U(0)=64w and M(0)=I+64 V tensor V.
+At x=y=z=pi/6, exact rational computation gives, with
+D_t=partial_t+U.grad denoting the MATERIAL derivative,
+
+```text
+s=|omega|^2=1152,      q=1152/73,      k=s/q=73,
+D_t s=10752>0,
+D_t q=-760320/5329<0,
+D_t k=4024/3>0.                                   (310)
+```
+
+The calculation uses the actual equations
+D_t omega=Delta omega+(grad U)omega and
+D_t M=Delta M+(grad U)M+M(grad U)^T, including every spatial derivative
+of the inherited tensor. Independent inverse differentiation verifies
+(D_t-Delta)q=-2D_cov, where
+D_cov=sum_j |partial_j omega-(partial_j M)M^(-1)omega|_(M^(-1))^2>=0.
+The Eulerian q rate has the opposite sign here; it is not substituted
+for the material rate in (310).
+
+There is also a strict increase of the whole frame bound. Initially
+sup_x lambda_max(M)=129, attained at the origin. There U=0, and for
+e=(1,-1,0)/sqrt(2), the exact Rayleigh rate is
+partial_t(e^T M e)=4992>0. Thus the inherited upper bound 129 cannot
+be kept unchanged even for the local descendant evolution.
+
+By the positive-time convergence above, the strict signs in (310)
+occur on a short material interval of actual finite-N unforced flows,
+with the frame initialized at I at their ORIGINAL time zero. Weighted
+depletion and ordinary-vorticity amplification coexist on the same
+history. Each datum is finite energy; no indefinite amplification or
+failure of a full-data allowance follows.
+
+The remaining physical task is the time-integrated conversion through
+interacting descendants, with their inherited frame and covariance.
+The cancellation in `TransportedFrameMetric.production_nonpos` does not
+supply that comparison, as its exact Lean statement explicitly retains.
+The BKM/gradient-energy continuation hypotheses and the core budget
+(284) are still open for arbitrary data.
+
+Run `python3 -O labs/inherited_frame_release.py`. It checks the two fast
+frame equations, covariance, exact inherited inverse, projected physical
+source, sharp conversion and complete material derivatives. The uniform
+lifted estimates, matrix comparison, smoothing and actual-history passages
+remain analytic. No Lean declarations or axioms change.

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [inherited-frame calculation](labs/README.md#the-frame-inherited-from-an-oscillatory-parent)
+tracks the original transported frame through an actual parent release.
+Its mean tends to the identity, but its covariance retains a nonzero
+tensor determined by the parent envelope. The release has a finite
+integrated strain allowance uniform in the carrier frequency. An explicit
+descendant then has decreasing weighted vorticity and increasing ordinary
+vorticity along the fluid: the conversion factor worsens. Thus the frame
+must retain both its parent history and the later cost of that conversion.
+The profile and physical derivatives have exact checks; uniform release
+and solution-interval arguments are analytic, not new Lean proofs.
+
 The [source-direction reserve test](labs/README.md#source-direction-reserves-transport-and-schur-elimination)
 adds the source's physical time derivative and also tests its transport
 adjustment. A positive square locally pays the capacity-return example
