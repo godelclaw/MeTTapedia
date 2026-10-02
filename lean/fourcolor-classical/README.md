@@ -1646,3 +1646,24 @@ widths five, six and seven have no survivors in the independent full-pairing
 repair computation. The latter is not a kernel certificate. Compatible
 exterior repair, strict reduction and wider geometric coverage remain open;
 the complete assembly stays at 633 coverage entries /629 original certificates.
+
+
+## A checked repair of the failed wheel closure
+
+[WheelSeedRepairChecked](MettapediaFourColor/WheelSeedRepairChecked.lean)
+repairs the specific boundary `0101010101013` from `D3009ColouringExample`.
+For every Kempe-closed exterior containing its trace, it produces an accepted
+trace with a genuine D3009 colouring. The same witness closes the two GSLT
+sectors and is realized by the exact Y/H construction.
+
+The retained certificate has one repair state and eight terminal colourings,
+with a supplied answer for each of the 132 unsigned exterior pairings.
+Three-chord exchanges are allowed and checked; necessity of those moves is
+not asserted. `KempeMaskCertificate.entries_eq` also now certifies the cached
+enumeration through twelve active ports once for all its consumers.
+
+Replay `lake build kernelWheelSeedRepair`. The
+[receipt](../../tools/fourcolor/near-linear/wheel-seed-repair-measurements.json)
+separates this checked trace from the complete finite discovery computation.
+The remaining thirteen-port traces, actual exterior closure and strict
+reduction are open. Coverage and original certificate counts remain 633 /629.

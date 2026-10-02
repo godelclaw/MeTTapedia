@@ -1,0 +1,351 @@
+{
+  "recorded_at": "2026-10-02T20:57:51.789115+00:00",
+  "status": "Kernel-certified repair of one nonextending D3009 seed trace, with exact source and closed GSLT sector consumers.",
+  "generation": {
+    "status": "untrusted certificate; requires Lean kernel replay",
+    "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "source_sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+    "seed": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      3
+    ],
+    "seed_local_index": 0,
+    "complete_discovery_states": 66430,
+    "stages": [
+      7496,
+      13001,
+      16617,
+      19922,
+      23635,
+      28614,
+      34741,
+      42986,
+      50934,
+      58550,
+      65255,
+      66430
+    ],
+    "retained_states": 9,
+    "terminals": 8,
+    "max_rank": 1,
+    "active_counts": {
+      "12": 1
+    },
+    "chord_records": 132,
+    "three_chord_records": 31,
+    "bytes": 3762,
+    "block": 4,
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        12
+      ],
+      [
+        0,
+        15
+      ],
+      [
+        0,
+        17
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        15
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        15
+      ],
+      [
+        2,
+        16
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        16
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        14
+      ],
+      [
+        4,
+        16
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        14
+      ],
+      [
+        5,
+        20
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        6,
+        20
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        19
+      ],
+      [
+        7,
+        20
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        19
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        9,
+        18
+      ],
+      [
+        9,
+        19
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        10,
+        18
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        11,
+        17
+      ],
+      [
+        11,
+        18
+      ],
+      [
+        12,
+        17
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        13,
+        15
+      ],
+      [
+        13,
+        16
+      ],
+      [
+        13,
+        17
+      ],
+      [
+        13,
+        18
+      ],
+      [
+        13,
+        19
+      ],
+      [
+        13,
+        20
+      ],
+      [
+        14,
+        16
+      ],
+      [
+        14,
+        20
+      ],
+      [
+        15,
+        16
+      ],
+      [
+        15,
+        17
+      ],
+      [
+        17,
+        18
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        19,
+        20
+      ]
+    ],
+    "selected_indices": [
+      0,
+      1,
+      5,
+      181,
+      455,
+      543,
+      1367,
+      1637,
+      4100
+    ],
+    "seconds": 60.934
+  },
+  "source_license": "MIT; copyright 2026 Yuta Inoue",
+  "theorem": "FourColor.WheelSeedRepairCertificate.seed_repair",
+  "statement": "Every Kempe-closed exterior predicate containing trace(0101010101013) meets the genuine D3009 source-colouring relation.",
+  "consumers": [
+    "FourColor.WheelSeedRepairCertificate.repaired_sectors",
+    "FourColor.WheelSeedRepairCertificate.repaired_construction"
+  ],
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 7841,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_dependency": false,
+    "unrelated_configuration_certificate_dependency": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeMaskCertificate",
+        "source_sha256": "4598c8ac49e8a2a9f74528411615f9136c7b24275aa35b6f208bf6fe37c42175",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.365,
+        "olean_bytes": 511912,
+        "olean_sha256": "26450a665c0b4e6d7d684d2c71a0c84f30ae02e054dafe7666f7000b6491ec9b"
+      },
+      {
+        "module": "MettapediaFourColor.WheelSeedRepairData",
+        "source_sha256": "437f7d2b84f9f35f072283748433101e3b6a2785464e1626dcb7ce800778897d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 0.425,
+        "olean_bytes": 103280,
+        "olean_sha256": "4b747fdaa93b55e7dca90a7618c835a38bba5127f0ccb40c6ea704cd82476919"
+      },
+      {
+        "module": "MettapediaFourColor.WheelSeedRepairCertificate",
+        "source_sha256": "f8eb87007c68bf13d559ce758e1208c3ea664650a632978e68e9eecbc67e0fbe",
+        "exit_code": 0,
+        "frontend_wall_seconds": 7.465,
+        "olean_bytes": 345392,
+        "olean_sha256": "3ed85d6b6d90e19910020a5885f2c9db6781d6ab8e25d71dde97b30f0b552e17"
+      },
+      {
+        "module": "MettapediaFourColor.WheelSeedRepairChecked",
+        "source_sha256": "31ed8ed3a05632c62b3cce8c952cb9180c86421fec22957d31f6270eda36e1e8",
+        "exit_code": 0,
+        "frontend_wall_seconds": 15.649,
+        "olean_bytes": 57616,
+        "olean_sha256": "224cbf18049ffb50287e8a25376e1eac7000874524b0d812323f38ea55c9fdb6"
+      },
+      {
+        "module": "MettapediaFourColor.WheelSeedRepairAudit",
+        "source_sha256": "f4102237e522d4c1e93472eaf587b6868bae731612c4c6d4fa8b64d23fd7f47a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.04,
+        "olean_bytes": 2600,
+        "olean_sha256": "1495b84264052a4b44d6f7fc127acf611091a5f1e629143e4b008773ea105419"
+      }
+    ]
+  },
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "member_checks_saved": 336,
+    "coverage_entries_removed_here": 0,
+    "original_certificates_removed_here": 0,
+    "retained_repair_states": 9,
+    "terminal_source_colourings": 8,
+    "unsigned_pairings": 132,
+    "new_uniform_repair_schemes": 0
+  },
+  "validation": {
+    "new_gate": "lake build kernelWheelSeedRepair",
+    "classical_gate": "lake build kernelComplete",
+    "main_gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "generator_reproduction": "byte-identical generated data with cached discovery ranks",
+    "new_module_warnings": 0,
+    "status": "all named targets passed; main lane retains existing linter warnings",
+    "main_jobs": 11195
+  },
+  "limits": [
+    "No complete thirteen-port repair theorem or uniform repair family is proved.",
+    "Actual exterior Kempe closure, initial colouring and strict reduction remain separate geometric obligations.",
+    "The 31 selected three-chord answers do not prove three-chord necessity; independent search found a one- or two-chord direct extension for every seed pairing.",
+    "This small retained certificate does not benchmark access costs of a full 66,430-state data table.",
+    "The complete Python rank closure is discovery evidence, not a premise of the Lean proof."
+  ]
+}

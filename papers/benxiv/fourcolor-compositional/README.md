@@ -1804,13 +1804,55 @@ D-reducibility proof or an unbounded family theorem.
 
 The remaining task is to certify compatible exterior repair and actual
 strict reconstruction, then integrate the geometric supply argument. A
-bounded kernel-cost test comes first: the earlier eleven-port D1774 repair
-required about 100 minutes of finite kernel checking, and this source has
-nine times as many canonical states. The uniform extension theorem can serve
+first kernel-cost test is now certified below. The earlier eleven-port
+D1774 repair required about 100 minutes of finite kernel checking, and this
+source has nine times as many canonical states; the full-table cost remains
+to be measured. The uniform extension theorem can serve
 that checker, but it does not eliminate the repair obligation. Coverage and
 original certificate counts remain 633 /629. The
 [receipt](../../../tools/fourcolor/near-linear/wheel-colouring-measurements.json)
 records the exact scope and audit.
+
+## Repairing the failed wheel closure
+
+The boundary `0101010101013` above now has a
+[kernel-certified repair](../../../lean/fourcolor-classical/MettapediaFourColor/WheelSeedRepairChecked.lean).
+It does not extend unchanged. Instead, every Kempe-closed exterior relation
+containing its trace admits another trace that both the exterior and the
+actual D3009 source permit.
+
+```text
+sectors with incompatible closing colours
+                  |
+retain the actual exterior's joint chord pattern
+                  |
+one of eight checked source colourings
+                  |
+both sectors close with one centre and two shared seams
+                  |
+actual Y/H construction has the same repaired trace
+```
+
+The finite certificate has nine states: the failed initial trace and eight
+terminal source colourings. Its one repair step covers all 132 noncrossing
+pairings of twelve active ports. It supplies whole-chord masks, including
+three-chord exchanges, rather than choosing a colour independently at each
+port. The checker also verifies every edge of each terminal source colouring.
+The three-chord answers are permitted choices; their presence does not prove
+that three-chord moves are necessary.
+
+`repaired_sectors` consumes the certificate through the uniform cyclic law;
+`repaired_construction` transports the same trace back to the exact source
+construction. This is a concrete instance of successful compatible choices
+repairing an unsuccessful initial composition. It retains a small finite
+certificate and makes no claim of a uniform repair theorem for all widths.
+
+The [measurement record](../../../tools/fourcolor/near-linear/wheel-seed-repair-measurements.json)
+records replay costs and dependency checks. All remaining thirteen-port
+traces still need certified coverage. Realizing Kempe closure for the actual
+punctured map and obtaining strict reduction remain separate obligations.
+The complete assembly still has 633 coverage entries and 629 original
+configuration certificate dependencies.
 
 ## Verification and attribution
 

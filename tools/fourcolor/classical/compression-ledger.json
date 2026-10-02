@@ -3850,5 +3850,23 @@
     "original_certificates_removed": 0,
     "member_checks_removed": 0,
     "open": "Compatible exterior repair, strict reconstruction and wider geometric coverage."
+  },
+  "wheel_seed_repair": {
+    "record": "../near-linear/wheel-seed-repair-measurements.json",
+    "status": "Kernel-certified repair of one nonextending D3009 seed trace, with exact source and closed GSLT sector consumers.",
+    "retained_states": 9,
+    "terminal_colourings": 8,
+    "unsigned_pairings": 132,
+    "source_ports": 13,
+    "scope": "One initial trace; arbitrary Kempe-closed exterior containing it.",
+    "consumers": [
+      "FourColor.WheelSeedRepairCertificate.repaired_sectors",
+      "FourColor.WheelSeedRepairCertificate.repaired_construction"
+    ],
+    "coverage_entries_removed": 0,
+    "original_certificates_removed": 0,
+    "member_checks_removed": 0,
+    "new_uniform_repair_schemes": 0,
+    "open": "All remaining traces, actual exterior closure, strict reduction and broader coverage."
   }
 }

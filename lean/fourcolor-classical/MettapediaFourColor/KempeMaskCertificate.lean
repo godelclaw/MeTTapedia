@@ -25,6 +25,17 @@ private def shortCodes : ℕ → List ℕ
   | 10 => [341, 213, 309, 181, 117, 333, 205, 301, 173, 109, 285, 157, 93, 61,
       339, 211, 307, 179, 115, 331, 203, 299, 171, 107, 283, 155, 91, 59,
       327, 199, 295, 167, 103, 279, 151, 87, 55, 271, 143, 79, 47, 31]
+  | 12 => [1365, 853, 1237, 725, 469, 1333, 821, 1205, 693, 437, 1141, 629,
+      373, 245, 1357, 845, 1229, 717, 461, 1325, 813, 1197, 685, 429,
+      1133, 621, 365, 237, 1309, 797, 1181, 669, 413, 1117, 605, 349,
+      221, 1085, 573, 317, 189, 125, 1363, 851, 1235, 723, 467, 1331,
+      819, 1203, 691, 435, 1139, 627, 371, 243, 1355, 843, 1227, 715,
+      459, 1323, 811, 1195, 683, 427, 1131, 619, 363, 235, 1307, 795,
+      1179, 667, 411, 1115, 603, 347, 219, 1083, 571, 315, 187, 123,
+      1351, 839, 1223, 711, 455, 1319, 807, 1191, 679, 423, 1127, 615,
+      359, 231, 1303, 791, 1175, 663, 407, 1111, 599, 343, 215, 1079,
+      567, 311, 183, 119, 1295, 783, 1167, 655, 399, 1103, 591, 335,
+      207, 1071, 559, 303, 175, 111, 1055, 543, 287, 159, 95, 63]
   | _ => []
 
 private def shortEntries (n : ℕ) : List (List Bool × ℕ) :=
@@ -32,12 +43,12 @@ private def shortEntries (n : ℕ) : List (List Bool × ℕ) :=
 
 set_option maxRecDepth 32768 in
 -- Check the shared small unsigned enumeration once, before its many consumers.
-private theorem shortEntries_eq : ∀ n : Fin 11, shortEntries n = enumeratedEntries n := by
+private theorem shortEntries_eq : ∀ n : Fin 13, shortEntries n = enumeratedEntries n := by
   decide +kernel
 
 /-- A checked small enumeration; larger boundaries retain the general definition. -/
 def entries (n : ℕ) : List (List Bool × ℕ) :=
-  if n < 11 then shortEntries n else enumeratedEntries n
+  if n < 13 then shortEntries n else enumeratedEntries n
 
 theorem entries_eq (n : ℕ) : entries n = enumeratedEntries n := by
   unfold entries

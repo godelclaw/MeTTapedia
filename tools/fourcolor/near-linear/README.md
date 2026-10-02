@@ -1333,3 +1333,33 @@ repair has yet been kernel certified. The next test is a compact repair
 certificate with a measured kernel cost, followed by actual exterior repair
 and strict reconstruction. Coverage and original certificate counts stay
 633 /629.
+
+
+## A repaired wheel seed
+
+`generate_wheel_seed_repair.py` extracts the answer closure of the concrete
+nonextending boundary `0101010101013`. The complete finite discovery still
+has 66,430 canonical states, but this seed uses only nine retained states:
+one repair record and eight terminal source colourings. There are 132
+unsigned exterior pairings and 31 selected answers exchange three chords.
+This does not establish that those three-chord moves are necessary.
+
+`WheelSeedRepairCertificate.seed_repair` checks that finite certificate in Lean.
+The theorem meets every Kempe-closed exterior containing the seed. Its
+`repaired_sectors` consumer obtains compatible GSLT sector histories;
+`repaired_construction` preserves the same trace in the pinned Y/H source.
+No other boundary trace is covered merely by the independent rank search.
+
+Generate the flat data with:
+
+```sh
+python3 tools/fourcolor/near-linear/generate_wheel_seed_repair.py \
+  --output WheelSeedRepairData.lean --report wheel-seed-generation.json
+```
+
+`--cache` optionally retains the untrusted discovery ranks between runs.
+The kernel checks every consumed fact independently of that cache. Replay
+`lake build kernelWheelSeedRepair`; the
+[receipt](wheel-seed-repair-measurements.json) records proof scope and costs.
+The complete D3009 repair contract, actual exterior closure and strict
+reconstruction remain open. No catalogue entry is removed by this seed.

@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay a compatible repair of the wheel's nonextending seed trace. -/
+target kernelWheelSeedRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-seed-repair-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeMaskCertificate", "WheelSeedRepairData", "WheelSeedRepairCertificate",
+        "WheelSeedRepairChecked", "WheelSeedRepairAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the exact wheel construction and its colouring interface. -/
 target kernelWheelConstruction pkg : Unit := do
   let env ← getAugmentedEnv

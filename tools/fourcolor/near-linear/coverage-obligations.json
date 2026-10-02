@@ -511,6 +511,18 @@
     {
       "declaration": "FourColor.D3009ColouringExample.incompatible_sectors",
       "meaning": "A proper thirteen-port boundary has separately inhabited sectors but no compatible closing pair. Exterior recolouring is not excluded."
+    },
+    {
+      "declaration": "FourColor.WheelSeedRepairCertificate.seed_repair",
+      "meaning": "Every Kempe-closed exterior predicate containing trace(0101010101013) meets the genuine D3009 source-colouring relation."
+    },
+    {
+      "declaration": "FourColor.WheelSeedRepairCertificate.repaired_sectors",
+      "meaning": "A justified seed repair makes both source sectors close with the same centre and both seam colours."
+    },
+    {
+      "declaration": "FourColor.WheelSeedRepairCertificate.repaired_construction",
+      "meaning": "The repaired exterior-compatible trace is realized by the actual Y/H construction."
     }
   ],
   "open": [
@@ -557,9 +569,9 @@
   ],
   "next_bounded_attack": {
     "target": "Certify compatible D3009 exterior repair and actual strict reconstruction; retain the uniform wheel extension law.",
-    "bounded_test": "Produce compact whole-chord repair records for thirteen ports, benchmark representative kernel checks and compare with the earlier eleven-port cost before full replay. Test a structural transfer between wheel widths separately.",
+    "bounded_test": "Extend the checked seed format to a representative block of the complete thirteen-port trace space; benchmark the full data decoder and input coverage before complete replay. Preserve the proved source and exterior semantics.",
     "acceptance": "A kernel-certified repair contract feeds the same actual occurrence and exterior, with genuine colouring reconstruction and strict decrease. A finite base remains a declared dependency.",
-    "evidence": "Complete source geometry and construction are proved. Independent full-pairing closure has no survivors at widths five, six and seven; this is not yet a Lean repair theorem."
+    "evidence": "Complete source geometry and construction, uniform cyclic extension and one nonextending-seed repair are kernel certified. The seed uses nine states and all 132 unsigned pairings. Full closure at widths 5,6,7 remains independent program evidence."
   },
   "counts": {
     "coverage_entries": 633,
@@ -609,5 +621,6 @@
   "extra_charge_record": "extra-charge-measurements.json",
   "exact_cyclic_charge_record": "exact-charge-measurements.json",
   "wheel_occurrence_record": "wheel-occurrence-measurements.json",
-  "wheel_colouring_record": "wheel-colouring-measurements.json"
+  "wheel_colouring_record": "wheel-colouring-measurements.json",
+  "wheel_seed_repair_record": "wheel-seed-repair-measurements.json"
 }
