@@ -91,10 +91,18 @@ mathematical charge used by the coverage scaffold.
 A [replayable program example](../../../tools/fourcolor/near-linear/flat-pair-probe.json)
 has two adjacent flat degree-eight centres in a 42-vertex triangulation. A
 `D0001` core lies in the union of their radius-two balls but neither ball alone.
-This is a concrete test of joint observations, not a certified coverage theorem:
-the example is not yet checked in Lean, and other reducible pieces already
-occur in its individual balls. The next obligation is a proved implication
-from shared charge constraints to a supported reduction over a nonempty class.
+Its flatness and that straddling core remain program evidence; other reducible
+pieces already occur in the individual balls. The exact rotation and a
+different local rule-pair consumer in the same graph are now checked in Lean.
+
+The [joint rule-pair law](#from-interacting-charge-rules-to-an-actual-reduction)
+combines rules 003_2 and 004_1 at the same degree-six neighbour. Five known
+turns force the sixth, exposing a mixed diamond under a degree-five sender
+guard. The actual-map consumer invokes strict reduction and colouring
+reconstruction, so this joint profile is forbidden in vertex minimality.
+The finite example witnesses the local hypotheses. This is a structural
+classification prune; a bound or classification for the surviving charge
+profiles is the next obligation.
 
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first
@@ -1279,6 +1287,30 @@ classification. They do not supply an exceptional pattern from zero charge,
 or remove a coverage configuration. The classical ledger remains 633 coverage
 entries and 629 original certificate dependencies. See the
 [rule and charge account](../../../tools/fourcolor/near-linear/README.md#actual-discharge-and-a-first-classification-prune).
+
+## From interacting charge rules to an actual reduction
+
+There is now a structural bridge from two pinned discharging-rule readings
+to the existing mixed-diamond family. Their shared vertex and root alignment
+are proved, not separate choices. Two known turns from one reading and three
+from the other fill five sectors around a degree-six vertex. Cyclic closure
+supplies the final sector, and triangular closure exposes the diamond.
+
+The actual-map theorem identifies dual degrees with original facial lengths,
+then invokes the thirteen-to-five replacement, strict decrease by eight and
+genuine colouring reconstruction. Thus this aligned rule pair cannot occur
+in vertex minimality when the first sender has degree five and the shared
+vertex has degree six. The surrounding graph's size and the receiver's degree
+are not fixed.
+
+A finite instance certifies that the local hypotheses are inhabited. This
+is a first explicit forbidden joint charge profile for the remaining
+classification, with a reduction consumer. It does not establish that the
+forty-unit budget always forces such a profile. Coverage and original
+certificate counts are unchanged by this result. The
+[rule-pair account](../../../tools/fourcolor/near-linear/README.md#two-charge-rules-force-a-shared-geometric-reduction)
+separates the generic theorem, actual reconstruction, finite instance and
+remaining classification obligation.
 
 ## Verification and attribution
 

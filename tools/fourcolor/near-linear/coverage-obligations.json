@@ -1,5 +1,5 @@
 {
-  "status": "The actual exceptional closing branch is kernel checked in graph-backed vertex minimality. All 84 oriented rules have checked rooted traversals, an exact executable occurrence matcher and charge equivalence. Surviving zero-charge classification, other degree/residual cases and coverage remain open.",
+  "status": "The actual exceptional closing branch, exact rooted rule matcher and a joint rule-pair exclusion through actual mixed-diamond reduction are kernel checked. Surviving zero-charge classification, other degree/residual cases and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -343,12 +343,36 @@
     {
       "declaration": "FourColor.RuleMatcher.checked_pair_budget",
       "meaning": "Computed flatness of two distinct degree-eight centres supplies the exact forty-unit external boundary obligation."
+    },
+    {
+      "declaration": "FourColor.RulePairDiamond.aligned",
+      "meaning": "Two rooted rule checks separated by two backward receiver turns share the same receiver and neighbouring vertex; both equalities are derived from actual darts."
+    },
+    {
+      "declaration": "FourColor.RulePairDiamond.closing_corner",
+      "meaning": "Two and three prescribed cyclic steps of rules 003_2 and 004_1 concatenate at their common degree-six vertex and force the remaining corner."
+    },
+    {
+      "declaration": "FourColor.RulePairDiamond.mixed_of_checks",
+      "meaning": "The two exact rule checks, cyclic triangular geometry, a degree-five first sender and a degree-six shared neighbour produce an actual mixed-diamond edge pattern."
+    },
+    {
+      "declaration": "FourColor.ActualRulePairDiamond.degree_dart",
+      "meaning": "The degree of the actual facial-dual vertex equals the original face length while retaining the same source dart."
+    },
+    {
+      "declaration": "FourColor.ActualRulePairDiamond.right_check_false",
+      "meaning": "In graph-backed vertex minimality, the checked left rule and the two degree guards force the aligned right rule check to be false, through the existing strict thirteen-to-five reduction and colouring reconstruction."
+    },
+    {
+      "declaration": "FourColor.RulePairExample.has_mixed",
+      "meaning": "A finite source-fidelity checked rotation has cyclic and triangular geometry and satisfies both complete rule checks and degree guards; the general structural theorem supplies the mixed pattern. Flatness and sphericality remain program evidence."
     }
   ],
   "open": [
     {
       "id": "source_dual_bridge",
-      "obligation": "The actual rotation on the quotient-face dual and its exact coverage-graph adjacency are now proved. Relate the published embedded triangulation and final-charge data to this representation, including source configurations and degree readings. Face length is not silently identified with simple dual degree."
+      "obligation": "The actual quotient-face dual, coverage-graph adjacency and equality of actual degree with original face length are proved. Complete transport from the published embedded triangulation and free-cartwheel inputs, including source configurations and degree readings."
     },
     {
       "id": "charge_semantics",
@@ -388,16 +412,17 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "A nonempty adjacent 8-8 class with a certified joint charge constraint and known reduction",
-    "test": "Use the exact rooted matcher to express the shared boundary constraints. The saved 42-vertex example has adjacent flat degree-eight centres and a D0001 core in the union of their radius-two balls but neither ball alone. Certify the relevant actual graph reading and seek a structural charge-to-reduction implication over an explicit domain; the example alone is not that implication.",
-    "acceptance": "A nonempty Lean-certified source subclass with an actual reduction consumer, or a replayable obstruction identifying missing geometry. Preserve the existing exceptional closing result and the source matcher. Do not count a verified example as full classification or a removed catalogue dependency.",
+    "target": "A per-star charge bound using the certified forbidden joint rule combination",
+    "test": "On degree-eight receivers with relevant observed degrees in 5..8, retain shared actual cyclic stars and test which zero-charge patterns survive the 003_2/004_1 exclusion. Include both degree guards and full source steps; distinguish missing positive readings from constraints supplied by negative checks. Preserve collision alternatives.",
+    "acceptance": "An exact charge bound or a certified finite residual class consumed by the coverage scaffold, with recognition and reconstruction attached to every excluded outcome. A surviving pattern must be retained as a residual, not discarded by an unproved independence assumption.",
+    "prior_result": "RulePairDiamond.mixed_of_checks and ActualRulePairDiamond.right_check_false",
     "primary_lemmas": [
       "8.3(i)",
       "9.8",
       "11.1"
     ],
-    "exploratory_example": "flat-pair-probe.json",
-    "example_limits": "Independent integer/program check only. Other reducible pieces already occur in the individual balls. No minimal-counterexample or no-obstruction hypothesis is established by the example."
+    "limit": "The forbidden pair is one class of rule profiles. It does not prove that forty units of shared boundary charge always force an existing reduction.",
+    "first_collision_subtest": "For the same aligned pair, test the shared-degree-five branch: five prescribed turns should identify y.vertex 4 with x.vertex 3. With degree-five first sender and degree-five y.vertex 3, test whether triangular closure yields the all-pentagonal diamond consumer. This is a proposed branch, not a proved lemma."
   },
   "counts": {
     "coverage_entries": 633,

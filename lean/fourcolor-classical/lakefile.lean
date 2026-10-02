@@ -16,6 +16,33 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Prepare the finite rotation and reachability facts for the rule-pair example. -/
+target kernelRulePairExampleData pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-pair-example-data",
+        "--library-output", ".lake/build/lib/lean", "--modules", "RulePairExampleData"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Check joint charge-rule geometry through shared actual darts. -/
+target kernelRulePairDiamond pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-pair-diamond-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RulePairDiamond", "ActualRulePairDiamond", "RulePairExample", "RulePairDiamondAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check the exact matcher using the prepared traversal certificates. -/
 target kernelRuleMatcher pkg : Unit := do
   let env ← getAugmentedEnv

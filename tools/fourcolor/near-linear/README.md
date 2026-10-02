@@ -808,10 +808,77 @@ python3 tools/fourcolor/near-linear/probe_flat_pairs.py \
 cmp tools/fourcolor/near-linear/flat-pair-probe.json /tmp/flat-pair-replay.json
 ```
 
-This example has not been certified in Lean. The core reading checks complete
-core stars and ring edges while allowing boundary identifications; a full
-embedded occurrence and reconstruction are additional obligations. Neither
+The flat-charge computation and the straddling core reading remain program
+evidence. The latter checks complete core stars and ring edges while allowing
+boundary identifications; a full embedded occurrence and reconstruction for
+that particular core are additional obligations. The rotation and a different
+rule-pair consumer in the same graph are certified below. Neither
 this example nor the generic matcher establishes cartwheel enumeration
 completeness, absence of obstructing cycles, or a charge-to-reduction law for
 all flat pairs. The coverage ledger remains 633 entries and 629 original
 configuration certificate dependencies.
+
+
+## Two charge rules force a shared geometric reduction
+
+`RulePairDiamond` gives a structural law for `rule003_2` (index 4) and
+`rule004_1` (index 5). The second incoming root is determined by two backward
+turns at the first root's receiver. The exact rule matcher proves that both
+readings then share the receiver and the same neighbouring vertex.
+
+If the first sender has degree five and the shared neighbour has degree six,
+the first reading supplies two consecutive turns at that neighbour and the
+second supplies three more. Cyclicity forces the sixth turn. Triangular
+closure transfers the resulting corner across the edge, exposing a five–six
+edge with a degree-five vertex on each flank. The receiver's degree need not
+be eight, and the surrounding graph has no fixed size bound.
+
+```text
+rule 003_2: two turns --+--> same six-valent star --> closing corner
+rule 004_1: three turns+                                |
+                                              mixed diamond
+                                                    |
+                                          13 removed, 5 added
+                                                    |
+                                       reconstruct actual colouring
+```
+
+`ActualRulePairDiamond` transports this result through the actual facial
+dual. Its degree-to-face-length theorem retains the source dart. The existing
+mixed-diamond reduction supplies strict descent by eight vertices and
+colouring reconstruction. Consequently, in a graph-backed vertex-minimal
+counterexample, the checked first rule and the two degree guards force the
+aligned second rule check to be false. This is a usable forbidden joint
+charge profile; no cartwheel-classification premise is assumed.
+
+`RulePairExample` checks a nonempty instance on the saved 42-vertex graph:
+root `25 → 18`, second root `28 → 18`, shared vertex 5 and derived mixed edge
+`26 → 5`. The cyclic star at vertex 5 is
+`26, 25, 18, 28, 19, 1`. Lean checks vertexwise cyclicity, triangular closure,
+both full rule checks and the two degree guards; `has_mixed` consumes the
+general structural theorem. It does not certify the experiment's flatness,
+spherical flip history or absence of other reductions.
+
+The independent source-fidelity replay is:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_rule_pair_example.py
+```
+
+It compares all 42 Lean cyclic stars with the saved oriented faces. It also
+records a limit of the earlier straddling-core candidate: vertex 38 is absent
+from every positive rule reading incident with the two flat centres. Thus
+those positive readings do not directly supply that particular four-vertex
+core. Other geometric or negative-rule information could still do so.
+
+Prepare the finite example once with `lake build kernelRulePairExampleData`,
+then run `lake build kernelRulePairDiamond` with the rule/traversal data and
+mixed-diamond artifacts prepared. Its dependency audit requires the actual
+strict-reduction and reconstruction chain. The shared diamond profile
+certificate remains; original catalogue certificates, the D1774 certificate
+and the complete Four Colour endpoint are absent.
+
+This removes one explicitly described class of joint rule profiles from the
+remaining classification. It removes no coverage entry or existing assembly
+certificate. The exact forty-unit budget still needs a complete account of
+the surviving profiles. See [measurements](rule-pair-diamond-measurements.json).

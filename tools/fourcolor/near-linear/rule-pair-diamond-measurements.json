@@ -1,0 +1,190 @@
+{
+  "result": "A guarded aligned pair of pinned charge-rule readings forces an actual mixed-diamond reduction; a finite cyclic triangular instance is certified.",
+  "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "rule_indices_zero_based": [
+    4,
+    5
+  ],
+  "source_labels": [
+    "rule003_2.rule",
+    "rule004_1.rule"
+  ],
+  "hypotheses": [
+    "The ambient finite simple graph has vertexwise cyclic rotation and triangular face return.",
+    "Rule 003_2 checks at d; rule 004_1 checks at the root obtained by two backward receiver turns.",
+    "The first sender has degree five; their shared neighbouring vertex has degree six."
+  ],
+  "generic_result": "The same actual rule readings force a five-six edge with degree-five vertices on both consecutive flanks. No independent alignment hypotheses, injectivity assumption or global size bound.",
+  "actual_consumer": "ActualRulePairDiamond.not_in_minimal transports to original face lengths and consumes the existing strict thirteen-to-five replacement, preserving the smaller map class and reconstructing an original colouring.",
+  "classification_consumer": "ActualRulePairDiamond.right_check_false is a forbidden joint rule profile in graph-backed vertex minimality.",
+  "reduction": {
+    "vertices_removed": 13,
+    "vertices_introduced": 5,
+    "whole_map_decrease": 8
+  },
+  "trust": {
+    "roots": 14,
+    "dependency_declarations": 28736,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "original_configuration_certificate_dependencies": false,
+    "D1774_repair_dependency": false,
+    "complete_four_colour_endpoint_dependencies": false,
+    "retained_certificate": "DiamondProfileReducibility.repair002"
+  },
+  "example_data": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RulePairExampleData",
+        "source_sha256": "2efffc353f31e57bdc8a6550ba0421f0bb9a1814c2b8ab598f080e594dbec6ac",
+        "exit_code": 0,
+        "frontend_wall_seconds": 38.919,
+        "olean_bytes": 846176,
+        "olean_sha256": "15aff3bf448920c020646c50d21c88df0e57bdedfa3ece8aa980b7d207b2dbc0"
+      }
+    ]
+  },
+  "proof_and_audit": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RulePairDiamond",
+        "source_sha256": "85c3ccba8e4a154f0f2dc22965819e1fc7122d76507d98315a2560c27f6b1f29",
+        "exit_code": 0,
+        "frontend_wall_seconds": 12.813,
+        "olean_bytes": 296984,
+        "olean_sha256": "3a3515e582a3db7cc818e248ef44e81416fa32d40874b842687135dc2d234374"
+      },
+      {
+        "module": "MettapediaFourColor.ActualRulePairDiamond",
+        "source_sha256": "c1b477d15bdddc19ab53babe674f422a6a527ef736701bbab5d40015a186d146",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.207,
+        "olean_bytes": 207984,
+        "olean_sha256": "d12dea14e9fa98064945890b68c7c50ea83b3bb7c3ad98d20eba1a7adfb1c0b2"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairExample",
+        "source_sha256": "1227b924ad352b4be73327e07b79db65297b1cf1a2026f795408027712f46361",
+        "exit_code": 0,
+        "frontend_wall_seconds": 58.055,
+        "olean_bytes": 243336,
+        "olean_sha256": "cf55359cd53e456c82f80bda15b7d3f475b009fbaa5fc757f9c93f4860d7fa44"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairDiamondAudit",
+        "source_sha256": "d751d2a0a21e8af6956aa6eb3ed2ffb84479f2a12ff003f661712633c0b7fbaf",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.326,
+        "olean_bytes": 2712,
+        "olean_sha256": "79616920b0e770251aa9307b83c80d6a3fca05f9ebc03a488ed3f81a5e3961da"
+      }
+    ]
+  },
+  "source_fidelity": {
+    "fixture_sha256": "561452dc9d6dcca39f83d7fc06035a1b5ad4d4b8ae0de56390f5d6cdb37b4c68",
+    "rotation_source_sha256": "c0ac126d6e25221aa2d7e8febf20b6c849ba3cf188b2d899dce3f3092cdcc20c",
+    "source_fidelity": "All 42 cyclic stars exactly match the saved oriented faces.",
+    "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "left_rule": {
+      "index": 4,
+      "source": "rule003_2.rule",
+      "root": [
+        25,
+        18
+      ],
+      "images": [
+        25,
+        18,
+        5,
+        26
+      ]
+    },
+    "right_rule": {
+      "index": 5,
+      "source": "rule004_1.rule",
+      "root": [
+        28,
+        18
+      ],
+      "images": [
+        28,
+        18,
+        5,
+        19,
+        1
+      ]
+    },
+    "shared_vertex_cycle": [
+      26,
+      25,
+      18,
+      28,
+      19,
+      1
+    ],
+    "mixed_edge": [
+      26,
+      5
+    ],
+    "flanking_vertices": [
+      1,
+      25
+    ],
+    "scope": "Lean certifies the cyclic/triangular rotation, two full rule checks and degree guards; the general theorem supplies the mixed pattern. Flat charge and spherical flip history remain program evidence.",
+    "discarded_candidate": {
+      "straddling_core": [
+        38,
+        39,
+        36,
+        27
+      ],
+      "vertices_not_in_any_positive_incident_rule_reading": [
+        38
+      ],
+      "conclusion": "Positive rule readings do not directly supply every vertex of this particular core. This is not a refutation of classification using other geometry or negative rule information."
+    }
+  },
+  "counts": {
+    "coverage_entries_removed_here": 0,
+    "existing_assembly_certificate_dependencies_replaced_here": 0
+  },
+  "open": [
+    "Surviving zero-charge profile classification and supply of exceptional X or another certified outcome.",
+    "The shared-degree-five collision branch and other degree-guard alternatives.",
+    "Remaining low-degree, higher-degree and residual coverage branches; global occurrence supply and scheduling."
+  ],
+  "regression_checks": [
+    {
+      "command": "lake build kernelFlatCoverage kernelComplete",
+      "exit_code": 0
+    },
+    {
+      "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "exit_code": 0,
+      "jobs": 11195
+    }
+  ]
+}

@@ -1234,7 +1234,32 @@ exact shared boundary budget for two flat degree-eight centres.
 With `kernelNearLinearRuleData` prepared, run `lake build kernelRuleTraversal`
 once, then `lake build kernelRuleMatcher`. The latter replays the generic
 matcher and its dependency audit without repeating the finite trace check.
-The separate 42-vertex flat-pair example is program evidence only; it is not
-Lean-certified classification or coverage. See the
+The 42-vertex experiment’s flatness remains program evidence; a local
+rule-pair witness in its rotation is certified by the next target. Neither
+is complete classification or coverage. See the
 [account](../../tools/fourcolor/near-linear/README.md#exact-rooted-matching-and-a-concrete-joint-view-test)
 and [measurements](../../tools/fourcolor/near-linear/rule-matcher-measurements.json).
+
+
+## Shared charge-rule geometry
+
+`RulePairDiamond` combines two actual pinned-rule readings around the same
+six-valent vertex. Their five prescribed turns force a sixth; triangular
+closure exposes the mixed-diamond face pattern. `ActualRulePairDiamond`
+transports it to the original cubic map and consumes the existing strict
+thirteen-to-five replacement and colouring reconstruction. Its
+`right_check_false` excludes this joint rule combination in graph-backed
+vertex minimality under explicit degree-five/six guards.
+
+`RulePairExample` certifies a nonempty instance in the saved finite rotation;
+its flat charge and spherical construction remain separate program evidence.
+`RulePairDiamondAudit` requires actual reconstruction dependencies and rejects
+original catalogue certificates, the D1774 certificate and complete Four
+Colour endpoints. The shared diamond profile remains.
+
+Prepare the finite example with `lake build kernelRulePairExampleData`, then
+run `lake build kernelRulePairDiamond` with the existing rule data, traversal
+data and mixed-diamond artifacts prepared. The
+[account](../../tools/fourcolor/near-linear/README.md#two-charge-rules-force-a-shared-geometric-reduction)
+and [measurement](../../tools/fourcolor/near-linear/rule-pair-diamond-measurements.json)
+state the exact scope. Full surviving-profile classification remains open.
