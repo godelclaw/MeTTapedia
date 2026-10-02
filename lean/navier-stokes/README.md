@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [source-transport and covariance decomposition](labs/README.md#source-transport-cancellation-and-the-evolving-covariance-interface)
+identifies the signed terms left in the receiver reserve's highest nonlinear
+derivative. Source transport cancels exactly; source deformation, heat
+covariance work and surrounding-parent work remain. Only the anisotropic
+covariance contributes to the projected force. Its physical-time equation
+retains both viscous loss and the full nonlinear parents. Exact smooth
+initial data show that covariance can reverse a depleting source-deformation
+sign, even with zero initial mean. The calculation reuses Gaussian-filter
+stress identities and tests the complete pressure projection. The PDE and
+stochastic interpretations are analytic; no new Lean declarations are
+asserted. Paying this combined work over arbitrary histories remains open.
+
 The [receiver-history payment](labs/README.md#source-square-payment-through-an-actual-refeeding-history)
 now carries the same energy-cube reserve through the entire constructed
 feed--return--feed interval, including the generated mean. It also pays
@@ -116,6 +128,7 @@ formal proofs.
 | [Morosi and Pizzocchero, *On approximate solutions of the incompressible Euler and Navier-Stokes equations*](https://arxiv.org/abs/1104.3832) | A posteriori residual and norm estimates connect approximations to actual solutions. The transfer-reversal examples use this validation principle with an explicitly derived nonlinear L2 comparison. | Their Sobolev control inequalities include an existence conclusion under their hypotheses. The local L2 transfer certificate instead uses the separately established global stability neighborhood; it does not establish arbitrary-data regularity or import their norm constants. |
 | [Bardos, Lopes Filho, Nussenzveig Lopes, Niu and Titi, *Stability of Two-dimensional Viscous Incompressible Flows Under Three-dimensional Perturbations and Inviscid Symmetry Breaking*](https://arxiv.org/abs/1201.2742) | Relative kinetic energy compares a full flow with a known symmetry-preserving reference. The [reference-stretching reserve](labs/README.md#reference-stretching-paid-without-perturbative-smallness) couples that energy to a negative-Sobolev observation of generated feedback. | Their cylinder boundary hypotheses and constants are not imported unchanged. The new smooth comparison is derived on the stated torus/whole-space domains and leaves pure perturbation self-stretching unpaid. |
 | [Goulart and Chernyshenko, *Global Stability Analysis of Fluid Flows using Sum-of-Squares*](https://arxiv.org/abs/1101.1043) | Use an inviscid invariant for the highest polynomial degree, and signed lower-degree corrections. The [energy-cube repair](labs/README.md#nonnegative-source-storage-and-an-energy-cube-repair) applies this design to receiver storage and certifies a scalar quadratic sign by its exact discriminant. | Their result concerns stability relative to a reference flow. Here only the stated initial-data families and short actual intervals are paid; arbitrary-history stretching control and unresolved-mode estimates remain open. |
+| [Johnson, *On the role of vorticity stretching and strain self-amplification in the turbulence energy cascade*](https://arxiv.org/abs/2102.06844) | Equations (2.44)--(2.46) identify Gaussian-filter covariance through a heat equation and filtered gradient products. The [source-covariance interface](labs/README.md#source-transport-cancellation-and-the-evolving-covariance-interface) uses that identity with filter variance `2nu s`, then pairs its anisotropic stress with the receiver reserve's actual observer. | The borrowed filtering identity is kinematic. The new signed observer work and physical-time covariance equation do not supply a closed memory model, stochastic-control identification or arbitrary-history payment. |
 
 The operative interface is a compatible history, not just a named flow
 pattern. For the new cellular family, the observed parent coefficient

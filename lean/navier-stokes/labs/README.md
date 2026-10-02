@@ -21752,3 +21752,196 @@ is not constructed for arbitrary initial data. This step shows that the
 reserve survives actual internal replenishment in the controlled class;
 it does not establish that all possible repeated renewal is paid or
 exclude the imported forced construction.
+
+## Source transport cancellation and the evolving covariance interface
+
+`receiver_transport_covariance.py` isolates the signed highest-degree term
+in (196). It cancels transport before estimating norms, identifies the
+remaining heat commutator with a covariance stress, and retains the actual
+physical evolution of that stress. An exact smooth example has negative
+source-deformation work but positive complete nonlinear renewal. Thus a
+control rule based only on the deformation sign loses necessary information.
+This is a refinement of the existing reserve, not a new regularity theorem.
+
+The covariance identity is standard Gaussian-filter mathematics: see
+[Johnson, equations (2.44)--(2.46)](https://arxiv.org/pdf/2102.06844).
+There the filter variance is the auxiliary variable; here it is `2nu s`.
+The periodic identity below follows directly from the torus heat semigroup.
+The present consumer is the source-square reserve, whose observer differs
+from the resolved strain used for ordinary filtered kinetic-energy flux.
+No statistical stationarity or turbulence closure is assumed.
+
+### A cancellation valid for the complete nonlinear source
+
+Work on the normalized 2pi torus with a smooth unforced solution on an
+available smooth interval, nu>0, M=average_z u, w=Pi u and Pi=I-average_z.
+Let P be the Leray projector, Q=Pi P, B(a,b)=-P[(a.grad)b], N(a)=B(a,a).
+At each physical time t, use a separate auxiliary heat variable s:
+
+```text
+v_s=S_s w, S_s=exp(nu s Delta), n_s=Pi N(v_s), h=Pi N(u),
+r_s=S_s Pi N(w)-n_s,
+p_s=S_s Pi[N(u)-N(w)],
+S_s h=n_s+r_s+p_s.                                     (207)
+```
+
+All these vector fields are solenoidal and have zero vertical mean.
+In particular n is already pressure-corrected. Differentiating C from
+(195), self-adjointness of Q and periodic integration by parts give
+
+```text
+D C_nu(w)[h] = Dgeom + Ccov + Pparent,
+Dgeom = -(2/nu) integral_0^infinity <n_s,(n_s.grad)v_s> ds,
+Ccov  =  (2/nu) integral_0^infinity <r_s,K_s> ds,
+Pparent=(2/nu) integral_0^infinity <p_s,K_s> ds,
+K_s=Q[(v_s.grad)n_s-(grad v_s)^T n_s].                  (208)
+```
+
+Indeed, the differentiated source is
+`-Q[((S_s h).grad)v_s+(v_s.grad)(S_s h)]`.
+Its part `<n_s,(v_s.grad)n_s>` is exactly zero, since div v_s=0.
+For a remainder a=r_s or p_s, move the derivative in
+`<n_s,(v_s.grad)a>` onto n_s. The other term contributes
+`-(grad v_s)^T n_s`. Pairing with a permits projection of the complete
+observer to K_s. This derives (208) without an L-infinity estimate on P.
+Dgeom depends only on the symmetric part of grad v_s, but need not be
+negative. It is the geometry of the nonlinear SOURCE, not an assertion
+that the actual vorticity stretching has the same sign.
+
+### The retained stochastic covariance and its actual evolution
+
+For vector fields a,b define
+`Cov_s(a,b)=S_s(a tensor b)-(S_s a) tensor (S_s b)` and put
+
+```text
+Tau_s=Cov_s(w,w),
+r_s=-Q div Tau_s,
+Tau_s=2nu integral_0^s S_(s-a)
+             [sum_j partial_j v_a tensor partial_j v_a] da.   (209)
+```
+
+The tensor is positive semidefinite pointwise. Equivalently, it is the
+covariance of w(x+sqrt(2nu) B_s), with the SAME Brownian displacement in
+both factors and coordinates taken modulo the torus. Separate independent
+displacements instead give the product of means and omit Tau. These are
+auxiliary free-heat probes of the current fluid, not the actual stochastic
+Lagrangian trajectories or a Schrödinger-bridge identification.
+
+Tau is not an independently available input. At fixed s its derivative
+in actual physical time, from w_t=nu Delta w+h, is
+
+```text
+partial_t Tau_s = nu Delta Tau_s - 2nu Gamma_s
+                   + Cov_s(h,w)+Cov_s(w,h),
+Gamma_s=sum_j Cov_s(partial_j w,partial_j w) >= 0.       (210)
+```
+
+To check the diffusion terms, apply the product rule for Delta to each
+of `S_s(w tensor w)` and `v_s tensor v_s`. The cross-gradient difference
+is precisely -2nu Gamma_s. The remaining terms are the displayed cross
+covariances with the FULL h=Pi N(u), including evolving mean motion and
+pressure. The nonlinearity can replenish covariance; (210) is not a closed
+second-moment model. Its anisotropic part obeys the anisotropic projection
+of the same equation. The trace and anisotropic evolution have different
+uses and neither may be silently reset at an interface.
+
+The isotropic part `(tr Tau_s/3) I` generates only a pressure gradient.
+Thus both the force in (209) and its work are unchanged on replacing Tau
+by `Tau_dev=Tau-(tr Tau/3)I`. More precisely,
+
+```text
+Ccov=(2/nu) integral_0^infinity <Tau_dev,sym grad K_s> ds,
+|Ccov| <= (2/nu) integral_0^infinity
+                       ||Tau_dev||2 ||sym grad K_s||2 ds.     (211)
+```
+
+The isotropic term pairs to zero because div K_s=0. This is an exact
+reduction of the force observation; it does not permit discarding trace
+energy from the resource ledger. For example,
+`integral tr Tau_s = E(w)-E(v_s)` remains a useful nonnegative quantity.
+A positive covariance matrix does not make its pairing with a traceless
+symmetric observer positive or negative. In particular, the negative
+matrix term in (210) alone does not fix the sign of (211).
+
+### Adverse covariance despite depleting source geometry
+
+Use the real four-mode seed r in the parent-refeeding construction and set
+`w_*=r-Pi N(r)/10`. It is smooth, real, solenoidal and has zero vertical
+mean. It is a full initial datum; all subsequent nonlinear outputs are
+retained. At nu=1 the exact rational checker gives
+
+```text
+Dgeom = -0.00017613808742723402...,
+Ccov  = +0.00019684919239252254...,
+Pparent=0,
+D C_1(w_*)[Pi N(w_*)] = +0.00002071110496528852... .     (212)
+```
+
+The signs are proved by rational arithmetic, not rounded decimals.
+Changing the input to `r+Pi N(r)/10` reverses all three nonzero signs.
+For every positive amplitude a and viscosity nu, replacing w_* by a w_*
+multiplies these three terms by a^5/nu^2, so the same sign obstruction
+holds without an amplitude smallness restriction.
+For comparison, the matched data (194) have both Dgeom and Ccov positive
+in the adverse phase, and both negative in the other phase. Adding the
+actual mean part in `r+/-N(r)/10` also contributes nonzero Pparent;
+the checker tests these full fields at nu=2/7.
+
+Consequently, the assertion that positive heat covariance cannot reverse
+an integrated depleting source-geometry contribution is false, even with
+zero initial mean. For the actual unforced smooth solution from w_*,
+continuity preserves Dgeom<0 and D C_1(w)[Pi N(u)]>0 for some positive
+short interval; the subsequently generated mean stays in h. This does
+NOT say that C increases after viscosity is included, that the full J
+payment fails, or that this datum blows up. The rejected assertion concerns
+one proposed cancellation in the complete reserve derivative.
+
+There is another diffusion term that must remain when using (208).
+Write `G_s=sum_j Pi B(partial_j v_s,partial_j v_s)`. In auxiliary heat time,
+`partial_s n_s=nu Delta n_s-2nu G_s`, so
+
+```text
+||n_0||2^2/nu = 2 integral_0^infinity ||grad n_s||2^2 ds
+                  +4 integral_0^infinity <n_s,G_s> ds.       (213)
+```
+
+The second term has no asserted sign. The endpoint loss in (196) cannot
+be replaced by pure source-gradient dissipation without retaining it.
+The checker verifies both this identity and
+`(partial_s-nu Delta)r_s=2nu G_s, r_0=0` independently by heat-rate blocks.
+
+### The precise remaining Bellman estimate
+
+Keep the nonnegative J from (198), its original gamma, and full energy.
+Combining the exact identities gives
+
+```text
+J'(t)+2g(w) = A_nu(u),
+A_nu(u)=-nu D_w-||n_0||2^2/nu+<Aw,h>+D H_nu(w)[h]
+        +Dgeom+Ccov+Pparent-6gamma E(u)^2 Z(u)/nu^3.      (214)
+```
+
+Thus an actual-history estimate `A_nu(u)<=nu D(u)/2`, or a nonnegative
+original-datum-funded correction paying its excess, would discharge the
+receiver budget (171). This is the named open physical estimate. The
+constructed history class (201)--(206) remains paid, but its small H3
+hypothesis has not been removed. A positive bound on (211) involving an
+unknown future observer norm would merely relocate that obligation.
+
+A trajectory interface may use the exact force quotient Tau_dev while
+retaining the trace for energy accounting and a compatible full-fluid
+witness for h. Existing `BoundaryBellman.CostedRelation.Bounds.comp` then
+composes proved interval payments with the same intermediate state and
+remaining stock. Neither (210) nor tensor positivity supplies the missing
+payment. Allowing arbitrary independent covariance inputs would enlarge
+the admissible histories and require a separate domination bound.
+
+Run `python3 -O labs/receiver_transport_covariance.py`. Six exact fixtures
+check direct differentiation, transport cancellation, covariance-force
+reconstruction, anisotropic-force preservation, pressure-corrected stress
+work, the physical covariance equation, auxiliary Duhamel generation and
+complete source diffusion. Both adverse phases and nonunit viscosity are
+retained. The analytic identities apply to arbitrary smooth periodic fields
+and smooth NS prefixes; the strict-sign witnesses and their local PDE
+interpretation do not establish arbitrary-horizon control. No Lean
+modules, declarations or axioms change in this checkpoint.
