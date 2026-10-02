@@ -1994,6 +1994,23 @@ This is a finite burst of the same amplitude order as the initial critical
 moment, not an obstruction to a finite full-datum allowance or a claim of
 indefinite renewal. The signed critical history budgets remain open.
 
+The [funded history test](labs/README.md#a-funded-critical-history-test-with-bounded-coarse-resources)
+also rules out a nonzero extra allowance based only on the displayed
+energy, circulation and scalar entropy/action resources. Finitely many
+separated copies of the critical burst are concentrated on one fixed
+Gaussian background. Actual NS stability retains their positive critical
+cost, while the coarse initial resources converge to the background's
+values. The signed excess grows with the packet count even though its
+ledger already includes the full initial critical moment. The original
+paid-parent subtraction tends to zero on these short prefixes, so the
+same obstruction reaches the signed core-history target.
+Continuous state corrections using only those coarse resources also cannot
+make the critical moment nonincreasing. These are analytic arguments with
+exact scaling checks, not new Lean theorems. The initial critical moment
+grows with packet count; an allowance depending on that or finer initial
+geometry remains possible. The examples do not show indefinite renewal
+from a fixed datum or disprove regularity.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

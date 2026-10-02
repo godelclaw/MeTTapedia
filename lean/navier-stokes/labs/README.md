@@ -16648,3 +16648,290 @@ phase margins and viscous scaling. Optional radial orders 32/64/96 with
 `-4554282.397419`; this is supporting quadrature, not an error certificate.
 The fractional-operator identities, localization, actual interval and
 continuation implications remain analytic. No new Lean theorem is claimed.
+
+## A funded critical-history test with bounded coarse resources
+
+`funded_critical_history.py` uses the preceding positive critical burst to
+test an allowance that is nonzero initially. The result concerns the
+actual signed critical-moment budget, rather than a raw higher moment or
+zero-allowance monotonicity. All fluid existence, separation, concentration
+and entropy arguments in this section are analytic. The checker verifies
+scaling and scalar bookkeeping; it does not certify the PDE limits.
+
+Fix a positive viscosity nu and horizon H. Write
+
+```text
+M=int_R5 |b|^(5/2), Dcrit=int_R5 |b|^(1/2)|grad b|^2,
+Pcrit=int_R5 q|b|^(5/2),
+J(T)=int_0^T [(3/2)Pcrit-(15nu/8)Dcrit].
+```
+
+The exact physical balance gives
+
+```text
+J(T)=M(T)-M(0)+(15nu/8)int_0^T Dcrit.                       (27)
+```
+
+In particular a positive moment increment is a lower bound for J. A bound
+`J(T)<=K` would give `M(T)+(15nu/8)int Dcrit<=M(0)+K`: it already includes
+the ENTIRE initial critical moment. The question here is whether a further
+allowance based only on the displayed coarse resources can pay J.
+
+### The actual-flow separation step
+
+The previous construction supplies one fixed smooth Schwartz pure-swirl
+datum u_* and an actual unforced interval [0,t_*] at this viscosity with
+
+```text
+delta=M(u_*(t_*))-M(u_*(0))>0.
+```
+
+This base is fixed before choosing the number N of packets. For each finite
+even N, translate its initial velocity to axial centers a_j in symmetric
+pairs, separated by at least R, and sum. For example use centers
+`+/-R,+/-2R,...,+/-(N/2)R`. The base and background are even in z, so the
+result also retains the reflection symmetry of the signed-order-history test.
+The resulting datum is still smooth, Schwartz, divergence free and pure
+swirl. As R tends to infinity, its actual evolution satisfies
+
+```text
+M(u_N(t_*))-M(u_N(0)) -> N delta.                            (28)
+```
+
+Here and below a sufficiently large finite separation is selected; an
+infinite collection of independently evolved packets is not a solution.
+To justify (28), use the sum V_R of the N translated ACTUAL base solutions
+only as an approximate solution. Its projected NS residual is exactly
+
+```text
+P sum_(j!=k) [u_*(x-a_j).grad]u_*(x-a_k).
+```
+
+For any fixed integer m>=4 this residual tends to zero in H^m uniformly
+on [0,t_*]. Products of separated translated H^(m+1) fields tend to zero
+in H^m; uniformity follows from compactness of the base trajectory in that
+space. The Leray projection is bounded on H^m, so the nonlocal pressure
+has not been omitted. The H^m norm of V_R is at most N times a fixed base
+bound, which may depend on N but not R. The difference equation, viscous
+energy estimate and Gronwall bootstrap therefore construct an actual
+solution on this entire interval, approaching V_R in H^m as R increases.
+No uniform-in-N local existence time is being inferred from a growing
+global Sobolev norm.
+
+For an axisymmetric difference field w, the swirl quotient satisfies
+
+```text
+||w_theta/r||_L2(R5)^2=pi ||w_theta||_L2(R3)^2,
+||w_theta/r||_infinity<=C||grad w||_infinity.
+```
+
+Interpolation and H^m Sobolev embedding give continuity into L(5/2)(R5).
+Finally Lp integrals of finitely many separated translates become additive.
+This proves (28) for the actual moment, including the generated parents.
+Choose R=R_N so the increment is at least `3N delta/4` and the initial
+moment differs from N times the base moment by at most `N delta/8`.
+
+The initial profiles also have a uniform circulation maximum. Their axial
+Gaussian envelope has width L, fixed by the base. For R>=4L,
+
+```text
+sup_z sum_j exp(-(z-(a_j)_z)^2/(2L^2)) <=3/2.
+```
+
+Indeed the non-nearest terms are bounded by exp(-2n) on each side, using
+`(n-1/2)^2>=n/4`, and exp(2)>=5. The radial envelope is fixed. Thus
+`||r u_N,theta(0)||_infinity<=G_*` with G_* independent of N and R_N.
+Larger separation also bounds any fixed number of initial derivatives
+by the corresponding wider Gaussian envelope, although that uniform
+derivative bound is not needed for the preceding H^m stability argument.
+
+### Concentration on a fixed background
+
+Choose a fixed positive Gaussian pure swirl u_B, with b_B(y)=B exp(-|y|^2/2)
+and circulation maximum G_B>G_*. It has a smooth actual local evolution.
+For the chosen finite packet datum define
+
+```text
+u_(N,lambda)(0,x)=u_B(0,x)+lambda u_N(0,lambda x).
+```
+
+NS scaling preserves viscosity, M and the time-integrated quantities in
+(27). It reduces packet kinetic energy by lambda^-1, and reduces both
+its lifted source mass and every finite physical circulation moment by
+lambda^-3. Its circulation maximum stays bounded by G_*.
+
+The actual flow exists to `T_lambda=t_*/lambda^2` for sufficiently large
+lambda, and
+
+```text
+M(u_(N,lambda)(T_lambda))-M(u_(N,lambda)(0))
+  -> M(u_N(t_*))-M(u_N(0)).                                 (29)
+```
+
+The background is not simply added to a nonlinear solution. In rescaled
+coordinates it is `B_lambda(s,y)=lambda^-1 u_B(s/lambda^2,y/lambda)`.
+Its W^(m+1,infinity) norm tends to zero. Use the actual u_N+B_lambda as
+an approximate solution. Its cross residual tends to zero in H^m: in
+each product the background is bounded in W^(m+1,infinity), and u_N in
+H^(m+1). The difference energy estimate uses the background's bounded
+derivatives and divergence cancellation, not its growing rescaled L2 norm.
+Consequently the actual rescaled error tends to zero in H^m on [0,t_*].
+
+For M, the rescaled background quotient is lambda^-2 b_B(s/lambda^2,y/lambda).
+It converges pointwise to zero, with bounded L(5/2) norm. The Lp splitting
+lemma (or its elementary truncation proof) separates its moment from the
+fixed packet field. Its own moment increment tends to zero as physical
+time tends to zero. This and the preceding quotient estimate prove (29).
+Both approximation steps retain all nonlinear outputs of a single actual
+unforced evolution.
+
+For each N choose a finite lambda_N large enough that T_N<=H and
+
+```text
+M(T_N)-M(0)>=N delta/2,
+J(T_N)>=N delta/2.                                         (30)
+```
+
+At the same time the initial coarse resources can be made arbitrarily
+close to those of this ONE fixed background:
+
+```text
+E0 -> E_B,
+C_p(0)=int_R3 |r u_theta(0)|^p -> C_p,B  (any fixed finite list p>=1),
+G0=||r u_theta(0)||_infinity -> G_B,
+M1=int_R5 b0 -> M1,B>0.
+```
+
+The energy conclusion follows from L2 convergence of the added velocity.
+Finite circulation moments follow from Lp convergence of its circulation.
+For the maximum, the concentrated packet circulation is supported near
+r=0 up to a uniformly Gaussian radial tail, where the background circulation
+vanishes quadratically. Outside a small axis tube the packet tail tends to
+zero. Since G_B>G_*, the maximum tends to G_B as well. The choices are
+sequential: fix N, choose R_N, then choose lambda_N. No unproved uniform
+separation rate is required.
+
+### The already-paid entropy and action do not repair this allowance
+
+The nonnegative source b0 has a fixed positive background mass. Normalize
+it to rho0 and use the standard Gaussian gamma on R5 as reference, exactly
+the normalized background. Let m_*=int5 b_*(0), and let K_* be the base
+source's finite relative entropy to gamma. The base is even, so it has
+zero mean. Entropy convexity and translation/dilation give
+
+```text
+theta=N m_* / (lambda^3 M1,B+N m_*),
+KL(rho0||gamma)
+ <= theta [K_*+(1/(2N))sum_j |a_j|^2+5 log lambda]
+ ->0  as lambda->infinity for each fixed N.                 (31)
+```
+
+For the dilation formula the omitted term is
+`(lambda^-2-1)int |y|^2 rho_N/2<=0`. Thus lambda_N can also be chosen
+so that initial KL tends to zero along the sequence. The actual source
+action and entropy allowances established earlier remain uniformly bounded:
+their constants depend only on G0, E0, M1, nu, H and this initial entropy.
+
+### A precise failure of a funded budget
+
+There is no upper bound for J depending only on these displayed coarse
+initial resources through a function locally bounded at their background
+values. They converge to one fixed finite vector while (30) tends to
+infinity. This refutes such an EXTRA allowance even when the full M(0)
+is already included separately in the energy ledger. A positive constant
+allowance, or the previously funded scalar entropy/action reserve, does
+not remove the obstruction.
+
+This assertion concerns uniform dependence on the listed resources, not
+arbitrary discontinuous encodings in exact scalar values. The initial
+critical moment itself grows linearly in N. An extra allowance comparable
+to M(0), a finer critical source resource, or full-datum dependence is
+not refuted. Each example consists of finitely many prepared bursts;
+there is no infinite renewal from one datum or blowup claim.
+
+### The paid-parent subtraction leaves the same obstruction
+
+Fix the original radial cutoff rho>0. Every initial datum above is pure
+swirl, so eta(0)=0. The earlier paid-parent history estimate, on its
+original prefix [0,T], gives the stronger short-time bound
+
+```text
+int_0^T ||q_paid||_infinity
+ <=2 C_BS T^(3/4)(2nu)^(-1/4) sqrt(T C4(0)/(3nu rho^8))
+ =C(nu,rho) sqrt(C4(0)) T^(5/4).
+```
+
+This does not restart the history split or its resource. Its original
+source cutoff is unchanged. Since w=exp[-(3/2)int_0^t ||q_paid||_infinity],
+`1-w(T)<=C'(nu,rho)sqrt(C4(0))T^(5/4)`. For each fixed N, (29) bounds
+M(T_lambda) as lambda grows, so the loss `(1-w(T_lambda))M(T_lambda)`
+tends to zero. Enlarge lambda_N until it is at most `N delta/4`.
+
+The exact core balance therefore gives
+
+```text
+int_0^T w[(3/2)Pcrit_core-(15nu/8)Dcrit]
+ >=w(T)M(T)-M(0)+(15nu/8)int_0^T w Dcrit
+ >=N delta/4.                                               (32)
+```
+
+Thus a bounded coarse allowance fails for the current signed CORE budget
+as well. Reflection symmetry is preserved by uniqueness, so equivalently
+the left side of (32) is
+
+```text
+int_0^T w[6(C_{+,-}+C_{-,+}-C_{+,+}-C_{-,-})-(15nu/8)Dcrit].
+```
+
+The matching-sign histories have not been dropped. This addresses the
+net history target after removing the already-paid parents, with the
+same fixed positive viscosity, horizon and radial cutoff.
+
+### Continuous energy/circulation corrections cannot spend this stock
+
+There is a related state-reserve obstruction, even with one fixed packet
+pair. At the short times T_lambda in (29), the endpoint kinetic energy and circulation
+moments converge to the SAME background values as their initial values.
+This needs an actual PDE argument, since initial convergence alone is
+insufficient.
+
+For compactly supported solenoidal velocity tests, the weak momentum
+equation bounds the change by T_lambda times a constant depending only
+on the test, nu and the uniformly bounded kinetic energy. Pressure drops
+by solenoidality. Thus endpoint velocities converge weakly to u_B(0).
+Weak lower semicontinuity and the unforced energy inequality sandwich
+their squared norms between the same limit E_B.
+
+Likewise, for circulation tests supported away from the axis,
+
+```text
+d_t int Gamma phi = int Gamma v.grad phi+nu int Gamma L5 phi.
+```
+
+The uniform circulation maximum and physical kinetic energy bound this
+rate independently of the concentrated derivatives. Since T_lambda->0,
+endpoint circulation converges weakly to Gamma_B. Its nonincreasing
+Lp moments and maximum, together with lower semicontinuity, give the same
+limits C_p,B and G_B. The positive source mass is conserved. If initial
+KL is included, the earlier entropy inequality gives
+`KL(rho(T_lambda)||gamma(T_lambda))<=KL(rho0||gamma)+C T_lambda`,
+so this value tends to zero too; the reference heat variance tends to one.
+
+Consequently a reserve
+
+```text
+R(t)=M(t)+F(E(t),C_p1(t),...,C_pk(t),G(t),M1,KL(t))
+```
+
+with F continuous at the fixed background vector has a strictly positive
+increment for all sufficiently large finite lambda in that fixed-pair
+construction. F may be nonnegative and initially nonzero. It cannot make
+R nonincreasing, because its initial and terminal values approach the
+same number while the critical moment has a fixed positive increment.
+This tests a funded state correction, not only an initially empty one.
+
+The remaining reserve must retain critical initial structure and an actual
+mechanism for spending it during parent generation. The original signed
+history target remains open; this result does not supply that mechanism.
+Run `python3 -O labs/funded_critical_history.py` for the exact scaling,
+Gaussian packing arithmetic, entropy limit and signed-budget bookkeeping.
