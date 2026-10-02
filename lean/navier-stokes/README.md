@@ -1928,6 +1928,24 @@ and the signed work replenishing them. The [source-reference tests](labs/README.
 also retain the stochastic moment correction and transverse diffusion;
 neither a power of an averaged source nor its axis trace closes that transfer.
 
+The [critical cubic-source clock](labs/README.md#a-critical-cubic-source-clock-and-its-internally-generated-rebound)
+gives a separate continuation consumer in the axisymmetric whole-space
+class. For the actual source stock `S=integral_R5 |u_theta/r|^3`, the
+circulation maximum and physical energy pay `integral S`. A bound on
+`integral S^2` gives the swirl `L8_t L4_x` criterion of
+[Wang, Theorem 1.1](https://ejde.math.txstate.edu/Volumes/2015/250/wang.pdf).
+Five-dimensional Sobolev interpolation identifies the nonnegative candidate
+`R=(E S)^(6/5)` and its exact signed parent cost, retaining both kinetic and
+source diffusion. R and the sufficient clock have invariant NS scaling.
+The required original-datum bound on that signed cost is open. An explicit
+localized pure swirl generates feedback that raises R above its initial
+value on an actual short unforced interval at every fixed positive viscosity,
+so this candidate is not automatically monotone. The interval proof uses
+uniform local estimates after amplitude/time rescaling; exact identities,
+localization constants and scaling pass symbolic checks. These results are
+analytic, not new Lean theorems, and do not supply general 3D/periodic
+continuation or refute a full-datum allowance for repeated renewal.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

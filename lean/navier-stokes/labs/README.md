@@ -15558,3 +15558,266 @@ the literal NS initial rate and the heat calibration pass exact symbolic
 checks. Local comparison, stochastic representation and the positive-time
 implication remain analytic. General three-dimensional and periodic
 continuation, and the arbitrary-history moment transfer, remain open.
+
+## A critical cubic-source clock and its internally generated rebound
+
+`swirl_cubic_clock.py` connects the actual cubic source stock to a
+continuation criterion and tests a joint kinetic/source reserve. All PDE,
+Sobolev, localization and continuation arguments in this section are
+analytic. The checker certifies the displayed algebra and rational moment
+comparisons, not these analytic arguments in Lean.
+
+### The actual stock has a continuation consumer
+
+Consider a smooth axisymmetric unforced whole-space evolution, regular at
+the axis, with positive viscosity and sufficient integrability for the
+identities below. Smooth Schwartz initial data satisfy the initial
+requirements. Retain the physical meridional velocity, pressure and all
+generated components. Use ordinary five-dimensional measure
+`dy5=2pi^2 r^3 dr dz=pi r^2 dx3` for axisymmetric integrands. Set
+
+```text
+b=u_theta/r, q=-2u_r/r, G0=||r u_theta(0)||_infinity,
+S=integral_R5 |b|^3, D=integral_R5 |b||grad b|^2,
+P=integral_R5 q|b|^3,
+E=||u||_L2(R3)^2, d=||grad u||_L2(R3)^2.
+```
+
+S uses the **actual** signed swirl through its absolute cube. It is not
+the larger passive envelope B from the entropy construction. The
+circulation maximum principle gives `r^2|b|<=G0`. Consequently,
+
+```text
+|u_theta|^4=r^4|b|^4 <= G0 r^2|b|^3,
+||u_theta||_4^4 <= G0 S/pi,
+integral_0^T ||u_theta||_4^8 <= (G0/pi)^2 integral_0^T S^2.       (1)
+```
+
+Thus a uniform original-datum bound on the last integral suffices for
+axisymmetric continuation: apply [Peng Wang, Theorem 1.1, EJDE 2015/250](https://ejde.math.txstate.edu/Volumes/2015/250/wang.pdf)
+with time/space exponents `(8,4)`, to the maximal smooth H2 solution.
+Every shorter prefix has the same bound, so the criterion applies at a
+candidate finite maximal time. This is an analytic use of the published
+theorem, not a new Lean import. It supplies an alternative axisymmetric
+consumer; it does not establish the uniform deformation receiver or the
+general three-dimensional/periodic continuation obligations.
+
+Energy already pays one power of S. The angular column of the physical
+velocity gradient has squared norm `b^2+(u_r/r)^2`. Hence
+
+```text
+S=pi integral_R3 (r^2|b|)|b|^2 <= pi G0 d,
+integral_0^T S <= pi G0 E0/(2nu).                               (2)
+```
+
+This identifies the remaining concentration in time: L1 payment alone
+does not bound the L2 clock in (1). For any fixed datum-chosen threshold A,
+`S^2<=A S+S(S-A)_+`, so only the latter excess needs additional payment.
+The first power payment is not asserted for the passive envelope B.
+
+### A joint reserve with the same scaling as the critical clock
+
+The actual equations give the complete balances
+
+```text
+E'=-2nu d,                 S'=2P-6nu D.                       (3)
+```
+
+For signs in b, use the C2 function `|b|^3`; its second derivative is
+`6|b|`. No singular measure at b=0 is discarded. The lifted drift has
+divergence `-q`, which changes the pointwise reaction coefficient three
+to the integrated coefficient two in (3).
+
+Let C5 be a fixed five-dimensional Sobolev constant with
+`||f||_(10/3)^2<=C5||grad f||_2^2`. Apply it to `f=|b|^(3/2)`:
+
+```text
+||b||_5^3 <= (9/4) C5 D,
+||b||_3 <= ||b||_2^(4/9) ||b||_5^(5/9),
+||b||_L2(R5)^2=pi ||u_theta||_L2(R3)^2 <= pi E,
+S^(9/5) <= (9/4) C5 (pi E)^(6/5) D.                          (4)
+```
+
+The initially finite nonnegative candidate is `R=(E S)^(6/5)`. Its exact
+derivative retains both viscous losses:
+
+```text
+R' = (12/5) E^(6/5) S^(1/5) P
+     -(12nu/5) E^(1/5) S^(6/5) d
+     -(36nu/5) E^(6/5) S^(1/5) D.
+```
+
+Define the signed remaining cost
+
+```text
+Q = (12/5) E^(6/5) S^(1/5) P
+    -(12nu/5) E^(1/5) S^(6/5) d
+    -(18nu/5) E^(6/5) S^(1/5) D.
+```
+
+Equations (3)--(4) imply on every compatible subinterval
+
+```text
+R(T) + [8nu/(5 C5 pi^(6/5))] integral_a^T S^2
+ <= R(a)+integral_a^T Q.                                      (5)
+```
+
+There is no restart of the reserve at a seam. A bound
+`integral_0^T Q<=K(u0,nu,H)` for every available prefix `T<=H`, with K
+finite from the full original datum, would therefore imply (1) and
+axisymmetric continuation. This signed payment is **open**. Defining K
+as the unknown future supremum would not prove it.
+
+Under the physical NS scaling `u_lambda(t,x)=lambda u(lambda^2 t,lambda x)`,
+E scales as `lambda^-1`, S as lambda, and both R and `integral S^2 dt`
+are unchanged. The concentration family in the previous section has a
+fixed broad background and is not a single NS rescaling; its S0 and R0
+grow and record the concentration missed by the entropy reserve.
+
+For an azimuthal fluid force, the stock rate in (3) has the additional
+term `3 integral_R5 |b|b f_theta/r`, and the energy rate has
+`2 integral_R3 u.f`. Both enter the derivative of R. This calculation
+does not identify a non-axisymmetric forced construction with an
+axisymmetric evolution or discard its forcing terms.
+
+### Positive feedback for this stock from initially pure swirl
+
+The following test includes the full parent response. For `0<beta<=1`,
+put `alpha=beta^2`, `y=r^2` and
+
+```text
+p_alpha=-48+(32+alpha)y-4y^2,  Q_alpha=(p_alpha-20)^2+21,
+q_rad=r^6 exp(-r^2), h=r^4 exp(-r^2)p_alpha,
+F=r^4 exp(-r^2)Q_alpha^2.
+```
+
+Here `h=(beta^2-Delta_R4)q_rad`, `Q_alpha>=21` and `Q_alpha>|p_alpha|`.
+For the intermediate axially periodic source `f=F+h cos(beta z)` one has
+`|h|/F<=1/21`. Its actual strain acceleration is
+`sigma=-2beta^2 q_rad cos(beta z)`. This follows from the unforced curl
+equation and canonical elliptic reconstruction:
+`eta_t(0)=partial_z(b0^2)` and `q_t(0)=2partial_zz(-Delta5)^-1 b0^2`.
+Initial meridional velocity and its viscous contribution vanish.
+
+Let the phase average use normalized measure on `[0,2pi]`. Taylor's
+theorem, retaining the quadratic term whose contribution averages to zero,
+gives
+
+```text
+|average cos(theta)(F+h cos(theta))^(3/2)-(3/4)sqrt(F)h|
+ <= |h|^3/[16(F-|h|)^(3/2)].
+```
+
+Since `(21/20)^(3/2)<2` and `|p_alpha|/Q_alpha<1`, the radial phase
+average of `f^(3/2)sigma` is bounded below by
+
+```text
+beta^2*(-3 J(alpha)/2-Z/4),
+J(alpha)=integral_0^infinity r^3 sqrt(F)h q_rad dr
+ =2064384*(9000alpha^3-25200alpha^2+94165alpha-214819)/244140625,
+Z=(1/2)integral_0^infinity y^7 exp(-5y/2)dy=129024/78125.
+```
+
+The Bernstein coefficients of J on `[0,1]` are
+`(-443468906496,-378671333376,-331214585856,-282519207936)/244140625`.
+The lower bound is positive, with its beta=1 margin
+`m=423678011904/244140625`. Slow axial variation retains beta-squared
+depletion, but does not impose a nonpositive feedback sign.
+
+### Localization with an explicit finite length
+
+Use the literal whole-space datum
+
+```text
+f_L=exp(-z^2/L^2)*(F+h cos(beta z)),
+b0,L=r^2 exp(-(r^2+z^2/L^2)/2)*sqrt(Q_alpha^2+p_alpha cos(beta z)),
+u0,L=(-x2 b0,L,x1 b0,L,0).
+```
+
+It is smooth, Schwartz, divergence-free and purely azimuthal. Define
+`I_L=integral_R5 b0,L^3 sigma_L`, with the literal whole-space
+`sigma_L=2partial_zz(-Delta5)^-1 f_L`. The radial norm below uses `r^3 dr`.
+The Fourier/Hardy estimates proved in the preceding swirl-return test give
+
+```text
+||sigma_L+2beta^2 exp(-z^2/L^2)q_rad cos(beta z)||_L2(R5)
+ <=2sqrt(2pi^2)L^(-1/2)||chi'||_2
+       *(||rF||_rad/2+||h||_rad/beta),  chi(Z)=exp(-Z^2).
+```
+
+Pairing with `f_L^(3/2)` gives a normalized error at most `Cmult/L`.
+At beta=1, an upward bound is
+`Cmult=12||F^(3/2)||_rad*(||rF||_rad/2+||h||_rad)`.
+All three norms have exact polynomial/Gaussian squares. Their upward
+integer bounds are `41847079250,90535142,14`, respectively, giving
+`Cmult<=22731794603413335000`.
+
+The remaining phase averaging has error at most `Cavg/L`. Indeed, a
+zero-mean periodic function has a primitive bounded by four pi times
+its supremum; integration against `exp(-3Z^2/2)`, whose derivative has
+L1 norm two, gives this estimate. Here it suffices to take
+
+```text
+Cavg=192*(1/2)integral_0^infinity y^7 exp(-5y/2)Q_1(y)^3 dy
+ =347013594597589887614976/762939453125.
+```
+
+The phase-averaged limit includes the factor `sqrt(2pi/3)>1`. For the
+explicit finite length `L=2^55`, exact rational comparisons give
+`(Cmult+Cavg)/L<m/2`. Thus `I_L/(2pi^2 L)>=m/2>0`.
+These deliberately loose constants certify a finite-energy witness;
+they do not estimate a physically sharp length. For every fixed beta
+in `(0,1]` the same proof has finite constants and works for sufficiently
+large L. No uniform limit as beta approaches zero is claimed.
+
+### A rebound after both viscous losses
+
+Fix the localized beta=1 datum above and write its positive constants as
+`E0,S0,d0,D0,I`, where `I=I_L`. For a specified physical viscosity nu>0,
+consider actual initial velocities `A u0`, with A tending to infinity.
+Write the actual solution as
+`u_A(t,x)=A v_epsilon(A t,x)`, where `epsilon=nu/A` and `v_epsilon(0)=u0`.
+This is the exact amplitude/time change of the unforced equation.
+
+The usual local Sobolev energy argument gives a common smooth existence
+interval and bounded high Sobolev norms for `0<=epsilon<=1`; the viscous
+term is nonpositive in that argument. Taking sufficiently many derivatives
+also bounds the required time derivatives uniformly. Only that common
+short interval is used. The integrals in these
+time derivatives are controlled by physical norms: `||b||_L2(R5)^2`
+equals pi times swirl kinetic energy, `||grad b||_L2(R5)^2` equals pi
+times swirl vorticity energy, and their time-differentiated versions have
+the same identities. Axis regularity controls the remaining bounded
+coefficients b, q and their time derivatives by high Sobolev norms.
+These observations justify, uniformly on that common short interval,
+
+```text
+P(tau)=I tau+O(tau^2),   D(tau)=D0+O(tau),   d(tau)=d0+O(tau).
+```
+
+At `tau=k epsilon`, integration of the complete balances (3) yields
+
+```text
+E=E0-2k epsilon^2 d0+O(epsilon^3),
+S=S0+epsilon^2*(I k^2-6D0 k)+O(epsilon^3),
+ES-E0 S0=epsilon^2*[E0 I k^2-(6E0 D0+2d0 S0)k]+O(epsilon^3).
+```
+
+Set `k=2(6E0 D0+2d0 S0)/(E0 I)`. The last quadratic coefficient is
+`2(6E0 D0+2d0 S0)^2/(E0 I)>0`. For sufficiently large A, at the actual
+time `t=k nu/A^2`, the complete joint reserve R is therefore larger
+than its initial value. Its signed Q integral is positive as well.
+
+This refutes a monotone joint reserve, or a zero remainder in (5), even
+when all initial meridional parents vanish and viscosity is positive.
+It proves one internally generated rebound, not indefinite recurrence,
+singularity, or failure of an allowance depending on the full datum.
+The test strengthens the requirement on a history correction: it must
+account for newly generated parents and cannot rely only on the already
+included kinetic and cubic viscous losses.
+
+Run `python3 -O labs/swirl_cubic_clock.py --quadrature`. The optional
+radial/phase quadrature checks the periodic average independently and is
+numerical evidence, not a localization or PDE error certificate. The
+signed Q budget, its generalization beyond axisymmetry, and the full
+arbitrary-data regularity goal remain open.
