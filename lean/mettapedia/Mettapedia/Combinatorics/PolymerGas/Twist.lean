@@ -33,18 +33,6 @@ section General
 
 variable {V : Type*} [DecidableEq V] {G : SimpleGraph V} [DecidableRel G.Adj]
 
-omit [DecidableEq V] in
-/-- The partition function over `Λ` depends only on the weights of the polymers
-of `Λ`. -/
-theorem partitionFunction_congr {w w' : V → ℂ} {Λ : Finset V}
-    (h : ∀ γ ∈ Λ, w γ = w' γ) : partitionFunction G w Λ = partitionFunction G w' Λ := by
-  unfold partitionFunction
-  refine sum_congr rfl fun I hI => ?_
-  have hsub : I ⊆ Λ := mem_powerset.mp hI
-  split_ifs
-  · exact prod_congr rfl fun γ hγ => h γ (hsub hγ)
-  · rfl
-
 /-- **Changing the weights on a set of polymers.**  If `w` and `w'` agree on
 `Λ ∖ W`, then `‖Z_{w'}(Λ)‖ ≤ e^{∑_W c + ∑_W c'} ‖Z_w(Λ)‖`. -/
 theorem norm_partitionFunction_le_of_eqOn {w w' : V → ℂ} {c c' : V → ℝ}

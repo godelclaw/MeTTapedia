@@ -167,6 +167,15 @@ theorem zeta_injective : Function.Injective (zeta (V := V) (A := A)) := by
     rw [hs] at hh
     exact add_left_cancel hh
 
+/-- Finite-subset coefficients commute with additive maps, including evaluation. -/
+theorem coefficient_map {B : Type*} [AddCommGroup B] (f : A →+ B) (F : Finset V → A) :
+    coefficient (fun S ↦ f (F S)) = fun S ↦ f (coefficient F S) := by
+  apply zeta_injective
+  funext S
+  rw [zeta_coefficient]
+  change f (F S) = ∑ T ∈ S.powerset, f (coefficient F T)
+  rw [← map_sum]
+  exact congrArg f (zeta_coefficient F S).symm
 theorem coefficient_zeta (F : Finset V → A) : coefficient (zeta F) = F := by
   apply zeta_injective
   funext S

@@ -314,8 +314,10 @@ interaction estimate is for the linear Haar average. The nonlinear logarithm
 now has an all-order polymer majorant:
 `PolymerGas.sum_weighted_log_coefficients_le` bounds the weighted absolute
 subset-coefficient sum through each polymer by its Dobrushin removal weight.
-The proof uses the full exponential and logarithm series. Weighted site
-incidence controls connected families of arbitrary support size, without a
+The proof uses the full exponential and logarithm series.
+`sum_weighted_norm_log_coefficients_le` controls the sum of uniform norms for
+continuous activities, using one boundary-independent negative-activity
+majorant. Weighted site incidence controls connected families of arbitrary support size, without a
 maximum-degree assumption. Applying these bounds to the generated interaction
 norm remains the nonlinear contraction obligation.
 

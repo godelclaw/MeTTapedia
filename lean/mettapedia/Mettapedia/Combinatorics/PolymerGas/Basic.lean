@@ -81,6 +81,18 @@ omit [DecidableEq V] in
     partitionFunction G w ∅ = 1 := by
   simp [partitionFunction, IsCompatible]
 
+omit [DecidableEq V] in
+/-- The partition function over `Λ` depends only on the weights of the polymers
+of `Λ`. -/
+theorem partitionFunction_congr {R : Type*} [CommSemiring R] {w w' : V → R} {Λ : Finset V}
+    (h : ∀ γ ∈ Λ, w γ = w' γ) : partitionFunction G w Λ = partitionFunction G w' Λ := by
+  unfold partitionFunction
+  refine sum_congr rfl fun I hI => ?_
+  have hsub : I ⊆ Λ := mem_powerset.mp hI
+  split_ifs
+  · exact prod_congr rfl fun γ hγ => h γ (hsub hγ)
+  · rfl
+
 omit [DecidableRel G.Adj] in
 theorem isCompatible_insert {t : Finset V} {γ : V} :
     IsCompatible G (insert γ t) ↔ IsCompatible G t ∧ ∀ u ∈ t, ¬ G.Adj γ u := by

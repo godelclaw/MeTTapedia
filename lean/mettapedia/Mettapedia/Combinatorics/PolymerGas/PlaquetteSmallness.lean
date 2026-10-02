@@ -62,33 +62,32 @@ theorem connectedWeight_le_of_site_sum (supp : P → Finset X) {w : P → ℝ}
     _ ≤ ∑ _x ∈ supp p, a := sum_le_sum fun x _ => hsmall x
     _ = a * (supp p).card := by simp [mul_comm]
 
-/-- A connected family through a site can be charged to one of its incident
-labels. The resulting bound has no dependence on volume or maximum support. -/
-theorem sum_connected_weight_through_site_le (supp : P → Finset X) {w : P → ℝ}
+/-- A connected family meeting designated labels can be charged to a root
+in that set. This permits distinct dependency and retained supports. -/
+theorem sum_connected_weight_meeting_labels_le (supp : P → Finset X) {w : P → ℝ}
     (hw : ∀ p, 0 ≤ w p) {a : ℝ}
     (hsmall : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
-      w p * Real.exp (a * (supp p).card) ≤ a) (x : X) :
-    ∑ C ∈ (connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C),
+      w p * Real.exp (a * (supp p).card) ≤ a) (incident : Finset P) :
+    ∑ C ∈ (connectedPlaquettes supp).filter (fun C => ¬ Disjoint C incident),
       ∏ p ∈ C, w p ≤
-      ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      ∑ p ∈ incident,
         w p * Real.exp (a * (supp p).card) := by
-  let incident : Finset P := univ.filter (fun p => x ∈ supp p)
   calc
     _ ≤ ∑ C ∈ connectedPlaquettes supp, ∑ p ∈ incident,
         if p ∈ C then ∏ q ∈ C, w q else 0 := by
       rw [sum_filter]
       apply sum_le_sum
       intro C _
-      by_cases hx : x ∈ plaquetteSupport supp C
-      · simp only [hx, if_pos]
-        obtain ⟨p, hp, hxp⟩ := mem_biUnion.mp hx
+      by_cases hx : ¬ Disjoint C incident
+      · simp only [if_pos hx]
+        obtain ⟨p, hp, hxp⟩ := not_disjoint_iff.mp hx
         calc
           _ = if p ∈ C then ∏ q ∈ C, w q else 0 := by rw [if_pos hp]
           _ ≤ _ := single_le_sum (s := incident)
             (f := fun p => if p ∈ C then ∏ q ∈ C, w q else 0)
             (fun p _ => by split_ifs <;> first | positivity | exact prod_nonneg fun q _ => hw q)
-            (mem_filter.mpr ⟨mem_univ _, hxp⟩)
-      · simp only [hx, if_false]
+            hxp
+      · simp only [if_neg hx]
         exact sum_nonneg fun p _ => by
           split_ifs <;> first | positivity | exact prod_nonneg fun q _ => hw q
     _ = ∑ p ∈ incident, connectedWeight (plaquetteGraph supp) w univ p := by
@@ -100,6 +99,71 @@ theorem sum_connected_weight_through_site_le (supp : P → Finset X) {w : P → 
       ext C
       simp [connectedPlaquettes, rootedFamily, and_comm, and_left_comm]
     _ ≤ _ := sum_le_sum fun p _ => connectedWeight_le_of_site_sum supp hw hsmall univ p
+
+theorem koteckyPreissCondition_of_supported_site_sum
+    (supp : P → Finset X) {w : P → ℂ}
+    (hempty : ∀ p, supp p = ∅ → w p = 0)
+    (hsite : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+      ‖w p‖ * Real.exp ((supp p).card : ℝ) ≤ 1) :
+    KoteckyPreissCondition (plaquetteGraph supp) w (fun p ↦ (supp p).card) where
+  nonneg p := Nat.cast_nonneg _
+  bound p A hA := by
+    have hp : p ∉ A := fun hp ↦ (hA p hp).1 rfl
+    by_cases he : supp p = ∅
+    · have hA0 : A = ∅ := by
+        apply eq_empty_iff_forall_notMem.mpr
+        intro q hq
+        have hh := (hA q hq).2
+        rw [he] at hh
+        exact hh (by simp)
+      simp [hempty p he, hA0, he]
+    · have hmeet : ∀ q ∈ insert p A, ¬ Disjoint (supp p) (supp q) := by
+        intro q hq
+        rcases mem_insert.mp hq with rfl | hq
+        · simpa using he
+        · exact (hA q hq).2
+      calc
+        _ = ∑ q ∈ insert p A, ‖w q‖ * Real.exp ((supp q).card : ℝ) := by
+          rw [sum_insert hp]
+        _ ≤ ∑ x ∈ supp p, ∑ q ∈ univ.filter (fun q ↦ x ∈ supp q),
+            ‖w q‖ * Real.exp ((supp q).card : ℝ) :=
+          sum_supported_meeting_le supp (fun q ↦ by positivity) (supp p) (insert p A) hmeet
+        _ ≤ ∑ _x ∈ supp p, (1 : ℝ) := sum_le_sum (fun x _ ↦ hsite x)
+        _ = _ := by simp
+
+theorem sum_card_weight_reserve_le (supp : P → Finset X)
+    (hne : ∀ p, (supp p).Nonempty) {t : P → ℝ} (ht : ∀ p, 0 ≤ t p)
+    {a b : ℝ} (hab : a ≤ b) (x : X) :
+    ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), Real.exp (a * (supp p).card) * t p ≤
+      Real.exp (a-b) * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+        Real.exp (b * (supp p).card) * t p := by
+  rw [mul_sum]
+  apply sum_le_sum
+  intro p hp
+  have hcard : (1 : ℝ) ≤ (supp p).card := by exact_mod_cast card_pos.mpr (hne p)
+  have he : Real.exp (a * (supp p).card) ≤
+      Real.exp (a-b) * Real.exp (b * (supp p).card) := by
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    nlinarith
+  exact (mul_le_mul_of_nonneg_right he (ht p)).trans_eq (mul_assoc _ _ _)
+
+
+/-- A connected family through a site can be charged to one of its incident
+labels. The resulting bound has no dependence on volume or maximum support. -/
+theorem sum_connected_weight_through_site_le (supp : P → Finset X) {w : P → ℝ}
+    (hw : ∀ p, 0 ≤ w p) {a : ℝ}
+    (hsmall : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      w p * Real.exp (a * (supp p).card) ≤ a) (x : X) :
+    ∑ C ∈ (connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C),
+      ∏ p ∈ C, w p ≤
+      ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+        w p * Real.exp (a * (supp p).card) := by
+  let incident : Finset P := univ.filter (fun p => x ∈ supp p)
+  have he (C : Finset P) : x ∈ plaquetteSupport supp C ↔ ¬ Disjoint C incident := by
+    simp only [plaquetteSupport, mem_biUnion, not_disjoint_iff, incident, mem_filter,
+      mem_univ, true_and]
+  simpa only [he] using sum_connected_weight_meeting_labels_le supp hw hsmall incident
 
 end Supported
 

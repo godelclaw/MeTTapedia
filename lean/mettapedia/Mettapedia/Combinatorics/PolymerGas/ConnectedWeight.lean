@@ -1,6 +1,7 @@
 import Mettapedia.Combinatorics.PolymerGas.ConnectedDecomposition
 import Mettapedia.Combinatorics.PolymerGas.SupportRegrouping
 import Mathlib.Analysis.SpecificLimits.Basic
+import Mathlib.Topology.ContinuousMap.Compact
 
 /-!
 # Summing exponentially weighted connected sets
@@ -400,5 +401,59 @@ theorem sum_weighted_log_coefficients_le (w : UnionWeight V) {a ρ c : V → ℝ
   simp only [negativeActivatedLogPartition, activatedLogPartition, Pi.neg_apply,
     inter_univ, he, neg_sub_neg]
   exact log_partitionFunction_erase_le hD Λ p
+
+section ContinuousActivities
+variable {B : Type*} [TopologicalSpace B] [CompactSpace B]
+
+@[simp] theorem partitionFunction_continuous_apply (a : V → C(B, ℝ)) (Λ : Finset V) (b : B) :
+    partitionFunction G a Λ b = partitionFunction G (fun p ↦ a p b) Λ := by
+  exact partitionFunction_map G
+    ((Pi.evalRingHom (fun _ : B ↦ ℝ) b).comp ContinuousMap.coeFnRingHom) a Λ
+
+open SubsetExpansion
+
+@[simp] theorem coefficient_continuous_apply (F : Finset V → C(B, ℝ)) (S : Finset V) (b : B) :
+    coefficient F S b = coefficient (fun A ↦ F A b) S := by
+  exact (congrFun (coefficient_map
+    ((ContinuousMap.evalCLM (R := ℝ) b).toLinearMap.toAddMonoidHom) F) S).symm
+
+
+theorem norm_coefficient_le_of_majorizes (w : UnionWeight V)
+    (F : Finset V → C(B, ℝ)) (H : Finset V → ℝ)
+    (hH : ∀ S, 0 ≤ coefficient H S)
+    (h : ∀ b, Majorizes w (fun S ↦ F S b) H) (S : Finset V) :
+    w S * ‖coefficient F S‖ ≤ coefficient H S := by
+  have hw : 0 < w S := lt_of_lt_of_le zero_lt_one (w.one_le S)
+  rw [mul_comm, ← le_div_iff₀ hw]
+  apply (ContinuousMap.norm_le _ (div_nonneg (hH S) hw.le)).mpr
+  intro b
+  rw [Real.norm_eq_abs, le_div_iff₀ hw, mul_comm, coefficient_continuous_apply]
+  exact h b S
+
+/-- The coefficient bound controls sums of uniform norms, not just the
+pointwise sum at one boundary configuration. -/
+theorem sum_weighted_norm_log_coefficients_le (w : UnionWeight V)
+    (a : V → C(B, ℝ)) {ρ c : V → ℝ} (hρ : ∀ p, 0 ≤ ρ p)
+    (hD : DobrushinCondition G (fun p ↦ ((-ρ p : ℝ) : ℂ)) c)
+    (ha : ∀ p b, w {p} * |a p b| ≤ ρ p) (Λ : Finset V)
+    (F : Finset V → C(B, ℝ))
+    (hF : ∀ A b, F A b = activatedLogPartition G (fun p ↦ a p b) Λ A) (p : V) :
+    ∑ S ∈ univ.filter (fun S : Finset V ↦ p ∈ S),
+      w S * ‖coefficient F S‖ ≤ c p := by
+  have hmajor b : Majorizes w (fun A ↦ F A b) (negativeActivatedLogPartition G ρ Λ) := by
+    simp_rw [hF]
+    exact activatedLogPartition_majorizes G w hρ hD (fun p ↦ ha p b) Λ
+  have hnonneg S : 0 ≤ coefficient (negativeActivatedLogPartition G ρ Λ) S := by
+    have hh := activatedLogPartition_majorizes G w hρ hD
+      (a := fun _ ↦ 0) (fun p ↦ by simpa using hρ p) Λ
+    exact hh.nonneg S
+  apply (sum_le_sum (fun S _ ↦ norm_coefficient_le_of_majorizes w F _ hnonneg hmajor S)).trans
+  rw [sum_rooted_coefficient]
+  have he : Λ ∩ univ.erase p = Λ.erase p := by ext x; simp [and_comm]
+  simp only [negativeActivatedLogPartition, activatedLogPartition, Pi.neg_apply,
+    inter_univ, he, neg_sub_neg]
+  exact log_partitionFunction_erase_le hD Λ p
+
+end ContinuousActivities
 
 end Mettapedia.Combinatorics.PolymerGas
