@@ -571,9 +571,9 @@ Four Colour endpoint or original catalogue rank certificate.
 
 The matching query is now derived from the two actual exceptional occurrences,
 as described below. A starting singleton contract colouring is also supplied
-directly in the graph-backed minimality regime. The remaining exterior
-embedding hypotheses must still be established there; the two minimality
-definitions are not identified implicitly. Zero-charge classification and
+directly in the graph-backed minimality regime. The local consumer below now
+also establishes exterior embedding and closure in that same domain, without
+identifying the two minimality definitions. Zero-charge classification and
 occurrence supply remain separate.
 
 Replay with `lake build kernelExceptionalConstruction` after preparing the
@@ -606,7 +606,7 @@ corners and degrees. Under reference minimality of this exact dual hypermap,
 chain to exclude the overlap. The graph-backed minimality hypothesis has not
 been shown to imply that reference hypothesis. The direct contract-colouring
 route below supplies its starting witness without such an implication;
-exterior embedding and closure still need their own geometric bridge.
+the local exterior consumer below now completes that geometric bridge.
 
 Replay with `lake build kernelExceptionalQuery`. Its nine-root audit retains
 the actual corner, degree and reconstruction dependencies, permits only the
@@ -633,12 +633,10 @@ initial contract colouring for every selected dart of that exact map, using
 graph-backed vertex minimality throughout. `not_colorable` proves the reverse
 consumer: a proper colouring there would reconstruct an original Tait colouring.
 
-This closes the starting-witness obligation. Applying the finite D1774 repair
-still requires justified exterior embedding and closure, including treatment
-of boundary identifications. The reference consumer asks for Birkhoff ring
-and pentagonal conditions; these must be supplied from the actual geometry,
-or replaced by sufficient local hypotheses in a direct consumer. Classification
-from final charge, geometric supply and global coverage remain open.
+This closes the starting-witness obligation. The local exterior consumer below
+now applies the finite D1774 repair using sufficient local hypotheses, including
+treatment of boundary identifications. Classification from final charge,
+geometric supply and global coverage remain open.
 
 Replay with `lake build kernelMinimalSingletonContract`. The twelve-root audit
 checks 24,706 dependency declarations and permits only standard axioms. It
@@ -648,3 +646,46 @@ The new modules add no enumeration or colouring certificate. Coverage remains
 633 entries and the complete assembly retains 629 original configuration
 certificates. See
 [minimal-singleton-contract-measurements.json](minimal-singleton-contract-measurements.json).
+
+## Actual exceptional closing law through local embedding
+
+`ExceptionalLocalRepair.aligned_not_in_minimal` now excludes two aligned actual
+X occurrences in a graph-backed vertex-minimal Tait counterexample. It consumes
+their full source geometry and the checked D1774 repair, supplying both the
+embedding and the initial contract colouring rather than assuming either.
+
+The reusable geometric contract is `FaithfulKernelEmbedding.FaithfulKernel`:
+core darts are injected and an ambient edge reversal between their images is
+already a source edge reversal. Together with a preembedding, plainness and
+cubicity, these two local facts imply injectivity on the complete off-perimeter
+disk. Distinct boundary faces need not have distinct ambient images.
+`InjectiveEmbeddedRepair.colorable` then composes the actual contract colouring,
+exterior Kempe closure and patch reconstruction. These two arguments adapt
+Gonthier and Werner's embedding proof as ported by Chris Emery, with its MIT
+attribution retained. They factor out the reference consumer's stronger global
+Birkhoff-ring and pentagonal hypotheses.
+
+`ExceptionalDartReading` certifies this local contract from the induced core
+and complete cyclic stars. It checks the finite source dart positions and star
+cycles, but adds no colouring-rank table. `ExceptionalPreembedding` transports
+the same reading through the exact Y/H numbering. `LocalPreembedding.of_radius2`
+constructs its ring-link paths from the source kernel's radius-two property.
+Every observation and every reconstruction stage uses this one map.
+
+The final consumer combines this disk injection with
+`ActualDualContract.singleton_colorable`, which comes from the existing strict
+smaller planar cap and vertex minimality. `ExceptionalLocalRepair.overlap_supply`
+fills the second-centre and joint closing fields of `EightOverlapSupply`.
+Its zero-charge classification remains an explicit hypothesis. The low-degree
+and degree-seven supply laws, residual cases, charge transport and global
+coverage are still open.
+
+After preparing the existing source and finite repair dependencies, run
+`lake build kernelInjectiveEmbeddedRepair`, then `lake build kernelExceptionalExterior`. The
+29-root audit excludes complete Four Colour endpoints, original catalogue rank
+certificates, the reference minimal-contract theorem and the global
+`embed_full`/`embed_inj` chain. It permits only standard axioms. The D1774 finite
+repair is retained in the final local consumer and absent from the generic and
+geometric roots. Coverage remains 633 entries / 629 original configuration
+certificate dependencies. See
+[exceptional-exterior-measurements.json](exceptional-exterior-measurements.json).

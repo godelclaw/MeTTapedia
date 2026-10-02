@@ -1,0 +1,132 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "status": "kernel checked",
+  "scope": "The two aligned actual exceptional X occurrences are excluded in the graph-backed vertex-minimal domain through one explicit preembedding, locally faithful core, injected disk, singleton contract colouring and compatible D1774 repair. The second-centre and joint-closing coverage fields are supplied; zero-charge classification remains a hypothesis.",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.InjectiveEmbeddedRepair",
+      "source_sha256": "8be80fca445646827fbfb2f0544ddf4a186d90e0469d64477f4e40938780aa38",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.105,
+      "olean_bytes": 112592,
+      "olean_sha256": "8bdaaac45ede683af305cbe3e7c4d13416fba31ef66c5dcfdeaea436527d1068"
+    },
+    {
+      "module": "MettapediaFourColor.FaithfulKernelEmbedding",
+      "source_sha256": "4973c7fc4501dc3950ae8e7e0a79c48286e74fbc522cd8e1c212c6bef81ace0d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.031,
+      "olean_bytes": 115048,
+      "olean_sha256": "d16ecd0a187681c0808614eb4392f55a3c87fd945710febae28109f122a0c0a7"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalDartReading",
+      "source_sha256": "ba1fa7e66a8ad5a8ce2fe3c8008869ba88391ba628827ff154d6d5d3ecbd9c3d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 22.787,
+      "olean_bytes": 280144,
+      "olean_sha256": "2a9a797ee2d2a98bb01cb946e209f23fadb9f8fb7ef38981cecd601b75b9e9da"
+    },
+    {
+      "module": "MettapediaFourColor.LocalPreembedding",
+      "source_sha256": "8f4fbce85a88ca6d0d704e475694b2102aca1d82bf24e96387efd57dd7e5bad4",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.11,
+      "olean_bytes": 164624,
+      "olean_sha256": "5cf8d9bb8d236acf1163a42c8006170e5f6506dbe6ee770cb0015608ae16bce5"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalPreembedding",
+      "source_sha256": "e6cabd5f7eee6383235dfd9ed40ba831bad4f3153915190b8b624f93eab5af7b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.861,
+      "olean_bytes": 75376,
+      "olean_sha256": "40899bd6684685fe0597a00d75905ed3ae67423b91ae5feab552464a47b4f232"
+    },
+    {
+      "module": "MettapediaFourColor.ActualDualLocalGeometry",
+      "source_sha256": "b16010aab4b757e12babb6ef5db02419e0910859f2d3ad398db524e740024b29",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.648,
+      "olean_bytes": 78600,
+      "olean_sha256": "722b614a0af11b20f1f628bf9a4818f97ae17701fc632d50bcbc30e1f1741d51"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalLocalRepair",
+      "source_sha256": "f5b23c53ac8ea2bf4363f142343cb1119f6928404583ceb77aefd17ab5e8b810",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.644,
+      "olean_bytes": 118976,
+      "olean_sha256": "412fb0f70832d4407e92e01fc1741bff0bad0ecdcdb0270f2da21c0af1d843a5"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalExteriorAudit",
+      "source_sha256": "16f85993138ace16731fb93f09020243ed25e6ed740b4548f5cbc5b6c2bd50f4",
+      "exit_code": 0,
+      "frontend_wall_seconds": 17.771,
+      "olean_bytes": 2600,
+      "olean_sha256": "6fb8b1bcb3234d62d2959014707d1bef9ffac544d354d8b54e222dc55d4c973f"
+    }
+  ],
+  "audit": {
+    "roots": 29,
+    "dependency_declarations": 30405,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_endpoints": false,
+    "original_configuration_rank_certificates": false,
+    "reference_minimal_contract_coloring": false,
+    "global_embed_full_and_embed_inj_chain": false,
+    "exceptional_finite_repair": "Retained in final local consumer; absent from generic and geometric roots."
+  },
+  "boundary_identifications": "Distinct boundary faces may have the same ambient image; only off-perimeter dart injection is required and proved.",
+  "new_finite_colouring_certificate": false,
+  "new_finite_geometry_checks": [
+    "Every source dart edge and ordered endpoint pair",
+    "Core star positions with their next cyclic step",
+    "The exact cyclic star periods for all eight core vertices"
+  ],
+  "reference_minimality_assumed": false,
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "entries_removed_here": 0,
+    "certificate_dependencies_replaced_here": 0
+  },
+  "reconstruction_dependencies": [
+    "FourColor.ExceptionalPreembedding.preembedding",
+    "FourColor.ExceptionalDartReading.actual_faithful",
+    "FourColor.FaithfulKernelEmbedding.disk_injective",
+    "FourColor.ActualDualContract.singleton_colorable",
+    "FourColor.ExceptionalConstructionRepair.singleton_reducible",
+    "FourColor.InjectiveEmbeddedRepair.colorable",
+    "FourColor.ActualDualContract.not_colorable"
+  ],
+  "scaffold_consumer": "FourColor.ExceptionalLocalRepair.overlap_supply",
+  "remaining": [
+    "Published final-charge semantics and source transport",
+    "Degree-eight classification producing actual outcomes or exact X occurrences",
+    "Low-degree and degree-seven supply and residual alternatives",
+    "Integrated geometric coverage, termination and reconstruction for the full class"
+  ],
+  "regressions": {
+    "status": "passed",
+    "commands": [
+      "lake build kernelInjectiveEmbeddedRepair",
+      "lake build kernelExceptionalExterior kernelFlatCoverage kernelComplete",
+      "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "main_jobs": 11195
+  }
+}

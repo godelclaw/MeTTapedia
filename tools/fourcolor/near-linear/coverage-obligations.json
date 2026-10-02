@@ -1,5 +1,5 @@
 {
-  "status": "Actual exceptional overlap realizes the compiled D1774 query. Graph-backed vertex minimality now supplies a genuine singleton contract colouring on the exact same dual map, using a smaller planar cap and preserved conserved field. Finite repair and source construction are checked; exterior embedding/closure, zero-charge classification and coverage remain open.",
+  "status": "The actual exceptional closing branch is kernel checked in the graph-backed vertex-minimal domain: one explicit preembedding, locally faithful core, injected disk, genuine singleton contract colouring and compatible D1774 repair exclude the aligned X pair. Zero-charge classification, other degree/residual cases and coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -247,6 +247,46 @@
     {
       "declaration": "FourColor.ActualDualContract.not_colorable",
       "meaning": "A proper colouring of that exact dual map reconstructs a Tait colouring forbidden by the original vertex-minimal hypothesis."
+    },
+    {
+      "declaration": "FourColor.FaithfulKernelEmbedding.off_ring_injective",
+      "meaning": "Local kernel dart injectivity and edge reflection imply injection over the complete off-perimeter disk; distinct boundary faces may coincide."
+    },
+    {
+      "declaration": "FourColor.InjectiveEmbeddedRepair.colorable",
+      "meaning": "An actual injected disk, contract colouring and compatible repair reconstruct an ambient colouring under planarity, plainness and cubicity, without global Birkhoff or pentagonal hypotheses."
+    },
+    {
+      "declaration": "FourColor.ExceptionalDartReading.actual_faithful",
+      "meaning": "The actual induced core and completed cyclic stars establish both local faithfulness fields, allowing coincident ring labels."
+    },
+    {
+      "declaration": "FourColor.LocalPreembedding.of_radius2",
+      "meaning": "Face and arity preservation with complete edge preservation build a preembedding on a face-closed radius-two kernel."
+    },
+    {
+      "declaration": "FourColor.ExceptionalPreembedding.preembedding",
+      "meaning": "The same nineteen-vertex endpoint reading transports through exact Y/H numbering to a preembedding of the reference source."
+    },
+    {
+      "declaration": "FourColor.ExceptionalPreembedding.faithful",
+      "meaning": "Source relabelling retains the very same kernel identity and edge-reflection witness."
+    },
+    {
+      "declaration": "FourColor.ExceptionalLocalRepair.disk_injective",
+      "meaning": "The full actual D1774 disk is injected; no independent boundary-injectivity assumption is supplied."
+    },
+    {
+      "declaration": "FourColor.ExceptionalLocalRepair.colorable",
+      "meaning": "Actual contract colouring from vertex minimality composes with the embedded D1774 finite repair to reconstruct a whole-map colouring."
+    },
+    {
+      "declaration": "FourColor.ExceptionalLocalRepair.aligned_not_in_minimal",
+      "meaning": "Two actual exceptional X occurrences aligned at the specified second centre cannot occur in a graph-backed vertex-minimal Tait counterexample."
+    },
+    {
+      "declaration": "FourColor.ExceptionalLocalRepair.overlap_supply",
+      "meaning": "The second-centre and joint closing fields are supplied on the actual minimal dual. Classification from zero charge remains an explicit argument."
     }
   ],
   "open": [
@@ -283,14 +323,8 @@
       "obligation": "The exact source occurrence is now defined over actual graph darts. Derive such occurrences from the published zero-charge classification, with explicit handling of collisions and obstructing cycles."
     },
     {
-      "id": "exception_joint_close",
-      "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
-      "source": "Figure 13 and Lemma 8.4",
-      "obligation": "Actual completion, finite D-repair, compiled-query fit and initial singleton contract colouring are proved in the graph-backed vertex-minimal domain. Supply the remaining exterior embedding/closure hypotheses (the reference consumer uses Birkhoff rings and pentagonality), or prove a direct local consumer with sufficient justified geometry. Preserve boundary identifications and consume repair/reconstruction without silently changing minimality regimes."
-    },
-    {
       "id": "residuals",
-      "obligation": "Define and handle every retained residual outcome, including obstructing cycles and other reduction families. The existing overlap theorem handles only its own joint pentagon readings."
+      "obligation": "Define and handle every retained residual outcome, including obstructing cycles and other reduction families. Current actual consumers exclude joint pentagon readings and aligned exceptional X pairs; other residual cases remain."
     },
     {
       "id": "global_coverage",
@@ -298,13 +332,12 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Actual exterior embedding and closure for the exceptional singleton contract",
-    "test": "Use exact source/dual relabelling and the new singleton contract witness. Enumerate the hypotheses of embdd_inj, embed_contract and embed_closure; compare them with the already proved triangle, four-cycle and five-cut results. Test whether the D1774 off-ring dart map is directly injective even when ring vertices collide, and which Birkhoff/pentagonal assumptions are genuinely needed by the local consumer.",
-    "acceptance": "An exceptional-overlap exclusion theorem from the graph-backed vertex-minimal source, with actual contract witness and finite repair, or a checked geometric component that removes an explicit remaining consumer premise. No complete Four Colour endpoint or implicit change of minimality domain.",
+    "target": "Source-faithful zero-charge classification for the degree-eight branch",
+    "test": "Pin the published charge rules and adjacent 8-8 neighbourhood classification used by Lemma 8.3. Reproduce the smallest source cases and preserve cyclic gaps, full degrees and shared vertices; identify the exact conditions yielding a supported reduction or the existing exceptional X occurrence. Use the now-closed exceptional-pair branch as the consumer.",
+    "acceptance": "A checked charge/representation bridge or a certified subclass producing the exact classify output, with residual cases stated explicitly. No supplied X occurrence disguised as a classification theorem and no complete Four Colour endpoint.",
     "primary_lemmas": [
-      "3.1",
-      "3.2",
-      "9.2"
+      "8.3",
+      "8.4"
     ]
   },
   "counts": {
@@ -315,8 +348,8 @@
   },
   "limits": [
     "No inhabitant of all local supply fields is claimed.",
-    "The source pattern, induced core, full cyclic core stars, boundary reconstruction, finite D-repair, exact query fit and initial singleton contract colouring are proved. The starting witness uses the existing strict two-vertex cap; the complete D1774 consumer still needs exterior embedding/closure and supply from flatness.",
+    "The full exceptional closing consumer is proved from actual aligned X occurrences in graph-backed vertex minimality. Its initial witness uses the existing strict two-vertex cap, and its reconstruction retains the D1774 finite repair. Supply from zero charge remains open.",
     "No scheduling, executable global recolouring or near-linear runtime is proved.",
-    "The existing joint diamond profile certificate remains in the reduction consumer."
+    "The pentagonal-overlap branch retains its shared diamond profile; the new exceptional branch retains the separate D1774 finite repair certificate."
   ]
 }

@@ -36,12 +36,14 @@ retain the attempted construction, and turn failed identification into a
 geometric witness that an existing reduction can exclude. It is not yet a
 general theorem for arbitrary triangle construction programs.
 
-The current reconstruction chain is:
+The exceptional closing branch is now complete in the graph-backed
+vertex-minimal counterexample domain:
 
 ```text
 aligned exceptional neighbourhoods
     -> actual induced core and joint boundary        proved
-    -> exact D1774 construction query                proved
+    -> cyclic stars and faithful core darts          proved
+    -> injective embedded disk                      proved
 
 smaller adjacent-pair cap
     -> colouring from vertex minimality             proved
@@ -49,19 +51,32 @@ smaller adjacent-pair cap
     -> contract colouring on the same actual dual    proved
 
 contract colouring + D1774 finite repair
-    -> compatible exterior and embedded reconstruction
-                     geometric bridge still open
+    -> compatible exterior and reconstructed colouring
+    -> contradiction to minimality                  proved
+
+zero-charge neighbourhood -> reduction or exceptional X
+                     classification still open
 ```
 
-The [new contract bridge](../../../lean/fourcolor-classical/MettapediaFourColor/ActualDualContract.lean)
-preserves every dart permutation and the actual colouring witness. It supplies
-the starting colouring directly from our vertex minimality, without silently
-equating it to the reference's different minimality hypothesis. The next task
-is to discharge the exterior embedding conditions, then classification from
-zero charge and occurrence supply. D1774 still uses its checked finite repair;
-these steps remove no additional certificate or coverage entry. The
+The [local reconstruction](../../../lean/fourcolor-classical/MettapediaFourColor/ExceptionalLocalRepair.lean)
+uses one explicit embedding throughout. Different boundary labels may coincide;
+the proof retains those identifications while establishing that the off-perimeter
+darts are distinct. A general
+[kernel-to-disk theorem](../../../lean/fourcolor-classical/MettapediaFourColor/FaithfulKernelEmbedding.lean)
+replaces the reference consumer's global Birkhoff-ring and pentagonal hypotheses
+with local injectivity and edge reflection of the same kernel map. Complete
+cyclic stars and the already proved induced core supply those facts for D1774.
+
+`ExceptionalLocalRepair.overlap_supply` now supplies the specified second
+centre and the joint closing law. Classification from zero charge remains an
+explicit input; the lower-degree branches, residual alternatives and global
+coverage are also open. The actual starting witness uses vertex minimality,
+without equating it to reference dart-minimality. D1774 retains its checked
+finite repair certificate, and this step removes no additional certificate or
+coverage entry. The
 [coverage ledger](../../../tools/fourcolor/near-linear/coverage-obligations.json)
-records the remaining obligations.
+and [receipt](../../../tools/fourcolor/near-linear/exceptional-exterior-measurements.json)
+record the exact scope.
 
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first

@@ -2839,6 +2839,37 @@
       "coverage_entries_removed": 0,
       "integrated_into_complete_assembly": false,
       "next_obligation": "Supply exterior embedding/closure conditions for the actual D1774 consumer, then classification and geometric supply."
+    },
+    {
+      "name": "actual exceptional overlap closes through local kernel faithfulness",
+      "status": "kernel checked",
+      "measurements": "../near-linear/exceptional-exterior-measurements.json",
+      "scope": "Exact joint preembedding, local kernel identity and edge reflection imply disk injection while allowing boundary-face coincidences. The actual singleton contract colouring and D1774 finite repair reconstruct a whole-map colouring, excluding the aligned exceptional pair in graph-backed vertex minimality. The scaffold now consumes this closing law.",
+      "uniform_theorems": [
+        "FourColor.FaithfulKernelEmbedding.disk_injective",
+        "FourColor.InjectiveEmbeddedRepair.colorable",
+        "FourColor.LocalPreembedding.of_radius2"
+      ],
+      "actual_consumers": [
+        "FourColor.ExceptionalDartReading.actual_faithful",
+        "FourColor.ExceptionalPreembedding.preembedding",
+        "FourColor.ExceptionalLocalRepair.aligned_not_in_minimal",
+        "FourColor.ExceptionalLocalRepair.overlap_supply"
+      ],
+      "finite_repair_retained": "../near-linear/exceptional-repair-measurements.json",
+      "reference_global_embedding_dependencies_replaced_in_local_consumer": [
+        "FourColor.Hypermap.embed_full",
+        "FourColor.Hypermap.pre_embed_inj",
+        "FourColor.Hypermap.embed_inj",
+        "FourColor.Hypermap.embdd_inj"
+      ],
+      "new_finite_colouring_certificate": false,
+      "new_finite_geometry_checks": "Source dart endpoints, complete star positions and cyclic star periods.",
+      "credited_compression": false,
+      "original_configuration_certificates_replaced": 0,
+      "coverage_entries_removed": 0,
+      "integrated_into_complete_assembly": false,
+      "next_obligation": "Classify zero-charge neighbourhoods into actual reduction or exceptional-pattern occurrences; finish residual and other degree supply laws."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, conditional-assembly and complete-assembly counts describe the same 231 shared checks and must not be added; the arity-specific counts are 87 plus 82 plus 62. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",

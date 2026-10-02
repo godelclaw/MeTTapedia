@@ -16,6 +16,35 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Reconstruct from local kernel faithfulness and actual disk injection. -/
+target kernelInjectiveEmbeddedRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/injective-embedded-repair-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "InjectiveEmbeddedRepair", "FaithfulKernelEmbedding", "ExceptionalDartReading"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Close the exceptional geometric branch through the actual local embedding. -/
+target kernelExceptionalExterior pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-exterior-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "LocalPreembedding", "ExceptionalPreembedding", "ActualDualLocalGeometry",
+        "ExceptionalLocalRepair", "ExceptionalExteriorAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Integrate actual singleton-zero fields into source contract colourings. -/
 target kernelMinimalSingletonContract pkg : Unit := do
   let env ← getAugmentedEnv

@@ -1136,9 +1136,10 @@ colouring, exterior closure and reconstruction.
 `ExceptionalQueryReading.actual_fitted` now derives that query fit from the
 retained exceptional overlap. `ActualDualContract.singleton_colorable` supplies
 the initial one-edge contract colouring directly from graph-backed vertex
-minimality, on the exact dual map used by the query. The remaining exterior
-embedding conditions must still be established in that same domain. No
-additional coverage entry or certificate dependency is removed.
+minimality, on the exact dual map used by the query. `ExceptionalLocalRepair`
+now completes exterior embedding and reconstruction in that same domain using
+local kernel faithfulness. Zero-charge classification and geometric supply
+remain open. No additional coverage entry or certificate dependency is removed.
 
 Replay with `lake build kernelExceptionalConstruction` using the prepared
 repair artifacts. Its seventeen-root audit allows only standard axioms and
@@ -1163,10 +1164,10 @@ map. Consequently every selected dual dart has a genuine initial singleton
 contract colouring in the graph-backed minimality regime.
 
 This is a starting witness for local repair, not a proper colouring of the
-whole original map. Exterior closure and the embedding hypotheses for applying
-the checked D1774 repair remain open, as do classification and geometric
-coverage. The reference and graph-backed minimality definitions are not
-identified by this result.
+whole original map. The local embedding consumer below now supplies exterior
+closure and applies the checked D1774 repair. Classification and geometric
+coverage remain open. The reference and graph-backed minimality definitions
+are not identified by this result.
 
 Replay with `lake build kernelMinimalSingletonContract`. The twelve-root audit
 requires the smaller-map, singleton-zero, face-potential and relabelling
@@ -1174,3 +1175,28 @@ dependencies. It excludes complete Four Colour endpoints, original catalogue
 certificates, the D1774 finite repair and reference minimal contract-colouring
 theorems. Only standard axioms occur. See the
 [receipt](../../tools/fourcolor/near-linear/minimal-singleton-contract-measurements.json).
+
+## Local embedding closes the actual exceptional overlap
+
+`ExceptionalLocalRepair.aligned_not_in_minimal` excludes the two aligned
+exceptional X occurrences in the actual vertex-minimal counterexample domain.
+The proof derives one explicit preembedding from the completed cyclic stars,
+proves its disk injective using local kernel identity and edge reflection,
+supplies the singleton contract colouring, and reconstructs an ordinary
+colouring with the checked D1774 repair. Boundary-face identifications remain
+permitted and are retained throughout.
+
+`FaithfulKernelEmbedding` and `InjectiveEmbeddedRepair` isolate the sufficient
+local geometric contract from the reference embedding proof. The final
+`overlap_supply` theorem fills the second-centre and closing fields of the
+coverage scaffold while retaining zero-charge classification as an input.
+The D1774 finite repair remains; no coverage entry or original configuration
+certificate is removed.
+
+Run `lake build kernelInjectiveEmbeddedRepair`, then
+`lake build kernelExceptionalExterior`.
+The 29-root audit checks only standard axioms and excludes complete Four Colour
+endpoints, original rank certificates and the global embedding/minimality
+shortcuts. See the
+[account](../../tools/fourcolor/near-linear/README.md#actual-exceptional-closing-law-through-local-embedding)
+and [measurements](../../tools/fourcolor/near-linear/exceptional-exterior-measurements.json).
