@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [source-direction reserve test](labs/README.md#source-direction-reserves-transport-and-schur-elimination)
+adds the source's physical time derivative and also tests its transport
+adjustment. A positive square locally pays the capacity-return example
+below. Another actual released descendant makes every constant positive
+quadratic form in either pair grow while core stretching remains costly.
+Even minimizing the integrated square over its mixing coefficient at
+each time leaves a growing Schur complement. The calculation identifies
+the additional work that changing observation weights would have to pay.
+These are analytic physical-interval results with exact matrix checks;
+the full-datum history allowance and arbitrary-data regularity remain open.
+
 The [source-capacity return](labs/README.md#an-actual-source-capacity-return-with-positive-core-cost)
 gives an actual unforced periodic history on which the generated remainder's
 source capacity returns to its earlier value while its enstrophy increases

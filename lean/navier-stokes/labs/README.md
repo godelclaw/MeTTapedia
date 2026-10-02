@@ -24470,3 +24470,227 @@ motion and exact return brackets. Local existence, the interval theorem
 and its parent realization remain analytic. No Lean declarations or
 axioms change. The next physical estimate must track resources beyond
 this returning scalar while controlling the same open core budget (284).
+
+## Source-direction reserves, transport and Schur elimination
+
+`source_time_direction_reserve.py` tests whether retaining the source's
+physical time direction repairs the remaining reserve. It gives a local
+payment for the return in (293), but another actual released descendant
+defeats every constant positive quadratic form in the source and either
+of two directions. Exact Schur elimination preserves the instantaneous
+minimum without making that minimum a decreasing history reserve.
+The new physical intervals use the preceding analytic release theorem;
+they are not newly Lean-certified.
+
+### Full remainder derivatives and two retained directions
+
+Keep the ORIGINAL h=exp(-nu t A)u0, b=u-h and full N=-P div(u tensor u).
+The remainder's tangent and acceleration are exactly
+
+```text
+h_t=-nu Ah,
+d=b_t=-nu Ab+N(b+h),
+e=b_tt=-nu Ad+DN(b+h)[d-nu Ah].                    (295)
+```
+
+The checker independently expands the last line into the derivative of
+N(b), the two mixed terms and N(h). A nonzero parent fixture verifies
+that dropping those terms changes the acceleration. In particular b is
+not assigned an independent unforced equation before release.
+
+For auxiliary H_r=exp(r Delta), let v_r=H_r b, n_r=N(v_r). The first
+direction is z_r=partial_t n_r=DN(v_r)[H_r d]. Its time derivative is
+DN(v_r)[H_r e]+2B(H_r d,H_r d). The second direction is
+
+```text
+m_r=partial_t n_r+(v_r.grad)n_r,
+partial_t m_r=partial_t^2 n_r+(H_r d.grad)n_r
+                                      +(v_r.grad)partial_t n_r.
+```
+
+This is transport along the FILTERED remainder v_r, not an identification
+of v_r with the full fluid velocity. No projection is applied to m_r,
+which need not be solenoidal. Pressure remains in n_r, d and e.
+Since div v_r=0, the transport contribution to integral <n_r,m_r>
+cancels exactly. Its time derivative cancels only after retaining the
+changing velocity H_r d, which the checker verifies separately.
+
+For either choice z=n_t or z=m, form the integrated Gram matrix and its
+FULL physical derivative, including integration over space and r:
+
+```text
+G = integral [[ |n|^2, <n,z> ], [ <n,z>, |z|^2 ]],
+L = G',
+G00=C1, G01=C1'/2, L00=C1', L01=C1''/2,
+G11=integral |z|^2, L11=2 integral <z,z_t>.
+
+J_W(t)=a(t) trace(W G(t)),
+J_W'=a trace(W [L-kappa G])  when W is constant,
+a'=-kappa a.                                      (296)
+```
+
+Here W is a fixed real symmetric positive semidefinite two-by-two
+matrix. Its entries are constants over space and auxiliary heat time,
+as well as physical time, but may be chosen from the original datum.
+Thus J_W is a nonnegative sum of squares of real linear combinations
+of n and z. The proposed square integral |n+eta z|^2 is included for
+EVERY real eta, not only positive eta. No spatially varying or nonlinear
+quadratic weight is included in this test.
+
+### A growing descendant defeats all these constant weights
+
+Use the growing and depleting seeds w=N(V) from (271), evolved with
+physical viscosity mu=1/256. First compute G and L in these raw variables,
+with no original-parent cooling. The two choices of z have the same
+L00 and L01. Rounded values are:
+
+| Seed | L00 | L01 | L11, time direction | L11, transport-adjusted |
+| --- | ---: | ---: | ---: | ---: |
+| Growing | 1869.462238 | 8397.071514 | 6613430.620087 | 107522.613480 |
+| Depleting | -3907.722076 | -7263.478872 | -9428937.432829 | -28403.886378 |
+| Return turning point (285) | 0 | -22948.248146 | 1080828.973326 | -54658.166739 |
+
+The final row uses its own mu_* from (285). The checker uses exact
+rationals, not the rounded table. At the growing seed, for BOTH directions,
+
+```text
+                         G > 0,    L-(1/2)G > 0.            (297)
+```
+
+Positive definiteness follows by checking the first diagonal and the
+determinant. The determinants of L-G/2 are respectively
+8621653475.0838... and 23162996.4920..., both strictly positive.
+For a symmetric matrix K with K00>0, square completion gives
+x^T K x=K00(x0+K01 x1/K00)^2+(det K/K00)x1^2.
+This proves the claim for all real coefficients, beyond sampled mixtures.
+At the depleting seed both L are negative definite. Source phase affects
+the full matrix of rates, not just a single diagonal observation.
+
+Removing transport substantially reduces both the direction's squared
+norm and its growth, but the remaining matrix is still positive definite.
+The failure is therefore not explained entirely by advection past a
+fixed observer. Neither direction supplies a universally decreasing
+reserve for the generated source.
+
+To obtain an ACTUAL original-remainder statement at viscosity one,
+scale U(t)=mu^(-1)w(t/mu), as before. With
+D_mu=diag(mu^(-2),mu^(-3)), the two matrices become
+
+```text
+G_phys=D_mu G D_mu,  L_phys=mu^(-1) D_mu L D_mu.
+```
+
+Hence (297) gives L_phys-128G_phys>0 at the growing seed.
+Continuity preserves this on a sufficiently short smooth interval.
+Apply (262)--(268) with its original oscillatory parents, epsilon=32.
+At fixed positive post-release times, b_N, its two time derivatives
+and the required spatial derivatives converge to this physical solution.
+The original kappa_N tends to zero. For sufficiently large finite N,
+one common interval therefore has, for BOTH directions,
+
+```text
+L_N-kappa_N G_N >= 64G_N >0,
+q_core=2g_core(b_N)-(3/4)D(b_N) >0.                 (298)
+```
+
+The second inequality uses the mask-independent lower bound (291),
+which is already positive at this seed. It retains the original E0_N,
+the all-scale region S, the disjoint fixed-band region F\S and all new
+modes. The full actual field remains unforced; b_N(0)=0 and its original
+heat age is unchanged.
+
+For any nonzero W>=0, trace(W G_N)>0, so (296)--(298) imply
+J_W'>=64J_W>0 while the core cost is positive. W=0 fails to pay the
+positive cost too. The interval is common to ALL constant W>=0,
+including weights selected from the original datum, since matrix
+positivity is an open condition independent of those choices.
+This is an obstruction to the stated differential payment, not to an
+integrated allowance that permits finite positive defects.
+
+### The same correction does pay the capacity return locally
+
+At the turning point (285), fix xi=1/50 in the raw variables. For either
+direction, exact arithmetic gives
+
+```text
+L00+2xi L01+xi^2 L11
+             +mu_*^2[2g(w)-(mu_*/2)D(w)] < -400.   (299)
+```
+
+At viscosity one the corresponding coefficient is eta=mu_*/50,
+not 1/50. The square's rate scales by mu_*^(-5), whereas the physical
+cost scales by mu_*^(-3), explaining the factor mu_*^2 in (299).
+The upper estimate complementary to (291) is
+
+```text
+q_core(v) <= 2g(v)-(nu/2)D(v)
+                  +2M^2||v||2 K_M||Q_(>=Lambda)v||2^2.
+```
+
+The high input vanishes at the seed. Continuity thus preserves strict
+payment for small theta>0, on the entire shrinking return interval
+constructed in (289)--(290), using the fixed eta=mu_theta/50 for that
+history. After parent release the same estimate holds for the actual
+b_N by positive-time smoothing. Original cooling contributes the
+favorable term -kappa_N J_W. It follows that this nonnegative square
+pays every subinterval of that local capacity return from its value
+at the subinterval's beginning.
+
+This does not pay the earlier creation of that value from b_N(0)=0,
+nor establish its replenishment budget over arbitrary histories.
+It explains why a correction can repair the return example yet fail
+the different growing descendant in (298).
+
+### Exact elimination and the cost of changing the observer
+
+On a tested interval with G>0, put C=G00, x=G01 and K=G11>0.
+At each time in that interval one can minimize the INTEGRATED square
+over one scalar eta. Exact square completion gives
+
+```text
+integral |n+eta z|^2 = S+K(eta-eta_*)^2,
+eta_*=-x/K,   S=C-x^2/K>0,
+S'=L00-2x L01/K+x^2 L11/K^2
+   =(1,eta_*) L (1,eta_*)^T.                       (300)
+```
+
+S is the Schur complement of the direction block; eta_* reconstructs
+the minimizing coefficient. This is the same linear-elimination pattern
+used by `GSLT.Dynamics.LinearBoundaryReduction`, applied here analytically
+to a quadratic norm. No new Lean connection is claimed. Differentiating
+the optimum introduces no missing eta_*' term because the derivative
+with respect to eta vanishes at eta_*.
+
+At the actual growing interval, (298) gives (a S)'>=64a S>0.
+Even this freely recomputed instantaneous minimum therefore fails to
+pay q_core. At the return turning point, x=0 and S'=0 while the cost
+is positive; the fixed non-minimizing direction in (299) pays instead.
+Minimizing a reserve's current size and minimizing its payment defect
+are different operations. This does not rule out Bellman optimization
+over compatible histories, or all nonlinear functions of G.
+
+For a differentiable time-dependent W(t)>=0, the exact additional term is
+
+```text
+J_W'=a trace(W[L-kappa G])+a trace(W'G).
+```
+
+Consequently payment J_W'+a q_core<=0 on (298) would require
+
+```text
+-trace(W'G) >= 64 trace(WG)+q_core.                 (301)
+```
+
+Changing the observation can decrease its reported reserve, but that
+work must be supplied and accounted for. Jumps require their endpoint
+cost as well. Equation (301) is a necessary local cost, not an estimate
+controlling it from the original datum. Spatially varying weights bring
+further derivative terms, also outside the constant-matrix obstruction.
+The full-data core budget (284) remains open.
+
+Run `python3 -O labs/source_time_direction_reserve.py`. It checks every
+parent term in (295), transport cancellation and its derivative, both
+complete Gram matrices, exact positivity certificates, direct square
+derivatives, the local return-payment margin and Schur reconstruction.
+Python compilation and finite algebra do not certify the local PDE or
+release arguments. No Lean declarations or axioms change.
