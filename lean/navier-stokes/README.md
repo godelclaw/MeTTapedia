@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [source-capacity return](labs/README.md#an-actual-source-capacity-return-with-positive-core-cost)
+gives an actual unforced periodic history on which the generated remainder's
+source capacity returns to its earlier value while its enstrophy increases
+and its remaining stretching cost is positive. The construction retains
+the original heat reference and uses the oscillatory-parent release below.
+It rules out paying every core-cost interval from a time-independent
+function of this scalar capacity alone, even with parameters chosen from
+the original datum. The full fluid does not return to its previous state;
+its kinetic energy decreases. The interval and release arguments are
+analytic, with exact Fourier jets and return brackets, not new Lean proofs.
+Reserves retaining additional state or history and the full-datum allowance
+remain open.
+
 The [descendant geometry and all-scale absorption](labs/README.md#descendant-source-geometry-and-all-scale-separated-absorption)
 identify source deformation as the main positive renewal in the released
 adverse phase; covariance reinforces it, and the complete capacity growth

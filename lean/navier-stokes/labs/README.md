@@ -24225,3 +24225,248 @@ disjoint source reconstruction and the retained adverse core. All new
 physical statements are analytic, not Lean-certified by the finite
 checks. No Lean declarations or axioms change. Arbitrary-data regularity
 and the uniform core-history estimate (284) remain open.
+
+## An actual source-capacity return with positive core cost
+
+`capacity_return_cycle.py` supplies a test of an interval reserve for the
+remaining cost (284). On a genuine smooth unforced periodic history, the
+FULL source capacity of the generated remainder returns to an earlier
+value while its enstrophy increases and its integrated core cost is
+strictly positive. This is a return of one observation, not a periodic
+orbit of the full fluid. Its kinetic energy decreases, and the returning
+states differ. All Fourier outputs, pressure and generated mean motion
+are retained. Exact calculation supplies the initial jets; uniform local
+existence, the return interval and its realization after parent release
+are analytic arguments below, not Lean-certified results.
+
+### A strict capacity turning point under the full equation
+
+Work on normalized period-2pi T3. Write A=-Delta and N(v)=-P[(v.grad)v].
+Use the four wavevectors of (271), but a new coefficient tuple:
+
+```text
+k1=(1,0,1), k2=(1,-1,1), k3=(2,0,1), k4=(2,-1,1),
+(c1,c2,c3,c4)=(1,1,-4,3),
+V=sum_j c_j (-(k_j)_2,(k_j)_1,0) cos(k_j.x),
+w=N(V),  C1(v)=integral_0^infinity ||N(exp(r Delta)v)||2^2 dr.
+```
+
+V is horizontal and exactly divergence-free, with ||V||2^2=56.
+The full pressure projection creates a vertical component in w. Both
+w and N(w) have nonzero vertical averages; neither is removed.
+The global spatial mean is zero. Exact rational arithmetic gives
+
+```text
+E(w)=140876/1071,  Z(w)=1345/2,  D(w)=20769/2,
+g(w)=11895/68,
+P0=DC1(w)[N(w)]=432.6120639436...,
+N2=||N(w)||2^2=30466.9519509665...,
+mu_*=P0/N2=0.01419938773789... >0.                   (285)
+```
+
+The displayed decimals only abbreviate exact rationals printed by the
+checker. Here E=||v||2^2, Z=<v,Av>, D=||Av||2^2 and g=<Av,N(v)>.
+For viscosity mu, the actual tangent and acceleration are
+
+```text
+d=-mu Aw+N(w),    e=-mu Ad+DN(w)[d],
+C1'=P0-mu N2,
+C1''=2 integral_0^infinity (||n_r'||2^2+<n_r,n_r''>) dr,
+n_r=N(H_r w),    n_r'=DN(H_r w)[H_r d],
+n_r''=DN(H_r w)[H_r e]+2B(H_r d,H_r d),
+B(v,z)=-P[(v.grad)z],    H_r=exp(r Delta).         (286)
+```
+
+Here P0 denotes a scalar production rate; P in N and B is the Leray
+projector. At mu=mu_* the checker establishes
+
+```text
+C1'=0,  C1''=-kappa < -45000,
+Z'=z_*=2g-2mu_*D >50,
+q_*=2g-mu_*D >200,
+E'=-2mu_*Z <0.                                    (287)
+```
+
+Numerically kappa=45896.49629143... and z_*=54.94585724....
+An independent quartic-polarization calculation checks C1'': if
+S_j=C1(w+jd)+C1(w-jd)-2C1(w), then
+D^2 C1(w)[d,d]=(16S_1-S_2)/12. Adding DC1(w)[e] gives exactly
+the value in (286). Thus the second derivative includes the acceleration
+of the full fluid, not a frozen-parent or straight-line surrogate.
+
+### From the turning point to an actual return interval
+
+Let v_theta(t) be the ACTUAL local NS solution starting from w with
+mu_theta=(1-theta)mu_*, for small theta>=0. Its initial capacity slope is
+alpha_theta=theta P0. Uniform smooth local existence holds for viscosities
+in [mu_*/2,mu_*]. Smooth dependence follows, for example, by subtracting
+the two NS equations: the viscosity difference contributes
+(mu-mu_*)Delta v as a source in the usual high-Sobolev difference estimate.
+Local bounds and Gronwall give convergence as mu tends to mu_*.
+The smooth trigonometric datum supplies all the regularity required.
+
+There is no unknown global bound in this step. One may first choose a
+common local H^12 existence interval and then shrink it. On mean-zero
+periodic fields, the heat semigroup decays exponentially. Product bounds
+therefore make C1 and the derivatives in (286) continuous in sufficiently
+high Sobolev norms, with integrable domination of the auxiliary heat
+integrals. The equation controls the two physical time derivatives.
+Consequently there exist T>0 and theta_0>0, fixed from w and mu_*, such
+that, for 0<=theta<=theta_0 and 0<=t<=T,
+
+```text
+-3kappa/2 <= d^2 C1(v_theta(t))/dt^2 <= -kappa/2,
+dZ(v_theta(t))/dt >= z_*/2.                         (288)
+```
+
+For theta>0 put alpha=alpha_theta. Integrating (288) gives
+
+```text
+alpha t-3kappa t^2/4 <= C1(v_theta(t))-C1(w)
+                         <= alpha t-kappa t^2/4.
+sigma=alpha/(8kappa), t1=alpha/kappa, t2=5alpha/kappa.     (289)
+```
+
+Choose theta still smaller so t2<=T. The exact brackets are
+
+```text
+C1(v_theta(sigma))-C1(w) >= 29alpha^2/(256kappa),
+C1(v_theta(t1))-C1(v_theta(sigma)) >= 33alpha^2/(256kappa),
+C1(v_theta(t2))-C1(v_theta(sigma)) <= -349alpha^2/(256kappa).
+```
+
+Continuity and strict concavity give a unique later return
+t_ret in (t1,t2), with capacity equal at sigma and t_ret and strictly
+larger between them. Also C1'(sigma)>0. The duration satisfies
+
+```text
+7alpha/(8kappa) < t_ret-sigma < 39alpha/(8kappa).            (290)
+```
+
+Enstrophy rises throughout this interval by (288). Full kinetic energy
+strictly falls because Z stays positive and E'=-2mu_theta Z.
+The positive starting time sigma is useful for the physical parent
+realization below. The exact fixtures theta=1/100 and 1/1000 verify
+the corresponding initial signs, but are not claimed to supply an
+explicit value of theta_0 or a certified numerical return time.
+
+### The return has positive cost after both previous payments
+
+Keep the disjoint regions S and F\S from (281)--(283), delta=1/8,
+M=5 and Lambda=7. For any field v to which the absorption bound applies,
+the absolute convolution argument for any subset of F gives
+
+```text
+|T_(F\S)(v)| <= M^2 ||v||2 K_M ||Q_(>=Lambda)v||2^2,
+2g_core(v)-(3mu/4)D(v)
+ >= 2g(v)-mu D(v)
+             -2M^2 ||v||2 K_M ||Q_(>=Lambda)v||2^2.  (291)
+```
+
+This uses |T_S|<=mu D/8, allocating its entire possible adverse sign.
+It does not assume continuity of the selected mask as the viscosity or
+original energy changes. All frequencies of w have magnitude less than7,
+so the last term initially vanishes. At theta=0 the right side is q_*>200
+from (287). By continuity, shrink the common interval and theta_0 so this
+right side is at least q_*/2 for every v_theta under consideration.
+Thus the core cost, not merely the unpartitioned stretching, is positive.
+The integral over the return is larger than
+7q_*P0 theta/(16kappa)>0. A positive weight at least one preserves this
+lower bound. The same interval has enstrophy increase larger than
+7z_*P0 theta/(16kappa).
+
+The checker also verifies that both paid regions are empty at each
+initial seed with energy envelope B0=2||w||2. The interval conclusion
+uses (291), allowing all new modes and selected interactions to appear;
+it does not assume these regions remain empty.
+
+### A return of the actual remainder from one original datum
+
+The independent solution above is a step in the construction, not a
+substitute for the remainder that must start at zero in (284).
+First convert to viscosity one by
+
+```text
+U_theta(t)=mu_theta^(-1) v_theta(t/mu_theta).
+```
+
+Direct substitution gives U_t=-AU+N(U). Capacity is multiplied by
+mu_theta^(-4), enstrophy by mu_theta^(-2), and the unweighted integrated
+core cost by mu_theta^(-2) when the corresponding absorption region is
+scaled with its energy envelope. The strict return and cost signs persist.
+The cost lower bound (291) is also valid for every larger admissible
+energy envelope, so the construction does not require equality of masks.
+
+Apply the analytic oscillatory-parent realization (262)--(268) with the
+present V, viscosity one and epsilon=2/sqrt(mu_theta). Its limiting
+descendant is epsilon^2 N(V)/4=mu_theta^(-1)w. The original data are
+
+```text
+u_(0,N)=epsilon N cos(Nx_3)V(x),
+h_N(t)=exp(t Delta)u_(0,N),   b_N(t)=u_N(t)-h_N(t),
+b_N(0)=0,   t_N=4log(N)/N^2.                        (292)
+```
+
+Fix a sufficiently small positive theta FIRST. Then choose N sufficiently
+large. The actual solutions exist through the required interval, and
+u_N(t_N+t) converges to U_theta(t), in every fixed spatial C^j norm on
+compact time intervals away from zero. This is precisely the positive-time
+stability and smoothing step after (268). The original h_N and its
+derivatives vanish there, so b_N has the same convergence, including the
+time derivatives supplied by its actual equation. No heat age is reset.
+
+At the three positive times mu_theta*sigma, mu_theta*t1 and
+mu_theta*t2, the strict capacity gaps in (289) persist for large N.
+The intermediate value theorem therefore gives an EXACT return of
+C1(b_N), starting at t_N+mu_theta*sigma and ending between
+t_N+mu_theta*t1 and t_N+mu_theta*t2. Its enstrophy is strictly increasing.
+Bound (291) stays strictly positive throughout this interval by the same
+strong convergence. Use S with the ORIGINAL E0_N and use the original
+weight a(t)>=1 from (254). The energy envelope is valid on every smooth
+prefix; no convergence of S itself is required. It follows that
+
+```text
+C1(b_N(t_plus))=C1(b_N(t_minus)),
+integral_(t_minus)^(t_plus)
+  a(t)[2g_core(b_N(t))-(3/4)D(b_N(t))] dt >0.       (293)
+```
+
+Every datum in this construction is smooth, solenoidal and finite energy.
+Its energy grows with N across the family. There is no claimed explicit
+small N, whole-space localization, infinite sequence of returns or blowup.
+The finite reserve of the full original datum may pay this finite cost.
+
+### The precise reserve architecture this excludes
+
+For a fixed original datum, viscosity and horizon, let Psi be any finite,
+single-valued, time-independent function of C1 alone. Suppose it were to
+pay every compatible interval's remaining core cost by
+
+```text
+Psi(C1(b(t_plus));u0,nu,H)
+ + integral_(t_minus)^(t_plus) a[2g_core-(3nu/4)D_b]
+ <= Psi(C1(b(t_minus));u0,nu,H).                    (294)
+```
+
+The actual history (293) contradicts (294): the endpoint values of Psi
+are identical and the intervening cost is positive. Neither monotonicity
+nor differentiability of Psi is needed. Allowing its parameters to depend
+on the full original datum cannot change this equality for the SAME
+history. This excludes a scalar-only remaining reserve, beyond the
+constant-multiplier family already tested in (273).
+
+It does not exclude explicit time dependence, a changing weight on Psi,
+additional state or memory, a separate original allowance, or using slack
+from another reserve. It does not refute (284). A compatible-history
+summary that keeps only this capacity loses information needed for
+interval payment. The observation's return cannot be pasted into an
+indefinite physical cycle: the enstrophy, full state and resources spent
+are different at the two endpoints.
+
+Run `python3 -O labs/capacity_return_cycle.py`. The checker verifies the
+full Fourier jets, an independent second-derivative calculation,
+viscosity-one rescaling, the empty initial paid regions, retained mean
+motion and exact return brackets. Local existence, the interval theorem
+and its parent realization remain analytic. No Lean declarations or
+axioms change. The next physical estimate must track resources beyond
+this returning scalar while controlling the same open core budget (284).
