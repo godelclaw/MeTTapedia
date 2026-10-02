@@ -11,8 +11,15 @@ The [general wheel law](MettapediaFourColor/WheelNeighborhood.lean) works at
 arbitrary degree. `lake build kernelWheelNeighborhood` replays the construction,
 its exact-budget consumer and the sixteen-root dependency audit. See the
 [receipt](../../tools/fourcolor/near-linear/wheel-occurrence-measurements.json).
-Colouring repair and strict reconstruction for D3009 remain open; counts
-remain 633 coverage entries /629 original certificates.
+[D3009Preembedding](MettapediaFourColor/D3009Preembedding.lean) now turns this
+occurrence into an injective disk. The
+[reconstruction consumer](MettapediaFourColor/D3009RepairGeometry.lean) chooses
+a valid interior contract and reconstructs the actual ambient colouring,
+conditional on a full thirteen-port repair law. Vertex minimality supplies
+its initial colouring through the established strict two-vertex reduction.
+That full repair law remains open; counts stay at 633 coverage entries /629
+original certificates. Replay `lake build kernelWheelEmbedding`; see the
+[geometry receipt](../../tools/fourcolor/near-linear/wheel-embedding-measurements.json).
 
 The [exact cyclic charge law](MettapediaFourColor/ExactCyclicCharge.lean)
 now accounts for every transfer at a receiver of degree `d >= 7` with only
@@ -1665,5 +1672,7 @@ enumeration through twelve active ports once for all its consumers.
 Replay `lake build kernelWheelSeedRepair`. The
 [receipt](../../tools/fourcolor/near-linear/wheel-seed-repair-measurements.json)
 separates this checked trace from the complete finite discovery computation.
-The remaining thirteen-port traces, actual exterior closure and strict
-reduction are open. Coverage and original certificate counts remain 633 /629.
+The remaining thirteen-port traces still require certification. The disk
+geometry, actual exterior closure and strict-reduction consumer are now
+proved conditional on that complete repair, in `D3009RepairGeometry`.
+Coverage and original certificate counts remain 633 /629.

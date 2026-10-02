@@ -1,0 +1,88 @@
+{
+  "status": "Kernel-certified D3009 disk geometry and actual reconstruction conditional on its full repair contract.",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+  "source_vertices": 21,
+  "boundary_ports": 13,
+  "source_darts": 94,
+  "contract": {
+    "source_zero_based_endpoints": [
+      13,
+      14
+    ],
+    "numbered_dart": 69,
+    "validity": "proved"
+  },
+  "proved": [
+    "Every complete occurrence determines a preembedding with injective darts and disk.",
+    "The centre-to-five-valent-neighbour edge is a valid singleton contract.",
+    "A full proper-trace repair law reconstructs the actual ambient colouring on the same disk.",
+    "Graph-backed vertex minimality supplies the starting contract via the established strict two-vertex reduction.",
+    "Conditional on full repair, the single-five/six-only degree-seven profile is excluded.",
+    "Conditional on full repair, the exact flat residual supplies a distinct high-degree neighbour within radius three."
+  ],
+  "explicit_remaining_hypothesis": "Repairs (GraphTrace D3009Wheel.input.graph D3009Wheel.input.boundary) 13",
+  "full_D3009_repair_certified": false,
+  "audit": {
+    "roots": 10,
+    "dependency_declarations": 35303,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_dependency": false,
+    "wheel_finite_repair_dependency": false,
+    "prior_residual_supply_certificate": "Cfg006 and shared diamond profile only in residual_high_neighbor"
+  },
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "member_checks_saved": 336,
+    "coverage_entries_removed": 0,
+    "original_certificates_removed": 0,
+    "new_uniform_repair_schemes": 0
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.D3009Preembedding",
+        "source_sha256": "339cc5af3f13a5434ff5cfa6ae8c3fa9359425ee9f5a81e05e8e6a878240b05b",
+        "exit_code": 0,
+        "frontend_wall_seconds": 26.588,
+        "olean_bytes": 239520,
+        "olean_sha256": "61549ba31c3f980e63bfbb93c9ffda7e717e398baf7807ed61ebab56b060f467"
+      },
+      {
+        "module": "MettapediaFourColor.D3009RepairGeometry",
+        "source_sha256": "f1010edb76e295c39686d00f0e3d329fe1682577695000a51b50176580a2bd9a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.21,
+        "olean_bytes": 150560,
+        "olean_sha256": "aa9d81ade4a70e7a83e9054a4207b35653cafe34f93f7e31ae660002dab8293b"
+      },
+      {
+        "module": "MettapediaFourColor.WheelEmbeddingAudit",
+        "source_sha256": "35a6236d0b6ff0f453b3e3262040a48e57f1b46bdb09f592b51182404500cd4a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.682,
+        "olean_bytes": 2600,
+        "olean_sha256": "7d221fa669f3b996a8a1eeabfa5e2d72332f48c79f34f526d848081c02e7dcd6"
+      }
+    ]
+  },
+  "checks": [
+    "lake build kernelWheelEmbedding kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ]
+}

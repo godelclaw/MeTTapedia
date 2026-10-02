@@ -3868,5 +3868,16 @@
     "member_checks_removed": 0,
     "new_uniform_repair_schemes": 0,
     "open": "All remaining traces, actual exterior closure, strict reduction and broader coverage."
+  },
+  "wheel_embedding": {
+    "record": "../near-linear/wheel-embedding-measurements.json",
+    "status": "Kernel-certified D3009 disk geometry and actual reconstruction conditional on its full repair contract.",
+    "remaining_local_input": "Repairs (GraphTrace D3009Wheel.input.graph D3009Wheel.input.boundary) 13",
+    "actual_exterior_and_initial_contract": "Supplied by existing disk reconstruction and strict vertex minimality, conditional on complete wheel repair.",
+    "coverage_entries_removed": 0,
+    "original_certificates_removed": 0,
+    "member_checks_removed": 0,
+    "new_uniform_repair_schemes": 0,
+    "open": "Full D3009 boundary repair certification, then unconditional residual integration and broader coverage."
   }
 }

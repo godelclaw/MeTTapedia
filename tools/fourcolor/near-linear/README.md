@@ -1361,5 +1361,26 @@ python3 tools/fourcolor/near-linear/generate_wheel_seed_repair.py \
 The kernel checks every consumed fact independently of that cache. Replay
 `lake build kernelWheelSeedRepair`; the
 [receipt](wheel-seed-repair-measurements.json) records proof scope and costs.
-The complete D3009 repair contract, actual exterior closure and strict
-reconstruction remain open. No catalogue entry is removed by this seed.
+The complete D3009 repair contract remains open. The following geometric
+consumer supplies actual exterior closure and strict reconstruction conditional
+on that full contract. No catalogue entry is removed by this seed.
+
+
+## The wheel occurrence as a repair disk
+
+`D3009Preembedding` maps all 94 source darts by their actual ordered endpoints.
+The retained complete core stars preserve the face operation and arities;
+whole-source vertex injection preserves dart identity. The same reading gives
+an injective disk for the exact Y/H construction.
+
+`D3009RepairGeometry` proves that the edge from the degree-seven centre to its
+degree-five neighbour is a valid singleton contract. Given a full thirteen-port
+repair law, the actual minimal-map consumer obtains a contract colouring from
+the established strict two-vertex reduction and reconstructs the ambient
+colouring. This would exclude the recognised degree profile and resolve the
+wheel branch of `ActualWheelOccurrence.residual_occurrence`.
+
+The full repair law remains an explicit hypothesis. The nine-state seed
+certificate alone does not discharge it. Replay `lake build kernelWheelEmbedding`;
+the [receipt](wheel-embedding-measurements.json) records ten audited roots and
+standard axioms only. No coverage entry or original certificate is removed.

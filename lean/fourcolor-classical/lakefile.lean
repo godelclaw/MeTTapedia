@@ -16,6 +16,19 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the actual wheel occurrence as the same injective repair disk. -/
+target kernelWheelEmbedding pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-embedding-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "D3009Preembedding", "D3009RepairGeometry", "WheelEmbeddingAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay a compatible repair of the wheel's nonextending seed trace. -/
 target kernelWheelSeedRepair pkg : Unit := do
   let env ← getAugmentedEnv

@@ -23,7 +23,7 @@ and the [compression ledger][ledger]. This guide connects them to the original
 plan. The [long companion][companion] preserves the detailed development and
 earlier attempts; its older sections are historical snapshots.
 
-The current geometric test concerns two overlapping exceptional neighbourhoods
+A completed geometric test concerns two overlapping exceptional neighbourhoods
 in the newer catalogue. Their shared rotation forces the D1774 core. Its
 [collision alternative](../../../lean/fourcolor-classical/MettapediaFourColor/ExceptionalCoreCollision.lean)
 produces an actual nonfacial triangle whenever core injectivity fails. In the
@@ -1849,10 +1849,34 @@ certificate and makes no claim of a uniform repair theorem for all widths.
 
 The [measurement record](../../../tools/fourcolor/near-linear/wheel-seed-repair-measurements.json)
 records replay costs and dependency checks. All remaining thirteen-port
-traces still need certified coverage. Realizing Kempe closure for the actual
-punctured map and obtaining strict reduction remain separate obligations.
+traces still need certified coverage. The actual disk and strict-reduction
+consumer are now established conditional on that full repair law, as follows.
 The complete assembly still has 633 coverage entries and 629 original
 configuration certificate dependencies.
+
+## The recognised wheel and its actual exterior
+
+The [wheel embedding](../../../lean/fourcolor-classical/MettapediaFourColor/D3009Preembedding.lean)
+now connects the complete occurrence to the same construction used by colouring
+semantics. Its 94 source darts retain their endpoints and cyclic positions;
+the off-perimeter disk is injective. The
+[geometric repair consumer](../../../lean/fourcolor-classical/MettapediaFourColor/D3009RepairGeometry.lean)
+then has this dependency structure:
+
+```text
+actual degree profile -> complete wheel -> same injective disk     proved
+chosen interior edge -> valid contract                            proved
+strictly smaller map -> initial contract colouring                proved
+all proper thirteen-port traces -> compatible wheel repair        required
+joint repair + actual exterior -> whole-map colouring              proved conditionally
+```
+
+The all-input repair law is the only remaining local input for this wheel
+consumer. It may be supplied by a checked finite certificate or a uniform
+argument; the current seed proof supplies only one initial trace. Conditional
+on the full law, the exact flat residual must instead expose another
+high-degree neighbour within radius three. This is one geometric branch,
+not universal coverage. Catalogue counts remain 633 /629.
 
 ## Verification and attribution
 
