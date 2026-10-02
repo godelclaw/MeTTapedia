@@ -3449,5 +3449,25 @@
       "The remaining five/six/six profile and full neighbourhood classification remain open.",
       "The eight-instance census is a program check on one finite graph, not a coverage proof."
     ]
+  },
+  "near_linear_chain_transfer": {
+    "record": "../near-linear/chain-measurements.json",
+    "status": "kernel-checked",
+    "source_entries": [
+      "D0004",
+      "D0006"
+    ],
+    "retained_base": "classical configuration 7",
+    "new_rank_tables": 0,
+    "existing_uniform_scheme": "BoundaryTriangleRepair.repair",
+    "actual_consumer": "NearLinearChainExample.repair_actual",
+    "actual_consumer_hypotheses": [
+      "closed exterior trace relation",
+      "proper initial exterior trace"
+    ],
+    "whole_profile_test": "Program-checked flat eight/seven pair with no obstructing short cycle and neither diamond core in the radius-two union; a D0004 core is present.",
+    "catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "next": "General geometric recognition and a strict reduction/initial-colouring bridge for the chain."
   }
 }

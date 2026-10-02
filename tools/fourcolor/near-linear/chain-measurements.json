@@ -1,0 +1,123 @@
+{
+  "status": "Kernel-certified local repair transfer from classical configuration 7 to the three-triangle chain D0004, with an actual finite occurrence and conditional ambient reconstruction.",
+  "source_manifest": "chain-sources.json",
+  "source_audit": "chain-source-audit.json",
+  "upstream_byte_verification": "Both configuration files and LICENSE matched the pinned raw upstream revision byte for byte.",
+  "repair": {
+    "base": "FourColor.Bulk.Cfg006 (classical configuration 7, identical to D0006)",
+    "larger_boundary_ports": 9,
+    "smaller_boundary_ports": 8,
+    "geometry": [
+      "complete reference construction map",
+      "source graph adjacency",
+      "all cyclic stars",
+      "prescribed core degrees",
+      "ordered boundary"
+    ],
+    "operation": "One boundary-triangle subdivision of D0004 produces D0006. Repair descends through the existing joint split law.",
+    "transfer": "FourColor.NearLinearChainRepair.transfer46",
+    "conclusion": "FourColor.NearLinearChainRepair.repair0004: every proper eight-port zero-sum trace has a compatible target colouring in any supplied Kempe-closed exterior relation containing it.",
+    "new_independent_rank_tables": 0,
+    "new_uniform_repair_schemes": 0,
+    "shared_scheme_reused": "FourColor.BoundaryTriangleRepair.repair"
+  },
+  "actual_example": {
+    "record": "chain-profile-example.json",
+    "program_audit": "chain-profile-audit.json",
+    "lean_consumer": "FourColor.NearLinearChainExample.repair_actual",
+    "proved": [
+      "injectivity of all thirteen source vertices",
+      "complete oriented five-vertex core stars",
+      "coverage of every ambient edge incident to the interior",
+      "gluing compatible genuine colourings while fixing the full exterior"
+    ],
+    "remaining_hypotheses": [
+      "Kempe closure of the actual exterior trace relation",
+      "a proper initial exterior trace"
+    ],
+    "program_only": [
+      "flat charge at the adjacent eight/seven centres",
+      "absence of obstructing cycles of lengths three through five",
+      "absence of both existing diamond cores in the radius-two union",
+      "global spherical triangulation check"
+    ]
+  },
+  "audit": {
+    "roots": 27,
+    "dependency_declarations": 14366,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_original_certificate": "FourColor.Bulk.Cfg006",
+    "other_original_certificates": false,
+    "complete_four_colour_endpoints": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.NearLinearChainData",
+        "source_sha256": "bb3b2231e0508b2ac6b3e965ef8f98d804f50ee1f83c026e7f56fce79a7cb64e",
+        "exit_code": 0,
+        "frontend_wall_seconds": 20.671,
+        "olean_bytes": 493624,
+        "olean_sha256": "4374485b48dc1c005bd13a10aee619023758b38f429785bf7f0606b97e3bec2d"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearChainRepair",
+        "source_sha256": "f467454a8b7f7cbcb700b46c9bbd015af6ff84fe0ac4ea51a040a78341a3fd73",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.082,
+        "olean_bytes": 108000,
+        "olean_sha256": "8dbcad9d030577fca82ce5174d174da6441082aa322b96d987edb13f8df22ca5"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearChainExample",
+        "source_sha256": "cff20893265d0114da56f11abd91136c8e142b73c43bc2a22115d501909bbe27",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.521,
+        "olean_bytes": 326176,
+        "olean_sha256": "e4ed408c9dabee680934abe2510922c1089d4fd3a95f79ee83ea06c8e875ee9d"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearChainAudit",
+        "source_sha256": "b2dda3212425a1979999ada1a7b6a9322d4e0a95a590e35414af8ae5b42e64f0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 7.505,
+        "olean_bytes": 2600,
+        "olean_sha256": "2707b4b1d04357916b0b0f21c77c65b2b81b11e802a5f04fc49b25461e4a3adf"
+      }
+    ]
+  },
+  "commands": [
+    "python3 tools/fourcolor/near-linear/audit_chain_sources.py",
+    "python3 tools/fourcolor/near-linear/audit_chain_profile.py",
+    "lake build kernelNearLinearChain",
+    "lake build kernelFlatCoverage kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "compression": {
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "additional_coverage_entries_removed": 0,
+    "additional_classical_certificate_dependencies_removed": 0,
+    "distinct_near_linear_entries_using_this_base": 2,
+    "scope": "A new formalized transfer application, not a newly discovered D-reducible configuration or a smaller unavoidable set."
+  },
+  "remaining": [
+    "General D0004 occurrence recognition from neighbourhood hypotheses",
+    "Ambient geometric reduction with initial witness supplied by minimality",
+    "Uniform classification/coverage of remaining neighbourhood profiles"
+  ]
+}

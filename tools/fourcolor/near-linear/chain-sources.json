@@ -1,0 +1,21 @@
+{
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "paper": "https://arxiv.org/abs/2603.24880",
+  "license": "MIT; see LICENSE",
+  "files": {
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+    },
+    "D0004.conf": {
+      "upstream_path": "D/D0004.conf",
+      "sha256": "8be840f6bb62324656880e63c18c797209720e80ece856d2b770c3ce71d6ed0d"
+    },
+    "D0006.conf": {
+      "upstream_path": "D/D0006.conf",
+      "sha256": "c3e49d7afeb2e67d00712cdea06bdf7ae15e29453f097340ad136a388a8daa7b"
+    }
+  },
+  "scope": "Three-triangle chain D0004 and its boundary subdivision D0006; the latter is exactly classical configuration 7. No catalogue coverage or new algorithmic runtime claim."
+}

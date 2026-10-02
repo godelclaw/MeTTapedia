@@ -1,5 +1,36 @@
 # Near-linear Four Colour catalogue bridges
 
+The [three-triangle chain](../../../lean/fourcolor-classical/MettapediaFourColor/NearLinearChainRepair.lean)
+now has a shared repair: `D0006` is exactly classical configuration 7, and
+`D0004` inherits its repair through one boundary-triangle subdivision. The
+source bridge checks all adjacencies, cyclic stars, degrees and ordered ports.
+No separate repair table is introduced for `D0004`.
+
+This target comes from a [whole-neighbourhood example](chain-profile-example.json),
+not solely a catalogue shape match. A finite program check finds adjacent
+flat centres of degrees eight and seven, with all other neighbours of the
+eight-centre of degree at most six. It checks all 461 simple cycles of lengths
+three through five and finds no obstructing cycle. Neither of the mixed and
+pentagonal diamond cores occurs in the union of the two radius-two balls.
+The five-vertex `D0004` interior does occur. Lean verifies its thirteen distinct
+source vertices and complete oriented core stars, and consumes its repair in
+actual graph reconstruction with explicit exterior-closure and initial-colouring
+hypotheses. The flatness and short-cycle checks remain program evidence.
+
+Replay source fidelity and the example from the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_chain_sources.py
+python3 tools/fourcolor/near-linear/audit_chain_profile.py
+```
+
+The package gate is `lake build kernelNearLinearChain`. The
+[receipt](chain-measurements.json) separates local repair, concrete occurrence,
+conditional reconstruction and remaining geometric obligations. The
+[source pins](chain-sources.json) retain upstream attribution and the MIT licence.
+This step removes no entry or certificate dependency from the complete assembly.
+
+
 The [rerooted reduction](../../../lean/fourcolor-classical/README.md#changing-the-reduction-edge-removes-a-residual-branch)
 now excludes the degree-five second sender in the actual minimal-map
 domain. A different edge of the same rule reading exposes the existing

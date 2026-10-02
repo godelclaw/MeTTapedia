@@ -1,0 +1,38 @@
+{
+  "evidence": "Independent source-fidelity check. Lean checks geometry and repair separately.",
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "entries": [
+    {
+      "configuration": "D0004",
+      "vertices": 13,
+      "ring": 8,
+      "core_vertices": 5,
+      "edges": 28,
+      "prescribed_core_degrees": [
+        5,
+        6,
+        5,
+        6,
+        5
+      ]
+    },
+    {
+      "configuration": "D0006",
+      "vertices": 14,
+      "ring": 9,
+      "core_vertices": 5,
+      "edges": 30,
+      "prescribed_core_degrees": [
+        6,
+        5,
+        6,
+        6,
+        5
+      ]
+    }
+  ],
+  "lean_source_sha256": "bb3b2231e0508b2ac6b3e965ef8f98d804f50ee1f83c026e7f56fce79a7cb64e",
+  "verifier_sha256": "dccc9601eb1484826e162832e7c49aaae92dcdde5f6b4e4fdcf64cd0def5ae43",
+  "shared_parser_sha256": "6d18cbf85974f18bf70599aa43e4c7a78a9c63be953961bdad1e0823c34c2349"
+}

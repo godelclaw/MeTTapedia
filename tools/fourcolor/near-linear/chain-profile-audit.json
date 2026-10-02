@@ -1,0 +1,261 @@
+{
+  "evidence": "Independent program replay; not a Lean proof of coverage.",
+  "vertices": 42,
+  "faces": 80,
+  "profiles": [
+    {
+      "centre": 40,
+      "charge": 0,
+      "transfers": [
+        {
+          "neighbour": 2,
+          "incoming": [
+            [
+              "rule002_1.rule",
+              1
+            ],
+            [
+              "rule003_2.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 4,
+          "incoming": [
+            [
+              "rule001.rule",
+              2
+            ],
+            [
+              "rule002_1.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 11,
+          "incoming": [
+            [
+              "rule001.rule",
+              2
+            ],
+            [
+              "rule002_2.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 13,
+          "incoming": [
+            [
+              "rule002_1.rule",
+              1
+            ],
+            [
+              "rule003_1.rule",
+              1
+            ],
+            [
+              "rule004_1.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 18,
+          "incoming": [
+            [
+              "rule008_1.rule",
+              1
+            ],
+            [
+              "rule008_2.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 27,
+          "incoming": [],
+          "outgoing": []
+        },
+        {
+          "neighbour": 28,
+          "incoming": [
+            [
+              "rule001.rule",
+              2
+            ],
+            [
+              "rule003_1.rule",
+              1
+            ],
+            [
+              "rule004_2.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 39,
+          "incoming": [
+            [
+              "rule002_2.rule",
+              1
+            ],
+            [
+              "rule003_2.rule",
+              1
+            ],
+            [
+              "rule004_1.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        }
+      ]
+    },
+    {
+      "centre": 18,
+      "charge": 0,
+      "transfers": [
+        {
+          "neighbour": 6,
+          "incoming": [
+            [
+              "rule001.rule",
+              2
+            ],
+            [
+              "rule002_2.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 7,
+          "incoming": [
+            [
+              "rule001.rule",
+              2
+            ],
+            [
+              "rule003_1.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 11,
+          "incoming": [
+            [
+              "rule001.rule",
+              2
+            ],
+            [
+              "rule002_1.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 27,
+          "incoming": [
+            [
+              "rule002_2.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 31,
+          "incoming": [
+            [
+              "rule002_1.rule",
+              1
+            ],
+            [
+              "rule003_2.rule",
+              1
+            ]
+          ],
+          "outgoing": []
+        },
+        {
+          "neighbour": 37,
+          "incoming": [
+            [
+              "rule008_1.rule",
+              1
+            ],
+            [
+              "rule008_2.rule",
+              1
+            ],
+            [
+              "rule009_2.rule",
+              1
+            ]
+          ],
+          "outgoing": [
+            [
+              "rule008_1.rule",
+              1
+            ],
+            [
+              "rule008_2.rule",
+              1
+            ],
+            [
+              "rule010_1.rule",
+              1
+            ]
+          ]
+        },
+        {
+          "neighbour": 40,
+          "incoming": [],
+          "outgoing": [
+            [
+              "rule008_1.rule",
+              1
+            ],
+            [
+              "rule008_2.rule",
+              1
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "independent_rule_tests": 2520,
+  "short_cycles_checked": 461,
+  "obstructing_short_cycles": 0,
+  "radius_two_sizes": [
+    23,
+    22
+  ],
+  "radius_two_union_size": 29,
+  "known_diamond_cores_in_union": 0,
+  "source_core_vertices": 5,
+  "source_ring": 8,
+  "all_source_vertices_distinct": true,
+  "complete_oriented_core_stars": true,
+  "example_sha256": "412a5ef59c4a882de18b93336cf0ccafad9d2507035bd8128319c571a969cbe8",
+  "lean_example_sha256": "cff20893265d0114da56f11abd91136c8e142b73c43bc2a22115d501909bbe27",
+  "verifier_sha256": "0e6bf01ceb602d275252ec90479937a96d624a01f3fee0957c95d5cda3ca66a2"
+}

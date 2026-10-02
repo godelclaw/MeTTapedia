@@ -1358,3 +1358,35 @@ Four Colour theorem, original configuration certificates and D1774 repair.
 This closes one local degree branch; it does not supply an aligned pair
 at every flat centre. Catalogue counts remain 633/629. See the
 [residual measurements](../../tools/fourcolor/near-linear/rule-pair-residual-measurements.json).
+
+## A chain repair selected by a surviving whole neighbourhood
+
+`NearLinearChainData` identifies `D0006` with classical configuration 7, including
+the whole reference construction map, every cyclic star and its ordered ring.
+It proves that one actual boundary-triangle subdivision turns `D0004` into
+`D0006`. `NearLinearChainRepair` then reuses `BoundaryTriangleRepair.repair`:
+the retained configuration-7 certificate covers all proper nine-port traces,
+and the same joint split law supplies every proper eight-port input for D0004.
+No new rank or terminal-colouring table is needed for the smaller source piece.
+
+The concrete `NearLinearChainExample` retains all thirteen source vertices in
+a 42-vertex graph. All five internal cyclic stars are complete. The checked
+occurrence covers every ambient edge touching the interior, so
+`PatchBoundaryGluing.reconstruct` applies. `repair_actual` consumes the new
+repair and reconstructs an actual graph colouring, with exterior Kempe closure
+and a proper initial exterior trace left explicit. It is not an unconditional
+colouring or strict-reduction theorem for arbitrary occurrences.
+
+The motivating finite experiment has adjacent flat centres of degrees eight
+and seven, no obstructing short cycle, and no mixed or pentagonal diamond core
+in their radius-two union. Those whole-map properties remain independent
+program checks. The Lean proofs certify source geometry, the repair transfer
+and its concrete reconstruction consumer.
+
+Replay with `lake build kernelNearLinearChain`; the
+[measurement record](../../tools/fourcolor/near-linear/chain-measurements.json)
+includes source pins, independent replay and the dependency audit. Only classical
+configuration 7 supplies a rank certificate. The complete assembly retains
+633 coverage entries and 629 original certificate dependencies. The next
+obligations are general recognition, the actual exterior/strict-reduction bridge,
+and coverage of remaining neighbourhood profiles.

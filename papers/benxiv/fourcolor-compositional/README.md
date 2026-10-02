@@ -107,6 +107,21 @@ a degree-five first sender must have shared degree five and remaining-corner
 degree six. Finite examples witness both reduction branches. A bound or
 classification for the surviving charge profiles is the next obligation.
 
+A subsequent whole-neighbourhood test identifies a case where diamond-only
+recognition needs another argument. A concrete flat eight/seven pair has no
+mixed or pentagonal diamond core in the union of its radius-two balls, despite
+passing the short-cycle obstruction check. It does contain the three-triangle chain `D0004`.
+The [checked repair](../../../lean/fourcolor-classical/MettapediaFourColor/NearLinearChainRepair.lean)
+transfers from classical configuration 7 through one exact boundary
+subdivision; `D0004` needs no separate repair table. Its complete core occurrence
+and conditional colouring reconstruction on the example are also checked.
+This is the intended feedback between coverage and composition: an actual
+remaining profile selects the next piece, and a shared operation supplies its
+repair. General occurrence recognition, exterior reconstruction from a smaller
+map, and coverage remain to be proved. The
+[receipt](../../../tools/fourcolor/near-linear/chain-measurements.json)
+distinguishes these obligations from the finite example.
+
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first
 [kernel-checked bridge](../../../lean/fourcolor-classical/MettapediaFourColor/NearLinearDiamondRepair.lean)

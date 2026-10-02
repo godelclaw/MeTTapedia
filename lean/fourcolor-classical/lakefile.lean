@@ -16,6 +16,19 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Transport a three-triangle chain repair from classical configuration 7. -/
+target kernelNearLinearChain pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/near-linear-chain-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "NearLinearChainData", "NearLinearChainRepair", "NearLinearChainExample", "NearLinearChainAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Eliminate the degree-five second sender using a different reduction edge. -/
 target kernelRulePairResidual pkg : Unit := do
   let env ← getAugmentedEnv
