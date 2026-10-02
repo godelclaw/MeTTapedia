@@ -20506,3 +20506,260 @@ Run `python3 -O labs/reference_stretching_control.py`. Exact checks
 retain canonical pressure, the complete nonlinear difference, actual
 relative energy, nonzero first-variation tests, projected adjoint
 duality with viscosity, and the coupled weight/payment algebra.
+
+## The evolving planar mean has a finite amplification price
+
+`generated_mean_enstrophy.py` checks a different decomposition which
+retains the ACTUAL evolving mean, including its internal forcing. The
+estimate below controls every cubic stretching term containing that
+mean by an integrable coefficient times total enstrophy and a fixed
+viscous share. The coefficient's entire time integral is paid by the
+original kinetic energy. No smallness or independently known reference
+is required. This is a periodic estimate; no whole-space vertical
+averaging operation is asserted.
+
+This is not a finite absolute stretching allowance independent of
+enstrophy. It removes the mean-containing terms through an energy
+compensation in the enstrophy inequality. Fluctuation self-stretching
+remains an explicit open input.
+
+### The mean and fluctuations obey the equation together
+
+On the normalized period-2pi T3, take any smooth unforced NS prefix
+with viscosity nu>0. Define M=average_z u, w=u-M, and
+`B(v,q)=-P[(v.grad)q]`. Projection and averaging commute. Their exact
+equations are
+
+```text
+M_t=nu Delta M+B(M,M)+F,
+F=average_z B(w,w),
+w_t=nu Delta w+B(M,w)+B(w,M)+(I-average_z)B(w,w).       (166)
+```
+
+The mean is generally forced by the fluctuations; it has not become
+an independently prescribed solution. The two internal kinetic works
+cancel, ` <M,F>+<w,B(M,w)+B(w,M)>=0`. Every non-mean output remains
+in the second equation. All fields remain solenoidal and pressure is
+retained through P.
+
+For `g(v)=integral curl(v)^T grad(v) curl(v)`, put
+
+```text
+E=||u||2^2, Z=||grad u||2^2, P2=||grad^2 u||2^2,
+Z_M=||grad M||2^2, Z_w=||grad w||2^2,
+Z=Z_M+Z_w, P2=P2_M+P2_w,
+g(u)=g(M)+Q_M(w)+g(w).                               (167)
+```
+
+Here Q_M is the sum of the three cubic terms containing one M and
+two w factors. The terms with two M factors and one w vanish by
+vertical averaging. In particular, neither g(M) nor the mean forcing
+is discarded. The mixed enstrophy identity is
+
+```text
+Q_M(w)=<-Delta w,B(M,w)+B(w,M)>+<-Delta M,F>.
+```
+
+This displays both sides of the internally generated enstrophy transfer.
+
+### The useful cancellation before estimating
+
+Let A=sqrt(Z_M). Fix a domain constant C_L>=1 for the horizontal
+mean-zero Hilbert-valued Ladyzhenskaya inequality
+
+```text
+||V||L4(T2;H)^2 <= C_L ||V||L2(T2;H) ||grad_h V||L2(T2;H).
+                                                               (168)
+```
+
+This follows from the usual two-dimensional inhomogeneous inequality
+applied to the scalar norm, the weak derivative bound for that norm,
+and horizontal Poincare for V. Regularizing the norm treats its zeros.
+The Hilbert space may be `L2(T_z;R^(3x3))`. Its constant is independent
+of the vertical Fourier support. All spatial norms use normalized
+measure, and Poincare's first nonzero horizontal frequency is one.
+
+For grad M, horizontal mean zero is automatic. For grad w it need not
+hold: a vertically varying horizontal shear can have no horizontal
+variation. Retain it explicitly by writing
+
+```text
+r=average_(x,y) w, s=w-r,
+Z_w=Z_r+Z_s, Z_s<=||grad_h grad s||2^2<=P2_w.
+```
+
+Since every term in Q_M(r) is linear in grad M and quadratic in the
+horizontally constant grad r, horizontal integration gives Q_M(r)=0.
+This cancellation must be performed BEFORE taking absolute values.
+It removes the spurious horizon-dependent lower-order coefficient
+that an inhomogeneous estimate would otherwise introduce.
+
+Let q_M be the symmetric polarization of Q_M, so
+`Q_M(w)=Q_M(s)+2q_M(s,r)`. Pointwise curl bounds and Cauchy-Schwarz in
+z give
+
+```text
+|g(M)| <= 2 C_L A sqrt(Z_M) sqrt(P2_M),
+|Q_M(s)| <= 6 C_L A sqrt(Z_s) sqrt(P2_w),
+|q_M(s,r)| <= 6 A sqrt(Z_r) sqrt(Z_s)
+             <=6 A sqrt(Z_r) sqrt(P2_w).
+```
+
+Indeed each polarized mixed term is bounded by twice the product of
+the three gradient norms; there are three such terms. Applying (168)
+to grad s controls the quadratic term, while the horizontal Poincare
+inequality controls the shear cross-term. Orthogonality and
+Cauchy-Schwarz now give, with C=12 C_L+24,
+
+```text
+2|g(u)-g(w)| <= C A sqrt(Z) sqrt(P2)
+             <=(nu/2)P2 + [C^2/(2nu)] Z_M Z.          (169)
+```
+
+This retains arbitrary amplitudes and all vertical frequencies. The
+kinetic law pays the coefficient's entire history:
+
+```text
+E'=-2nu Z,
+integral_0^t [C^2/(2nu)] Z_M
+  <= C^2 [E(0)-E(t)]/(4nu^2) <= C^2 E(0)/(4nu^2).    (170)
+```
+
+The bound is independent of t and uses no future target regularity.
+Two-dimensional interpolation in three-dimensional comparisons is
+classical; compare the use of Ladyzhenskaya and kinetic dissipation in
+[Bardos et al., Section 3](https://arxiv.org/pdf/1201.2742).
+Their symmetric-reference stability theorem has different hypotheses;
+(166)--(170) are derived here for the instantaneous mean of the actual
+periodic flow. No novelty priority is asserted for this estimate.
+
+### A concrete energy compensation and its remaining obligation
+
+The exact enstrophy law and (169) imply
+
+```text
+Z'+(3nu/2)P2 <= 2g(w)+beta Z_M Z,
+beta=C^2/(2nu), gamma=C^2/(4nu^2).
+```
+
+Suppose a finite allowance K, fixed by the full original datum, nu
+and prescribed horizon, supplied the following remaining prefix bound:
+
+```text
+2 integral_0^t g(w) <= (nu/2) integral_0^t P2 + K.     (171)
+```
+
+THIS IS OPEN. It is a bound on the w extracted from the full actual
+solution, with its evolving mean and all their couplings. It is not
+an estimate for an autonomous unforced w equation.
+
+Set `R(t)=K-2 integral_0^t g(w)+(nu/2) integral_0^t P2`.
+Under (171), R>=0 and R(0)=K. The compensated reserve
+
+```text
+S(t)=exp(gamma E(t)) [Z(t)+R(t)]
+```
+
+satisfies
+
+```text
+S'+nu exp(gamma E)P2
+ <=-beta exp(gamma E)[(Z-Z_M)Z+ZR]<=0,
+Z(t)<=S(t)<=exp(gamma E(0))[Z(0)+K].                  (172)
+```
+
+Thus an original-data bound on this precise residual would give the
+uniform enstrophy bound required for periodic continuation. The same
+kinetic stock and residual reserve pass through every compatible seam.
+Neither is replenished when a pattern returns. A bound on all prefix
+integrals is sufficient: no favorable pointwise stretching sign is
+assumed. The exponential price and the reserve are explicit; finiteness
+of K in (171) is the missing physical estimate, not a definition by an
+unknown-future supremum.
+
+The existing formal periodic consumer is
+`FourierLerayRate.one_le_lerayRate`: a maximal tame solution has an
+unbounded order-one energy near its endpoint. Its hypotheses retain
+positive viscosity, reality, transversality, zero spatial mean and
+initial finite order-m energy with m>=7. For smooth zero-mean data,
+the bound above together with E<=E(0) controls that order-one norm
+after the fixed period/Fourier normalization conversion. This analytic
+connection is not a newly certified adapter; the physical estimate
+itself does not require zero spatial mean.
+
+For an externally forced periodic flow, (172) additionally retains
+`2 exp(gamma E)[<curl u,curl f>+gamma<u,f>(Z+R)]`.
+Zero kinetic work does not imply zero vorticity work. This formula
+does not transplant a whole-space forced construction onto the torus.
+
+### The first unpaid return is already positive in an actual history
+
+The seed r0 from the previous refeeding example has only vertical
+frequencies +/-1. Its self-stretching is initially zero. Split its
+complete quadratic source into
+
+```text
+F0=average_z B(r0,r0), Nperp=(I-average_z)B(r0,r0).
+Dg(r0)[F0] = -3283/10000,
+Dg(r0)[Nperp] = 6252773/5460000 > 0.                  (173)
+```
+
+All source outputs are retained. The mean first return is depleting
+here; the non-mean outputs have the opposite sign. These numbers concern
+the quartic return from r0's own source, not the entire derivative of
+mean-containing production in a nonzero background. For actual initial
+data `u0=U0+epsilon r0`, any smooth z-independent solenoidal U0 and
+any positive viscosity, let w(t)=u(t)-average_z u(t). Then
+
+```text
+g(w(0))=0,
+d/dt g(w(t))|_(t=0)=epsilon^4 * 6252773/5460000 > 0.
+```
+
+The viscous and U0-linearized tangents keep vertical frequencies +/-1;
+three such frequencies cannot sum to zero, so their cubic variation
+vanishes. The non-mean quadratic outputs give (173). Smooth local
+existence and time differentiability imply g(w(t))>0 for all sufficiently
+small positive t at each fixed nonzero epsilon and viscosity. This
+applies in particular to the already constructed actual refeeding
+histories under their original parameter restrictions. The sign does
+not assert enstrophy growth against viscosity, failure of (171) with a
+full-datum allowance, or any singularity.
+
+It also yields an analytic test of the stronger zero-allowance version
+of (171). Take u0=epsilon r0 and write
+`u(t)=epsilon v(epsilon t)`, with viscosity mu=nu/epsilon for v.
+Smooth local estimates for the fixed seed are uniform for 0<=mu<=1.
+Thus there is a fixed small tau0>0 for which
+`g(v-average_z v)>=c tau/2` and `P2(v)<=2P2(r0)` throughout
+0<=tau<=tau0, where c=6252773/5460000. The first bound follows from
+the uniform second-time-derivative remainder and (173).
+Consequently the residual at t=tau0/epsilon obeys
+
+```text
+2 integral_0^t g(w)-(nu/2) integral_0^t P2(u)
+ >= epsilon^2 [c tau0^2/2-mu P2(r0) tau0] > 0
+```
+
+when mu<c tau0/(2P2(r0)). For every fixed positive nu, a sufficiently
+large original amplitude gives an ACTUAL smooth unforced prefix
+violating K=0. This is a local analytic consequence of uniform smooth
+existence, not a closed Fourier truncation or a statement about later
+regularity. It leaves the finite full-datum allowance in (171) open.
+
+### Verification boundary
+
+`MettapediaNS.GeneratedMeanEnstrophy` certifies six scalar compensation
+ingredients, including the exact energy price, reserve derivative,
+conditional payment and resulting enstrophy bound. R>=0 and its physical
+source law remain hypotheses. The anisotropic Sobolev estimate, the
+actual projection equations, periodic continuation connection and the
+short-time PDE sign argument are analytic, not newly Lean-certified.
+
+Run `python3 -O labs/generated_mean_enstrophy.py`. Exact Fourier checks
+cover full pressure-corrected mean and fluctuation equations, both
+energy-transfer directions, the horizontally constant cancellation,
+complete cubic and dissipation splittings, viscosity, and the positive
+first unpaid return. Exact scalar checks retain every compensation
+term. The fixtures are independent algebra checks, not simulated
+continuum trajectories or a proof of (171).

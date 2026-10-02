@@ -2271,6 +2271,22 @@ nine scalar reserve and composition ingredients. The PDE identification,
 negative-Sobolev estimate and absolutely-continuous norm calculus remain
 analytic.
 
+The [evolving-mean estimate](labs/README.md#the-evolving-planar-mean-has-a-finite-amplification-price)
+instead retains M=average_z u from the actual periodic flow, including its
+Reynolds source. Two-dimensional interpolation and a horizontal-mean
+cancellation control all mean-containing stretching by a viscous share
+plus a coefficient times total enstrophy. The coefficient's entire time
+integral is bounded by a domain constant times initial kinetic energy
+divided by nu squared. This yields an explicit exponential energy
+compensation, without smallness or an independently known reference.
+It is a multiplicative enstrophy estimate, not an absolute stretching
+allowance independent of enstrophy. The mean-free self-stretching budget
+remains open; a positive first nonlinear return on the actual refeeding
+history shows it cannot be discarded. `GeneratedMeanEnstrophy` certifies
+six scalar compensation ingredients. The anisotropic PDE estimate and
+short-time sign argument remain analytic, and no whole-space vertical
+average is asserted.
+
 The [geometric cascade ledger](labs/README.md#a-finite-energy-finite-time-cascade-ledger-with-unbounded-stretching)
 formally separates that remaining question from energy conservation.
 It has summable positive energy costs and durations, a decreasing reserve

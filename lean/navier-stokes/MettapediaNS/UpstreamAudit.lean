@@ -1,3 +1,4 @@
+import MettapediaNS.GeneratedMeanEnstrophy
 import MettapediaNS.ReferenceStretchingReserve
 import MettapediaNS.GeometricCascadeLedger
 import MettapediaNS.WholeSpaceEnergyReturn
@@ -1554,3 +1555,9 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.terminal_zero_mean_weight
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.interval_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ReferenceStretchingReserve.seam_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeneratedMeanEnstrophy.reserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeneratedMeanEnstrophy.reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeneratedMeanEnstrophy.compensated_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeneratedMeanEnstrophy.pricing_identity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeneratedMeanEnstrophy.enstrophy_le_reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeneratedMeanEnstrophy.initial_allowance
