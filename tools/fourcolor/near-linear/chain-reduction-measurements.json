@@ -1,0 +1,164 @@
+{
+  "status": "Kernel-certified reduction of a supplied actual D0004 occurrence in the graph-backed vertex-minimal domain.",
+  "previous_transfer": "chain-measurements.json",
+  "source_manifest": "chain-sources.json",
+  "construction": {
+    "Y_steps": 6,
+    "H_steps": 5,
+    "darts": 56,
+    "source_vertices": 13,
+    "core_vertices": 5,
+    "boundary_ports": 8,
+    "exact_data": [
+      "edge, node and face permutations",
+      "full source graph",
+      "cyclic stars up to global reflection and cyclic shifts",
+      "ordered boundary",
+      "core degrees"
+    ],
+    "internal_contract_endpoints": [
+      8,
+      9
+    ]
+  },
+  "occurrence": {
+    "type": "FourColor.NearLinearChainOccurrence.Occurrence",
+    "hypotheses": [
+      "source graph homomorphism",
+      "five complete oriented core rotations",
+      "exact core degrees",
+      "injective core vertices",
+      "boundary images outside the core"
+    ],
+    "boundary_vertices_must_be_pairwise_distinct": false,
+    "construction": [
+      "preembedding",
+      "facewise injectivity",
+      "faithful kernel",
+      "injective disk"
+    ]
+  },
+  "actual_reduction": {
+    "consumer": "FourColor.ActualChainReduction.colorable",
+    "exclusion": "FourColor.ActualChainReduction.not_in_minimal",
+    "domain": "GraphBackedVertexMinimalTaitCounterexample with a supplied geometric occurrence on its actual dual",
+    "starting_witness": "ActualDualContract.singleton_colorable via MinimalSingletonContract.one_zero",
+    "strict_descent": "Existing adjacent-pair reduction deletes two primal vertices before applying vertex minimality. This is not deletion of the entire chain core.",
+    "exterior": "InjectiveEmbeddedRepair.colorable derives compatible repair using the same actual planar embedding.",
+    "caller_supplies_exterior_closure": false,
+    "caller_supplies_initial_colouring": false
+  },
+  "example": {
+    "vertices": 42,
+    "source": "chain-profile-example.json",
+    "kernel_checked": [
+      "cyclic triangular rotation",
+      "complete occurrence contract",
+      "disk injection"
+    ],
+    "program_only": [
+      "global planar spherical embedding",
+      "flat eight/seven centres",
+      "short-cycle checks",
+      "absence of the two existing diamond cores in the radius-two union"
+    ],
+    "not_claimed": [
+      "minimality of the example",
+      "universal occurrence supply"
+    ]
+  },
+  "audit": {
+    "roots": 21,
+    "dependency_declarations": 30789,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_original_certificate": "FourColor.Bulk.Cfg006 (classical configuration 7)",
+    "other_original_rank_certificates": false,
+    "full_four_colour_endpoint": false,
+    "exceptional_D1774_certificate": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.NearLinearChainConstruction",
+        "source_sha256": "182ddcdcc0b2c2d6a3a27894c5373b96bc62874b5c0e0f4f9fae541fc62a49b5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 11.389,
+        "olean_bytes": 173656,
+        "olean_sha256": "0713b8173fff47de88969d67177bb62fcb29f569ea84b570cb2e664c558bee8a"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearChainContract",
+        "source_sha256": "7ae22f37940285d2b7f7216a23078f3b807acd6d4427c4096ed55b61cca8bc49",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.66,
+        "olean_bytes": 82168,
+        "olean_sha256": "858dd9063f72b74c2223f7d6eea759100adafeb039e1104eee951a3b995bff96"
+      },
+      {
+        "module": "MettapediaFourColor.NearLinearChainOccurrence",
+        "source_sha256": "8033655a920080c83324252af591806dfb9b10ff039938ff80a609ec2218a7f5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.027,
+        "olean_bytes": 260680,
+        "olean_sha256": "0093cdbb3fabc5b0156d7084c2e70c99b8e84366fea18e8481eccde093298fe9"
+      },
+      {
+        "module": "MettapediaFourColor.ActualChainReduction",
+        "source_sha256": "e6dcf82b4bf2a7b0c5035ece120c1af61ef51a27b5ff01bd8a7c5e43cb986449",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.165,
+        "olean_bytes": 54536,
+        "olean_sha256": "8ae2a318cadd772c9d55163a3e1e327d6b8ed2238f80c08fd6984f213c6de7e1"
+      },
+      {
+        "module": "MettapediaFourColor.ChainReductionExample",
+        "source_sha256": "2c707b49a24e63b37e2a274458994006f0e8a12392d3484fab12d462f7715e13",
+        "exit_code": 0,
+        "frontend_wall_seconds": 30.368,
+        "olean_bytes": 735560,
+        "olean_sha256": "76220f190c99eff22791916ed5cf3d4fe581437c8f89e26a0808fba2fd2c68f6"
+      },
+      {
+        "module": "MettapediaFourColor.ChainReductionAudit",
+        "source_sha256": "31ba4dd120eab1eac95810ddb3a2d05cf5e70e80c590b8c4860c695639faa78b",
+        "exit_code": 0,
+        "frontend_wall_seconds": 12.892,
+        "olean_bytes": 2720,
+        "olean_sha256": "0fd6c9993571572120a17babeae1cfd4ad4760c0ae6269d0f0e3c40a9ffb62e9"
+      }
+    ]
+  },
+  "commands": [
+    "lake build kernelChainReduction",
+    "lake build kernelFlatCoverage kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "compression": {
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "new_rank_tables": 0,
+    "new_uniform_repair_schemes": 0,
+    "shared_repair_reused": "BoundaryTriangleRepair.repair",
+    "additional_coverage_entries_removed": 0,
+    "additional_assembly_certificate_dependencies_removed": 0
+  },
+  "remaining": [
+    "Recognize an actual chain or another certified alternative from charge and overlapping-neighbourhood hypotheses.",
+    "Classify residual neighbourhoods and integrate an actual coverage branch.",
+    "Prove global coverage for the intended class."
+  ]
+}

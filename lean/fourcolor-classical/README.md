@@ -1388,5 +1388,38 @@ Replay with `lake build kernelNearLinearChain`; the
 includes source pins, independent replay and the dependency audit. Only classical
 configuration 7 supplies a rank certificate. The complete assembly retains
 633 coverage entries and 629 original certificate dependencies. The next
-obligations are general recognition, the actual exterior/strict-reduction bridge,
-and coverage of remaining neighbourhood profiles.
+obligations at that checkpoint were general recognition, the actual
+exterior/strict-reduction bridge, and coverage of remaining neighbourhood profiles.
+
+## The chain as an actual local reduction
+
+`NearLinearChainConstruction` builds the exact D0004 disk with six Y steps
+and five H steps. Its 56 darts, cyclic stars and eight ordered boundary ports
+are checked against the source. `NearLinearChainContract` transports the
+shared repair onto that disk and proves a concrete internal singleton
+contract valid.
+
+`NearLinearChainOccurrence` turns a graph homomorphism with five complete
+core rotations and degrees into a preembedding. Core vertices must be distinct,
+and boundary vertices must stay outside the core. Boundary vertices may
+identify with each other. Facewise injectivity supplies a faithful kernel;
+the shared kernel-to-disk theorem gives the disk injection.
+
+`ActualChainReduction.colorable` consumes this occurrence in the graph-backed
+vertex-minimal domain. The existing strict two-vertex reduction supplies a
+contract colouring. The actual planar exterior supplies Kempe closure, and
+`InjectiveEmbeddedRepair.colorable` reconstructs the complete colouring.
+`not_in_minimal` excludes the occurrence. The caller supplies geometry alone,
+with no initial-colouring or exterior-closure assumption.
+
+`ChainReductionExample` certifies this geometric contract on the retained
+42-vertex example, including a cyclic triangular rotation. It does not assert
+minimality or kernel-certified global planarity of that example.
+
+Replay with `lake build kernelChainReduction`. The
+[receipt](../../tools/fourcolor/near-linear/chain-reduction-measurements.json)
+and `ChainReductionAudit` distinguish this completed local consumer from the
+remaining occurrence-supply theorem. The only original rank certificate is
+configuration 7. No new table or uniform repair scheme is introduced, and the
+complete assembly still retains 633 coverage entries and 629 original
+certificate dependencies.

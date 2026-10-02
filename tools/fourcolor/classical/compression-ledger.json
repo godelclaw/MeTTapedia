@@ -3468,6 +3468,22 @@
     "whole_profile_test": "Program-checked flat eight/seven pair with no obstructing short cycle and neither diamond core in the radius-two union; a D0004 core is present.",
     "catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
-    "next": "General geometric recognition and a strict reduction/initial-colouring bridge for the chain."
+    "next": "General geometric recognition and coverage; the actual exterior/initial-colouring bridge is closed by near_linear_chain_reduction."
+  },
+  "near_linear_chain_reduction": {
+    "record": "../near-linear/chain-reduction-measurements.json",
+    "status": "kernel-checked",
+    "actual_consumer": "FourColor.ActualChainReduction.not_in_minimal",
+    "retained_base": "classical configuration 7",
+    "new_rank_tables": 0,
+    "shared_repair": "BoundaryTriangleRepair.repair",
+    "geometric_domain": "Five complete core stars and degrees, injective core, boundary outside core; boundary labels may coincide.",
+    "initial_witness": "Actual vertex minimality via an existing strict two-vertex reduction",
+    "exterior_closure": "Derived for the same actual planar disk embedding",
+    "kernel_example_vertices": 42,
+    "audit_roots": 21,
+    "catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "next": "Supply a chain or another certified reduction from joint charge profiles; global coverage remains open."
   }
 }

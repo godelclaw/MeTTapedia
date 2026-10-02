@@ -16,6 +16,19 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Reconstruct the chain from a genuine local occurrence and minimality. -/
+target kernelChainReduction pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/chain-reduction-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "NearLinearChainConstruction", "NearLinearChainContract", "NearLinearChainOccurrence", "ActualChainReduction", "ChainReductionExample", "ChainReductionAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Transport a three-triangle chain repair from classical configuration 7. -/
 target kernelNearLinearChain pkg : Unit := do
   let env ← getAugmentedEnv

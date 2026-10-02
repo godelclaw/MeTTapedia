@@ -117,10 +117,27 @@ subdivision; `D0004` needs no separate repair table. Its complete core occurrenc
 and conditional colouring reconstruction on the example are also checked.
 This is the intended feedback between coverage and composition: an actual
 remaining profile selects the next piece, and a shared operation supplies its
-repair. General occurrence recognition, exterior reconstruction from a smaller
-map, and coverage remain to be proved. The
+repair. The
 [receipt](../../../tools/fourcolor/near-linear/chain-measurements.json)
-distinguishes these obligations from the finite example.
+records that transfer and its finite example.
+
+The chain now also has an
+[actual-map reduction](../../../lean/fourcolor-classical/MettapediaFourColor/ActualChainReduction.lean).
+Six Y steps and five H steps construct its exact disk. Five complete cyclic
+stars, the core degrees and distinct core vertices give an injective disk
+embedding; boundary labels may coincide outside the core. Vertex minimality
+supplies the starting singleton contract through the existing strict
+two-vertex reduction. The transferred repair and the actual planar exterior
+then reconstruct a colouring. No exterior-closure or initial-colouring
+hypothesis is left to the caller. The 42-vertex example supplies the geometric
+occurrence contract, including the complete rotation, in Lean.
+
+This completes the local consumer for a supplied occurrence. Recognizing
+such occurrences from charge and overlap constraints, and covering the
+remaining neighbourhood profiles, are still open. The
+[reduction receipt](../../../tools/fourcolor/near-linear/chain-reduction-measurements.json)
+retains configuration 7 as the single base certificate and records no change
+to the complete assembly's coverage or certificate counts.
 
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first

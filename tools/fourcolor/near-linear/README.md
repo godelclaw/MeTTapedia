@@ -15,7 +15,14 @@ pentagonal diamond cores occurs in the union of the two radius-two balls.
 The five-vertex `D0004` interior does occur. Lean verifies its thirteen distinct
 source vertices and complete oriented core stars, and consumes its repair in
 actual graph reconstruction with explicit exterior-closure and initial-colouring
-hypotheses. The flatness and short-cycle checks remain program evidence.
+hypotheses. A subsequent
+[actual reduction](../../../lean/fourcolor-classical/MettapediaFourColor/ActualChainReduction.lean)
+derives those witnesses from vertex minimality and the actual planar exterior.
+Its geometric occurrence contract requires the five complete core stars,
+their degrees, distinct core vertices and boundary images outside the core;
+boundary images need not be distinct from each other. The example supplies
+this contract and a cyclic triangular rotation in Lean. The flatness,
+global planarity and short-cycle checks remain program evidence.
 
 Replay source fidelity and the example from the repository root:
 
@@ -24,9 +31,12 @@ python3 tools/fourcolor/near-linear/audit_chain_sources.py
 python3 tools/fourcolor/near-linear/audit_chain_profile.py
 ```
 
-The package gate is `lake build kernelNearLinearChain`. The
+The package gates are `lake build kernelNearLinearChain kernelChainReduction`. The
 [receipt](chain-measurements.json) separates local repair, concrete occurrence,
-conditional reconstruction and remaining geometric obligations. The
+and conditional reconstruction. The
+[actual-reduction receipt](chain-reduction-measurements.json) closes the
+initial-colouring and exterior bridge through an existing strict two-vertex
+reduction. General occurrence recognition and coverage remain open. The
 [source pins](chain-sources.json) retain upstream attribution and the MIT licence.
 This step removes no entry or certificate dependency from the complete assembly.
 
