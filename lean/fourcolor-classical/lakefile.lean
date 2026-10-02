@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay ordered wheel recognition and its pinned source consumer. -/
+target kernelWheelNeighborhood pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-neighborhood-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "WheelNeighborhood", "D3009Wheel", "D3009Boundary", "ActualWheelOccurrence",
+        "WheelOccurrenceAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay exact cyclic accounting and its residual coverage consumer. -/
 target kernelExactCyclicCharge pkg : Unit := do
   let env ← getAugmentedEnv

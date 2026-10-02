@@ -1705,11 +1705,11 @@ both centres flat. The two-extra example is already excluded by the preceding
 marked-edge reduction; it does not realize that additional residual constraint.
 The no-extra example satisfies the marked-edge exclusion and shows that complete elimination
 of additional transfers does not, by itself, eliminate this profile.
-The next common candidate is `D3009`: its core is exactly the seven-valent
+The common source is `D3009`: its core is exactly the seven-valent
 centre and its one five-valent and six six-valent neighbours. Both finite
 examples have a complete source-graph match with distinct vertices and
-an induced core. Turning the profile into a general embedded occurrence,
-and certifying its colouring reconstruction, remain separate obligations.
+an induced core. The general occurrence is now proved in the next section;
+its colouring reconstruction remains open.
 
 The general identity and actual-map budget classification are proved in
 Lean. Two base receivers also consume the identity, giving exact formulas
@@ -1718,6 +1718,50 @@ are independently program checked. This adds one uniform accounting
 law, not a colouring repair or a smaller unavoidable catalogue. See the
 [receipt](../../../tools/fourcolor/near-linear/exact-charge-measurements.json)
 for the distinction between kernel proofs and finite program evidence.
+
+## The residual now constructs a complete wheel
+
+The source-occurrence obligation has closed. From the seven-valent centre,
+one five-valent neighbour and six six-valent neighbours, Lean constructs
+all 21 vertices of D3009, with every source edge, prescribed degree and
+interior cyclic turn. All vertices are distinct and within radius two of
+that same centre. This is a theorem about the actual minimal facial dual,
+not an inference from the tested examples.
+
+```text
+actual degree profile
+        |
+ordered wheel core                 PROVED at arbitrary degree
+        |
+complete neighbour stars
+        |
+identify shared outer corners      PROVED
+        |
+exclude core capture and
+boundary collisions                PROVED using short-cycle laws
+        |
+complete D3009 occurrence           PROVED
+        |
+compatible colouring repair        OPEN
+        |
+strict descent and reconstruction  OPEN
+```
+
+The key retained information is who owns each outer port and how the other
+star reads the same corner. If two ports collide, their owners and the centre
+form a four-cycle. Its necessary chord forces the owners to be consecutive;
+faciality then forces the port to be their already identified seam. That
+rules out a collision between different source ports. The geometry has a
+single joint map throughout, matching the construction-and-gluing mechanism.
+
+The [actual consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ActualWheelOccurrence.lean)
+retains the previous fan's centre, marked neighbour, rule exclusion and exact
+charge budget. Both budgets produce the same complete source shape. It does
+not yet colour that shape in every required exterior. The
+[receipt](../../../tools/fourcolor/near-linear/wheel-occurrence-measurements.json)
+records the sixteen-root audit and regression gates. Geometry adds no repair
+certificate; the prior residual supply retains configuration 7. Coverage
+remains 633 entries /629 original certificate dependencies.
 
 ## Verification and attribution
 

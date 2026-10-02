@@ -1228,8 +1228,8 @@ rules alone cannot close the geometric obligation. Both examples have an
 injective complete source-graph match of [D3009](D3009.conf), with its core
 induced: a seven-valent centre, one five-valent neighbour and six six-valent
 neighbours. The input manifest pins its upstream revision, source hash and
-MIT licence. This is a candidate for a common closing law; its general
-embedded occurrence, colouring repair and reconstruction are still open.
+MIT licence. The general occurrence is now proved below. Colouring repair and
+strict reconstruction remain open.
 
 Run `lake build kernelExactCyclicCharge` in `lean/fourcolor-classical`.
 Run `python3 tools/fourcolor/near-linear/audit_exact_charge.py --output tools/fourcolor/near-linear/exact-charge-audit.json`
@@ -1240,3 +1240,41 @@ and the D3009 occurrences are program evidence. The
 [measurement record](exact-charge-measurements.json) separates these scopes.
 The actual-map continuation retains configuration 7 through the preceding
 reduction. Coverage remains 633 entries /629 original certificates.
+
+## Completing the residual wheel
+
+`ActualWheelOccurrence.occurrence` constructs D3009 from the single-five
+seven-valent profile in the actual minimal facial dual. It assumes only
+that profile, not an embedded source occurrence. The construction proves
+all source edges, all eight complete core stars and degrees, an induced
+core, and injectivity of all 21 vertices. Every image is within radius two
+of the retained centre. Extra edges between boundary vertices are not
+excluded or needed by this statement.
+
+The geometric argument is compositional. `WheelNeighborhood` first gives
+an ordered wheel at arbitrary degree. Source neighbour stars then grow the
+thirteen-port boundary; the actual facial seam identifies their shared
+observations. An outer port cannot fold into the induced core. If two owned
+outer ports coincide, the resulting four-cycle forces adjacent owners.
+Facial triangles then force the common vertex to be their designated seam,
+contradicting its two different owner positions. Thus the complete boundary
+is a genuine simple cycle, with distinct vertices.
+
+`ActualWheelOccurrence.residual_occurrence` consumes the exact-charge
+classification without changing its centre, marked five-neighbour or rule
+exclusion. Both retained budgets supply this same source shape. The occurrence
+construction uses no configuration repair certificate or complete Four Colour
+theorem; the residual supply still retains configuration 7 through the prior
+reduction. No D3009 repair is assumed from the source catalogue.
+
+Replay with `lake build kernelWheelNeighborhood` in `lean/fourcolor-classical`.
+The [receipt](wheel-occurrence-measurements.json) records sixteen audited roots,
+only standard axioms, and the full regression gates. The
+[source audit](wheel-source-audit.json), reproduced by
+`python3 tools/fourcolor/near-linear/audit_wheel_source.py`, verifies the source
+hash and equality of its numeric rows with the Lean decoder input.
+
+The next obligation is compatible colouring repair and actual strict
+reconstruction, including an exact bridge to the source construction consumed
+by that reconstruction. This occurrence theorem removes no coverage entry or
+certificate dependency. Counts remain 633 /629.

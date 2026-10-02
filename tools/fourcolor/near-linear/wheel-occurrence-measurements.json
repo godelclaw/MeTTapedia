@@ -1,0 +1,112 @@
+{
+  "status": "Kernel-checked complete cyclic-star source occurrence with full injectivity in the actual minimal facial dual. Colouring repair and strict reconstruction remain open.",
+  "source_audit": "wheel-source-audit.json",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_license": "MIT; copyright 2026 Yuta Inoue",
+  "domain": "Finite graph-backed vertex-minimal Tait counterexample; actual dual centre degree seven, a specified degree-five neighbour, every other neighbour degree six.",
+  "uniform_component": "WheelNeighborhood: all-degree ordered-neighbour construction, injectivity, exhaustiveness and induced rim under facial-triangle hypotheses.",
+  "source_component": {
+    "vertices": 21,
+    "core_vertices": 8,
+    "ordered_boundary_ports": 13,
+    "core_induced": true,
+    "whole_source_injective": true,
+    "complete_core_stars": true,
+    "radius_from_same_centre": 2,
+    "extra_ambient_boundary_edges_excluded": false
+  },
+  "construction": [
+    "Enumerate the centre star from an actual directed edge.",
+    "Identify the complete source core and its seven triangles.",
+    "Complete neighbour stars and identify shared outer corners across actual facial seams.",
+    "Exclude boundary capture by the induced core.",
+    "Turn an outer-port collision into a four-cycle; a chord forces consecutive owners; faciality contradicts two different owned positions."
+  ],
+  "actual_consumer": "ActualWheelOccurrence.residual_occurrence retains the same shared-fan centre, marked neighbour, source-rule exclusion and exact charge budget.",
+  "audit": {
+    "roots": 16,
+    "dependency_declarations": 35207,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "full_four_colour_dependency": false,
+    "D1774_repair_dependency": false,
+    "D3009_repair_dependency": false,
+    "retained_rank_certificate": "Cfg006 only in residual supply; none in occurrence construction"
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.WheelNeighborhood",
+        "source_sha256": "db80834a4dc09bb530d281f85ab99329a01e56a3da7af54431f1476332bed1bf",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.07,
+        "olean_bytes": 195600,
+        "olean_sha256": "85ff07c2208e5fb03a5c160b770f7183ed52ca1206e75517b2a14b36c9a93fdd"
+      },
+      {
+        "module": "MettapediaFourColor.D3009Wheel",
+        "source_sha256": "4c14580d6db0fcbb2733f9a2a63d77f40fa2adb897df441e472f62cce2b50186",
+        "exit_code": 0,
+        "frontend_wall_seconds": 14.642,
+        "olean_bytes": 426032,
+        "olean_sha256": "3830ad1914bd587f9b58e34fb732a9263da128f6fff432b3788bddd0553acf09"
+      },
+      {
+        "module": "MettapediaFourColor.D3009Boundary",
+        "source_sha256": "461c112e3a47f15bc36567b07371f3dbafafc4e035a2be23a416faaa09f4e4af",
+        "exit_code": 0,
+        "frontend_wall_seconds": 25.364,
+        "olean_bytes": 741568,
+        "olean_sha256": "dec8f50b7cf8b25807251ca401af98af32c6262d7683e91c9ea25c9e31a15e88"
+      },
+      {
+        "module": "MettapediaFourColor.ActualWheelOccurrence",
+        "source_sha256": "9e1d7e78fa240a0b3d9daccd192acfcf209581f3f6dbc7fcfd71b85a87919f47",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.264,
+        "olean_bytes": 166624,
+        "olean_sha256": "8fd67c38f56e3cf58c1eb5420bc7a5b244f3f7c891266b8ce0adbd1d4926c2af"
+      },
+      {
+        "module": "MettapediaFourColor.WheelOccurrenceAudit",
+        "source_sha256": "f869b4d93f6955c151ebfc56988a1684cc580abdeea1881384950553def957c2",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.348,
+        "olean_bytes": 2600,
+        "olean_sha256": "73ca5bc2601c0486a1164980ac11c81d2af00f6d7567958edc0e8789c1d26141"
+      }
+    ]
+  },
+  "checks": {
+    "kernelWheelNeighborhood": "passed 2026-10-02T19:54:04+00:00; no warnings",
+    "kernelComplete": "passed 2026-10-02T19:47:26Z",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint": "passed 11195 jobs, 2026-10-02T19:46:46Z"
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "saved_member_checks": 336,
+    "coverage_entries_removed": 0,
+    "new_repair_schemes": 0,
+    "certificate_dependencies_replaced": 0
+  },
+  "remaining": [
+    "Certify the ordered source construction and its connection to the reference reconstruction semantics.",
+    "Prove a compatible colouring repair, retaining any finite base dependence explicitly.",
+    "Consume actual strict descent and reconstruction to exclude the profile.",
+    "Complete broader source-profile supply and coverage; no global runtime bound follows from this occurrence."
+  ]
+}

@@ -483,6 +483,14 @@
     {
       "declaration": "FourColor.ExactFanResidual.alternatives",
       "meaning": "The actual shared-fan continuation retains these budgets and the previous source-rule exclusion."
+    },
+    {
+      "declaration": "FourColor.ActualWheelOccurrence.occurrence",
+      "meaning": "The single-five degree-seven wheel supplies every source vertex, edge and core turn of D3009. All 21 images are distinct and within radius two; actual short-cycle laws discharge collision hypotheses."
+    },
+    {
+      "declaration": "FourColor.ActualWheelOccurrence.residual_occurrence",
+      "meaning": "The same complete occurrence is constructed in the retained exact-budget residual, preserving the actual centre and marked neighbour."
     }
   ],
   "open": [
@@ -528,10 +536,10 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Certify the embedded D3009 wheel from the single-five profile and assess its compatible repair contract.",
-    "bounded_test": "Replay both exact residual examples against the complete pinned source, then certify core rotations and the boundary correspondence. Classify possible boundary identifications using the existing short-cycle framework.",
-    "acceptance": "A proved embedded occurrence or a precise obstruction under explicit geometric hypotheses, followed by a checked repair and genuine reconstruction. No coverage credit from matching a core alone.",
-    "evidence": "D3009 occurs in both joint-flat residual examples. Eliminating every extra transfer still leaves the three-tip profile. The source shape does not certify general boundary geometry or reducibility."
+    "target": "Certify a compatible D3009 repair and actual strict reconstruction, reusing the now-proved complete source occurrence.",
+    "bounded_test": "Identify its exact ordered source construction and boundary relation. Compare with existing cap and cyclic-choice laws; test the smallest boundary obstruction before attempting uniform repair.",
+    "acceptance": "A genuine smaller-map colouring reconstructs in the same exterior, with strict decrease and all consumed geometry. Any finite base certificate remains explicit.",
+    "evidence": "The complete injective source occurrence is kernel proved for the degree profile in an actual minimal dual; matching finite examples is no longer its geometric justification."
   },
   "counts": {
     "coverage_entries": 633,
@@ -579,5 +587,6 @@
   },
   "cyclic_charge_record": "cyclic-charge-measurements.json",
   "extra_charge_record": "extra-charge-measurements.json",
-  "exact_cyclic_charge_record": "exact-charge-measurements.json"
+  "exact_cyclic_charge_record": "exact-charge-measurements.json",
+  "wheel_occurrence_record": "wheel-occurrence-measurements.json"
 }

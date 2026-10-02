@@ -1,0 +1,12 @@
+{
+  "source": "near-linear-4ct/reducible-configurations/D3009.conf",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+  "lean_rows_equal": true,
+  "vertices": 21,
+  "boundary_ports": 13,
+  "core_vertices": 8,
+  "edges": 47,
+  "triangles": 27,
+  "scope": "Source provenance and finite graph inventory. General occurrence is proved in Lean; no colouring repair is certified by this script."
+}

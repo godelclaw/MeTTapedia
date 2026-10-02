@@ -1,5 +1,19 @@
 # Classical Four Colour and compositional reconstruction
 
+The [wheel occurrence](MettapediaFourColor/ActualWheelOccurrence.lean) now
+constructs the complete D3009 source from its degree profile in the actual
+minimal facial dual: one seven-valent centre, one five-valent neighbour and
+six six-valent neighbours. All 21 vertices are distinct, all source edges
+and core cyclic stars are preserved, and the thirteen ordered boundary
+ports lie within radius two. Shared outer corners are identified before
+constructing the joint map. Triangle and four-cycle laws exclude collisions.
+The [general wheel law](MettapediaFourColor/WheelNeighborhood.lean) works at
+arbitrary degree. `lake build kernelWheelNeighborhood` replays the construction,
+its exact-budget consumer and the sixteen-root dependency audit. See the
+[receipt](../../tools/fourcolor/near-linear/wheel-occurrence-measurements.json).
+Colouring repair and strict reconstruction for D3009 remain open; counts
+remain 633 coverage entries /629 original certificates.
+
 The [exact cyclic charge law](MettapediaFourColor/ExactCyclicCharge.lean)
 now accounts for every transfer at a receiver of degree `d >= 7` with only
 five- and six-valent neighbours:
@@ -8,13 +22,14 @@ of eight oriented source rules. In the single-five flat-seven residual,
 two rule types are impossible and there are precisely two budgets:
 `(m,E) = (2,2)` or `(3,0)`. The
 [actual-map consumer](MettapediaFourColor/ExactFanResidual.lean) retains
-these observations and the preceding reduction exclusion. Each budget
-still requires a geometric closing argument.
+these observations and the preceding reduction exclusion. The wheel occurrence
+above supplies their common geometric source;
+its colouring repair remains open.
 `lake build kernelExactCyclicCharge` replays the identity, consumer, finite
 exact-charge examples and audit. The
 [receipt](../../tools/fourcolor/near-linear/exact-charge-measurements.json)
 records two jointly flat program examples and the common `D3009` wheel
-candidate, whose repair remains unverified here. Catalogue counts are unchanged.
+source, whose repair remains unverified here. Catalogue counts are unchanged.
 
 The latest local reduction bridge is
 [ExtraChargeReduction](MettapediaFourColor/ExtraChargeReduction.lean).

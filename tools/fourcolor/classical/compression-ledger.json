@@ -3825,5 +3825,18 @@
     "original_certificates_removed": 0,
     "member_checks_removed": 0,
     "new_repair_scheme": false
+  },
+  "wheel_occurrence": {
+    "record": "../near-linear/wheel-occurrence-measurements.json",
+    "status": "Kernel-certified whole D3009 cyclic-star occurrence, full injectivity and same-centre residual consumer.",
+    "uniform_geometric_laws": "All-degree cyclic wheel core; source outer-star seam and collision argument.",
+    "new_colouring_repair_schemes": 0,
+    "source_boundary_ports": 13,
+    "source_vertices": 21,
+    "retained_rank_certificate": "Cfg006 in prior residual supply only; none in wheel geometry.",
+    "coverage_entries_removed": 0,
+    "original_certificates_removed": 0,
+    "member_checks_removed": 0,
+    "open": "Compatible D3009 repair, strict reconstruction and broader coverage."
   }
 }
