@@ -1051,3 +1051,32 @@ The next coverage obligation is to derive one of the supported reductions
 from the surviving joint charge profiles, or retain and characterize a
 counterexample to that proposed local supply claim. Coverage remains 633
 entries with 629 original certificate dependencies.
+
+## Joint rule-fan coverage branch
+
+Rules `002_2` and `003_2`, matched on the same directed edge, jointly fix
+`[receiver,5,5,a,b,5]` around a degree-six sender when its next neighbour
+after the receiver has degree five. The three low-degree alternatives consume the mixed diamond,
+D0004 and D0006. On the actual minimal-map domain, one of `a,b` must have
+degree at least seven. It is a distinct vertex within radius two of the
+receiver. The flat degree-at-most-eight domain thus supplies a second flat
+centre of degree seven or eight.
+
+The [Lean theorem](../../../lean/fourcolor-classical/MettapediaFourColor/ActualRuleFanSupply.lean)
+uses all three reconstruction consumers; its dependency audit retains only
+the shared diamond profile and the existing configuration-7 rank certificate.
+The [kernel receipt](rule-fan-supply-measurements.json) distinguishes this
+local supply result from initial profile classification and global coverage.
+Three finite examples use the exact source rules and exercise each branch.
+Replay their independent program check with:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_rule_fan_supply.py --output tools/fourcolor/near-linear/rule-fan-supply-audit.json
+```
+
+`lake build kernelRuleFanSupply` checks the general laws, actual reductions,
+finite consumers and audit with the earlier artifacts prepared. The next
+obligation is to exploit the overlapping views at the supplied centre,
+retaining shared vertices and detecting repeated centres. No universal
+coverage or termination theorem is claimed, and the assembly counts stay
+633 coverage entries and 629 original configuration certificates.

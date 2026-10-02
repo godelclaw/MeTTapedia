@@ -3697,5 +3697,42 @@
     "integrated_into_complete_coverage_assembly": false,
     "scope": "The source completions retain ordered ports, full stars and the same shared core. The generic geometry is parameterized by degrees and port count; only the two specified profiles have colouring-repair consumers here. No arbitrary-degree repair, global supply, byte saving or runtime saving is claimed.",
     "next": "Derive one of the supported reductions or a stronger joint charge constraint from surviving profiles. Retain independently checked residuals."
+  },
+  "joint_rule_fan_supply": {
+    "record": "../near-linear/rule-fan-supply-measurements.json",
+    "status": "Kernel-certified joint source-rule recognition and actual second-centre supply.",
+    "uniform_geometric_arguments": 1,
+    "existing_reduction_consumers": [
+      "mixed diamond",
+      "D0004",
+      "D0006"
+    ],
+    "source_rule_indices": [
+      2,
+      4
+    ],
+    "sender_degree": 6,
+    "neighbor_profile": [
+      "receiver",
+      5,
+      5,
+      "a",
+      "b",
+      5
+    ],
+    "surviving_constraint": "a >= 6 and (a >= 7 or b >= 7)",
+    "distinct_second_centre_radius": 2,
+    "kernel_examples": 3,
+    "example_vertices": 162,
+    "retained_certificates": [
+      "shared diamond profile",
+      "FourColor.Bulk.Cfg006"
+    ],
+    "new_rank_certificates": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "integrated_into_complete_coverage_assembly": false,
+    "scope": "A guarded local supply theorem. A flat degree-at-most-eight ball supplies a distinct flat degree-seven/eight centre. No universal initial fan supply, closing of all overlaps, termination, algorithmic bound or extra assembly compression is claimed."
   }
 }

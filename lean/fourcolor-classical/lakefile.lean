@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Combine two exact charge-rule views with three geometric reduction consumers. -/
+target kernelRuleFanSupply pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-fan-supply-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RuleFanSupply", "ActualRuleFanSupply", "RuleFanSupplyExample", "RuleFanSupplyAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the shared degree-seven region and its rebuilt coverage endpoint. -/
 target kernelSector7 pkg : Unit := do
   let env ← getAugmentedEnv

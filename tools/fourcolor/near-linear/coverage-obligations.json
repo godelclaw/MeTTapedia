@@ -1,5 +1,5 @@
 {
-  "status": "The actual exceptional closing branch, exact rooted rule matcher, guarded rule-pair diamond reductions, both chain degree-word recognizers and the continued-rule consumer are kernel checked. Surviving zero-charge classification and global coverage remain open.",
+  "status": "Actual exceptional closing, exact rule matching, diamond and chain reductions, and a joint rule-fan second-centre supply are kernel checked. Surviving zero-charge classification and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -399,6 +399,26 @@
     {
       "declaration": "FourColor.ActualExtendedChainReduction.not_degree_word",
       "meaning": "A degree-six centre with consecutive neighbour degrees 5,6,6,5 constructs the complete nine-port D0006 occurrence and contradicts actual vertex minimality through strict reduction and colouring reconstruction."
+    },
+    {
+      "declaration": "FourColor.RuleFanSupply.fixed_of_checks",
+      "meaning": "Rules 002_2 and 003_2 on the same directed edge, sender degree six and its next neighbour degree five, determine the actual cyclic word [receiver,5,5,a,b,5]."
+    },
+    {
+      "declaration": "FourColor.RuleFanSupply.alternatives",
+      "meaning": "If a and b lie in 5..6, the retained rotation supplies a mixed diamond or the eight- or nine-port chain degree word."
+    },
+    {
+      "declaration": "FourColor.ActualRuleFanSupply.surviving_degrees",
+      "meaning": "Actual minimal-map reconstructions for all three branches imply a>=6 and (a>=7 or b>=7), with no new reduction certificate."
+    },
+    {
+      "declaration": "FourColor.ActualRuleFanSupply.next_center",
+      "meaning": "Cyclic injectivity makes the forced degree-at-least-seven vertex distinct from the receiver; it lies within radius two of that receiver."
+    },
+    {
+      "declaration": "FourColor.ActualRuleFanSupply.next_flat_center",
+      "meaning": "When the receiver radius-two ball has zero charge and degrees at most eight, the supplied distinct centre has degree seven or eight and zero charge."
     }
   ],
   "open": [
@@ -444,11 +464,11 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Joint-profile supply using both certified chain words and the diamond alternatives",
-    "test": "Re-evaluate retained flat eight/seven profiles with exact rule matches in both orientations, actual common vertices and complete degree-six stars. Track where 5,6,5,5 or 5,6,6,5 occurs and what signed charge remains when both are excluded. Test the smallest surviving profile before extending the reduction vocabulary.",
-    "acceptance": "Derive a supported actual reduction or a stronger joint charge constraint from an explicit class of source-rule profiles, with a second consumer where available; otherwise retain a replayable residual with exact failed supply assertion. A list of matched configurations alone is not a supply theorem.",
-    "prior_result": "Both degree words now construct their complete eight- or nine-port interfaces within radius two and have actual minimal-map reductions through one shared fan-completion law. RuleChainRecognition already connects one retained rule continuation to the eight-port word.",
-    "limit": "The shared boundary theorem does not prove repair for arbitrary degree parameters. Neither the two chain words nor their union with the diamonds is shown to cover every flat pair. Exact orientations and shared vertex identities remain part of the domain."
+    "target": "Use the forced second centre to close a justified overlapping flat-profile branch",
+    "test": "Retain the same-root rule fan and its actual degree-seven/eight continuation. Inspect the exact source-rule profile at the second centre, tracking shared rotation and common vertices. Test whether the overlap forces a supported reduction or another strictly stronger profile constraint; explicitly detect repeated centres.",
+    "acceptance": "A certified second-centre overlap consumer or a replayable residual identifying the missing shared observation. Do not treat a walk among higher-degree centres as descent, or infer universal supply from the guarded fan theorem.",
+    "prior_result": "Rules 002_2 and 003_2 with the proved guards force a distinct higher-degree centre within radius two; all low continuations consume one of three actual reconstructions. All three source-rule branches have kernel-certified finite examples.",
+    "limit": "Initial rule-fan supply from every relevant zero-charge neighbourhood, a complete closing classification, and global coverage remain open."
   },
   "counts": {
     "coverage_entries": 633,
@@ -470,5 +490,26 @@
     "base_certificate": "FourColor.Bulk.Cfg006",
     "coverage_entries_removed": 0,
     "example_record": "chain-boundary-audit.json"
+  },
+  "joint_rule_fan": {
+    "record": "rule-fan-supply-measurements.json",
+    "source_rules": [
+      "rule002_2.rule (index 2)",
+      "rule003_2.rule (index 4)"
+    ],
+    "same_root": true,
+    "hypotheses": "Sender degree six; the first neighbour after the receiver in rule003_2 has degree five. Both rules are exact same-root matches in the actual dual rotation.",
+    "reduction_branches": [
+      "mixed diamond",
+      "D0004 eight-port chain",
+      "D0006 nine-port chain"
+    ],
+    "second_centre_radius": 2,
+    "retained_certificates": [
+      "shared diamond profile",
+      "FourColor.Bulk.Cfg006"
+    ],
+    "new_certificates": 0,
+    "universal_supply_or_termination": false
   }
 }

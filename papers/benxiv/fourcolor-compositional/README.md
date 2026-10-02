@@ -1496,6 +1496,44 @@ additional assembly certificate is removed here. The
 [receipt](../../../tools/fourcolor/near-linear/extended-chain-measurements.json)
 records the exact scope and audit.
 
+## Combining the family laws into a coverage step
+
+The diamond and both chain laws now cooperate in one geometric argument.
+Two exact charge rules on the same edge force this degree pattern around
+a six-valent sender:
+
+```text
+       receiver, 5, 5, a, b, 5      (one cyclic star)
+                        |
+             a=5        | mixed diamond
+             a=6, b=5   | eight-port chain
+             a=6, b=6   | nine-port chain
+                        |
+       all three reconstruct genuine colourings
+                        |
+       a surviving minimal map needs a>=7 or b>=7
+                        |
+       another centre within radius two of receiver
+```
+
+The [actual theorem](../../../lean/fourcolor-classical/MettapediaFourColor/ActualRuleFanSupply.lean)
+proves the new centre differs from the receiver. When the surrounding ball
+has zero final charge and degrees at most eight, that centre also has zero
+charge and degree seven or eight. The exact source rules are `002_2` and
+`003_2`; the sender has degree six and its next neighbour after the receiver
+has degree five.
+Three kernel-checked examples realize all three reduction branches.
+
+This is a concrete instance of the intended compositional coverage method:
+several compatible reduction laws jointly constrain the geometry that can
+survive. Their original colouring witnesses and strict reductions do the
+work. The new result supplies a further observation centre for an overlap
+argument; it does not claim that walking between centres must terminate.
+Supply of the initial rule profile and closure of every remaining overlap
+are still required. The [receipt](../../../tools/fourcolor/near-linear/rule-fan-supply-measurements.json)
+retains the shared diamond profile and the classical configuration-7 base
+certificate. Coverage and complete-assembly certificate counts are unchanged.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

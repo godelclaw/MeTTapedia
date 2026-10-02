@@ -1,0 +1,115 @@
+{
+  "evidence": "Independent program check, separately kernel-certified examples.",
+  "fixture": "chain-boundary-example.json",
+  "fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "vertices": 162,
+  "cases": [
+    {
+      "branch": "diamond",
+      "root": [
+        59,
+        26
+      ],
+      "cycle": [
+        26,
+        58,
+        3,
+        57,
+        21,
+        128
+      ],
+      "degrees": [
+        7,
+        5,
+        5,
+        5,
+        6,
+        5
+      ],
+      "rule2_images": [
+        59,
+        26,
+        128
+      ],
+      "rule4_images": [
+        59,
+        26,
+        58,
+        3
+      ]
+    },
+    {
+      "branch": "eight",
+      "root": [
+        122,
+        76
+      ],
+      "cycle": [
+        76,
+        124,
+        121,
+        68,
+        70,
+        33
+      ],
+      "degrees": [
+        7,
+        5,
+        5,
+        6,
+        5,
+        5
+      ],
+      "rule2_images": [
+        122,
+        76,
+        33
+      ],
+      "rule4_images": [
+        122,
+        76,
+        124,
+        121
+      ]
+    },
+    {
+      "branch": "nine",
+      "root": [
+        94,
+        159
+      ],
+      "cycle": [
+        159,
+        95,
+        10,
+        96,
+        160,
+        37
+      ],
+      "degrees": [
+        7,
+        5,
+        5,
+        6,
+        6,
+        5
+      ],
+      "rule2_images": [
+        94,
+        159,
+        37
+      ],
+      "rule4_images": [
+        94,
+        159,
+        95,
+        10
+      ]
+    }
+  ],
+  "independent_rule_checks": 6,
+  "disagreements": 0,
+  "verifier_sha256": "c5086ef87d75a68c83eafe3821feaecc9aed0f5e80aa40ee2de9988e8d693159",
+  "scope": "Three same-root source-rule examples; no minimality or universal coverage claim."
+}

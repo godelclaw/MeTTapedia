@@ -1517,3 +1517,37 @@ It proves neither reducibility for every degree profile admitted by a scheme
 nor supply of one of these two profiles in every flat neighbourhood. The
 complete assembly remains at 633 coverage entries and 629 original
 configuration certificate dependencies.
+
+## A joint rule fan supplies a second centre
+
+[RuleFanSupply](MettapediaFourColor/RuleFanSupply.lean) reads source rules
+`002_2` and `003_2` on the same directed edge. At a degree-six sender, with
+the next neighbour after the receiver of degree five, cyclic closure fixes
+the neighbour word
+`[receiver,5,5,a,b,5]`. One argument gives three alternatives:
+
+- `a=5` exposes the mixed diamond, independently of `b`;
+- `a=6,b=5` supplies the eight-port chain;
+- `a=6,b=6` supplies the nine-port chain.
+
+[ActualRuleFanSupply](MettapediaFourColor/ActualRuleFanSupply.lean) consumes
+all three actual reductions and their colouring reconstructions. Minimum
+face size supplies the lower degree bounds. A surviving fan must therefore
+have `a>=6` and (`a>=7` or `b>=7`). Cyclic injectivity proves that this higher-degree
+vertex differs from the receiver; it is within radius two of the receiver.
+If that ball is flat with degrees at most eight, the second centre is flat
+and has degree seven or eight.
+
+`RuleFanSupplyExample` checks both complete source-rule matches in three
+places of the retained 162-vertex triangulation, exercising all alternatives
+and constructing both complete chain interfaces. Replay with
+`lake build kernelRuleFanSupply`, after preparing the preceding rule, chain
+and finite-geometry artifacts. The
+[receipt](../../tools/fourcolor/near-linear/rule-fan-supply-measurements.json)
+records the dependency audit and independent program checks.
+
+This is a geometric supply theorem for a guarded rule profile. Initial
+supply of that profile and closure of all subsequent overlaps remain open;
+following higher-degree centres is not a terminating reduction by itself.
+The shared diamond profile and classical configuration-7 certificate remain.
+No coverage entry or additional complete-assembly certificate disappears.

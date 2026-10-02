@@ -1,0 +1,163 @@
+{
+  "status": "Kernel-certified guarded joint-rule family supply and distinct second-centre theorem.",
+  "source_manifest": "discharging-sources.json",
+  "construction_and_repair_record": "extended-chain-measurements.json",
+  "domain": {
+    "ambient": "Actual facial dual of a GraphBackedVertexMinimalTaitCounterexample.",
+    "source_rules": [
+      "rule002_2.rule (index 2)",
+      "rule003_2.rule (index 4)"
+    ],
+    "root_alignment": "Both exact rule checks use the same directed sender-to-receiver dart.",
+    "sender_degree": 6,
+    "next_neighbor_degree": 5,
+    "next_neighbor_observation": "RuleMatcher.candidate rotation 4 root 2: the first sender neighbour after the receiver.",
+    "derived_neighbor_word": [
+      "receiver",
+      5,
+      5,
+      "a",
+      "b",
+      5
+    ]
+  },
+  "geometric_alternatives": [
+    {
+      "condition": "a=5; b unrestricted",
+      "consumer": "RuleFanSupply.mixed",
+      "reduction": "mixed diamond"
+    },
+    {
+      "condition": "a=6,b=5",
+      "consumer": "RuleFanSupply.eight_word",
+      "reduction": "D0004, eight-port chain"
+    },
+    {
+      "condition": "a=6,b=6",
+      "consumer": "RuleFanSupply.nine_word",
+      "reduction": "D0006, nine-port chain"
+    }
+  ],
+  "actual_conclusions": {
+    "surviving_degrees": "a>=6 and (a>=7 or b>=7)",
+    "theorem": "FourColor.ActualRuleFanSupply.surviving_degrees",
+    "second_centre": "FourColor.ActualRuleFanSupply.next_center",
+    "radius_from_receiver": 2,
+    "distinct_from_receiver": true,
+    "flat_consumer": "FourColor.ActualRuleFanSupply.next_flat_center",
+    "flat_hypotheses": "Zero final charge and degree at most eight throughout the receiver radius-two ball.",
+    "flat_conclusion": "A distinct centre in that ball has zero charge and degree seven or eight.",
+    "minimum_degree": "Derived from actual minimum face length; not supplied by the caller.",
+    "reconstruction": "The three branches consume actual strict reductions and compatible colouring reconstruction.",
+    "retained_certificates": [
+      "shared diamond profile",
+      "FourColor.Bulk.Cfg006 (classical configuration 7)"
+    ],
+    "additional_rank_certificates": 0
+  },
+  "finite_examples": {
+    "geometry": "MettapediaFourColor.ChainBoundaryGeometry",
+    "vertices": 162,
+    "roots": {
+      "diamond": [
+        59,
+        26
+      ],
+      "eight_port_chain": [
+        122,
+        76
+      ],
+      "nine_port_chain": [
+        94,
+        159
+      ]
+    },
+    "kernel_claims": [
+      "Both complete source-rule matches at all three roots",
+      "All degree guards and branch observations",
+      "The shared geometric arguments consumed in each branch",
+      "Both full chain interfaces constructed"
+    ],
+    "minimality_of_examples_claimed": false,
+    "program_record": "rule-fan-supply-audit.json",
+    "program_checks": "Compiled traces agree with independent dart propagation for all six retained rule occurrences."
+  },
+  "audit": {
+    "roots": 23,
+    "dependency_declarations": 34906,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "all_three_actual_reconstructions_required": true,
+    "complete_four_colour_endpoint_dependency": false,
+    "other_original_rank_certificates": false,
+    "exceptional_D1774_certificate": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RuleFanSupply",
+        "source_sha256": "60b1fd38362c892f61448e5177fb63fd22e2e554827c804caa336322b3b78916",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.771,
+        "olean_bytes": 385824,
+        "olean_sha256": "4621631281b76f1f30c7a6b8e0abc08ca5494a239424516211adc9c28cebbc75"
+      },
+      {
+        "module": "MettapediaFourColor.ActualRuleFanSupply",
+        "source_sha256": "4e7ac77314c5d13eb7723660642306fedd6b78ce28c1905fada08e98f7dd0ab5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.321,
+        "olean_bytes": 226488,
+        "olean_sha256": "3bb5b82c782e24bfca592e0fbe8f0c6b16b11839b797d4f08828433567ce6834"
+      },
+      {
+        "module": "MettapediaFourColor.RuleFanSupplyExample",
+        "source_sha256": "3648ff18bdcaf90d7519d223b5a562be9438510c75e2ef1d77bfe448e8d668dc",
+        "exit_code": 0,
+        "frontend_wall_seconds": 19.083,
+        "olean_bytes": 596816,
+        "olean_sha256": "c85564945ee18e6d6624946b0a749a6d805884efd181d58dd88922df549d24e0"
+      },
+      {
+        "module": "MettapediaFourColor.RuleFanSupplyAudit",
+        "source_sha256": "48f0c66f831e2d4ba47614322fd4b16e71b4b743be68b2e89110549ac55bffad",
+        "exit_code": 0,
+        "frontend_wall_seconds": 16.695,
+        "olean_bytes": 2600,
+        "olean_sha256": "2f3bca1cce4e734ae5d77cb80cbf8682ff662b0aa23a0e543992d5d103ff2e66"
+      }
+    ]
+  },
+  "commands": [
+    "lake build kernelRuleFanSupply kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "compression": {
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "shared_geometric_supply_arguments": 1,
+    "existing_reduction_branches": 3,
+    "new_uniform_repair_schemes": 0,
+    "additional_coverage_entries_removed": 0,
+    "additional_assembly_certificate_dependencies_removed": 0,
+    "kernel_saving_claimed": false
+  },
+  "remaining": [
+    "Supply the guarded rule profile or another reduction from every relevant flat neighbourhood.",
+    "Use the second-centre view to close justified overlapping profiles, including repeated-centre cases.",
+    "Complete geometric coverage and termination of the compact family system."
+  ]
+}
