@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Transport the constructed exceptional query through actual core corners. -/
+target kernelExceptionalQuery pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-query-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "DualGraphQuery", "ExceptionalQueryReading", "ExceptionalQueryAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check exact Y/H construction and source geometry for D1774. -/
 target kernelExceptionalConstruction pkg : Unit := do
   let env ← getAugmentedEnv

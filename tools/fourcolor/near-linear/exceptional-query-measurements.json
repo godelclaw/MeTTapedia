@@ -1,0 +1,113 @@
+{
+  "status": "kernel checked",
+  "scope": "Actual exceptional overlap realizes the compiled D1774 query, with explicit reference-minimality exclusion. Ambient minimality transport and strict reduction in the graph-backed domain remain open.",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.DualGraphQuery",
+      "source_sha256": "b50997196554d037da1ef2d8ae134f6e9865f1438100fd26c9a2d01431c7585b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.601,
+      "olean_bytes": 113952,
+      "olean_sha256": "172ddbad35b6b8874c4afcf85171913594c9a8ec4c6f6576916cc2d624c41937"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalQueryReading",
+      "source_sha256": "1501c2eb9e2ef8caff57e65f6198e6fb1c5b88d055b0df0d39dbde979d4fdee3",
+      "exit_code": 0,
+      "frontend_wall_seconds": 29.446,
+      "olean_bytes": 189312,
+      "olean_sha256": "79bff407a1a1e0f85e113065f02499f22e553443989f733999a1c65c5c657065"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalQueryAudit",
+      "source_sha256": "876a469bd7c41745c06d2bdb40e82fcd2db778343124bef3f75ddf841de2aa3a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.631,
+      "olean_bytes": 2600,
+      "olean_sha256": "40bf94388d50a34347e879b9c5b3ea87c50dd61f7b54baf83809a412ada53515"
+    }
+  ],
+  "audit": {
+    "roots": 9,
+    "dependency_declarations": 29158,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_endpoints": false,
+    "original_configuration_rank_certificates": false
+  },
+  "source": {
+    "root_dart": 84,
+    "root_endpoints": [
+      16,
+      18
+    ],
+    "query_darts": [
+      84,
+      85,
+      82,
+      78,
+      74,
+      70,
+      52,
+      30
+    ],
+    "query_vertices": [
+      16,
+      18,
+      11,
+      14,
+      17,
+      15,
+      12,
+      13
+    ],
+    "degrees": [
+      5,
+      5,
+      8,
+      7,
+      5,
+      5,
+      5,
+      5
+    ],
+    "labels": "zero-based"
+  },
+  "reused_geometry": [
+    "directed core corners",
+    "ambient core degrees",
+    "vertexwise cyclicity",
+    "triangular face closure"
+  ],
+  "additional_occurrence_hypothesis": false,
+  "core_injectivity_required_by_query_proof": false,
+  "distinct_boundary_images_required_by_query_proof": false,
+  "finite_repair_retained": "exceptional-repair-measurements.json",
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "entries_removed_here": 0,
+    "certificate_dependencies_replaced_here": 0
+  },
+  "next_obligation": "Supply the contraction consumer in the same minimality regime. Smaller candidates in graph-backed vertex minimality are arbitrary connected bridgeless cubic spherical rotation systems, so parallel edges are permitted; the reference hypothesis instead quantifies over smaller planar bridgeless plain precubic hypermaps by dart count. Prove the needed representation, normalization and size bounds or construct the strict reduction directly.",
+  "regressions": {
+    "status": "passed",
+    "commands": [
+      "lake build kernelFlatCoverage kernelComplete",
+      "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "main_jobs": 11195
+  }
+}

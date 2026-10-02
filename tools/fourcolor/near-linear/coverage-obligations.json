@@ -1,5 +1,5 @@
 {
-  "status": "Actual exceptional core, completion and conditional reconstruction, complete finite D-repair, exact source construction and reference-query exclusion proved. Actual overlap-to-query fit and the ambient minimality bridge remain open, as do zero-charge classification and coverage.",
+  "status": "Actual exceptional overlap now realizes the exact compiled D1774 query through its core corners and full ambient degrees. Complete finite D-repair, source construction and reference-minimal exclusion are proved. The bridge from graph-backed to reference minimality, or direct strict reduction in the former domain, remains open, as do zero-charge classification and coverage.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -187,6 +187,38 @@
     {
       "declaration": "FourColor.ExceptionalConstructionRepair.not_fitted",
       "meaning": "A matching compiled query is excluded in a reference minimal counterexample using the established preembedding, contraction, exterior closure and reconstruction chain."
+    },
+    {
+      "declaration": "FourColor.DualGraphQuery.stepR",
+      "meaning": "An actual directed corner determines the right recognition move in the exact dual hypermap."
+    },
+    {
+      "declaration": "FourColor.DualGraphQuery.stepL",
+      "meaning": "Two consecutive actual corners determine the left recognition move, retaining the intermediate dart."
+    },
+    {
+      "declaration": "FourColor.DualGraphQuery.arity_eq_degree",
+      "meaning": "Vertexwise cyclicity identifies query arity with full ambient graph degree."
+    },
+    {
+      "declaration": "FourColor.ExceptionalQueryReading.source_walk",
+      "meaning": "The exact source query starts at numbered dart 84 and visits the eight specified core darts."
+    },
+    {
+      "declaration": "FourColor.ExceptionalQueryReading.walk",
+      "meaning": "The retained joint core supplies all actual dart steps in both branches of the compiled query."
+    },
+    {
+      "declaration": "FourColor.ExceptionalQueryReading.fitted",
+      "meaning": "Core corners and degrees imply the exact compiled D1774 query fit; no occurrence or injectivity assumption is added."
+    },
+    {
+      "declaration": "FourColor.ExceptionalQueryReading.actual_fitted",
+      "meaning": "The two aligned exceptional occurrences in the actual graph-backed minimal facial dual supply that query fit."
+    },
+    {
+      "declaration": "FourColor.ExceptionalQueryReading.not_minimal",
+      "meaning": "The actual joint reading contradicts reference minimality of the exact dual hypermap by consuming the established source repair and contraction."
     }
   ],
   "open": [
@@ -226,7 +258,7 @@
       "id": "exception_joint_close",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
       "source": "Figure 13 and Lemma 8.4",
-      "obligation": "The actual completion and complete finite D-repair are proved. Establish the actual exterior Kempe closure and initial proper exterior trace, or consume the reference embedding interface through an exact preembedding and valid contract colouring. Preserve boundary identifications. Connect to strict reduction in the same ambient minimality regime."
+      "obligation": "The actual completion, complete finite D-repair and actual compiled-query fit are proved. Connect graph-backed minimality to reference minimality of the exact dual hypermap, or construct the strict contraction and initial proper exterior colouring directly in the graph-backed domain. Preserve boundary identifications and then consume the existing repair/reconstruction chain."
     },
     {
       "id": "residuals",
@@ -238,9 +270,9 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Actual exceptional overlap to compiled-query fit",
-    "test": "The independent source walk probe locates numbered dart 84 (source edge 16 to 18) and visits all eight core vertices in order 16,18,11,14,17,15,12,13. Certify these source readings, then transport each query step and its arity through the actual dual rotation.",
-    "acceptance": "An actual query-fit or preembedding theorem from the two aligned exceptional occurrences, consumed by the existing repair interface; no fit or exterior-closure hypothesis merely repackaged as a new field. Keep the reference and graph-backed minimality regimes distinct until their bridge is proved.",
+    "target": "Ambient minimality and strict contraction for the actual exceptional query",
+    "test": "Compare the exact smaller-map quantifiers in graph-backed vertex minimality and reference minimality. The former already admits arbitrary rotation systems, including parallel edges. Test the singleton source contract at core edge 13-14: construct its connected bridgeless cubic spherical smaller map, or prove the required conversion from the reference precubic contraction, with strict vertex decrease and transported colourings.",
+    "acceptance": "A theorem supplying the reference consumer hypotheses from the actual minimal source, or a direct smaller-map colouring and reconstruction theorem in the same graph-backed domain. No implicit change of minimality domain and no complete Four Colour endpoint.",
     "primary_lemmas": [
       "3.1",
       "3.2",

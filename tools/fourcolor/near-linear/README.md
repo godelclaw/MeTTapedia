@@ -569,15 +569,48 @@ contract, then reuses the established query-to-preembedding, contraction,
 exterior-closure and patch reconstruction theorems. It uses no complete
 Four Colour endpoint or original catalogue rank certificate.
 
-The outstanding bridge is concrete: derive the matching query, or equivalent
-preembedding, from the two actual exceptional occurrences. The reference
-minimal-counterexample hypothesis must also be connected to the graph-backed
-minimality regime used by the overlap geometry, or the contraction must be
-constructed directly in that regime. Neither bridge is assumed implicitly.
-Zero-charge classification and occurrence supply remain separate.
+The matching query is now derived from the two actual exceptional occurrences,
+as described below. The reference minimal-counterexample hypothesis must still
+be connected to the graph-backed minimality regime used by the overlap geometry,
+or the contraction must be constructed directly in that regime. That bridge
+is not assumed implicitly. Zero-charge classification and occurrence supply
+remain separate.
 
 Replay with `lake build kernelExceptionalConstruction` after preparing the
 finite repair artifacts. Its seventeen-root audit checks the representation,
 query compiler and reconstruction dependencies. This establishes source
 reducibility and reuse; it removes no coverage entry or existing certificate
 dependency. See [construction-measurements.json](construction-measurements.json).
+
+## Actual overlap recognition through compositional query moves
+
+`DualGraphQuery` constructs the exact dual hypermap on the graph's actual darts.
+Its face permutation is the given vertex rotation. The general `stepR` and
+`stepL` theorems turn directed facial corners into the elementary recognition
+moves. `arity_eq_degree` identifies each query observation with the full ambient
+degree under vertexwise cyclicity.
+
+`ExceptionalQueryReading.walk` composes those moves through the retained joint
+core. The two branches use the same directed starting edge and the same corner
+witnesses. `fitted` proves that the resulting eight observations satisfy the
+exact query compiled from the D1774 construction. `actual_fitted` instantiates
+this theorem at the two aligned exceptional occurrences in the graph-backed
+minimal facial dual. The source walk starts at numbered dart 84 and visits
+source vertices `16,18,11,14,17,15,12,13` (zero-based labels); those readings are
+also kernel checked.
+
+This recognition proof needs no new hypothesis asserting a D1774 occurrence,
+core injectivity or distinct ring images. It uses the already retained core
+corners and degrees. Under reference minimality of this exact dual hypermap,
+`not_minimal` consumes the source construction, finite repair and contraction
+chain to exclude the overlap. The graph-backed minimality hypothesis has not
+yet been shown to imply that reference hypothesis. An explicit bridge or a
+direct strict reduction in the graph-backed domain remains necessary.
+
+Replay with `lake build kernelExceptionalQuery`. Its nine-root audit retains
+the actual corner, degree and reconstruction dependencies, permits only the
+standard axioms, and rejects complete Four Colour endpoints and original
+configuration rank certificates. The D1774 finite repair certificate remains.
+This closes the local query-recognition obligation; coverage remains 633 entries
+and the complete assembly retains 629 original configuration certificates.
+See [exceptional-query-measurements.json](exceptional-query-measurements.json).
