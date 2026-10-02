@@ -246,6 +246,25 @@ theorem norm_iterate_le (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)
         mul_le_mul_of_nonneg_left A.norm_block_le (by positivity)
       _ = _ := by rw [pow_succ]; ring
 
+
+theorem spatial_norm_iterate_le {η : ℝ} (hη : 0 ≤ η) (n : ℕ) :
+    ∀ j (A : InteractionState (scaleIndex n j)), spatialInteractionNorm 8 η A.terms ≤ 1/2 →
+      spatialInteractionNorm 8 η (iterate n j A).terms ≤
+        (4 * Real.exp (-2))^j * spatialInteractionNorm 8 η A.terms := by
+  intro j
+  induction j with
+  | zero =>
+    intro A hA
+    change spatialInteractionNorm 8 η A.terms ≤ (4 * Real.exp (-2))^0 * spatialInteractionNorm 8 η A.terms
+    rw [pow_zero, one_mul]
+  | succ j ih =>
+    intro A hA
+    calc
+      _ ≤ (4 * Real.exp (-2))^j * spatialInteractionNorm 8 η A.block.terms :=
+        ih A.block (spatial_small_block hη A hA)
+      _ ≤ (4 * Real.exp (-2))^j * ((4 * Real.exp (-2)) * spatialInteractionNorm 8 η A.terms) :=
+        mul_le_mul_of_nonneg_left (spatial_norm_block_le hη A hA) (by positivity)
+      _ = _ := by rw [pow_succ]; ring
 /-- Every step is the conditional Haar integral for the previous generated law. -/
 def route (n : ℕ) : (j : ℕ) → (A : InteractionState (scaleIndex n j)) →
     Route Step A.weightedState (iterate n j A).weightedState
@@ -280,6 +299,19 @@ theorem wilson_iteration_bound (n j : ℕ) (β : ℝ) (hβ : |β| ≤ iterationB
   (InteractionState.norm_iterate_le n j _).trans
     (mul_le_mul_of_nonneg_left (by simpa only [wilsonState, show (4 : ℝ)*8 = 32 by norm_num]
       using wilsonInteraction_norm_le (scaleIndex n j) β 8 (by norm_num)) (by positivity))
+
+/-- Spatial control persists through every actual scale change. -/
+
+theorem wilson_spatial_iteration_bound {η : ℝ} (hη : 0 ≤ η) (n j : ℕ) (β : ℝ)
+    (hβ : |β| ≤ spatialIterationBeta η) :
+    spatialInteractionNorm 8 η (InteractionState.iterate n j
+      (wilsonState (scaleIndex n j) β (hβ.trans (spatialIterationBeta_le hη)))).terms ≤
+      (4 * Real.exp (-2))^j * (64 * |β| * Real.exp (32+4*η)) := by
+  apply (InteractionState.spatial_norm_iterate_le hη n j _
+    (wilsonState_spatial_small hη _ β _ hβ)).trans
+  apply mul_le_mul_of_nonneg_left _ (by positivity)
+  simpa only [wilsonState, show (4 : ℝ)*8 = 32 by norm_num] using
+    wilsonInteraction_spatial_norm_le (scaleIndex n j) β 8 η (by norm_num) hη
 
 end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
 

@@ -262,15 +262,37 @@ include hne in
 theorem plaquetteMajorant_nonneg {δ : ℝ} (hδ : 0 ≤ δ) (S : Finset X) :
     0 ≤ plaquetteMajorant supp δ S := sum_nonneg fun _ _ => pow_nonneg hδ _
 
+/-- Majorants with a separate bound for every local interaction. -/
+def weightedPlaquetteMajorant (v : Pl → ℝ) (S : Finset X) : ℝ :=
+  ∑ C ∈ (connectedPlaquettes supp).filter (fun C => plaquetteSupport supp C = S), ∏ p ∈ C, v p
+
+theorem weightedPlaquetteMajorant_const (δ : ℝ) :
+    weightedPlaquetteMajorant supp (fun _ => δ) = plaquetteMajorant supp δ := by
+  funext S
+  simp only [weightedPlaquetteMajorant, plaquetteMajorant, prod_const]
+
+theorem weightedPlaquetteMajorant_empty (hne : ∀ p, (supp p).Nonempty) (v : Pl → ℝ) :
+    weightedPlaquetteMajorant supp v ∅ = 0 := by
+  apply sum_eq_zero
+  intro C hC
+  obtain ⟨hC, hCS⟩ := mem_filter.mp hC
+  exact ((plaquetteSupport_nonempty supp hne (mem_filter.mp hC).2).ne_empty hCS).elim
+
+theorem weightedPlaquetteMajorant_nonneg {v : Pl → ℝ} (hv : ∀ p, 0 ≤ v p) (S : Finset X) :
+    0 ≤ weightedPlaquetteMajorant supp v S := sum_nonneg fun C _ => prod_nonneg fun p _ => hv p
+
+theorem norm_plaquetteActivity_le_weighted (base : E) (f : Pl → (X → E) → ℂ)
+    {v : Pl → ℝ} (hf : ∀ p ω, ‖f p ω‖ ≤ v p) (S : Finset X) (u : S → E) :
+    ‖plaquetteActivity supp base f S u‖ ≤ weightedPlaquetteMajorant supp v S := by
+  refine (norm_sum_le _ _).trans (sum_le_sum fun C _ => ?_)
+  rw [norm_prod]
+  exact prod_le_prod (fun _ _ => norm_nonneg _) (fun p _ => hf p _)
+
 theorem norm_plaquetteActivity_le (base : E) (f : Pl → (X → E) → ℂ)
     {δ : ℝ} (hf : ∀ p ω, ‖f p ω‖ ≤ δ) (S : Finset X) (v : S → E) :
     ‖plaquetteActivity supp base f S v‖ ≤ plaquetteMajorant supp δ S := by
-  refine (norm_sum_le _ _).trans (sum_le_sum fun C _ => ?_)
-  rw [norm_prod]
-  calc
-    (∏ p ∈ C, ‖f p (extendConfiguration base S v)‖) ≤ ∏ _p ∈ C, δ :=
-      prod_le_prod (fun _ _ => norm_nonneg _) (fun p _ => hf p _)
-    _ = δ ^ C.card := by simp
+  simpa only [weightedPlaquetteMajorant_const] using
+    norm_plaquetteActivity_le_weighted supp base f hf S v
 
 section Measurability
 

@@ -516,6 +516,13 @@ theorem wilson_clustering (d : ℕ) (ν₀ : Measure E) [IsProbabilityMeasure ν
 
 end Potential
 
+/-- A plaquette has uniformly bounded metric tree length. -/
+theorem treeLength_support_le {d n : ℕ} (p : Plaquette d n) : treeLength (support p) ≤ 4 := by
+  have hc : ((support p).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le p
+  have ht := treeLength_le_card_mul_diam (support p)
+  have hd := mul_le_mul_of_nonneg_left (diam_support_le p) (Nat.cast_nonneg (support p).card : (0 : ℝ) ≤ _)
+  linarith
+
 #print axioms dist_link_eq_zero_iff
 #print axioms norm_coordinateCircle_eq
 #print axioms sum_exp_dist_le

@@ -196,6 +196,115 @@ theorem sum_connected_weight_through_site_le (supp : P → Finset X) {w : P → 
 
 end Supported
 
+/-! ## Spatial bounds for nonuniform generated interactions -/
+
+section WeightedPlaquettes
+variable {X P : Type*} [Fintype X] [DecidableEq X] [Fintype P] [DecidableEq P]
+variable (supp : P → Finset X)
+
+theorem blockSum_weightedPlaquetteMajorant (v : P → ℝ) (F : Finset X → ℝ) (x : X) :
+    blockSum (fun S => weightedPlaquetteMajorant supp v S * F S) x =
+      ∑ C ∈ (connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C),
+        (∏ p ∈ C, v p) * F (plaquetteSupport supp C) := by
+  symm
+  rw [← sum_fiberwise
+    ((connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C))
+    (plaquetteSupport supp) (fun C => (∏ p ∈ C, v p) * F (plaquetteSupport supp C))]
+  unfold blockSum
+  rw [sum_filter]
+  apply sum_congr rfl
+  intro S _
+  have hfilter :
+      ((connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C)).filter
+        (fun C => plaquetteSupport supp C = S) =
+      if x ∈ S then (connectedPlaquettes supp).filter
+        (fun C => plaquetteSupport supp C = S) else ∅ := by
+    ext C
+    by_cases h : plaquetteSupport supp C = S <;>
+      by_cases hx : x ∈ S <;> simp [h, hx]
+  rw [hfilter]
+  by_cases hx : x ∈ S
+  · simp only [hx, ↓reduceIte]
+    unfold weightedPlaquetteMajorant
+    rw [sum_mul]
+    apply sum_congr rfl
+    intro C hC
+    rw [(mem_filter.mp hC).2]
+  · simp [hx]
+
+variable [PseudoMetricSpace X]
+
+theorem spatial_weighted_plaquette_term_le {v : P → ℝ} (hv : ∀ p, 0 ≤ v p)
+    {η : ℝ} (hη : 0 ≤ η) {C : Finset P}
+    (hC : ((plaquetteGraph supp).induce (C : Set P)).Connected) :
+    (∏ p ∈ C, v p) * Real.exp (4 * (plaquetteSupport supp C).card +
+      η * polymerDiam (plaquetteSupport supp C)) ≤
+      ∏ p ∈ C, v p * Real.exp (4 * (supp p).card + η * treeLength (supp p)) := by
+  rw [prod_mul_distrib, ← Real.exp_sum]
+  apply mul_le_mul_of_nonneg_left _ (prod_nonneg fun p _ => hv p)
+  apply Real.exp_le_exp.mpr
+  have hc : ((plaquetteSupport supp C).card : ℝ) ≤ ∑ p ∈ C, ((supp p).card : ℝ) := by
+    exact_mod_cast (card_biUnion_le : (C.biUnion supp).card ≤ ∑ p ∈ C, (supp p).card)
+  have ht : polymerDiam (plaquetteSupport supp C) ≤ ∑ p ∈ C, treeLength (supp p) :=
+    (polymerDiam_le_treeLength _).trans
+      (treeLength_biUnion_le_of_connected (plaquetteGraph supp) supp (fun p q h => h.2) C hC)
+  rw [sum_add_distrib, ← mul_sum, ← mul_sum]
+  nlinarith
+
+theorem spatial_plaquette_root_budget (hne : ∀ p, (supp p).Nonempty)
+    {v : P → ℝ} (hv : ∀ p, 0 ≤ v p) {η r : ℝ}
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card + η * treeLength (supp p)) * v p ≤ r) (x : X) :
+    ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      (v p * Real.exp (4 * (supp p).card + η * treeLength (supp p))) *
+        Real.exp (1 * (supp p).card) ≤ Real.exp (-3) * r := by
+  calc
+    _ = ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+        Real.exp (5 * (supp p).card) * (Real.exp (η * treeLength (supp p)) * v p) := by
+      apply sum_congr rfl
+      intro p _
+      rw [mul_assoc, ← Real.exp_add, mul_comm (v p)]
+      rw [← mul_assoc, ← Real.exp_add]
+      congr 2
+      ring
+    _ ≤ Real.exp (-3) * ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+        Real.exp (8 * (supp p).card) * (Real.exp (η * treeLength (supp p)) * v p) := by
+      simpa only [show (5 : ℝ)-8 = -3 by norm_num] using
+        sum_card_weight_reserve_le supp hne (fun p => mul_nonneg (Real.exp_pos _).le (hv p))
+          (show (5 : ℝ) ≤ 8 by norm_num) x
+    _ ≤ _ := by
+      apply mul_le_mul_of_nonneg_left _ (Real.exp_pos _).le
+      calc
+        _ = ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+            Real.exp (8 * (supp p).card + η * treeLength (supp p)) * v p := by
+          apply sum_congr rfl
+          intro p _
+          rw [← mul_assoc, ← Real.exp_add]
+        _ ≤ r := hrow x
+
+theorem activitySmall_weightedPlaquetteMajorant (hne : ∀ p, (supp p).Nonempty)
+    {v : P → ℝ} (hv : ∀ p, 0 ≤ v p) {η r : ℝ} (hη : 0 ≤ η) (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card + η * treeLength (supp p)) * v p ≤ r) :
+    ActivitySmall (weightedPlaquetteMajorant supp v) η (Real.exp (-3) * r) := by
+  intro x
+  rw [blockSum_weightedPlaquetteMajorant]
+  calc
+    _ ≤ ∑ C ∈ (connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C),
+        ∏ p ∈ C, v p * Real.exp (4 * (supp p).card + η * treeLength (supp p)) :=
+      sum_le_sum (fun C hC => spatial_weighted_plaquette_term_le supp hv hη
+        (mem_filter.mp (mem_filter.mp hC).1).2)
+    _ ≤ ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+        (v p * Real.exp (4 * (supp p).card + η * treeLength (supp p))) * Real.exp (1 * (supp p).card) := by
+      apply sum_connected_weight_through_site_le supp (fun p => mul_nonneg (hv p) (Real.exp_pos _).le)
+      intro y
+      apply (spatial_plaquette_root_budget supp hne hv hrow y).trans
+      have he : Real.exp (-3) ≤ 1 := Real.exp_le_one_iff.mpr (by norm_num)
+      nlinarith [Real.exp_pos (-3)]
+    _ ≤ _ := spatial_plaquette_root_budget supp hne hv hrow x
+
+end WeightedPlaquettes
+
 variable {X Pl : Type*} [Fintype X] [DecidableEq X] [PseudoMetricSpace X]
   [Fintype Pl] [DecidableEq Pl]
 variable (supp : Pl → Finset X)
@@ -262,32 +371,8 @@ theorem blockSum_plaquetteMajorant (δ : ℝ) (F : Finset X → ℝ) (x : X) :
     blockSum (fun S => plaquetteMajorant supp δ S * F S) x =
       ∑ C ∈ (connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C),
         δ ^ C.card * F (plaquetteSupport supp C) := by
-  classical
-  symm
-  rw [← sum_fiberwise
-    ((connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C))
-    (plaquetteSupport supp) (fun C => δ ^ C.card * F (plaquetteSupport supp C))]
-  unfold blockSum
-  rw [sum_filter]
-  apply sum_congr rfl
-  intro S _
-  have hfilter :
-      ((connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C)).filter
-        (fun C => plaquetteSupport supp C = S) =
-      if x ∈ S then (connectedPlaquettes supp).filter
-        (fun C => plaquetteSupport supp C = S) else ∅ := by
-    ext C
-    by_cases h : plaquetteSupport supp C = S <;>
-      by_cases hx : x ∈ S <;> simp [h, hx]
-  rw [hfilter]
-  by_cases hx : x ∈ S
-  · simp only [hx, ↓reduceIte]
-    unfold plaquetteMajorant
-    rw [sum_mul]
-    apply sum_congr rfl
-    intro C hC
-    rw [(mem_filter.mp hC).2]
-  · simp [hx]
+  simpa only [weightedPlaquetteMajorant_const, prod_const] using
+    blockSum_weightedPlaquetteMajorant supp (fun _ => δ) F x
 
 /-- Charge a connected set through a link to any plaquette in that set using
 the link, then apply the rooted connected-set sum. -/

@@ -339,6 +339,25 @@ instance : CoeFun (UnionWeight V) (fun _ => Finset V → ℝ) := ⟨UnionWeight.
 section SupportWeights
 variable {X : Type*} [DecidableEq X]
 
+/-- Support cardinality together with a nonnegative additive label cost.
+The extra cost is subadditive under union, even when labels overlap. -/
+def supportCardinalityCostWeight (supp : V → Finset X) (a : ℝ) (ha : 0 ≤ a)
+    (cost : V → ℝ) (hc : ∀ v, 0 ≤ cost v) : UnionWeight V where
+  toFun S := Real.exp (a * (S.biUnion supp).card + ∑ v ∈ S, cost v)
+  one_le S := Real.one_le_exp (add_nonneg (mul_nonneg ha (Nat.cast_nonneg _)) (sum_nonneg fun v _ => hc v))
+  empty := by simp
+  union_le S T := by
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    have hs : (∑ v ∈ S ∪ T, cost v) ≤ (∑ v ∈ S, cost v) + ∑ v ∈ T, cost v := by
+      rw [← sum_union_inter]
+      exact le_add_of_nonneg_right (sum_nonneg (fun v _ => hc v))
+    have hk : (((S.biUnion supp) ∪ (T.biUnion supp)).card : ℝ) ≤
+        (S.biUnion supp).card + (T.biUnion supp).card := by exact_mod_cast card_union_le _ _
+    rw [union_biUnion]
+    nlinarith
+
+
 /-- Exponential cardinality of the union support is submultiplicative,
 including for overlapping label families. -/
 def supportCardinalityWeight (supp : V → Finset X) (a : ℝ) (ha : 0 ≤ a) : UnionWeight V where

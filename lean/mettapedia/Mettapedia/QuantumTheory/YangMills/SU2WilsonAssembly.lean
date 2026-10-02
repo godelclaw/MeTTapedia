@@ -269,6 +269,7 @@ theorem plaquetteObservable_bounds (N : ℕ) (p : AssemblyPlaquette N) (ω : Ful
   SU2WilsonBlockIntegration.potential_bounds _
 
 open WilsonConditionalProjection.PairedHaar SU2BoundaryResponse WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas
 
 def wilsonInteraction (n : ℕ) (β : ℝ) : Finset (Link 4 n) → C(Link 4 n → SU2, ℝ) :=
   regroupInteraction support (fun p : Plaquette 4 n ↦ (-β) • plaquetteTrace p)
@@ -315,6 +316,40 @@ theorem wilsonInteraction_norm_le (n : ℕ) (β a : ℝ) (ha : 0 ≤ a) :
       have hc : (((univ : Finset (Plaquette 4 n)).filter (fun p ↦ l ∈ support p)).card : ℝ) ≤ 64 := by
         exact_mod_cast card_incident_le 4 n l
       nlinarith [mul_le_mul_of_nonneg_right hc (show 0 ≤ Real.exp (4*a) * |β| by positivity)]
+
+set_option maxHeartbeats 800000 in
+theorem wilsonInteraction_spatial_norm_le (n : ℕ) (β a η : ℝ) (ha : 0 ≤ a) (hη : 0 ≤ η) :
+    spatialInteractionNorm a η (wilsonInteraction n β) ≤ 64 * |β| * Real.exp (4*a + 4*η) := by
+  apply spatialInteractionNorm_le _ _ _ (by positivity)
+  intro l
+  refine (weightedInteractionRow_regroup_le support
+    (fun p : Plaquette 4 n => (-β) • plaquetteTrace p)
+    (fun S => Real.exp (a * S.card + η * treeLength S)) (fun _ => (Real.exp_pos _).le) l).trans ?_
+  calc
+    _ ≤ ∑ p ∈ univ.filter (fun p : Plaquette 4 n => l ∈ support p), Real.exp (4*a+4*η) * |β| := by
+      apply sum_le_sum
+      intro p _
+      have hn : ‖(-β) • plaquetteTrace p‖ ≤ |β| := by
+        rw [norm_smul, Real.norm_eq_abs, abs_neg]
+        exact (mul_le_mul_of_nonneg_left (norm_plaquetteTrace_le p) (abs_nonneg β)).trans_eq (mul_one _)
+      have he : Real.exp (a * (support p).card + η * treeLength (support p)) ≤ Real.exp (4*a+4*η) := by
+        apply Real.exp_le_exp.mpr
+        have hc : ((support p).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le p
+        have ht := treeLength_support_le p
+        nlinarith
+      exact mul_le_mul he hn (norm_nonneg _) (Real.exp_pos _).le
+    _ ≤ _ := by
+      simp only [sum_const, nsmul_eq_mul]
+      have hc : (((univ : Finset (Plaquette 4 n)).filter (fun p => l ∈ support p)).card : ℝ) ≤ 64 := by
+        exact_mod_cast card_incident_le 4 n l
+      nlinarith [mul_le_mul_of_nonneg_right hc (show 0 ≤ Real.exp (4*a+4*η) * |β| by positivity)]
+
+theorem wilsonInteraction_spatial_entry (a η ρ : ℝ) (ha : 0 ≤ a) (hη : 0 ≤ η)
+    (n : ℕ) (β : ℝ) (hβ : |β| ≤ ρ / (64 * Real.exp (4*a+4*η))) :
+    spatialInteractionNorm a η (wilsonInteraction n β) ≤ ρ := by
+  have hp : 0 < 64 * Real.exp (4*a+4*η) := by positivity
+  have hh := (le_div_iff₀ hp).mp hβ
+  exact (wilsonInteraction_spatial_norm_le n β a η ha hη).trans (by nlinarith)
 
 theorem wilsonInteraction_entry (a ρ : ℝ) (ha : 0 ≤ a)
     (n : ℕ) (β : ℝ) (hβ : |β| ≤ ρ / (64 * Real.exp (4*a))) :
@@ -888,6 +923,24 @@ theorem norm_block_le (A : InteractionState (doubleIndex n)) :
     interactionNorm 8 A.block.terms ≤ (4 * Real.exp (-2)) * interactionNorm 8 A.terms := by
   simpa only [block] using effectiveInteraction_norm_le volume (blockIndexEquiv 4 n) A.terms A.small
 
+theorem spatial_norm_block_le {η : ℝ} (hη : 0 ≤ η)
+    (A : InteractionState (doubleIndex n)) (hA : spatialInteractionNorm 8 η A.terms ≤ 1/2) :
+    spatialInteractionNorm 8 η A.block.terms ≤ (4 * Real.exp (-2)) * spatialInteractionNorm 8 η A.terms := by
+  have hfirst (i : Link 4 n) : halfLink (blockIndexEquiv 4 n (.inl (.inl i))) = i :=
+    halfLink_blockEdge i 0
+  have hsecond (i : Link 4 n) : halfLink (blockIndexEquiv 4 n (.inl (.inr i))) = i :=
+    halfLink_blockEdge i 1
+  simpa only [block] using effectiveInteraction_spatial_norm_le (blockIndexEquiv 4 n) halfLink
+    hfirst hsecond dist_halfLink_le volume hη A.terms A.small hA
+
+theorem spatial_small_block {η : ℝ} (hη : 0 ≤ η)
+    (A : InteractionState (doubleIndex n)) (hA : spatialInteractionNorm 8 η A.terms ≤ 1/2) :
+    spatialInteractionNorm 8 η A.block.terms ≤ 1/2 := by
+  have h := spatial_norm_block_le hη A hA
+  have h' := mul_le_mul_of_nonneg_left hA (show 0 ≤ 4 * Real.exp (-2) by positivity)
+  have hq := exp_reserve_lt_one
+  linarith
+
 theorem density_block (A : InteractionState (doubleIndex n)) :
     A.block.density = PairedLinks.blockedDensity volume (blockIndexEquiv 4 n) A.density := by
   ext c
@@ -970,6 +1023,27 @@ theorem abs_le_iterationBeta {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ strongIt
     |β| ≤ iterationBeta := by
   rw [abs_of_nonneg hβ]
   exact hβ0.trans (min_le_left _ _)
+
+/-- Spatial Wilson entry, with the rate fixed before the volume. -/
+
+def spatialIterationBeta (η : ℝ) : ℝ := 1 / (128 * Real.exp (32+4*η))
+
+theorem spatialIterationBeta_pos (η : ℝ) : 0 < spatialIterationBeta η := by unfold spatialIterationBeta; positivity
+
+theorem spatialIterationBeta_le {η : ℝ} (hη : 0 ≤ η) : spatialIterationBeta η ≤ iterationBeta := by
+  apply one_div_le_one_div_of_le (by positivity : 0 < 128 * Real.exp 32)
+  apply mul_le_mul_of_nonneg_left _ (by norm_num)
+  apply Real.exp_le_exp.mpr
+  linarith
+
+theorem wilsonState_spatial_small {η : ℝ} (hη : 0 ≤ η) (n : ℕ) (β : ℝ)
+    (hβ : |β| ≤ iterationBeta) (hsp : |β| ≤ spatialIterationBeta η) :
+    spatialInteractionNorm 8 η (wilsonState n β hβ).terms ≤ 1/2 := by
+  apply wilsonInteraction_spatial_entry 8 η (1/2) (by norm_num) hη
+  convert hsp using 1
+  unfold spatialIterationBeta
+  norm_num
+  ring
 
 
 end ScaleTwo

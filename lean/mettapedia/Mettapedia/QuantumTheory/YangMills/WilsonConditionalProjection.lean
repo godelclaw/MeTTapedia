@@ -19,8 +19,10 @@ controlled by connected conditional activities and an all-order polymer
 majorant. At input radius at most `1/2`, exact vacuum extraction produces a
 centered local family whose norm with weight `exp(8 |S|)` is at most
 `4 exp(-2)` times the input radius. The constants are independent of volume.
-These are uniform norms of interaction functions; derivative seminorms and
-spatial-diameter weights require their own estimates.
+The same contraction holds with an additional spatial tree-length weight
+when the blocking chart admits a nonexpanding projection identifying each
+link pair. These are uniform norms of interaction functions; derivative
+seminorms require their own estimates.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -368,22 +370,46 @@ theorem norm_blockedDensity_le (ν : Measure E) [IsProbabilityMeasure ν]
   intro c
   exact abs_blockedDensity_le ν e F (fun U ↦ F.norm_coe_le_norm U) c
 
-def interactionRow {Y : Type*} [Fintype Y] [DecidableEq Y] (a : ℝ) (i : Y) :
+section WeightedNorms
+omit [Group E] [IsTopologicalGroup E] [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+variable {Y : Type*} [Fintype Y] [DecidableEq Y]
+
+def weightedInteractionRow (w : Finset Y → ℝ) (hw : ∀ S, 0 ≤ w S) (i : Y) :
     Seminorm ℝ (Finset Y → C(Y → E, ℝ)) :=
-  Seminorm.of (fun Φ ↦ ∑ S ∈ univ.filter (fun S : Finset Y ↦ i ∈ S),
-      Real.exp (a * S.card) * ‖Φ S‖)
+  Seminorm.of (fun Φ ↦ ∑ S ∈ univ.filter (fun S : Finset Y ↦ i ∈ S), w S * ‖Φ S‖)
     (fun Φ Ψ ↦ by
       calc
-        _ ≤ ∑ S ∈ univ.filter (fun S : Finset Y ↦ i ∈ S),
-            Real.exp (a * S.card) * (‖Φ S‖ + ‖Ψ S‖) :=
-          Finset.sum_le_sum (fun S _ ↦
-            mul_le_mul_of_nonneg_left (norm_add_le _ _) (Real.exp_pos _).le)
+        _ ≤ ∑ S ∈ univ.filter (fun S : Finset Y ↦ i ∈ S), w S * (‖Φ S‖ + ‖Ψ S‖) :=
+          Finset.sum_le_sum (fun S _ ↦ mul_le_mul_of_nonneg_left (norm_add_le _ _) (hw S))
         _ = _ := by simp only [mul_add, Finset.sum_add_distrib])
     (fun c Φ ↦ by
       simp only [Pi.smul_apply, norm_smul, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro S _
       ring)
+
+@[simp] theorem weightedInteractionRow_apply (w : Finset Y → ℝ) (hw : ∀ S, 0 ≤ w S) (i : Y)
+    (Φ : Finset Y → C(Y → E, ℝ)) :
+    weightedInteractionRow w hw i Φ = ∑ S ∈ univ.filter (fun S : Finset Y ↦ i ∈ S), w S * ‖Φ S‖ := rfl
+
+def weightedInteractionNorm (w : Finset Y → ℝ) (hw : ∀ S, 0 ≤ w S) :
+    Seminorm ℝ (Finset Y → C(Y → E, ℝ)) := Finset.univ.sup (weightedInteractionRow w hw)
+
+theorem weightedInteractionRow_le (w : Finset Y → ℝ) (hw : ∀ S, 0 ≤ w S) (i : Y)
+    (Φ : Finset Y → C(Y → E, ℝ)) :
+    weightedInteractionRow w hw i Φ ≤ weightedInteractionNorm w hw Φ :=
+  Seminorm.le_finset_sup_apply (Finset.mem_univ i)
+
+theorem weightedInteractionNorm_le (w : Finset Y → ℝ) (hw : ∀ S, 0 ≤ w S)
+    (Φ : Finset Y → C(Y → E, ℝ)) {C : ℝ} (hC : 0 ≤ C)
+    (h : ∀ i, weightedInteractionRow w hw i Φ ≤ C) : weightedInteractionNorm w hw Φ ≤ C :=
+  Seminorm.finset_sup_apply_le hC (fun i _ ↦ h i)
+
+end WeightedNorms
+
+def interactionRow {Y : Type*} [Fintype Y] [DecidableEq Y] (a : ℝ) (i : Y) :
+    Seminorm ℝ (Finset Y → C(Y → E, ℝ)) :=
+  weightedInteractionRow (fun S ↦ Real.exp (a * S.card)) (fun _ ↦ (Real.exp_pos _).le) i
 
 omit [Group E] [IsTopologicalGroup E] [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E] in
 @[simp] theorem interactionRow_apply {Y : Type*} [Fintype Y] [DecidableEq Y] (a : ℝ) (i : Y)
@@ -406,6 +432,43 @@ theorem interactionNorm_le {Y : Type*} [Fintype Y] [DecidableEq Y] (a : ℝ)
     (Φ : Finset Y → C(Y → E, ℝ)) {C : ℝ} (hC : 0 ≤ C)
     (h : ∀ i, interactionRow a i Φ ≤ C) : interactionNorm a Φ ≤ C :=
   Seminorm.finset_sup_apply_le hC (fun i _ ↦ h i)
+
+section SpatialNorms
+open Mettapedia.Combinatorics.PolymerGas
+omit [Group E] [IsTopologicalGroup E] [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+variable {Y : Type*} [Fintype Y] [DecidableEq Y]
+variable [PseudoMetricSpace Y]
+
+def spatialInteractionRow (a η : ℝ) (i : Y) : Seminorm ℝ (Finset Y → C(Y → E, ℝ)) :=
+  weightedInteractionRow (fun S => Real.exp (a*S.card + η*treeLength S)) (fun _ => (Real.exp_pos _).le) i
+
+def spatialInteractionNorm (a η : ℝ) : Seminorm ℝ (Finset Y → C(Y → E, ℝ)) :=
+  weightedInteractionNorm (fun S => Real.exp (a*S.card + η*treeLength S)) (fun _ => (Real.exp_pos _).le)
+
+@[simp] theorem spatialInteractionRow_apply (a η : ℝ) (i : Y) (Φ : Finset Y → C(Y → E, ℝ)) :
+    spatialInteractionRow a η i Φ =
+      ∑ S ∈ univ.filter (fun S : Finset Y => i ∈ S), Real.exp (a*S.card + η*treeLength S) * ‖Φ S‖ := rfl
+
+theorem spatialInteractionRow_le (a η : ℝ) (i : Y) (Φ : Finset Y → C(Y → E, ℝ)) :
+    spatialInteractionRow a η i Φ ≤ spatialInteractionNorm a η Φ := weightedInteractionRow_le _ _ _ _
+
+theorem spatialInteractionNorm_le (a η : ℝ) (Φ : Finset Y → C(Y → E, ℝ))
+    {C : ℝ} (hC : 0 ≤ C) (h : ∀ i, spatialInteractionRow a η i Φ ≤ C) :
+    spatialInteractionNorm a η Φ ≤ C := weightedInteractionNorm_le _ _ _ hC h
+
+theorem interactionNorm_le_spatial (a : ℝ) {η : ℝ} (hη : 0 ≤ η) (Φ : Finset Y → C(Y → E, ℝ)) :
+    interactionNorm a Φ ≤ spatialInteractionNorm a η Φ := by
+  apply interactionNorm_le _ _ (by positivity)
+  intro i
+  apply le_trans (b := spatialInteractionRow a η i Φ) ?_ (spatialInteractionRow_le _ _ _ _)
+  apply sum_le_sum
+  intro S hS
+  apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+  apply Real.exp_le_exp.mpr
+  have h := mul_nonneg hη (treeLength_nonneg S)
+  linarith
+
+end SpatialNorms
 
 section Regroup
 variable {Y P : Type*} [Fintype Y] [DecidableEq Y] [Fintype P]
@@ -430,19 +493,19 @@ theorem regroupInteraction_local (support : P → Finset Y) (F : P → C(Y → E
   exact hF p U V ((mem_filter.mp hp).2 ▸ h)
 
 omit [Group E] [IsTopologicalGroup E] [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E] in
-theorem interactionRow_regroup_le (support : P → Finset Y) (F : P → C(Y → E, ℝ))
-    (a : ℝ) (i : Y) :
-    interactionRow a i (regroupInteraction support F) ≤
-      ∑ p ∈ univ.filter (fun p ↦ i ∈ support p), Real.exp (a * (support p).card) * ‖F p‖ := by
+theorem weightedInteractionRow_regroup_le (support : P → Finset Y) (F : P → C(Y → E, ℝ))
+    (w : Finset Y → ℝ) (hw : ∀ S, 0 ≤ w S) (i : Y) :
+    weightedInteractionRow w hw i (regroupInteraction support F) ≤
+      ∑ p ∈ univ.filter (fun p ↦ i ∈ support p), w (support p) * ‖F p‖ := by
   calc
     _ ≤ ∑ S ∈ univ.filter (fun S : Finset Y ↦ i ∈ S),
-        ∑ p ∈ univ.filter (fun p ↦ support p = S), Real.exp (a * S.card) * ‖F p‖ := by
+        ∑ p ∈ univ.filter (fun p ↦ support p = S), w S * ‖F p‖ := by
       apply Finset.sum_le_sum
       intro S _
       rw [← Finset.mul_sum]
-      exact mul_le_mul_of_nonneg_left (norm_sum_le _ _) (Real.exp_pos _).le
+      exact mul_le_mul_of_nonneg_left (norm_sum_le _ _) (hw S)
     _ = ∑ S ∈ univ.filter (fun S : Finset Y ↦ i ∈ S),
-        ∑ p ∈ univ.filter (fun p ↦ support p = S), Real.exp (a * (support p).card) * ‖F p‖ := by
+        ∑ p ∈ univ.filter (fun p ↦ support p = S), w (support p) * ‖F p‖ := by
       apply Finset.sum_congr rfl
       intro S _
       apply Finset.sum_congr rfl
@@ -452,7 +515,14 @@ theorem interactionRow_regroup_le (support : P → Finset Y) (F : P → C(Y → 
       simpa only [mem_filter, mem_univ, true_and] using
         Finset.sum_fiberwise_eq_sum_filter (univ : Finset P)
           (univ.filter (fun S : Finset Y ↦ i ∈ S)) support
-          (fun p ↦ Real.exp (a * (support p).card) * ‖F p‖)
+          (fun p ↦ w (support p) * ‖F p‖)
+
+omit [Group E] [IsTopologicalGroup E] [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E] in
+theorem interactionRow_regroup_le (support : P → Finset Y) (F : P → C(Y → E, ℝ))
+    (a : ℝ) (i : Y) :
+    interactionRow a i (regroupInteraction support F) ≤
+      ∑ p ∈ univ.filter (fun p ↦ i ∈ support p), Real.exp (a * (support p).card) * ‖F p‖ :=
+  weightedInteractionRow_regroup_le support F _ _ i
 
 end Regroup
 
@@ -978,28 +1048,35 @@ theorem extractedInteraction_reconstruct :
   rw [he]
   simp only [extractedVacuum, sub_add_cancel]
 
+theorem extractedInteraction_weighted_row_le (w : Finset X → ℝ) (hw : ∀ S, 0 ≤ w S) {c : V → ℝ}
+    (hbudget : ∀ p, ∑ S ∈ univ.filter (fun S : Finset V ↦ p ∈ S),
+      w (S.biUnion supp) * ‖coefficient F S‖ ≤ c p) (x : X) :
+    weightedInteractionRow w hw x (extractedInteraction ν supp F) ≤
+      2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), c p := by
+  calc
+    _ ≤ ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
+        w (S.biUnion supp) *
+          ‖centered (Measure.pi fun _ : X ↦ ν) 1 (coefficient F S)‖ :=
+      weightedInteractionRow_regroup_le _ _ w hw x
+    _ ≤ ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
+        2 * (w (S.biUnion supp) * ‖coefficient F S‖) := by
+      apply sum_le_sum
+      intro S hS
+      nlinarith [mul_le_mul_of_nonneg_left (norm_haarCentered_le ν (coefficient F S)) (hw (S.biUnion supp))]
+    _ = 2 * ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
+        w (S.biUnion supp) * ‖coefficient F S‖ := by rw [mul_sum]
+    _ ≤ 2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
+        ∑ S ∈ univ.filter (fun S : Finset V ↦ p ∈ S),
+          w (S.biUnion supp) * ‖coefficient F S‖ :=
+      mul_le_mul_of_nonneg_left (sum_union_support_incident_le supp (fun S ↦ mul_nonneg (hw _) (norm_nonneg _)) x) (by norm_num)
+    _ ≤ _ := mul_le_mul_of_nonneg_left (sum_le_sum (fun p _ ↦ hbudget p)) (by norm_num)
+
 theorem extractedInteraction_row_le (a : ℝ) {c : V → ℝ}
     (hbudget : ∀ p, ∑ S ∈ univ.filter (fun S : Finset V ↦ p ∈ S),
       Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖ ≤ c p) (x : X) :
     interactionRow a x (extractedInteraction ν supp F) ≤
-      2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), c p := by
-  calc
-    _ ≤ ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
-        Real.exp (a * (S.biUnion supp).card) *
-          ‖centered (Measure.pi fun _ : X ↦ ν) 1 (coefficient F S)‖ :=
-      interactionRow_regroup_le _ _ a x
-    _ ≤ ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
-        2 * (Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖) := by
-      apply sum_le_sum
-      intro S hS
-      nlinarith [mul_le_mul_of_nonneg_left (norm_haarCentered_le ν (coefficient F S)) (Real.exp_pos (a * (S.biUnion supp).card)).le]
-    _ = 2 * ∑ S ∈ univ.filter (fun S : Finset V ↦ x ∈ S.biUnion supp),
-        Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖ := by rw [mul_sum]
-    _ ≤ 2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
-        ∑ S ∈ univ.filter (fun S : Finset V ↦ p ∈ S),
-          Real.exp (a * (S.biUnion supp).card) * ‖coefficient F S‖ :=
-      mul_le_mul_of_nonneg_left (sum_union_support_incident_le supp (fun S ↦ by positivity) x) (by norm_num)
-    _ ≤ _ := mul_le_mul_of_nonneg_left (sum_le_sum (fun p _ ↦ hbudget p)) (by norm_num)
+      2 * ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p), c p :=
+  extractedInteraction_weighted_row_le ν supp F _ (fun _ ↦ (Real.exp_pos _).le) hbudget x
 
 end PairedHaar
 
@@ -1163,6 +1240,35 @@ theorem clusterLogFamily_root_budget (hne : ∀ p, (supp p).Nonempty)
     simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply,
       activatedLogPartition]
 
+theorem sum_clusterRemoval_retained_le_of_row (v : P → ℝ)
+    (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p), Real.exp (8 * (supp p).card) * v p ≤ r)
+    (i : I) :
+    ∑ C ∈ univ.filter (fun C => i ∈ clusterRetainedSupport e supp C),
+      clusterRemovalWeight e supp v C ≤ Real.exp (-2) * r := by
+  calc
+    _ ≤ ∑ C ∈ univ.filter (fun C => i ∈ clusterRetainedSupport e supp C),
+        clusterMajorant e supp v C *
+          Real.exp ((plaquetteSupport (fun p => fluctuationSupport e (supp p)) C).card : ℝ) := by
+      apply sum_le_sum
+      intro C hC
+      have hn := mul_nonneg (clusterMajorant_nonneg e supp v hv C)
+        (Real.exp_pos ((plaquetteSupport (fun p => fluctuationSupport e (supp p)) C).card : ℝ)).le
+      have h := Real.log_le_sub_one_of_pos (show 0 < 1 + clusterMajorant e supp v C *
+        Real.exp ((plaquetteSupport (fun p => fluctuationSupport e (supp p)) C).card : ℝ) by linarith)
+      exact (show Real.log _ ≤ _ from h).trans_eq (by ring)
+    _ ≤ ∑ C ∈ univ.filter (fun C => e (.inl (.inl i)) ∈ plaquetteSupport supp C),
+        clusterMajorant e supp v C *
+          Real.exp ((plaquetteSupport (fun p => fluctuationSupport e (supp p)) C).card : ℝ) := by
+      apply sum_le_sum_of_subset_of_nonneg
+      · intro C hC
+        exact mem_filter.mpr ⟨mem_univ _, ((mem_retainedSupport e _ i).mp (mem_filter.mp hC).2).1⟩
+      · intro C hC hnot
+        exact mul_nonneg (clusterMajorant_nonneg e supp v hv C) (Real.exp_pos _).le
+    _ ≤ _ := clusterMajorant_through_fine_site e supp v hne hv hr hr1 hrow (e (.inl (.inl i)))
+
+
 theorem sum_clusterRemoval_retained_le (hne : ∀ p, (supp p).Nonempty)
     {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
     (hrow : ∀ x, ∑ p ∈ univ.filter (fun p ↦ x ∈ supp p),
@@ -1183,27 +1289,8 @@ theorem sum_clusterRemoval_retained_le (hne : ∀ p, (supp p).Nonempty)
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_left (hrow x) (by norm_num)
   calc
-    _ ≤ ∑ C ∈ univ.filter (fun C ↦ i ∈ clusterRetainedSupport e supp C),
-        clusterMajorant e supp v C *
-          Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) := by
-      apply sum_le_sum
-      intro C hC
-      have hn : 0 ≤ clusterMajorant e supp v C *
-          Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) :=
-        mul_nonneg (clusterMajorant_nonneg e supp v hv C) (Real.exp_pos _).le
-      have h := Real.log_le_sub_one_of_pos (show 0 < 1 + clusterMajorant e supp v C *
-        Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) by linarith)
-      exact (show Real.log _ ≤ _ from h).trans_eq (by ring)
-    _ ≤ ∑ C ∈ univ.filter (fun C ↦ e (.inl (.inl i)) ∈ plaquetteSupport supp C),
-        clusterMajorant e supp v C *
-          Real.exp ((plaquetteSupport (fun p ↦ fluctuationSupport e (supp p)) C).card : ℝ) := by
-      apply sum_le_sum_of_subset_of_nonneg
-      · intro C hC
-        exact mem_filter.mpr ⟨mem_univ _, ((mem_retainedSupport e _ i).mp (mem_filter.mp hC).2).1⟩
-      · intro C hC hnot
-        exact mul_nonneg (clusterMajorant_nonneg e supp v hv C) (Real.exp_pos _).le
-    _ ≤ Real.exp (-2) * (2*R) := clusterMajorant_through_fine_site e supp v hne hv
-      (by positivity) (by linarith) hr (e (.inl (.inl i)))
+    _ ≤ Real.exp (-2) * (2*R) :=
+      sum_clusterRemoval_retained_le_of_row e supp v hne hv (by positivity) (by linarith) hr i
     _ = _ := by ring
 
 def nonlinearInteraction : Finset I → C(I → E, ℝ) :=
@@ -1443,3 +1530,255 @@ theorem effectiveInteraction_eval_eq (ν : Measure E) [IsProbabilityMeasure ν]
 end PairedHaar
 
 end Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection
+
+/-! ## Spatial contraction of the complete generated interaction -/
+
+namespace Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection.PairedHaar
+open WilsonBlockElimination WilsonBlockElimination.PairedLinks WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas Mettapedia.Combinatorics.PolymerGas.SubsetExpansion
+variable {X I J P : Type*} [Fintype X] [Fintype I] [Fintype J] [Fintype P]
+  [DecidableEq X] [DecidableEq I] [DecidableEq J] [DecidableEq P]
+  [PseudoMetricSpace X] [PseudoMetricSpace I]
+variable (e : ((I ⊕ I) ⊕ J) ≃ X) (π : X → I)
+  (hπ₁ : ∀ i, π (e (.inl (.inl i))) = i)
+  (hπ₂ : ∀ i, π (e (.inl (.inr i))) = i)
+  (hπd : ∀ x y, dist (π x) (π y) ≤ dist x y)
+
+include hπ₁ in
+theorem retainedSupport_subset_image (S : Finset X) : retainedSupport e S ⊆ S.image π := by
+  intro i hi
+  exact mem_image.mpr ⟨_, ((mem_retainedSupport e S i).mp hi).1, hπ₁ i⟩
+
+include hπ₁ hπ₂ in
+theorem projectedSupport_meet {S T : Finset X}
+    (hm : ¬Disjoint (fluctuationSupport e S) (fluctuationSupport e T)) :
+    ¬Disjoint (S.image π) (T.image π) := by
+  obtain ⟨y, hyS, hyT⟩ := not_disjoint_iff.mp hm
+  rcases y with i | j
+  · have hi (U : Finset X) (hU : Sum.inl i ∈ fluctuationSupport e U) : i ∈ U.image π := by
+      rcases (mem_fluctuationSupport_inl e U i).mp hU with h | h
+      · exact mem_image.mpr ⟨_, h, hπ₁ i⟩
+      · exact mem_image.mpr ⟨_, h, hπ₂ i⟩
+    exact not_disjoint_iff.mpr ⟨i, hi S hyS, hi T hyT⟩
+  · exact not_disjoint_iff.mpr ⟨π (e (.inr j)),
+      mem_image_of_mem π ((mem_fluctuationSupport_inr e S j).mp hyS),
+      mem_image_of_mem π ((mem_fluctuationSupport_inr e T j).mp hyT)⟩
+
+theorem fluctuationSupport_biUnion (supp : P → Finset X) (C : Finset P) :
+    fluctuationSupport e (plaquetteSupport supp C) =
+      plaquetteSupport (fun p => fluctuationSupport e (supp p)) C := by
+  ext y
+  simp only [fluctuationSupport, plaquetteSupport, biUnion_image, mem_biUnion, mem_image]
+
+include hπ₁ hπ₂ hπd in
+theorem projectedCluster_treeLength_le (supp : P → Finset X) (C : Finset P)
+    (hC : C ∈ connectedPlaquettes (fun p => fluctuationSupport e (supp p))) :
+    treeLength ((plaquetteSupport supp C).image π) ≤ ∑ p ∈ C, treeLength (supp p) := by
+  have hc := (mem_filter.mp hC).2
+  calc
+    _ = treeLength (C.biUnion (fun p => (supp p).image π)) := by
+      simp only [plaquetteSupport, biUnion_image]
+    _ ≤ ∑ p ∈ C, treeLength ((supp p).image π) :=
+      treeLength_biUnion_le_of_connected (plaquetteGraph (fun p => fluctuationSupport e (supp p)))
+        _ (fun p q hpq => projectedSupport_meet e π hπ₁ hπ₂ hpq.2) C hc
+    _ ≤ _ := sum_le_sum (fun p _ => treeLength_image_le π hπd (supp p))
+
+include hπ₁ hπ₂ hπd in
+theorem retainedFamily_treeLength_le (supp : P → Finset X) (A : Finset (Finset P))
+    (ha : A ⊆ connectedPlaquettes (fun p => fluctuationSupport e (supp p)))
+    (hc : ((plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p)))).induce
+      (A : Set (Finset P))).Connected) :
+    treeLength (A.biUnion (clusterRetainedSupport e supp)) ≤
+      ∑ C ∈ A, ∑ p ∈ C, treeLength (supp p) := by
+  calc
+    _ ≤ treeLength (A.biUnion (fun C => (plaquetteSupport supp C).image π)) :=
+      treeLength_mono (biUnion_mono (fun C _ => retainedSupport_subset_image e π hπ₁ _))
+    _ ≤ ∑ C ∈ A, treeLength ((plaquetteSupport supp C).image π) := by
+      apply treeLength_biUnion_le_of_connected _ _ _ A hc
+      intro C D hCD
+      apply projectedSupport_meet e π hπ₁ hπ₂
+      simpa only [fluctuationSupport_biUnion] using hCD.2
+    _ ≤ _ := sum_le_sum (fun C hC => projectedCluster_treeLength_le e π hπ₁ hπ₂ hπd supp C (ha hC))
+
+variable {E : Type*} [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+variable (ν : Measure E) [IsProbabilityMeasure ν]
+  (supp : P → Finset X) (Φ : P → C(X → E, ℝ))
+  (hpos : ∀ Λ c, 0 < partitionFunction
+    (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
+    (fun C ↦ clusterActivity ν e supp Φ C c) Λ)
+
+theorem clusterLogFamily_coefficient_zero_of_not_connected (A : Finset (Finset P))
+    (hA : ¬((plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p)))).induce
+      (A : Set (Finset P))).Connected) :
+    coefficient (clusterLogFamily ν e supp Φ hpos) A = 0 := by
+  ext c
+  rw [coefficient_continuous_apply]
+  have he : (fun B => clusterLogFamily ν e supp Φ hpos B c) =
+      activatedLogPartition (plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p))))
+        (fun C => clusterActivity ν e supp Φ C c)
+        (connectedPlaquettes (fun p => fluctuationSupport e (supp p))) := by
+    funext B
+    simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply,
+      activatedLogPartition]
+  rw [he]
+  exact coefficient_activatedLogPartition_eq_zero_of_not_connected _ _ (fun T => hpos T c) _ A hA
+
+theorem clusterLogFamily_coefficient_zero_of_not_active (A : Finset (Finset P))
+    (hA : ¬A ⊆ connectedPlaquettes (fun p => fluctuationSupport e (supp p))) :
+    coefficient (clusterLogFamily ν e supp Φ hpos) A = 0 := by
+  ext c
+  rw [coefficient_continuous_apply]
+  have he : (fun B => clusterLogFamily ν e supp Φ hpos B c) =
+      (fun B => Real.log (partitionFunction
+        (plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p))))
+        (fun C => clusterActivity ν e supp Φ C c)
+        (B ∩ connectedPlaquettes (fun p => fluctuationSupport e (supp p))))) := by
+    funext B
+    simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply, inter_comm]
+  rw [he, coefficient_restrict (fun T => Real.log (partitionFunction
+    (plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p))))
+    (fun C => clusterActivity ν e supp Φ C c) T))]
+  simp only [hA, ↓reduceIte, ContinuousMap.zero_apply]
+
+def spatialClusterWeight (η : ℝ) (hη : 0 ≤ η) : UnionWeight (Finset P) :=
+  supportCardinalityCostWeight (clusterRetainedSupport e supp) 8 (by norm_num)
+    (fun C => η * ∑ p ∈ C, treeLength (supp p))
+    (fun C => mul_nonneg hη (sum_nonneg (fun p _ => treeLength_nonneg _)))
+
+include hπ₁ hπ₂ hπd in
+theorem spatialClusterWeight_controls_coefficient {η : ℝ} (hη : 0 ≤ η)
+    (A : Finset (Finset P)) :
+    Real.exp (8 * (A.biUnion (clusterRetainedSupport e supp)).card +
+      η * treeLength (A.biUnion (clusterRetainedSupport e supp))) *
+        ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ ≤
+      spatialClusterWeight e supp η hη A * ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ := by
+  by_cases ha : A ⊆ connectedPlaquettes (fun p => fluctuationSupport e (supp p))
+  · by_cases hc : ((plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p)))).induce
+        (A : Set (Finset P))).Connected
+    · apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+      apply Real.exp_le_exp.mpr
+      dsimp only [spatialClusterWeight, supportCardinalityCostWeight]
+      rw [← mul_sum]
+      have h := mul_le_mul_of_nonneg_left
+        (retainedFamily_treeLength_le e π hπ₁ hπ₂ hπd supp A ha hc) hη
+      linarith
+    · rw [clusterLogFamily_coefficient_zero_of_not_connected e ν supp Φ hpos A hc]
+      simp
+  · rw [clusterLogFamily_coefficient_zero_of_not_active e ν supp Φ hpos A ha]
+    simp
+
+theorem clusterMajorant_exp_mul (cost v : P → ℝ) (C : Finset P) :
+    clusterMajorant e supp (fun p => Real.exp (cost p) * v p) C =
+      Real.exp (∑ p ∈ C, cost p) * clusterMajorant e supp v C := by
+  unfold clusterMajorant
+  split_ifs
+  · rw [Real.exp_sum, ← prod_mul_distrib]
+    apply prod_congr rfl
+    intro p _
+    ring
+  · simp
+
+theorem spatial_clusterActivity_norm_le {η : ℝ} (hη : 0 ≤ η)
+    (hn : ∀ p, ‖Φ p‖ ≤ 1) (C : Finset P) :
+    spatialClusterWeight e supp η hη {C} * ‖clusterActivity ν e supp Φ C‖ ≤
+      clusterMajorant e supp (fun p => Real.exp (η * treeLength (supp p)) * (2 * ‖Φ p‖)) C := by
+  rw [clusterMajorant_exp_mul]
+  simp only [spatialClusterWeight, supportCardinalityCostWeight, singleton_biUnion, sum_singleton]
+  rw [← mul_sum, Real.exp_add]
+  calc
+    _ = Real.exp (η * ∑ p ∈ C, treeLength (supp p)) *
+        (Real.exp (8 * (clusterRetainedSupport e supp C).card) * ‖clusterActivity ν e supp Φ C‖) := by ring
+    _ ≤ _ := mul_le_mul_of_nonneg_left (weighted_clusterActivity_norm_le ν e supp Φ hn C) (Real.exp_pos _).le
+
+theorem cardinality_row_le_spatial_row {η : ℝ} (hη : 0 ≤ η) (x : X) :
+    (∑ p ∈ univ.filter (fun p => x ∈ supp p), Real.exp (8 * (supp p).card) * ‖Φ p‖) ≤
+      ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+        Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ := by
+  apply sum_le_sum
+  intro p _
+  apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+  exact Real.exp_le_exp.mpr (le_add_of_nonneg_right (mul_nonneg hη (treeLength_nonneg _)))
+
+theorem spatial_inflated_row_le {η R : ℝ}
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ ≤ R) (x : X) :
+    (∑ p ∈ univ.filter (fun p => x ∈ supp p), Real.exp (8 * (supp p).card) *
+      (Real.exp (η * treeLength (supp p)) * (2 * ‖Φ p‖))) ≤ 2 * R := by
+  calc
+    _ = 2 * ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+        Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ := by
+      rw [mul_sum]
+      apply sum_congr rfl
+      intro p _
+      rw [Real.exp_add]
+      ring
+    _ ≤ _ := mul_le_mul_of_nonneg_left (hrow x) (by norm_num)
+
+include hπ₁ hπ₂ hπd in
+theorem clusterLogFamily_spatial_root_budget {η : ℝ} (hη : 0 ≤ η)
+    (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ ≤ R) (C : Finset P) :
+    ∑ A ∈ univ.filter (fun A : Finset (Finset P) => C ∈ A),
+      Real.exp (8 * (A.biUnion (clusterRetainedSupport e supp)).card +
+        η * treeLength (A.biUnion (clusterRetainedSupport e supp))) *
+        ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ ≤
+      clusterRemovalWeight e supp (fun p => Real.exp (η * treeLength (supp p)) * (2 * ‖Φ p‖)) C := by
+  apply le_trans (sum_le_sum (fun A _ => spatialClusterWeight_controls_coefficient e π hπ₁ hπ₂ hπd ν supp Φ hpos hη A))
+  apply sum_weighted_norm_log_coefficients_le
+    (Λ := connectedPlaquettes (fun p => fluctuationSupport e (supp p)))
+    _ (spatialClusterWeight e supp η hη) (clusterActivity ν e supp Φ)
+    (fun C => clusterMajorant_nonneg e supp _ (fun p => by positivity) C)
+    (clusterMajorant_dobrushin e supp hne (fun p => by positivity)
+      (by positivity : 0 ≤ 2*R) (by linarith) (spatial_inflated_row_le supp Φ hrow))
+  · intro D c
+    have hn : ∀ p, ‖Φ p‖ ≤ 1 := fun p =>
+      (component_norm_le_of_row supp Φ hne
+        (fun x => (cardinality_row_le_spatial_row supp Φ hη x).trans (hrow x)) p).trans (by linarith)
+    exact (mul_le_mul_of_nonneg_left ((clusterActivity ν e supp Φ D).norm_coe_le_norm c)
+      (le_trans zero_le_one ((spatialClusterWeight e supp η hη).one_le _))).trans
+        (spatial_clusterActivity_norm_le e ν supp Φ hη hn D)
+  · intro A c
+    simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply, activatedLogPartition]
+
+include hπ₁ hπ₂ hπd in
+theorem nonlinearInteraction_spatial_norm_le {η : ℝ} (hη : 0 ≤ η)
+    (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ ≤ R) :
+    spatialInteractionNorm 8 η (nonlinearInteraction ν e supp Φ hpos) ≤ (4 * Real.exp (-2)) * R := by
+  apply spatialInteractionNorm_le _ _ _ (by positivity)
+  intro i
+  calc
+    _ ≤ 2 * ∑ C ∈ univ.filter (fun C => i ∈ clusterRetainedSupport e supp C),
+        clusterRemovalWeight e supp (fun p => Real.exp (η * treeLength (supp p)) * (2 * ‖Φ p‖)) C :=
+      extractedInteraction_weighted_row_le ν _ _ _ (fun _ => (Real.exp_pos _).le)
+        (clusterLogFamily_spatial_root_budget e π hπ₁ hπ₂ hπd ν supp Φ hpos hη hne hR hR1 hrow) i
+    _ ≤ 2 * (Real.exp (-2) * (2*R)) :=
+      mul_le_mul_of_nonneg_left (sum_clusterRemoval_retained_le_of_row e supp _ hne
+        (fun p => by positivity) (by positivity : 0 ≤ 2*R) (by linarith)
+        (spatial_inflated_row_le supp Φ hrow) i) (by norm_num)
+    _ = _ := by ring
+
+theorem spatialInteractionRow_nonempty (a η : ℝ) (Ψ : Finset X → C(X → E, ℝ)) (x : X) :
+    (∑ S ∈ univ.filter (fun S : {S : Finset X // S.Nonempty} => x ∈ S.val),
+      Real.exp (a * S.val.card + η * treeLength S.val) * ‖Ψ S.val‖) = spatialInteractionRow a η x Ψ := by
+  simp only [sum_filter, spatialInteractionRow_apply]
+  exact sum_nonemptySupports (fun S => if x ∈ S then
+    Real.exp (a * S.card + η * treeLength S) * ‖Ψ S‖ else 0) (by simp)
+
+include hπ₁ hπ₂ hπd in
+theorem effectiveInteraction_spatial_norm_le {η : ℝ} (hη : 0 ≤ η)
+    (Ψ : Finset X → C(X → E, ℝ)) (hsmall : interactionNorm 8 Ψ ≤ 1/2)
+    (hspatial : spatialInteractionNorm 8 η Ψ ≤ 1/2) :
+    spatialInteractionNorm 8 η (effectiveInteraction ν e Ψ hsmall) ≤
+      (4 * Real.exp (-2)) * spatialInteractionNorm 8 η Ψ :=
+  nonlinearInteraction_spatial_norm_le e π hπ₁ hπ₂ hπd ν _ _ _ hη (fun S => S.property)
+    (R := spatialInteractionNorm 8 η Ψ) (by positivity) hspatial (fun x => by
+      rw [spatialInteractionRow_nonempty]
+      exact spatialInteractionRow_le 8 η x Ψ)
+
+end Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection.PairedHaar
