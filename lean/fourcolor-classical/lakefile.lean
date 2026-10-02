@@ -30,6 +30,21 @@ target kernelSector7 pkg : Unit := do
       cwd := pkg.dir
       env := env }
 
+/-- Check a chain that crosses a flat pair's original observation boundary. -/
+target kernelChainBoundary pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/chain-boundary-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RuleChainRecognition", "ChainBoundaryGeometry", "ChainBoundaryExample",
+        "RuleChainRecognitionAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Recognize the chain from its embedded three-triangle core. -/
 target kernelChainRecognition pkg : Unit := do
   let env ← getAugmentedEnv

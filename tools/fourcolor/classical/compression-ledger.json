@@ -3639,5 +3639,16 @@
     "catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "next": "Derive this degree word or another certified reduction from the surviving joint charge profiles."
+  },
+  "continued_chain_recognition": {
+    "record": "../near-linear/chain-boundary-measurements.json",
+    "module": "MettapediaFourColor.RuleChainRecognition",
+    "status": "Kernel-checked charge-rule continuation to the existing chain, with actual strict-reduction consumer and radius-four full boundary.",
+    "scope": "A further degree-five vertex completes a retained 5,6,5 prefix around a degree-six vertex. The 162-vertex consumer crosses both original radius-two balls.",
+    "original_rank_certificate": "Bulk.Cfg006",
+    "new_rank_certificates": 0,
+    "coverage_entries_removed": 0,
+    "additional_assembly_dependencies_removed": 0,
+    "next": "Classify the surviving continuations and prove family supply; exact-rule existence and flatness must retain common ambient vertices."
   }
 }

@@ -1,5 +1,5 @@
 {
-  "status": "The actual exceptional closing branch, exact rooted rule matcher, both guarded rule-pair diamond reductions and their surviving five/six profile are kernel checked. Surviving zero-charge classification and global coverage remain open.",
+  "status": "The actual exceptional closing branch, exact rooted rule matcher, both guarded rule-pair diamond reductions, chain degree-word recognition and its continued-rule consumer are kernel checked. Surviving zero-charge classification and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -436,17 +436,11 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "A per-star charge bound using the certified forbidden joint rule combination",
-    "test": "On degree-eight receivers, retain full shared cyclic readings and test zero-charge profiles after applying surviving_pair_degrees to every aligned 003_2/004_1 pair with degree-five first sender. Track both positive and negative checks. Determine whether the surviving five/six profile forces a further shared turn, another certified reduction or a genuine residual requiring additional geometry.",
-    "acceptance": "An exact charge bound or a certified finite residual class consumed by the coverage scaffold, with recognition and reconstruction attached to every excluded outcome. A surviving pattern must be retained as a residual, not discarded by an unproved independence assumption.",
-    "prior_result": "RulePairDiamond.pair_alternatives and ActualRulePairDiamond.surviving_pair_degrees",
-    "primary_lemmas": [
-      "8.3(i)",
-      "9.8",
-      "11.1"
-    ],
-    "limit": "The exact pair classification does not show that forty units of external supply force a reducible profile. The finite example has seven shared-five/outer-six readings, so these cannot simply be discarded.",
-    "first_collision_subtest": "Completed: actual corner identification, pentagonal repair, full degree split and finite nonempty instance. The shared-five/outer-six residual remains explicit."
+    "target": "Extend the shared three-triangle fan recognition to D0006 and consume it in residual joint profiles",
+    "test": "Retain the existing D0004 chain consumer. On the next independently checked flat 8/7 pair, derive the D0006 five-vertex core from the consecutive degree word 5,6,6,5 at a degree-six centre, then construct all nine boundary ports from the same rotation. Test the exact source occurrence and shared boundary reconstruction before using it as a coverage exclusion.",
+    "acceptance": "One shared fan-geometry argument consumed by both chain recognizers, followed by the actual minimal-map reduction for D0006 using its existing certified repair. Retain all residual profiles and prove an observation-radius bound; do not assume that the two chains cover every flat pair.",
+    "prior_result": "RuleChainRecognition.not_continuation_five is proved. D0006 already has an exact source bridge and certified repair using the same configuration-7 base as D0004. Its full actual-map recognition from the degree word 5,6,6,5 is the next missing theorem.",
+    "limit": "Neither the three known core families nor the continued-rule exclusion is shown to cover every flat pair. Reflection orientations remain explicit; the generic new consumer is for index 6 in the supplied rotation."
   },
   "counts": {
     "coverage_entries": 633,
@@ -459,5 +453,14 @@
     "The full exceptional closing consumer is proved from actual aligned X occurrences in graph-backed vertex minimality. Its initial witness uses the existing strict two-vertex cap, and its reconstruction retains the D1774 finite repair. Supply from zero charge remains open.",
     "No scheduling, executable global recolouring or near-linear runtime is proved.",
     "The pentagonal-overlap branch retains its shared diamond profile; the new exceptional branch retains the separate D1774 finite repair certificate."
-  ]
+  ],
+  "continued_rule_recognition": {
+    "module": "MettapediaFourColor.RuleChainRecognition",
+    "source_rule": "rule004_2.rule (index 6)",
+    "hypotheses": "Actual sender degree 5, shared degree 6 and outer degree 6; the next vertex after the retained degree 5 tip has degree 5.",
+    "conclusion": "The same reading constructs the chain; all 13 source vertices are within radius 4 of the receiver. The actual minimal-map consumer excludes the continuation.",
+    "base_certificate": "FourColor.Bulk.Cfg006",
+    "coverage_entries_removed": 0,
+    "example_record": "chain-boundary-audit.json"
+  }
 }

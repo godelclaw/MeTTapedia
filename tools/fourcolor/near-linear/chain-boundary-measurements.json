@@ -1,0 +1,119 @@
+{
+  "status": "Kernel-certified continuation of a retained charge-rule reading into an actual chain reduction.",
+  "previous_recognition": "chain-recognition-measurements.json",
+  "program_audit": "chain-boundary-audit.json",
+  "recognition": {
+    "consumer": "FourColor.RuleChainRecognition.not_continuation_five",
+    "domain": "Actual dual of a GraphBackedVertexMinimalTaitCounterexample",
+    "source_rule": "rule004_2.rule (index 6)",
+    "input": "One actual rule occurrence, sender degree 5, shared degree 6, outer degree 6, and next degree 5.",
+    "retained_neighbor_word": [
+      5,
+      6,
+      5,
+      5
+    ],
+    "constructed_source_vertices": 13,
+    "boundary_ports": 8,
+    "complete_patch_radius_from_receiver": 4,
+    "additional_rank_certificates": 0,
+    "original_rank_certificate": "FourColor.Bulk.Cfg006 (classical configuration 7)",
+    "reconstruction": "Existing actual strict reduction and compatible exterior recolouring; not merely a graph homomorphism."
+  },
+  "finite_consumer": {
+    "vertices": 162,
+    "proved": [
+      "cyclic triangular rotation",
+      "actual source-rule occurrence",
+      "same chain vertices through two readings",
+      "complete occurrence constructed from the core",
+      "fourth neighbour lies outside both radius-two balls",
+      "all thirteen source vertices lie within radius four"
+    ],
+    "program_only": [
+      "sphere constructed by subdivision and legal flips",
+      "zero final charges under the pinned rules",
+      "absence of the three tested cores inside the original joint view",
+      "absence of obstructing simple cycles of length three through five"
+    ],
+    "not_claimed": [
+      "universal family supply",
+      "minimality of the finite example",
+      "a new configuration repair certificate"
+    ]
+  },
+  "audit": {
+    "roots": 17,
+    "dependency_declarations": 31606,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "other_original_rank_certificates": false,
+    "full_four_colour_endpoint": false,
+    "exceptional_D1774_certificate": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RuleChainRecognition",
+        "source_sha256": "af3baaa8ba053d7ed4ad375a8090f838e8fb4630ec42d594532f2d8869ec15ef",
+        "exit_code": 0,
+        "frontend_wall_seconds": 7.151,
+        "olean_bytes": 247872,
+        "olean_sha256": "f74e310e48d9fd52467c374482744b5a77b58456286120ca129bd2764170b93a"
+      },
+      {
+        "module": "MettapediaFourColor.ChainBoundaryGeometry",
+        "source_sha256": "a03c9397d0066dc06cc653afc3fd2d93fdafae1fa7f8340bc2d6d9738f9cbe63",
+        "exit_code": 0,
+        "frontend_wall_seconds": 258.698,
+        "olean_bytes": 2913760,
+        "olean_sha256": "bf88a21423e230100ce6708c16523c02d3f32c606461f472c4b5381dccc32774"
+      },
+      {
+        "module": "MettapediaFourColor.ChainBoundaryExample",
+        "source_sha256": "e7a1cf6ec2ddc7bc17bc9b945a45fc526bd47add06e2fddb1a85b3b3d62132ce",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.571,
+        "olean_bytes": 191032,
+        "olean_sha256": "6b700cb10f7f2334ded394b1c1624c2089322ed4acdbf876d0e752a2d0aad1fc"
+      },
+      {
+        "module": "MettapediaFourColor.RuleChainRecognitionAudit",
+        "source_sha256": "4a1942e9f47f744e92344e05d91681231bf6f0a3e31f0037e9f67fa034705cbb",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.967,
+        "olean_bytes": 2600,
+        "olean_sha256": "c54476376f2af2aebdb17563f38a96cd7cbbe7e48186677a4d20971882a51a18"
+      }
+    ]
+  },
+  "commands": [
+    "lake build kernelChainBoundary",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_chain_boundary.py"
+  ],
+  "compression": {
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "additional_coverage_entries_removed": 0,
+    "additional_assembly_certificate_dependencies_removed": 0
+  },
+  "remaining": [
+    "Derive reductions from all surviving joint charge profiles.",
+    "Extend shared three-triangle fan recognition to D0006 and its nine-port boundary.",
+    "Establish global coverage and termination for the intended compact family system."
+  ]
+}

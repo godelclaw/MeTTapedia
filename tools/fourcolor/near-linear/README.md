@@ -979,3 +979,48 @@ remaining classification and specifies the surviving degrees. It removes no
 coverage entry or existing assembly certificate. The exact forty-unit budget
 still needs a complete account of the surviving profiles. See
 [measurements](rule-pair-diamond-measurements.json).
+
+## Continuing a rule beyond the original pair boundary
+
+[chain-boundary-example.json](chain-boundary-example.json) retains a generated
+162-vertex triangulation and its 100 legal edge flips. The adjacent centres
+have degrees eight and seven; the seven is the eight's only neighbour of
+degree above six. Both final charges are zero. Their radius-two balls contain
+22 and 20 vertices, with 27 in their union. That union contains neither known
+diamond core nor the chain degree word in either orientation.
+
+The charge rule `rule004_2` in the reversed rotation retains three successive
+neighbours of a degree-six outer vertex. Their degrees are `5,6,5`. Continuing
+once reaches another degree-five vertex, beyond both original radius-two
+balls, and recognizes the existing chain. All thirteen source vertices fit
+within radius four of the degree-eight centre.
+
+[RuleChainRecognition](../../../lean/fourcolor-classical/MettapediaFourColor/RuleChainRecognition.lean)
+proves this implication for arbitrary triangular rotations. Its actual-map
+consumer excludes the continuation in graph-backed vertex minimality, using
+the same strict reduction, reconstruction and configuration-7 base certificate.
+[ChainBoundaryExample](../../../lean/fourcolor-classical/MettapediaFourColor/ChainBoundaryExample.lean)
+certifies the concrete cyclic geometry, rule and degree-word readings, full
+occurrence, boundary crossing and radius bound. It does not certify the
+example's global sphericality, flatness or absence of obstructing cycles.
+
+Replay the separate program evidence with:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_chain_boundary.py
+```
+
+The audit reconstructs the spherical triangulation from its saved flips,
+checks 5,040 rooted rule matches in both orientations by two independent methods, checks both sides
+of all 1,826 simple cycles of length three through five, verifies the absence
+of the three known core patterns in the original view, and checks the complete
+chain and all Lean cyclic stars. Results are in
+[chain-boundary-audit.json](chain-boundary-audit.json).
+
+With the preceding chain artifacts prepared, `lake build kernelChainBoundary`
+replays the new theorems and their dependency audit. The
+[kernel receipt](chain-boundary-measurements.json) records all four modules
+and the seventeen-root audit. This supplies a concrete
+reason to extend local views during the coverage search. It neither proves
+universal family supply nor removes a catalogue entry. The complete assembly
+still uses 633 coverage entries and 629 original configuration certificates.

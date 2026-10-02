@@ -1467,3 +1467,16 @@ endpoints. The [receipt](../../tools/fourcolor/near-linear/chain-recognition-mea
 records the exact hypotheses. Deriving this degree word or another reduction
 from every surviving joint charge profile remains open. This recognition
 result removes no catalogue entry or additional original certificate.
+
+The continued charge-rule recognizer in
+[RuleChainRecognition.lean](MettapediaFourColor/RuleChainRecognition.lean)
+completes a chain from the retained degree prefix `5,6,5` and one further
+five-valent neighbour. The actual minimal-map consumer uses the established
+strict reduction and reconstruction; the whole patch stays within radius four
+of the rule receiver. `lake build kernelChainBoundary` checks the general law,
+a concrete example crossing the original radius-two view, and its dependency
+audit; see the [kernel receipt](../../tools/fourcolor/near-linear/chain-boundary-measurements.json).
+The [program receipt](../../tools/fourcolor/near-linear/chain-boundary-audit.json)
+separates the example's flatness and global geometry checks from its Lean
+recognition theorem. This is a new profile exclusion, with no coverage-count
+or configuration-certificate saving.

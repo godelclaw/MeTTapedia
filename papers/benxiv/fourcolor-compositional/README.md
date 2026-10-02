@@ -149,6 +149,30 @@ includes an exact recovery of the retained 42-vertex example. The next
 coverage obligation is to derive this degree word or a certified alternative
 from every surviving joint charge profile.
 
+A subsequent boundary test shows why the size of the observed neighbourhood
+must remain flexible. In a generated 162-vertex triangulation, an adjacent
+flat degree-eight/degree-seven pair has neither of the two diamond patterns
+nor the chain wholly inside its joint radius-two view. A chain is present
+just across that boundary. Its centre is two steps from the degree-eight
+vertex; all thirteen reconstructed vertices fit within radius four.
+
+The [continued-rule theorem](../../../lean/fourcolor-classical/MettapediaFourColor/RuleChainRecognition.lean)
+extracts the first three chain neighbours from one oriented charge rule.
+Their degrees are `5,6,5`; a further degree-five observation completes the
+chain around their degree-six centre. The existing strict reduction and
+reconstruction therefore exclude this continuation in an actual minimal
+counterexample. The same original rule witness bounds the full reconstructed
+interface. No new repair certificate is introduced.
+
+The [finite consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ChainBoundaryExample.lean)
+checks the rule reading, the continued chain, the crossed observation boundary
+and the radius-four bound in Lean. Flat charges, spherical construction,
+absence of the known cores in the original joint view, and the short-cycle
+conditions have separate [program checks](../../../tools/fourcolor/near-linear/chain-boundary-audit.json).
+This excludes a specific rule continuation; coverage of all surviving profiles
+remains open. Enlarging the observation view is now a tested option alongside
+adding another reduction family.
+
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first
 [kernel-checked bridge](../../../lean/fourcolor-classical/MettapediaFourColor/NearLinearDiamondRepair.lean)
