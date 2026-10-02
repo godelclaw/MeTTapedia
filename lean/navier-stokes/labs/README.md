@@ -18434,3 +18434,292 @@ At resolution 192 their differences are below 8e-16. Omitting the cutoff
 derivative gives errors between about 2.6e-6 and 1.2e-2. These tests check
 the complete integral and expose a real cutoff error; their numerical
 accuracy is not a certified error bound or proof of physical evolution.
+
+## An actual no-swirl reference and swirl-seeded parent histories
+
+`noswirl_reference_payment.py` tests an alternative to subtracting the
+prepared heat parent. It removes the harmless meridional evolution by
+following an actual no-swirl solution, while retaining the full nonlinear
+feedback of the target flow. The new estimates are analytic; their PDE,
+stochastic and harmonic-analysis parts are not Lean-certified.
+
+Start with smooth, rapidly decaying axisymmetric R3 data u0. Let V be the
+unforced NS solution whose initial velocity is u0 with its swirl removed.
+This reference is globally regular independently of the target's swirl:
+[Gallay--Sverak, Theorem 1.1, Remark 4.6 and Proposition 5.5](https://www.numdam.org/article/CML_2015__7_2_67_0.pdf)
+give global no-swirl existence and smoothing when the meridional vorticity
+is in L1(dr dz), as it is here. Their viscosity-one result rescales to
+any nu>0. Smooth initial data supply regularity at time zero as well.
+This uses established no-swirl theory, not an asserted regularity theorem
+for the swirling target.
+
+Use the SAME reference from the original initial time through every
+compatible segment. Write its lifted fields as V, eta_bar and q_bar,
+and set
+
+```text
+h=eta-eta_bar, a=Lh, chi_a=La, v=v_a+V,
+q=q_a+q_bar, q_a=2partial_z chi_a, p=5/2.
+```
+
+The scalar a here differs from the heat-subtracted a in (57). All formulas
+in this section use the actual reference just defined. The exact equations
+on every available smooth target prefix are
+
+```text
+h_t+v.grad h=nu Delta5 h+partial_z b^2-v_a.grad eta_bar,
+a_t+v.grad a=nu Delta5 a+R_z(b^2)
+              -[L,v.grad]h-L(v_a.grad eta_bar),
+b_t+v.grad b=nu Delta5 b+(q_a+q_bar)b,
+h(0)=a(0)=0, h_t(0)=partial_z b0^2.                    (80)
+```
+
+There is no independent force available in (80). The source uses the
+actual b, the drift uses the full actual v, and the reference-feedback
+term depends on the actual residual velocity v_a. In particular, the
+source cannot be reset as fresh external input at successive segments.
+
+For comparison, an axisymmetric external force would add
+`(partial_z f_r-partial_r f_z)/r` to the h equation and `f_theta/r`
+to the b equation, with V still chosen unforced. Those are additional
+inputs. The internally generated feedback `-v_a.grad eta_bar` in (80)
+is retained and is not identified with an independently selectable force.
+
+The first equation has a precise stochastic history representation. For
+a fixed available terminal time t and starting point x, let
+
+```text
+dX_s=-v(t-s,X_s)ds+sqrt(2nu)dW_s, X_0=x, 0<=s<=t.
+h(t,x)=E integral_0^t
+        [partial_z b^2-v_a.grad eta_bar](t-s,X_s) ds.    (81)
+```
+
+Ito's formula for `h(t-s,X_s)` proves (81); its initial endpoint is zero.
+The five-dimensional Brownian motion represents the quotient's lifted diffusion.
+The coefficients and source are bounded on each smooth decaying prefix,
+so this calculation introduces no extra target continuation assumption.
+The drift and source remain coupled to that target solution. This is
+stochastic transport of an actual residual, not an identification of an
+arbitrary auxiliary control or Schrödinger bridge with a fluid solution.
+
+### Reference feedback has a finite critical coefficient
+
+Put `R_p=int_R5 (b^2+a^2)^(p/2)` and retain its complete diffusion D_p.
+The self contribution Q_self has exactly the form (56), with the present
+residual. Subtraction gives
+
+```text
+R_p'+nu D_p=Q_self+int q_bar w[(p-1)b^2-a^2]
+  -p<wa,[L,V.grad]h>-p<wa,L(v_a.grad eta_bar)>,
+R_p(0)=M0=int_R5 |b0|^(5/2).                           (82)
+```
+
+Both displayed operators matter at the critical exponent. Estimate (52)
+bounds the first by `c_bar||a||_p`, where `c_bar=C_op N(V)` and
+`N(V)=||V||_infinity+||grad V||_infinity+||D2V||_infinity+||D2V||_5`
+uses Cartesian R5 fields. For the second, horizontal Hardy in four
+dimensions, followed by the vector Riesz bound C_R, gives
+
+```text
+||chi_a/r||_p <=p/(4-p)||grad_h chi_a||_p,
+||v_a/r||_p <=(16/3)C_R||a||_p, p=5/2.
+```
+
+Indeed `v_a=(-y_h chi_a,z,2chi_a+y_h.grad_h chi_a)`.
+The elementary Hardy estimate follows by integrating
+`div_h(y_h/r^p)=(4-p)/r^p` against `|chi_a|^p` at each z.
+Holder and the R5 fractional integration estimate
+`L:L(5/3)->L(5/2)` now give
+
+```text
+||L(v_a.grad eta_bar)||_p <=ell_bar||a||_p,
+ell_bar=(16/3)C_I C_R ||r grad eta_bar||_5.
+kappa_bar=(3/2)||q_bar||_infinity+(5/2)(c_bar+ell_bar),
+R_p'+nu D_p <=Q_self+kappa_bar R_p.                    (83)
+```
+
+Here the Riesz and fractional-integration constants are fixed, and no
+actual future derivative appears in kappa_bar. The underlying operator
+results are those cited in (52); the feedback estimate additionally keeps
+the radial factor needed for the physical lifted velocity.
+
+The reference integral `Kappa_H=int_0^H kappa_bar` is finite from the
+original meridional datum. To justify the weighted part of this assertion,
+global smoothness gives bounded physical derivatives on each compact
+reference time interval. Weighted L2 derivatives through order two remain
+finite: differentiate the physical NS equation, test by W_L times the
+same derivative, and use bounded reference derivatives in the transport
+products. Integrating pressure by parts leaves only grad W_L, because
+each velocity derivative is divergence-free. The unweighted pressure
+derivatives are bounded in L2 by product Sobolev estimates and the Riesz
+multiplier. The resulting finite triangular Gronwall system, uniformly
+in W_L, propagates the weighted derivative norms from their initial values.
+
+For clarity, no weighted estimate at the axis is hidden here. The Cartesian
+derivatives of the O(4) lift have the same radial expressions, with fixed
+multiplicities, as those of the smooth O(2) physical meridional field.
+Thus their second-derivative norm is bounded pointwise by a fixed multiple
+of the physical second-derivative norm (sqrt(3) suffices, as the Cartesian
+checker verifies). Also
+`r grad eta_bar=grad omega_bar,theta-(omega_bar,theta/r)e_r`;
+the physical Cartesian derivative of `omega_bar,theta e_theta` includes
+both of these terms. It follows that
+
+```text
+||D2V_lift||_5+||r grad eta_bar||_5
+ <=C ||D2V_physical||_infinity^(3/5)
+      [int_R3 (1+|x|^2) sum_(j<=2)|D^j V|^2]^(1/5).   (84)
+```
+
+The bound uses `int_R5 f=pi int_R3 r^2 f` for scalar radial functions
+and interpolation between L2 and Linfinity. The other terms in N(V) and
+q_bar are bounded by ordinary reference derivatives. This proves finite
+Kappa_H for the stated initial class, including at time zero.
+
+Kappa_H is a functional of the known globally regular reference. This
+section does not give a closed numerical formula for it in initial
+seminorms. Its finiteness follows from established reference existence
+and the weighted argument above, rather than a supremum over an unknown
+future target flow. Computing or formally bounding that reference is a
+separate task from proving the remaining target estimate.
+
+### Relative energy supplies a nonnegative history reserve
+
+Let w_phys=u-V be the PHYSICAL three-dimensional velocity difference,
+including swirl, and use
+
+```text
+E_w=int_R3 |w_phys|^2, Z_w=int_R3 |grad w_phys|^2,
+I_w=int_R3 |x|^2|w_phys|^2,
+E_s=E_w(0)=int_R3 |u0,theta|^2,
+I_s=I_w(0)=int_R3 |x|^2|u0,theta|^2,
+L_H=int_0^H ||grad V||_infinity, U_H=int_0^H ||V||_infinity.
+```
+
+Use a matrix norm dominating the operator norm in L_H. The literal
+difference equation gives
+
+```text
+E_w'+2nu Z_w=-2int_R3 w_phys.(grad V)w_phys,
+E_w(t)<=Ebar:=E_s exp(2L_H),
+int_0^T Z_w<=Ebar/(2nu), T<=H.                         (85)
+```
+
+More explicitly, the nonnegative remaining reserve
+
+```text
+B_kin(t)=exp[2int_t^H ||grad V||_infinity] E_w(t)/(2nu)
+```
+
+satisfies `B_kin'(t)<=-Z_w(t)`. It starts from Ebar/(2nu) and pays
+every compatible prefix without a refill. It controls deviation
+enstrophy, not the still-open critical stretching history.
+
+The pressure difference is the Riesz contraction of
+`w_phys tensor w_phys+V tensor w_phys+w_phys tensor V`, hence
+`||p_u-p_V||_2<=||w_phys||_4^2+2||V||_infinity sqrt(E_w)`.
+The same bounded moment tests as in (70) give
+
+```text
+I_w'+2nu int |x|^2|grad w_phys|^2
+ <=2||grad V||_infinity I_w+6nu E_w
+   +sqrt(I_w)[6 C_S^(3/2) E_w^(1/4) Z_w^(3/4)
+              +10||V||_infinity sqrt(E_w)].
+sqrt(I_w(t))<=Mrel
+ :=exp(L_H)[sqrt(I_s+6nu Ebar H)
+   +3 C_S^(3/2) Ebar^(1/4) H^(1/4)(Ebar/(2nu))^(3/4)
+   +5sqrt(Ebar)U_H].                                  (86)
+```
+
+This is a conservative bound. Multiply the differential inequality by
+`exp(-2int_0^t ||grad V||_infinity)`, use (85), and apply the same scalar
+comparison and Holder argument as for (70). It uses only available target
+prefixes. The physical estimates (85)--(86) hold for general smooth
+divergence-free target/reference pairs when the reference norms are known;
+the critical-parent system (80)--(84) uses axisymmetry.
+
+The lifted relative kinetic identities are
+`int_R5 (b^2+a^2)=pi E_w` and
+`int_R5 |grad chi_a|^2<=pi E_w`. Applying (71) to the residual meridional
+velocity yields `int_R5 |x|^2|grad chi_a|^2<=25pi Mrel^2/9`.
+Therefore the complete far payment (76) improves in this reference to
+
+```text
+||J_a,far||_(5/2)<=P_R
+ :=3pi cK R^(-2)Ebar
+   +(14pi/3)cD R^(-3)sqrt(Ebar)Mrel.                   (87)
+```
+
+This is still at fixed R and uses the complete stress and cutoff
+derivatives of (72)--(76). For a fixed meridional reference and
+`u0,theta=epsilon times a fixed profile`, Ebar=O(epsilon^2),
+Mrel=O(epsilon)+O(epsilon^2), and P_R=O(epsilon^2)+O(epsilon^3).
+With `L0=M0>0` in (77), the new far coefficient is O(epsilon^2) and
+its additive payment is O(epsilon^(9/2)), at fixed nu,H,R. These are
+relative-resource estimates, not arbitrary-amplitude regularity.
+
+### Calibration and the precise unpaid part
+
+If b0=0, target uniqueness gives u=V throughout each existing prefix,
+so b,h,a,R_p,Q_self and the relative stocks all vanish. This includes
+the no-swirl positive-production example (61): its full parent norm may
+grow, but it produces zero DEVIATION from the actual reference.
+If b0 is nonzero, the exact initial source in (80) is retained. Thus
+the subtraction neither invents new parents nor falsely forbids them.
+
+At quadratic weight the feedback term has an additional cancellation:
+
+```text
+<a,L(v_a.grad eta_bar)>=<chi_a,v_a.grad eta_bar>=0,
+div5(chi_a v_a)=0.
+```
+
+This does not hold at the critical exponent. A kinematic compatible test
+with `s=r^2+z^2`, `chi_a=(1+s)^(-2)`,
+`a=4(1+s)^(-3)`, `chi_bar=z(1+s)^(-3)` gives
+
+```text
+<a,L(v_a.grad eta_bar)>=0,
+<a^(3/2),L(v_a.grad eta_bar)>=222816pi^2/1978375 >0.     (88)
+```
+
+Reversing chi_bar reverses the second pairing. No reachability of this
+particular pair from matched initial parents is claimed. It tests the
+operator identity and excludes discarding that term merely because the
+quadratic pairing cancels. A separate exact Gaussian test verifies that
+the full reference contribution agrees with physical relative strain
+work in (85). Neither test is a counterexample to a history allowance.
+
+Set `c_R=3P_R^2/(4nu M0^(4/5))`, `d_R=4M0c_R` when M0>0, and
+`Omega_ref=exp[-int_0^t kappa_bar-c_R t]`. Keep all J_b and the near
+part of J_a in Q_near. The OPEN sufficient estimate is now
+
+```text
+int_0^T Omega_ref[Q_near-(nu/4)D_p]
+ <=K_seed(u0,nu,H,R), for every actual prefix T<=H.      (89)
+```
+
+If K_seed is bounded from the original datum, (82)--(87) imply
+
+```text
+Omega_ref(T)R_p(T)+(nu/2)int_0^T Omega_ref D_p
+ <=M0+d_R H+K_seed,
+int_0^T S^2 <=(5C5/(4nu))exp[(12/5)(Kappa_H+c_R H)]
+                       *(M0+d_R H+K_seed)^(12/5).      (90)
+```
+
+This is the same analytic axisymmetric continuation consumer as (79).
+There is no prepared-source additive Sigma in this alternative balance;
+all reference terms have the finite linear coefficient (83). When M0=0,
+uniqueness handles the zero-deviation case instead of dividing by M0.
+The near interaction of swirl with the parents it generates remains
+unpaid. It can contain repeated renewal, and the estimates here do not
+rule that out. General non-axisymmetric R3/T3 closure remains open.
+
+Run `python3 -O labs/noswirl_reference_payment.py`. Exact checks include
+the actual residual equation, source at the matched initial state, the
+full physical relative-energy equation, both pressure cross tensors,
+the critical coefficient exponents, (88), the Gaussian kinetic comparison,
+and the small-swirl scaling of the relative spatial stock. The global
+reference theory, finite weighted coefficients, stochastic formula and
+actual-history estimates have the analytic status specified above.

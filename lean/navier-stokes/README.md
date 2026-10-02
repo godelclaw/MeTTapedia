@@ -2099,6 +2099,21 @@ remain in a signed sufficient history estimate. This is an analytic result
 for the axisymmetric R3 track with the stated finite initial moment, not
 a bound uniform in the kernel cutoff or arbitrary R3/T3 closure.
 
+An [actual no-swirl reference](labs/README.md#an-actual-no-swirl-reference-and-swirl-seeded-parent-histories)
+provides an alternative that does not charge for the reference's harmless
+meridional motion. It starts from the same meridional datum and uses
+established global no-swirl theory. All residual parents then start at
+zero, with their actual swirl source and subsequent feedback retained.
+Both reference transport operators have finite critical-norm coefficients;
+the physical deviation's energy and spatial moment are paid from its
+initial swirl resources. These sharpen the complete far-parent estimate
+and vanish when the initial swirl vanishes. The reference coefficient is
+a proved-finite functional of that known reference, not a closed formula
+in initial seminorms or an assumed bound on the future target flow.
+The exact stochastic representation keeps the actual drift and source
+together. A sufficient signed budget for the remaining nearby generated
+parents is still open. These new arguments are analytic, not Lean-certified.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
