@@ -23403,7 +23403,7 @@ examples. Allowing the generated components to feed back into that
 parent, and paying their subsequent self-stretching, remains the central
 obligation for arbitrary three-dimensional data.
 
-### Current trial and verification
+### Normalized trial and verification
 
 The next tested storage replaces Y in (256) by the already defined
 normalized W_8(b). Its COMPLETE payment defect, divided by a, is
@@ -23414,17 +23414,17 @@ Q_trial=DW_8(b)[-nu Ab+N(b)+L_h b+n]
 ```
 
 A universal nonpositive sign along actual prefixes would imply the needed
-history bound with K=J_trial(0). That sign has not been established.
-Off-trajectory identities or passing numerical histories cannot establish
-it. Every derivative of the normalization and both mixed interactions
-must be retained when testing (261).
+history bound with K=J_trial(0). The next section refutes that universal
+sign for each fixed ell, using an actual oscillatory-parent release.
+Every derivative of the normalization and both mixed interactions is
+retained. This failure does not refute the integrated history bound.
 
 For the ENTIRE actual triangular class (258), the remainder has zero
 self-source at every auxiliary heat age, so H_nu(b)=Ctilde_nu(b)=0 and
 W_8(b)=Y/2, including its continuous value at zero. Equation (249) then
 gives Q_trial<=-(5nu/4)D_b-f/2-kappa F<=0 for all time. Thus this trial
-does have an actual-history consumer at arbitrary amplitudes. Its
-extension to remainders with mutually interacting parents is open.
+does have an actual-history consumer at arbitrary amplitudes. The same
+pointwise rule does not cover all mutually interacting parents.
 
 Run `python3 -O labs/heat_parent_lifetime.py`. Exact checks verify the
 parent-tail derivatives, original-source spending, full coupled remainder
@@ -23438,3 +23438,278 @@ projection. A nonconstant planar heat solution checks that an identically
 zero heat source gives zero source-funded allowance. The actual-history,
 heat-integrability, stochastic and all-time estimates are analytic, not
 Lean-certified by these finite checks. No Lean declarations or axioms change.
+
+## An oscillatory parent releases a self-stretching descendant
+
+The universal pointwise sign proposed in (261) fails on an actual smooth
+unforced periodic history, for each fixed ell>0. Rapid oscillations in
+an initially horizontal velocity generate a slower three-dimensional
+field, which survives after the original heat parents decay. An
+initial-layer estimate and local stability identify the actual descendant;
+its complete normalized-storage defect is positive. The PDE argument is
+analytic, with exact algebra in `oscillatory_parent_release.py`, not
+newly Lean-certified.
+
+This rejects the pointwise sign, NOT the integrated allowance in (257),
+even with its original large reserve. It gives a finite smooth release
+and a short later interval, not indefinite renewal or a singularity.
+
+High-frequency interactions producing a low-frequency response, with the
+actual nonlinear error retained, are classical tools; see
+[Bourgain--Pavlovic, *Ill-posedness of the Navier--Stokes equations in a
+critical space in 3D*](https://arxiv.org/abs/0807.0882), especially its
+heat/first-response/remainder decomposition. Their norm-inflation theorem
+does not identify the particular descendant below. The layer and error
+estimate here supply that separate identification.
+
+### Data, pressure and the complete layer
+
+Use the normalized torus of period 2pi. Let V be a smooth horizontal,
+divergence-free trigonometric polynomial: V_3=0, with x_3 dependence
+allowed. For any fixed nu>0 and finite real epsilon, set
+
+```text
+B=(V.grad)V, w=N(V)=-P B,
+u_N(0,x)=epsilon N cos(Nx_3)V(x),
+tau=N^2 t, theta=Nx_3, delta=1/N.                 (262)
+```
+
+The carrier N is a sufficiently large integer. Each datum is exactly
+divergence-free, smooth and finite energy. No smallness of epsilon is
+assumed; the required N can depend strongly on epsilon, nu and V.
+All Fourier outputs are retained.
+
+On T3_x times T_theta define
+
+```text
+D_N=(delta partial_1,delta partial_2,
+                    delta partial_3+partial_theta),
+P_N(k,l)=P(k+Nl e_3),
+U_tau=nu D_N^2 U-P_N[(U.D_N)U],
+U(0,x,theta)=epsilon cos(theta)V(x).              (263)
+```
+
+At zero physical frequency take the identity projector. P_N is an
+orthogonal Fourier multiplier, commutes with derivatives, is uniformly
+bounded on every H^m(T4), and projects onto D_N-solenoidal fields.
+The pullback u_N(t,x)=N U(N^2 t,x,Nx_3) solves the ACTUAL unforced 3D
+NS equation: physical derivatives become N D_N. The pressure projection
+commutes with pullback, since indices with equal k+Nl e_3 have the same
+projector. The extra coordinate separates phase; it is not an extra
+physical fluid dimension or an auxiliary force.
+
+The exact lifted original heat field is
+H_N=exp(nu tau D_N^2)[epsilon cos(theta)V]. Its leading profile is
+H_0=epsilon exp(-nu tau)cos(theta)V. The limiting projector P_infinity
+is P(k) on l=0 and diag(1,1,0) on l!=0. In particular the slow pressure
+can create vertical velocity from a horizontal source.
+
+With q=exp(-nu tau) and T=(w_3 V_1,w_3 V_2,0), the complete first layer is
+
+```text
+R=m w+c2 cos(2theta)B+c1 sin(theta)T,
+m=epsilon^2(1-q^2)/(4nu),
+c2=-epsilon^2(q^2-q^4)/(4nu),
+c1=epsilon^3 q[tau-(1-q^2)/(2nu)]/(4nu).          (264)
+```
+
+Its three components start at zero and solve
+
+```text
+R_tau=nu partial_theta^2 R
+      -P_infinity[H_0.grad_x H_0+R_3 partial_theta H_0],
+R_3=m w_3,
+m'=epsilon^2 q^2/2,
+c2'+4nu c2=-epsilon^2 q^2/2,
+c1'+nu c1=epsilon q m.                            (265)
+```
+
+The last channel is essential: the generated vertical motion advects
+the original fast phase. A first Duhamel response alone omits this
+order-one physical correction. It decays like a polynomial times
+exp(-nu tau), leaving b_*=epsilon^2 w/(4nu). Thus this layer includes
+feedback into the original carrier, beyond the triangular class (258).
+
+### Uniform control of the actual initial layer
+
+Fix an integer m>=6. All norms here are on T4. Constants depend on
+m,V,epsilon,nu, but not N. For l!=0, elementary projection geometry gives
+
+```text
+|P_N(k,l)-P_infinity(k,l)| <= C min(1,|k|/N).
+```
+
+For |k|<N|l|/2 use the angle with e_3; outside that region use boundedness
+of both projectors. On l=0 they coincide. Their difference therefore maps
+H^(m+1) to H^m with norm at most C/N, including modes of zero physical
+frequency. R is P_infinity-solenoidal; only its decaying oscillatory part
+contributes to P_N R-R. The finite Fourier support of V also gives
+
+```text
+||H_N||_(H^(m+2)) <= C exp(-nu tau/2),
+||H_N-H_0||_(H^(m+2)) <= C delta tau exp(-nu tau/2)
+```
+
+for sufficiently large N, by the exact rates |l e_3+delta k|^2, l=+-1.
+Use the exactly solenoidal approximation
+
+```text
+U_app=H_N+delta P_N R,
+Res=partial_tau U_app-nu D_N^2 U_app
+                     +P_N[(U_app.D_N)U_app].
+```
+
+Equation (265) cancels every term of order delta. H_N has zero third
+component, so its self-interaction is delta H_N.grad_x H_N. The other
+leading term is delta(P_N R)_3 partial_theta H_N. Their limit is exactly
+the source F_0 in (265). Moreover P_N P_infinity F_0=P_N F_0: its
+oscillatory coefficients are horizontal and its mean uses the same
+pressure projection. The remaining terms are:
+
+- the differences H_N-H_0 and P_N R-R in these two sources;
+- nu delta P_N(2delta partial_3 partial_theta+delta^2 Delta_x)R;
+- the two slow mixed derivatives, each with coefficient delta^2;
+- delta^2 P_N[(P_N R)_3 partial_theta(P_N R)] and
+  delta^3 P_N[(P_N R).grad_x(P_N R)].
+
+Every order-delta^2 term decays integrably. Only order delta^3 can persist,
+through slow derivatives of the mean. For a fixed polynomial p,
+
+```text
+||U_app||_(H^(m+1)) <= C(exp(-nu tau/2)+delta),
+||Res||_(H^m) <= C delta^2 p(tau)exp(-nu tau/2)+C delta^3.
+                                                               (266)
+```
+
+The Sobolev energy argument for (263) is uniform in N. Its transport
+vector on T4 is (delta U_1,delta U_2,delta U_3,U_3), with zero ordinary
+divergence; its norms are bounded by those of U. P_N is self-adjoint
+and commutes with derivatives. Galerkin approximation, transport
+cancellation and the H^m product/commutator estimates give local
+solutions and continuation while the H^m norm is bounded. No inverse
+ellipticity constant is used for the degenerate operator D_N^2.
+
+For E=U-U_app, both fields are D_N-solenoidal and E(0)=0. The same
+energy estimates give, using an upper derivative when the norm is zero,
+
+```text
+d||E||_(H^m)/d tau
+ <= C[||U_app||_(H^(m+1))+||E||_(H^m)]||E||_(H^m)
+       +||Res||_(H^m).
+```
+
+Set tau_N=4 log(N)/nu. The integrated approximation coefficient is
+bounded independently of N and the integrated residual is at most C/N^2.
+A bootstrap of the quadratic term gives
+
+```text
+sup_(0<=tau<=tau_N)||U-U_app||_(H^m) <= C/N^2.     (267)
+```
+
+All constants are fixed before choosing N and involve no unknown future
+solution norm. This estimate also continues U through tau_N. Higher
+regularity propagates by the tame energy estimates, giving a smooth
+physical pullback.
+
+The embedding H^m(T4) into continuous functions controls values on the
+diagonal without derivative loss. For t_N=tau_N/N^2, the formulas give
+
+```text
+||u_N(t_N)-b_*||_infinity <= C/N.                  (268)
+```
+
+Indeed N H_N tends to zero, both oscillatory channels of R decay, its
+mean tends to b_*, and N E=O(1/N). This asserts uniform convergence of
+velocities, NOT their physical derivatives at t_N: differentiation of
+the diagonal would introduce powers of N.
+
+For the stronger convergence used below, let v(s) be the ordinary smooth
+local NS solution from b_*. All velocities at t_N are uniformly bounded.
+The periodic mild formulation has
+||exp(nu s Delta)P div||_(L-infinity to L-infinity)<=C_nu s^(-1/2)
+on a fixed bounded interval. Contraction and local stability therefore
+give a common positive interval [0,s_0] on which
+u_N(t_N+s)->v(s) uniformly. Away from s=0, parabolic smoothing gives
+convergence in every fixed C^j norm. Only local existence at b_* is
+used, not its global regularity.
+
+### A reachable descendant with strictly positive defect
+
+Choose
+
+```text
+k1=(1,0,1), k2=(1,-1,1), k3=(2,0,1), k4=(2,-1,1),
+(c1,c2,c3,c4)=(-2,2,-2,3),
+V=sum_j c_j (-(k_j)_2,(k_j)_1,0) cos(k_j.x).
+```
+
+This V depends on all three coordinates, with ||V||2^2=73/2. Its full
+source w=N(V) has a nonzero vertical component and nonzero w_3 V. Exact
+calculation gives
+
+```text
+Z(w)=443, D(w)=4767, g(w)=14040/119>0,
+H_1(w)=13403/1785,
+Ctilde_1(w)=4759369226919706030857271/8265219767113767658200.
+```
+
+Set nu=1, epsilon=12, hence b_*=36w. Retaining all weight, forecast and
+capacity derivatives, the checker verifies the rational inequality
+
+```text
+Q_free(b_*)=DW_8(b_*)[-A b_*+N(b_*)]
+                +2g(b_*)-D(b_*)/2 > 7,000,000 > D(b_*).
+                                                               (269)
+```
+
+Its decimal value is approximately 7,136,339.346; the proof uses the
+strict rational margin. By smooth local continuity Q_free(v(s)) stays
+positive on some interval starting at zero. Fix s>0 in that interval.
+
+The ORIGINAL heat field h_N and all fixed spatial derivatives at t_N+s
+decay exponentially in N^2 s, with polynomial prefactors in N. The
+Fourier envelopes in (254) do too. Since E_star<=4E0 and
+E0=73 epsilon^2 N^2/4, the same holds for F,f,kappa, while a tends to1.
+No heat age or reserve is reset. Strong convergence after (268) gives
+b_N=u_N-h_N->v(s), including its full physical tangent and all
+derivatives needed for W_8. The heat functionals and their derivatives
+are continuous in sufficiently high Sobolev norms on this mean-zero
+periodic class, and Z+8C remains positive. Consequently
+
+```text
+Q_trial[b_N,h_N](t_N+s) -> Q_free[v](s)>0.
+```
+
+For every fixed ell>0, (261) fails for sufficiently large finite N on
+a nonempty interval of a genuine smooth unforced solution. The argument
+does not certify a particular small N, or refute an existential choice
+of ell depending on the datum and hence on N. It rejects the universal
+sign at each fixed choice, for example ell=1.
+
+Each datum has one finite reserve, although its energy grows like N^2
+across the family. All effective forcing is internal. The argument does
+not show that the accumulated cost exceeds the initial reserve. It
+shows that cooling the original-parent allowance and retaining only
+W_8 of the descendant loses the local payment property. The reserve
+must follow what the parents created, as well as their own decay.
+
+### Verification and remaining physical obligation
+
+Run `python3 -O labs/oscillatory_parent_release.py`. It checks complete
+carrier sources, low difference and high sum outputs, divergence and
+energy; all three profile coefficient equations; the nonzero vertical
+feedback; lifted pressure projections; the descendant's kinetic and
+enstrophy identities; and the full normalized derivative, including
+the changing weight. Exact checks at alpha=1,16,32,36 distinguish the
+negative and positive state defects.
+
+The estimates (266)--(268), local stability and actual failure interval
+remain ANALYTIC. Python does not certify them. No new Lean declarations
+or axioms are introduced, and no whole-space localization is asserted.
+
+The open task remains the full-original-datum payment of generated
+self-stretching in (257). A transferred resource must follow generated
+parents after their original suppliers decay, without being replenished
+when histories compose. The explicit release map
+V -> epsilon^2 N(V)/(4nu), retaining pressure and the return channel,
+provides a controlled physical test of such a rule.

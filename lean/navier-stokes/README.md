@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [oscillatory-parent release](labs/README.md#an-oscillatory-parent-releases-a-self-stretching-descendant)
+constructs actual smooth unforced periodic histories whose fast initial
+motion leaves a slower, self-stretching descendant. The initial-layer
+analysis retains the pressure-generated vertical velocity and its return
+into the carrier, then uses local stability to control the actual flow.
+It refutes the current normalized reserve's universal pointwise payment
+at each fixed parameter; the integrated full-datum allowance remains open.
+The original parents' decay does not erase their surviving descendants.
+The PDE realization is analytic, with exact Fourier checks, not a new
+Lean-certified theorem or an unforced blowup construction.
+
 The [finite heat-parent lifetime](labs/README.md#a-single-original-heat-reserve-for-all-time)
 replaces the horizon-growing weight by one finite original-data allowance
 for the original heat source and all mixed interactions. It applies on
