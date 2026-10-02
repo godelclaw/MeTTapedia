@@ -969,6 +969,40 @@ theorem hasDerivAt_scoreCovariance (β : ℝ) (active : Finset (Plaquette 4 n))
       rw [boundaryDensity_eq_exp]
       exact Real.exp_pos _)
 
+/-- Differentiating three actual Wilson scores retains their three action
+contacts and the fourth connected response. This holds at every real coupling. -/
+theorem hasDerivAt_scoreThirdCumulant (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held S T U V : Finset (Link 4 n)) (q r u v b : Link 4 n → SU2) (t : ℝ) :
+    let μ := Measure.pi (fun _ : Link 4 n ↦ (volume : Measure SU2))
+    let W := fun s ↦ boundaryDensity β active held (boundaryCurve V v b s)
+    let F := fun s ↦ score active held S q (boundaryCurve V v b s) 0
+    let G := fun s ↦ score active held T r (boundaryCurve V v b s) 0
+    let H := fun s ↦ score active held U u (boundaryCurve V v b s) 0
+    HasDerivAt (fun s ↦ WilsonBlockElimination.thirdCumulant μ (W s) (F s) (G s) (H s))
+      (WilsonBlockElimination.thirdCumulant μ (W t) (contact active held S V q v b t) (G t) (H t) +
+        WilsonBlockElimination.thirdCumulant μ (W t) (F t) (contact active held T V r v b t) (H t) +
+        WilsonBlockElimination.thirdCumulant μ (W t) (F t) (G t) (contact active held U V u v b t) -
+        β * WilsonBlockElimination.fourthCumulant μ (W t) (F t) (G t) (H t)
+          (score active held V v b t)) t := by
+  exact WilsonBoundaryResponse.hasDerivAt_thirdCumulant
+    (Measure.pi fun _ : Link 4 n ↦ (volume : Measure SU2)) β
+    (fun s ↦ boundaryDensity β active held (boundaryCurve V v b s)) (score active held V v b)
+    (fun s ↦ score active held S q (boundaryCurve V v b s) 0)
+    (fun s ↦ score active held T r (boundaryCurve V v b s) 0)
+    (fun s ↦ score active held U u (boundaryCurve V v b s) 0)
+    (contact active held S V q v b) (contact active held T V r v b) (contact active held U V u v b)
+    (continuous_boundaryDensity_curve β active held V v b) (continuous_score active held V v b)
+    (continuous_score_other active held S V q v b) (continuous_score_other active held T V r v b)
+    (continuous_score_other active held U V u v b)
+    (continuous_contact active held S V q v b) (continuous_contact active held T V r v b)
+    (continuous_contact active held U V u v b)
+    (hasDerivAt_boundaryDensity β active held V v b)
+    (hasDerivAt_score_contact active held S V q v b)
+    (hasDerivAt_score_contact active held T V r v b)
+    (hasDerivAt_score_contact active held U V u v b) t (fun ω ↦ by
+      rw [boundaryDensity_eq_exp]
+      exact Real.exp_pos _)
+
 /-- The genuine iterated three-patch derivative of the original Haar log
 partition function, with the third patch applied to the outer background. -/
 def thirdDerivative (β : ℝ) (active : Finset (Plaquette 4 n))
@@ -1243,6 +1277,36 @@ theorem uniform_weightedThirdSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤
   intro l
   rw [show (κ / 2 - κ / 4) / 2 = κ / 8 by ring]
   exact sum_exp_dist_le (by decide) (by positivity) l
+
+/-- Four independently framed Wilson score probes at a fixed boundary. -/
+def scoreFourthArray (β : ℝ) (active : Finset (Plaquette 4 n))
+    (held : Finset (Link 4 n)) (q r u v b : Link 4 n → SU2) :
+    Link 4 n → Link 4 n → Link 4 n → Link 4 n → ℝ := fun l m k j ↦
+  WilsonBlockElimination.fourthCumulant (Measure.pi fun _ ↦ (volume : Measure SU2))
+    (boundaryDensity β active held b) (score active held {l} q b 0)
+    (score active held {m} r b 0) (score active held {k} u b 0)
+    (score active held {j} v b 0)
+
+/-- The fourth connected response has one weighted budget chosen before
+volume, active plaquettes, pinned boundary values and all four frames. -/
+theorem uniform_weightedFourthSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (n : ℕ) (active : Finset (Plaquette 4 n))
+      (held : Finset (Link 4 n)) (q r u v b : Link 4 n → SU2),
+      WilsonBoundaryResponse.weightedFourthSeminorm η
+        (scoreFourthArray β active held q r u v b) ≤ C := by
+  obtain ⟨η, hη, C, hC, hc⟩ := uniform_ball_fourth_response_bound
+    (volume : Measure SU2) (1 : SU2) hβ hβ0
+    (show (0 : ℝ) ≤ 256 by norm_num) (show (0 : ℝ) ≤ 1 by norm_num)
+  refine ⟨η, hη, C, hC, ?_⟩
+  intro n active held q r u v b
+  let frames : Fin 4 → Link 4 n → SU2 := ![q,r,u,v]
+  have h := hc ((model n active).pinned held b)
+    (continuous_pinned (model n active) (model_continuous n active) held b)
+    (fun a l ↦ score active held {l} (frames a) b 0)
+    (fun a l ↦ WilsonLocalResponse.DependsOn.mono (score_local active held {l} (frames a) b 0)
+      (collar_singleton_subset_linkBall l))
+    (fun a l ↦ by simpa using abs_score_le active held {l} (frames a) b 0)
+  exact h
 
 /-- Four original boundary partition functions on the same SU(2) lattice. -/
 def response (β : ℝ) (n : ℕ) (active : Finset (Plaquette 4 n))

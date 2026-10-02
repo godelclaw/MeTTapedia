@@ -82,6 +82,44 @@ theorem separation_linkBall_union {r : ℝ} (hr : 0 ≤ r) (l m k : Link d n) :
       ((polymerDist_le_infDist hy).trans (Metric.infDist_le_dist_of_mem hx))
     linarith [min_le_right (dist l m) (dist l k)]
 
+def ballFamily (r : ℝ) (A : Finset (Link d n)) : Finset (Link d n) := A.biUnion (linkBall r)
+
+theorem linkBall_subset_ballFamily (r : ℝ) {A : Finset (Link d n)} {l : Link d n} (hl : l ∈ A) :
+    linkBall r l ⊆ ballFamily r A := by
+  intro x hx
+  exact mem_biUnion.mpr ⟨l, hl, hx⟩
+
+theorem ballFamily_nonempty {r : ℝ} (hr : 0 ≤ r) {A : Finset (Link d n)} (hA : A.Nonempty) :
+    (ballFamily r A).Nonempty := by
+  obtain ⟨l, hl⟩ := hA
+  exact (linkBall_nonempty hr l).mono (linkBall_subset_ballFamily r hl)
+
+theorem card_ballFamily_le (hd : 0 < d) (r : ℝ) (A : Finset (Link d n)) :
+    ((ballFamily r A).card : ℝ) ≤ A.card * (Real.exp r * exponentialVolumeBound d 1) := by
+  have hc : ((ballFamily r A).card : ℝ) ≤ ∑ l ∈ A, ((linkBall r l).card : ℝ) := by
+    exact_mod_cast card_biUnion_le
+  calc
+    _ ≤ ∑ l ∈ A, ((linkBall r l).card : ℝ) := hc
+    _ ≤ ∑ _l ∈ A, Real.exp r * exponentialVolumeBound d 1 :=
+      sum_le_sum (fun l _ ↦ card_linkBall_le hd r l)
+    _ = _ := by simp
+
+theorem separation_ballFamily {r δ : ℝ} (hr : 0 ≤ r)
+    {A B : Finset (Link d n)} (hA : A.Nonempty) (hB : B.Nonempty)
+    (hδ : ∀ l ∈ A, ∀ m ∈ B, δ ≤ dist l m) :
+    δ - 2*r ≤ polymerDist (ballFamily r A) (ballFamily r B) := by
+  have hn := ballFamily_nonempty hr hB
+  simp only [polymerDist, hn, ↓reduceDIte]
+  apply le_inf'
+  intro y hy
+  apply (Metric.le_infDist (ballFamily_nonempty hr hA).to_set).mpr
+  intro x hx
+  obtain ⟨l, hl, hxl⟩ := mem_biUnion.mp hx
+  obtain ⟨m, hm, hym⟩ := mem_biUnion.mp hy
+  have h := (separation_linkBall hr hr l m).trans
+    ((polymerDist_le_infDist hym).trans (Metric.infDist_le_dist_of_mem hxl))
+  linarith [hδ l hl m hm]
+
 /-- Exactly the plaquettes that touch the changed links. -/
 def incident (S : Finset (Link d n)) : Finset (Plaquette d n) :=
   univ.filter (fun p => ¬ Disjoint (support p) S)
@@ -119,6 +157,15 @@ theorem collar_radius {S : Finset (Link d n)} {x : Link d n} (hx : x ∈ collar 
   obtain ⟨p, hp, hxp⟩ := mem_biUnion.mp hx
   obtain ⟨a, ha, hap⟩ := mem_incident.mp hp
   exact ⟨a, ha, (dist_le_polymerDiam hxp hap).trans (diam_support_le p)⟩
+
+/-- Singleton plaquette collars lie in the unit ball of the link metric. -/
+theorem collar_singleton_subset_linkBall (l : Link d n) :
+    collar {l} ⊆ linkBall 1 l := by
+  intro x hx
+  obtain ⟨a, ha, hxa⟩ := collar_radius hx
+  simp only [mem_singleton] at ha
+  subst a
+  exact mem_linkBall.mpr (by simpa only [dist_comm] using hxa)
 
 theorem polymerDist_le_dist {S T : Finset (Link d n)} {a b : Link d n}
     (ha : a ∈ S) (hb : b ∈ T) : polymerDist S T ≤ dist b a :=

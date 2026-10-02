@@ -246,6 +246,57 @@ theorem hasDerivAt_logPartitionHessian (β : ℝ)
   have hcontact := hasDerivAt_expectation μ β W V J L hW hV hJ hL hdW hdJ t hpos
   exact ((hcov.const_mul (β ^ 2)).sub (hcontact.const_mul β)).congr_deriv (by ring)
 
+/-- Differentiating the third connected response introduces a genuine fourth
+cumulant, in addition to all three direct score derivatives. -/
+theorem hasDerivAt_thirdCumulant (β : ℝ) (W V F G H B D J : ℝ → C(X, ℝ))
+    (hW : Continuous (fun z : ℝ × X ↦ W z.1 z.2))
+    (hV : Continuous (fun z : ℝ × X ↦ V z.1 z.2))
+    (hF : Continuous (fun z : ℝ × X ↦ F z.1 z.2))
+    (hG : Continuous (fun z : ℝ × X ↦ G z.1 z.2))
+    (hH : Continuous (fun z : ℝ × X ↦ H z.1 z.2))
+    (hB : Continuous (fun z : ℝ × X ↦ B z.1 z.2))
+    (hD : Continuous (fun z : ℝ × X ↦ D z.1 z.2))
+    (hJ : Continuous (fun z : ℝ × X ↦ J z.1 z.2))
+    (hdW : ∀ r x, HasDerivAt (fun s ↦ W s x) (-β * (W r x * V r x)) r)
+    (hdF : ∀ r x, HasDerivAt (fun s ↦ F s x) (B r x) r)
+    (hdG : ∀ r x, HasDerivAt (fun s ↦ G s x) (D r x) r)
+    (hdH : ∀ r x, HasDerivAt (fun s ↦ H s x) (J r x) r)
+    (t : ℝ) (hpos : ∀ x, 0 < W t x) :
+    HasDerivAt (fun s ↦ thirdCumulant μ (W s) (F s) (G s) (H s))
+      (thirdCumulant μ (W t) (B t) (G t) (H t) +
+        thirdCumulant μ (W t) (F t) (D t) (H t) +
+        thirdCumulant μ (W t) (F t) (G t) (J t) -
+        β * fourthCumulant μ (W t) (F t) (G t) (H t) (V t)) t := by
+  have hEF := hasDerivAt_expectation μ β W V F B hW hV hF hB hdW hdF t hpos
+  have hEG := hasDerivAt_expectation μ β W V G D hW hV hG hD hdW hdG t hpos
+  have hEH := hasDerivAt_expectation μ β W V H J hW hV hH hJ hdW hdH t hpos
+  have hFG := hasDerivAt_expectation μ β W V (fun s ↦ F s * G s)
+    (fun s ↦ B s * G s + F s * D s) hW hV (hF.mul hG)
+    ((hB.mul hG).add (hF.mul hD)) hdW
+    (fun r x ↦ ((hdF r x).mul (hdG r x)).congr_deriv (by
+      simp only [ContinuousMap.add_apply, ContinuousMap.mul_apply])) t hpos
+  have hFH := hasDerivAt_expectation μ β W V (fun s ↦ F s * H s)
+    (fun s ↦ B s * H s + F s * J s) hW hV (hF.mul hH)
+    ((hB.mul hH).add (hF.mul hJ)) hdW
+    (fun r x ↦ ((hdF r x).mul (hdH r x)).congr_deriv (by
+      simp only [ContinuousMap.add_apply, ContinuousMap.mul_apply])) t hpos
+  have hGH := hasDerivAt_expectation μ β W V (fun s ↦ G s * H s)
+    (fun s ↦ D s * H s + G s * J s) hW hV (hG.mul hH)
+    ((hD.mul hH).add (hG.mul hJ)) hdW
+    (fun r x ↦ ((hdG r x).mul (hdH r x)).congr_deriv (by
+      simp only [ContinuousMap.add_apply, ContinuousMap.mul_apply])) t hpos
+  have hFGH := hasDerivAt_expectation μ β W V (fun s ↦ F s * G s * H s)
+    (fun s ↦ B s * G s * H s + F s * D s * H s + F s * G s * J s)
+    hW hV ((hF.mul hG).mul hH)
+    (((hB.mul hG).mul hH).add ((hF.mul hD).mul hH) |>.add ((hF.mul hG).mul hJ)) hdW
+    (fun r x ↦ (((hdF r x).mul (hdG r x)).mul (hdH r x)).congr_deriv (by
+      simp only [ContinuousMap.add_apply, ContinuousMap.mul_apply, Pi.mul_apply]; ring)) t hpos
+  apply ((hFGH.sub (hFG.mul hEH) |>.sub (hFH.mul hEG) |>.sub (hGH.mul hEF)).add
+    (((hEF.mul hEG).mul hEH).const_mul 2)).congr_deriv
+  simp only [expectation_add, covariance, thirdCumulant, thirdMoment, fourthCumulant,
+    fourthMoment, smul_eq_mul, nsmul_eq_mul, Pi.mul_apply]
+  ring
+
 end DifferentialResponse
 
 section SpatialResponse
@@ -318,6 +369,146 @@ theorem weightedResponseSeminorm_le_of_envelope (η κ : ℝ) (H : ι → ι →
     _ ≤ M * C := mul_le_mul_of_nonneg_left (hcount i) hM
 
 end SpatialResponse
+
+section SpatialFourthGeometry
+variable {X : Type*} [PseudoMetricSpace X]
+
+/-- The length of the spanning star rooted at the first of four labels. -/
+def fourStarLength (i j k l : X) : ℝ := dist i j + dist i k + dist i l
+
+theorem fourStarLength_le_six_mul (i j k l : X) (r : ℝ) (hr : 0 ≤ r)
+    (h0 : min (dist i j) (min (dist i k) (dist i l)) ≤ r)
+    (h1 : min (dist i j) (min (dist j k) (dist j l)) ≤ r)
+    (h2 : min (dist i k) (min (dist j k) (dist k l)) ≤ r)
+    (h3 : min (dist i l) (min (dist j l) (dist k l)) ≤ r)
+    (h01 : min (dist i k) (min (dist i l) (min (dist j k) (dist j l))) ≤ r)
+    (h02 : min (dist i j) (min (dist i l) (min (dist j k) (dist k l))) ≤ r)
+    (h03 : min (dist i j) (min (dist i k) (min (dist j l) (dist k l))) ≤ r) :
+    fourStarLength i j k l ≤ 6 * r := by
+  have ht1 := dist_triangle i j k
+  have ht2 := dist_triangle i k j
+  have ht3 := dist_triangle i j l
+  have ht4 := dist_triangle i l j
+  have ht5 := dist_triangle i k l
+  have ht6 := dist_triangle i l k
+  rw [dist_comm k j] at ht2
+  rw [dist_comm l j] at ht4
+  rw [dist_comm l k] at ht6
+  simp only [min_le_iff] at h0 h1 h2 h3 h01 h02 h03
+  unfold fourStarLength
+  rcases h0 with h0 | h0 | h0
+  · rcases h01 with h01 | h01 | h01 | h01
+    · rcases h3 with h3 | h3 | h3 <;> linarith
+    · rcases h2 with h2 | h2 | h2 <;> linarith
+    · rcases h3 with h3 | h3 | h3 <;> linarith
+    · rcases h2 with h2 | h2 | h2 <;> linarith
+  · rcases h02 with h02 | h02 | h02 | h02
+    · rcases h3 with h3 | h3 | h3 <;> linarith
+    · rcases h1 with h1 | h1 | h1 <;> linarith
+    · rcases h3 with h3 | h3 | h3 <;> linarith
+    · rcases h1 with h1 | h1 | h1 <;> linarith
+  · rcases h03 with h03 | h03 | h03 | h03
+    · rcases h2 with h2 | h2 | h2 <;> linarith
+    · rcases h1 with h1 | h1 | h1 <;> linarith
+    · rcases h2 with h2 | h2 | h2 <;> linarith
+    · rcases h1 with h1 | h1 | h1 <;> linarith
+
+/-- Largest minimum distance across the seven nontrivial four-label cuts. -/
+def fourCutRadius (i j k l : X) : ℝ :=
+  max (min (dist i j) (min (dist i k) (dist i l)))
+    (max (min (dist i j) (min (dist j k) (dist j l)))
+      (max (min (dist i k) (min (dist j k) (dist k l)))
+        (max (min (dist i l) (min (dist j l) (dist k l)))
+          (max (min (dist i k) (min (dist i l) (min (dist j k) (dist j l))))
+            (max (min (dist i j) (min (dist i l) (min (dist j k) (dist k l))))
+              (min (dist i j) (min (dist i k) (min (dist j l) (dist k l)))))))))
+
+theorem fourStarLength_le_six_cutRadius (i j k l : X) :
+    fourStarLength i j k l ≤ 6 * fourCutRadius i j k l := by
+  apply fourStarLength_le_six_mul
+  · unfold fourCutRadius; positivity
+  all_goals unfold fourCutRadius; simp only [le_max_iff, le_refl, true_or, or_true]
+
+end SpatialFourthGeometry
+
+section SpatialFourthResponse
+open Finset
+variable {X : Type*} [PseudoMetricSpace X] [Fintype X]
+
+def weightedFourthRow (η : ℝ) (i : X) : Seminorm ℝ (X → X → X → X → ℝ) :=
+  Seminorm.of (fun H ↦ ∑ j, ∑ k, ∑ l, Real.exp (η * fourStarLength i j k l) * |H i j k l|)
+    (fun H G ↦ by
+      calc
+        _ ≤ ∑ j, ∑ k, ∑ l, Real.exp (η * fourStarLength i j k l) *
+            (|H i j k l| + |G i j k l|) :=
+          sum_le_sum (fun j _ ↦ sum_le_sum (fun k _ ↦ sum_le_sum (fun l _ ↦
+            mul_le_mul_of_nonneg_left (abs_add_le _ _) (Real.exp_pos _).le)))
+        _ = _ := by simp only [mul_add, sum_add_distrib])
+    (fun a H ↦ by
+      simp only [Pi.smul_apply, smul_eq_mul, abs_mul, Real.norm_eq_abs, Finset.mul_sum]
+      apply sum_congr rfl
+      intro j _
+      apply sum_congr rfl
+      intro k _
+      apply sum_congr rfl
+      intro l _
+      ring)
+
+@[simp] theorem weightedFourthRow_apply (η : ℝ) (i : X) (H : X → X → X → X → ℝ) :
+    weightedFourthRow η i H = ∑ j, ∑ k, ∑ l, Real.exp (η * fourStarLength i j k l) * |H i j k l| := rfl
+
+def weightedFourthSeminorm (η : ℝ) : Seminorm ℝ (X → X → X → X → ℝ) :=
+  univ.sup (weightedFourthRow η)
+
+theorem weightedFourthRow_le (η : ℝ) (i : X) (H : X → X → X → X → ℝ) :
+    weightedFourthRow η i H ≤ weightedFourthSeminorm η H :=
+  Seminorm.le_finset_sup_apply (mem_univ i)
+
+theorem weightedFourthSeminorm_le (η : ℝ) (H : X → X → X → X → ℝ)
+    {C : ℝ} (hC : 0 ≤ C) (h : ∀ i, weightedFourthRow η i H ≤ C) :
+    weightedFourthSeminorm η H ≤ C := Seminorm.finset_sup_apply_le hC (fun i _ ↦ h i)
+
+theorem sum_exp_fourStarLength (a : ℝ) (i : X) :
+    (∑ j, ∑ k, ∑ l, Real.exp (-a * fourStarLength i j k l)) =
+      (∑ j, Real.exp (-a * dist i j))^3 := by
+  simp only [fourStarLength, mul_add, Real.exp_add]
+  rw [pow_succ, pow_two]
+  simp only [sum_mul, mul_sum]
+  apply sum_congr rfl
+  intro j _
+  apply sum_congr rfl
+  intro k _
+  apply sum_congr rfl
+  intro l _
+  ring
+
+theorem weightedFourthSeminorm_le_of_envelope (η κ : ℝ) (H : X → X → X → X → ℝ)
+    {M C : ℝ} (hM : 0 ≤ M) (hC : 0 ≤ C)
+    (hH : ∀ i j k l, |H i j k l| ≤ M * Real.exp (-κ * fourStarLength i j k l))
+    (hcount : ∀ i : X, ∑ j, Real.exp (-(κ-η) * dist i j) ≤ C) :
+    weightedFourthSeminorm η H ≤ M * C^3 := by
+  apply weightedFourthSeminorm_le _ _ (by positivity)
+  intro i
+  calc
+    _ ≤ ∑ j, ∑ k, ∑ l, Real.exp (η * fourStarLength i j k l) *
+        (M * Real.exp (-κ * fourStarLength i j k l)) :=
+      sum_le_sum (fun j _ ↦ sum_le_sum (fun k _ ↦ sum_le_sum (fun l _ ↦
+        mul_le_mul_of_nonneg_left (hH i j k l) (Real.exp_pos _).le)))
+    _ = M * ∑ j, ∑ k, ∑ l, Real.exp (-(κ-η) * fourStarLength i j k l) := by
+      simp only [mul_sum]
+      apply sum_congr rfl
+      intro j _
+      apply sum_congr rfl
+      intro k _
+      apply sum_congr rfl
+      intro l _
+      rw [← mul_assoc, mul_comm (Real.exp _) M, mul_assoc, ← Real.exp_add]
+      congr 2
+      ring
+    _ = M * (∑ j, Real.exp (-(κ-η) * dist i j))^3 := by rw [sum_exp_fourStarLength]
+    _ ≤ M*C^3 := by gcongr; exact hcount i
+
+end SpatialFourthResponse
 
 section SpatialThirdResponse
 

@@ -208,6 +208,27 @@ support inside the original plaquette collar. Ordered repeated-slot matrix
 insertions cover overlapping and coincident links. Its left and right
 disjointness lemmas recover the relevant contact cancellations.
 
+`WilsonBoundaryResponse.hasDerivAt_thirdCumulant` identifies the first
+higher response required on differentiating this calculus: three third
+cumulants containing the derivatives of the marks, minus `beta` times their
+fourth cumulant with the action score. The fourth conditioning identity in
+`WilsonProjectionComposition.fiberFourthCumulant_staged` retains all fifteen
+partition terms under the explicit generated integration maps.
+
+`WilsonLocalResponse.fourthCumulant_ball_clustering` proves four-mark decay
+from all seven singleton/pair cuts. For marks bounded by `B` in radius-`r`
+balls, its envelope is
+`66 B^4 exp(12 exp(r) V(1) + 2 kappa r) exp(-(kappa/6) star)`,
+where `star` is the sum of the three distances from the first label and
+`V(t) = exponentialVolumeBound 4 t`. At rate `eta = kappa/12`, the weighted
+row budget is `66 B^4 exp(12 exp(r) V(1) + 2 kappa r) V(kappa/12)^3`.
+`uniform_weightedFourthSeminorm` in `SU2BoundaryResponse` and
+`SU2WilsonEffectiveInteraction` specializes this to actual Wilson scores
+(`B = 256`, `r = 1`) at both assembly levels, including repeated labels and
+independent frames. Rates and constants precede volume, active plaquettes,
+boundary data and frames. This fourth-order estimate does not imply an
+all-order analytic bound or clustering under the product-constrained block law.
+
 `ResponseData.Contract.transport` proves the quantitative rule
 `C₂' ≤ C₂ + D₂` and `C₃' ≤ C₃ + D₃ + E₁ + E₂ + E₃`, where the three `E`
 budgets control the three mixed covariances. Direct and staged moment data

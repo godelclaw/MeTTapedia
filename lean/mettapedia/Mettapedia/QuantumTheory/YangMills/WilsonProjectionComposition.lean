@@ -12,6 +12,8 @@ remain present in this identity.
 Conditional covariances and third cumulants obey their exact tower laws.
 Third order retains the transported inner cumulant and all three mixed
 covariances; these terms remain continuous marks for subsequent integration.
+Fourth cumulance retains all fifteen partition contributions, with the
+generated inner and outer normalized maps explicit.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -129,6 +131,43 @@ theorem fiberThirdCumulant_staged (ν : Measure I) (ρ : Measure J)
   rw [ht]
   exact thirdMoment_comp (projectLinear ρ W hW)
     (projectLinear ν (marginal ρ W) (marginal_pos ρ W hW)) F G H
+
+omit [MeasurableSpace B] [BorelSpace B] in
+/-- Exact fourth-cumulant transport, retaining all fifteen partition terms
+and the two generated normalized integration maps. -/
+theorem fiberFourthCumulant_staged (ν : Measure I) (ρ : Measure J)
+    [IsProbabilityMeasure ν] [IsProbabilityMeasure ρ]
+    (W : C((B × I) × J, ℝ)) (hW : ∀ p, 0 < W p)
+    (F G H K : C((B × I) × J, ℝ)) :
+    let P := projectLinear ρ W hW
+    let Q := projectLinear ν (marginal ρ W) (marginal_pos ρ W hW)
+    fiberFourthCumulant (ν.prod ρ) (reassociate W) (fun _ ↦ hW _)
+      (reassociate F) (reassociate G) (reassociate H) (reassociate K) =
+      Q (fourthMoment P F G H K) + fourthMoment Q (P F) (P G) (P H) (P K) +
+      secondMoment Q (P F) (thirdMoment P G H K) +
+      secondMoment Q (P G) (thirdMoment P F H K) +
+      secondMoment Q (P H) (thirdMoment P F G K) +
+      secondMoment Q (P K) (thirdMoment P F G H) +
+      secondMoment Q (secondMoment P F G) (secondMoment P H K) +
+      secondMoment Q (secondMoment P F H) (secondMoment P G K) +
+      secondMoment Q (secondMoment P F K) (secondMoment P G H) +
+      thirdMoment Q (P F) (P G) (secondMoment P H K) +
+      thirdMoment Q (P F) (P H) (secondMoment P G K) +
+      thirdMoment Q (P F) (P K) (secondMoment P G H) +
+      thirdMoment Q (P G) (P H) (secondMoment P F K) +
+      thirdMoment Q (P G) (P K) (secondMoment P F H) +
+      thirdMoment Q (P H) (P K) (secondMoment P F G) := by
+  have ht : (fun U : C((B × I) × J, ℝ) ↦
+      project (ν.prod ρ) (reassociate W) (fun _ ↦ hW _) (reassociate U)) =
+      (projectLinear ν (marginal ρ W) (marginal_pos ρ W hW)).comp
+        (projectLinear ρ W hW) := by
+    funext U
+    exact (project_staged ν ρ W hW U).symm
+  change fourthMoment (fun U : C((B × I) × J, ℝ) ↦
+      project (ν.prod ρ) (reassociate W) (fun _ ↦ hW _) (reassociate U)) F G H K = _
+  rw [ht]
+  exact fourthMoment_comp (projectLinear ρ W hW)
+    (projectLinear ν (marginal ρ W) (marginal_pos ρ W hW)) F G H K
 
 section Coordinates
 open WilsonPinnedIntegral WilsonEliminationRoutes Mettapedia.GSLT.Ultrainfinite

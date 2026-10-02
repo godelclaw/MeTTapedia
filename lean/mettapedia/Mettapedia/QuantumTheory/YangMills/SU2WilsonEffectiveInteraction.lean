@@ -15,7 +15,8 @@ uniformly in volume at both levels, including nearby contacts. The full
 ordered third derivative retains every action contact and covariance
 correction, including coincident patches. The coarse score cumulant is the
 actual GSLT route's third remainder.
-All singleton score triples satisfy a volume-uniform tree-weighted budget.
+All singleton score triples satisfy a volume-uniform tree-weighted budget;
+four score probes satisfy a volume-uniform spanning-star budget.
 The actual Wilson scores also satisfy the boundary contract after each Haar
 step, with concrete witnesses for its OSLF reachability. The quantitative
 composition theorem is instantiated with spatial bounds for all three
@@ -370,6 +371,20 @@ theorem uniform_weightedThirdRow {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta
   intro N coarse q r u b l
   exact (WilsonBoundaryResponse.weightedThirdRow_le η l _).trans (h N coarse q r u b)
 
+/-- Fourth Wilson score cumulants at either exact assembly level. -/
+def scoreFourthArray (N : ℕ) (β : ℝ) (coarse : Bool) (q r u v b : FullField N) :
+    AssemblyLink N → AssemblyLink N → AssemblyLink N → AssemblyLink N → ℝ :=
+  SU2BoundaryResponse.scoreFourthArray β univ (retainedSet (mesh coarse)) q r u v b
+
+theorem uniform_weightedFourthSeminorm {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ η > 0, ∃ C ≥ 0, ∀ (N : ℕ) (coarse : Bool) (q r u v b : FullField N),
+      WilsonBoundaryResponse.weightedFourthSeminorm η
+        (scoreFourthArray N β coarse q r u v b) ≤ C := by
+  obtain ⟨η, hη, C, hC, h⟩ := SU2BoundaryResponse.uniform_weightedFourthSeminorm hβ hβ0
+  exact ⟨η, hη, C, hC, fun N coarse q r u v b ↦
+    h (volumeIndex N) univ (retainedSet (mesh coarse)) q r u v b⟩
+
+
 /-- Original Wilson scores used as fixed local probes in either exact Haar
 integration. At their prescribed boundary they are the derivative scores. -/
 def scoreFamily (N : ℕ) (coarse : Bool) (q b : FullField N) :
@@ -678,6 +693,34 @@ theorem hasDerivAt_blockContact_thirdContact (S T V : Finset (Link 4 n))
   simp_rw [chart_boundaryCurve V u c f]
   exact hasDerivAt_contact_thirdContact univ univ (liftPatch S) (liftPatch T) (liftPatch V)
     (liftFrame q f) (liftFrame r f) (liftFrame u f) (chart n (c, f)) t (fun _ ↦ 1)
+
+/-- The same fourth-response differentiation identity under the actual
+product-constrained block law, with fluctuation-dependent lifted frames. -/
+theorem hasDerivAt_blockScoreThirdCumulant (β : ℝ) (S T U V : Finset (Link 4 n))
+    (q r u v c : CoarseConfig n) (t : ℝ) :
+    let W := fun s ↦ fiberDensity β (boundaryCurve V v c s)
+    let F := fun s ↦ blockScore S q (boundaryCurve V v c s) 0
+    let G := fun s ↦ blockScore T r (boundaryCurve V v c s) 0
+    let H := fun s ↦ blockScore U u (boundaryCurve V v c s) 0
+    HasDerivAt (fun s ↦ thirdCumulant volume (W s) (F s) (G s) (H s))
+      (thirdCumulant volume (W t) (blockContact S V q v c t) (G t) (H t) +
+        thirdCumulant volume (W t) (F t) (blockContact T V r v c t) (H t) +
+        thirdCumulant volume (W t) (F t) (G t) (blockContact U V u v c t) -
+        β * fourthCumulant volume (W t) (F t) (G t) (H t) (blockScore V v c t)) t := by
+  exact WilsonBoundaryResponse.hasDerivAt_thirdCumulant volume β
+    (fun s ↦ fiberDensity β (boundaryCurve V v c s)) (blockScore V v c)
+    (fun s ↦ blockScore S q (boundaryCurve V v c s) 0)
+    (fun s ↦ blockScore T r (boundaryCurve V v c s) 0)
+    (fun s ↦ blockScore U u (boundaryCurve V v c s) 0)
+    (blockContact S V q v c) (blockContact T V r v c) (blockContact U V u v c)
+    (continuous_fiberDensity_curve β V v c) (continuous_blockScore V v c)
+    (continuous_blockScore_other S V q v c) (continuous_blockScore_other T V r v c)
+    (continuous_blockScore_other U V u v c)
+    (continuous_blockContact S V q v c) (continuous_blockContact T V r v c)
+    (continuous_blockContact U V u v c)
+    (hasDerivAt_fiberDensity β V v c)
+    (hasDerivAt_blockScore_contact S V q v c) (hasDerivAt_blockScore_contact T V r v c)
+    (hasDerivAt_blockScore_contact U V u v c) t (fiberDensity_pos β _)
 
 def blockLogWeight (β : ℝ) (c : CoarseConfig n) : ℝ := Real.log (coarseDensity n β c)
 

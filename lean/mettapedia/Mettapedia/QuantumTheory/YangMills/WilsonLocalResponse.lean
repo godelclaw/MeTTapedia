@@ -14,6 +14,8 @@ pointwise lower bounds account for their normalization costs.
 Three bounded collar-local marks have exponential tree decay, derived from
 the three singleton-versus-pair covariance cuts. The resulting second/third
 weighted budgets are uniform over all models and fixed boundary values.
+Four marks admit a spanning-star bound from all seven nontrivial cuts, with
+an explicit volume-uniform fourth-response budget.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -181,11 +183,243 @@ theorem covariance_clustering_local (d : ℕ) (ν₀ : Measure E) [IsProbability
   rwa [localObservable_reconstruct base S F hFS,
     localObservable_reconstruct base T G hGT] at h
 
+section BallFamilies
+open WilsonPatchGeometry
+
+def ballFamilyEnvelope (r κ : ℝ) (q : ℕ) : ℝ :=
+  Real.exp (3*q*(Real.exp r * exponentialVolumeBound 4 1) + 2*κ*r)
+
+theorem covariance_ballFamily_clustering (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (base : E) {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (M : Model 4 E) (hφ : ∀ p, Continuous (M.φ p))
+      (r : ℝ), 0 ≤ r → ∀ (A B : Finset (Link 4 M.n)), A.Nonempty → B.Nonempty →
+      ∀ (δ : ℝ) (q : ℕ), A.card + B.card ≤ q →
+      (∀ l ∈ A, ∀ m ∈ B, δ ≤ dist l m) →
+      ∀ (F G : C(Link 4 M.n → E, ℝ)) (CF CG : ℝ), 0 ≤ CF → 0 ≤ CG →
+      DependsOn (ballFamily r A) F → DependsOn (ballFamily r B) G →
+      (∀ ω, |F ω| ≤ CF) → (∀ ω, |G ω| ≤ CG) →
+      |covariance (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) F G| ≤
+        3 * CF * CG * ballFamilyEnvelope r κ q * Real.exp (-κ * δ) := by
+  obtain ⟨κ, hκ, hc⟩ := covariance_clustering_local 4 ν₀ base hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro M hφ r hr A B hA hB δ q hq hδ F G CF CG hCF hCG hFdep hGdep hF hG
+  have h := hc M hφ (ballFamily r A) (ballFamily r B) (ballFamily_nonempty hr hA)
+    F G CF CG hFdep hGdep hF hG
+  have hd := separation_ballFamily hr hA hB hδ
+  have hcardA := card_ballFamily_le (by decide : 0 < 4) r A
+  have hcardB := card_ballFamily_le (by decide : 0 < 4) r B
+  have hq' : (A.card : ℝ) + B.card ≤ q := by exact_mod_cast hq
+  have hcount : 0 ≤ Real.exp r * exponentialVolumeBound 4 1 := by
+    unfold exponentialVolumeBound; positivity
+  have he : Real.exp (3 * (ballFamily r A).card + 3 * (ballFamily r B).card) *
+      Real.exp (-κ * polymerDist (ballFamily r A) (ballFamily r B)) ≤
+      ballFamilyEnvelope r κ q * Real.exp (-κ * δ) := by
+    unfold ballFamilyEnvelope
+    rw [← Real.exp_add, ← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    nlinarith [mul_le_mul_of_nonneg_right hq' hcount, mul_nonneg hκ.le (sub_nonneg.mpr hd)]
+  exact h.trans (by
+    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left he (show 0 ≤ 3*CF*CG by positivity))
+
+/-- Four local marks have exponential decay in a spanning-star length.
+All seven nontrivial cuts are used; overlaps and coincidences are allowed. -/
+theorem fourthCumulant_ball_clustering (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (base : E) {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :
+    ∃ κ > 0, ∀ (M : Model 4 E) (hφ : ∀ p, Continuous (M.φ p))
+      (r : ℝ), 0 ≤ r → ∀ (l m k j : Link 4 M.n)
+      (F G H K : C(Link 4 M.n → E, ℝ)) (B : ℝ), 0 ≤ B →
+      DependsOn (linkBall r l) F → DependsOn (linkBall r m) G →
+      DependsOn (linkBall r k) H → DependsOn (linkBall r j) K →
+      (∀ ω, |F ω| ≤ B) → (∀ ω, |G ω| ≤ B) → (∀ ω, |H ω| ≤ B) → (∀ ω, |K ω| ≤ B) →
+      |fourthCumulant (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) F G H K| ≤
+        66 * B^4 * ballFamilyEnvelope r κ 4 * Real.exp (-(κ/6) * fourStarLength l m k j) := by
+  obtain ⟨κ, hκ, hc⟩ := covariance_ballFamily_clustering ν₀ base hβ hβ0
+  refine ⟨κ, hκ, ?_⟩
+  intro M hφ r hr l m k j F G H K B hB hFl hGm hHk hKj hF hG hH hK
+  let μ := Measure.pi (fun _ : Link 4 M.n ↦ ν₀)
+  let W := realDensity M hφ β
+  let Q := ballFamilyEnvelope r κ 4
+  have hW : ∀ ω, 0 < W ω := realDensity_pos M hφ β
+  have hC (δ : ℝ) : 0 ≤ 3 * Q * Real.exp (-κ*δ) := by
+    dsimp [Q, ballFamilyEnvelope]; positivity
+  have hcenter {S : Finset (Link 4 M.n)} {A : C(Link 4 M.n → E, ℝ)}
+      (hA : DependsOn S A) : DependsOn S (centered μ W A) := by
+    intro U V h
+    simp only [centered, ContinuousMap.sub_apply, ContinuousMap.smul_apply,
+      ContinuousMap.one_apply, smul_eq_mul, mul_one]
+    rw [hA U V h]
+  have hpairBound (A D : C(Link 4 M.n → E, ℝ))
+      (hA : ∀ ω, |A ω| ≤ B) (hD : ∀ ω, |D ω| ≤ B) :
+      ∀ ω, |(centered μ W A * centered μ W D) ω| ≤ 4*B^2 := by
+    intro ω
+    simp only [ContinuousMap.mul_apply, abs_mul]
+    calc
+      _ ≤ (2*B)*(2*B) := mul_le_mul (abs_centered_le μ W A hW hA ω)
+        (abs_centered_le μ W D hW hD ω) (abs_nonneg _) (by positivity)
+      _ = _ := by ring
+  have htripleBound (A D V : C(Link 4 M.n → E, ℝ))
+      (hA : ∀ ω, |A ω| ≤ B) (hD : ∀ ω, |D ω| ≤ B) (hV : ∀ ω, |V ω| ≤ B) :
+      ∀ ω, |(centered μ W A * centered μ W D * centered μ W V) ω| ≤ 8*B^3 := by
+    intro ω
+    rw [ContinuousMap.mul_apply, abs_mul]
+    calc
+      _ ≤ (4*B^2)*(2*B) := mul_le_mul (hpairBound A D hA hD ω)
+        (abs_centered_le μ W V hW hV ω) (abs_nonneg _) (by positivity)
+      _ = _ := by ring
+  have hcov (A D : Finset (Link 4 M.n)) (hA : A.Nonempty) (hD : D.Nonempty)
+      (hAD : A.card + D.card ≤ 4) (δ : ℝ)
+      (hδ : ∀ x ∈ A, ∀ y ∈ D, δ ≤ dist x y)
+      (U V : C(Link 4 M.n → E, ℝ)) (CU CV : ℝ) (hCU : 0 ≤ CU) (hCV : 0 ≤ CV)
+      (hUdep : DependsOn (ballFamily r A) U) (hVdep : DependsOn (ballFamily r D) V)
+      (hU : ∀ ω, |U ω| ≤ CU) (hV : ∀ ω, |V ω| ≤ CV) :
+      |covariance μ W U V| ≤ CU*CV*(3*Q*Real.exp (-κ*δ)) := by
+    exact (hc M hφ r hr A D hA hD δ 4 hAD hδ U V CU CV hCU hCV hUdep hVdep hU hV).trans_eq (by dsimp [Q]; ring)
+  have hsingle (l m k j : Link 4 M.n) (F G H K : C(Link 4 M.n → E, ℝ))
+      (hFl : DependsOn (linkBall r l) F) (hGm : DependsOn (linkBall r m) G)
+      (hHk : DependsOn (linkBall r k) H) (hKj : DependsOn (linkBall r j) K)
+      (hF : ∀ ω, |F ω| ≤ B) (hG : ∀ ω, |G ω| ≤ B)
+      (hH : ∀ ω, |H ω| ≤ B) (hK : ∀ ω, |K ω| ≤ B) :
+      |fourthCumulant μ W F G H K| ≤ 66*B^4*Q*
+        Real.exp (-κ * min (dist l m) (min (dist l k) (dist l j))) := by
+    let δ := min (dist l m) (min (dist l k) (dist l j))
+    have hcard : ({l} : Finset (Link 4 M.n)).card + ({m,k,j} : Finset (Link 4 M.n)).card ≤ 4 := by
+      simp only [card_singleton]
+      have h := card_insert_le m ({k,j} : Finset (Link 4 M.n))
+      have hh := card_insert_le k ({j} : Finset (Link 4 M.n))
+      simp only [card_singleton] at hh
+      omega
+    have hd : ∀ x ∈ ({l} : Finset (Link 4 M.n)), ∀ y ∈ ({m,k,j} : Finset (Link 4 M.n)), δ ≤ dist x y := by
+      intro x hx y hy
+      rcases mem_singleton.mp hx with rfl
+      simp only [mem_insert, mem_singleton] at hy
+      rcases hy with rfl | rfl | rfl
+      · exact min_le_left _ _
+      · exact (min_le_right _ _).trans (min_le_left _ _)
+      · exact (min_le_right _ _).trans (min_le_right _ _)
+    have hFdep : DependsOn (ballFamily r {l}) F := hFl.mono (linkBall_subset_ballFamily r (by simp))
+    have hGdep : DependsOn (ballFamily r {m,k,j}) G := hGm.mono (linkBall_subset_ballFamily r (by simp))
+    have hHdep : DependsOn (ballFamily r {m,k,j}) H := hHk.mono (linkBall_subset_ballFamily r (by simp))
+    have hKdep : DependsOn (ballFamily r {m,k,j}) K := hKj.mono (linkBall_subset_ballFamily r (by simp))
+    have hc' := hcov {l} {m,k,j} (by simp) (by simp) hcard δ hd
+    have hmain := hc' (centered μ W F) (centered μ W G * centered μ W H * centered μ W K)
+      (2*B) (8*B^3) (by positivity) (by positivity) (hcenter hFdep)
+      (((hcenter hGdep).mul (hcenter hHdep)).mul (hcenter hKdep))
+      (abs_centered_le μ W F hW hF) (htripleBound G H K hG hH hK)
+    have hFG := hc' F G B B hB hB hFdep hGdep hF hG
+    have hFH := hc' F H B B hB hB hFdep hHdep hF hH
+    have hFK := hc' F K B B hB hB hFdep hKdep hF hK
+    have h := abs_fourthCumulant_le_singleton_cut μ W F G H K hW hB (hC δ)
+      hF hG hH hK (hmain.trans_eq (by ring))
+      (hFG.trans_eq (by ring)) (hFH.trans_eq (by ring)) (hFK.trans_eq (by ring))
+    exact h.trans_eq (by dsimp [δ]; ring)
+  have hpair (l m k j : Link 4 M.n) (F G H K : C(Link 4 M.n → E, ℝ))
+      (hFl : DependsOn (linkBall r l) F) (hGm : DependsOn (linkBall r m) G)
+      (hHk : DependsOn (linkBall r k) H) (hKj : DependsOn (linkBall r j) K)
+      (hF : ∀ ω, |F ω| ≤ B) (hG : ∀ ω, |G ω| ≤ B)
+      (hH : ∀ ω, |H ω| ≤ B) (hK : ∀ ω, |K ω| ≤ B) :
+      |fourthCumulant μ W F G H K| ≤ 66*B^4*Q*
+        Real.exp (-κ * min (dist l k) (min (dist l j) (min (dist m k) (dist m j)))) := by
+    let δ := min (dist l k) (min (dist l j) (min (dist m k) (dist m j)))
+    have hcard : ({l,m} : Finset (Link 4 M.n)).card + ({k,j} : Finset (Link 4 M.n)).card ≤ 4 := by
+      have h := card_insert_le l ({m} : Finset (Link 4 M.n))
+      have hh := card_insert_le k ({j} : Finset (Link 4 M.n))
+      simp only [card_singleton] at h hh
+      omega
+    have hd : ∀ x ∈ ({l,m} : Finset (Link 4 M.n)), ∀ y ∈ ({k,j} : Finset (Link 4 M.n)), δ ≤ dist x y := by
+      intro x hx y hy
+      simp only [mem_insert, mem_singleton] at hx hy
+      rcases hx with rfl | rfl <;> rcases hy with rfl | rfl
+      · exact min_le_left _ _
+      · exact (min_le_right _ _).trans (min_le_left _ _)
+      · exact (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
+      · exact (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))
+    have hFdep : DependsOn (ballFamily r {l,m}) F := hFl.mono (linkBall_subset_ballFamily r (by simp))
+    have hGdep : DependsOn (ballFamily r {l,m}) G := hGm.mono (linkBall_subset_ballFamily r (by simp))
+    have hHdep : DependsOn (ballFamily r {k,j}) H := hHk.mono (linkBall_subset_ballFamily r (by simp))
+    have hKdep : DependsOn (ballFamily r {k,j}) K := hKj.mono (linkBall_subset_ballFamily r (by simp))
+    have hc' := hcov {l,m} {k,j} (by simp) (by simp) hcard δ hd
+    have hmain := hc' (centered μ W F * centered μ W G) (centered μ W H * centered μ W K)
+      (4*B^2) (4*B^2) (by positivity) (by positivity)
+      ((hcenter hFdep).mul (hcenter hGdep)) ((hcenter hHdep).mul (hcenter hKdep))
+      (hpairBound F G hF hG) (hpairBound H K hH hK)
+    have hFH := hc' F H B B hB hB hFdep hHdep hF hH
+    have hFK := hc' F K B B hB hB hFdep hKdep hF hK
+    have h := abs_fourthCumulant_le_pair_cut μ W F G H K hW hB (hC δ)
+      hF hG hH hK (hmain.trans_eq (by ring))
+      (hFH.trans_eq (by ring)) (hFK.trans_eq (by ring))
+    exact h.trans_eq (by dsimp [δ]; ring)
+  have h0 := hsingle l m k j F G H K hFl hGm hHk hKj hF hG hH hK
+  have h1 := hsingle m k j l G H K F hGm hHk hKj hFl hG hH hK hF
+  have h2 := hsingle k j l m H K F G hHk hKj hFl hGm hH hK hF hG
+  have h3 := hsingle j l m k K F G H hKj hFl hGm hHk hK hF hG hH
+  have h01 := hpair l m k j F G H K hFl hGm hHk hKj hF hG hH hK
+  have h02 := hpair l k m j F H G K hFl hHk hGm hKj hF hH hG hK
+  have h03 := hpair l j m k F K G H hFl hKj hGm hHk hF hK hG hH
+  rw [← fourthCumulant_rotate] at h1
+  rw [← fourthCumulant_rotate, ← fourthCumulant_rotate] at h2
+  rw [← fourthCumulant_rotate, ← fourthCumulant_rotate, ← fourthCumulant_rotate] at h3
+  rw [← fourthCumulant_swap_middle] at h02
+  rw [fourthCumulant_swap_middle, fourthCumulant_swap_last] at h03
+  simp only [dist_comm m l, dist_comm k l, dist_comm k m, dist_comm j l,
+    dist_comm j m, dist_comm j k] at h1 h2 h3 h02 h03
+  have hmax (a b : ℝ)
+      (ha : |fourthCumulant μ W F G H K| ≤ 66*B^4*Q*Real.exp (-κ*a))
+      (hb : |fourthCumulant μ W F G H K| ≤ 66*B^4*Q*Real.exp (-κ*b)) :
+      |fourthCumulant μ W F G H K| ≤ 66*B^4*Q*Real.exp (-κ*max a b) := by
+    rcases le_total a b with h | h
+    · simpa only [max_eq_right h] using hb
+    · simpa only [max_eq_left h] using ha
+  have hcut : |fourthCumulant μ W F G H K| ≤ 66*B^4*Q*Real.exp (-κ*fourCutRadius l m k j) := by
+    unfold fourCutRadius
+    refine hmax _ _ h0 (hmax _ _ ?_ (hmax _ _ ?_ (hmax _ _ ?_ (hmax _ _ h01 (hmax _ _ ?_ ?_)))))
+    · simpa only [min_comm, min_left_comm, min_assoc] using h1
+    · simpa only [min_comm, min_left_comm, min_assoc] using h2
+    · exact h3
+    · simpa only [min_comm, min_left_comm, min_assoc] using h02
+    · simpa only [min_comm, min_left_comm, min_assoc] using h03
+  refine hcut.trans ?_
+  apply mul_le_mul_of_nonneg_left _ (by dsimp [Q, ballFamilyEnvelope]; positivity)
+  apply Real.exp_le_exp.mpr
+  nlinarith [mul_nonneg hκ.le (sub_nonneg.mpr (fourStarLength_le_six_cutRadius l m k j))]
+
+/-- An explicit volume-uniform fourth-response budget for four independently
+chosen families of marks with a fixed support radius and pointwise bound. -/
+theorem uniform_ball_fourth_response_bound (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
+    (base : E) {β B r : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4)
+    (hB : 0 ≤ B) (hr : 0 ≤ r) :
+    ∃ η > 0, ∃ C ≥ 0,
+      ∀ (M : Model 4 E) (hφ : ∀ p, Continuous (M.φ p))
+        (F : Fin 4 → Link 4 M.n → C(Link 4 M.n → E, ℝ)),
+        (∀ a l, DependsOn (linkBall r l) (F a l)) →
+        (∀ a l ω, |F a l ω| ≤ B) →
+        weightedFourthSeminorm η (fun l m k j ↦
+          fourthCumulant (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β)
+            (F 0 l) (F 1 m) (F 2 k) (F 3 j)) ≤ C := by
+  obtain ⟨κ, hκ, hc⟩ := fourthCumulant_ball_clustering ν₀ base hβ hβ0
+  let A := 66 * B^4 * ballFamilyEnvelope r κ 4
+  have hA : 0 ≤ A := by dsimp [A, ballFamilyEnvelope]; positivity
+  have hV : 0 ≤ exponentialVolumeBound 4 (κ/12) := by
+    unfold exponentialVolumeBound; positivity
+  refine ⟨κ/12, by positivity, A * (exponentialVolumeBound 4 (κ/12))^3,
+    by positivity, ?_⟩
+  intro M hφ F hlocal hF
+  apply weightedFourthSeminorm_le_of_envelope (κ/12) (κ/6) _ hA hV
+  · intro l m k j
+    exact hc M hφ r hr l m k j (F 0 l) (F 1 m) (F 2 k) (F 3 j) B hB
+      (hlocal 0 l) (hlocal 1 m) (hlocal 2 k) (hlocal 3 j)
+      (hF 0 l) (hF 1 m) (hF 2 k) (hF 3 j)
+  · intro l
+    rw [show κ/6 - κ/12 = κ/12 by ring]
+    exact sum_exp_dist_le (by decide) (by positivity) l
+
+end BallFamilies
+
 /-- Explicit support-size and separation cost for one metric ball against
 the union of two balls in four dimensions. -/
 def ballResponseEnvelope (r κ : ℝ) : ℝ :=
   Real.exp (9 * (Real.exp r * exponentialVolumeBound 4 1) + 2 * κ * r)
 
+open WilsonPatchGeometry in
 /-- Spatial covariance after a local elimination may involve the boundaries
 of whole cells. The radius enters the prefactor explicitly and the decay
 rate is chosen before the radius, model, volume and marks. -/
@@ -200,34 +434,25 @@ theorem covariance_ball_union_clustering (ν₀ : Measure E) [IsProbabilityMeasu
       |covariance (Measure.pi fun _ ↦ ν₀) (realDensity M hφ β) F G| ≤
         3 * CF * CG * ballResponseEnvelope r κ *
           Real.exp (-κ * min (dist l m) (dist l k)) := by
-  obtain ⟨κ, hκ, hc⟩ := covariance_clustering_local 4 ν₀ base hβ hβ0
+  obtain ⟨κ, hκ, hc⟩ := covariance_ballFamily_clustering ν₀ base hβ hβ0
   refine ⟨κ, hκ, ?_⟩
   intro M hφ r hr l m k F G CF CG hCF hCG hFdep hGdep hF hG
-  have h := hc M hφ (WilsonPatchGeometry.linkBall r l)
-    (WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k)
-    (WilsonPatchGeometry.linkBall_nonempty hr l) F G CF CG hFdep hGdep hF hG
-  have hcard (x : Link 4 M.n) := WilsonPatchGeometry.card_linkBall_le (by decide) r x
-  have hcardUnion :
-      ((WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k).card : ℝ) ≤
-        2 * (Real.exp r * exponentialVolumeBound 4 1) := by
-    have hle :
-        ((WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k).card : ℝ) ≤
-        (WilsonPatchGeometry.linkBall r m).card + (WilsonPatchGeometry.linkBall r k).card := by
-      exact_mod_cast card_union_le (WilsonPatchGeometry.linkBall r m) (WilsonPatchGeometry.linkBall r k)
-    linarith [hcard m, hcard k]
-  have hd := WilsonPatchGeometry.separation_linkBall_union hr l m k
-  have he : Real.exp (3 * (WilsonPatchGeometry.linkBall r l).card +
-      3 * (WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k).card) *
-      Real.exp (-κ * polymerDist (WilsonPatchGeometry.linkBall r l)
-        (WilsonPatchGeometry.linkBall r m ∪ WilsonPatchGeometry.linkBall r k)) ≤
-      ballResponseEnvelope r κ * Real.exp (-κ * min (dist l m) (dist l k)) := by
-    unfold ballResponseEnvelope
-    rw [← Real.exp_add, ← Real.exp_add]
-    apply Real.exp_le_exp.mpr
-    nlinarith [hcard l, mul_nonneg hκ.le (sub_nonneg.mpr hd)]
-  exact h.trans (by
-    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left he
-      (show 0 ≤ 3 * CF * CG by positivity))
+  have hcard : ({l} : Finset (Link 4 M.n)).card + ({m,k} : Finset (Link 4 M.n)).card ≤ 3 := by
+    have h := card_insert_le m ({k} : Finset (Link 4 M.n))
+    simp only [card_singleton] at *
+    omega
+  have hd : ∀ x ∈ ({l} : Finset (Link 4 M.n)), ∀ y ∈ ({m,k} : Finset (Link 4 M.n)),
+      min (dist l m) (dist l k) ≤ dist x y := by
+    intro x hx y hy
+    rcases mem_singleton.mp hx with rfl
+    simp only [mem_insert, mem_singleton] at hy
+    rcases hy with rfl | rfl
+    · exact min_le_left _ _
+    · exact min_le_right _ _
+  have h := hc M hφ r hr {l} {m,k} (by simp) (by simp) _ 3 hcard hd F G CF CG hCF hCG
+    (by simpa only [WilsonPatchGeometry.ballFamily, singleton_biUnion] using hFdep)
+    (by simpa only [WilsonPatchGeometry.ballFamily, biUnion_insert, singleton_biUnion] using hGdep) hF hG
+  simpa only [ballFamilyEnvelope, ballResponseEnvelope, Nat.cast_ofNat, show (3:ℝ)*3=9 by norm_num] using h
 
 theorem covariance_ball_clustering (ν₀ : Measure E) [IsProbabilityMeasure ν₀]
     (base : E) {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ beta0 4) :

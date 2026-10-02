@@ -12,9 +12,10 @@ the weight is strictly positive. In particular all displayed integrals are
 integrable and every normalization denominator is positive.
 
 The conditional covariance is kept as a continuous boundary observable, so its
-contribution can be transported through further eliminations. Third cumulants
-use one common moment polynomial, including its five-term composition law.
-Weighted expectation and interior projection are linear maps on marks.
+contribution can be transported through further eliminations. Third and fourth
+cumulants use common moment polynomials, retaining all five and fifteen terms
+of their respective conditioning laws. Weighted expectation and interior
+projection are linear maps on marks.
 
 `KernelRoute.action` gives continuous-kernel integral semantics to the existing
 GSLT route type. Concatenation composes the weighted operators. The concrete
@@ -49,6 +50,68 @@ theorem thirdMoment_comp {A B D : Type*} [CommRing A] [CommRing B] [CommRing D]
       (Q (P G * (P (F * H) - P F * P H)) - Q (P G) * Q (P (F * H) - P F * P H)) +
       (Q (P H * (P (F * G) - P F * P G)) - Q (P H) * Q (P (F * G) - P F * P G)) := by
   simp only [thirdMoment, LinearMap.comp_apply, mul_sub, map_sub, map_add, two_smul ℝ]
+  ring
+
+def secondMoment {A B : Type*} [CommRing A] [CommRing B] (P : A → B) (F G : A) : B :=
+  P (F * G) - P F * P G
+
+/-- The fourth joint cumulant polynomial, with all fifteen set partitions. -/
+def fourthMoment {A B : Type*} [CommRing A] [CommRing B] (P : A → B) (F G H K : A) : B :=
+  P (F * G * H * K) -
+    (P (F * G * H) * P K + P (F * G * K) * P H + P (F * H * K) * P G + P (G * H * K) * P F) -
+    (P (F * G) * P (H * K) + P (F * H) * P (G * K) + P (F * K) * P (G * H)) +
+    2 • (P (F * G) * P H * P K + P (F * H) * P G * P K + P (F * K) * P G * P H +
+      P (G * H) * P F * P K + P (G * K) * P F * P H + P (H * K) * P F * P G) -
+    6 • (P F * P G * P H * P K)
+
+/-- Total fourth cumulance: four mean/third covariances, three pair/pair
+covariances and six outer third-cumulant corrections accompany the two
+fourth cumulants. This identity is algebraic in the actual linear maps. -/
+theorem fourthMoment_comp {A B D : Type*} [CommRing A] [CommRing B] [CommRing D]
+    [Module ℝ A] [Module ℝ B] [Module ℝ D]
+    (P : A →ₗ[ℝ] B) (Q : B →ₗ[ℝ] D) (F G H K : A) :
+    fourthMoment (Q.comp P) F G H K =
+      Q (fourthMoment P F G H K) + fourthMoment Q (P F) (P G) (P H) (P K) +
+      secondMoment Q (P F) (thirdMoment P G H K) +
+      secondMoment Q (P G) (thirdMoment P F H K) +
+      secondMoment Q (P H) (thirdMoment P F G K) +
+      secondMoment Q (P K) (thirdMoment P F G H) +
+      secondMoment Q (secondMoment P F G) (secondMoment P H K) +
+      secondMoment Q (secondMoment P F H) (secondMoment P G K) +
+      secondMoment Q (secondMoment P F K) (secondMoment P G H) +
+      thirdMoment Q (P F) (P G) (secondMoment P H K) +
+      thirdMoment Q (P F) (P H) (secondMoment P G K) +
+      thirdMoment Q (P F) (P K) (secondMoment P G H) +
+      thirdMoment Q (P G) (P H) (secondMoment P F K) +
+      thirdMoment Q (P G) (P K) (secondMoment P F H) +
+      thirdMoment Q (P H) (P K) (secondMoment P F G) := by
+  simp only [fourthMoment, thirdMoment, secondMoment, LinearMap.comp_apply,
+    show (6 : ℕ) = 2 + 2 + 2 by norm_num, add_nsmul, two_nsmul, two_smul ℝ,
+    mul_sub, mul_add, sub_mul, map_sub, map_add]
+  ring
+
+theorem fourthMoment_eq_singleton_cut {A : Type*} [CommRing A]
+    (P : A → ℝ) (F G H K : A) :
+    fourthMoment P F G H K = secondMoment P F (G * H * K) -
+      P G * secondMoment P F (H * K) - P H * secondMoment P F (G * K) -
+      P K * secondMoment P F (G * H) -
+      P (G * H) * secondMoment P F K - P (G * K) * secondMoment P F H -
+      P (H * K) * secondMoment P F G +
+      2 * (P G * P H * secondMoment P F K + P G * P K * secondMoment P F H +
+        P H * P K * secondMoment P F G) := by
+  simp only [fourthMoment, secondMoment, nsmul_eq_mul, ← mul_assoc]
+  ring
+
+theorem fourthMoment_eq_centeredProducts {A : Type*} [CommRing A] [Algebra ℝ A]
+    (P : A →ₗ[ℝ] ℝ) (hP : P 1 = 1) (F G H K : A) :
+    fourthMoment P F G H K =
+      P ((F - (P F) • 1) * (G - (P G) • 1) * (H - (P H) • 1) * (K - (P K) • 1)) -
+      secondMoment P F G * secondMoment P H K -
+      secondMoment P F H * secondMoment P G K -
+      secondMoment P F K * secondMoment P G H := by
+  simp only [fourthMoment, secondMoment, mul_sub, sub_mul, mul_smul_comm,
+    smul_mul_assoc, one_mul, mul_one, map_sub, map_smul,
+    hP, smul_eq_mul, nsmul_eq_mul]
   ring
 
 section Weighted
@@ -88,6 +151,26 @@ theorem thirdCumulant_eq_covariances (W F G H : C(X, ℝ)) :
       expectation μ W H * covariance μ W F G := by
   simp only [thirdCumulant, thirdMoment, covariance, smul_eq_mul,
     mul_assoc F G H, mul_comm G H, mul_comm H F, mul_comm G F]
+  ring
+
+def fourthCumulant (W F G H K : C(X, ℝ)) : ℝ :=
+  fourthMoment (expectation μ W) F G H K
+
+omit [CompactSpace X] [BorelSpace X] [IsProbabilityMeasure μ] in
+theorem fourthCumulant_swap (W F G H K : C(X, ℝ)) :
+    fourthCumulant μ W F G H K = fourthCumulant μ W G F H K := by
+  have hFG : F * G = G * F := mul_comm _ _
+  simp only [fourthCumulant, fourthMoment, nsmul_eq_mul, hFG]
+  ring
+
+omit [CompactSpace X] [BorelSpace X] [IsProbabilityMeasure μ] in
+theorem fourthCumulant_rotate (W F G H K : C(X, ℝ)) :
+    fourthCumulant μ W F G H K = fourthCumulant μ W G H K F := by
+  have hFGH : F * G * H = G * H * F := by ring
+  have hFGK : F * G * K = G * K * F := by ring
+  have hFHK : F * H * K = H * K * F := by ring
+  simp only [fourthCumulant, fourthMoment, nsmul_eq_mul, hFGH, hFGK, hFHK,
+    mul_comm K F, mul_comm H F, mul_comm G F]
   ring
 
 @[simp] theorem expectation_zero (W : C(X, ℝ)) : expectation μ W 0 = 0 := by
@@ -166,6 +249,160 @@ theorem abs_covariance_le (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
       (abs_expectation_le μ W F hW hF) (abs_nonneg _) hCG
   exact (abs_sub _ _).trans (by nlinarith)
 
+/-- Remove the mean under the explicitly supplied generated density. -/
+def centered (W F : C(X, ℝ)) : C(X, ℝ) := F - (expectation μ W F) • 1
+
+theorem abs_centered_le (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    {B : ℝ} (hF : ∀ x, |F x| ≤ B) (x : X) : |centered μ W F x| ≤ 2 * B := by
+  change |F x - expectation μ W F * 1| ≤ _
+  rw [mul_one]
+  exact (abs_sub _ _).trans (by linarith [hF x, abs_expectation_le μ W F hW hF])
+
+theorem expectation_centered (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
+    expectation μ W (centered μ W F) = 0 := by
+  change (expectationLinear μ W) (F - (expectation μ W F) • 1) = 0
+  rw [map_sub, map_smul]
+  change expectation μ W F - expectation μ W F * expectation μ W 1 = 0
+  rw [expectation_one μ W hW]
+  ring
+
+theorem covariance_centered (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
+    covariance μ W (centered μ W F) (centered μ W G) = covariance μ W F G := by
+  let P := expectationLinear μ W
+  have hP : P 1 = 1 := expectation_one μ W hW
+  change P ((F - (P F) • 1) * (G - (P G) • 1)) - P (F - (P F) • 1) *
+    P (G - (P G) • 1) = P (F * G) - P F * P G
+  simp only [mul_sub, sub_mul, mul_smul_comm, smul_mul_assoc,
+    one_mul, mul_one, map_sub, map_smul, hP, smul_eq_mul]
+  ring
+
+theorem fourthCumulant_eq_centeredProducts (W F G H K : C(X, ℝ))
+    (hW : ∀ x, 0 < W x) :
+    fourthCumulant μ W F G H K =
+      expectation μ W (centered μ W F * centered μ W G * centered μ W H * centered μ W K) -
+      covariance μ W F G * covariance μ W H K -
+      covariance μ W F H * covariance μ W G K -
+      covariance μ W F K * covariance μ W G H :=
+  fourthMoment_eq_centeredProducts (expectationLinear μ W) (expectation_one μ W hW) F G H K
+
+theorem fourthCumulant_eq_pair_cut (W F G H K : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
+    fourthCumulant μ W F G H K =
+      covariance μ W (centered μ W F * centered μ W G) (centered μ W H * centered μ W K) -
+      covariance μ W F H * covariance μ W G K -
+      covariance μ W F K * covariance μ W G H := by
+  rw [fourthCumulant_eq_centeredProducts μ W F G H K hW]
+  have hm (A B : C(X, ℝ)) : expectation μ W (centered μ W A * centered μ W B) = covariance μ W A B := by
+    have h := covariance_centered μ W A B hW
+    simpa only [covariance, expectation_centered μ W _ hW, zero_mul, sub_zero] using h
+  simp only [covariance, hm]
+  simp only [mul_assoc]
+
+theorem fourthCumulant_eq_singleton_cut (W F G H K : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
+    fourthCumulant μ W F G H K =
+      covariance μ W (centered μ W F) (centered μ W G * centered μ W H * centered μ W K) -
+      covariance μ W F G * covariance μ W H K -
+      covariance μ W F H * covariance μ W G K -
+      covariance μ W F K * covariance μ W G H := by
+  rw [fourthCumulant_eq_centeredProducts μ W F G H K hW]
+  simp only [covariance, expectation_centered μ W F hW, zero_mul, sub_zero, mul_assoc]
+
+theorem abs_fourthCumulant_le (W F G H K : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    {B : ℝ} (hB : 0 ≤ B) (hF : ∀ x, |F x| ≤ B) (hG : ∀ x, |G x| ≤ B)
+    (hH : ∀ x, |H x| ≤ B) (hK : ∀ x, |K x| ≤ B) :
+    |fourthCumulant μ W F G H K| ≤ 28 * B^4 := by
+  have hprod : |expectation μ W (centered μ W F * centered μ W G * centered μ W H * centered μ W K)| ≤ 16 * B^4 := by
+    apply abs_expectation_le μ W _ hW
+    intro x
+    simp only [ContinuousMap.mul_apply, abs_mul]
+    calc
+      _ ≤ (2*B)*(2*B)*(2*B)*(2*B) := by
+        gcongr
+        · exact abs_centered_le μ W F hW hF x
+        · exact abs_centered_le μ W G hW hG x
+        · exact abs_centered_le μ W H hW hH x
+        · exact abs_centered_le μ W K hW hK x
+      _ = _ := by ring
+  have hb (A D : C(X, ℝ)) (hA : ∀ x, |A x| ≤ B) (hD : ∀ x, |D x| ≤ B) :
+      |covariance μ W A D| ≤ 2*B^2 := by
+    simpa only [pow_two, mul_assoc] using abs_covariance_le μ W A D hW hB hB hA hD
+  have hpair (A D V Z : C(X, ℝ))
+      (hA : ∀ x, |A x| ≤ B) (hD : ∀ x, |D x| ≤ B)
+      (hV : ∀ x, |V x| ≤ B) (hZ : ∀ x, |Z x| ≤ B) :
+      |covariance μ W A D * covariance μ W V Z| ≤ 4*B^4 := by
+    rw [abs_mul]
+    calc
+      _ ≤ (2*B^2)*(2*B^2) := mul_le_mul (hb A D hA hD) (hb V Z hV hZ) (abs_nonneg _) (by positivity)
+      _ = _ := by ring
+  rw [fourthCumulant_eq_centeredProducts μ W F G H K hW]
+  have ht (a b c d : ℝ) : |a-b-c-d| ≤ |a|+|b|+|c|+|d| := by
+    linarith [abs_sub (a-b-c) d, abs_sub (a-b) c, abs_sub a b]
+  apply (ht _ _ _ _).trans
+  linarith [hpair F G H K hF hG hH hK, hpair F H G K hF hH hG hK,
+    hpair F K G H hF hK hG hH]
+
+omit [CompactSpace X] [BorelSpace X] [IsProbabilityMeasure μ] in
+theorem fourthCumulant_swap_middle (W F G H K : C(X, ℝ)) :
+    fourthCumulant μ W F G H K = fourthCumulant μ W F H G K := by
+  simp only [fourthCumulant, fourthMoment, nsmul_eq_mul]
+  ring
+
+omit [CompactSpace X] [BorelSpace X] [IsProbabilityMeasure μ] in
+theorem fourthCumulant_swap_last (W F G H K : C(X, ℝ)) :
+    fourthCumulant μ W F G H K = fourthCumulant μ W F G K H := by
+  simp only [fourthCumulant, fourthMoment, nsmul_eq_mul]
+  ring
+
+/-- A singleton cut or a pair cut controls the fourth connected response.
+Only covariances crossing the cut require a spatial estimate. -/
+theorem abs_fourthCumulant_le_singleton_cut (W F G H K : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
+    (_hF : ∀ x, |F x| ≤ B) (hG : ∀ x, |G x| ≤ B)
+    (hH : ∀ x, |H x| ≤ B) (hK : ∀ x, |K x| ≤ B)
+    (hFGHK : |covariance μ W (centered μ W F)
+      (centered μ W G * centered μ W H * centered μ W K)| ≤ 16 * B^4 * C)
+    (hFG : |covariance μ W F G| ≤ B^2*C)
+    (hFH : |covariance μ W F H| ≤ B^2*C)
+    (hFK : |covariance μ W F K| ≤ B^2*C) :
+    |fourthCumulant μ W F G H K| ≤ 22 * B^4 * C := by
+  have hb (A D : C(X, ℝ)) (hA : ∀ x, |A x| ≤ B) (hD : ∀ x, |D x| ≤ B) :
+      |covariance μ W A D| ≤ 2*B^2 := by
+    simpa only [pow_two, mul_assoc] using abs_covariance_le μ W A D hW hB hB hA hD
+  have hpair (a b : ℝ) (ha : |a| ≤ B^2*C) (hb : |b| ≤ 2*B^2) : |a*b| ≤ 2*B^4*C := by
+    rw [abs_mul]
+    calc
+      _ ≤ (B^2*C)*(2*B^2) := mul_le_mul ha hb (abs_nonneg _) (by positivity)
+      _ = _ := by ring
+  rw [fourthCumulant_eq_singleton_cut μ W F G H K hW]
+  have ht (a b c d : ℝ) : |a-b-c-d| ≤ |a|+|b|+|c|+|d| := by
+    linarith [abs_sub (a-b-c) d, abs_sub (a-b) c, abs_sub a b]
+  apply (ht _ _ _ _).trans
+  linarith [hpair _ _ hFG (hb H K hH hK), hpair _ _ hFH (hb G K hG hK),
+    hpair _ _ hFK (hb G H hG hH)]
+
+theorem abs_fourthCumulant_le_pair_cut (W F G H K : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
+    (_hF : ∀ x, |F x| ≤ B) (hG : ∀ x, |G x| ≤ B)
+    (hH : ∀ x, |H x| ≤ B) (hK : ∀ x, |K x| ≤ B)
+    (hFGHK : |covariance μ W (centered μ W F * centered μ W G)
+      (centered μ W H * centered μ W K)| ≤ 16 * B^4 * C)
+    (hFH : |covariance μ W F H| ≤ B^2*C)
+    (hFK : |covariance μ W F K| ≤ B^2*C) :
+    |fourthCumulant μ W F G H K| ≤ 22 * B^4 * C := by
+  have hb (A D : C(X, ℝ)) (hA : ∀ x, |A x| ≤ B) (hD : ∀ x, |D x| ≤ B) :
+      |covariance μ W A D| ≤ 2*B^2 := by
+    simpa only [pow_two, mul_assoc] using abs_covariance_le μ W A D hW hB hB hA hD
+  have hpair (a b : ℝ) (ha : |a| ≤ B^2*C) (hb : |b| ≤ 2*B^2) : |a*b| ≤ 2*B^4*C := by
+    rw [abs_mul]
+    calc
+      _ ≤ (B^2*C)*(2*B^2) := mul_le_mul ha hb (abs_nonneg _) (by positivity)
+      _ = _ := by ring
+  rw [fourthCumulant_eq_pair_cut μ W F G H K hW]
+  have ht (a b c : ℝ) : |a-b-c| ≤ |a|+|b|+|c| := by
+    linarith [abs_sub (a-b) c, abs_sub a b]
+  apply (ht _ _ _).trans
+  nlinarith [hpair _ _ hFH (hb G K hG hK), hpair _ _ hFK (hb G H hG hH),
+    mul_nonneg (pow_nonneg hB 4) hC]
+
 end Weighted
 
 section Elimination
@@ -213,6 +450,11 @@ def fiberCovariance (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
 def fiberThirdCumulant (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
     (F G H : C(B × I, ℝ)) : C(B, ℝ) :=
   thirdMoment (project ν W hW) F G H
+
+/-- The exact conditional fourth cumulant, under the generated fiber law. -/
+def fiberFourthCumulant (W : C(B × I, ℝ)) (hW : ∀ p, 0 < W p)
+    (F G H K : C(B × I, ℝ)) : C(B, ℝ) :=
+  fourthMoment (project ν W hW) F G H K
 
 omit [MeasurableSpace B] [BorelSpace B] [SecondCountableTopology I] in
 /-- A projected observable is the normalized expectation in its actual fiber. -/
