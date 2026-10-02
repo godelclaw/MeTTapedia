@@ -3359,8 +3359,44 @@
     "original_configuration_certificate_dependencies_replaced": 0,
     "classification_checks_removed_from_complete_assembly": 0,
     "limits": [
-      "The 42-vertex example is independently program checked, not Lean certified.",
+      "Cyclicity, triangularity and three complete local rule-pair instances in the 42-vertex rotation are Lean certified. Its flat charge, spherical construction and exhaustive profile census remain independent program checks.",
       "No complete flat-pair classification, new reduction family or algorithmic runtime bound."
+    ]
+  },
+  "near_linear_joint_rule_charge": {
+    "status": "Kernel-certified gluing of shared rule readings, net charge bound and actual minimal-map flat-centre consumer; universal profile classification remains open.",
+    "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "source_patterns": [
+      "rule003_2.rule",
+      "rule004_1.rule"
+    ],
+    "joint_pattern": "rule006_1.rule",
+    "subpattern": "rule002_2.rule",
+    "target_directed_edges": 20,
+    "target_cyclic_turns": 15,
+    "joint_hypotheses": [
+      "Aligned roots in an actual vertexwise cyclic finite rotation.",
+      "First sender and shared vertex have degree five; outer corner and second sender have degree six; receiver degree is at least seven."
+    ],
+    "actual_consumer": "In graph-backed vertex minimality, the two existing diamond reductions force the shared-five/outer-six profile. The glued third rule forces at least three net incoming units on the second edge. A flat degree-eight receiver has at most seventeen units of remaining net supply.",
+    "proved": [
+      "FourColor.RulePairCharge.third_of_checks",
+      "FourColor.RulePairCharge.reduction_or_charge",
+      "FourColor.RulePairCharge.net_three",
+      "FourColor.ActualRulePairCharge.flat_remainder"
+    ],
+    "retained_certificates": [
+      "DiamondProfileReducibility.repair001",
+      "DiamondProfileReducibility.repair002"
+    ],
+    "measurement": "../near-linear/rule-pair-charge-measurements.json",
+    "coverage_entries_removed": 0,
+    "original_configuration_certificate_dependencies_replaced": 0,
+    "classification_checks_removed_from_complete_assembly": 0,
+    "limits": [
+      "The rule pair is not proved to occur at every flat centre.",
+      "The lower bound is not by itself a contradiction to flatness.",
+      "No complete profile classification or scheduling/runtime theorem is supplied."
     ]
   }
 }

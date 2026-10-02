@@ -1273,3 +1273,36 @@ data and both diamond artifacts prepared. The
 [account](../../tools/fourcolor/near-linear/README.md#two-charge-rules-force-a-shared-geometric-reduction)
 and [measurement](../../tools/fourcolor/near-linear/rule-pair-diamond-measurements.json)
 state the exact scope. Full surviving-profile classification remains open.
+
+## Shared rule readings constrain the remaining charge
+
+`RulePairCharge` handles part of the shared-five/outer-six residual. When
+the second sender has degree six and the receiver has degree at least seven,
+the two readings glue into the complete oriented rule `006_1`. All twenty
+directed edges and fifteen turns come from the two original readings; the
+identified corner is retained. `GeometryCover` separates this finite pattern
+cover from agreement of the actual vertex readings and their degree bounds.
+
+The larger rule also contains `002_2` at the same marked edge. Together with
+the original `004_1`, these are three distinct one-unit contributions. A
+separate endpoint lemma for the pinned rules excludes reverse transfer from
+degree at least seven to degree at most six, so the three-unit bound is net.
+
+`ActualRulePairCharge.third_and_charge` first uses the two existing diamond
+reductions to obtain the residual degree profile in actual vertex minimality.
+Its `flat_remainder` consumer shows that a flat degree-eight receiver has at
+most seventeen units of net supply from the rest of the graph, since its
+total required supply is twenty. Other incoming and outgoing transfers are
+retained in this exact remainder. No independent-spoke assumption is made.
+
+`RulePairChargeExample` supplies a nonempty instance in the saved 42-vertex
+rotation. The third rule and net bound are derived from the general theorem.
+Its zero final charge and exact seventeen-unit remainder remain independent
+program checks. Build `kernelRulePairCharge` after the preceding rule-pair
+artifacts. The dependency audit requires both actual reduction consumers and
+excludes the original catalogue certificates and full Four Colour endpoints.
+
+This adds a joint constraint for classification; it does not prove that all
+flat centres contain this pair. The complete proof retains 633 coverage
+entries and 629 original configuration certificate dependencies. See the
+[measurements](../../tools/fourcolor/near-linear/rule-pair-charge-measurements.json).

@@ -1,5 +1,11 @@
 # Near-linear Four Colour catalogue bridges
 
+The latest [joint rule charge result](../../../lean/fourcolor-classical/README.md#shared-rule-readings-constrain-the-remaining-charge)
+glues two actual rule readings into a third and bounds the remaining net
+supply at a flat degree-eight receiver. The
+[measurement record](rule-pair-charge-measurements.json) separates its general
+proof, minimal-map consumer, finite instance and open coverage obligations.
+
 The configuration files are unmodified inputs from
 [near-linear-4ct/reducible-configurations](https://github.com/near-linear-4ct/reducible-configurations),
 pinned to `c2ce7a96e35256201526e2abb51a39d04a588b53`.

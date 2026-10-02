@@ -1327,6 +1327,31 @@ certificate counts are unchanged by this result. The
 separates the generic theorem, actual reconstruction, finite instance and
 remaining classification obligation.
 
+## A composed overlap forces a third charge rule
+
+Part of the surviving degree profile now has a quantitative consequence.
+With a degree-six second sender and receiver degree at least seven, the two
+original rule readings together contain every edge and cyclic turn of the
+larger rule `006_1`. Its actual occurrence is reconstructed by gluing those
+readings, including the corner identified by the five-turn closure.
+
+The resulting edge receives at least three net charge units: three distinct
+rules apply, and the endpoint degree bounds forbid transfer in the reverse
+direction. At a flat degree-eight receiver the total net supply is twenty,
+so the remaining vertices contribute at most seventeen. The actual-map
+consumer obtains the necessary residual degree profile through the two
+previous diamond reductions and their colouring reconstruction.
+
+This is a compositional constraint on discharging itself. Separate rule
+checks cannot choose their outcomes independently when they share the same
+embedded geometry. The next coverage step must determine which combinations
+of these joint constraints force a reduction or a justified residual class.
+This result alone changes neither coverage nor original-certificate counts.
+The [package account](../../../lean/fourcolor-classical/README.md#shared-rule-readings-constrain-the-remaining-charge)
+and [measurement record](../../../tools/fourcolor/near-linear/rule-pair-charge-measurements.json)
+separate the general proof, actual-map consumer, finite instance and remaining
+classification work.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

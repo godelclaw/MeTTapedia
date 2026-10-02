@@ -1,0 +1,173 @@
+{
+  "result": "Two compatible rule readings glue into a third actual occurrence. In the surviving minimal-map profile this yields at least three net incoming units and a seventeen-unit upper bound on the remaining supply at a flat degree-eight centre.",
+  "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "source_patterns": [
+    "rule003_2.rule",
+    "rule004_1.rule"
+  ],
+  "joined_pattern": "rule006_1.rule",
+  "subpattern": "rule002_2.rule",
+  "joint_geometry": {
+    "target_vertices": 6,
+    "directed_edges": 20,
+    "cyclic_turns": 15,
+    "ambient_injectivity_assumed": false,
+    "identified_corner": "The two actual outer vertices coincide by the five-turn cyclic closure."
+  },
+  "hypotheses": [
+    "Actual finite simple graph with vertexwise cyclic rotation.",
+    "The two complete source checks hold at roots separated by two backward receiver turns.",
+    "First sender and shared vertex have degree five; remaining outer vertex and second sender have degree six; receiver degree at least seven."
+  ],
+  "actual_consumer": "ActualRulePairCharge.third_and_charge obtains the shared-five/outer-six profile from surviving_pair_degrees, which consumes both strict diamond reductions and genuine colouring reconstruction. ActualRulePairCharge.flat_remainder additionally assumes actual flatness and receiver degree eight.",
+  "charge": {
+    "distinct_source_rules": [
+      2,
+      5,
+      9
+    ],
+    "amounts": [
+      1,
+      1,
+      1
+    ],
+    "reverse_transfer": 0,
+    "net_lower_bound": 3,
+    "flat_degree_eight_total": 20,
+    "remaining_net_supply_upper_bound": 17
+  },
+  "trust": {
+    "roots": 18,
+    "dependency_declarations": 29479,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "original_configuration_certificate_dependencies": false,
+    "D1774_repair_dependency": false,
+    "complete_four_colour_endpoint_dependencies": false,
+    "retained_certificates": [
+      "DiamondProfileReducibility.repair001",
+      "DiamondProfileReducibility.repair002"
+    ]
+  },
+  "proof_and_audit": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RulePairCharge",
+        "source_sha256": "e1f3fa0fe2bb945535c97f6b43b455aeefd4671374ecaae720c521b0cba4152c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 114.461,
+        "olean_bytes": 2047608,
+        "olean_sha256": "aad045950a0570f465cd0a213c5fabc4c0db0b12a1a6ebe07842bde1cf1236ba"
+      },
+      {
+        "module": "MettapediaFourColor.ActualRulePairCharge",
+        "source_sha256": "a50cf3157029b0172608af3d8e433f880160491e1e454c5df78a1e2e8c23ef0d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.071,
+        "olean_bytes": 109424,
+        "olean_sha256": "c8e75a523e1aff6ae00e212591da1232b06a6e866017678d30d9759589b4c8fa"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairChargeExample",
+        "source_sha256": "5af3ee45d97b8cc9df26a953fa37ce66a36d2528b594e9ba8d67745c7d6c6b82",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.095,
+        "olean_bytes": 182816,
+        "olean_sha256": "2b1d76acdd1dea2ddf62c696675e322d2c7b0f0aa8946584c0e422cc61b83846"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairChargeAudit",
+        "source_sha256": "a06cc02c9585c160d0efdf4931b45fc1eef493095f05eb5b2d1ee44e80c573ed",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.132,
+        "olean_bytes": 2720,
+        "olean_sha256": "e1331d56372b62e9ab8716d6bb0696abaaf2a197d4d97ccf87a9aa04753afad5"
+      }
+    ]
+  },
+  "source_fidelity": {
+    "fixture_sha256": "561452dc9d6dcca39f83d7fc06035a1b5ad4d4b8ae0de56390f5d6cdb37b4c68",
+    "rotation_source_sha256": "c0ac126d6e25221aa2d7e8febf20b6c849ba3cf188b2d899dce3f3092cdcc20c",
+    "source_fidelity": "All 42 cyclic stars exactly match the saved oriented faces.",
+    "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "charge_example": {
+      "root": [
+        7,
+        11
+      ],
+      "second_root": [
+        9,
+        11
+      ],
+      "left_images": [
+        7,
+        11,
+        36,
+        27
+      ],
+      "right_images": [
+        9,
+        11,
+        36,
+        39,
+        27
+      ],
+      "joined_rule": "rule006_1.rule",
+      "joined_images": [
+        9,
+        11,
+        39,
+        36,
+        7,
+        27
+      ],
+      "distinct_contributing_rules": [
+        "rule002_2.rule",
+        "rule004_1.rule",
+        "rule006_1.rule"
+      ],
+      "certified_charge_lower_bound": 3,
+      "program_net_charge": 3,
+      "program_remaining_supply": 17,
+      "program_final_charge": 0,
+      "scope": "RulePairChargeExample checks the two original readings and degree guards; the uniform gluing theorem supplies the third rule and the charge bound."
+    }
+  },
+  "source_check_command": "python3 tools/fourcolor/near-linear/audit_rule_pair_example.py",
+  "source_check_sha256": "ae376ef1c03833bdb92dfe2a8752e1b76eace0f181982a2eba5ba1c0eee71e37",
+  "regression_checks": [
+    {
+      "command": "lake build kernelFlatCoverage kernelComplete",
+      "exit_code": 0
+    },
+    {
+      "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "exit_code": 0,
+      "jobs": 11195
+    }
+  ],
+  "counts": {
+    "coverage_entries_removed_here": 0,
+    "existing_assembly_certificate_dependencies_replaced_here": 0,
+    "classification_checks_removed_from_complete_assembly_here": 0
+  },
+  "limits": [
+    "No theorem supplies this pair at every flat centre.",
+    "The seventeen-unit bound retains all other signed transfers and is not a contradiction to flatness.",
+    "The finite example has certified local geometry and rule observations; its total flat charge and exact remaining supply are independent program checks.",
+    "No complete residual classification, coverage compression or scheduling/runtime bound follows."
+  ]
+}

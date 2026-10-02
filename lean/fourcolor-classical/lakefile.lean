@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Reconstruct a third charge rule from two compatible actual readings. -/
+target kernelRulePairCharge pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-pair-charge-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RulePairCharge", "ActualRulePairCharge", "RulePairChargeExample", "RulePairChargeAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Prepare the finite rotation and reachability facts for the rule-pair example. -/
 target kernelRulePairExampleData pkg : Unit := do
   let env ← getAugmentedEnv

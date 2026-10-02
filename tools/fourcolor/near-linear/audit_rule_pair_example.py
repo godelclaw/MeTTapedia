@@ -84,6 +84,29 @@ def audit():
                                'outer_degree': outer_degree})
     assert len(collisions) == 11
     assert sum(item['outer_degree'] == 5 for item in collisions) == 4
+    charge_root = (7, 11)
+    charge_second = (prevs[11, prevs[11, 7]], 11)
+    charge_left = reading(rules[4], *charge_root, neighbors, nexts, prevs)
+    charge_right = reading(rules[5], *charge_second, neighbors, nexts, prevs)
+    charge_joined = reading(rules[9], *charge_second, neighbors, nexts, prevs)
+    assert charge_second == (9, 11)
+    assert charge_left == [7, 11, 36, 27]
+    assert charge_right == [9, 11, 36, 39, 27]
+    assert charge_joined == [9, 11, 39, 36, 7, 27]
+    assert charge_left[3] == charge_right[4]
+    assert [len(neighbors[v]) for v in charge_joined] == [6, 8, 6, 5, 5, 5]
+    for index in (2, 5, 9):
+        assert reading(rules[index], *charge_second, neighbors, nexts, prevs) is not None
+        assert rules[index][1][0][3] == 1
+    def sent(u, v):
+        if v not in neighbors[u]:
+            return 0
+        return sum(rule[1][0][3] for rule in rules
+                   if reading(rule, u, v, neighbors, nexts, prevs) is not None)
+    second_net = sent(*charge_second) - sent(*reversed(charge_second))
+    rest_net = sum(sent(w, 11) - sent(11, w) for w in neighbors if w != 9)
+    assert second_net == 3 and rest_net == 17
+    assert 10 * (6 - len(neighbors[11])) + second_net + rest_net == 0
     observed = set()
     for centre in fixture['pair']:
         for neighbor in neighbors[centre]:
@@ -116,6 +139,16 @@ def audit():
             'pentagonal_guards_satisfied': 4, 'residual_five_six_profiles': 7,
             'readings': collisions,
             'scope': 'Program check on one saved graph. A residual profile is not an obstruction to all other reductions.'},
+        'charge_example': {
+            'root': charge_root, 'second_root': charge_second,
+            'left_images': charge_left, 'right_images': charge_right,
+            'joined_rule': rules[9][0], 'joined_images': charge_joined,
+            'distinct_contributing_rules': [rules[i][0] for i in (2, 5, 9)],
+            'certified_charge_lower_bound': 3,
+            'program_net_charge': second_net,
+            'program_remaining_supply': rest_net,
+            'program_final_charge': 0,
+            'scope': 'RulePairChargeExample checks the two original readings and degree guards; the uniform gluing theorem supplies the third rule and the charge bound.'},
         'scope': 'Lean certifies the cyclic/triangular rotation and complete rule checks with degree guards for both examples; shared structural theorems supply the mixed and pentagonal patterns. Flat charge, spherical flip history and the exhaustive collision scan remain program evidence.',
         'discarded_candidate': {
             'straddling_core': straddling_core,
