@@ -851,6 +851,39 @@ counterexample, the checked first rule and the two degree guards force the
 aligned second rule check to be false. This is a usable forbidden joint
 charge profile; no cartwheel-classification premise is assumed.
 
+The same five-turn path also has a degree-five branch. Cyclicity then
+identifies the last outer vertex of the second reading with the first outer
+vertex of the first reading. `identified_corner` proves this equality in the
+actual graph. With the first sender and other outer corner of degree five, triangular closure
+exposes the all-pentagonal diamond. The existing twelve-to-four replacement
+again decreases the full map by eight and reconstructs its colouring.
+
+The source rules bound both the shared degree and that other corner's degree
+between five and six. `pair_alternatives` therefore gives a complete split
+for this aligned pair with a degree-five first sender:
+
+```text
+five prescribed turns at the shared vertex
+                  |
+          +-------+--------+
+          |                |
+       degree 6         degree 5
+          |                |
+    closing corner    endpoints identified
+          |                |
+    mixed diamond     other corner's degree
+       13 -> 5          /             \
+                       5               6
+                  pentagonal        retained
+                   12 -> 4          residual
+```
+
+`ActualRulePairDiamond.surviving_pair_degrees` discharges both reduction
+branches in graph-backed vertex minimality: a surviving pair must have shared
+degree five and other-corner degree six. This is a necessary local condition;
+it does not assert that the residual is irreducible or occurs in a minimal
+counterexample.
+
 `RulePairExample` checks a nonempty instance on the saved 42-vertex graph:
 root `25 → 18`, second root `28 → 18`, shared vertex 5 and derived mixed edge
 `26 → 5`. The cyclic star at vertex 5 is
@@ -858,6 +891,14 @@ root `25 → 18`, second root `28 → 18`, shared vertex 5 and derived mixed edg
 both full rule checks and the two degree guards; `has_mixed` consumes the
 general structural theorem. It does not certify the experiment's flatness,
 spherical flip history or absence of other reductions.
+
+`RulePairCollisionExample.has_pentagonal` uses the same certified rotation
+at root `41 → 39` and second root `9 → 39`. Both readings identify vertex 30;
+the resulting edge `30 → 32` has five-valent flanks 4 and 41. Lean checks the
+complete rule matches and guards, then consumes the general collision law.
+A separate exhaustive program scan finds eleven degree-five overlaps in this
+graph: four satisfy the pentagonal guard and seven retain the five/six profile.
+That scan is not a coverage theorem.
 
 The independent source-fidelity replay is:
 
@@ -873,12 +914,13 @@ core. Other geometric or negative-rule information could still do so.
 
 Prepare the finite example once with `lake build kernelRulePairExampleData`,
 then run `lake build kernelRulePairDiamond` with the rule/traversal data and
-mixed-diamond artifacts prepared. Its dependency audit requires the actual
+both diamond artifacts prepared. Its dependency audit requires the actual
 strict-reduction and reconstruction chain. The shared diamond profile
 certificate remains; original catalogue certificates, the D1774 certificate
 and the complete Four Colour endpoint are absent.
 
-This removes one explicitly described class of joint rule profiles from the
-remaining classification. It removes no coverage entry or existing assembly
-certificate. The exact forty-unit budget still needs a complete account of
-the surviving profiles. See [measurements](rule-pair-diamond-measurements.json).
+This removes two explicitly described branches of joint rule profiles from the
+remaining classification and specifies the surviving degrees. It removes no
+coverage entry or existing assembly certificate. The exact forty-unit budget
+still needs a complete account of the surviving profiles. See
+[measurements](rule-pair-diamond-measurements.json).

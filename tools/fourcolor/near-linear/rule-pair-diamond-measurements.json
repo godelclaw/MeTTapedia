@@ -1,5 +1,5 @@
 {
-  "result": "A guarded aligned pair of pinned charge-rule readings forces an actual mixed-diamond reduction; a finite cyclic triangular instance is certified.",
+  "result": "One shared five-turn construction yields mixed or pentagonal diamond reductions according to actual degree and corner identification; source degree bounds leave an explicit shared-five/outer-six residual.",
   "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
   "rule_indices_zero_based": [
     4,
@@ -12,19 +12,26 @@
   "hypotheses": [
     "The ambient finite simple graph has vertexwise cyclic rotation and triangular face return.",
     "Rule 003_2 checks at d; rule 004_1 checks at the root obtained by two backward receiver turns.",
-    "The first sender has degree five; their shared neighbouring vertex has degree six."
+    "The first sender has degree five. Mixed branch: shared neighbour degree six. Pentagonal branch: shared neighbour and remaining outer corner degree five."
   ],
-  "generic_result": "The same actual rule readings force a five-six edge with degree-five vertices on both consecutive flanks. No independent alignment hypotheses, injectivity assumption or global size bound.",
-  "actual_consumer": "ActualRulePairDiamond.not_in_minimal transports to original face lengths and consumes the existing strict thirteen-to-five replacement, preserving the smaller map class and reconstructing an original colouring.",
-  "classification_consumer": "ActualRulePairDiamond.right_check_false is a forbidden joint rule profile in graph-backed vertex minimality.",
+  "generic_result": "The two readings share actual darts. At degree six cyclic closure adds a corner; at degree five it identifies endpoint vertices. Triangular closure exposes the respective diamond patterns. The source bounds prove the pair_alternatives split, with no global size or independent injectivity assumption.",
+  "actual_consumer": "ActualRulePairDiamond.not_in_minimal and pentagonal_not_in_minimal transport through actual facial-dual degree equalities to existing strict replacements and genuine colouring reconstruction.",
+  "classification_consumer": "ActualRulePairDiamond.surviving_pair_degrees proves a surviving aligned pair with first sender degree five has shared degree five and remaining outer corner degree six in graph-backed vertex minimality.",
   "reduction": {
-    "vertices_removed": 13,
-    "vertices_introduced": 5,
-    "whole_map_decrease": 8
+    "mixed": {
+      "vertices_removed": 13,
+      "vertices_introduced": 5,
+      "whole_map_decrease": 8
+    },
+    "pentagonal": {
+      "vertices_removed": 12,
+      "vertices_introduced": 4,
+      "whole_map_decrease": 8
+    }
   },
   "trust": {
-    "roots": 14,
-    "dependency_declarations": 28736,
+    "roots": 23,
+    "dependency_declarations": 29217,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -33,7 +40,10 @@
     "original_configuration_certificate_dependencies": false,
     "D1774_repair_dependency": false,
     "complete_four_colour_endpoint_dependencies": false,
-    "retained_certificate": "DiamondProfileReducibility.repair002"
+    "retained_certificates": [
+      "DiamondProfileReducibility.repair001",
+      "DiamondProfileReducibility.repair002"
+    ]
   },
   "example_data": {
     "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
@@ -71,35 +81,43 @@
     "modules": [
       {
         "module": "MettapediaFourColor.RulePairDiamond",
-        "source_sha256": "85c3ccba8e4a154f0f2dc22965819e1fc7122d76507d98315a2560c27f6b1f29",
+        "source_sha256": "53effe1ade304795cff07ba1ffb99e1730fc72a7e4871ca9191c2caf6082b0a2",
         "exit_code": 0,
-        "frontend_wall_seconds": 12.813,
-        "olean_bytes": 296984,
-        "olean_sha256": "3a3515e582a3db7cc818e248ef44e81416fa32d40874b842687135dc2d234374"
+        "frontend_wall_seconds": 17.105,
+        "olean_bytes": 464400,
+        "olean_sha256": "fee620f2d2ba421c81a572d687e5121241e331b84d3207fba562dfd20053b9a6"
       },
       {
         "module": "MettapediaFourColor.ActualRulePairDiamond",
-        "source_sha256": "c1b477d15bdddc19ab53babe674f422a6a527ef736701bbab5d40015a186d146",
+        "source_sha256": "07a43cf0a7ae8328493c3db55daa8c920f9e5777f71198930f919118409204dd",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.207,
-        "olean_bytes": 207984,
-        "olean_sha256": "d12dea14e9fa98064945890b68c7c50ea83b3bb7c3ad98d20eba1a7adfb1c0b2"
+        "frontend_wall_seconds": 4.618,
+        "olean_bytes": 352192,
+        "olean_sha256": "49641d5392bb65f46b04254f4f0b1173751486a445291c6eaf209a5bbc23c659"
       },
       {
         "module": "MettapediaFourColor.RulePairExample",
         "source_sha256": "1227b924ad352b4be73327e07b79db65297b1cf1a2026f795408027712f46361",
         "exit_code": 0,
-        "frontend_wall_seconds": 58.055,
-        "olean_bytes": 243336,
-        "olean_sha256": "cf55359cd53e456c82f80bda15b7d3f475b009fbaa5fc757f9c93f4860d7fa44"
+        "frontend_wall_seconds": 55.717,
+        "olean_bytes": 243280,
+        "olean_sha256": "d2a2362d621a7e207c595ace177a93c12f5a6c03a8872dd8121f7f995e9ed9ab"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairCollisionExample",
+        "source_sha256": "2dbbed64b2df29f56515b699fe0e6c148b8b20f5bbffb69cfd188fd400cbb718",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.485,
+        "olean_bytes": 176136,
+        "olean_sha256": "26b63e866e1ce4cfa79ff56e538238f1723e566d123f1159341d3b89282dc1ac"
       },
       {
         "module": "MettapediaFourColor.RulePairDiamondAudit",
-        "source_sha256": "d751d2a0a21e8af6956aa6eb3ed2ffb84479f2a12ff003f661712633c0b7fbaf",
+        "source_sha256": "1132429d79d2e3d15b3a25d30302a50e140f69a0a1771b5605d1d76cdff71098",
         "exit_code": 0,
-        "frontend_wall_seconds": 10.326,
-        "olean_bytes": 2712,
-        "olean_sha256": "79616920b0e770251aa9307b83c80d6a3fca05f9ebc03a488ed3f81a5e3961da"
+        "frontend_wall_seconds": 15.199,
+        "olean_bytes": 2728,
+        "olean_sha256": "61d9f77ac49dd9d3324b7412ef6d91d04c0f609c38a2df34e8eac34199b21530"
       }
     ]
   },
@@ -153,7 +171,268 @@
       1,
       25
     ],
-    "scope": "Lean certifies the cyclic/triangular rotation, two full rule checks and degree guards; the general theorem supplies the mixed pattern. Flat charge and spherical flip history remain program evidence.",
+    "collision_example": {
+      "root": [
+        41,
+        39
+      ],
+      "second_root": [
+        9,
+        39
+      ],
+      "left_images": [
+        41,
+        39,
+        32,
+        30
+      ],
+      "right_images": [
+        9,
+        39,
+        32,
+        4,
+        30
+      ],
+      "identified_vertex": 30,
+      "shared_vertex": 32,
+      "pentagonal_edge": [
+        30,
+        32
+      ],
+      "flanking_vertices": [
+        4,
+        41
+      ]
+    },
+    "bounded_collision_scan": {
+      "degree_five_pairs": 11,
+      "pentagonal_guards_satisfied": 4,
+      "residual_five_six_profiles": 7,
+      "readings": [
+        {
+          "root": [
+            0,
+            34
+          ],
+          "left_images": [
+            0,
+            34,
+            21,
+            24
+          ],
+          "right_images": [
+            14,
+            34,
+            21,
+            8,
+            24
+          ],
+          "outer_degree": 6
+        },
+        {
+          "root": [
+            1,
+            5
+          ],
+          "left_images": [
+            1,
+            5,
+            19,
+            13
+          ],
+          "right_images": [
+            28,
+            5,
+            19,
+            29,
+            13
+          ],
+          "outer_degree": 5
+        },
+        {
+          "root": [
+            4,
+            16
+          ],
+          "left_images": [
+            4,
+            16,
+            6,
+            30
+          ],
+          "right_images": [
+            37,
+            16,
+            6,
+            31,
+            30
+          ],
+          "outer_degree": 6
+        },
+        {
+          "root": [
+            6,
+            31
+          ],
+          "left_images": [
+            6,
+            31,
+            30,
+            4
+          ],
+          "right_images": [
+            41,
+            31,
+            30,
+            32,
+            4
+          ],
+          "outer_degree": 5
+        },
+        {
+          "root": [
+            7,
+            11
+          ],
+          "left_images": [
+            7,
+            11,
+            36,
+            27
+          ],
+          "right_images": [
+            9,
+            11,
+            36,
+            39,
+            27
+          ],
+          "outer_degree": 6
+        },
+        {
+          "root": [
+            13,
+            23
+          ],
+          "left_images": [
+            13,
+            23,
+            1,
+            19
+          ],
+          "right_images": [
+            26,
+            23,
+            1,
+            5,
+            19
+          ],
+          "outer_degree": 6
+        },
+        {
+          "root": [
+            21,
+            8
+          ],
+          "left_images": [
+            21,
+            8,
+            24,
+            0
+          ],
+          "right_images": [
+            20,
+            8,
+            24,
+            33,
+            0
+          ],
+          "outer_degree": 6
+        },
+        {
+          "root": [
+            24,
+            33
+          ],
+          "left_images": [
+            24,
+            33,
+            0,
+            21
+          ],
+          "right_images": [
+            22,
+            33,
+            0,
+            34,
+            21
+          ],
+          "outer_degree": 6
+        },
+        {
+          "root": [
+            29,
+            12
+          ],
+          "left_images": [
+            29,
+            12,
+            13,
+            19
+          ],
+          "right_images": [
+            23,
+            12,
+            13,
+            1,
+            19
+          ],
+          "outer_degree": 5
+        },
+        {
+          "root": [
+            30,
+            31
+          ],
+          "left_images": [
+            30,
+            31,
+            41,
+            32
+          ],
+          "right_images": [
+            38,
+            31,
+            41,
+            39,
+            32
+          ],
+          "outer_degree": 6
+        },
+        {
+          "root": [
+            41,
+            39
+          ],
+          "left_images": [
+            41,
+            39,
+            32,
+            30
+          ],
+          "right_images": [
+            9,
+            39,
+            32,
+            4,
+            30
+          ],
+          "outer_degree": 5
+        }
+      ],
+      "scope": "Program check on one saved graph. A residual profile is not an obstruction to all other reductions."
+    },
+    "scope": "Lean certifies the cyclic/triangular rotation and complete rule checks with degree guards for both examples; shared structural theorems supply the mixed and pentagonal patterns. Flat charge, spherical flip history and the exhaustive collision scan remain program evidence.",
     "discarded_candidate": {
       "straddling_core": [
         38,
@@ -173,7 +452,7 @@
   },
   "open": [
     "Surviving zero-charge profile classification and supply of exceptional X or another certified outcome.",
-    "The shared-degree-five collision branch and other degree-guard alternatives.",
+    "The shared-five/outer-six residual and first-sender-degree-six alternatives; no general collision-to-reduction dichotomy is claimed.",
     "Remaining low-degree, higher-degree and residual coverage branches; global occurrence supply and scheduling."
   ],
   "regression_checks": [

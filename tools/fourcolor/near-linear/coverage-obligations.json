@@ -1,5 +1,5 @@
 {
-  "status": "The actual exceptional closing branch, exact rooted rule matcher and a joint rule-pair exclusion through actual mixed-diamond reduction are kernel checked. Surviving zero-charge classification, other degree/residual cases and global coverage remain open.",
+  "status": "The actual exceptional closing branch, exact rooted rule matcher, both guarded rule-pair diamond reductions and their surviving five/six profile are kernel checked. Surviving zero-charge classification and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -367,6 +367,30 @@
     {
       "declaration": "FourColor.RulePairExample.has_mixed",
       "meaning": "A finite source-fidelity checked rotation has cyclic and triangular geometry and satisfies both complete rule checks and degree guards; the general structural theorem supplies the mixed pattern. Flatness and sphericality remain program evidence."
+    },
+    {
+      "declaration": "FourColor.RulePairDiamond.identified_corner",
+      "meaning": "Five shared cyclic turns at a degree-five vertex identify the two actual outer corners; no injectivity assumption discards the collision."
+    },
+    {
+      "declaration": "FourColor.RulePairDiamond.pentagonal_of_checks",
+      "meaning": "The aligned pair, degree-five sender/shared vertex/remaining corner, and actual triangular cyclic rotation expose an all-pentagonal diamond."
+    },
+    {
+      "declaration": "FourColor.RulePairDiamond.pair_alternatives",
+      "meaning": "Source degree bounds split every aligned pair with a degree-five first sender into mixed reduction, pentagonal reduction or the explicit shared-five/outer-six profile."
+    },
+    {
+      "declaration": "FourColor.ActualRulePairDiamond.pentagonal_not_in_minimal",
+      "meaning": "The identified-corner branch transports through the actual facial dual to the existing twelve-to-four strict reduction and colouring reconstruction."
+    },
+    {
+      "declaration": "FourColor.ActualRulePairDiamond.surviving_pair_degrees",
+      "meaning": "Both reduction branches are excluded in graph-backed vertex minimality; the surviving pair must have shared degree five and remaining-corner degree six."
+    },
+    {
+      "declaration": "FourColor.RulePairCollisionExample.has_pentagonal",
+      "meaning": "A second certified instance on the same 42-vertex rotation consumes the uniform collision law after checking both full source rules and all degree guards."
     }
   ],
   "open": [
@@ -413,16 +437,16 @@
   ],
   "next_bounded_attack": {
     "target": "A per-star charge bound using the certified forbidden joint rule combination",
-    "test": "On degree-eight receivers with relevant observed degrees in 5..8, retain shared actual cyclic stars and test which zero-charge patterns survive the 003_2/004_1 exclusion. Include both degree guards and full source steps; distinguish missing positive readings from constraints supplied by negative checks. Preserve collision alternatives.",
+    "test": "On degree-eight receivers, retain full shared cyclic readings and test zero-charge profiles after applying surviving_pair_degrees to every aligned 003_2/004_1 pair with degree-five first sender. Track both positive and negative checks. Determine whether the surviving five/six profile forces a further shared turn, another certified reduction or a genuine residual requiring additional geometry.",
     "acceptance": "An exact charge bound or a certified finite residual class consumed by the coverage scaffold, with recognition and reconstruction attached to every excluded outcome. A surviving pattern must be retained as a residual, not discarded by an unproved independence assumption.",
-    "prior_result": "RulePairDiamond.mixed_of_checks and ActualRulePairDiamond.right_check_false",
+    "prior_result": "RulePairDiamond.pair_alternatives and ActualRulePairDiamond.surviving_pair_degrees",
     "primary_lemmas": [
       "8.3(i)",
       "9.8",
       "11.1"
     ],
-    "limit": "The forbidden pair is one class of rule profiles. It does not prove that forty units of shared boundary charge always force an existing reduction.",
-    "first_collision_subtest": "For the same aligned pair, test the shared-degree-five branch: five prescribed turns should identify y.vertex 4 with x.vertex 3. With degree-five first sender and degree-five y.vertex 3, test whether triangular closure yields the all-pentagonal diamond consumer. This is a proposed branch, not a proved lemma."
+    "limit": "The exact pair classification does not show that forty units of external supply force a reducible profile. The finite example has seven shared-five/outer-six readings, so these cannot simply be discarded.",
+    "first_collision_subtest": "Completed: actual corner identification, pentagonal repair, full degree split and finite nonempty instance. The shared-five/outer-six residual remains explicit."
   },
   "counts": {
     "coverage_entries": 633,

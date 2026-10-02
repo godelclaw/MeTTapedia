@@ -100,9 +100,12 @@ combines rules 003_2 and 004_1 at the same degree-six neighbour. Five known
 turns force the sixth, exposing a mixed diamond under a degree-five sender
 guard. The actual-map consumer invokes strict reduction and colouring
 reconstruction, so this joint profile is forbidden in vertex minimality.
-The finite example witnesses the local hypotheses. This is a structural
-classification prune; a bound or classification for the surviving charge
-profiles is the next obligation.
+At degree five the same path instead identifies its two outer corners. With
+a degree-five remaining corner it gives the pentagonal diamond and a second
+strict reduction. Combining both branches proves that a surviving pair with
+a degree-five first sender must have shared degree five and remaining-corner
+degree six. Finite examples witness both reduction branches. A bound or
+classification for the surviving charge profiles is the next obligation.
 
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first
@@ -1303,10 +1306,22 @@ in vertex minimality when the first sender has degree five and the shared
 vertex has degree six. The surrounding graph's size and the receiver's degree
 are not fixed.
 
-A finite instance certifies that the local hypotheses are inhabited. This
-is a first explicit forbidden joint charge profile for the remaining
-classification, with a reduction consumer. It does not establish that the
-forty-unit budget always forces such a profile. Coverage and original
+The shared degree-five case illustrates how a construction collision can
+supply another reduction. Five prescribed turns now return to their starting
+dart, so two named outer corners are the same actual vertex. With the
+remaining outer corner of degree five, the overlap exposes three consecutive
+pentagonal neighbours of a pentagon. The existing twelve-to-four reduction
+and joint colouring reconstruction apply.
+
+Both shared degrees are the only possibilities allowed by these two source
+rules. For a degree-five first sender, the combined theorem retains one
+residual degree profile in vertex minimality: shared vertex five, remaining
+outer corner six. It does not erase
+that case or assume independent colour choices at the identified corner.
+A second finite instance consumes the collision argument. Together these
+are explicit exclusions for the remaining charge classification, with actual
+reduction consumers. They do not establish that the forty-unit budget always
+forces a reducible profile. Coverage and original
 certificate counts are unchanged by this result. The
 [rule-pair account](../../../tools/fourcolor/near-linear/README.md#two-charge-rules-force-a-shared-geometric-reduction)
 separates the generic theorem, actual reconstruction, finite instance and

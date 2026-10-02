@@ -1,5 +1,5 @@
 import MettapediaFourColor.ActualRulePairDiamond
-import MettapediaFourColor.RulePairExample
+import MettapediaFourColor.RulePairCollisionExample
 import Lean.Util.CollectAxioms
 
 open Lean Elab Command FourColor
@@ -13,6 +13,12 @@ run_cmd do
     (``RulePairDiamond.aligned, []),
     (``RulePairDiamond.mixed_of_checks,
       [``RuleMatcher.check_iff, ``RulePairDiamond.aligned, ``RulePairDiamond.mixed]),
+    (``RulePairDiamond.identified_corner, []),
+    (``RulePairDiamond.pentagonal, [``RulePairDiamond.identified_corner]),
+    (``RulePairDiamond.pentagonal_of_checks,
+      [``RuleMatcher.check_iff, ``RulePairDiamond.aligned, ``RulePairDiamond.pentagonal]),
+    (``RulePairDiamond.pair_alternatives,
+      [``RulePairDiamond.mixed_of_checks, ``RulePairDiamond.pentagonal_of_checks]),
     (``ActualRulePairDiamond.degree_dart, [``ActualDualContract.map_eq_source_relabel]),
     (``ActualRulePairDiamond.face_pattern, [``ActualRulePairDiamond.degree_dart]),
     (``ActualRulePairDiamond.not_in_minimal,
@@ -21,6 +27,16 @@ run_cmd do
         ``MixedDiamondPatch.Tangle.FaceReduction.colorable_of_smaller,
         ``DiamondProfileReducibility.repair002]),
     (``ActualRulePairDiamond.right_check_false, [``ActualRulePairDiamond.not_in_minimal]),
+    (``ActualRulePairDiamond.pentagonal_face_pattern, [``ActualRulePairDiamond.degree_dart]),
+    (``ActualRulePairDiamond.pentagonal_not_in_minimal,
+      [``RulePairDiamond.pentagonal_of_checks, ``ActualRulePairDiamond.pentagonal_face_pattern,
+        ``SixPortTreeReplacement.Embedded.size_decrease,
+        ``SixPortTreeReplacement.open_reconstruct_from_tree,
+        ``DiamondProfileReducibility.repair001]),
+    (``ActualRulePairDiamond.surviving_pair_degrees,
+      [``RulePairDiamond.pair_alternatives, ``ActualRulePairDiamond.face_pattern,
+        ``ActualRulePairDiamond.pentagonal_face_pattern,
+        ``DiamondProfileReducibility.repair001, ``DiamondProfileReducibility.repair002]),
     (``RulePairExample.source_valid, []),
     (``RulePairExample.row_source_exact, []),
     (``RulePairExample.cyclic, []),
@@ -28,7 +44,12 @@ run_cmd do
     (``RulePairExample.observations, []),
     (``RulePairExample.has_mixed,
       [``RulePairDiamond.mixed_of_checks, ``RulePairExample.cyclic,
-        ``RulePairExample.triangular, ``RulePairExample.observations])]
+        ``RulePairExample.triangular, ``RulePairExample.observations]),
+    (``RulePairCollisionExample.observations, []),
+    (``RulePairCollisionExample.has_pentagonal,
+      [``RulePairDiamond.pentagonal_of_checks, ``RulePairDiamond.identified_corner,
+        ``RulePairExample.cyclic, ``RulePairExample.triangular,
+        ``RulePairCollisionExample.observations])]
   let forbidden : List Name := [
     `FourColor.fourColorTheorem, `FourColor.ClassicalAssembly, `FourColor.CompositionalComplete,
     `FourColor.reducible_all, `FourColor.reducibility, `FourColor.coversRec,
@@ -58,6 +79,6 @@ run_cmd do
         throwError m!"Unexpected axiom in {root}: {name}"
     logInfo m!"Audited {root}"
   logInfo m!"Joint charge-rule reduction: {roots.length} roots; {all.toList.length} declarations; \
-    actual strict descent and colouring reconstruction, with a nonempty certified instance. \
+    both actual reduction branches and their surviving degree profile, with certified instances. \
     Shared diamond profile retained; no original catalogue certificate, D1774 repair, \
     complete Four Colour endpoint or flat-neighbourhood classification."

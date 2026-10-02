@@ -1251,6 +1251,16 @@ thirteen-to-five replacement and colouring reconstruction. Its
 `right_check_false` excludes this joint rule combination in graph-backed
 vertex minimality under explicit degree-five/six guards.
 
+The same five-turn construction at a degree-five shared vertex identifies
+its endpoint corners. `identified_corner` preserves that equality and
+`pentagonal_of_checks` exposes the all-pentagonal diamond when the remaining
+outer corner has degree five. The actual consumer invokes the twelve-to-four
+replacement. `surviving_pair_degrees` combines both branches: in vertex
+minimality a surviving pair with a degree-five first sender must have shared
+degree five and remaining-corner degree six. No global classification premise
+is assumed. `RulePairCollisionExample` certifies this second branch's local
+hypotheses in the same finite rotation and consumes the uniform theorem.
+
 `RulePairExample` certifies a nonempty instance in the saved finite rotation;
 its flat charge and spherical construction remain separate program evidence.
 `RulePairDiamondAudit` requires actual reconstruction dependencies and rejects
@@ -1259,7 +1269,7 @@ Colour endpoints. The shared diamond profile remains.
 
 Prepare the finite example with `lake build kernelRulePairExampleData`, then
 run `lake build kernelRulePairDiamond` with the existing rule data, traversal
-data and mixed-diamond artifacts prepared. The
+data and both diamond artifacts prepared. The
 [account](../../tools/fourcolor/near-linear/README.md#two-charge-rules-force-a-shared-geometric-reduction)
 and [measurement](../../tools/fourcolor/near-linear/rule-pair-diamond-measurements.json)
 state the exact scope. Full surviving-profile classification remains open.

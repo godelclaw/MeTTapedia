@@ -39,7 +39,8 @@ target kernelRulePairDiamond pkg : Unit := do
         "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
         "--package", ".", "--output", ".lake/rule-pair-diamond-audit",
         "--library-output", ".lake/build/lib/lean", "--modules",
-        "RulePairDiamond", "ActualRulePairDiamond", "RulePairExample", "RulePairDiamondAudit"]
+        "RulePairDiamond", "ActualRulePairDiamond", "RulePairExample",
+        "RulePairCollisionExample", "RulePairDiamondAudit"]
       cwd := pkg.dir
       env := env }
 

@@ -2,10 +2,11 @@ import MettapediaFourColor.RulePairDiamond
 import MettapediaFourColor.ActualDualContract
 import MettapediaFourColor.LocalPreembedding
 import MettapediaFourColor.MixedDiamondFaceReduction
+import MettapediaFourColor.PentagonalDiamondFaceReduction
 import Mettapedia.GraphTheory.FourColor.PentagonalNeighbourSupply
 
 /-!
-# A charge-rule pair supplies the actual mixed-diamond reduction
+# A charge-rule pair supplies actual diamond reductions
 
 The rule-pair closure is transported through the actual facial dual, with
 degree observations identified with original face lengths. The resulting
@@ -13,6 +14,9 @@ mixed diamond has the existing thirteen-to-five vertex replacement and
 colouring reconstruction. Hence this aligned pair of charge rules, with
 the stated five/six guards, cannot occur in a graph-backed vertex-minimal
 counterexample. No cartwheel-classification hypothesis is supplied.
+The degree-five collision branch similarly consumes the twelve-to-four
+pentagonal replacement. Together the two reductions constrain a surviving
+pair with degree-five first sender to shared degree five and outer degree six.
 -/
 
 namespace FourColor.ActualRulePairDiamond
@@ -114,6 +118,59 @@ theorem face_pattern (e : (graph original minimal).Dart)
     rw [last]
     exact hp
 
+/-- Recentring by two facial steps puts the opposite and both flanks in
+the three consecutive positions used by the pentagonal reduction. -/
+theorem pentagonal_face_pattern (e : (graph original minimal).Dart)
+    (pattern : PentagonalAt (rotation original minimal) e) :
+    ∃ d : G.Dart, PentagonalDiamond.FaceLengths original d := by
+  obtain ⟨d, rfl⟩ := (darts original minimal).surjective e
+  let RS := original.toRotationSystem
+  have ho := (opposite_degree original minimal d).symm.trans pattern.opposite
+  have hn := pattern.next
+  rw [step, opposite_degree] at hn
+  have hp := pattern.previous
+  rw [previous, opposite_degree] at hp
+  have invfst (z : (graph original minimal).Dart) :
+      ((rotation original minimal).vertexRotation.symm z).fst = z.fst := by
+    have h := (rotation original minimal).vertexRotation_fst
+      ((rotation original minimal).vertexRotation.symm z)
+    simpa only [Equiv.apply_symm_apply] using h.symm
+  refine ⟨RS.phi.symm (RS.phi.symm d), ?_, ?_⟩
+  · change size RS (RS.phi.symm (RS.phi.symm d)) = 5
+    rw [← degree_dart original minimal, ← previous, ← previous]
+    rw [invfst, invfst]
+    exact pattern.five
+  · intro i hlo hhi
+    have cases : i = 1 ∨ i = 2 ∨ i = 3 := by omega
+    rcases cases with rfl | rfl | rfl
+    · change size RS (((RS.phi ^ 1) (RS.phi.symm (RS.phi.symm d))).symm) = 5
+      simpa only [pow_one,
+        Equiv.apply_symm_apply] using hp
+    · change size RS (((RS.phi ^ 2) (RS.phi.symm (RS.phi.symm d))).symm) = 5
+      simpa only [pow_succ', pow_zero,
+        Equiv.Perm.mul_apply, Equiv.Perm.one_apply, Equiv.apply_symm_apply] using ho
+    · change size RS (((RS.phi ^ 3) (RS.phi.symm (RS.phi.symm d))).symm) = 5
+      simpa only [pow_succ', pow_zero,
+        Equiv.Perm.mul_apply, Equiv.Perm.one_apply, Equiv.apply_symm_apply] using hn
+
+/-- The collision branch consumes the existing twelve-to-four reduction
+and its joint colouring repair. -/
+theorem pentagonal_not_in_minimal (d : (graph original minimal).Dart)
+    (left : RuleMatcher.check (rotation original minimal) 4 d = true)
+    (right : RuleMatcher.check (rotation original minimal) 5
+      (secondRoot (rotation := rotation original minimal) d) = true)
+    (sender : (graph original minimal).degree d.fst = 5)
+    (five : (graph original minimal).degree
+      (RuleMatcher.candidate (rotation original minimal) 4 d 2) = 5)
+    (outer : (graph original minimal).degree
+      (RuleMatcher.candidate (rotation original minimal) 5
+        (secondRoot (rotation := rotation original minimal) d) 3) = 5) : False := by
+  obtain ⟨e, he⟩ := pentagonal_of_checks (MinimalExceptionalEmbedding.cyclic original minimal)
+    (MinimalExceptionalEmbedding.triangular original minimal) d left right sender five outer
+  obtain ⟨root, hroot⟩ := pentagonal_face_pattern original minimal e he
+  exact PentagonalDiamondPatch.Tangle.FaceReduction.not_in_minimal_counterexample_of_face_pattern
+    original root hroot minimal
+
 /-- The supplied rule pair is excluded by actual strict reduction and
 reconstruction, independently of the full Four Colour theorem. -/
 theorem not_in_minimal (d : (graph original minimal).Dart)
@@ -142,6 +199,30 @@ theorem right_check_false (d : (graph original minimal).Dart)
       (secondRoot (rotation := rotation original minimal) d)
   · rfl
   · exact (not_in_minimal original minimal d left hr five six).elim
+
+/-- Both reducible branches are discharged. Any surviving aligned pair
+with a five-valent first sender must have this precise five/six profile. -/
+theorem surviving_pair_degrees (d : (graph original minimal).Dart)
+    (left : RuleMatcher.check (rotation original minimal) 4 d = true)
+    (right : RuleMatcher.check (rotation original minimal) 5
+      (secondRoot (rotation := rotation original minimal) d) = true)
+    (sender : (graph original minimal).degree d.fst = 5) :
+    (graph original minimal).degree
+      (RuleMatcher.candidate (rotation original minimal) 4 d 2) = 5 ∧
+    (graph original minimal).degree (RuleMatcher.candidate (rotation original minimal) 5
+      (secondRoot (rotation := rotation original minimal) d) 3) = 6 := by
+  rcases pair_alternatives (MinimalExceptionalEmbedding.cyclic original minimal)
+      (MinimalExceptionalEmbedding.triangular original minimal) d left right sender with
+    mixed | pentagonal | residual
+  · obtain ⟨e, he⟩ := mixed
+    obtain ⟨root, hroot⟩ := face_pattern original minimal e he
+    exact (MixedDiamondPatch.Tangle.FaceReduction.not_in_minimal_counterexample_of_face_pattern
+      original root hroot minimal).elim
+  · obtain ⟨e, he⟩ := pentagonal
+    obtain ⟨root, hroot⟩ := pentagonal_face_pattern original minimal e he
+    exact (PentagonalDiamondPatch.Tangle.FaceReduction.not_in_minimal_counterexample_of_face_pattern
+      original root hroot minimal).elim
+  · exact residual
 
 end
 end FourColor.ActualRulePairDiamond
