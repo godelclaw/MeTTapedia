@@ -22971,3 +22971,231 @@ The Schwartz localization, uniform smooth local existence, inviscid
 limit and positive-viscosity solution-history argument are analytic.
 The checker does not certify these infinite-dimensional steps, and no
 Lean declarations or axioms change.
+
+## Original heat parents and the generated remainder's critical cost
+
+`heat_remainder_payment.py` isolates what an original-heat reserve can
+pay on EVERY available smooth prefix, without assuming a small residual.
+The setting is unforced NS on R3 with smooth solenoidal data having the
+finite Sobolev norms used below, or smooth periodic NS on T3. Viscosity
+nu is positive. Every coefficient and remaining reserve is fixed from
+the full original datum and a prescribed horizon H.
+
+The heat-flow/remainder decomposition is classical. For its use with
+nonlinear smallness conditions and large data, see
+[Chemin--Gallagher, Wellposedness and stability results (2009)](https://arxiv.org/abs/math/0611044).
+Here it identifies a paid part of the physical history and an explicit
+unpaid critical cost. No nonlinear smallness assumption or global
+existence conclusion from that paper is imported without its hypotheses.
+
+### The actual generated component
+
+Let P be the Leray projection, A=-Delta, and N(v)=-P[(v.grad)v]. Define
+
+```text
+h(t)=exp(nu t Delta)u0, b(t)=u(t)-h(t), b(0)=0,
+L_h b=-P[(h.grad)b+(b.grad)h],
+b_t=-nu A b+N(b)+L_h b+N(h).                         (247)
+```
+
+This is the actual residual of the full NS solution, not an independent
+forced fluid. Its source and coefficients all come from the SAME original
+heat path. In particular they are not arbitrary controls. Pressure and
+all newly generated modes remain in (247). The heat path exists for the
+whole prescribed horizon even when only a shorter NS prefix is available.
+
+Put Y=||grad b||2^2, D_b=||Delta b||2^2 and E_b=||b||2^2. Since Ab is
+solenoidal, pressure gradients cancel in the integrated pairing, giving
+
+```text
+Y'+2nu D_b=2g(b)+2M(h,b)+2<Ab,N(h)>,
+M(h,b)=<Ab,L_h b>.                                  (248)
+```
+
+Writing partial_i b_j=b_(j,i), integration by parts gives the complete
+mixed term (all repeated indices summed and all terms integrated):
+
+```text
+M=-integral [b_(j,i) h_(k,i) b_(j,k)
+            +b_(j,i) b_(k,i) h_(j,k)
+            +b_(j,i) b_k h_(j,ki)].
+```
+
+The last term is the changing strain of the original heat parent. It
+cannot be removed by transport cancellation. Define G(t)=||grad h||infinity
+and L(t)=||grad^2 h||infinity, using pointwise Frobenius tensor norms.
+Then |M|<=2G Y+L sqrt(E_b Y). For any fixed length ell>0,
+2sqrt(E_b Y)<=ell Y+E_b/ell. Also
+2<Ab,N(h)><=(nu/2)D_b+(2/nu)||N(h)||2^2.
+Consequently
+
+```text
+Y'+(3nu/2)D_b
+ <=2g(b)+(4G+ell L)Y+(L/ell)E_b+(2/nu)||N(h)||2^2.    (249)
+```
+
+These estimates do not assume the residual's size, alignment, scale
+support, or sign of stretching. They retain all mixed work rather than
+inferring its sign from the direction of energy exchange.
+
+### A finite original-data price for the original parents
+
+Write E0=||u0||2^2. Unforced kinetic-energy dissipation and heat contraction
+give E_b<=2||u||2^2+2||h||2^2<=4E0. There is a sharper source-funded
+bound. Pairing (247) with b cancels its self-advection and transport by h:
+
+```text
+(1/2)E_b'+nu Y=-<b,(b.grad)h>+<b,N(h)>.
+```
+
+Consequently ||b(t)||2<=M_h(t), where
+
+```text
+M_h(t)=integral_0^t exp[integral_s^t G(r)dr]||N(h(s))||2 ds.
+```
+
+The norm inequality follows by regularizing sqrt(E_b), using b(0)=0,
+applying the integrating factor and letting the regularization vanish.
+The entire comparison path is determined by u0. In particular, if the
+original heat source N(h) vanishes, then b=0 throughout every prefix.
+Put Ehat(t)=min(4E0,M_h(t)^2), so E_b<=Ehat.
+
+Heat contraction also gives G(t)<=G0=||grad u0||infinity and
+L(t)<=L0=||grad^2 u0||infinity. Fix ell once, and set
+kappa0=4G0+ell L0. Define FROM THE ORIGINAL DATUM
+
+```text
+a_H(t)=exp[kappa0(H-t)]>=1,
+f0(t)=Ehat(t)L(t)/ell+(2/nu)||N(h(t))||2^2,
+R_H(t)=integral_t^H a_H(s)f0(s)ds>=0,
+J_H(t)=a_H(t)Y(t)+R_H(t)>=0.
+```
+
+Multiplying (249) by a_H and using a_H'=-kappa0 a_H gives
+
+```text
+J_H'+(3nu/2)a_H D_b<=2a_H g(b),
+J_H(t)+(3nu/2)integral_0^t a_H D_b
+       <=R_H(0)+2integral_0^t a_H g(b).              (250)
+```
+
+The original-heat source is paid by precisely the capacity in (245):
+nu^-1 integral_0^H ||N(h)||2^2<=Ctilde_nu(u0). Thus the price is finite
+and admits the entirely initial-data upper bound
+
+```text
+R_H(0)<=exp(kappa0 H)[4E0 H L0/ell+2Ctilde_nu(u0)]
+       <=exp(kappa0 H)[4E0 H L0/ell+U0^2 E0/nu^2],   (251)
+U0=||u0||infinity.
+```
+
+More sharply, Cauchy--Schwarz gives
+M_h(t)^2<=t exp(2G0 H)nu Ctilde_nu(u0). Thus the SAME allowance obeys
+
+```text
+R_H(0)<=exp(kappa0 H)
+       [2+nu L0 H^2 exp(2G0 H)/(2ell)]Ctilde_nu(u0).
+```
+
+The allowance is therefore entirely source-funded, and vanishes when
+the original heat source does. It does not charge a nonzero curvature
+price to a residual that is identically zero.
+
+For the second inequality in (251), Leray is an L2 contraction and
+||N(h)||2<=||h||infinity||grad h||2<=U0||grad h||2.
+The heat energy identity bounds integral_0^infinity ||grad h||2^2
+by E0/(2nu), on either domain. A periodic constant mean causes no
+problem: only the decaying part contributes to this dissipation.
+For the admissible whole-space smooth fields with all derivatives in
+L2, the initial supremum norms above are finite by Sobolev embedding.
+The bound may be very large. Its finiteness uses no future solution norm.
+
+On adjacent actual intervals, h keeps the same age, a_H keeps the same
+horizon, and R_H keeps the same remaining integral. Equation (250)
+telescopes at a shared physical endpoint. Matching a pattern label and
+replacing h by the new fluid state would not preserve this reserve.
+
+### The exact sufficient history estimate still missing
+
+The outstanding claim is now a bound, fixed from u0, nu and H, on
+
+```text
+2 integral_0^t a_H(s)g(b(s))ds
+  <=nu integral_0^t a_H(s)D_b(s)ds+K(u0,nu,H)         (252)
+```
+
+for EVERY available smooth unforced prefix from that datum and every
+t in that prefix with t<=H. This is a signed history estimate, not
+an asserted pointwise depletion law. The remainder is zero initially,
+but its parents and source continue to evolve by (247).
+
+If (252) holds, (250) yields Y(t)<=R_H(0)+K. Since u=h+b,
+
+```text
+||grad u(t)||2^2<=2||grad u0||2^2+2R_H(0)+2K.
+```
+
+This has exactly the uniform-prefix quantifiers required by the existing
+whole-space Lean theorem
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` in
+`MettapediaNS.WholeSpaceEnstrophyContinuation`. The physical identification
+and estimates (247)--(252) are analytic, not an additional certified
+instance of that theorem. The same analytic enstrophy bound is sufficient
+for smooth periodic continuation. Neither domain is closed here.
+
+All work involving the ORIGINAL heat parent has a finite price in
+(250). The self-interaction of the GENERATED remainder has not been paid.
+Describing that remainder as externally forced would lose the essential
+constraint that its source and coefficients come from the original heat
+history. Conversely, the constraint alone does not establish (252).
+
+### The generated remainder can have either sign of self-stretching
+
+For any smooth datum, the actual short-time expansion of (247) is
+b(t)=t N(u0)+O(t^2) in sufficiently strong Sobolev norms. Hence
+
+```text
+g(b(t))=t^3 g(N(u0))+O(t^4).                         (253)
+```
+
+The coefficient is independent of positive viscosity: the same heat
+term cancels from u_t(0)-h_t(0). The seed r of (243) gives the exact
+negative value g(N(r))=-75009477/773500000. In contrast, set
+
+```text
+v(x)=(1/10) sum_(k,p) p cos(k.x),
+(k,p)=((1,0,1),(3,1,-3)), ((1,-1,1),(-1,-3,-2)),
+      ((2,0,1),(-2,9,4)), ((2,-1,1),(3,9,3)).
+```
+
+Every polarization is transverse, E(v)=233/200, and
+
+```text
+g(N(v))=706789431/24752000000>0.
+```
+
+Both examples are genuine smooth periodic initial data. Local existence
+and (253) give actual positive-viscosity histories with the respective
+strict signs on sufficiently short positive intervals. These are signs
+of the GENERATED remainder, not signs inferred from an arbitrary later
+Fourier state. The full source includes its generated vertical mean.
+
+The positive value rejects automatic depletion g(b)<=0. It does not
+refute (252): initially D_b is order t^2 whereas g(b) is order t^3, and
+a full-datum allowance can pay finite bursts. No indefinite renewal or
+positive-viscosity singularity follows from this fixture.
+
+### Verification
+
+Run `python3 -O labs/heat_remainder_payment.py`. Exact rational checks
+verify the full remainder direction, all three integrated mixed terms,
+the exact kinetic remainder cancellation, the source/diffusion estimate,
+and the complete relative enstrophy identity for two nonzero viscosities
+and both remainder phases. The
+cubic source coefficients are computed independently via vorticity
+stretching and the Laplacian/Leray pairing. Generated means are retained.
+The off-trajectory identity fixtures verify algebra applicable to every
+smooth state; only the analytic expansion (253) identifies actual
+solution intervals. The heat contraction, Sobolev estimates, integration
+and continuation implication are analytic. No Lean declarations or axioms
+change, and the central history estimate (252) remains open.
