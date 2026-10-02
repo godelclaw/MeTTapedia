@@ -19751,3 +19751,168 @@ and canonical-pressure checks above use exact arithmetic. The actual
 PDE comparison, existence and cycle construction are analytic and are
 not newly Lean-certified. No numerical plot or initial-time identity
 is used in place of the interval estimate (135).
+
+## Parent refeeding with a paid energy-exchange loop
+
+`cellular_parent_refeeding.py` extends the actual comparison method
+(132)--(137) to a different four-mode perturbation. On ONE unforced
+positive-viscosity solution, the same parent is fed, supplies the other
+modes, and is fed again. These are physical modal power signs, not
+independently prescribed controls. The three observations fit inside
+the first turn of the preceding finite pattern-cycle construction.
+
+### A fully specified seed and three signed observations
+
+Retain `U=(a v,A rho w)`, the original annular w0, and all notation
+from (132). Let `u0=U(0)+epsilon r0`, where epsilon>0 and
+
+```text
+10 r0=(1,-2,-1)cos(x+z)+(-4,-2,2)cos(x-y+z)
+      +(-3,-5,6)cos(2x+z)+(4,10,2)cos(2x-y+z),
+||r0||2^2=11/10, ||r0||H3^2=259/2.                     (138)
+```
+
+Each polarization is perpendicular to its own frequency. The field is
+real, mean-zero and genuinely three-dimensional. Set `T=3/4` and require
+
+```text
+Re=A/nu>=200000,
+gamma=8rho(1+3G0)+824epsilon/A<=1/10000.                 (139)
+```
+
+Retain global H3 stability as in (123), now with
+`Y0=(259/2)epsilon^2` and the same scaled reference Q as in (132).
+For the actual parent coefficient alpha and transfer F in (126), the
+three claimed observations are
+
+```text
+F(t(0))=3epsilon^2/400,
+F(t(3/8))<=-epsilon^2/200,
+F(t(3/4))>=epsilon^2/400,
+alpha(t(sigma))>A/3 for all 0<=sigma<=3/4.              (140)
+```
+
+Thus `alpha F` has signs positive, negative, positive on three nonempty
+intervals, with at least two intervening zeros. The opposite power in
+the full orthogonal remainder has the reversed signs. This is a
+recurrence of an observed transfer direction, not an exact return of
+the complete fluid state or a proof of indefinitely repeated refeeding.
+
+### Exact residual control of the complete physical history
+
+Use the SAME complete operator `L=-P(v.grad+(.grad)v)` as above, but
+start `c0=r0` and take `p=sum_(j=0..16)c_j sigma^j` with
+`c_(j+1)=L c_j/(j+1)`. The residual is exactly
+`p'-L p=-17c17 sigma^16`. No generated mode is discarded.
+The exact rational checks give, uniformly over 0<=sigma<=T,
+
+```text
+||p||2<=4, ||grad p||infinity<=103, ||Delta p||2<=31,
+integral_0^T ||p'-L p||2<=1/12000,
+||p(3/8)||2, ||p(3/4)||2<=11/10,
+Fcal(p(3/8))<=-1/100, Fcal(p(3/4))>=1/200.              (141)
+```
+
+The checker tests the integrated residual by
+`T^34||c17||2^2<=(1/12000)^2`, with both conjugate frequency blocks
+included. It independently reconstructs the canonical pressure at
+degrees zero, two and four. The observation polynomial has 610 modes
+in its positive vertical block and the residual has 682, together
+with their conjugates. These are finite exact approximations, not a
+closed finite-dimensional invariant subspace.
+
+Apply the full nonlinear q equation preceding (135) to
+`q=(u-U)/epsilon-p`. Its unknown-velocity transport still cancels in
+L2; the entire viscosity, receiver contribution and nonlinear source
+remain. The changed polynomial bounds make the extra forcing at most
+gamma and the norm growth coefficient at most `1+gamma/4`.
+As `(1+1/40000)T<1`, the same analytic comparison gives
+
+```text
+sup_(0<=sigma<=T)||q||2
+ <=3[1/12000+31T/(200000-T)+T/10000]
+ <=3/5000+9/40000=33/40000<1/1000.                     (142)
+```
+
+At either observation the error in Fcal is therefore at most
+`(11/5+1/1000)/1000=2201/1000000`. The negative and positive margins
+in (141) remain strict and imply (140). The initial value in (140)
+is computed directly from (138). Condition (139) also implies
+`epsilon/A<=1/8240000<1/30`; hence
+`alpha>=A/2-epsilon(4+1/1000)>A/3` on the complete interval.
+Every estimate concerns the same actual nonlinear NS solution.
+
+### The exchange loop consumes energy and preserves its original reserve
+
+For the normalized periodic kinetic energy `Ekin=||u||2^2/2`,
+the literal unforced energy law and projection onto v yield
+
+```text
+Ekin'=-nu||grad u||2^2,
+<grad u,grad v>=<u,v>=alpha, ||grad v||2=1,
+||grad u||2^2>=alpha^2>A^2/9.
+```
+
+Since `dt/dsigma=1/a>=1/A`, each of the two observation intervals
+has physical duration at least `3/(8A)`. In particular,
+
+```text
+Ekin(t(0))-Ekin(t(3/8))>=nu A/24,
+Ekin(t(3/8))-Ekin(t(3/4))>=nu A/24.                    (143)
+```
+
+These are bounds for these fixed observation gaps in this constructed
+class, not a universal energy price for every possible renewal event.
+The repeated qualitative label therefore conceals strictly different
+full states with less kinetic energy. Positive nonlinear power is not
+asserted to overcome viscous loss in the parent's own total energy.
+
+There is also an explicit payment for the absolute nonlinear exchange
+itself. From the retained global perturbation bound set
+
+```text
+C_alpha=A+sqrt(Y0)exp(M/2),
+B(t)=Y(t)exp(M exp(-nu t))/nu,
+R_power(t)=C_alpha B(t),
+R_power'+|alpha F|<=0,
+integral_s^t |alpha F|<=R_power(s)-R_power(t).           (144)
+```
+
+Here `|alpha|<=C_alpha` and `B'+|F|<=0` hold along the entire global
+history, by the same proof as (123) and (128). Its initial allowance
+is `C_alpha Y0 exp(M)/nu`, finite from the full original datum. To
+count the absolute powers of both components, use `2R_power`.
+No allowance is restarted when the sign or observed pattern changes.
+
+For any prescribed finite number of approximate m-state pattern cycles,
+choose the annular seed and delta as before, then positive rho making
+its contribution to (139) at most 1/20000. Choose finite A for the
+pattern comparison and `A>=200000nu`. Finally choose epsilon>0 with
+`824epsilon/A<=1/20000` and
+`sqrt(259/2)epsilon exp(M/2)<=min(nu/(2C3),rho eta A/(2Cemb))`.
+This gives the same proportionate whole-pattern accuracy and global
+existence as (137), together with all three signs (140). The amplitudes
+may be extremely small, and no repetition of the transfer word on
+every subsequent turn is claimed.
+
+As a physical consumer for compositional histories, the observed word
+`feeding -- returning -- feeding` has an actual smooth witness. A
+summary that records only these labels would hide the energy loss
+and changing parent correlations. Joining histories must retain their
+compatible endpoint fields and remaining reserve, as in the existing
+costed-history interface. No general fluid language or arbitrary-history
+continuation budget is inferred from this one witnessed word.
+
+Run `python3 -O labs/cellular_parent_refeeding.py`. The residual and
+finite inequalities are checked with exact arithmetic. The nonlinear
+comparison, global solution and pattern-cycle construction remain
+analytic, not newly Lean-certified. Floating-point search was used
+only to find the seed; none of its output is a proof premise.
+
+Residual-based validation belongs to the established a posteriori approach;
+see [Morosi and Pizzocchero](https://arxiv.org/abs/1104.3832), especially
+their Sobolev control inequalities and exact-solution comparison theorem.
+Here the L2 error inequality is derived explicitly for the transfer
+observable, while the preceding H3 stability argument supplies global
+existence for this restricted class. These distinct uses of error control
+must not be combined into an unsupported arbitrary-data existence claim.

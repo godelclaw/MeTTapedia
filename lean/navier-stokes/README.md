@@ -50,6 +50,7 @@ formal proofs.
 | [Lohmayer and Leyendecker, *Exergetic Port-Hamiltonian Systems: Navier-Stokes-Fourier Fluid*](https://arxiv.org/abs/2204.05135) | Typed graphical interfaces and composition with energy accounting inform the organization of solution components. Existing `BoundaryBellman` composition retains the intermediate witness and spent reserve. | This thermodynamic model includes additional state variables. Its full semantics is not identified with the incompressible NS history category here. |
 | [Chorin, Hald and Kupferman, *Optimal prediction and the Mori-Zwanzig representation of irreversible processes*](https://math.huji.ac.il/~razk/Publications/PDF/CHK00.pdf) | Eliminating hidden variables leaves memory and an initial hidden-state contribution. Equation (131) retains these through an exact nonlinear Duhamel constraint. | This is not a closed Mori-Zwanzig memory kernel or an imported orthogonal-dynamics theorem; kernel construction, approximation error and any statistical assumptions remain separate. |
 | [Constantin and Iyer, *A stochastic Lagrangian representation of the 3-dimensional incompressible Navier-Stokes equations*](https://arxiv.org/abs/math/0511067) | Stochastic trajectories and covector reconstruction connect viscous dynamics to physical velocity. The existing `CovectorFluidBridge` treats its projected equation under explicit hypotheses. | The complete probabilistic construction and arbitrary-data stretching payment are not consequences of the reconstruction algebra alone. |
+| [Morosi and Pizzocchero, *On approximate solutions of the incompressible Euler and Navier-Stokes equations*](https://arxiv.org/abs/1104.3832) | A posteriori residual and norm estimates connect approximations to actual solutions. The transfer-reversal examples use this validation principle with an explicitly derived nonlinear L2 comparison. | Their Sobolev control inequalities include an existence conclusion under their hypotheses. The local L2 transfer certificate instead uses the separately established global stability neighborhood; it does not establish arbitrary-data regularity or import their norm constants. |
 
 The operative interface is a compatible history, not just a named flow
 pattern. For the new cellular family, the observed parent coefficient
@@ -2215,6 +2216,16 @@ turn. The parent remains positive, so its nonlinear energy-exchange power
 also reverses. This strengthens the initial-time phase comparison to an
 analytic interval result. It requires small receiver and perturbation
 amplitudes and does not assert that every turn repeats the reversal.
+
+The [four-mode refeeding example](labs/README.md#parent-refeeding-with-a-paid-energy-exchange-loop)
+realizes a positive--negative--positive sequence of parent power along
+one actual unforced flow. The complete residual bounds retain all
+nonlinear modes. The full kinetic energy strictly decreases between
+the three observations, and a single original reserve pays the absolute
+modal power over the entire history. Thus the repeated qualitative
+transfer label does not imply a repeated full state or a replenished
+budget. This analytic, small-perturbation example can be combined with
+the prescribed finite pattern cycles; arbitrary-history control is open.
 
 The [geometric cascade ledger](labs/README.md#a-finite-energy-finite-time-cascade-ledger-with-unbounded-stretching)
 formally separates that remaining question from energy conservation.
