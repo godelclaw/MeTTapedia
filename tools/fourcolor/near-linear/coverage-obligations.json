@@ -1,5 +1,5 @@
 {
-  "status": "Actual exceptional closing, shared family reductions, cyclic charge and source-rule closure are kernel checked. The single-five residual excludes a certified extra-rule reduction branch; other inflows and global coverage remain open.",
+  "status": "Actual exceptional closing, shared reductions and complete residual-wheel occurrence are kernel checked. The wheel now has exact source construction and joint cyclic colouring semantics; exterior repair and universal coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -491,6 +491,26 @@
     {
       "declaration": "FourColor.ActualWheelOccurrence.residual_occurrence",
       "meaning": "The same complete occurrence is constructed in the retained exact-budget residual, preserving the actual centre and marked neighbour."
+    },
+    {
+      "declaration": "FourColor.D3009Construction.ringTrace_iff",
+      "meaning": "The full Y/H construction preserves the source graph, cyclic stars and ordered thirteen-port colouring trace."
+    },
+    {
+      "declaration": "FourColor.WheelColouring.coloringEquiv",
+      "meaning": "One boundary colouring, shared centre colour and cyclic rim witness are exactly an actual full wheel colouring, for arbitrary interfaces."
+    },
+    {
+      "declaration": "FourColor.WheelColouringGSLT.extends_iff",
+      "meaning": "An actual wheel colouring fixing the boundary exists exactly when its GSLT colour-transfer route closes, at every width at least two."
+    },
+    {
+      "declaration": "FourColor.D3009Colouring.two_sectors_iff",
+      "meaning": "Three-step and four-step sectors reconstruct the source colouring exactly when their common centre and both seam colours agree."
+    },
+    {
+      "declaration": "FourColor.D3009ColouringExample.incompatible_sectors",
+      "meaning": "A proper thirteen-port boundary has separately inhabited sectors but no compatible closing pair. Exterior recolouring is not excluded."
     }
   ],
   "open": [
@@ -536,10 +556,10 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Certify a compatible D3009 repair and actual strict reconstruction, reusing the now-proved complete source occurrence.",
-    "bounded_test": "Identify its exact ordered source construction and boundary relation. Compare with existing cap and cyclic-choice laws; test the smallest boundary obstruction before attempting uniform repair.",
-    "acceptance": "A genuine smaller-map colouring reconstructs in the same exterior, with strict decrease and all consumed geometry. Any finite base certificate remains explicit.",
-    "evidence": "The complete injective source occurrence is kernel proved for the degree profile in an actual minimal dual; matching finite examples is no longer its geometric justification."
+    "target": "Certify compatible D3009 exterior repair and actual strict reconstruction; retain the uniform wheel extension law.",
+    "bounded_test": "Produce compact whole-chord repair records for thirteen ports, benchmark representative kernel checks and compare with the earlier eleven-port cost before full replay. Test a structural transfer between wheel widths separately.",
+    "acceptance": "A kernel-certified repair contract feeds the same actual occurrence and exterior, with genuine colouring reconstruction and strict decrease. A finite base remains a declared dependency.",
+    "evidence": "Complete source geometry and construction are proved. Independent full-pairing closure has no survivors at widths five, six and seven; this is not yet a Lean repair theorem."
   },
   "counts": {
     "coverage_entries": 633,
@@ -588,5 +608,6 @@
   "cyclic_charge_record": "cyclic-charge-measurements.json",
   "extra_charge_record": "extra-charge-measurements.json",
   "exact_cyclic_charge_record": "exact-charge-measurements.json",
-  "wheel_occurrence_record": "wheel-occurrence-measurements.json"
+  "wheel_occurrence_record": "wheel-occurrence-measurements.json",
+  "wheel_colouring_record": "wheel-colouring-measurements.json"
 }

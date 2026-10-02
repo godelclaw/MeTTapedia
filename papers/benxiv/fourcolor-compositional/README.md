@@ -1763,6 +1763,55 @@ records the sixteen-root audit and regression gates. Geometry adds no repair
 certificate; the prior residual supply retains configuration 7. Coverage
 remains 633 entries /629 original certificate dependencies.
 
+## The wheel's colouring choices now compose exactly
+
+The residual D3009 wheel now has a complete bridge from its source construction
+to a shared cyclic colouring argument:
+
+```text
+eleven Y steps + eight H steps       [proved exact source and cyclic order]
+                |
+choose one centre colour
+                |
+compose allowed rim colours         [proved uniformly for wheel interfaces]
+                |
+close at the retained starting colour
+                |
+actual source colouring              [proved, fixing every boundary colour]
+```
+
+The [witness equivalence](../../../lean/fourcolor-classical/MettapediaFourColor/WheelColouring.lean)
+retains the full colouring, so it preserves both existence and multiplicities.
+The [GSLT interpretation](../../../lean/fourcolor-classical/MettapediaFourColor/WheelColouringGSLT.lean)
+allows any split into sectors. Both sectors use the same centre colour and
+must agree at both seams. The
+[D3009 consumer](../../../lean/fourcolor-classical/MettapediaFourColor/D3009Colouring.lean)
+proves this for the actual pinned source and its thirteen ordered ports.
+
+The small checked example shows why this matters. For boundary colours
+`0101010101013`, all seven rim vertices must use only colours 2 and 3.
+Each sector has a colouring history, but an odd cycle cannot close with two
+colours. An actual successful source colouring supplies a second example in
+which both sectors do stitch. Thus the theorem identifies the information
+composition must keep; it does not demand that every partial choice survive.
+
+An [independent finite test](../../../tools/fourcolor/near-linear/wheel-repair-probe.json)
+finds no surviving obstruction under full noncrossing Kempe-pairing closure
+for the corresponding wheels of widths five, six and seven. The degree-seven
+test uses D3009 itself: 66,430 canonical boundary traces, 7,496 direct
+extensions and eleven repair rounds. These are discovery results, not a Lean
+D-reducibility proof or an unbounded family theorem.
+
+The remaining task is to certify compatible exterior repair and actual
+strict reconstruction, then integrate the geometric supply argument. A
+bounded kernel-cost test comes first: the earlier eleven-port D1774 repair
+required about 100 minutes of finite kernel checking, and this source has
+nine times as many canonical states. The uniform extension theorem can serve
+that checker, but it does not eliminate the repair obligation. Coverage and
+original certificate counts remain 633 /629. The
+[receipt](../../../tools/fourcolor/near-linear/wheel-colouring-measurements.json)
+records the exact scope and audit.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

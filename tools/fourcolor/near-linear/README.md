@@ -1275,6 +1275,61 @@ only standard axioms, and the full regression gates. The
 hash and equality of its numeric rows with the Lean decoder input.
 
 The next obligation is compatible colouring repair and actual strict
-reconstruction, including an exact bridge to the source construction consumed
-by that reconstruction. This occurrence theorem removes no coverage entry or
-certificate dependency. Counts remain 633 /629.
+reconstruction. The exact construction and colouring interface are now proved
+below. The occurrence theorem removes no coverage entry or certificate
+dependency. Counts remain 633 /629.
+
+## Shared cyclic choices for the wheel
+
+`D3009Construction` builds the pinned source with eleven Y and eight H steps.
+Its 94 darts retain all three permutations, every source edge and cyclic star,
+and the thirteen ports in source order. Actual colouring witnesses and their
+ordered traces transport exactly. The reference construction also supplies
+the embeddability contract.
+
+`WheelColouring.coloringEquiv` applies to any boundary graph and any
+fixed-point-free rim successor. A complete colouring is equivalent to its
+boundary colouring, one shared centre colour, and compatible colours around
+the rim. `WheelColouringGSLT.extends_iff` identifies this with a closed GSLT
+route, uniformly at every width at least two. Splitting the route keeps the
+common centre colour and both interface colours. These are exact extension
+laws; they do not assert that an arbitrary boundary assignment extends.
+
+`D3009Colouring` proves the exact graph isomorphism and consumes those laws.
+In particular, `two_sectors_iff` reconstructs a source colouring from compatible
+three-step and four-step sectors. `constructionTrace_iff` equates the Y/H
+construction's trace with this cyclic interpretation. The witness equivalence
+retains multiplicities as well as support; it supplies no executable Kempe
+recolouring algorithm.
+
+`D3009ColouringExample` checks a successful pair and a precise failed closure.
+For the proper boundary word `0101010101013`, each rim vertex must use colour
+2 or 3. The seven-cycle cannot close with those two colours. Both sectors have
+histories, even with the same centre colour and agreement at their shared
+middle seam, but the other seam cannot close. Exterior recolouring remains
+available; the example refutes only independent sector inhabitation.
+
+The [finite probe](wheel-repair-probe.json) goes further experimentally:
+
+| Centre degree | Ring length | Canonical traces | Direct extensions | Survivors after full pairing closure |
+| --- | --- | --- | --- | --- |
+| 5 | 9 | 820 | 257 | 0 |
+| 6 | 11 | 7,381 | 1,381 | 0 |
+| 7 | 13 | 66,430 | 7,496 | 0 |
+
+These are independent program results, not Lean repair certificates. Every
+terminal witness is checked on all graph edges. The closure considers all
+noncrossing pairings and all unions of whole chords, up to complementary
+choices and global colour permutation. In particular the thirteen-port case
+allows three-chord answers. At width seven the exact pinned source is used;
+its boundary labels are a checked rotation of the uniform wheel incidence.
+Reproduce with `python3 tools/fourcolor/near-linear/probe_wheel_repair.py`.
+
+Replay the proofs with `lake build kernelWheelColouring` in
+`lean/fourcolor-classical`; see the [receipt](wheel-colouring-measurements.json).
+The nineteen-root audit excludes configuration repair certificates and the
+complete Four Colour theorem. Neither a uniform D-repair law nor the D3009
+repair has yet been kernel certified. The next test is a compact repair
+certificate with a measured kernel cost, followed by actual exterior repair
+and strict reconstruction. Coverage and original certificate counts stay
+633 /629.

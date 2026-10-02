@@ -1620,3 +1620,29 @@ supply of that profile and closure of all subsequent overlaps remain open;
 following higher-degree centres is not a terminating reduction by itself.
 The shared diamond profile and classical configuration-7 certificate remain.
 No coverage entry or additional complete-assembly certificate disappears.
+
+## Exact wheel colourings and their cyclic histories
+
+[D3009Construction](MettapediaFourColor/D3009Construction.lean) certifies the
+complete source as eleven Y and eight H operations, including all cyclic
+stars and the ordered thirteen-port interface.
+[WheelColouring](MettapediaFourColor/WheelColouring.lean) gives an exact witness
+equivalence: boundary colouring, shared centre colour and cyclic rim choices.
+[WheelColouringGSLT](MettapediaFourColor/WheelColouringGSLT.lean) proves that
+these choices are exactly closed operational routes, at every width at least
+two. Its splitting law retains the shared centre and both endpoint colours.
+
+[D3009Colouring](MettapediaFourColor/D3009Colouring.lean) consumes the uniform
+law through an exact graph isomorphism and preserves the construction's full
+boundary trace. The accompanying example has compatible sectors that produce
+an actual colouring, and a proper boundary assignment where each sector is
+inhabited but cyclic closure fails. This isolates the need for joint choices.
+
+Replay `lake build kernelWheelColouring`. The
+[receipt](../../tools/fourcolor/near-linear/wheel-colouring-measurements.json)
+separates the nineteen audited roots from the
+[finite exploration](../../tools/fourcolor/near-linear/wheel-repair-probe.json):
+widths five, six and seven have no survivors in the independent full-pairing
+repair computation. The latter is not a kernel certificate. Compatible
+exterior repair, strict reduction and wider geometric coverage remain open;
+the complete assembly stays at 633 coverage entries /629 original certificates.

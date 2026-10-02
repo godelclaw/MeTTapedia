@@ -1,0 +1,162 @@
+{
+  "recorded_at": "2026-10-02T20:36:01.126959+00:00",
+  "status": "Kernel-certified exact wheel construction, colouring witness equivalence, closed GSLT routes and source consumer. No wheel repair certificate is claimed.",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+  "source_license": "MIT; copyright 2026 Yuta Inoue",
+  "source_construction": {
+    "Y_steps": 11,
+    "H_steps": 8,
+    "darts": 94,
+    "graph_vertices": 21,
+    "graph_edges": 47,
+    "ordered_boundary_ports": 13,
+    "all_permutations_checked": true,
+    "all_cyclic_stars_checked": true,
+    "reference_embeddability_proved": true
+  },
+  "uniform_laws": {
+    "colouring": "WheelColouring.coloringEquiv: arbitrary boundary graph, arbitrary colour type and fixed-point-free successor; exact witness equivalence.",
+    "route": "CyclicColourRoute.closed_iff: complete cyclic assignment exactly when the GSLT colour route closes.",
+    "wheel_consumer": "WheelColouringGSLT.extends_iff, at every width at least two, retains the centre colour and all boundary incidences.",
+    "split": "WheelColouringGSLT.split_iff: sectors share the centre colour and both seam colours.",
+    "source_consumer": "D3009Colouring.constructionTrace_iff and two_sectors_iff preserve the actual source graph and thirteen ordered ports.",
+    "information_scope": "No bounded geometric interface or pumping follows. Boundary data and retained histories may grow with the width."
+  },
+  "examples": {
+    "positive": "D3009ColouringExample.stitched supplies two compatible sector histories from a checked source colouring.",
+    "negative": "D3009ColouringExample.incompatible_sectors: boundary 0101010101013 forces a two-colour odd rim. Both sectors separately have histories; there is no compatible closing pair.",
+    "negative_scope": "Refutes separate sector inhabitation as an extension criterion; permits changing the boundary by justified exterior recolouring."
+  },
+  "audit": {
+    "roots": 19,
+    "dependency_declarations": 13004,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_dependency": false,
+    "configuration_repair_certificate_dependency": false,
+    "finite_repair_experiment_used_as_premise": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.D3009Construction",
+        "source_sha256": "22e2a9c141097b40078bcc23c5fcfb99406f432da51666a7ff2704c06c2dee08",
+        "exit_code": 0,
+        "frontend_wall_seconds": 34.568,
+        "olean_bytes": 329312,
+        "olean_sha256": "7dc8689ecd58386c114f620696a31ef9064995375c4f9b3b712a3e9c1d010a93"
+      },
+      {
+        "module": "MettapediaFourColor.WheelColouring",
+        "source_sha256": "ebf660d0127fa9a82f72e5e9686633cbad1f86a06cba8725c0d774d952882c01",
+        "exit_code": 0,
+        "frontend_wall_seconds": 1.831,
+        "olean_bytes": 381856,
+        "olean_sha256": "ee88c0ea677ff0c55edf95523871f96b0f6240645c2bddb10d0c72a6135e9fe0"
+      },
+      {
+        "module": "MettapediaFourColor.CyclicColourRoute",
+        "source_sha256": "699ba70dfbaadde42103c963366369d0c0b7b39da67ff4a036d6ce7fb6f2e094",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.345,
+        "olean_bytes": 302464,
+        "olean_sha256": "64cd809b300abf82bce9db9ae7fb90fc7aa6488f87b21a2fbcf1f6118a78ceef"
+      },
+      {
+        "module": "MettapediaFourColor.WheelColouringGSLT",
+        "source_sha256": "5762f9895d42ce326eca12d455ea08fcc6bf757de784955f0baa4b1845fe8a76",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.224,
+        "olean_bytes": 152088,
+        "olean_sha256": "3e07b01b0b146e7ea3cd15808c0d4bc8e46aee2c8b6380159ebd0ecc9f2728bf"
+      },
+      {
+        "module": "MettapediaFourColor.D3009Colouring",
+        "source_sha256": "26d8a28d15e7aecdbf4f0926aeebfacde234bbc828ff00999fa7e959110165d1",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.863,
+        "olean_bytes": 162936,
+        "olean_sha256": "d1801f733eea057d6d352b2770cdb44dd42df7ac2028f14445f0f3ae756ea4be"
+      },
+      {
+        "module": "MettapediaFourColor.D3009ColouringExample",
+        "source_sha256": "c5586693ca220cda3e005f5237a060e1a33381a309457358dec76f2e95b02828",
+        "exit_code": 0,
+        "frontend_wall_seconds": 11.47,
+        "olean_bytes": 168288,
+        "olean_sha256": "5a98a8ce0817c4922884fd1f07afbf791a4dc14b9a7c47c49eccea70b9b33c7e"
+      },
+      {
+        "module": "MettapediaFourColor.WheelColouringAudit",
+        "source_sha256": "af62a9bb6fc661d067b9f570a3f4fa3585d981d101284770808e2db468b57cc2",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.233,
+        "olean_bytes": 2600,
+        "olean_sha256": "730607ddebd09fbff1f63826e2ab2c7df105f885d5f4d236d495081b858da9ad"
+      }
+    ]
+  },
+  "validation": {
+    "new_gate": "lake build kernelWheelColouring",
+    "classical_gate": "lake build kernelComplete",
+    "main_gate": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_jobs": 11195,
+    "new_module_warnings": 0,
+    "status": "all passed; existing main-lane linter warnings retained"
+  },
+  "finite_experiment": {
+    "record": "wheel-repair-probe.json",
+    "script": "probe_wheel_repair.py",
+    "status": "independent program evidence only",
+    "widths": [
+      5,
+      6,
+      7
+    ],
+    "canonical_states": [
+      820,
+      7381,
+      66430
+    ],
+    "terminal_states": [
+      257,
+      1381,
+      7496
+    ],
+    "survivors": [
+      0,
+      0,
+      0
+    ],
+    "whole_chord_subsets": "all, modulo complement; up to three chords at ring thirteen"
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "member_checks_saved": 336,
+    "coverage_entries_removed_here": 0,
+    "certificate_dependencies_replaced_here": 0,
+    "new_uniform_repair_schemes": 0,
+    "uniform_extension_interpretation": "one wheel scheme, with arbitrary width and incidence"
+  },
+  "remaining": [
+    "Kernel-certify the D3009 repair contract or obtain a uniform family repair law.",
+    "Connect actual exterior repair to strict smaller-map reconstruction.",
+    "Prove residual geometric supply and global coverage."
+  ],
+  "next_cost_test": "Benchmark compact kernel checks on representative thirteen-port states, including twelve active positions and three-chord answers, before a full finite replay. The prior eleven-port repair used 5964.252 seconds of finite kernel checking."
+}

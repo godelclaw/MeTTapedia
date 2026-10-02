@@ -1,0 +1,113 @@
+{
+  "status": "independent program experiment, not a Lean repair certificate",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "D3009_sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+  "canonicalization": "nonzero xor-zero traces modulo global edge-colour permutations",
+  "closure": "all noncrossing pairings, whole-chord subsets modulo complement",
+  "scope": "no uniform D-repair, actual exterior reconstruction, or coverage claim",
+  "results": [
+    {
+      "width": 5,
+      "ring": 9,
+      "states": 820,
+      "stages": [
+        257,
+        366,
+        455,
+        527,
+        645,
+        801,
+        820
+      ],
+      "complete": true,
+      "survivors": 0,
+      "first_nonextending": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        1
+      ],
+      "first_survivor": null,
+      "edges_checked_per_terminal": 33,
+      "seconds": 0.09
+    },
+    {
+      "width": 6,
+      "ring": 11,
+      "states": 7381,
+      "stages": [
+        1381,
+        2622,
+        3279,
+        4037,
+        5130,
+        6363,
+        7084,
+        7379,
+        7381
+      ],
+      "complete": true,
+      "survivors": 0,
+      "first_nonextending": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        2
+      ],
+      "first_survivor": null,
+      "edges_checked_per_terminal": 40,
+      "seconds": 1.96
+    },
+    {
+      "width": 7,
+      "ring": 13,
+      "states": 66430,
+      "stages": [
+        7496,
+        13001,
+        16617,
+        19922,
+        23635,
+        28614,
+        34741,
+        42986,
+        50934,
+        58550,
+        65255,
+        66430
+      ],
+      "complete": true,
+      "survivors": 0,
+      "first_nonextending": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3
+      ],
+      "first_survivor": null,
+      "edges_checked_per_terminal": 47,
+      "seconds": 60.82
+    }
+  ]
+}

@@ -16,6 +16,35 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the exact wheel construction and its colouring interface. -/
+target kernelWheelConstruction pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-construction-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "D3009Construction"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay the uniform wheel-colouring law and its cyclic GSLT interpretation. -/
+target kernelWheelColouring pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-colouring-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "D3009Construction", "WheelColouring", "CyclicColourRoute", "WheelColouringGSLT",
+        "D3009Colouring", "D3009ColouringExample", "WheelColouringAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay ordered wheel recognition and its pinned source consumer. -/
 target kernelWheelNeighborhood pkg : Unit := do
   let env ← getAugmentedEnv

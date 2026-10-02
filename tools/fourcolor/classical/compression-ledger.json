@@ -3838,5 +3838,17 @@
     "original_certificates_removed": 0,
     "member_checks_removed": 0,
     "open": "Compatible D3009 repair, strict reconstruction and broader coverage."
+  },
+  "wheel_colouring": {
+    "record": "../near-linear/wheel-colouring-measurements.json",
+    "status": "Kernel-certified exact construction and uniform joint cyclic extension semantics, with D3009 consumer and examples.",
+    "source_boundary_ports": 13,
+    "new_uniform_extension_scheme": true,
+    "new_uniform_repair_schemes": 0,
+    "finite_repair_evidence": "All noncrossing-pairing closure succeeds at widths 5,6,7 in an independent program; not a Lean certificate.",
+    "coverage_entries_removed": 0,
+    "original_certificates_removed": 0,
+    "member_checks_removed": 0,
+    "open": "Compatible exterior repair, strict reconstruction and wider geometric coverage."
   }
 }
