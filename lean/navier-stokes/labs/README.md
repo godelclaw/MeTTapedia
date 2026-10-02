@@ -18919,3 +18919,438 @@ pairing, angular and radial integration identities, exact anisotropic
 moments, strict polynomial sign and generated angular defect. Analytic
 local existence and the Taylor remainder are not certified by the
 symbolic calculations. No new Lean declarations or axioms are introduced.
+
+## Angular history and a heat-smoothed circulation entropy
+
+`angular_history_entropy.py` tests whether diffusion pays for the angular
+change in (99). It identifies a failure of one natural angular measure,
+bounds the first angular departure, and derives an alternative entropy
+with the complete diffusion retained. The new physical estimates below
+are analytic; exact symbolic checks certify their algebra, not their PDE
+or continuation hypotheses. The scope here is axisymmetric R3.
+
+### Angular contrast can increase under literal diffusion
+
+Let P denote normalized angular averaging on S4 at fixed radius, p=5/2,
+and define the nonnegative contrast
+
+```text
+A_p(b)=int_R5 [|b|^p-(P b^2)^(p/2)].                       (100)
+```
+
+It vanishes on radial absolute values. For `B=exp(-alpha |y|^2)` and
+`h=(z^2-|y|^2/5)exp(-beta |y|^2)`, its second perturbation coefficient
+at B is `(5/8)I`, where `I=int B^(1/2)h^2`. Under heat evolution of
+BOTH B and h, the exact rate is
+
+```text
+I'/(nu I)=(13alpha^2-56alpha beta-72beta^2)/(alpha+4beta).
+```
+
+At alpha=6, beta=1 this equals 6, despite the degree-two angular
+eigenvalue -10. The radial diffusion of the weight matters.
+
+A compact radial cutoff gives an actual smooth unforced realization
+without a nonuniform perturbation argument in the Gaussian tail.
+Choose smooth chi(rho) equal to one below 3 and zero above 6, with
+`0<=chi<=1`, `|chi'|<=2/3`, and replace h by chi h. For each fixed
+cutoff, `b0=B+epsilon chi h` is positive for sufficiently small absolute
+epsilon and gives Schwartz pure-swirl physical data. Initially v=q=0,
+so the ACTUAL NS rate is exactly `b_t(0)=nu Delta5 b0`.
+After integration by parts, the second contrast-rate coefficient is
+
+```text
+A_p'(0)=(5nu/8)epsilon^2 J(chi h)+o(epsilon^2),
+J(h)=int exp(-3|y|^2)
+       [-2|grad h|^2+24h y.grad h+36|y|^2 h^2].             (101)
+```
+
+For the uncut h, `I=2pi^(5/2)/5^(11/2)`, `J(h)=6I`, and
+`J(h)/|S4|>9/31250`. The cutoff error divided by |S4| is at most
+`(3724756896/3125)exp(-45)<116398653/3435973836800000`, which is
+less than half that lower bound. To verify the bound, use
+`|h|<=(4/5)rho^2 exp(-rho^2)` and
+`|grad h|<=(8/5)rho(1+rho^2)exp(-rho^2)`. The error integrand is
+bounded by `exp(-5s)(2048s+4672s^2+3968s^3)/25`, s=rho^2;
+radial integration over rho>=3 uses `s^(3/2)<=s^2` and e>2.
+Thus `J(chi h)>|S4|9/62500>0`. The perturbation is compactly
+supported where B is bounded below, so differentiation in epsilon is
+legitimate. Smooth local evolution gives an actual interval of increasing
+contrast. This refutes heat monotonicity of (100), not regularity or a
+full-datum history allowance.
+
+### The first generated angular departure has a finite initial payment
+
+For the radial seeds of (95), put `G=sup_(s>=0) s g(s)^2`, which is
+finite from the original datum. The C2 contrast and actual Lp time jets
+give
+
+```text
+A_p(b(t))=L_ang t^4+o(t^4),
+L_ang=(pi^2/420)int_0^infinity
+              s^(7/2) f^(-3/4)(12g f'-16g'f)^2 ds,
+L_ang<=(18/35)G Dcrit(0)
+       +(2/13)||f||_infinity^(1/4)(-C_return).              (102)
+```
+
+Here Dcrit is the complete initial weighted gradient in (7).
+At zeros of b0 the integrand is interpreted continuously using
+`f^(-3/4)(12g f'-16g'f)^2
+ =4|b0|^(1/2)(12g b0'-8g'b0)^2`.
+The nonradial part of b2 is `(12g b0'-8g'b0)(z^2-s/5)`.
+The angular variance is `P[(z^2-s/5)^2]=8s^2/175`.
+Expanding about the evolving radial angular mean, whose contrast and
+first variation vanish, gives the fourth-order coefficient even though
+the functional is only used as C2. The square bound
+`(12g f'-16g'f)^2<=288g^2(f')^2+512(g')^2 f^2`
+and the positive density of -C_return in (96) prove (102).
+This is an initial-order comparison, not absorption with a universal
+coefficient or payment for successive returns.
+
+### A fixed heat reference with an exact physical cancellation
+
+The full lifted swirl equation has conservative form
+`b_t+div5(v b)=nu Delta5 b`, since `div5 v=-q`.
+For any positive fixed heat reference `W_t=nu Delta5 W`, define
+
+```text
+e=W|b/W|^(5/2), E=int_R5 e,
+D_W=int_R5 W|b/W|^(1/2)|grad(b/W)|^2.
+E'+(15nu/4)D_W=(3/2)int_R5 (q-v.grad log W)e.             (103)
+```
+
+The Hessian of the perspective `W|b/W|^p` yields the complete
+nonnegative square `p(p-1)W|b/W|^(p-2)|grad(b/W)|^2`.
+The transport of W and the lifted divergence are both retained.
+The formula extends across b=0 since p>2.
+
+There is a reference adapted to physical cylindrical volume. Fix ell>0
+from the original datum and horizon, without resetting its clock:
+
+```text
+d=ell^2+4nu t,
+W(t,r)=(1-exp(-r^2/d))/r^2, W(t,0)=1/d,
+x=r^2/d, theta=x/(exp(x)-1), theta(0)=1.
+q-v.grad log W=theta q,
+E'+(15nu/4)D_W=(3/2)int_R5 theta q e.                     (104)
+```
+
+W solves the four-transverse-dimensional heat equation, hence Delta5
+heat, and is the heat average of r^(-2) at time
+`t+ell^2/(4nu)`. Indeed, integrate the Gaussian heat average of
+`exp(-a r^2)` over a>=0 and substitute `a/(1+4nu tau a)`;
+the result is `int_0^(1/(4nu tau)) exp(-k r^2)dk`.
+This stochastic averaging is a reference construction, not a force
+applied to the fluid. The cancellation in (104) uses only
+`u_r=-rq/2` and `1+(r/2)partial_r log W=theta`, so it retains
+the FULL actual parent field. The lifted scalar density law does not
+make the physical three-dimensional fluid compressible.
+
+Since `int5 F=pi int3 r^2 F`, the entropy has physical form
+
+```text
+E=pi int_R3 |Gamma|^(5/2)/(1-exp(-r^2/d))^(3/2),
+Gamma=r u_theta.                                       (105)
+```
+
+The elementary bounds
+`0<W<=ell^(-2)`, `W^(-1)<=r^2+d`, `|grad log W|<=2/ell`
+follow from `0<theta<=1` and `1-theta<=min(1,x)`.
+They give finite original stock and coercivity:
+
+```text
+E(0)<=sqrt(2)[pi ||Gamma0||_(5/2)^(5/2)+ell^3 M(0)],
+M<=ell^(-3)E,
+Dcrit<=2ell^(-3)[D_W+4ell^(-2)E].                       (106)
+```
+
+These hypotheses hold for smooth rapidly decaying physical data in
+this axisymmetric track. Weighted parabolic estimates on every existing
+smooth prefix justify spatial cutoffs in (103); the needed growth of
+W^(-1) is polynomial. This local justification is not a bound uniform
+up to an unknown maximal time. The factor theta decreases exponentially
+away from `r^2` comparable to d but equals one at the axis. The remaining
+near-axis production is not eliminated.
+
+### Known and far parents are paid; the near-history estimate remains open
+
+Use the SAME actual no-swirl reference as (80)--(85):
+`q=q_bar+q_a`, `a=L(eta-eta_bar)`,
+`||a||_2<=sqrt(pi Ebar)`, `Ebar=E_s exp(2L_H)`.
+Fix a spatial cutoff R>0 from the datum. With c=1/(2pi^3), let
+`K_R(y)=c chi_cut(|y|/R)|y|^(-4)`, where chi_cut vanishes below one,
+equals one above two, and has derivative at most 3/2 in absolute value.
+Then, including its cutoff derivative,
+
+```text
+||grad K_R||_2<=d_R:=7c sqrt(|S4|/(5R^5)),
+q_a,far=2partial_z(K_R*a),
+||q_a,far||_infinity<=2d_R sqrt(pi Ebar),
+kappa_far=3d_R sqrt(pi Ebar),
+kappa_ref(t)=(3/2)||q_bar(t)||_infinity.                 (107)
+```
+
+The integral of kappa_ref is finite from the known global reference,
+independently of the target swirl. In this entropy the exact full-field
+cancellation already removed the separate transport term. Thus (107)
+pays its complete far contribution without a separate spatial-moment
+estimate. It is not uniform as R tends to zero.
+
+Write `q_near=q_a-q_a,far`,
+`P_near=(3/2)int theta q_near e`, and
+`Omega(t)=exp(-int_0^t kappa_ref-kappa_far t)`.
+A precise sufficient, still OPEN estimate is
+
+```text
+int_0^T Omega[P_near-(15nu/8)D_W]<=K(u0,nu,H,ell,R)       (108)
+```
+
+for every available smooth prefix T<=H, with finite K fixed from the
+full original datum and no future target norm. If it holds, setting
+`B=E(0)+K`, `Lambda_H=int_0^H kappa_ref+kappa_far H`, yields
+
+```text
+Omega(T)E(T)+(15nu/8)int_0^T Omega D_W<=B,
+int_0^T S^2 <=(25C5/16)ell^(-36/5)
+       [16/(15nu)+8H/ell^2]exp(12Lambda_H/5)B^(12/5).     (109)
+```
+
+This follows from (106) and the existing
+`S^2<=(25C5/16)M^(7/5)Dcrit`, so it has the same analytic
+axisymmetric continuation consumer as (8)--(10), including the finite
+initial circulation bound. It is an alternative target, not a proof
+of (108) or a replacement of the preceding joint-parent target (89).
+All angular changes, surviving parents and subsequent cycles remain
+in q_near. A sequence of individually finite payments cannot be summed
+without one allowance for its full compatible history.
+
+Run `python3 -O labs/angular_history_entropy.py`. Its exact checks cover
+the Gaussian and cutoff signs, first angular coefficient and constants,
+perspective Hessian, actual conservative equation, complete heat reference,
+physical cancellation, far-kernel constants and conditional consumer
+coefficients. No new Lean declarations or axioms are introduced.
+
+## Arbitrarily many finite cellular pattern cycles
+
+`cellular_pattern_cycles.py` constructs a test class in which genuine
+spatial patterns undergo repeated approximate cycles under unforced
+positive-viscosity NS. The number of cycles is any prescribed finite
+integer; the original datum depends on that number and the accuracy.
+The construction has a finite original-resource payment. It does not
+produce mutually amplifying parents or an infinite concentrating cascade.
+
+### An exact unforced family with a closed parent orbit
+
+On the 2pi-periodic three-torus, fix nu>0 and A>0 and set
+
+```text
+v(x,y)=(sin y,-sin x), psi=cos x+cos y,
+a(t)=A exp(-nu t),
+u(t,x,y,z)=(a(t)sin y,-a(t)sin x,A w(t,x,y)),
+p(t,x,y,z)=-a(t)^2 cos x cos y,
+w_t+a(t)v.grad w=nu Delta2 w.                            (110)
+```
+
+This is the full three-dimensional NS equation with zero force, not a
+Galerkin truncation. All fields are independent of z; incompressibility
+holds, `Delta2 v=-v`, and `(v.grad)v=grad(cos x cos y)`.
+The vertical component cannot affect its horizontal parent because its
+only additional advective derivative is in z. The scalar parabolic
+equation has a global smooth periodic solution for every smooth w0:
+its drift has bounded derivatives on every finite horizon, so successive
+Sobolev energy estimates and linear parabolic existence extend it there.
+This existence statement is analytic here.
+
+The autonomous flow Phi_sigma of v preserves psi. For c in (0,2),
+the connected level psi=c around the origin is a smooth closed orbit.
+Choose c=1, away from the central critical point and the separatrix.
+Its period P0 is finite:
+
+```text
+P0=4 int_0^(pi/2) [cos x(2-cos x)]^(-1/2) dx
+  approximately 8.626062589998572.                       (111)
+```
+
+The displayed decimal is a numerical illustration. The optional orbit
+check evolves `(pi/2,0)` through nine third-period transitions. Its
+reported return and level errors are floating-point diagnostics, not
+certified enclosures or a fluid simulation.
+
+### A quantitative construction of whole-pattern cycles
+
+On a small fixed annulus of regular levels around c=1, choose a smooth
+circle-valued phase theta with `v.grad theta=omega(psi)`, where
+`omega(c)=2pi/P(c)`. A transverse section and flow time define this
+phase; P is smooth on the compact regular annulus. Only cos(theta)
+and its phase shifts are used, so no globally real-valued angle is
+required. Let L_omega be a bound for |omega'| there.
+
+Given N>=1 and an error epsilon>0, put S=N P0. Choose a smooth bump
+chi supported in (-1,1), with `0<=chi<=1` and chi(0)=1, then choose
+delta>0 small enough that the supported levels remain in the annulus
+and `L_omega delta S<=epsilon/3`. Define, extending by zero outside,
+
+```text
+w0=chi((psi-1)/delta)cos(theta),
+w_inv(sigma)=chi((psi-1)/delta)cos(theta-omega(psi)sigma),
+Ustar(sigma)=(v,chi((psi-1)/delta)cos(theta-omega(1)sigma)). (112)
+```
+
+The seed is smooth and mean-zero. In these coordinates the area measure
+is a function of psi times `dpsi dtheta`, and the phase cosine has zero
+mean. Ustar is a nonconstant P0-periodic MOVIE of divergence-free fields;
+it is a comparison, not itself asserted to be a viscous NS evolution.
+w_inv is the exact inviscid passive solution under v, and
+`||w_inv(sigma)-Ustar_vertical(sigma)||_infinity
+ <=L_omega delta S` for 0<=sigma<=S.
+
+Physical and parent time are related by
+
+```text
+sigma(t)=A(1-exp(-nu t))/nu,
+t(sigma)=-log(1-nu sigma/A)/nu,
+w_sigma+v.grad w=[nu/(A-nu sigma)]Delta2 w.               (113)
+```
+
+Take A>=2nu S. The difference w-w_inv solves this last advection-
+diffusion equation with zero initial datum and source
+`[nu/(A-nu sigma)]Delta2 w_inv`. The maximum principle yields
+
+```text
+||w-w_inv||_infinity<=M_S log(A/(A-nu S))<=2nu S M_S/A,
+M_S=2(||D2 w0||_infinity+||grad w0||_infinity)exp(2S).     (114)
+```
+
+The explicit M_S follows from `||Dv||op<=1`, `||D2v||bilinear<=1`:
+the first variation of Phi has norm at most exp(sigma), and its second
+variation at most `exp(sigma)(exp(sigma)-1)`. The trace of the composed
+Hessian gives (114). These constants are deliberately conservative.
+The full velocity, normalized by the SAME original A, obeys
+
+```text
+sup_(0<=sigma<=S)||u(t(sigma))/A-Ustar(sigma)||_infinity
+ <=sqrt(2)nu S/A+L_omega delta S+2nu S M_S/A.              (115)
+```
+
+Thus any finite
+`A>=max(2nu S,3sqrt(2)nu S/epsilon,6nu S M_S/epsilon)`
+makes this error at most epsilon. First choose N and delta, then A;
+M_S is a finite norm of that chosen ORIGINAL seed, not of an unknown
+future flow. For normalized torus volume,
+`E0=(A^2/2)(1+mean(w0^2))<=A^2`.
+
+Sampling at `sigma=jP0/2` gives A--B--A cycles; sampling at
+`sigma=jP0/3` gives A--B--C--A cycles. The ideal two states have sup
+distance 2, and the three states have pairwise sup distance sqrt(3),
+attained on the central orbit where chi=1. More generally m>=2 phases
+give an m-state cycle, with adjacent separation `2sin(pi/m)`; choose
+epsilon smaller than a quarter of that separation to distinguish the
+actual states. All N circuits use one datum and one evolving solution.
+The physical sampling intervals need not be equal. This proves
+arbitrarily many finite approximate whole-pattern returns, not an exact
+full-state return, a cycle count uniform in initial data, or an arbitrarily
+long physical duration at a fixed normalized amplitude and fixed datum.
+
+### The cycles have a finite, nonrenewable original payment
+
+Differentiating the actual passive equation and retaining its complete
+diffusion gives, with g=grad w and H=D2 w,
+
+```text
+(partial_t+a v.grad-nu Delta2)|g|^2
+ =-2a(cos y-cos x)w_x w_y-2nu|H|^2 <=2a|g|^2.
+||grad w(t)||_infinity<=||grad w0||_infinity exp(sigma(t))
+                     <=||grad w0||_infinity exp(A/nu).   (116)
+```
+
+The inequality uses `|cos y-cos x|<=2` and `2|w_x w_y|<=|g|^2`;
+the norm conclusion uses the periodic parabolic maximum principle.
+The actual curl is `(A w_y,-A w_x,-a(cos x+cos y))`, so
+
+```text
+int_0^H ||curl u||_infinity
+ <=H A ||grad w0||_infinity exp(A/nu)+2A/nu < infinity.   (117)
+```
+
+There is also an all-time absolute receiver-stretching payment. Put
+`E=||grad(Aw)||_2^2`, `D=||D2(Aw)||_2^2`, and
+`G=-a int (cos y-cos x)(Aw)_x(Aw)_y`. Then
+`E'=2G-2nu D`, `|G|<=aE`, and `r(t)=a(t)/nu` satisfies r'=-a.
+The nonnegative reserve `R=E(exp(2r)-1)` therefore satisfies
+
+```text
+R'+2|G|<=0,
+int_0^T 2|G|<=E(0)(exp(2A/nu)-1), for every T>=0.        (118)
+```
+
+The same reserve persists at every seam. The parent clock never reaches
+A/nu: N full parent circuits imply `N<A/(nu P0)`. Raising the original
+energy permits more circuits, but no circuit manufactures a fresh parent
+allowance. This example consequently cannot develop the finite-time
+vorticity divergence of a singular forced construction. It does not
+exclude reproducing selected forced observations on a regular interval,
+nor does it control a larger class in which parents replenish one another.
+
+`MettapediaNS.CellularCycleReserve` certifies the horizontal differential
+equations with their actual pressure, clock derivatives and bound, seam
+payment, finite-turn arithmetic, gradient reaction inequality and envelope,
+and the receiver payment under its explicit energy-law hypotheses.
+The complete passive PDE construction, annular phase coordinates,
+approximate cycles (115), maximum-principle passage (116) and integrated
+physical conclusions remain analytic. They are not Lean existence theorems.
+
+Separately, `MettapediaNS.WholeSpaceEnergyReturn` applies the certified
+actual whole-space kinetic rate: exact return of the velocity forces
+zero gradient energy at every interior time. Positive interior gradient
+energy rules out such a return. This formal result concerns smooth
+whole-space L2 evolutions with nu>0; it is not a new torus classification.
+It excludes neither (115) nor rescaled or concentrating histories.
+
+Run `python3 -O labs/cellular_pattern_cycles.py` for exact symbolic checks
+of the full NS reduction, passive-gradient identity, physical curl, clock
+and comparison constants. Add `--orbit` for the separate numerical orbit
+illustration. The reusable physical specification is: an actual solution,
+a retained parent clock, separated comparison states, a quantified tracking
+error, and one original reserve. Any extension to interacting parents must
+re-establish both tracking and payment for the enlarged actual system.
+
+## A finite-energy finite-time cascade ledger with unbounded stretching
+
+`MettapediaNS.GeometricCascadeLedger` certifies a distinction needed when
+interpreting cycles. An exact return of a dissipating full state is
+impossible, but finite energy expenditure alone does not exclude an
+abstract sequence of successively smaller events. For nu>0, take
+
+```text
+ell_n=2^(-n),
+energy_n=nu^2 ell_n,
+duration_n=ell_n^2/nu,
+vorticity_n=nu/ell_n^2,
+reserve_n=2nu^2 ell_n.                                  (119)
+```
+
+The length, costs, durations, vorticity scales and reserves are positive.
+The Lean theorems prove
+
+```text
+reserve_n-reserve_(n+1)=energy_n,
+sum_n energy_n=2nu^2,
+sum_n duration_n=4/(3nu),
+duration_n*vorticity_n=1,
+sum_(n<N) duration_n*vorticity_n=N.                      (120)
+```
+
+In particular the positive stretching partial sums exceed every prescribed
+real bound, although both resource series converge. The proof uses
+unbounded partial sums, not the value of a totalized real infinite sum
+for a divergent series. The reserve never becomes negative or refills.
+
+These numbers match the usual dimensional assignments of a localized
+event with velocity scale nu/ell: kinetic energy is velocity squared
+times volume, the viscous time is ell squared over nu, and vorticity is
+velocity over length. They are a SCALING MODEL, not a sequence of actual
+NS fields. No pressure compatibility, incompressibility, nonlinear transfer,
+or existence of an evolution realizing them has been established here.
+The result refutes the abstract implication from finite energy and finite
+time to bounded accumulated stretching. The physical crux is whether the
+actual geometry and compatible parent histories permit such a sequence.

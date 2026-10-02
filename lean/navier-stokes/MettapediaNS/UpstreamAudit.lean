@@ -1,3 +1,6 @@
+import MettapediaNS.GeometricCascadeLedger
+import MettapediaNS.WholeSpaceEnergyReturn
+import MettapediaNS.CellularCycleReserve
 import NavierStokes.R3.HeatKernelCommutator
 import NavierStokes.ViscousPropagator
 import NavierStokes.PeriodicViscosityUniqueness
@@ -1500,3 +1503,44 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_acceleration
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_source_derivative
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.delayed_not_unforced
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.amplitude_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.amplitude_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.remaining_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.remaining_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.clock_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.clock_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.clock_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.clock_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.clock_lt
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.seam_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.integral_amplitude
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.integral_amplitude_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.finite_turn_count
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontalX_y
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontalY_x
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontal_divergence
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontalX_time
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontalY_time
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontalX_yy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontalY_xx
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.pressure_x
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.pressure_y
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontal_unforced_x
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.horizontal_unforced_y
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.gradientEnvelope_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.gradientEnvelope_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.gradientProduction_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CellularCycleReserve.receiver_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceEnergyReturn.dissipation_zero_of_energy_return
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceEnergyReturn.actual_return_zero_dissipation
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceEnergyReturn.actual_no_return_of_positive_dissipation
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.positive_stage
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.reserve_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.duration_eq_viscous_time
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.stage_stretching
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.energy_summable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.duration_summable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.total_energy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.total_duration
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.prefix_stretching
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GeometricCascadeLedger.stretching_unbounded
