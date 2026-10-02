@@ -25331,3 +25331,256 @@ joint heat rates, frame covariance, all vertical return coefficients,
 pressure-projected outputs, finite initial-energy fixtures and ordered
 physical frame comparisons. Uniform estimates, actual finite histories
 and their composition remain analytic. No Lean declarations or axioms change.
+
+## Evolving covariance compatibility and its pressure cost
+
+`covariance_velocity_defect.py` follows the relation between the actual
+fluid and its inherited covariance after a release. The complete physical
+equation has a favorable anisotropic diffusion term. A four-wave family
+shows that the associated pressure-Hessian work can exceed it, even on
+an actual unforced history with increasing enstrophy. Thus the signed
+history estimate must retain this work and its source of payment.
+
+The PDE identities below are analytic identities for smooth solutions.
+The checker verifies independent Fourier expansions and the exact physical
+fixtures. Local solution intervals and transfer from original parent data
+use (313) and positive-time stability; they are not new Lean certificates.
+
+### The full evolving relation
+
+Let u be an actual smooth unforced periodic NS solution with nu>0. Evolve
+F,M by (302), with their original initialization or an incoming compatible
+state. Define
+
+```text
+Sigma=M-F F^T,   K=sum_j (partial_j F)(partial_j F)^T,
+B=grad u,   d=div Sigma,
+C=u+nu P d,     grad chi=(I-P)d.
+```
+
+M is symmetric positive definite and Sigma>=0. The potential chi is chosen
+with zero spatial mean. It is the gradient part of the covariance divergence;
+it is not an independently specified pressure or an external control.
+The actual fluid pressure remains in the full Leray projection P.
+The covariance equation is
+
+```text
+(partial_t+u.grad-nu Delta)Sigma=B Sigma+Sigma B^T+2nu K.         (322)
+```
+
+A useful cancellation holds before projection:
+
+```text
+div[-u.grad Sigma+B Sigma+Sigma B^T]
+                      =-u.grad d+div(Sigma grad u),
+[div(Sigma grad u)]_i=sum_jk partial_j(Sigma_jk partial_k u_i).
+```
+
+To verify it, differentiating transport produces
+-(partial_j u_k)(partial_k Sigma_ij). The matching term from
+Sigma B^T cancels it after exchanging j,k; div u=0 removes its other
+term. Differentiating B Sigma gives exactly the displayed divergence-form
+operator. In particular this operator includes derivatives of Sigma.
+
+Differentiate C using BOTH actual evolution equations. The self-advection
+of u cancels against the u part of d=(C-u)/nu+grad chi. The result is
+
+```text
+C_t+P[(u.grad)C]
+ =nu Delta C+nu P div(Sigma grad u)
+       -nu P[(u.grad)grad chi]+2nu^2 P div K.       (323)
+```
+
+No stretching term is discarded: it is part of the anisotropic diffusion
+operator. The mean-frame source K generally does not vanish. The checker
+uses a nonconstant F and obtains ||P div K||_2^2=1/6144, so that omission
+would fail an actual chain-rule fixture. The arbitrary incoming fixture
+checks the identity; it is not used as a newly realized original-frame
+counterexample.
+
+Pair (323) with u, and the NS equation with C. Ordinary incompressible
+transport cancels in their sum. With normalized spatial integrals, write
+
+```text
+m=integral u.C,
+D_Sigma(u)=integral sum_ijk Sigma_jk partial_j u_i partial_k u_i >=0.
+
+m'+nu D_Sigma(u)
+ =-2nu integral grad u:grad C
+       -nu integral u^T Hess(chi)u-2nu^2 integral B:K.           (324)
+```
+
+This is an identity along the complete physical history, not just at its
+initial time. It isolates a nonnegative diffusion payment and three
+remaining terms. In particular m need not be nonnegative, so (324) is
+not itself a nonnegative reserve or a continuation bound.
+
+### What the first descendant generates
+
+For any horizontal solenoidal trigonometric parent V, let
+w=N(V)=-P[(V.grad)V] and let p_V be its canonical envelope pressure:
+w=-(V.grad)V-grad p_V. At the limiting single release with no background,
+
+```text
+u(0)=alpha w,  F(0)=I,
+Sigma(0)=(alpha/nu)V tensor V,  C(0)=0,
+chi(0)=-(alpha/nu)p_V,                 alpha>0.
+```
+
+These are precisely the physical inherited data from carrier amplitude
+2sqrt(alpha nu), not a freely selected covariance. Since grad F=0 here,
+K(0)=0. The viscous parts of u_t and nu P div Sigma_t cancel in C_t.
+The entire remaining first derivative is
+
+```text
+C_t(0)=alpha^2 Z_V,
+Z_V=P[(V.grad)^2 w+Hess(p_V)w].                    (325)
+```
+
+Thus nonlinear feedback regenerates the compatibility error after the
+parent has decayed. The directional operator is unambiguous:
+(V.grad)^2 w=(V.grad)((V.grad)w), including derivatives of V.
+It comes from div[(V tensor V)grad w] and div V=0.
+
+There is an independent verification. Let h=(V.grad)w-(w.grad)V. Then
+Z_V=N(w)-DN(V)[h]. Expanding the bracket cancels the self-advection of w
+and leaves exactly (325), with the pressure Hessian retained. Consequently
+
+```text
+integral w.Z_V = -L_V+P_V,
+L_V=||(V.grad)w||_2^2,
+P_V=integral w^T Hess(p_V)w.                       (326)
+```
+
+The term -L_V is always favorable. The pressure term is signed.
+The simple parent V=cos z(cos y,-cos x,0) has
+L_V=5/288, P_V=0 and ||Z_V||_2^2=26221/967680.
+The earlier self-stretching parent (262) has
+L_V=102543095/29988, P_V=-1464301/2499, and
+integral w.Z_V=-7065571/1764<0. These are positive first-return comparisons
+for those geometries, but the following family reverses the sign.
+
+### A resonant family defeats the pressure-only absorption
+
+For k in Z3 write v_k=(-k2,k1,0)cos(k.x). Set
+
+```text
+V_rho=v_(2,1,0)+v_(1,2,0)
+                         -rho v_(1,0,1)+rho v_(0,1,1).         (327)
+```
+
+It is horizontal and divergence-free, and has three-dimensional dependence
+when rho!=0. At rho=0 its projected source vanishes: the two planar modes
+have the same Laplacian eigenvalue. Nevertheless small additional modes
+produce a pressure cost exceeding the directional diffusion. Exact Fourier
+calculation gives
+
+```text
+L(rho)=rho^2(55rho^4+20482rho^2+11601)/330,
+P(rho)=6rho^2(507-55rho^2)/55,
+P(rho)-L(rho)=rho^2(6651-22462rho^2-55rho^4)/330.                (328)
+```
+
+For every 0<|rho|<=1/2 the last quantity is strictly positive: the bracket
+is at least 16513/16. In particular, at rho=1/10,
+
+```text
+L=23611651/66000000,
+P=30387/55000,
+P-L=12852749/66000000>0.
+```
+
+The polynomial verification uses their degree at most six, evenness under
+rho->-rho (translation z->z+pi), and vanishing to order two at rho=0.
+Thus three nonzero squared parameter values determine each polynomial.
+The checker evaluates them independently at rho=1,2,3, and verifies the
+rho=1/10 physical source directly. No floating-point search result is
+used as evidence for (328).
+
+This disproves the universal pointwise claim P_V<=L_V for these actual
+released-parent geometries. It also disproves the stronger claim that the
+same term always pays pressure with a fixed fraction below one. It does
+not disprove payment with an additional full-datum allowance, or a reserve
+retaining C, K and their later history.
+
+To express the comparison physically, define the instantaneous covariance
+prediction v_Sigma=-nu P div Sigma=u-C. It is an observer, not another
+NS solution. At the matched release,
+
+```text
+d/dt [||u||_2^2-||v_Sigma||_2^2] at t=0
+                          =2alpha^3(P_V-L_V).                  (329)
+```
+
+The simple and earlier self-stretching parents initially lie below that
+prediction; the resonant family initially lies above it. Also
+||C(t)||_2^2=alpha^4 t^2||Z_V||_2^2+O(t^3) when Z_V!=0. A homogeneous
+heat-contraction law for this error would miss its nonlinear source.
+
+### The same unpaid pressure term in an enstrophy-growing flow
+
+The resonant example at rho=1/10 has g(w)=-423/275000. Its positive
+pressure excess alone is therefore not a claim of positive initial
+vorticity stretching for u=alpha w. The actual incoming-background law
+(313) provides a direct test in that regime too.
+
+Take nu=1, alpha=10000, the SAME V=V_(1/10), and put the background
+W=-2alpha w in the original datum. With carrier amplitude 2sqrt(alpha),
+its limiting released state is
+
+```text
+u=-alpha w, F=I, Sigma=alpha V tensor V,
+C=-2alpha w, chi=-alpha p_V.
+```
+
+The two competing terms in (324) are still alpha^3 L and alpha^3 P,
+so pressure strictly exceeds the covariance diffusion. At the same time,
+
+```text
+||(-Delta)w||_2^2=13239/2500,
+d/dt ||curl u||_2^2
+ =2alpha^2[-alpha g(w)-||(-Delta)w||_2^2]
+ =22189680000/11>0.                               (330)
+```
+
+The background was present originally and evolves by unforced NS; it is
+not a later force. The other terms of (324), including its nonzero C,
+remain present. Thus (330) does not assert that pressure defeats all
+viscous dissipation or every possible combined reserve. It shows that
+restricting attention to enstrophy-growing flow does not rescue the
+specific proposed pressure absorption.
+
+### Actual intervals, literature connection and remaining payment
+
+For each fixed nu, alpha and parent above, local smooth NS and linear
+frame existence justify the displayed time derivatives. Strict signs
+persist on a small positive descendant interval. The original release
+(313), followed by its positive-time smoothing argument, transfers these
+signs to sufficiently large FINITE carrier frequencies with F=M=I at
+original time zero. In particular the strict energy comparison from (329) occurs on
+actual short histories, and the pressure excess and enstrophy growth in
+(330) coexist on an actual short interval. No frame is reset at release,
+and derivative convergence is not inferred from the C0 endpoint limit.
+
+The vector transport and stress-divergence structure has a useful precedent
+in [Beekie, Friedlander and Vicol, *On Moffatt's magnetic relaxation
+equations*](https://arxiv.org/abs/2104.14084), equations (1.1)--(1.2) and
+(2.1). Their Darcy constitutive law uses +P div(V tensor V), with a
+magnetic-energy dissipation identity. The released velocity here uses
+-P div(V tensor V), and its subsequent evolution is actual NS. Those
+constitutive dynamics and their energy estimate cannot be substituted
+for (322)--(324). Their framework is useful for identifying the transport
+and pressure terms, with that distinction retained.
+
+The next physical estimate must pay the pressure-Hessian work jointly
+with the changing compatibility error and mean-frame diffusion work.
+A signed cross-work identity alone does not supply a nonnegative finite
+reserve. The ordinary-vorticity conversion, arbitrary-prefix core budget
+(284), and arbitrary-data regularity remain open.
+
+Run `python3 -O labs/covariance_velocity_defect.py`. It checks the complete
+moment chain rule with nonconstant mean frame, both discrepancy equations,
+the integrated cross-work identity, independent parent-source expansions,
+the rational parameter family, and the enstrophy-growing background.
+The physical interval arguments remain analytic. No Lean declarations
+or axioms change.

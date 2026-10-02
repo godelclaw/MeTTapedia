@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [evolving covariance calculation](labs/README.md#evolving-covariance-compatibility-and-its-pressure-cost)
+derives the actual velocity–covariance discrepancy equation and its signed
+work identity. Covariance gives a favorable anisotropic diffusion term;
+a four-wave family makes the associated pressure-Hessian work larger.
+An original background realizes the same pressure excess while enstrophy
+increases. This rules out that isolated absorption, while retaining the
+full-datum history estimate as the open target. Exact Fourier checks
+support the analytic physical arguments; no new Lean theorem is claimed.
+
 The [joint-parent boundary law](labs/README.md#joint-parent-covariance-and-ordered-release-histories)
 retains the correlations that jointly determine the released fluid and its
 frame memory. It allows an incoming frame and gives a finite strain price
