@@ -18158,3 +18158,279 @@ formula with absolute errors about `1.08e-8`, `5.29e-11` and `1.97e-13`.
 Those quadratures have no certified error bound. The exact moment and
 nodal algebra, analytic physical interval arguments, and open full-datum
 history estimate retain their separate status.
+
+## Paying the complete far-parent flux from a spatial moment
+
+`far_parent_payment.py` checks the identities and constants below. This is
+an analytic payment for one part of the ACTUAL nonlinear history, not only
+the prepared heat history. It applies to the smooth, decaying axisymmetric
+R3 class of (58), with finite initial second kinetic moment. The moment
+estimate itself does not require axisymmetry. None of the new PDE arguments
+in this section is Lean-certified.
+
+Keep the complete residual `chi=chi_a`, `h=-Delta5 chi`, `a=Lambda chi`,
+the actual b, and the original prepared history from (57). Fix a kernel
+distance R>0 before following the solution. This is separation in the R5
+lifted Riesz kernel, not a claim that a pair of physical vortices has a
+particular three-dimensional separation. Split only J_a in (68); J_b and
+the complementary near part of J_a retain their signs.
+
+### A physical moment that remains payable
+
+Use no factor 1/2 in the physical energy. For the FULL unforced velocity,
+including swirl, let
+
+```text
+E0=int_R3 |u0|^2, I0=int_R3 |x|^2|u0|^2,
+Z(t)=int_R3 |grad u|^2, I(t)=int_R3 |x|^2|u|^2.
+```
+
+Let C_S be any fixed constant in `||u||_6<=C_S||grad u||_2` on R3.
+For every available smooth prefix t<=H,
+
+```text
+sqrt(I(t)) <= M_H
+ :=sqrt(I0+6nu E0 H)
+   +3 C_S^(3/2) E0^(1/4) H^(1/4)(E0/(2nu))^(3/4).       (70)
+```
+
+Here the center and H are fixed from the initial problem. The canonical
+pressure satisfies `||p||_2<=||u||_4^2`: in Fourier space its tensor
+multiplier is contraction with the rank-one matrix `k tensor k/|k|^2`, whose
+Frobenius norm is one. Testing the local kinetic-energy identity gives
+
+```text
+I'+2nu int |x|^2|grad u|^2
+ =6nu E(t)+2 int (x.u)(|u|^2+2p)
+ <=6nu E0+6 C_S^(3/2) sqrt(I) E0^(1/4) Z^(3/4).
+```
+
+There is no assumed future moment bound in this test. First use
+`W_L=|x|^2/(1+|x|^2/L^2)`, which is bounded and obeys
+`|grad W_L|^2<=4W_L`, `Delta W_L<=6`. The same differential inequality
+holds uniformly for `int W_L|u|^2`. Scalar comparison, the prefix energy
+bound `int_0^t Z<=E0/(2nu)` for t<=H, and Holder give (70). Monotone convergence
+as L increases supplies the actual moment. The pressure and Sobolev
+estimates use only norms already controlled on each smooth prefix.
+This is a standard weighted-energy argument, stated with the constants
+needed here; it is not a new general regularity result. For the underlying
+Hardy and Sobolev tools, see Appendix A of
+[Tao's analysis text](https://www.math.ucla.edu/~tao/preprints/chapter.pdf).
+
+For an axisymmetric meridional potential chi, integration by parts gives
+
+```text
+G0=int_R5 |grad chi|^2=pi E_meridional,
+G2=int_R5 |x|^2|grad chi|^2=pi I_meridional+4 int_R5 chi^2,
+int_R5 chi^2 <=(4/25)G2,
+G2 <=(25pi/9)I_meridional.                              (71)
+```
+
+The positive correction in the second line matters. In general a weight
+W contributes `-2 int_R5 (W_r/r)chi^2` to the physical energy integral;
+it cannot be dropped. The third line follows from
+`5 int chi^2=-2 int chi x.grad chi` and Cauchy--Schwarz.
+
+Finiteness in (71) need not be assumed circularly. The canonical physical
+vector potential is `A=(-x2 chi,x1 chi,0)` in Cartesian R3 coordinates
+`(x1,x2,z)`, with `curl A=v`, `div A=0`. Fourier-space Hardy in dimension
+three first gives `||chi||_2(R5)^2=pi||A||_2(R3)^2<=4pi I_meridional`.
+The bounded weights W_L in the preceding identity then yield finite G2
+and its exact identity by monotone convergence. Dimension-five weighted
+Hardy improves the constant to 25/9 as displayed. These arguments concern
+the decaying canonical potential, not an arbitrary added harmonic field.
+
+### Transport and stress stay together
+
+All indices in the following formula are Cartesian R5 indices. Write
+`Y=(y1,y2,y3,y4,0)`, `g=grad chi`,
+`S_ik=g_i g_k-delta_ik |g|^2/2`, and
+`A_jk=delta_jz Y_k-Y_j delta_kz`. Thus `v=2chi e_z+A g`. Define
+
+```text
+F_ij=2 delta_jz chi g_i+sum_k A_jk S_ik,
+H_vec=(-3chi_z grad_h chi, 2|grad_h chi|^2-chi_z^2).
+```
+
+The exact identity, including derivatives of the coordinate factors, is
+
+```text
+v h+T=-div F+H_vec,
+T=e_z|grad chi|^2-2chi_z grad chi, h=-Delta5 chi.          (72)
+```
+
+The divergence is in F's first index. For example,
+`div_i S_ik=Delta5 chi g_k`; differentiating A supplies the remaining
+terms in H_vec. The checker verifies (72) for an arbitrary five-variable
+function, before imposing axisymmetry. Pointwise Frobenius estimates and
+(71) give
+
+```text
+|H_vec|<=2|g|^2, |F|<=2|chi||g|+2r|g|^2,
+||H_vec||_1<=2G0, ||F||_1<=(14/5)sqrt(G0 G2).              (73)
+```
+
+Consequently the transport term v h has not been replaced by a bound
+only on T. Its derivative is moved onto the far kernel with all of the
+coordinate and stress corrections retained.
+
+### Explicit stocks for the complete residual
+
+Here chi is the residual, not the full potential. The subtraction must
+therefore also be paid. In R5 put
+
+```text
+A0=||b0||_infinity, F0=||b0||_2, M0w=||x b0||_2,
+J0=H A0 F0,
+Jw=A0[H M0w+(4/3)sqrt(10nu) H^(3/2)F0].
+```
+
+These are original norms; `F0^2=pi E_swirl(0)` and
+`M0w^2=pi I_swirl(0)`. For the SAME prepared history through every seam,
+
+```text
+B(t)=heat(nu t)b0,
+J(t)=integral_0^t heat(nu(t-s)) B(s)^2 ds,
+chi1=partial_z(-Delta5)^(-1)J,
+||grad chi1||_2<=J0, ||x grad chi1||_2<=(7/3)Jw.        (74)
+```
+
+Indeed heat contraction gives `||B||_infinity<=A0`, `||B||_2<=F0`.
+The heat displacement estimate
+`||x heat(nu t)f||_2<=||xf||_2+sqrt(10nu t)||f||_2`
+follows from the Gaussian's second moment and Minkowski. Apply it once
+to B and once to the outer heat operator. Integrating the two square
+roots gives 4/3 and the bound Jw. The multiplier of grad chi1 is the
+vector `m(k)=-k_z k/|k|^2`. Its norm is at most one and
+
+```text
+|grad_k m|_F^2=(1+3 k_z^2/|k|^2)/|k|^2 <=4/|k|^2.
+```
+
+Plancherel and the dimension-five Hardy constant 2/3 then give
+`||x grad chi1||_2 <=(1+4/3)||xJ||_2`. Thus (74) uses no unknown
+actual velocity gradients. With chi=chi_total-chi1, (70)--(74) imply
+the uniform residual stocks
+
+```text
+G0(t)<=Gbar=2[pi E0+J0^2],
+G2(t)<=Wbar=2[(25pi/9)M_H^2+(49/9)Jw^2].              (75)
+```
+
+All these bounds hold on every available smooth prefix from the same
+datum. They require finite I0 and the stated initial heat norms. Smooth
+rapidly decaying data satisfy them; no periodic analogue is claimed here.
+
+### A fixed-scale payment with a named remaining consumer
+
+The kernel of L is `K(x)=1/(2pi^3|x|^4)`. Set
+`K_R(x)=theta(|x|/R)K(x)`, where theta is zero below 1, one above 2,
+and `3(t-1)^2-2(t-1)^3` between them. It is C1 at the seams,
+`0<=theta<=1`, and `0<=theta'<=3/2`. Let
+
+```text
+s4=8pi^2/3,
+cK=(1/(2pi^3))(s4/5)^(2/5),
+cD=(7/(2pi^3))(2s4/15)^(2/5).
+```
+
+The derivative of the cutoff is included in the constant 7:
+`|grad K_R|<=7/(2pi^3|x|^5)` on its support. Radial integration gives
+`||K_R||_(5/2)<=cK R^(-2)` and
+`||grad K_R||_(5/2)<=cD R^(-3)`. From (72), the complete far part is
+
+```text
+J_a,far=e_z K_R*b^2 + sum_i partial_i K_R*F_ij - K_R*H_vec.
+```
+
+Young's convolution inequality, (73), (75), and
+`||b||_2(R5)^2=pi E_swirl(t)<=pi E0` give the original-data bound
+
+```text
+||J_a,far(t)||_(5/2) <= P_R
+ :=cK R^(-2)(pi E0+2Gbar)
+   +cD R^(-3)(14/5)sqrt(Gbar Wbar).                    (76)
+```
+
+This bounds the full nonlinear far contribution, including internally
+generated parents, without taking their unknown future norms as inputs.
+It is a fixed-scale statement. P_R grows as R tends to zero, and moving
+R or resetting the original heat history is not justified by it.
+
+Set `J_a,near=J_a-J_a,far`, and keep
+
+```text
+Q_far=-p int grad(wa).J_a,far,
+Q_near=-p int[grad(wb).J_b+grad(wa).J_a,near], p=5/2.
+```
+
+Holder gives `int w|J_a,far|^2<=R_p^(1/5)P_R^2`, since
+`||w||_5=R_p^(1/5)`. Using the COMPLETE observer bound (66), allocate
+one quarter of diffusion to this part:
+
+```text
+|Q_far| <=(nu/4)D_p+(15/(4nu))P_R^2 R_p^(1/5)
+        <=(nu/4)D_p+c_R R_p+d_R,                       (77)
+c_R=3P_R^2/(4nu L0^(4/5)), d_R=4L0 c_R.
+```
+
+Here any positive stock L0 is chosen from the original datum, viscosity
+and H. For nonzero data one may use `L0=R_p(0)+Sigma^(5/2)`; the zero
+solution is handled separately. The last inequality is the tangent bound
+`x^(1/5)<=(1/5)L0^(-4/5)x+(4/5)L0^(1/5)`.
+Thus the payment is a fixed finite linear coefficient and additive
+allowance. It is NOT an assertion that `integral |Q_far|` is bounded
+independently of the still-unknown reserve and diffusion.
+
+Retain the prepared clock Omega from (57) and set
+`Omega_R(t)=Omega(t)exp(-c_R t)`. The OPEN remaining sufficient target is
+
+```text
+integral_0^T Omega_R[Q_near-(nu/4)D_p]
+ <=K_near(u0,nu,H,R)                                  (78)
+```
+
+for every smooth prefix T<=H, with K_near finite from the original data.
+Equations (57), (77), (78) would give
+
+```text
+Omega_R(T)R_p(T)+(nu/2)integral_0^T Omega_R D_p
+ <=R_p(0)+Sigma^(5/2)+d_R H+K_near.
+```
+
+In particular the previously established conditional axisymmetric
+continuation estimate becomes
+
+```text
+integral_0^T S(t)^2 dt
+ <=(5C5/(4nu))
+   *exp[(18/5)(A_cal+1)+6C1+(12/5)c_R H]
+   *[R_p(0)+Sigma^(5/2)+d_R H+K_near]^(12/5),
+S(t)=int_R5 |b|^3.                                    (79)
+```
+
+The g/Sigma part of the prepared clock is omitted when Sigma=0; the
+displayed bound with the extra 1 remains a valid conservative bound.
+All clocks retain one original start across compatible segments. The
+new coefficient pays the complete distant interaction, while (78) still
+contains local swirl transport and the nearby, mutually changing parent
+field. A proof of (78), or a better corrected observation with an actual
+continuation consumer, remains necessary. Neither a favorable instant
+nor the spatial moment estimate proves it. General non-axisymmetric
+R3/T3 regularity remains open in this lane.
+
+For the nodal-parent family in (63), including its small-swirl perturbations,
+the stocks in (75)--(77) stay uniformly finite as the swirl tends to zero,
+at fixed R, nu, H and positive original L0. No division by the evolving
+parent amplitude appears. This repairs the particular far contribution
+without claiming that the remaining near work is bounded or favorable.
+
+Run `python3 -O labs/far_parent_payment.py --quadrature`. Exact checks
+include (71)--(74), bounded moment-test derivatives, kernel exponents,
+diffusion allocations and NS scaling. Independent 48/96/192 quadrature
+compares the literal and stress forms of J_a,far on the positive-parent
+and nodal-parent profiles, with actual initial swirl added, at R=1/2,1,2.
+At resolution 192 their differences are below 8e-16. Omitting the cutoff
+derivative gives errors between about 2.6e-6 and 1.2e-2. These tests check
+the complete integral and expose a real cutoff error; their numerical
+accuracy is not a certified error bound or proof of physical evolution.

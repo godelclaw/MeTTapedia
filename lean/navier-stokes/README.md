@@ -2085,6 +2085,20 @@ cost is at most three fifths of the complete diffusion. An exact form of
 the signed defect keeps this regular observer intact, with its nonlocal
 coefficients and time-integrated payment still open.
 
+The [complete far-parent payment](labs/README.md#paying-the-complete-far-parent-flux-from-a-spatial-moment)
+bounds an actual nonlinear contribution from the original fluid's energy
+and second kinetic moment. The latter propagates by the unforced energy
+identity, with no assumed future stretching bound. A Cartesian stress
+identity retains both parent transport and the pressure-related correction;
+moving its derivative onto a fixed far kernel, including the cutoff
+derivative, gives a uniform original-data flux bound. The regular observer
+then pays this part by a quarter of diffusion, a fixed linear coefficient
+and an additive allowance. The explicitly prepared parent is also retained
+in the weighted stocks. Nearby parent interactions and local swirl transport
+remain in a signed sufficient history estimate. This is an analytic result
+for the axisymmetric R3 track with the stated finite initial moment, not
+a bound uniform in the kernel cutoff or arbitrary R3/T3 closure.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
