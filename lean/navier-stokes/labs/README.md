@@ -21367,3 +21367,180 @@ Simply taking another heat forecast creates another nonlinear source and
 does not establish convergence, positivity or finite total payment of such
 a hierarchy. These are explicit open obligations, not consequences of
 the local first-generation calculation.
+
+## Nonnegative source storage and an energy-cube repair
+
+`receiver_source_square.py` tests a globally nonnegative completion of
+the preceding receiver correction. It fails a universal differential
+payment despite its positivity. A higher power of the FULL kinetic
+energy then repairs both tested hidden phases at every amplitude and
+integer harmonic dilation. The repair has a strict initial margin and
+therefore pays on a short interval of each actual smooth solution.
+Persistence beyond that interval remains open. All PDE conclusions in
+this section are analytic; the checker certifies exact finite algebra.
+
+### Completing the signed forecast to a square
+
+Keep the normalized 2pi torus, nu>0, M=average_z u, w=u-M,
+Pi=I-average_z, N(u)=-P[(u.grad)u], A=-Delta and S_s=exp(-nu s A).
+Use the actual nonlinear solution only on its available smooth prefix.
+Let D_w=||Aw||2^2 and D=||Au||2^2. Define
+
+```text
+C_nu(w)=(1/nu) integral_0^infinity ||Pi N(S_s w)||2^2 ds,
+V_nu(w)=Z(w)/2+H_nu(w)+C_nu(w)
+       =(1/nu) integral_0^infinity
+           ||nu A S_s w+Pi N(S_s w)||2^2 ds >=0.          (195)
+```
+
+This uses the complete ADVECTIVE Leray source. It differs from the
+inverse-curl stretching source used in `caloric_force.py`. Both constructions
+retain heat rates, but their capacities and derivatives are different.
+
+To verify the square, the pure linear integral is Z(w)/2 by Fourier
+heat decay, and the cross term is H_nu(w) because
+<Av,Pi N(v)>=<Av,N(v)>=g(v) for a zero-vertical-mean solenoidal v.
+The remaining term is C_nu. Exponential heat decay and Sobolev product
+estimates make these functionals continuously differentiable on, for
+example, periodic H^m with m>=5. Differentiation along a sufficiently
+smooth NS prefix is justified in the same spaces. The auxiliary heat
+integral is not an assumption about infinite nonlinear lifespan.
+
+The semigroup property and the actual equation give
+
+```text
+D C_nu(w)[-nu Aw]=-||Pi N(w)||2^2/nu,
+d_t V_nu(w)+2g(w)
+ =-nu D_w-||Pi N(w)||2^2/nu+<Aw,Pi N(u)>
+   +D H_nu(w)[Pi N(u)]+D C_nu(w)[Pi N(u)].              (196)
+```
+
+Thus positivity of storage does not eliminate nonlinear renewal.
+The full u in both differentiated terms retains the evolving mean,
+all parents, all phases and pressure. It is not replaced by w.
+
+### Positive storage does not alone pay the next return
+
+Use the explicit w_- and w_+ of (194). They have equal positive energy,
+enstrophy, D, C_1 and V_1, and g=H_1=0. Define the common values E_*,
+Z_*, D_* and the following coefficients, computed exactly by the checker:
+
+```text
+b=D H_1(w_-)[Pi N(w_-)]-||Pi N(w_-)||2^2
+ =D H_1(w_+)[Pi N(w_+)]-||Pi N(w_+)||2^2 <0,
+p=D C_1(w_-)[Pi N(w_-)]
+ =-D C_1(w_+)[Pi N(w_+)] >0.                            (197)
+```
+
+Their exact values include
+
+```text
+E_*=1000598841218897/909543690000000,
+Z_*=5249427801854603/909543690000000,
+D_*=28714885428973207/909543690000000,
+b=-382373288285148495431151591994675913
+   /29656662809696737448634000000000000000,
+p=20098105310454878385748474602187144764763499
+   /355120248771863575260309700871220000000000000000.
+```
+
+For u0=a w_- the initial value of (196) is
+-nu a^2 D_*+a^4 b/nu+a^5 p/nu^2. At a=512nu its ratio to
+(nu/2)D(u0) is strictly greater than 265. Consequently
+
+```text
+V_nu(w(t))+2 integral_0^t g(w)
+  <= V_nu(w0)+(nu/2)integral_0^t D
+```
+
+fails for every sufficiently small positive t of the actual solution.
+Local smooth existence and continuity transfer the strict initial
+defect to such an interval. No forced dynamics, truncated evolution or
+negative reserve is involved. This rejects this particular certificate;
+it does not reject a larger original-data allowance or global regularity.
+
+### A correction using an inviscid invariant
+
+The polynomial design principle is established in
+[Goulart and Chernyshenko, Sections 1.2 and 3.1](https://arxiv.org/pdf/1101.1043):
+highest-degree terms must be compatible with the inviscid nonlinearity.
+Here a direct amplitude argument states the precise necessary condition.
+If a fixed polynomial storage has highest homogeneous part V_d, d even,
+and every other term in its universal differential inequality has degree
+at most d, the coefficient D V_d(u)[N(u)] must vanish. Otherwise the leading
+degree d+1 is odd: one sign of arbitrarily large amplitude violates the
+inequality. This conclusion does not classify inviscid invariants or
+exclude nonpolynomial, restricted-domain or datum-dependent certificates.
+
+For (195), D C_nu[N] is the nonzero quintic term. Appending lower-degree
+terms cannot cancel it. A suitable higher-degree invariant can change
+that conclusion. In particular, use the FULL energy E=||u||2^2 and set
+
+```text
+gamma=1/100000000,
+J_nu(u)=V_nu(u-average_z u)+gamma E(u)^3/nu^4 >=0,
+d_t(gamma E^3/nu^4)=-6gamma E^2 Z(u)/nu^3.              (198)
+```
+
+The last identity follows from the unforced energy law E'=-2nu Z(u).
+There is no seventh-degree nonlinear term because <u,N(u)>=0. This
+would not hold for the energy of the receiver alone: it exchanges energy
+with the mean.
+
+For u0=a w_-(ell x), a!=0 and integer ell>=1, equations (196)--(198)
+give the exact initial cost
+
+```text
+J_nu'(0)+2g(w0)
+ =-nu a^2 ell^4 D_*
+   +(a^4 ell^2/nu)[b+p r-q ell^2 r^2],
+r=a/(nu ell), q=6gamma E_*^2 Z_*>0.                    (199)
+```
+
+For w_+ replace p by -p. Exact rational arithmetic gives
+p^2+4qb<0. Completion of the scalar square proves
+b+/-p r-q r^2<0 for every real r. Since ell^2>=1, (199) is
+strictly less than -nu D(u0) for either initial phase at every nonzero
+amplitude and harmonic dilation, with the SAME gamma.
+
+For EACH such datum and nu>0, continuity therefore gives an epsilon>0
+on its actual smooth NS lifespan such that
+
+```text
+J_nu(u(t))+2 integral_s^t g(w)
+ <=J_nu(u(s))+(nu/2)integral_s^t D,
+                     0<=s<=t<=epsilon.                (200)
+```
+
+This is a positive local repair of the two adversarial phases, not just
+a sign check on a projected dynamical system. In particular it includes
+the datum that defeats (195). The actual solution may immediately leave
+these initial-data rays; no invariance of this family, prescribed
+epsilon, arbitrary-horizon payment or global existence follows.
+The initial stock contains gradient and source information in V, so
+this is not a uniform energy-only arbitrary-data estimate.
+
+### What the control construction must retain next
+
+All intermediate seams in (200) use the same actual state and its
+remaining J. Taking successive heat forecasts and choosing a fresh
+allowance at each seam is not justified. A continuation certificate
+requires control of the complete right-hand side of (196), together
+with the energy-cube derivative, after geometry and parent modes change.
+It must handle concentration and arbitrary simultaneous modes, not just
+harmonic dilation of a fixed profile. Optimizing a constant for the
+initial shape does not bound its later reachable shapes.
+
+With external body force f, the derivative acquires
+D V_nu(w)[Pi P f]+6gamma E^2<u,f>/nu^4. Incompressibility alone
+does not erase these terms. Neither the local repair nor the polynomial
+design argument excludes the imported forced singular construction.
+
+Run `python3 -O labs/receiver_source_square.py`. The checker independently
+reconstructs the full projected source, verifies the square identity,
+checks all four capacity derivative slots by polynomial polarization,
+and retains a nonzero mean in the actual evolution identity. It checks
+both matched phases, the strict failure ratio, the exact discriminant,
+and direct full-source viscosity/frequency scaling. The all-amplitude
+conclusion follows analytically from that discriminant, not sampling.
+There are no new Lean declarations or axioms in this checkpoint.

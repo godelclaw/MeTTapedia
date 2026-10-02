@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [source-square receiver test](labs/README.md#nonnegative-source-storage-and-an-energy-cube-repair)
+completes the signed heat correction to a globally nonnegative storage.
+The storage still fails its proposed universal payment: exact hidden-phase
+data give positive nonlinear production exceeding the half-dissipation
+allowance. Adding a fixed multiple of the full kinetic energy cubed repairs
+both tested phases at every amplitude and integer harmonic dilation,
+giving a short payment interval of each actual smooth NS solution.
+This uses the leading-term design principle from polynomial fluid
+Lyapunov methods. Controlling the reserve after the geometry changes
+remains open. The heat identities and interval arguments are analytic,
+with exact rational Fourier checks, not new Lean declarations.
+
 The [receiver heat-correction test](labs/README.md#heat-lifetime-corrections-and-the-next-receiver-generation)
 now gives an explicit signed correction and a quartic initial allowance
 for generated stretching. The allowance pays the first return on a short
@@ -90,6 +102,7 @@ formal proofs.
 | [Constantin and Iyer, *A stochastic Lagrangian representation of the 3-dimensional incompressible Navier-Stokes equations*](https://arxiv.org/abs/math/0511067) | Stochastic trajectories and covector reconstruction connect viscous dynamics to physical velocity. The existing `CovectorFluidBridge` treats its projected equation under explicit hypotheses. | The complete probabilistic construction and arbitrary-data stretching payment are not consequences of the reconstruction algebra alone. |
 | [Morosi and Pizzocchero, *On approximate solutions of the incompressible Euler and Navier-Stokes equations*](https://arxiv.org/abs/1104.3832) | A posteriori residual and norm estimates connect approximations to actual solutions. The transfer-reversal examples use this validation principle with an explicitly derived nonlinear L2 comparison. | Their Sobolev control inequalities include an existence conclusion under their hypotheses. The local L2 transfer certificate instead uses the separately established global stability neighborhood; it does not establish arbitrary-data regularity or import their norm constants. |
 | [Bardos, Lopes Filho, Nussenzveig Lopes, Niu and Titi, *Stability of Two-dimensional Viscous Incompressible Flows Under Three-dimensional Perturbations and Inviscid Symmetry Breaking*](https://arxiv.org/abs/1201.2742) | Relative kinetic energy compares a full flow with a known symmetry-preserving reference. The [reference-stretching reserve](labs/README.md#reference-stretching-paid-without-perturbative-smallness) couples that energy to a negative-Sobolev observation of generated feedback. | Their cylinder boundary hypotheses and constants are not imported unchanged. The new smooth comparison is derived on the stated torus/whole-space domains and leaves pure perturbation self-stretching unpaid. |
+| [Goulart and Chernyshenko, *Global Stability Analysis of Fluid Flows using Sum-of-Squares*](https://arxiv.org/abs/1101.1043) | Use an inviscid invariant for the highest polynomial degree, and signed lower-degree corrections. The [energy-cube repair](labs/README.md#nonnegative-source-storage-and-an-energy-cube-repair) applies this design to receiver storage and certifies a scalar quadratic sign by its exact discriminant. | Their result concerns stability relative to a reference flow. Here only the stated initial-data families and short actual intervals are paid; arbitrary-history stretching control and unresolved-mode estimates remain open. |
 
 The operative interface is a compatible history, not just a named flow
 pattern. For the new cellular family, the observed parent coefficient
