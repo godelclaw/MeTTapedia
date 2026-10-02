@@ -25584,3 +25584,232 @@ the integrated cross-work identity, independent parent-source expansions,
 the rational parameter family, and the enstrophy-growing background.
 The physical interval arguments remain analytic. No Lean declarations
 or axioms change.
+
+## A joint reserve with the evolving memory retained
+
+`covariance_joint_payment.py` tests the positive quadratic completion of
+(324). Keeping the actual mean-frame gradient gives a constructive result:
+a nonnegative reserve pays a collection of weighted derivative costs along
+every available smooth periodic NS history. The weights retain the largest
+frame size reached so far. Their loss of coercivity as that size grows
+remains an explicit obstruction to arbitrary-data continuation.
+
+All PDE and norm estimates here are analytic. The checker verifies the
+finite Fourier identities, independent moment derivatives, exact shear
+formulas and scalar absorption squares. It does not certify the general
+functional-analysis estimates or turn this into a Lean regularity theorem.
+
+### Pressure as a compensated stress
+
+Retain all the definitions and actual evolution equations in (322)--(324).
+For fixed real theta and beta>0 put
+
+```text
+q=C-theta u,
+R=1/2 ||q||_2^2+beta/2 ||u||_2^2,
+T=B Sigma+chi B^T+2nu K.                                  (331)
+```
+
+Both u and q are divergence-free. Since
+(u.grad)grad chi=grad(u.grad chi)-B^T grad chi and
+B^T grad chi=div(chi B^T), incompressibility gives the exact full equation
+and quadratic balance
+
+```text
+q_t+P[(u.grad)q]=nu Delta q+nu P div T,
+R'+nu ||grad q||_2^2+beta nu ||B||_2^2
+                                  =-nu integral grad q:T. (332)
+```
+
+The formula includes all derivatives of the covariance and the mean frame.
+In particular the pressure potential occurs without derivatives in its
+integrated work. This does not assert that chi itself has a bounded
+L-infinity norm in terms of Sigma.
+
+There is a further classical cancellation. Write
+
+```text
+Q=sum_ij (partial_j u_i)(partial_i q_j),
+chi=-(-Delta)^(-1) div div Sigma,
+I_chi=integral chi Q
+     =-integral Sigma:Hess[(-Delta)^(-1)Q].                (333)
+```
+
+For each i, grad u_i is curl-free and partial_i q is divergence-free.
+Also Q has spatial mean zero. The div--curl estimate bounds its Hardy
+norm by a fixed constant times ||B||_2 ||grad q||_2. The zero-mode-removed
+periodic Hessian inverse Laplacian maps this Hardy space to L1. Therefore,
+for a finite constant c_*>=1 fixed by the dimension and torus,
+
+```text
+|integral grad q:(B Sigma+chi B^T)|
+           <=c_* ||Sigma||_(op,infinity) ||B||_2 ||grad q||_2. (334)
+```
+
+This uses Coifman--Lions--Meyer--Semmes,
+[*Compensated compactness and Hardy spaces*](https://benahou.github.io/pdfs/CLMS_Compensated%20compactness%20and%20Hardy%20spaces.pdf),
+Theorem II.1(2), its local version in Remark II.1 and the proof of Lemma
+II.1. On the fixed torus, apply the local maximal-function proof on small
+coordinate balls; larger scales are controlled by the L1 product estimate.
+For the elliptic operator, its L2 bound controls an atom near its support,
+and the atom's cancellation plus the kernel derivative estimate controls
+its far field. The smooth periodic remainder is bounded. These give a
+constant independent of the fields, time or Fourier support. This is an
+analytic application of the classical estimate, not a new div--curl theorem
+or a formal-library import. No numerical value of c_* is claimed.
+
+### Mean-frame diffusion pays the gradient product
+
+Let A bound the pointwise Frobenius norm of F on a smooth interval, and set
+X=||grad q||_2, Y=||B||_2 and Z=||Delta F||_2. An elementary periodic estimate is
+
+```text
+||K||_2 <= ||grad F||_4^2 <=3 A Z.                         (335)
+```
+
+For completeness, integrate div(sum_i F_i grad F_i |grad F|^2), treating
+F as a vector of nine entries. The resulting two terms bound
+||grad F||_4^4 by
+A (||Delta F||_2+2||Hess F||_2) ||grad F||_4^2.
+Periodic integration by parts gives ||Hess F||_2=||Delta F||_2; division
+when the gradient norm is positive proves (335). The zero case is immediate.
+No mean-zero hypothesis on F is needed.
+
+For E_F=1/2||grad F||_2^2, its ACTUAL equation gives
+
+```text
+E_F'=-nu Z^2+integral Delta F:(u.grad F)
+                   -integral Delta F:(B F)
+     <=-nu Z^2+4 A Y Z.                                  (336)
+```
+
+In the transport integral, integrate by parts: incompressibility cancels
+the derivative on |grad F|^2, leaving at most Y||grad F||_4^2. The second
+integral is at most A Y Z. Thus pressure and frame derivatives have not
+introduced an unaccounted second derivative of u.
+
+For fixed bounds ||Sigma||_(op,infinity)<=S and |F|<=A, set
+
+```text
+a=c_* S, gamma=72 A^2, beta=a^2+1152 A^4+1,
+E=R+gamma nu^2 E_F.
+```
+
+Here A>0, as in the original-frame setting. Equations (332)--(336) imply
+
+```text
+E'+nu/2 X^2+nu Y^2+gamma nu^3/4 Z^2<=0.                  (337)
+```
+
+Indeed its upper bound, in variables x=sqrt(nu)X, y=sqrt(nu)Y,
+z=nu^(3/2)Z, is
+-x^2-beta y^2-gamma z^2+a xy+6A xz+4gamma A yz.
+Subtracting it from the claimed negative bound leaves the three squares
+(x/2-a y)^2+(x/2-6A z)^2+gamma(z/2-4A y)^2.
+The estimate is conditional on the fixed bounds S,A; choosing them from
+a future supremum would not supply an original-data allowance.
+
+### A reserve valid along every smooth original-frame history
+
+There is an exact way to keep that dependence as an observed history
+variable. Start the actual moment fields at F(0)=M(0)=I and define
+
+```text
+L(t)=max(1, sup_(0<=s<=t) ||M(s)||_(op,infinity)),
+b=c_*^2+10368.
+```
+
+On every compact smooth prefix L is finite, nondecreasing and absolutely
+continuous. The physical inequalities 0<=Sigma<=M and FF^T<=M give S=L
+and A^2=3L. Substitute gamma=216L and beta=b L^2+1 in (337), divide by L^2,
+and retain the derivatives of these weights. The resulting reserve is
+
+```text
+Rbar=(||q||_2^2+||u||_2^2)/(2L^2)
+                     +b/2 ||u||_2^2+108nu^2/L ||grad F||_2^2,
+
+Rbar'+nu/(2L^2)||grad q||_2^2+nu/L^2||B||_2^2
+                          +54nu^3/L||Delta F||_2^2<=0.   (338)
+```
+
+The additional derivative is exactly
+-L'(||q||_2^2+||u||_2^2)/L^3-108nu^2 L'||grad F||_2^2/L^2,
+which is nonpositive. This is why adaptation is legitimate here; it is not
+silently treated as a constant weight. The differential inequality holds
+almost everywhere and integrates over the full smooth prefix.
+
+For example theta=1 gives q=nu P div Sigma, initially zero, and
+
+```text
+Rbar(0)=(1+b)/2 ||u0||_2^2.                               (339)
+```
+
+Thus (338) pays the displayed weighted observations from a finite original
+reserve on EVERY available smooth prefix, with no future supremum inserted
+in (339). Compatible concatenation retains F,M and L; at a join the running
+maximum is continued, not reset to one.
+
+The limitation is the denominator. As L increases, the observations being
+paid weaken. This controls neither L itself nor ordinary vorticity. The
+existing nonpositive-production result for omega^T M^(-1)omega still needs
+a finite original-data bound on its conversion, for example the periodic
+integral of sqrt(||M||_(op,infinity)). The core budget (284) is also still
+open. A bounded normalized reserve is not arbitrary-data regularity.
+
+### Exact physical calibration: a decaying shear with inherited memory
+
+A solvable incoming state shows why a memory-dependent weight is natural.
+Take u(t)=a exp(-nu t)sin y e1, F(0)=I and
+M(0)=I+lambda e2 tensor e2, lambda>=0. This is actual unforced NS with
+zero pressure and zero vortex stretching. Its evolved moments satisfy
+
+```text
+F_12=a t exp(-nu t)cos y,
+Sigma_22=lambda, Sigma_12=lambda F_12,
+C=(1-lambda nu t)u,  chi=0, P div K=0.                   (340)
+```
+
+The other covariance component is retained in the checker: if
+h_t-nu h_yy=2(partial_y u_1)F_12 and h(0)=0, then
+M_11=1+(1+lambda)h. Moreover h-F_12^2 has nonnegative source
+2nu(partial_y F_12)^2, which verifies covariance positivity.
+
+For the unnormalized R in (331), put s=nu t and z=1-theta-lambda s. Then
+
+```text
+R=1/2 [z^2+beta] exp(-2s)||u(0)||_2^2,
+dR/ds=-[(z+lambda/2)^2+beta-lambda^2/4]
+                                      exp(-2s)||u(0)||_2^2. (341)
+```
+
+Hence beta>=lambda^2/4 pays the entire shear history for every theta.
+When lambda>0 and theta<=1+lambda/2 this threshold is also necessary.
+For any fixed theta,beta, sufficiently large lambda gives a strict growth
+interval. That defeats coefficients uniform over these inherited memories,
+not a coefficient selected from the full original datum.
+
+The inherited state is physically approachable without resetting frames:
+use original data a sin y e1+2nu sqrt(lambda)N cos(Nz)e2 with F=M=I and
+apply (313). Its endpoint tends to this shear and covariance. This original
+flow is triangular: its second component solves heat, and its first solves
+linear advection--diffusion by the second. The release and positive-time
+stability transfer strict growth intervals from (341) to sufficiently large
+finite N. The exact all-time formula (340) describes the limiting incoming
+shear; it is not asserted verbatim for finite N.
+
+For this shear M e3=e3 and omega is parallel to e3, so
+omega^T M^(-1)omega=|omega|^2 even when lambda is large. Thus the
+full-frame maximum can greatly overestimate the conversion actually needed
+by vorticity. This distinguishes memory growth in an observation from
+physical stretching.
+The favorable normalization in (338) is consistent with such harmless
+transients. Controlling the deformation that changes that normalization,
+while retaining the actual pressure and parent history, is the next task.
+
+Run `python3 -O labs/covariance_joint_payment.py`. It checks the stress PDE,
+the integrated and adjoint pressure identities, mean-frame gradient balance,
+three released parents, the growing-background fixture, both ordered
+histories, exact shear moments, and all coefficient/weight derivative
+identities. The equal integrated rates of the ordered pair are consistent
+with its coordinate symmetry; their pointwise frame observations still
+need not agree. No Lean declarations or axioms change.

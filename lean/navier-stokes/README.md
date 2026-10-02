@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint covariance reserve](labs/README.md#a-joint-reserve-with-the-evolving-memory-retained)
+uses incompressibility and the classical div--curl estimate to retain
+pressure without losing derivatives. Mean-frame diffusion pays its gradient
+product. Normalizing by the largest frame size reached so far gives a
+nonnegative original-data reserve for weighted observations along every
+smooth periodic history. The weights weaken as that frame size grows;
+controlling this conversion remains open. These are analytic estimates,
+supported by exact fixtures, with no new Lean regularity theorem.
+
 The [evolving covariance calculation](labs/README.md#evolving-covariance-compatibility-and-its-pressure-cost)
 derives the actual velocity–covariance discrepancy equation and its signed
 work identity. Covariance gives a favorable anisotropic diffusion term;
