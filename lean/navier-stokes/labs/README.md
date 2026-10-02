@@ -21169,3 +21169,201 @@ all source outputs, viscosity and the separate full enstrophy equation.
 Symbolic checks cover the correction, external kinetic work and seams.
 No finite Fourier truncation, simulated trajectory or new regularity
 claim is used.
+
+## Heat-lifetime corrections and the next receiver generation
+
+`receiver_heat_corrector.py` tests a signed correction for the remaining
+receiver stretching in (171). Integrating the current interactions over
+their viscous lifetimes gives an exact heat cancellation. Its first
+nonlinear generation has an explicit quartic initial stock, and this
+stock pays the first return on a short interval of an actual flow.
+The same correction fails as a universal history certificate, even
+where it is strictly positive. All pressure-corrected outputs and the
+evolving mean are retained. The PDE arguments below are analytic.
+
+### A signed heat forecast and its actual nonlinear defect
+
+Use normalized measure on the 2pi torus, nu>0, and an available smooth
+unforced solution u. Set M=average_z u, w=u-M, Pi=I-average_z,
+N(u)=-P[(u.grad)u], and D=||Delta u||2^2. Let S_s=exp(nu s Delta).
+For any field v write E(v)=||v||2^2 and Z(v)=||grad v||2^2.
+Define the signed cubic functional
+
+```text
+H_nu(w)=2 integral_0^infinity g(S_s w) ds,
+g(v)=integral curl(v)^T grad(v) curl(v).                  (189)
+```
+
+This is a heat forecast from the CURRENT field, not the original
+nonlinear history. Every w has zero vertical mean. Exponential heat
+decay and Sobolev multiplication make (189) a continuous cubic
+functional on sufficiently regular fields. For example, the trilinear
+observation is bounded by the two curl L2 norms and the middle gradient
+supremum norm; on a high Sobolev space each heated factor decays
+exponentially. This also justifies differentiation on compact smooth
+prefixes. The infinite auxiliary heat interval does not assume global
+existence of the nonlinear target.
+
+The semigroup property gives
+
+```text
+D H_nu(w)[nu Delta w]=-2g(w),
+d_t H_nu(w)+2g(w)=D H_nu(w)[Pi N(u)].                    (190)
+```
+
+Here D H denotes the Frechet derivative, distinct from the dissipation D.
+The actual fluctuation equation is w_t=nu Delta w+Pi N(u); replacing its
+source by an autonomous N(w) would omit the evolving mean and its pressure.
+In Fourier variables each ordered triad k+ell+m=0 receives the exact
+weight 2/[nu(|k|^2+|ell|^2+|m|^2)]. Phases and all three differentiated
+slots remain. No absolute-value estimate precedes this identity.
+
+### An empty forecast does not pay its own generation
+
+Let r be the four-cosine seed of (173), and N0=N(r). Its input modes
+have vertical frequencies +/-1. Hence g(S_s r)=0 for EVERY s>=0:
+three such frequencies cannot add to zero. Nevertheless exact arithmetic
+gives
+
+```text
+C0=D H_1(r)[Pi N0]=46234957/600600000>0,
+D H_1(r)[average_z N0]=-4331/75000,
+||Delta r||2^2=631/20.                                  (191)
+```
+
+The second line records a real generated mean, not a term discarded
+from the actual solution. Its contribution to the FULL-velocity heat
+forecast differs from the fluctuation forecast's contribution.
+
+For u0=A r with A=16nu, initially H_nu(w0)=g(w0)=0, while
+the right-hand side of (190) is A^4 C0/nu. Its ratio to (nu/2)D is
+1479518624/1184308125>1. Thus the proposed payment
+
+```text
+H_nu(w(t))+2 integral_0^t g(w)
+  <= H_nu(w0)+(nu/2)integral_0^t D
+```
+
+fails for every sufficiently small positive time of the actual smooth
+solution. Local existence supplies that solution, and continuity keeps
+the strictly positive initial defect positive on a smaller interval.
+The same argument defeats any completion C(w)>=H_nu(w) with C(w0)=0.
+This includes H_nu(w)_+ and 2 integral |g(S_s w)| ds: the complete initial
+heat forecast vanishes, not merely its signed integral. This does not
+refute an additional allowance from other resources of the original datum.
+
+### A first-generation initial stock and its complete next defect
+
+Define the self-generated quartic source and its heat forecast by
+
+```text
+Q_nu(w)=D H_nu(w)[Pi N(w)],
+K_nu(w)=integral_0^infinity Q_nu(S_s w) ds,
+R_nu(w)=H_nu(w)+K_nu(w).                                (192)
+```
+
+The smoothness and convergence arguments are as above with sufficiently
+many derivatives. K is quartic and is not asserted nonnegative on all
+fields. Its Fourier formula retains two distinct denominators: the
+inner H denominator uses the generated wave number p+q, whereas the
+outer heat integration uses |p|^2+|q|^2+|k|^2+|ell|^2 for the four
+ORIGINAL parents. Confusing these heat rates would change the correction.
+
+Let L=Pi[N(u)-N(w)]. It is the complete coupling to M (including its
+pressure projection), since Pi N(M)=0. Along the actual flow,
+
+```text
+D K_nu(w)[nu Delta w]=-Q_nu(w),
+d_t R_nu(w(t))+2g(w)
+  =D H_nu(w)[L]+D K_nu(w)[Pi N(u)].                     (193)
+```
+
+All generated mean motion remains in this identity. It is not reset
+when a new receiver mode appears. At the original seed,
+
+```text
+K_1(r)=9212971/2402400000>0,
+D K_1(r)[Pi N0]=0.
+```
+
+Consequently, for each A>0 and nu>0, the actual flow from A r has
+R_nu(w0)=A^4 K_1(r)/nu^2>0 and zero initial right-hand side in (193).
+Continuity gives an epsilon>0 on which R_nu(w(t))>0 and
+
+```text
+d_t R_nu(w(t))+2g(w(t)) <= (nu/2)D(t),
+R_nu(w(t))+2 integral_s^t g(w)
+  <= R_nu(w(s))+(nu/2)integral_s^t D,   0<=s<=t<=epsilon.
+```
+
+This is a funded FIRST return in the full three-dimensional equation.
+Its stretching is genuinely generated: g(w0)=0 and
+g(w)'(0)=A^4*6252773/5460000>0. No perturbative smallness of A is required,
+but no interval length uniform in A or a prescribed horizon is supplied.
+The same state and remaining stock are retained at every seam inside this
+interval. This local result alone does not supply arbitrary-history (171).
+
+### Equal recorded resources, opposite next renewal
+
+A sharper test retains the actual cubic observation too. Let v_k be
+the pair of modes +/-k in Pi N0, and set
+
+```text
+y=v_(2,-1,2)+(559/2376)v_(3,-2,2)-(3311/4335)v_(3,-1,2),
+w_+=r+y/10, w_-=r-y/10.                                (194)
+```
+
+These are two distinct smooth real divergence-free initial data, both
+with zero vertical mean. Selecting their input modes does not truncate
+their subsequent nonlinear sources. Exact arithmetic gives
+
+```text
+g(w_+)=g(w_-)=H_1(w_+)=H_1(w_-)=0,
+K_1(w_+)=K_1(w_-)=kappa>0,
+E(w_+)=E(w_-), Z(w_+)=Z(w_-), D(w_+)=D(w_-),
+D K_1(w_-)[Pi N(w_-)]=p>0,
+D K_1(w_+)[Pi N(w_+)]=-p.
+```
+
+Here
+
+```text
+kappa=8378830290697834010855134831649203
+       /2185042298515980655752000000000000000,
+p=460211189638875086695980591914234514986595679
+   /339619162444930160775671256243535860000000000000000,
+D(w_-)=28714885428973207/909543690000000.
+```
+
+Thus neither the current stretching nor these two successive forecasts
+and the quadratic resources determine the next signed reserve rate.
+This does not preclude a conservative bound covering BOTH signs.
+
+For the actual datum u0=A w_- with A=512nu, R_nu(w0)=A^4 kappa/nu^2>0.
+Initially the mean is zero, so the right-hand side of (193) is A^5 p/nu^2.
+Its ratio to (nu/2)D(u0) is 2*512^3*p/D(w_-)>11. Hence the universal
+differential payment fails even inside the STRICTLY POSITIVE region of
+R. Continuity again turns this into an actual short-time interval failure.
+Clipping R to its positive part cannot repair this example. No perpetual
+cycle, blowup or failure of a different full-datum allowance is asserted.
+
+### Verification and the remaining obligation
+
+Run `python3 -O labs/receiver_heat_corrector.py`. The checker uses independent
+vorticity and Fourier-triad evaluations, exact heat cancellations, canonical
+pressure and full nonlinear outputs. It tests both signs of r+delta N0,
+positive viscosities and harmonic dilations, the quartic completion, and
+a state with nonzero mean where both defects in (193) are retained.
+It prints exact rational certificates for (191), (192), and (194).
+
+The exact computations certify finite algebra. The semigroup, local PDE,
+continuity and interval conclusions are analytic, not new Lean theorems.
+No Lean declarations or axioms change. The fixed-parent theorem remains
+valid; this test addresses the receiver term it leaves unpaid.
+
+The next physical obligation is to bound the COMPLETE right-hand side of
+(193), with nonnegative remaining reserve, using original data and viscosity.
+Simply taking another heat forecast creates another nonlinear source and
+does not establish convergence, positivity or finite total payment of such
+a hierarchy. These are explicit open obligations, not consequences of
+the local first-generation calculation.

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [receiver heat-correction test](labs/README.md#heat-lifetime-corrections-and-the-next-receiver-generation)
+now gives an explicit signed correction and a quartic initial allowance
+for generated stretching. The allowance pays the first return on a short
+interval of the actual three-dimensional seed flow. It does not give a
+universal history certificate: two smooth data with equal energy,
+enstrophy, current stretching, signed heat forecast and quartic stock
+have opposite next renewal costs. A scaled member violates the proposed
+differential payment while its reserve is strictly positive. The full
+evolving-mean defect is retained. These conclusions are analytic with
+exact Fourier checks; no new Lean declarations are asserted.
+
 The [fixed-parent feedback payment](labs/README.md#paying-the-weighted-feedback-into-a-fixed-smooth-parent)
 now covers repeated nonlinear replenishment of an observed parent in an
 arbitrary smooth unforced history. For a fixed smooth solenoidal test field,
