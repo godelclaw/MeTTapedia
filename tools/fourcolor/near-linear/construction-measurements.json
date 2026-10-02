@@ -1,0 +1,117 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ExceptionalConstruction",
+      "source_sha256": "e70da946ff82acc95fe60bf2545c2128d1c59d83b8851c8ada0c14e9c5b83c3c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 27.528,
+      "olean_bytes": 328672,
+      "olean_sha256": "522813ea7381d131667c6718a485113b16981b7eb2af1d64f7ea8dbace8c26c8"
+    },
+    {
+      "module": "MettapediaFourColor.KempeRepairContract",
+      "source_sha256": "1ed05a84ed105733b0ad818d05043dd6ef9595b5c102c40634186d81468c22b7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.849,
+      "olean_bytes": 129632,
+      "olean_sha256": "2ce51d1893041880d8fd23dbd813891274f7dfb9a261ec992ed644629342a574"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalConstructionRepair",
+      "source_sha256": "e9f488fe675567f5cb01409390b6a8f030e7020302f39e282329bf06cb6e4a9b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.269,
+      "olean_bytes": 96992,
+      "olean_sha256": "89bb48edaeb3c59209d3a707cc79541102a42363470b9636e83bc20f803bf235"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalConstructionAudit",
+      "source_sha256": "20c8f6232e8db4a3af9631b09121a0aaadc94b6817b1b3c2a5651b4f9d35af8e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.172,
+      "olean_bytes": 2608,
+      "olean_sha256": "438c3fa46070a685a5e20cc15a3438cd642f47e51728f4cdba352640334e99c0"
+    }
+  ],
+  "recorded_at": "2026-10-02T06:02:34.760332+00:00",
+  "status": "Kernel replay, dependency audit, flat-coverage and complete-classical regressions, and full main lane build passed.",
+  "replay_command": "lake build kernelExceptionalConstruction",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 17,
+    "declarations_in_dependency_closure": 18124,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false
+  },
+  "mathematical_scope": {
+    "Y_operations": 9,
+    "H_operations": 8,
+    "darts": 86,
+    "source_vertices": 19,
+    "ordered_boundary_ports": 11,
+    "source_edges": 43,
+    "all_dart_permutations_preserved": true,
+    "cyclic_stars_preserved": true,
+    "ordered_coloring_traces_preserved": true,
+    "compiled_query_degrees": [
+      5,
+      5,
+      8,
+      7,
+      5,
+      5,
+      5,
+      5
+    ],
+    "query_geometry": "Specified branching dart walk rooted at one edge; arbitrary degree-list agreement is insufficient.",
+    "source_embeddability_proved": true,
+    "singleton_contract_endpoints_zero_based": [
+      13,
+      14
+    ],
+    "contract_reducibility_proved": true,
+    "reference_minimal_exclusion": "ExceptionalConstructionRepair.not_fitted",
+    "open": [
+      "actual query fit or preembedding from aligned exceptional occurrences",
+      "reference-minimal versus graph-backed-minimal geometric bridge or direct strict contraction in the latter regime",
+      "zero-charge classification",
+      "global coverage and simultaneous repair scheduling"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "finite_repair": "exceptional-repair-measurements.json",
+  "provenance": {
+    "construction_compiler": "Gonthier/Werner, formalized by Chris Emery",
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "source": "D1774.conf",
+    "source_attribution": "Yuta Inoue, MIT; retained catalogue notice"
+  },
+  "base_revision": "fd4c72b02d02cd727f18dd2860ebdde39f22abdf",
+  "regression": {
+    "classical_command": "lake build kernelFlatCoverage kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}

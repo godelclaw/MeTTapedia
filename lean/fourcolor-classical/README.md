@@ -1092,3 +1092,53 @@ the generic reconstruction consumer, excluding complete Four Colour
 endpoints and original rank certificates. See the
 [account](../../tools/fourcolor/near-linear/README.md#eleven-port-completion-and-exact-reconstruction)
 and [measurements](../../tools/fourcolor/near-linear/boundary-measurements.json).
+
+## Exceptional boundary: complete finite repair
+
+`ExceptionalRepairCertificate.repair` proves that every proper zero-sum
+eleven-port trace admits compatible repair to an actual D1774 colouring.
+The certificate checks 7,381 trace representatives and 93,665 unsigned
+exterior-skeleton cases. Terminal witnesses satisfy all forty-three source
+edges. Every other step retains whole exterior chords and strictly decreases
+the repair rank. The reusable soundness theorem quantifies over every
+Kempe-closed exterior predicate.
+
+`GraphTraceAlignment.align` aligns the entire boundary by one colour
+translation. `ExceptionalRepairReconstruction.reconstruct` then invokes the
+proved actual graph gluing theorem. Actual exterior Kempe closure and an
+initial proper exterior trace remain explicit hypotheses; coincident boundary
+images must still receive equal colours.
+
+This is a complete finite repair check, not a case-free reduction family or
+a new coverage theorem. The full finite replay took 5,964 seconds. The
+twelve-root audit found only standard axioms and no complete Four Colour or
+original catalogue rank-certificate dependencies. Counts remain 633/629.
+
+Replay with `lake build kernelExceptionalRepair`. With its finite artifacts
+already prepared, `lake build kernelExceptionalRepairConsumer` replays the
+alignment, actual reconstruction and dependency audit. See the
+[account](../../tools/fourcolor/near-linear/README.md#complete-exceptional-boundary-repair)
+and [measurements](../../tools/fourcolor/near-linear/exceptional-repair-measurements.json).
+
+## Exceptional source: compositional construction and contraction
+
+`ExceptionalConstruction` identifies D1774 with a program of nine Y and eight
+H operations, preserving all dart permutations, cyclic stars and ordered
+boundary traces. The established configuration compiler proves its source
+embeddability and produces an exactly checked local degree query.
+
+`KempeRepairContract.reducible_of_repair` converts all-proper-trace repair into
+the repair contract of any valid contraction. The source has a checked
+one-edge contract. `ExceptionalConstructionRepair.not_fitted` excludes its
+compiled query in a reference minimal counterexample through actual contract
+colouring, exterior closure and reconstruction.
+
+Deriving that query fit from the retained exceptional overlap is still open.
+The graph-backed and reference minimality hypotheses must be connected
+explicitly. No additional coverage entry or certificate dependency is removed.
+
+Replay with `lake build kernelExceptionalConstruction` using the prepared
+repair artifacts. Its seventeen-root audit allows only standard axioms and
+excludes complete Four Colour endpoints and original catalogue ranks. See the
+[account](../../tools/fourcolor/near-linear/README.md#constructed-source-local-query-and-valid-contraction)
+and [measurements](../../tools/fourcolor/near-linear/construction-measurements.json).

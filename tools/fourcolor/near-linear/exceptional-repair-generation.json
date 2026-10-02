@@ -1,0 +1,36 @@
+{
+  "evidence": "Untrusted generated certificate; requires the separate Lean check.",
+  "source_sha256": "694db4afd81219890d3b84c453f2c2dbb55e1a8b5b60ac57577470e50013b196",
+  "states": 7381,
+  "terminal_states": 1383,
+  "rank_stages": [
+    1383,
+    2157,
+    2597,
+    2986,
+    3367,
+    3840,
+    4501,
+    5347,
+    6226,
+    6944,
+    7296,
+    7381
+  ],
+  "maximum_answers": 12,
+  "record_width": 24,
+  "anchor_counts": {
+    "0": 1383,
+    "1": 1553,
+    "2": 2391,
+    "3": 333,
+    "8": 993,
+    "10": 728
+  },
+  "joint_classifications": 68706,
+  "checked_unsigned_skeletons": 93665,
+  "edges": 43,
+  "core_colorings": 768,
+  "output_sha256": "2304feb7f69cce7c96d7be9de6c8fb2aa091d7f41d295ecb3cac7f480d1dda50",
+  "seconds": 22.55
+}

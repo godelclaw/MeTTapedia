@@ -1,5 +1,5 @@
 {
-  "status": "Conditional coverage assembly, actual induced exceptional core, eleven-port completion and compatible-colouring reconstruction proved; repair existence, strict reduction and classification bridges open.",
+  "status": "Actual exceptional core, completion and conditional reconstruction, complete finite D-repair, exact source construction and reference-query exclusion proved. Actual overlap-to-query fit and the ambient minimality bridge remain open, as do zero-charge classification and coverage.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -143,6 +143,50 @@
     {
       "declaration": "FourColor.ExceptionalBoundaryReconstruction.extension_iff",
       "meaning": "For any colour type and fixed proper exterior assignment, an ambient extension exists exactly when a source completion colouring matches its eleven joint observations."
+    },
+    {
+      "declaration": "FourColor.KempeIndexedCertificate.sound",
+      "meaning": "A rank on witness records yields Kempe coclosure when each answer covers the same exterior chromogram and strictly decreases rank."
+    },
+    {
+      "declaration": "FourColor.KempeMaskCertificate.check_sound",
+      "meaning": "Supplied complete-chord masks cover all signed exteriors matching the boundary trace and produce the checked lower-rank answers."
+    },
+    {
+      "declaration": "FourColor.ExceptionalRepairCertificate.repair",
+      "meaning": "All proper eleven-port zero-sum traces have compatible repair to genuine D1774 source colourings; the finite certificate has 7381 records and 93665 unsigned-skeleton cases."
+    },
+    {
+      "declaration": "FourColor.GraphTraceAlignment.align",
+      "meaning": "Equality of complete boundary traces permits one global colour translation aligning every boundary observation."
+    },
+    {
+      "declaration": "FourColor.ExceptionalRepairReconstruction.reconstruct",
+      "meaning": "The checked finite repair and actual completion geometry reconstruct an ambient colouring, conditional on actual exterior Kempe closure and a proper initial exterior trace."
+    },
+    {
+      "declaration": "FourColor.ExceptionalConstruction.numbered_eq",
+      "meaning": "Nine Y and eight H steps produce the complete eighty-six-dart source map; all three permutations are retained."
+    },
+    {
+      "declaration": "FourColor.ExceptionalConstruction.ringTrace_iff",
+      "meaning": "The constructed hypermap and literal nineteen-vertex source have exactly the same actual colouring witnesses at the ordered ring trace."
+    },
+    {
+      "declaration": "FourColor.ExceptionalConstruction.compiled_query",
+      "meaning": "The reference compiler produces the exact eight-observation branching local degree query."
+    },
+    {
+      "declaration": "FourColor.ExceptionalConstructionRepair.valid_contract",
+      "meaning": "The source edge joining zero-based vertices 13 and 14 is a valid nonempty singleton contract."
+    },
+    {
+      "declaration": "FourColor.ExceptionalConstructionRepair.singleton_reducible",
+      "meaning": "The checked joint-chord repair is transported to the exact constructed source and proves reducibility of the singleton contract."
+    },
+    {
+      "declaration": "FourColor.ExceptionalConstructionRepair.not_fitted",
+      "meaning": "A matching compiled query is excluded in a reference minimal counterexample using the established preembedding, contraction, exterior closure and reconstruction chain."
     }
   ],
   "open": [
@@ -182,7 +226,7 @@
       "id": "exception_joint_close",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
       "source": "Figure 13 and Lemma 8.4",
-      "obligation": "The actual induced core now has a complete eleven-port graph map, full cyclic stars, incident-edge coverage and reconstruction from a compatible colouring. Prove existence or justified exterior Kempe repair of a compatible source colouring, respecting possible ring identifications, and construct valid strict reduction. The close field for certified reductions remains open."
+      "obligation": "The actual completion and complete finite D-repair are proved. Establish the actual exterior Kempe closure and initial proper exterior trace, or consume the reference embedding interface through an exact preembedding and valid contract colouring. Preserve boundary identifications. Connect to strict reduction in the same ambient minimality regime."
     },
     {
       "id": "residuals",
@@ -194,9 +238,9 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Compatible D1774 repair for the actual completed boundary",
-    "test": "Extract the exact source boundary-colouring support and compare its repair contract with the existing Kempe machinery. Retain equal-image constraints and actual shared exterior Kempe components. Test the smallest informative boundary partitions and identify the geometry needed for the repair consumer.",
-    "acceptance": "A kernel-checked repair or exact obstruction for a stated domain of actual exterior colourings, consumed by ExceptionalBoundaryReconstruction.reconstruct. Successful repair must yield genuine witnesses and preserve all forced boundary equalities; a finite support inventory alone is not sufficient.",
+    "target": "Actual exceptional overlap to compiled-query fit",
+    "test": "The independent source walk probe locates numbered dart 84 (source edge 16 to 18) and visits all eight core vertices in order 16,18,11,14,17,15,12,13. Certify these source readings, then transport each query step and its arity through the actual dual rotation.",
+    "acceptance": "An actual query-fit or preembedding theorem from the two aligned exceptional occurrences, consumed by the existing repair interface; no fit or exterior-closure hypothesis merely repackaged as a new field. Keep the reference and graph-backed minimality regimes distinct until their bridge is proved.",
     "primary_lemmas": [
       "3.1",
       "3.2",
@@ -211,7 +255,7 @@
   },
   "limits": [
     "No inhabitant of all local supply fields is claimed.",
-    "The source getX pattern, joint induced core, full cyclic core stars and joint boundary reconstruction are proved. Supply from flatness and existence of compatible repair remain open.",
+    "The source getX pattern, induced core, full cyclic core stars, boundary reconstruction and complete finite D-repair are proved. Actual exterior closure, initial colouring, strict reduction and supply from flatness remain open.",
     "No scheduling, executable global recolouring or near-linear runtime is proved.",
     "The existing joint diamond profile certificate remains in the reduction consumer."
   ]

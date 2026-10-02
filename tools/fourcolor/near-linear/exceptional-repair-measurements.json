@@ -1,0 +1,139 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.KempeIndexedCertificate",
+      "source_sha256": "5bc25eeb6a6a83bc395392d80c9a8fb86119f801cf553438a64b74453b6727a7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.752,
+      "olean_bytes": 36104,
+      "olean_sha256": "fa4f9e868eee640b7bcba0d57bea3e4f8e6dc1571e45f4a194b956f6e4a0db87"
+    },
+    {
+      "module": "MettapediaFourColor.KempeMaskCertificate",
+      "source_sha256": "ba713fdf08000b99efed54ddac14ac204426ecd7cf4ea4303fcaf49e12dffe89",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.292,
+      "olean_bytes": 273008,
+      "olean_sha256": "563a526deb8c86b84f2fcdbbdef82bd26ef239a8dd61e343a846e5aa3f0ab28f"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalRepairData",
+      "source_sha256": "2304feb7f69cce7c96d7be9de6c8fb2aa091d7f41d295ecb3cac7f480d1dda50",
+      "exit_code": 0,
+      "frontend_wall_seconds": 37.917,
+      "olean_bytes": 74361680,
+      "olean_sha256": "7aa04efd1aabae77924acfcc93f65c6bd98e6e211e0253a9d6ae6185a746098d"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalRepairCertificate",
+      "source_sha256": "ab216e77f967ac12bb770c994b7589d1d038dbfb63cff8787dc7a56df0e24f43",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.875,
+      "olean_bytes": 375920,
+      "olean_sha256": "b5907b016c657d6e17e08ab1aefae2d4975a8c47603eb391eb8196b56d30fe7f"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalRepairChecked",
+      "source_sha256": "750140d06b02603fc8d69d6124d85eec4c07383e807650e32558b58a417043b1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5964.252,
+      "olean_bytes": 3788832,
+      "olean_sha256": "3356ba28897a44adcfb55353478b73dcbe0775d4dc8bb54f1bb8cd215ef4aae0"
+    },
+    {
+      "module": "MettapediaFourColor.GraphTraceAlignment",
+      "source_sha256": "ae2aaa88ee936459501d1fb6c9eddf55ed08fd44880f5cba73fc819bd0ddcb3e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.439,
+      "olean_bytes": 28856,
+      "olean_sha256": "dabe8a3da513cb53e8f60315a931a6b3a5d9859f455699ddf624292f5ba23747"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalRepairReconstruction",
+      "source_sha256": "85d42ffb65f7288e6bb47c6688e6ffe1a2782fc2e821a0d43192980c101f5dd0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.049,
+      "olean_bytes": 150008,
+      "olean_sha256": "4e81c3d7fd5ce161747aeed0f64064843d524049440d46d7daedc61fd16f2915"
+    },
+    {
+      "module": "MettapediaFourColor.ExceptionalRepairAudit",
+      "source_sha256": "92a8f3b7cb5d6d1e4f2f28170fdc94b85369020039ac6eb64bf196a8b290ff1b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.551,
+      "olean_bytes": 2608,
+      "olean_sha256": "4d0f5dbfe0cf2c615c164f29d14d076fa0c92c780f9e2a958f5b858f786cd0b4"
+    }
+  ],
+  "recorded_at": "2026-10-02T05:58:18.694677+00:00",
+  "status": "Kernel replay, dependency audit, flat-coverage and complete-classical regressions, and full main lane build passed.",
+  "replay_command": "lake build kernelExceptionalRepair",
+  "replay_directory": "lean/fourcolor-classical",
+  "audit": {
+    "roots": 12,
+    "declarations_in_dependency_closure": 26494,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_color_endpoints": false,
+    "original_catalogue_rank_certificates": false
+  },
+  "mathematical_scope": {
+    "canonical_traces": 7381,
+    "terminal_traces": 1383,
+    "maximum_record_rank": 11,
+    "unsigned_skeleton_cases": 93665,
+    "source_edges_checked": 43,
+    "joint_exterior_preserved": true,
+    "actual_terminal_colorings": true,
+    "all_proper_inputs_covered": true,
+    "uniform_checker": "KempeMaskCertificate.check_sound",
+    "uniform_induction": "KempeIndexedCertificate.sound",
+    "repair": "ExceptionalRepairCertificate.repair",
+    "actual_consumer": "ExceptionalRepairReconstruction.reconstruct",
+    "remaining_hypotheses": [
+      "Kempe closure of the actual exterior trace relation",
+      "a proper initial exterior trace"
+    ],
+    "not_claimed": [
+      "case-free repair theorem",
+      "unbounded configuration-family repair",
+      "geometric coverage",
+      "strict reduction of the actual overlap",
+      "new configuration removal",
+      "near-linear runtime"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "additional_dependencies_replaced": 0,
+    "coverage_entries_removed": 0
+  },
+  "reproducibility": {
+    "generator": "generate_exceptional_repair.py",
+    "report": "exceptional-repair-generation.json",
+    "independent_regeneration_byte_identical": true,
+    "finite_check_seconds": 5964.252
+  },
+  "base_revision": "fd4c72b02d02cd727f18dd2860ebdde39f22abdf",
+  "regression": {
+    "classical_command": "lake build kernelFlatCoverage kernelComplete",
+    "classical_exit_code": 0,
+    "main_command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_exit_code": 0,
+    "main_jobs": 11195
+  }
+}

@@ -487,3 +487,97 @@ full incident-edge coverage and reconstruction. It allows only standard
 axioms and excludes complete Four Colour endpoints and original catalogue
 rank certificates. The source and object hashes, replay times and gate
 results are in [boundary-measurements.json](boundary-measurements.json).
+
+## Complete exceptional boundary repair
+
+`ExceptionalRepairCertificate.repair` now proves repair for every proper
+zero-sum eleven-port trace. The terminal relation consists of actual colourings
+of the complete nineteen-vertex D1774 source. Each terminal witness is checked
+against all forty-three edges, including the ring, and its entire ordered trace.
+
+The certificate contains 7,381 trace representatives, including 1,383 terminal
+ones. Every nonterminal record supplies a whole-chord mask for each possible
+unsigned exterior skeleton. `KempeMaskCertificate.check_sound` proves that
+these masks preserve the same signed exterior chromogram. The selected answer
+has strictly smaller rank. `KempeIndexedCertificate.sound` performs the common
+well-founded argument, quantifying over every Kempe-closed exterior predicate.
+Records need not be uniquely identified by their traces.
+
+```text
+one proper boundary trace and its actual exterior witness
+                         |
+       choose complete chords in that same exterior
+                         |
+              strictly smaller repair rank
+                         |
+           genuine full source colouring
+                         |
+       align all ports by one colour translation
+                         |
+                  reconstruct the map
+```
+
+The complete check retains 93,665 unsigned-skeleton cases. It is a finite
+repair certificate with a reusable checker and reconstruction law; no
+case-free family theorem or catalogue removal is credited. The generator is
+untrusted. Its output, all terminal colourings, all rank decreases and the
+coverage of all proper inputs are checked by kernel reduction. The full
+finite replay took 5,964 seconds; this is verification cost, not an algorithmic
+colouring bound. A separate regeneration reproduced both generated files
+byte for byte.
+
+`GraphTraceAlignment.align` preserves the whole boundary assignment by one
+Klein-group translation. `ExceptionalRepairReconstruction.reconstruct` uses
+the earlier actual graph geometry and allows coincident ring images. It still
+requires Kempe closure of the actual exterior relation and an initial proper
+exterior trace. The finite certificate does not supply those geometric inputs.
+
+Replay with `lake build kernelExceptionalRepair`; after the finite artifacts
+are prepared, `kernelExceptionalRepairConsumer` checks alignment,
+reconstruction and the twelve-root dependency audit separately. The audit
+allows only standard axioms and excludes complete Four Colour endpoints and
+original catalogue rank certificates. Counts remain 633 coverage entries and
+629 original configuration certificate dependencies.
+
+## Constructed source, local query and valid contraction
+
+`ExceptionalConstruction.program` builds the complete D1774 source with nine
+Y operations and eight H operations, interspersed with rotations. The
+kernel comparison identifies all three permutations on its eighty-six darts.
+The face presentation recovers every source edge, every cyclic star and the
+ordered eleven-port ring. `ringTrace_iff` transports actual colouring witnesses
+and their complete traces between the literal source and this construction.
+
+The established Gonthier/Werner configuration compiler, as formalized by
+Chris Emery, supplies embeddability. Its local recognition query is also
+checked exactly. It observes degrees `5, 5, 8, 7, 5, 5, 5, 5` along a specified
+branching walk. Matching this list at arbitrary vertices would not suffice:
+the dart steps and common starting edge are part of the query.
+
+`KempeRepairContract.reducible_of_repair` proves a general bridge: an
+all-proper-trace repair law supplies the coclosure field of every valid
+contract on the same perimeter. Its proof derives a proper boundary trace
+from an actual contract colouring, using the contract's exclusion from the
+ring. D1774 has a checked singleton contract on the edge joining source
+vertices 13 and 14 (zero-based labels). Its two darts are off the ring and
+lie on distinct nodes.
+
+`ExceptionalConstructionRepair.not_fitted` now excludes a matching local
+query in a reference minimal counterexample. The proof consumes the source
+construction, exact trace transport, finite joint-chord repair and singleton
+contract, then reuses the established query-to-preembedding, contraction,
+exterior-closure and patch reconstruction theorems. It uses no complete
+Four Colour endpoint or original catalogue rank certificate.
+
+The outstanding bridge is concrete: derive the matching query, or equivalent
+preembedding, from the two actual exceptional occurrences. The reference
+minimal-counterexample hypothesis must also be connected to the graph-backed
+minimality regime used by the overlap geometry, or the contraction must be
+constructed directly in that regime. Neither bridge is assumed implicitly.
+Zero-charge classification and occurrence supply remain separate.
+
+Replay with `lake build kernelExceptionalConstruction` after preparing the
+finite repair artifacts. Its seventeen-root audit checks the representation,
+query compiler and reconstruction dependencies. This establishes source
+reducibility and reuse; it removes no coverage entry or existing certificate
+dependency. See [construction-measurements.json](construction-measurements.json).

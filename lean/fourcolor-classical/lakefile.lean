@@ -16,6 +16,64 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Check exact Y/H construction and source geometry for D1774. -/
+target kernelExceptionalConstruction pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-construction-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ExceptionalConstruction", "KempeRepairContract", "ExceptionalConstructionRepair",
+        "ExceptionalConstructionAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay reconstruction and the dependency audit after the finite checks. -/
+target kernelExceptionalRepairConsumer pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-repair-consumer",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "GraphTraceAlignment", "ExceptionalRepairReconstruction", "ExceptionalRepairAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay the repair proof against prepared finite-data artifacts. -/
+target kernelExceptionalRepairChecks pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-repair-checks",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ExceptionalRepairCertificate", "ExceptionalRepairChecked"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Check the joint-chord certificate and literal D1774 terminal witnesses. -/
+target kernelExceptionalRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exceptional-repair-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules", "KempeIndexedCertificate", "KempeMaskCertificate",
+        "ExceptionalRepairData", "ExceptionalRepairCertificate", "ExceptionalRepairChecked",
+        "GraphTraceAlignment", "ExceptionalRepairReconstruction", "ExceptionalRepairAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Check the eleven-port completion and actual compatible-colouring reconstruction. -/
 target kernelExceptionalBoundary pkg : Unit := do
   let env ← getAugmentedEnv
