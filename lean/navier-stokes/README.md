@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint sampling law](labs/README.md#joint-history-change-of-measure-and-velocity-payment)
+keeps the metric loss and its sampling drift together. An exact change
+of control removes both at the cost of one bounded endpoint term,
+preserving the full control penalty. It strengthens the separate payment
+below. Initial kinetic energy also pays accumulated velocity magnitude
+under these controlled sampling laws. Ordinary stretching remains open;
+an actual smooth datum increases its global vorticity maximum immediately.
+Lean certifies the two control-shift identities. Path-measure, occupation
+and positive-time arguments remain analytic, with exact physical fixtures.
+
 The [metric-loss Bellman estimate](labs/README.md#metric-loss-bellman-payment-and-the-actual-sampling-density)
 pays the transported-metric part of directional conversion along every
 available smooth unforced history, using an original-data regularizer.

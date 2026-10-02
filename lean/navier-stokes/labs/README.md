@@ -26282,6 +26282,10 @@ vorticity equation. This agrees with the existing
 improve that physical equation. A bound on the remaining supremum from
 the full datum would be sufficient: `|omega|^2+delta<=2delta exp G`.
 Such a bound on every prefix up to a prescribed horizon is still open.
+The [joint history transformation](#joint-history-change-of-measure-and-velocity-payment)
+below subsequently preserves the full control penalty by changing the
+sampling law and retaining its correlated endpoint term. It avoids the
+separate allocation in (354); that estimate remains valid but is weaker.
 
 ### The receiver is a bounded weight times a killed fluid diffusion
 
@@ -26417,3 +26421,240 @@ Comparison, Ito verification, kernel estimates and the continuation
 implication here are analytic, not new Lean-certified results. The
 general arbitrary-history bound remains open; no Lean declaration or
 axiom changes.
+
+## Joint history change of measure and velocity payment
+
+`joint_history_sampling.py` checks the exact joint change behind
+(350)--(354). Retaining its correlated drift, loss and endpoint removes
+the need to allocate three quarters of the control cost to the metric
+term. The same construction composes along a complete original history.
+It also gives an explicit payment for velocity observations. Stretching,
+which observes a derivative of velocity, remains an open obligation.
+
+### The complete path law, with its loss retained
+
+Keep the smooth-prefix hypotheses and original-data regularizer of (350).
+Fix `(t,x)`. Let P_u be the law of the auxiliary diffusion
+
+```text
+dX_s=-u(t-s,X_s)ds+sqrt(2nu)dB_s,  X_0=x,
+Z_s=h(t-s,X_s)/h(t,x) exp[-integral_0^s a(t-r,X_r)dr].       (360)
+```
+
+The physical identity `Dh=-a h` gives
+`dZ_s=Z_s sqrt(2nu) grad log h(t-s,X_s).dB_s`.
+Thus Z is a positive local martingale. Since `delta<=h<=2delta` and
+`a>=0`, it satisfies `0<Z_s<=2`; it is therefore a true martingale,
+with `E Z_s=1`. Change measure by Z on the fixed prefix. Its sampling
+drift is `-u+2nu grad log h=-w`, exactly the receiver's drift. Denote
+that law by P_w. In particular, for every nonnegative path functional J,
+
+```text
+E_(P_w) J=E_(P_u)(Z_t J)<=2 E_(P_u)J.                     (361)
+```
+
+This controls complete histories, not only their one-time marginals.
+It does not assert domination of arbitrary controlled laws by P_u.
+The construction is a time-dependent Doob change with killing, a
+classical change-of-measure method. Compare Leonard's
+[survey of the Schrodinger problem](https://arxiv.org/abs/1308.0215),
+Sections 3--4, for logarithmic drift changes and path measures. Here
+(360) derives the actual coefficients and killing from NS. No claim
+that an arbitrary Schrodinger bridge evolves as NS is used.
+
+At an intermediate physical time s0, the endpoint factors compose as
+`h(0,X_t)/h(s0,X_(t-s0))` times
+`h(s0,X_(t-s0))/h(t,x)`. The common h cancels and the loss integrals
+add. Over any finite compatible subdivision, the result is still (360).
+The factor two is for the complete history, not a factor paid per join.
+The original M and regularizer are retained at every join.
+
+For bounded potentials on the fixed prefix, (360) gives in particular
+
+```text
+E_(P_w) exp integral_0^t (a+v)
+ =E_(P_u)[h(0,X_t)/h(t,x) exp integral_0^t v].             (362)
+```
+
+The nonnegative loss cancels against the SAME path's density, before
+either factor is bounded. Since k(0)=1, the left side is k(t,x).
+Consequently
+
+```text
+(1/2) E_(P_u) exp integral_0^t v <=k(t,x)
+                         <=2 E_(P_u) exp integral_0^t v,
+|log k(t,x)-log E_(P_u) exp integral_0^t v|<=log 2.        (363)
+```
+
+This avoids the fourth exponential moment sufficient in (354) and
+identifies the remaining value up to a bounded endpoint term.
+It does not establish that the first exponential moment on the right
+has a bound uniform over all prefixes before a possible singular time.
+Indeed `h k=|omega|^2+delta` gives its usual scalar Feynman--Kac
+representation with initial weight `h(0)=|omega0|^2+delta`.
+The physical stretching is retained, not eliminated by a gauge.
+
+### The full control penalty survives
+
+On one fixed smooth prefix, write `p=grad log h` and change auxiliary
+controls by `gamma=beta+2nu p`. The sampling paths then have the same
+drift, `-w+beta=-u+gamma`. Ito's formula gives
+
+```text
+drift[log h(t-s,X_s)]=a-nu|p|^2+gamma.p,
+a+v-|beta|^2/(4nu)
+ =v-|gamma|^2/(4nu)+(a-nu|p|^2+gamma.p).                  (364)
+```
+
+Thus their expected integrated costs differ exactly by
+`E log h(0,X_t)-log h(t,x)`, at most log 2. The map between bounded
+adapted controls is invertible on the fixed prefix because p is bounded
+there. No uniform bound on that future p enters the endpoint allowance.
+The entire penalty `|gamma|^2/(4nu)` is available for v under the
+incompressible reference diffusion. This is an exact identity of
+auxiliary sampling problems for a fixed physical flow; neither control
+is an applied fluid force.
+
+`TransportedFrameDirection.sampling_control_shift` and
+`sampling_cost_shift` certify the two algebraic identities in Lean for
+arbitrary vectors in a real inner-product space and nonzero nu where
+division is used. The identification of the supplied log rate, stochastic
+construction, Ito integration and uniform endpoint bound remain analytic.
+
+### A controlled velocity observation paid by initial energy
+
+There is a concrete observation which this full entropy budget can pay
+on arbitrary smooth unforced histories. On R3 set `E0=||u0||_2^2`.
+The energy inequality gives `||u(s)||_2<=sqrt(E0)` throughout the prefix.
+For the reversed physical diffusion, the L2 case of the
+[Hess-Childs--Raquepas--Rowan concentration theorem](https://arxiv.org/abs/2503.16723)
+gives the kernel bound `(8pi nu s)^(-3/4)`, uniformly in the
+time-dependent incompressible drift. Cauchy--Schwarz therefore yields,
+from ANY starting time and position with the interval available,
+
+```text
+E_(P_u) integral_0^tau |u(t-s,X_s)| ds <=L tau^(1/4),
+L=4 sqrt(E0)(8pi nu)^(-3/4).                              (365)
+```
+
+Fix an observation coefficient c>0 and E0>0. Choose
+`tau_c=(2cL)^(-4)`. On every interval of length at most tau_c,
+the conditional first moment of `c integral |u|` is at most 1/2.
+Ordering the n time variables and using the Markov property bounds its
+n-th moment by `n! 2^(-n)`. Summing the exponential series gives a
+bound of 2 on each such interval. This is the classical Khasminskii
+argument, here with explicit coefficients. For `0<T<=t`, conditioning
+successively over a partition of the available duration T gives
+
+```text
+log E_(P_u) exp[c integral_0^T |u(t-s,X_s)|ds]
+ <=ceil(T/tau_c) log 2
+ <=[1+8 c^4 E0^2 T/(pi^3 nu^3)] log 2 =: B_vel.           (366)
+```
+
+For a single short interval with `cL T^(1/4)<1`, the same series gives
+the sharper bound `-log[1-cL T^(1/4)]`. If c=0 or E0=0, the velocity
+reward is zero and its allowance can be zero.
+
+Relative-entropy duality and Girsanov, on this fixed smooth prefix,
+now give for every bounded adapted gamma and its controlled law
+
+```text
+E_gamma integral_0^T [c|u|-|gamma|^2/(4nu)] <=B_vel.
+```
+
+For completeness, the entropy inequality is
+`E_Q J-H(Q|P_u)<=log E_(P_u)exp J`, by Jensen. The path-law relative
+entropy is at most the expected drift action
+`E_gamma integral |gamma|^2/(4nu)`; allowing a control's extra randomness
+does not increase that path-law entropy. Together with (364), this also
+pays `a+c|u|` under the metric-adjusted controls beta, with allowance
+`log 2+B_vel`. It is a bound for all these controlled histories, not just
+their uncontrolled mean. Conditional composition retains one physical
+datum and the original energy bound throughout.
+
+On a fixed torus replace the sharp kernel bound by
+`C_T[1+(nu s)^(-3/4)]` in L2. Choose any datum-fixed tau_c>0 satisfying
+`c C_T sqrt(E0)[tau_c+4nu^(-3/4)tau_c^(1/4)]<=1/2`.
+The same `ceil(T/tau_c)log 2` payment follows. The whole-space constant
+in (366) is not asserted on the torus.
+
+This pays bounded-speed transport observations, for example with c
+fixed by a prescribed observation length. It does not pay an observation
+whose coefficient grows without control as that length shrinks. Nor
+does it bound v, which contains grad u. The proof uses the energy bound
+and incompressibility; a forced flow with the same kinetic-energy bound
+would also satisfy this velocity payment. It therefore does not by
+itself distinguish a forced stretching mechanism from unforced renewal.
+
+### Actual tests retain the stretching obstruction
+
+The checker independently differentiates spatial/time jets for the
+density martingale and full control cost. It checks the entire shear
+history (358), where `v=-a` and the joint formula gives k=1 exactly.
+It also checks the simple and resonant inherited-parent fixtures with
+their complete M, first and second spatial derivatives, and actual NS
+vorticity tangent. No inherited frame is reset. The simple fixture's v
+is negative at the selected point, while the resonant one has positive v.
+The cost identity holds in both cases and at two regularizer sizes.
+These are coefficient checks. A datum-sized regularizer in an actual
+finite-frequency release must be chosen from its ORIGINAL vorticity,
+not from the later limiting descendant; the test values do not assert
+that extra uniform identification.
+
+There is also a useful actual initial-maximum test. For the periodic
+datum in (359), let a0>nu and `b0^2>=2a0^2`. Its vorticity has
+
+```text
+|omega0|^2=4a0^2 sin^2 x sin^2 z+b0^2(cos x+cos y)^2,
+||omega0||_infinity^2=4b0^2,
+partial_t |omega|^2(0,0)=8b0^2(a0-nu)>0.                 (367)
+```
+
+To verify the global maximum, set `r=|cos x|` and bound `|cos y|<=1`.
+The difference from 4b0^2 is at least
+`(1-r)[(b0^2-2a0^2)(r+3)+2a0^2(1-r)]>=0`.
+Equality occurs at the origin. The last line of (367) is computed
+from the actual NS curl tangent, retaining viscosity. Local smooth
+existence gives a positive interval on which the value at the origin
+exceeds the ORIGINAL global maximum. For example nu=1,a0=2,b0=3 gives
+initial maximum squared 36 and derivative 72; delta=36 is a valid
+original-data choice in (350). Thus a uniform-in-time maximum principle
+for ordinary vorticity is false even in this elementary admissible case.
+This is a finite burst, not indefinite renewal or a failure of a
+full-datum allowance. The pressure is the actual NS pressure; only its
+curl cancels from the tangent calculation.
+
+The same example rules out paying the remaining control value merely
+by replacing its reward with a fixed multiple of velocity magnitude.
+For delta=4b0^2 one has `u0(0)=0` but `v(0,0)=a0>0`. Define, using
+the actual reversed physical diffusion from `(T,0)`,
+
+```text
+V_v(T)=log E_(P_u) exp integral_0^T v,
+V_c(T)=log E_(P_u) exp[c integral_0^T |u|].
+```
+
+For every fixed finite c>=0, local smoothness and Feynman--Kac give
+`V_v(T)=a0 T+O(T^2)` but `V_c(T)=O(T^(3/2))` as T decreases to zero.
+For the second estimate, on the available local interval
+`|u(s,x)|<=L|x|+Cs` in a periodic lift. Gronwall in the sampling SDE
+bounds its maximum displacement by
+`exp(LT)[C T^2+sqrt(2nu) sup_(s<=T)|B_s|]`.
+Thus the velocity integral is bounded by a constant times
+`T^2+T sup_(s<=T)|B_s|`. Brownian scaling and the finite exponential
+moments of its unit-time maximum give the claimed order.
+
+Consequently `V_v(T)<=V_c(T)` fails for sufficiently small positive T,
+even if c was fixed using the complete initial datum. These are actual
+local NS histories, not independently assigned potentials. The failure
+concerns domination without an additional initial allowance. It does
+not refute a datum-paid initial burst, a reserve for later geometric
+renewal, or the intended full-horizon continuation bound.
+
+Run `python3 -O labs/joint_history_sampling.py`. Exact fixtures and
+the two Lean control identities support the stated algebra. The path
+change of measure, energy-based occupation estimate and positive-time
+realization are analytic. The remaining continuation obligation is the
+signed-stretching exponential moment in (363), or the existing signed
+renewal budget; neither has been bounded for arbitrary initial data.

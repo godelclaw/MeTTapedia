@@ -184,6 +184,8 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.controlHamiltonian_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.controlHamiltonian_attained
 #print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.optimal_sampling_drift
+#print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.sampling_control_shift
+#print axioms Mettapedia.FluidDynamics.NavierStokes.TransportedFrameDirection.sampling_cost_shift
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_lower_certificate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_upper_certificate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_bounds

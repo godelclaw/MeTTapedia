@@ -155,6 +155,27 @@ theorem optimal_sampling_drift {E : Type*} [AddCommGroup E] [Module ℝ E]
   rw [smul_sub]
   abel
 
+/-- The logarithmic metric drift can be moved into any auxiliary control,
+not just the maximizing control. The physical velocity is unchanged. -/
+theorem sampling_control_shift {E : Type*} [AddCommGroup E] [Module ℝ E]
+    (ν : ℝ) (u logMetricGradient control : E) :
+    (-u + (2 * ν) • logMetricGradient) +
+        (control - (2 * ν) • logMetricGradient) = -u + control := by
+  abel
+
+/-- Under the sampling-control shift, the full cost changes by the
+supplied backward rate of the logarithmic metric. Its stochastic integral
+is an endpoint term; identification of that rate with an actual NS history
+and Ito's formula are separate analytic obligations. -/
+theorem sampling_cost_shift {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (ν : ℝ) (hν : ν ≠ 0) (loss reaction : ℝ) (logMetricGradient control : E) :
+    loss + reaction - ‖control - (2 * ν) • logMetricGradient‖ ^ 2 / (4 * ν) =
+      reaction - ‖control‖ ^ 2 / (4 * ν) +
+        (loss - ν * ‖logMetricGradient‖ ^ 2 + ⟪control, logMetricGradient⟫) := by
+  have h := controlHamiltonian_eq ν hν logMetricGradient control
+  unfold controlHamiltonian at h
+  linarith
+
 /-- The scalar initial jet of the companion periodic example: at its
 symmetry point `s=4b²`, `stretch=4ab²`, and both gradient costs vanish.
 Realization by the actual local NS evolution is analytic, not asserted here. -/
