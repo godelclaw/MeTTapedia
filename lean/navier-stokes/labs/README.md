@@ -18723,3 +18723,199 @@ the critical coefficient exponents, (88), the Gaussian kinetic comparison,
 and the small-swirl scaling of the relative spatial stock. The global
 reference theory, finite weighted coefficients, stochastic formula and
 actual-history estimates have the analytic status specified above.
+
+## The first nonlinear return from an actual swirl seed
+
+`generated_parent_return.py` tests the first closed source--parent--source
+interaction of an actual unforced flow. It starts with zero meridional
+velocity, so the actual no-swirl reference in (80) is zero. The generated
+parents are not independently chosen inputs. A radial identity gives a
+strictly negative return for a whole class of seeds, while the source's
+next angular component records why this is not an invariant class or an
+iterable history bound. The exact algebra is checked; local PDE evolution,
+fractional reconstruction and the time-interval implications are analytic.
+
+### The complete initial history and its caloric comparison
+
+Take smooth rapidly decaying pure-swirl data
+`u0=(-x2 b0,x1 b0,0)`, with b0 a smooth radial function of
+`s=r^2+z^2`. Fix any nu>0 and use the actual local unforced solution.
+Let `f=b0^2`, `F=(-Delta5)^(-1)f` be the canonical decaying potential,
+and let subscripts denote literal initial time derivatives, not Taylor
+coefficients. Then
+
+```text
+h1=partial_z f, chi1=partial_z F, v1=velocity(chi1),
+q1=2partial_z chi1,
+b1=nu Delta5 b0,
+b2=nu^2 Delta5^2 b0-v1.grad b0+q1 b0,
+h2=nu[Delta5 h1+2partial_z(b0 Delta5 b0)].              (91)
+```
+
+Compare with the SAME original caloric forecast
+`B=exp(nu t Delta5)b0`,
+`(h_cal)_t=nu Delta5 h_cal+partial_z(B^2)`, `h_cal(0)=0`.
+The actual and forecast parent jets agree through order two. Their full
+third-derivative difference is
+
+```text
+f2_nl=-v1.grad f+2q1 f,
+h3_nl=partial_z f2_nl-2v1.grad h1,
+h3-h3_cal=h3_nl,
+h3_cal=nu^2[Delta5^2 h1+2Delta5 partial_z(b0 Delta5 b0)
+       +2partial_z((Delta5 b0)^2+b0 Delta5^2 b0)].      (92)
+```
+
+Thus no viscosity term is dropped to obtain h3_nl. The two nonlinear
+terms retain both deformation of the source and transport of its parent.
+Define their signed return into the first generated parent by
+
+```text
+C_return=<chi1,h3_nl>
+        =-(1/2)int_R5 f[v1.grad q1+q1^2].              (93)
+```
+
+To obtain (93), `div5(chi1 v1)=0` cancels the canonical pairing of the
+parent-transport term. The remaining integration by parts uses
+`div5 v1=-q1`, not zero. These identities apply before imposing radial
+symmetry. The sign is not inferred merely from a square or a source norm.
+
+Write `a=Lh`, `a_cal=Lh_cal`. Local smooth evolution and the canonical
+kinetic isometry give the Hilbert-space Taylor comparison
+
+```text
+||a(t)||_2^2-||a_cal(t)||_2^2
+       =(t^4/3) C_return+o(t^4).                      (94)
+```
+
+Indeed `a-a_cal=t^3 Lh3_nl/6+o(t^3)` and both first derivatives equal
+Lh1. The L2 pairing is `<Lh1,Lh3_nl>=<chi1,h3_nl>`. Smooth physical
+L2 time jets justify this expansion on the actual local existence
+interval; the forecast has the corresponding smooth jets. The same
+positive viscosity appears on both sides. A strict negative return
+therefore gives an actual short-time inequality, with an interval
+depending on the datum and nu. No uniform Taylor window is asserted.
+
+### A radial sign law for the first complete return
+
+Regard F as a function of squared radius s and put `g=-F'`. The radial
+Poisson equation and the regular axis condition give
+
+```text
+f=4s g'+10g,
+g(s)=(1/(4s^(5/2)))int_0^s y^(3/2) f(y)dy >=0.
+q1=-4g-8z^2 g'.                                      (95)
+```
+
+The normalized angular mean on S4 of the bracket in (93) is
+
+```text
+mean(v1.grad q1+q1^2)
+ =(16/35)[42s g g'+4s^2 g g''+28s^2(g')^2+35g^2].
+```
+
+This contains the complete transport contribution. The radial integration
+by parts can be checked without suppressing any endpoint terms. With
+the square bracket called A, its exact integrand identity is
+
+```text
+s^(3/2) f A
+ =4s^(7/2)(g')^2(26s g'+83g)
+  +d_s[8s^(9/2)g(g')^2+40s^(7/2)g^2 g'+140s^(5/2)g^3].
+```
+
+The boundary term vanishes: g is smooth at zero, and at infinity a
+rapidly decaying f gives `g=O(s^(-5/2))`, `g'=O(s^(-7/2))`.
+Since `26s g'+83g=(13/2)f+18g` and `|S4|=8pi^2/3`, this proves
+
+```text
+C_return=-(64pi^2/105)int_0^infinity
+                  s^(7/2)(g')^2[13f+36g] ds <0        (96)
+```
+
+for every nonzero seed in this class. Strictness follows also in the
+far radial tail: the nonzero total source gives a positive leading
+coefficient of g and a negative leading coefficient of g'. This is a
+signed law for the first generated nonlinear return, not an estimate
+for an arbitrary instantaneous pair of parent and source fields.
+
+There is a related comparison at the critical observer itself. Radial
+averaging gives `mean(q1)=-2f/5`. In the joint critical functional
+`R_p(b,a)=int (b^2+a^2)^(p/2)`, the actual and caloric parent contributions
+to its second initial derivative agree. Only the retained b2 deformation
+differs. Using the full transport divergence yields
+
+```text
+R_p(b(t),a(t))-R_p(B(t),a_cal(t))
+ =-((p-1)/5)t^2 int_R5 |b0|^(p+2)+o(t^2), p=5/2.      (97)
+```
+
+The Lp power functional is C2 for p>2. The lifted L2 and first-derivative
+norms of b and a are controlled by the physical velocity and vorticity
+norms, including their smooth local time jets. R5 Sobolev and interpolation
+therefore give C2 time dependence into L(5/2), justifying this comparison.
+Consequently the actual joint critical moment initially lies below its original caloric
+forecast. This supplies no monotonicity of that forecast, no comparison
+beyond its justified initial interval, and no full diffusion-history
+budget on a prescribed arbitrary horizon. The radial hypothesis is absent
+from the earlier positive critical-burst family (23)--(26); the two results
+concern different seed geometries.
+
+### An anisotropic test and the geometry the next estimate must retain
+
+For `B0=1+r^2+z^2`, the explicitly nonradial potential family
+
+```text
+F=B0^(-3/2)+c z^2 B0^(-7/2),
+f=-Delta5 F=[(15-2c)B0^2+63c z^2]/B0^(11/2)
+```
+
+has f>0 whenever `-12/11<c<15/2`, using `z^2/B0^2<=1/4`.
+The associated b0=sqrt(f) gives smooth finite-energy physical data with
+all physical L2 derivatives. These particular fixtures have algebraic
+tails; the general radial statement above includes Schwartz seeds.
+Exact beta integration gives
+
+```text
+C_return=(32768pi^2/727840488375)
+          [46844c^3-22283310c^2+54483750c-69784875].     (98)
+```
+
+This is strictly negative throughout the source-positive interval. A
+certificate for the polynomial P in brackets is
+
+```text
+P=-21931980(c-1816125/1462132)^2
+  -52560048619125/1462132+46844c^2(c-15/2).
+```
+
+At c=0, independent radial and angular calculations both give
+`C_return=-1015808pi^2/323323`. This robustness test does not make
+the family invariant under NS.
+
+In fact, for any radial seed the NONRADIAL part of its second nonlinear
+source derivative is exactly
+
+```text
+(f2_nl)_nonradial=(12g f'-16g' f)(z^2-s/5).            (99)
+```
+
+This is a degree-two angular harmonic; its spherical Laplacian
+eigenvalue is -10. For the explicit c=0 fixture, the entire nonlinear
+jet is `f2_nl=45(3r^2+2z^2-4)/B0^7`, and its nonradial part is
+`-45(z^2-s/5)/B0^7`, which is nonzero. Initial viscous contributions
+are radial and do not remove this generated angular component.
+
+Thus the first closed return is depleted, but its own evolution changes
+the source geometry. The next necessary estimate is a signed bound on
+that evolving angular defect and later parent returns, with diffusion
+and the original allowance retained. Replacing every later source by
+a fresh radial seed would discard precisely this information. Neither
+(96) nor (98) supplies the open allowance K_seed in (89).
+
+Run `python3 -O labs/generated_parent_return.py`. The checker verifies
+the full viscous initial jets, both transport divergences, the signed
+pairing, angular and radial integration identities, exact anisotropic
+moments, strict polynomial sign and generated angular defect. Analytic
+local existence and the Taylor remainder are not certified by the
+symbolic calculations. No new Lean declarations or axioms are introduced.

@@ -2114,6 +2114,20 @@ The exact stochastic representation keeps the actual drift and source
 together. A sufficient signed budget for the remaining nearby generated
 parents is still open. These new arguments are analytic, not Lean-certified.
 
+The [first generated-parent return](labs/README.md#the-first-nonlinear-return-from-an-actual-swirl-seed)
+has a favorable sign for an entire radial seed class. Starting from pure
+swirl, the first nonlinear feedback into its generated meridional parent
+is strictly negative in the canonical kinetic pairing. Every viscous term
+is retained in comparison with the original caloric forecast; this gives
+an actual short-time parent-energy comparison. The joint critical moment
+also initially lies below its caloric forecast for these seeds. An exact
+anisotropic family retains the negative parent return. However, the actual
+second source jet already leaves radial symmetry, so this comparison cannot
+be restarted or iterated without a new estimate. Its role is a concrete
+geometric depletion test; it supplies no arbitrary-history allowance.
+The identities have exact symbolic checks; the local-history passage is
+analytic and no new Lean theorem is claimed.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
