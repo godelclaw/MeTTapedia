@@ -7,6 +7,7 @@ import MettapediaNS.GeometricCascadeLedger
 import MettapediaNS.WholeSpaceEnergyReturn
 import MettapediaNS.CellularCycleReserve
 import MettapediaNS.SignedReactionRenewal
+import MettapediaNS.PassiveParentBellman
 import NavierStokes.R3.HeatKernelCommutator
 import NavierStokes.ViscousPropagator
 import NavierStokes.PeriodicViscosityUniqueness
@@ -193,6 +194,10 @@ unforced Navier–Stokes solutions.
 #print axioms MettapediaNS.SignedReactionRenewal.correctedRate_le_amplitude
 #print axioms MettapediaNS.SignedReactionRenewal.correctedRate_at_origin
 #print axioms MettapediaNS.SignedReactionRenewal.parameters_with_positive_initial_rate
+#print axioms MettapediaNS.PassiveParentBellman.potential_bounds
+#print axioms MettapediaNS.PassiveParentBellman.control_square
+#print axioms MettapediaNS.PassiveParentBellman.controlled_gradient_paid
+#print axioms MettapediaNS.PassiveParentBellman.linear_reward_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_lower_certificate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_upper_certificate
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PressureBoundaryResponse.angularKernel_bounds

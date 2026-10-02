@@ -26877,3 +26877,226 @@ reserve must accommodate after the favorable correction in (370),
 and rules out that correction's proposed original-maximum principle. The full
 initial datum can still pay both finite bursts; control of repeated
 renewal, using that same datum throughout, remains open.
+
+## Passive-parent gradient payment and the pressure-impulse remainder
+
+`passive_parent_bellman.py` supplies a positive payment for a derivative
+channel, using the original passive parent already constructed analytically
+in the pressure-impulse section. The bound holds on every available smooth
+prefix; it does not assume a perturbative regime or a bound for the future
+fluid gradient. It leaves a precise signed pressure-impulse history open.
+
+### One bounded original parent on the actual fluid history
+
+Let u be a smooth unforced NS evolution on an available finite prefix,
+with positive viscosity nu, in the whole-space or periodic setting.
+Use the lane's smooth class, with bounded spatial derivatives on each
+compact smooth prefix, and choose a finite constant `M>0` such that
+`||u0||_infinity<=M`. Retain the ORIGINAL componentwise passive field
+
+```text
+D=partial_t+u.grad-nu Delta,
+D H=0,  H(0)=u0,
+I=H-u,  D I=grad p,  I(0)=0,
+B_H=grad H,  A=grad I,  B=grad u=B_H-A,
+D B_H=-B_H B,  D A=P-AB,  P=Hess p.                    (374)
+```
+
+This H is a passive vector, not a divergence-free replacement velocity
+or the stochastic Weber covector. Its construction uses the actual u
+as drift. Classical linear parabolic existence, or the reversed diffusion
+representation, gives H on each smooth prefix; comparison gives
+`|H|<=M`. The future coefficient bounds used for that construction are
+not part of the payment constant. The physical gradient laws and impulse
+decomposition are already certified, with their stated hypotheses, in
+`CovectorParentHistory` and `PressureImpulseHistory`.
+
+For a fixed cost share theta>0, use the bounded potential
+
+```text
+Phi=theta (M^2-|H|^2)/(4M^2),        0<=Phi<=theta/4,
+G=|grad H|_F^2,
+D Phi=theta nu G/(2M^2),
+grad Phi=-theta (grad H)^T H/(2M^2).                   (375)
+```
+
+For every sampling control gamma, completing all spatial squares gives
+
+```text
+D Phi-gamma.grad Phi+theta|gamma|^2/(4nu)
+                      -theta nu G/(4M^2)
+ =theta nu/(4M^2) sum_j |partial_j H+gamma_j H/nu|^2
+   +theta|gamma|^2/(4nu)(1-|H|^2/M^2) >=0.             (376)
+```
+
+No pressure term has been removed from u: it is retained in I. The
+comparison for H and the literal scalar product rule give (375); the
+nonnegative right side of (376) uses only the original magnitude bound.
+`MettapediaNS.PassiveParentBellman` certifies that range, the vector square,
+its resulting inequality and the following conversion for every real c,y:
+
+```text
+c y <= theta nu y^2/(4M^2)+c^2 M^2/(theta nu).
+```
+
+Its difference is
+`(theta nu y-2cM^2)^2/(4M^2 theta nu)`.
+The one-coordinate vector square is summed over the actual three spatial
+derivatives; the componentwise control penalty becomes |gamma|^2.
+The continuous PDE and stochastic assembly are analytic here.
+
+### Controlled histories and exponential moments
+
+For a fixed available endpoint `(t,x)` and earlier time s, sample along
+
+```text
+dX_r=[-u(t-r,X_r)+gamma_r]dr+sqrt(2nu)dW_r,
+0<=r<=t-s,  X_0=x.
+```
+
+The control is bounded and adapted on the fixed smooth prefix. It changes
+which fluid history is sampled, not the velocity or pressure of that
+fluid. Backward Ito applied to the SAME Phi gives, for fixed c>=0,
+
+```text
+E_gamma integral_0^(t-s)
+       [c|grad H|_F-theta|gamma|^2/(4nu)](t-r,X_r) dr
+ <=Phi(t,x)-E_gamma Phi(s,X_(t-s))
+                         +c^2 M^2(t-s)/(theta nu)
+ <=theta/4+c^2 M^2(t-s)/(theta nu).                     (377)
+```
+
+For c=2 this is the announced derivative-parent payment. Coefficients
+and stochastic integrands are bounded on each fixed smooth prefix,
+justifying the expectation step. The bound itself is uniform over all
+such prefixes from the same datum. For consecutive compatible intervals,
+condition on their shared state and add the first line: the intermediate
+Phi terms telescope. The allowance theta/4 is charged once, and elapsed
+times add. Restarting H or charging a new theta/4 at each seam would be
+a different construction. Matching scalar endpoint costs alone does not
+authorize joining unrelated fluid histories.
+
+An independent exponential-moment derivation avoids needing a variational
+representation theorem for this step. Set theta=1 and F=exp(Phi). From
+(375)--(376),
+
+```text
+D F/F=D Phi-nu|grad Phi|^2 >=nu G/(4M^2),
+1<=F<=exp(1/4).
+```
+
+Feynman--Kac comparison under the physical reversed diffusion P_u yields
+
+```text
+log E_(P_u) exp integral_s^t [nu|grad H|_F^2/(4M^2)] <=1/4,
+log E_(P_u) exp integral_s^t c|grad H|_F
+                                  <=1/4+c^2 M^2(t-s)/nu. (378)
+```
+
+The bounded terminal F(s) is at least one; it is not replaced by an
+independent sample. These are derivative observations on actual drifting
+paths, with neither a frame-coercivity factor nor an unknown gradient
+norm in the allowance. They do not assert a pointwise bound for grad H.
+The estimates use elementary parabolic comparison and Ito/Feynman--Kac
+arguments, not a new arbitrary-data regularity theorem.
+
+### The exact unpaid reaction and its continuation consumer
+
+Keep the original regularizer `delta>=||omega0||_infinity^2`, delta>0,
+and `s_omega=|omega|^2+delta`. The physical reaction now splits as
+
+```text
+v=v_H+r_I,
+v_H=2omega.B_H omega/s_omega <=2|grad H|_F,
+r_I=-2omega.A omega/s_omega-2nu|grad omega|^2/s_omega,
+r_I(0)=-2nu|grad omega0|^2/s_omega(0)<=0.               (379)
+```
+
+The negative vorticity-gradient term remains in the unpaid reaction.
+It is not discarded merely because the passive parent's derivative
+was paid. For any theta in (0,1), Holder's inequality and (378) give
+
+```text
+log E_(P_u) exp integral_0^t v
+ <=theta/4+4M^2 t/(theta nu)
+       +(1-theta) log E_(P_u) exp integral_0^t r_I/(1-theta).
+```
+
+The same split in (377) spends theta of the quadratic sampling penalty
+on the passive derivative, leaving the share 1-theta for r_I. The
+increased exponential order belongs to this NEW pressure-impulse reward,
+not to the original v. All factors are evaluated on the same physical
+law; Holder's inequality does not assert independent histories.
+
+For example choose theta=1/2 and a prescribed horizon T. If a finite
+constant K, fixed from u0,nu,T, bounds
+
+```text
+log E_(P_u from (t,x)) exp[2 integral_0^t r_I] <= K
+```
+
+uniformly in x, t<=T and every available smooth prefix from u0, then
+`B_T=1/8+8M^2 T/nu` and direct scalar Feynman--Kac give
+
+```text
+|omega(t,x)|^2+delta <=2delta exp(B_T+K/2),
+integral_0^T ||omega(t)||_infinity dt
+                  <=T sqrt(2delta) exp(B_T/2+K/4).
+```
+
+The time integral means the corresponding bound on each available
+prefix, with its endpoint at most T. It would supply the existing BKM
+continuation criterion. No such K is proved here. In particular, defining
+K as a supremum over the unknown future would not discharge the obligation.
+The derivation is analytic, not a newly certified stochastic consumer.
+
+### Actual pressure activation and a forcing calibration
+
+The remainder in (379) has a concrete source. Since I(0)=0, its first
+gradient derivative is the ACTUAL initial pressure Hessian, `A_t(0)=P0`.
+For (373) at the origin, with nu=1 and a=4, exact differentiation gives
+
+```text
+r_I(0,0)=0,   partial_t r_I(0,0)=64/3,
+partial_t v_H(0,0)=0.
+```
+
+Thus the true pressure-created stretching from that example is entirely
+in the unpaid channel at first order. Smooth local existence makes r_I
+positive on a short actual interval. For (371) with the same a and nu,
+the corresponding derivatives are `partial_t r_I=16` and
+`partial_t v_H=-12`, adding to the previously checked `partial_t v=4`.
+These finite activations do not refute an integrated full-datum allowance.
+
+The passive payment also holds if u is forced; it cannot by itself
+distinguish forced and unforced singularity mechanisms. With a physical
+force f, the retained equations instead contain
+`D I=grad p-f`, `D A=P-grad f-AB`, and the ordinary vorticity reaction
+adds `2omega.curl f/s_omega`. All three changes must remain. The checker
+uses a smooth manufactured calibration, the stationary shear
+`u=(a sin y,0,0)`, `f=nu u`, `p=0`. Its original passive parent is
+`H=(a exp(-nu t)sin y,0,0)`; the impulse source is exactly -f and the
+curl-force reaction is nonzero. This is not a forced blowup construction
+or a claim about internal realization of one.
+
+### Verification and the remaining history task
+
+The checker verifies full control squares, an exact all-time unforced
+shear, the forced calibration, and two complete NS/passive time jets
+for both explicit initial-data families. It also uses finite ORIGINAL
+oscillatory carriers built from the simple and resonant parents, including
+the resonant original background. H starts from each full carrier datum;
+no descendant's state is used to reset it. Original Fourier bounds fix M
+and delta before the jets are evaluated. Every convolution output and
+the derivative of the actual drift are retained, together with the
+canonical pressure and its first derivative.
+
+Run `python3 -O labs/passive_parent_bellman.py`. The four new Lean
+inequalities and exact algebra support the calculations. Construction,
+comparison and integration of the physical histories remain analytic.
+The next missing estimate is the pressure-impulse exponential history
+bound in (379), with the full initial resource and retained parents.
+Its source is constrained by actual unforced NS; it cannot be replaced
+by an arbitrary control or presumed nonpositive from its zero initial
+impulse. The favorable correction in (370) and the covariance reserve
+(338) remain available, with their unproved conversions explicit.

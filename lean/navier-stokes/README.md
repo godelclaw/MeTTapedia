@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [passive-parent Bellman payment](labs/README.md#passive-parent-gradient-payment-and-the-pressure-impulse-remainder)
+pays the gradient of the original velocity transported passively along
+the actual fluid, including its sampling-control cost. Its allowance
+depends on the original velocity maximum, viscosity and horizon, with
+no smallness or unknown future norm. It leaves an explicit signed
+pressure-impulse reaction, whose exponential history bound would imply
+continuation. An actual unforced example makes this remainder positive
+immediately. Four Lean inequalities certify the potential and squares;
+the PDE comparison, stochastic integration and continuation reduction
+remain analytic. The remainder is still open for arbitrary data.
+
 The [signed-reaction calculation](labs/README.md#signed-reaction-renewal-and-gradient-correction)
 retains the complete pressure and diffusion in the remaining stretching
 reward. A positive gradient correction reverses the highest-derivative
