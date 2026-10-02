@@ -17106,3 +17106,207 @@ is being substituted for this critical initial resource.
 Run `python3 -O labs/critical_caloric_allowance.py` for exponent, time-integral,
 constant and decomposition checks. The heat/Riesz estimates, nonnegative
 reserve construction and actual PDE Duhamel passage remain analytic.
+
+## Paying the caloric parent against the actual receiver
+
+`caloric_parent_strain.py` checks a stronger payment for the same original
+prepared parent q1. With initial energy and enstrophy available, its entire
+time-integrated supremum is finite. This pays its production against the
+ACTUAL receiver, without a separate estimate for receiver deformation.
+The nonlinear source and parent transport remain unpaid. The Fourier and
+PDE estimates below are analytic, not new Lean theorems.
+
+Use ordinary Lebesgue measure on R5, positive viscosity nu, and a fixed
+cutoff beta with `0<=beta<=1` and bounded weak gradient. Let
+
+```text
+B(t)=exp(nu t Delta5)b0,
+q1(t)=-2 A5 int_0^t exp(nu(t-s)Delta5)[beta B(s)^2] ds,
+A5=-partial_zz(-Delta5)^(-1),
+F=||b0||_2, G=||grad b0||_2, d=||grad beta||_infinity.
+```
+
+Assume b0 belongs to H1(R5). Smooth rapidly decaying axisymmetric data
+suffice for this and the subsequent physical identities. Neither a small
+initial norm nor an initial L1 moment is required for the parent bound.
+For actual-flow use beta=1-zeta_rho from the original core decomposition.
+
+### A Fourier observation paid by two initial norms
+
+Use the unitary Fourier transform with derivative multiplier i xi. For
+f in H1(R5), define
+
+```text
+I(f)=(2pi)^(-5/2) int_R5 |fhat(xi)|/|xi|^2 dxi.
+```
+
+For any a>0, Cauchy--Schwarz and Plancherel give
+
+```text
+I(f)^2 <=(a^2 ||f||_2^2+||grad f||_2^2)/(24 pi^2 a).
+```
+
+Indeed the other squared Cauchy factor before Fourier normalization is
+
+```text
+int_R5 |xi|^(-4)/(a^2+|xi|^2) dxi
+ =(8pi^2/3) int_0^infinity 1/(a^2+r^2) dr=4pi^3/(3a).
+```
+
+Optimize at `a=||grad f||_2/||f||_2` to obtain
+
+```text
+I(f)<=Cp sqrt(||f||_2 ||grad f||_2),
+Cp=1/(2 sqrt(3) pi).                                      (37)
+```
+
+If either norm vanishes, f=0 in L2 and the result is immediate. All
+integrals in this estimate are finite in dimension five, including the
+low-frequency endpoint. Fourier inversion followed by Tonelli now gives
+
+```text
+int_0^infinity ||B(t)||_infinity dt
+ <=I(b0)/nu<=Cp sqrt(FG)/nu.                               (38)
+```
+
+The time integration contributes `1/(nu |xi|^2)`. This estimate also
+follows by approximation from smooth data; it does not assume that b0
+itself has an absolutely integrable Fourier transform.
+
+### The complete first parent has finite accumulated strain
+
+The symbol of A5 has absolute value at most one. Fourier inversion,
+the triangle inequality, and Tonelli over t>=s>=0 give
+
+```text
+int_0^infinity ||q1(t)||_infinity dt
+ <=(2/nu) int_0^infinity I(beta B(s)^2) ds.                 (39)
+```
+
+This integrates the output heat kernel in time BEFORE applying (37).
+It is not an L-infinity bound for the Riesz multiplier A5 by itself.
+Heat contraction and the product rule give, for s>0,
+
+```text
+||beta B(s)^2||_2<=||B(s)||_infinity F,
+||grad(beta B(s)^2)||_2<=||B(s)||_infinity(dF+2G).
+```
+
+Apply (37), then (38), in (39):
+
+```text
+int_0^infinity ||q1(t)||_infinity dt <= A_cal,
+A_cal=F sqrt(G(dF+2G))/(6 pi^2 nu^2).                     (40)
+```
+
+This bounds the full elliptic strain response of the original caloric source,
+over all positive times. It does not estimate actual NS source evolution
+by heat. The nonnegative remaining clock
+`r1(t)=int_t^infinity ||q1(s)||_infinity ds` has `r1(0)<=A_cal` and
+spends exactly its decrease on any compatible interval. B, q1 and their
+initial clock must persist across seams; they are never restarted from
+the current fluid state. Finiteness is proved from the original datum,
+without access to an unknown future NS norm.
+
+The resources in (40) have a literal physical interpretation. Writing
+`u_theta=r b` and taking E without a factor 1/2,
+
+```text
+F^2=pi E_swirl(0), E_swirl=int_R3 |u_theta|^2,
+G^2=pi Z_swirl(0), Z_swirl=int_R3 |curl(u_theta e_theta)|^2.
+```
+
+The first identity uses `dy5=2pi^2 r^3 dr dz=pi r^2 dx3` for
+axisymmetric integrands. For the second, the two nonzero components of
+the swirl's curl are `-r b_z` and `2b+r b_r`. Their squared physical
+integrand differs from that of the lifted gradient by
+
+```text
+r[(r b_z)^2+(2b+r b_r)^2]-r^3(b_r^2+b_z^2)
+ =partial_r(2r^2 b^2).
+```
+
+The boundary terms vanish at the regular axis and at infinity under the
+stated decay; approximation extends the norm identity where these norms
+are finite. For beta=1, (40) simplifies to
+
+```text
+A_cal=sqrt(2) sqrt(E_swirl(0) Z_swirl(0))/(6pi nu^2).
+```
+
+This is initial enstrophy, not an assumed future enstrophy bound. It is
+therefore distinct from the coarse energy-only allowances refuted above.
+Under `b0_lambda(y)=lambda^2 b0(lambda y)`, F scales as lambda^(-1/2)
+and G as lambda^(1/2). The allowance is invariant if beta scales too
+(`d_lambda=lambda d`), or if beta=1. At a fixed physical cutoff its
+squared resource `F^2 G(dF+2G)` becomes `F^2 G(dF/lambda+2G)`;
+exact covariance must not be asserted for that different cutoff choice.
+
+### Paying the actual receiver and retaining the nonlinear remainder
+
+On every smooth actual axisymmetric prefix, retain
+`q=q_paid+q1+qR`, with qR exactly as in the preceding Duhamel decomposition.
+It is meridional strain reconstructed from vorticity, not the scalar
+pressure itself. The earlier paid-parent bound gives
+`int_0^T ||q_paid||_infinity<=2M_H` on every available T<=H, from the
+original datum and prescribed horizon.
+Use the single history weight
+
+```text
+W(t)=exp[-(3/2)int_0^t (||q_paid||_infinity+||q1||_infinity)],
+W(t)>=exp[-(3/2)(2M_H+A_cal)]>0,  t<=H.
+```
+
+Here M_H and A_cal are fixed in advance. The exact critical balance
+`M'=(3/2)<q,|b|^(5/2)>-(15nu/4)Dcrit` now implies
+
+```text
+(WM)' +(15nu/8) W Dcrit
+ <=W[(3/2)<qR,|b|^(5/2)>-(15nu/8)Dcrit].                  (41)
+```
+
+Thus the ONLY remaining signed payment in this decomposition is a finite
+original-datum constant K_R>=0 such that every available prefix T<=H obeys
+
+```text
+int_0^T W[(3/2)<qR,|b|^(5/2)>-(15nu/8)Dcrit]
+ <=K_R(u0,nu,H,rho).                                      (42)
+```
+
+If (42) holds, the earlier interpolation
+`S^2<=(25C5/16)M^(7/5)Dcrit`, `S=int_R5 |b|^3`, yields
+
+```text
+int_0^T S^2
+ <=(5C5/(6nu)) exp[(18/5)(2M_H+A_cal)](M0+K_R)^(12/5).
+```
+
+This is the same analytic axisymmetric continuation consumer as before.
+The receiver need not be close to B. Its entire interaction with q1 has
+been paid by the weight; there is no separate receiver-difference
+obligation in (42). The signed qR work is still OPEN.
+
+For a concrete evolution of this remainder, let eta1 solve the original
+heat equation with source `partial_z(beta B^2)` and zero initial value.
+Set `e=b-B`, `h=eta_core-eta1`, `T_op=2partial_z(-Delta5)^(-1)`.
+The complete actual equations give
+
+```text
+(partial_t+v.grad-nu Delta5)e=q b-v.grad B,
+(partial_t+v.grad-nu Delta5)h
+ =partial_z[beta(2B e+e^2)]-v.grad eta1,
+e(0)=h(0)=0,  qR=T_op h.                                  (43)
+```
+
+The drift is the full actual meridional velocity and `div5 v=-q`.
+In particular the generated source and transported parent cannot be
+replaced by independent controls. Initial zero error does not bound
+its subsequent growth. A payment for (43) must retain both forcings,
+their common evolving drift, pressure reconstruction and diffusion.
+No such arbitrary-history payment is established here; general 3D and
+periodic continuation remain separate, open obligations.
+
+Run `python3 -O labs/caloric_parent_strain.py` for the Fourier constants,
+heat time integral, physical norm algebra, scaling, and continuation
+coefficient checks. These exact checks do not certify the analytic
+inequalities, physical evolution, or continuation theorem in Lean.
