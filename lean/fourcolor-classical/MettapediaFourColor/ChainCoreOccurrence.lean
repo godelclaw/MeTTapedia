@@ -120,7 +120,7 @@ def occurrence (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic
     intro d hd
     obtain ⟨i, p, hi, hp, hj, hq⟩ := source_turn d hd
     obtain ⟨_, _, h⟩ := full_turn r tri cyclic i p
-    simpa [NearLinearChainOccurrence.dart, hom, hi, hp, hj, hq] using h
+    simpa only [NearLinearChainOccurrence.dart, hom_apply, hi, hp, hj, hq] using h
   degree_eq := by
     intro v hv
     let i : Fin 5 := ⟨v.val - 8, by omega⟩

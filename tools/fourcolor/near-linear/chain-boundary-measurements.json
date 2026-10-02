@@ -44,7 +44,7 @@
   },
   "audit": {
     "roots": 17,
-    "dependency_declarations": 31606,
+    "dependency_declarations": 31663,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -70,15 +70,15 @@
         "module": "MettapediaFourColor.RuleChainRecognition",
         "source_sha256": "af3baaa8ba053d7ed4ad375a8090f838e8fb4630ec42d594532f2d8869ec15ef",
         "exit_code": 0,
-        "frontend_wall_seconds": 7.151,
-        "olean_bytes": 247872,
-        "olean_sha256": "f74e310e48d9fd52467c374482744b5a77b58456286120ca129bd2764170b93a"
+        "frontend_wall_seconds": 7.4,
+        "olean_bytes": 248360,
+        "olean_sha256": "1413da0722333a6e0ae802e8a7ee556f92701afc22fe62319afcdde9b51bb01f"
       },
       {
         "module": "MettapediaFourColor.ChainBoundaryGeometry",
         "source_sha256": "a03c9397d0066dc06cc653afc3fd2d93fdafae1fa7f8340bc2d6d9738f9cbe63",
         "exit_code": 0,
-        "frontend_wall_seconds": 258.698,
+        "frontend_wall_seconds": 253.781,
         "olean_bytes": 2913760,
         "olean_sha256": "bf88a21423e230100ce6708c16523c02d3f32c606461f472c4b5381dccc32774"
       },
@@ -86,15 +86,15 @@
         "module": "MettapediaFourColor.ChainBoundaryExample",
         "source_sha256": "e7a1cf6ec2ddc7bc17bc9b945a45fc526bd47add06e2fddb1a85b3b3d62132ce",
         "exit_code": 0,
-        "frontend_wall_seconds": 10.571,
-        "olean_bytes": 191032,
-        "olean_sha256": "6b700cb10f7f2334ded394b1c1624c2089322ed4acdbf876d0e752a2d0aad1fc"
+        "frontend_wall_seconds": 10.513,
+        "olean_bytes": 204480,
+        "olean_sha256": "01ac45a879863230adae694bd7d612e3889d42ca88645ff262322223a0b38ee0"
       },
       {
         "module": "MettapediaFourColor.RuleChainRecognitionAudit",
         "source_sha256": "4a1942e9f47f744e92344e05d91681231bf6f0a3e31f0037e9f67fa034705cbb",
         "exit_code": 0,
-        "frontend_wall_seconds": 10.967,
+        "frontend_wall_seconds": 7.563,
         "olean_bytes": 2600,
         "olean_sha256": "c54476376f2af2aebdb17563f38a96cd7cbbe7e48186677a4d20971882a51a18"
       }
@@ -113,7 +113,7 @@
   },
   "remaining": [
     "Derive reductions from all surviving joint charge profiles.",
-    "Extend shared three-triangle fan recognition to D0006 and its nine-port boundary.",
+    "Consume both completed chain recognizers in a justified joint-profile supply argument; see extended-chain-measurements.json.",
     "Establish global coverage and termination for the intended compact family system."
   ]
 }

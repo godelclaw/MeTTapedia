@@ -1024,3 +1024,30 @@ and the seventeen-root audit. This supplies a concrete
 reason to extend local views during the coverage search. It neither proves
 universal family supply nor removes a catalogue entry. The complete assembly
 still uses 633 coverage entries and 629 original configuration certificates.
+
+## Completing the second chain profile
+
+The degree-six word `5,6,6,5` now constructs an actual D0006 occurrence,
+including all nine ordered boundary ports. The eight-port D0004 word
+`5,6,5,5` has been refactored to use the same parameterized
+[fan boundary law](../../../lean/fourcolor-classical/MettapediaFourColor/FanBoundaryScheme.lean).
+Shared rotation readings determine a single boundary map, so the three
+triangles retain their common vertices throughout completion.
+
+[ActualExtendedChainReduction](../../../lean/fourcolor-classical/MettapediaFourColor/ActualExtendedChainReduction.lean)
+connects this recognition to strict descent and reconstruction in the actual
+minimal-map domain. It reuses the already certified D0006 repair from
+classical configuration 7. There is no new rank certificate.
+[ExtendedChainExample](../../../lean/fourcolor-classical/MettapediaFourColor/ExtendedChainExample.lean)
+constructs the whole source from directed edge `(48,117)` of the retained
+162-vertex graph and checks all fourteen images. Those images lie within
+radius two of centre 48; flatness and global sphericality of the example
+remain separate program evidence.
+
+The [kernel receipt](extended-chain-measurements.json) records the common
+geometry, exact source bridge, actual reconstruction and finite example.
+This gives a second concrete consumer of the generic completion theorem.
+The next coverage obligation is to derive one of the supported reductions
+from the surviving joint charge profiles, or retain and characterize a
+counterexample to that proposed local supply claim. Coverage remains 633
+entries with 629 original certificate dependencies.

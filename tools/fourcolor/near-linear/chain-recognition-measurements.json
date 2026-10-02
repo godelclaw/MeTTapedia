@@ -21,7 +21,8 @@
   "shared_geometry": [
     "FacialPatchInduced.corner_chain_successor excludes extra core edges.",
     "FacialStarCompletion.across_edge identifies the two readings of each shared boundary corner.",
-    "Cyclic rotations supply all source stars; inducedness prevents boundary capture by the core."
+    "Cyclic rotations supply all source stars; inducedness prevents boundary capture by the core.",
+    "ThreeTriangleFan and FanBoundaryScheme now supply shared degree- and port-parameterized geometry; ExtendedChainCompletion is a second actual consumer."
   ],
   "reconstruction": {
     "consumer": "FourColor.ActualChainReduction.not_in_minimal",
@@ -48,7 +49,7 @@
   },
   "audit": {
     "roots": 26,
-    "dependency_declarations": 31140,
+    "dependency_declarations": 31209,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -71,58 +72,74 @@
     "completed": true,
     "modules": [
       {
-        "module": "MettapediaFourColor.ChainCoreReading",
-        "source_sha256": "bea224021280345eb729f5647b4adb0b0aa41a4085449546684ae939abfd8d63",
+        "module": "MettapediaFourColor.ThreeTriangleFan",
+        "source_sha256": "887655aeb9e3f9bc0540f737c4f1838cbe4541b69c57093cf1c0f64d8e77631f",
         "exit_code": 0,
-        "frontend_wall_seconds": 5.187,
-        "olean_bytes": 257216,
-        "olean_sha256": "9cf3210167b98305e7ea365550723ee854e4c836ba5d9eb0a2768b4c07206e87"
+        "frontend_wall_seconds": 4.971,
+        "olean_bytes": 230384,
+        "olean_sha256": "74088c86654cc4fc94edb222948ed916016af916e88c9a1ab3a57ed64237a003"
+      },
+      {
+        "module": "MettapediaFourColor.FanBoundaryScheme",
+        "source_sha256": "352fd2bdf8bbf14c9126c7dd0317e3bf90b60691976541b2a6e19d3044562e2f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.055,
+        "olean_bytes": 658632,
+        "olean_sha256": "eabfd2a8adb797339c5513d983e8ab586d7e80a18788a88385e2867f15221c8e"
+      },
+      {
+        "module": "MettapediaFourColor.ChainCoreReading",
+        "source_sha256": "4a93b993eb964ce920cf0efeaf5d7d6df032ff32b15ccc8e04e3b3e75b81b6f0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.928,
+        "olean_bytes": 130440,
+        "olean_sha256": "aaf7e2da8d553e3a4adf2ad0f7035b16d2b2f81bbaeb2c6ec0f652f312fc848d"
       },
       {
         "module": "MettapediaFourColor.ChainCoreCompletion",
-        "source_sha256": "0bec69e8afd740b50d2149e24cdec64537c974c9f485ddabaf0078ccb70dee83",
+        "source_sha256": "fdc1b287aef29370f5b61bdaeb335b704541ec83d90f56fd2d88d4dcecd68555",
         "exit_code": 0,
-        "frontend_wall_seconds": 6.771,
-        "olean_bytes": 496592,
-        "olean_sha256": "25a42804d3e72cf3ffc1928cdd5ca272f29c506b04202a74e011868a3c0d7ab6"
+        "frontend_wall_seconds": 8.542,
+        "olean_bytes": 425256,
+        "olean_sha256": "ce1629c1fc2c180982c7b61bc7848f8a8f96c0a827bd00be1ecacdb787c260e8"
       },
       {
         "module": "MettapediaFourColor.ChainCoreOccurrence",
-        "source_sha256": "bf269bae01a3468e94775a771da64fab87997f8732b9d6f5fc31ab99045bd5e2",
+        "source_sha256": "f81a9825cdd49e2b6b75046e10df8d803b8169e9603e4b44725ba9be38d3263a",
         "exit_code": 0,
-        "frontend_wall_seconds": 6.243,
-        "olean_bytes": 298888,
-        "olean_sha256": "c13327cfe2bb957022d67c77b03f804f1dc1b26126ac3b55ebf444752df35e48"
+        "frontend_wall_seconds": 6.177,
+        "olean_bytes": 301504,
+        "olean_sha256": "fdaa1559f3fe2c009c68fcd461a5c8cd108ca7e581a008e50d488e79fd2f5d16"
       },
       {
         "module": "MettapediaFourColor.ActualChainRecognition",
         "source_sha256": "7c3edc19979e14083c7b9f081341f2401feeac48d04d390ea64d9a60db5d6ade",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.388,
-        "olean_bytes": 46344,
-        "olean_sha256": "103315a87fb0f1c9306223b12562e7015ce5792fe483ddb2473e208097cdc255"
+        "frontend_wall_seconds": 4.1,
+        "olean_bytes": 46800,
+        "olean_sha256": "fb0f54633ba11e81a16041da5a95858f226e4a15b2269be47baab0695bec5bd0"
       },
       {
         "module": "MettapediaFourColor.ChainFanRecognition",
         "source_sha256": "205a86d7968ada5ec63168cb27c612518d7dd667eee112eececb6e729b99c833",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.955,
-        "olean_bytes": 183232,
-        "olean_sha256": "cd4bec64dcaca0f59d5c339ed7ac559e5d678f378b812cc7237b7a9c64b3b4e7"
+        "frontend_wall_seconds": 4.698,
+        "olean_bytes": 183936,
+        "olean_sha256": "9b3a723a750ea14dd8e857751779a89c36c1f0d7a928403710e2606bbf282254"
       },
       {
         "module": "MettapediaFourColor.ChainRecognitionExample",
         "source_sha256": "fd23cb631f4b9abc2c1f5caa1ad2766013d937c0b6f6b0e0cb150a1423459ebc",
         "exit_code": 0,
-        "frontend_wall_seconds": 5.576,
-        "olean_bytes": 102240,
-        "olean_sha256": "4fa04719f14456be2f466ae1659be922fb71a07f79775c34a1bd6779e7555436"
+        "frontend_wall_seconds": 5.695,
+        "olean_bytes": 116160,
+        "olean_sha256": "3db27fc291ede543c7fe79f4b72760152b4a0fb9679a2cf53b58fdd837e78b6b"
       },
       {
         "module": "MettapediaFourColor.ChainRecognitionAudit",
-        "source_sha256": "15bb59f7e8f597bc7cb07c1270cde7416c89acdf8b4a64dcc46583dc34daffff",
+        "source_sha256": "6f26193c02673c174aa674fcf68afe1850c32e77038cf34c8ea8fc8336f1b23d",
         "exit_code": 0,
-        "frontend_wall_seconds": 11.027,
+        "frontend_wall_seconds": 10.805,
         "olean_bytes": 2720,
         "olean_sha256": "2e4cdd81845fbd271154bc45c57094e585bde816fc6f99e0f86653602a4bef47"
       }

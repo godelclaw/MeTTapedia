@@ -1480,3 +1480,40 @@ The [program receipt](../../tools/fourcolor/near-linear/chain-boundary-audit.jso
 separates the example's flatness and global geometry checks from its Lean
 recognition theorem. This is a new profile exclusion, with no coverage-count
 or configuration-certificate saving.
+
+## One fan-completion law for two degree profiles
+
+[ThreeTriangleFan](MettapediaFourColor/ThreeTriangleFan.lean) separates the
+three-triangle geometry from its prescribed degrees. A proper cyclic interval
+makes the five core vertices distinct; the facial-triangle property excludes
+extra core edges. [FanBoundaryScheme](MettapediaFourColor/FanBoundaryScheme.lean)
+then completes full stars with a parameterized number of ports. Each port has
+one defining observation, and the triangular rotation law identifies its
+other reading across a shared edge. This constructs one joint boundary map,
+including every source edge and full core rotation.
+
+Both `ChainCoreCompletion` and `ExtendedChainCompletion` consume this law.
+At a degree-six centre their consecutive neighbour words are respectively
+`5,6,5,5` and `5,6,6,5`. The first constructs D0004's eight-port interface;
+the second constructs D0006's nine-port interface. The source bridges retain
+all edges, prescribed core degrees, ordered ports and cyclic turns. Boundary labels may
+coincide outside the induced core.
+
+[ActualExtendedChainReduction.not_degree_word](MettapediaFourColor/ActualExtendedChainReduction.lean)
+excludes the second word in an actual graph-backed vertex-minimal
+counterexample. The proof constructs the occurrence, obtains a singleton
+contract colouring by strict two-vertex descent, and reconstructs through the
+existing configuration-7 repair and the same planar exterior. No initial
+colouring or boundary-completion assumption is supplied by the caller.
+`ExtendedChainExample` checks all fourteen reconstructed images in the
+retained 162-vertex rotation, within radius two of centre 48.
+
+With the existing chain and finite-geometry artifacts prepared, replay
+`lake build kernelChainRecognition`, then `lake build kernelExtendedChain`.
+The latter audit checks both actual reduction consumers and their common
+completion dependency; see the [receipt](../../tools/fourcolor/near-linear/extended-chain-measurements.json).
+This shares the geometric argument and adds a usable recognition pattern.
+It proves neither reducibility for every degree profile admitted by a scheme
+nor supply of one of these two profiles in every flat neighbourhood. The
+complete assembly remains at 633 coverage entries and 629 original
+configuration certificate dependencies.

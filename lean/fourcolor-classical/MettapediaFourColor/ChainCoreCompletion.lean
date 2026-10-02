@@ -1,5 +1,5 @@
 import MettapediaFourColor.ChainCoreReading
-import MettapediaFourColor.FacialStarCompletion
+import MettapediaFourColor.FanBoundaryScheme
 
 /-!
 # Growing the chain boundary from its retained core
@@ -67,8 +67,25 @@ theorem edge_reading : ∀ a b : Fin 13, input0004.graph.Adj a b →
       (a = fullSpoke i p ∧ b = fullSpoke i (nextPos i p)) ∨
       (b = fullSpoke i p ∧ a = fullSpoke i (nextPos i p)) := by decide +kernel
 
+/-- The original eight-port completion is one instance of the common
+owner-and-seam scheme. -/
+def scheme : FanBoundaryScheme.Scheme 8 where
+  graph := input0004.graph
+  degree := degree
+  proper := fun i => (star_specs i).2.1
+  row := fun i n => (fullRow i).getD n 0
+  owner := owner
+  owner_bounds := by decide +kernel
+  core_prefix := by decide +kernel
+  ring_cases := by decide +kernel
+  edge_reading := by decide +kernel
+
 variable {V : Type*} {G : SimpleGraph V} [G.LocallyFinite] {rotation : Data G}
   (r : Reading rotation)
+
+def schemeReading : FanBoundaryScheme.Reading scheme rotation where
+  toReading := r.toReading
+  degree_eq := r.degree_eq
 
 def base (i : Fin 5) : G.Dart :=
   ⟨(r.map i, r.map (firstNeighbor i)), r.map.map_adj (first_edge i)⟩
@@ -170,32 +187,8 @@ theorem outer_seam (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCy
 
 theorem row_agrees (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic) :
     ∀ (i : Fin 5) (p : Fin (degree i)),
-      vertex r (fullSpoke i p) = (around r i p.val).snd := by
-  have s0 := outer_seam r tri cyclic 0
-  have s1 := outer_seam r tri cyclic 1
-  have s2 := outer_seam r tri cyclic 2
-  have s3 := outer_seam r tri cyclic 3
-  have s4 := outer_seam r tri cyclic 4
-  change (around r 0 4).snd = (around r 1 4).snd at s0
-  change (around r 1 5).snd = (around r 4 2).snd at s1
-  change (around r 2 4).snd = (around r 0 2).snd at s2
-  change (around r 3 5).snd = (around r 2 3).snd at s3
-  change (around r 4 4).snd = (around r 3 3).snd at s4
-  intro i p
-  by_cases hp : p.val < (star i).length
-  · rw [show fullSpoke i p = (spoke i ⟨p.val, hp⟩).natAdd 8 from
-      fullSpoke_core i ⟨p.val, hp⟩, vertex_core]
-    exact (around_core r tri i ⟨p.val, hp⟩).symm
-  obtain ⟨b, hb, cases⟩ := ring_position_cases i p (by omega)
-  rw [hb, vertex_ring]
-  rcases cases with own | ⟨rfl, hp, rfl⟩ | ⟨rfl, hp, rfl⟩ | ⟨rfl, hp, rfl⟩ |
-    ⟨rfl, hp, rfl⟩ | ⟨rfl, hp, rfl⟩
-  · rw [own]
-  · rw [hp]; exact s0.symm
-  · rw [hp]; exact s1.symm
-  · rw [hp]; exact s2.symm
-  · rw [hp]; exact s3.symm
-  · rw [hp]; exact s4.symm
+      vertex r (fullSpoke i p) = (around r i p.val).snd :=
+  FanBoundaryScheme.row_agrees (schemeReading r) tri cyclic
 
 theorem around_next (cyclic : rotation.IsVertexwiseCyclic)
     (i : Fin 5) (p : Fin (degree i)) :
@@ -209,23 +202,10 @@ theorem around_next (cyclic : rotation.IsVertexwiseCyclic)
 
 /-- The whole free completion maps to actual ambient vertices and edges. -/
 def hom (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic) :
-    input0004.graph →g G where
-  toFun := vertex r
-  map_rel' := by
-    intro a b h
-    obtain ⟨i, p, h⟩ := edge_reading a b h
-    have center : G.Adj (vertex r (i.natAdd 8)) (vertex r (fullSpoke i p)) := by
-      rw [vertex_core, row_agrees r tri cyclic]
-      simpa only [around_fst] using (around r i p.val).adj
-    have ring : G.Adj (vertex r (fullSpoke i p))
-        (vertex r (fullSpoke i (nextPos i p))) := by
-      rw [row_agrees r tri cyclic, row_agrees r tri cyclic]
-      have h := consecutive_adjacent rotation tri (around r i p.val)
-      rwa [around_next r cyclic] at h
-    rcases h with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · exact center
-    · exact center.symm
-    · exact ring
-    · exact ring.symm
+    input0004.graph →g G :=
+  FanBoundaryScheme.hom (schemeReading r) tri cyclic
+
+theorem hom_apply (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic)
+    (v : Fin 13) : hom r tri cyclic v = vertex r v := rfl
 
 end FourColor.ChainCoreCompletion

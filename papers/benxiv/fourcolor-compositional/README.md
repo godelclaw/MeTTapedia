@@ -1458,6 +1458,44 @@ without a separate degree hypothesis. This is a removed local branch, not
 a removed catalogue entry. The [rerooted-reduction account](../../../lean/fourcolor-classical/README.md#changing-the-reduction-edge-removes-a-residual-branch)
 records the geometric law and actual-map consumer.
 
+## The same construction with one additional port
+
+The three-triangle chain now supplies a concrete example of shared geometric
+reasoning across different interfaces:
+
+```text
+one degree-six centre and four consecutive neighbours
+                 |
+          same three-triangle fan
+                 |
+        joint boundary-completion law
+          /                    \
+     5,6,5,5                 5,6,6,5
+     eight ports             nine ports
+          \                    /
+       existing shared colouring repair
+                 |
+      strict descent and reconstruction
+```
+
+The [common law](../../../lean/fourcolor-classical/MettapediaFourColor/FanBoundaryScheme.lean)
+retains the same ambient vertices across all three triangles and identifies
+both readings of each shared outer corner. Its geometric proof is independent
+of the particular degrees and port count. Both concrete source profiles
+satisfy its contracts, and both have actual minimal-map consumers with
+colouring reconstruction. The nine-port consumer also recovers all fourteen
+source vertices in a checked 162-vertex example.
+
+This is a faithful instance of Ben's proposed compositional method: changing
+one local degree changes the interface while the construction argument is
+reused. The colouring repair still retains one classical base certificate;
+reducibility for arbitrary degree profiles is not claimed. The remaining
+coverage task is to show that the surviving joint charge profiles supply one
+of these pieces or another certified alternative. No catalogue entry or
+additional assembly certificate is removed here. The
+[receipt](../../../tools/fourcolor/near-linear/extended-chain-measurements.json)
+records the exact scope and audit.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

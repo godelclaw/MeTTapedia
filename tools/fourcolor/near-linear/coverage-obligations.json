@@ -1,5 +1,5 @@
 {
-  "status": "The actual exceptional closing branch, exact rooted rule matcher, both guarded rule-pair diamond reductions, chain degree-word recognition and its continued-rule consumer are kernel checked. Surviving zero-charge classification and global coverage remain open.",
+  "status": "The actual exceptional closing branch, exact rooted rule matcher, guarded rule-pair diamond reductions, both chain degree-word recognizers and the continued-rule consumer are kernel checked. Surviving zero-charge classification and global coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -391,6 +391,14 @@
     {
       "declaration": "FourColor.RulePairCollisionExample.has_pentagonal",
       "meaning": "A second certified instance on the same 42-vertex rotation consumes the uniform collision law after checking both full source rules and all degree guards."
+    },
+    {
+      "declaration": "FourColor.FanBoundaryScheme.hom",
+      "meaning": "One degree- and port-parameterized owner-and-seam law reconstructs the whole source graph from a joint three-triangle reading. Both D0004 and D0006 completions consume it."
+    },
+    {
+      "declaration": "FourColor.ActualExtendedChainReduction.not_degree_word",
+      "meaning": "A degree-six centre with consecutive neighbour degrees 5,6,6,5 constructs the complete nine-port D0006 occurrence and contradicts actual vertex minimality through strict reduction and colouring reconstruction."
     }
   ],
   "open": [
@@ -436,11 +444,11 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Extend the shared three-triangle fan recognition to D0006 and consume it in residual joint profiles",
-    "test": "Retain the existing D0004 chain consumer. On the next independently checked flat 8/7 pair, derive the D0006 five-vertex core from the consecutive degree word 5,6,6,5 at a degree-six centre, then construct all nine boundary ports from the same rotation. Test the exact source occurrence and shared boundary reconstruction before using it as a coverage exclusion.",
-    "acceptance": "One shared fan-geometry argument consumed by both chain recognizers, followed by the actual minimal-map reduction for D0006 using its existing certified repair. Retain all residual profiles and prove an observation-radius bound; do not assume that the two chains cover every flat pair.",
-    "prior_result": "RuleChainRecognition.not_continuation_five is proved. D0006 already has an exact source bridge and certified repair using the same configuration-7 base as D0004. Its full actual-map recognition from the degree word 5,6,6,5 is the next missing theorem.",
-    "limit": "Neither the three known core families nor the continued-rule exclusion is shown to cover every flat pair. Reflection orientations remain explicit; the generic new consumer is for index 6 in the supplied rotation."
+    "target": "Joint-profile supply using both certified chain words and the diamond alternatives",
+    "test": "Re-evaluate retained flat eight/seven profiles with exact rule matches in both orientations, actual common vertices and complete degree-six stars. Track where 5,6,5,5 or 5,6,6,5 occurs and what signed charge remains when both are excluded. Test the smallest surviving profile before extending the reduction vocabulary.",
+    "acceptance": "Derive a supported actual reduction or a stronger joint charge constraint from an explicit class of source-rule profiles, with a second consumer where available; otherwise retain a replayable residual with exact failed supply assertion. A list of matched configurations alone is not a supply theorem.",
+    "prior_result": "Both degree words now construct their complete eight- or nine-port interfaces within radius two and have actual minimal-map reductions through one shared fan-completion law. RuleChainRecognition already connects one retained rule continuation to the eight-port word.",
+    "limit": "The shared boundary theorem does not prove repair for arbitrary degree parameters. Neither the two chain words nor their union with the diamonds is shown to cover every flat pair. Exact orientations and shared vertex identities remain part of the domain."
   },
   "counts": {
     "coverage_entries": 633,

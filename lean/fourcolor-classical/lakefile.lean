@@ -55,9 +55,26 @@ target kernelChainRecognition pkg : Unit := do
         "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
         "--package", ".", "--output", ".lake/chain-recognition-audit",
         "--library-output", ".lake/build/lib/lean", "--modules",
-        "ChainCoreReading", "ChainCoreCompletion", "ChainCoreOccurrence",
+        "ThreeTriangleFan", "FanBoundaryScheme", "ChainCoreReading", "ChainCoreCompletion",
+        "ChainCoreOccurrence",
         "ActualChainRecognition", "ChainFanRecognition", "ChainRecognitionExample",
         "ChainRecognitionAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Extend the same facial-fan completion to the nine-port profile. -/
+target kernelExtendedChain pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/extended-chain-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ExtendedChainCore", "ExtendedChainCompletion", "ExtendedChainOccurrence",
+        "ExtendedChainRecognition", "ExtendedChainContract", "ActualExtendedChainReduction",
+        "ExtendedChainExample", "ExtendedChainAudit"]
       cwd := pkg.dir
       env := env }
 

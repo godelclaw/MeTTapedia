@@ -1,0 +1,219 @@
+{
+  "status": "Kernel-certified shared fan completion with both eight- and nine-port actual reconstruction consumers.",
+  "source_manifest": "chain-sources.json",
+  "previous_recognition": "chain-recognition-measurements.json",
+  "shared_geometry": {
+    "core": "ThreeTriangleFan: five vertices, seven edges, three compatible facial triangles.",
+    "completion": "FourColor.FanBoundaryScheme.hom",
+    "parameters": "Prescribed degrees, source graph and ordered boundary-port count, subject to the explicit Scheme contracts.",
+    "preserved": "One shared ambient core; source edges; all core cyclic turns; owner-and-seam equalities for joint boundary observations.",
+    "core_injectivity": "Derived from the proper cyclic intervals.",
+    "inducedness": "Derived when ambient triangles are facial, as proved in actual vertex minimality.",
+    "boundary_labels_may_coincide": true,
+    "boundary_core_identification": false,
+    "arbitrary_degree_profile_repair_proved": false
+  },
+  "consumers": [
+    {
+      "source": "D0004",
+      "degree_six_neighbor_word": [
+        5,
+        6,
+        5,
+        5
+      ],
+      "ports": 8,
+      "source_vertices": 13,
+      "actual_theorem": "FourColor.ChainFanRecognition.not_in_minimal",
+      "completion": "FourColor.ChainCoreCompletion.hom"
+    },
+    {
+      "source": "D0006",
+      "degree_six_neighbor_word": [
+        5,
+        6,
+        6,
+        5
+      ],
+      "ports": 9,
+      "source_vertices": 14,
+      "actual_theorem": "FourColor.ActualExtendedChainReduction.not_degree_word",
+      "completion": "FourColor.ExtendedChainCompletion.hom"
+    }
+  ],
+  "reconstruction": {
+    "domain": "Actual dual of a GraphBackedVertexMinimalTaitCounterexample.",
+    "strict_descent": "Existing adjacent-pair deletion of two primal vertices; not deletion of the whole five-vertex dual core.",
+    "initial_witness": "Supplied by ActualDualContract.singleton_colorable.",
+    "joint_exterior": "Derived on the same actual planar disk by InjectiveEmbeddedRepair.colorable.",
+    "repair": "Existing NearLinearChainRepair.reference_repair for D0006; the eight-port repair uses the proved boundary-triangle transfer.",
+    "retained_base": "FourColor.Bulk.Cfg006 (classical configuration 7)",
+    "additional_rank_certificates": 0,
+    "supplied_boundary_completion": false,
+    "supplied_starting_colouring": false,
+    "supplied_exterior_closure": false
+  },
+  "finite_example": {
+    "geometry": "MettapediaFourColor.ChainBoundaryGeometry",
+    "vertices": 162,
+    "directed_start": [
+      48,
+      117
+    ],
+    "core_images": [
+      1,
+      48,
+      118,
+      17,
+      117
+    ],
+    "complete_source_images": [
+      47,
+      51,
+      125,
+      120,
+      52,
+      119,
+      123,
+      50,
+      49,
+      17,
+      117,
+      48,
+      118,
+      1
+    ],
+    "proved": [
+      "cyclic triangular rotation (existing geometry module)",
+      "degree-six centre and consecutive word 5,6,6,5",
+      "induced five-vertex core",
+      "full D0006 occurrence from the common completion",
+      "all fourteen source images",
+      "radius-two containment around centre 48"
+    ],
+    "program_only": [
+      "global sphericality and flatness, in chain-boundary-audit.json"
+    ],
+    "not_claimed": [
+      "minimality of this finite example",
+      "all flat pairs contain one of the recognized words"
+    ]
+  },
+  "audit": {
+    "roots": 25,
+    "dependency_declarations": 31428,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "both_actual_consumers_require_shared_completion": true,
+    "other_original_rank_certificates": false,
+    "complete_four_colour_endpoint": false,
+    "exceptional_D1774_certificate": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.ExtendedChainCore",
+        "source_sha256": "91efbaecec95606bf405d65233c094cd2e325ae0816b278053618b65f4aff654",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.795,
+        "olean_bytes": 167320,
+        "olean_sha256": "a208a24ba39459a3cbd23aa8b1313ba7ec00e66e860d3df679ef99c170074b5f"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainCompletion",
+        "source_sha256": "68b1fa85fc83d46451306031705cbb24d47b350a78fc364fed5b8a5516787a41",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.559,
+        "olean_bytes": 241448,
+        "olean_sha256": "fab0d2e840b65b4683f2c1cf3f5ad34a062bf84eb2b447cd9d9bff2e10eb4977"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainOccurrence",
+        "source_sha256": "8f6e5fbb41c83a3a43d0a8be196ee41613f4cfd6f014c5f79df3f23f695c88ee",
+        "exit_code": 0,
+        "frontend_wall_seconds": 11.295,
+        "olean_bytes": 272152,
+        "olean_sha256": "cb67b620b419348d936b7dfb84401013db3805206f01925c8df326effb554694"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainRecognition",
+        "source_sha256": "f58b9054c8f61636842b3b3827a1aebd982257e6c91e8968a82ba8bcf19a3fb0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.757,
+        "olean_bytes": 197080,
+        "olean_sha256": "ac01fc987ea4ae9236828864dd30397fe804c27c298974dd5df4f2ba04c4cd00"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainContract",
+        "source_sha256": "3498363551d27e669f8e702b643e5794adecdba1cf371b15047767526249b354",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.0,
+        "olean_bytes": 70720,
+        "olean_sha256": "2c4aef9e306bb310300fc6c7176ba46cc50d7bb37ee782ec27b84ee45bd5676b"
+      },
+      {
+        "module": "MettapediaFourColor.ActualExtendedChainReduction",
+        "source_sha256": "8acf9f3741c00fba085cc1be15fe91d9be1569b9c15c581cc64d0220d03b3254",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.185,
+        "olean_bytes": 70192,
+        "olean_sha256": "96e18ce549efac9cfa5d2c41d0caf30eab651fa165319f50f441f905a38fc1ed"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainExample",
+        "source_sha256": "86d3d1b624f708af5e615a18e6ea12257d834b3add6a87d981ccb3a5269e9ee5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.394,
+        "olean_bytes": 105944,
+        "olean_sha256": "43250ff89696258db12153b1071e5645ed8394b4e03369c518ef1e06b19d6a62"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainAudit",
+        "source_sha256": "9b2af18fa9bc7a47ddcc95912c43358803bd67f16380bd4966339ee89fd00e20",
+        "exit_code": 0,
+        "frontend_wall_seconds": 12.764,
+        "olean_bytes": 2600,
+        "olean_sha256": "bcb8e8714cc822508f3f8d7057368392a1164a63f5bb573d147a1f56106e706b"
+      }
+    ]
+  },
+  "prerequisite_replays": [
+    "chain-recognition-measurements.json",
+    "chain-boundary-measurements.json"
+  ],
+  "commands": [
+    "lake build kernelChainRecognition",
+    "lake build kernelChainBoundary kernelComplete",
+    "lake build kernelExtendedChain",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "compression": {
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "shared_geometric_completion_schemes": 1,
+    "concrete_geometric_completion_consumers": 2,
+    "new_rank_tables": 0,
+    "new_uniform_colouring_repair_schemes": 0,
+    "additional_coverage_entries_removed": 0,
+    "additional_assembly_certificate_dependencies_removed": 0,
+    "runtime_or_byte_saving_claimed": false
+  },
+  "remaining": [
+    "Derive a supported reduction or a stronger signed charge constraint from the surviving joint rule profiles.",
+    "Complete justified residual neighbourhood classification.",
+    "Prove global coverage and termination for the intended compact family system."
+  ]
+}
