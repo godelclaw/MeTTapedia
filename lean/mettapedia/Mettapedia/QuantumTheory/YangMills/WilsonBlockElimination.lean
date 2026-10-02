@@ -185,6 +185,18 @@ theorem partition_pos (W : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
     simp only [Function.mem_support, ne_eq, (hW x).ne', not_false_eq_true, Set.mem_univ]
   simp [hs]
 
+/-- A nonzero scalar vacuum factor cancels from normalized expectations. -/
+theorem expectation_smul_density (W F : C(X, ℝ)) {c : ℝ} (hc : c ≠ 0) :
+    expectation μ (c • W) F = expectation μ W F := by
+  simp only [expectation, ContinuousMap.smul_apply, smul_eq_mul, mul_assoc,
+    integral_const_mul]
+  exact mul_div_mul_left _ _ hc
+
+theorem covariance_smul_density (W F G : C(X, ℝ)) {c : ℝ} (hc : c ≠ 0) :
+    covariance μ (c • W) F G = covariance μ W F G := by
+  simp only [covariance, expectation_smul_density μ _ _ hc]
+
+
 theorem expectation_sub (W F G : C(X, ℝ)) :
     expectation μ W (F - G) = expectation μ W F - expectation μ W G := by
   simp only [expectation, ContinuousMap.sub_apply, mul_sub]

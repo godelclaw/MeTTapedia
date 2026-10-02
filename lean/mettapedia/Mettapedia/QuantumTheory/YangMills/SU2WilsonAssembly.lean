@@ -906,6 +906,19 @@ theorem density_pos (A : InteractionState n) (U : Link 4 n → SU2) : 0 < A.dens
   rw [density_apply]
   positivity
 
+/-- Spatial polymer clustering for the complete generated law, including its
+vacuum factor. The contraction radius needs no further reduction. -/
+theorem covariance_spatial_le {η : ℝ} (hη : 0 ≤ η) {n : ℕ}
+    (A : InteractionState n) (hA : spatialInteractionNorm 8 η A.terms ≤ 1/2)
+    (S T : Finset (Link 4 n)) (hS : S.Nonempty) (F G : C(Link 4 n → SU2, ℝ))
+    (hF : DependsOn S F) (hG : DependsOn T G) (B C : ℝ)
+    (hB : ∀ U, |F U| ≤ B) (hC : ∀ U, |G U| ≤ C) :
+    |covariance volume A.density F G| ≤
+      3 * B * C * Real.exp (3 * S.card + 3 * T.card) * Real.exp (-η * polymerDist S T) := by
+  rw [density, covariance_smul_density volume _ _ _ (Real.exp_pos A.vacuum).ne']
+  exact covariance_interactionDensity_le A.terms volume hη A.locality A.empty hA S T hS F G hF hG B C hB hC
+
+
 def block (A : InteractionState (doubleIndex n)) : InteractionState n where
   terms := effectiveInteraction volume (blockIndexEquiv 4 n) A.terms A.small
   locality := effectiveInteraction_local volume (blockIndexEquiv 4 n) A.terms A.small A.locality

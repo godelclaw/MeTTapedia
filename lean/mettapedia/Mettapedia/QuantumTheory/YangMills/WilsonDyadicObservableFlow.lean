@@ -10,15 +10,20 @@ agree with direct nested marginalization under the generated Wilson weights.
 The scale-two construction changes the lattice itself. Starting at side
 `2^j (n+3)`, each actual Haar step extracts the complete local interaction and
 its vacuum constant. In the support-cardinality norm with weight `exp(8 |S|)`,
-the radius contracts by `4 exp(-2)` inside `R <= 1/2`. The SU(2) Wilson family
-enters this region at an explicit positive coupling threshold.
+the radius contracts by `4 exp(-2)` inside `R <= 1/2`. The same estimate holds
+with a spatial tree-length weight. The SU(2) Wilson family enters this region
+at an explicit positive coupling threshold, with a rate fixed before volume
+and elimination depth.
 
 The complete fluctuation product gives a direct integral equal to the staged
 density and every transported continuous observable. Partitions, gauge
 invariance and nonzero coarse Wilson loops are preserved. The actual radii
 instantiate the scalar RG bootstrap; the native OSLF forward predicate has a
-concrete Haar successor with the proved gain. These function-norm estimates
-do not assert higher derivative or spatial-diameter bounds.
+concrete Haar successor with the proved gain. The spatial radius supplies an
+exact polymer representation and clustering for the generated law and fine
+pullbacks of coarse-product observables. For arbitrary continuous marks,
+the conditional-covariance remainder is retained explicitly. These
+function-norm estimates do not assert higher derivative bounds.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -265,6 +270,16 @@ theorem spatial_norm_iterate_le {η : ℝ} (hη : 0 ≤ η) (n : ℕ) :
       _ ≤ (4 * Real.exp (-2))^j * ((4 * Real.exp (-2)) * spatialInteractionNorm 8 η A.terms) :=
         mul_le_mul_of_nonneg_left (spatial_norm_block_le hη A hA) (by positivity)
       _ = _ := by rw [pow_succ]; ring
+/-- The same spatial radius is valid at every finite scale. -/
+theorem spatial_small_iterate {η : ℝ} (hη : 0 ≤ η) (n : ℕ) :
+    ∀ j (A : InteractionState (scaleIndex n j)), spatialInteractionNorm 8 η A.terms ≤ 1/2 →
+      spatialInteractionNorm 8 η (iterate n j A).terms ≤ 1/2 := by
+  intro j
+  induction j with
+  | zero => intro A hA; exact hA
+  | succ j ih => intro A hA; exact ih A.block (A.spatial_small_block hη hA)
+
+
 /-- Every step is the conditional Haar integral for the previous generated law. -/
 def route (n : ℕ) : (j : ℕ) → (A : InteractionState (scaleIndex n j)) →
     Route Step A.weightedState (iterate n j A).weightedState
@@ -427,6 +442,91 @@ theorem directProject_apply (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, 
     (hW : ∀ U, 0 < W U) (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (c : Link 4 n → SU2) :
     directProject n j W hW F c = directDensity n j (W * F) c / directDensity n j W c := rfl
 
+/-- Direct integration preserves the full finite-volume partition. -/
+theorem integral_directDensity (n : ℕ) : ∀ j (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)),
+    (∫ c, directDensity n j W c) = ∫ U, W U := by
+  intro j
+  induction j with
+  | zero => intro W; rw [directDensity_zero]; rfl
+  | succ j ih =>
+    intro W
+    rw [directDensity_succ, ih]
+    exact PairedLinks.integral_blockedDensity volume (blockIndexEquiv 4 (scaleIndex n j)) W
+
+theorem directDensity_mul_directProject (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) :
+    directDensity n j W * directProject n j W hW F = directDensity n j (W * F) := by
+  ext c
+  rw [ContinuousMap.mul_apply, directProject_apply]
+  exact mul_div_cancel₀ _ (directDensity_pos n j W hW c).ne'
+
+theorem expectation_directProject (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(Link 4 (scaleIndex n j) → SU2, ℝ)) :
+    expectation volume (directDensity n j W) (directProject n j W hW F) = expectation volume W F := by
+  unfold expectation
+  change (∫ c, (directDensity n j W * directProject n j W hW F) c) /
+    (∫ c, directDensity n j W c) = (∫ U, (W * F) U) / (∫ U, W U)
+  rw [directDensity_mul_directProject, integral_directDensity, integral_directDensity]
+
+/-- Staged transport under the generated density agrees with one integral
+at every coupling; no interaction smallness is used. -/
+theorem directProject_succ (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n (j+1)) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(Link 4 (scaleIndex n (j+1)) → SU2, ℝ)) :
+    directProject n (j+1) W hW F = directProject n j
+      (PairedLinks.blockedDensity volume (blockIndexEquiv 4 (scaleIndex n j)) W)
+      (PairedLinks.blockedDensity_pos volume (blockIndexEquiv 4 (scaleIndex n j)) W hW)
+      (PairedLinks.blockedProject volume (blockIndexEquiv 4 (scaleIndex n j)) W hW F) := by
+  ext c
+  rw [directProject_apply, directProject_apply, directDensity_succ, directDensity_succ]
+  apply congrArg (fun z : ℝ => z / directDensity n j
+    (PairedLinks.blockedDensity volume (blockIndexEquiv 4 (scaleIndex n j)) W) c)
+  exact congrArg (fun H => directDensity n j H c)
+    (PairedLinks.blockedDensity_mul_project volume (blockIndexEquiv 4 (scaleIndex n j)) W hW F)
+
+def directProjectLinear (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    (hW : ∀ U, 0 < W U) : C(Link 4 (scaleIndex n j) → SU2, ℝ) →ₗ[ℝ] C(Link 4 n → SU2, ℝ) where
+  toFun := directProject n j W hW
+  map_add' F G := by
+    ext c
+    exact expectation_add _ ((W.comp (scaleAssembleMap n j)).curry c)
+      ((F.comp (scaleAssembleMap n j)).curry c) ((G.comp (scaleAssembleMap n j)).curry c)
+  map_smul' a F := by
+    ext c
+    exact expectation_const_mul _ ((W.comp (scaleAssembleMap n j)).curry c)
+      ((F.comp (scaleAssembleMap n j)).curry c) a
+
+theorem abs_directProject_le (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    (hW : ∀ U, 0 < W U) (F : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    {B : ℝ} (hF : ∀ U, |F U| ≤ B) : ∀ c, |directProject n j W hW F c| ≤ B :=
+  abs_project_le _ _ _ _ (fun _ => hF _)
+
+def directStep (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U) :
+    Step (WilsonProjectionComposition.coordinateState volume W hW)
+      (WilsonProjectionComposition.coordinateState volume (directDensity n j W) (directDensity_pos n j W hW)) where
+  project := directProjectLinear n j W hW
+  expectation := expectation_directProject n j W hW
+  contract := fun F _ hF => abs_directProject_le n j W hW F hF
+
+theorem covariance_directProject (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(Link 4 (scaleIndex n j) → SU2, ℝ)) :
+    covariance volume W F G = covariance volume (directDensity n j W)
+      (directProject n j W hW F) (directProject n j W hW G) +
+      expectation volume (directDensity n j W)
+        (directProject n j W hW (F*G) - directProject n j W hW F * directProject n j W hW G) :=
+  covariance_action (.cons (directStep n j W hW) (.refl _)) F G
+
+theorem abs_directRemainder_le (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(Link 4 (scaleIndex n j) → SU2, ℝ))
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (hF : ∀ U, |F U| ≤ B) (hG : ∀ U, |G U| ≤ C) (c : Link 4 n → SU2) :
+    |directProject n j W hW (F*G) c - directProject n j W hW F c * directProject n j W hW G c| ≤ 2 * B * C :=
+  abs_remainder_le (.cons (directStep n j W hW) (.refl _)) F G hB hC hF hG c
+
+
 namespace InteractionState
 
 theorem density_iterate_direct (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)),
@@ -585,6 +685,25 @@ theorem directProject_scaleLift (n j : ℕ) (W : C(Link 4 (scaleIndex n j) → S
   rw [integral_mul_const]
   exact mul_div_cancel_left₀ _ (directDensity_pos n j W hW c).ne'
 
+theorem scaleLift_mul (n : ℕ) : ∀ j (F G : C(Link 4 n → SU2, ℝ)),
+    scaleLift n j (F*G) = scaleLift n j F * scaleLift n j G := by
+  intro j
+  induction j with
+  | zero => intro F G; rfl
+  | succ j ih => intro F G; simp only [scaleLift, ih]; rfl
+
+theorem expectation_scaleLift (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U) (F : C(Link 4 n → SU2, ℝ)) :
+    expectation volume W (scaleLift n j F) = expectation volume (directDensity n j W) F := by
+  rw [← expectation_directProject n j W hW, directProject_scaleLift]
+
+theorem covariance_scaleLift (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U) (F G : C(Link 4 n → SU2, ℝ)) :
+    covariance volume W (scaleLift n j F) (scaleLift n j G) =
+      covariance volume (directDensity n j W) F G := by
+  simp only [covariance, ← scaleLift_mul, expectation_scaleLift n j W hW]
+
+
 theorem action_scaleLift (n j : ℕ) (A : InteractionState (scaleIndex n j))
     (F : C(Link 4 n → SU2, ℝ)) :
     action (InteractionState.route n j A) (scaleLift n j F) = F := by
@@ -689,5 +808,57 @@ theorem wilson_expectation_iterate (n j : ℕ) (β : ℝ) (hβ : |β| ≤ iterat
         (model_continuous (scaleIndex n j) univ) β) F := by
   have h := InteractionState.expectation_iterate n j (wilsonState (scaleIndex n j) β hβ) F
   simpa only [wilsonState_density] using h
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonConditionalProjection.PairedHaar
+open WilsonDyadicGeometry SU2WilsonBlockPilot WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas (polymerDist)
+
+/-- The radius used by the nonlinear contraction already supplies a single
+crossing input for all volumes and finite elimination depths. -/
+theorem crossingInput_wilson_iterates {η : ℝ} (hη : 0 < η) (β : ℝ)
+    (hβ : |β| ≤ spatialIterationBeta η) :
+    CrossingInput.CrossingInput (fun p : ℕ × ℕ => Link 4 p.1) SU2
+      (fun p => interactionActivity (InteractionState.iterate p.1 p.2
+        (wilsonState (scaleIndex p.1 p.2) β (hβ.trans (spatialIterationBeta_le hη.le)))).terms) := by
+  apply crossingInput_of_spatial_norm _ _ hη
+  intro p
+  exact InteractionState.spatial_small_iterate hη.le p.1 p.2 _
+    (wilsonState_spatial_small hη.le _ β _ hβ)
+
+/-- The covariance of exact coarse-product pullbacks is the covariance of
+the actual generated law, with no conditional-covariance error. -/
+theorem covariance_scaleLift_spatial_le {η : ℝ} (hη : 0 ≤ η) (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (A : InteractionState n) (hA : spatialInteractionNorm 8 η A.terms ≤ 1/2)
+    (hWA : directDensity n j W = A.density)
+    (S T : Finset (Link 4 n)) (hS : S.Nonempty) (F G : C(Link 4 n → SU2, ℝ))
+    (hF : DependsOn S F) (hG : DependsOn T G) (B C : ℝ)
+    (hB : ∀ U, |F U| ≤ B) (hC : ∀ U, |G U| ≤ C) :
+    |covariance volume W (scaleLift n j F) (scaleLift n j G)| ≤
+      3 * B * C * Real.exp (3 * S.card + 3 * T.card) * Real.exp (-η * polymerDist S T) := by
+  rw [covariance_scaleLift n j W hW, hWA]
+  exact A.covariance_spatial_le hη hA S T hS F G hF hG B C hB hC
+
+/-- Fully instantiated spatial clustering for the actual strong-coupling
+Wilson density and its nontrivial ordered-product observables. -/
+theorem wilson_scaleLift_clustering {η : ℝ} (hη : 0 ≤ η) (β : ℝ)
+    (hβ : |β| ≤ spatialIterationBeta η) (n j : ℕ)
+    (S T : Finset (Link 4 n)) (hS : S.Nonempty) (F G : C(Link 4 n → SU2, ℝ))
+    (hF : DependsOn S F) (hG : DependsOn T G) (B C : ℝ)
+    (hB : ∀ U, |F U| ≤ B) (hC : ∀ U, |G U| ≤ C) :
+    |covariance volume
+      (realDensity (SU2BoundaryResponse.model (scaleIndex n j) univ)
+        (SU2BoundaryResponse.model_continuous (scaleIndex n j) univ) β)
+      (scaleLift n j F) (scaleLift n j G)| ≤
+      3 * B * C * Real.exp (3 * S.card + 3 * T.card) * Real.exp (-η * polymerDist S T) := by
+  apply covariance_scaleLift_spatial_le hη n j _
+    (realDensity_pos (SU2BoundaryResponse.model (scaleIndex n j) univ)
+      (SU2BoundaryResponse.model_continuous (scaleIndex n j) univ) β)
+    (InteractionState.iterate n j (wilsonState (scaleIndex n j) β (hβ.trans (spatialIterationBeta_le hη))))
+    (InteractionState.spatial_small_iterate hη n j _ (wilsonState_spatial_small hη _ β _ hβ))
+    (wilson_density_iterate_direct n j β _).symm S T hS F G hF hG B C hB hC
 
 end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo

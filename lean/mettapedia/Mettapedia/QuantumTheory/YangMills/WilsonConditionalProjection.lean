@@ -1782,3 +1782,150 @@ theorem effectiveInteraction_spatial_norm_le {η : ℝ} (hη : 0 ≤ η)
       exact spatialInteractionRow_le 8 η x Ψ)
 
 end Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection.PairedHaar
+
+/-! ## Exact polymer representation and spatial clustering of generated laws -/
+
+namespace Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection.PairedHaar
+open WilsonBlockElimination WilsonLocalResponse
+open Mettapedia.Combinatorics.PolymerGas
+variable {X E : Type*} [Fintype X] [DecidableEq X] [PseudoMetricSpace X]
+  [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
+variable (Ψ : Finset X → C(X → E, ℝ))
+
+def interactionActivity (S : Finset X) : (S → E) → ℂ :=
+  plaquetteActivity (fun T : {S : Finset X // S.Nonempty} => T.val) (1 : E)
+    (fun T ω => ((interactionFactor (Ψ T.val) ω : ℝ) : ℂ)) S
+
+def interactionMajorant (S : Finset X) : ℝ :=
+  weightedPlaquetteMajorant (fun T : {S : Finset X // S.Nonempty} => T.val)
+    (fun T => 2 * ‖Ψ T.val‖) S
+
+theorem measurable_interactionActivity (S : Finset X) : Measurable (interactionActivity Ψ S) := by
+  unfold interactionActivity
+  apply measurable_plaquetteActivity
+  intro T
+  exact Complex.measurable_ofReal.comp (interactionFactor (Ψ T.val)).continuous.measurable
+
+theorem interactionMajorant_empty : interactionMajorant Ψ ∅ = 0 :=
+  weightedPlaquetteMajorant_empty _ (fun T => T.property) _
+
+theorem interactionActivity_bound (hsmall : interactionNorm 8 Ψ ≤ 1/2) (S : Finset X) (u : S → E) :
+    ‖interactionActivity Ψ S u‖ ≤ interactionMajorant Ψ S := by
+  apply norm_plaquetteActivity_le_weighted
+  intro T ω
+  have hn : ‖Ψ T.val‖ ≤ 1 := by
+    have h := component_norm_le_of_row (fun T : {S : Finset X // S.Nonempty} => T.val)
+      (fun T => Ψ T.val) (fun T => T.property) (R := (1:ℝ)/2) (fun x => by
+        rw [interactionRow_nonempty]
+        exact (interactionRow_le 8 x Ψ).trans hsmall) T
+    linarith
+  simpa only [Complex.norm_real, Real.norm_eq_abs] using
+    ((interactionFactor (Ψ T.val)).norm_coe_le_norm ω).trans (interactionFactor_norm_le _ hn)
+
+theorem interactionActivity_small {η : ℝ} (hη : 0 ≤ η)
+    (hsmall : spatialInteractionNorm 8 η Ψ ≤ 1/2) :
+    ActivitySmall (interactionMajorant Ψ) η (Real.exp (-3)) := by
+  unfold interactionMajorant
+  have hrow (x : X) :
+      (∑ T ∈ univ.filter (fun T : {S : Finset X // S.Nonempty} => x ∈ T.val),
+        Real.exp (8 * T.val.card + η * treeLength T.val) * (2 * ‖Ψ T.val‖)) ≤ 1 := by
+    calc
+      _ = 2 * spatialInteractionRow 8 η x Ψ := by
+        rw [← spatialInteractionRow_nonempty, mul_sum]
+        apply sum_congr rfl
+        intro T _
+        ring
+      _ ≤ 1 := by have h := (spatialInteractionRow_le 8 η x Ψ).trans hsmall; linarith
+  simpa only [mul_one, interactionMajorant] using activitySmall_weightedPlaquetteMajorant
+    (fun T : {S : Finset X // S.Nonempty} => T.val) (fun T => T.property)
+    (fun T => by positivity : ∀ T : {S : Finset X // S.Nonempty}, 0 ≤ 2 * ‖Ψ T.val‖)
+    hη (by norm_num : (0:ℝ) ≤ 1) (by norm_num) hrow
+
+theorem interactionDensity_eq_polymerDensity
+    (hΨ : ∀ S, DependsOn S (Ψ S)) (hzero : Ψ ∅ = 0) (ω : X → E) :
+    ((interactionDensity Ψ ω : ℝ) : ℂ) = polymerDensity (interactionActivity Ψ) univ ω := by
+  have h := prod_one_add_eq_polymerDensity
+    (fun T : {S : Finset X // S.Nonempty} => T.val) (fun T => T.property) (1 : E)
+    (fun T ω => ((interactionFactor (Ψ T.val) ω : ℝ) : ℂ))
+    (fun T U V hUV => congrArg Complex.ofReal (interactionFactor_local _ _ (hΨ T.val) U V hUV)) ω
+  unfold interactionActivity
+  rw [← h]
+  change ((Real.exp (∑ S, Ψ S ω) : ℝ) : ℂ) = _
+  rw [← sum_nonemptySupports (fun S => Ψ S ω) (by simp [hzero]), Real.exp_sum, Complex.ofReal_prod]
+  apply prod_congr rfl
+  intro T _
+  simp only [interactionFactor, ContinuousMap.coe_mk, Complex.ofReal_sub, Complex.ofReal_one]
+  ring
+
+variable (ν : Measure E) [IsProbabilityMeasure ν]
+
+theorem polymer_expectation_eq_realExpectation
+    (hΨ : ∀ S, DependsOn S (Ψ S)) (hzero : Ψ ∅ = 0)
+    (hsmall : interactionNorm 8 Ψ ≤ 1/2) (F : C(X → E, ℝ)) :
+    Mettapedia.Combinatorics.PolymerGas.expectation ν (fun ω => (F ω : ℂ)) (interactionActivity Ψ) univ =
+      (WilsonBlockElimination.expectation (Measure.pi fun _ : X => ν) (interactionDensity Ψ) F : ℂ) := by
+  unfold Mettapedia.Combinatorics.PolymerGas.expectation
+  rw [← integral_polymerDensity ν (interactionActivity Ψ) (measurable_interactionActivity Ψ)
+    (interactionMajorant Ψ) (interactionActivity_bound Ψ hsmall)]
+  simp_rw [← interactionDensity_eq_polymerDensity Ψ hΨ hzero]
+  simp only [← Complex.ofReal_mul, integral_complex_ofReal, ← Complex.ofReal_div,
+    WilsonBlockElimination.expectation]
+  congr 2
+  congr 1
+  funext ω
+  ring
+
+theorem covariance_interactionDensity_le {η : ℝ} (hη : 0 ≤ η)
+    (hΨ : ∀ S, DependsOn S (Ψ S)) (hzero : Ψ ∅ = 0)
+    (hsmall : spatialInteractionNorm 8 η Ψ ≤ 1/2)
+    (S T : Finset X) (hS : S.Nonempty) (F G : C(X → E, ℝ))
+    (hF : DependsOn S F) (hG : DependsOn T G) (B C : ℝ)
+    (hB : ∀ ω, |F ω| ≤ B) (hC : ∀ ω, |G ω| ≤ C) :
+    |covariance (Measure.pi fun _ : X => ν) (interactionDensity Ψ) F G| ≤
+      3 * B * C * Real.exp (3 * S.card + 3 * T.card) * Real.exp (-η * polymerDist S T) := by
+  have h0 := (interactionNorm_le_spatial 8 hη Ψ).trans hsmall
+  let f : (S → E) → ℂ := fun u => (F (extendConfiguration (1 : E) S u) : ℂ)
+  let g : (T → E) → ℂ := fun u => (G (extendConfiguration (1 : E) T u) : ℂ)
+  have hf : Measurable f := Complex.measurable_ofReal.comp
+    (F.continuous.measurable.comp (measurable_extendConfiguration _ _))
+  have hg : Measurable g := Complex.measurable_ofReal.comp
+    (G.continuous.measurable.comp (measurable_extendConfiguration _ _))
+  have he : Real.exp (-3) * Real.exp 1 ≤ 1 := by
+    rw [← Real.exp_add]
+    exact Real.exp_le_one_iff.mpr (by norm_num)
+  have h := norm_truncated_le_exp ν (interactionActivity Ψ) (measurable_interactionActivity Ψ)
+    (interactionMajorant Ψ) (interactionActivity_bound Ψ h0) (interactionMajorant_empty Ψ)
+    hη (Real.exp_pos (-3)).le he (interactionActivity_small Ψ hη hsmall)
+    S T hS f hf B (fun u => by simpa only [f, Complex.norm_real, Real.norm_eq_abs] using hB _)
+    g hg C (fun u => by simpa only [g, Complex.norm_real, Real.norm_eq_abs] using hC _) univ
+  have hf' (ω : X → E) : f (restrictTo S ω) = (F ω : ℂ) := by
+    apply congrArg Complex.ofReal
+    apply hF
+    intro x hx
+    simp [extendConfiguration, restrictTo, hx]
+  have hg' (ω : X → E) : g (restrictTo T ω) = (G ω : ℂ) := by
+    apply congrArg Complex.ofReal
+    apply hG
+    intro x hx
+    simp [extendConfiguration, restrictTo, hx]
+  simp_rw [hf', hg', ← Complex.ofReal_mul] at h
+  have hfg : (fun ω => ((F ω * G ω : ℝ) : ℂ)) = (fun ω => (((F*G) ω : ℝ) : ℂ)) := rfl
+  rw [hfg, polymer_expectation_eq_realExpectation Ψ ν hΨ hzero h0,
+    polymer_expectation_eq_realExpectation Ψ ν hΨ hzero h0,
+    polymer_expectation_eq_realExpectation Ψ ν hΨ hzero h0,
+    ← Complex.ofReal_mul, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
+  exact h
+
+theorem crossingInput_of_spatial_norm {ι : Type*} (Blocks : ι → Type*)
+    [∀ L, Fintype (Blocks L)] [∀ L, DecidableEq (Blocks L)] [∀ L, PseudoMetricSpace (Blocks L)]
+    (Φ : ∀ L, Finset (Blocks L) → C(Blocks L → E, ℝ)) {η : ℝ} (hη : 0 < η)
+    (hsmall : ∀ L, spatialInteractionNorm 8 η (Φ L) ≤ 1/2) :
+    CrossingInput.CrossingInput Blocks E (fun L => interactionActivity (Φ L)) := by
+  refine ⟨fun L => measurable_interactionActivity (Φ L),
+    ⟨fun L => interactionMajorant (Φ L), η, Real.exp (-3), hη, (Real.exp_pos _).le,
+      (by rw [← Real.exp_add]; exact Real.exp_le_one_iff.mpr (by norm_num)),
+      fun L => interactionActivity_bound (Φ L) ((interactionNorm_le_spatial 8 hη.le _).trans (hsmall L)),
+      fun L => interactionMajorant_empty (Φ L), fun L => interactionActivity_small (Φ L) hη.le (hsmall L)⟩⟩
+
+end Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection.PairedHaar
