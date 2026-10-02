@@ -2227,6 +2227,20 @@ transfer label does not imply a repeated full state or a replenished
 budget. This analytic, small-perturbation example can be combined with
 the prescribed finite pattern cycles; arbitrary-history control is open.
 
+The [stretching comparison](labs/README.md#stretching-through-the-parent-refeeding-loop)
+tests the continuation-relevant cubic production on that SAME history.
+While the parent receives, returns, and again receives nonlinear energy,
+the stretching excess over the original evolving reference has signs
+negative, positive, positive. A complete H1 residual estimate and the
+evolution of the generated vertical mean control the receiver corrections;
+no hidden mean is supplied freely. With zero receiver amplitude these
+are signs of total cubic production; with a nonzero receiver its own
+production is retained in the reference. Neither positive production nor
+positive parent power implies enstrophy growth after viscosity. This
+analytic interval result shows that transfer direction alone cannot
+decide geometric depletion. Its payment still uses a small H3 stability
+neighborhood; arbitrary mutually amplifying histories remain open.
+
 The [geometric cascade ledger](labs/README.md#a-finite-energy-finite-time-cascade-ledger-with-unbounded-stretching)
 formally separates that remaining question from energy conservation.
 It has summable positive energy costs and durations, a decreasing reserve

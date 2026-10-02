@@ -19916,3 +19916,184 @@ Here the L2 error inequality is derived explicitly for the transfer
 observable, while the preceding H3 stability argument supplies global
 existence for this restricted class. These distinct uses of error control
 must not be combined into an unsupported arbitrary-data existence claim.
+
+## Stretching through the parent refeeding loop
+
+`refeeding_stretching.py` connects the actual exchange in (140) to
+the cubic vorticity production
+`g(u)=mean curl(u)^T grad(u) curl(u)`.
+For the same four-mode seed and sufficiently small parameters specified
+below, define the physical excess over the ORIGINAL evolving reference:
+
+```text
+G(sigma)=[g(u(t(sigma)))-g(U(t(sigma)))]/[a(t(sigma))epsilon^2].
+G(0)<=-1/20, G(3/8)>=3/16, G(3/4)>=3/4.               (145)
+```
+
+These inequalities concern one actual nonlinear unforced history. They
+coexist with the parent-transfer signs positive, negative, positive in
+(140). Thus refeeding can accompany either depletion or enhancement of
+the excess stretching. When rho=0 the reference is purely cellular and
+g(U)=0, so (145) concerns the literal total cubic production. For rho>0
+it is the reference-subtracted production; the receiver's own stretching
+is retained in g(U). Positive production does not assert net enstrophy
+growth after viscous dissipation, or failure of a finite-data budget.
+
+### The quadratic stretching observable
+
+For any smooth solenoidal field r on the normalized torus let
+
+```text
+C(r)=<-Delta r,L r>+Fcal(r),
+L r=-P[(v.grad)r+(r.grad)v], v=(sin y,-sin x,0).
+g(a v+epsilon r)=a epsilon^2 C(r)+epsilon^3 g(r).        (146)
+```
+
+Indeed `g(u)=<-Delta u,-P[(u.grad)u]>`, `-Delta v=v`, the
+projected self-advection of v is zero, and `<v,L r>=0` by
+incompressibility. These facts remove the constant and linear terms.
+The checker verifies the complete expansion independently through the
+physical curl for the seed and a separate complex Fourier fixture.
+
+After integrating its principal transport by parts, the quadratic form
+satisfies `|C(r)|<=3||r||H1^2`. To see the derivative count, the
+gradient pairing is bounded by
+`2||grad r||2^2+||r||2||grad r||2`, and `|Fcal(r)|<=||r||2^2`.
+Consequently its symmetric polarization obeys
+`|C(r,s)|<=3||r||H1||s||H1`, and
+`|C(r)-C(s)|<=3(||r||H1+||s||H1)||r-s||H1`.
+This cancellation is why an H1 comparison suffices for C despite its
+displayed Laplacian and first-order operator.
+
+For the SAME degree-sixteen polynomial p used in (141), exact rational
+arithmetic gives the additional derivative-level bounds
+
+```text
+integral_0^T ||p'-L p||H1<=1/1500,
+sup_(0<=sigma<=T)||Delta p||H1<=116,
+||p(3/8)||H1, ||p(3/4)||H1<=11/4,
+C(r0)=-3/40, C(p(3/8))>=8/25, C(p(3/4))>=9/10.        (147)
+```
+
+Here T=3/4 and the complete residual is still `-17c17 sigma^16`.
+No later polynomial state has been substituted for an actual solution.
+
+### Original-data bounds for the generated mean and the error
+
+All constants below are fixed from the original annular seed and torus
+Sobolev inequalities. Choose fixed positive constants C3,C1,Cb,Ce large
+enough for these usual estimates: linearized transport by W has norm
+growth at most `C3||W||H4` in H3 and `C1||W||H4` in H1; its nonlinear
+H3 energy term is at most `C3 c||y||H3^2` in the norm differential
+inequality; `||grad y||infinity<=Ce||y||H3`. For
+`B(r,s)=-P[(r.grad)s]`, also require
+
+```text
+||B(r,s)+B(s,r)||H1<=Cb||r||H3||s||H3,
+||B(r,r)||H1<=Cb||r||H3^2.
+```
+
+These are Sobolev product/commutator estimates, not assumptions about
+the unknown solution. They use the same multi-index norms as (121);
+choose C3 large enough to serve the earlier global estimate as well.
+Put delta=epsilon/A, assume 0<=rho<=1 and Re>=200000, and define
+
+```text
+Kw=||w0||H4 exp(228T), V=sqrt(5)+2Kw,
+K=2sqrt(259/2) exp(C3 V T),
+J=2Cb K^2 T exp(C1 V T), Gw=Ce Kw,
+delta<=1/(4C3 K T).                                   (148)
+```
+
+The actual passive reference has `||w||H4<=Kw`, uniformly in Re,
+since its diffusion is dissipative. Thus `W=U/a=(v,bw)` has H4 norm
+at most V, with b=A rho/a<=2rho. For y=(u-U)/epsilon its H3 norm z
+satisfies `z'<=C3 V z+2delta C3 z^2`. Inside z<=K, integration and
+(148) give `z<= (K/2)exp(1/2)<K`. The bootstrap therefore bounds
+`||y||H3<=K` on the entire interval. Global existence is still supplied
+by the earlier H3 neighborhood theorem; this additional short-interval
+bound is uniform in the parameters and contains no future target norm.
+
+Let bar(y) be the average over the vertical coordinate. Its initial
+value is zero. Averaging commutes with the Leray projection, diffusion
+and linearization about the vertically independent W. Hence bar(y)
+solves the SAME linearized equation with the actual source
+`c average_z B(y,y)`, where c=epsilon/a<=2delta. The H1 estimate gives
+`||bar(y)||H1<=delta J`. This is a bound on a generated parent, not a
+freely chosen mean field. Dropping this history would lose the small
+factor delta needed below.
+
+More explicitly, with `L_W r=B(W,r)+B(r,W)` and `Pi0=average_z`,
+the full equation is
+`bar(y)'=L_W bar(y)+mu Delta bar(y)+c Pi0 B(y,y)`, `bar(y)(0)=0`.
+The exact checker verifies nonzero mean generation by the seed, commutation
+of averaging with the full projected linearization, and the complete mixed
+cubic expansion on two fixtures. These checks support the algebra; the
+norm estimate for the evolving mean is the analytic argument above.
+
+For q=y-p the H1 growth of the pure cellular operator is at most 5/2;
+the proof is the same integrated transport estimate used for (146).
+Keep the complete receiver and nonlinear terms as sources and use K
+to bound them. In full,
+`q'=Lq+mu Delta q-(p'-Lp)+mu Delta p`
+`+b[B(w e_z,y)+B(y,w e_z)]+c B(y,y)`.
+Since mu<=2/Re and exp(5T/2)<9, (147) yields
+
+```text
+Gamma=9T[232/Re+2Cb rho Kw K+2Cb delta K^2],
+Gamma<=1/1000
+  implies sup_(0<=sigma<=T)||q||H1<=9/1500+Gamma<=7/1000.
+                                                               (149)
+```
+
+This is a derivative-level estimate for the actual full nonlinear
+equation, not an upgrade inferred from the preceding L2 error alone.
+
+### Retaining the receiver terms in the physical stretching
+
+Write `U=a v+A rho w e_z`. Expanding the cubic g with (146), the
+terms linear in y against two vertically independent reference factors
+depend only on bar(y). Their apparently large factors rho/delta and
+rho^2/delta are therefore controlled by `||bar(y)||H1<=delta J`.
+For the other terms use `|curl r|<=sqrt(2)|grad r|`, the bound K,
+and `||grad w||infinity<=Gw`. Explicitly,
+
+```text
+|G(sigma)-C(y(sigma))|<=Xi,
+Xi=6rho Kw J+12rho^2 Gw Kw J+12rho Gw K^2+4delta Ce K^3.
+Xi<=1/100.                                             (150)
+```
+
+The four summands pay respectively for the mixed quadratic form C,
+the terms with two receiver factors and one generated mean, the terms
+with one receiver and two y factors, and the pure cubic in y. The
+factor A/a is at most two. All terms come from the exact physical
+cubic expansion, including those involving the retained mean history.
+
+At the two later observations, (147)--(149) bound
+`|C(y)-C(p)|` by `3(11/2+7/1000)(7/1000)=115647/1000000`.
+Together with (150), this proves the two positive bounds in (145).
+Initially y=r0, so `-3/40+1/100<=-1/20` proves the negative bound.
+Smoothness gives nonempty intervals with all the claimed signs.
+
+Conditions (148)--(150) are compatible with the entire preceding
+construction. After fixing the annular seed, Kw,V,K,J,Gw are fixed
+independently of rho, Re and delta. Choose positive rho small enough
+for its contributions, then finite A large enough for Re and the
+pattern comparison, then positive epsilon small enough for delta and
+the original global H3 threshold. Thus the same solution can retain
+any prescribed finite approximate pattern cycles as well as the
+refeeding and excess-stretching signs. With rho=0 the same estimates
+give the pure cellular-reference variant, without an annular movie.
+
+The power reserve (144) remains valid. This test shows why that modal
+payment is not, by itself, the missing critical stretching estimate:
+the same positive feeding label occurs with opposite signs of excess
+stretching. The generated mean can be paid in this small neighborhood;
+controlling it and the full critical cost for arbitrary mutually
+amplifying histories remains open.
+
+Run `python3 -O labs/refeeding_stretching.py`. The finite Fourier
+identities, H1 residual bounds and sign margins are exact rational
+checks. The Sobolev bootstrap, averaged evolution, physical interval
+comparison and existence are analytic, not newly Lean-certified.
