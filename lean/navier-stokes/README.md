@@ -1877,8 +1877,13 @@ paid by the actual full-energy law. Renormalizing
 the receiver by r^2 retains the correct physical measure and axis flux.
 The transport correction is then bounded using the full physical vorticity
 and the already paid parent history, without assuming either is absent.
-The source identification, reserve, duality and transport estimate are
-analytic, with exact symbolic checks.
+The source identification, duality and transport estimate remain
+analytic, with exact symbolic checks. `MettapediaNS.LogSourceReserve`
+certifies the scalar reserve along the actual whole-space `NSEvolution`,
+including payment on every compatible subinterval and the initial
+allowance. Its seven theorems and three definitions use only the
+permitted foundational axioms; the spatial source comparison and
+stochastic receiver identification are not formalized by that adapter.
 For the actual deformation-weighted receiver, its derivative bounds remain
 uncontrolled by the original datum; smooth averaged observations do not
 give the uniform point-started moment required by the compression criterion.
@@ -1905,6 +1910,23 @@ evaluate the deformation receiver's signed cost. The kinetic-energy-weighted
 return has a favorable sign; an exact commutator isolates the additional
 cost introduced by the quartic concentration weight. Controlling that cost
 along the evolution, including diffusion, remains the target.
+
+The [circulation-envelope entropy reserve](labs/README.md#an-actual-source-law-with-funded-action-and-entropy)
+identifies a probability law transported by the actual lifted meridional
+drift. Original circulation, source mass and kinetic energy pay its entire
+drift action. Relative entropy to a heat Gaussian plus a remaining-energy
+allowance is nonnegative and pays its relative Fisher information. This
+includes interacting parents and sign-changing axisymmetric swirl through
+a positive passive envelope, under the stated moment assumptions. The law
+is an actual-flow stochastic observer, not an optimal Schrödinger bridge
+or the law of three-dimensional fluid particles. The derivation is analytic.
+A concentrated family has uniformly bounded entropy/action reserves but
+unbounded integrated third-moment diffusion cost on actual short unforced
+prefixes. Its cubic initial source moment grows at the required scale.
+Thus a transfer to deformation moments must retain higher initial resources
+and the signed work replenishing them. The [source-reference tests](labs/README.md#source-moments-and-the-axis-receiver)
+also retain the stochastic moment correction and transverse diffusion;
+neither a power of an averaged source nor its axis trace closes that transfer.
 
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |

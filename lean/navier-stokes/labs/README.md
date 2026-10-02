@@ -14730,6 +14730,15 @@ In particular L^2=4nu H costs at most `3pi E0 H`. This weaker observable
 does not contradict the earlier failures of energy-only stretching or
 caloric-renewal budgets.
 
+`MettapediaNS.LogSourceReserve` certifies the scalar logarithmic comparison
+and the reserve derivative, nonnegativity, interval payment and original
+allowance along the existing whole-space `NSEvolution`. In particular,
+`actual_interval_payment` pays `C(E+L^2 d)` on every compatible subinterval
+using the same horizon, and `actual_initial_allowance` removes the final
+nonnegative reserve. The spatial identification of B_L with this cost,
+the physical source history and the receiver estimates below remain
+analytic. This energy adapter does not certify those additional steps.
+
 For a forced evolution the reserve rate has the additional term
 `2pi[H-t+L^2/(2nu)]<u,force>`. The residual's equation also retains its
 additional vorticity source and hence another receiver pairing. Finite
@@ -15248,3 +15257,304 @@ those terms over full generated-parent histories is the remaining physical
 obligation. The example rules out discarding the concentration defect on
 sign grounds; it leaves quantitative geometric depletion and finite
 full-datum payment open.
+
+## An actual source law with funded action and entropy
+
+`swirl_source_entropy.py` supplies an analytic stochastic identification
+and an original-datum reserve for a source observation. Assume an actual
+smooth axisymmetric unforced whole-space NS prefix, nu>0, a regular axis,
+and the integrability stated below. No bound on a future strain supremum
+enters its constants. All five-dimensional integrals here use ordinary
+Lebesgue measure `dy=2pi^2 r^3 dr dz`.
+
+Write `b=u_theta/r`, `Gamma=r^2 b`, and `q=-2u_r/r`. Lift the actual
+meridional velocity to `v5=(u_r*x_h/r,u_z)` on `R4 x R`. Incompressibility
+gives `div5(v5)=-q`; the actual swirl equation is exactly
+
+```text
+b_t=nu Delta5 b-div5(v5 b).
+```
+
+Thus nonnegative b, normalized by its conserved mass, is a probability
+density with the actual drift v5. For sign-changing b, construct the
+positive envelope B by this same linear equation along the actual drift,
+with `B(0)=|b0|`. Order preservation gives `|b|<=B`. This construction
+does not replace the drift by a separately chosen control. The equation
+for `Gamma_B=r^2 B` is the existing circulation equation, so
+
+```text
+0<=Gamma_B(t)<=G0=||r^2 b0||_infinity,
+M=integral_R5 B(t)=integral_R5 |b0|,
+rho=B/M,                       0<M<infinity.
+```
+
+Require G0 finite, finite kinetic energy E0, and finite initial relative
+entropy to the heat reference below. Smooth rapidly decaying data have
+these properties when b0 is nonzero. The case b0=0 has no swirl source
+and does not require normalization by M. On a compact smooth prefix the
+lifted drift is bounded and regular; scalar parabolic construction and
+uniqueness identify the envelope, preserve its mass and justify the
+maximum principle. Approximation handles zeros of b0. These prefix-local
+regularity facts justify the construction; their bounds are not used in
+the final allowance.
+
+### Action paid by the actual fluid
+
+The lifted and physical measures give a direct estimate:
+
+```text
+W(t)=integral_R5 rho |v5|^2
+    =(pi/M) integral_R3 Gamma_B |v_mer|^2
+    <=C E(t),                  C=pi G0/M,
+E(t)=||u(t)||_2^2,              E'=-2nu d,
+d=||grad u||_2^2.
+```
+
+For a prescribed H and every available prefix t<=H,
+`R_A(t)=C(H-t)E(t)>=0` satisfies `R_A'+W<=0`. Consequently all
+compatible subinterval action costs are paid by `R_A(0)=C H E0`.
+Mutual amplification of meridional parents does not change this estimate.
+
+Let P be the path law of
+`dX=v5(t,X)dt+sqrt(2nu)dW5`, with initial density rho0. Its marginals
+are rho. Let R be Brownian motion with the same initial density and
+diffusivity. Girsanov's entropy identity gives
+
+```text
+KL(P_[0,T] || R_[0,T])=(1/(4nu)) integral_0^T W(t)dt
+                    <=pi G0 H E0/(4nu M),       T<=H.
+```
+
+The normalization follows, for example, from
+[Léonard, equation (4.7)](https://arxiv.org/html/1308.0215v1#S4.E7)
+after changing the noise amplitude to sqrt(2nu) and using the same
+initial law. On each bounded smooth prefix the ordinary bounded-drift
+Girsanov argument applies; the displayed action estimate removes the
+prefix-dependent coefficient bound from its result. Conditional action
+costs compose along the same law without restarting the reserve.
+
+This is a finite-action stochastic law identified with an actual fluid
+observable. It is not asserted to minimize a Schrödinger bridge problem.
+The five-dimensional source observer is also distinct from ordinary
+three-dimensional fluid-particle diffusion and from the one-dimensional
+axis deformation receiver.
+
+### A nonnegative reserve for relative Fisher information
+
+Fix L>0 from the initial data and let
+
+```text
+gamma_L(t,y)=N(0,(L^2+2nu t)I5),
+K(t)=KL(rho(t)||gamma_L(t))>=0,
+I(t)=integral rho |grad log(rho/gamma_L)|^2.
+```
+
+The complete relative entropy identity and its square completion are
+
+```text
+K'=-nu I+integral rho v5.grad log(rho/gamma_L)
+   =-(nu/2)I+W/(2nu)-Q,
+Q=(1/(2nu)) integral rho |v5-nu grad log(rho/gamma_L)|^2>=0.
+```
+
+The local computation retains all transport and heat-reference fluxes.
+Integrating with cutoffs and approximation yields the corresponding
+entropy inequality if a classical entropy derivative is unavailable.
+Define the actual joint reserve
+
+```text
+R(t)=K(t)+C(H-t)E(t)/(2nu)>=0.
+```
+
+Its exact smooth ledger is
+
+```text
+R'+(nu/2)I+Q+(CE-W)/(2nu)+C(H-t)d=0.
+```
+
+Every term after R' is nonnegative. Therefore
+
+```text
+R(T)+(nu/2) integral_0^T I(t)dt <= R(0)
+ =KL(rho0||gamma_L(0))+pi G0 H E0/(2nu M).
+```
+
+This controls the complete source-envelope history from the original datum,
+including all interacting parents. The same fixed H, L and M apply at
+every seam. It does not yet control the deformation-weighted receiver.
+
+### Concentration separates this reserve from the needed higher moments
+
+There is an actual unforced family showing why an additional transfer
+estimate is necessary. Let `g(y)=exp(-|y|^2/2)` in R5 and, for lambda>=1,
+
+```text
+b0,lambda(y)=g(y)+lambda^2 g(lambda y),
+u0,lambda(x)=u_base(x)+lambda u_base(lambda x),
+u_base(x)=(-x2 g(x),x1 g(x),0).
+```
+
+Here g(x) denotes the same radial formula in physical R3. The velocities
+are smooth Schwartz, divergence-free and initially pure swirl, with
+nonnegative b. Their initial resources obey
+
+```text
+M_lambda=(2pi)^(5/2)(1+lambda^-3),
+E0,lambda<=4pi^(3/2),          G0,lambda<=4/e.
+```
+
+The normalized source is the mixture of N(0,I5) and N(0,lambda^-2 I5)
+with concentrated weight `w=1/(1+lambda^3)`. Convexity of relative entropy
+and the Gaussian formula give
+
+```text
+KL(rho0,lambda||N(0,I5))
+ <=w*(5/2)(lambda^-2-1+2log lambda)<=5/(3e).
+```
+
+Taking L=1, every initial reserve is bounded by
+`5/(3e)+sqrt(2)H/(e nu)`, independent of lambda. Thus their actual
+available histories have uniformly paid action and relative Fisher cost.
+
+Nevertheless their third-moment covariance source
+`V3=integral_R5 b |grad b|^2` has arbitrarily large integrated cost on
+short actual unforced prefixes. This is an interval statement, not just
+an initial derivative. Under NS scaling the rescaled initial velocity is
+
+```text
+U0,lambda(y)=lambda^-1 u0,lambda(y/lambda)
+           =u_base(y)+lambda^-1 u_base(y/lambda)
+           ->u_base in C_b^1(R3).
+```
+
+There is a common local C_b^1 mild-solution interval with continuous
+dependence in that norm; use its subspace with bounded uniformly
+continuous first derivatives, which contains this family. One can
+obtain it directly by contraction:
+the heat--Leray divergence kernel has L1 norm at most a constant times
+`(nu t)^(-1/2)`, and C_b^1 is an algebra. The kernel estimate follows
+by writing its nonlocal part as the integral of the third derivative of
+the heat kernel from nu*t to infinity; its L1 bound is the integral of
+`Cs^(-3/2)`. The constants in this argument are uniform for this bounded
+C_b^1 initial family. The smooth finite-energy solutions agree with
+these local solutions.
+
+Choose a compact annulus away from the axis where the base initial b
+is positive and has nonzero radial derivative. On a sufficiently short
+common interval [0,tau], continuity and the C_b^1 convergence give a
+fixed positive lower bound for the rescaled integral of b|grad b|^2
+on that annulus. Positivity of b persists. The exact scalings are
+`b=lambda^2 B`, `grad b=lambda^3 grad B`, `dy=lambda^-5 dY`,
+and `dt=lambda^-2 ds`. Thus, for some c,tau>0 depending on the base
+datum and nu, but not lambda,
+
+```text
+integral_0^(tau/lambda^2) V3(t)dt >=c lambda -> infinity.
+```
+
+For large lambda this available prefix lies below any fixed H>0.
+This refutes uniform payment of the raw nonnegative cubic diffusion
+correction by the bounded entropy/action reserve just constructed.
+It does not refute an allowance depending on higher resources of the
+full initial datum, or a signed estimate with additional cancellations.
+Indeed `integral b0,lambda^3` grows at order lambda. Its actual balance is
+
+```text
+d_t integral_R5 b^3 +6nu integral_R5 b|grad b|^2
+ =2 integral_R5 q b^3                 (b>=0).
+```
+
+The initial cubic resource has the size needed for this burst. The
+remaining question is how to pay the signed work that replenishes it
+over repeated parent renewal. Finite relative entropy alone also does
+not supply an exponential deformation moment or a uniform point-started
+axis bound. No such inference is used here.
+
+Run `python3 -O labs/swirl_source_entropy.py`. The differential and reserve
+identities, normalization, Gaussian scaling and algebraic bounds are
+symbolically checked. Envelope construction, entropy inequalities,
+stochastic identification and the local-solution interval argument are
+analytic, not Lean-certified. The finite-action part is a partial bridge;
+it is not a sufficient regularity criterion and need not, by itself,
+exclude every forced singular construction. For an azimuthal force the
+source equation acquires `f_theta/r`; forcing also changes the kinetic
+energy law used in both reserves.
+
+## Source moments and the axis receiver
+
+`swirl_receiver_reference.py` tests a tempting direct bridge. At the axis,
+write `U=u_z|axis`, `q=U_z`, and `L_b=nu Delta_R4 b|axis`. Then
+
+```text
+b_t+U b_z=nu b_zz+q b+L_b,
+m_t=nu m_zz-(Um)_z+4q m=nu m_zz-U m_z+3q m.
+```
+
+This uses the full strain q. On the same axis path, the previously paid
+bound on `integral |q_paid|` compares full and core fourth deformation
+moments in both directions by the factor `exp(8M_H)`. Neither moment
+is bounded merely by the source-reference identities below.
+
+The source cube h=b^3 has the same strain coefficient as this full-strain
+receiver, but its complete defect is
+
+```text
+h_t-[nu h_zz-U h_z+3q h]=3b^2 L_b-6nu b b_z^2.
+```
+
+For positive h, put `e=3L_b/b-6nu(b_z/b)^2`. The exact ratio equation is
+
+```text
+(m/h)_t=nu(m/h)_zz+[2nu(log h)_z-U](m/h)_z-e(m/h).
+```
+
+Thus equality of the strain coefficients is insufficient. For the actual
+unforced Gaussian pure-swirl datum `b0=exp(-(r^2+z^2)/2)`, normalize
+`m0=sqrt(3/(2pi))*b0(0,z)^3`. Initial U=q=0, and the literal NS equation
+gives
+
+```text
+[m-sqrt(3/(2pi))*b_axis^3]_t(0,z)
+ =sqrt(3/(2pi))*6nu(z^2+2)exp(-3z^2/2)>0.
+```
+
+The proposed comparison by the bare cube fails on a short actual interval.
+The stochastic third-moment lift instead solves
+
+```text
+H_t+v.grad H=nu Delta5 H+3q H,       H0=b0^3,
+(H-b^3)_t+v.grad(H-b^3)
+ =nu Delta5(H-b^3)+3q(H-b^3)+6nu b|grad b|^2.
+```
+
+For nonnegative b the retained source gives H>=b^3 by comparison.
+This is the positive moment correction, not a product of averaged
+fields. At a fixed terminal observation, their Feynman--Kac formulas
+use the same backward-representation paths: b is the first moment and
+H the third moment of the same weighted initial amplitude. Those paths
+are not the forward source-density law used for the entropy estimate.
+Its axis trace still has the additional term
+`nu Delta_R4 H|axis` relative to the receiver equation. For the Gaussian
+initial datum, the normalized initial mass rates of the receiver, cube
+trace and lifted trace are respectively `0`, `-14nu` and `-12nu`.
+
+In the diffusion-only calibration these two defects can be repaired
+exactly. If `H_heat=heat5(b0^3)` and m_heat is the one-dimensional heat
+receiver from the normalized cube trace, then
+
+```text
+m_heat(t,z)=sqrt(3/(2pi))*(1+6nu t)^2*H_heat(t,0,z).
+```
+
+The factor is transverse dilution in four dimensions; its logarithmic
+rate is `12nu/(1+6nu t)`. This calibration is not asserted to be an
+NS evolution of the Gaussian swirl. In the actual flow, both the moment
+correction and lateral transport/diffusion must be retained. The funded
+source Fisher information above has a different weight from the cubic
+correction and from the point-started deformation receiver.
+
+Run `python3 -O labs/swirl_receiver_reference.py`. Differential identities,
+the literal NS initial rate and the heat calibration pass exact symbolic
+checks. Local comparison, stochastic representation and the positive-time
+implication remain analytic. General three-dimensional and periodic
+continuation, and the arbitrary-history moment transfer, remain open.

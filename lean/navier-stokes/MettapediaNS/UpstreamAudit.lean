@@ -50,6 +50,7 @@ import MettapediaNS.AnisotropicCycleHistory
 import MettapediaNS.PlanarParentReserve
 import MettapediaNS.RotationalForecastReserve
 import MettapediaNS.FullEnergyParentReserve
+import MettapediaNS.LogSourceReserve
 import MettapediaNS.HeatGradientObserver
 import MettapediaNS.CellularParentRenewal
 import MettapediaNS.RieszDoubleCommutator
@@ -1457,6 +1458,16 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_interval_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.actual_initial_allowance
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FullEnergyParentReserve.weighted_enstrophy_rate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.logarithmic_weight_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.loss
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.reserve_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.cost_paid
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.energyReserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.actual_reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.actual_interval_payment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LogSourceReserve.actual_initial_allowance
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.heat
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.heat_derivative
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HeatGradientObserver.heat_zero
