@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Integrate actual singleton-zero fields into source contract colourings. -/
+target kernelMinimalSingletonContract pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/minimal-singleton-contract-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ConservedContract", "MinimalSingletonContract", "ContractTransport", "ActualDualContract",
+        "MinimalSingletonContractAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Transport the constructed exceptional query through actual core corners. -/
 target kernelExceptionalQuery pkg : Unit := do
   let env ← getAugmentedEnv

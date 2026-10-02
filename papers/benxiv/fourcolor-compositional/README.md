@@ -1,6 +1,6 @@
 # Compositional Four Colour: proof plan and current results
 
-Updated 1 October 2026. Original complete assembly: `b99eaf006`.
+Updated 2 October 2026. Original complete assembly: `b99eaf006`.
 The current assembly additionally consumes a shared joint-profile certificate
 for the diamond cores and a general boundary-split law transferring repair from
 configuration 2 to configuration 1, and configuration 6 to configuration 3.
@@ -22,6 +22,46 @@ Start with the [completed theorem][complete], the [integration guide][package],
 and the [compression ledger][ledger]. This guide connects them to the original
 plan. The [long companion][companion] preserves the detailed development and
 earlier attempts; its older sections are historical snapshots.
+
+The current geometric test concerns two overlapping exceptional neighbourhoods
+in the newer catalogue. Their shared rotation forces the D1774 core. Its
+[collision alternative](../../../lean/fourcolor-classical/MettapediaFourColor/ExceptionalCoreCollision.lean)
+produces an actual nonfacial triangle whenever core injectivity fails. In the
+graph-backed minimal regime, the existing three-edge-cut theorem proves that every
+such triangle is facial, excluding that branch. The resulting induced core,
+eleven-port completion and exact compiled query are checked.
+
+This gives a concrete instance of the construction-or-obstruction approach:
+retain the attempted construction, and turn failed identification into a
+geometric witness that an existing reduction can exclude. It is not yet a
+general theorem for arbitrary triangle construction programs.
+
+The current reconstruction chain is:
+
+```text
+aligned exceptional neighbourhoods
+    -> actual induced core and joint boundary        proved
+    -> exact D1774 construction query                proved
+
+smaller adjacent-pair cap
+    -> colouring from vertex minimality             proved
+    -> original conserved field, one zero edge       proved
+    -> contract colouring on the same actual dual    proved
+
+contract colouring + D1774 finite repair
+    -> compatible exterior and embedded reconstruction
+                     geometric bridge still open
+```
+
+The [new contract bridge](../../../lean/fourcolor-classical/MettapediaFourColor/ActualDualContract.lean)
+preserves every dart permutation and the actual colouring witness. It supplies
+the starting colouring directly from our vertex minimality, without silently
+equating it to the reference's different minimality hypothesis. The next task
+is to discharge the exterior embedding conditions, then classification from
+zero charge and occurrence supply. D1774 still uses its checked finite repair;
+these steps remove no additional certificate or coverage entry. The
+[coverage ledger](../../../tools/fourcolor/near-linear/coverage-obligations.json)
+records the remaining obligations.
 
 The [2026 near-linear algorithm](https://arxiv.org/abs/2603.24880) provides an
 additional source of family and coverage arguments. The first

@@ -1133,12 +1133,44 @@ one-edge contract. `ExceptionalConstructionRepair.not_fitted` excludes its
 compiled query in a reference minimal counterexample through actual contract
 colouring, exterior closure and reconstruction.
 
-Deriving that query fit from the retained exceptional overlap is still open.
-The graph-backed and reference minimality hypotheses must be connected
-explicitly. No additional coverage entry or certificate dependency is removed.
+`ExceptionalQueryReading.actual_fitted` now derives that query fit from the
+retained exceptional overlap. `ActualDualContract.singleton_colorable` supplies
+the initial one-edge contract colouring directly from graph-backed vertex
+minimality, on the exact dual map used by the query. The remaining exterior
+embedding conditions must still be established in that same domain. No
+additional coverage entry or certificate dependency is removed.
 
 Replay with `lake build kernelExceptionalConstruction` using the prepared
 repair artifacts. Its seventeen-root audit allows only standard axioms and
 excludes complete Four Colour endpoints and original catalogue ranks. See the
 [account](../../tools/fourcolor/near-linear/README.md#constructed-source-local-query-and-valid-contraction)
 and [measurements](../../tools/fourcolor/near-linear/construction-measurements.json).
+
+## Actual contract witnesses from a smaller planar map
+
+`MinimalSingletonContract.one_zero` uses the existing strict two-vertex
+adjacent-pair reduction. Vertex minimality colours its smaller planar cap;
+the resulting deleted-graph colouring extends to a conserved field on the
+original map, with exactly the selected edge zero.
+
+`ConservedContract.of_conserved` integrates the field into a face assignment,
+preserving its value on every edge. Its exact zero set is the contract, and
+every other edge remains proper. `ContractTransport` carries both the actual
+assignment and the contracted edge list through exact hypermap relabelling.
+`ActualDualContract.map_eq_source_relabel` proves equality of all three
+permutations between the original source map and the actual facial-dual query
+map. Consequently every selected dual dart has a genuine initial singleton
+contract colouring in the graph-backed minimality regime.
+
+This is a starting witness for local repair, not a proper colouring of the
+whole original map. Exterior closure and the embedding hypotheses for applying
+the checked D1774 repair remain open, as do classification and geometric
+coverage. The reference and graph-backed minimality definitions are not
+identified by this result.
+
+Replay with `lake build kernelMinimalSingletonContract`. The twelve-root audit
+requires the smaller-map, singleton-zero, face-potential and relabelling
+dependencies. It excludes complete Four Colour endpoints, original catalogue
+certificates, the D1774 finite repair and reference minimal contract-colouring
+theorems. Only standard axioms occur. See the
+[receipt](../../tools/fourcolor/near-linear/minimal-singleton-contract-measurements.json).

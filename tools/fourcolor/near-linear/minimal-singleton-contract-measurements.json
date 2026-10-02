@@ -1,0 +1,101 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ConservedContract",
+      "source_sha256": "2c781ec0b56705b35fc44c7fa2532f305416e2b1430ed5fa56f421ab45b294fd",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.098,
+      "olean_bytes": 86200,
+      "olean_sha256": "0f30a2f03d6abbaa8b6efdadb50cf57d76f24133e9e11bced9799bfd6bf025ab"
+    },
+    {
+      "module": "MettapediaFourColor.MinimalSingletonContract",
+      "source_sha256": "c619607d8bd1d06e259d132f596ebe9a3cad78fb6e48fe01247681c91f279965",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.522,
+      "olean_bytes": 137296,
+      "olean_sha256": "440dacfe4e65afd68131591bb41052a91262afdacb69440dafa0559fceeb184a"
+    },
+    {
+      "module": "MettapediaFourColor.ContractTransport",
+      "source_sha256": "46621f3c6a8c908e73e7a6717d4e399df80dd218deb420cd231adafbdbb18f9e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.076,
+      "olean_bytes": 98424,
+      "olean_sha256": "6a405f9f07eb92ee28e4bf9cfecac843a74e50db3698a3f144d3d07205e9617e"
+    },
+    {
+      "module": "MettapediaFourColor.ActualDualContract",
+      "source_sha256": "9caa2d04d9e7e55e30c28973c96b711ce040580ea62893ad5b32724208e89b04",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.477,
+      "olean_bytes": 110216,
+      "olean_sha256": "9586ee7455dc8cef6aa432234dd154119c749d87acf5dffc5c34f8f0ddf4ba76"
+    },
+    {
+      "module": "MettapediaFourColor.MinimalSingletonContractAudit",
+      "source_sha256": "b08642fd27101b53c26469d493bdc28d04c6319eafb1cb68abdf8cf47e185619",
+      "exit_code": 0,
+      "frontend_wall_seconds": 9.512,
+      "olean_bytes": 2600,
+      "olean_sha256": "f19261d4e743964f459a15ac2b7b90c6aee12c5c0ecbd713c73a803656b1a130"
+    }
+  ],
+  "status": "kernel checked",
+  "scope": "Graph-backed vertex minimality supplies exact singleton contract witnesses on the same actual facial-dual hypermap used by exceptional recognition. All edge differences and all three hypermap permutations are preserved. The complete exceptional exterior-embedding consumer remains open.",
+  "audit": {
+    "roots": 12,
+    "dependency_declarations": 24706,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_endpoints": false,
+    "original_configuration_rank_certificates": false,
+    "exceptional_finite_repair_certificate": false,
+    "reference_minimal_contract_coloring": false
+  },
+  "witness_chain": [
+    "existing strict two-vertex planar-cap reduction",
+    "smaller cap colouring from graph-backed vertex minimality",
+    "deleted graph colouring",
+    "original conserved field zero exactly on the selected edge",
+    "face potential preserving every edge difference",
+    "singleton contract colouring of the source hypermap",
+    "exact relabelling to the actual dual query map"
+  ],
+  "new_finite_colouring_certificate": false,
+  "reference_minimality_assumed": false,
+  "full_minimality_equivalence_proved": false,
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "entries_removed_here": 0,
+    "certificate_dependencies_replaced_here": 0
+  },
+  "remaining": [
+    "actual D1774 exterior embedding and closure, including boundary identifications",
+    "Birkhoff/pentagonal geometry for the reference consumer, or sufficient local hypotheses for a direct consumer",
+    "zero-charge classification and occurrence supply",
+    "integrated geometric coverage"
+  ],
+  "regressions": {
+    "status": "passed",
+    "commands": [
+      "lake build kernelMinimalSingletonContract",
+      "lake build kernelFlatCoverage kernelComplete",
+      "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "main_jobs": 11195
+  }
+}

@@ -570,11 +570,11 @@ exterior-closure and patch reconstruction theorems. It uses no complete
 Four Colour endpoint or original catalogue rank certificate.
 
 The matching query is now derived from the two actual exceptional occurrences,
-as described below. The reference minimal-counterexample hypothesis must still
-be connected to the graph-backed minimality regime used by the overlap geometry,
-or the contraction must be constructed directly in that regime. That bridge
-is not assumed implicitly. Zero-charge classification and occurrence supply
-remain separate.
+as described below. A starting singleton contract colouring is also supplied
+directly in the graph-backed minimality regime. The remaining exterior
+embedding hypotheses must still be established there; the two minimality
+definitions are not identified implicitly. Zero-charge classification and
+occurrence supply remain separate.
 
 Replay with `lake build kernelExceptionalConstruction` after preparing the
 finite repair artifacts. Its seventeen-root audit checks the representation,
@@ -604,8 +604,9 @@ core injectivity or distinct ring images. It uses the already retained core
 corners and degrees. Under reference minimality of this exact dual hypermap,
 `not_minimal` consumes the source construction, finite repair and contraction
 chain to exclude the overlap. The graph-backed minimality hypothesis has not
-yet been shown to imply that reference hypothesis. An explicit bridge or a
-direct strict reduction in the graph-backed domain remains necessary.
+been shown to imply that reference hypothesis. The direct contract-colouring
+route below supplies its starting witness without such an implication;
+exterior embedding and closure still need their own geometric bridge.
 
 Replay with `lake build kernelExceptionalQuery`. Its nine-root audit retains
 the actual corner, degree and reconstruction dependencies, permits only the
@@ -614,3 +615,36 @@ configuration rank certificates. The D1774 finite repair certificate remains.
 This closes the local query-recognition obligation; coverage remains 633 entries
 and the complete assembly retains 629 original configuration certificates.
 See [exceptional-query-measurements.json](exceptional-query-measurements.json).
+
+## Initial contract colouring in the actual graph-backed domain
+
+The existing adjacent-pair reduction provides a strict smaller planar cap.
+`MinimalSingletonContract.one_zero` uses vertex minimality to colour that cap,
+then reconstructs a conserved field on the original graph with exactly one
+zero edge. `ConservedContract.of_conserved` integrates the full field into an
+actual face assignment. Every edge difference is preserved, including its
+zero set, so the result is a genuine contract colouring.
+
+`ContractTransport.ccColoring_push` transports that assignment and its entire
+contracted edge list together. `ActualDualContract.map_eq_source_relabel`
+identifies all three permutations of the physical source hypermap with those
+of the actual dual query map. `singleton_colorable` therefore provides an
+initial contract colouring for every selected dart of that exact map, using
+graph-backed vertex minimality throughout. `not_colorable` proves the reverse
+consumer: a proper colouring there would reconstruct an original Tait colouring.
+
+This closes the starting-witness obligation. Applying the finite D1774 repair
+still requires justified exterior embedding and closure, including treatment
+of boundary identifications. The reference consumer asks for Birkhoff ring
+and pentagonal conditions; these must be supplied from the actual geometry,
+or replaced by sufficient local hypotheses in a direct consumer. Classification
+from final charge, geometric supply and global coverage remain open.
+
+Replay with `lake build kernelMinimalSingletonContract`. The twelve-root audit
+checks 24,706 dependency declarations and permits only standard axioms. It
+excludes complete Four Colour endpoints, original configuration ranks, the
+D1774 finite repair and the reference minimal contract-colouring theorem.
+The new modules add no enumeration or colouring certificate. Coverage remains
+633 entries and the complete assembly retains 629 original configuration
+certificates. See
+[minimal-singleton-contract-measurements.json](minimal-singleton-contract-measurements.json).

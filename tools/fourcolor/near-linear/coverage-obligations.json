@@ -1,5 +1,5 @@
 {
-  "status": "Actual exceptional overlap now realizes the exact compiled D1774 query through its core corners and full ambient degrees. Complete finite D-repair, source construction and reference-minimal exclusion are proved. The bridge from graph-backed to reference minimality, or direct strict reduction in the former domain, remains open, as do zero-charge classification and coverage.",
+  "status": "Actual exceptional overlap realizes the compiled D1774 query. Graph-backed vertex minimality now supplies a genuine singleton contract colouring on the exact same dual map, using a smaller planar cap and preserved conserved field. Finite repair and source construction are checked; exterior embedding/closure, zero-charge classification and coverage remain open.",
   "source": {
     "paper": "https://arxiv.org/abs/2603.24880",
     "version": "v1",
@@ -219,6 +219,34 @@
     {
       "declaration": "FourColor.ExceptionalQueryReading.not_minimal",
       "meaning": "The actual joint reading contradicts reference minimality of the exact dual hypermap by consuming the established source repair and contraction."
+    },
+    {
+      "declaration": "FourColor.ConservedContract.of_conserved",
+      "meaning": "A conserved field integrates into a genuine contract colouring with the exact supplied zero set; every original edge difference is preserved."
+    },
+    {
+      "declaration": "FourColor.MinimalSingletonContract.one_zero",
+      "meaning": "The existing strict two-vertex planar-cap reduction and graph-backed vertex minimality supply an original conserved field whose only zero is the selected edge."
+    },
+    {
+      "declaration": "FourColor.MinimalSingletonContract.colorable",
+      "meaning": "Every selected original dart has a genuine singleton contract colouring, using vertex minimality and no reference minimality hypothesis."
+    },
+    {
+      "declaration": "FourColor.Hypermap.ccColoring_push",
+      "meaning": "Exact relabelling transports the actual colouring and its complete contracted edge list together."
+    },
+    {
+      "declaration": "FourColor.ActualDualContract.map_eq_source_relabel",
+      "meaning": "All three permutations of the actual dual query map agree with the original source map under the existing dart equivalence."
+    },
+    {
+      "declaration": "FourColor.ActualDualContract.singleton_colorable",
+      "meaning": "Every selected dart of the actual dual query map has a genuine starting contract colouring in the graph-backed vertex-minimal regime."
+    },
+    {
+      "declaration": "FourColor.ActualDualContract.not_colorable",
+      "meaning": "A proper colouring of that exact dual map reconstructs a Tait colouring forbidden by the original vertex-minimal hypothesis."
     }
   ],
   "open": [
@@ -258,7 +286,7 @@
       "id": "exception_joint_close",
       "field": "FourColor.LocalCoverageAssembly.EightOverlapSupply.close",
       "source": "Figure 13 and Lemma 8.4",
-      "obligation": "The actual completion, complete finite D-repair and actual compiled-query fit are proved. Connect graph-backed minimality to reference minimality of the exact dual hypermap, or construct the strict contraction and initial proper exterior colouring directly in the graph-backed domain. Preserve boundary identifications and then consume the existing repair/reconstruction chain."
+      "obligation": "Actual completion, finite D-repair, compiled-query fit and initial singleton contract colouring are proved in the graph-backed vertex-minimal domain. Supply the remaining exterior embedding/closure hypotheses (the reference consumer uses Birkhoff rings and pentagonality), or prove a direct local consumer with sufficient justified geometry. Preserve boundary identifications and consume repair/reconstruction without silently changing minimality regimes."
     },
     {
       "id": "residuals",
@@ -270,9 +298,9 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Ambient minimality and strict contraction for the actual exceptional query",
-    "test": "Compare the exact smaller-map quantifiers in graph-backed vertex minimality and reference minimality. The former already admits arbitrary rotation systems, including parallel edges. Test the singleton source contract at core edge 13-14: construct its connected bridgeless cubic spherical smaller map, or prove the required conversion from the reference precubic contraction, with strict vertex decrease and transported colourings.",
-    "acceptance": "A theorem supplying the reference consumer hypotheses from the actual minimal source, or a direct smaller-map colouring and reconstruction theorem in the same graph-backed domain. No implicit change of minimality domain and no complete Four Colour endpoint.",
+    "target": "Actual exterior embedding and closure for the exceptional singleton contract",
+    "test": "Use exact source/dual relabelling and the new singleton contract witness. Enumerate the hypotheses of embdd_inj, embed_contract and embed_closure; compare them with the already proved triangle, four-cycle and five-cut results. Test whether the D1774 off-ring dart map is directly injective even when ring vertices collide, and which Birkhoff/pentagonal assumptions are genuinely needed by the local consumer.",
+    "acceptance": "An exceptional-overlap exclusion theorem from the graph-backed vertex-minimal source, with actual contract witness and finite repair, or a checked geometric component that removes an explicit remaining consumer premise. No complete Four Colour endpoint or implicit change of minimality domain.",
     "primary_lemmas": [
       "3.1",
       "3.2",
@@ -287,7 +315,7 @@
   },
   "limits": [
     "No inhabitant of all local supply fields is claimed.",
-    "The source getX pattern, induced core, full cyclic core stars, boundary reconstruction and complete finite D-repair are proved. Actual exterior closure, initial colouring, strict reduction and supply from flatness remain open.",
+    "The source pattern, induced core, full cyclic core stars, boundary reconstruction, finite D-repair, exact query fit and initial singleton contract colouring are proved. The starting witness uses the existing strict two-vertex cap; the complete D1774 consumer still needs exterior embedding/closure and supply from flatness.",
     "No scheduling, executable global recolouring or near-linear runtime is proved.",
     "The existing joint diamond profile certificate remains in the reduction consumer."
   ]
