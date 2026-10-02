@@ -245,6 +245,18 @@ theorem abs_expectation_le (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x)
       (fun x => mul_le_mul_of_nonneg_left (hF x) (hW x).le)
     _ = C * ∫ x, W x ∂μ := by rw [integral_mul_const, mul_comm]
 
+theorem expectation_sum {ι : Type*} (W : C(X, ℝ)) (s : Finset ι) (F : ι → C(X, ℝ)) :
+    expectation μ W (∑ i ∈ s, F i) = ∑ i ∈ s, expectation μ W (F i) :=
+  map_sum (expectationLinear μ W) F s
+
+theorem covariance_sum {ι κ : Type*} (W : C(X, ℝ)) (s : Finset ι) (t : Finset κ)
+    (F : ι → C(X, ℝ)) (G : κ → C(X, ℝ)) :
+    covariance μ W (∑ i ∈ s, F i) (∑ j ∈ t, G j) =
+      ∑ i ∈ s, ∑ j ∈ t, covariance μ W (F i) (G j) := by
+  simp only [covariance, Finset.sum_mul, Finset.mul_sum, expectation_sum, Finset.sum_sub_distrib]
+  congr 1 <;> exact Finset.sum_comm
+
+
 /-- A contact-free bound requiring no spatial separation; useful at the
 diagonal as well as at nearby coordinates. -/
 theorem abs_covariance_le (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
@@ -260,6 +272,23 @@ theorem abs_covariance_le (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
     exact mul_le_mul (abs_expectation_le μ W G hW hG)
       (abs_expectation_le μ W F hW hF) (abs_nonneg _) hCG
   exact (abs_sub _ _).trans (by nlinarith)
+
+/-- Local approximations of transported marks have an explicit covariance
+cost under the same generated measure. -/
+theorem abs_covariance_sub_le (W F G f g : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    {B C εF εG : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (hεF : 0 ≤ εF) (hεG : 0 ≤ εG)
+    (hf : ∀ x, |f x| ≤ B) (hG : ∀ x, |G x| ≤ C)
+    (hFf : ∀ x, |F x - f x| ≤ εF) (hGg : ∀ x, |G x - g x| ≤ εG) :
+    |covariance μ W F G - covariance μ W f g| ≤ 2 * εF * C + 2 * B * εG := by
+  have he : covariance μ W F G - covariance μ W f g =
+      covariance μ W (F-f) G + covariance μ W f (G-g) := by
+    simp only [covariance, sub_mul, mul_sub, expectation_sub]
+    ring
+  rw [he]
+  exact (abs_add_le _ _).trans (add_le_add
+    (abs_covariance_le μ W (F-f) G hW hεF hC hFf hG)
+    (abs_covariance_le μ W f (G-g) hW hB hεG hf hGg))
+
 
 /-- Remove the mean under the explicitly supplied generated density. -/
 def centered (W F : C(X, ℝ)) : C(X, ℝ) := F - (expectation μ W F) • 1

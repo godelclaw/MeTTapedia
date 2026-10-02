@@ -326,9 +326,19 @@ and proves `interactionNorm 8 Psi <= 4 exp(-2) R`, with `4 exp(-2) < 1`.
 Every output term is local and Haar-centered, and its empty-support term is
 zero. `effectiveInteraction` is the canonical support-indexed version of the
 same construction. These constants precede all volumes and boundary values.
-This is a norm of complete continuous interaction functions with an exponential
-support-cardinality weight; it does not assert a diameter weight or control
-boundary derivatives. The proof sums the full exponential and logarithm series.
+The proof sums the full exponential and logarithm series. Its spatial extension,
+`effectiveInteraction_spatial_norm_le`, uses the complete interaction norm
+
+`sup_l sum_(S containing l) exp(8 |S| + eta treeLength(S)) ||Phi_S||_sup`.
+
+`PolymerGas.treeLength` is the infimum of costs of recursive metric networks
+spanning the support; auxiliary vertices are allowed. It dominates diameter
+and is subadditive along connected overlaps. The actual `halfLink` projection
+identifies both halves of each block pair and is nonexpanding, so the same
+spatial rate is retained. Disconnected logarithmic coefficients vanish exactly.
+For every fixed `eta >= 0`, the same radius `1/2` and gain `4 exp(-2)` apply,
+independently of volume and coarse fields. These are bounds on interaction
+functions; higher derivative estimates remain separate.
 `ScaleTwo.effectiveInteraction_gauge` proves that each extracted term retains
 gauge invariance for the actual ordered SU(2) block map.
 
@@ -336,18 +346,38 @@ gauge invariance for the actual ordered SU(2) block map.
 constant, Haar centering, gauge symmetry and the invariant radius `1/2`.
 Its `density_block` theorem identifies the next state's density with the actual
 conditional Haar integral. In `WilsonDyadicObservableFlow`, `iterate n j`
-performs `j` such steps from torus side `2^j (n+3)` to side `n+3`, proving
-`R_j <= (4 exp(-2))^j R_0`. The input Wilson norm is at most
-`64 |beta| exp(32)`, so `|beta| <= 1/(128 exp(32))` supplies the invariant radius
-for every volume and depth. `strongIterationBeta` is the positive minimum of
-this threshold and the existing `beta0 4`; `strong_coupling_iteration_bound`
-provides both obligations on that interval. Constants precede volume and depth.
+performs `j` such steps from torus side `2^j (n+3)` to side `n+3`.
+`spatial_norm_iterate_le` gives `R_j <= (4 exp(-2))^j R_0`. The Wilson input has
+spatial norm at most `64 |beta| exp(32+4 eta)`, so
+
+`spatialIterationBeta eta = 1 / (128 exp(32+4 eta))`
+
+supplies the radius for every volume and depth. The choice `eta = 1` gives an
+explicit positive interval. At `eta = 0`, this recovers the earlier cardinality
+threshold `iterationBeta`. All these constants precede volume and depth.
+
+The same radius suffices for spatial clustering. For the complete generated
+interaction, `interactionDensity_eq_polymerDensity` is an exact polymer
+identity and `polymer_expectation_eq_realExpectation` identifies normalized
+expectations. `interactionActivity_small` gives `ActivitySmall` with rate `eta`
+and smallness `exp(-3)`. `crossingInput_wilson_iterates` supplies one crossing
+input for every pair `(volume, depth)`. For continuous real marks supported on
+`S,T`, with `S` nonempty and bounds `B,C`, the generated covariance is at most
+`3 B C exp(3|S|+3|T|) exp(-eta polymerDist S T)` in absolute value. The vacuum
+factor cancels exactly. `wilson_scaleLift_clustering` proves the same estimate
+for the corresponding ordered-product pullbacks under the original Wilson law.
 
 `ScaleFiber` is the explicit product of all Haar fluctuations in the finite
 chain. `density_iterate_direct` and `action_route_eq_direct` identify the
 staged generated density and marks with one integral over that product under
-the original density. The partition is unchanged. Every continuous mark,
-including every finite product of marks, retains its original expectation.
+the original density. The partition is unchanged. `integral_directDensity`, `directProject_succ`
+and `expectation_directProject` also hold for every positive continuous input
+density, with no input smallness assumption. Every continuous mark, including
+every finite product of marks, retains its original expectation. For general
+marks, `covariance_directProject` keeps the exact correction
+`E_generated[P(FG) - PF PG]`. Its unconditional bound is only `2 B C`, with no
+spatial decay. `covariance_scaleLift` removes this correction exactly for
+coarse-product pullbacks.
 `retainedWilsonLoop_nonzero` proves that a nonzero coarse plaquette trace
 survives every finite chain through its ordered-product pullback, which is
 gauge invariant and Haar-centered.
@@ -356,7 +386,8 @@ gauge invariant and Haar-centered.
 interaction norms, gain `4 exp(-2)`, and zero error. The sequence is explicitly
 padded by zero after its finite lattice chain ends; it does not posit further
 scales on a fixed finite torus. `haarDiamond_interactionContract` supplies a
-successor satisfying the strict bound in the existing OSLF forward modality.
+successor satisfying the strict bound in the existing OSLF forward modality;
+`haarDiamond_spatialInteractionContract` supplies the spatial version.
 The paired-Haar rewrite constructor itself contains no smallness condition.
 This is a contraction of complete interaction functions with exact vacuum
 extraction; no finite-coordinate dimension-16 extraction certificate or
@@ -372,8 +403,9 @@ supports, which contain only complete fine pairs.
 
 The coordinate-rescaling lemmas in `WilsonBoundaryResponse.lean` prove that
 an injective coordinate map with `d_fine = s · d_coarse` changes the admissible
-exponent to `η_coarse = sη_fine`, without a volume factor. The current assembly
-uses the original link metric. The concrete scale-two map and its first
+exponent to `η_coarse = sη_fine`, without a volume factor. The two-separator assembly
+uses the original link metric; scale-two iteration uses the successive coarse
+metrics. The concrete scale-two map and its first
 three ordered response identities are now proved. Finite repeated scale changes
 now preserve the full interaction-function contract with a strict gain. Preservation of spatially weighted derivative
 budgets under the successive generated product constraints is a separate
@@ -389,3 +421,54 @@ the generated marginal for the outer law. For this stronger all-order derivative
 contract, preservation after extraction and rescaling with gain below one remains open. It does not follow
 from the complete interaction-function norm bound. The weak-to-strong
 trajectory and the continuum construction remain further obligations.
+
+`StoppingScaleEntrance` records a quantitative entrance obligation on the
+actual integrated Wilson density. Fixed `eta > 0` and `0 < rMin <= rMax` precede
+the cutoff and volume. At cutoff `k`, the finite depth `j(k)` is independent of
+volume, the stopped interaction has spatial norm at most `1/2`, and its physical
+spacing satisfies `rMin <= 2^j(k) a(k) <= rMax`. The density identity includes
+vacuum normalization. `coarseSpacing` and `physical_anchor_distance` give the
+exact units conversion: the rate is `eta/r`, hence at least `m = eta/rMax`.
+`uniform_pullback_clustering` makes its rate and prefactor uniform in cutoff
+and volume when support sizes and amplitudes are uniformly bounded.
+
+General transported observables can have spatial tails. `AnchoredObservableBound`
+records an exact decomposition `F = sum_S f_S`, each piece supported on its
+nonempty `S`, with budget
+
+`sum_S exp(3|S| + eta treeLength(S union {x})) ||f_S||_sup <= B`.
+
+`covariance_of_anchoredBounds` proves the bound `3 B C exp(-eta dist x y)`
+for two such decompositions under the actual generated law. The number and
+sizes of the pieces may depend on volume; their total budgets must be uniform.
+`StoppingScaleEntrance.TransportControl` requires these budgets for `PF,PG`,
+a physical anchor separation at least `D-delta`, and the independent bound
+`|E_generated[P(FG)-PF PG]| <= epsilon exp(-m D)`. Its checked consequence is
+
+`|Cov_original(F,G)| <= (3 B C exp(m delta) + epsilon) exp(-m D)`.
+
+Every constant precedes cutoff and volume. Exact pullbacks satisfy the
+conditional-covariance obligation with error zero (`transportControl_pullbacks`).
+`covariance_le_of_local_approximation` also quantifies errors from approximating
+projected marks by single local functions; those localization errors are charged
+explicitly rather than discarded.
+
+`strongCouplingEntrance` constructs an actual entrance family with fixed small
+Wilson coupling, `a(k)=2^(-k)`, depth `k`, and stopping spacing one. This proves
+the stopping interface is nonempty. `WeakCouplingEntranceObligation` separately
+states the unproved target with `a(k) -> 0` and `beta(k) -> infinity`. Its
+existence, the needed observable budgets and conditional-covariance decay along
+such a trajectory are open. Nonzero observables at each finite cutoff do not
+establish a nontrivial continuum limit. Construction, Euclidean covariance,
+reflection compatibility and quantum-field reconstruction remain separate.
+
+The reproducible [planar SU(2) diagnostic](../../../../../tools/yang-mills/su2_planar_block_diagnostic.py)
+examines a two-dimensional open patch through exact character-convolution
+formulas, quadrature and sampled direct/staged Haar integrals. It tests couplings
+from zero to 16, checks ordered-product gauge identities, and records generated
+non-Wilson logarithmic components. Mode and quadrature refinements and sampling
+errors are reported. These finite computations do not certify four-dimensional
+uniform bounds. The planar setting is the open-boundary Euclidean example in
+[Kanwar and Wagman](https://arxiv.org/abs/2103.02602); the spatial polymer estimates
+are proved separately in Lean. [Ueltschi's cluster-expansion criteria](https://arxiv.org/abs/math-ph/0304003)
+likewise require strengthened weighted hypotheses to obtain spatial decay.

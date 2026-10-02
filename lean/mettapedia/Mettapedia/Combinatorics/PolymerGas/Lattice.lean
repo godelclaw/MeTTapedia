@@ -494,4 +494,21 @@ theorem treeLength_image_le (f : X → Y) (hf : ∀ x y, dist (f x) (f y) ≤ di
   exact treeLength_le_of_network (image_subset_image hST) (hT.map f hf)
 
 
+/-- Moving from anchors to nonempty observable supports costs at most
+the lengths of the two attached tree networks. -/
+theorem polymerDist_ge_dist_sub_treeLength (x y : X) (S T : Finset X)
+    (hS : S.Nonempty) (hT : T.Nonempty) :
+    dist x y - treeLength (insert x S) - treeLength (insert y T) ≤ polymerDist S T := by
+  simp only [polymerDist, hT, ↓reduceDIte]
+  apply le_inf'
+  intro v hv
+  apply (Metric.le_infDist (show (S : Set X).Nonempty from hS)).mpr
+  intro u hu
+  have hxu := dist_le_treeLength (mem_insert_self x S) (mem_insert_of_mem hu)
+  have hyv := dist_le_treeLength (mem_insert_self y T) (mem_insert_of_mem hv)
+  have ht := dist_triangle4 x u v y
+  rw [dist_comm u v, dist_comm v y] at ht
+  linarith
+
+
 end Mettapedia.Combinatorics.PolymerGas

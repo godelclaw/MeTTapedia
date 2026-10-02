@@ -431,3 +431,58 @@ theorem dist_halfLink_le {d n : ℕ} (l k : Link d (doubleIndex n)) :
 
 
 end Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry
+
+/-! ## Physical spacing of a finite scale change -/
+
+namespace Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry
+open StrongCouplingCrossing
+open Mettapedia.Combinatorics.PolymerGas (polymerDist polymerDist_nonneg)
+
+/-- Physical lattice spacing after a finite number of scale-two blocks. -/
+def coarseSpacing (a : ℝ) (j : ℕ) : ℝ := (2 : ℝ)^j * a
+
+theorem coarseSpacing_pos {a : ℝ} (ha : 0 < a) (j : ℕ) : 0 < coarseSpacing a j := by
+  unfold coarseSpacing
+  positivity
+
+/-- Physical separation is measured between the anchors of coarse supports. -/
+def physicalSeparation {d n : ℕ} (a : ℝ) (j : ℕ) (S T : Finset (Link d n)) : ℝ :=
+  coarseSpacing a j * polymerDist S T
+
+theorem physicalSeparation_nonneg {d n : ℕ} {a : ℝ} (ha : 0 ≤ a) (j : ℕ)
+    (S T : Finset (Link d n)) : 0 ≤ physicalSeparation a j S T := by
+  exact mul_nonneg (mul_nonneg (by positivity) ha) (polymerDist_nonneg S T)
+
+theorem physical_anchor_distance {d n : ℕ} (a : ℝ) (j : ℕ) (l k : Link d n) :
+    a * dist (scaleAnchor j l) (scaleAnchor j k) = coarseSpacing a j * dist l k := by
+  rw [dist_scaleAnchor]
+  unfold coarseSpacing
+  ring
+
+theorem decay_eq_physical {d n : ℕ} (η : ℝ) {a : ℝ} (ha : 0 < a) (j : ℕ)
+    (S T : Finset (Link d n)) :
+    Real.exp (-η * polymerDist S T) =
+      Real.exp (-(η / coarseSpacing a j) * physicalSeparation a j S T) := by
+  congr 1
+  unfold physicalSeparation
+  field_simp [(coarseSpacing_pos ha j).ne']
+
+/-- Conversion for any nonnegative lattice distance, including anchor and
+support distances. A fixed upper stopping scale gives a fixed physical rate. -/
+theorem decay_distance_le_physical {η a rMax D : ℝ} (hη : 0 ≤ η) (ha : 0 < a) (j : ℕ)
+    (hr : coarseSpacing a j ≤ rMax) (hD : 0 ≤ D) :
+    Real.exp (-η * D) ≤ Real.exp (-(η / rMax) * (coarseSpacing a j * D)) := by
+  have hm : 0 < rMax := (coarseSpacing_pos ha j).trans_le hr
+  have he := mul_le_mul_of_nonneg_left hr (div_nonneg hη hm.le)
+  rw [div_mul_cancel₀ _ hm.ne'] at he
+  have h := mul_le_mul_of_nonneg_right he hD
+  apply Real.exp_le_exp.mpr
+  nlinarith
+
+theorem decay_le_physical {d n : ℕ} {η a rMax : ℝ} (hη : 0 ≤ η) (ha : 0 < a) (j : ℕ)
+    (hr : coarseSpacing a j ≤ rMax) (S T : Finset (Link d n)) :
+    Real.exp (-η * polymerDist S T) ≤
+      Real.exp (-(η / rMax) * physicalSeparation a j S T) :=
+  decay_distance_le_physical hη ha j hr (polymerDist_nonneg S T)
+
+end Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry

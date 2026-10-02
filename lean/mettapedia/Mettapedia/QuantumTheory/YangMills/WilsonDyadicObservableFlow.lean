@@ -24,6 +24,13 @@ exact polymer representation and clustering for the generated law and fine
 pullbacks of coarse-product observables. For arbitrary continuous marks,
 the conditional-covariance remainder is retained explicitly. These
 function-norm estimates do not assert higher derivative bounds.
+
+A stopping-scale certificate identifies the actual integrated Wilson density
+and fixes its spatial rate and physical scale before cutoff and volume.
+Anchored local decompositions of transported marks and the discarded
+conditional covariance give an explicit physical clustering bound. The
+weak-coupling entrance, observable budgets and continuum construction remain
+separate obligations.
 -/
 set_option autoImplicit false
 noncomputable section
@@ -860,5 +867,352 @@ theorem wilson_scaleLift_clustering {η : ℝ} (hη : 0 ≤ η) (β : ℝ)
     (InteractionState.iterate n j (wilsonState (scaleIndex n j) β (hβ.trans (spatialIterationBeta_le hη))))
     (InteractionState.spatial_small_iterate hη n j _ (wilsonState_spatial_small hη _ β _ hβ))
     (wilson_density_iterate_direct n j β _).symm S T hS F G hF hG B C hB hC
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+
+/-! ## Stopping-scale entrance and physical correlation decay -/
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonConditionalProjection.PairedHaar
+open WilsonDyadicGeometry SU2WilsonBlockPilot WilsonLocalResponse
+open Mettapedia.GSLT.Ultrainfinite WilsonEliminationRoutes
+open Mettapedia.Combinatorics.PolymerGas (polymerDist)
+
+namespace InteractionState
+
+theorem covariance_physical_le {η a rMax : ℝ} (hη : 0 ≤ η) (ha : 0 < a)
+    {n : ℕ} (j : ℕ) (hr : coarseSpacing a j ≤ rMax)
+    (A : InteractionState n) (hA : spatialInteractionNorm 8 η A.terms ≤ 1/2)
+    (S T : Finset (Link 4 n)) (hS : S.Nonempty) (M : ℕ) (hSM : S.card ≤ M) (hTM : T.card ≤ M)
+    (F G : C(Link 4 n → SU2, ℝ)) (hF : DependsOn S F) (hG : DependsOn T G)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (hFB : ∀ U, |F U| ≤ B) (hGC : ∀ U, |G U| ≤ C) :
+    |covariance volume A.density F G| ≤
+      3 * B * C * Real.exp (6 * M) * Real.exp (-(η / rMax) * physicalSeparation a j S T) := by
+  apply (A.covariance_spatial_le hη hA S T hS F G hF hG B C hFB hGC).trans
+  apply mul_le_mul
+  · apply mul_le_mul_of_nonneg_left _ (by positivity)
+    apply Real.exp_le_exp.mpr
+    exact_mod_cast (show 3 * S.card + 3 * T.card ≤ 6 * M by omega)
+  · exact decay_le_physical hη ha j hr S T
+  · positivity
+  · positivity
+
+
+theorem covariance_anchored_le {η : ℝ} (hη : 0 ≤ η) {n : ℕ}
+    (A : InteractionState n) (hA : spatialInteractionNorm 8 η A.terms ≤ 1/2)
+    (x y : Link 4 n) {B C : ℝ} (F G : C(Link 4 n → SU2, ℝ))
+    (hF : AnchoredObservableBound η x B F) (hG : AnchoredObservableBound η y C G) :
+    |covariance volume A.density F G| ≤ 3*B*C*Real.exp (-η*dist x y) := by
+  rw [density, covariance_smul_density volume _ _ _ (Real.exp_pos A.vacuum).ne']
+  exact covariance_of_anchoredBounds A.terms volume hη A.locality A.empty hA x y F G hF hG
+
+end InteractionState
+
+/-- A finite stopping scale for the actual Wilson density. All rates and
+physical scale bounds are fixed before cutoff and volume. Existence of such
+data along a weak-coupling trajectory is a separate analytic obligation. -/
+structure StoppingScaleEntrance {ι : Type*} (η rMin rMax : ℝ) (a β : ι → ℝ) where
+  rate_pos : 0 < η
+  lower_pos : 0 < rMin
+  spacing_pos : ∀ k, 0 < a k
+  coupling_nonneg : ∀ k, 0 ≤ β k
+  depth : ι → ℕ
+  scale_lower : ∀ k, rMin ≤ coarseSpacing (a k) (depth k)
+  scale_upper : ∀ k, coarseSpacing (a k) (depth k) ≤ rMax
+  state : ∀ _k : ι, (n : ℕ) → InteractionState n
+  generated : ∀ k n, directDensity n (depth k)
+    (realDensity (SU2BoundaryResponse.model (scaleIndex n (depth k)) univ)
+      (SU2BoundaryResponse.model_continuous (scaleIndex n (depth k)) univ) (β k)) = (state k n).density
+  small : ∀ k n, spatialInteractionNorm 8 η (state k n).terms ≤ 1/2
+
+namespace StoppingScaleEntrance
+variable {ι : Type*} {η rMin rMax : ℝ} {a β : ι → ℝ}
+variable (h : StoppingScaleEntrance η rMin rMax a β)
+
+/-- The original Wilson density at the fine cutoff, without a small-coupling
+hypothesis on the input parameter. -/
+def fineDensity (k : ι) (n : ℕ) : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ) :=
+  realDensity (SU2BoundaryResponse.model (scaleIndex n (h.depth k)) univ)
+    (SU2BoundaryResponse.model_continuous (scaleIndex n (h.depth k)) univ) (β k)
+
+theorem fineDensity_pos (k : ι) (n : ℕ) (U : Link 4 (scaleIndex n (h.depth k)) → SU2) :
+    0 < h.fineDensity k n U := realDensity_pos _ _ _ _
+
+include h in
+theorem upper_pos (k : ι) : 0 < rMax := h.lower_pos.trans_le ((h.scale_lower k).trans (h.scale_upper k))
+
+include h in
+theorem physical_rate_pos (k : ι) : 0 < η / rMax := div_pos h.rate_pos (h.upper_pos k)
+
+theorem crossingInput : CrossingInput.CrossingInput (fun p : ι × ℕ => Link 4 p.2) SU2
+    (fun p => interactionActivity (h.state p.1 p.2).terms) :=
+  crossingInput_of_spatial_norm _ _ h.rate_pos (fun p => h.small p.1 p.2)
+
+theorem generated_fineDensity (k : ι) (n : ℕ) :
+    directDensity n (h.depth k) (h.fineDensity k n) = (h.state k n).density := h.generated k n
+
+theorem partition (k : ι) (n : ℕ) : (∫ U, h.fineDensity k n U) = ∫ c, (h.state k n).density c := by
+  rw [← h.generated k n]
+  exact (integral_directDensity n (h.depth k) _).symm
+
+theorem pullback_clustering (k : ι) (n : ℕ)
+    (S T : Finset (Link 4 n)) (hS : S.Nonempty) (M : ℕ) (hSM : S.card ≤ M) (hTM : T.card ≤ M)
+    (F G : C(Link 4 n → SU2, ℝ)) (hF : DependsOn S F) (hG : DependsOn T G)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (hFB : ∀ U, |F U| ≤ B) (hGC : ∀ U, |G U| ≤ C) :
+    |covariance volume (h.fineDensity k n) (scaleLift n (h.depth k) F) (scaleLift n (h.depth k) G)| ≤
+      3 * B * C * Real.exp (6 * M) *
+        Real.exp (-(η / rMax) * physicalSeparation (a k) (h.depth k) S T) := by
+  rw [covariance_scaleLift n (h.depth k) _ (h.fineDensity_pos k n)]
+  rw [h.generated_fineDensity k n]
+  exact (h.state k n).covariance_physical_le h.rate_pos.le (h.spacing_pos k) (h.depth k)
+    (h.scale_upper k) (h.small k n) S T hS M hSM hTM F G hF hG hB hC hFB hGC
+
+
+/-- The stopping map is the actual integral over all discarded Haar
+coordinates, now with the certified generated density as target. -/
+def step (k : ι) (n : ℕ) : Step
+    (WilsonProjectionComposition.coordinateState volume (h.fineDensity k n) (h.fineDensity_pos k n))
+    (h.state k n).weightedState where
+  project := directProjectLinear n (h.depth k) (h.fineDensity k n) (h.fineDensity_pos k n)
+  expectation F := by
+    change expectation volume (h.state k n).density _ = _
+    rw [← h.generated_fineDensity k n]
+    exact expectation_directProject n (h.depth k) _ (h.fineDensity_pos k n) F
+  contract := fun F _ hF => abs_directProject_le n (h.depth k) _ (h.fineDensity_pos k n) F hF
+
+def projected (k : ι) (n : ℕ) (F : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)) : C(Link 4 n → SU2, ℝ) :=
+  directProject n (h.depth k) (h.fineDensity k n) (h.fineDensity_pos k n) F
+
+theorem step_project (k : ι) (n : ℕ) (F : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)) :
+    (h.step k n).project F = h.projected k n F := rfl
+
+theorem projected_scaleLift (k : ι) (n : ℕ) (F : C(Link 4 n → SU2, ℝ)) :
+    h.projected k n (scaleLift n (h.depth k) F) = F :=
+  directProject_scaleLift n (h.depth k) _ (h.fineDensity_pos k n) F
+
+def covarianceRemainder (k : ι) (n : ℕ) (F G : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)) :
+    C(Link 4 n → SU2, ℝ) := h.projected k n (F*G) - h.projected k n F * h.projected k n G
+
+theorem covarianceRemainder_scaleLift (k : ι) (n : ℕ) (F G : C(Link 4 n → SU2, ℝ)) :
+    h.covarianceRemainder k n (scaleLift n (h.depth k) F) (scaleLift n (h.depth k) G) = 0 := by
+  rw [covarianceRemainder, ← scaleLift_mul, projected_scaleLift, projected_scaleLift,
+    projected_scaleLift, sub_self]
+
+theorem covariance_identity (k : ι) (n : ℕ) (F G : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)) :
+    covariance volume (h.fineDensity k n) F G =
+      covariance volume (h.state k n).density (h.projected k n F) (h.projected k n G) +
+        expectation volume (h.state k n).density (h.covarianceRemainder k n F G) := by
+  simpa only [h.generated_fineDensity, projected, covarianceRemainder] using
+    covariance_directProject n (h.depth k) (h.fineDensity k n) (h.fineDensity_pos k n) F G
+
+/-- The unconditional estimate is finite but has no spatial decay. A
+separated bound on this term remains an independent entrance obligation. -/
+theorem covarianceRemainder_bound (k : ι) (n : ℕ)
+    (F G : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ))
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (hF : ∀ U, |F U| ≤ B) (hG : ∀ U, |G U| ≤ C) :
+    |expectation volume (h.state k n).density (h.covarianceRemainder k n F G)| ≤ 2*B*C := by
+  apply abs_expectation_le volume _ _ (h.state k n).density_pos
+  exact abs_directRemainder_le n (h.depth k) _ (h.fineDensity_pos k n) F G hB hC hF hG
+
+theorem covariance_le_of_local_approximation (k : ι) (n : ℕ)
+    (F G : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ))
+    (f g : C(Link 4 n → SU2, ℝ)) (S T : Finset (Link 4 n)) (hS : S.Nonempty)
+    (M : ℕ) (hSM : S.card ≤ M) (hTM : T.card ≤ M) (hf : DependsOn S f) (hg : DependsOn T g)
+    {B C εF εG εR δ D : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (hεF : 0 ≤ εF) (hεG : 0 ≤ εG)
+    (hfB : ∀ U, |f U| ≤ B) (hgC : ∀ U, |g U| ≤ C) (hGC : ∀ U, |G U| ≤ C)
+    (hlocalF : ∀ c, |h.projected k n F c - f c| ≤ εF * Real.exp (-(η/rMax)*D))
+    (hlocalG : ∀ c, |h.projected k n G c - g c| ≤ εG * Real.exp (-(η/rMax)*D))
+    (hsep : D-δ ≤ physicalSeparation (a k) (h.depth k) S T)
+    (hrem : |expectation volume (h.state k n).density (h.covarianceRemainder k n F G)| ≤
+      εR * Real.exp (-(η/rMax)*D)) :
+    |covariance volume (h.fineDensity k n) F G| ≤
+      (3*B*C*Real.exp (6*M)*Real.exp ((η/rMax)*δ) + 2*εF*C + 2*B*εG + εR) *
+        Real.exp (-(η/rMax)*D) := by
+  have hrate := (h.physical_rate_pos k).le
+  have hdec : Real.exp (-(η/rMax) * physicalSeparation (a k) (h.depth k) S T) ≤
+      Real.exp ((η/rMax)*δ) * Real.exp (-(η/rMax)*D) := by
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    have he := mul_le_mul_of_nonneg_left hsep hrate
+    nlinarith
+  have hcoarse : |covariance volume (h.state k n).density f g| ≤
+      (3*B*C*Real.exp (6*M)*Real.exp ((η/rMax)*δ)) * Real.exp (-(η/rMax)*D) := by
+    apply ((h.state k n).covariance_physical_le h.rate_pos.le (h.spacing_pos k) (h.depth k)
+      (h.scale_upper k) (h.small k n) S T hS M hSM hTM f g hf hg hB hC hfB hgC).trans
+    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hdec
+      (show 0 ≤ 3*B*C*Real.exp (6*M) by positivity)
+  have happrox := abs_covariance_sub_le volume (h.state k n).density
+    (h.projected k n F) (h.projected k n G) f g (h.state k n).density_pos
+    hB hC (mul_nonneg hεF (Real.exp_pos _).le) (mul_nonneg hεG (Real.exp_pos _).le) hfB
+    (abs_directProject_le n (h.depth k) _ (h.fineDensity_pos k n) G hGC) hlocalF hlocalG
+  have he : covariance volume (h.fineDensity k n) F G =
+      covariance volume (h.state k n).density f g +
+      (covariance volume (h.state k n).density (h.projected k n F) (h.projected k n G) -
+        covariance volume (h.state k n).density f g) +
+      expectation volume (h.state k n).density (h.covarianceRemainder k n F G) := by
+    rw [h.covariance_identity k n F G]
+    ring
+  rw [he]
+  calc
+    _ ≤ |covariance volume (h.state k n).density f g| +
+        |covariance volume (h.state k n).density (h.projected k n F) (h.projected k n G) -
+          covariance volume (h.state k n).density f g| +
+        |expectation volume (h.state k n).density (h.covarianceRemainder k n F G)| :=
+      (abs_add_le _ _).trans (add_le_add (abs_add_le _ _) le_rfl)
+    _ ≤ _ := by nlinarith [hcoarse, happrox, hrem]
+
+
+
+/-- Transported marks may be sums of local terms with arbitrarily large
+supports. The exact local decompositions are charged by anchored spatial
+budgets; the conditional covariance is charged separately under the actual
+generated law. Every constant is fixed before cutoff and volume. -/
+structure TransportControl (B C δ ε : ℝ)
+    (F G : ∀ k, (n : ℕ) → C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ))
+    (D : ι → ℕ → ℝ) where
+  left_nonneg : 0 ≤ B
+  right_nonneg : 0 ≤ C
+  slack_nonneg : 0 ≤ δ
+  remainder_nonneg : 0 ≤ ε
+  left_anchor : ∀ _k : ι, (n : ℕ) → Link 4 n
+  right_anchor : ∀ _k : ι, (n : ℕ) → Link 4 n
+  left_budget : ∀ k n, AnchoredObservableBound η (left_anchor k n) B (h.projected k n (F k n))
+  right_budget : ∀ k n, AnchoredObservableBound η (right_anchor k n) C (h.projected k n (G k n))
+  distance_nonneg : ∀ k n, 0 ≤ D k n
+  separation : ∀ k n, D k n - δ ≤
+    coarseSpacing (a k) (h.depth k) * dist (left_anchor k n) (right_anchor k n)
+  conditional_covariance : ∀ k n,
+    |expectation volume (h.state k n).density (h.covarianceRemainder k n (F k n) (G k n))| ≤
+      ε * Real.exp (-(η/rMax) * D k n)
+
+/-- Exact pullbacks discharge the conditional-covariance obligation with
+zero error. The only observable input is their anchored local budget. -/
+def transportControl_pullbacks {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
+    (F G : ∀ _k : ι, (n : ℕ) → C(Link 4 n → SU2, ℝ))
+    (x y : ∀ _k : ι, (n : ℕ) → Link 4 n)
+    (hF : ∀ k n, AnchoredObservableBound η (x k n) B (F k n))
+    (hG : ∀ k n, AnchoredObservableBound η (y k n) C (G k n)) :
+    h.TransportControl B C 0 0
+      (fun k n => scaleLift n (h.depth k) (F k n)) (fun k n => scaleLift n (h.depth k) (G k n))
+      (fun k n => coarseSpacing (a k) (h.depth k) * dist (x k n) (y k n)) where
+  left_nonneg := hB
+  right_nonneg := hC
+  slack_nonneg := le_rfl
+  remainder_nonneg := le_rfl
+  left_anchor := x
+  right_anchor := y
+  left_budget := by intro k n; rw [projected_scaleLift]; exact hF k n
+  right_budget := by intro k n; rw [projected_scaleLift]; exact hG k n
+  distance_nonneg := fun k n => mul_nonneg (coarseSpacing_pos (h.spacing_pos k) _).le dist_nonneg
+  separation := by intro k n; simp only [sub_zero, le_refl]
+  conditional_covariance := by
+    intro k n
+    rw [covarianceRemainder_scaleLift]
+    simp [WilsonBlockElimination.expectation]
+
+theorem transport_clustering {B C δ ε : ℝ}
+    {F G : ∀ k, (n : ℕ) → C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)} {D : ι → ℕ → ℝ}
+    (c : h.TransportControl B C δ ε F G D) : ∀ k n,
+    |covariance volume (h.fineDensity k n) (F k n) (G k n)| ≤
+      (3*B*C*Real.exp ((η/rMax)*δ) + ε) * Real.exp (-(η/rMax) * D k n) := by
+  intro k n
+  have hB := c.left_nonneg
+  have hC := c.right_nonneg
+  have hrate := (h.physical_rate_pos k).le
+  have hdec := decay_distance_le_physical h.rate_pos.le (h.spacing_pos k) (h.depth k)
+    (h.scale_upper k) (dist_nonneg (x := c.left_anchor k n) (y := c.right_anchor k n))
+  have hsep : Real.exp (-(η/rMax) *
+      (coarseSpacing (a k) (h.depth k) * dist (c.left_anchor k n) (c.right_anchor k n))) ≤
+      Real.exp ((η/rMax)*δ) * Real.exp (-(η/rMax)*D k n) := by
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    have he := mul_le_mul_of_nonneg_left (c.separation k n) hrate
+    nlinarith
+  have hcoarse : |covariance volume (h.state k n).density
+      (h.projected k n (F k n)) (h.projected k n (G k n))| ≤
+      (3*B*C*Real.exp ((η/rMax)*δ)) * Real.exp (-(η/rMax)*D k n) := by
+    apply ((h.state k n).covariance_anchored_le h.rate_pos.le (h.small k n)
+      (c.left_anchor k n) (c.right_anchor k n) _ _ (c.left_budget k n) (c.right_budget k n)).trans
+    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left (hdec.trans hsep)
+      (show 0 ≤ 3*B*C by positivity)
+  rw [h.covariance_identity k n]
+  exact (abs_add_le _ _).trans (by nlinarith [hcoarse, c.conditional_covariance k n])
+
+/-- The physical rate and prefactor precede both cutoff and volume. The
+certificate exposes the unproved entrance and transport obligations. -/
+theorem uniform_transport_clustering [Nonempty ι] {B C δ ε : ℝ}
+    {F G : ∀ k, (n : ℕ) → C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)} {D : ι → ℕ → ℝ}
+    (c : h.TransportControl B C δ ε F G D) :
+    ∃ m > 0, ∃ A ≥ 0, ∀ k n,
+      |covariance volume (h.fineDensity k n) (F k n) (G k n)| ≤ A * Real.exp (-m * D k n) := by
+  refine ⟨η/rMax, h.physical_rate_pos (Classical.arbitrary ι),
+    3*B*C*Real.exp ((η/rMax)*δ)+ε, ?_, h.transport_clustering c⟩
+  have := c.left_nonneg; have := c.right_nonneg; have := c.remainder_nonneg
+  positivity
+
+/-- Exact pullbacks need only support and uniform-amplitude control. -/
+theorem uniform_pullback_clustering [Nonempty ι] {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (M : ℕ) :
+    0 < η/rMax ∧ ∀ k n (S T : Finset (Link 4 n)), S.Nonempty → S.card ≤ M → T.card ≤ M →
+      ∀ (F G : C(Link 4 n → SU2, ℝ)), DependsOn S F → DependsOn T G →
+      (∀ U, |F U| ≤ B) → (∀ U, |G U| ≤ C) →
+      |covariance volume (h.fineDensity k n) (scaleLift n (h.depth k) F) (scaleLift n (h.depth k) G)| ≤
+        3*B*C*Real.exp (6*M)*Real.exp (-(η/rMax)*physicalSeparation (a k) (h.depth k) S T) :=
+  ⟨h.physical_rate_pos (Classical.arbitrary ι), fun k n S T hS hSM hTM F G hf hg hFB hGC =>
+    h.pullback_clustering k n S T hS M hSM hTM F G hf hg hB hC hFB hGC⟩
+
+end StoppingScaleEntrance
+
+/-- The unproved weak-to-strong entrance target for a cutoff sequence. The
+cutoff tends to zero while the Wilson inverse coupling tends to infinity;
+fixed spatial rates and physical stopping scales must work for all volumes.
+Observable transport remains a separate `StoppingScaleEntrance.TransportControl`.
+-/
+def WeakCouplingEntranceObligation (a β : ℕ → ℝ) : Prop :=
+  Filter.Tendsto a Filter.atTop (𝓝 0) ∧ Filter.Tendsto β Filter.atTop Filter.atTop ∧
+    ∃ η rMin rMax : ℝ, Nonempty (StoppingScaleEntrance η rMin rMax a β)
+
+/-- A nonvacuous entrance family at fixed strong coupling: the cutoff spacing
+is `2^(-k)`, the actual depth is `k`, and the stopping spacing is exactly one.
+This example does not assert a weak-coupling or nontrivial continuum limit. -/
+def strongCouplingEntrance {η : ℝ} (hη : 0 < η) (β : ℝ) (hβ : 0 ≤ β)
+    (hsmall : |β| ≤ spatialIterationBeta η) :
+    StoppingScaleEntrance η 1 1 (fun k : ℕ => 1/(2:ℝ)^k) (fun _ => β) where
+  rate_pos := hη
+  lower_pos := by norm_num
+  spacing_pos := by intro k; positivity
+  coupling_nonneg := fun _ => hβ
+  depth := id
+  scale_lower := by
+    intro k
+    dsimp [coarseSpacing]
+    rw [one_div, mul_inv_cancel₀ (pow_ne_zero k (by norm_num : (2:ℝ) ≠ 0))]
+  scale_upper := by
+    intro k
+    dsimp [coarseSpacing]
+    rw [one_div, mul_inv_cancel₀ (pow_ne_zero k (by norm_num : (2:ℝ) ≠ 0))]
+  state := fun k n => InteractionState.iterate n k
+    (wilsonState (scaleIndex n k) β (hsmall.trans (spatialIterationBeta_le hη.le)))
+  generated := fun k n => (wilson_density_iterate_direct n k β _).symm
+  small := fun k n => InteractionState.spatial_small_iterate hη.le n k _
+    (wilsonState_spatial_small hη.le _ β _ hsmall)
+
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
+
+/-- A spatial interaction predicate on the existing weighted boundary states. -/
+def spatialInteractionContract {ι : Type} (η R : ℝ) (s : BoundaryState ι) : Prop :=
+  ∃ (n : ℕ) (A : InteractionState n), A.weightedState = s.1 ∧ spatialInteractionNorm 8 η A.terms ≤ R
+
+/-- The native forward modality is witnessed by the actual paired-Haar
+rewrite, with a spatial gain proved separately from the rewrite definition. -/
+theorem haarDiamond_spatialInteractionContract {ι : Type} {n : ℕ} {η R : ℝ}
+    (hη : 0 ≤ η) (hR : R ≤ 1/2) (A : InteractionState (doubleIndex n))
+    (D : ResponseData A.weightedState ι) (hA : spatialInteractionNorm 8 η A.terms ≤ R) :
+    gsltDiamond (haarTheory ι) (spatialInteractionContract η ((4*Real.exp (-2))*R))
+      ⟨A.weightedState, D⟩ := by
+  apply (gsltDiamond_spec _ _ _).mpr
+  refine ⟨_, HaarTransition.paired volume (blockIndexEquiv 4 n) A.density A.density_pos D, ?_⟩
+  refine ⟨n, A.block, ?_, (A.spatial_norm_block_le hη (hA.trans hR)).trans
+    (mul_le_mul_of_nonneg_left hA (by positivity))⟩
+  exact coordinateState_congr volume _ _ _ _ A.density_block
 
 end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo

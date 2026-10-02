@@ -1928,4 +1928,115 @@ theorem crossingInput_of_spatial_norm {ι : Type*} (Blocks : ι → Type*)
       fun L => interactionActivity_bound (Φ L) ((interactionNorm_le_spatial 8 hη.le _).trans (hsmall L)),
       fun L => interactionMajorant_empty (Φ L), fun L => interactionActivity_small (Φ L) hη.le (hsmall L)⟩⟩
 
+/-! ### Spatial budgets for decomposed observables -/
+
+variable {ι κ : Type*} [Fintype ι] [Fintype κ]
+
+/-- A local decomposition may have arbitrarily many supports. Their
+cardinality and distance from an anchor are charged in one absolute budget. -/
+def anchoredObservableBudget (η : ℝ) (x : X) (supp : ι → Finset X) (F : ι → C(X → E, ℝ)) : ℝ :=
+  ∑ i, Real.exp (3 * (supp i).card + η * treeLength (insert x (supp i))) * ‖F i‖
+
+theorem covariance_anchored_le (Ψ : Finset X → C(X → E, ℝ)) (ν : Measure E) [IsProbabilityMeasure ν]
+    {η : ℝ} (hη : 0 ≤ η) (hΨ : ∀ S, DependsOn S (Ψ S)) (hzero : Ψ ∅ = 0)
+    (hsmall : spatialInteractionNorm 8 η Ψ ≤ 1/2) (x y : X)
+    (S T : Finset X) (hS : S.Nonempty) (hT : T.Nonempty)
+    (F G : C(X → E, ℝ)) (hF : DependsOn S F) (hG : DependsOn T G) :
+    |covariance (Measure.pi fun _ : X => ν) (interactionDensity Ψ) F G| ≤
+      3 * (Real.exp (3*S.card + η*treeLength (insert x S)) * ‖F‖) *
+        (Real.exp (3*T.card + η*treeLength (insert y T)) * ‖G‖) * Real.exp (-η * dist x y) := by
+  apply (covariance_interactionDensity_le Ψ ν hη hΨ hzero hsmall S T hS F G hF hG ‖F‖ ‖G‖
+    (fun U => by simpa only [Real.norm_eq_abs] using F.norm_coe_le_norm U)
+    (fun U => by simpa only [Real.norm_eq_abs] using G.norm_coe_le_norm U)).trans
+  have hd := polymerDist_ge_dist_sub_treeLength x y S T hS hT
+  have he : Real.exp (-η*polymerDist S T) ≤
+      Real.exp (η*treeLength (insert x S)+η*treeLength (insert y T)) * Real.exp (-η*dist x y) := by
+    rw [← Real.exp_add]
+    apply Real.exp_le_exp.mpr
+    have hh := mul_le_mul_of_nonneg_left hd hη
+    nlinarith
+  calc
+    _ ≤ 3*‖F‖*‖G‖*Real.exp (3*S.card+3*T.card)*
+        (Real.exp (η*treeLength (insert x S)+η*treeLength (insert y T))*Real.exp (-η*dist x y)) :=
+      mul_le_mul_of_nonneg_left he (by positivity)
+    _ = _ := by simp only [Real.exp_add]; ring
+
+theorem covariance_sum_spatial_le (Ψ : Finset X → C(X → E, ℝ)) (ν : Measure E) [IsProbabilityMeasure ν]
+    {η : ℝ} (hη : 0 ≤ η) (hΨ : ∀ S, DependsOn S (Ψ S)) (hzero : Ψ ∅ = 0)
+    (hsmall : spatialInteractionNorm 8 η Ψ ≤ 1/2) (x y : X)
+    (suppF : ι → Finset X) (suppG : κ → Finset X)
+    (hSF : ∀ i, (suppF i).Nonempty) (hSG : ∀ j, (suppG j).Nonempty)
+    (F : ι → C(X → E, ℝ)) (G : κ → C(X → E, ℝ))
+    (hF : ∀ i, DependsOn (suppF i) (F i)) (hG : ∀ j, DependsOn (suppG j) (G j)) :
+    |covariance (Measure.pi fun _ : X => ν) (interactionDensity Ψ) (∑ i, F i) (∑ j, G j)| ≤
+      3 * anchoredObservableBudget η x suppF F * anchoredObservableBudget η y suppG G *
+        Real.exp (-η * dist x y) := by
+  rw [covariance_sum]
+  calc
+    _ ≤ ∑ i, |∑ j, covariance (Measure.pi fun _ : X => ν) (interactionDensity Ψ) (F i) (G j)| :=
+      Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ i, ∑ j, |covariance (Measure.pi fun _ : X => ν) (interactionDensity Ψ) (F i) (G j)| :=
+      sum_le_sum (fun i _ => Finset.abs_sum_le_sum_abs _ _)
+    _ ≤ ∑ i, ∑ j, 3 * (Real.exp (3*(suppF i).card + η*treeLength (insert x (suppF i))) * ‖F i‖) *
+        (Real.exp (3*(suppG j).card + η*treeLength (insert y (suppG j))) * ‖G j‖) * Real.exp (-η*dist x y) :=
+      sum_le_sum (fun i _ => sum_le_sum (fun j _ =>
+        covariance_anchored_le Ψ ν hη hΨ hzero hsmall x y _ _ (hSF i) (hSG j) _ _ (hF i) (hG j)))
+    _ = _ := by
+      unfold anchoredObservableBudget
+      simp only [sum_mul, mul_sum]
+      exact sum_comm
+
+
+omit [Fintype X] [Group E] [IsTopologicalGroup E] [MeasurableSpace E] [BorelSpace E]
+    [SecondCountableTopology E] in
+theorem anchoredObservableBudget_nonneg (η : ℝ) (x : X) (supp : ι → Finset X)
+    (F : ι → C(X → E, ℝ)) : 0 ≤ anchoredObservableBudget η x supp F := by
+  unfold anchoredObservableBudget
+  exact sum_nonneg (fun _ _ => mul_nonneg (Real.exp_pos _).le (norm_nonneg _))
+
+/-- An exact decomposition into local pieces, with a uniform budget charging
+support cardinality and tree distance from the observable's anchor. -/
+def AnchoredObservableBound (η : ℝ) (x : X) (B : ℝ) (F : C(X → E, ℝ)) : Prop :=
+  ∃ f : {S : Finset X // S.Nonempty} → C(X → E, ℝ),
+    (∀ S, DependsOn S.val (f S)) ∧ F = ∑ S, f S ∧
+      anchoredObservableBudget η x (fun S => S.val) f ≤ B
+
+theorem AnchoredObservableBound.nonneg {η : ℝ} {x : X} {B : ℝ} {F : C(X → E, ℝ)}
+    (hF : AnchoredObservableBound η x B F) : 0 ≤ B := by
+  obtain ⟨f, _, _, hf⟩ := hF
+  exact (anchoredObservableBudget_nonneg _ _ _ _).trans hf
+
+theorem AnchoredObservableBound.of_local (η : ℝ) (x : X) (S : Finset X) (hS : S.Nonempty)
+    (F : C(X → E, ℝ)) (hF : DependsOn S F) :
+    AnchoredObservableBound η x (Real.exp (3*S.card + η*treeLength (insert x S)) * ‖F‖) F := by
+  let s : {S : Finset X // S.Nonempty} := ⟨S, hS⟩
+  let f : {S : Finset X // S.Nonempty} → C(X → E, ℝ) := fun T => if T=s then F else 0
+  refine ⟨f, ?_, ?_, ?_⟩
+  · intro T U V hUV
+    by_cases hT : T=s
+    · subst T; simpa [f, s] using hF U V hUV
+    · simp [f, hT]
+  · simp [f]
+  · simp only [anchoredObservableBudget, f, apply_ite norm, norm_zero, mul_ite, mul_zero]
+    simp [s]
+
+theorem covariance_of_anchoredBounds (Ψ : Finset X → C(X → E, ℝ)) (ν : Measure E) [IsProbabilityMeasure ν]
+    {η : ℝ} (hη : 0 ≤ η) (hΨ : ∀ S, DependsOn S (Ψ S)) (hzero : Ψ ∅ = 0)
+    (hsmall : spatialInteractionNorm 8 η Ψ ≤ 1/2) (x y : X) {B C : ℝ}
+    (F G : C(X → E, ℝ)) (hF : AnchoredObservableBound η x B F) (hG : AnchoredObservableBound η y C G) :
+    |covariance (Measure.pi fun _ : X => ν) (interactionDensity Ψ) F G| ≤
+      3 * B * C * Real.exp (-η * dist x y) := by
+  have hB := hF.nonneg
+  have hC := hG.nonneg
+  obtain ⟨f, hf, rfl, hfB⟩ := hF
+  obtain ⟨g, hg, rfl, hgC⟩ := hG
+  apply (covariance_sum_spatial_le Ψ ν hη hΨ hzero hsmall x y
+    (fun S : {S : Finset X // S.Nonempty} => S.val)
+    (fun S : {S : Finset X // S.Nonempty} => S.val)
+    (fun S => S.property) (fun S => S.property) f g hf hg).trans
+  apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+  exact mul_le_mul (mul_le_mul_of_nonneg_left hfB (by norm_num)) hgC
+    (anchoredObservableBudget_nonneg _ _ _ _) (by positivity)
+
+
 end Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection.PairedHaar

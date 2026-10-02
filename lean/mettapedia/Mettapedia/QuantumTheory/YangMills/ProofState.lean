@@ -25,6 +25,7 @@ import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingTwist
 import Mettapedia.QuantumTheory.YangMills.WilsonReflectionPositivity
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingTransferGap
+import Mettapedia.QuantumTheory.YangMills.WilsonDyadicObservableFlow
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -975,7 +976,7 @@ def yangMillsCrossingInputNode : YangMillsProofNode where
   status := .openGoal
   truthValue := ⟨0, 90⟩
   evidence := "CrossingInput records the bounds the stopping-scale step needs on the activities of a polymer representation over a block-product reference measure: per-block Kotecky-Preiss smallness with a positive rate and constants independent of the volume. That an actual stopped Wilson or RG measure admits such a representation is part of what the route must supply. CrossingInput.clustering proves that it implies exponential clustering of bounded block observables uniformly in the volume (PolymerGas.LatticeClustering, by Dobrushin's criterion, an influence recursion and conditioning, without a cluster expansion). CrossingInput.false_of_tendsto_dominating proves that no family satisfying it has bounded two-point functions whose limits dominate the free lattice Maxwell field-strength two-point function; currentYangMillsFreeMaxwell_barrier records that this function has no exponential bound in four and five dimensions, and CrossingInput.norm_fieldStrengthCorrelation_le_gaussian gives the domination for the bounded Gaussian observables exp(i sqrt t F01). The separation hypothesis is eventual in the volume for each fixed displacement; on the tori of StrongCouplingCrossing it holds for single-link supports with slope 1/d, offset 0 and support size one, so the torus specialization CalibrationSeparation.false_of_tendsto_dominating leaves only the convergence and domination of the two-point functions as hypotheses. For the periodic Gaussian F01 field of the free Maxwell theory these are proved: FreeFieldNoCrossing.false_of_phaseRepresentation shows that no family satisfying CrossingInput reproduces its two phase marginals exp(+-i F01/2) and their joint expectation at every volume (Gaussian characteristic functions; the torus covariance converges to the free Maxwell one by Riemann sums of the bounded symbol). The comparison lemma is an algebraic estimate on the free correlation with the factor 2 exp(t sigma^2) / t for 0 < t <= 1/2; the beta -> infinity limit that would place four-dimensional U(1) and the abelian components of five-dimensional SU(2) near the free field is not formalized. TwistDiagnostic adds a calibration that can be tested at finite coupling: if the untwisted and twisted representations share the Kotecky-Preiss bounds and the twist changes only the integrated activities of polymers that meet a cut and wind around the torus, the twist free energy is at most 2|Y| eps exp(-kappa D) (TwistDiagnostic.abs_logTwistRatio_le, from PolymerGas.Twist), and TwistDiagnostic.false_of_twistFreeEnergy_ge_of_poly_linear proves that on tori with cuts of polynomial size and linearly growing winding diameters no such family has twist free energy bounded below by a positive constant; the winding hypothesis is stated, not derived from a lattice measure. MarginalBlindness proves that one-site marginal criteria admitting a nonzero one-site covariance cannot by themselves imply clustering: the product and diagonal measures share their marginals, the first with no correlations at distinct sites and the second with the covariance at every pair. TwistCost proves that every twisted U(1) configuration costs at least 2 beta L^(d-4) in the twisted planes, and TwistEater that in SU(2) the anticommuting i sigma_1, i sigma_2 absorb the twist at zero action in the twisted planes, so the classical minima give SU(2) no action cost of the U(1) kind. goertzel_ym.tex records the numerical stopping-scale test, the hierarchical-lattice barrier, where U(1) confines too, and the candidate crossing mechanisms with Monte Carlo twist free energies."
-  nextObligation := "Prove the crossing input for four-dimensional SU(2) at some block scale: control of the flow from beta_min to a strong effective coupling with Kotecky-Preiss-small activities, by a mechanism that fails for four-dimensional U(1) and five-dimensional SU(2)."
+  nextObligation := "The spatial interaction contract now supplies CrossingInput for the actual generated law at radius 1/2. Prove that a four-dimensional SU(2) weak-coupling trajectory enters this radius at a volume-independent depth with controlled physical stopping scale, anchored observable budgets and decay of the discarded conditional covariance. The entrance mechanism must respect the four-dimensional U(1) and five-dimensional SU(2) calibrations."
 
 /-- OUR strong-coupling instance of the crossing input: it holds for Wilson-type
 lattice measures at small coupling, uniformly in the volume. -/
@@ -985,6 +986,24 @@ def yangMillsCrossingInputStrongCouplingNode : YangMillsProofNode where
   truthValue := ⟨100, 95⟩
   evidence := "StrongCouplingCrossing.crossingInput proves CrossingInput for the connected plaquette activities of every Wilson-type measure on the tori (Z/(n+3))^d: independent link variables, any measurable four-link potential with values in [0, 2] (the Wilson action 1 - Re tr U_p / N for SU(N) with Haar measure is one), and 0 <= beta <= beta0 d = exp(-18) / (4 (4 d^2 + 1) (16 d^2 + 1)^2), with decay rate one and smallness exp(-1) at every volume. StrongCouplingCrossing.wilson_clustering gives exponential clustering of the Wilson expectations, uniformly in the volume. The proof uses the connected plaquette expansion (PolymerGas.PlaquetteExpansion, from PolymerGas.ConnectedDecomposition and PolymerGas.SupportRegrouping), the count of connected sets through a vertex, at most (Delta + 1)^(2n) (PolymerGas.ConnectedCount), and the explicit smallness threshold (PolymerGas.PlaquetteSmallness). So the crossing input holds where clustering is known and fails at the barrier theories. StrongCouplingTwist verifies the twist diagnostic there: for a group with a central involution z (the centre element -1 of SU(2)), a z-invariant probability measure and a measurable plaquette function psi in [0, 2], moving the twist is a measure-preserving change of variables and distant polymers do not see it, so the untwisted and twisted activities form a twist-compatible crossing family (StrongCouplingTwist.twistCompatibleCrossing), and the Wilson twist free energy -log (Z_tw / Z), both partition functions real Wilson integrals, tends to zero as the volume grows (StrongCouplingTwist.tendsto_twistFreeEnergy)."
   nextObligation := "None at strong coupling. The open crossing is the passage from weak coupling to this regime for four-dimensional SU(2)."
+
+/-- Exact SU(2) scale integration with a volume-uniform spatial norm and
+clustering of the complete generated law. -/
+def yangMillsWilsonSpatialIterationNode : YangMillsProofNode where
+  id := "yang-mills.rg.wilson-spatial-iteration"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  evidence := "WilsonConditionalProjection.PairedHaar.effectiveInteraction_spatial_norm_le proves contraction by q = 4 exp(-2) < 1 of the full interaction norm sup_l sum_(S containing l) exp(8|S| + eta treeLength(S)) norm(Phi_S), at radius at most 1/2. The compact-group chart must admit a nonexpanding projection identifying each paired link; WilsonDyadicGeometry.halfLink proves this for the actual scale-two tori. SU2WilsonAssembly.ScaleTwo.InteractionState carries the exact positive density, its vacuum term, locality, Haar centering and gauge invariance. WilsonDyadicObservableFlow proves q^j contraction for every finite scale chain and Wilson entry at |beta| <= 1/(128 exp(32+4 eta)), with eta >= 0 fixed before volume and depth. At eta > 0, the same radius gives an exact polymer representation and CrossingInput for all generated volumes and depths, with rate eta and smallness exp(-3). Normalized expectations and fine pullbacks are identified exactly. The native OSLF forward predicate has an actual paired-Haar successor with the proved spatial gain. These bounds concern complete continuous interaction functions, not all-order boundary derivatives."
+  nextObligation := "The spatial strong-coupling iteration is proved. Establish weak-coupling entrance and uniform observable transport at a controlled physical stopping scale; higher derivative control and continuum construction remain separate."
+
+/-- A conditional physical clustering bridge with the entrance and discarded
+covariance obligations stated on the actual generated measures. -/
+def yangMillsStoppingScaleBridgeNode : YangMillsProofNode where
+  id := "yang-mills.rg.physical-stopping-scale-bridge"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  evidence := "SU2WilsonAssembly.ScaleTwo.StoppingScaleEntrance in WilsonDyadicObservableFlow fixes eta > 0 and 0 < rMin <= 2^j(k) a(k) <= rMax before cutoff and volume. The depth j(k) is independent of volume, and the certified small interaction reconstructs the actual integrated fine Wilson density including vacuum normalization. AnchoredObservableBound records exact local decompositions of projected marks with weighted support and anchor-distance budgets B,C. StoppingScaleEntrance.TransportControl additionally bounds their averaged conditional covariance by epsilon exp(-m D), with physical anchor separation at least D-delta and m = eta/rMax. uniform_transport_clustering proves |Cov_original(F,G)| <= (3 B C exp(m delta) + epsilon) exp(-m D), uniformly in cutoff and volume. Exact pullbacks have conditional-covariance error zero; general marks retain that term. strongCouplingEntrance constructs a nonempty example with fixed small beta, a(k)=2^(-k), depth k, and stopping spacing one. WeakCouplingEntranceObligation separately requires a(k) to tend to zero and beta(k) to infinity; its existence is not proved."
+  nextObligation := "Supply the weak-coupling entrance, anchored observable budgets and spatial decay of the discarded conditional covariance for a suitable observable family. Prove a nontrivial continuum limit and the reconstruction hypotheses; finite-cutoff nonzero observables and physical clustering alone do not establish them."
 
 /-- OUR lattice reflection positivity of the Wilson-type measure (site
 reflection), at every real coupling. -/
@@ -1090,6 +1109,8 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsCommutatorLeibnizCorrectionNode
   , yangMillsCrossingInputNode
   , yangMillsCrossingInputStrongCouplingNode
+  , yangMillsWilsonSpatialIterationNode
+  , yangMillsStoppingScaleBridgeNode
   , yangMillsWilsonReflectionPositivityNode
   , yangMillsStrongCouplingTransferGapNode
   , yangMillsContinuumOSConditionalScaffoldNode
@@ -1916,6 +1937,41 @@ theorem currentYangMillsMassGapEndpoint_blockedByConstructiveGate :
       currentYangMillsConstructiveWorldInterfaces_supplied,
       currentYangMillsConstructiveStatus_missingPrerequisites_hamiltonianTransfer,
       currentYangMillsConstructiveStatus_unrepresentedChecks⟩
+
+section SpatialStoppingScale
+open scoped Topology
+open SU2WilsonAssembly.ScaleTwo WilsonConditionalProjection.PairedHaar
+open StrongCouplingCrossing WilsonDyadicGeometry SU2WilsonBlockPilot
+
+/-- The spatial rate and strict gain are fixed before the actual Wilson
+coupling, torus and finite blocking depth. -/
+theorem currentYangMillsWilsonSpatialIteration_packet {η : ℝ} (hη : 0 < η) :
+    0 < spatialIterationBeta η ∧ IsRGContractionGain (4 * Real.exp (-2)) ∧
+      ∀ (β : ℝ) (hβ : |β| ≤ spatialIterationBeta η),
+        CrossingInput.CrossingInput (fun p : ℕ × ℕ => Link 4 p.1) SU2
+          (fun p => interactionActivity (InteractionState.iterate p.1 p.2
+            (wilsonState (scaleIndex p.1 p.2) β (hβ.trans (spatialIterationBeta_le hη.le)))).terms) ∧
+        ∀ n j, spatialInteractionNorm 8 η (InteractionState.iterate n j
+          (wilsonState (scaleIndex n j) β (hβ.trans (spatialIterationBeta_le hη.le)))).terms ≤
+            (4 * Real.exp (-2))^j * (64 * |β| * Real.exp (32+4*η)) :=
+  ⟨spatialIterationBeta_pos η, nonlinearGain_contraction,
+    fun β hβ => ⟨crossingInput_wilson_iterates hη β hβ,
+      fun n j => wilson_spatial_iteration_bound hη.le n j β hβ⟩⟩
+
+/-- A conditional bridge for the specified cutoff family and its actual
+transported observables. No entrance or continuum existence is inferred. -/
+theorem currentYangMillsPhysicalStoppingScale_packet {ι : Type*} [Nonempty ι]
+    {η rMin rMax : ℝ} {a β : ι → ℝ} (h : StoppingScaleEntrance η rMin rMax a β)
+    {B C δ ε : ℝ}
+    {F G : ∀ k, (n : ℕ) → C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)} {D : ι → ℕ → ℝ}
+    (c : h.TransportControl B C δ ε F G D) :
+    ∃ m > 0, ∃ A ≥ 0, ∀ k n,
+      |WilsonBlockElimination.covariance MeasureTheory.volume (h.fineDensity k n) (F k n) (G k n)| ≤
+        A * Real.exp (-m * D k n) := h.uniform_transport_clustering c
+
+#print axioms currentYangMillsWilsonSpatialIteration_packet
+#print axioms currentYangMillsPhysicalStoppingScale_packet
+end SpatialStoppingScale
 
 end YangMills
 end QuantumTheory
