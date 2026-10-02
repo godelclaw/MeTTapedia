@@ -2241,6 +2241,20 @@ analytic interval result shows that transfer direction alone cannot
 decide geometric depletion. Its payment still uses a small H3 stability
 neighborhood; arbitrary mutually amplifying histories remain open.
 
+The [generated-mean controller](labs/README.md#bellman-control-of-the-actual-generated-mean)
+now gives a closed-form Bellman upper bound for a physical part of that
+stretching history. Its state keeps the generated mean and original
+remaining clock. An adjoint weight pays both the mean already present
+and its allowed future source; it also yields a complete interval budget
+for the stretching excess in the controlled class. Exact composition
+retains a cross-interval memory term that disappears under an incorrect
+reset. Actual NS segments map into the scalar relaxation, whose maximizer
+need not itself be a fluid. The analytic cost domination fits the existing
+`Bounds.of_domination`, `Bounds.comp` and `Bounds.iterate` interface while
+full endpoint velocities remain required for physical gluing. The source
+allowance still relies on the proved small H3 neighborhood; that physical
+restriction, not the Bellman algebra, is the arbitrary-data obstruction.
+
 The [geometric cascade ledger](labs/README.md#a-finite-energy-finite-time-cascade-ledger-with-unbounded-stretching)
 formally separates that remaining question from energy conservation.
 It has summable positive energy costs and durations, a decreasing reserve

@@ -20097,3 +20097,155 @@ Run `python3 -O labs/refeeding_stretching.py`. The finite Fourier
 identities, H1 residual bounds and sign margins are exact rational
 checks. The Sobolev bootstrap, averaged evolution, physical interval
 comparison and existence are analytic, not newly Lean-certified.
+
+## Bellman control of the actual generated mean
+
+`generated_mean_control.py` supplies an explicit finite-horizon controller
+for the generated mean in (148)--(150). It uses linear comparison and an
+adjoint cost weight. The costed-history composition laws already available
+in `GSLT.Dynamics.BoundaryBellman` provide the interface; no additional
+general control library is needed for this calculation.
+
+The physical class and smallness hypotheses remain those of (145)--(150).
+Fix the ORIGINAL clock horizon T=3/4 and all original-data constants.
+With `m=average_z[(u-U)/epsilon]`, define
+
+```text
+n(sigma)=||m(sigma)||H1/delta, delta=epsilon/A>0,
+kappa=C1 V>0, beta=2Cb K^2,
+n(0)=0, n>=0, n'<=kappa n+beta.                       (151)
+```
+
+The inequality follows from the actual projected mean equation above,
+not an independently imposed fluid force. The norm is absolutely continuous
+on the compact interval and the inequality holds almost everywhere; a
+regularized-norm argument gives the same comparison at its zeros. Viscous
+dissipation has favorable sign. Its removal in (151) makes a larger set
+of histories, suitable for an upper bound.
+
+### An explicit value function and its physical payment
+
+For h>=0 and n>=0 put
+
+```text
+alpha(h)=(exp(kappa h)-1)/kappa,
+b(h)=(exp(kappa h)-1-kappa h)/kappa^2,
+Vcontrol(h,n)=alpha(h)n+beta b(h).                     (152)
+```
+
+Both weights are nonnegative. This is exactly the maximal integral of
+the scalar state over the remaining time h among nonnegative absolutely
+continuous histories starting at n and satisfying (151). Indeed the
+maximizer solves `n'=kappa n+beta`; comparison bounds every admitted
+history by it, and direct integration gives (152). Equivalently admit
+`n'=kappa n+v-d`, `0<=v<=beta`, `d>=0`, while retaining n>=0.
+Then `partial_n Vcontrol=alpha>=0` and
+
+```text
+partial_h Vcontrol
+ =n+sup_(0<=v<=beta,d>=0)[(kappa n+v-d)partial_n Vcontrol],
+d/dsigma Vcontrol(T-sigma,n(sigma))+n(sigma)
+ =-alpha(T-sigma)[beta-v+d]<=0.                       (153)
+```
+
+The maximizing scalar controls v=beta, d=0 need not be realizable by a
+fluid. The valid implication is from each physical history to an admitted
+scalar history. This is a control relaxation of an observation, not an
+external NS force or a Schrödinger-bridge identification theorem.
+
+The terms in the cubic production that are linear in the perturbation
+and involve the reference receiver depend on m. Denote their exact sum
+by `g_mean`: in the expansion of `g(a v+A rho w e_z+epsilon y)`, this
+is the mixed C pairing and the three terms with two receiver factors
+and one epsilon y. The estimates leading to (150) give
+
+```text
+ell=6rho Kw+12rho^2 Gw Kw,
+|g_mean(t(sigma))|<=a epsilon^2 ell n(sigma),
+R_mean(sigma)=epsilon^2 ell Vcontrol(T-sigma,n(sigma)). (154)
+```
+
+Since `dt=dsigma/a`, the factor a cancels in the integrated physical cost.
+Thus, for any `0<=s0<=s1<=T` in the SAME original clock,
+
+```text
+integral_(t(s0))^(t(s1)) |g_mean(r)| dr <=R_mean(s0)-R_mean(s1),
+R_mean(0)=epsilon^2 ell beta b(T), R_mean(T)=0.
+```
+
+Here t(sigma) denotes the original clock inverse, not a renewed clock.
+The initial allowance is finite and explicit from the original datum.
+This pays a contribution to actual vorticity stretching, not merely
+the quadratic energy exchange with the modal parent.
+
+There is also a complete payment for the reference-subtracted cubic
+production on this interval. Equation (146) and ||y||H3<=K give
+
+```text
+C0=3K^2+12rho Gw K^2+4delta Ce K^3,
+|g(u)-g(U)|<=a epsilon^2[C0+ell n],
+R_excess(sigma)=epsilon^2[C0(T-sigma)+ell Vcontrol(T-sigma,n(sigma))],
+integral_(t(s0))^(t(s1)) |g(u(r))-g(U(r))| dr
+ <=R_excess(s0)-R_excess(s1),
+R_excess(0)=epsilon^2[C0 T+ell beta b(T)].              (155)
+```
+
+The estimate retains g(U); it does not identify this cost with
+`g(u)-g(u0)` in the signed-renewal continuation theorem. The reference
+and change of baseline would need their own payment there. The present
+class already has global existence from the earlier stability theorem;
+(155) supplies a concrete stretching-cost consumer for the history
+interface, not a second arbitrary-data regularity proof.
+
+### Exact seams, inherited memory, and the existing GSLT interface
+
+For h1,h2>=0 the weights obey
+
+```text
+alpha(h1+h2)=alpha(h1)+exp(kappa h1)alpha(h2),
+b(h1+h2)=b(h1)+b(h2)+alpha(h1)alpha(h2).               (156)
+```
+
+For a saturating first interval, its ending mean is
+`n1=exp(kappa h1)n0+beta alpha(h1)`. Consequently its cost plus
+`Vcontrol(h2,n1)` is exactly `Vcontrol(h1+h2,n0)`. For any admitted
+first interval the corresponding inequality holds. Repeated composition
+uses that same inherited mean and the original terminal time.
+
+If n0=0, restarting each interval with zero mean would retain only
+`beta[b(h1)+b(h2)]` and lose the strictly positive term
+`beta alpha(h1)alpha(h2)` when beta,h1,h2>0. It represents mean
+generated in the first interval acting during the second. The exact
+scalar maximum is only a comparison witness, but actual NS mean
+generation is independently nonzero for the seed. It cannot be deleted
+from an actual endpoint state merely because a pattern label recurs.
+
+The physical boundary state retains the full endpoint velocity and clock,
+with the original reference, constants and horizon fixed. Each actual
+solution segment in the controlled class maps to its scalar n history;
+its cost is bounded by the integral of `epsilon^2(C0+ell n)`.
+Pulling this relaxed relation back to those full endpoint states gives
+the same-state cost domination required by
+`CostedRelation.Bounds.of_domination`. The reserve (155) then has exactly
+the form consumed by `Bounds.comp` and `Bounds.iterate`: intermediate
+reserves cancel and no new initial allowance appears.
+
+This specifies an analytic instance of the existing formal interface;
+the PDE-to-scalar domination is not newly Lean-certified. Matching only
+n or a pattern label does not reconstruct matching physical velocities.
+The full endpoint witness remains necessary for physically gluing flows.
+Scalar summaries may bound a larger family without claiming that each
+member reconstructs to an NS solution.
+
+The unresolved extension is explicit: beta and C0 are currently paid by
+the proved small-neighborhood bound K. Arbitrary mutually amplifying
+parents need a replacement source/stretching estimate from the full
+original datum. The Bellman formula and GSLT composition do not provide
+that missing physical estimate.
+
+Run `python3 -O labs/generated_mean_control.py`. Exact symbolic checks
+cover the adjoint and Bellman equations, complete source/loss slack,
+two- and three-interval composition, the zero-growth limit and physical
+clock scaling. The actual mean-generation fixtures are reused. The
+analytic trajectory domination and interval payment remain distinct
+from these finite algebra checks; no new Lean declaration is asserted.
