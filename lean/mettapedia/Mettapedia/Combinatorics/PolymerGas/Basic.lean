@@ -13,7 +13,9 @@ independent set of `G`.  For a finite set `Λ` of polymers the partition functio
 
 `Z(Λ) = ∑_{I ⊆ Λ compatible} ∏_{γ ∈ I} w γ`
 
-is the multivariate independence polynomial of `G` on `Λ`.  It satisfies
+is the multivariate independence polynomial of `G` on `Λ`. Its definition
+is shared over commutative semirings; the norm estimates use complex activities.
+It satisfies
 `Z(Λ ∪ {γ}) = Z(Λ) + w γ · Z(Λ ∖ N(γ))`, where `N(γ)` is the set of polymers
 incompatible with `γ` (`partitionFunction_insert`).
 
@@ -49,8 +51,24 @@ instance (I : Finset V) : Decidable (IsCompatible G I) := by
 
 /-- The partition function of the polymers in `Λ` with activities `w`: the sum
 over compatible subfamilies of the product of their activities. -/
-def partitionFunction (w : V → ℂ) (Λ : Finset V) : ℂ :=
+def partitionFunction {R : Type*} [CommSemiring R] (w : V → R) (Λ : Finset V) : R :=
   ∑ I ∈ Λ.powerset, if IsCompatible G I then ∏ γ ∈ I, w γ else 0
+
+/-- The independence polynomial commutes with semiring homomorphisms. -/
+theorem partitionFunction_map {R S : Type*} [CommSemiring R] [CommSemiring S]
+    (f : R →+* S) (w : V → R) (Λ : Finset V) :
+    f (partitionFunction G w Λ) = partitionFunction G (fun p => f (w p)) Λ := by
+  unfold partitionFunction
+  simp only [map_sum]
+  apply sum_congr rfl
+  intro I hI
+  split_ifs <;> simp only [map_prod, map_zero]
+
+/-- The real partition polynomial is the real-activity specialization of the
+same complex polynomial used by the convergence estimates. -/
+theorem ofReal_partitionFunction (a : V → ℝ) (Λ : Finset V) :
+    ((partitionFunction G a Λ : ℝ) : ℂ) = partitionFunction G (fun p => (a p : ℂ)) Λ :=
+  partitionFunction_map G Complex.ofRealHom a Λ
 
 /-- The polymers of `S` compatible with `γ`. -/
 def compatibleWith (S : Finset V) (γ : V) : Finset V :=
@@ -59,7 +77,7 @@ def compatibleWith (S : Finset V) (γ : V) : Finset V :=
 variable {G}
 
 omit [DecidableEq V] in
-@[simp] theorem partitionFunction_empty (w : V → ℂ) :
+@[simp] theorem partitionFunction_empty {R : Type*} [CommSemiring R] (w : V → R) :
     partitionFunction G w ∅ = 1 := by
   simp [partitionFunction, IsCompatible]
 
@@ -82,7 +100,7 @@ theorem isCompatible_insert {t : Finset V} {γ : V} :
 
 /-- The fundamental recursion: a compatible family either omits `γ` or contains
 it together with a compatible family of polymers compatible with `γ`. -/
-theorem partitionFunction_insert (w : V → ℂ) {S : Finset V} {γ : V} (hγ : γ ∉ S) :
+theorem partitionFunction_insert {R : Type*} [CommSemiring R] (w : V → R) {S : Finset V} {γ : V} (hγ : γ ∉ S) :
     partitionFunction G w (insert γ S) =
       partitionFunction G w S + w γ * partitionFunction G w (compatibleWith G S γ) := by
   unfold partitionFunction
@@ -348,7 +366,7 @@ theorem norm_mul_partitionFunction_compatibleWith_le {w : V → ℂ} {c : V → 
         rw [show ∀ p q r s : ℝ, p * q * (r * s) = p * (q * r) * s by intros; ring,
           ← Real.exp_add, neg_add_cancel, Real.exp_zero, mul_one]
 
-theorem partitionFunction_eq_erase_add {w : V → ℂ} {M : Finset V} {a : V} (ha : a ∈ M) :
+theorem partitionFunction_eq_erase_add {R : Type*} [CommSemiring R] {w : V → R} {M : Finset V} {a : V} (ha : a ∈ M) :
     partitionFunction G w M =
       partitionFunction G w (M.erase a) +
         w a * partitionFunction G w (compatibleWith G (M.erase a) a) := by
@@ -428,6 +446,55 @@ theorem norm_partitionFunction_le_exp_mul_sdiff {w : V → ℂ} {c : V → ℝ}
       _ = Real.exp (c b) * Real.exp (∑ u ∈ B, c u) *
             ‖partitionFunction G w ((M \ B).erase b)‖ := by ring
 
+
+/-! ## Positive real partitions and logarithmic removal bounds -/
+
+theorem DobrushinCondition.mono_activity {a b : V → ℂ} {c : V → ℝ}
+    (hb : DobrushinCondition G b c) (hab : ∀ p, ‖a p‖ ≤ ‖b p‖) :
+    DobrushinCondition G a c :=
+  ⟨hb.nonneg, fun p S hS => (hab p).trans (hb.bound p S hS)⟩
+
+theorem partitionFunction_pos_of_dobrushin {a : V → ℝ} {c : V → ℝ}
+    (hD : DobrushinCondition G (fun p => (a p : ℂ)) c) (Λ : Finset V) :
+    0 < partitionFunction G a Λ := by
+  induction Λ using Finset.induction_on with
+  | empty => simp
+  | @insert p Λ hp ih =>
+    rw [partitionFunction_insert (G := G) a hp]
+    have hb := norm_mul_partitionFunction_compatibleWith_le hD Λ p
+    rw [← ofReal_partitionFunction G a (compatibleWith G Λ p),
+      ← ofReal_partitionFunction G a Λ, ← Complex.ofReal_mul] at hb
+    simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos ih] at hb
+    have hh := neg_abs_le (a p * partitionFunction G a (compatibleWith G Λ p))
+    have he := mul_pos (Real.exp_pos (-c p)) ih
+    nlinarith
+
+theorem partitionFunction_abs_insertion_ratio_le {a : V → ℝ} {c : V → ℝ}
+    (hD : DobrushinCondition G (fun p => (a p : ℂ)) c) (Λ : Finset V) (p : V) :
+    |a p * partitionFunction G a (compatibleWith G Λ p) / partitionFunction G a Λ| ≤
+      1 - Real.exp (-c p) := by
+  have hpos := partitionFunction_pos_of_dobrushin hD Λ
+  have hb := norm_mul_partitionFunction_compatibleWith_le hD Λ p
+  rw [← ofReal_partitionFunction G a (compatibleWith G Λ p),
+    ← ofReal_partitionFunction G a Λ, ← Complex.ofReal_mul] at hb
+  simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hpos] at hb
+  rw [abs_div, abs_of_pos hpos]
+  exact (div_le_iff₀ hpos).mpr hb
+
+theorem log_partitionFunction_erase_le {a : V → ℝ} {c : V → ℝ}
+    (hD : DobrushinCondition G (fun p => (a p : ℂ)) c) (Λ : Finset V) (p : V) :
+    Real.log (partitionFunction G a (Λ.erase p)) - Real.log (partitionFunction G a Λ) ≤ c p := by
+  by_cases hp : p ∈ Λ
+  · have hp0 := partitionFunction_pos_of_dobrushin hD Λ
+    have hp1 := partitionFunction_pos_of_dobrushin hD (Λ.erase p)
+    have hb := (removalBound_of_dobrushin hD Λ).2 p hp
+    rw [← ofReal_partitionFunction G a (Λ.erase p), ← ofReal_partitionFunction G a Λ] at hb
+    simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hp0, abs_of_pos hp1] at hb
+    have hl := Real.log_le_log hp1 hb
+    rw [Real.log_mul (Real.exp_ne_zero _) hp0.ne', Real.log_exp] at hl
+    linarith
+  · simp only [erase_eq_of_notMem hp, sub_self]
+    exact hD.nonneg p
 
 #print axioms removalBound_of_dobrushin
 #print axioms koteckyPreiss

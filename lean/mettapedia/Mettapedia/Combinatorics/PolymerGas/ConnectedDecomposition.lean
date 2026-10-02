@@ -177,6 +177,44 @@ theorem sum_componentFamilies {R : Type*} [CommSemiring R] (w : V → R) :
   · intro Γ hΓ
     exact (Finset.prod_biUnion (mem_filter.mp hΓ).2.2.1).symm
 
+variable (G) in
+/-- After removing a vertex from a connected induced graph, every remaining
+component contains a neighbour of that vertex. -/
+theorem componentFamily_erase_touches {C : Finset V} {p : V}
+    (hC : (G.induce (C : Set V)).Connected) (hp : p ∈ C)
+    {D : Finset V} (hD : D ∈ componentFamily G (C.erase p)) :
+    ∃ q ∈ D, G.Adj p q := by
+  have hΓ := isComponentFamily_componentFamily G (C.erase p)
+  have hsub : D ⊆ C.erase p := by
+    intro v hv
+    rw [← biUnion_componentFamily G (C.erase p)]
+    exact mem_biUnion.mpr ⟨D, hD, hv⟩
+  by_contra h
+  push Not at h
+  have hstep : ∀ {u v : V}, u ∈ D → v ∈ C → G.Adj u v → v ∈ D := by
+    intro u v hu hv huv
+    have hvp : v ≠ p := by
+      intro hvp
+      subst v
+      exact h u hu huv.symm
+    apply hΓ.mem_of_adj hD hu
+    · rw [biUnion_componentFamily]
+      exact mem_erase.mpr ⟨hvp, hv⟩
+    · exact huv
+  obtain ⟨u⟩ := (hΓ.1 D hD).nonempty
+  have huC : u.val ∈ C := mem_of_mem_erase (hsub u.property)
+  obtain ⟨w⟩ := hC.preconnected ⟨u.val, huC⟩ ⟨p, hp⟩
+  have hwalk : ∀ {x y : C}, (G.induce (C : Set V)).Walk x y →
+      x.val ∈ D → y.val ∈ D := by
+    intro x y w
+    induction w with
+    | nil => exact id
+    | @cons x y z hxy w ih =>
+      intro hx
+      exact ih (hstep hx y.property hxy)
+  exact (notMem_erase p C) (hsub (hwalk w u.property))
+
+
 #print axioms isComponentFamily_componentFamily
 #print axioms IsComponentFamily.eq_of_biUnion_eq
 #print axioms sum_componentFamilies

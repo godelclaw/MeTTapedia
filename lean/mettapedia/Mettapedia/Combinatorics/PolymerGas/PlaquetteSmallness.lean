@@ -18,6 +18,91 @@ open scoped Classical
 
 namespace Mettapedia.Combinatorics.PolymerGas
 
+section Supported
+
+variable {X P : Type*} [Fintype X] [DecidableEq X] [Fintype P] [DecidableEq P]
+
+/-- A nonnegative sum over labels meeting a set is bounded by its site
+incidences, with multiplicities retained. -/
+theorem sum_supported_meeting_le (supp : P → Finset X) {f : P → ℝ}
+    (hf : ∀ p, 0 ≤ f p) (S : Finset X) (A : Finset P)
+    (hA : ∀ p ∈ A, ¬ Disjoint S (supp p)) :
+    ∑ p ∈ A, f p ≤
+      ∑ x ∈ S, ∑ p ∈ univ.filter (fun p => x ∈ supp p), f p := by
+  simp_rw [sum_filter]
+  rw [sum_comm]
+  calc
+    _ ≤ ∑ p ∈ A, ∑ x ∈ S, if x ∈ supp p then f p else 0 := by
+      apply sum_le_sum
+      intro p hp
+      obtain ⟨x, hxS, hxp⟩ := not_disjoint_iff.mp (hA p hp)
+      calc
+        _ = if x ∈ supp p then f p else 0 := by rw [if_pos hxp]
+        _ ≤ _ := single_le_sum (s := S) (f := fun x => if x ∈ supp p then f p else 0)
+          (fun x _ => by split_ifs <;> simp_all) hxS
+    _ ≤ _ := sum_le_sum_of_subset_of_nonneg (subset_univ _) fun p _ _ =>
+      sum_nonneg fun x _ => by split_ifs <;> simp_all
+
+/-- Weighted site incidence replaces bounded overlap degree for generated
+interactions, whose supports may have arbitrary size. -/
+theorem connectedWeight_le_of_site_sum (supp : P → Finset X) {w : P → ℝ}
+    (hw : ∀ p, 0 ≤ w p) {a : ℝ}
+    (hsmall : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      w p * Real.exp (a * (supp p).card) ≤ a)
+    (Λ : Finset P) (p : P) :
+    connectedWeight (plaquetteGraph supp) w Λ p ≤ w p * Real.exp (a * (supp p).card) := by
+  apply connectedWeight_le_of_neighbor_sum (plaquetteGraph supp) hw
+  intro p
+  calc
+    _ ≤ ∑ x ∈ supp p, ∑ q ∈ univ.filter (fun q => x ∈ supp q),
+        w q * Real.exp (a * (supp q).card) := by
+      apply sum_supported_meeting_le supp (fun q => mul_nonneg (hw q) (Real.exp_pos _).le)
+      intro q hq
+      exact (((plaquetteGraph supp).mem_neighborFinset p q).mp hq).2
+    _ ≤ ∑ _x ∈ supp p, a := sum_le_sum fun x _ => hsmall x
+    _ = a * (supp p).card := by simp [mul_comm]
+
+/-- A connected family through a site can be charged to one of its incident
+labels. The resulting bound has no dependence on volume or maximum support. -/
+theorem sum_connected_weight_through_site_le (supp : P → Finset X) {w : P → ℝ}
+    (hw : ∀ p, 0 ≤ w p) {a : ℝ}
+    (hsmall : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      w p * Real.exp (a * (supp p).card) ≤ a) (x : X) :
+    ∑ C ∈ (connectedPlaquettes supp).filter (fun C => x ∈ plaquetteSupport supp C),
+      ∏ p ∈ C, w p ≤
+      ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+        w p * Real.exp (a * (supp p).card) := by
+  let incident : Finset P := univ.filter (fun p => x ∈ supp p)
+  calc
+    _ ≤ ∑ C ∈ connectedPlaquettes supp, ∑ p ∈ incident,
+        if p ∈ C then ∏ q ∈ C, w q else 0 := by
+      rw [sum_filter]
+      apply sum_le_sum
+      intro C _
+      by_cases hx : x ∈ plaquetteSupport supp C
+      · simp only [hx, if_pos]
+        obtain ⟨p, hp, hxp⟩ := mem_biUnion.mp hx
+        calc
+          _ = if p ∈ C then ∏ q ∈ C, w q else 0 := by rw [if_pos hp]
+          _ ≤ _ := single_le_sum (s := incident)
+            (f := fun p => if p ∈ C then ∏ q ∈ C, w q else 0)
+            (fun p _ => by split_ifs <;> first | positivity | exact prod_nonneg fun q _ => hw q)
+            (mem_filter.mpr ⟨mem_univ _, hxp⟩)
+      · simp only [hx, if_false]
+        exact sum_nonneg fun p _ => by
+          split_ifs <;> first | positivity | exact prod_nonneg fun q _ => hw q
+    _ = ∑ p ∈ incident, connectedWeight (plaquetteGraph supp) w univ p := by
+      rw [sum_comm]
+      apply sum_congr rfl
+      intro p hp
+      rw [← sum_filter]
+      congr 1
+      ext C
+      simp [connectedPlaquettes, rootedFamily, and_comm, and_left_comm]
+    _ ≤ _ := sum_le_sum fun p _ => connectedWeight_le_of_site_sum supp hw hsmall univ p
+
+end Supported
+
 variable {X Pl : Type*} [Fintype X] [DecidableEq X] [PseudoMetricSpace X]
   [Fintype Pl] [DecidableEq Pl]
 variable (supp : Pl → Finset X)
