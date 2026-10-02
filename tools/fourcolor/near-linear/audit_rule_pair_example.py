@@ -132,6 +132,19 @@ def audit():
     five_example = next(item for item in paired if item['second_sender_degree'] == 5)
     assert five_example['left_images'] == [4, 16, 6, 30]
     assert five_example['right_images'] == [37, 16, 6, 31, 30]
+    rerooted = []
+    for u in sorted(neighbors):
+        for v in sorted(neighbors[u]):
+            y = reading(rules[5], u, v, neighbors, nexts, prevs)
+            if y is None or [len(neighbors[y[i]]) for i in (0, 2, 3)] != [5, 5, 6]:
+                continue
+            edge = y[2], y[3]
+            assert [nexts[edge], prevs[edge]] == [y[4], y[0]]
+            assert [len(neighbors[z]) for z in (*edge, nexts[edge], prevs[edge])] == [5, 6, 5, 5]
+            rerooted.append({'root': [u, v], 'reading': y, 'mixed_edge': edge,
+                             'flanks': [nexts[edge], prevs[edge]]})
+    assert len(rerooted) == 8
+    assert any(item['root'] == [37, 16] for item in rerooted)
     observed = set()
     for centre in fixture['pair']:
         for neighbor in neighbors[centre]:
@@ -175,6 +188,9 @@ def audit():
             'program_final_charge': 0,
             'scope': 'RulePairChargeExample checks the two original readings and degree guards; the uniform gluing theorem supplies the third rule and the charge bound.'},
         'paired_budget_examples': paired,
+        'rerooted_mixed_scan': {
+            'instances': rerooted,
+            'scope': 'Program scan of all rooted right rules in the saved graph. RulePairResidual proves the generic law; RulePairResidualExample consumes it at the degree-five budget instance.'},
         'scope': 'Lean certifies the cyclic/triangular rotation and complete local readings for the mixed, pentagonal and two residual instances. Uniform laws give reductions or charge lower bounds. Total charge, exact remainders, spherical flip history and the exhaustive collision scan remain program evidence.',
         'discarded_candidate': {
             'straddling_core': straddling_core,

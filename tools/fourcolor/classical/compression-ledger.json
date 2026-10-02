@@ -3423,5 +3423,31 @@
       "The two examples certify local geometry, readings and lower bounds. Exact charges, total flatness and remainders are independent program evidence; the degree-five example has positive final charge.",
       "No complete neighbourhood classification, reduced catalogue or scheduling/runtime bound follows."
     ]
+  },
+  "near_linear_rerooted_rule_reduction": {
+    "status": "Kernel-certified rerooting of an existing rule reading to a mixed diamond; actual strict reduction excludes the degree-five second sender.",
+    "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "retained_certificates": [
+      "DiamondProfileReducibility.repair001",
+      "DiamondProfileReducibility.repair002"
+    ],
+    "actual_consumer": "FourColor.ActualRulePairResidual.second_degree_six",
+    "remaining_local_profile": {
+      "first_sender": 5,
+      "shared_vertex": 5,
+      "outer_corner": 6,
+      "second_sender": 6
+    },
+    "generic_budget_note": "The degree-five second sender still has the proved eight-unit generic budget, but actual minimality now excludes that branch by strict reduction.",
+    "measurement": "../near-linear/rule-pair-residual-measurements.json",
+    "coverage_entries_removed": 0,
+    "original_configuration_certificate_dependencies_replaced": 0,
+    "classification_checks_removed_from_complete_assembly": 0,
+    "limits": [
+      "No new family repair certificate is introduced; the existing mixed reduction is recognized on another edge.",
+      "No theorem supplies the aligned pair at every flat centre.",
+      "The remaining five/six/six profile and full neighbourhood classification remain open.",
+      "The eight-instance census is a program check on one finite graph, not a coverage proof."
+    ]
   }
 }

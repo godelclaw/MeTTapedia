@@ -1,5 +1,12 @@
 # Near-linear Four Colour catalogue bridges
 
+The [rerooted reduction](../../../lean/fourcolor-classical/README.md#changing-the-reduction-edge-removes-a-residual-branch)
+now excludes the degree-five second sender in the actual minimal-map
+domain. A different edge of the same rule reading exposes the existing
+mixed diamond and its strict replacement. This removes one local branch;
+the [measurements](rule-pair-residual-measurements.json) retain the unchanged
+global coverage and certificate counts.
+
 The latest [paired rule budget](../../../lean/fourcolor-classical/README.md#a-paired-budget-retains-both-sender-choices)
 retains both sender degrees, proves the two incoming edges distinct, and
 bounds their joint net supply by seven or eight units from below. At a flat

@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Eliminate the degree-five second sender using a different reduction edge. -/
+target kernelRulePairResidual pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-pair-residual-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RulePairResidual", "ActualRulePairResidual", "RulePairResidualExample", "RulePairResidualAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Combine distinct incoming rule occurrences in a signed star budget. -/
 target kernelRulePairBudget pkg : Unit := do
   let env ← getAugmentedEnv

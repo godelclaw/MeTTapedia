@@ -1334,3 +1334,27 @@ diamond reconstructions and excludes original catalogue certificates, D1774
 repair and complete Four Colour endpoints. Coverage remains 633 entries and
 629 original certificate dependencies. See the
 [paired-budget measurements](../../tools/fourcolor/near-linear/rule-pair-budget-measurements.json).
+
+## Changing the reduction edge removes a residual branch
+
+`RulePairResidual.right_mixed` reads a different edge of `rule004_1`:
+from its shared vertex to the remaining outer corner. If these have degrees
+five and six and the sender has degree five, the two prescribed turns give
+a degree-five vertex on each flank. This is precisely the existing mixed
+diamond pattern. No new finite colouring certificate is introduced.
+
+`ActualRulePairResidual.not_second_five` combines this observation with the
+previous surviving-profile theorem and the strict thirteen-to-five
+replacement. Consequently `second_degree_six` determines the remaining
+sender degree. `forced_third` now obtains the larger `006_1` occurrence and
+its net charge without requiring that degree as an input. The generic
+eight-unit budget is still valid, but its degree-five branch is excluded
+in the actual minimal-map consumer.
+
+The finite degree-five budget instance also consumes this geometric law.
+Build `kernelRulePairResidual` after the paired-budget artifacts. The
+seven-root audit requires the actual reconstruction and excludes the full
+Four Colour theorem, original configuration certificates and D1774 repair.
+This closes one local degree branch; it does not supply an aligned pair
+at every flat centre. Catalogue counts remain 633/629. See the
+[residual measurements](../../tools/fourcolor/near-linear/rule-pair-residual-measurements.json).

@@ -1,0 +1,282 @@
+{
+  "status": "Kernel-certified rerooting of an existing rule reading to a mixed diamond; actual strict reduction excludes the degree-five second sender.",
+  "source_rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "generic_theorem": {
+    "name": "FourColor.RulePairResidual.right_mixed",
+    "input": "Actual occurrence of rule004_1 with sender and shared vertex degree five, remaining corner degree six.",
+    "output": "MixedAt at the edge from source vertex 2 to vertex 3 (zero-based), with flanks source vertices 4 and 0.",
+    "additional_cyclic_or_triangular_hypotheses": false
+  },
+  "actual_consumer": {
+    "name": "FourColor.ActualRulePairResidual.second_degree_six",
+    "input": "Aligned actual rule003_2/rule004_1 checks, degree-five first sender, graph-backed vertex-minimal Tait-counterexample domain.",
+    "output": "Second sender has degree six. Shared vertex degree five and remaining outer corner degree six are obtained from the previous two reductions.",
+    "reconstruction": "Rerooting supplies the existing mixed diamond face pattern and its strict thirteen-to-five vertex replacement with actual colouring reconstruction."
+  },
+  "composition": "FourColor.ActualRulePairResidual.forced_third invokes the shared-rule gluing theorem after deriving the second-sender degree, so the degree is no longer a caller premise.",
+  "audit": {
+    "roots": 7,
+    "dependency_declarations": 29444,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_certificates": [
+      "DiamondProfileReducibility.repair001",
+      "DiamondProfileReducibility.repair002"
+    ],
+    "original_configuration_certificates": false,
+    "D1774_repair": false,
+    "complete_four_colour_endpoints": false
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.RulePairResidual",
+        "source_sha256": "f99fc041404a06873e7e01baffd14d29f7c8388135e786dc03cbde5e791c9375",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.93,
+        "olean_bytes": 118184,
+        "olean_sha256": "c2abba7e16ef5607e10ae87ce00d6e8c5132f1569b8ffa69dbcc12ca8c24ea59"
+      },
+      {
+        "module": "MettapediaFourColor.ActualRulePairResidual",
+        "source_sha256": "7a15ba7ead12ef856dd7f7c22b7ed8b3210b52290fd689f6478286d085d497f4",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.732,
+        "olean_bytes": 143080,
+        "olean_sha256": "56f1e5d5568de133b2b3719cd6917449634fe037b32c5975b920ff83addebbb9"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairResidualExample",
+        "source_sha256": "866643b1e4d5a7fd3f58cb88b25de869e5dc8df8f72873f567ed800b7d3f1465",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.99,
+        "olean_bytes": 21032,
+        "olean_sha256": "597aaa19a29dc75a951876777ef0514dd1ac51fbeeba4e11e02e1499a7e5d81c"
+      },
+      {
+        "module": "MettapediaFourColor.RulePairResidualAudit",
+        "source_sha256": "3ef93446c62b1671c17136b2aea521673d50b248d75bfe4a489e0f75595e241f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.386,
+        "olean_bytes": 2720,
+        "olean_sha256": "0da7e4d2e091770573ee507769bbfa545bdc3e04420cb7ae8351fdb02108fcb2"
+      }
+    ]
+  },
+  "finite_example": "FourColor.RulePairResidualExample.five_sender_mixed consumes the generic theorem at the previously certified degree-five paired-budget reading.",
+  "source_check": {
+    "command": "python3 tools/fourcolor/near-linear/audit_rule_pair_example.py",
+    "sha256": "84b9047785fd03a8337e83192c529d67039c4cabe23539fdbe1d6eae3f322859",
+    "fixture_sha256": "561452dc9d6dcca39f83d7fc06035a1b5ad4d4b8ae0de56390f5d6cdb37b4c68",
+    "program_scan": {
+      "instances": [
+        {
+          "root": [
+            14,
+            34
+          ],
+          "reading": [
+            14,
+            34,
+            21,
+            8,
+            24
+          ],
+          "mixed_edge": [
+            21,
+            8
+          ],
+          "flanks": [
+            24,
+            14
+          ]
+        },
+        {
+          "root": [
+            22,
+            33
+          ],
+          "reading": [
+            22,
+            33,
+            0,
+            34,
+            21
+          ],
+          "mixed_edge": [
+            0,
+            34
+          ],
+          "flanks": [
+            21,
+            22
+          ]
+        },
+        {
+          "root": [
+            25,
+            2
+          ],
+          "reading": [
+            25,
+            2,
+            26,
+            5,
+            1
+          ],
+          "mixed_edge": [
+            26,
+            5
+          ],
+          "flanks": [
+            1,
+            25
+          ]
+        },
+        {
+          "root": [
+            26,
+            5
+          ],
+          "reading": [
+            26,
+            5,
+            25,
+            2,
+            3
+          ],
+          "mixed_edge": [
+            25,
+            2
+          ],
+          "flanks": [
+            3,
+            26
+          ]
+        },
+        {
+          "root": [
+            26,
+            23
+          ],
+          "reading": [
+            26,
+            23,
+            1,
+            5,
+            19
+          ],
+          "mixed_edge": [
+            1,
+            5
+          ],
+          "flanks": [
+            19,
+            26
+          ]
+        },
+        {
+          "root": [
+            27,
+            40
+          ],
+          "reading": [
+            27,
+            40,
+            38,
+            39,
+            41
+          ],
+          "mixed_edge": [
+            38,
+            39
+          ],
+          "flanks": [
+            41,
+            27
+          ]
+        },
+        {
+          "root": [
+            37,
+            16
+          ],
+          "reading": [
+            37,
+            16,
+            6,
+            31,
+            30
+          ],
+          "mixed_edge": [
+            6,
+            31
+          ],
+          "flanks": [
+            30,
+            37
+          ]
+        },
+        {
+          "root": [
+            38,
+            31
+          ],
+          "reading": [
+            38,
+            31,
+            41,
+            39,
+            32
+          ],
+          "mixed_edge": [
+            41,
+            39
+          ],
+          "flanks": [
+            32,
+            38
+          ]
+        }
+      ],
+      "scope": "Program scan of all rooted right rules in the saved graph. RulePairResidual proves the generic law; RulePairResidualExample consumes it at the degree-five budget instance."
+    }
+  },
+  "regression_checks": [
+    {
+      "command": "lake build kernelFlatCoverage kernelComplete",
+      "exit_code": 0
+    },
+    {
+      "command": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "exit_code": 0
+    }
+  ],
+  "counts": {
+    "local_second_sender_degree_branches_before": 2,
+    "local_second_sender_degree_branches_after": 1,
+    "coverage_entries": 633,
+    "original_configuration_certificate_dependencies": 629,
+    "coverage_entries_removed_here": 0,
+    "existing_assembly_certificate_dependencies_replaced_here": 0
+  },
+  "limits": [
+    "No new family repair certificate is introduced; the existing mixed reduction is recognized on another edge.",
+    "No theorem supplies the aligned pair at every flat centre.",
+    "The remaining five/six/six profile and full neighbourhood classification remain open.",
+    "The eight-instance census is a program check on one finite graph, not a coverage proof."
+  ]
+}

@@ -1371,6 +1371,15 @@ The [paired-budget account](../../../lean/fourcolor-classical/README.md#a-paired
 and [measurements](../../../tools/fourcolor/near-linear/rule-pair-budget-measurements.json)
 record the exact hypotheses and unchanged coverage counts.
 
+The next local repair illustrates the value of changing the decomposition.
+In the degree-five sender branch above, a different edge of the same right
+rule exposes the mixed diamond. The existing thirteen-to-five replacement
+reconstructs its colouring. A surviving pair in a minimal counterexample
+therefore has a degree-six second sender, and forces the larger charge rule
+without a separate degree hypothesis. This is a removed local branch, not
+a removed catalogue entry. The [rerooted-reduction account](../../../lean/fourcolor-classical/README.md#changing-the-reduction-edge-removes-a-residual-branch)
+records the geometric law and actual-map consumer.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;
