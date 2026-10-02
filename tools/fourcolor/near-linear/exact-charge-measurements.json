@@ -1,0 +1,179 @@
+{
+  "status": "Kernel-replayed exact identity, actual-map residual classification, concrete symbolic specializations and dependency audit; independent finite program audit passed.",
+  "source_manifest": "discharging-sources.json",
+  "inputs": "exact-charge-examples.json",
+  "program_audit": "exact-charge-audit.json",
+  "general_law": {
+    "theorem": "FourColor.ExactCyclicCharge.exact_charge",
+    "domain": "Finite simple graph with triangular dart rotation, receiver degree at least seven and every neighbour of degree five or six.",
+    "formula": "finalCharge(v) = 10*(6-degree(v)) + 4*k + 2*m + E",
+    "k": "Actual degree-five neighbours.",
+    "m": "Marked receiver wedges with a degree-five outer facial tip; different wedges may share the same tip.",
+    "E": "Number of actual matches of oriented source rules5..12 on incoming edges.",
+    "source_rule_types_accounted_for": 84,
+    "possible_low_sender_types": 13,
+    "planarity_assumed": false,
+    "vertexwise_cyclic_assumed": false
+  },
+  "single_five_classification": {
+    "theorem": "FourColor.ExactCyclicCharge.flat_seven_cases",
+    "domain": "Flat degree-seven receiver, one marked five-neighbour, six other six-neighbours, at least two marked outer five-tips.",
+    "excluded_rules": [
+      9,
+      10
+    ],
+    "reason": "Each retains two distinct adjacent five-neighbours of the same receiver.",
+    "remaining_extra_rules": [
+      5,
+      6,
+      7,
+      8,
+      11,
+      12
+    ],
+    "outcomes": [
+      {
+        "tips": 2,
+        "extra_matches": 2
+      },
+      {
+        "tips": 3,
+        "extra_matches": 0
+      }
+    ],
+    "zero_means_all_absent": "FourColor.ExactCyclicCharge.residual_zero_iff",
+    "reduction_or_termination_claimed": false
+  },
+  "actual_map_consumer": {
+    "theorem": "FourColor.ExactFanResidual.alternatives",
+    "domain": "The retained shared fan in the facial dual of a graph-backed vertex-minimal Tait counterexample, with its first free vertex degree seven and flat.",
+    "output": "Third distinct high centre within radius three, or the single-five profile with its index5 exclusion and one of the two exact budgets.",
+    "retained_rank_certificate": "FourColor.Bulk.Cfg006, from the preceding extra-rule reduction only.",
+    "retained_joint_profile": true
+  },
+  "finite_evidence": {
+    "joint_flat_residuals": [
+      {
+        "tips": 2,
+        "extra_matches": 2,
+        "flips": 5,
+        "satisfies_prior_marked_rule_exclusion": false
+      },
+      {
+        "tips": 3,
+        "extra_matches": 0,
+        "flips": 13,
+        "satisfies_prior_marked_rule_exclusion": true
+      }
+    ],
+    "independent_readings": 7232,
+    "disagreements": 0,
+    "modified_graphs_kernel_certified": false,
+    "candidate": "D3009: seven-valent hub with one five-valent and six six-valent neighbours. Both modified examples have complete source-graph matches with all vertices distinct and induced cores; these are program evidence only.",
+    "scope": "Both exact charge budgets occur with both centres flat. The two-extra example is already excluded by the preceding marked-rule reduction; only the three-tip example also satisfies that exclusion. Neither example is a minimal counterexample.",
+    "program_base_values": {
+      "69": {
+        "charge": 4,
+        "extras": 2
+      },
+      "150": {
+        "charge": 9,
+        "extras": 1
+      }
+    },
+    "kernel_base_formulas": {
+      "69": "finalCharge = 2 + extraCount",
+      "150": "finalCharge = 8 + extraCount"
+    },
+    "numerical_matcher_counts_kernel_certified": false
+  },
+  "audit": {
+    "status": "passed",
+    "roots": 13,
+    "dependency_declarations": 34946,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_rank_certificate": "Cfg006 in ExactFanResidual.alternatives only",
+    "full_four_colour_dependency": false,
+    "exceptional_D1774_certificate_dependency": false
+  },
+  "commands": [
+    "lake build kernelExactCyclicCharge",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_exact_charge.py --output tools/fourcolor/near-linear/exact-charge-audit.json"
+  ],
+  "compression": {
+    "coverage_entries_retained": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_checks_saved_in_assembly": 336,
+    "additional_coverage_entries_removed": 0,
+    "additional_assembly_dependencies_removed": 0,
+    "new_colouring_repair_schemes": 0,
+    "uniform_exact_charge_laws": 1,
+    "integrated_into_complete_coverage_assembly": false
+  },
+  "remaining": [
+    "Certify the D3009 embedded occurrence from the single-five profile, accounting for boundary identifications and extra ambient edges.",
+    "Supply a checked D3009 repair and genuine compatible reconstruction, or a uniform alternative covering this profile.",
+    "Handle degree-eight continuations, source-profile supply, longer cycles, coverage and termination."
+  ],
+  "kernel_example_evaluation": {
+    "raw_replay": "Stopped after at least 845 seconds without completing the example module. No raw completion-time claim.",
+    "reordered_attempts": "Degree-first and degree-list evaluation attempts were also stopped. They are not retained as completed kernel benchmarks.",
+    "committed_scope": "Concrete instances specialize the exact law and retain extraCount explicitly. The independent program verifies the numerical counts. No numerical count is assumed by a Lean theorem."
+  },
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.ExactCyclicCharge",
+        "source_sha256": "aa202eef1c78702d6c9253d7e0f70e10bf57a9e9b84337c809f3ce53db792821",
+        "exit_code": 0,
+        "frontend_wall_seconds": 109.074,
+        "olean_bytes": 987488,
+        "olean_sha256": "b7bab5452ed2ac8b364dbbf3cb938d30790ef7ba89e2e944ba559177b4d99e43"
+      },
+      {
+        "module": "MettapediaFourColor.ExactFanResidual",
+        "source_sha256": "4a856715b60d62c899246e20dbb7d0ca99730decefff36847cc9dd8901719f3d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.214,
+        "olean_bytes": 76576,
+        "olean_sha256": "d710c0cc847e8cb96fe9a3b4902e87d5e458f3f5b187eceb61316dd242a43b04"
+      },
+      {
+        "module": "MettapediaFourColor.ExactChargeExample",
+        "source_sha256": "5e94231dbef9ce72f0975840a66f4d65b08e38425d189d8816148ac9c6e0eb1a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.242,
+        "olean_bytes": 40072,
+        "olean_sha256": "14b564f1082cf936b29241c1aabfd7c158c972ab3a94af8f421af6a1f08e336e"
+      },
+      {
+        "module": "MettapediaFourColor.ExactChargeAudit",
+        "source_sha256": "92bc802fee5f938a8272e9800cbefb39f9695103863d6efc365e4052a375dc48",
+        "exit_code": 0,
+        "frontend_wall_seconds": 8.728,
+        "olean_bytes": 2600,
+        "olean_sha256": "9d42a5214986c24531f2f3051a5ccb3ff0d2d77d4366c0d7b6d94c94f0f29eef"
+      }
+    ]
+  },
+  "regressions": {
+    "kernelComplete": "passed",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint": "passed (11195 jobs)"
+  }
+}

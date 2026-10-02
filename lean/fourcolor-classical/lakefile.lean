@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay exact cyclic accounting and its residual coverage consumer. -/
+target kernelExactCyclicCharge pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/exact-cyclic-charge-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "ExactCyclicCharge", "ExactFanResidual", "ExactChargeExample", "ExactChargeAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay a source-rule closing law and its actual colouring reductions. -/
 target kernelExtraCharge pkg : Unit := do
   let env ← getAugmentedEnv

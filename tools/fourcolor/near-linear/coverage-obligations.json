@@ -467,6 +467,22 @@
     {
       "declaration": "FourColor.ActualExtraChargeReduction.flat_alternatives",
       "meaning": "The previous flat-seven classification retains the same third-centre alternative; its single-five residual now excludes rule004_1 on the specified shared-five-to-first-free edge."
+    },
+    {
+      "declaration": "FourColor.ExactCyclicCharge.exact_charge",
+      "meaning": "Complete signed charge identity for receivers of degree at least seven with only five- and six-valent neighbours; accounts for all 84 source rule types."
+    },
+    {
+      "declaration": "FourColor.ExactCyclicCharge.flat_seven_cases",
+      "meaning": "The single-five flat-seven residual with at least two marked tips has exactly two tips and two extra matches, or three tips and no extra matches."
+    },
+    {
+      "declaration": "FourColor.ExactCyclicCharge.residual_zero_iff",
+      "meaning": "Zero remainder excludes every retained extra rule-edge match."
+    },
+    {
+      "declaration": "FourColor.ExactFanResidual.alternatives",
+      "meaning": "The actual shared-fan continuation retains these budgets and the previous source-rule exclusion."
     }
   ],
   "open": [
@@ -512,10 +528,10 @@
     }
   ],
   "next_bounded_attack": {
-    "target": "Classify the remaining actual inflows in the flat-seven single-five residual, now with rule004_1 excluded at the retained shared-five edge.",
-    "bounded_test": "Preserve both actual centres, the complete same-root fan and all signed rule matches. Test alternative outer tips and rule004_2 or larger source-rule unions; use the new forbidden branch as a proved constraint.",
-    "acceptance": "A supported actual-map reduction or a precise reproducible residual that identifies necessary additional geometry. Prove classification or supply before crediting coverage.",
-    "evidence": "Joint flatness alone admits a replayable example, but that example contains D0004 via the new closure law. Bounded failure to find a no-extra-rule example is not a proof."
+    "target": "Certify the embedded D3009 wheel from the single-five profile and assess its compatible repair contract.",
+    "bounded_test": "Replay both exact residual examples against the complete pinned source, then certify core rotations and the boundary correspondence. Classify possible boundary identifications using the existing short-cycle framework.",
+    "acceptance": "A proved embedded occurrence or a precise obstruction under explicit geometric hypotheses, followed by a checked repair and genuine reconstruction. No coverage credit from matching a core alone.",
+    "evidence": "D3009 occurs in both joint-flat residual examples. Eliminating every extra transfer still leaves the three-tip profile. The source shape does not certify general boundary geometry or reducibility."
   },
   "counts": {
     "coverage_entries": 633,
@@ -562,5 +578,6 @@
     "third_centre_domain": "First free degree seven and flat; second free degree five. Other first/second-free profiles remain open."
   },
   "cyclic_charge_record": "cyclic-charge-measurements.json",
-  "extra_charge_record": "extra-charge-measurements.json"
+  "extra_charge_record": "extra-charge-measurements.json",
+  "exact_cyclic_charge_record": "exact-charge-measurements.json"
 }

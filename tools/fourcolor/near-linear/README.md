@@ -1192,3 +1192,51 @@ Lean results from program-checked flatness and sphericality. The chain
 reconstruction retains classical configuration 7 and the shared profile.
 Counts remain 633 coverage entries and 629 original certificates; no new
 assembly dependency or coverage entry is removed.
+
+
+## Exact accounting of the residual inflows
+
+`ExactCyclicCharge.exact_charge` strengthens the lower bound to the identity
+`finalCharge(v) = 10(6-degree(v)) + 4k + 2m + E`. The domain is a finite simple
+graph with triangular dart rotation, a receiver of degree at least seven,
+and all its neighbours of degree five or six. Neither planarity nor a
+single-cycle condition on each vertex rotation is needed for this identity.
+The counts retain actual neighbours and marked wedges; two wedges may share
+a five-valent outer tip. The remainder counts all matches of rules 5..12.
+The other source types cannot have a sender of degree at most six.
+
+In a single-five neighbourhood, rules 9 and 10 cannot occur: both would
+retain distinct adjacent five-neighbours of the receiver. At a flat seven
+with at least two marked outer five-tips, exactly two budgets remain:
+
+| Marked tips | Additional rule-edge matches |
+| --- | --- |
+| 2 | 2 |
+| 3 | 0 |
+
+`ExactFanResidual.alternatives` connects this to the actual shared fan,
+retaining the previous index-5 exclusion on its specified edge. These are
+budgets, not two completed repair arguments. The source types still allowed
+in the remainder are 5, 6, 7, 8, 11 and 12.
+
+The [inputs](exact-charge-examples.json) and [independent audit](exact-charge-audit.json)
+replay both charge budgets on spherical triangulations with both centres flat.
+The two-extra example still has the marked rule excluded by the preceding
+reduction. Only the three-tip example also satisfies that exclusion.
+It has no extra transfer at all, so eliminating extra
+rules alone cannot close the geometric obligation. Both examples have an
+injective complete source-graph match of [D3009](D3009.conf), with its core
+induced: a seven-valent centre, one five-valent neighbour and six six-valent
+neighbours. The input manifest pins its upstream revision, source hash and
+MIT licence. This is a candidate for a common closing law; its general
+embedded occurrence, colouring repair and reconstruction are still open.
+
+Run `lake build kernelExactCyclicCharge` in `lean/fourcolor-classical`.
+Run `python3 tools/fourcolor/near-linear/audit_exact_charge.py --output tools/fourcolor/near-linear/exact-charge-audit.json`
+from the repository root. Two base receivers consume the Lean identity to
+give `2 + E` and `8 + E`. The program checks their extra counts as 2 and 1,
+giving charges 4 and 9. These numerical matcher counts, the modified graphs
+and the D3009 occurrences are program evidence. The
+[measurement record](exact-charge-measurements.json) separates these scopes.
+The actual-map continuation retains configuration 7 through the preceding
+reduction. Coverage remains 633 entries /629 original certificates.

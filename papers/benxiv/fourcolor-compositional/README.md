@@ -1670,6 +1670,55 @@ No new catalogue entry or assembly dependency has been removed. See the
 [receipt](../../../tools/fourcolor/near-linear/extra-charge-measurements.json)
 for proof scope and replay costs.
 
+## The residual has an exact budget
+
+The next step makes all the remaining incoming information explicit.
+For a receiver of degree `d >= 7` with only degree-five and degree-six
+neighbours, the complete signed charge is
+
+```text
+10(6-d) + 4 × five-neighbours + 2 × marked outer five-tips
+        + number of extra oriented rule-edge matches.
+```
+
+Each marked wedge uses its actual outer vertex. If two wedges share a tip,
+they still correspond to different oriented rule-edge pairs; nothing is
+counted as an independently chosen boundary colouring. One proof covers
+all receiver degrees in this domain and all 84 source rule types.
+
+The shared fan already supplies two marked tips. In its single-five
+flat-seven branch the exact identity leaves only:
+
+```text
+                 retained single-five profile
+                             |
+             +---------------+---------------+
+             |                               |
+       two marked tips                 three marked tips
+       two extra matches               no extra matches
+             |                               |
+             +---------- geometric closure OPEN
+```
+
+Both charge budgets occur in independently checked spherical examples with
+both centres flat. The two-extra example is already excluded by the preceding
+marked-edge reduction; it does not realize that additional residual constraint.
+The no-extra example satisfies the marked-edge exclusion and shows that complete elimination
+of additional transfers does not, by itself, eliminate this profile.
+The next common candidate is `D3009`: its core is exactly the seven-valent
+centre and its one five-valent and six six-valent neighbours. Both finite
+examples have a complete source-graph match with distinct vertices and
+an induced core. Turning the profile into a general embedded occurrence,
+and certifying its colouring reconstruction, remain separate obligations.
+
+The general identity and actual-map budget classification are proved in
+Lean. Two base receivers also consume the identity, giving exact formulas
+`2 + E` and `8 + E`. Their numerical extra counts and resulting charges
+are independently program checked. This adds one uniform accounting
+law, not a colouring repair or a smaller unavoidable catalogue. See the
+[receipt](../../../tools/fourcolor/near-linear/exact-charge-measurements.json)
+for the distinction between kernel proofs and finite program evidence.
+
 ## Verification and attribution
 
 The classical mathematics is due to Robertson, Sanders, Seymour and Thomas;

@@ -3800,5 +3800,30 @@
     "additional_original_certificate_dependencies_removed": 0,
     "integrated_into_complete_coverage_assembly": false,
     "scope": "Strengthens the flat-seven residual by excluding one actual extra-rule check; other charge and coverage branches remain open."
+  },
+  "exact_cyclic_charge": {
+    "record": "../near-linear/exact-charge-measurements.json",
+    "law": "Exact signed charge = initial + four per five-neighbour + two per marked five-tip + all extra source-rule matches.",
+    "single_five_outcomes": [
+      [
+        2,
+        2
+      ],
+      [
+        3,
+        0
+      ]
+    ],
+    "budget_meaning": "Marked outer tips and actual extra rule-edge matches, respectively; neither budget is a reduction theorem.",
+    "excluded_extra_source_types": [
+      9,
+      10
+    ],
+    "retained_configuration_certificate": "Cfg006 in the actual-map consumer only, inherited from the previous extra-rule reduction.",
+    "candidate": "D3009 matches both program-checked residual examples; its reduction is not certified here.",
+    "coverage_entries_removed": 0,
+    "original_certificates_removed": 0,
+    "member_checks_removed": 0,
+    "new_repair_scheme": false
   }
 }

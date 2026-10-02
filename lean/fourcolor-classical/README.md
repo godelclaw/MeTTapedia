@@ -1,5 +1,21 @@
 # Classical Four Colour and compositional reconstruction
 
+The [exact cyclic charge law](MettapediaFourColor/ExactCyclicCharge.lean)
+now accounts for every transfer at a receiver of degree `d >= 7` with only
+five- and six-valent neighbours:
+`finalCharge = 10(6-d) + 4k + 2m + E`. The extra term counts actual matches
+of eight oriented source rules. In the single-five flat-seven residual,
+two rule types are impossible and there are precisely two budgets:
+`(m,E) = (2,2)` or `(3,0)`. The
+[actual-map consumer](MettapediaFourColor/ExactFanResidual.lean) retains
+these observations and the preceding reduction exclusion. Each budget
+still requires a geometric closing argument.
+`lake build kernelExactCyclicCharge` replays the identity, consumer, finite
+exact-charge examples and audit. The
+[receipt](../../tools/fourcolor/near-linear/exact-charge-measurements.json)
+records two jointly flat program examples and the common `D3009` wheel
+candidate, whose repair remains unverified here. Catalogue counts are unchanged.
+
 The latest local reduction bridge is
 [ExtraChargeReduction](MettapediaFourColor/ExtraChargeReduction.lean).
 An exact `004_1` source-rule occurrence and a retained degree-five companion

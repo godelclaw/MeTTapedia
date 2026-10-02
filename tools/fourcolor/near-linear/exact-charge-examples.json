@@ -1,0 +1,188 @@
+{
+  "fixture": "chain-boundary-example.json",
+  "fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "base_receivers": [
+    {
+      "vertex": 69,
+      "degree": 8,
+      "fives": 5,
+      "tips": 1,
+      "extras": 2,
+      "charge": 4
+    },
+    {
+      "vertex": 150,
+      "degree": 7,
+      "fives": 4,
+      "tips": 1,
+      "extras": 1,
+      "charge": 9
+    }
+  ],
+  "residuals": [
+    {
+      "name": "two_tips_two_extras",
+      "flips": [
+        [
+          140,
+          88,
+          141,
+          27
+        ],
+        [
+          159,
+          157,
+          80,
+          40
+        ],
+        [
+          32,
+          41,
+          98,
+          152
+        ],
+        [
+          32,
+          98,
+          151,
+          152
+        ],
+        [
+          65,
+          142,
+          31,
+          138
+        ]
+      ],
+      "centres": [
+        150,
+        143
+      ],
+      "charges": [
+        0,
+        0
+      ],
+      "fives": 1,
+      "tips": 2,
+      "extras": 2,
+      "marked_rule_absent": false
+    },
+    {
+      "name": "three_tips_no_extras",
+      "flips": [
+        [
+          140,
+          88,
+          141,
+          27
+        ],
+        [
+          159,
+          157,
+          80,
+          40
+        ],
+        [
+          32,
+          41,
+          98,
+          152
+        ],
+        [
+          32,
+          98,
+          151,
+          152
+        ],
+        [
+          65,
+          142,
+          31,
+          138
+        ],
+        [
+          158,
+          160,
+          37,
+          161
+        ],
+        [
+          62,
+          138,
+          65,
+          25
+        ],
+        [
+          11,
+          151,
+          98,
+          99
+        ],
+        [
+          9,
+          91,
+          88,
+          89
+        ],
+        [
+          80,
+          158,
+          37,
+          7
+        ],
+        [
+          37,
+          161,
+          160,
+          158
+        ],
+        [
+          37,
+          160,
+          94,
+          158
+        ],
+        [
+          32,
+          63,
+          66,
+          145
+        ]
+      ],
+      "centres": [
+        150,
+        143
+      ],
+      "charges": [
+        0,
+        0
+      ],
+      "fives": 1,
+      "tips": 3,
+      "extras": 0,
+      "marked_rule_absent": true
+    }
+  ],
+  "fan_root": [
+    92,
+    150
+  ],
+  "fan_cycle": [
+    150,
+    10,
+    95,
+    143,
+    28,
+    93
+  ],
+  "catalogue_candidate": {
+    "file": "D3009.conf",
+    "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "license": "MIT; see LICENSE",
+    "sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+    "core_vertices": 8,
+    "ring_size": 13,
+    "scope": "Source graph occurrence candidate only. Its colouring repair and actual-map reconstruction are not certified here."
+  }
+}

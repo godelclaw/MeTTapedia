@@ -1,0 +1,470 @@
+{
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "manifest_sha256": "04f817210a7be11fd538a2f54b00f097ccb69a92b22edd498e4d4af7fe2a7f8c",
+  "verifier_sha256": "52c4e75fbac11f57b2e86d216450c9285bc72ad0d0a6d8d76aa8fd4307b26d32",
+  "lean_source_sha256": {
+    "ExactCyclicCharge": "aa202eef1c78702d6c9253d7e0f70e10bf57a9e9b84337c809f3ce53db792821",
+    "ExactFanResidual": "4a856715b60d62c899246e20dbb7d0ca99730decefff36847cc9dd8901719f3d",
+    "ExactChargeExample": "5e94231dbef9ce72f0975840a66f4d65b08e38425d189d8816148ac9c6e0eb1a"
+  },
+  "base_receivers": [
+    {
+      "vertex": 69,
+      "degree": 8,
+      "fives": [
+        29,
+        33,
+        70,
+        146,
+        147
+      ],
+      "tips": [
+        [
+          71,
+          67
+        ]
+      ],
+      "extra_matches": [
+        {
+          "rule": 5,
+          "edge": [
+            5,
+            69
+          ],
+          "sign": 1,
+          "amount": 1,
+          "images": [
+            5,
+            69,
+            71,
+            67,
+            108
+          ]
+        },
+        {
+          "rule": 10,
+          "edge": [
+            5,
+            69
+          ],
+          "sign": 1,
+          "amount": 1,
+          "images": [
+            5,
+            69,
+            68,
+            70,
+            33,
+            122
+          ]
+        }
+      ],
+      "charge": 4,
+      "low_neighbours": true
+    },
+    {
+      "vertex": 150,
+      "degree": 7,
+      "fives": [
+        10,
+        31,
+        93,
+        152
+      ],
+      "tips": [
+        [
+          92,
+          95
+        ]
+      ],
+      "extra_matches": [
+        {
+          "rule": 5,
+          "edge": [
+            96,
+            150
+          ],
+          "sign": 1,
+          "amount": 1,
+          "images": [
+            96,
+            150,
+            10,
+            94,
+            95
+          ]
+        }
+      ],
+      "charge": 9,
+      "low_neighbours": true
+    }
+  ],
+  "residuals": [
+    {
+      "name": "two_tips_two_extras",
+      "observations": [
+        {
+          "vertex": 150,
+          "degree": 7,
+          "fives": [
+            10,
+            93
+          ],
+          "tips": [
+            [
+              92,
+              95
+            ]
+          ],
+          "extra_matches": [
+            {
+              "rule": 5,
+              "edge": [
+                31,
+                150
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                31,
+                150,
+                149,
+                65,
+                66
+              ]
+            },
+            {
+              "rule": 5,
+              "edge": [
+                96,
+                150
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                96,
+                150,
+                10,
+                94,
+                95
+              ]
+            },
+            {
+              "rule": 12,
+              "edge": [
+                149,
+                150
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                149,
+                150,
+                31,
+                65,
+                138,
+                142,
+                93
+              ]
+            },
+            {
+              "rule": 15,
+              "edge": [
+                152,
+                150
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                152,
+                150,
+                96,
+                41,
+                98
+              ]
+            }
+          ],
+          "charge": 0,
+          "low_neighbours": false
+        },
+        {
+          "vertex": 143,
+          "degree": 7,
+          "fives": [
+            95
+          ],
+          "tips": [
+            [
+              92,
+              93
+            ],
+            [
+              95,
+              10
+            ]
+          ],
+          "extra_matches": [
+            {
+              "rule": 5,
+              "edge": [
+                95,
+                143
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                95,
+                143,
+                159,
+                94,
+                37
+              ]
+            },
+            {
+              "rule": 6,
+              "edge": [
+                159,
+                143
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                159,
+                143,
+                95,
+                94,
+                10
+              ]
+            }
+          ],
+          "charge": 0,
+          "low_neighbours": true
+        }
+      ],
+      "marked_rule_absent": false,
+      "candidate_occurrences": [
+        {
+          "reversed_order": false,
+          "images": [
+            61,
+            142,
+            93,
+            150,
+            10,
+            94,
+            37,
+            80,
+            157,
+            91,
+            88,
+            27,
+            60,
+            143,
+            95,
+            28,
+            92,
+            140,
+            141,
+            40,
+            159
+          ]
+        },
+        {
+          "reversed_order": true,
+          "images": [
+            91,
+            157,
+            80,
+            37,
+            94,
+            10,
+            150,
+            93,
+            142,
+            61,
+            60,
+            27,
+            88,
+            143,
+            95,
+            40,
+            159,
+            141,
+            140,
+            28,
+            92
+          ]
+        }
+      ]
+    },
+    {
+      "name": "three_tips_no_extras",
+      "observations": [
+        {
+          "vertex": 150,
+          "degree": 7,
+          "fives": [
+            10,
+            93
+          ],
+          "tips": [
+            [
+              92,
+              95
+            ],
+            [
+              152,
+              32
+            ]
+          ],
+          "extra_matches": [
+            {
+              "rule": 5,
+              "edge": [
+                93,
+                150
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                93,
+                150,
+                31,
+                142,
+                138
+              ]
+            },
+            {
+              "rule": 14,
+              "edge": [
+                152,
+                150
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                152,
+                150,
+                149,
+                32
+              ]
+            },
+            {
+              "rule": 40,
+              "edge": [
+                152,
+                150
+              ],
+              "sign": 1,
+              "amount": 1,
+              "images": [
+                152,
+                150,
+                149,
+                31,
+                93,
+                32,
+                92
+              ]
+            }
+          ],
+          "charge": 0,
+          "low_neighbours": false
+        },
+        {
+          "vertex": 143,
+          "degree": 7,
+          "fives": [
+            95
+          ],
+          "tips": [
+            [
+              92,
+              93
+            ],
+            [
+              95,
+              10
+            ],
+            [
+              141,
+              91
+            ]
+          ],
+          "extra_matches": [],
+          "charge": 0,
+          "low_neighbours": true
+        }
+      ],
+      "marked_rule_absent": true,
+      "candidate_occurrences": [
+        {
+          "reversed_order": false,
+          "images": [
+            61,
+            142,
+            93,
+            150,
+            10,
+            94,
+            37,
+            80,
+            157,
+            91,
+            88,
+            27,
+            60,
+            143,
+            95,
+            28,
+            92,
+            140,
+            141,
+            40,
+            159
+          ]
+        },
+        {
+          "reversed_order": true,
+          "images": [
+            91,
+            157,
+            80,
+            37,
+            94,
+            10,
+            150,
+            93,
+            142,
+            61,
+            60,
+            27,
+            88,
+            143,
+            95,
+            40,
+            159,
+            141,
+            140,
+            28,
+            92
+          ]
+        }
+      ]
+    }
+  ],
+  "catalogue_candidate": {
+    "file": "D3009.conf",
+    "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "license": "MIT; see LICENSE",
+    "sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+    "core_vertices": 8,
+    "ring_size": 13,
+    "scope": "Source graph occurrence candidate only. Its colouring repair and actual-map reconstruction are not certified here."
+  },
+  "independent_readings": 7232,
+  "disagreements": 0,
+  "scope": "Exact program evidence. Lean base instances give 2+E and 8+E; their numerical E values are program checked. Modified spherical graphs and D3009 source occurrences are program checked. No D3009 repair certificate, minimality or universal coverage claim."
+}
