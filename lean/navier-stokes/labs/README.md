@@ -17310,3 +17310,266 @@ Run `python3 -O labs/caloric_parent_strain.py` for the Fourier constants,
 heat time integral, physical norm algebra, scaling, and continuation
 coefficient checks. These exact checks do not certify the analytic
 inequalities, physical evolution, or continuation theorem in Lean.
+
+## A relative parent balance with paid supplied terms
+
+`relative_parent_payment.py` derives the critical joint balance after
+subtracting the prepared parent. Three supplied terms in this balance
+have finite original-datum payments: the original caloric source, the
+source outside the axis tube, and transport of the prepared parent by
+the FULL actual velocity. The remaining exchange and transport of the
+residual parents are explicit and open. These are analytic estimates for
+smooth, decaying axisymmetric whole-space flows; the exact checker covers
+algebra and constants, not PDE existence or continuation.
+
+### The residual parent retains the complete drift
+
+Keep the original cutoff beta=1-zeta_rho, the original heat source B,
+and eta1 from (43). Write
+
+```text
+h=eta_core-eta1, L=(-Delta5)^(-1/2), a=L h, R_z=partial_z L,
+qR=2R_z a, q0=q_paid+q1, q=q0+qR,
+D_v=partial_t+v.grad-nu Delta5.
+```
+
+The exact equations are
+
+```text
+D_v b=q b,
+D_v a=R_z(b^2)-C+f, C=[L,v.grad]h,
+f=-R_z(zeta_rho b^2)-R_z(beta B^2)-L(v.grad eta1).          (44)
+```
+
+Here f is a term in an exact decomposition of the unforced equation, not
+an external force applied to the fluid. In particular the last summand
+uses the full actual v. All operators are canonically reconstructed and
+`[A,B]=AB-BA`. The identity follows by applying L to (43); no independence
+between the evolving source, parent and velocity is introduced.
+
+Set p=5/2 and
+
+```text
+X=b^2+a^2, Phi=X^(p/2), w=X^((p-2)/2), R_p=int_R5 Phi,
+T_w=<w a,C>+(1/2)int q w a^2,
+Q_R=((p-2)/2)int qR Phi-p<b^2,[R_z,w]a>-p T_w.
+```
+
+The complete chain rule, `div5 v=-q`, and skew-adjointness of R_z give
+
+```text
+R_p'+nu D_p=Q_R
+  +int q0 w[(p-1)b^2+(p/2-1)a^2]+p<w a,f>,               (45)
+D_p=int p w(|grad b|^2+|grad a|^2)
+       +p(p-2)X^((p-4)/2)|b grad b+a grad a|^2.
+```
+
+As before, diffusion is defined by continuity at X=0. In particular
+`D_(5/2)>=(5/2)Dcrit` and `R_(5/2)>=M`. Since the two coefficients in
+the q0 pairing lie between zero and p-1, that pairing is bounded above
+by `(p-1)||q0||_infinity R_p`. This is paid by the preceding caloric
+and transported-parent clocks. The spatial weight w is fully evolved;
+it is different from any scalar time-integrating factor.
+
+### The initial caloric square source is integrable in the needed norm
+
+Let C_R denote a universal L(5/2) norm bound for the single Riesz operator
+R_z, and let C5 be the same five-dimensional Sobolev constant as before.
+The Gaussian Young estimates give
+
+```text
+||B(s)||_5^2 <= min[A_e^2 C5 G^2 (nu s)^(-1/2),
+                    A_l^2 F^2 (nu s)^(-3/2)],
+A_e=(4pi)^(-1/4)(10/9)^(-9/4),
+A_l=(4pi)^(-3/4)(10/7)^(-7/4),
+F=||b0||_2, G=||grad b0||_2.
+```
+
+The early estimate smooths L(10/3) into L5 and uses Sobolev on b0;
+the late estimate smooths L2 into L5. Integrating the minimum, splitting
+where its two powers agree, proves
+
+```text
+int_0^infinity ||R_z(beta B(s)^2)||_(5/2) ds
+ <=C_R int_0^infinity ||beta B(s)^2||_(5/2) ds
+ <=Sigma_B=(4 C_R A_e A_l sqrt(C5)/nu) F G.                 (46)
+```
+
+Thus this supplied source has a finite all-time norm without an initial
+L1 assumption or smallness. No estimate of the actual b by B is used.
+
+### The outside source is paid by physical energy and circulation
+
+Use the actual unforced energy bound `||u(t)||_2^2<=E0` and the
+axisymmetric circulation maximum `|r u_theta(t)|<=Gamma0`.
+On the support of zeta_rho, r>=rho, so `|b|<=Gamma0/rho^2`. Then
+
+```text
+||zeta_rho b^2||_(5/2)^(5/2)
+ <=pi int_(r>=rho) r^2 |b|^5 dx3
+ <=pi Gamma0^3 rho^(-6) E0.
+```
+
+Consequently every available prefix T<=H satisfies
+
+```text
+int_0^T ||R_z(zeta_rho b^2)||_(5/2)
+ <=Sigma_out=C_R H pi^(2/5) E0^(2/5) Gamma0^(6/5) rho^(-12/5).
+                                                               (47)
+```
+
+This pays the cutoff mismatch introduced by writing the residual source
+as the complete b^2 transfer in (44). It does not assume that initially
+outside parents stay outside the tube.
+
+### Actual transport of the prepared parent also has finite payment
+
+Let C_I be a universal norm bound for
+`L:L(5/3)(R5)->L(5/2)(R5)`. This is the Hardy--Littlewood--Sobolev
+fractional-integration estimate at order one; the exponent difference
+is `3/5-2/5=1/5`. See
+[Tao, Appendix A, (A.10)--(A.11)](https://www.math.ucla.edu/~tao/preprints/chapter.pdf).
+Holder with exponents 2 and 10 gives
+
+```text
+||L(v.grad eta1)||_(5/2)
+ <=C_I ||v/r||_2(R5) ||r grad eta1||_10(R5)
+ <=C_I sqrt(pi E0) ||r grad eta1||_10(R5).                  (48)
+```
+
+The physical identity is
+`||v/r||_2(R5)^2=pi ||v||_2(R3)^2<=pi E0`. The apparent axis singularity
+is integrable with the lifted measure. This uses the actual velocity's
+energy, not its future gradient or supremum. The other factor is the
+explicit original heat history, defined independently of the actual
+solution's lifespan.
+
+Here is a conservative finite bound directly in initial norms. Assume
+the following quantities are finite, as for smooth Schwartz b0 and the
+fixed smooth cutoff. All norms and derivatives here are in R5:
+
+```text
+C_beta=max_(|alpha|<=3) ||D^alpha beta||_infinity,
+A3=max_(|alpha|<=3) ||D^alpha b0||_infinity,
+B4=max_(|alpha|<=4) ||D^alpha b0||_10,
+C3=max_(i<=4, |alpha|<=3) ||y_i D^alpha b0||_10.
+```
+
+For s<=H, heat contraction and the exact coordinate commutator give
+
+```text
+||y_i D^alpha B(s)||_10<=C3+2nu H B4,  |alpha|<=3,
+y_i heat(nu tau)g=heat(nu tau)(y_i g)-2nu tau heat(nu tau)partial_i g.
+```
+
+Apply the last formula to `g=partial_j partial_z(beta B(s)^2)` in
+the Duhamel formula for `partial_j eta1`. Each second derivative has
+product coefficient sum 9, and each third derivative has sum 27.
+Summing the four horizontal coordinates and five gradient components
+therefore gives
+
+```text
+||r grad eta1(t)||_10
+ <=180 t C_beta A3 (C3+8nu H B4),  0<=t<=H.
+```
+
+Integrating (48) yields
+
+```text
+int_0^T ||L(v.grad eta1)||_(5/2)
+ <=Sigma_adv=90 C_I sqrt(pi E0) C_beta A3 H^2(C3+8nu H B4).
+                                                               (49)
+```
+
+Only initial derivatives and a prescribed horizon occur in this bound.
+Its constants are deliberately conservative; no scale-invariance claim
+is made for the maxima of mixed derivative orders. It pays transport of
+eta1, not transport of the unknown residual h.
+
+### A finite allowance for all three supplied terms
+
+Define a majorant using the known original heat history,
+
+```text
+g(t)=C_R ||beta B(t)^2||_(5/2)
+     +C_R pi^(2/5) E0^(2/5) Gamma0^(6/5) rho^(-12/5)
+     +C_I sqrt(pi E0)||r grad eta1(t)||_10,
+Sigma=Sigma_B+Sigma_out+Sigma_adv.
+```
+
+Then `||f(t)||_(5/2)<=g(t)` and `int_0^H g<=Sigma`. This does not
+define an allowance through an unknown future fluid norm. Holder and
+Young give, if Sigma>0,
+
+```text
+p |<w a,f>| <=p g R_p^((p-1)/p)
+ <=(p-1)(g/Sigma)R_p+g Sigma^(p-1),
+int_0^H g Sigma^(p-1)<=Sigma^p.                            (50)
+```
+
+Thus these supplied terms have a finite additive allowance Sigma^p and
+an additional multiplicative clock whose logarithm is at most p-1.
+If Sigma=0, g=0 almost everywhere and the extra clock is omitted.
+This payment is valid for every compatible segment, with the same
+original Sigma and elapsed heat history; segmentation grants no refill.
+
+Set `a0=||q_paid||_infinity+||q1||_infinity` and
+
+```text
+Omega=exp[-(3/2)int_0^t (a0+g/Sigma)],
+Omega>=exp[-(3/2)(2M_H+A_cal+1)].
+```
+
+It remains to prove a finite K_joint>=0 from the original datum, nu, H
+and rho such that EVERY smooth actual prefix satisfies
+
+```text
+int_0^T Omega[Q_R-(nu/2)D_(5/2)]<=K_joint.                 (51)
+```
+
+Equations (45)--(50) would then give
+
+```text
+int_0^T S^2 <=(5C5/(4nu)) exp[(18/5)(2M_H+A_cal+1)]
+                         *(M0+Sigma^(5/2)+K_joint)^(12/5).
+```
+
+Here R_p(0)=M0 because h(0)=0, and the stock already includes the
+nonzero supplied-term allowance. This connects (51) to the earlier
+analytic axisymmetric continuation criterion. It is an alternative to
+the direct qR budget (42), not a claim that either open estimate has
+been established or that the joint version is necessarily easier.
+
+### The residual transport does not inherit a missing cancellation
+
+The full-parent quadratic kinetic cancellation cannot be applied to the
+residual parent alone. Let chi_R=L a and decompose the actual meridional
+velocity as `v=v_R+v0`, where v_R is reconstructed from h and v0 from
+the subtracted parent. At constant spatial weight,
+
+```text
+T_1=<chi_R,v.grad h>=<chi_R,v0.grad h>,
+div5(v_R chi_R)=0.
+```
+
+The last cross pairing need not vanish. A kinematically compatible check
+uses `chi_R=exp(-(r^2+z^2)/2)`, `chi0=z chi_R`, `h=-Delta5 chi_R`,
+and the canonical v0 reconstructed from chi0. Exact Gaussian integration
+gives
+
+```text
+<chi_R,v0.grad h>=(28/9)(2pi/3)^(5/2)>0.
+```
+
+This is an algebraic two-field test. It is not a claim that this pair
+occurs in the prescribed actual source-history split, and is not a
+counterexample to (51). It prevents using a kinetic identity whose
+compatibility hypothesis was lost on subtraction. At nonconstant w,
+the full T_w and the source commutator in Q_R both remain. Paying the
+radial observation q0 does not by itself pay this entire cross transport.
+
+Run `python3 -O labs/relative_parent_payment.py`. Exact checks cover (45),
+the diffusion matrix, harmonic-analysis exponents, scalar payment,
+constants in (46)--(50), the continuation multiplier and the Gaussian
+cross pairing. The analytic inequalities and arbitrary-history target
+retain their distinct status. No general R3/T3 regularity theorem follows.

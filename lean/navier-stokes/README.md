@@ -2044,6 +2044,20 @@ conditional axisymmetric continuation consequence are analytic, with exact
 constant and scaling checks; they are not new Lean-certified PDE results
 or an arbitrary-data three-dimensional regularity theorem.
 
+The [relative parent balance](labs/README.md#a-relative-parent-balance-with-paid-supplied-terms)
+retains the joint critical moment of the actual swirl and the residual
+parent after that subtraction. Its prepared source, outside source and
+transport of the prepared parent by the full actual velocity have finite
+initial-data payments. The last uses physical kinetic energy paired with
+weighted derivatives of the known heat history; no future velocity-gradient
+bound is assumed. The complete residual exchange and transport are still
+open. In particular, the residual parent does not inherit the full field's
+quadratic kinetic cancellation: transport by the subtracted parents leaves
+a cross pairing. The exact checker verifies a compatible Gaussian pair
+where that pairing is nonzero, without asserting realization by the actual
+history split. The new payments and conditional continuation bound remain
+analytic, not Lean-certified.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
