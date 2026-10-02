@@ -1963,6 +1963,22 @@ growing multiplicity. These are analytic arguments with exact algebraic
 checks; they neither establish indefinite renewal nor rule out full-datum
 regularity, and no new Lean certification is claimed.
 
+The [axial-order history test](labs/README.md#axial-ordering-signed-parent-histories-and-its-dynamical-defect)
+keeps the full interacting drift in a positive half-space propagator.
+For reflection-symmetric flows, persistent axial ordering of the swirl
+magnitude makes the generated-parent contribution to the critical moment
+nonpositive, giving the conditional continuation allowance explicitly.
+An actual smooth pure swirl shows that initial ordering need not persist:
+internally generated pressure reverses a flat axial slope on a short
+positive-viscosity interval. An exact signed decomposition identifies the
+opposite-sign source/receiver histories left to pay, while retaining the
+favorable terms. This refutes automatic persistence of that geometric
+condition, not the possibility of signed compensation or regularity.
+In fact, the same example retains negative net parent production on a
+short interval while its axial ordering has already failed.
+These physical statements are analytic with symbolic checks; the general
+three-dimensional/periodic history estimate remains open.
+
 | Module | Reused mathematics | Exact remaining boundary |
 | --- | --- | --- |
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |

@@ -16163,3 +16163,225 @@ Gaussian constants, algebraic separation bound, viscous rebound coefficient
 and conditional clock constants pass exact checks. Translation decoupling,
 uniform local existence, entropy convexity and continuation are analytic.
 No new Lean certification or unconditional regularity is claimed.
+
+## Axial ordering, signed parent histories, and its dynamical defect
+
+`swirl_order_history.py` identifies a class of generated-parent work with
+a favorable sign along the **actual interacting evolution**. It also
+constructs smooth unforced data showing that initial membership in this
+geometric class need not persist. The exact history decomposition retains
+the terms created when ordering fails. The PDE and interval arguments here
+are analytic, not new Lean theorems.
+
+### Positive propagators retain the nonlinear parent history
+
+Continue with the preceding axisymmetric whole-space variables. Assume
+reflection symmetry about z=0: b and u_r are even in z, u_z is odd, and
+eta=omega_theta/r is odd. These parities are preserved by uniqueness of
+the smooth unforced NS evolution. Smoothness at the axis and sufficient
+decay justify the integrals below. Let
+
+```text
+D=R4 times (0,infinity),  beta(r)=1-zeta_rho(r),
+f=beta b^2,  F=|b|^(5/2),
+(partial_t+v.grad-nu Delta5)eta_core=partial_z f,
+eta_core(0)=0,  eta_core|_(z=0)=0.
+```
+
+On each available smooth prefix, let U_v(t,s) be the Dirichlet propagator
+of `nu Delta5-v.grad` on D with this same complete meridional drift.
+The maximum principle makes U_v positive; no bound on its operator norm
+or on future drift derivatives is inferred. In particular, this is not
+the heat propagator and does not remove parent transport.
+
+Let K_D be the Dirichlet inverse of -Delta5 on D. Its kernel is
+
+```text
+G5(X-Y)-G5(X-Y_reflected),  G5(X)=1/(8pi^2 |X|^3).
+```
+
+It is positive for X,Y in D because reflection increases their distance.
+The full-space potential of an odd function restricts to K_D. Thus
+the actual nonlocal reconstruction and history are
+
+```text
+q_core=2partial_z K_D eta_core,
+eta_core(t)=integral_0^t U_v(t,s) partial_z f(s) ds.
+```
+
+The full-space production is consequently
+
+```text
+Pcrit_core(t)
+ =-4 integral_0^t <partial_z F(t),K_D U_v(t,s) partial_z f(s)>_D ds. (15)
+```
+
+The factor four includes the two reflected half-spaces and the factor
+two in q_core. The integration-by-parts boundary term vanishes because
+K_D eta_core has zero trace at z=0. The receiver F(t) is the actual
+evolving swirl at the observation time; it is not frozen at time zero.
+
+Equivalently, full-space adjoint duality uses
+`-psi_t=nu Delta5 psi+div5(v psi)+h`, `psi(T)=0`. Here `div5(v)=-q`
+must be retained. With `h=w(t)*(-2partial_z K5)F`, it gives
+`integral w Pcrit_core=-integral f psi_z`. The checker verifies the
+complete local identity, including its diffusive and transport fluxes.
+
+### Ordered histories deplete the critical moment
+
+Suppose `partial_z(b^2)<=0` on D throughout the prefix. Since beta is
+nonnegative and radial, the source derivative is nonpositive. Positivity
+of U_v implies eta_core<=0, and positivity of K_D then implies
+K_D eta_core<=0. The receiver has the same derivative sign, since
+
+```text
+partial_z |b|^(5/2)=(5/4)|b|^(1/2) partial_z(b^2).
+```
+
+Equation (15) gives `Pcrit_core<=0`. This controls the entire generated
+history, including full parent transport and elliptic response. It does
+not require small swirl or small drift.
+
+Combining this sign with the preceding paid-parent factor w leaves the
+entire critical diffusion available:
+
+```text
+(w M)' +(15nu/4)w Dcrit<=0,
+integral_0^T S^2 <=(5C5/(12nu))*exp(36M_H/5)*M(0)^(12/5).       (16)
+```
+
+Thus persistence of the stated geometric ordering supplies the sufficient
+axisymmetric continuation bound. For initially pure swirl one may instead
+use beta=1 and the full generated eta, with no paid class: then w=1,
+M_H=0 and M itself is nonincreasing while the ordering persists. The same
+argument allows initially nonpositive eta on D. These are conditional
+physical implications, not a proof that arbitrary initial order persists.
+
+### Which departures from ordering can produce positive work?
+
+Formula (15) also applies without axial monotonicity. Put
+`d=partial_z F`, `j=partial_z f`, and split each into positive and negative
+parts, `d=d_+-d_-`, `j=j_+-j_-`. For a,b in {+,-}, define
+
+```text
+C_ab(t)=integral_0^t <d_a(t),K_D U_v(t,s) j_b(s)>_D ds >=0.
+```
+
+The exact identity is
+
+```text
+Pcrit_core=4(C_{+,-}+C_{-,+}-C_{+,+}-C_{-,-}).                (17)
+```
+
+Matching derivative signs deplete this moment; opposite signs at the
+source and its later receiver can increase it. The spatial coupling and
+the complete intervening drift remain inside K_D U_v. This is a signed
+comparison of compatible histories, not a sum of independent bursts.
+
+In this reflection-symmetric class, the current open allowance is exactly
+
+```text
+integral_0^T w[6(C_{+,-}+C_{-,+}-C_{+,+}-C_{-,-})-(15nu/8)Dcrit]
+ <= K(u0,nu,H,rho).                                          (18)
+```
+
+The negative terms in (18) may matter; discarding them gives a stronger
+and still unproved target. No initial bound for (18) is supplied here.
+
+### Initial ordering can fail through internally generated pressure
+
+For n=b_z, differentiating the actual swirl equation and using
+incompressibility gives
+
+```text
+n_t+v.grad n-nu Delta5 n
+ =-(r/2)q_r n+q_z(b+(r/2)b_r).                               (19)
+```
+
+The last factor is half the axial vorticity. The term involving q_z is
+not sign-controlled by n<=0. The following datum makes it strictly
+positive at a flat part of the initial profile, without external force.
+
+Choose a nonnegative smooth a(r), nonzero and supported in 4<r<5.
+Choose h(z) smooth and even, equal to one for |z|<=1, zero for |z|>=2,
+with h'<0 on (1,2). Set
+
+```text
+b0(r,z)=[a(r)+delta exp(-r^2/2)]h(z),
+u0=(-x2 b0,x1 b0,0),                        delta>0.
+```
+
+This is a Schwartz divergence-free pure swirl with initially nonincreasing
+b0^2 on D. Evaluate at r=0,z0=1/2. Initially the meridional velocity is
+zero and
+`sigma=q_t(0)=2partial_zz K5(b0^2)`, independent of viscosity. Write
+`B(r)=a(r)+delta exp(-r^2/2)` and `g(R,w)=(R^2+w^2)^(-3/2)`. Moving one
+axial derivative to h^2 gives the nonsingular formula
+
+```text
+sigma_z(0,z0)
+ =(1/2)integral_0^infinity R^3 B(R)^2 integral_1^2 (h^2)'(s)
+     [g_ww(R,s-z0)-g_ww(R,s+z0)] ds dR,
+g_www(R,w)=15w(3R^2-4w^2)/(R^2+w^2)^(9/2).
+```
+
+For 4<=R<=5 and 1/2<=w<=5/2, `3R^2-4w^2>=23`. Thus g_ww increases
+strictly across this interval. The bracket is negative, whereas (h^2)'
+is negative. The annular term and the annulus/Gaussian cross term in
+sigma_z are both strictly positive.
+
+Let A>0 be the annular contribution and D the absolute Gaussian-only
+contribution. Both are finite. Choosing `delta=A/[2(A+D)]` gives
+
+```text
+sigma_z[full datum]>=A-delta^2 D>=15A/16>0.
+```
+
+This fixes a single smooth datum. Its local axial flatness gives
+`n(0)=n_t(0)=0` near the test point: all initial axial diffusion terms
+vanish there. Differentiating (19) once in time then yields
+
+```text
+n_tt(0,0,1/2)=delta*sigma_z(0,1/2)>0.                         (20)
+```
+
+For every fixed nu>0, local smooth NS existence and time differentiability
+therefore give n(t,0,1/2)>0 for all sufficiently small positive times.
+Continuity gives a neighboring region of increasing b^2 as well. This
+is an actual interval argument from a strict initial second derivative;
+it assumes no viscosity-free evolution or long Taylor window.
+
+The example refutes preservation of initial axial ordering. It does not
+refute the conditional sign theorem, the signed compensation in (18),
+a finite original-datum allowance, or regularity. In particular, newly
+positive cross terms need not dominate the remaining negative work.
+The annulus can be placed within any prescribed core radius by NS spatial
+rescaling. The underlying profile may change while its total signed work
+remains paid; a quantitative history estimate must allow that possibility.
+
+Indeed this same example has favorable **net** production initially.
+Use the full source beta=1; the entire meridional parent starts at zero.
+Both `d0=partial_z F0` and `j0=partial_z(b0^2)` are nonpositive on D
+and nonzero on sets of positive measure. Strict positivity of K_D gives
+
+```text
+Pcrit'(0)=-4<d0,K_D j0>_D<0.
+```
+
+Hence Pcrit(t)<0 on a sufficiently short positive interval, and the
+complete moment M decreases there. During that same interval the axial
+ordering is already broken near the test point. Persistent pointwise
+ordering is therefore stronger than the signed payment actually needed.
+Controlling the compensation in (18), rather than forbidding every
+geometric departure, remains a viable and distinct question.
+
+Run `python3 -O labs/swirl_order_history.py --quadrature`. Exact checks
+cover the local equations, complete initial second derivative, full adjoint
+flux, Green derivatives, kernel normalization and algebraic margins.
+The optional quadrature uses `a(r)=exp[4-1/((r-4)(5-r))]` on (4,5),
+zero outside, and `h(s)=1/[1+exp(1/(2-s)-1/(s-1))]` on (1,2), with
+the stated plateau, zero extension and reflection. The 64/96/128-point
+quadratures give `n_tt(0)` approximately
+`0.0003070871013`. It supports the kernel calculation and has no certified
+quadrature error; it is not a numerical evolution. Propagator positivity,
+PDE existence, physical interval and continuation claims remain analytic.
