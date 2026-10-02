@@ -17573,3 +17573,261 @@ the diffusion matrix, harmonic-analysis exponents, scalar payment,
 constants in (46)--(50), the continuation multiplier and the Gaussian
 cross pairing. The analytic inequalities and arbitrary-history target
 retain their distinct status. No general R3/T3 regularity theorem follows.
+
+## Prepared transport and the complete residual parent
+
+`prepared_transport_commutator.py` checks the kernel and balance algebra
+for a finite payment of transport by the explicitly prepared parent. The
+coefficient uses original heat-history norms, not future derivatives of
+the actual velocity. Keeping all other parents together then restores
+their quadratic self-transport cancellation. The critical weighted
+exchange is still open. The physical estimates below are analytic for
+smooth, sufficiently decaying axisymmetric whole-space flows, not new
+Lean-certified results. Schwartz lifted initial data suffice for the
+additional weighted norms used here.
+
+### A homogeneous operator bound, including low frequencies
+
+On R5 set `Lambda=(-Delta5)^(1/2)`, `L=Lambda^(-1)` and
+`R_k=partial_k L`. For p=5/2 and a bounded C2 vector field V, define
+
+```text
+N(V)=||V||_infinity+||grad V||_infinity
+     +||D2 V||_infinity+||D2 V||_5.
+```
+
+There is a universal C_op such that, if N(V) is finite,
+
+```text
+||[L,V.grad]Lambda a||_p <= C_op N(V)||a||_p.              (52)
+```
+
+The operator is initially defined on smooth test inputs and extends by
+density. No divergence-free hypothesis on V in R5 is imposed. In
+particular it applies to the lifted meridional velocity, whose divergence
+is generally nonzero. The norms of mixed derivative orders give a finite
+bound at a fixed spatial normalization; no scale-invariance assertion is
+made for N.
+
+Here is a proof that retains the homogeneous low-frequency contribution.
+Use `Lambda=-sum_k partial_k R_k`, so it suffices to bound
+`[L,F]partial_j partial_k` on Lp. The kernel of L is
+`K(z)=c5 |z|^(-4)`. Twice integrating by parts gives the kernel
+
+```text
+K_jk(x-y)(F(y)-F(x))
+ -K_j(x-y) F_k(y)-K_k(x-y) F_j(y)+K(x-y) F_jk(y),
+K_j(z)=-4c5 z_j |z|^(-6),
+K_jk(z)=-4c5 delta_jk |z|^(-6)+24c5 z_j z_k |z|^(-8).
+```
+
+For the first term, fix a smooth radial cutoff equal to one on the unit
+ball and zero beyond radius two. Subtract `-grad F(x).z` locally from
+`F(x-z)-F(x)`. Its remainder is bounded by
+`C||D2 F||_infinity |z|^2`. The resulting local kernel is bounded by
+`C|z|^(-4)`, which is integrable in R5. The distant original term is
+bounded by `C||F||_infinity |z|^(-6)`, also integrable on its region.
+
+The local linear terms have kernels `z_ell K_jk(z)`. These are odd,
+homogeneous of degree -5 and smooth on the sphere. Their principal-value
+operators are bounded: their Fourier multipliers, with derivative symbol
+`i xi_j`, are those of
+
+```text
+-delta_ell,j R_k-delta_ell,k R_j-R_j R_k R_ell.
+```
+
+Multiplying the kernel by the fixed smooth cutoff preserves L2
+boundedness, since it convolves this bounded multiplier with an L1
+Fourier transform. The cut-off kernel has the usual size and smoothness
+bounds, so Calderon--Zygmund theory gives Lp boundedness. The integration
+by parts introduces no diagonal correction: on an excluded sphere of
+radius epsilon, the potentially constant boundary term is odd; its next
+Taylor term is O(epsilon), and the other boundary term is O(epsilon).
+This also specifies the principal-value interpretation of the formula.
+
+The two middle terms are Riesz operators on `F_k a` and `F_j a` and
+cost `C||grad F||_infinity||a||_p`. The last term is the part that cannot
+be discarded at low frequency. Holder and fractional integration give
+
+```text
+||L(F_jk a)||_(5/2)
+ <= C ||F_jk a||_(5/3) <= C||D2 F||_5 ||a||_(5/2).
+```
+
+Summing and using Lp boundedness of R_k proves (52). The standard
+operator ingredients are [Calderon--Zygmund boundedness and Riesz
+multipliers, Corollary 2.10 and Theorem 4.4](https://www.math.ucla.edu/~tao/247a.1.06f/notes4.pdf),
+and [fractional integration, Appendix A (A.10)--(A.11)](https://www.math.ucla.edu/~tao/preprints/chapter.pdf).
+The imported `NS.Lit.CZ.truncated_Lp_uniform`, `pvOp_Lp` and
+`smoothTruncate_Lp_uniform` already cover the positive-dimensional
+homogeneous-kernel estimates under their angular hypotheses. No claim
+is made here that this new variable-coefficient application or its PDE
+consumer has been formalized.
+
+### The prepared coefficient is finite from the original datum
+
+Let `B(t)=heat(nu t)b0` and beta be a fixed smooth function with
+`0<=beta<=1`. Define
+
+```text
+J(t)=int_0^t heat(nu(t-s))[beta B(s)^2] ds,
+eta1=partial_z J, chi1=partial_z(-Delta5)^(-1)J,
+v1^i=-y_i partial_z chi1 (1<=i<=4),
+v1^5=2chi1+sum_(i<=4) y_i partial_i chi1,
+q1=2partial_z chi1, div5 v1=-q1.
+```
+
+Write `C_beta,4=max_(|alpha|<=4)||D^alpha beta||_infinity`.
+Let N0 be the sum of all
+
+```text
+||D^alpha b0||_q, ||y_i D^alpha b0||_q,
+|alpha|<=4, 1<=i<=4, q in {1,infinity,5/3,5/2}.
+```
+
+The coordinate heat commutator used in (49) implies, for |alpha|<=3,
+each indicated q, and t<=H,
+
+```text
+||D^alpha J(t)||_q <=27 t C_beta,4 N0^2,
+||y_i D^alpha J(t)||_q
+ <=27 t C_beta,4 N0^2(1+8nu H).                          (53)
+```
+
+Indeed the product coefficient sums through order three and four are
+at most 27 and 81. The weighted input heat evolution costs `2nu H`,
+and the outer heat commutator contributes the fourth derivative with
+coefficient `2nu H`; `27*2+2*81=27*8`.
+
+For completeness, these estimates also control the nonlocal velocity.
+If K2 is the Newtonian kernel in R5, `partial_z K2` has order -4.
+For each needed derivative,
+
+```text
+y_i [(partial_z K2)*D^gamma J]
+ =(partial_z K2)*(y_i D^gamma J)
+   +(z_i partial_z K2)*D^gamma J.
+```
+
+The two kernels have absolute bounds of orders -4 and -3.
+Splitting each at radius one bounds the supremum by the input L1 and
+Linfinity norms. For `||D2 v1||_5`, fractional integration uses
+`I1:L(5/2)->L5` and `I2:L(5/3)->L5`. Thus (53) proves
+
+```text
+N(v1(t)) <= C_rec t C_beta,4 N0^2(1+8nu H),
+c1(t)=C_op N(v1(t)),
+int_0^H c1(t)dt <= C1=C_* C_beta,4 H^2(1+8nu H)N0^2.     (54)
+```
+
+C_* is a fixed universal constant absorbing the finite sums and operator
+bounds. This bound is deliberately conservative and permits large
+initial derivatives. The actual nonlinear flow is never replaced by v1.
+
+### Recombining all unprepared parents preserves kinetic compatibility
+
+For the following alternative balance take beta=1 and set
+
+```text
+h=eta-eta1, a=L h, chi_a=L a,
+v=v_a+v1, q=q_a+q1, q_a=2R_z a.
+```
+
+Here v_a is reconstructed from h by the same meridional rule. This h
+includes ALL initial and subsequently generated parents except eta1.
+It differs from `eta_core-eta1` in (44); no transported outside parent
+is subtracted. In particular `a(0)=L eta0`, not zero in general.
+The previous cutoff decomposition remains valid as a separate option.
+
+The actual equations now read
+
+```text
+D_v b=q b,
+D_v a=R_z(b^2)-[L,v.grad]h+f,
+f=-R_z(B^2)-L(v.grad eta1).                              (55)
+```
+
+Let p=5/2, X=b^2+a^2, Phi=X^(p/2), w=X^((p-2)/2), and
+`R_p=int_R5 Phi`. Define
+
+```text
+T_w^a=<w a,[L,v_a.grad]h>+(1/2)int q_a w a^2,
+Q_self=((p-2)/2)int q_a Phi-p<b^2,[R_z,w]a>-p T_w^a.
+```
+
+Combining the prepared divergence before taking absolute values gives
+the exact complete balance
+
+```text
+R_p'+nu D_p=Q_self+int q1 w[(p-1)b^2-a^2]
+            -p<w a,[L,v1.grad]h>+p<w a,f>.               (56)
+```
+
+D_p is the full convex diffusion in (45), with `D_p>=p Dcrit`.
+The new decomposition retains `div5(v_a chi_a)=0`, so `T_1^a=0`.
+Consequently Q_self vanishes at p=2. At p=5/2, the changing spatial
+weight leaves both commutators and `(1/4)int q_a Phi`; no favorable
+sign or critical payment has been proved for their sum.
+
+### Paid terms and the remaining signed target
+
+The q1 coefficient in (56) lies between -Phi and (p-1)Phi. Its payment
+therefore costs only `(p-1)||q1||_infinity R_p`; there is no additional
+prepared-divergence charge. Equation (52) pays the prepared transport
+by `p c1(t) R_p`. Use (46), (48)--(50) with beta=1 and
+
+```text
+Sigma=Sigma_B+Sigma_adv,
+g(t)=C_R ||B(t)^2||_(5/2)
+     +C_I sqrt(pi E0)||r grad eta1(t)||_10,
+int_0^H g<=Sigma, ||f||_p<=g,
+A_cal=sqrt(2) F G/(6pi^2 nu^2).
+```
+
+There is no outside-source term in (55). Let
+
+```text
+Omega=exp[-int_0^t ((p-1)(||q1||_infinity+g/Sigma)+p c1)],
+Omega>=exp[-(3/2)(A_cal+1)-(5/2)C1].                     (57)
+```
+
+As before omit g/Sigma if Sigma=0. These are original heat-history
+clocks throughout a prescribed window, never restarted on concatenation.
+The starting stock contains the actual initial meridional field:
+
+```text
+R_p(0)=int5 (b0^2+(L eta0)^2)^(5/4)
+ <=2^(1/4)[M0+C5^(5/8)(pi E_m(0))^(5/8)(pi Z_m(0))^(5/8)].
+```
+
+This is the initial physical interpolation bound established in the
+full-parent balance. It is finite under the stated initial hypotheses.
+It remains to prove a finite nonnegative K_full, controlled from the
+original datum, nu and H, such that EVERY available smooth prefix T<=H
+satisfies
+
+```text
+int_0^T Omega[Q_self-(nu/2)D_p] <= K_full(u0,nu,H).        (58)
+```
+
+If (58) holds, (50), (56) and (57) give
+
+```text
+int_0^T S^2 <= (5C5/(4nu)) exp[(18/5)(A_cal+1)+6C1]
+                *(R_p(0)+Sigma^(5/2)+K_full)^(12/5),
+S=int_R5 |b|^3.                                         (59)
+```
+
+This follows from `S^2<=(25C5/16)M^(7/5)Dcrit`, `M<=R_p`, and
+`Dcrit<=D_p/p`, retaining half the weighted diffusion. It connects
+the remaining signed target to the same analytic axisymmetric
+continuation criterion. It does not control non-axisymmetric defects
+or establish arbitrary-data regularity on R3 or T3.
+
+Run `python3 -O labs/prepared_transport_commutator.py`. The checker covers
+the derivative kernels, oddness, homogeneity, Fourier symbols,
+fractional-integration exponents, scalar coefficients and complete
+balance algebra. The operator bounds, actual history estimates and
+continuation implication remain analytic. Paying the prepared parent
+and restoring the quadratic cancellation do not establish (58).
