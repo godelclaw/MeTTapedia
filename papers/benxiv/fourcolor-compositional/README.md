@@ -23,8 +23,16 @@ cores, the D0051 fan and D0052 tripod. One
 [Lean geometry proof](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCore.lean)
 now handles both shapes: the four face readings retain their shared
 vertices, cyclic intervals prevent collisions, and the minimal-map facial
-law excludes additional core edges. This is a reusable part of recognition,
-with boundary completion and colouring repair still to be supplied.
+law excludes additional core edges. The complete source graphs now have
+[exact bridges and repair](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleRepair.lean):
+the fan matches classical configuration 33 in its source orientation, and
+the tripod matches configuration 37 with orientation reversed. Full rank
+coverage gives repair on all proper ten-port inputs, reusing those two
+certificates. One actual-map argument then reconstructs colourings after
+strict two-vertex descent from either complete occurrence.
+The missing link is geometric boundary completion from the four inner
+faces; complete occurrences are still explicit hypotheses. This step
+removes no certificate dependency or coverage entry.
 The motivating spherical example also separates a larger observation
 radius from a larger repair vocabulary: widening to radius three still
 misses all the tested diamond, chain and wheel cores, while the new tripod

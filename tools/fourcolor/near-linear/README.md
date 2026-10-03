@@ -13,8 +13,16 @@ The [four-triangle geometry](four-triangle-measurements.json) shares one
 injectivity and inducedness proof between the distinct D0051 fan and D0052
 tripod cores. Both full source files, degree profiles and core facial
 intervals are checked; the actual minimal-map consumer is kernel certified.
-The ten-port boundary completions, repairs and coverage classification
-remain open. No configuration certificate has been replaced by this step.
+The [complete source and repair bridge](four-triangle-repair-measurements.json)
+now identifies the full ten-port patches with classical configurations 33
+and 37, including opposite orientation conventions. One rank-coverage
+theorem consumes their existing certificates and supplies full proper-domain
+repair. A supplied complete occurrence yields actual strict two-vertex
+descent and compatible ambient reconstruction; different boundary labels
+may coincide. Deriving that occurrence from the four core triangles, and
+the joint coverage classification, remain open. No original certificate
+dependency or coverage entry is removed.
+Replay `lake build kernelFourTriangleRepair kernelFourTriangleGeometry`.
 Replay the source audit with
 `python3 tools/fourcolor/near-linear/audit_four_triangle_sources.py`.
 

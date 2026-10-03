@@ -16,6 +16,34 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay exact source bridges and full joint repair for two four-triangle patches. -/
+target kernelFourTriangleRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/four-triangle-repair",
+        "--library-output", ".lake/build/lib/lean", "--modules", "FullRankRepair",
+        "FourTriangleConstruction", "FourTriangleRepair"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay actual occurrence geometry and strict four-triangle reconstruction. -/
+target kernelFourTriangleGeometry pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/four-triangle-geometry",
+        "--library-output", ".lake/build/lib/lean", "--modules", "FourTriangleOccurrence",
+        "FourTriangleRepairGeometry", "FourTriangleRepairAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the common facial geometry of two four-triangle source cores. -/
 target kernelFourTriangleCore pkg : Unit := do
   let env ← getAugmentedEnv

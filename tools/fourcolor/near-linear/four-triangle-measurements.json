@@ -1,5 +1,5 @@
 {
-  "status": "Kernel-certified source cores and actual-map recognition. Complete ten-port embeddings, repair and joint flat-pair classification remain open.",
+  "status": "Kernel-certified source cores and actual-map recognition. This receipt records the earlier geometry milestone; subsequent repair and strict occurrence consumers are recorded separately.",
   "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
   "modules": [
     {
@@ -65,8 +65,8 @@
   "catalogue_entries_removed": 0,
   "original_certificate_dependencies_removed": 0,
   "remaining": [
-    "Complete ten-port occurrence and boundary order",
-    "Actual strict reduction and compatible colouring reconstruction",
-    "Universal joint-neighbourhood supply"
-  ]
+    "Derive complete ten-port occurrences from the retained inner faces.",
+    "Universal joint-neighbourhood supply."
+  ],
+  "followup": "four-triangle-repair-measurements.json"
 }

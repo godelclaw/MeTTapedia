@@ -1,0 +1,149 @@
+{
+  "status": "Kernel-certified exact source bridges, full proper-domain repairs and strict actual reconstruction from supplied complete occurrences. Completion from the four inner faces remains open.",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "source_manifest": "four-triangle-sources.json",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FullRankRepair",
+      "source_sha256": "6c5f6fba9334ba1bfc2be1f997b0991538d98ed097937f4ab48409cd704136ec",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.969,
+      "olean_bytes": 87568,
+      "olean_sha256": "afc0b21635afd661e3abd36ca64b6d4787ff983c2f991631433ec7a5d85462d3"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleConstruction",
+      "source_sha256": "fd6923f053922e6ef1c0fb5d8a82600366bf54b5d76a84d87ddd6e03a85ee625",
+      "exit_code": 0,
+      "frontend_wall_seconds": 37.538,
+      "olean_bytes": 479200,
+      "olean_sha256": "59eb1e44ab78d2cecc8861078c3c8b9b56d1580beb609b3b45a94f26b752c7a3"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleRepair",
+      "source_sha256": "e423243b50b45f2b6d6593590f785f8085edbd1f3a23fee90b690c4389510f46",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.594,
+      "olean_bytes": 81504,
+      "olean_sha256": "392023597121b12dfc37729a6e1316bef7e2e049c5b1f319b159689ae90f20df"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleOccurrence",
+      "source_sha256": "6f656697a93045512d0f56c21937552641b842e3799dd18aa545830023c1ed54",
+      "exit_code": 0,
+      "frontend_wall_seconds": 23.012,
+      "olean_bytes": 301792,
+      "olean_sha256": "e9607868b44b2d7dd5a823994fc304e3bbf0efb51f07d3356080f03f5764abf3"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleRepairGeometry",
+      "source_sha256": "57f3c5f4cd05140f4f180108b9060d6b95ec43cf38ada2bf3079a98f51f6bf94",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.461,
+      "olean_bytes": 121624,
+      "olean_sha256": "6c4c295a4f91956a1530bb73e12bb61138b166a26159ff5bd9030f83453c5e3e"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleRepairAudit",
+      "source_sha256": "dfbcd5fdc0660d5010ddd869ee09c907c24ecfc430e0b011c21f6e0f9fee4c26",
+      "exit_code": 0,
+      "frontend_wall_seconds": 11.535,
+      "olean_bytes": 2608,
+      "olean_sha256": "dc0d32f5f5b17b27deadffecb1cf0ebf343e1c40039fb71c43eb717bf3634062"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 16,
+    "declarations": 30705,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_configuration_certificates": [
+      "FourColor.Bulk.Cfg032",
+      "FourColor.Bulk.Cfg036"
+    ],
+    "recorded_contract_checks_used": false,
+    "complete_four_colour_theorem_used": false
+  },
+  "source_bridges": [
+    {
+      "source": "D0051",
+      "reference_configuration": 33,
+      "orientation": "agrees with published core stars",
+      "ordered_boundary_zero_based": [
+        9,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "source": "D0052",
+      "reference_configuration": 37,
+      "orientation": "reverses published core stars",
+      "ordered_boundary_zero_based": [
+        3,
+        2,
+        1,
+        0,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4
+      ]
+    }
+  ],
+  "geometry": {
+    "vertices_per_patch": 16,
+    "core_vertices": 6,
+    "boundary_ports": 10,
+    "edges": 35,
+    "darts": 70,
+    "contract_core_endpoints_zero_based": [
+      10,
+      11
+    ],
+    "complete_occurrence_fields": [
+      "all source edges",
+      "complete oriented core stars",
+      "prescribed core degrees",
+      "core injectivity",
+      "boundary images outside the core"
+    ],
+    "boundary_labels_may_coincide": true,
+    "strict_descent": "The existing ActualDualContract.singleton_colorable theorem removes two vertices of the actual cubic map, preserving the required smaller-map domain."
+  },
+  "repair": {
+    "uniform_soundness": "FullRankRepair.repairs",
+    "finite_mask_checks": 2,
+    "input_indices_per_patch": 19683,
+    "proper_zero_sum_inputs_per_patch": 14763,
+    "input_count_evidence": "Independent exact program count; kernel mask checks certify coverage of the entire proper domain.",
+    "new_rank_tables": 0,
+    "retained_joint_witness": "Actual source colouring compatible with the same Kempe-closed exterior relation; executable recolouring histories are not claimed."
+  },
+  "checks": [
+    "kernelFourTriangleRepair",
+    "kernelFourTriangleGeometry kernelComplete",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_four_triangle_sources.py"
+  ],
+  "catalogue_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0,
+  "remaining": [
+    "Construct complete occurrences from the four core faces, respecting the orientation difference.",
+    "Prove supply in the joint flat-neighbourhood class.",
+    "Integrate a new coverage branch before crediting catalogue compression."
+  ]
+}
