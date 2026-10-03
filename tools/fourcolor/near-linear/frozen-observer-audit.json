@@ -1,0 +1,179 @@
+{
+  "evidence": "Independent program verification of the actual premises of a kernel-proved observer theorem.",
+  "cases": [
+    {
+      "source_colouring": "independent-repair-example.json",
+      "source_case": 0,
+      "sphere_fixture": "flat-seven-return-example.json",
+      "configuration": "D0092.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "ambient_degree_range": [
+        5,
+        7
+      ],
+      "exterior_degree_range": [
+        3,
+        7
+      ],
+      "observer_exterior_degrees": [
+        5,
+        5,
+        7,
+        7,
+        7,
+        6,
+        6,
+        6,
+        5
+      ],
+      "observer_images": [
+        66,
+        149,
+        32,
+        4,
+        150,
+        98,
+        65,
+        65,
+        145
+      ],
+      "observer_distinct_vertices": 8,
+      "observer_is_graph_homomorphism": true,
+      "hidden_pair": [
+        66,
+        149
+      ],
+      "core_ambient_degrees": [
+        5,
+        5,
+        7
+      ],
+      "core_exterior_degrees": [
+        5,
+        5,
+        7
+      ],
+      "retained_component": [
+        0,
+        13,
+        32,
+        45,
+        67,
+        68,
+        69,
+        70,
+        102,
+        104,
+        106,
+        109,
+        117,
+        121,
+        123,
+        124,
+        147
+      ],
+      "protected_vertices": 136,
+      "original_patch_ports_changed": [
+        45,
+        102,
+        104,
+        121
+      ],
+      "both_exterior_endpoints_proper": true,
+      "target_extends_over_hidden_pair": true,
+      "initial_word_extends_to_original_patch": false,
+      "target_word_extends_to_original_patch": false,
+      "fixed_context_lift_obstructed_by_frozen_observer": true,
+      "flat_centres": [
+        51,
+        118,
+        48
+      ],
+      "obstructing_short_cycles": 0,
+      "concrete_premises_kernel_certified": false
+    },
+    {
+      "source_colouring": "independent-repair-example.json",
+      "source_case": 1,
+      "sphere_fixture": "flat-seven-return-extension-example.json",
+      "configuration": "D0063.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "ambient_degree_range": [
+        5,
+        7
+      ],
+      "exterior_degree_range": [
+        4,
+        7
+      ],
+      "observer_exterior_degrees": [
+        5,
+        7,
+        6,
+        7,
+        5,
+        5,
+        6,
+        6,
+        5
+      ],
+      "observer_images": [
+        42,
+        102,
+        12,
+        45,
+        43,
+        1,
+        0,
+        0,
+        49
+      ],
+      "observer_distinct_vertices": 8,
+      "observer_is_graph_homomorphism": true,
+      "hidden_pair": [
+        42,
+        102
+      ],
+      "core_ambient_degrees": [
+        5,
+        7,
+        6
+      ],
+      "core_exterior_degrees": [
+        5,
+        7,
+        6
+      ],
+      "retained_component": [
+        12,
+        18,
+        47,
+        50,
+        51
+      ],
+      "protected_vertices": 148,
+      "original_patch_ports_changed": [
+        18
+      ],
+      "both_exterior_endpoints_proper": true,
+      "target_extends_over_hidden_pair": true,
+      "initial_word_extends_to_original_patch": false,
+      "target_word_extends_to_original_patch": false,
+      "fixed_context_lift_obstructed_by_frozen_observer": true,
+      "flat_centres": [
+        146,
+        68,
+        70
+      ],
+      "obstructing_short_cycles": 0,
+      "concrete_premises_kernel_certified": false
+    }
+  ],
+  "kernel_theorem": "Mettapedia.GraphTheory.FourColor.FrozenBoundaryObserver.no_lift_renamed",
+  "scope": "Obstructs the specified moves with all unchanged retained vertices protected. Does not rule out exterior recolouring with a larger moving context, another command, or another decomposition. Ambient degrees are 5..7, but whole-ball flatness and minimal-counterexample hypotheses are not asserted.",
+  "fixture_sha256": "89c7f88d301721a7c4cd843e00ae7b12cc95c7ed7296c3db67f4dc435bda802d",
+  "verifier_sha256": "ffb0b22fdeb2e76b778310fdee2d387eec86815815e91a3df398a8289f87a9c0",
+  "credited_compression": false
+}

@@ -395,6 +395,53 @@ Replay `lake build Mettapedia.GraphTheory.FourColor.BoundaryCooperationAudit`.
 The [measurement receipt](boundary-cooperation-measurements.json) records the
 uniform statements, dependency audit, and verification costs.
 
+## Frozen observers in the actual spherical exteriors
+
+The [frozen-observer theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FrozenBoundaryObserver.lean)
+transports the obstruction into an arbitrary finite graph through a graph
+homomorphism and a permutation of the four colour labels. The observer's
+leaves need not be leaves of the ambient graph. Injectivity and inducedness
+are unnecessary: proper colourings and physical histories pull back along
+the homomorphism. Protecting the images of its boundary therefore freezes
+the observed core throughout every possible history.
+
+The [independent replay](frozen-observer-audit.json) checks two concrete
+applications on the complete 155-vertex punctured exteriors of the existing
+162-vertex spherical fixtures. The ambient degrees are five through seven.
+Each operation hides two adjacent exterior vertices off the original patch
+ports, switches one actual retained component, and has a proper extension
+over those two vertices.
+
+| Original patch | Retained component size | Original patch ports changed | Ambient degrees at the observer core |
+| --- | --- | --- | --- |
+| D0092 | 17 | 4 | `5,5,7` |
+| D0063 | 5 | 1 | `5,7,6` |
+
+In both cases the nine observer vertices map to eight distinct exterior
+vertices; two observer leaves have the same image. All nine observer edges,
+the complete initial colour pattern, the protected boundary images, both
+proper exterior endpoints, and the changed observed core are checked. Thus
+the target cannot be reached while keeping every unchanged retained vertex
+fixed. The replay checks the premises of the universal Lean theorem and
+requires no search through recolouring histories. The actual geometric
+applications remain program evidence; they are not kernel-certified graph
+instances.
+
+Extension over the newly hidden pair is a different obligation from restoring
+the original seven-vertex patch. Both selected target words still fail the
+latter test. These witnesses refute endpoint-only acceptance of a proposed
+fixed-context step; they do not refute the existence of successful choices.
+The earlier two-step independent-set repairs still colour both complete
+spheres. Whole-ball flatness and minimal-counterexample hypotheses are not
+asserted, and no coverage entry is removed.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.FrozenBoundaryObserverAudit`
+and `python3 tools/fourcolor/near-linear/audit_frozen_observer.py`.
+The [fixture](frozen-observer-example.json) pins the existing source colourings
+and stores only the observer map and reduced command. The
+[measurement receipt](frozen-observer-measurements.json) separates the five-root
+kernel audit from the concrete program checks.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

@@ -1,0 +1,75 @@
+{
+  "evidence": "Finite geometric applications of the generic frozen-observer obstruction; independent program evidence, not kernel-certified embeddings.",
+  "cases": [
+    {
+      "source_colouring": "independent-repair-example.json",
+      "source_colouring_sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e",
+      "case_index": 0,
+      "observer_images": [
+        66,
+        149,
+        32,
+        4,
+        150,
+        98,
+        65,
+        65,
+        145
+      ],
+      "palette": [
+        3,
+        1,
+        0,
+        2
+      ],
+      "hidden": [
+        66,
+        149
+      ],
+      "pair": [
+        3,
+        1
+      ],
+      "root": 32,
+      "target_hidden": [
+        0,
+        1
+      ]
+    },
+    {
+      "source_colouring": "independent-repair-example.json",
+      "source_colouring_sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e",
+      "case_index": 1,
+      "observer_images": [
+        42,
+        102,
+        12,
+        45,
+        43,
+        1,
+        0,
+        0,
+        49
+      ],
+      "palette": [
+        3,
+        0,
+        2,
+        1
+      ],
+      "hidden": [
+        42,
+        102
+      ],
+      "pair": [
+        3,
+        0
+      ],
+      "root": 12,
+      "target_hidden": [
+        2,
+        0
+      ]
+    }
+  ]
+}

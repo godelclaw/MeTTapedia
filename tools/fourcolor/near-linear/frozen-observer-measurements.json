@@ -1,0 +1,59 @@
+{
+  "evidence": "Kernel-checked frozen-observer transport and exact independent program applications on two spherical punctured exteriors.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.PaletteProjection",
+      "source_sha256": "a6b080cef14770264e9732f76f8a1c41b804579058aabfecd93fb2caec075d20",
+      "source_bytes": 1790,
+      "lake_build_seconds": 1.6,
+      "olean_bytes": 64920,
+      "olean_sha256": "38a646a5b4097ed4b19e2fed6ba56bce56b2fa2a21004039a81bfb9611b1441a"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FrozenBoundaryObserver",
+      "source_sha256": "022f6f09d28c7fcef444e4dfb1f08d8a0328da6b1599970549b6513ade6a5d2b",
+      "source_bytes": 2971,
+      "lake_build_seconds": 2.6,
+      "olean_bytes": 48200,
+      "olean_sha256": "9bd96d1b652d25bc00d2eb5ebf052a7943c5cc8c55c49561b67c935ebadd8b98"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FrozenBoundaryObserverAudit",
+      "source_sha256": "7d6acc5dcfa000059dffbc2f312d1d65ce9ccb6d409bd0c130379be47a46faa3",
+      "source_bytes": 1992,
+      "lake_build_seconds": 2.0,
+      "olean_bytes": 2800,
+      "olean_sha256": "3c1f04b49c1dc06013fe7bfed3c083bfe68bdff874cfff26ce555cef9c58831a"
+    }
+  ],
+  "audit": {
+    "roots": 5,
+    "dependency_declarations": 3599,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "Injective palette maps transport actual boundary-avoiding histories on finite graphs.",
+    "A graph homomorphism with the certified frozen initial observation and protected boundary images forces the observed core to remain fixed throughout all physical histories.",
+    "The observer contract permits arbitrary permutations of the four colour labels; injectivity and inducedness of the graph map are not required."
+  ],
+  "program_applications": "frozen-observer-audit.json",
+  "program_scope": "Complete 155-vertex exteriors of 162-vertex spheres with ambient degrees 5..7. The observer vertices all have exterior degrees 5..7. The moves change four and one original patch ports respectively. Both endpoints extend over the newly hidden pair, but both target words still fail to restore the original seven-vertex patch.",
+  "negative_controls": [
+    "Collapsed observer core edge rejected",
+    "Non-bijective palette rejected",
+    "Observer leaf mapped into the moving component rejected",
+    "Improper full exterior target rejected"
+  ],
+  "scope": "Failure of a specified fixed-context step-lifting promise. Does not exclude other commands, larger moving context, alternative decompositions, or successful original-patch repair. The spherical applications are program checked, not kernel-certified instances. Full-ball flatness, minimal-counterexample conditions and geometric coverage are not asserted.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.FrozenBoundaryObserverAudit",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_frozen_observer.py"
+  ],
+  "credited_compression": false
+}
