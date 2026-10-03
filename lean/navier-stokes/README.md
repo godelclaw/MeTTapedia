@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [reciprocal heat-payment test](labs/README.md#whole-time-heat-payment-for-reciprocal-parents)
+proves that the complete first nonlinear pressure correction stays favorable
+for every time and every ratio of two interacting parents. Exact differential
+cascades certify the coefficient signs. A uniform analytic remainder gives an
+actual all-time comparison with the original Brownian heat forecast in a small
+two-amplitude disk, with a finite stock determined by the original data.
+Separating the coefficient into pressure-source and transport contributions
+exhibits a positive shared cost that must remain in their joint payment.
+The stronger-amplitude comparison remains open. A conditional finite-time
+handoff pays its tail while retaining the accumulated impulse; numerical
+prefixes do not certify that handoff. The physical identification and remainder
+are analytic, not new Lean certificates.
+
 The [joint renewal test](labs/README.md#balanced-reciprocal-parents-defeat-the-joint-rational-allowance)
 finds a whole-fluid failure of the two-coefficient rational pressure allowance.
 For an interval of balanced three-dimensional parent ratios, the first complete

@@ -37571,3 +37571,293 @@ the separate viscous moment recurrence, and the label algebra. Local
 PDE existence, time grading, uniform remainder and stochastic symmetry
 identification are ANALYTIC, not new Lean certificates. No Lean
 declarations or axioms change.
+
+## Whole-time heat payment for reciprocal parents
+
+`reciprocal_pressure_payment.py` tests the coarser heat forecast left open
+by the joint rational obstruction (774). The complete first nonlinear
+correction has a favorable sign for every time and every parent ratio.
+A uniform analytic remainder turns this into an actual all-time pressure
+comparison in a small two-amplitude disk. Strong-amplitude histories are
+tested numerically; their continuum comparison remains open.
+
+### Actual histories and the fixed original forecast
+
+On the normalized period-2pi torus, first set viscosity equal to one and
+take the actual unforced solution from
+
+```text
+U_(a,b)=(a sin y+b sin z, a sin x, b sin x).
+p(0)=a^2 cos x cos y+b^2 cos x cos z.
+N(0)=(0,-ab sin z cos x,-ab sin y cos x).                (777)
+```
+
+Here N is the projected nonlinear velocity derivative. When ab is
+nonzero, all three coordinate frequencies are present and the flow
+immediately generates parents outside its initial Fourier support.
+The preceding full jets give g(0)=0 and g'(0)=a^2 b^2/2 for the integrated
+vortex stretching. This is not a superposition of independently evolved
+planar flows.
+
+Let X be the actual forward process with drift u and Brownian variance
+2, with uniform original position. Retain
+`P_t=integral_0^t grad p(s,X_s)ds` and `Phi=E|P_t|^4`.
+The reference process Y has Brownian motion only, with the same viscosity
+and uniform initial position. Its pressure source is the quadratic heat
+forecast `exp(-2t)grad p(0)`. Define
+
+```text
+H_(a,b)(t)=E|integral_0^t exp(-2s)grad p(0,Y_s)ds|^4
+          =(a^8+b^8) A0(t)+a^4 b^4 A1(t).              (778)
+```
+
+Y is an auxiliary forecast, not an independently forced fluid. It is
+identified with the full degree-eight coefficient of the actual history.
+The actual process continues to use the evolving NS velocity and pressure.
+No pressure impulse, conditional moment, original label or time origin is
+restarted at a later return.
+
+The two complete heat functions are
+
+```text
+A0=11/2048 +(5/1024-t/16)exp(-4t)
+   +(-23/2048+t/256+t^2/32)exp(-8t)+exp(-12t)/1024,
+
+A1=427/30720 +(-15/256-3t/32)exp(-4t)+exp(-6t)/6
+   +(-301/2048-17t/256+t^2/64)exp(-8t)+exp(-10t)/40.
+                                                               (779)
+```
+
+Both start at zero and have strictly positive derivative for t>0.
+Thus the entire forecast is paid by the finite original stock
+`(11/2048)(a^8+b^8)+(427/30720)a^4 b^4`. In the balanced unit case the
+stock is 757/30720. These are exact infinite-time integrals, not fitted
+numerical plateaux.
+
+An independent check expands the fourth Brownian moment over its 24 time
+orderings. For four ordered pressure Fourier modes k1,...,k4 with zero
+sum, the Brownian characteristic function and exp(-2s) source give the
+four gap decay rates
+`8, 6+|k1|^2, 4+|k1+k2|^2, 2+|k4|^2`.
+Integrating that simplex exactly, with all three vector pairings and
+their multiplicity eight, reproduces (779). This check does not use the
+conditional-moment PDE recurrence.
+
+### The complete first correction is favorable for every time
+
+The next homogeneous coefficient of the ACTUAL Phi is
+
+```text
+J_(a,b)=(a^10+b^10) B0
+       +(a^8 b^2+a^2 b^8) B1
+       +(a^6 b^4+a^4 b^6) B2.
+Bi(0)=0, Bi'(t)<0 for every t>0, i=0,1,2.              (780)
+```
+
+The full exponential polynomials are emitted by the checker. Their
+initial and final data are:
+
+| function | -[t^6]Bi | limit as t tends to infinity | sign-cascade levels |
+|---|---|---|---|
+| B0 | 5/96 | -50593/276480000 | 13 |
+| B1 | 65/576 | -16312927/26671680000 | 18 |
+| B2 | 107/432 | -2287499437/2133734400000 | 23 |
+
+All velocity, pressure and moment coefficients are obtained from the
+complete viscous equations through degree ten of Phi. In particular the
+calculation keeps the generated velocity modes, their canonical pressure,
+and the transport of all lower moments. The exact exponential-polynomial
+and heat-convolution operations are reused from `paired_stretching_history.py`
+and `pressure_impulse_payment.py`. Independent full Gaussian-rational time
+jets check the velocity and pressure; the lower-amplitude viscous moment
+terms also match the separate calculation in the preceding section.
+
+The ratio identification is algebraic. Reflection in y or z changes the
+sign of the corresponding original amplitude, preserving the integrated
+fourth moment. Interchanging y and z exchanges a and b. Degree-ten
+homogeneity therefore leaves exactly the three symmetric monomial pairs
+in (780). Exact full-output evaluations at (a,b)=(1,0),(1,1),(1,2)
+determine their coefficient functions; (1,3/4) is an unused exact check.
+This is not an extrapolation from floating-point samples. At degree eight,
+the auxiliary Brownian forecast has only a^8, a^4 b^4, b^8: translation in
+y or z changes the sign of one of its two pressure sources and removes
+the odd mixed terms. This extra cancellation is specific to that coefficient.
+
+Each derivative sign in (779)--(780) has the finite differential certificate
+(659). Every oriented initial datum in the cascade has the required sign,
+and the final function vanishes identically. The largest decay rate in the
+negative cascades is 18. Retaining the first strict datum of B0 and using
+positive convolution kernels gives the deliberately conservative bound
+
+```text
+-B0(t)>=c min(t^6,1), c=5/(96*3^18)>0.
+16(a^10+b^10)>=(a^2+b^2)^5.
+J_(a,b)(t)<=-(c/16)(a^2+b^2)^5 min(t^6,1).             (781)
+```
+
+For the first inequality, `-B0'(t)>=(5/16)t^5 exp(-18t)` follows directly
+from the positive cascade. Integrate on [0,t] when t<=1, use exp(18)<3^18,
+then use monotonicity for t>=1. The second inequality follows from the
+checked identity
+`16(x^5+y^5)-(x+y)^5=5(x-y)^2(x+y)(3x^2+2xy+3y^2)` with x=a^2,y=b^2.
+
+The sharper rational comparison can still fail: the positive next return
+in (771) exceeds that rational formula's predicted correction. Statements
+(780)--(781) concern the saving relative to the unsharpened heat forecast.
+They do not discard or change the preceding counterexample.
+
+There is also a useful operator-level separation at equal parents. Tag
+each extra fluid-nonlinearity insertion by alpha and each moment-advection
+insertion by beta. A pressure coefficient of degree n receives
+alpha^(n-2); transport by velocity degree n receives beta alpha^(n-1).
+The complete degree-ten correction becomes
+`alpha^2 S + alpha beta C + beta^2 T`. These are bookkeeping tags within
+the equations, not three independently realizable fluid histories.
+
+| contribution | coefficient of t^6 | derivative sign for every t>0 |
+|---|---|---|
+| evolving pressure source S | -259/432 | negative |
+| transport with the original heat pressure T | -35/96 | negative |
+| shared source/transport work C | 5/36 | positive |
+
+All three whole-time signs have exact differential certificates. An unused
+tag pair (alpha,beta)=(2,3) checks the degree-two decomposition independently.
+The physical case alpha=beta=1 retains the positive mixed work, and its sum
+is still negative. Adding the two isolated savings while dropping their
+shared work would overstate depletion. This identifies a concrete cost
+that a compositional reserve must carry even in this favorable family.
+
+### A uniform remainder pays actual small-amplitude histories
+
+Here is the analytic step from the finite coefficient calculation to
+actual flows. It reuses the global weighted periodic fixed-point and
+moment estimates in (661), an application of the classical
+[Fujita--Kato method](https://arxiv.org/abs/math/0511213).
+The specific comparison below is not a theorem imported from that paper.
+
+Take the complex mean-zero solenoidal space with norm
+`sup_(t>=0) exp(t/2)||u(t)||_(H^40)`. The heat semigroup and the fixed
+Sobolev product constants bound the NS bilinear Duhamel map there.
+For a sufficiently small fixed polydisc in (a,b), contraction gives a
+global holomorphic solution with uniform exponential decay. The pressure
+gradient is holomorphic with integrable time decay. On
+`L_infinity([0,infinity);H^40)`, heat convolution against `-u.grad M`
+has norm less than one half after shrinking this same polydisc.
+Successively solving the complete moment equations by the resulting
+Neumann inverse gives uniform holomorphic bounds. All accumulated zero
+Fourier modes are retained. For real amplitudes, the joint forward
+equation identifies these moments with the actual stochastic observation.
+The complex extension uses the polynomial `(P.P)^2` only.
+
+Choose a closed polydisc of radius R strictly inside this contraction
+region. Let M0 bound the fourth moment there for all time, and M8 bound
+its eighth time derivative on [0,1]. The differentiated equations and
+the smooth initial trigonometric fields give these finite bounds from
+the same fixed H^40 majorants, before the future solution is known.
+Eight time derivatives use at most sixteen extra spatial derivatives;
+the remaining Sobolev regularity controls the products and observation.
+
+Set r^2=a^2+b^2. Individual evenness in a,b and Cauchy estimates on the
+polydisc bound the remainder after homogeneous degree ten by
+`2 M0 R^(-12) r^12` for r<=R/2. The same estimate applies to its eighth
+time derivative with M8. Its first eight initial time jets vanish:
+the pressure coefficient of amplitude degree n starts at time order n-2,
+and the fourth-moment coefficient of degree n starts no earlier than
+time order n-4. In particular every remaining degree is at least 12
+and its time order is at least 8. Hence
+
+```text
+Phi_(a,b)=H_(a,b)+J_(a,b)+E_(a,b),
+|E_(a,b)(t)|<=C r^12 min(t^8,1),
+C=2 R^(-12) max(M0,M8/8!).                            (782)
+```
+
+There is no division by a possibly vanishing parent amplitude. The
+Cauchy estimate sums `sum_(i+j=k)|a|^(2i)|b|^(2j)<=r^(2k)` and a
+geometric tail. The time grading uses the actual equation; it does not
+assume that higher generated modes are absent.
+
+For example choose
+`rho=min(R/2,sqrt(c/[32(1+C)]))>0`. Combining (781)--(782) proves
+
+```text
+Phi_(a,b)(t)<=H_(a,b)(t)-(c/32)r^10 min(t^6,1),
+0<r<=rho, t>0.                                        (783)
+```
+
+This is an actual all-time unforced comparison, with both parent
+amplitudes varying independently and with every subsequent return kept
+in the controlled remainder. The radius is conservative and not
+numerically evaluated. Small-data regularity itself is established
+theory; the additional result is this particular pressure-history
+payment and its strict geometric saving. It does not leave the
+small-amplitude region.
+
+For positive viscosity nu and integer common frequency ell>=1, apply
+NS scaling to `nu ell v(nu ell^2 t,ell x)`. For physical initial
+amplitudes A,B with `sqrt(A^2+B^2)<=rho nu ell`, the entire actual
+pressure fourth moment is at most
+
+```text
+[(11/2048)(A^8+B^8)+(427/30720)A^4 B^4]/(nu ell)^4.
+```
+
+This stock uses the original amplitudes, scale and viscosity. It is
+never replenished when the evolving geometry changes.
+
+### A finite tail target for stronger parents
+
+The optional prefix test retains all three velocity components and the
+complete first, second and third conditional pressure moments, together
+with the integrated fourth moment. It uses dealiased Fourier products
+and the existing Lawson RK4 step. Energy balance, high-mode fractions,
+conditional covariance and a fourth/second-moment Jensen check diagnose
+the computation; they do not bound the continuum error.
+
+For balanced unit parents, the completed discovery prefixes give:
+
+| nu | grid | time step | final time | Phi | Phi/H |
+|---|---|---|---|---|---|
+| 0.25 | 32^3 | 0.005 | 12 | 1.449071257 | 0.229747832 |
+| 0.05 | 48^3 | 0.01 | 8 | 19.82699708 | 0.0231232492 |
+
+Every reported quarter-time sample stays below the heat forecast and has
+positive conditional covariance and Jensen gap. For nu=0.25, comparison
+with 24^3 and time step 0.01 changes the final Phi relatively by 4.2e-10;
+the largest relative change at matched reported times is 1.2e-7. For
+nu=0.05, comparison with 32^3 at the same step changes final Phi by 5.9e-6
+and all matched reported values by at most 6.6e-6. The maximum reported
+high-moment fractions on the refined runs are 2.4e-11 and 1.8e-6 respectively.
+The latter comparison refines space only. Neither these diagnostics nor
+the small kinetic-energy balance errors certify the PDE history.
+
+There is a concrete sufficient tail condition for the balanced datum
+(a,b)=(1,1) at nu=1/4. If the ACTUAL history at time 12 satisfies
+
+```text
+sum_(k!=0)|u_hat(12,k)|<=1/8, Phi(12)<=2,               (784)
+```
+
+the previously proved Fourier tail reserve gives future impulse radius
+`R<=log(2)/4-1/8<1/20`. Minkowski retains all inherited/future mixed costs:
+`Phi(t)^(1/4)<=Phi(12)^(1/4)+R<6/5+1/20=5/4`.
+The complete heat forecast is increasing and exceeds 6 at time 12;
+the checker verifies that lower bound with rational exponential
+enclosures. Thus `Phi(t)<625/256<6<=H(t)` for every t>=12.
+This is conditional on the actual seam (784). Neither the preceding
+continuum comparison nor that seam is certified by a numerical prefix.
+
+The stronger-amplitude task is now finite and specific: bound the actual
+history up to such a tail seam while retaining the accumulated saving.
+The exact sign of one complete correction does not pay all higher
+returns at large amplitudes. Nor is the quadratic heat forecast a proposed
+universal allowance for every datum: the earlier cyclic datum has zero
+initial pressure and creates nonzero pressure through its generated parents.
+Any extension must include those parents' pressure resources as well.
+
+Run `python3 -O labs/reciprocal_pressure_payment.py` for exact family,
+independent time-jet and conditional-tail checks. Use
+`python3 -O labs/reciprocal_pressure_payment.py --prefix --n 32 --nu .25 --dt .005 --final 12`
+for a numerical discovery history. The actual stochastic identification,
+uniform analytic remainder and scaling argument are ANALYTIC, not new
+Lean certificates. No Lean declarations or axioms change.
