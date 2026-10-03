@@ -789,6 +789,63 @@ Replay `lake build Mettapedia.GraphTheory.FourColor.BridgeGuardAudit` and
 [fixture](bridge-guard-example.json) pins both examples and their sources;
 the [receipt](bridge-guard-measurements.json) records the three-root audit.
 
+## Two ports in the actual five-triangle cores
+
+[EarGuard](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/EarGuard.lean)
+removes a vertex with two adjacent neighbours by adding an exact binary
+constraint to their edge. The new constraint requires one common colour
+for the removed vertex. It retains both orientations of every incident
+relation and reconstructs the removed witness. Because inherited relations
+are arbitrary, the same law applies at subsequent stages.
+
+[TwoPortCoreElimination](../../../lean/fourcolor-classical/MettapediaFourColor/TwoPortCoreElimination.lean)
+checks five such stages in each decoded D0092/D0063 core, the exact remaining
+vertex sets, and the terminal edge. Each stage consumes the general law
+for arbitrary palettes, unary lists and inherited binary relations. These
+operations characterize extension; they do not assert that every boundary
+extends or establish arbitrary-exterior reducibility.
+
+Two actual punctured-sphere colourings expose the failure of replacing a
+joint message by independent port marginals. In D0063, boundary constraints
+force the two ports to colours `0` and `3`, while the removed vertex has
+only those two colours available. Either port can be accommodated alone;
+both cannot. D0092 gives the same obstruction with colours `1` and `3`.
+
+[TwoPortCoreObstruction](../../../lean/fourcolor-classical/MettapediaFourColor/TwoPortCoreObstruction.lean)
+proves that these exact boundary words cannot extend through their decoded
+source graphs, using short forced-colour arguments. It also supplies proper
+assignments on each source with its first ear omitted, preserving the
+boundary and passing both separate port tests. Thus the marginal relaxation
+really accepts a false positive. The spherical exterior realizations remain
+separately checked program evidence.
+
+The [program replay](two-port-core-audit.json) repairs those same two
+counterexample inputs. One specified exterior Kempe component is switched,
+then five exact two-port messages construct the seven interior colours in
+reverse elimination order. The whole 162-vertex sphere is checked proper.
+Each relation has at most 16 colour pairs; no table over boundary words or
+joint core colourings is used. An independent finite extension search
+cross-checks these two rejected and two accepted words only.
+
+| Source | Ring ports | Eliminations | Exterior switches | Vertices in switched component |
+| --- | ---: | ---: | ---: | ---: |
+| D0092 | 11 | 5 | 1 | 35 |
+| D0063 | 10 | 5 | 1 | 66 |
+
+This uses the same structural calculation for both source cores, including
+the correlations that their attachment changes require. A small interface
+does not make the exterior component small. The example repairs do not
+prove a uniform way to find a successful component, a decreasing repair
+potential, or geometric coverage. No catalogue entry or complete-proof
+certificate dependency is removed.
+
+Replay `lake build MettapediaFourColor.TwoPortCoreAudit` in the classical
+package and `python3 tools/fourcolor/near-linear/audit_two_port_core.py` from
+the repository root. The [fixture](two-port-core-example.json) retains the
+source pins, compact exterior colourings and explicit repair commands. The
+[receipt](two-port-core-measurements.json) distinguishes the generic
+two-root audit, source eight-root audit and program executions.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

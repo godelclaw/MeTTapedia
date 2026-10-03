@@ -1,0 +1,750 @@
+{
+  "evidence": "Exact program replay; general ear law, source stages and bad-boundary nonextension are Lean proved.",
+  "fixture_sha256": "75dcd9ec0ccfdb54572c34ae85b5e31ac7ec8ddc5b8c74897a62bbb2d21f3aa6",
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "ambient_vertices": 162,
+      "boundary_ports": 11,
+      "core_vertices": 7,
+      "bad_boundary": [
+        3,
+        0,
+        3,
+        0,
+        3,
+        0,
+        2,
+        0,
+        2,
+        1,
+        2
+      ],
+      "exact_bad_result": {
+        "stages": [
+          {
+            "ear": 13,
+            "ports": [
+              12,
+              14
+            ],
+            "exact_message": [
+              [
+                1,
+                1
+              ],
+              [
+                2,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ],
+            "kept_relation": [
+              [
+                2,
+                1
+              ],
+              [
+                2,
+                3
+              ]
+            ],
+            "phantom_pairs": [
+              [
+                1,
+                3
+              ]
+            ]
+          },
+          {
+            "ear": 14,
+            "ports": [
+              11,
+              12
+            ],
+            "exact_message": [
+              [
+                0,
+                2
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                2
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                2
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                2
+              ]
+            ],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 12,
+            "ports": [
+              11,
+              15
+            ],
+            "exact_message": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                1
+              ],
+              [
+                3,
+                1
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                1
+              ],
+              [
+                3,
+                1
+              ]
+            ],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 15,
+            "ports": [
+              11,
+              17
+            ],
+            "exact_message": [],
+            "kept_relation": [],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 11,
+            "ports": [
+              16,
+              17
+            ],
+            "exact_message": [],
+            "kept_relation": [],
+            "phantom_pairs": []
+          }
+        ],
+        "terminal_ports": [
+          16,
+          17
+        ],
+        "terminal_pairs": [],
+        "colour_triples_tested": 41,
+        "max_relation_capacity": 16
+      },
+      "relaxed_ear": 13,
+      "spurious_port_pair": [
+        1,
+        3
+      ],
+      "eliminated_vertex_colours": [
+        1,
+        3
+      ],
+      "proper_assignment_except_ear": {
+        "11": 0,
+        "12": 1,
+        "14": 3,
+        "15": 2,
+        "16": 3,
+        "17": 1
+      },
+      "relaxed_terminal_pairs": [
+        [
+          3,
+          1
+        ]
+      ],
+      "source_physical_switches": [
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 2,
+          "size": 35
+        }
+      ],
+      "repaired_boundary": [
+        3,
+        0,
+        3,
+        0,
+        3,
+        0,
+        2,
+        0,
+        1,
+        2,
+        1
+      ],
+      "exact_good_result": {
+        "stages": [
+          {
+            "ear": 13,
+            "ports": [
+              12,
+              14
+            ],
+            "exact_message": [
+              [
+                1,
+                2
+              ],
+              [
+                2,
+                2
+              ],
+              [
+                2,
+                3
+              ]
+            ],
+            "kept_relation": [
+              [
+                1,
+                2
+              ],
+              [
+                2,
+                3
+              ]
+            ],
+            "phantom_pairs": [
+              [
+                1,
+                3
+              ]
+            ]
+          },
+          {
+            "ear": 14,
+            "ports": [
+              11,
+              12
+            ],
+            "exact_message": [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                2
+              ],
+              [
+                2,
+                2
+              ],
+              [
+                3,
+                1
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                2
+              ],
+              [
+                3,
+                1
+              ]
+            ],
+            "phantom_pairs": [
+              [
+                2,
+                1
+              ],
+              [
+                3,
+                2
+              ]
+            ]
+          },
+          {
+            "ear": 12,
+            "ports": [
+              11,
+              15
+            ],
+            "exact_message": [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                2
+              ],
+              [
+                3,
+                2
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                2
+              ],
+              [
+                3,
+                2
+              ]
+            ],
+            "phantom_pairs": [
+              [
+                3,
+                1
+              ]
+            ]
+          },
+          {
+            "ear": 15,
+            "ports": [
+              11,
+              17
+            ],
+            "exact_message": [
+              [
+                0,
+                2
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                2
+              ]
+            ],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 11,
+            "ports": [
+              16,
+              17
+            ],
+            "exact_message": [
+              [
+                3,
+                2
+              ]
+            ],
+            "kept_relation": [
+              [
+                3,
+                2
+              ]
+            ],
+            "phantom_pairs": []
+          }
+        ],
+        "terminal_ports": [
+          12,
+          14
+        ],
+        "terminal_pairs": [
+          [
+            3,
+            2
+          ]
+        ],
+        "colour_triples_tested": 35,
+        "max_relation_capacity": 16
+      },
+      "reconstructed_core": {
+        "11": 0,
+        "12": 2,
+        "13": 1,
+        "14": 3,
+        "15": 1,
+        "16": 3,
+        "17": 2
+      },
+      "whole_sphere_reconstructed": true,
+      "joint_boundary_table_enumerated": false
+    },
+    {
+      "configuration": "D0063.conf",
+      "ambient_vertices": 162,
+      "boundary_ports": 10,
+      "core_vertices": 7,
+      "bad_boundary": [
+        3,
+        1,
+        0,
+        3,
+        1,
+        2,
+        1,
+        0,
+        2,
+        0
+      ],
+      "exact_bad_result": {
+        "stages": [
+          {
+            "ear": 12,
+            "ports": [
+              11,
+              14
+            ],
+            "exact_message": [
+              [
+                0,
+                2
+              ],
+              [
+                2,
+                2
+              ],
+              [
+                2,
+                3
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                2
+              ],
+              [
+                2,
+                3
+              ]
+            ],
+            "phantom_pairs": [
+              [
+                0,
+                3
+              ]
+            ]
+          },
+          {
+            "ear": 11,
+            "ports": [
+              14,
+              15
+            ],
+            "exact_message": [
+              [
+                2,
+                2
+              ]
+            ],
+            "kept_relation": [],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 15,
+            "ports": [
+              13,
+              14
+            ],
+            "exact_message": [],
+            "kept_relation": [],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 14,
+            "ports": [
+              10,
+              13
+            ],
+            "exact_message": [],
+            "kept_relation": [],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 10,
+            "ports": [
+              13,
+              16
+            ],
+            "exact_message": [],
+            "kept_relation": [],
+            "phantom_pairs": []
+          }
+        ],
+        "terminal_ports": [
+          13,
+          16
+        ],
+        "terminal_pairs": [],
+        "colour_triples_tested": 33,
+        "max_relation_capacity": 16
+      },
+      "relaxed_ear": 12,
+      "spurious_port_pair": [
+        0,
+        3
+      ],
+      "eliminated_vertex_colours": [
+        0,
+        3
+      ],
+      "proper_assignment_except_ear": {
+        "10": 1,
+        "11": 0,
+        "13": 0,
+        "14": 3,
+        "15": 2,
+        "16": 2
+      },
+      "relaxed_terminal_pairs": [
+        [
+          0,
+          2
+        ]
+      ],
+      "source_physical_switches": [
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 1,
+          "size": 66
+        }
+      ],
+      "repaired_boundary": [
+        3,
+        1,
+        0,
+        3,
+        2,
+        1,
+        2,
+        0,
+        1,
+        0
+      ],
+      "exact_good_result": {
+        "stages": [
+          {
+            "ear": 12,
+            "ports": [
+              11,
+              14
+            ],
+            "exact_message": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                1
+              ],
+              [
+                1,
+                3
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                1
+              ],
+              [
+                1,
+                3
+              ]
+            ],
+            "phantom_pairs": [
+              [
+                0,
+                3
+              ]
+            ]
+          },
+          {
+            "ear": 11,
+            "ports": [
+              14,
+              15
+            ],
+            "exact_message": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                2
+              ]
+            ],
+            "kept_relation": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                2
+              ]
+            ],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 15,
+            "ports": [
+              13,
+              14
+            ],
+            "exact_message": [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                3
+              ],
+              [
+                3,
+                1
+              ],
+              [
+                3,
+                3
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                3
+              ],
+              [
+                3,
+                1
+              ]
+            ],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 14,
+            "ports": [
+              10,
+              13
+            ],
+            "exact_message": [
+              [
+                2,
+                0
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                3,
+                0
+              ],
+              [
+                3,
+                3
+              ]
+            ],
+            "kept_relation": [
+              [
+                2,
+                0
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                3,
+                0
+              ]
+            ],
+            "phantom_pairs": []
+          },
+          {
+            "ear": 10,
+            "ports": [
+              13,
+              16
+            ],
+            "exact_message": [
+              [
+                0,
+                2
+              ]
+            ],
+            "kept_relation": [
+              [
+                0,
+                2
+              ]
+            ],
+            "phantom_pairs": []
+          }
+        ],
+        "terminal_ports": [
+          11,
+          14
+        ],
+        "terminal_pairs": [
+          [
+            0,
+            2
+          ]
+        ],
+        "colour_triples_tested": 29,
+        "max_relation_capacity": 16
+      },
+      "reconstructed_core": {
+        "10": 3,
+        "11": 0,
+        "12": 3,
+        "13": 0,
+        "14": 1,
+        "15": 2,
+        "16": 2
+      },
+      "whole_sphere_reconstructed": true,
+      "joint_boundary_table_enumerated": false
+    }
+  ],
+  "scope": "Two specified spherical exteriors and repairs, not arbitrary-exterior reducibility or coverage."
+}

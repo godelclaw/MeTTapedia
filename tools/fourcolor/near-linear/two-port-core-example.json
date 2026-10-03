@@ -1,0 +1,111 @@
+{
+  "evidence": "Proper spherical exterior colourings expose loss of a joint two-port constraint. Encoded colours 0..3; omitted core vertices use a dash.",
+  "sources": [
+    {
+      "file": "independent-repair-example.json",
+      "sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e"
+    },
+    {
+      "file": "flat-seven-return-example.json",
+      "sha256": "50fa6b1a55c587893bcd0295a48282c53e73dd54627e53bd99f3df24a251212c"
+    },
+    {
+      "file": "D0092.conf",
+      "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14"
+    },
+    {
+      "file": "seven-pair-four-triangle-example.json",
+      "sha256": "5639ca17d0eb311814d4c183c7c034bc0a0ee7b14020df6b510b56d352f3bf75"
+    },
+    {
+      "file": "flat-seven-return-extension-example.json",
+      "sha256": "e299cca5e72f30cfb4cf9d155b6675ac77f76399bc4057040c2027dc7d536f6d"
+    },
+    {
+      "file": "D0063.conf",
+      "sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d"
+    }
+  ],
+  "cases": [
+    {
+      "source_case": 0,
+      "exterior_colours": "2-2331002131-2023232032331312210103000300101230-0--2103300213101210320322313132201030312323001110032223-0-31111121220310001132112202201003220233021323200323112230",
+      "relaxed_ear": 13,
+      "boundary_word": [
+        3,
+        0,
+        3,
+        0,
+        3,
+        0,
+        2,
+        0,
+        2,
+        1,
+        2
+      ],
+      "repair_commands": [
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 2,
+          "size": 35
+        }
+      ],
+      "repaired_boundary": [
+        3,
+        0,
+        3,
+        0,
+        3,
+        0,
+        2,
+        0,
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "source_case": 1,
+      "exterior_colours": "02312-3322110103003331213212212313-03112103332132101120032100301323--21003221122003101301013013003312021002--0132213321131-022003312013330311002300302121131033232",
+      "relaxed_ear": 12,
+      "boundary_word": [
+        3,
+        1,
+        0,
+        3,
+        1,
+        2,
+        1,
+        0,
+        2,
+        0
+      ],
+      "repair_commands": [
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 1,
+          "size": 66
+        }
+      ],
+      "repaired_boundary": [
+        3,
+        1,
+        0,
+        3,
+        2,
+        1,
+        2,
+        0,
+        1,
+        0
+      ]
+    }
+  ]
+}

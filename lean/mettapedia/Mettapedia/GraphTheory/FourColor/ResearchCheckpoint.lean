@@ -69,6 +69,7 @@ import Mettapedia.GraphTheory.FourColor.ForestGuardAudit
 import Mettapedia.GraphTheory.FourColor.CycleAnchorsAudit
 import Mettapedia.GraphTheory.FourColor.CycleBlocksAudit
 import Mettapedia.GraphTheory.FourColor.BridgeGuardAudit
+import Mettapedia.GraphTheory.FourColor.EarGuardAudit
 import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
 import Mettapedia.GraphTheory.FourColor.FacialRollbackLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth

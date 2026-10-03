@@ -1,0 +1,85 @@
+{
+  "evidence": "Kernel-proved exact two-port ear elimination, ten source stage consumers and two marginal false positives.",
+  "modules": [
+    {
+      "project": "mettapedia",
+      "module": "Mettapedia.GraphTheory.Kempe.EarGuard",
+      "source_bytes": 3443,
+      "source_sha256": "e447f7c45b11664c12cce5c78c12af2f3fb5d683d5c95e7f38936a44d12fb143",
+      "lake_build_seconds": 1.8,
+      "olean_bytes": 110504,
+      "olean_sha256": "d97d8bdccac5b5f7adc6824576f0c578b0ddae65cc66b70518d1792cf4d5317a"
+    },
+    {
+      "project": "mettapedia",
+      "module": "Mettapedia.GraphTheory.FourColor.EarGuardAudit",
+      "source_bytes": 1236,
+      "source_sha256": "abb8439c5d9e503b8f78de1a12c623b13bb49c3d47fb0fa0cc54cfe2b748cbaf",
+      "lake_build_seconds": 1.7,
+      "olean_bytes": 2784,
+      "olean_sha256": "01a4c7d95b503be2239d263221f170155791cc6e3bd7f6b78701663fd0873afe"
+    },
+    {
+      "project": "fourcolor-classical",
+      "module": "MettapediaFourColor.TwoPortCoreElimination",
+      "source_bytes": 4244,
+      "source_sha256": "0934d471b0e3de3bd37ddf67fa9b796f75967f144a13bc8b576b34771fb1b6d7",
+      "lake_build_seconds": 6.9,
+      "olean_bytes": 251256,
+      "olean_sha256": "5446d23e8ebd6091a80236f5b24d878c82c1a3d18f9d42afd9fadac1ee6fe95f"
+    },
+    {
+      "project": "fourcolor-classical",
+      "module": "MettapediaFourColor.TwoPortCoreObstruction",
+      "source_bytes": 4841,
+      "source_sha256": "ebf79108397ce641aaa0ab569153b37fd6c4f12e9f5ef8db53c37cfcfcff888b",
+      "lake_build_seconds": 17.0,
+      "olean_bytes": 199048,
+      "olean_sha256": "d33ad90ba4fccdf52f06f9f8a9a52195a45e06a71e532a257964f02ed903146e"
+    },
+    {
+      "project": "fourcolor-classical",
+      "module": "MettapediaFourColor.TwoPortCoreAudit",
+      "source_bytes": 2369,
+      "source_sha256": "edb768106e40e5f4648ae8f95c5009e7942fe42db612b7a632c54cfaa3962187",
+      "lake_build_seconds": 2.4,
+      "olean_bytes": 2648,
+      "olean_sha256": "10e9da45cc8a4124a9e0d12c69f22463ea0632375eb23a82a04267d106df9031"
+    }
+  ],
+  "audits": {
+    "generic": {
+      "roots": 2,
+      "dependency_declarations": 502
+    },
+    "sources": {
+      "roots": 8,
+      "dependency_declarations": 3087
+    },
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_repair_certificates_used": false,
+    "required_load_bearing_dependencies": [
+      "decoded actual source graph",
+      "shared exact ear elimination",
+      "common-witness obstruction"
+    ]
+  },
+  "proved": [
+    "An ear with two adjacent neighbours can be eliminated into one exact binary relation, with reconstruction and arbitrary inherited unary and binary constraints.",
+    "All five elimination stages, successive remaining vertex sets and terminal edges are certified for both D0092 and D0063 decoded cores. Each stage consumes the common law over arbitrary palettes and constraints.",
+    "Two exact source boundary words have no full colouring extension. Their explicit assignments with the first ear omitted pass both separate port tests; a common interior colour does not exist."
+  ],
+  "program_applications": "two-port-core-audit.json",
+  "program_scope": "Both bad words occur in proper colourings of the actual 155-vertex spherical exteriors. One actual exterior component switch repairs each; exact binary messages reconstruct all seven core colours and the whole 162-vertex sphere. The two switched components contain 35 and 66 vertices. Matrix executions, concrete exterior geometry and physical switches are program evidence.",
+  "scope": "Source-stage laws are universally quantified over palettes and inherited constraints. Concrete matrix execution and composed spherical repairs are independently checked, not kernel execution certificates. The method uses standard variable elimination. No arbitrary-exterior repair theorem, successful-move selector, ordinary smaller-map reduction, coverage or catalogue saving is established.",
+  "checks": [
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "lake build MettapediaFourColor.TwoPortCoreAudit",
+    "python3 tools/fourcolor/near-linear/audit_two_port_core.py"
+  ],
+  "credited_compression": false
+}
