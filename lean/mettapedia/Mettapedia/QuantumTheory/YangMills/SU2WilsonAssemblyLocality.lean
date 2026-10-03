@@ -894,3 +894,166 @@ theorem plaquetteObservable_local (N : ℕ) (p : AssemblyPlaquette N) :
 #print axioms secondProjected_support_radius
 #print axioms plaquetteObservable_local
 end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssemblyLocality
+
+/-! ## Spatial covariance inside an actual scale-two Haar fiber -/
+
+namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
+open StrongCouplingCrossing WilsonBlockElimination WilsonBlockElimination.PairedLinks
+open WilsonConditionalProjection.PairedHaar WilsonDyadicGeometry SU2WilsonBlockPilot
+open WilsonLocalResponse SU2BoundaryResponse Mettapedia.Combinatorics.PolymerGas
+
+/-- The full Wilson action at fixed coarse products, regrouped by its actual
+independent fluctuation support. No plaquette or induced dependence is removed. -/
+def conditionalWilsonInteraction (n : ℕ) (β : ℝ) (c : CoarseConfig n) :
+    Finset (FluctuationLink n) → C(FluctuationLink n → SU2, ℝ) :=
+  regroupInteraction fluctuationPlaquetteSupport (fun p : Plaquette 4 (doubleIndex n) =>
+    fluctuationMark (blockIndexEquiv 4 n) c ((-β) • plaquetteTrace p))
+
+theorem conditionalWilsonInteraction_local (n : ℕ) (β : ℝ) (c : CoarseConfig n)
+    (S : Finset (FluctuationLink n)) : DependsOn S (conditionalWilsonInteraction n β c S) := by
+  apply regroupInteraction_local
+  intro p
+  apply fluctuationMark_local
+  intro U V h
+  exact congrArg (fun t : ℝ => -β*t) (plaquetteTrace_local p U V h)
+
+theorem conditionalWilsonInteraction_empty (n : ℕ) (β : ℝ) (c : CoarseConfig n) :
+    conditionalWilsonInteraction n β c ∅ = 0 := by
+  apply sum_eq_zero
+  intro p hp
+  have he : fluctuationPlaquetteSupport p = ∅ := by
+    simpa only [mem_filter, mem_univ, true_and] using hp
+  exact ((fluctuationPlaquetteSupport_nonempty p).ne_empty he).elim
+
+theorem conditionalWilsonInteraction_spatial_norm_le (n : ℕ) (β a η : ℝ)
+    (ha : 0 ≤ a) (hη : 0 ≤ η) (c : CoarseConfig n) :
+    spatialInteractionNorm a η (conditionalWilsonInteraction n β c) ≤
+      128 * |β| * Real.exp (4*a+12*η) := by
+  apply spatialInteractionNorm_le _ _ _ (by positivity)
+  intro y
+  refine (weightedInteractionRow_regroup_le fluctuationPlaquetteSupport
+    (fun p : Plaquette 4 (doubleIndex n) => fluctuationMark (blockIndexEquiv 4 n) c ((-β) • plaquetteTrace p))
+    (fun S => Real.exp (a*S.card + η*treeLength S)) (fun _ => (Real.exp_pos _).le) y).trans ?_
+  calc
+    _ ≤ ∑ p ∈ univ.filter (fun p : Plaquette 4 (doubleIndex n) => y ∈ fluctuationPlaquetteSupport p),
+        Real.exp (4*a+12*η) * |β| := by
+      simp only [sum_filter]
+      apply sum_le_sum
+      intro p _
+      by_cases hp : y ∈ fluctuationPlaquetteSupport p
+      swap
+      · simp only [hp, ↓reduceIte, le_refl]
+      simp only [hp, ↓reduceIte]
+      have hn : ‖fluctuationMark (blockIndexEquiv 4 n) c ((-β) • plaquetteTrace p)‖ ≤ |β| := by
+        apply (norm_fluctuationMark_le _ _ _).trans
+        rw [norm_smul, Real.norm_eq_abs, abs_neg]
+        exact (mul_le_mul_of_nonneg_left (norm_plaquetteTrace_le p) (abs_nonneg β)).trans_eq (mul_one _)
+      have he : Real.exp (a*(fluctuationPlaquetteSupport p).card +
+          η*treeLength (fluctuationPlaquetteSupport p)) ≤ Real.exp (4*a+12*η) := by
+        apply Real.exp_le_exp.mpr
+        have hc : ((fluctuationPlaquetteSupport p).card : ℝ) ≤ 4 := by
+          exact_mod_cast card_fluctuationPlaquetteSupport_le p
+        have ht := treeLength_le_card_mul_diam (fluctuationPlaquetteSupport p)
+        have hd := diam_fluctuationPlaquetteSupport_le p
+        have hn := polymerDiam_nonneg (fluctuationPlaquetteSupport p)
+        have hcard : (0 : ℝ) ≤ (fluctuationPlaquetteSupport p).card := by positivity
+        have ht' : treeLength (fluctuationPlaquetteSupport p) ≤ 12 := by nlinarith
+        nlinarith
+      exact mul_le_mul he hn (norm_nonneg _) (Real.exp_pos _).le
+    _ ≤ _ := by
+      simp only [sum_const, nsmul_eq_mul]
+      have hc : (((univ : Finset (Plaquette 4 (doubleIndex n))).filter
+          (fun p => y ∈ fluctuationPlaquetteSupport p)).card : ℝ) ≤ 128 := by
+        exact_mod_cast card_incident_fluctuationPlaquetteSupport_le n y
+      nlinarith [mul_le_mul_of_nonneg_right hc (show 0 ≤ Real.exp (4*a+12*η)*|β| by positivity)]
+
+/-- Rate and coupling threshold precede volume and every retained field. -/
+def conditionalCovarianceBeta (η : ℝ) : ℝ := 1 / (256 * Real.exp (32+12*η))
+
+theorem conditionalCovarianceBeta_pos (η : ℝ) : 0 < conditionalCovarianceBeta η := by
+  unfold conditionalCovarianceBeta
+  positivity
+
+theorem conditionalWilsonInteraction_small {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ conditionalCovarianceBeta η) (n : ℕ) (c : CoarseConfig n) :
+    spatialInteractionNorm 8 η (conditionalWilsonInteraction n β c) ≤ 1/2 := by
+  have hp : 0 < 256 * Real.exp (32+12*η) := by positivity
+  have hh := (le_div_iff₀ hp).mp hβ
+  apply (conditionalWilsonInteraction_spatial_norm_le n β 8 η (by norm_num) hη c).trans
+  norm_num only at *
+  nlinarith
+
+theorem fluctuation_wilson_density (n : ℕ) (β : ℝ) (c : CoarseConfig n) :
+    fluctuationMark (blockIndexEquiv 4 n) c (fineDensity n β) =
+      Real.exp (-β * Fintype.card (Plaquette 4 (doubleIndex n))) •
+        interactionDensity (conditionalWilsonInteraction n β c) := by
+  ext f
+  change fineDensity n β (fluctuationChart (blockIndexEquiv 4 n) c f) = _
+  rw [fineDensity, realDensity_eq_wilsonInteraction, sum_wilsonInteraction]
+  have hs : (∑ S, conditionalWilsonInteraction n β c S) f =
+      ∑ p : Plaquette 4 (doubleIndex n), -β * plaquetteTrace p (fluctuationChart (blockIndexEquiv 4 n) c f) := by
+    unfold conditionalWilsonInteraction
+    rw [sum_regroupInteraction]
+    simp only [ContinuousMap.sum_apply, fluctuationMark, ContinuousMap.comp_apply,
+      ContinuousMap.coe_mk, ContinuousMap.smul_apply, smul_eq_mul]
+  simp only [ContinuousMap.sum_apply, ContinuousMap.smul_apply, smul_eq_mul,
+    interactionDensity, ContinuousMap.coe_mk, Real.exp_add]
+  congr 1
+  apply congrArg Real.exp
+  simpa only [ContinuousMap.sum_apply] using hs.symm
+
+/-- The covariance discarded by the actual one-step normalized Haar projection. -/
+def conditionalCovariance (n : ℕ) (β : ℝ) (F G : C(FineConfig n, ℝ)) : C(CoarseConfig n, ℝ) :=
+  projected n β (F*G) - projected n β F * projected n β G
+
+theorem conditionalCovariance_spatial_le {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ conditionalCovarianceBeta η) (n : ℕ)
+    (S T : Finset (Link 4 (doubleIndex n))) (hS : S.Nonempty) (hT : T.Nonempty)
+    (F G : C(FineConfig n, ℝ)) (hF : DependsOn S F) (hG : DependsOn T G)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
+    (hFB : ∀ U, |F U| ≤ B) (hGC : ∀ U, |G U| ≤ C) (c : CoarseConfig n) :
+    |conditionalCovariance n β F G c| ≤
+      3*B*C*Real.exp (3*S.card+3*T.card) * Real.exp (-η*(polymerDist S T-2)) := by
+  have he := covariance_fluctuationMark (volume : Measure SU2) (blockIndexEquiv 4 n)
+    (fineDensity n β) (fineDensity_pos n β) F G c
+  change _ = conditionalCovariance n β F G c at he
+  rw [← he, fluctuation_wilson_density,
+    covariance_smul_density _ _ _ _ (Real.exp_pos _).ne']
+  have hc := covariance_interactionDensity_le (conditionalWilsonInteraction n β c) volume hη
+    (conditionalWilsonInteraction_local n β c) (conditionalWilsonInteraction_empty n β c)
+    (conditionalWilsonInteraction_small hη hβ n c)
+    (fluctuationSupport (blockIndexEquiv 4 n) S) (fluctuationSupport (blockIndexEquiv 4 n) T)
+    (fluctuationSupport_nonempty _ hS) (fluctuationMark (blockIndexEquiv 4 n) c F)
+    (fluctuationMark (blockIndexEquiv 4 n) c G)
+    (fluctuationMark_local _ _ S F hF) (fluctuationMark_local _ _ T G hG)
+    B C (fun f => hFB _) (fun f => hGC _)
+  apply hc.trans
+  have hd := dist_fluctuationSupport_ge (blockIndexEquiv 4 n)
+    (r := 1) dist_fluctuationRepresentative_le S T hS hT
+  have hcardS : ((fluctuationSupport (blockIndexEquiv 4 n) S).card : ℝ) ≤ S.card := by
+    exact_mod_cast card_fluctuationSupport_le (blockIndexEquiv 4 n) S
+  have hcardT : ((fluctuationSupport (blockIndexEquiv 4 n) T).card : ℝ) ≤ T.card := by
+    exact_mod_cast card_fluctuationSupport_le (blockIndexEquiv 4 n) T
+  apply mul_le_mul
+  · apply mul_le_mul_of_nonneg_left _ (by positivity)
+    apply Real.exp_le_exp.mpr
+    linarith
+  · apply Real.exp_le_exp.mpr
+    nlinarith
+  · positivity
+  · positivity
+
+/-- Averaging uses the generated coarse Wilson density, with its exact
+normalization. The same rate and constant remain uniform in volume. -/
+theorem expectation_conditionalCovariance_spatial_le {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ conditionalCovarianceBeta η) (n : ℕ)
+    (S T : Finset (Link 4 (doubleIndex n))) (hS : S.Nonempty) (hT : T.Nonempty)
+    (F G : C(FineConfig n, ℝ)) (hF : DependsOn S F) (hG : DependsOn T G)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
+    (hFB : ∀ U, |F U| ≤ B) (hGC : ∀ U, |G U| ≤ C) :
+    |expectation volume (coarseDensity n β) (conditionalCovariance n β F G)| ≤
+      3*B*C*Real.exp (3*S.card+3*T.card) * Real.exp (-η*(polymerDist S T-2)) :=
+  abs_expectation_le volume _ _ (coarseDensity_pos n β)
+    (conditionalCovariance_spatial_le hη hβ n S T hS hT F G hF hG hB hC hFB hGC)
+
+end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo

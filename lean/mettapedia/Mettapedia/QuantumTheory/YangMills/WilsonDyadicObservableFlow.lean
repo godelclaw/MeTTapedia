@@ -533,6 +533,74 @@ theorem abs_directRemainder_le (n j : ℕ)
     |directProject n j W hW (F*G) c - directProject n j W hW F c * directProject n j W hW G c| ≤ 2 * B * C :=
   abs_remainder_le (.cons (directStep n j W hW) (.refl _)) F G hB hC hF hG c
 
+/-- The zero-depth conditional expectation is the original mark. -/
+theorem directProject_zero (n : ℕ) (W : C(Link 4 (scaleIndex n 0) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(Link 4 (scaleIndex n 0) → SU2, ℝ)) : directProject n 0 W hW F = F := by
+  ext U
+  rw [directProject_apply, directDensity_zero, directDensity_zero]
+  exact mul_div_cancel_left₀ _ (hW U).ne'
+
+/-- Contributions are ordered from the finest eliminated scale to the
+coarsest. Each entry is averaged under the density generated at that step;
+subsequent entries use the actually transported marks. This construction
+requires positivity, but no strong-coupling hypothesis. -/
+def scaleCovarianceContribution (n : ℕ) : (j : ℕ) →
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) → (hW : ∀ U, 0 < W U) →
+    C(Link 4 (scaleIndex n j) → SU2, ℝ) → C(Link 4 (scaleIndex n j) → SU2, ℝ) → Fin j → ℝ
+  | 0, _, _, _, _ => Fin.elim0
+  | j+1, W, hW, F, G =>
+      let e := blockIndexEquiv 4 (scaleIndex n j)
+      let V := PairedLinks.blockedDensity volume e W
+      let hV := PairedLinks.blockedDensity_pos volume e W hW
+      let P := PairedLinks.blockedProject volume e W hW
+      Fin.cases (expectation volume V (P (F*G) - P F * P G))
+        (scaleCovarianceContribution n j V hV (P F) (P G))
+
+/-- Exact finite-depth covariance ledger, including all discarded-scale
+contributions and the final normalized generated law. -/
+theorem covariance_eq_direct_add_scaleContributions (n : ℕ) : ∀ j
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(Link 4 (scaleIndex n j) → SU2, ℝ)),
+    covariance volume W F G =
+      covariance volume (directDensity n j W) (directProject n j W hW F) (directProject n j W hW G) +
+        ∑ i, scaleCovarianceContribution n j W hW F G i := by
+  intro j
+  induction j with
+  | zero =>
+    intro W hW F G
+    simp only [directDensity_zero, directProject_zero, Finset.univ_eq_empty, Finset.sum_empty, add_zero]
+    rfl
+  | succ j ih =>
+    intro W hW F G
+    let e := blockIndexEquiv 4 (scaleIndex n j)
+    let V := PairedLinks.blockedDensity volume e W
+    let hV := PairedLinks.blockedDensity_pos volume e W hW
+    let P := PairedLinks.blockedProject volume e W hW
+    have hs := covariance_action (.cons
+      (WilsonProjectionComposition.blockedStep volume e W hW) (.refl _)) F G
+    change covariance volume W F G = covariance volume V (P F) (P G) +
+      expectation volume V (P (F*G) - P F * P G) at hs
+    rw [hs, ih V hV (P F) (P G)]
+    rw [directDensity_succ, directProject_succ, directProject_succ]
+    simp only [scaleCovarianceContribution, Fin.sum_univ_succ, Fin.cases_zero, Fin.cases_succ]
+    ring
+
+/-- Scalar spatial budgets compose by summing the scale contributions.
+A uniform depth bound requires controlling this sum, not only its entries. -/
+theorem covariance_le_of_scaleContributions (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (A m D : ℝ) (R : Fin j → ℝ)
+    (hfinal : |covariance volume (directDensity n j W)
+      (directProject n j W hW F) (directProject n j W hW G)| ≤ A*Real.exp (-m*D))
+    (hscale : ∀ i, |scaleCovarianceContribution n j W hW F G i| ≤ R i * Real.exp (-m*D)) :
+    |covariance volume W F G| ≤ (A + ∑ i, R i) * Real.exp (-m*D) := by
+  rw [covariance_eq_direct_add_scaleContributions n j W hW F G]
+  apply (abs_add_le _ _).trans
+  calc
+    _ ≤ A*Real.exp (-m*D) + ∑ i, R i*Real.exp (-m*D) :=
+      add_le_add hfinal ((Finset.abs_sum_le_sum_abs _ _).trans (sum_le_sum fun i _ => hscale i))
+    _ = _ := by rw [← sum_mul, add_mul]
+
 
 namespace InteractionState
 

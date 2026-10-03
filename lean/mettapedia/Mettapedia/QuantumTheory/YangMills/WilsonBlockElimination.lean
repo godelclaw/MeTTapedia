@@ -1161,6 +1161,34 @@ theorem diam_fluctuationSupport_le [PseudoMetricSpace X]
   rw [dist_comm (fluctuationRepresentative e (fluctuationIndex e u)) u] at h
   linarith [hshift u, hshift v, dist_le_polymerDiam hu hv]
 
+/-- Identifying the two halves of a link loses at most twice the displacement
+of their chosen representatives in the separation of two nonempty supports. -/
+theorem dist_fluctuationSupport_ge [PseudoMetricSpace X]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) {r : ℝ}
+    (hshift : ∀ x, dist x (fluctuationRepresentative e (fluctuationIndex e x)) ≤ r)
+    (S T : Finset X) (hS : S.Nonempty) (hT : T.Nonempty) :
+    letI : PseudoMetricSpace (I ⊕ J) := PseudoMetricSpace.induced (fluctuationRepresentative e) inferInstance
+    polymerDist S T - 2*r ≤ polymerDist (fluctuationSupport e S) (fluctuationSupport e T) := by
+  letI : PseudoMetricSpace (I ⊕ J) := PseudoMetricSpace.induced (fluctuationRepresentative e) inferInstance
+  have hSn := fluctuationSupport_nonempty e hS
+  have hTn := fluctuationSupport_nonempty e hT
+  conv_rhs => rw [polymerDist, dif_pos hTn]
+  apply Finset.le_inf'
+  intro y hy
+  rw [Metric.le_infDist (show ((fluctuationSupport e S : Finset (I ⊕ J)) : Set (I ⊕ J)).Nonempty from hSn)]
+  intro x hx
+  obtain ⟨u, hu, rfl⟩ := mem_image.mp hx
+  obtain ⟨v, hv, rfl⟩ := mem_image.mp hy
+  change polymerDist S T - 2*r ≤
+    dist (fluctuationRepresentative e (fluctuationIndex e v))
+      (fluctuationRepresentative e (fluctuationIndex e u))
+  have hd : polymerDist S T ≤ dist v u :=
+    (polymerDist_le_infDist hv).trans (Metric.infDist_le_dist_of_mem hu)
+  have ht := dist_triangle4 v (fluctuationRepresentative e (fluctuationIndex e v))
+    (fluctuationRepresentative e (fluctuationIndex e u)) u
+  rw [dist_comm (fluctuationRepresentative e (fluctuationIndex e u)) u] at ht
+  linarith [hshift u, hshift v]
+
 variable [Group E] [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]
   [TopologicalSpace E] [IsTopologicalGroup E]
 
@@ -1184,6 +1212,48 @@ theorem integral_fluctuationChart (ν : Measure E) [IsProbabilityMeasure ν]
     hm.measurable H.continuous.stronglyMeasurable
   rw [hm.map_eq] at hi
   exact hi.symm
+
+/-- A fine observable evaluated in the independent fluctuation coordinates
+at fixed retained products. -/
+def fluctuationMark (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E)
+    (F : C(X → E, ℝ)) : C(I ⊕ J → E, ℝ) :=
+  F.comp ⟨fluctuationChart e c, continuous_fluctuationChart e c⟩
+
+theorem fluctuationMark_local (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E)
+    (S : Finset X) (F : C(X → E, ℝ))
+    (hF : ∀ U V, (∀ x ∈ S, U x = V x) → F U = F V) :
+    ∀ f g, (∀ y ∈ fluctuationSupport e S, f y = g y) → fluctuationMark e c F f = fluctuationMark e c F g := by
+  intro f g h
+  exact hF _ _ (fluctuationChart_agree e c h)
+
+theorem norm_fluctuationMark_le (e : ((I ⊕ I) ⊕ J) ≃ X) (c : I → E)
+    (F : C(X → E, ℝ)) : ‖fluctuationMark e c F‖ ≤ ‖F‖ := by
+  apply (ContinuousMap.norm_le _ (norm_nonneg F)).mpr
+  intro f
+  exact F.norm_coe_le_norm _
+
+/-- The conditional law is the complete fine density composed with the chart,
+normalized against product Haar measure on the independent fluctuations. -/
+theorem expectation_fluctuationMark (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(X → E, ℝ)) (c : I → E) :
+    expectation (Measure.pi fun _ : I ⊕ J => ν) (fluctuationMark e c W) (fluctuationMark e c F) =
+      blockedProject ν e W hW F c := by
+  unfold expectation
+  change (∫ f, (W*F) (fluctuationChart e c f) ∂Measure.pi (fun _ : I ⊕ J => ν)) /
+    (∫ f, W (fluctuationChart e c f) ∂Measure.pi (fun _ : I ⊕ J => ν)) = _
+  rw [integral_fluctuationChart, integral_fluctuationChart]
+  rfl
+
+theorem covariance_fluctuationMark (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(X → E, ℝ)) (c : I → E) :
+    covariance (Measure.pi fun _ : I ⊕ J => ν) (fluctuationMark e c W)
+      (fluctuationMark e c F) (fluctuationMark e c G) =
+      blockedProject ν e W hW (F*G) c - blockedProject ν e W hW F c * blockedProject ν e W hW G c := by
+  have hmul : fluctuationMark e c F * fluctuationMark e c G = fluctuationMark e c (F*G) := rfl
+  rw [covariance, hmul, expectation_fluctuationMark, expectation_fluctuationMark,
+    expectation_fluctuationMark]
 
 end PairedLinks
 
