@@ -1,5 +1,59 @@
 # Near-linear Four Colour catalogue bridges
 
+## Uniform boundary and complete stars after core deletion
+
+[ThreeBlockDiskDeletion](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockDiskDeletion.lean)
+derives the ordered eleven-port facial boundary after deleting D0092's seven
+core vertices. Its input is an injective graph reading preserving every
+cyclic core turn in a triangular ambient rotation. There is no bound on
+ambient size. The rotation acts on the actual induced exterior graph:
+at each retained vertex it skips the deleted neighbours and takes the
+first retained successor. The source's eleven short fan arcs prove that
+these successors follow the original port order.
+
+[ThreeBlockDiskStars](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockDiskStars.lean)
+proves that the same core reading has no extra ambient neighbours when
+vertex rotations are cyclic. Each source row is closed under rotation;
+every ambient dart at that vertex lies in the same orbit, so it must
+already belong to the row. Complete core stars are a conclusion here.
+
+```text
+injective source + complete cyclic core turns + triangular faces
+                              |
+                  delete seven core vertices
+                              |
+       actual induced graph + exact ordered facial boundary
+                              |
+       planar exterior + triangular remaining faces [OPEN]
+                              |
+              existing seed repair and reconstruction
+```
+
+[The reconstruction consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockDiskReconstruction.lean)
+uses these results to discharge exterior coverage, complete stars, vertex
+cyclicity, boundary order and boundary distinctness. It also derives the
+exact seven-vertex decrease using the existing counting theorem. Exterior
+planarity, triangular remaining faces and the specified initial seed
+colouring remain explicit inputs. This is a uniform geometric step for
+one source shape, not full D0092 reducibility or a new coverage theorem.
+
+A 19-vertex source cone supplies a checked instance of the complete core
+reading and triangular rotation. It tests the orientation and inhabited
+geometric contract; it does not supply a seed colouring. The source's 23
+inner triangles and eleven fans are checked against the pinned D0092 rows.
+No new colouring table or repair strategy is added. The repair consumer
+retains the existing compact seed strategy and Gonthier/Emery Kempe theory.
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.ThreeBlockDiskAudit
+```
+
+The [receipt](three-block-disk-measurements.json) separates the uniform
+theorems, small checked source instance, remaining hypotheses and build
+costs. Catalogue counts remain 633 coverage entries and 629 original
+certificates, with 336 member checks replaced in the complete assembly.
+
 ## An actual exterior disk and source reconstruct the ambient graph
 
 [The retained exterior](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualExteriorDiskGeometry.lean)

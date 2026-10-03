@@ -1,0 +1,129 @@
+{
+  "classification": "CHECKED_UNIFORM_CORE_DELETION_BOUNDARY_AND_STARS",
+  "source": {
+    "configuration": "D0092",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "attribution": "Yuta Inoue, 2026; MIT",
+    "decoder": "MettapediaFourColor.FiveTriangleCollapseObstruction.upper"
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.InducedGraphRotation",
+      "source_bytes": 3159,
+      "source_sha256": "0ec21b25694124eefa2ae3e95e4feffea21857b47e279eac7060657033121e69",
+      "olean_bytes": 120056,
+      "olean_sha256": "82d1324f807cc8121a7db490a15db39d1b6472e7d5cb180533bcbe6ba13768e4",
+      "build_frontend_seconds_rounded": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDiskBoundary",
+      "source_bytes": 4848,
+      "source_sha256": "6aa30f03b375d38344d7e7a368cdf015763a79504f7d1afae941bd59962b6c7d",
+      "olean_bytes": 502168,
+      "olean_sha256": "d725880ee7c1800788cddb58d97ad3c0fbcf9e8782f42991d21d6199de9bba29",
+      "build_frontend_seconds_rounded": 9.3
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDiskDeletion",
+      "source_bytes": 5515,
+      "source_sha256": "877f1600c2cd73368068c2758cea5e53464c20f5bc001d0fdf1861b07da0b950",
+      "olean_bytes": 308128,
+      "olean_sha256": "616dc35d016c8ea880f148bf33fb859235ea99e3a4341d2ea30c3e0fc4bc8e07",
+      "build_frontend_seconds_rounded": 3.2
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDiskStars",
+      "source_bytes": 2164,
+      "source_sha256": "e512ae47743a497b1719751318b5f3a55f7cd04654d6744d8e91817bc820fa8a",
+      "olean_bytes": 93592,
+      "olean_sha256": "b033434d73f19872beab9bd1323ab7ec5e9a637ca85ec4c67b44455324438bbe",
+      "build_frontend_seconds_rounded": 5.2
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDiskReconstruction",
+      "source_bytes": 3065,
+      "source_sha256": "d6b78647415c9390c7312a29906cdc1100fadd4dba379d5a09feffbb4ef4ca2f",
+      "olean_bytes": 101296,
+      "olean_sha256": "1bad446ccfaa1759539fb19d68229299ea823bd5b4190aba5eab77fca52052d5",
+      "build_frontend_seconds_rounded": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDiskBoundaryExample",
+      "source_bytes": 2439,
+      "source_sha256": "22816124cb2a876d2543b5aef59a1f9ea299d7d8caca2a0272d259b22ed297d8",
+      "olean_bytes": 152496,
+      "olean_sha256": "cc42e3ebd47054d9ac3ad31360e8d5f304c05e2779d9e1a5b8cdeaf2cdc59bc3",
+      "build_frontend_seconds_rounded": 11.0
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDiskAudit",
+      "source_bytes": 3560,
+      "source_sha256": "f50cf9bf9cc9ca417731394d722567f3429d8e6495eeec156253149f6653a17c",
+      "olean_bytes": 3368,
+      "olean_sha256": "db9f9b7846aed541c59ae1ab3877d25661b88a303904a69ff9949850f958b701",
+      "build_frontend_seconds_rounded": 4.9
+    }
+  ],
+  "new_lean_source_bytes": 24750,
+  "new_repair_certificate_bytes": 0,
+  "cost_scope": "Rounded Lake frontend times of the final successful individual modules across incremental builds. Not a clean end-to-end time or a saving in the complete classical proof.",
+  "mathematical_scope": {
+    "input": "An injective D0092 graph homomorphism preserving all cyclic core turns, an ambient triangular rotation, and vertexwise cyclicity for the complete-star and reconstruction consumers.",
+    "generic_induced_rotation": "First return constructs the rotation on the actual induced graph for an arbitrary retained vertex set and preserves vertexwise cyclicity.",
+    "ordered_boundary": "Eleven source fan arcs supply the ordered distinct facial ring after deleting all seven core vertices; no ambient-size bound.",
+    "complete_stars": "Every core row is closed under ambient rotation; vertexwise cyclicity excludes all additional ambient neighbours.",
+    "reconstruction": "The existing planar seed-repair theorem now consumes the induced exterior directly; exterior coverage, complete core stars, exterior vertex cyclicity, facial boundary and port order are supplied. The same ambient colouring restricts to the selected exterior colouring.",
+    "exact_decrease": "The existing exact-decrease theorem yields ambient vertex count = exterior vertex count + 7, with no introduced vertices.",
+    "finite_checks": {
+      "source_inner_triangles": 23,
+      "boundary_fans": 11,
+      "example_vertices": 19,
+      "example": "A source cone supplies the complete core reading, triangular rotation and deletion boundary. It does not supply the seed colouring."
+    },
+    "limitations": [
+      "Exterior planarity and triangular remaining faces are still reconstruction hypotheses; they have not yet been derived uniformly from ambient planarity.",
+      "Full core-turn occurrence supply and remaining seed classes are open.",
+      "This is not full D0092 reducibility, a new unconditional strict reduction, or a coverage theorem.",
+      "No physical Kempe-switch history or switch-count bound is supplied."
+    ]
+  },
+  "audit": {
+    "roots": 15,
+    "dependency_declarations": 12173,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false,
+    "repair_certificates_in_geometry_roots": false,
+    "retained_seed_certificate": "residual-seed-repair-measurements.json",
+    "required_dependencies": [
+      "First-return arcs",
+      "Checked core-turn and fan correspondence",
+      "Actual induced graph dart equivalence",
+      "Complete-star orbit argument",
+      "Gonthier/Emery Kempe theorem",
+      "Existing compact seed repair and actual ambient reconstruction"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.ThreeBlockDiskAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  }
+}
