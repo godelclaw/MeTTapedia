@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete cyclic pressure payment](labs/README.md#whole-time-cyclic-pressure-depletion-and-a-funded-continuation)
+extends the favorable local return to an all-time comparison for sufficiently
+small, independently varying cyclic parent amplitudes in two frequency
+patterns. Exact exponential-polynomial certificates prove the sign throughout
+time; an analytic remainder estimate then controls the actual nonlinear
+flows. Their pressure-impulse allowance is proportional to the fourth power
+of the product of all three parent amplitudes. The signed reserve keeps the
+existing moments across continuation seams. The smallness condition remains
+essential to the proof, and its conservative radius is not numerically
+evaluated. The next nonlinear correction is strictly positive throughout
+time, so successive feedback terms do not all deplete the observation.
+These are analytic physical results with exact algebraic checks,
+not new Lean certificates or an arbitrary-data bound.
+
 The [pressure-impulse return test](labs/README.md#pressure-impulse-returns-and-the-failure-of-local-funding)
 retains the complete stochastic fourth moment on two cyclic flow families.
 Their first correction beyond a matched generated-pressure forecast is

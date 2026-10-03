@@ -34501,3 +34501,341 @@ and viscosity-polynomial checks pass with assertions disabled.
 Conditional stochastic identification, local PDE intervals, scaling
 and the failed pointwise inequality are analytic arguments, not
 new Lean certificates. No Lean declarations or axioms change.
+
+## Whole-time cyclic pressure depletion and a funded continuation
+
+`pressure_impulse_payment.py` follows the pressure history beyond its
+initial return. The calculation uses the existing full viscous amplitude
+recurrence and exact exponential-polynomial algebra in
+`paired_stretching_history.py`. No numerical time grid, frequency cutoff,
+frozen parent or restarted pressure impulse occurs.
+
+The result is an all-time pressure-history payment for two families of
+actual nonlinear flows with sufficiently small, independently varying
+parent amplitudes. Small-data existence is established theory, already
+represented by `FourierSmallDataOne.nonempty_globalSolution_of_small_one`.
+The additional assertion here is the strict comparison to the original
+generated-pressure forecast, including its joint amplitude dependence.
+The analytic dependence and stochastic remainder argument below are not
+new Lean certificates.
+
+### The actual-flow statement
+
+First set nu=1 on the normalized period-2pi torus and prescribe
+`U_{a,b,c,k}=(a sin y,b sin(kz),c sin x)`, k in {1,4}. There exists a
+positive radius rho_k, determined from this original family and the
+estimates below, such that if `r^2=a^2+b^2+c^2<=rho_k^2`, then the
+actual global smooth unforced solution satisfies
+
+```text
+Phi_{a,b,c,k}(t)=E|integral_0^t grad p(s,X_s)ds|^4
+ <= (abc)^4 F_{0,k}(t) <= (abc)^4 L_k,    all t>=0,
+
+L_1=27539587/384072192000,
+L_4=97150482506203/145010906352284544000000.               (656)
+```
+
+Here F_{0,k} is exactly the unit-amplitude Brownian forecast Phibar
+in (652), with nu=1. The first comparison is strict for t>0 if all
+three amplitudes are nonzero. Its proof retains all subsequent parents,
+transport, pressure, viscosity and stochastic correlations. It is not
+an assertion that the actual solution remains in its initial Fourier
+support. A numerical value of the sufficient radius is not supplied;
+the proof gives a conservative radius in terms of fixed Sobolev and
+analytic majorants. No large-amplitude extension is inferred.
+
+### Why the common joint factor is exact
+
+If one amplitude is zero, the remaining two parents form a triangular
+pressure-free flow. For example, when c=0 the second component is
+`b exp(-k^2 t)sin(kz)`, the first component solves the corresponding
+passive advection-diffusion equation in y,z, and the third stays zero.
+Its gradient is strictly triangular, its divergence is zero, and its
+canonical pressure is zero. Cyclic permutations cover a=0 and b=0.
+This statement is exact for those triangular flows, without smallness.
+
+In the small analytic neighborhood, the pressure gradient is therefore
+divisible by abc as a function of the initial amplitudes. The successive
+conditional moment equations (648) show divisibility by abc, (abc)^2,
+(abc)^3 and (abc)^4 at their respective levels. Consequently Phi/(abc)^4
+has an analytic extension across the coordinate planes; it is not a
+singular quotient near a missing parent.
+
+Translating one coordinate by a half-period reverses exactly one initial
+amplitude. Spatial integration and uniform stochastic sampling are
+translation invariant. The quotient is thus even in each amplitude.
+Its expansion is
+
+```text
+Phi_{a,b,c,k}(t)/(abc)^4
+ =F_{0,k}(t)+a^2 F_{a,k}(t)+b^2 F_{b,k}(t)+c^2 F_{c,k}(t)
+    + E_k(a,b,c,t),
+E_k starts at total amplitude degree four.               (657)
+```
+
+At k=1, cyclic coordinate symmetry makes the three F_i equal. At k=4,
+the three coefficients are recovered exactly from amplitudes (1,1,1),
+(2,1,1) and (1,2,1); the sample (1,1,2) is an unused check. This finite
+coefficient identification is justified by the proved polynomial basis
+`(abc)^4(a^2 F_a+b^2 F_b+c^2 F_c)`. It is not extrapolation from
+numerical samples or an assumption about finite-amplitude solutions.
+
+### Complete time evolution of the amplitude coefficients
+
+Write `u= sum_{n>=1} epsilon^n u_n` and similarly for pressure at a
+fixed initial amplitude triple. Coefficients have no factorials.
+The full projected NS recurrence determines u_1,...,u_5 and p_3,...,p_5.
+The first three pressure-impulse moment levels are then retained through
+degrees 5,8 and 11, giving the integrated fourth moment through degree14.
+All pressure convolution outputs are kept. The advecting velocity is
+expanded at the same time; it is never replaced by its first parent.
+
+For each spatial Fourier mode the resulting scalar coefficients have
+the form `sum c_{lambda,j} t^j exp(-lambda t)` with rational c and
+nonnegative integer lambda,j. Heat convolution, including resonance,
+is performed exactly. Every moment field is checked against its full
+heat-source equation and zero original history. The implementation
+represents an order-r moment coefficient as i^r times a real coefficient;
+this retains the sign in both pressure forcing and advective transport.
+Independent Gaussian-rational NS time jets check the velocity and
+canonical pressure reconstruction.
+
+The whole-time result is stronger than a sign of the tenth initial
+derivative:
+
+```text
+F_{0,k}'(t)>0,
+F_{i,k}'(t)<0 for i=a,b,c,              every t>0.
+F_{i,k}(t)=-d_{i,k} t^10+O(t^11),
+F_{0,k}(0)=F_{i,k}(0)=0.                              (658)
+```
+
+| k | d_a | d_b | d_c |
+|---|---|---|---|
+| 1 | 20641/456192 | 20641/456192 | 20641/456192 |
+| 4 | 408649/1364688 | 34518739/57953313 | 15515401/4179357 |
+
+The constants in (656) are the exact integrals of F_0' over the full
+half-line. They are not inferred from a late-time numerical plateau.
+
+### A finite certificate proves each sign for every time
+
+For an exponential polynomial f, list each decay rate lambda with
+multiplicity one greater than its largest polynomial degree, in
+descending order. Define a finite differential cascade
+
+```text
+f_0=f, f_{j+1}=(d/dt+lambda_j)f_j.
+The final f_N vanishes identically.
+f_j(t)=exp(-lambda_j t)f_j(0)
+       +integral_0^t exp(-lambda_j(t-s)) f_{j+1}(s)ds.    (659)
+```
+
+If every f_j(0) is nonpositive, backwards induction proves f<=0 for
+all t>=0. A strictly negative datum at any level gives f(t)<0 for
+all t>0. The same argument applies to nonnegative data. It uses
+positive heat kernels and exact identities, with no interval sampling.
+
+The checker applies this certificate to each derivative in (658).
+The k=1 negative cascades have 53 levels; the k=4 negative cascades
+have 98,85,98 levels. The positive F_0' cascades have 19 and25 levels.
+Every oriented initial value has the required sign, and the last
+field is checked to vanish exactly. The first nonzero datum for
+F_i' is at level9 and equals `-10! d_i`.
+
+Let Lambda_k be any common upper bound on their decay rates: 26 for
+k=1 and292 for k=4 suffice. Formula (659), retaining just the first
+strict datum and using positivity of the remaining kernels, gives
+
+```text
+F_{i,k}'(t)<=-10 d_{i,k} t^9 exp(-Lambda_k t).
+F_{i,k}(t)<=-delta_k min(t^10,1),
+delta_k=min_i d_{i,k}/3^Lambda_k >0.                    (660)
+```
+
+For t<=1 integrate the derivative bound and use exp(-Lambda)>=3^(-Lambda).
+For t>=1 use monotonicity. The deliberately coarse constant will make
+the sufficient amplitude radius small, but provides a uniform margin
+both near t=0 and over the infinite time tail.
+
+### A uniform remainder makes this an actual-flow comparison
+
+This step is necessary: signs of finitely many amplitude coefficients
+alone do not imply (656). Here is a quantitative analytic construction
+of the required uniform remainder, using only the original family.
+It uses the classical Fujita--Kato fixed-point strategy; see
+[Monniaux's account](https://arxiv.org/abs/math/0511213) for the
+semigroup construction of local strong solutions. The weighted
+periodic estimates below supply the particular global bounds needed here.
+
+Choose an integer m=40 and the complex mean-zero solenoidal space
+`X_m` with norm `sup_{t>=0} exp(t/2)||u(t)||_{H^m}`. The periodic heat
+semigroup and Sobolev product estimate bound the usual NS bilinear
+Duhamel operator by `B_m||u||_{X_m}||v||_{X_m}`. One may use
+`C(1+s^(-1/2))exp(-3s/4)` as its differentiated heat kernel bound;
+after the time weight the remaining kernel is integrable. B_m is a
+fixed operator constant, not a quantity read from the evolving solution.
+
+For a sufficiently small complex polydisc of initial amplitudes,
+Picard iteration is a contraction in X_m. Equivalently the homogeneous
+coefficients are bounded by the corresponding Catalan majorant.
+This gives a unique global solution, holomorphic dependence on the
+three amplitudes, and uniform exponential decay of the H^m norm.
+The pressure gradient is holomorphic in the associated integrable
+time-weighted H^(m-1) space.
+
+For the moment equations use `Y_m=L_infinity([0,infinity);H^m)`.
+Heat convolution maps an exponentially decaying H^(m-1) source into
+Y_m. The operator `M -> integral heat[-u.grad M]` has norm less
+than one half after shrinking the same original polydisc if needed.
+Thus its inverse is a convergent Neumann series, uniformly over the
+whole half-line. Applying it successively to (648) proves holomorphy
+and uniform bounds for all four moments. This also retains their
+zero spatial modes; persistent accumulated memory is not discarded.
+On the real amplitudes the moments coincide with the actual stochastic
+ones by the joint forward equation and uniqueness. The complex
+extension uses the polynomial `(P.P)^2`; it is not a stochastic
+process with a complex physical velocity.
+
+Differentiating these equations ten times on [0,1] gives a second
+uniform bound from the same H^40 majorant and the smooth original
+datum. There is ample spatial regularity for the derivatives lost
+to the Laplacians. After the analytic division by (abc)^4 described
+above, let M_0 and M_10 denote the resulting bounds for the quotient
+and its tenth time derivative on a closed polydisc of radius R>0.
+They are finite majorants obtained from the fixed-point, product and
+differentiated-equation estimates, not unproved future-solution bounds.
+The radius can be shrunk once to put that closed polydisc inside the
+convergence domain.
+
+Cauchy's coefficient estimate and evenness in each amplitude now give,
+for `r^2=a^2+b^2+c^2<=R^2/2`, a degree-four remainder bounded by
+`2 M_0 r^4/R^4` for all t. The same estimate with M_10 controls
+its tenth time derivative on [0,1]. Its initial time derivatives
+through order9 vanish: since g starts at time order1 and amplitude
+degree3, the fourth moment starts at time order8 and amplitude
+degree12; one additional time derivative adds at most one amplitude
+degree, whose odd contribution vanishes by translation symmetry.
+The remaining degree12 term is exactly F_0. Therefore
+
+```text
+|E_k(a,b,c,t)| <= C_k r^4 min(t^10,1),
+C_k=2 R^(-4) max(M_0,M_10/10!).                         (661)
+```
+
+This estimate remains uniform when any amplitude tends to zero because
+the quotient was analytically extended before applying Cauchy's estimate.
+It does not divide an uncontrolled error by a tiny parent amplitude.
+
+Choose, for example,
+
+```text
+rho_k=min(R/2,sqrt(delta_k/(2(1+C_k)))).
+Phi/(abc)^4-F_0
+ <= -(delta_k/2) r^2 min(t^10,1),   0<r<=rho_k.         (662)
+```
+
+For abc=0 use the exact pressure-free triangular evolution. Equations
+(660)--(662) establish the actual-flow assertion (656), including strict
+depletion for nonzero parents. The construction proves a positive radius
+and gives its dependence on fixed analytic constants. It does not offer
+an optimized numerical threshold or remove the smallness assumption.
+
+### Viscosity, physical scales and one shared reserve
+
+For any nu>0 and integer ell>=1, NS scaling transfers the result to
+initial datum `(A sin(ell y),B sin(k ell z),C sin(ell x))`, provided
+`A^2+B^2+C^2 <= rho_k^2 nu^2 ell^2`. Use amplitudes
+`(a,b,c)=(A,B,C)/(nu ell)` at viscosity1, time `nu ell^2 t` and
+velocity multiplier `nu ell`. The actual pressure impulse has the
+same velocity multiplier. In particular
+
+```text
+E|P_t|^4 <= (ABC)^4/(nu^8 ell^8) L_k,     all t>=0.     (663)
+```
+
+This is a bound from the original datum, positive viscosity and fixed
+frequency pattern. It is small in the relevant amplitude-to-viscosity
+and spatial-scale ratio, even when a spatial rescaling makes individual
+dimensional amplitudes large. It does not enter the arbitrary-data regime.
+
+Let B_P be the right side of (663), and set R(t)=B_P-Phi(t).
+Its nonnegativity is now proved by (656), rather than assumed from a
+formal ledger. The exact fourth-moment balance gives every compatible
+continuation of this SAME original history the signed payment
+
+```text
+4 integral_s^t integral grad p.T = Phi(t)-Phi(s)
+                               = R(s)-R(t) <= R(s).    (664)
+```
+
+At a seam, retain the actual fluid state and its existing conditional
+moments I,Q,T,J4. Their equations compose without replenishing B_P or
+setting the impulse to zero again. These moment summaries suffice for
+this polynomial observation given a compatible actual fluid evolution;
+they do not replace the full NS state or identify arbitrary auxiliary
+controls with physically possible fluids. The bound feeds the periodic
+L4/enstrophy consumer (636). Small-data regularity itself is not a new
+claim; the pressure allowance and relative depletion are the added
+quantitative information.
+
+The arbitrary-data problem remains controlling the higher corrections
+without the small radius used in (661)--(662). The finite certificates
+prove that the first feedback remains favorable throughout time. They
+do not justify restarting the initial geometry after a return.
+
+### The next feedback reinforces the pressure history
+
+There is an exact obstruction to claiming that all successive nonlinear
+corrections have the favorable sign. At equal parent amplitudes epsilon
+and k=1, retain the pressure through amplitude degree7 and the first
+three moment levels through degrees7,10,13. The complete next term is
+
+```text
+Phi_epsilon(t)=epsilon^12 F_0(t)+epsilon^14 F_14(t)
+               +epsilon^16 F_16(t)+O(epsilon^18),
+F_14=F_a+F_b+F_c<0,
+F_16'(t)>0 and F_16(t)>0 for every t>0,
+F_16(t)=(106168693607/2059433164800)t^12+O(t^13).        (665)
+```
+
+The derivative sign again has a finite certificate (659): 101 levels,
+maximum rate38, all initial values nonnegative, with the first strict
+one at level11. Its infinite-time value is the positive rational
+
+```text
+152490621712563288522860694365656656374065925339476309
+/35951541890842638215113438256286222765113462489088000000000.
+```
+
+This is a complete coefficient of the evolving fluid and stochastic
+history. It includes the new parents and existing moments; it is not
+a sum of separately restarted first returns. At any fixed t_*>0,
+the same holomorphic solution and moment bounds give a controlled
+O(epsilon^18) remainder. Consequently, for all sufficiently small
+nonzero epsilon, the ACTUAL flow satisfies
+
+```text
+Phi_epsilon(t_*) > epsilon^12 F_0(t_*)+epsilon^14 F_14(t_*),
+while Phi_epsilon(t_*) <= epsilon^12 F_0(t_*).
+```
+
+Thus the two-term expression is not automatically an upper
+bound, although the original allowance (656) still pays the actual
+history in its proved small regime. The positive coefficient does
+not show that the full pressure cost exceeds that allowance at large
+amplitude: a truncated amplitude series is not such evidence. Nor
+does it assert a temporal cycle in which each coefficient is a
+separate flow stage. It identifies competing contributions within
+the same complete history, and the higher-order payment that the
+arbitrary-data argument must control.
+
+Run `python3 -O labs/pressure_impulse_payment.py`. It checks the complete
+amplitude evolution, conditional moment recurrences, independent time
+jets, joint-amplitude coefficient identification, whole-time sign
+cascades and exact infinite-time stocks. The fixed-point estimates,
+uniform analytic remainder and actual all-time physical payment remain
+analytic arguments. No Lean declarations or axioms change.
+Use `python3 -O labs/pressure_impulse_payment.py --next-coefficient`
+to check the complete degree-sixteen calculation and its positive
+whole-time certificate separately.
