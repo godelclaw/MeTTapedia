@@ -32754,3 +32754,320 @@ including parent decay, and the full physical allowance algebra. The PDE
 comparison, fractional interpolation, operator identities on smooth flows
 and all-history estimates remain analytic, not Lean-certified. No Lean
 declaration or axiom changes.
+
+## Cubic velocity, pressure work and a Bernoulli reserve
+
+The material-metric cost in (587) depends on the observation. Incompressible
+pullback preserves the physical cubic velocity mass EXACTLY, without any
+metric comparison. Its integrated nonlinear source is pressure work. A
+Bernoulli correction supplies a nonnegative reserve and a full-history payment
+in a nonzero-pressure, arbitrary-amplitude cellular class. Genuine 3D parents
+can generate an adverse correction defect immediately. Thus the change of
+observation removes one cost but does not establish an arbitrary-data bound.
+
+### The physical budget and its continuation consumer
+
+On an actual smooth unforced prefix on R3 with the stated decay, or on the
+normalized 2*pi torus, write r=|u| and
+
+```text
+Y=integral r^3,
+D=integral r |grad u|^2 + r |grad r|^2,
+Pi=-integral r u dot grad p=integral p u dot grad r,
+Y'+3nu D=3Pi.                                      (588)
+```
+
+At u=0 the expression `r |grad r|^2` is understood through
+`sum_j (u dot partial_j u)^2/r`, with value zero. The Hessian of |u|^3 is
+`3r I+3u tensor u/r`, extended continuously by zero at u=0. Multiplying
+NS by `3r u`, incompressibility, and integration by parts give (588).
+For every volume-preserving material map Phi,
+`integral |u composed with Phi|^3=Y`. Unlike (575), no fixed fractional
+operator on labels appears. Pressure remains in the actual equation.
+
+A sufficient target, retaining half the diffusion, is
+
+```text
+C3(t)=3 integral_0^t Pi-(3nu/2) integral_0^t D
+     =Y(t)-Y(0)+(3nu/2) integral_0^t D <= B3,
+K=Y(0)+B3,
+sup Y <= K, integral_0^t D <= 2K/(3nu).             (589)
+```
+
+For arbitrary-data continuation the quantifiers are essential: for each
+original datum, nu>0 and prescribed H, choose a finite B3 BEFORE all available
+smooth prefixes from that datum of duration at most H. No future norm may
+supply this allowance. The existing `WholeSpaceCubicHistory` controls the
+TIME INTEGRAL of Y from energy and viscosity; it does not establish (589).
+
+The consumer of (589) has a short classical proof. Sobolev applied to r^(3/2)
+gives `||u||_9^3 <= C D` on R3 and `<= C(D+Y)` on the fixed torus.
+For E1=||grad u||_2^2 and E2=||Delta u||_2^2, the complete NS equation gives
+
+```text
+E1'+nu E2 <= C nu^(-2) ||u||_9^3 E1,
+E1(t) <= E1(0) exp[C nu^(-2) K (nu^(-1)+chi H)],
+chi=0 on R3, chi=1 on the fixed torus.               (590)
+```
+
+Indeed the convection pairing is at most
+`||u||_9 ||grad u||_(18/7) ||Delta u||_2`, and interpolation bounds this
+by `C ||u||_9 E1^(1/3) E2^(2/3)`. Young's inequality and Gronwall prove
+(590). The constants depend only on the domain's Sobolev constants.
+Thus (589) supplies the hypothesis of the existing whole-space Lean theorem
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` in
+`MettapediaNS.WholeSpaceEnstrophyContinuation`; the periodic enstrophy
+continuation argument applies likewise. This NEW derivation has not been
+formalized in Lean. In particular, the already certified consumer does not
+certify the missing payment.
+
+This is the classical nonendpoint Serrin mechanism, with L3 in time and
+L9 in space. The stronger endpoint result that sup_t ||u||_3 alone suffices
+on R3 is due to Escauriaza--Seregin--Sverak; see Theorem 1.1 and the
+quantitative refinement in [Tao, arXiv:1908.04958](https://arxiv.org/abs/1908.04958).
+We do not need to import that endpoint theorem to deduce (590), because
+(589) also pays D.
+
+### A nonnegative pressure completion and its exact defect
+
+Let h be a specified smooth scalar along the SAME actual solution prefix,
+with the integrability needed below. It is an observer correction, not a
+force on the fluid. Suppose P=p+h>=0, and define
+
+```text
+e=|u|^2/2, Q=e+P,
+L=partial_t+u dot grad-nu Delta,
+S=(partial_t-nu Delta)p+Lh,
+LQ=S-nu |grad u|^2,
+Z=2sqrt(2) integral Q^(3/2), R=Z-Y>=0.               (591)
+```
+
+The energy equation is `Le=-u dot grad p-nu |grad u|^2`.
+Adding p cancels its advective pressure derivative and leaves S. In
+particular, replacing S by the material derivative of p alone would be
+incorrect. The full entropy identity is
+
+```text
+Z'=3sqrt(2) integral sqrt(Q) S
+   -3sqrt(2)nu integral sqrt(Q) |grad u|^2
+   -(3sqrt(2)/2)nu integral |grad Q|^2/sqrt(Q).       (592)
+```
+
+Use positive regularization and passage to the limit at Q=0. On R3 also
+use spatial cutoffs and the stated integrability; a nonzero constant h over
+all R3 is not admissible because it makes Z infinite. Since
+`D <= 2 integral r |grad u|^2 <= 2sqrt(2) integral sqrt(Q)|grad u|^2`,
+(588)--(592) give the actual-history inequality
+
+```text
+R'+3Pi-(3nu/2)D <= 3sqrt(2) integral sqrt(Q) S,
+C3(t) <= R(0)+3sqrt(2) integral_0^t integral sqrt(Q) S.   (593)
+```
+
+The last step retains R(t)>=0. This is useful only when positivity of P,
+finiteness of R(0), and a full-data bound for the SIGNED right-hand defect
+are established. Defining h or its allowance from an uncontrolled future
+pressure is not a proof. For a spatially varying h, its advection and
+viscosity in Lh must both be retained. Even a time-dependent pressure gauge
+has the extra cost h'.
+
+There is also a direct stochastic interpretation on a smooth periodic prefix.
+For `dX_s=-u(t-s,X_s)ds+sqrt(2nu)dW_s`, X_0=x, the scalar representation is
+`Q(t,x)=E[Q(0,X_t)+integral_0^t (S-nu|grad u|^2)(t-s,X_s)ds]`.
+If S<=0, Jensen's inequality and preservation of volume imply Z(t)<=Z(0).
+The differential identity (592) additionally retains the required diffusion
+payment. These are actual fluid-driven paths; no independent replacement of
+joint expectations or external fluid control is made. The representation
+and entropy argument are analytic, not new stochastic Lean certificates.
+
+### A complete payment with nonzero pressure and arbitrary amplitudes
+
+Consider the exact periodic class
+
+```text
+a(t)=A exp(-2nu t),
+u=(a sin x cos y,-a cos x sin y,w(t,x,y)),
+p=(a^2/4)(cos(2x)+cos(2y)),
+w_t+(a sin x cos y)w_x-(a cos x sin y)w_y=nu Delta w,
+h=a^2/2, P=(a^2/4)(2+cos(2x)+cos(2y))>=0.          (594)
+```
+
+Here w(0) is ANY smooth real periodic profile. These are actual unforced
+NS solutions: the horizontal Euler convection is exactly -grad p, the
+horizontal field is a Laplace eigenfield of eigenvalue -2, and the vertical
+component obeys the displayed scalar advection-diffusion equation. Its
+smooth coefficients give a global smooth evolution. No amplitude smallness,
+finite-mode closure, or reset of the passive component is imposed. This is
+an already known regular class, not a new arbitrary-data regularity theorem.
+
+Crucially `p_t-nu Delta p=0` and `h'=-2nu a^2`, so S=-2nu a^2<=0.
+Consequently
+
+```text
+B3=R(0)=2sqrt(2) integral (|u0|^2/2+p0+A^2/2)^(3/2)-Y(0),
+R(t)>=0, R'+3Pi-(3nu/2)D<=0,
+C3(t)<=B3, all t>=0,
+Y(t)+(3nu/2) integral_0^t D <= Z(0).               (595)
+```
+
+This bounds the COMPLETE criterion (589), not just one separated source.
+A coarse explicit estimate is
+`B3 <= 3A^2 integral |u0|+3sqrt(2)|A|^3`, since 0<=P0<=A^2 and the
+torus volume is normalized to one. The same reserve passes through every
+intermediate time; it is never replenished. Signed pressure work can be
+positive during the history. Its absolute time integral is not claimed to
+be controlled by B3.
+
+### Cubic mass really can grow in that paid viscous class
+
+Let v=(sin x cos y,-cos x sin y,0), p_*=(cos(2x)+cos(2y))/4 and
+
+```text
+F=v dot grad p_*=cos x cos y (sin^2 y-sin^2 x),
+mean F=0, integral F^2=1/32,
+integral |sin x| F^2=43/(840pi),
+u0^-=A(v_x,v_y,16sin x(1-F)),
+u0^+=A(v_x,v_y,16sin x(1+F)).                       (596)
+```
+
+Both fields are smooth, divergence-free and have ZERO spatial mean.
+Reflection x -> pi-x preserves |v| and sin x, reverses F and exchanges
+their speed fields. Thus they have equal initial Y and kinetic energy,
+but opposite Pi. To prove strictness without numerical quadrature, use
+`|v|<=1`, `|F|<=1` and
+`0<=sqrt(|v|^2+w^2)-|w|<=|v|`. For w=16sin x(1-F), this gives
+
+```text
+Pi(u0^-)/A^4 >= 16*43/(840pi)-||v||_2 ||F||_2
+             >179/1320>1/8,
+D(u0^-)/A^3 <=2*33*(1+163)=10824,
+A>=100000nu implies Y'(0)>0.                      (597)
+```
+
+The exact gradient square of sin x(1-F) is 163/256. The pressure-error
+bound is 1/8 by Cauchy--Schwarz. The classical strict inequality pi<22/7
+also follows from the positive integral
+`integral_0^1 x^4(1-x)^4/(1+x^2) dx=22/7-pi`.
+The constants are deliberately conservative. Continuity of the actual
+smooth solution makes Y(t)>Y(0) on a nonzero interval. Nevertheless the
+all-time budget (595) holds. This refutes cubic contraction, not the
+pressure-corrected reserve or regularity. The opposite profile has strictly
+negative initial pressure work; energy and speed-norm data alone cannot
+identify that sign.
+
+### Interacting 3D parents generate the unpaid defect
+
+Take a different, genuinely three-dimensional periodic datum
+
+```text
+u0=(A sin y,B sin z,C sin x), A,B,C>0.
+p0=0,
+partial_t p(0)=-2ABC cos x cos y cos z.             (598)
+```
+
+These identities use canonical mean-zero pressure. In the complete NS
+initial tangent,
+`u_t(0)=nu Delta u0-(u0 dot grad)u0`; the pressure at time zero vanishes
+because `trace((grad u0)^2)=0`. Differentiating
+`-Delta p=trace((grad u)^2)` gives (598), including all generated modes.
+The viscous part of this derivative cancels, not the nonlinear part.
+Thus pressure is NOT automatically caloric in an unforced flow.
+
+At (0,0,0), u0=0 and `partial_t(e+p)(0)=-2ABC<0`. The uncorrected
+Bernoulli quantity, initially nonnegative, becomes negative there on the
+actual short-time smooth history. At (pi,pi,pi),
+
+```text
+[L(e+p)](0,pi,pi,pi)=2ABC-nu(A^2+B^2+C^2).
+A=B=C=a>3nu/2 makes this strictly positive.        (599)
+```
+
+It remains positive on a nonzero neighborhood in space and time by local
+smooth existence and continuity. A constant positive gauge can repair
+initial positivity but does not change this defect. A changing gauge can
+change the sign only by contributing its own derivative to S.
+These are pointwise failures of a proposed automatic correction, not a
+counterexample to an integrated full-datum allowance, nor to NS regularity.
+
+For reference the general pressure-defect equation is
+
+```text
+-Delta [(partial_t-nu Delta)p]
+ =-2 sum_ij (partial_i u_j) partial_j[(u dot grad)u_i+partial_i p]
+  -2nu sum_ijk (partial_k partial_i u_j)(partial_k partial_j u_i).   (600)
+```
+
+It follows by differentiating the same pressure Poisson equation. This
+retains nonlinear parent interactions, pressure feedback and viscosity.
+The next substantive obligation is to control the weighted SIGNED history
+in (593), with a finite nonnegative completion initialized from the full
+datum. The initial source (598) must be paid; suppressing it, assuming
+pressure follows heat, or repeatedly rebuilding (595) from a fresh parent
+would fail this test. The known cellular payment calibrates a proposed
+repair but does not establish it for unrestricted 3D coupling.
+
+### The imported forced construction fails this pressure budget
+
+For forced NS the exact cubic balance gains the direct work
+
+```text
+J_f=integral |u| u dot f,
+Y'+3nu D=3Pi+3J_f,
+|J_f|<=||f||_infinity ||u||_2^2.                    (601)
+```
+
+Apply this to precisely the same whole-space fields satisfying the pinned
+`NavierStokesR3.ProblemStatement.CandidateProperties`, supplied by
+`NavierStokesR3.theorem_1_1_with_initial_rest`. They have positive viscosity,
+smooth velocity and pressure on every prefix before time 1, common compact
+spatial support, zero original velocity, globally smooth compactly supported
+forcing, uniformly bounded kinetic energy, and speed unbounded toward time 1.
+The stronger theorem retains initial rest through 3/8. No periodic substitute
+or dropped force is used.
+
+For this ONE candidate, sup ||f||_infinity and sup ||u||_2^2 are finite,
+so the absolute integral of J_f on [1/2,1) is finite. Nevertheless
+
+```text
+sup_(1/2<=t<1) [3 integral_(1/2)^t Pi
+                  -(3nu/2) integral_(1/2)^t D]=+infinity.   (602)
+```
+
+To see this, a finite upper bound would give bounded Y and finite integral D
+by (601). The R3 Sobolev estimate above would give finite
+`integral_(1/2)^1 ||u||_9^3`. The forced version of (590) is
+`E1'+nu E2 <= C nu^(-2)||u||_9^3 E1+C nu^(-1)||f||_2^2`.
+Its forcing term has finite integral, so Gronwall would bound E1 uniformly.
+That contradicts the existing Lean theorem
+`ForcedCandidatePancake.no_uniform_gradient_energy` in
+`MettapediaNS.ForcedSignedBudget`, whose hypothesis is this exact
+`CandidateProperties`. The new cubic implication and (602) are analytic;
+the imported candidate and its gradient-energy obstruction are separately
+kernel-checked results.
+
+Thus finite DIRECT cubic force work cannot explain away the failed pressure
+payment. This does not show that its history can be realized without forcing:
+the same zero initial datum with no force remains zero, and restarting from
+a nonzero later slice changes the subsequent equation and history.
+
+For completeness, the pressure-completed reserve itself has an additional
+weighted force term. With Q and S defined as in (591), its forced inequality is
+
+```text
+R'+3Pi-(3nu/2)D <= 3sqrt(2) integral sqrt(Q) S
+                   +3 integral (sqrt(2Q)-|u|) u dot f.     (603)
+```
+
+The second term is not J_f and is not automatically bounded by the estimate
+in (601). No assertion that this extra observer cost is finite is needed for
+(602). Any proposed pressure completion must account for it when tested on
+the forced construction. The unforced task remains a finite original-data
+payment for the actual signed defect in (593).
+
+Run `python3 -O labs/cubic_pressure_reserve.py`. The checker verifies the
+complete cellular and cyclic NS initial equations, differentiated pressure,
+exact Fourier norms, pressure-sign reflection, rational growth margins,
+convex entropy Hessian and the reserve's diffusion remainder. The PDE
+history inequalities, scalar stochastic representation and continuation
+bridge remain analytic, not Lean-certified. No Lean declaration or axiom
+changes. No new general regularity result is asserted.

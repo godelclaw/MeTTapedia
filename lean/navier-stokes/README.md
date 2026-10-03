@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [cubic pressure reserve](labs/README.md#cubic-velocity-pressure-work-and-a-bernoulli-reserve)
+uses a critical quantity preserved by incompressible material pullback.
+A nonnegative pressure correction pays its full signed history, including
+half the viscous cost, for the stated cellular flows with an arbitrary smooth
+vertical component. The cubic quantity itself can grow on these actual viscous
+flows. A separate genuinely three-dimensional datum generates pressure from
+zero and violates the proposed automatic sign of the correction's defect.
+The exact arbitrary-flow defect and its enstrophy-continuation consumer are
+identified; a full-data payment for that defect remains open. These are
+analytic arguments with exact checks, not new Lean certificates. The imported
+forced construction has finite direct cubic force work but must violate
+this signed pressure budget, providing a separate adversarial test.
+
 The [material critical-history test](labs/README.md#material-coordinates-critical-diffusion-and-a-paid-physical-metric)
 shows why following the actual fluid does not remove the geometric cost:
 an unforced positive-viscosity flow can increase its critical norm measured
