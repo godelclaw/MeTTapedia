@@ -34238,3 +34238,266 @@ identification, conditional composition, all-time physical payment and
 continuation consumer are analytic, not Lean-certified. No Lean declarations
 or axioms change. These new statements use normalized periodic measure;
 no whole-space uniform-probability claim is made.
+
+## Pressure-impulse returns and the failure of local funding
+
+`pressure_impulse_return.py` tests two concrete questions about the
+pressure-history target (636). Can a local reserve, transported from the
+original velocity, pay for pressure arriving at that location? Does the
+complete fourth moment of the pressure impulse have a favorable first
+feedback correction on the cyclic examples that challenged earlier
+entropy estimates? The first answer is no for the precise rule below;
+the second is yes for the two stated families. Both conclusions concern
+actual smooth unforced periodic NS histories on a positive local interval.
+
+### The observation and its complete evolution
+
+Use normalized measure on the period-2pi torus and the actual solution u.
+For a uniform original label a, let
+`dX_t=u(t,X_t)dt+sqrt(2nu)dW_t` and
+`P_t=integral_0^t grad p(s,X_s)ds`, with the canonical mean-zero pressure.
+The marginal law of X_t stays uniform. Write g=grad p and
+`D=partial_t+u.grad-nu Delta`. Conditional on X_t=x, define
+
+```text
+I=E[P], Q=E[P P^T], T=E[|P|^2 P], J4=E[|P|^4].
+DI=g,
+DQ=I tensor g+g tensor I,
+DT=(2Q+tr(Q) Id)g,
+DJ4=4g.T;                  I(0)=Q(0)=T(0)=J4(0)=0.       (648)
+```
+
+These follow by multiplying the joint forward equation for (X,P) by
+the indicated polynomial in P. Every preceding level retains transport
+and diffusion. Only after spatial integration at the final level do
+their contributions vanish. No independence or Gaussian closure is used.
+The global observation is `Phi(t)=integral J4(t,x)dx=E|P_t|^4`.
+Its connection to an L4 velocity bound and continuation is (636).
+
+### A local transported reserve cannot pay incoming pressure
+
+Consider the proposed rule
+
+```text
+Dh4=0, h4(0,x)=|u0(x)|^4,
+J4(t,x) <= C(u0,nu,H) h4(t,x)                            (649)
+```
+
+for all available smooth prefixes t<=H and all x, with one finite
+constant chosen from the full original datum. This is a specific local
+funding hypothesis. It is stronger than the global original-data
+allowance sought in (636).
+
+One fixed smooth mean-zero divergence-free datum refutes (649). Put
+
+```text
+F(y)=(1-cos y)^3(cos y+3/4),
+G(z)=sin z(1-cos z)^2, H(x)=sin x(1-cos x)^2,
+U=(F(y),G(z),H(x)),
+gamma=1178750/28129101>0.                               (650)
+```
+
+All three coordinates occur. For any cyclic field of this form,
+`tr((grad U)^2)=0`, so its canonical initial pressure is identically
+zero. If p_1 denotes the actual first time derivative of pressure,
+the full NS tangent gives
+
+```text
+Delta p_1=6 F'(y)G'(z)H'(x),
+grad p_1(0)=(0,-gamma,0) for (650).
+```
+
+Indeed `u_1=nu Delta U-U.grad U`, and
+`tr((grad U)(grad u_1))=-3F'G'H'`; all viscosity terms cancel
+in this pressure derivative. The checker solves the complete Fourier
+Poisson equation and verifies the rational value above, including all
+generated frequencies.
+
+At the origin U vanishes to order at least five. Its first two time
+derivatives therefore satisfy `u_1(0)=0` and
+`u_2(0)=-grad p_1(0)`, for every fixed nu>0. The terms in
+`nu Delta u_1-u_1.grad U-U.grad u_1` vanish there; they have not
+been discarded from the equation. Consequently
+
+```text
+u(t,0)=(gamma/2)t^2 e_y+O(t^3),
+|u(t,0)|^4=(gamma^4/16)t^8+O(t^9),
+J4(t,0)=(gamma^4/16)t^8+O(t^9),
+h4(t,0)=5244976800 nu^10 t^10+O(t^11).                  (651)
+```
+
+To derive the conditional moment coefficient, write `g(t)=t g_1+O(t^2)`
+in (648). In the spatially smooth topology the leading terms are
+`I=t^2 g_1/2`, `Q=t^4 g_1 tensor g_1/4`,
+`T=t^6 |g_1|^2 g_1/8` and `J4=t^8 |g_1|^4/16`.
+Transport and diffusion contribute at subsequent orders.
+
+The passive reserve calculation uses its ACTUAL advecting velocity.
+For a smooth time-dependent drift, the nth initial time derivative of
+the passive solution is a differential operator on h4(0) of order at
+most 2n. Its principal part is `nu^n Delta^n`; all other terms have
+order at most 2n-1. This follows inductively by differentiating
+`partial_t h4=nu Delta h4-u.grad h4`, retaining every time derivative
+of u. Here all spatial derivatives of h4(0) of order below twenty
+vanish. Its leading homogeneous term is
+
+```text
+(x^20+2x^10 z^10+z^20)/256.
+```
+
+Thus its initial time derivatives through order nine vanish. At order
+ten, only the principal Laplacian contributes, and
+`Delta^10 h4(0,0)/10!=5244976800`. The checker verifies this both
+from the full Fourier datum and from its leading homogeneous polynomial.
+This does not replace the actual advecting flow by free heat.
+
+For each fixed nu>0 the ratio in (649) diverges like
+`gamma^4/(16*5244976800*nu^10*t^2)` as t decreases to zero.
+Hence for this single U, every prescribed H>0 and every finite
+C(U,nu,H), there is an actual positive local time at which (649)
+fails. Replacing J4 by the actual `|u|^4` also fails. At any such
+strict violation, continuity gives a spatial neighborhood of violation;
+this is not an ambiguity of conditional expectation at a null point.
+
+The remainders in (651) are controlled by local smooth existence, not
+by extending a formal series past its validity. For example choose
+L=1+||U||_{H^40} and a sufficiently large fixed Sobolev constant C_40.
+The usual differentiated energy estimate gives an interval
+`tau<=min(1,(4 C_40 L)^(-1))` with `||u||_{H^40}<=2L`.
+Time differentiation of the NS equation and of the linear triangular
+moment system bounds the required derivatives on a smaller closed
+interval by finite functions of L and nu. Taylor's theorem then
+gives the remainders above. The passive equation is smooth to the
+eleventh required time derivative; its coefficients and initial datum
+come from the same U. In particular the leading positive t^8 terms
+and the upper t^10 bound yield the strict inequality on a sufficiently
+short positive interval. No claim about numerical resolution is needed.
+
+This obstruction is spatial redistribution. Pressure is elliptic and
+can accelerate a quiet region because of interactions elsewhere. Its
+global kinetic work still cancels exactly:
+`integral u.grad p=-integral p div u=0`.
+There is no external force and no new energy supply. A positive
+globally funded stock, a nonlocal initial reserve, or an explicitly
+accounted transfer between regions is not refuted by (651).
+
+### A favorable complete return with matched viscosity
+
+Now take the previous cyclic seeds
+`U_k=(sin y,sin(kz),sin x)`, for k=1 and k=4. Write N=k^2+2.
+Their initial pressure is zero and
+
+```text
+p_1=-(6k/N)cos x cos y cos(kz).
+```
+
+There is a natural fixed-original-data forecast to compare against.
+In the amplitude expansion starting from epsilon U_k, the linear
+parents decay by their heat factors. Their first quadratic velocity
+outputs are
+`-t exp(-nu(lambda_i+lambda_j)t) U_j partial_j U_i`;
+the inputs occupy different coordinate directions, so the Laplace
+eigenvalues add. The cubic pressure generated by these parents is
+exactly `t exp(-nu N t)p_1`.
+
+Use that generated pressure on Brownian paths with uniform initial
+label, keeping the SAME viscosity:
+
+```text
+g_gen(t,x)=t exp(-nu N t) grad p_1(x),
+dB_t=sqrt(2nu)dW_t,
+Pbar_t=integral_0^t g_gen(s,B_s)ds,
+Phibar(t)=E|Pbar_t|^4.                                 (652)
+```
+
+This is a diagnostic first-generation forecast, not a second NS
+solution. It omits the subsequent nonlinear parent feedback and fluid
+advection; those remain in the actual Phi. Its entire allowance is
+explicit: for nu>0,
+`Phibar(t)<=||grad p_1||_infinity^4/(nu N)^8` for all t.
+This inequality alone says nothing about the actual Phi after the
+proved comparison interval.
+
+The complete actual moment equations (648), with canonical pressure
+jets through p_3, give
+
+```text
+Phi(t)    = a_k t^8+b_k nu t^9+(c_k nu^2-d_k)t^10+O(t^11),
+Phibar(t) = a_k t^8+b_k nu t^9+ c_k nu^2     t^10+O(t^11).
+                                                               (653)
+```
+
+| k | a_k | b_k | c_k | d_k |
+|---|---|---|---|---|
+| 1 | 99/512 | -297/160 | 29203/3200 | 20641/152064 |
+| 4 | 199/72 | -796/5 | 3183262/675 | 907148604883/196886722032 |
+
+Every d_k is strictly positive. These are identities over the
+polynomial ring QQ(i)[nu], not coefficients interpolated from sample
+viscosities. The checker retains the full convolutions, checks each
+velocity jet is divergence-free, and rejects a product if a needed
+nonzero derivative has not been computed. It separately reproduces
+the nu=0 coefficients by integrating the full evolving material
+pressure jets along particle paths. A rational-viscosity specialization
+also agrees with the existing complete NS jet implementation.
+
+Local smooth existence and the triangular moment equations justify
+the actual time derivatives. Their next derivatives have bounds from
+the original smooth datum and fixed viscosity, as in the local
+argument above. Thus for every fixed nu>0 there is tau_k(nu)>0 with
+
+```text
+Phi(t)-Phibar(t) <= -(d_k/2)t^10 < 0,
+0<t<=tau_k(nu), k in {1,4}.                            (654)
+```
+
+For example, if the two Taylor remainders together are bounded by
+M t^11 on an original-data local interval, restrict to
+`t<=d_k/(2(1+M))`. This keeps the whole comparison on the SAME
+actual history. No inviscid limit or a posteriori choice of viscosity
+is necessary.
+
+The statement extends to arbitrary overall amplitude A>0 and common
+integer spatial multiplier ell>=1. The actual NS scaling is
+`u(t,x)=A v(A ell t,ell x)` with v's viscosity `nu ell/A`.
+Both pressure impulses scale by A and their fourth moments by A^4.
+Therefore the first difference for datum `A U_k(ell x)` is
+
+```text
+-d_k A^14 ell^10 t^10+O(t^11), k in {1,4}.              (655)
+```
+
+The local interval may shrink with the datum and viscosity. This
+proves two unbounded families of local comparisons, not an
+amplitude-independent time window or a statement about all frequency
+ratios and all independent parent amplitudes.
+
+The k=4 datum was adverse for the earlier quartic kinetic-entropy
+return (632). Its first pressure-impulse correction in (654) is
+nevertheless favorable. Changing the observed history changes which
+cancellation is visible. Phi itself initially increases from zero;
+(654) is depletion relative to the explicitly matched forecast,
+not a monotonicity theorem.
+
+### What the next payment must retain
+
+The local failure (651) and the averaged depletion (654) can coexist.
+Pressure exchanges acceleration between regions without external
+kinetic work. A reserve sufficient for (636) must retain this
+exchange or fund it globally. The passive pointwise rule (649)
+cannot do that, even with a datum-dependent multiplicative constant.
+
+The open target remains one finite B_P(u0,nu,H), controlled from the
+original datum, with `E|P_t|^4<=B_P` for every same-datum smooth
+prefix t<=H. The generated forecast in (652) cannot be restarted
+after each return: existing parents, accumulated impulse and their
+joint distribution are already nonzero. Proving a signed correction
+for those subsequent returns, or finding an actual adverse return,
+is a concrete next test. Neither result here constructs blowup or
+rules out an initial allowance with nonlocal pressure transfer.
+
+Run `python3 -O labs/pressure_impulse_return.py`. The exact Fourier
+and viscosity-polynomial checks pass with assertions disabled.
+Conditional stochastic identification, local PDE intervals, scaling
+and the failed pointwise inequality are analytic arguments, not
+new Lean certificates. No Lean declarations or axioms change.

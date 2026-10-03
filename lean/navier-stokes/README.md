@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-impulse return test](labs/README.md#pressure-impulse-returns-and-the-failure-of-local-funding)
+retains the complete stochastic fourth moment on two cyclic flow families.
+Their first correction beyond a matched generated-pressure forecast is
+strictly depleting for every positive viscosity, including the mixed-scale
+datum that defeated an earlier entropy sign rule. Separately, one fixed
+smooth three-dimensional datum generates pressure acceleration where its
+initial velocity vanishes to high order. Neither its velocity fourth moment
+nor its pressure-impulse fourth moment can be bounded pointwise by any finite
+multiple of the passively transported initial fourth moment. This rules
+out that local funding rule; a global reserve with spatial exchange remains
+possible. The actual short-time arguments are analytic with exact checks,
+not a global history bound or new Lean certificates.
+
 The [physical Bellman payment](labs/README.md#a-bellman-payment-for-complete-stochastic-pressure-histories)
 bounds the full stochastic pressure history for steady Euler Laplace
 eigenparents, including genuinely three-dimensional ABC flows of arbitrary
