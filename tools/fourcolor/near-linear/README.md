@@ -492,6 +492,52 @@ and `python3 tools/fourcolor/near-linear/audit_transition_guard.py`.
 The [measurement receipt](transition-guard-measurements.json) records the
 universal theorem and the separate finite applications.
 
+## Arbitrarily many hidden pairs, and the first state-loss obstruction
+
+[PairBlocks](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/PairBlocks.lean)
+extends the guarded theorem to any number of isolated hidden vertices and
+pairs. Block labels must separate all hidden edges, and every nonempty block
+must contain at most two vertices. Distinct blocks may share retained
+neighbours. One proof establishes connected fibres, factors the transition
+guard into local block conditions, and proves exact physical-history
+equivalence. All guards observe the same retained colouring and the same
+colour transposition; their marginal possibilities are not combined freely.
+
+The [program replay](pair-blocks-audit.json) applies this law to larger hidden
+sets in the two spherical exteriors, preserving all original patch ports and
+the protected frozen-observer vertices:
+
+| Patch | Hidden vertices | Retained exterior vertices | Pair / singleton guards | Distinct neighbours per guard |
+| --- | --- | --- | --- | --- |
+| D0092 | 53 | 102 | 23 / 7 | 5–9 |
+| D0063 | 52 | 103 | 23 / 6 | 5–10 |
+
+The previous independent deletion hid 33 vertices and retained 122 in each
+case. Total guard-neighbour incidences change from 210 and 212 to 206 in each
+case. A pair guard, however, retains four before/after colour variables rather
+than a single endpoint availability choice. These counts therefore describe
+different interfaces, not a certified net reduction in all checking costs.
+Both obstructed commands remain rejected, and both successful two-switch
+repairs still reconstruct the complete 162-vertex sphere. These geometric
+applications remain program checked, not kernel-certified instances.
+
+[HiddenTriangleObstruction](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/HiddenTriangleObstruction.lean)
+identifies a limit to extending this theorem. Hiding all three core vertices
+of the nine-vertex example makes two distinct physical classes have exactly
+the same retained colouring. Their reflexive abstract path cannot lift with
+the boundary fixed. Restricting the step relation alone cannot restore a
+distinction erased from the state. A larger-block theorem must prove connected
+fibres, retain the relevant hidden class, or justify another successful choice.
+The example has pendant vertices; minimal-counterexample geometry and a
+universal impossibility of compositional proofs are not asserted.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.PairBlocksAudit` and
+`python3 tools/fourcolor/near-linear/audit_pair_blocks.py`. The small
+[fixture](pair-blocks-example.json) stores the two partitions. The
+[measurement receipt](pair-blocks-measurements.json) records the eight-root
+audit and separate consumer checks. No coverage entry or configuration
+certificate is removed.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

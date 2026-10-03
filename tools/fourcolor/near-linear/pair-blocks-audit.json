@@ -1,0 +1,150 @@
+{
+  "evidence": "Independent program replay of factored guards and full physical reconstruction.",
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "hidden_vertices": 53,
+      "retained_vertices": 102,
+      "pair_blocks": 23,
+      "singleton_blocks": 7,
+      "guards": 30,
+      "guard_neighbour_widths": [
+        6,
+        9,
+        8,
+        7,
+        7,
+        8,
+        6,
+        6,
+        7,
+        7,
+        8,
+        6,
+        8,
+        9,
+        8,
+        6,
+        8,
+        6,
+        6,
+        6,
+        8,
+        8,
+        7,
+        6,
+        6,
+        8,
+        5,
+        6,
+        5,
+        5
+      ],
+      "guard_neighbour_incidences": 206,
+      "previous_independent_hidden_vertices": 33,
+      "previous_availability_neighbour_incidences": 210,
+      "rejected_blocks_for_obstructed_command": [
+        [
+          66,
+          149
+        ]
+      ],
+      "successful_transitions": [
+        {
+          "switches_by_phase": {
+            "prepare": 0,
+            "joint": 1,
+            "finish": 0
+          },
+          "largest_component": 3
+        },
+        {
+          "switches_by_phase": {
+            "prepare": 0,
+            "joint": 1,
+            "finish": 0
+          },
+          "largest_component": 70
+        }
+      ],
+      "full_sphere_reconstructed": true
+    },
+    {
+      "configuration": "D0063.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "hidden_vertices": 52,
+      "retained_vertices": 103,
+      "pair_blocks": 23,
+      "singleton_blocks": 6,
+      "guards": 29,
+      "guard_neighbour_widths": [
+        7,
+        7,
+        9,
+        7,
+        10,
+        5,
+        8,
+        8,
+        7,
+        6,
+        6,
+        8,
+        7,
+        6,
+        10,
+        5,
+        9,
+        7,
+        5,
+        6,
+        7,
+        5,
+        9,
+        8,
+        8,
+        5,
+        7,
+        6,
+        8
+      ],
+      "guard_neighbour_incidences": 206,
+      "previous_independent_hidden_vertices": 33,
+      "previous_availability_neighbour_incidences": 212,
+      "rejected_blocks_for_obstructed_command": [
+        [
+          42,
+          102
+        ]
+      ],
+      "successful_transitions": [
+        {
+          "switches_by_phase": {
+            "prepare": 0,
+            "joint": 1,
+            "finish": 0
+          },
+          "largest_component": 32
+        },
+        {
+          "switches_by_phase": {
+            "prepare": 0,
+            "joint": 1,
+            "finish": 0
+          },
+          "largest_component": 68
+        }
+      ],
+      "full_sphere_reconstructed": true
+    }
+  ],
+  "prior_pair_consumers_replayed": 2,
+  "generic_lean_theorem": "SimpleGraph.KempePairBlocks.history_iff",
+  "scope": "A constrained transition representation, not an ordinary smaller-graph reduction. Concrete geometry remains program evidence. No repeated-elimination closure, geometric coverage or catalogue saving is asserted.",
+  "fixture_sha256": "5331c93d190ed5760696a28f031eaf98c76c463b507e48696c0d039d5111d7b4",
+  "verifier_sha256": "11c6d9264c886f54028659eb0caa26f4fbe5a0e1f6e429d33b25b3882536f5da",
+  "credited_compression": false
+}

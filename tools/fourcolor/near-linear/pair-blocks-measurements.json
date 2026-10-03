@@ -1,0 +1,60 @@
+{
+  "evidence": "Kernel-proved simultaneous guarded elimination of arbitrarily many hidden pairs, plus a hidden-triangle obstruction to state-forgetting.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.PairBlocks",
+      "source_sha256": "8ae2e096493e30dba875d83e7dd0e1e35c7c65ffd95de7c9e9aa7625d7159b05",
+      "source_bytes": 8590,
+      "lake_build_seconds": 1.7,
+      "olean_bytes": 338296,
+      "olean_sha256": "c7d200e869cdfe635e89c4a6a4b81352db44bab42c65c4c65370c623c0b6c479"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.HiddenTriangleObstruction",
+      "source_sha256": "1ff2aab7ec87ba5db79f34d749fd29ea23ee11b80df66727d4cf80159d0f2838",
+      "source_bytes": 2142,
+      "lake_build_seconds": 2.7,
+      "olean_bytes": 141280,
+      "olean_sha256": "0c399fce32f72e2e5112c1a6c85c389453523dc70548c1c11ad1dbac2090d99e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PairBlocksAudit",
+      "source_sha256": "fb0f471447d83f29663467cc3514c0b5ddb66ddd0975e404a3a164b4eac10ea3",
+      "source_bytes": 2456,
+      "lake_build_seconds": 3.5,
+      "olean_bytes": 2992,
+      "olean_sha256": "ab32517a4f9ac321b539b20a1ecaccf37e2bc670dfb797e2e8f1a7bab608a30a"
+    }
+  ],
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 3713,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "For every finite graph and palette, a hidden set partitioned into blocks of size at most two with no cross-block hidden edges has connected restriction fibres.",
+    "Joint before/after transition guards factor into one condition per hidden block. Shared retained neighbours are permitted and use one common colouring. The factorization alone does not require small blocks.",
+    "The factored guarded histories coincide with actual boundary-avoiding Kempe histories for the proved pair-block domain.",
+    "Three hidden vertices forming a triangle can already have disconnected fibres: two full colourings project to the same retained state. Restricting abstract steps alone cannot repair that loss."
+  ],
+  "program_applications": "pair-blocks-audit.json",
+  "program_scope": "Two 155-vertex exteriors of 162-vertex spheres. The selected partitions hide 53 and 52 vertices with 30 and 29 guards, versus 33 independent hidden vertices previously. Both blocked commands remain rejected; both successful two-switch full reconstructions replay.",
+  "negative_controls": [
+    "Splitting an adjacent hidden pair into distinct blocks rejected",
+    "Overlapping blocks rejected",
+    "A three-vertex block rejected"
+  ],
+  "scope": "An unbounded family of faithful constrained interfaces, not an ordinary graph reduction or a proved closure law under repeated elimination. The three-vertex obstruction has pendant vertices; no minimal-counterexample geometric obstruction is asserted.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.Kempe.PairBlocks",
+    "lake build Mettapedia.GraphTheory.FourColor.HiddenTriangleObstruction",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_pair_blocks.py"
+  ],
+  "credited_compression": false
+}
