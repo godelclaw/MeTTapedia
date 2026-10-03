@@ -30788,3 +30788,234 @@ fixtures, their pressure and higher generated modes, the conditional reserve
 and the normalization of (491). The local uniform PDE estimates, logarithmic
 Fourier argument and physical continuation assembly are analytic obligations,
 not proved by the finite checker. No Lean declarations or axioms change.
+
+
+## Helical geometry, coherent children and a critical history reserve
+
+Helical Fourier decomposition supplies a geometry-sensitive positive
+quantity at the critical scaling. [Waleffe's triad analysis](https://doi.org/10.1063/1.858309)
+describes the interaction coefficients. [Biferale--Titi](https://arxiv.org/abs/1303.1215)
+prove global regularity for an equation projected onto one helicity sign.
+That projection changes the equation. The calculation below keeps the full
+NS evolution, identifies its extra production term, and tests the first
+return of generated modes. Helicity sign here is the sign of a curl Fourier
+eigenvalue, not an assumption of aligned physical vorticity directions or
+spatial helical symmetry. No regularity theorem for the decimated model is
+asserted to apply automatically to full NS.
+
+### The actual critical reserve and its unpaid source
+
+On R3, or the mean-zero normalized 2*pi torus, let Lambda=sqrt(-Delta) and
+P_+/-=(P_sol +/- curl/Lambda)/2. The zero mode is absent on the torus and
+irrelevant to the R3 multiplier. For actual divergence-free u, define
+
+```text
+u_+=P_+ u, u_-=P_- u, omega=Lambda u_+-Lambda u_-,
+M_+/-=||Lambda^(1/2)u_+/-||_2^2,
+L_+/-=||Lambda^(3/2)u_+/-||_2^2,
+M=M_++M_-, L=L_++L_-, H=M_+-M_-.
+J=<Lambda u_-, u cross Lambda u_+>.                (492)
+```
+
+All fields come from the SAME solution. The full projected equation is
+u_t=-nu Lambda^2 u+P_sol(u cross omega). Self-adjointness and orthogonality
+of the fixed Fourier projections give the exact identities
+
+```text
+M_+'+2nu L_+=2J, M_-'+2nu L_-=2J,
+M'+2nu L=4J, H'=-2nu(L_+-L_-).                    (493)
+```
+
+For example, pairing the negative sector with Lambda u_- eliminates the
+term u cross Lambda u_- pointwise, leaving J. The positive-sector pairing
+gives the same J by the scalar triple-product identity. Pressure is removed
+only from these solenoidal pairings; the evolving velocity retains the full
+pressure-projected equation. Signed helicity records the difference of the
+two sectors. It does not bound their sum: the nonlinear source creates or
+removes equal amounts in both sector balances.
+
+There is an explicit sufficient history target. Fix 0<=alpha<1 and demand
+ONE finite original-data allowance B_H>=0, uniformly on every available
+same-datum prefix through the prescribed horizon, such that
+
+```text
+C_H(t)=4 integral_0^t J -2alpha nu integral_0^t L <= B_H,
+R_H=M+B_H-C_H>=0,
+R_H'=-2(1-alpha)nu L.                             (494)
+```
+
+The allowance in (494) is OPEN. Defining it by an uncontrolled supremum of
+the future would not prove it. The identity alone is not a payment. If the
+bound holds, put kappa=1-alpha and R0=M0+B_H. Then
+`sup M<=R0` and `integral L<=R0/(2kappa nu)`.
+
+Here is the direct connection to the existing gradient-energy continuation
+consumer. Let S be a fixed homogeneous Sobolev constant for the domain,
+valid for the mean-zero periodic velocity and vorticity when appropriate.
+Retain Z=||omega||_2^2 and D=||grad omega||_2^2 from the preceding sections.
+Fourier interpolation and Sobolev give
+
+```text
+Z^2<=M L, integral ||u||_6^4<=S^4 R0^2/(2kappa nu),
+Z'+nu D <= [27 S^2/(16nu^3)] ||u||_6^4 Z,
+Z_max=Z0 exp[27 S^6 R0^2/(32kappa nu^4)],
+Z<=Z_max, integral D<=Z_max/nu.                    (495)
+```
+
+Indeed `|g|<=S^(1/2)||u||_6 Z^(1/4)D^(3/4)`. The stated Young constant
+follows from the nonnegative polynomial
+`x^4-2yx^3+27y^4/16=(2x-3y)^2(4x^2+4xy+3y^2)/16`.
+The integrating factor for the Z inequality proves both bounds in (495).
+Thus `K=2Z_max-Z0+2T|g0|` supplies the signed-renewal allowance. This
+derivation applies to smooth prefixes before global existence is known;
+M0 is finite for the admitted smooth data. It is analytic here, not a new
+Lean-certified physical estimate.
+
+The forced test remains discriminating. An applied force adds
+`2<Lambda^(3/2)u,Lambda^(-1/2)f>` to the M balance. If its squared
+H^(-1/2) norm has a finite time integral, Young's inequality leaves
+`M+kappa nu integral L` bounded whenever (494) has a finite allowance.
+Finite time-integrated ||f||_2^2 then also preserves a uniform Z bound in
+the forced version of (495). The imported whole-space forced candidate
+has these force bounds: its common compact support bounds ||f||_1 by
+||f||_2, and splitting its Fourier norm at |xi|=1 bounds H^(-1/2) by
+these two norms. On its shorter slabs beginning at time 1/2, a finite
+uniform B_H would therefore contradict the exact Lean theorem
+`ForcedCandidatePancake.no_uniform_gradient_energy`. This does not exclude
+every possible internal realization of a forced pattern by surrounding fluid.
+
+### An isolated forward interaction has a favorable helicity fraction
+
+Consider two positive-helicity parent coefficients at nonparallel p and q,
+and the solenoidal nonlinear coefficient b at k=p+q. Write P=|p|, Q=|q|,
+r=|k|. The helical coupling identity gives, when the interaction is nonzero,
+
+```text
+||P_- b||^2/||P_+ b||^2 = ((P+Q-r)/(P+Q+r))^2.
+If r>=max(P,Q),
+||P_- b||^2 <= (1/10)||b||^2.                     (496)
+```
+
+This is a kinematic coefficient statement, not a statistical cascade
+assumption. Equal-length or parallel parents may have zero interaction;
+the inequality includes that case. One way to verify the identity is to
+choose coefficient coordinates p=(P,0,0), q=(q1,q2,0), use helical vectors
+(0,1,i) and (-q2,q1,iQ), and apply the solenoidal projection to their cross
+product. If E=||b||^2 and h=Re(conj(b).(ik cross b)), the exact identity is
+`h[(P+Q)^2+r^2]=2(P+Q)r^2 E`. For r<=P+Q<=2r, the fraction of total
+energy in the negative sector is at most 1/10. The checker verifies both
+the coefficient identity and this last scalar inequality.
+
+### Two such pairs can create an entirely opposite-sign child
+
+The favorable fraction (496) does not survive arbitrary coherent summation.
+Here is an exact genuinely three-dimensional datum. Let R be rotation by pi/2 around the
+z axis, R(x,y,z)=(-y,x,z), and choose four wave vectors and their
+Fourier coefficients as follows:
+
+```text
+p=(12,0,16), A=(16,20i,-12), |p|=20,
+q=(-12,0,9), B=(9,15i,12),   |q|=15,
+u_hat(p)=A/2, u_hat(q)=B/2,
+u_hat(Rp)=-i R(A)/2, u_hat(Rq)=R(B)/2.             (497)
+```
+
+Include the complex-conjugate coefficients at the negative wave vectors
+and no others. Thus u is real, smooth, mean zero and divergence free.
+Every original coefficient satisfies ik cross u_hat=|k| u_hat; there is
+NO initial negative helicity. The original wave vectors span three-space.
+
+Both pairs generate the same forward child k=(0,0,25). For the complete
+nonlinear acceleration b=P_sol(u cross omega), the exact modal energies are
+
+| Parents included | Positive-sector child energy | Negative-sector child energy | Negative fraction |
+|---|---:|---:|---:|
+| p,q | 405000 | 11250 | 1/37 |
+| Rp,Rq, with the stated phase | 405000 | 11250 | 1/37 |
+| All four parents | 0 | 45000 | 1 |
+
+The positive outputs cancel; the negative outputs agree. Explicitly,
+
+```text
+b_hat(0,0,25)=(-150i,-150,0),
+ik cross b_hat=-25 b_hat.                         (498)
+```
+
+All cross interactions and other children are retained: there are 12
+nonzero source wave vectors. The datum has E0=1250, M0=H0=22750 and
+L0=7918750. The full second velocity derivative has 60 wave vectors,
+including a return to the original parents; the pressure and its first
+time derivative used in those jets have 18 and 66 modes. This is not a closed
+triad, a helicity projection imposed on the equation, or an externally
+driven construction.
+
+In a fixed helical basis at k, the two pair-amplitude products x,y, measured
+before imposing the rotated pair's phase, are observed as `c_+(x-i y)` and
+`c_-(x+i y)`, with nonzero constants c_+,c_-.
+The choice x=1,y=-i erases the first observation but doubles the second.
+Thus elimination that retains only the positive child output loses a
+direction needed for reconstruction of the negative output. A compatible
+boundary summary must retain the relevant joint phase information.
+
+At any prescribed positive viscosity the actual smooth local solution has
+u_hat(k,t)=t b_hat(k)+O(t^2), since k is initially absent. Its negative
+sector energy is 45000t^2+O(t^3), whereas its positive sector energy is O(t^4).
+The negative fraction therefore tends to 1. For ANY finite constant C, even
+one chosen from this full datum, a bound of negative child energy by C times
+positive child energy fails on sufficiently short actual intervals. The
+parents' full resources can still pay an integrated allowance. This result
+rules out compressing their joint state to the positive child output alone.
+
+### The complete first return creates positive critical storage
+
+Let b denote the entire nonlinear acceleration of (497), and put
+`A_-=||Lambda^(1/2)P_- b||_2^2`. The mode in (498) and its conjugate alone
+contribute 2250000 to A_-, so A_->=2250000>0. The exact full value is
+
+```text
+A_-=-15835500+190643400/sqrt(337)+462770100/sqrt(913).
+M_-(t)=A_- t^2+O(t^3), J(t)=A_- t+O(t^2),
+M(t)-M(exp(nu t Delta)u0)=2A_- t^2+O(t^3).         (499)
+```
+
+The last identity includes the evolving original parents, not only the
+new children's energy. The complete second NS jet verifies that their
+return gives exactly the stated coefficient. Initial signed-helicity
+curvature agrees with the heat forecast; it does not see this increase
+in the sum of the two helicity magnitudes. In particular M is not bounded
+above by its original heat forecast, even on these initially one-sign data.
+
+There is also a failure of the proposed monotone critical reserve at FIXED
+positive viscosity. The same local Sobolev argument used for (490) gives a
+common smooth interval for v_mu starting at (497), uniformly for 0<mu<=1.
+For sufficiently many derivatives, the third derivative of M is bounded
+there uniformly. Equations (493) and (499) give
+
+```text
+M(v_mu(tau))-M0
+ =-2mu L0 tau+[2mu^2 ||Lambda^(5/2)u0||_2^2+2A_-]tau^2
+   +O(tau^3),                                    (500)
+```
+
+with a uniform remainder. Choose a small fixed tau0, then sufficiently
+small positive mu. The right side is positive. Rescaling
+u_A(t)=A v_{nu/A}(At) gives actual unforced solutions at any prescribed
+nu>0 for which M(u_A(tau0/A))>M(u_A(0)). It refutes both monotonicity of
+M and the stronger inequality M'+nu L<=0 on all such histories. It does
+not refute the open full-data allowance B_H in (494), nor exhibit repeated
+unbounded creation or a singularity.
+
+The useful remaining question is now explicit: can the ACTUAL joint
+source J, including coherent opposite-sign creation and later returns,
+be paid by an original-data allowance with the retained viscous fraction
+in (494)? The decimated theorem supplies a positive calibration when its
+opposite-sign sector is removed, but doing so is not a faithful repair of
+the full equation. A correction must retain the shared parent phases and
+the generated sector. The fixed-band payment (486) and signed tail
+observation remain available alongside this critical-helicity test.
+
+Run `python3 -O labs/helicity_renewal.py`. It checks the general isolated
+triad identity, the full four-parent cancellation, every source mode,
+two viscosities of complete NS return jets, and the conditional reserve
+algebra. The local-time and continuation arguments remain analytic;
+no new Lean declarations or axioms are introduced.

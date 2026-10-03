@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [helical renewal test](labs/README.md#helical-geometry-coherent-children-and-a-critical-history-reserve)
+uses the classical helical decomposition while retaining the full NS equation.
+Two same-sign parent pairs each produce a child with negative-helicity fraction
+1/37, but their coherent sum produces an entirely negative-helicity child.
+Complete return jets show positive critical storage above the heat forecast.
+The exact signed production term has an explicit continuation consumer; its
+arbitrary-data history payment is open. The physical arguments are analytic
+with exact checks, and no decimated-model theorem is substituted for full NS.
+
 The [fixed-band renewal calculation](labs/README.md#fixed-spectral-bands-and-coherent-generation-of-stretching)
 absorbs any fixed finite band of vertical frequencies using the full energy
 reserve, while retaining all interactions. Two elliptically polarized
