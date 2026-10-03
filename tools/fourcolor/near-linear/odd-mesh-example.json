@@ -1,0 +1,50 @@
+{
+  "evidence": "Deterministic odd-mesh construction and explicit two-step repairs; no repair search on replay.",
+  "source_fixture": "clique-fill-example.json",
+  "source_fixture_sha256": "15be415f794887e1588307364c73e5cf19074eaf0f827c71096e861449c5e39c",
+  "widths": [
+    3,
+    5,
+    7
+  ],
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "prepare": {
+        "pair": [
+          1,
+          3
+        ],
+        "root": 38,
+        "size": 10
+      },
+      "finish": {
+        "pair": [
+          0,
+          3
+        ],
+        "root": 0,
+        "size": 25
+      }
+    },
+    {
+      "configuration": "D0063.conf",
+      "prepare": {
+        "pair": [
+          0,
+          3
+        ],
+        "root": 51,
+        "size": 9
+      },
+      "finish": {
+        "pair": [
+          2,
+          3
+        ],
+        "root": 5,
+        "size": 16
+      }
+    }
+  ]
+}

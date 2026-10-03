@@ -1015,6 +1015,87 @@ Lean package. The [measurement receipt](clique-fill-measurements.json) records
 sizes, timings and scope. No catalogue or complete-proof dependency saving
 is credited.
 
+## Preparation survives the stronger connectivity test
+
+The clique-filled examples above have separating triangles. The
+[odd-mesh replay](odd-mesh-audit.json) tests the progress question after
+excluding those separators as well as the other obstructing short cycles.
+An exterior triangle is replaced by an odd triangular mesh. Its colours
+use the Klein four group: a lattice point takes the xor of the corner
+colours whose barycentric coefficients are odd. Each old exterior edge
+becomes an alternating path. Triangulated strips retain the original ring
+edges, and every source core star stays unchanged.
+
+For each tested sphere the replay enumerates **every** simple cycle of
+length three, four and five, including chorded cycles. It cuts the actual
+dual along that cycle, verifies two connected facial shores and counts
+off-cycle vertices on both sides. There is no separating three- or
+four-cycle and no five-cycle with at least two vertices on each side in
+the following examples. Thus they satisfy internal six-connectivity in
+the sense used in [the pinned paper, Section 2.2](https://arxiv.org/html/2603.24880v1#S2.SS2).
+
+| Source core | Mesh width | Sphere vertices | Obstructing cycles |
+| --- | --- | --- | --- |
+| D0092 | 5 | 159 | 0 |
+| D0092 | 7 | 278 | 0 |
+| D0063 | 5 | 143 | 0 |
+| D0063 | 7 | 249 | 0 |
+
+Width three is a negative control: its degree-four strip centres produce
+49 and 45 obstructing cycles. Internal six-connectivity for arbitrary
+mesh widths is not claimed. These are colourable spheres, not actual
+minimal counterexamples to Four Colour.
+
+All initial fixed-pair boundary choices agree with the small exterior.
+Consequently none increases the near-extension count vector; the only
+equal outcomes are palette renamings. This defeats a requirement of strict
+improvement after each fixed-pair phase even with the stronger connectivity.
+It does **not** defeat preparation followed by improvement:
+
+| Width-five sphere | Boundary-silent preparation | Following repair | Core extensions |
+| --- | --- | --- | --- |
+| D0092 | Switch a 10-vertex path using colours 1,3 | Switch a 25-vertex component using 0,3 | 0 → 0 → 1 |
+| D0063 | Switch a 9-vertex path using colours 0,3 | Switch a 16-vertex component using 2,3 | 0 → 0 → 1 |
+
+The first step leaves every boundary colour, hence the entire count vector,
+unchanged. It changes the next pair's connectivity: in D0092 the boundary
+block `{0,2,8,10}` splits into `{0,10}`, `{2}`, `{8}`; in D0063 `{5,7,9}`
+splits into `{5}`, `{7,9}`. The second step raises the extension count.
+Exact ear elimination reconstructs the seven core colours, and every
+ambient edge is checked against the resulting whole colouring. The
+[input](odd-mesh-example.json) stores only construction parameters and
+these explicit commands; replay does not search for repairs.
+
+[RouteProjection](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/RouteProjection.lean)
+provides the general transfer law behind the initial obstruction. For any
+graph and palette, replace observed edges by paths using their two initial
+endpoint colours. Every fixed-pair phase on the larger graph then restricts
+to a proper partial transposition of the observed colouring. The theorem
+does not require the observed edges themselves to remain. Its paths refer
+to the initial colouring, so it deliberately asserts no mixed-pair history
+projection: the successful preparation changes those observations.
+
+[OddMeshAudit](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OddMeshAudit.lean)
+checks the exact 21-vertex, width-five triangle mesh, its colouring and six
+directed alternating edge routes. Its pairwise nonadjacent corners consume
+the general projection theorem. The larger spherical geometry, counts and
+two-step repairs remain program evidence, separate from this Lean result.
+The [receipt](odd-mesh-measurements.json) records sizes, costs and the
+dependency audit.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_odd_mesh.py \
+  --output tools/fourcolor/near-linear/odd-mesh-audit.json
+```
+
+Run `lake build Mettapedia.GraphTheory.FourColor.OddMeshAudit` in the main
+Lean package. The open obligation is to supply useful preparations by a
+uniform geometric argument, or identify the precise hypotheses under
+which that proposed supply fails. These examples prove neither arbitrary
+preparation nor a uniform two-switch repair bound. Complete-proof counts
+remain 633 coverage entries, 629 original configuration certificates and
+336 replaced member-check obligations.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

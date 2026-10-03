@@ -1,0 +1,1012 @@
+{
+  "evidence": "Exact program replay; general fixed-pair route projection and the small mesh are separately Lean checked.",
+  "fixture_sha256": "c8bee2b1f9a5900c37ea35b8b0f868f0aba2fd105d9fbaf3afeefcdfe49a9b8b",
+  "lean_mesh_sha256": "c046b95ba04ac9dfdff962124eee596c7d8447e0773fa9b8c6c618e5a2adcf4a",
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "examples": [
+        {
+          "width": 3,
+          "geometry": {
+            "vertices": 76,
+            "faces": 148,
+            "minimum_degree": 4,
+            "cycles_by_length": {
+              "3": 148,
+              "4": 233,
+              "5": 551
+            },
+            "shore_counts": [
+              {
+                "length": 3,
+                "side_vertices": [
+                  0,
+                  73
+                ],
+                "cycles": 148
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  0,
+                  72
+                ],
+                "cycles": 222
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  1,
+                  71
+                ],
+                "cycles": 11
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  0,
+                  71
+                ],
+                "cycles": 444
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  1,
+                  70
+                ],
+                "cycles": 69
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  2,
+                  69
+                ],
+                "cycles": 22
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  3,
+                  68
+                ],
+                "cycles": 11
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  7,
+                  64
+                ],
+                "cycles": 3
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  8,
+                  63
+                ],
+                "cycles": 2
+              }
+            ],
+            "obstructing_cycles": 49,
+            "first_obstruction": {
+              "cycle": [
+                0,
+                1,
+                21,
+                19
+              ],
+              "side_vertices": [
+                1,
+                71
+              ]
+            }
+          },
+          "initial_phase_choices": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "boundary_components": 4,
+              "palette_only": 2,
+              "strictly_worse": 14
+            },
+            {
+              "pair": [
+                1,
+                3
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "boundary_components": 1,
+              "palette_only": 2
+            }
+          ],
+          "source_core_stars_preserved": true,
+          "alternating_edge_routes_checked": 27,
+          "base_two_switch_repair_reconstructs": true
+        },
+        {
+          "width": 5,
+          "geometry": {
+            "vertices": 159,
+            "faces": 314,
+            "minimum_degree": 5,
+            "cycles_by_length": {
+              "3": 314,
+              "4": 471,
+              "5": 989
+            },
+            "shore_counts": [
+              {
+                "length": 3,
+                "side_vertices": [
+                  0,
+                  156
+                ],
+                "cycles": 314
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  0,
+                  155
+                ],
+                "cycles": 471
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  0,
+                  154
+                ],
+                "cycles": 942
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  1,
+                  153
+                ],
+                "cycles": 47
+              }
+            ],
+            "obstructing_cycles": 0,
+            "first_obstruction": null
+          },
+          "initial_phase_choices": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "boundary_components": 4,
+              "palette_only": 2,
+              "strictly_worse": 14
+            },
+            {
+              "pair": [
+                1,
+                3
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "boundary_components": 1,
+              "palette_only": 2
+            }
+          ],
+          "source_core_stars_preserved": true,
+          "alternating_edge_routes_checked": 27,
+          "base_two_switch_repair_reconstructs": true,
+          "preparation_and_repair": {
+            "prepare": {
+              "pair": [
+                1,
+                3
+              ],
+              "root": 38,
+              "size": 10
+            },
+            "finish": {
+              "pair": [
+                0,
+                3
+              ],
+              "root": 0,
+              "size": 25
+            },
+            "preparation_is_a_boundary_silent_path": true,
+            "initial_profile": [
+              0,
+              5,
+              15,
+              56,
+              118,
+              107,
+              63,
+              20,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "prepared_profile": [
+              0,
+              5,
+              15,
+              56,
+              118,
+              107,
+              63,
+              20,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "final_profile": [
+              1,
+              8,
+              22,
+              68,
+              86,
+              108,
+              56,
+              28,
+              7,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "final_boundary": [
+              3,
+              1,
+              0,
+              1,
+              0,
+              1,
+              3,
+              2,
+              0,
+              2,
+              0
+            ],
+            "core_colours": [
+              1,
+              2,
+              0,
+              3,
+              3,
+              3,
+              2
+            ],
+            "next_pair_components_before": [
+              [
+                0,
+                2,
+                8,
+                10
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "next_pair_components_after": [
+              [
+                0,
+                10
+              ],
+              [
+                2
+              ],
+              [
+                4,
+                6
+              ],
+              [
+                8
+              ]
+            ],
+            "whole_colouring_reconstructed": true
+          }
+        },
+        {
+          "width": 7,
+          "geometry": {
+            "vertices": 278,
+            "faces": 552,
+            "minimum_degree": 5,
+            "cycles_by_length": {
+              "3": 552,
+              "4": 828,
+              "5": 1725
+            },
+            "shore_counts": [
+              {
+                "length": 3,
+                "side_vertices": [
+                  0,
+                  275
+                ],
+                "cycles": 552
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  0,
+                  274
+                ],
+                "cycles": 828
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  0,
+                  273
+                ],
+                "cycles": 1656
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  1,
+                  272
+                ],
+                "cycles": 69
+              }
+            ],
+            "obstructing_cycles": 0,
+            "first_obstruction": null
+          },
+          "initial_phase_choices": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "boundary_components": 4,
+              "palette_only": 2,
+              "strictly_worse": 14
+            },
+            {
+              "pair": [
+                1,
+                3
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "boundary_components": 1,
+              "palette_only": 2
+            }
+          ],
+          "source_core_stars_preserved": true,
+          "alternating_edge_routes_checked": 27,
+          "base_two_switch_repair_reconstructs": true
+        }
+      ]
+    },
+    {
+      "configuration": "D0063.conf",
+      "examples": [
+        {
+          "width": 3,
+          "geometry": {
+            "vertices": 69,
+            "faces": 134,
+            "minimum_degree": 4,
+            "cycles_by_length": {
+              "3": 134,
+              "4": 211,
+              "5": 501
+            },
+            "shore_counts": [
+              {
+                "length": 3,
+                "side_vertices": [
+                  0,
+                  66
+                ],
+                "cycles": 134
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  0,
+                  65
+                ],
+                "cycles": 201
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  1,
+                  64
+                ],
+                "cycles": 10
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  0,
+                  64
+                ],
+                "cycles": 402
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  1,
+                  63
+                ],
+                "cycles": 64
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  2,
+                  62
+                ],
+                "cycles": 20
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  3,
+                  61
+                ],
+                "cycles": 10
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  7,
+                  57
+                ],
+                "cycles": 3
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  8,
+                  56
+                ],
+                "cycles": 2
+              }
+            ],
+            "obstructing_cycles": 45,
+            "first_obstruction": {
+              "cycle": [
+                0,
+                1,
+                20,
+                18
+              ],
+              "side_vertices": [
+                1,
+                64
+              ]
+            }
+          },
+          "initial_phase_choices": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                1,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "boundary_components": 1,
+              "palette_only": 2
+            }
+          ],
+          "source_core_stars_preserved": true,
+          "alternating_edge_routes_checked": 24,
+          "base_two_switch_repair_reconstructs": true
+        },
+        {
+          "width": 5,
+          "geometry": {
+            "vertices": 143,
+            "faces": 282,
+            "minimum_degree": 5,
+            "cycles_by_length": {
+              "3": 282,
+              "4": 423,
+              "5": 890
+            },
+            "shore_counts": [
+              {
+                "length": 3,
+                "side_vertices": [
+                  0,
+                  140
+                ],
+                "cycles": 282
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  0,
+                  139
+                ],
+                "cycles": 423
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  0,
+                  138
+                ],
+                "cycles": 846
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  1,
+                  137
+                ],
+                "cycles": 44
+              }
+            ],
+            "obstructing_cycles": 0,
+            "first_obstruction": null
+          },
+          "initial_phase_choices": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                1,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "boundary_components": 1,
+              "palette_only": 2
+            }
+          ],
+          "source_core_stars_preserved": true,
+          "alternating_edge_routes_checked": 24,
+          "base_two_switch_repair_reconstructs": true,
+          "preparation_and_repair": {
+            "prepare": {
+              "pair": [
+                0,
+                3
+              ],
+              "root": 51,
+              "size": 9
+            },
+            "finish": {
+              "pair": [
+                2,
+                3
+              ],
+              "root": 5,
+              "size": 16
+            },
+            "preparation_is_a_boundary_silent_path": true,
+            "initial_profile": [
+              0,
+              6,
+              25,
+              78,
+              109,
+              102,
+              53,
+              10,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "prepared_profile": [
+              0,
+              6,
+              25,
+              78,
+              109,
+              102,
+              53,
+              10,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "final_profile": [
+              1,
+              4,
+              31,
+              76,
+              104,
+              102,
+              51,
+              14,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "final_boundary": [
+              0,
+              1,
+              0,
+              1,
+              0,
+              3,
+              0,
+              2,
+              1,
+              3
+            ],
+            "core_colours": [
+              0,
+              3,
+              2,
+              3,
+              1,
+              2,
+              2
+            ],
+            "next_pair_components_before": [
+              [
+                5,
+                7,
+                9
+              ]
+            ],
+            "next_pair_components_after": [
+              [
+                5
+              ],
+              [
+                7,
+                9
+              ]
+            ],
+            "whole_colouring_reconstructed": true
+          }
+        },
+        {
+          "width": 7,
+          "geometry": {
+            "vertices": 249,
+            "faces": 494,
+            "minimum_degree": 5,
+            "cycles_by_length": {
+              "3": 494,
+              "4": 741,
+              "5": 1546
+            },
+            "shore_counts": [
+              {
+                "length": 3,
+                "side_vertices": [
+                  0,
+                  246
+                ],
+                "cycles": 494
+              },
+              {
+                "length": 4,
+                "side_vertices": [
+                  0,
+                  245
+                ],
+                "cycles": 741
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  0,
+                  244
+                ],
+                "cycles": 1482
+              },
+              {
+                "length": 5,
+                "side_vertices": [
+                  1,
+                  243
+                ],
+                "cycles": 64
+              }
+            ],
+            "obstructing_cycles": 0,
+            "first_obstruction": null
+          },
+          "initial_phase_choices": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "boundary_components": 3,
+              "palette_only": 2,
+              "strictly_worse": 6
+            },
+            {
+              "pair": [
+                1,
+                3
+              ],
+              "boundary_components": 2,
+              "palette_only": 2,
+              "strictly_worse": 2
+            },
+            {
+              "pair": [
+                2,
+                3
+              ],
+              "boundary_components": 1,
+              "palette_only": 2
+            }
+          ],
+          "source_core_stars_preserved": true,
+          "alternating_edge_routes_checked": 24,
+          "base_two_switch_repair_reconstructs": true
+        }
+      ]
+    }
+  ],
+  "scope": "Strict increase after every fixed-pair phase fails in internally six-connected spheres. In both width-five examples a boundary-silent preparation then a different-pair switch succeeds without decreasing the count vector. This does not refute weakly monotone repair allowing preparation, nor prove uniform availability or a bound on that preparation. No catalogue reduction."
+}

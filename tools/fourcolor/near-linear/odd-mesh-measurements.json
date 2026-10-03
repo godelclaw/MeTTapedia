@@ -1,0 +1,52 @@
+{
+  "evidence": "General fixed-pair projection through bichromatic routes and a 21-vertex triangular mesh kernel checked. Whole spheres, short-cycle census and specified repairs independently program checked.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.RouteProjection",
+      "source_bytes": 4174,
+      "source_sha256": "e0822b2489d67de2a044687b87e383c4627812e59ee0f92e1793812082414bbc",
+      "build_seconds": 1.8,
+      "olean_bytes": 101608,
+      "olean_sha256": "716ced01dce767c840f69f496c81da0439a8d6011aecf2ce96d39f25e75df234"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OddMeshAudit",
+      "source_bytes": 5267,
+      "source_sha256": "c046b95ba04ac9dfdff962124eee596c7d8447e0773fa9b8c6c618e5a2adcf4a",
+      "build_seconds": 3.7,
+      "olean_bytes": 361752,
+      "olean_sha256": "5139d59a5f9e4db6cea206a3cf62dfa4173849bf0bfaf710227cf30f0fe35c0c"
+    }
+  ],
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 2082,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "bulk_repair_certificates_used": false
+  },
+  "build_gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "Mettapedia.GraphTheory.FourColor.OddMeshAudit",
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "passed": true
+  },
+  "programme_counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_check_obligations_replaced": 336,
+    "additional_removals_credited": 0
+  },
+  "scope": [
+    "Finite width-five and width-seven spheres have no obstructing short cycles; arbitrary-width geometric recognition is open.",
+    "Initial fixed-pair phases cannot increase the count potential. This does not imply that boundary-silent preparation cannot enable a later increase.",
+    "Two explicit preparations preserve the entire boundary and potential, change the next pair partition, and permit reconstruction. No uniform supply or switch bound is proved.",
+    "The general route projection is relative to the initial colouring. No projection of arbitrary mixed-pair histories is asserted."
+  ]
+}
