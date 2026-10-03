@@ -1,14 +1,12 @@
 import MettapediaFourColor.ThreeTriangleFan
-import MettapediaFourColor.FacialStarCompletion
+import MettapediaFourColor.FacialBoundaryScheme
 
 /-!
-# Completing the joint boundary of a facial fan
+# The three-triangle fan uses the common facial boundary law
 
-A scheme specifies full source stars extending the common three-triangle
-core. Each boundary port has one owner. A second reading of that port is
-allowed precisely at the shared exterior corner of an edge. The triangular
-rotation law identifies those readings, so all source edges reconstruct in
-one ambient graph. Degrees and the number of ports are parameters.
+The fan layout supplies the core-interval and seam data. Its eight-port and
+nine-port consumers retain the same interface while sharing geometric
+completion with the four-triangle fan and tripod.
 -/
 
 namespace FourColor.FanBoundaryScheme
@@ -16,9 +14,17 @@ namespace FourColor.FanBoundaryScheme
 open Mettapedia.GraphTheory.FourColor SimpleGraphDartRotation
 open ThreeTriangleFan ExceptionalCoreOrientation ExceptionalOverlap
 
-def firstNeighbor : Fin 5 → Fin 5 := ![1, 4, 0, 2, 3]
+def coreLayout : FacialBoundaryScheme.Core 5 where
+  graph := core
+  star := star
+  positive := fun i => (star_specs i).1
+  adjacent := fun i => (star_specs i).2
+  seam := by decide +kernel
 
-theorem first_edge : ∀ i, core.Adj i (firstNeighbor i) := by decide +kernel
+def firstNeighbor : Fin 5 → Fin 5 := FacialBoundaryScheme.firstNeighbor coreLayout
+
+theorem first_edge : ∀ i, core.Adj i (firstNeighbor i) :=
+  FacialBoundaryScheme.first_edge coreLayout
 
 theorem first_spoke : ∀ i,
     spoke i ⟨0, (star_specs i).1⟩ = firstNeighbor i := by decide +kernel
@@ -28,34 +34,14 @@ theorem seam_last : ∀ i : Fin 5,
       ⟨(star (firstNeighbor i)).length - 1, by
         have := (star_specs (firstNeighbor i)).1; omega⟩ = i := by decide +kernel
 
-structure Scheme (ports : ℕ) where
-  graph : SimpleGraph (Fin (ports + 5))
-  degree : Fin 5 → ℕ
-  proper : ∀ i, (star i).length < degree i
-  row : Fin 5 → ℕ → Fin (ports + 5)
-  owner : Fin ports → Fin 5 × ℕ
-  owner_bounds : ∀ b, (star (owner b).1).length ≤ (owner b).2 ∧
-    (owner b).2 < degree (owner b).1
-  core_prefix : ∀ (i : Fin 5) (p : Fin (star i).length),
-    row i p.val = (spoke i p).natAdd ports
-  ring_cases : ∀ (i : Fin 5) (p : Fin (degree i)), (star i).length ≤ p.val →
-    ∃ b : Fin ports, row i p.val = b.castAdd 5 ∧
-      (owner b = (i, p.val) ∨
-        (p.val + 1 = degree i ∧
-          owner b = (firstNeighbor i, (star (firstNeighbor i)).length)))
-  edge_reading : ∀ a b, graph.Adj a b → ∃ (i : Fin 5) (p : Fin (degree i)),
-    (a = i.natAdd ports ∧ b = row i p.val) ∨
-    (b = i.natAdd ports ∧ a = row i p.val) ∨
-    (a = row i p.val ∧ b = row i ((p.val + 1) % degree i)) ∨
-    (b = row i p.val ∧ a = row i ((p.val + 1) % degree i))
+abbrev Scheme (ports : ℕ) := FacialBoundaryScheme.Scheme coreLayout ports
 
 variable {ports : ℕ} (s : Scheme ports)
 
 theorem degree_pos (i : Fin 5) : 0 < s.degree i :=
-  lt_trans (star_specs i).1 (s.proper i)
+  FacialBoundaryScheme.degree_pos coreLayout s i
 
-def nextPos (i : Fin 5) (p : Fin (s.degree i)) : Fin (s.degree i) :=
-  ⟨(p.val + 1) % s.degree i, Nat.mod_lt _ (degree_pos s i)⟩
+abbrev nextPos := FacialBoundaryScheme.nextPos coreLayout s
 
 variable {V : Type*} {G : SimpleGraph V} [G.LocallyFinite] {rotation : Data G}
 
@@ -64,6 +50,12 @@ structure Reading (s : Scheme ports) (rotation : Data G)
   degree_eq : ∀ i, G.degree (map i) = s.degree i
 
 variable {s} (r : Reading s rotation)
+
+def completedReading (tri : Triangular rotation) :
+    FacialBoundaryScheme.Reading coreLayout s rotation where
+  map := r.map
+  turns := ThreeTriangleFan.turns r.toReading tri
+  degree_eq := r.degree_eq
 
 def base (i : Fin 5) : G.Dart :=
   ⟨(r.map i, r.map (firstNeighbor i)), r.map.map_adj (first_edge i)⟩
@@ -78,20 +70,8 @@ theorem around_step (i : Fin 5) (n : ℕ) :
   simp only [around, pow_succ', Equiv.Perm.mul_apply]
 
 theorem around_core (tri : Triangular rotation) (i : Fin 5) (p : Fin (star i).length) :
-    (around r i p.val).snd = r.map (spoke i p) := by
-  have hd : ∀ n (hn : n < (star i).length), around r i n =
-      (⟨(r.map i, r.map (spoke i ⟨n, hn⟩)),
-        r.map.map_adj ((star_specs i).2 _ |>.mpr ⟨⟨n, hn⟩, rfl⟩)⟩ : G.Dart) := by
-    intro n
-    induction n with
-    | zero => intro hn; simp only [around, pow_zero, Equiv.Perm.one_apply, base, first_spoke]
-    | succ n ih =>
-      intro hn
-      rw [← around_step, ih (by omega)]
-      obtain ⟨_, _, eq⟩ := ThreeTriangleFan.turns r.toReading tri i
-        ⟨n, by omega⟩ ⟨n + 1, hn⟩ rfl
-      exact eq
-  exact congrArg (fun d : G.Dart => d.snd) (hd p.val p.isLt)
+    (around r i p.val).snd = r.map (spoke i p) :=
+  FacialBoundaryScheme.around_core coreLayout (completedReading r tri) tri i p
 
 def vertex (v : Fin (ports + 5)) : V :=
   if h : v.val < ports then (around r (s.owner ⟨v.val, h⟩).1 (s.owner ⟨v.val, h⟩).2).snd
@@ -147,120 +127,42 @@ theorem around_previous (cyclic : rotation.IsVertexwiseCyclic) (i : Fin 5) :
 theorem outer_seam (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic)
     (i : Fin 5) :
     (around r i (s.degree i - 1)).snd =
-      (around r (firstNeighbor i) (star (firstNeighbor i)).length).snd := by
-  let j := firstNeighbor i
-  have hn := (star_specs j).1
-  have hd : (base r i).symm = around r j ((star j).length - 1) := by
-    apply SimpleGraph.Dart.ext
-    apply Prod.ext
-    · exact (around_fst r j _).symm
-    · have h := around_core r tri j ⟨(star j).length - 1, by omega⟩
-      rw [seam_last] at h
-      exact h.symm
-  rw [around_previous r cyclic, FacialStarCompletion.across_edge rotation tri, hd,
-    around_step, Nat.sub_add_cancel hn]
+      (around r (firstNeighbor i) (star (firstNeighbor i)).length).snd :=
+  FacialBoundaryScheme.outer_seam coreLayout (completedReading r tri) tri cyclic i
 
-/-- Owner and seam equalities produce a single joint boundary map. -/
+/-- Both chains use the same joint seam theorem as the larger patches. -/
 theorem row_agrees (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic)
     (i : Fin 5) (p : Fin (s.degree i)) :
-    vertex r (s.row i p.val) = (around r i p.val).snd := by
-  by_cases hp : p.val < (star i).length
-  · rw [s.core_prefix i ⟨p.val, hp⟩, vertex_core]
-    exact (around_core r tri i ⟨p.val, hp⟩).symm
-  obtain ⟨b, hb, own | ⟨last, seam⟩⟩ := s.ring_cases i p (by omega)
-  · rw [hb, vertex_ring, own]
-  · rw [hb, vertex_ring, seam]
-    have hp : p.val = s.degree i - 1 := by omega
-    rw [hp]
-    exact (outer_seam r tri cyclic i).symm
+    vertex r (s.row i p.val) = (around r i p.val).snd :=
+  FacialBoundaryScheme.row_agrees coreLayout (completedReading r tri) tri cyclic i p
 
 theorem around_next (cyclic : rotation.IsVertexwiseCyclic)
     (i : Fin 5) (p : Fin (s.degree i)) :
     rotation.vertexRotation (around r i p.val) = around r i (nextPos s i p).val := by
   rw [around_step]
   by_cases h : p.val + 1 < s.degree i
-  · simp only [nextPos, Nat.mod_eq_of_lt h]
+  · simp only [nextPos, FacialBoundaryScheme.nextPos, Nat.mod_eq_of_lt h]
   · have he : p.val + 1 = s.degree i := by omega
-    simp only [nextPos, he, Nat.mod_self]
+    simp only [nextPos, FacialBoundaryScheme.nextPos, he, Nat.mod_self]
     exact around_period r cyclic i
 
-def hom (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic) : s.graph →g G where
-  toFun := vertex r
-  map_rel' := by
-    intro a b h
-    obtain ⟨i, p, h⟩ := s.edge_reading a b h
-    have center : G.Adj (vertex r (i.natAdd ports)) (vertex r (s.row i p.val)) := by
-      rw [vertex_core, row_agrees r tri cyclic]
-      simpa only [around_fst] using (around r i p.val).adj
-    have ring : G.Adj (vertex r (s.row i p.val))
-        (vertex r (s.row i ((p.val + 1) % s.degree i))) := by
-      change G.Adj (vertex r (s.row i p.val)) (vertex r (s.row i (nextPos s i p).val))
-      rw [row_agrees r tri cyclic, row_agrees r tri cyclic]
-      have h := consecutive_adjacent rotation tri (around r i p.val)
-      rwa [around_next r cyclic] at h
-    rcases h with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · exact center
-    · exact center.symm
-    · exact ring
-    · exact ring.symm
+def hom (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic) : s.graph →g G :=
+  FacialBoundaryScheme.hom coreLayout (completedReading r tri) tri cyclic
 
 theorem full_turn (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic)
     (i : Fin 5) (p : Fin (s.degree i)) :
     Corner rotation (vertex r (i.natAdd ports)) (vertex r (s.row i p.val))
-      (vertex r (s.row i (nextPos s i p).val)) := by
-  have adj (q : Fin (s.degree i)) :
-      G.Adj (vertex r (i.natAdd ports)) (vertex r (s.row i q.val)) := by
-    rw [vertex_core, row_agrees r tri cyclic]
-    simpa only [around_fst] using (around r i q.val).adj
-  have eq (q : Fin (s.degree i)) :
-      (⟨(vertex r (i.natAdd ports), vertex r (s.row i q.val)), adj q⟩ : G.Dart) =
-        around r i q.val := by
-    apply SimpleGraph.Dart.ext
-    exact Prod.ext ((vertex_core r i).trans (around_fst r i q.val).symm)
-      (row_agrees r tri cyclic i q)
-  refine ⟨adj p, adj (nextPos s i p), ?_⟩
-  exact (congrArg rotation.vertexRotation (eq p)).trans
-    ((around_next r cyclic i p).trans (eq (nextPos s i p)).symm)
+      (vertex r (s.row i (nextPos s i p).val)) :=
+  FacialBoundaryScheme.full_turn coreLayout (completedReading r tri) tri cyclic i p
 
 theorem around_injective (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic)
-    (i : Fin 5) : Function.Injective (fun p : Fin (s.degree i) => (around r i p.val).snd) := by
-  classical
-  let : Fintype V := Fintype.ofFinite V
-  apply ExceptionalCoreLocalInjectivity.corner_chain_injective rotation cyclic
-    (r.map i) (degree_pos s i)
-  · intro p
-    simpa only [around_fst] using (around r i p.val).adj
-  · intro n hn
-    have h := full_turn r tri cyclic i ⟨n, by omega⟩
-    rw [vertex_core, row_agrees r tri cyclic, row_agrees r tri cyclic] at h
-    simpa only [nextPos, Nat.mod_eq_of_lt hn] using h
-  · rw [r.degree_eq]
+    (i : Fin 5) : Function.Injective (fun p : Fin (s.degree i) => (around r i p.val).snd) :=
+  FacialBoundaryScheme.around_injective coreLayout (completedReading r tri) tri cyclic i
 
-/-- An owned exterior position cannot identify with an induced core vertex.
-Identifications among exterior ports remain permitted. -/
+/-- Exterior identifications are permitted, but cannot capture an induced core. -/
 theorem ring_outside_core (tri : Triangular rotation) (cyclic : rotation.IsVertexwiseCyclic)
     (reflect : ∀ i j, G.Adj (r.map i) (r.map j) → core.Adj i j)
-    (p : Fin ports) (j : Fin 5) : vertex r (p.castAdd 5) ≠ r.map j := by
-  intro eq
-  rw [vertex_ring] at eq
-  let i := (s.owner p).1
-  let n := (s.owner p).2
-  obtain ⟨lo, hi⟩ := s.owner_bounds p
-  have adj : G.Adj (r.map i) (r.map j) := by
-    have h := (around r i n).adj
-    rw [around_fst, eq] at h
-    exact h
-  obtain ⟨q, hq⟩ := (star_specs i).2 j |>.mp (reflect i j adj)
-  have he : (around r i n).snd = (around r i q.val).snd := by
-    rw [around_core r tri i q, hq]
-    exact eq
-  have indices : (⟨n, hi⟩ : Fin (s.degree i)) =
-      ⟨q.val, lt_trans q.isLt (s.proper i)⟩ :=
-    around_injective r tri cyclic i he
-  have hval := congrArg Fin.val indices
-  have hqbound := q.isLt
-  change n = q.val at hval
-  change (star i).length ≤ n at lo
-  omega
+    (p : Fin ports) (j : Fin 5) : vertex r (p.castAdd 5) ≠ r.map j :=
+  FacialBoundaryScheme.ring_outside_core coreLayout (completedReading r tri) tri cyclic reflect p j
 
 end FourColor.FanBoundaryScheme

@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay generic facial-interval boundary completion. -/
+target kernelFacialBoundary pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/facial-boundary",
+        "--library-output", ".lake/build/lib/lean", "--modules", "FacialBoundaryScheme",
+        "FanBoundaryScheme", "FourTriangleCompletion", "FourTriangleCompletedOccurrence",
+        "FacialBoundaryAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay exact source bridges and full joint repair for two four-triangle patches. -/
 target kernelFourTriangleRepair pkg : Unit := do
   let env ← getAugmentedEnv

@@ -19,9 +19,21 @@ and 37, including opposite orientation conventions. One rank-coverage
 theorem consumes their existing certificates and supplies full proper-domain
 repair. A supplied complete occurrence yields actual strict two-vertex
 descent and compatible ambient reconstruction; different boundary labels
-may coincide. Deriving that occurrence from the four core triangles, and
-the joint coverage classification, remain open. No original certificate
-dependency or coverage entry is removed.
+may coincide. The [joint boundary completion](facial-boundary-measurements.json)
+now derives all source edges and complete positive core stars from four
+facial triangles and six degrees. Both complete occurrences and actual
+strict reconstruction are connected. A proved reflection of the tripod's
+full source aligns its positive geometric completion with its reversed
+classical repair. The joint coverage classification remains open. No original
+certificate dependency or coverage entry is removed.
+
+The same parameterized seam theorem now serves both earlier three-triangle
+chains and both four-triangle layouts. Owners read each exterior port once;
+the across-edge triangle law proves agreement at every closing seam. This
+retains the joint boundary, while allowing distinct exterior labels to
+coincide. Replay `lake build kernelFacialBoundary`, then the migrated
+consumers with `lake build kernelChainRecognition` and
+`lake build kernelExtendedChain`.
 Replay `lake build kernelFourTriangleRepair kernelFourTriangleGeometry`.
 Replay the source audit with
 `python3 tools/fourcolor/near-linear/audit_four_triangle_sources.py`.

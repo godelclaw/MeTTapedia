@@ -43,8 +43,17 @@ without using either original contract check. The
 [actual consumer](MettapediaFourColor/FourTriangleRepairGeometry.lean)
 uses a valid singleton contract, strict two-vertex descent and joint exterior
 repair to reconstruct a colouring from either complete occurrence.
-Supplying those complete occurrences from only the four retained inner
-triangles is still open. No certificate or catalogue entry is removed.
+The [common boundary theorem](MettapediaFourColor/FacialBoundaryScheme.lean)
+now supplies complete positive-orientation boundaries from the four inner
+faces and six degrees. It also replaces the geometry behind both earlier
+three-triangle chain layouts. Each exterior port has one owner; a triangular
+seam identifies its other reading, preserving one joint boundary map.
+The [complete consumer](MettapediaFourColor/FourTriangleCompletedOccurrence.lean)
+connects these core data to actual strict reconstruction for both layouts,
+without an assumed boundary occurrence. A degree-preserving reflection of
+D0052 aligns its complete source with the reversed classical presentation.
+All ports are transported together. Universal geometric supply remains open;
+no certificate or catalogue entry is removed.
 The target comes from a replayed spherical example with adjacent flat
 sevens: none of the tested diamond, chain or one/two-five wheel cores lies
 within radius three of either centre, while D0052 lies within radius two.
@@ -55,6 +64,13 @@ Replay `lake build kernelFourTriangleCore`; see the
 The full bridges and actual consumers replay with
 `lake build kernelFourTriangleRepair kernelFourTriangleGeometry`; see their
 [separate receipt](../../tools/fourcolor/near-linear/four-triangle-repair-measurements.json).
+Replay the shared boundary completion and both consumers with
+`lake build kernelFacialBoundary`, followed by the migrated chain consumers
+`lake build kernelChainRecognition` and `lake build kernelExtendedChain`.
+The [completion audit](MettapediaFourColor/FacialBoundaryAudit.lean) excludes
+rank certificates from the geometric roots and checks the retained repair
+dependencies separately; see the
+[completion receipt](../../tools/fourcolor/near-linear/facial-boundary-measurements.json).
 
 The [second side of the shared fan](MettapediaFourColor/SecondFanResidual.lean)
 now has an exact geometric classification. At a flat degree-seven second

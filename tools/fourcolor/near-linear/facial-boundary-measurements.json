@@ -1,0 +1,292 @@
+{
+  "status": "Kernel-certified common boundary completion, exact tripod reflection and actual strict reconstruction from four faces for both layouts.",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "source_manifest": "four-triangle-sources.json",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FacialBoundaryScheme",
+      "source_sha256": "274ec4eb18da92f083e900804eee2baa063d8426f4d604b5acdc5e1217d93add",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.416,
+      "olean_bytes": 766928,
+      "olean_sha256": "ad43450a7d0ad99b57006839eed37d28ed49270edb645785f7568ee7c1ca0863"
+    },
+    {
+      "module": "MettapediaFourColor.FanBoundaryScheme",
+      "source_sha256": "12c75c44b9f22927ab4f6df5a56cae24427912890e225efb6945e45b60073aa6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.394,
+      "olean_bytes": 360520,
+      "olean_sha256": "7bc6bb833f9c4bab7492c4feef12f8ed0260283787a5d1cf5a8956095e9bea15"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleCompletion",
+      "source_sha256": "a19d1bb8ffc8150fe7b2d1294372bc575ff99b9cfb7f0e68806cb1ccbc61d248",
+      "exit_code": 0,
+      "frontend_wall_seconds": 14.176,
+      "olean_bytes": 223600,
+      "olean_sha256": "34f2480f4c7f1aa6791981bd76a54dd13b23bfafca5e1ddcda1b7e2a679542a2"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleCompletedOccurrence",
+      "source_sha256": "0a2c2b8039409c5268c83376b05f173c2ccfc12b0dea21ce684da5ce47c186fb",
+      "exit_code": 0,
+      "frontend_wall_seconds": 16.076,
+      "olean_bytes": 308920,
+      "olean_sha256": "e8b67eeb1c8407de8d043fef1c50a8abd9749d19f2c023dcc5298475dd082ea8"
+    },
+    {
+      "module": "MettapediaFourColor.FacialBoundaryAudit",
+      "source_sha256": "140456dbfef4a77bff1025d94ca6c0e78f5d1a05e0c7952e9af1daf8fd08ea16",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.736,
+      "olean_bytes": 2728,
+      "olean_sha256": "14f8a8be61555c7ed05030b243e3c7fe520d8ce775f4a5c061232cb1d9e6486a"
+    }
+  ],
+  "regression_modules": {
+    "chain": [
+      {
+        "module": "MettapediaFourColor.ThreeTriangleFan",
+        "source_sha256": "887655aeb9e3f9bc0540f737c4f1838cbe4541b69c57093cf1c0f64d8e77631f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.003,
+        "olean_bytes": 230384,
+        "olean_sha256": "74088c86654cc4fc94edb222948ed916016af916e88c9a1ab3a57ed64237a003"
+      },
+      {
+        "module": "MettapediaFourColor.FanBoundaryScheme",
+        "source_sha256": "12c75c44b9f22927ab4f6df5a56cae24427912890e225efb6945e45b60073aa6",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.513,
+        "olean_bytes": 360520,
+        "olean_sha256": "7bc6bb833f9c4bab7492c4feef12f8ed0260283787a5d1cf5a8956095e9bea15"
+      },
+      {
+        "module": "MettapediaFourColor.ChainCoreReading",
+        "source_sha256": "4a93b993eb964ce920cf0efeaf5d7d6df032ff32b15ccc8e04e3b3e75b81b6f0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.548,
+        "olean_bytes": 130440,
+        "olean_sha256": "aaf7e2da8d553e3a4adf2ad0f7035b16d2b2f81bbaeb2c6ec0f652f312fc848d"
+      },
+      {
+        "module": "MettapediaFourColor.ChainCoreCompletion",
+        "source_sha256": "301c21e8970914df4371d80d388e83282c119a38bc862f9ddf2c0c5b1124e35e",
+        "exit_code": 0,
+        "frontend_wall_seconds": 8.104,
+        "olean_bytes": 417360,
+        "olean_sha256": "ec66e78974845f585192bb0730fd4fec26780bd554d5127bb75e67652a896737"
+      },
+      {
+        "module": "MettapediaFourColor.ChainCoreOccurrence",
+        "source_sha256": "f81a9825cdd49e2b6b75046e10df8d803b8169e9603e4b44725ba9be38d3263a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.928,
+        "olean_bytes": 301504,
+        "olean_sha256": "7ffaf940b2ebc7a0b41644f8c14b35d10bcdad598f4bd43e3b1473de9fb2cbd1"
+      },
+      {
+        "module": "MettapediaFourColor.ActualChainRecognition",
+        "source_sha256": "7c3edc19979e14083c7b9f081341f2401feeac48d04d390ea64d9a60db5d6ade",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.357,
+        "olean_bytes": 46800,
+        "olean_sha256": "7d6c17a7e4ee56c4a5796683ba700e072ccaa36fb25e83b1a5e20e4f28c4aec7"
+      },
+      {
+        "module": "MettapediaFourColor.ChainFanRecognition",
+        "source_sha256": "205a86d7968ada5ec63168cb27c612518d7dd667eee112eececb6e729b99c833",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.821,
+        "olean_bytes": 183936,
+        "olean_sha256": "9b3a723a750ea14dd8e857751779a89c36c1f0d7a928403710e2606bbf282254"
+      },
+      {
+        "module": "MettapediaFourColor.ChainRecognitionExample",
+        "source_sha256": "fd23cb631f4b9abc2c1f5caa1ad2766013d937c0b6f6b0e0cb150a1423459ebc",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.58,
+        "olean_bytes": 128752,
+        "olean_sha256": "3edd48b89296b982744ee723b2566ba328d22034e35e65333ca39133715eab50"
+      },
+      {
+        "module": "MettapediaFourColor.ChainRecognitionAudit",
+        "source_sha256": "9272f3030ee8ed955ac3486bcc94d013a881cb2ad382d9eee6e1be5623493dc8",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.527,
+        "olean_bytes": 2720,
+        "olean_sha256": "2e4cdd81845fbd271154bc45c57094e585bde816fc6f99e0f86653602a4bef47"
+      }
+    ],
+    "extended_chain": [
+      {
+        "module": "MettapediaFourColor.ExtendedChainCore",
+        "source_sha256": "91efbaecec95606bf405d65233c094cd2e325ae0816b278053618b65f4aff654",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.544,
+        "olean_bytes": 167320,
+        "olean_sha256": "0873c08440460a81e65aeb4d4746219e7a98d60e7bcefdea2309763f228e64dd"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainCompletion",
+        "source_sha256": "68b1fa85fc83d46451306031705cbb24d47b350a78fc364fed5b8a5516787a41",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.087,
+        "olean_bytes": 242464,
+        "olean_sha256": "b222cf84188d5e24b327306f1169a587211a87e4c5563a4a9c527a915ccf8e0c"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainOccurrence",
+        "source_sha256": "8f6e5fbb41c83a3a43d0a8be196ee41613f4cfd6f014c5f79df3f23f695c88ee",
+        "exit_code": 0,
+        "frontend_wall_seconds": 10.498,
+        "olean_bytes": 272152,
+        "olean_sha256": "cb67b620b419348d936b7dfb84401013db3805206f01925c8df326effb554694"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainRecognition",
+        "source_sha256": "f58b9054c8f61636842b3b3827a1aebd982257e6c91e8968a82ba8bcf19a3fb0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.604,
+        "olean_bytes": 206768,
+        "olean_sha256": "7164169117947100c1cc5e3c31f4abcf4031bdba3ff38141ee6f62cb270acb92"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainContract",
+        "source_sha256": "3498363551d27e669f8e702b643e5794adecdba1cf371b15047767526249b354",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.996,
+        "olean_bytes": 70720,
+        "olean_sha256": "2c4aef9e306bb310300fc6c7176ba46cc50d7bb37ee782ec27b84ee45bd5676b"
+      },
+      {
+        "module": "MettapediaFourColor.ActualExtendedChainReduction",
+        "source_sha256": "8acf9f3741c00fba085cc1be15fe91d9be1569b9c15c581cc64d0220d03b3254",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.996,
+        "olean_bytes": 70192,
+        "olean_sha256": "e2820d7a87b2e2f6c9f5cf8ef3cca53fe3ea22fa6e3962c3d07a2b3248ce5187"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainExample",
+        "source_sha256": "86d3d1b624f708af5e615a18e6ea12257d834b3add6a87d981ccb3a5269e9ee5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.072,
+        "olean_bytes": 118504,
+        "olean_sha256": "af4b56b84b34f2db519363c4fb1a0a60e8e9526011f2b82b803e033679686d67"
+      },
+      {
+        "module": "MettapediaFourColor.ExtendedChainAudit",
+        "source_sha256": "35317ae97906a6f3ebcfa14fbb674f36f084dd90c380f4250b60b7bf431dbbb1",
+        "exit_code": 0,
+        "frontend_wall_seconds": 12.215,
+        "olean_bytes": 2600,
+        "olean_sha256": "bcb8e8714cc822508f3f8d7057368392a1164a63f5bb573d147a1f56106e706b"
+      }
+    ]
+  },
+  "native_code_generation": false,
+  "audit": {
+    "roots": 19,
+    "declarations": 31023,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "geometric_roots_use_rank_certificates": false,
+    "actual_repair_dispatcher_retains": [
+      "FourColor.Bulk.Cfg032",
+      "FourColor.Bulk.Cfg036"
+    ],
+    "recorded_contract_checks_used": false,
+    "complete_four_colour_theorem_used": false
+  },
+  "shared_geometry": {
+    "theorem": "FacialBoundaryScheme.row_agrees",
+    "parameters": [
+      "core size and graph",
+      "ordered core intervals",
+      "full source stars and degrees",
+      "boundary owners and closing seams",
+      "complete source edge readings"
+    ],
+    "mechanism": "Triangular across-edge closure identifies the second reading of a seam port with its owner. One joint boundary map then preserves all edges and full core turns.",
+    "distinct_core_graphs": 3,
+    "checked_layouts": 4,
+    "consumers": [
+      "D0004 eight-port chain",
+      "D0006 nine-port extended chain",
+      "D0051 ten-port fan",
+      "D0052 ten-port tripod"
+    ],
+    "boundary_labels_may_coincide": true,
+    "boundary_core_separation": "Derived from inducedness and cyclic neighbour injectivity.",
+    "finite_layout_checks_retained": true
+  },
+  "tripod_transport": {
+    "theorem": "FourTriangleCompletedOccurrence.source_turn",
+    "zero_based_vertex_reflection": [
+      4,
+      3,
+      2,
+      1,
+      0,
+      9,
+      8,
+      7,
+      6,
+      5,
+      10,
+      12,
+      11,
+      13,
+      15,
+      14
+    ],
+    "preserves": [
+      "complete adjacency in both directions",
+      "core degrees",
+      "core and boundary sets",
+      "all reference core turns after reflection",
+      "entire ordered boundary"
+    ],
+    "boundary_rotation_after_transport": {
+      "D0051": 9,
+      "D0052": 1
+    },
+    "new_repair_table": false
+  },
+  "actual_consumer": {
+    "theorem": "ActualFourTrianglePatch.not_in_minimal",
+    "inputs": [
+      "same graph-backed vertex-minimal spherical cubic counterexample",
+      "four retained inner facial triangles in the selected core",
+      "six prescribed ambient degrees"
+    ],
+    "derived": [
+      "injective induced core",
+      "complete ten-port occurrence",
+      "strict two-vertex smaller-map descent",
+      "compatible actual ambient colouring reconstruction"
+    ],
+    "caller_supplied_full_boundary": false,
+    "caller_supplied_exterior_colouring": false,
+    "repair_basis": "Reuses Emery/Gonthier configurations 33 and 37 through FullRankRepair; this is geometric integration, not a new reducibility certificate."
+  },
+  "checks": [
+    "kernelFacialBoundary kernelComplete",
+    "kernelChainRecognition",
+    "kernelExtendedChain",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_four_triangle_sources.py"
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "remaining": [
+    "Supply one of these recognized cores, or another sound reduction, in the remaining joint flat-neighbourhood branches.",
+    "Integrate a proved coverage branch into the complete assembly.",
+    "Universal coverage, termination and reconstruction for the proposed compact explanation."
+  ]
+}

@@ -30,9 +30,19 @@ the tripod matches configuration 37 with orientation reversed. Full rank
 coverage gives repair on all proper ten-port inputs, reusing those two
 certificates. One actual-map argument then reconstructs colourings after
 strict two-vertex descent from either complete occurrence.
-The missing link is geometric boundary completion from the four inner
-faces; complete occurrences are still explicit hypotheses. This step
-removes no certificate dependency or coverage entry.
+The [boundary completion](../../../lean/fourcolor-classical/MettapediaFourColor/FacialBoundaryScheme.lean)
+now works uniformly for the two earlier chain layouts, the fan and the tripod.
+A boundary port is read once from its owner, and triangle closure forces
+agreement with its second reading at a seam. The result preserves all
+source edges and complete core rotations, including the shared choices.
+For both layouts, [four faces and six degrees](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCompletedOccurrence.lean)
+now supply the complete occurrence and hence actual strict reconstruction.
+The tripod uses a proved reflection of its entire source disk: edges,
+degrees, core turns and ordered boundary are transported together. This
+aligns the positive geometric completion with the reversed classical repair
+presentation. Universal occurrence supply remains separate. This step removes
+no certificate dependency or coverage entry; its [receipt](../../../tools/fourcolor/near-linear/facial-boundary-measurements.json)
+records the shared theorem, consumers and audit.
 The motivating spherical example also separates a larger observation
 radius from a larger repair vocabulary: widening to radius three still
 misses all the tested diamond, chain and wheel cores, while the new tripod

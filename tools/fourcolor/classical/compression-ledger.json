@@ -4086,7 +4086,7 @@
     "open": [
       "Joint unique-neighbour, induced-path and facial-seven-triangle closing laws.",
       "Initial shared-fan supply or alternative reductions throughout the intended coverage class.",
-      "Complete boundary and repair consumers for the newly recognized D0051/D0052 cores."
+      "Joint geometric supply using the now-completed D0051/D0052 boundary and repair consumers."
     ]
   },
   "four_triangle_source_repair": {
@@ -4236,6 +4236,113 @@
       "Construct complete occurrences from the four core faces, respecting the orientation difference.",
       "Prove supply in the joint flat-neighbourhood class.",
       "Integrate a new coverage branch before crediting catalogue compression."
+    ],
+    "followup": "facial-boundary-measurements.json"
+  },
+  "facial_boundary_completion": {
+    "record": "../near-linear/facial-boundary-measurements.json",
+    "status": "Kernel-certified common boundary completion, exact tripod reflection and actual strict reconstruction from four faces for both layouts.",
+    "audit": {
+      "roots": 19,
+      "declarations": 31023,
+      "allowed_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "geometric_roots_use_rank_certificates": false,
+      "actual_repair_dispatcher_retains": [
+        "FourColor.Bulk.Cfg032",
+        "FourColor.Bulk.Cfg036"
+      ],
+      "recorded_contract_checks_used": false,
+      "complete_four_colour_theorem_used": false
+    },
+    "shared_geometry": {
+      "theorem": "FacialBoundaryScheme.row_agrees",
+      "parameters": [
+        "core size and graph",
+        "ordered core intervals",
+        "full source stars and degrees",
+        "boundary owners and closing seams",
+        "complete source edge readings"
+      ],
+      "mechanism": "Triangular across-edge closure identifies the second reading of a seam port with its owner. One joint boundary map then preserves all edges and full core turns.",
+      "distinct_core_graphs": 3,
+      "checked_layouts": 4,
+      "consumers": [
+        "D0004 eight-port chain",
+        "D0006 nine-port extended chain",
+        "D0051 ten-port fan",
+        "D0052 ten-port tripod"
+      ],
+      "boundary_labels_may_coincide": true,
+      "boundary_core_separation": "Derived from inducedness and cyclic neighbour injectivity.",
+      "finite_layout_checks_retained": true
+    },
+    "tripod_transport": {
+      "theorem": "FourTriangleCompletedOccurrence.source_turn",
+      "zero_based_vertex_reflection": [
+        4,
+        3,
+        2,
+        1,
+        0,
+        9,
+        8,
+        7,
+        6,
+        5,
+        10,
+        12,
+        11,
+        13,
+        15,
+        14
+      ],
+      "preserves": [
+        "complete adjacency in both directions",
+        "core degrees",
+        "core and boundary sets",
+        "all reference core turns after reflection",
+        "entire ordered boundary"
+      ],
+      "boundary_rotation_after_transport": {
+        "D0051": 9,
+        "D0052": 1
+      },
+      "new_repair_table": false
+    },
+    "actual_consumer": {
+      "theorem": "ActualFourTrianglePatch.not_in_minimal",
+      "inputs": [
+        "same graph-backed vertex-minimal spherical cubic counterexample",
+        "four retained inner facial triangles in the selected core",
+        "six prescribed ambient degrees"
+      ],
+      "derived": [
+        "injective induced core",
+        "complete ten-port occurrence",
+        "strict two-vertex smaller-map descent",
+        "compatible actual ambient colouring reconstruction"
+      ],
+      "caller_supplied_full_boundary": false,
+      "caller_supplied_exterior_colouring": false,
+      "repair_basis": "Reuses Emery/Gonthier configurations 33 and 37 through FullRankRepair; this is geometric integration, not a new reducibility certificate."
+    },
+    "checks": [
+      "kernelFacialBoundary kernelComplete",
+      "kernelChainRecognition",
+      "kernelExtendedChain",
+      "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "python3 tools/fourcolor/near-linear/audit_four_triangle_sources.py"
+    ],
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "remaining": [
+      "Supply one of these recognized cores, or another sound reduction, in the remaining joint flat-neighbourhood branches.",
+      "Integrate a proved coverage branch into the complete assembly.",
+      "Universal coverage, termination and reconstruction for the proposed compact explanation."
     ]
   }
 }

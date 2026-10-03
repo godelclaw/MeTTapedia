@@ -17,7 +17,7 @@ open ExceptionalCoreOrientation ExceptionalOverlap
 
 set_option maxRecDepth 32768
 
-def firstNeighbor : Fin 5 → Fin 5 := ![1, 4, 0, 2, 3]
+def firstNeighbor : Fin 5 → Fin 5 := FanBoundaryScheme.firstNeighbor
 
 theorem first_edge : ∀ i, core.Adj i (firstNeighbor i) := by decide +kernel
 
