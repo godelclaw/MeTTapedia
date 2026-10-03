@@ -125,6 +125,87 @@ target kernelWheelEmbedding pkg : Unit := do
       cwd := pkg.dir
       env := env }
 
+/-- Assemble complete wheel repair and its actual compositional consumers. -/
+target kernelWheelFamilyChecked pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-family-checked",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "WheelRepairChecked", "WheelFamilyChecked", "WheelFamilyAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay all wheel record checks after the full-table pilot. -/
+target kernelWheelRepairRecords pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-repair-records",
+        "--library-output", ".lake/build/lib/lean", "--modules", "WheelRepairRecord0", "WheelRepairRecord1", "WheelRepairRecord2", "WheelRepairRecord3", "WheelRepairRecord4", "WheelRepairRecord5", "WheelRepairRecord6", "WheelRepairRecord7", "WheelRepairRecord8", "WheelRepairRecord9", "WheelRepairRecord10", "WheelRepairRecord11", "WheelRepairRecord12", "WheelRepairRecord13", "WheelRepairRecord14", "WheelRepairRecord15", "WheelRepairRecord16"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay all wheel input checks after the full-table pilot. -/
+target kernelWheelRepairInputs pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-repair-inputs",
+        "--library-output", ".lake/build/lib/lean", "--modules", "WheelRepairInput0", "WheelRepairInput1", "WheelRepairInput2", "WheelRepairInput3", "WheelRepairInput4", "WheelRepairInput5", "WheelRepairInput6", "WheelRepairInput7", "WheelRepairInput8", "WheelRepairInput9", "WheelRepairInput10", "WheelRepairInput11", "WheelRepairInput12", "WheelRepairInput13", "WheelRepairInput14", "WheelRepairInput15", "WheelRepairInput16"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Prepare shared finite block definitions. -/
+target kernelWheelRepairCheckCommon pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-repair-common",
+        "--library-output", ".lake/build/lib/lean", "--modules", "WheelRepairCheckCommon"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Check action sharing without weakening exterior compatibility. -/
+target kernelSharedMask pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/shared-mask-audit",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeSharedMaskCertificate"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Benchmark the complete wheel certificate format before full finite replay. -/
+target kernelWheelRepairPilot pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/wheel-repair-pilot",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeSharedMaskCertificate", "WheelRepairData", "WheelRepairCertificate", "WheelRepairPilot4", "WheelRepairPilot6", "WheelRepairPilot8", "WheelRepairPilot10", "WheelRepairPilot12", "WheelRepairPilotInput"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay a compatible repair of the wheel's nonextending seed trace. -/
 target kernelWheelSeedRepair pkg : Unit := do
   let env ← getAugmentedEnv

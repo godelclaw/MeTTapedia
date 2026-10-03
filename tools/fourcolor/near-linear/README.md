@@ -1,5 +1,14 @@
 # Near-linear Four Colour catalogue bridges
 
+The [complete wheel-family receipt](wheel-family-measurements.json) records
+kernel certification of every D3009 repair state and input trace. A shared
+action checker validates each recolouring once while retaining each
+exterior pairing's joint compatibility. The existing boundary-collapse law
+then supplies all six ordered two-five variants without new repair tables.
+The actual-map consumer proves strict reconstruction and supplies the next
+adjacent-seven pair from a shared fan. Broader geometric coverage remains
+open; no classical coverage entry is removed by this result.
+
 The [four-triangle geometry](four-triangle-measurements.json) shares one
 injectivity and inducedness proof between the distinct D0051 fan and D0052
 tripod cores. Both full source files, degree profiles and core facial

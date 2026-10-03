@@ -1,5 +1,33 @@
 # Classical Four Colour and compositional reconstruction
 
+The [complete wheel repair](MettapediaFourColor/WheelFamilyChecked.lean)
+now supplies the previously open D3009 contract. All 66,430 repair states
+and all 531,441 input indices have passed kernel checks. One shared
+boundary-collapse law transports that repair to all six ordered placements
+of a second degree-five rim vertex, with no target repair tables.
+Actual embedded occurrences, strict two-vertex descent and compatible
+colouring reconstruction are connected in the same consumer. Its two GSLT
+sector witnesses retain a common centre and both seam colours.
+
+The [audit](MettapediaFourColor/WheelFamilyAudit.lean) checks every finite
+shard and excludes the complete Four Colour theorem from these dependencies.
+The actual shared-fan consumer now supplies an adjacent flat-seven pair
+without an assumed wheel repair. Joint pair/path/triangle closing laws and
+universal fan supply remain open. The classical assembly still uses 633
+coverage entries and 629 original configuration certificates.
+See the [full receipt](../../tools/fourcolor/near-linear/wheel-family-measurements.json).
+Replay the finite stages in order:
+
+```sh
+lake build kernelWheelRepairPilot
+lake build kernelWheelRepairCheckCommon
+lake build kernelWheelRepairRecords kernelWheelRepairInputs
+lake build kernelWheelFamilyChecked
+```
+
+The finite replay checks a source base; the six target repairs come from
+the shared theorem. This is a completed local family, not universal coverage.
+
 The [four-triangle core theorem](MettapediaFourColor/FourTriangleCore.lean)
 now handles both the D0051 fan and D0052 tripod with one facial-interval
 argument. Their exact source stars retain all shared vertices. Proper
@@ -31,8 +59,9 @@ placements of the second five have checked complete adjacency, cyclic
 stars, prescribed degrees and ordered ports. No per-position repair table
 is added. Actual colourings are equivalent to joint cyclic choices, and
 `TwoFiveWheelColouring.repaired_sectors` produces two compatible GSLT
-sector witnesses for the same exterior. The full D3009 repair remains an
-explicit premise. Actual occurrence is now supplied by the shared
+sector witnesses for the same exterior. `WheelFamilyChecked` supplies the
+full D3009 premise from the complete finite certificate. Actual occurrence
+is supplied by the shared
 [boundary-completion theorem](MettapediaFourColor/WheelBoundaryCompletion.lean).
 `TwoFiveWheelOccurrence.supplied` selects the second-five position from the
 actual neighbour orbit and constructs twenty distinct vertices, twelve
@@ -87,8 +116,9 @@ occurrence into an injective disk. The
 a valid interior contract and reconstructs the actual ambient colouring,
 conditional on a full thirteen-port repair law. Vertex minimality supplies
 its initial colouring through the established strict two-vertex reduction.
-That full repair law remains open; counts stay at 633 coverage entries /629
-original certificates. Replay `lake build kernelWheelEmbedding`; see the
+That full repair law is now supplied by `WheelFamilyChecked.source_repair`;
+counts stay at 633 coverage entries /629 original certificates. Replay
+`lake build kernelWheelEmbedding`; see the
 [geometry receipt](../../tools/fourcolor/near-linear/wheel-embedding-measurements.json).
 
 The [exact cyclic charge law](MettapediaFourColor/ExactCyclicCharge.lean)
@@ -101,12 +131,13 @@ two rule types are impossible and there are precisely two budgets:
 [actual-map consumer](MettapediaFourColor/ExactFanResidual.lean) retains
 these observations and the preceding reduction exclusion. The wheel occurrence
 above supplies their common geometric source;
-its colouring repair remains open.
+its colouring repair is supplied by `WheelFamilyChecked.source_repair`.
 `lake build kernelExactCyclicCharge` replays the identity, consumer, finite
 exact-charge examples and audit. The
 [receipt](../../tools/fourcolor/near-linear/exact-charge-measurements.json)
 records two jointly flat program examples and the common `D3009` wheel
-source, whose repair remains unverified here. Catalogue counts are unchanged.
+source. The complete repair is now kernel certified above; catalogue counts
+are unchanged.
 
 The latest local reduction bridge is
 [ExtraChargeReduction](MettapediaFourColor/ExtraChargeReduction.lean).
@@ -1742,7 +1773,7 @@ enumeration through twelve active ports once for all its consumers.
 Replay `lake build kernelWheelSeedRepair`. The
 [receipt](../../tools/fourcolor/near-linear/wheel-seed-repair-measurements.json)
 separates this checked trace from the complete finite discovery computation.
-The remaining thirteen-port traces still require certification. The disk
-geometry, actual exterior closure and strict-reduction consumer are now
-proved conditional on that complete repair, in `D3009RepairGeometry`.
+The complete thirteen-port certification is now supplied by
+`WheelRepairChecked`. `WheelFamilyChecked` connects it to the existing disk
+geometry, actual exterior closure and strict-reduction consumer.
 Coverage and original certificate counts remain 633 /629.

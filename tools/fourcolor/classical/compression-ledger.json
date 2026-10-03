@@ -3845,7 +3845,8 @@
     "coverage_entries_removed": 0,
     "original_certificates_removed": 0,
     "member_checks_removed": 0,
-    "open": "Compatible D3009 repair, strict reconstruction and broader coverage."
+    "open": "Broader geometric supply and joint closing laws; local wheel repair and strict reconstruction are complete.",
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "wheel_colouring": {
     "record": "../near-linear/wheel-colouring-measurements.json",
@@ -3857,7 +3858,8 @@
     "coverage_entries_removed": 0,
     "original_certificates_removed": 0,
     "member_checks_removed": 0,
-    "open": "Compatible exterior repair, strict reconstruction and wider geometric coverage."
+    "open": "Broader geometric supply and joint closing laws; local wheel repair and strict reconstruction are complete.",
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "wheel_seed_repair": {
     "record": "../near-linear/wheel-seed-repair-measurements.json",
@@ -3875,22 +3877,24 @@
     "original_certificates_removed": 0,
     "member_checks_removed": 0,
     "new_uniform_repair_schemes": 0,
-    "open": "All remaining traces, actual exterior closure, strict reduction and broader coverage."
+    "open": "Broader geometric supply and joint closing laws; local wheel repair and strict reconstruction are complete.",
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "wheel_embedding": {
     "record": "../near-linear/wheel-embedding-measurements.json",
-    "status": "Kernel-certified D3009 disk geometry and actual reconstruction conditional on its full repair contract.",
-    "remaining_local_input": "Repairs (GraphTrace D3009Wheel.input.graph D3009Wheel.input.boundary) 13",
-    "actual_exterior_and_initial_contract": "Supplied by existing disk reconstruction and strict vertex minimality, conditional on complete wheel repair.",
+    "status": "Kernel-certified D3009 disk and actual reconstruction; WheelFamilyChecked now supplies its complete repair contract.",
+    "actual_exterior_and_initial_contract": "Supplied by disk reconstruction and strict vertex minimality, with the full repair now certified.",
     "coverage_entries_removed": 0,
     "original_certificates_removed": 0,
     "member_checks_removed": 0,
     "new_uniform_repair_schemes": 0,
-    "open": "Full D3009 boundary repair certification, then unconditional residual integration and broader coverage."
+    "open": "Broader geometric supply and joint closing laws; local wheel repair and strict reconstruction are complete.",
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone.",
+    "supplied_local_input": "Repairs (GraphTrace D3009Wheel.input.graph D3009Wheel.input.boundary) 13"
   },
   "second_free_fan_classification": {
     "record": "../near-linear/second-fan-measurements.json",
-    "status": "kernel-certified geometric classification; the D3009 consumer still requires its explicit full repair contract",
+    "status": "Kernel-certified geometric classification; WheelFamilyChecked supplies the full repair to exclude both wheel alternatives.",
     "unconditional_alternatives": [
       "A high neighbour distinct from the original receiver, within radius three.",
       "The original last five is its unique degree-five neighbour; all six other neighbours have degree six.",
@@ -3901,13 +3905,13 @@
     "new_configuration_certificate_dependencies_removed": 0,
     "two_five_experiment": "All three cyclic separations close in Python with 22,144 states each. These are discovery results; the new kernel-certified collapse transfer uses the single D3009 repair premise instead of their separate certificates.",
     "open": [
-      "Complete the separately running D3009 finite replay.",
       "Supply the shared fan and subsequent joint-centre reductions throughout the intended flat neighbourhood class."
-    ]
+    ],
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "two_five_wheel_transfer": {
     "record": "../near-linear/two-five-wheel-measurements.json",
-    "status": "Kernel-certified six-position family transfer, conditional on full D3009 repair; no target repair certificate.",
+    "status": "Kernel-certified six-position family transfer, instantiated by the complete D3009 repair; no target repair certificate.",
     "source": "D3009, 21 vertices and 13 ordered boundary ports",
     "targets": "All six placements of the second degree-five rim vertex: 20 vertices, 12 ports, one degree-seven centre, two rim degrees five, five rim degrees six.",
     "operation": "The source is exactly a boundary-triangle subdivision of each target. Existing boundary split and reconstruction descend through the same operation.",
@@ -3926,11 +3930,11 @@
     "additional_target_repair_certificates": 0,
     "new_coverage_entries_removed": 0,
     "new_configuration_certificate_dependencies_removed": 0,
-    "retained_finite_obligations": "Six exact graph/degree/cyclic-order/boundary alignments. Full source repair remains an explicit premise.",
+    "retained_finite_obligations": "Six exact graph/degree/cyclic-order/boundary alignments and one complete source repair certificate.",
     "open": [
-      "Complete the live D3009 finite repair replay.",
       "Geometric supply and coverage throughout the intended flat class."
-    ]
+    ],
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "wheel_boundary_completion": {
     "record": "../near-linear/wheel-boundary-completion-measurements.json",
@@ -3949,13 +3953,13 @@
     "new_coverage_entries_removed": 0,
     "new_configuration_certificate_dependencies_removed": 0,
     "open": [
-      "Complete the full D3009 repair replay.",
       "Supply the remaining degree profiles and close geometric coverage."
-    ]
+    ],
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "two_five_wheel_embedding": {
     "record": "../near-linear/two-five-embedding-measurements.json",
-    "status": "Kernel-certified source constructions, common injective disk and actual strict reconstruction, conditional on one full D3009 repair.",
+    "status": "Kernel-certified source constructions, common injective disk and actual strict reconstruction, instantiated by the complete source repair.",
     "positions": 6,
     "darts_per_source": 90,
     "dual_vertices_per_source": 20,
@@ -3968,14 +3972,13 @@
     "new_original_certificate_dependencies_removed": 0,
     "additional_target_repair_certificates": 0,
     "open": [
-      "Complete and aggregate the full D3009 finite repair replay.",
-      "Supply the checked source repair to the family and coverage consumers.",
       "Supply and close the remaining geometric coverage branches."
-    ]
+    ],
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "rule_fan_seven_cluster": {
     "record": "../near-linear/rule-fan-seven-cluster-measurements.json",
-    "status": "Kernel-certified adjacent-centre supply and joint-view selection; full D3009 repair and joint closing laws remain explicit premises.",
+    "status": "Kernel-certified adjacent-centre supply and joint-view selection; full D3009 repair is supplied, while the joint closing laws remain explicit premises.",
     "actual_supply": "Select an actual high firstFree or secondFree position using the three existing fan reductions. Apply the corresponding single-five/two-five repair consumer to obtain its adjacent high neighbour. Both are flat sevens distinct from the original receiver.",
     "outcomes": [
       "First centre has exactly one high neighbour: every other neighbour has degree at most6.",
@@ -3986,16 +3989,15 @@
     "retained_dependencies": [
       "Existing shared diamond profile",
       "Classical configuration7 for the nine-port chain",
-      "Explicit full D3009 SourceRepair premise"
+      "Kernel-certified full D3009 SourceRepair"
     ],
     "new_coverage_entries_removed": 0,
     "new_original_certificate_dependencies_removed": 0,
     "open": [
-      "Complete and aggregate the independently running full D3009 repair replay.",
-      "Supply that repair to the geometric consumers.",
       "Prove the joint unique-neighbour, induced-path and facial-triangle closing laws over a justified domain.",
       "Establish initial fan supply or alternative reductions for the entire intended coverage class."
-    ]
+    ],
+    "current_completion": "The full source repair is now proved and supplied by WheelFamilyChecked; see complete_wheel_family. Earlier receipts record the conditional milestone."
   },
   "four_triangle_core_recognition": {
     "status": "Kernel-certified source cores and actual-map recognition. Complete ten-port embeddings, repair and joint flat-pair classification remain open.",
@@ -4067,6 +4069,24 @@
       "Complete ten-port occurrence and boundary order",
       "Actual strict reduction and compatible colouring reconstruction",
       "Universal joint-neighbourhood supply"
+    ]
+  },
+  "complete_wheel_family": {
+    "record": "../near-linear/wheel-family-measurements.json",
+    "status": "Kernel-certified complete D3009 repair, all six ordered two-five transfers, actual strict reconstruction and shared-fan pair supply.",
+    "source_states": 66430,
+    "source_input_indices": 531441,
+    "finite_source_certificates": 1,
+    "ordered_target_positions": 6,
+    "additional_target_repair_tables": 0,
+    "shared_action_checker": "KempeSharedMaskCertificate.check_sound verifies actual recolouring and rank descent once per action, then checks whole-chord compatibility separately for every exterior skeleton. It retains the original signed exterior.",
+    "actual_consumer": "An actual shared fan in the flat, degree-at-most-seven ball supplies an adjacent flat-seven pair without a caller-supplied repair premise.",
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "open": [
+      "Joint unique-neighbour, induced-path and facial-seven-triangle closing laws.",
+      "Initial shared-fan supply or alternative reductions throughout the intended coverage class.",
+      "Complete boundary and repair consumers for the newly recognized D0051/D0052 cores."
     ]
   }
 }

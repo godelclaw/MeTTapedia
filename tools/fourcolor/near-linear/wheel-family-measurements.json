@@ -1,0 +1,479 @@
+{
+  "status": "Kernel-certified complete D3009 repair, all six ordered two-five transfers, actual strict reconstruction and shared-fan pair supply.",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_sha256": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+  "native_code_generation": false,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.KempeSharedMaskCertificate",
+      "source_sha256": "bc0953bca4ebefa408daebedfc91b5fbf6a7586079b5d65e39c6fc4c7e7ff690",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.178,
+      "olean_bytes": 135008,
+      "olean_sha256": "e88b581da6bb4a91e23043a9bd9064a07def7ea203225093e4dd01c04ef8241f"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairData",
+      "source_sha256": "6ff489849dd3f46e208260462c5c4f6c8b339cc799f2e7fd337a3afebda42eb7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 63.47,
+      "olean_bytes": 89983368,
+      "olean_sha256": "e355f11708d56b7bfdf73af130891c22c22195bb3e485095778632a57edeb221"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairCertificate",
+      "source_sha256": "2c0a2268db5036ad5b2894b592e45d6b7b8595edfff38774fca13e41d6124742",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.441,
+      "olean_bytes": 206888,
+      "olean_sha256": "9247ddb13ef8edf552b7a8e3f6051d4e3701bd70a50ed4ac204c91f2caf18909"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairPilot4",
+      "source_sha256": "14edd08594bf5502ae1b78c7fe42d899d0b71c3e4806ecb07949e921d7101af0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.584,
+      "olean_bytes": 23000,
+      "olean_sha256": "d95e0dc34b1a7e1cad6f936cea273569abddf1ea96a69a84cf119f5d9be9e295"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairPilot6",
+      "source_sha256": "820f681a8d6cc681446ab44d5b31944da6b920a3464fb9cb0dba0fc7245fc5da",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.758,
+      "olean_bytes": 26680,
+      "olean_sha256": "8ba4e16b5129023190fdb897e2b5ae202116357b39aa722e6409140e654d1bde"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairPilot8",
+      "source_sha256": "0fdd9d39131a5f9a21ecc79b29e7ed09522a3d6c8b425709e394fa44dbfc4646",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.183,
+      "olean_bytes": 26680,
+      "olean_sha256": "9cfca6c5ed62fdb54f47310b932b67d0f6ac458228cf864d437155d84a2c9f87"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairPilot10",
+      "source_sha256": "8a95bb8b045d58b62ecf4fc2ec1b406c2bb403caf3bce4ea97c497fb4f75b70e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.105,
+      "olean_bytes": 24840,
+      "olean_sha256": "d830849c6dfb0cc1884e6b31141a6145171bbd474e43608c2e169c21f866556b"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairPilot12",
+      "source_sha256": "15b6283feda8b6c5553b110a72e45d0e9a2900eb212811899c7f3f50942d87a5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.364,
+      "olean_bytes": 24816,
+      "olean_sha256": "83a87a7291539896c52b38516bd6ea768694f40bb7cfd61838020c2bf47c2008"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairPilotInput",
+      "source_sha256": "6fd455a9aa327b3f68fdd32de045d4fc2ec8167fc5ddf70095570371907b087e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.617,
+      "olean_bytes": 11752,
+      "olean_sha256": "f766f986d60ef9e7c5af8711280a1d1b77ffaaf8560f29846fe527c0d6b220c8"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairCheckCommon",
+      "source_sha256": "b20ff551cadf942ac6de7c7b19aaa5b728c959d9f433c0eacde3e6167fcb399a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.368,
+      "olean_bytes": 16384,
+      "olean_sha256": "536ff4d2ac9b582b85acf9d0a3d7ffd283f0f9ab540503120cc8112ed6b25934"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord0",
+      "source_sha256": "a8f824951063f476f638dd1fa9f3e00017c531f1d23afd0fe645673d885aaae2",
+      "exit_code": 0,
+      "frontend_wall_seconds": 930.119,
+      "olean_bytes": 1412720,
+      "olean_sha256": "37c234c8a14e5c8731093ea87da2d0a8a0f0fa16e1c10c0bccace4ba2532a4e0"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord1",
+      "source_sha256": "5f00043572060e3b2caa9d9a8e33a99bf7a5af06638ff416bf7d861a3b0dd5bb",
+      "exit_code": 0,
+      "frontend_wall_seconds": 899.849,
+      "olean_bytes": 1413144,
+      "olean_sha256": "0df8d02f4bd18b0f39a47ff13809e7514d99d1d23dce1bd11aba9f27be27d619"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord2",
+      "source_sha256": "f4ec50cbb5af22a9691f9cf475964f5757a3bb3e9f1d86c45d33e532d0041078",
+      "exit_code": 0,
+      "frontend_wall_seconds": 729.952,
+      "olean_bytes": 1413280,
+      "olean_sha256": "16eb937f0b88489544e7df954f318e0f74cdba08359b7070c8766127b452b90d"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord3",
+      "source_sha256": "51fbc8a273a1c1130c8f60651a1f1aa003888d8e6be445782ed403914a6ac0f0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 775.877,
+      "olean_bytes": 1413280,
+      "olean_sha256": "0c02f4f4f0e830836d45decaae71c20742b8d524ff83384f15bc354e6a5d8ccb"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord4",
+      "source_sha256": "74bb50479fe1656ae414ee2dee2e803a874f29bee8d55f117a923e5b01afd24f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 681.883,
+      "olean_bytes": 1413280,
+      "olean_sha256": "d5adc79c4a69172947a633e79eb36dad9e064fde13c76c25bf07dfa9988e8257"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord5",
+      "source_sha256": "86c6966ee3b11e1f847d5832e9e9dee4be503c5984abbdc902eb6acbfe12bb00",
+      "exit_code": 0,
+      "frontend_wall_seconds": 854.361,
+      "olean_bytes": 1413280,
+      "olean_sha256": "25821caf63c422eb9affb28679d29cdad75d63f7e3867416c863fc10ce0a6e8d"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord6",
+      "source_sha256": "38a7d4f156aa7e90f49615b0b928cf3a06f842d5c2074ddf6338ff412b189360",
+      "exit_code": 0,
+      "frontend_wall_seconds": 719.289,
+      "olean_bytes": 1413280,
+      "olean_sha256": "e37c66ffc8a514b4d41bb2263b7480f78a309467bc4e8ee6c86e1edd65b09a09"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord7",
+      "source_sha256": "948d642f00204a3f3ce66c6810bafd419d7dd7241e9b4db90b0909625c1f64dd",
+      "exit_code": 0,
+      "frontend_wall_seconds": 817.673,
+      "olean_bytes": 1413280,
+      "olean_sha256": "9b55c6e7e828dca7f867417419dddeea8c624b3f1c947c1d1d61f93ded1f6ede"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord8",
+      "source_sha256": "fbd8eea8376379c75097d3e6751d030d21a12aab5edcc4daa53c23a3ec99cf3a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 732.299,
+      "olean_bytes": 1413280,
+      "olean_sha256": "3b4cedc332a973e96101f45a3578f40b40c6f7ed630b8fe6bf4ad01ac9568e0f"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord9",
+      "source_sha256": "8a081b625bbe3d64c723ef45bbf12b0265f287764493b499e3d81670b8f5d8c0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1013.826,
+      "olean_bytes": 1413280,
+      "olean_sha256": "3b638dc86845054a9cbe31f21bae5bdb3a435af7f57290b64134a0d10431b984"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord10",
+      "source_sha256": "c56f7ebd8ac8dc4c5431c7cf4eca0e0aac085b622868ddb021d93c9ad4f17d7e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 895.06,
+      "olean_bytes": 1413280,
+      "olean_sha256": "99e8fee0228b5b84d687b6de55efff7c347dc0f2d79873f420d45b0d6bcc6097"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord11",
+      "source_sha256": "c12433cc402a9bd69913d0da04cc94e6015585dfab6e376e5e8788852db700c2",
+      "exit_code": 0,
+      "frontend_wall_seconds": 730.305,
+      "olean_bytes": 1413280,
+      "olean_sha256": "a42f8c4f313be6a97c5d04c83f456e0391f095766c9e321a4fc5ff3ea16ceb08"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord12",
+      "source_sha256": "6e4a39401490de56b659da95e244918be4fafcd68be60724847d02042a90877b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 785.388,
+      "olean_bytes": 1413280,
+      "olean_sha256": "b9970b663da372f2544f3e58cf3f29374a1f1b9cce43f2111cd648845189847c"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord13",
+      "source_sha256": "c41964b2865383d988a2838b57c1d0a12ee1053b83102241e50d4f9178dd26c1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 678.541,
+      "olean_bytes": 1413280,
+      "olean_sha256": "61e3dfd278dc3fedfbee551fb7b88d75836f2c4da2e27e0e35e6b31bb57df540"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord14",
+      "source_sha256": "97a503d92c2b7cb4f0a6799203af586d4aaf481bfcf9ed9a4b188e3ea349c069",
+      "exit_code": 0,
+      "frontend_wall_seconds": 710.508,
+      "olean_bytes": 1413280,
+      "olean_sha256": "ba8ac8a57ab301c014ed6014bd822b24bc5ec815cbfc97b92eb2e7b072b6318e"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord15",
+      "source_sha256": "47be551c362d71956acbd6ce9f42c58a3def060f7f1614c1a75320ff118968e8",
+      "exit_code": 0,
+      "frontend_wall_seconds": 669.53,
+      "olean_bytes": 1413280,
+      "olean_sha256": "fc7bee603c5d73deb6f958b75cf1d41c4e73b77dffe7f1d0e285493137cc11c3"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairRecord16",
+      "source_sha256": "4bcfd60f1cedbcd651e383ca32aca24773052acb3224faad7ef501f4b1d1b06d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 148.148,
+      "olean_bytes": 326120,
+      "olean_sha256": "eee6c2f555081a7caedd6d073a6ebae5128e79352074115d3eee616e282b1cd0"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput0",
+      "source_sha256": "725445761b69fd656780218121d23cb1b0d942e6f486f3b9e47d4422cd052363",
+      "exit_code": 0,
+      "frontend_wall_seconds": 324.324,
+      "olean_bytes": 1412976,
+      "olean_sha256": "bfa3d81d95a400839ff8455e4441bb8539998ac356a32e946ae2a15b785d8631"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput1",
+      "source_sha256": "c2166cd841fe23c2dc4e9abcb1916d835aab7025d4b4403466280ea380431600",
+      "exit_code": 0,
+      "frontend_wall_seconds": 328.376,
+      "olean_bytes": 1413184,
+      "olean_sha256": "02854bb4b7b6d00364d8a475973787d7ac3d053b91f35d3a03a92a836901aaf9"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput2",
+      "source_sha256": "c9d859b6e157e9709abaa05520deb6d01d91a1f013bf21b7c045d30747f137cf",
+      "exit_code": 0,
+      "frontend_wall_seconds": 331.402,
+      "olean_bytes": 1413184,
+      "olean_sha256": "f955cf8e0217d4e759fcd6cd459e79970d9b83bb1973205dbdbc18e2b080b0f5"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput3",
+      "source_sha256": "e1c34644ead5cb8cde54e4c27f78502415b1fb0abe7fd469142e43cd38de47d6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 324.48,
+      "olean_bytes": 1413320,
+      "olean_sha256": "f002e70d342e0e7f23d7ce3676249c1690ec1051089325d5c96a7c2fb94a4c96"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput4",
+      "source_sha256": "fca29ac5269981303a614ff7eb0a0b34402b89876e6d94b8f7c77ddbd50065b7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 332.942,
+      "olean_bytes": 1413320,
+      "olean_sha256": "f52860f7f48e21a935475061c02aab751ba954b2f87b25f2058fb729c26d6656"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput5",
+      "source_sha256": "d78b243b863590b3338158d1ae520c05be293c43e5c1d873956f798203d764d8",
+      "exit_code": 0,
+      "frontend_wall_seconds": 326.881,
+      "olean_bytes": 1413320,
+      "olean_sha256": "c4bd768d2a4e761a7510906e7a89b8b8915f3d4ca028a423a744ce665aa90394"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput6",
+      "source_sha256": "d9d895ebd1de84a098b30298bf92fd1bc86ddc410c9fcad91250513db9c7eee9",
+      "exit_code": 0,
+      "frontend_wall_seconds": 332.362,
+      "olean_bytes": 1413320,
+      "olean_sha256": "14a525d439b92385dd3ba5afe4da3be326130480806f66b99baac53901aa2bf1"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput7",
+      "source_sha256": "b2b02015b006d0612328c7cba5972130f3279d68d73db3a6ae478e80646da42c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 330.294,
+      "olean_bytes": 1413320,
+      "olean_sha256": "975b6dc0519b229e4ad19ec36b6bd71dd2ec3574e3075a9391fa6c235c896dc8"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput8",
+      "source_sha256": "c75494839d396087403a8caa25c4f061a0d9babe26e7c3975cee5843bc920e42",
+      "exit_code": 0,
+      "frontend_wall_seconds": 326.536,
+      "olean_bytes": 1413320,
+      "olean_sha256": "db9a54c3f6d3142d8c5eef4dd197b5dac9b7acecec2fc4874ac14a3ca7123e98"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput9",
+      "source_sha256": "d5ae48df82be9baec059377967483a7517a52d2a3c90ea930056ed4e02337428",
+      "exit_code": 0,
+      "frontend_wall_seconds": 331.066,
+      "olean_bytes": 1413320,
+      "olean_sha256": "b01d7ee441231c37efe7e2649cdc3c84fabd3ae6522ff6841b6bb7e6758bfcd8"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput10",
+      "source_sha256": "4faffefeee2212c558b82af66dd77433d39265b274896547af6fb1bb4647115f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 329.749,
+      "olean_bytes": 1413320,
+      "olean_sha256": "b9d5af002118a209bd99198d2ac0b14dfb3984bbcea3a09c84ea9cdd9d2ef8f1"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput11",
+      "source_sha256": "a100ca449ac192478fb24306d5b66ebc9335b46a214c3cb03a009f1e76ffda75",
+      "exit_code": 0,
+      "frontend_wall_seconds": 321.768,
+      "olean_bytes": 1413320,
+      "olean_sha256": "ab0b97def66f587f2926191e26a6e3d0fbdac82c0bb11db15a0f1b9455bbfafd"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput12",
+      "source_sha256": "b4532861f271e706ce3edb4fe841b61548eb4225c3a172642255485bae93c4c7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 330.319,
+      "olean_bytes": 1413320,
+      "olean_sha256": "e8ad1807d057f1582a9eb5bd47a01033867452f4aacd9ed193577d50958e33d0"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput13",
+      "source_sha256": "06ac64863c9d57c69819954008d97fe0a3973d483955123499b3649a20b65ca8",
+      "exit_code": 0,
+      "frontend_wall_seconds": 328.343,
+      "olean_bytes": 1413320,
+      "olean_sha256": "a5c2584726baf07823d29e3feb25af539ba91ce46fd6b5d20a1b0bf1dab3d2f1"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput14",
+      "source_sha256": "13f69bd3eaae22255751c2ab767fd277f04a5ddd62bf59b32c03935853cf8488",
+      "exit_code": 0,
+      "frontend_wall_seconds": 326.764,
+      "olean_bytes": 1413320,
+      "olean_sha256": "ccba0d877a2e1886ecc689b83a180b08f8123e85aecefe95d9d48710f49aad4c"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput15",
+      "source_sha256": "573bb641494c9619df0038c74cd4550bf4ab34a84c33b84a7fac2869a9b36341",
+      "exit_code": 0,
+      "frontend_wall_seconds": 326.591,
+      "olean_bytes": 1413320,
+      "olean_sha256": "f37188a9446504a90a6d7cc0d8155eed2947738655b78be7ceef8bdaf2b14e02"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairInput16",
+      "source_sha256": "99feb04924abc84beb5ccc35b5f75400d277006e5cafc86227c386e0a0493475",
+      "exit_code": 0,
+      "frontend_wall_seconds": 69.367,
+      "olean_bytes": 326120,
+      "olean_sha256": "8d74ac8f9d34a22f79cf50e1992e8390cb926817d06b89ee32a9bd0aa384d6b3"
+    },
+    {
+      "module": "MettapediaFourColor.WheelRepairChecked",
+      "source_sha256": "c07a7aac194b46eacebea53692927e49a9737ef708ab1aa7b47b02759fd2131f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.222,
+      "olean_bytes": 1048024,
+      "olean_sha256": "b86c2ed6b9e0bd70bf9ad9006f3aa1f70a45cc3653af4b237c1af36d54febf0b"
+    },
+    {
+      "module": "MettapediaFourColor.WheelFamilyChecked",
+      "source_sha256": "3f52d1bcbb75ccbdf84e7133c51523528767988c8f35b2a3ffe28beb543bb1e8",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.183,
+      "olean_bytes": 86880,
+      "olean_sha256": "1a2555ca1d02d2005465474b8ed508ebbe11bab688a863ca660b4f8cc232d292"
+    },
+    {
+      "module": "MettapediaFourColor.WheelFamilyAudit",
+      "source_sha256": "8154f725f28a935b30d4e1e5ae054034c8ae28a1dc7dbc08fd41e84b3fbcbca9",
+      "exit_code": 0,
+      "frontend_wall_seconds": 16.467,
+      "olean_bytes": 2784,
+      "olean_sha256": "af6968c79d51ec45440686194fb0c9d1fa9e284dbd14661232bcbc2bfa464b3d"
+    }
+  ],
+  "phases": {
+    "wheel-repair-pilot": {
+      "modules": 9,
+      "frontend_seconds": 98.7
+    },
+    "wheel-repair-common": {
+      "modules": 1,
+      "frontend_seconds": 3.368
+    },
+    "wheel-repair-records": {
+      "modules": 17,
+      "frontend_seconds": 12772.608
+    },
+    "wheel-repair-inputs": {
+      "modules": 17,
+      "frontend_seconds": 5321.564
+    },
+    "wheel-family-checked": {
+      "modules": 3,
+      "frontend_seconds": 24.872
+    }
+  },
+  "audit": {
+    "roots": 13,
+    "declarations": 45080,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "finite_shards_required": 34,
+    "full_four_colour_theorem_used": false,
+    "classical_certificates": "None in wheel repair or reconstruction. Pair supply additionally retains Cfg006 and the shared diamond profile."
+  },
+  "certificate": {
+    "states": 66430,
+    "terminals": 7496,
+    "stages": [
+      7496,
+      13001,
+      16617,
+      19922,
+      23635,
+      28614,
+      34741,
+      42986,
+      50934,
+      58550,
+      65255,
+      66430
+    ],
+    "shared_actions": 470642,
+    "action_selections": 1988169,
+    "lookup_entries": 531441,
+    "encoding": "six-bit base36 digits in flat natural-number blocks",
+    "source_bytes": 25612448,
+    "source_data_sha256": "6ff489849dd3f46e208260462c5c4f6c8b339cc799f2e7fd337a3afebda42eb7"
+  },
+  "generator": "generate_wheel_repair.py",
+  "generator_reproduction": "Full data and all 36 generated checking modules reproduced byte-for-byte.",
+  "generic_law": "KempeSharedMaskCertificate.check_sound verifies actual recolouring and rank descent once per action, then checks whole-chord compatibility separately for every exterior skeleton. It retains the original signed exterior.",
+  "repair_contract": "Every proper zero-sum thirteen-port trace and every Kempe-closed joint exterior containing it admit an actual source colouring whose trace satisfies that same exterior.",
+  "family": {
+    "source": "D3009: 21 vertices, 13 ordered ports",
+    "target_positions": 6,
+    "target_vertices": 20,
+    "target_ports": 12,
+    "operation": "Boundary-triangle collapse with exact graph, cyclic-order, degree and ordered-boundary bridges.",
+    "additional_target_repair_tables": 0,
+    "scope": "Six ordered placements; symmetry-related positions are not counted as distinct graph shapes."
+  },
+  "actual_geometry": "Complete source occurrences, injective repair disks and a valid singleton contract. Graph-backed vertex minimality supplies a colouring after strict two-vertex descent; the repair reconstructs the original ambient colouring.",
+  "gslt": "The repaired target colouring supplies two sector histories sharing one centre and both seam colours, while satisfying the same joint exterior.",
+  "coverage_consumer": "An actual shared fan in the flat, degree-at-most-seven ball supplies an adjacent flat-seven pair without a caller-supplied repair premise.",
+  "checks": [
+    "lake build kernelWheelRepairPilot",
+    "lake build kernelWheelRepairCheckCommon",
+    "lake build kernelWheelRepairRecords kernelWheelRepairInputs",
+    "lake build kernelWheelFamilyChecked",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_checks_saved": 336,
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0
+  },
+  "open": [
+    "Joint unique-neighbour, induced-path and facial-seven-triangle closing laws.",
+    "Initial shared-fan supply or alternative reductions throughout the intended coverage class.",
+    "Complete boundary and repair consumers for the newly recognized D0051/D0052 cores."
+  ]
+}

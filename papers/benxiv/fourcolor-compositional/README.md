@@ -5,6 +5,19 @@ The current assembly additionally consumes a shared joint-profile certificate
 for the diamond cores and a general boundary-split law transferring repair from
 configuration 2 to configuration 1, and configuration 6 to configuration 3.
 
+The wheel family now has a complete local proof. The
+[checked source repair](../../../lean/fourcolor-classical/MettapediaFourColor/WheelFamilyChecked.lean)
+handles all proper zero-sum thirteen-port input traces of D3009. One boundary-collapse
+argument supplies all six ordered two-five variants, with no separate
+target repair tables. Complete embedded occurrences and strict two-vertex
+descent reconstruct genuine ambient colourings; two GSLT sectors share the
+same centre and seam choices. This closes a repair assumption in the
+shared-fan coverage bridge, yielding an actual adjacent pair of flat sevens.
+The remaining task is the joint geometric closing law and universal supply.
+The [receipt](../../../tools/fourcolor/near-linear/wheel-family-measurements.json)
+separates the finite source base, uniform transfer, retained geometry checks
+and unchanged classical coverage count.
+
 The next joint-neighbourhood test has identified two concrete four-triangle
 cores, the D0051 fan and D0052 tripod. One
 [Lean geometry proof](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCore.lean)
@@ -44,16 +57,16 @@ second free centre, the
 gives a further high neighbour, a single-five wheel, or an exact two-five
 profile. That last profile spends its entire charge budget: one outer
 five-tip and no extra transfers. The geometry is proved independently of
-repair. The single-five consumer still requires the full D3009 repair
-contract, whose finite checks are being certified separately.
+repair. The separate complete consumer now supplies the full D3009 repair
+contract from its kernel-checked finite certificate.
 
 The next family now reuses that same source repair. A
 [boundary-triangle collapse](../../../lean/fourcolor-classical/MettapediaFourColor/TwoFiveWheelRepair.lean)
 changes any one of the six degree-six rim vertices to degree five. Lean
 checks the entire graph, cyclic stars and ordered boundary for all six
 positions; the one repair-transfer theorem covers every placement.
-The source's full repair remains an explicit premise, with no additional
-per-position repair certificates. The
+The transfer is parameterized by the source repair; the complete consumer
+now supplies it, with no additional per-position repair certificates. The
 [colouring equivalence](../../../lean/fourcolor-classical/MettapediaFourColor/TwoFiveWheelColouring.lean)
 retains the joint exterior and composes two GSLT sector witnesses through
 the same centre and both seam colours. This is a direct use of compositional
@@ -76,9 +89,9 @@ ambient readings, and the same marked contract uses strict two-vertex
 descent. One source repair then reconstructs each ambient colouring. Thus
 both wheel alternatives at the second flat centre are excluded by the same
 full D3009 repair premise, leaving an actual new high neighbour.
-This premise is still undergoing finite certification; broader occurrence
-supply and universal coverage remain open. No unavoidable-set entry is
-removed.
+This premise is now certified and supplied in `WheelFamilyChecked`; broader
+occurrence supply and universal coverage remain open. No unavoidable-set
+entry is removed.
 
 The [next coverage bridge](../../../lean/fourcolor-classical/MettapediaFourColor/RuleFanSevenCluster.lean)
 uses both wheel outcomes to supply an adjacent pair of flat sevens from the
