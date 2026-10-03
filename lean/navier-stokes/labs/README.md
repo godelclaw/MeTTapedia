@@ -33071,3 +33071,293 @@ convex entropy Hessian and the reserve's diffusion remainder. The PDE
 history inequalities, scalar stochastic representation and continuation
 bridge remain analytic, not Lean-certified. No Lean declaration or axiom
 changes. No new general regularity result is asserted.
+
+## Pressure storage and the complete Bernoulli return
+
+The defect in (593) can charge pressure storage even when the observed
+velocity moment is depleting. This section tests two concrete completions
+on the SAME actual three-dimensional history. Both completions increase,
+but a regularized cubic velocity moment lies strictly BELOW its original
+heat forecast. The conclusions hold at positive viscosity on a controlled
+interval. They do not rely on a finite-mode trajectory or identify an
+unforced singularity.
+
+### Three observations and the exact proposed payment
+
+Work on the normalized 2*pi torus. Fix h>0 from the original datum and keep
+it constant throughout the history. With e=|u|^2/2, define
+
+```text
+Phi(s)=2sqrt(2) s^(3/2), rho=e+h,
+Y=integral |u|^3,
+V=integral Phi(rho),
+Z=integral Phi(rho+p),
+W=integral [Phi(rho)+Phi'(rho)p].                    (604)
+```
+
+Z is the previous Bernoulli completion. W removes its convex pressure
+remainder: `Z-W=integral [Phi(rho+p)-Phi(rho)-Phi'(rho)p]>=0` whenever
+rho+p>0. It is the exact tangent in pressure, not a truncation of the fluid
+itself. If p>=-h/2, both Z>=Y and W>=Y. Indeed the density in W is
+`2sqrt(2)sqrt(e+h)(e+h+3p/2)`, which is at least
+`2sqrt(2)sqrt(e+h)(e+h/4)>=|u|^3`. This hypothesis will hold on the entire
+constructed interval. Also V>=Y, so V retains the velocity observation
+used in (588)--(589). The constant h is admissible here
+because the torus has finite volume; no such whole-space claim is made.
+
+For either completion J=Z or J=W, the proposed nonnegative reserve R_J=J-Y
+would pay the same pressure budget (589) monotonically if
+
+```text
+R_J'+3Pi-(3nu/2)D<=0,
+equivalently J'+(3nu/2)D<=0.                       (605)
+```
+
+This is the exact claim tested below. It is stronger than merely having
+SOME finite full-datum allowance. A violation of (605) does not refute that
+weaker target.
+
+Subtracting pressure variance changes the evolution and cannot be done for
+free. For `L=partial_t+u.grad-nu Delta`, G=|grad u|^2 and
+`H_p=(partial_t-nu Delta)p`, the complete tangent identity is
+
+```text
+W'=integral Phi'(rho) H_p - p Phi''(rho) u dot grad p
+   -nu integral [Phi'(rho)+p Phi''(rho)] G
+   -nu integral [Phi''(rho)+p Phi'''(rho)] |grad e|^2
+   -2nu integral Phi''(rho) grad e dot grad p.       (606)
+```
+
+Here h is constant, as specified. The last mixed diffusion term has no
+prescribed sign. Equation (606) follows by applying L to both factors of
+Phi'(rho)p; it retains the actual pressure, transport, velocity diffusion
+and derivative cross term. The full Z identity remains (592), with both
+of its nonnegative diffusion terms retained.
+
+### The first complete returns for cyclic interacting parents
+
+Use the dimensionless Euler solution v^0 on its smooth local interval,
+with original datum `U=(sin y,sin z,sin x)`. Its use here is to establish
+strict margins that will be transferred to actual viscous solutions below.
+Write e_j and p_j for the j-th time derivatives at zero of e and canonical
+pressure. The existing complete NS jet operator supplies all generated
+modes; specialize viscosity to zero for these coefficients. In particular,
+
+```text
+e_0=(sin^2 x+sin^2 y+sin^2 z)/2, p_0=0,
+p_1=-2cos x cos y cos z, integral p_1^2=1/2,
+p_2=-(2/3)[sin(2x)cos y sin z+sin x sin(2y)cos z
+                       +cos x sin y sin(2z)].       (607)
+```
+
+This reuses the pressure derivatives from `cyclic_pressure_history.py`.
+It is not a new claim that those local pressure sources exist. The new
+calculation pairs the COMPLETE evolving derivatives with the nonlinear
+observation weights.
+
+Set h=1 in (604). Reflection symmetries give
+`integral F(e_0) p_1=integral F(e_0) p_2=0` and
+`integral F(e_0) e_1 p_1=0` for every smooth F on the relevant interval.
+Moreover translating all three coordinates by pi sends U to -U. Euler
+uniqueness and time reversal therefore make V, W and Z even functions of
+time on a common small interval about zero. Their first and third time
+derivatives vanish. The full second derivatives satisfy
+
+```text
+V''(0)=W''(0)=0,
+Z''(0)=integral Phi''(1+e_0) p_1^2
+       >=3/(2sqrt(5))>2/3.                        (608)
+```
+
+For V, differentiate its pressure-work identity once and integrate by parts;
+the surviving term is a function of e_0 times p_1 u_0.grad e_0, whose
+integral vanishes by the same symmetry. For W, (606) at zero viscosity
+leaves the weighted p_2 and e_1 p_1 terms, which vanish. Z additionally
+retains the strictly positive variance in (608). Thus its first increase
+is not an increase of the velocity-only quantity V. The same variance
+argument works for any strictly convex C3 function of e+p+h: convexity
+alone does not supply a dissipating Bernoulli observation.
+
+Removing that variance does not settle the next return. Exact weighted
+integration of the fourth derivatives gives
+
+```text
+-47/100 < V''''(0)/sqrt(7/2) < -46/100,
+  9/20  < W''''(0)/sqrt(7/2) <  23/50.
+In particular V''''(0)<-4/5 and W''''(0)>4/5.      (609)
+```
+
+Both quantities start with the same value, since p_0=0. The tangent
+completion has removed the positive second-order pressure variance, but
+now grows at fourth order while the velocity-only moment decreases.
+These are full derivatives, including the fourth pressure derivative and
+all generated velocity fields. Dropping the new squared terms or replacing
+the pressure by its first jet would give a different calculation.
+
+### Exact certification of the nonpolynomial weights
+
+Here is the finite calculation behind (609). Let `r0=1+e_0`. Chain and
+product rules give the fourth derivative as a sum of four weighted
+polynomials. For W these polynomials are
+
+```text
+P0=e4+p4,
+P1=4e1 e3+3e2^2+4e3 p1+6e2 p2+4e1 p3,
+P2=6e1^2 e2+12e1 e2 p1+6e1^2 p2,
+P3=e1^4+4e1^3 p1,
+W''''/sqrt(2)=integral [3sqrt(r0) P0
+ +(3/2)r0^(-1/2)P1-(3/4)r0^(-3/2)P2+(9/8)r0^(-5/2)P3].   (610)
+```
+
+For V remove all terms involving p_j. Every P_j is an exact rational
+trigonometric polynomial. Since
+`e_0-3/4=-(cos(2x)+cos(2y)+cos(2z))/4`, write
+`r0=(7/4)(1+q)`, with |q|<=3/7. Expand each power `(1+q)^alpha`,
+alpha=1/2,-1/2,-3/2,-5/2, through degree N=32.
+
+Every retained moment is rational. For a Fourier mode with an odd coordinate
+the integral is zero. For k=(2m1,2m2,2m3), the moment of `(e_0-3/4)^n`
+is `(-1/4)^n n!` times the degree-n coefficient in the product of the three
+exponential generating functions
+
+```text
+sum_(l>=|m|, l=m mod2) binom(l,(l+m)/2) t^l/(2^l l!).      (611)
+```
+
+Coordinate reflections allow |m| and coordinate permutations without losing
+information, since this particular weight depends on the symmetric e_0.
+If L_P bounds the Fourier l1 norm of P, the absolute omitted integral is at
+most
+
+```text
+L_P |binom(alpha,N+1)| (3/7)^(N+1) /(1-r_alpha),
+r_alpha=(3/7)(1+|alpha|/(N+1))<1.                         (612)
+```
+
+The ratio bounds every subsequent absolute binomial term. Applying (612)
+with the actual polynomial norms certifies the strict rational intervals
+in (609). This is an exact enclosure, not floating-point quadrature. The
+checker also compares the low moments with independent direct Fourier
+multiplication and verifies the symmetry cancellations in (608).
+
+### A uniform interval at positive viscosity
+
+The signs above persist for actual NS, rather than only for Euler. Let
+v^mu solve unforced periodic NS with viscosity mu in [0,1], initial datum U,
+and pressure q^mu. Choose m=16 and N0=||U||_Hm. The usual local Sobolev
+energy estimate provides constants C_m and a positive time tau, depending
+only on this fixed datum and Sobolev product constants, such that
+
+```text
+sup_(0<=sigma<=tau, 0<=mu<=1) ||v^mu(sigma)||_Hm <=2N0.     (613)
+```
+
+For example take tau no larger than `1/(4C_m(1+N0))` after enlarging C_m
+in the standard estimate. Pressure is the order-zero multiplier applied
+to v tensor v. Its time derivative and all the Euler time derivatives
+through order five needed below consequently have finite bounds computed
+from N0 and the product constants. No future solution norm defines those
+bounds. This is the smooth local inviscid-limit argument; for classical
+background see [Kato, 1972](https://doi.org/10.1016/0022-1236(72)90003-1).
+The periodic estimates required here are described explicitly below.
+
+These envelopes can be obtained recursively: start with B0=2N0, and for
+Euler use `B_(j+1)=C_m sum_(r=0)^j binom(j,r) B_r B_(j-r)` to bound
+the j+1 time derivative in H^(m-j-1), through j+1=5. The same products
+bound pressure derivatives. The finitely many derivatives of Phi on the
+resulting compact positive argument range then bound the scalar observation
+derivatives. For q^mu_sigma also retain the term mu Delta v^mu; its
+H^(m-2) norm is at most 2N0. Thus the constants below are a priori
+functions of fixed Sobolev constants and N0, rather than assumed regularity
+bounds on a future interval.
+
+Let K1 bound ||partial_sigma q^mu||_infinity in (613). Reduce tau so that
+`tau<=1/[4(1+K1)]`. Since q^mu(0)=0, this guarantees |q^mu|<=1/4 and
+hence the positivity hypotheses for BOTH completions throughout the common
+interval. Let M>=1 bound the third and fifth time derivatives of the three
+Euler observations there. Reduce to
+`s=min(tau,1/(1+M),1)>0`. Taylor's theorem, (608)--(609) and the vanishing
+odd derivatives give
+
+```text
+Z^0(s)-Z^0(0)>=s^2/6,
+W^0(s)-W^0(0)>=s^4/60,
+V^0(s)-V^0(0)<=-s^4/60.                           (614)
+```
+
+All these constants can be chosen from the original profile's local Sobolev
+bounds. In particular M is an a priori derivative envelope from (613),
+not an unrestricted supremum of the unknown future.
+
+For completeness, set d=v^mu-v^0. Its projected equation has source
+mu Delta v^mu and convection `v^mu.grad d+d.grad v^0`. The H^(m-2) estimate
+therefore gives
+`(||d||_H(m-2))'<=C N0 ||d||_H(m-2)+2mu N0`, with d(0)=0.
+Gronwall bounds d by `2mu N0 tau exp(CN0 tau)` uniformly on the interval.
+The pressure multiplier and Sobolev embedding give the corresponding uniform
+pressure bound. Since the observation arguments stay strictly positive,
+there is a finite original-profile constant L such that each of V, W and Z
+changes by at most L mu relative to its Euler value on that interval.
+The heat forecast `v_heat^mu=exp(-mu sigma)U` likewise differs from its
+initial velocity observation by at most L_heat mu.
+
+Choose
+`mu_* = min(1,s^4/[240(1+L+L_heat)]) >0`.
+For every mu in (0,mu_*], (614) implies
+
+```text
+Z^mu(s)-Z^mu(0)>=s^2/12,
+W^mu(s)-W^mu(0)>=s^4/80,
+V^mu(s)-V(v_heat^mu(s))<=-s^4/80.                 (615)
+```
+
+This uses the complete positive-viscosity equations, not an inviscid answer
+substituted for a viscous history. The small parameter is viscosity divided
+by amplitude; the physical initial datum need not be small.
+
+For ANY prescribed physical nu>0, choose A>=nu/mu_* and take the actual
+datum A U. Then
+`u(t)=A v^(nu/A)(At)`, `p(t)=A^2 q^(nu/A)(At)` and h=A^2.
+At t_*=s/A, each observation in (604) is A^3 times its dimensionless value.
+Consequently (615) is a strict, quantitative comparison on actual smooth
+unforced NS prefixes with arbitrary fixed positive viscosity. Both reserves
+remain nonnegative throughout the interval. Yet for J=Z and J=W,
+
+```text
+J(t_*)-J(0)+(3nu/2) integral_0^(t_*) D >0,        (616)
+```
+
+contradicting the proposed monotone payment (605). The diffusion is not
+omitted: its contribution to the left side is nonnegative, and the actual
+viscous comparison already includes its effect on J. Strict inequalities
+also persist on a nonzero neighborhood of t_* by continuity.
+
+The velocity comparison is specifically for the regularized moment V, not
+a claim about the sign of every vorticity or stretching observable. The
+heat forecast uses the ORIGINAL datum; no parent is reset. No global
+regularity of this cyclic 3D family is assumed or proved.
+
+### Consequence for the history reserve
+
+This calculation rules out two specific passive pressure completions as
+universally monotone payers. The convex completion charges pressure variance
+before the velocity observation changes. Its tangent repair cancels that
+first charge but still overestimates the next return in this example.
+Neither failure establishes unforced blowup or disproves a finite allowance
+from the full initial datum. It also does not contradict the cellular
+all-time payment (595), whose pressure has additional structure.
+
+The next physical target is the signed pressure--velocity work itself,
+with an evolving correction whose full defect is paid, rather than making
+every pressure rearrangement a positive expense. The negative velocity
+return (609), and the positive returns of both completed observations,
+are discriminating tests for such a correction. Its positivity, pressure
+lower envelope and cost under repeated 3D parent renewal must all remain
+explicit. A successful cancellation at one return cannot be restarted
+indefinitely without an actual-history estimate.
+
+Run `python3 -O labs/bernoulli_pressure_return.py`. Full rational Fourier
+jets, exact weighted-series enclosures, the complete tangent evolution and
+comparison margins pass. The local Sobolev existence bounds, Taylor
+remainder envelopes and inviscid comparison used to obtain (615)--(616)
+remain analytic, not Lean-certified. No Lean declarations or axioms change.

@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete Bernoulli return test](labs/README.md#pressure-storage-and-the-complete-bernoulli-return)
+separates an observer cost from physical amplification. On one actual
+three-dimensional unforced viscous history, two positive pressure completions
+increase while a regularized cubic velocity moment lies below its heat
+forecast. Removing the initial pressure-variance term cancels the second
+return but leaves an adverse fourth return. Exact weighted enclosures and
+a uniform smooth inviscid comparison establish the signs on an actual
+positive-viscosity interval. These analytic results rule out the stated
+monotone reserves; they do not refute a full-data allowance or regularity.
+
 The [cubic pressure reserve](labs/README.md#cubic-velocity-pressure-work-and-a-bernoulli-reserve)
 uses a critical quantity preserved by incompressible material pullback.
 A nonnegative pressure correction pays its full signed history, including
