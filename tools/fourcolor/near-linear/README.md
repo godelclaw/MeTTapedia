@@ -180,6 +180,64 @@ measurements, not savings in the complete classical proof. Replay
 `lake build Mettapedia.GraphTheory.FourColor.OrderedFanKempe` in the main package
 and `lake build kernelFiveTrianglePuncturedRepair` in the classical package.
 
+## Current pair partitions are insufficient for repeated updates
+
+The [boundary observation theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/KempeBoundaryObservation.lean)
+separates two requirements for a compressed exterior state. On every graph,
+the current boundary colours and all current bichromatic connectivity
+relations determine the boundary colours after one rooted Kempe switch.
+They do not determine the new connectivity relations needed for later moves.
+
+A four-cycle with three retained ports proves the distinction:
+
+```text
+port 0: colour 0 ----- port 1: colour 1
+       |                     |
+hidden: colour 1 or 3 -- port 2: colour 2
+```
+
+Both choices at the hidden vertex are proper and give the same observed
+boundary word and all six pair partitions. In each state, the component of
+colours 0 and 2 rooted at port 0 is a singleton. Switch it. Both boundary
+words become `(2,1,2)`, but the colour-2 ports are connected through colours
+2 and 3 precisely when the hidden vertex has colour 3. Consequently no
+function of the old summary computes the full new summary for this operation.
+A second switch, using colours 2 and 3 at port 0, yields boundary words
+`(3,1,2)` and `(3,1,3)`. Lean also rules out computing the boundary word after
+these two commands from the initial summary. The proof consumes the existing
+GSLT non-factorization criterion.
+
+This is an obstruction to deterministic updating of this particular summary.
+It is not an impossibility of compositional repair. The same module certifies
+an invisible interior switch joining the two initial states and a two-step
+physical history producing the other outcome. A relational summary may retain
+both possibilities, but concatenating its transitions requires compatible
+concrete witnesses or a proved preparation/lifting law. Existentially choosing
+a different hidden witness at each step does not establish such a law.
+
+The [spherical replay](flat-seven-observation-audit.json) finds the same failure
+on the complete 155-vertex punctured exteriors of both existing flat-seven
+fixtures, with 11 and 10 ports respectively. It checks four actual proper
+colourings, the hidden component and both boundary-rooted component switches
+in each exterior. Before the switches, all six boundary partitions agree;
+afterwards the words still agree and two pair partitions differ. A further
+common boundary command produces different boundary words in each example.
+The ambient spheres have degrees 5 through 7, three marked flat centres, and no obstructing
+short cycles under the existing test. Flatness of an entire surrounding ball
+and minimal-counterexample hypotheses are not asserted. These geometric
+applications are exact program evidence; the general four-cycle obstruction
+is separately kernel checked.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.KempeBoundaryObservationAudit`
+in the main package and
+`python3 tools/fourcolor/near-linear/audit_boundary_observation.py` from the
+repository root. The [measurement receipt](boundary-observation-measurements.json)
+records the eight-root audit and build costs. The
+[fixture](flat-seven-observation-example.json) stores one initial exterior
+colouring and two rooted commands per case. The shared boundary command is
+executed in both states. No table of possible histories is stored. No coverage
+entry or original certificate dependency is removed.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

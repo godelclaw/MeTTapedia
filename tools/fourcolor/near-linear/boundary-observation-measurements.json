@@ -1,0 +1,45 @@
+{
+  "evidence": "Kernel-checked positive one-step word update and failure of deterministic partition update.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.KempeBoundaryObservation",
+      "source_sha256": "dcd7dd341216c396ed68b8ec5feb31391c2a0f595833e88a86182bb2aee2b211",
+      "source_bytes": 9041,
+      "lake_build_seconds": 3.1,
+      "olean_bytes": 331472,
+      "olean_sha256": "601a606aff50f37c2b403e3d0d99f791d3fe647837652fac8f7437e0aaa8902c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.KempeBoundaryObservationAudit",
+      "source_sha256": "4e971580a22be9c9cdd8b14b8513535c1da086e6cbf1e49b4a47e88c811dfd57",
+      "source_bytes": 2319,
+      "lake_build_seconds": 3.2,
+      "olean_bytes": 2808,
+      "olean_sha256": "feb67164e85213ec3ba0ca8d0f52b05bc414167c9ac4e3589df145c480ba65ba"
+    }
+  ],
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 5375,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "On arbitrary graphs and palettes, boundary colours after a rooted component switch factor through the current boundary colours and pair connectivity.",
+    "Two four-cycle colourings have equal boundary words and all pair-connectivity observations, but different successor observations under the same rooted switch.",
+    "The boundary word after two specified rooted commands does not factor through the initial current-state summary.",
+    "A silent interior switch and the rooted switch form an actual two-step GSLT history."
+  ],
+  "program_applications": "flat-seven-observation-audit.json",
+  "scope": "The obstruction concerns a deterministic update on this summary. Relational transport with compatible concrete witnesses or proved silent preparation remains possible. No general compositional impossibility or coverage reduction is claimed.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.KempeBoundaryObservationAudit",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_boundary_observation.py"
+  ],
+  "credited_compression": false
+}

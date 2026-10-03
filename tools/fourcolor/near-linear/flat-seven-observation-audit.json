@@ -1,0 +1,268 @@
+{
+  "evidence": "Exact independent program checks on complete punctured exteriors.",
+  "cases": [
+    {
+      "source_fixture": "flat-seven-return-example.json",
+      "configuration": "D0092.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "ports": 11,
+      "ambient_degree_range": [
+        5,
+        7
+      ],
+      "flat_centres": [
+        51,
+        118,
+        48
+      ],
+      "obstructing_short_cycles": 0,
+      "first_stage_colourings_checked": 4,
+      "hidden_component_size": 33,
+      "action_pair": [
+        0,
+        3
+      ],
+      "action_port": 5,
+      "action_component_sizes": [
+        6,
+        51
+      ],
+      "initial_boundary_and_all_six_partitions_equal": true,
+      "final_boundary_equal": true,
+      "final_partition_differences": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "left": [
+            [
+              0,
+              4,
+              5,
+              7,
+              9
+            ],
+            [
+              2
+            ]
+          ],
+          "right": [
+            [
+              0,
+              4,
+              5,
+              7
+            ],
+            [
+              2
+            ],
+            [
+              9
+            ]
+          ]
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "left": [
+            [
+              1,
+              3
+            ],
+            [
+              6
+            ],
+            [
+              8
+            ],
+            [
+              10
+            ]
+          ],
+          "right": [
+            [
+              1,
+              3
+            ],
+            [
+              6
+            ],
+            [
+              8,
+              10
+            ]
+          ]
+        }
+      ],
+      "second_command_distinguishes_boundary_words": {
+        "pair": [
+          0,
+          1
+        ],
+        "port": 0,
+        "left_word": [
+          0,
+          2,
+          0,
+          3,
+          0,
+          1,
+          2,
+          1,
+          2,
+          0,
+          2
+        ],
+        "right_word": [
+          0,
+          2,
+          0,
+          3,
+          0,
+          1,
+          2,
+          1,
+          2,
+          1,
+          2
+        ]
+      },
+      "geometry_kernel_certified": false
+    },
+    {
+      "source_fixture": "flat-seven-return-extension-example.json",
+      "configuration": "D0063.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "ports": 10,
+      "ambient_degree_range": [
+        5,
+        7
+      ],
+      "flat_centres": [
+        146,
+        68,
+        70
+      ],
+      "obstructing_short_cycles": 0,
+      "first_stage_colourings_checked": 4,
+      "hidden_component_size": 8,
+      "action_pair": [
+        0,
+        2
+      ],
+      "action_port": 3,
+      "action_component_sizes": [
+        76,
+        69
+      ],
+      "initial_boundary_and_all_six_partitions_equal": true,
+      "final_boundary_equal": true,
+      "final_partition_differences": [
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "left": [
+            [
+              0,
+              4,
+              5,
+              8,
+              9
+            ],
+            [
+              2
+            ]
+          ],
+          "right": [
+            [
+              0,
+              2,
+              4,
+              5,
+              8,
+              9
+            ]
+          ]
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "left": [
+            [
+              1,
+              3
+            ],
+            [
+              6,
+              7
+            ]
+          ],
+          "right": [
+            [
+              1
+            ],
+            [
+              3
+            ],
+            [
+              6,
+              7
+            ]
+          ]
+        }
+      ],
+      "second_command_distinguishes_boundary_words": {
+        "pair": [
+          0,
+          3
+        ],
+        "port": 0,
+        "left_word": [
+          3,
+          1,
+          0,
+          2,
+          3,
+          0,
+          1,
+          2,
+          3,
+          0
+        ],
+        "right_word": [
+          3,
+          1,
+          3,
+          2,
+          3,
+          0,
+          1,
+          2,
+          3,
+          0
+        ]
+      },
+      "geometry_kernel_certified": false
+    }
+  ],
+  "claim_refuted": "The current boundary word and all six current pair partitions determine their successor under a boundary-rooted component switch.",
+  "not_refuted": [
+    "Witness-preserving relational transport with silent preparation",
+    "A richer compositional interface",
+    "Repair using several colour pairs",
+    "Coverage under stronger whole-neighbourhood flatness or minimality hypotheses",
+    "Compact compositional Four Colour proofs in general"
+  ],
+  "fixture_sha256": "aab8743db361623ed4d141bc3c54669dec3c65c91044daeaf3d4fd19f4ca5053",
+  "verifier_sha256": "8aa5a9ce267c586e1fb023eaa88df48ea360d9735ea1cd8bea571317c3e22b84",
+  "credited_compression": false
+}
