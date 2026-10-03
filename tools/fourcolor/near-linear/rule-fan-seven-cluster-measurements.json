@@ -1,0 +1,69 @@
+{
+  "status": "Kernel-certified adjacent-centre supply and joint-view selection; full D3009 repair and joint closing laws remain explicit premises.",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.RuleFanSevenCluster",
+      "source_sha256": "7014517c6e751062d1888fe0de1394922f7a2d1bb3ebe0e84c62bc0bf278d767",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.786,
+      "olean_bytes": 757216,
+      "olean_sha256": "8eb5260da4c0b7dbf08cac7af3aa469f7e3ac3f40ddc19203ae7fb4a66046c2f"
+    },
+    {
+      "module": "MettapediaFourColor.RuleFanSevenClusterAudit",
+      "source_sha256": "ff90b4d840185ad8383b170bfbfff678a26dd96e613cd6bb79b6d685f1c88f71",
+      "exit_code": 0,
+      "frontend_wall_seconds": 13.922,
+      "olean_bytes": 2600,
+      "olean_sha256": "a72224a324b34996f57b1602ba3a72a9bbd1edd8468604f367a8e349dc14422e"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 8,
+    "declarations": 35717,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_configuration_certificates": [
+      "FourColor.Bulk.Cfg006"
+    ],
+    "retained_shared_profile": "DiamondProfileReducibility.repair002"
+  },
+  "domain": "Actual graph-backed vertex-minimal Tait counterexample. One shared six-valent fan has fixed five-neighbours at positions1,2,5. Actual final charge is zero and actual degrees at most7 within radius3.",
+  "adjacent_pair": "Select an actual high firstFree or secondFree position using the three existing fan reductions. Apply the corresponding single-five/two-five repair consumer to obtain its adjacent high neighbour. Both are flat sevens distinct from the original receiver.",
+  "three_outcomes": [
+    "First centre has exactly one high neighbour: every other neighbour has degree at most6.",
+    "Three distinct flat sevens form an induced path of length2.",
+    "The same three sevens form a facial triangle, retaining its actual corner orientation."
+  ],
+  "preserved_information": [
+    "Same original root and sender star.",
+    "Selected first centre is one of the two actual free positions.",
+    "Every centre is distinct from the original receiver.",
+    "All pair/triple radius-two views lie within radius5.",
+    "Any occurrence supplied by a closing law keeps the same witness and support."
+  ],
+  "paper_consumers": "Geometric input domains of Lemmas8.5 and8.6 of arXiv:2603.24880v1; their classifications remain open.",
+  "conditional_assembly": "occurs_of_joint_laws returns a supported occurrence within radius5, given the three corresponding joint closing laws, radius3 flatness and radius5 degree bound.",
+  "checks": [
+    "lake build kernelRuleFanSevenCluster kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "metrics": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_checks_saved": 336,
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0
+  },
+  "open": [
+    "Complete and aggregate the independently running full D3009 repair replay.",
+    "Supply that repair to the geometric consumers.",
+    "Prove the joint unique-neighbour, induced-path and facial-triangle closing laws over a justified domain.",
+    "Establish initial fan supply or alternative reductions for the entire intended coverage class."
+  ]
+}

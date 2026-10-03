@@ -67,6 +67,16 @@ This premise is still undergoing finite certification; broader occurrence
 supply and universal coverage remain open. No unavoidable-set entry is
 removed.
 
+The [next coverage bridge](../../../lean/fourcolor-classical/MettapediaFourColor/RuleFanSevenCluster.lean)
+uses both wheel outcomes to supply an adjacent pair of flat sevens from the
+same shared fan. It preserves the selected fan position, excludes returning
+to the original receiver, and exposes three joint views: a unique-high-neighbour
+pair, an induced three-centre path, or a facial seven-triangle. All complete
+radius-two views fit within radius five. The theorem transports the same
+resulting occurrence once the corresponding joint closing law is proved;
+those closing laws remain open. This connects the existing repairs to the
+geometric inputs of the newer paper's Lemmas 8.5 and 8.6.
+
 A completed geometric test concerns two overlapping exceptional neighbourhoods
 in the newer catalogue. Their shared rotation forces the D1774 core. Its
 [collision alternative](../../../lean/fourcolor-classical/MettapediaFourColor/ExceptionalCoreCollision.lean)

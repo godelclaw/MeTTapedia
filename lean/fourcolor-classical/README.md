@@ -38,6 +38,16 @@ full D3009 repair. No separate target repair certificate is introduced.
 Replay `lake build kernelTwoFiveConstruction`, then
 `lake build kernelTwoFiveEmbedding`; see the
 [reconstruction receipt](../../tools/fourcolor/near-linear/two-five-embedding-measurements.json).
+The [seven-centre bridge](MettapediaFourColor/RuleFanSevenCluster.lean)
+combines both wheel repairs with the existing diamond and chain reductions.
+On the flat degree-at-most-seven domain, the surviving shared fan supplies
+an actual adjacent pair of sevens. The same first centre then has a unique
+high neighbour, an induced three-centre path, or a facial seven-triangle.
+Their complete radius-two views stay within radius five of the original
+receiver. Joint closing laws remain explicit in `occurs_of_joint_laws`;
+this does not certify the paper's pair/path/triangle classifications.
+Replay `lake build kernelRuleFanSevenCluster`; see the
+[joint-view receipt](../../tools/fourcolor/near-linear/rule-fan-seven-cluster-measurements.json).
 Replay `lake build kernelWheelBoundaryCompletion`; see the
 [geometric receipt](../../tools/fourcolor/near-linear/wheel-boundary-completion-measurements.json).
 Replay `lake build kernelTwoFiveWheel`; see the

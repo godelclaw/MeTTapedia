@@ -3964,5 +3964,29 @@
       "Supply the checked source repair to the family and coverage consumers.",
       "Supply and close the remaining geometric coverage branches."
     ]
+  },
+  "rule_fan_seven_cluster": {
+    "record": "../near-linear/rule-fan-seven-cluster-measurements.json",
+    "status": "Kernel-certified adjacent-centre supply and joint-view selection; full D3009 repair and joint closing laws remain explicit premises.",
+    "actual_supply": "Select an actual high firstFree or secondFree position using the three existing fan reductions. Apply the corresponding single-five/two-five repair consumer to obtain its adjacent high neighbour. Both are flat sevens distinct from the original receiver.",
+    "outcomes": [
+      "First centre has exactly one high neighbour: every other neighbour has degree at most6.",
+      "Three distinct flat sevens form an induced path of length2.",
+      "The same three sevens form a facial triangle, retaining its actual corner orientation."
+    ],
+    "observation_radius": 5,
+    "retained_dependencies": [
+      "Existing shared diamond profile",
+      "Classical configuration7 for the nine-port chain",
+      "Explicit full D3009 SourceRepair premise"
+    ],
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "open": [
+      "Complete and aggregate the independently running full D3009 repair replay.",
+      "Supply that repair to the geometric consumers.",
+      "Prove the joint unique-neighbour, induced-path and facial-triangle closing laws over a justified domain.",
+      "Establish initial fan supply or alternative reductions for the entire intended coverage class."
+    ]
   }
 }

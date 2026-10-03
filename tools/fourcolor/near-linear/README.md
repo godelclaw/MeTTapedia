@@ -1482,3 +1482,32 @@ Replay `lake build kernelTwoFiveConstruction`, then
 `lake build kernelTwoFiveEmbedding`; the
 [receipt](two-five-embedding-measurements.json) records the finite source
 checks, disk/reconstruction audit and unchanged catalogue counts.
+
+## From the shared fan to joint seven-centre views
+
+`RuleFanSevenCluster.pair_exists` consumes the actual shared six-valent fan,
+flatness and the degree-at-most-seven bound within radius three. The existing
+diamond and chain reductions force one of the two free positions to be high.
+The single full D3009 repair, including its six transferred two-five repairs,
+then supplies a high neighbour of that same selected position. Both vertices
+are flat sevens, and neither is the original receiver.
+
+`unique_or_third` retains this pair when selecting a second high neighbour
+of its first centre. If there is none, every other neighbour has degree at
+most six. Otherwise the three distinct sevens form an induced path or an
+actual facial triangle, with the two possible orientations retained. The
+third centre also differs from the original receiver. The complete
+radius-two views fit within radius five of the original receiver.
+
+`occurs_of_joint_laws` supplies the same supported occurrence after one of
+three joint closing laws is established. These laws are still explicit
+hypotheses. They correspond to the unique-neighbour and path cases of
+Lemma 8.6 and the facial seven-triangle case of Lemma 8.5 in the pinned paper;
+their computational classifications have not been imported as assumptions.
+The radius-five degree bound is available for the full joint views.
+
+Replay `lake build kernelRuleFanSevenCluster`. The
+[receipt](rule-fan-seven-cluster-measurements.json) records the eight-root
+audit. The existing shared diamond profile and classical configuration 7
+remain in the initial fan reduction; the full D3009 repair remains an
+explicit premise. No new repair certificate or coverage entry is removed.

@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the shared fan's adjacent seven-centre and joint-view supply. -/
+target kernelRuleFanSevenCluster pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/rule-fan-seven-cluster",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "RuleFanSevenCluster", "RuleFanSevenClusterAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay common disk embedding and strict reconstruction for two-five wheels. -/
 target kernelTwoFiveEmbedding pkg : Unit := do
   let env ← getAugmentedEnv
