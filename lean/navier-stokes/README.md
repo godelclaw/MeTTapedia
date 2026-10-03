@@ -36,6 +36,14 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete-time residual test](labs/README.md#a-pressure-history-residual-needs-its-complete-time-polynomial)
+exhibits an exact decaying NS shear whose inaccurate quintic reference
+has zero residual at both endpoints and the midpoint, even with matching
+endpoint equation jets. The repair retains the complete time polynomial
+and its signed coefficient correlations. Four interval probes of the
+reciprocal flow support the resulting bounds; full-history and arithmetic
+enclosures remain separate obligations.
+
 The [pressure-history comparison](labs/README.md#pressure-history-comparison-from-velocity-error-dissipation)
 connects velocity-error dissipation to the original stochastic pressure
 impulse. A coupling with shared Brownian noise accounts separately for

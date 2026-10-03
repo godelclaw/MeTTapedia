@@ -38128,3 +38128,174 @@ produces sampled feasibility data, not a continuum certificate. The analytic
 comparison (785)--(796), stochastic coupling and tail derivation are not new
 Lean theorems. No Lean declarations or axioms change. The arbitrary-data
 pressure-history payment remains open.
+
+## A pressure-history residual needs its complete time polynomial
+
+`pressure_history_slabs.py` addresses the next obligation in (794): bounds
+on the entire reference interval, retaining every pressure and moment
+source. The coefficient formulas are exact finite polynomial identities.
+The present array implementation still uses unenclosed floating arithmetic,
+so its numerical output is feasibility evidence, not a continuum certificate.
+
+### An actual decaying NS shear exposes the sampling defect
+
+Three residual samples cannot certify a time interval, even if both endpoint
+first and second time derivatives agree with the physical equation. On the
+periodic torus at viscosity one, take the exact globally regular unforced
+flow
+
+```text
+u(t,x,y,z)=(-386 exp(-t) sin y,0,0), p=0.              (797)
+```
+
+Its transport nonlinearity vanishes. Consider the quintic reference
+`v=(a(t)sin y,0,0)` on [0,1], where
+
+```text
+a(t)=2t^5-15t^4+64t^3-193t^2+386t-386,
+a'(t)+a(t)=r(t)=t^2(1-t)^2(2t-1).                    (798)
+```
+
+Thus v has the SAME original datum as u. Its complete NS residual is
+`(r(t)sin y,0,0)`, which vanishes at times 0,1/2,1. Moreover r' vanishes
+at both endpoints, so `a'=-a` and `a''=a` there. These are precisely the
+first and second heat-equation jets used in the shared quintic reference.
+Nevertheless the residual at time 1/4 has amplitude -9/512. The final
+reference amplitude is -142, whereas the true amplitude is -386/e.
+An exact rational Taylor upper bound verifies `e<193/71`, so these differ.
+
+The construction is transparent: start with the displayed r, and solve
+`a'+a=r` within degree-five polynomials by
+`a=sum_(j=0)^5 (-1)^j r^(j)`. All identities in (798) are checked exactly.
+There is also a direct sign proof of the endpoint error:
+`a(1)-a(0)e^(-1)=e^(-1) integral_0^1 e^t r(t)dt>0`, by pairing t with
+1-t. The residual is antisymmetric about 1/2, while the exponential gives
+its positive half more weight.
+
+This is an actual NS solution compared with an inaccurate reference, not
+an NS blowup or a failure of the pressure payment. Its pressure is zero.
+It refutes the proposed inference from three zero residual samples to a
+correct physical history. The preceding scripts classified their samples
+as discovery evidence; none used this inference as a proof premise.
+
+The same defect occurs with nonzero pressure. Take
+`U=(sin x cos y,-cos x sin y,0)` and
+`p_U=(cos(2x)+cos(2y))/4`. Exact differentiation gives
+`div U=0`, `U.grad U+grad p_U=0` and `Delta U=-2U`.
+At viscosity 1/2, the actual flow is
+`u=-386e^(-t)U`, `p=386^2 e^(-2t)p_U`. The reference
+`v=a(t)U`, `p_v=a(t)^2 p_U` has the same residual `r(t)U` and
+the same three vanishing samples. Its final canonical pressure differs
+from the actual pressure because `142^2!=386^2/e^2`. The checker verifies
+these full incompressible NS identities as well. These examples are
+independent of the third coordinate; they test the validation premise,
+not a claim about three-dimensional singularity formation.
+
+### Retain all time coefficients and all generated spatial outputs
+
+For a slab [t0,t0+h], put `xi=2(t-t0)/h-1`. Write the shared quintic
+reference state as
+
+```text
+V(xi)=sum_(j=0)^5 C_j xi^j, -1<=xi<=1.               (799)
+```
+
+The state has three velocity entries, three first moments, six symmetric
+second moments, three third moments and the integrated fourth moment.
+The latter is a spatial scalar; the other moments retain their zero
+Fourier modes. All moments still refer to the original start time.
+
+The complete transport term is a degree-ten polynomial. The canonical
+pressure gradient determined by the velocity has degree ten as well.
+Multiplying it by a first, second or third moment raises the corresponding
+source degree to fifteen. Hence the complete velocity and first-moment
+residuals have degree at most ten; the second, third and integrated-fourth
+residuals have degree at most fifteen. Differentiation in time uses
+`partial_t=(2/h)partial_xi`; diffusion is applied to every relevant field.
+
+The implementation constructs each coefficient of those operators before
+forming a bound. With retained spatial support `|k_j|<n/3`, all cubic
+outputs fit strictly inside the doubled Fourier grid. The complete pressure
+is used in the moment sources; it is not filtered back to the velocity
+storage box. No generated mode or temporal coefficient is discarded.
+
+For a residual block R, a valid first bound is
+`sup_|xi|<=1 ||R(xi)|| <= sum_j ||R_j||`. However this can pay repeatedly
+for coefficients which cancel as time passes. The sharper bound retains
+their joint information:
+
+```text
+||R(xi)||^2 = sum_(k=0)^30 p_k xi^k,
+p_k=sum_(i+j=k) Re <R_i,R_j>.                         (800)
+```
+
+For velocity H1 residuals the inner product includes the Fourier weight
+`|k|^2`; for the symmetric second moment it includes twice each off-diagonal
+entry. The scalar fourth-moment residual uses its absolute square. These
+are the same norms required by (788) and (793).
+
+On any subinterval [a,b] of [-1,1], convert the scalar polynomial (800)
+using `xi=a+(b-a)tau`. If its resulting power coefficients are d_j, then
+its degree-30 Bernstein coefficients are
+
+```text
+B_k=sum_(j=0)^k [binom(k,j)/binom(30,j)] d_j,
+sup_(a<=xi<=b) ||R(xi)|| <=sqrt(max_k B_k).            (801)
+```
+
+The Bernstein basis is nonnegative and sums to one on [0,1], proving the
+bound. Subdivision changes only the enclosure of the SAME reference
+polynomial. It does not create separate histories or replenish the
+original reserve. The method keeps signed cross terms between temporal
+coefficients until after their complete physical norm has been formed.
+
+### What the bounded probes show
+
+For balanced unit reciprocal parents at nu=1/4, retained grid 40^3,
+integrator step 1/128 and comparison interval 1/16, four interval probes give
+the following velocity H1 residual figures:
+
+| interval ending at | largest endpoint/midpoint sample | sum of coefficient norms | joint polynomial bound |
+|---|---|---|---|
+| 0.0625 | 5.25494e-9 | 6.18412e-7 | 4.54911e-8 |
+| 1 | 1.64919e-9 | 4.15755e-8 | 2.87031e-9 |
+
+At the interior points `xi=+/-1/sqrt(5)` of the first interval, direct
+polynomial evaluation gives a residual norm as large as 4.53561e-8.
+Thus the missing error is present between the three sample times; it is
+not merely an artifact of the coefficient-sum bound. Retaining the cross
+terms makes the interval bound about 13.6 times smaller than that sum and
+within 0.3 percent of this interior observation.
+
+The intervals ending at 2 and 4 were also checked. Their joint H1 bounds
+are respectively about 1.018 and 1.306 times their three-node samples.
+All six residual groups (velocity L2/H1 and four moment levels) retain
+the full polynomial; the largest joint-bound/sample ratio among these
+four probes is below 9.34. This finite set of probes is not a uniform
+multiplier for other intervals.
+
+An independent fixture varies the time coefficients through different
+quarter-period spatial translations and uses nonzero entries in every
+moment block. Reconstructing the full residual at independently selected
+times agrees with a direct complete-operator evaluation within 3.8e-16
+relatively. Independent Gaussian-rational Fourier fixtures check that
+operator, including pressure. Exact algebra checks the time conversion
+and the decaying-shear counterexample. These checks support the formulas;
+they do not replace rounding or the full-prefix obligations.
+
+Run `python3 -O labs/pressure_history_slabs.py` for those checks and
+`python3 -O labs/pressure_history_slabs.py --probe` for the four probes.
+The optional full-history run is
+`python3 -O labs/pressure_history_slabs.py --prefix --n 40 --nu .25 --dt .0078125 --h .0625 --final 18`.
+It propagates (788)--(794) using complete time-polynomial bounds instead
+of three residual samples. Its floating coefficient arithmetic remains
+unenclosed. Passing that run would still not certify the actual seam.
+
+A final certificate must reconstruct exactly solenoidal, Hermitian
+velocity references with shared endpoints, preserve every inherited
+moment, and enclose the Fourier products, inner products and signed
+polynomial conversions. The existing radix-two arithmetic proof does
+not cover the sampled grid 80 transform; an appropriate supported grid
+or a separately proved transform enclosure is required. No Lean
+statements or axioms change. The arbitrary-data history estimate remains
+open.
