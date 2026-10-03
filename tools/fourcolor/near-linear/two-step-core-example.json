@@ -1,0 +1,88 @@
+{
+  "sources": [
+    {
+      "file": "D0063.conf",
+      "sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d"
+    },
+    {
+      "file": "D0092.conf",
+      "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14"
+    },
+    {
+      "file": "LICENSE",
+      "sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+    },
+    {
+      "file": "flat-seven-return-example.json",
+      "sha256": "50fa6b1a55c587893bcd0295a48282c53e73dd54627e53bd99f3df24a251212c"
+    },
+    {
+      "file": "flat-seven-return-extension-example.json",
+      "sha256": "e299cca5e72f30cfb4cf9d155b6675ac77f76399bc4057040c2027dc7d536f6d"
+    },
+    {
+      "file": "independent-repair-example.json",
+      "sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e"
+    },
+    {
+      "file": "seven-pair-four-triangle-example.json",
+      "sha256": "5639ca17d0eb311814d4c183c7c034bc0a0ee7b14020df6b510b56d352f3bf75"
+    },
+    {
+      "file": "sources.json",
+      "sha256": "fb5d2821c5a4b4e5a154740b032a971c80eb9335706cfe61cd1244c00528521d"
+    }
+  ],
+  "cases": [
+    {
+      "source_case": 0,
+      "repair": [
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 48,
+          "size": 1
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 19,
+          "size": 1
+        }
+      ],
+      "silent_preparation": {
+        "pair": [
+          0,
+          1
+        ],
+        "root": 0,
+        "size": 3
+      }
+    },
+    {
+      "source_case": 1,
+      "repair": [
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 13,
+          "size": 4
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 12,
+          "size": 6
+        }
+      ]
+    }
+  ]
+}

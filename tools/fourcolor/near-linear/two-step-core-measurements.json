@@ -1,0 +1,89 @@
+{
+  "evidence": "Kernel-proved sound list propagation, 29 exact source-boundary nonextension cases and two source colourings. Physical shortest-history claims are separate program evidence.",
+  "modules": [
+    {
+      "project": "mettapedia",
+      "module": "Mettapedia.GraphTheory.Kempe.ListPropagation",
+      "source_bytes": 2041,
+      "source_sha256": "07b86b7fa569419f44ac8397f9e276a13e7c1ca9efa7b217de5a14da9445afee",
+      "lake_build_seconds": 1.6,
+      "olean_bytes": 94800,
+      "olean_sha256": "6fa29112b4d3d73dda3bf5141b8e7ac7f109fbd581950223e013128b291a319f"
+    },
+    {
+      "project": "fourcolor-classical",
+      "module": "MettapediaFourColor.TwoStepCoreProgress",
+      "source_bytes": 5577,
+      "source_sha256": "71ee59f28100a5114fdd76d4f971c031ce00c51308760a2ff9f635475e183ed9",
+      "lake_build_seconds": 8.4,
+      "olean_bytes": 742432,
+      "olean_sha256": "bbaffadae951b5183856ac0aec3d2a6414ad8b687e5bd81b90f3be58b1d63cab"
+    },
+    {
+      "project": "fourcolor-classical",
+      "module": "MettapediaFourColor.TwoStepCoreAudit",
+      "source_bytes": 2135,
+      "source_sha256": "5fa937b2cb9c17da6fd4aed75b6a7304a8a25ec8ddd176590652f700b2f8d137",
+      "lake_build_seconds": 2.4,
+      "olean_bytes": 2648,
+      "olean_sha256": "0aca419dbe7828b05832a0a6b3e0c871d061e7e7fb37340e5e4ef0ace8832cc1"
+    }
+  ],
+  "audit": {
+    "roots": 7,
+    "dependency_declarations": 3581,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_dependencies": [
+      "decoded source graph",
+      "ColoringListPropagation.empty_refutes"
+    ],
+    "bulk_repair_certificates_used": false
+  },
+  "program_receipt": "two-step-core-audit.json",
+  "fixture": "two-step-core-example.json",
+  "verifier_sha256": "ebbe78207c1e19e36cf14d3ee7b8b0d71fe64f212959d843a957e08250d14af8",
+  "proved": [
+    "Filtering a vertex colour list by supported unequal colours across an edge preserves every proper list colouring, on any graph and palette.",
+    "An edge trace ending at an empty list refutes a proper list colouring. Nonempty lists do not imply existence.",
+    "The two initial source boundary words and all 27 listed boundary-changing one-step outcomes do not extend through the decoded D0092/D0063 cores. Each trace uses at most six deductions.",
+    "Both displayed final source assignments are proper."
+  ],
+  "program_checked": [
+    "Complete spherical geometry and exact source occurrences, including full core stars, cyclic order and ordered ports.",
+    "All six unordered colour pairs: 30 initial components for D0092, 28 for D0063; none permits source extension. Boundary-invisible switches retain the rejected word.",
+    "Two specified component switches repair each original exterior. Exact ear messages reconstruct seven core vertices and a proper 162-vertex sphere.",
+    "D0092 has a two-singleton repair. The displayed D0063 repair has component sizes four and six, touching nine distinct exterior vertices.",
+    "A separate three-vertex boundary-invisible D0092 preparation opens four successful one-switch moves. The unchanged boundary word has repair distance two before and one after; the six pair partitions do change."
+  ],
+  "discovery": {
+    "candidate_two_step_endpoints": {
+      "D0092": 420,
+      "D0063": 364
+    },
+    "distinct_boundary_words_tested": {
+      "D0092": 148,
+      "D0063": 141
+    },
+    "successful_two_step_paths": {
+      "D0092": 25,
+      "D0063": 18
+    },
+    "scope": "Complete second moves touching the boundary after every initial component. Retained only specified successful paths; no search through histories on replay."
+  },
+  "scope": "Refutes a one-switch guarantee on these exteriors and strictly improving extension-feasibility at every physical step. Does not refute finer potentials or composite repairs, prove a universal two-step bound, or establish coverage. A boundary-silent first step is available but is not necessary on every successful path.",
+  "checks": [
+    "lake build MettapediaFourColor.TwoStepCoreAudit",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_two_step_core.py --check-lean lean/fourcolor-classical/MettapediaFourColor/TwoStepCoreProgress.lean"
+  ],
+  "credited_compression": false,
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_saved": 336
+  }
+}

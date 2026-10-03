@@ -1,0 +1,1869 @@
+{
+  "evidence": "Exact program census and replay; source-core rejection and acceptance are Lean checked.",
+  "fixture_sha256": "011d1c4a45fcb1dd37f156d8edf1b472475b1d8bd0a90faac3ddb73f4a72e163",
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "boundary_ports": 11,
+      "initial_boundary": [
+        3,
+        2,
+        3,
+        1,
+        0,
+        3,
+        0,
+        2,
+        0,
+        1,
+        0
+      ],
+      "visible_moves": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 3,
+          "size": 56,
+          "ports": [
+            3,
+            4,
+            6,
+            8,
+            9,
+            10
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            0,
+            1,
+            3,
+            1,
+            2,
+            1,
+            0,
+            1
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 2,
+          "size": 75,
+          "ports": [
+            6,
+            7,
+            8,
+            10
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            1,
+            0,
+            3,
+            2,
+            0,
+            2,
+            1,
+            2
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 18,
+          "size": 2,
+          "ports": [
+            4
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            1,
+            2,
+            3,
+            0,
+            2,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 42,
+          "size": 1,
+          "ports": [
+            1
+          ],
+          "word": [
+            3,
+            0,
+            3,
+            1,
+            0,
+            3,
+            0,
+            2,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 6,
+          "size": 15,
+          "ports": [
+            4,
+            5,
+            6
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            1,
+            3,
+            0,
+            3,
+            2,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 8,
+          "size": 41,
+          "ports": [
+            0,
+            10
+          ],
+          "word": [
+            0,
+            2,
+            3,
+            1,
+            0,
+            3,
+            0,
+            2,
+            0,
+            1,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 43,
+          "size": 4,
+          "ports": [
+            2
+          ],
+          "word": [
+            3,
+            2,
+            0,
+            1,
+            0,
+            3,
+            0,
+            2,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 51,
+          "size": 1,
+          "ports": [
+            8
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            1,
+            0,
+            3,
+            0,
+            2,
+            3,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 0,
+          "size": 72,
+          "ports": [
+            1,
+            3,
+            7,
+            9
+          ],
+          "word": [
+            3,
+            1,
+            3,
+            2,
+            0,
+            3,
+            0,
+            1,
+            0,
+            2,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 0,
+          "size": 32,
+          "ports": [
+            0,
+            2,
+            3,
+            5
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            3,
+            0,
+            1,
+            0,
+            2,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 11,
+          "size": 39,
+          "ports": [
+            9
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            1,
+            0,
+            3,
+            0,
+            2,
+            0,
+            3,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 5,
+          "size": 12,
+          "ports": [
+            0,
+            1,
+            2
+          ],
+          "word": [
+            2,
+            3,
+            2,
+            1,
+            0,
+            3,
+            0,
+            2,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 48,
+          "size": 1,
+          "ports": [
+            7
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            1,
+            0,
+            3,
+            0,
+            3,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 121,
+          "size": 1,
+          "ports": [
+            5
+          ],
+          "word": [
+            3,
+            2,
+            3,
+            1,
+            0,
+            2,
+            0,
+            2,
+            0,
+            1,
+            0
+          ],
+          "extends": false
+        }
+      ],
+      "silent_moves": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 0,
+          "size": 3
+        },
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 10,
+          "size": 10
+        },
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 11,
+          "size": 4
+        },
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 27,
+          "size": 4
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 9,
+          "size": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 3,
+          "size": 6
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 17,
+          "size": 1
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 62,
+          "size": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 63,
+          "size": 4
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 100,
+          "size": 1
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 158,
+          "size": 1
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 7,
+          "size": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 33,
+          "size": 5
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 10,
+          "size": 4
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 2,
+          "size": 63
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 64,
+          "size": 1
+        }
+      ],
+      "forced_traces": [
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              4,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              4
+            ]
+          ],
+          "empty_vertex": 4
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              4
+            ]
+          ],
+          "empty_vertex": 4
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              5
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              5
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "empty_vertex": 3
+        },
+        {
+          "edges": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "empty_vertex": 3
+        }
+      ],
+      "repair": [
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 48,
+          "size": 1
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 19,
+          "size": 1
+        }
+      ],
+      "intermediate_boundary": [
+        3,
+        2,
+        3,
+        1,
+        0,
+        3,
+        0,
+        3,
+        0,
+        1,
+        0
+      ],
+      "final_boundary": [
+        3,
+        2,
+        3,
+        1,
+        0,
+        3,
+        2,
+        3,
+        0,
+        1,
+        0
+      ],
+      "core_assignment": [
+        3,
+        2,
+        0,
+        1,
+        0,
+        2,
+        1
+      ],
+      "vertices_touched": 2,
+      "vertex_switches": 2,
+      "shortest_switch_count": 2,
+      "complete_source_stars_and_cyclic_order_checked": true,
+      "whole_sphere_reconstructed": true,
+      "silent_preparation": {
+        "moves": [
+          {
+            "pair": [
+              0,
+              1
+            ],
+            "root": 0,
+            "size": 3
+          }
+        ],
+        "successful_next_moves": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "root": 2,
+            "size": 70,
+            "ports": [
+              3,
+              7,
+              9
+            ],
+            "word": [
+              3,
+              2,
+              3,
+              2,
+              0,
+              3,
+              0,
+              1,
+              0,
+              2,
+              0
+            ],
+            "extends": true
+          },
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "root": 42,
+            "size": 1,
+            "ports": [
+              1
+            ],
+            "word": [
+              3,
+              1,
+              3,
+              1,
+              0,
+              3,
+              0,
+              2,
+              0,
+              1,
+              0
+            ],
+            "extends": true
+          },
+          {
+            "pair": [
+              1,
+              3
+            ],
+            "root": 4,
+            "size": 25,
+            "ports": [
+              5
+            ],
+            "word": [
+              3,
+              2,
+              3,
+              1,
+              0,
+              1,
+              0,
+              2,
+              0,
+              1,
+              0
+            ],
+            "extends": true
+          },
+          {
+            "pair": [
+              1,
+              3
+            ],
+            "root": 45,
+            "size": 2,
+            "ports": [
+              0
+            ],
+            "word": [
+              1,
+              2,
+              3,
+              1,
+              0,
+              3,
+              0,
+              2,
+              0,
+              1,
+              0
+            ],
+            "extends": true
+          }
+        ],
+        "same_boundary": true,
+        "same_six_partitions": false,
+        "initial_repair_distance": 2,
+        "prepared_repair_distance": 1
+      }
+    },
+    {
+      "configuration": "D0063.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "boundary_ports": 10,
+      "initial_boundary": [
+        1,
+        2,
+        1,
+        0,
+        1,
+        3,
+        2,
+        0,
+        2,
+        3
+      ],
+      "visible_moves": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 0,
+          "size": 68,
+          "ports": [
+            0,
+            2,
+            3,
+            4,
+            7
+          ],
+          "word": [
+            0,
+            2,
+            0,
+            1,
+            0,
+            3,
+            2,
+            1,
+            2,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 1,
+          "size": 78,
+          "ports": [
+            1,
+            3,
+            6,
+            7,
+            8
+          ],
+          "word": [
+            1,
+            0,
+            1,
+            2,
+            1,
+            3,
+            0,
+            2,
+            0,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 6,
+          "size": 25,
+          "ports": [
+            5
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            0,
+            1,
+            0,
+            2,
+            0,
+            2,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 10,
+          "size": 32,
+          "ports": [
+            7,
+            9
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            0,
+            1,
+            3,
+            2,
+            3,
+            2,
+            0
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 12,
+          "size": 8,
+          "ports": [
+            3
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            3,
+            1,
+            3,
+            2,
+            0,
+            2,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 0,
+          "size": 68,
+          "ports": [
+            0,
+            1,
+            2,
+            4,
+            6
+          ],
+          "word": [
+            2,
+            1,
+            2,
+            0,
+            2,
+            3,
+            1,
+            0,
+            2,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "root": 4,
+          "size": 8,
+          "ports": [
+            8
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            0,
+            1,
+            3,
+            2,
+            0,
+            1,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 0,
+          "size": 15,
+          "ports": [
+            2
+          ],
+          "word": [
+            1,
+            2,
+            3,
+            0,
+            1,
+            3,
+            2,
+            0,
+            2,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 6,
+          "size": 21,
+          "ports": [
+            4,
+            5
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            0,
+            3,
+            1,
+            2,
+            0,
+            2,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 11,
+          "size": 16,
+          "ports": [
+            0,
+            9
+          ],
+          "word": [
+            3,
+            2,
+            1,
+            0,
+            1,
+            3,
+            2,
+            0,
+            2,
+            1
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 1,
+          "size": 53,
+          "ports": [
+            5,
+            6
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            0,
+            1,
+            2,
+            3,
+            0,
+            2,
+            3
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 4,
+          "size": 14,
+          "ports": [
+            8,
+            9
+          ],
+          "word": [
+            1,
+            2,
+            1,
+            0,
+            1,
+            3,
+            2,
+            0,
+            3,
+            2
+          ],
+          "extends": false
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 13,
+          "size": 4,
+          "ports": [
+            1
+          ],
+          "word": [
+            1,
+            3,
+            1,
+            0,
+            1,
+            3,
+            2,
+            0,
+            2,
+            3
+          ],
+          "extends": false
+        }
+      ],
+      "silent_moves": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 17,
+          "size": 7
+        },
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 98,
+          "size": 1
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 7,
+          "size": 8
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 26,
+          "size": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 43,
+          "size": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 60,
+          "size": 1
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 66,
+          "size": 1
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 3,
+          "size": 9
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 10,
+          "size": 4
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 21,
+          "size": 3
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 31,
+          "size": 5
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "root": 88,
+          "size": 4
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 16,
+          "size": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 31,
+          "size": 4
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 37,
+          "size": 2
+        }
+      ],
+      "forced_traces": [
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "empty_vertex": 4
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "empty_vertex": 4
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              5
+            ]
+          ],
+          "empty_vertex": 5
+        },
+        {
+          "edges": [
+            [
+              5,
+              1
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              5,
+              1
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ]
+          ],
+          "empty_vertex": 6
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              1,
+              5
+            ]
+          ],
+          "empty_vertex": 5
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              5
+            ]
+          ],
+          "empty_vertex": 5
+        },
+        {
+          "edges": [
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              1,
+              5
+            ]
+          ],
+          "empty_vertex": 5
+        }
+      ],
+      "repair": [
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "root": 13,
+          "size": 4
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 12,
+          "size": 6
+        }
+      ],
+      "intermediate_boundary": [
+        1,
+        3,
+        1,
+        0,
+        1,
+        3,
+        2,
+        0,
+        2,
+        3
+      ],
+      "final_boundary": [
+        1,
+        3,
+        1,
+        3,
+        1,
+        3,
+        2,
+        0,
+        2,
+        3
+      ],
+      "core_assignment": [
+        1,
+        2,
+        0,
+        2,
+        3,
+        0,
+        0
+      ],
+      "vertices_touched": 9,
+      "vertex_switches": 10,
+      "shortest_switch_count": 2,
+      "complete_source_stars_and_cyclic_order_checked": true,
+      "whole_sphere_reconstructed": true
+    }
+  ],
+  "scope": "Two specified exteriors. No one-switch repair exists; a two-switch repair does. Silent preparation is one option, not necessary on every successful path. No universal two-switch theorem or coverage claim."
+}

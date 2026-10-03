@@ -846,6 +846,65 @@ source pins, compact exterior colourings and explicit repair commands. The
 [receipt](two-port-core-measurements.json) distinguishes the generic
 two-root audit, source eight-root audit and program executions.
 
+## Shortest repairs can include an unproductive first switch
+
+The original exteriors in `independent-repair-example.json` give a different
+test from the marginal counterexamples above. Neither original boundary
+extends, and no single actual Kempe component switch makes it extend. A
+two-switch repair succeeds in each. The [complete census](two-step-core-audit.json)
+includes all six unordered colour pairs and all their components, including
+components missing the boundary entirely.
+
+| Source | All initial components | Boundary-changing components | Successful one-switch repairs | Shortest successful history | Distinct exterior vertices touched by displayed repair |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| D0092 | 30 | 14 | 0 | 2 switches | 2 |
+| D0063 | 28 | 13 | 0 | 2 switches | 9 |
+
+For D0092, two successive singleton recolourings suffice. Neither move
+alone gives a source extension. A separate three-vertex preparatory switch
+leaves the boundary word unchanged but opens four successful next moves.
+Consequently the same boundary word can have repair distance two or one.
+The current pair partitions distinguish these two states; this is a failure
+of the boundary word alone to determine repair distance. The earlier
+partition-update obstruction concerns a different, stronger observation.
+Silent preparation is an available repair, not necessary on every path.
+
+[ListPropagation](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ListPropagation.lean)
+proves that removing colours without support across an actual edge preserves
+every proper list colouring. An empty list therefore refutes extension.
+[TwoStepCoreProgress](../../../lean/fourcolor-classical/MettapediaFourColor/TwoStepCoreProgress.lean)
+uses this common theorem for the two initial words and all 27 boundary-changing
+outcomes. Each contradiction uses at most six deductions on the seven-vertex
+decoded core. Both repaired source assignments are also kernel checked.
+The 5.6 KB source module builds in 8.4 seconds; the generic theorem builds in
+1.6 seconds. No table of complete core colourings is used.
+
+The program checks the complete spherical graph, injective source occurrence,
+full core stars, cyclic order, actual components and reconstruction of all
+162 vertices. These concrete geometric and physical checks remain program
+evidence. Lean certifies the 29 boundary rejections and two positive source
+assignments; it does not yet certify the spherical component census.
+
+This refutes an immediate one-switch repair guarantee and a strategy requiring
+extension feasibility to improve at every physical move. It leaves open finer
+progress measures, preparatory moves, successful composite operations, and
+uniform coverage. It proves neither that two switches always suffice nor
+that compact compositional proofs are impossible. No catalogue entry or
+complete-proof dependency is removed.
+
+Replay `lake build MettapediaFourColor.TwoStepCoreAudit` in the classical
+package, then from the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_two_step_core.py \
+  --check-lean lean/fourcolor-classical/MettapediaFourColor/TwoStepCoreProgress.lean
+```
+
+The [fixture](two-step-core-example.json) pins the reused sources and records
+only explicit repair commands. The [receipt](two-step-core-measurements.json)
+separates the kernel claims, exhaustive one-step program census and bounded
+search used to discover the displayed two-step repairs.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)
