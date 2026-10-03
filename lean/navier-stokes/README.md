@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [cyclic entropy law and its scale boundary](labs/README.md#cyclic-entropy-depletion-and-its-scale-boundary)
+proves a negative first nonlinear velocity-moment return for every positive
+choice of three cyclic parent amplitudes at a common spatial scale. Changing
+one parent's spatial frequency from one to four reverses that sign. A uniform
+local comparison gives actual unforced positive-viscosity histories whose
+regularized cubic velocity moment first decreases and then exceeds its initial
+value, while kinetic energy decreases. These analytic results retain every
+generated mode; the algebra and weighted enclosures are exact. They distinguish
+a valid family depletion law from a false extension across scales. Payment
+for repeated arbitrary histories remains open; no blowup is constructed.
+
 The [complete Bernoulli return test](labs/README.md#pressure-storage-and-the-complete-bernoulli-return)
 separates an observer cost from physical amplification. On one actual
 three-dimensional unforced viscous history, two positive pressure completions

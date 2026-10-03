@@ -33361,3 +33361,236 @@ jets, exact weighted-series enclosures, the complete tangent evolution and
 comparison margins pass. The local Sobolev existence bounds, Taylor
 remainder envelopes and inviscid comparison used to obtain (615)--(616)
 remain analytic, not Lean-certified. No Lean declarations or axioms change.
+
+## Cyclic entropy depletion and its scale boundary
+
+The favorable velocity return in (609) extends to an entire family with
+unequal amplitudes. It does not extend to arbitrary spatial scales, even
+when all amplitudes are equal. Both conclusions use the complete physical
+equation and the same regularized cubic velocity observation. Thus the
+scale counterexample concerns actual velocity redistribution, rather than
+the pressure-storage overcharge in (608)--(616).
+
+### A uniform amplitude law at a common scale
+
+On the normalized 2*pi torus, take the smooth Euler datum
+`U=(a sin y,b sin z,c sin x)`, with a,b,c>0, and any fixed h>0. Define
+`Phi(s)=2sqrt(2)s^(3/2)` and `V(t)=integral Phi(e(t)+h)`, where
+e=|u|^2/2. The Euler calculation is a calibration for the actual
+positive-viscosity comparison below. It proves
+
+```text
+V'(0)=V''(0)=V'''(0)=0,
+V''''(0)<=-delta(a,b,c,h)<0,
+delta=(7sqrt(2)/80) a^2 b^2 c^2 (a^2+b^2+c^2)
+                 /sqrt(h+(a^2+b^2+c^2)/2).                (617)
+```
+
+In particular this applies to h=max(a^2,b^2,c^2), fixed from the original
+datum. No smallness or comparability assumption on the amplitudes is used.
+The fourth return is zero if any parent is removed. The family is not an
+invariant class of solutions: its generated modes are retained, and (617)
+cannot be restarted later by pretending the original geometry persists.
+
+The proof simplifies in material coordinates without discarding pressure.
+Let D_t=partial_t+u.grad, and write M_j=(D_t^j e)(0). The actual material
+flow preserves volume. Initially p0=0, M1=0, and
+`M2=-U.grad p1`, with `p1=-2abc cos x cos y cos z`. Consequently
+
+```text
+V''''(0)=integral [Phi'(e0+h) M4+3Phi''(e0+h) M2^2].       (618)
+```
+
+The new square in (618) has a positive coefficient and must be retained.
+This is not the return obtained by following only the original parents.
+
+Set X=sin^2 x, Y=sin^2 y, Z=sin^2 z and
+`r=h+(c^2 X+a^2 Y+b^2 Z)/2`. Average the finite Fourier polynomials over
+coordinate reflections and half-period translations, which leave r
+unchanged. Denote that projection by an overbar. Complete symbolic
+pressure and velocity jets give
+
+```text
+overbar(M2)=0,
+overbar(M4)=(16/15)a^2 b^2 c^2 S,
+overbar(M2^2)=4a^2 b^2 c^2 T,
+S=30XYZ-27(XY+XZ+YZ)+11(X+Y+Z),
+T=c^2 X(1-X) Z(1-Y)+a^2 Y(1-Y) X(1-Z)
+                         +b^2 Z(1-Z) Y(1-X).              (619)
+```
+
+The coordinates and their weights remain ordered. Permuting unequal
+weights would invalidate the calculation. The first and third integral
+derivatives vanish by Euler time reversal and the translation of all
+three coordinates by pi. The second vanishes by overbar(M2)=0.
+
+Under normalized spatial integration, X,Y,Z are independent arcsine
+variables on [0,1]. Integration by parts gives
+`E[(X-1/2)G]=E[X(1-X) partial_X G]` for a smooth G. The boundary term
+vanishes because sqrt(X(1-X)) vanishes at both endpoints. Since h>0,
+all the weights below are smooth on the closed cube. Applying this
+identity to the three terms in T combines the two terms of (618):
+
+```text
+V''''(0)=-(4/15)a^2 b^2 c^2 E[Phi'(r) P],
+P=150XYZ-27(XY+XZ+YZ)+X+Y+Z.                              (620)
+```
+
+Although P has both signs, its weighted average here has a definite sign.
+Write x=X-1/2, y=Y-1/2, z=Z-1/2. Then
+`P=150xyz+48(xy+xz+yz)+(23/2)(x+y+z)`.
+Put `d=(c^2,a^2,b^2)/2`, `t_i=d_i X_i(1-X_i)`,
+`S1=sum t_i`, `S2=sum_(i<j) t_i t_j`, and `S3=t1 t2 t3`.
+Repeated arcsine integration by parts, now applied to Phi'(r), yields
+
+```text
+E[Phi'(r)P]=3sqrt(2) E[r^(-5/2) B],
+B=(23/4)r^2 S1-12r S2+(225/4)S3,
+B-(7/4)r^2 S1
+ =4r S1(r-S1)+2r sum_(i<j)(t_i-t_j)^2+(225/4)S3 >=0.      (621)
+```
+
+Every term on the right is nonnegative because
+`r-S1=h+sum d_i X_i^2>0`. Thus (620) is at most
+`-(7sqrt(2)/5)a^2 b^2 c^2 E[S1/sqrt(r)]`.
+Finally `E[X(1-X)]=1/8`, so `E[S1]=(a^2+b^2+c^2)/16`, and
+`r<=h+(a^2+b^2+c^2)/2`. This proves the quantitative bound (617).
+The strict sign comes from the full pressure return and its new square
+together; neither one was assigned a favorable sign separately.
+
+### Different scales reverse the physical return
+
+Now keep equal amplitudes but use
+`U_*=(sin y,sin(4z),sin x)` and h=1. Its initial canonical pressure is
+also zero. Its initial speed distribution, and hence every integral
+depending only on that speed, is identical to the unit-frequency datum.
+Its spatial derivatives and generated pressure are different. Computing
+the COMPLETE Euler jets gives
+
+```text
+V_*'(0)=V_*''(0)=V_*'''(0)=0,
+73/1000 < V_*''''(0)/sqrt(7/2) <74/1000,
+in particular V_*''''(0)>1/8.                             (622)
+```
+
+The reflection projection again verifies the vanishing second derivative.
+Translation by `(pi,pi,pi/4)` sends U_* to -U_*, giving the vanishing odd
+derivatives by Euler uniqueness and time reversal. There is no discarded
+Fourier output or imposed closed cascade.
+
+For certification, all physical Fourier differentiation and pressure
+inversion use wave numbers `(k_x,k_y,4k_z)`. Only AFTER generating the
+complete jets are they pulled back to independent phase coordinates.
+The integer phase covering preserves normalized spatial integration.
+In those coordinates e0 is again the symmetric sum of three squared sines.
+Therefore the exact rational weighted-series integration (611)--(612)
+applies with h=1, center 7/4, radius 3/7 and degree 32. The checker bounds
+the fourth derivative both by the Eulerian chain formula (610), with
+pressure-observer terms removed, and independently by the complete
+material formula (618). Both enclosures imply (622). Applying the old
+unit-wave-number pressure operator after this change of coordinates would
+be incorrect; the checker preserves the physical wave numbers throughout
+the evolution calculation.
+
+Thus changing only a spatial frequency reverses the signed physical
+return. The amplitude law (617) is valid on its stated domain, while its
+extension to all cyclic spatial scales is false. This is a statement about
+the regularized cubic velocity moment, not a universal claim about
+vorticity stretching or every measure of concentration.
+
+### Actual positive-viscosity histories
+
+Both strict signs transfer to actual unforced NS. Here are the quantifiers
+and interval bounds. Fix either a common-scale profile U with its h>0 and
+margin delta from (617), or U_* with h=1 and delta=1/8. Let v^mu solve NS
+with that same datum and viscosity mu in [0,1]. The local H16 estimate
+(613) supplies a common interval [0,tau] and an a priori bound from the
+original profile. Because e+h>=h, finite product-rule recursions and the
+derivatives of Phi on that positive range give an a priori fifth time
+derivative bound M for the Euler observation. No pressure lower bound is
+needed for this velocity-only observation.
+
+Choose `s=min(tau,1,5delta/[2(1+M)])>0`. Let epsilon=-1 for (617) and
+epsilon=+1 for (622). Taylor's theorem gives
+`epsilon[V^0(s)-V^0(0)]>=delta s^4/48`.
+The same H14 difference estimate as below (614) bounds
+`|V^mu(s)-V^0(s)|<=L mu`, with L determined by the original profile,
+h and the local Sobolev constants. The original heat forecast obeys
+`|V(exp(mu s Delta)U)-V(U)|<=L_heat mu`. These are finite original-data
+constants, not assumed control of an unknown future history.
+
+For
+`0<mu<=mu_*=min(1,delta s^4/[96(1+L+L_heat)])`, one obtains
+
+```text
+epsilon [V^mu(s)-V(exp(mu s Delta)U)]>=delta s^4/96,
+and, for U_*, V^mu(s)-V(U_*)>=s^4/768>0.                  (623)
+```
+
+For ANY fixed physical viscosity nu>0 choose a finite amplitude
+`A>=nu/mu_*`. The actual solution with original datum A U is
+`u(t)=A v^(nu/A)(At)`. Use the constant original-data regularizer A^2 h.
+At t_*=s/A all the entropy differences in (623) are multiplied by A^3.
+The heat comparison is always with the ORIGINAL datum:
+for U_* it is
+`A(e^(-nu t)sin y,e^(-16nu t)sin(4z),e^(-nu t)sin x)`.
+Strict inequalities persist on a neighborhood of t_*.
+
+In the unequal-scale example, V initially decreases: p0=0 and the full
+viscous derivative at zero is strictly negative. Yet (623) places V
+strictly above its initial value later on the same smooth history. Kinetic
+energy decreases throughout according to its usual viscous identity.
+The pressure is generated internally and only redistributes energy;
+no external force, reinitialization or negative-viscosity evolution is
+used. The proof provides a local interval and a finite amplitude threshold,
+not optimized numerical thresholds or global regularity for these 3D data.
+
+### What the continuation reserve still has to pay
+
+The physical meaning is visible directly in the complete identity for V.
+Set `r=|u|`, `s_h=sqrt(r^2+2h)`, `G=|grad u|^2`, and
+
+```text
+Pi_h=-integral Phi'(e+h) u.grad p
+    = integral p Phi''(e+h) u.grad e,
+D_h=3 integral [s_h G+(r^2/s_h)|grad r|^2],
+V'+nu D_h=Pi_h,       D_h>=3D,                            (624)
+```
+
+where D is the cubic diffusion from (588). These formulas hold along
+every smooth unforced periodic prefix with constant h>0. The norm gradient
+is understood almost everywhere; at zero velocity the multiplied terms
+vanish. To verify the comparison, write
+`D_h-3D=3 integral (s_h-r)[G-(r/s_h)|grad r|^2]>=0`, using
+`|grad r|^2<=G`. All pressure and viscous terms remain present.
+
+Consequently a finite full-datum bound B_h on every available prefix for
+
+```text
+integral_0^t Pi_h-(nu/2)integral_0^t D_h <= B_h
+implies
+Y(t)+(3nu/2)integral_0^t D <= V(0)+B_h.                   (625)
+```
+
+This feeds the SAME cubic/enstrophy continuation argument (588)--(591).
+The allowance must be fixed by the full original datum, nu and horizon
+before ranging over all its smooth prefixes. It cannot be defined by an
+uncontrolled future supremum. Equation (623) rules out automatic monotone
+payment `V'+(nu/2)D_h<=0` even for cyclic initial geometry. It does not
+refute SOME larger original-data allowance in (625).
+
+The common-scale law is a useful geometric calibration; scale imbalance
+is an explicit obstruction to iterating that law indiscriminately.
+Neither an increasing velocity moment nor a sequence of isolated initial
+jets constructs a singularity. Whether repeated, changing, interacting
+parents have a finite allowance in (625) remains open. Constant h has
+infinite background integral on R3, so this particular regularized
+observation and new family results are periodic statements; the original
+unregularized whole-space criterion remains unchanged.
+
+Run `python3 -O labs/cyclic_entropy_depletion.py`. The symbolic full jets,
+ordered reflection projection, arcsine polynomial identities, nonnegative
+remainder and two exact weighted enclosures pass. The integration-by-parts
+argument, common local interval, derivative envelopes and positive-viscosity
+comparison are analytic, not Lean-certified. No Lean declarations or
+axioms change.
