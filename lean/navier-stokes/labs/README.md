@@ -37861,3 +37861,270 @@ independent time-jet and conditional-tail checks. Use
 for a numerical discovery history. The actual stochastic identification,
 uniform analytic remainder and scaling argument are ANALYTIC, not new
 Lean certificates. No Lean declarations or axioms change.
+
+## Pressure-history comparison from velocity-error dissipation
+
+`pressure_history_control.py` supplies a concrete consumer for the preceding
+velocity validation: an error estimate for the original pressure impulse
+along actual stochastic paths. It retains all inherited moments. This is an
+analytic comparison theorem and a numerical feasibility tool; the new
+sampled runs do not certify an actual finite prefix.
+
+The general strategy of proving regularity from a checked approximation is
+established in [Chernyshenko, Constantin, Robinson and Titi,
+*A posteriori regularity of the three-dimensional Navier--Stokes equations
+from numerical computations*](https://arxiv.org/abs/math/0607181), alongside
+the control-inequality work cited above. Here the additional consumer is the
+pressure-history fourth moment, including its trajectory error.
+
+### Spatial pressure error uses the available dissipation
+
+Work on the normalized period-2pi torus. Let u be any available smooth
+mean-zero unforced NS prefix at viscosity nu>0. Let v be a prescribed smooth
+mean-zero solenoidal reference with the SAME original datum; v may have a
+nonzero NS residual. Its canonical pressure is determined by v, not by an
+independently fitted pressure field. Write
+
+```text
+w=u-v, X=||w||2, Y=||grad w||2, Z=||Delta w||2,
+g_u=grad p_u, g_v=grad p_v,
+V0>=||v||infinity, V1>=||grad v||infinity,
+V2>=||D^2 v||infinity.                                (785)
+```
+
+Use Frobenius norms for derivatives. The Fourier sums
+`sum |vhat|`, `sum |k||vhat|`, `sum |k|^2|vhat|` suffice for V0,V1,V2.
+The existing mean-zero Agmon inequality gives
+`||w||infinity<=C_A sqrt(Y Z)`, with `C_A=sqrt(26pi)<10`.
+Two further elementary bounds are
+
+```text
+||f||4<=3||grad f||2       (mean-zero scalar or vector f),
+||grad w||4^2<=3||w||infinity Z.                       (786)
+```
+
+For the first, Hausdorff--Young and Holder give the fourth root of
+`sum_(k!=0)|k|^(-4)` as a constant. Grouping by `|k|infinity=n` bounds this
+sum by `24 sum n^(-2)+2 sum n^(-4)<=24*2+2*(4/3)<81`.
+The vector version follows by applying the scalar bound to each component
+and using Minkowski for the sum of their squares. For the second, integrate
+one derivative in `integral |grad w|^4`. The Laplacian term costs
+`||w||infinity Z ||grad w||4^2`; differentiating `|grad w|^2` costs at most
+twice that amount. On the torus `||D^2 w||2=||Delta w||2`.
+
+The gradient projection `Q=I-P_Leray` is an H1 contraction and
+
+```text
+g_u-g_v=-Q[v.grad w+w.grad v+w.grad w].
+```
+
+Differentiating the three products, and using (786) also on this mean-zero
+pressure difference, proves
+
+```text
+||g_u-g_v||4
+ <=3[V0 Z+2 V1 Y+V2 X+40 sqrt(Y) Z^(3/2)].             (787)
+```
+
+Every derivative of the unknown error is either X, Y or Z. In particular,
+(787) does not assume a Lipschitz bound on the unknown actual flow.
+
+Let `Sminus>=sup lambda_max(-sym grad v)`, and let epsilon0,epsilon1
+bound the L2 and homogeneous H1 norms of the full solenoidal NS residual
+of v. The previously derived comparison gives, with
+`kappa=27(26pi)^2/(32nu^3)`,
+
+```text
+X' <=(Sminus-nu)X+epsilon0,
+Y' <=(2Sminus-nu/2)Y+V2 X+kappa Y^5+epsilon1,
+(1/2)(Y^2)' +(nu/2)Z^2
+ <=2Sminus Y^2+V2 XY+kappa Y^6+epsilon1 Y.              (788)
+```
+
+Let x(t),y(t) be finite nonnegative supersolutions for X,Y starting at
+zero. They are obtained from the reference and its residual, not from the
+unknown solution. Set
+
+```text
+E(t)=(2/nu) integral_0^t
+       [2Sminus y^2+V2 xy+kappa y^6+epsilon1 y],
+A0(t)=integral_0^t V0^2,
+A1(t)=integral_0^t [2V1 y+V2 x],
+A2(t)=integral_0^t y^2.
+```
+
+Integration of (788) proves `integral_0^t Z^2<=E(t)`. Cauchy--Schwarz
+and Holder in time then turn (787) into
+
+```text
+integral_0^t ||g_u-g_v||4
+ <=3[sqrt(A0 E)+A1+40 A2^(1/4)E^(3/4)].               (789)
+```
+
+This cumulative account uses the one original zero error. It does not
+charge a fresh initial gradient on every subinterval. An alternative valid
+bound sums local versions of (787), using
+`integral_s^(s+h) Z^2 <=[y(s)^2+2 integral_s^(s+h)(...)]/nu`.
+The minimum of the cumulative and local bounds is available; neither
+restarts the physical pressure impulse.
+
+### Couple paths, then compare the retained moments
+
+Start actual and reference stochastic paths at the same uniform point,
+and drive them with the SAME Brownian motion:
+
+```text
+dX_t=u(t,X_t)dt+sqrt(2nu)dW_t,
+dY_t=v(t,Y_t)dt+sqrt(2nu)dW_t.
+```
+
+Both spatial marginals remain uniform by incompressibility. Use continuous
+lifts to R3 with identical initial lifts to measure their displacement.
+The common noise cancels in that displacement. With
+`Splus>=sup lambda_max(sym grad v)`,
+
+```text
+d(t)=||X_t-Y_t||_(L4 probability),
+d'<=Splus d+3y, d(0)=0.                               (790)
+```
+
+Indeed, split the velocity difference as `w(X)+v(X)-v(Y)`, use the
+one-sided strain bound for the second term and (786) for the first.
+No derivative of actual u is used in (790). If dbar is a supersolution
+and `G1>=||grad g_v||infinity`, Minkowski gives
+
+```text
+|| integral_0^t g_u(s,X_s)ds
+   -integral_0^t g_v(s,Y_s)ds ||4
+ <= B(t)+integral_0^t G1 dbar =: b(t),                 (791)
+```
+
+where B is either pressure bound from (789) or its local variant. The
+first term pays changed pressure; the second pays changed paths. The
+reference is an auxiliary comparison process, not an independently
+controlled physical fluid or an external force inserted into u.
+
+The EXACT conditional reference moments satisfy, with
+`D_v=partial_t+v.grad-nu Delta`,
+
+```text
+D_v I=g_v,
+D_v Q=I tensor g_v+g_v tensor I,
+D_v T=2Q g_v+(tr Q)g_v,
+Phi_v'=4 integral g_v.T.                              (792)
+```
+
+All start at zero at the original time. Let prescribed approximations
+Ibar,Qbar,Tbar,Phibar have residual norms rI,rQ,rT,rPhi in (792), where
+the first three are L2, Q uses the full symmetric Frobenius norm, and
+rPhi is scalar absolute value. For `G0>=||g_v||infinity` and
+`G2>=||g_v||2`, their errors are bounded by the triangular system
+
+```text
+e1'<=rI,
+e2'<=2G0 e1+rQ,
+e3'<=4G0 e2+rT,
+e4'<=4G2 e3+rPhi,       e1(0)=...=e4(0)=0.             (793)
+```
+
+Transport cancels and diffusion has favorable sign in each L2 comparison.
+The third inequality uses `2+sqrt(3)<4` for
+`2(Q-Qbar)g_v+tr(Q-Qbar)g_v`. There is no blanket exponential
+amplification of all moment errors.
+
+Combining (791)--(793) gives the actual-history consumer
+
+```text
+Phi_u(t)^(1/4)<=max(0,Phibar(t)+e4(t))^(1/4)+b(t).      (794)
+```
+
+A complete implementation must bound all coefficients and residuals over
+ENTIRE time slabs and enclose arithmetic. Finite velocity controls then
+also extend the actual smooth prefix by the existing H1 continuation
+criterion. This is an a posteriori sufficient condition, not a proof that
+arbitrary data satisfy it. Conversely, an exploding comparison control is
+not evidence that the physical solution blows up.
+
+The pressure observation remains physically relevant: the conditional
+transport representation gives `||u(t)||4<=||u0||4+Phi_u(t)^(1/4)`.
+Together with the established enstrophy estimate this supplies continuation
+on a finite horizon when the right side is bounded. This argument uses the
+conditional transport equation. It does not use the false forward-path
+identity `du(t,X_t)=-grad p dt`: that Ito derivative also contains viscosity
+and a stochastic term.
+
+### The small-gradient tail pays pressure as well
+
+There is a second tail consumer that avoids a pointwise Wiener-error
+estimate. Suppose the ACTUAL mean-zero flow at time s has
+`Ys=||grad u(s)||2` and `theta=2kappa Ys^4/nu<1`.
+The existing gradient-energy argument gives
+
+```text
+integral_s^infinity ||Delta u||2^2
+ <=Ds=Ys^2/[nu(1-theta)],
+integral_s^infinity ||grad u||2^2<=Ds.
+```
+
+Apply (787) with zero reference and Holder over the whole remaining
+interval. The future L4 pressure-impulse radius is at most
+
+```text
+R_pressure<=12 C_A Ds<=120 Ds,
+Phi_u(t)^(1/4)<=Phi_u(s)^(1/4)+R_pressure, t>=s.       (795)
+```
+
+Thus the original impulse and all mixed inherited/future costs stay in
+the bound. For nu=1/4 and Ys<=1/64 the conservative constants give
+`theta<3/10`, `Ds<=5/3584`, and `R_pressure<=75/448`.
+If additionally `Phi_u(s)<=4`, then
+
+```text
+Phi_u(t)<(99/70+75/448)^4
+ =157574018016801/25176309760000
+ <63/10<757/120.                                      (796)
+```
+
+The last number is the complete original heat stock for balanced unit
+reciprocal parents. If s>=12, the increasing heat curve itself exceeds
+63/10, checked using rational exponential enclosures. This pays the entire
+tail from such an ACTUAL seam. It does not certify arrival at that seam
+or comparison with the sharper heat curve before it.
+
+### Feasibility checks and their limits
+
+The default checker verifies the exact constants, the conditional tail,
+and the polarization formula for the complete cubic joint vector field.
+An independent Gaussian-rational Fourier recurrence supplies both velocity
+jets and the first two derivatives of ALL conditional moments; the numerical
+interpolation derivatives agree within 1.0e-15 relatively. This checks the
+pressure sign and the complete generated outputs at the original datum.
+It is not a validation of later time slabs.
+
+The prefix tool uses a shared quintic reference for velocity and the
+retained moments. Products are evaluated without filtering on a doubled
+spatial grid; cubic outputs fit because each retained frequency satisfies
+`|k_j|<n/3`. The three time samples per comparison interval do NOT bound
+unsampled residuals. The scalar Phibar has a Bernstein bound over the slab,
+but its floating arithmetic and the other controls are not enclosed.
+
+For balanced unit parents at nu=1/4, an initial 24^3 run with comparison
+step 1/8 loses its gradient-error bootstrap at time 3. A 32^3 run at the
+same comparison step loses it at time 10.875. The latter occurs after the
+computed physical pressure moment has nearly stabilized, while the error
+majorant is still growing. These are failures of validation bounds, not
+counterexamples to the heat payment or regularity.
+
+A separate residual test locates a real spatial truncation cost: at time
+1.5, the endpoint H1 residual is about 1.6e-7 at 32^3 and 3.8e-10
+at 40^3 with the same integrator step. Decreasing only the interpolation
+interval does not remove the spatial cost. Spatial refinement and full-time
+residual enclosure are separate remaining obligations.
+
+Run `python3 -O labs/pressure_history_control.py` for the algebra and
+independent Fourier-jet checks. The optional command
+`python3 -O labs/pressure_history_control.py --prefix --n 40 --nu .25 --dt .0078125 --h .0625 --final 18`
+produces sampled feasibility data, not a continuum certificate. The analytic
+comparison (785)--(796), stochastic coupling and tail derivation are not new
+Lean theorems. No Lean declarations or axioms change. The arbitrary-data
+pressure-history payment remains open.

@@ -225,23 +225,11 @@ def seam_check():
                 scope='Conditional physical tail; the actual seam and preceding comparison are not certified here')
 
 
-def numerical_prefix(n, nu, delta, dt, final):
-    import time
+def make_flow(n, nu, delta=1.):
+    """The retained joint state, reusable by full-history residual consumers."""
     import numpy as np
-    import mpmath as mp
     from pressure_prefix_control import VelocityFlow
     from cellular_parent_history import PAIRS
-
-    h.require(n >= 12 and n % 2 == 0 and nu > 0 and dt > 0 and final > 0,
-              'Positive physical parameters and even retained grid')
-    steps = round(final/dt)
-    h.require(abs(steps*dt-final) < 1e-10, 'Integral number of time steps')
-    mp.mp.dps = 60
-    field = coefficients(Q(str(delta)), degree=8)[8]
-    def forecast(t):
-        v, tau = mp.mpf(str(nu)), mp.mpf(str(nu))*mp.mpf(str(t))
-        return float(v**-4*mp.fsum(mp.mpf(c.numerator)/c.denominator*tau**j*mp.exp(-r*tau)
-                                  for (r, j), c in field.items()))
 
     class JointFlow(VelocityFlow):
         def __init__(self):
@@ -275,7 +263,7 @@ def numerical_prefix(n, nu, delta, dt, final):
             loss = nu*np.mean(sum(np.sum(q[..., :3]**2, axis=-1) for q in gradient))
             return result, np.array([loss])
 
-        def report(self, t, state, spent):
+        def report(self, t, state, spent, forecast):
             values = self.ifft(state)
             phi = float(state[0, 0, 0, 15].real/n**3)
             bound = forecast(t)
@@ -294,7 +282,25 @@ def numerical_prefix(n, nu, delta, dt, final):
                         minimum_covariance=float(np.linalg.eigvalsh(second-first[..., None]*first[..., None, :]).min()),
                         fourth_second_jensen_gap=float(phi-np.mean(np.trace(second, axis1=-2, axis2=-1)**2)))
 
-    flow = JointFlow()
+    return JointFlow()
+
+
+def numerical_prefix(n, nu, delta, dt, final):
+    import time
+    import mpmath as mp
+
+    h.require(n >= 12 and n % 2 == 0 and nu > 0 and dt > 0 and final > 0,
+              'Positive physical parameters and even retained grid')
+    steps = round(final/dt)
+    h.require(abs(steps*dt-final) < 1e-10, 'Integral number of time steps')
+    mp.mp.dps = 60
+    field = coefficients(Q(str(delta)), degree=8)[8]
+    def forecast(t):
+        v, tau = mp.mpf(str(nu)), mp.mpf(str(nu))*mp.mpf(str(t))
+        return float(v**-4*mp.fsum(mp.mpf(c.numerator)/c.denominator*tau**j*mp.exp(-r*tau)
+                                  for (r, j), c in field.items()))
+
+    flow = make_flow(n, nu, delta)
     state, spent, start = flow.initial.copy(), 0., time.time()
     yield dict(n=n, nu=nu, delta=delta, dt=dt, final=final,
                scope='Dealiased numerical discovery; no continuum error enclosure')
@@ -302,7 +308,7 @@ def numerical_prefix(n, nu, delta, dt, final):
         state, cost = flow.step(state, dt)
         spent += cost[0]
         if step % max(1, round(.25/dt)) == 0 or step == steps:
-            yield flow.report(step*dt, state, spent)
+            yield flow.report(step*dt, state, spent, forecast)
     yield dict(elapsed=time.time()-start)
 
 

@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-history comparison](labs/README.md#pressure-history-comparison-from-velocity-error-dissipation)
+connects velocity-error dissipation to the original stochastic pressure
+impulse. A coupling with shared Brownian noise accounts separately for
+changed pressure and changed trajectories; the retained conditional moments
+have a triangular residual estimate. The existing small-gradient tail also
+pays the future pressure impulse, including its mixed costs with the past.
+This is an analytic sufficient condition with exact algebraic checks.
+Its stronger-amplitude numerical tests sample time residuals and do not
+certify an actual prefix. The arbitrary-data payment remains open.
+
 The [reciprocal heat-payment test](labs/README.md#whole-time-heat-payment-for-reciprocal-parents)
 proves that the complete first nonlinear pressure correction stays favorable
 for every time and every ratio of two interacting parents. Exact differential
