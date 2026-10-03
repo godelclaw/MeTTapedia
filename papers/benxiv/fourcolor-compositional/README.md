@@ -18,6 +18,18 @@ The [receipt](../../../tools/fourcolor/near-linear/wheel-family-measurements.jso
 separates the finite source base, uniform transfer, retained geometry checks
 and unchanged classical coverage count.
 
+A [first seam closing law](../../../lean/fourcolor-classical/MettapediaFourColor/RuleFanTripodSupply.lean)
+now connects a concrete part of that classification to the completed tripod
+repair. The retained six-star has two adjacent free neighbours. When their
+degrees are seven and six, in either order, a degree-five outer tip across
+their shared edge supplies all four tripod faces and all six degrees.
+The complete boundary and genuine colouring reconstruction follow from the
+shared geometric theorem. Thus a minimal counterexample must avoid that tip.
+When the seven has a unique high neighbour, the same tip must have degree
+six or coincide with that very neighbour. This is precisely the joint
+information the next overlapping view must retain. It neither settles
+those remaining possibilities nor removes a classical coverage entry.
+
 The next joint-neighbourhood test has identified two concrete four-triangle
 cores, the D0051 fan and D0052 tripod. One
 [Lean geometry proof](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCore.lean)

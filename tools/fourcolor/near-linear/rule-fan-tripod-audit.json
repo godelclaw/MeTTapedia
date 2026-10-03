@@ -1,0 +1,72 @@
+{
+  "evidence": "Independent finite geometry checks; not a flat-pair coverage proof.",
+  "vertices": 162,
+  "checked_prefix_flips": 103,
+  "occurrences": [
+    {
+      "step": 83,
+      "side": 0,
+      "root": [
+        49,
+        121
+      ],
+      "star": [
+        121,
+        18,
+        104,
+        12,
+        1,
+        50
+      ],
+      "tip": 47,
+      "free_degrees": [
+        7,
+        6
+      ],
+      "core_images": [
+        50,
+        49,
+        1,
+        12,
+        47,
+        104
+      ],
+      "core_edges": 9,
+      "oriented_core_corners": 12
+    },
+    {
+      "step": 103,
+      "side": 1,
+      "root": [
+        111,
+        110
+      ],
+      "star": [
+        110,
+        112,
+        77,
+        78,
+        114,
+        14
+      ],
+      "tip": 35,
+      "free_degrees": [
+        6,
+        7
+      ],
+      "core_images": [
+        77,
+        78,
+        111,
+        114,
+        14,
+        35
+      ],
+      "core_edges": 9,
+      "oriented_core_corners": 12
+    }
+  ],
+  "fixture_sha256": "5639ca17d0eb311814d4c183c7c034bc0a0ee7b14020df6b510b56d352f3bf75",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "verifier_sha256": "cda34332b08675f913c84bc4501dcac29c2d36e4d57f15fdaa9cd4dd1f5a4b48"
+}

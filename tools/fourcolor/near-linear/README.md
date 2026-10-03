@@ -38,6 +38,20 @@ Replay `lake build kernelFourTriangleRepair kernelFourTriangleGeometry`.
 Replay the source audit with
 `python3 tools/fourcolor/near-linear/audit_four_triangle_sources.py`.
 
+The [shared-fan tripod receipt](rule-fan-tripod-measurements.json) connects
+this repair to the actual six-star `[receiver, 5, 5, a, b, 5]`.
+For either placement of degrees seven and six at `a,b`, a degree-five
+outer tip across `a–b` supplies the tripod. In a minimal counterexample
+with a unique high neighbour `q` at the seven, the remaining tip must
+have degree six or be exactly `q`. Its identity and radius-three support
+are retained. Other free-degree profiles and these two surviving seam
+cases still need joint classification. Replay `lake build kernelRuleFanTripod`.
+The independent [geometry test](rule-fan-tripod-audit.json) finds both
+placements after 83 and 103 legal flips of the existing spherical fixture;
+it checks all source core edges, corners and ambient degrees. It does
+not assert the full flat-neighbourhood hypothesis. Replay with
+`python3 tools/fourcolor/near-linear/audit_rule_fan_tripod.py`.
+
 The [seven-pair example](seven-pair-four-triangle-example.json) explains the
 choice of these cores. It is a 162-vertex sphere obtained by 1,625 legal
 edge flips. Independent matchers agree on all 4,704 rooted rule tests for

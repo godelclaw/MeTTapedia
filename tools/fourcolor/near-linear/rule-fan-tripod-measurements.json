@@ -1,0 +1,102 @@
+{
+  "status": "Kernel-certified shared-fan tripod closing on both free sides, with an exact residual seam constraint.",
+  "source_manifest": "four-triangle-sources.json",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.RuleFanTripodSupply",
+      "source_sha256": "fab8e18df528582e7e7c20bfaf7fb146f6eafbc3ce6f90e49195450a113e58ac",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.796,
+      "olean_bytes": 610568,
+      "olean_sha256": "8faf8672323cecc5bb00342bdc3548cf38adca19f5b6db5c4e542e7c45d6ad2e"
+    },
+    {
+      "module": "MettapediaFourColor.RuleFanTripodAudit",
+      "source_sha256": "66556338dee2a640d71b9dc2a85cddd8b597cf90ae91a96de9dcce40f95e5fa5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 11.706,
+      "olean_bytes": 2600,
+      "olean_sha256": "3dce7c84b505fce1ee76026b102be6d46d491f1dd4a58ec01e6242e2ac8f4875"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 10,
+    "declarations": 31746,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "geometric_roots_use_rank_certificates": false,
+    "repair_dispatcher_retains": [
+      "FourColor.Bulk.Cfg032",
+      "FourColor.Bulk.Cfg036"
+    ],
+    "recorded_contract_checks_used": false,
+    "complete_four_colour_theorem_used": false
+  },
+  "geometry": {
+    "star": "[receiver, 5, 5, a, b, 5] around a degree-six sender",
+    "shared_tip": "Outer triangular tip across the same a-b edge, opposite the sender.",
+    "free_degree_profiles": [
+      [
+        7,
+        6
+      ],
+      [
+        6,
+        7
+      ]
+    ],
+    "tip_degree_for_reduction": 5,
+    "core": "D0052 tripod",
+    "faces": 4,
+    "vertices": 6,
+    "edges": 9,
+    "construction": "Four actual facial corners supply the graph map and oriented core. All prescribed degrees follow from the same star and tip.",
+    "caller_supplied_complete_occurrence": false,
+    "caller_supplied_exterior_colouring": false
+  },
+  "actual_consumer": {
+    "theorem": "ActualRuleFanTripodSupply.not_five",
+    "inputs": [
+      "graph-backed vertex-minimal spherical cubic counterexample",
+      "retained fixed six-star",
+      "one of the two free-degree profiles",
+      "degree-five shared outer tip"
+    ],
+    "output": "Contradiction through complete occurrence, strict two-vertex descent and compatible ambient reconstruction."
+  },
+  "residual": {
+    "theorem": "ActualRuleFanTripodSupply.unique_tip_of_other_six",
+    "extra_hypotheses": [
+      "The selected degree-seven centre has a unique neighbour of degree at least seven.",
+      "The other free position has degree six."
+    ],
+    "conclusion": "The same outer tip has degree six or is literally the retained second high centre.",
+    "support": "The tip is adjacent to the selected centre, distinct from the original receiver and within radius three of that receiver."
+  },
+  "bounded_examples": {
+    "receipt": "rule-fan-tripod-audit.json",
+    "vertices": 162,
+    "legal_flip_prefixes": [
+      83,
+      103
+    ],
+    "scope": "Independent finite geometry checks of both placements; no asserted flat-neighbourhood coverage."
+  },
+  "checks": [
+    "kernelRuleFanTripod kernelComplete",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_rule_fan_tripod.py"
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "remaining": [
+    "Close the surviving degree-six or retained-second-centre seam branches under the exact joint flatness hypotheses.",
+    "Handle other free-degree profiles and the induced-path and seven-triangle cases.",
+    "Integrate proved coverage into the complete assembly; establish universal supply for the proposed compact explanation."
+  ]
+}

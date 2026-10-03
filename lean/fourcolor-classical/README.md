@@ -72,6 +72,22 @@ rank certificates from the geometric roots and checks the retained repair
 dependencies separately; see the
 [completion receipt](../../tools/fourcolor/near-linear/facial-boundary-measurements.json).
 
+The [shared-fan closing law](MettapediaFourColor/RuleFanTripodSupply.lean)
+now supplies the tripod directly. In the six-star
+`[receiver, 5, 5, a, b, 5]`, let `t` be the outer tip across `a–b`.
+If `(degree a, degree b)` is `(7,6)` or `(6,7)` and `degree t = 5`,
+the same four actual faces complete D0052. The existing consumer reconstructs
+a colouring through strict descent, so this combination cannot occur in
+the minimal counterexample. If the seven has a unique high neighbour `q`,
+the remaining seam constraint is `degree t = 6` or `t = q`.
+The same tip stays within radius three of the original receiver.
+This is a necessary constraint in the joint classification, not its completion.
+Replay `lake build kernelRuleFanTripod`; the
+[receipt](../../tools/fourcolor/near-linear/rule-fan-tripod-measurements.json)
+records the ten-root audit and retained classical repair dependencies.
+An independent [spherical replay](../../tools/fourcolor/near-linear/rule-fan-tripod-audit.json)
+exhibits both degree placements, without claiming flatness of their neighbourhoods.
+
 The [second side of the shared fan](MettapediaFourColor/SecondFanResidual.lean)
 now has an exact geometric classification. At a flat degree-seven second
 free centre, either a new high neighbour occurs within radius three, or
