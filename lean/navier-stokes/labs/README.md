@@ -29885,3 +29885,264 @@ pressure and joint angular history, with spatial concentration controlled,
 or use the earlier signed deformation target to avoid overcharging this
 observation. The harmless cellular flow remains an essential calibration:
 its geometric observation can grow although its actual stretching is zero.
+
+## Physical enstrophy receiver and a diffusion feedback budget
+
+The continuation argument can retain the flow's own spatial weighting
+instead of replacing it by a maximum over all receivers. This keeps an
+intermediate Cauchy--Schwarz estimate in the geometric energy method of
+[Chae--Lee](https://arxiv.org/html/1606.08126), combined with the original
+passive/impulse decomposition. It gives a different sufficient history
+target and a precise diffusion-feedback allowance. The required
+original-data bound is still open; this is not a new unconditional
+regularity theorem.
+
+### A finite global normalization
+
+On an actual smooth unforced prefix on R3 or the fixed torus, retain
+D_u H=0, H(0)=u0, I=H-u and D_u I=grad p. Set M=||u0||_infinity and
+fix zeta>0 from the original datum, viscosity and prescribed horizon,
+before considering any future prefix. Define
+
+```text
+e=|omega|^2, c=curl omega, J=-(I cross omega).c,
+W=J_+^2/|c|^2 if c!=0, and 0 if c=0,
+Z=integral e, Y=Z+zeta, D=integral |grad omega|^2,
+Theta=(integral W)/Y, d=D/Y.                         (463)
+```
+
+The offset zeta is added to the FINITE global enstrophy; it is not
+constant spatial mass on R3. Where omega,c are nonzero, put
+`a_0=J_+/(|omega||c|)`, with zero elsewhere. Then
+`Theta=integral a_0^2 rho`, where `rho=e/Y` is the actual subprobability
+density. Also W<=|I|^2 e. No derivative of W or its positive part is
+needed in the continuation argument below.
+
+All interactions are summed before taking J_+. Original H, pressure,
+phases and incoming impulse are retained through every segment. The
+weight rho is fixed by the actual solution; it is not an independently
+chosen concentrating control or a passively transported density.
+
+### Direct continuation from the physical geometric history
+
+The actual integrated Lamb identity and ||H||_infinity<=M give
+
+```text
+g=integral omega.(grad u)omega
+ <=sqrt(D)[M sqrt(Z)+sqrt(integral W)]
+ <=sqrt(Y D)(M+sqrt(Theta)),
+Y'=2g-2nu D,
+Y'+nu D <=2(M^2+Theta)Y/nu.                         (464)
+```
+
+Suppose B_phys is finite, fixed from the original resources, and bounds
+`integral_0^t Theta` for EVERY available same-datum prefix and every
+endpoint t<=T. Writing Y0=Z0+zeta, Gronwall gives
+`Y(t)+nu integral_0^t D<=Y0 exp[2(M^2T+B_phys)/nu]`.
+Equivalently the nonnegative reserve
+
+```text
+r(t)=2[M^2(T-t)+B_phys-integral_0^t Theta]/nu,
+R(t)=(exp(r(t))-1)Y(t)
+```
+
+obeys `R'+2g-nu D<=0`. Thus an explicit original signed-renewal
+allowance is
+
+```text
+K=Y0[exp(2(M^2T+B_phys)/nu)-1]+2T|g(0)|.
+```
+
+It matches the quantified hypothesis of
+`JointCubicRenewal.hasNSEvolution_of_signed_renewal` on R3 and gives
+the uniform H1 estimate used by periodic continuation. The spatial
+identities and passive construction remain analytic. The existing
+Lean consumer does not prove the new B_phys hypothesis.
+
+The previous supremum criterion implies this target quantitatively.
+For any fixed delta>0 in (449), `W=a_delta^2(e+delta)` and the existing
+impulse-energy bound give
+
+```text
+Theta <= ||a_delta||_infinity^2 +4delta E0/zeta.
+```
+
+With the unregularized a_0, the sharper direct comparison is
+`Theta<=||a_0||_infinity^2 Z/(Z+zeta)`. These comparisons explain the
+smaller observation being requested. They do not assert a new class of
+unforced singular solutions separating two sufficient criteria.
+
+### Feedback below the full normalized dissipation
+
+An allowance may also let the geometric cost use some of the same
+physical diffusion. Fix 0<=alpha<1 and put kappa=1-alpha. The proposed
+remaining estimate is
+
+```text
+C(t)=integral_0^t [Theta-alpha nu^2 d] <=B0           (465)
+```
+
+for all the same original-data prefixes, with one finite B0>=0 fixed
+from the original resources. This is a substantive OPEN inequality,
+not a definition of B0 by the unknown future. Neither alpha nor zeta
+may be chosen adaptively from an unknown future solution.
+
+To see why (465) suffices, let L=log Y. Retaining the passive term
+linearly in (464), rather than combining it with Theta too early, gives
+
+```text
+L'+2nu d <=2M sqrt(d)+2sqrt(Theta d),
+L'+kappa nu d <=C'/nu+2M sqrt(d).
+```
+
+The coefficient range alpha<1 follows from these actual inequalities.
+It does not claim an optimal threshold for the fluid equation.
+The complete logarithmic reserve is
+
+```text
+R_log=log(Y/zeta)+(B0-C)/nu+2M^2(T-t)/(kappa nu)>=0,
+R_log'+(kappa nu/2)d<=0.                             (466)
+```
+
+Indeed, let
+`gap=2(M+sqrt(Theta))sqrt(d)-(L'+2nu d)>=0` and
+`S_Theta=(sqrt(Theta/nu)-sqrt(nu d))^2`. The exact remainder in (466) is
+
+```text
+R_log'+(kappa nu/2)d
+ =-gap-S_Theta
+       -[sqrt(kappa nu/2)sqrt(d)-sqrt(2/(kappa nu))M]^2.
+```
+
+Every term uses the same actual history. The expenditure C can decrease
+when diffusion pays it, but no new B0 is issued at a join. The original
+zeta, H and accumulated C persist across the join.
+
+Set L0=log(Y0/zeta). It follows that
+
+```text
+integral_0^t d <=Q_star,
+Q_star=2[L0+B0/nu+2M^2 T/(kappa nu)]/(kappa nu),
+Y(t)<=Y_max=Y0 exp[(B0+M^2T/kappa)/nu].               (467)
+```
+
+For the second estimate use
+`2M sqrt(d)-kappa nu d<=M^2/(kappa nu)` before integrating.
+Consequently `integral_0^t D<=Y_max Q_star`, and one direct
+signed-renewal allowance is
+
+```text
+K=(Y_max-Y0)+nu Y_max Q_star+2T|g(0)|.
+```
+
+This follows from `2 integral(g-g(0))=Z(t)-Z0+2nu integral D-2t g(0)`.
+All constants are prescribed original resources IF (465) is proved.
+The feedback assumption also supplies the earlier sufficient budget
+`B_phys=B0+alpha nu^2 Q_star`.
+
+### The physical receiver carries its own reaction and diffusion
+
+The density rho=e/Y has mass Z/Y. The remaining scalar mass zeta/Y
+can be recorded at an auxiliary point so that total mass is one; that
+point is bookkeeping, not an additional fluid component. Put
+`A=2omega.(Bomega)-2nu|grad omega|^2`, B=grad u. Directly from NS,
+
+```text
+D_u rho=A/Y-(Z'/Y)rho,
+(d/dt)(zeta/Y)=-(Z'/Y)(zeta/Y),
+Z'=integral A.                                      (468)
+```
+
+This equation retains local stretching, diffusion and the evolving
+global normalization. It is nonsingular at omega=0 and is not the
+passive diffusion equation. In particular, replacing rho by a convenient
+heat kernel would change the observation being estimated.
+
+There is an exact physical interpretation of the d paid in (466).
+On omega!=0 let n=omega/|omega|. With the usual weak derivatives at
+zeros, the norm-gradient identity gives
+
+```text
+d=(1/4)Fisher(rho)+integral rho|grad n|^2,
+Fisher(rho)=integral_{rho>0}|grad rho|^2/rho.
+```
+
+To verify it, write
+`|grad omega|^2=|grad |omega||^2+|omega|^2|grad n|^2`
+where omega!=0. On its zero set the derivative of the smooth vector
+field vanishes almost everywhere, so no spatial integral is lost.
+Under the OPEN feedback hypothesis this yields
+`integral_0^t Fisher(rho)<=4Q_star` and
+`integral_0^t integral rho|grad n|^2<=Q_star`.
+Thus concentration and direction variation spend the same normalized
+dissipation. These conclusions are conditional; Fisher information
+alone is not asserted to bound the density's spatial maximum in 3D.
+The continuation argument uses the physical energy inequality directly.
+
+The earlier unweighted impulse payment does NOT automatically pay
+`integral rho|grad I|^2`. The normalized receiver's source and its
+correlation with I still have to enter the estimate for (465).
+
+### Entire eigenflow histories and the actual forced obstruction
+
+Take any smooth periodic steady Euler field U with
+`-Delta U=k^2 U`, k>0. The actual unforced solution
+`u=a exp(-nu k^2t)U` has c=k^2u, so its full Lamb work vanishes
+pointwise. Retaining its original passive H gives
+`J=-(H cross omega).c`, hence W<=M^2 e. Its enstrophy is
+`Z=Z0 exp(-2nu k^2t)`. Therefore, for all t>=0,
+
+```text
+integral_0^t Theta
+ <=M^2/(2nu k^2) log[(Z0+zeta)/(Z0 exp(-2nu k^2t)+zeta)]
+ <=M^2/(2nu k^2) log(1+Z0/zeta),
+integral_0^t d=log[(Z0+zeta)/(Z(t)+zeta)]/(2nu).     (469)
+```
+
+This is an explicit finite payment over ALL time for this entire known
+solution family, without small-amplitude assumptions or H=u. It improves
+on charging M^2 once per unit time in the earlier coarse calibration.
+For the decaying ABC family W=0 exactly, a stronger statement. For the
+cellular family the actual stretching is zero while the geometric
+observation need not be; (469) pays that harmless observation.
+No payment for arbitrary mutually amplifying parents follows.
+
+For the ONE actual imported whole-space forced candidate, H=0,I=-u,
+and `F_star=sup_t||f(t)||_2^2<infinity`. Retain any fixed zeta>0.
+The forced enstrophy equation and Cauchy--Schwarz give
+
+```text
+(log Y)'+2nu d
+ <=2sqrt(Theta d)+2sqrt(F_star/zeta)sqrt(d).          (470)
+```
+
+Thus the same feedback proof applies with M replaced by
+`sqrt(F_star/zeta)`. If C(t) in (465) had a finite upper bound through
+time1 for ANY fixed alpha<1, it would give a uniform gradient-energy
+bound. This contradicts the existing Lean theorem
+`ForcedCandidatePancake.no_uniform_gradient_energy` on that SAME
+candidate. Accordingly C(t) has no finite upper bound there; in
+particular its integral of Theta is infinite. This uses the exact
+imported force assumptions. It neither constructs internal realization
+by unforced fluid nor excludes such realization by an arbitrary datum.
+
+### Checks and the remaining physical estimate
+
+Run `python3 -O labs/physical_geometric_receiver.py`. Exact checks cover
+the direct reserve, the complete logarithmic reserve square, feedback
+constants, full receiver equations through their first evolving derivative
+on two genuine 3D NS data, mass preservation including the scalar remainder,
+the concentration/direction identity, and the entire eigenflow integral.
+Canonical pressure and every generated Fourier output are retained.
+The earlier eigenflow checks establish the literal PDEs. No truncated
+finite-mode dynamics is used as an evolution.
+
+These calculations identify sufficient targets (463) and (465) and
+positive calibrations. Their arbitrary-data payment, passive/stochastic
+construction, PDE integration and continuation assembly remain analytic
+obligations, not new Lean certificates. The next estimate should use the
+ACTUAL reaction (468), original pressure impulse and compatible joint
+geometry to pay (465). It need not first prove the stronger maximum over
+arbitrary spatial samplers. The old targets (379), (435) and (449) remain
+available alternatives; no equivalence or completed regularity proof is
+asserted by this reformulation.

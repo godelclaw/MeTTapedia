@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [physical enstrophy receiver](labs/README.md#physical-enstrophy-receiver-and-a-diffusion-feedback-budget)
+retains the actual vorticity weighting in the geometric continuation
+estimate. A finite original-data allowance for its cost, even with feedback
+below the full normalized dissipation, would close the existing criterion.
+The receiver's exact reaction and its concentration/direction costs are
+retained. Known decaying eigenflow families have an explicit all-time
+payment; the imported forced candidate violates the proposed allowance.
+The arbitrary-data unforced payment remains open. These are analytic
+arguments with exact checks, not new Lean-certified regularity results.
+
 The [viscous geometric-cost test](labs/README.md#viscous-creation-of-signed-geometric-cost)
 shows that diffusion can increase the signed directional observation on
 an exact unforced cellular flow with zero actual stretching. The failure
