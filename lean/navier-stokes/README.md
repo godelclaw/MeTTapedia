@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [conditional deformation payment](labs/README.md#conditional-deformation-and-an-original-energy-payment)
+removes precisely the part of stochastic deformation invisible to all
+endpoint observations. On the fixed torus, incompressibility and
+drift-independent mixing bound the retained noise's second moment by
+the original kinetic energy and viscosity, uniformly over sampling
+duration on every available smooth prefix. A whole-space counterpart
+uses the existing divergence-free kernel bound. These estimates pay a
+terminal directional-score cost for sampling controls whose terminal
+density ratio has a prescribed bound. They impose no small-data
+restriction on the fluid, but do not pay arbitrarily concentrated
+controls or the full integrated stretching source. The elliptic,
+stochastic and PDE arguments are analytic with exact algebra checks;
+no new Lean declarations are added.
+
 The [projected-noise test](labs/README.md#projected-score-noise-and-conditioning-on-the-endpoint)
 retains the complete joint evolution of vorticity direction and score
 noise. Its proposed unconditioned exponential moment is infinite on an

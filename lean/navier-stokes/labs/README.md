@@ -28494,3 +28494,332 @@ is not itself a bound. A successful correction must reproduce both
 the finite rotating-shear payment and the finite actual ABC score
 without demanding its infinite noise moment. The full integrated
 arbitrary-data pressure-history estimate (379) remains open.
+
+## Conditional deformation and an original-energy payment
+
+The endpoint-conditional repair in (419)--(420) has a useful positive
+consequence. A weighted gradient projection removes stochastic circulation
+without changing its conditional first moment. On the fixed torus the
+retained noise has an original-energy second-moment bound uniform in
+sampling duration. This pays a terminal observation for a specified class
+of sampling controls. The full exponential stretching budget (379) and
+integrated reserve source (404) remain open.
+
+### The physical history and its exact observable projection
+
+Let u be any available smooth unforced NS prefix with viscosity nu>0 on
+`T3=(R/(2pi Z))^3`, using normalized volume. Fix a physical endpoint
+(t,x) and sample backwards in physical time:
+
+```text
+dX_s=-u(t-s,X_s)ds+sqrt(2nu)dW_s, X_0=x,
+q(s,y)dy=Law(X_s), k=grad log q, B_s(y)=grad u(t-s,y),
+E0=||u0||_2^2,  0<r<=t.
+```
+
+Here W_s is Brownian motion, not the normalized vorticity gradient used
+in (379). Keep the actual u and q throughout. At each positive age q is
+smooth and strictly positive. Define T_s rowwise by the weighted elliptic
+problem, with periodic mean-zero potentials psi_i:
+
+```text
+T_ij=partial_j psi_i,
+integral q grad psi_i.grad f = integral q (B^T)_i.grad f
+                                for every periodic H1 function f.
+Thus div_rows[q(B^T-T)]=0.                             (421)
+```
+
+Weighted coercivity and Poincare give existence and uniqueness of the
+gradient at each positive age; smooth coefficients give spatial
+regularity and smooth dependence on positive age. No lower bound for q
+uniform down to age zero is assumed. The stochastic integrals below are
+constructed from positive ages and extended to zero in L2 using (426).
+
+For any smooth periodic terminal test f, let
+`phi(s,y)=E[f(X_r)|X_s=y]`. Its backward equation gives
+`f(X_r)-E f(X_r)=sqrt(2nu) integral_0^r grad phi(s,X_s).dW_s`.
+Ito isometry and (421) therefore show
+
+```text
+E[f(X_r) integral_0^r s(B^T-T)(s,X_s)dW_s]
+ =sqrt(2nu) integral_0^r s integral q(B^T-T)grad phi =0.
+```
+
+The same identity follows first on positive-age subintervals and then
+by the L2 limit. Testing the resulting finite signed measures against
+smooth functions proves equality of the endpoint-conditional means.
+Consequently the terminal-shift formula (407) becomes exactly
+
+```text
+Z_r=integral_0^r s T_s(X_s)dW_s,
+E[Z_r|X_r]=E[integral_0^r s B_s^T(X_s)dW_s|X_r],
+k(r,y)=-(sqrt(2nu)r)^(-1) E[W_r+Z_r|X_r=y].           (422)
+```
+
+Only the conditional first moment is being preserved. The full noise
+law, its unconditioned exponential moments, and its higher conditional
+moments need not be preserved. A nonlinear function of the preserved
+conditional mean is still exactly the same observation.
+
+This projection keeps a cancellation in the actual physical fields.
+With the original passive H, pressure impulse I=H-u, and
+`Omega v=omega cross v`, one has
+
+```text
+C=grad I+Omega=grad H-B^T,
+div_rows B^T=grad div u=0,
+div_rows C=Delta H,  Pi_q C=grad H-T.                (423)
+```
+
+Thus the pressure and rotation terms should not be estimated separately
+before this cancellation. The pressure in the fluid equation is retained;
+the projection changes a representation of the observation, not u.
+There is no derivative-of-projection term in (422): its preservation
+follows directly by testing the additive stochastic integral.
+
+### Projection energy, kernel smoothing and mixing
+
+Write `||T||_q^2=integral q|T|_F^2` and
+`epsilon_s=||q(s)-1||_infinity`. Orthogonality gives
+`||T||_q^2=integral q B^T:T`. Incompressibility also gives
+`integral B^T:T=0`, by periodic integration by parts. Hence
+
+```text
+||T_s||_q^2
+ <= min(||q(s)||_infinity, epsilon_s^2/min q(s))
+                                      ||B_s||_2^2.  (424)
+```
+
+The second bound follows by Cauchy--Schwarz in
+`integral (q-1)B^T:T` and
+`||T||_2<=||T||_q/sqrt(min q)`. At uniform q, T is exactly zero,
+although B need not vanish.
+
+An explicit kernel constant sufficient here is C_T=324:
+
+```text
+||q(s)||_infinity <= C_T[1+(nu s)^(-3/2)].
+```
+
+For completeness, this bound does not assume heat-kernel domination
+on the torus. Fourier splitting at R>=1 gives, for any periodic f,
+
+```text
+X=||f||_2^2 <=27 R^3 m^2+R^(-2)||grad f||_2^2,
+m=||f||_1.
+```
+
+When X>=54m^2, choose `R=(X/(54m^2))^(1/3)`. The gradient norm squared
+is at least `X^(5/3)/(2*54^(2/3)*m^(4/3))`. Incompressible transport
+cancels from the scalar L2 identity and its positive semigroup contracts
+L1. With m fixed at the initial L1 norm, the resulting comparison yields
+
+```text
+||P_s||_(L1->L2)^2
+ <=54 max(1,(3/(2nu s))^(3/2)).
+```
+
+This applies also to the time-reversed adjoint evolution: its drift is
+again divergence-free. Compose the two half intervals by duality to
+obtain `||P_s||_(L1->L_infinity)<=54 max(1,(3/(nu s))^(3/2))`.
+Since `3 sqrt(3)<6`, C_T=324 suffices. Approximation of a point source
+then proves the displayed q bound, on any time interval, independently
+of the magnitude of the smooth time-dependent drift.
+
+Set tau=1/nu. At age tau,
+`||q-1||_2^2<=2C_T-1`. Mean-zero L2 energy and the torus Poincare
+constant 1 give decay at rate nu. On a final interval of length tau,
+the kernel bound and invariance of uniform volume give L2-to-L_infinity
+norm at most `sqrt(2C_T)`. Therefore, for s>=2tau,
+
+```text
+epsilon_s <=sqrt(2C_T(2C_T-1)) exp(2-nu s)
+          <=2C_T exp(2-nu s).
+L=2+log(4C_T), sigma=L/nu,
+s>=sigma => epsilon_s<=(1/2)exp[-nu(s-sigma)],
+             min q(s)>=1/2.
+```
+
+Use the first estimate in (424) for s<=sigma and the second for
+s>=sigma. Since `z^2 exp[-2(z-L)]` decreases for z>=L>=2,
+
+```text
+s^2 ||T_s||_q^2 <=(D_T/nu^2)||B_s||_2^2,
+D_T=C_T(L^2+sqrt(L)).                               (425)
+```
+
+The early-age estimate uses
+`s^2[1+(nu s)^(-3/2)]<=nu^(-2)(L^2+sqrt L)`;
+the late-age coefficient is at most `L^2/(2nu^2)`.
+All bounds use the same actual drift and its original point-source law.
+
+### A payment from the original unforced energy
+
+The actual unforced energy identity gives
+`integral_0^t ||grad u(v)||_2^2 dv<=E0/(2nu)`. Combining it with
+(425) and Ito isometry proves, for every endpoint and available prefix,
+
+```text
+E_phys |Z_r|^2
+ =E_phys integral_0^r s^2 |T_s(X_s)|_F^2 ds
+ <=K_T := D_T E0/(2nu^3)
+ <=16848 E0/nu^3.                                  (426)
+```
+
+The final numerical constant follows from
+`L=2+log1296<10` and `sqrt L<4`. For example e>5/2 and
+`(5/2)^8>1296` prove the first strict bound. The raw integral with B^T
+also exists in L2 on each finite interval, using the early kernel bound;
+(426) improves its duration dependence by removing the invisible part.
+Conditional Jensen gives
+`integral q|E[Z_r|X_r=y]|^2<=K_T`. One further consequence of (422) is
+
+```text
+integral q|k(r)|^2
+ <=(sqrt(3r)+sqrt(K_T))^2/(2nu r^2)
+ <=3/(nu r)+K_T/(nu r^2).                           (427)
+```
+
+There is no smallness hypothesis on u0, no future derivative norm in
+K_T, and no upper bound on r other than the available smooth prefix.
+This is a mean-square estimate, not an exponential or stopping-time
+conditional estimate. It does not contradict the ABC obstruction (414),
+which concerned a different unconditioned exponential moment. A forced
+flow with an independently bounded total dissipation would satisfy the
+corresponding estimate too; this result alone does not distinguish all
+forced and unforced singularity mechanisms.
+
+### Controlled terminal observations with prescribed concentration
+
+Let gamma be a bounded adapted sampling control, with the same physical
+fluid drift and initial sampler position. Denote its terminal density by
+rho and its path action by
+`A_gamma=integral_0^r |gamma|^2/(4nu)`. Assume a constant Lrho>=1 is
+prescribed in advance and that
+
+```text
+rho(r,y)<=Lrho q(r,y) almost everywhere.             (428)
+```
+
+Only the terminal ratio is required; the intermediate densities can
+vary. Let n be the physical normalized vorticity direction, so |n|<=1.
+Define `U(y)=E[W_r/sqrt r|X_r=y]` and `V(y)=E[Z_r|X_r=y]` under the
+uncontrolled law. Equation (422) gives
+`nu r(n.k)^2 <= |U|^2+|V|^2/r`.
+For alpha=1/24 and theta=1/2, entropy duality, Girsanov and conditional
+Jensen give
+
+```text
+E_gamma[alpha |U(X_r)|^2]-theta E_gamma A_gamma
+ <=theta log E_phys exp[(alpha/theta)|U(X_r)|^2]
+ <=-(3theta/2)log(1-2alpha/theta)=(3/4)log(6/5).
+```
+
+The last step uses the three-dimensional Gaussian W_r/sqrt r; it does
+not assume that W_r and X_r are independent. The remaining term is paid
+by (428) and (426), without spending another share of the action:
+
+```text
+E_gamma[(nu r/24)(n.k)^2]-(1/2)E_gamma A_gamma
+ <=(3/4)log(6/5)+Lrho K_T/(24r)
+ <=(3/4)log(6/5)+702 Lrho E0/(nu^3 r).               (429)
+```
+
+For r>=1/nu the final energy term is at most
+`702 Lrho E0/nu^2`, uniformly in sampling duration. The apparent
+small-age divergence of this bound does not replace the finite entrance
+calculation (410) for each fixed bounded control. Nor does (429) prove
+a uniform entrance bound over arbitrary controls.
+
+The restriction (428) is material: relative entropy alone supplies no
+uniform L_infinity bound on rho/q. Defining Lrho from the unknown future
+controlled solution would not give the required original-data payment.
+Thus (429) does not yet close the unrestricted Bellman problem.
+
+### Whole-space counterpart
+
+On R3, keep the raw integral
+`Z_r^R=integral_0^r s B_s^T(X_s)dW_s` in (407). The point-source
+L_infinity bound of Hess-Childs, Raquépas and Rowan,
+[Divergence-free drifts decrease concentration, Theorem 1.7 and
+Corollary 1.10](https://arxiv.org/abs/2503.16723), gives
+`||q(s)||_infinity<=(4pi nu s)^(-3/2)`.
+The cited result allows bounded measurable time-dependent divergence-free
+drift. Apply it to -u on the fixed smooth bounded prefix, with viscosity
+rescaled; it may be extended by zero outside that interval. Its bound
+does not depend on the drift norm. This sharp Euclidean comparison is
+not asserted on the torus, where the preceding Nash argument was used.
+
+For finite-energy smooth unforced prefixes, Ito isometry and the original
+dissipation ledger now give
+
+```text
+E_phys |Z_r^R|^2
+ <=K_R(r):= E0 sqrt(r)/[2nu(4pi nu)^(3/2)].
+```
+
+Indeed `s^2||q(s)||_infinity<=sqrt(r)/(4pi nu)^(3/2)` for s<=r.
+The same entropy calculation under the prescribed terminal ratio (428)
+yields
+
+```text
+E_gamma[(nu r/24)(n.k)^2]-(1/2)E_gamma A_gamma
+ <=(3/4)log(6/5)
+    +Lrho E0/[48nu(4pi nu)^(3/2)sqrt(r)].            (430)
+```
+
+No whole-space weighted elliptic projection or periodic mixing is used
+in this corollary. A prescribed lower age r0>0 makes the displayed
+allowance uniform in r>=r0 within available prefixes. The same limits
+concerning concentration and the complete integrated source apply.
+
+### Verification and the remaining consumer
+
+Run `python3 -O labs/conditional_deformation_payment.py`. The exact
+checker verifies (423) on the initial field and first physical time jet
+of four full NS fixtures, retaining their generated pressure. A separate
+nonzero projection fixture has
+
+```text
+u=(5sin y,0,0), q=64/[5(5-3cos x)^2],
+psi=(0,3sin x cos y,0), T=grad psi,
+||T||_q^2=9/2, ||B^T||_q^2=25/2.
+```
+
+It verifies (421), normalization, the first cosine moment and projection
+orthogonality exactly. This chosen positive receiver tests the elliptic
+identity; it is not claimed to be an actual point-source kernel. The
+Nash comparison constants, mixing threshold, decreasing late-age weight,
+Gaussian action allocation and whole-space coefficient are also checked.
+Weighted elliptic existence, observation preservation, probability
+inequalities and the PDE payments (426)--(430) remain analytic, not
+Lean-certified. No Lean declarations or axioms change.
+
+At a compositional seam, retain the incoming physical q, elapsed age,
+and conditional noise density. For the representation (422), the latter
+satisfies `partial_r m_Z=nu Delta m_Z+u.grad m_Z-sqrt(2nu)r div(qT)`
+with zero initial value only at the original sampling origin. Its source
+equals that obtained from B^T by (421). Resetting q or m_Z would change
+the observation and invalidate the proof.
+
+The next consumer is the arbitrary-control version of this terminal
+payment and its use in the complete source (404), with the signed
+pressure-history continuation bound (379) unchanged. More precisely,
+without (428), allocate one quarter of the action to each contribution
+in (422). Entropy duality gives the exact sufficient reduction
+
+```text
+E_gamma[(nu r/24)(n.k)^2]-(1/2)E_gamma A_gamma
+ <=(3/8)log(3/2)
+   +(1/4)log integral q exp[(n.V)^2/(6r)],
+V(y)=E[Z_r|X_r=y].                                  (431)
+```
+
+The Gaussian coefficient here uses `1-2*(1/24)/(1/4)=2/3`.
+The remaining moment must retain endpoint conditioning; finite second
+moments alone do not pay it. Its original-data bound, uniform over
+endpoints and available prefixes at prescribed positive ages, is the
+next precise sub-target. It is not asserted in (431). The original
+energy payment above removes one duration-dependent deformation cost,
+while the concentration of controlled observations and their integrated
+physical stretching remain explicit open obligations.
