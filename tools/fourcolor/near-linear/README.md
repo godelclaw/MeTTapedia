@@ -1,5 +1,19 @@
 # Near-linear Four Colour catalogue bridges
 
+The [constructive recognition receipt](seven-pair-recognition-measurements.json)
+records a rooted construction of the same shared seven-pair sector.
+One actual edge, triangle attachments and a general degree-closing theorem
+supply all 31 facial correspondences. The actual consumer takes only the
+retained degree test and the surrounding pair hypotheses.
+
+The [independent replay](audit_seven_pair_recognition.py) checks all fourteen
+degree-seven rooted edges in each of two triangulated spheres. It recovers
+the existing 32-vertex sector and tests retained label identifications on
+a nine-vertex bipyramid. These are program checks, separate from the Lean
+proof and from the unresolved degree-profile supply theorem. Replay
+`lake build kernelSevenPairRecognition`. No catalogue entry, rank certificate
+or classical member check is removed by this recognition bridge.
+
 The [seven-pair sector receipt](seven-pair-sector-measurements.json) records
 an actual geometric continuation. A shared facial chart with fifteen fixed
 degrees forces positive charge if its three marked outer vertices are low.

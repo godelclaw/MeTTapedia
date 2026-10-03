@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay constructive recognition of the shared facial sector. -/
+target kernelSevenPairRecognition pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/seven-pair-recognition",
+        "--library-output", ".lake/build/lib/lean", "--modules", "FacialChainClosure",
+        "SevenPairSectorRecognition", "SevenPairRecognitionAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the finite facial paths and source maps of the shared seven-pair sector. -/
 target kernelSevenPairSectorData pkg : Unit := do
   let env ← getAugmentedEnv

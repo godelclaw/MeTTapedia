@@ -1,0 +1,35 @@
+{
+  "evidence": "Independent program checks; recognition coverage remains open.",
+  "source_sha256": "811be74139b782565ae1158cd105e0b935e2b1cd5dba4f62958e1b38b185d2bb",
+  "root_labels": 2,
+  "triangle_attachments": 22,
+  "root_degree_closures": 1,
+  "remaining_degree_closures": 8,
+  "caller_supplied_facial_correspondences": 0,
+  "degree_observations": 15,
+  "examples": [
+    {
+      "example": "sector_sphere",
+      "vertices": 32,
+      "faces": 60,
+      "degree_seven_rooted_edges": 14,
+      "degree_test_passes": 1,
+      "roots_with_identified_labels": 13,
+      "matching_roots": [
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "example": "seven_bipyramid",
+      "vertices": 9,
+      "faces": 14,
+      "degree_seven_rooted_edges": 14,
+      "degree_test_passes": 0,
+      "roots_with_identified_labels": 14,
+      "matching_roots": []
+    }
+  ]
+}

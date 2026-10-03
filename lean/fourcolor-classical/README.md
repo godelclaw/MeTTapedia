@@ -1,5 +1,20 @@
 # Classical Four Colour and compositional reconstruction
 
+The [constructive sector recognizer](MettapediaFourColor/SevenPairSectorRecognition.lean)
+now builds the shared seven-pair chart from one actual directed edge.
+Twenty-two triangle attachments and a uniform degree-closing law construct
+all 31 facial correspondences. Its caller supplies a finite degree test on
+the generated vertices; distant labels may coincide. The actual-pair
+consumer then obtains the existing further-seven conclusion.
+
+The [closing law](MettapediaFourColor/FacialChainClosure.lean) works at
+arbitrary degree and supplies all eight remaining sector seams. Proving
+that the relevant surviving branches pass the degree test, or supply a
+certified alternative reduction, remains open. Replay
+`lake build kernelSevenPairRecognition`; the
+[receipt](../../tools/fourcolor/near-linear/seven-pair-recognition-measurements.json)
+records unchanged catalogue counts and the retained source-rule checks.
+
 The [shared seven-pair sector](MettapediaFourColor/SevenPairSector.lean)
 now gives a geometric continuation from a specified facial degree profile.
 Fifteen fixed degrees and the same signed high-edge transfer imply that a

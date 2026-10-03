@@ -4959,5 +4959,131 @@
       "Integrate a proved supply branch into complete coverage. Universal structural supply remains open."
     ],
     "receipt": "tools/fourcolor/near-linear/seven-pair-sector-measurements.json"
+  },
+  "constructive_seven_pair_recognition": {
+    "status": "Kernel-certified construction of the shared seven-pair sector from an actual root dart and degree observations.",
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "modules": [
+      {
+        "module": "MettapediaFourColor.FacialChainClosure",
+        "source_sha256": "05b59cfedac03b2e3f634aab9698746550fac767c58e9f8b72969dc07009489f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.067,
+        "olean_bytes": 121632,
+        "olean_sha256": "31278fc8580b47a91fde60e57416f4ae7bf5446efd240b4f2badd08521426995"
+      },
+      {
+        "module": "MettapediaFourColor.SevenPairSectorRecognition",
+        "source_sha256": "811be74139b782565ae1158cd105e0b935e2b1cd5dba4f62958e1b38b185d2bb",
+        "exit_code": 0,
+        "frontend_wall_seconds": 25.201,
+        "olean_bytes": 4324464,
+        "olean_sha256": "04461244d0c5b486c69bff8182746454bc22f239120f4fe813c706ce75d74ef1"
+      },
+      {
+        "module": "MettapediaFourColor.SevenPairRecognitionAudit",
+        "source_sha256": "074a49e043c6a35604d560981f3eab5b4e288745b68d6eede26790ef2d89abfb",
+        "exit_code": 0,
+        "frontend_wall_seconds": 8.058,
+        "olean_bytes": 2608,
+        "olean_sha256": "563b432bd3859ae986b237a1509b341830ab8aea1b3c05a53c364f0c0d5e7aab"
+      }
+    ],
+    "native_code_generation": false,
+    "general_law": {
+      "root": "FacialChainClosure.close",
+      "domain": "Any finite graph with locally finite, vertexwise cyclic dart rotation.",
+      "statement": "A consistently oriented chain containing all neighbours except its final corner closes when its length matches the ambient degree.",
+      "parameter": "Arbitrary positive chain length; no fixed width or global label injectivity assumption.",
+      "consumer": "Root closure and eight sector seams in SevenPairSectorRecognition."
+    },
+    "construction": {
+      "root": "SevenPairSectorRecognition.develop",
+      "domain": "Finite simple graph with triangular, vertexwise cyclic dart rotation; an actual dart whose first vertex has degree seven.",
+      "triangle_attachments": 22,
+      "root_degree_closures": 1,
+      "generated_labels": 24,
+      "initial_facial_correspondences": 23,
+      "remaining_seams": 8,
+      "global_label_injectivity_assumed": false
+    },
+    "recognition": {
+      "root": "SevenPairSectorRecognition.complete",
+      "observations": "The fifteen degree observations of SevenPairSector.observed on those same generated vertices.",
+      "caller_supplied_facial_correspondences": 0,
+      "proved_facial_correspondences": 31,
+      "root_endpoints_preserved": true,
+      "finite_degree_test": "SevenPairSectorRecognition.check_iff"
+    },
+    "actual_map_consumer": {
+      "root": "ActualSevenPairRecognition.checked_continuation",
+      "input": "The retained actual flat-seven pair, a successful degree test on its rooted development, and the original radius-five degree upper bound.",
+      "conclusion": "A vertex of degree seven differs from both centres, lies within radius two of the second and radius five of the original receiver.",
+      "retained_sector_theorem": "ActualSevenPairSector.pair_continuation",
+      "remaining_hypothesis": "A relevant surviving branch must pass the degree test or supply a certified alternative reduction."
+    },
+    "audit": {
+      "roots": 9,
+      "dependency_declarations": 26064,
+      "allowed_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "configuration_rank_certificates_used": false,
+      "complete_four_colour_theorem_used": false
+    },
+    "program_evidence": {
+      "evidence": "Independent program checks; recognition coverage remains open.",
+      "source_sha256": "811be74139b782565ae1158cd105e0b935e2b1cd5dba4f62958e1b38b185d2bb",
+      "root_labels": 2,
+      "triangle_attachments": 22,
+      "root_degree_closures": 1,
+      "remaining_degree_closures": 8,
+      "caller_supplied_facial_correspondences": 0,
+      "degree_observations": 15,
+      "examples": [
+        {
+          "example": "sector_sphere",
+          "vertices": 32,
+          "faces": 60,
+          "degree_seven_rooted_edges": 14,
+          "degree_test_passes": 1,
+          "roots_with_identified_labels": 13,
+          "matching_roots": [
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "example": "seven_bipyramid",
+          "vertices": 9,
+          "faces": 14,
+          "degree_seven_rooted_edges": 14,
+          "degree_test_passes": 0,
+          "roots_with_identified_labels": 14,
+          "matching_roots": []
+        }
+      ]
+    },
+    "checks": [
+      "kernelSevenPairRecognition",
+      "kernelComplete",
+      "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+      "python3 tools/fourcolor/near-linear/audit_seven_pair_recognition.py"
+    ],
+    "retained_checks": "The prior sector still uses 83 source-rule exclusion paths and eleven incoming-rule maps; those dependencies are not removed.",
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "new_member_checks_removed": 0,
+    "not_claimed": [
+      "Every retained pair passes the degree test",
+      "The further vertex is flat or different from every prior observation",
+      "An iterated progress law",
+      "A new strict reduction or universal geometric coverage"
+    ],
+    "receipt": "tools/fourcolor/near-linear/seven-pair-recognition-measurements.json"
   }
 }

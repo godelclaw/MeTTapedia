@@ -1,5 +1,12 @@
 # FourColor
 
+The [rooted sector construction](../../../../fourcolor-classical/MettapediaFourColor/SevenPairSectorRecognition.lean)
+constructs every facial observation needed by the shared seven-pair law.
+Triangle attachments compose on actual vertices; one degree-closing theorem
+supplies the omitted seams. The remaining input is a finite test of the
+same vertices' degrees. Recognition is proved conditional on that test;
+supply of the matching degree profile remains a coverage obligation.
+
 The classical package's
 [shared seven-pair sector](../../../../fourcolor-classical/MettapediaFourColor/SevenPairSector.lean)
 now derives a further high vertex from a specified joint facial profile and

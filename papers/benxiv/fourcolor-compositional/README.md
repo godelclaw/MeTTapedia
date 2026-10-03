@@ -59,6 +59,15 @@ proved constraint while retaining its genuine shared boundary. The
 [receipt](../../../tools/fourcolor/near-linear/punctured-charge-measurements.json)
 separates these Lean laws from finite tests and unchanged coverage counts.
 
+The [rooted development](../../../lean/fourcolor-classical/MettapediaFourColor/SevenPairSectorRecognition.lean)
+constructs the next sector from a single actual edge. Twenty-two triangle
+attachments retain the same vertices, and one general closing law uses
+their degrees to close the remaining seams. All 31 facial correspondences
+are proved; a caller checks the fifteen retained degrees. This separates
+the geometric construction from the still-open classification that must
+supply those degrees or an alternative reduction. No global injectivity
+of the chart is assumed.
+
 A [shared seven-pair sector](../../../lean/fourcolor-classical/MettapediaFourColor/SevenPairSector.lean)
 now supplies one geometric continuation. Its chart retains fifteen degree
 observations and the same directed transfers across the common high edge.
