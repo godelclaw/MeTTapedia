@@ -35122,3 +35122,278 @@ independent material calculation, or
 for a numerical prefix. Python compilation and exact
 algebra are separate from the analytic actual-flow remainder arguments.
 No Lean declarations or axioms change.
+
+## Retained energy concentration and pressure alignment
+
+`retained_energy_alignment.py` tests a weaker physical observation than
+the full fourth moment of the stochastic pressure history. The matrix
+memory is the existing augmented-stress construction, not a new fluid
+model. On each available smooth unforced prefix, put
+
+```text
+D=partial_t+u.grad-nu Delta,
+D C=2nu grad u (grad u)^T,     C(0)=0,
+e=|u|^2+tr C,                 J=integral e^2.
+D e=-2u.grad p=-2div(pu),
+e>=|u|^2,                    integral e=E0.              (678)
+```
+
+Positivity of C follows from the matrix advection-diffusion propagator.
+The construction and its mass identity were established analytically in
+the augmented-stress section. On the normalized torus, it also has the
+previous stochastic identification: for the actual forward process X and
+`Z=u0(a)-integral_0^t grad p(s,X_s)ds`,
+
+```text
+e(t,x)=E[|Z_t|^2 | X_t=x],
+||u(t)||_4^4 <= J(t) <= E|Z_t|^4.                        (679)
+```
+
+If P_t denotes the pressure impulse, Minkowski also gives
+`J(t)^(1/4)<=||u0||_4+(E|P_t|^4)^(1/4)`. The observations J and
+`E|P_t|^4` are not identical: the latter starts at zero, while J starts
+at `||u0||_4^4`.
+
+This statement does not impose a Gaussian closure. The conditional
+second moment keeps the velocity and its accumulated covariance. It can
+be strictly easier to control than the fourth moment, as the explicit
+positive-viscosity example below demonstrates.
+
+### Exact signed work and the continuation consumer
+
+On the torus, integration of (678) gives
+
+```text
+J'=-2nu integral |grad e|^2+4 integral p u.grad e.
+integral F(t,e) u.grad e=0,
+J'+nu integral |grad e|^2
+  <=(4/nu) integral |p-F(t,e)|^2 |u|^2.                 (680)
+```
+
+The second identity holds for a smooth scalar F: use a primitive in e
+and incompressibility. No time derivative of F is being discarded; the
+identity is applied at each fixed time. Thus only the pressure component
+not described by the retained energy contributes to concentration. If
+`p=F(t,e)`, J is nonincreasing; in fact every smooth convex integral of e
+has only its nonpositive diffusion term. This is an alignment statement,
+not the claim that pressure does no work along individual trajectories.
+
+Pressure/velocity geometry is a classical direction of regularity
+research; see Tran, Yu and Dritschel,
+[Velocity-pressure correlation in Navier-Stokes flows and the problem of global regularity](https://doi.org/10.1017/jfm.2020.1033),
+JFM 911 (2021), A18. Their criteria retain a quantitative pressure/velocity
+correlation. Here the observation additionally retains the diffusion
+memory C; (678)--(680) are derived directly from its identified equation.
+No published conditional criterion supplies an arbitrary-data bound for
+the new residual automatically.
+
+For clarity, a sufficient missing payment is an original-data constant
+K, uniform over every available prefix ending before H, such that
+
+```text
+4 integral_0^t integral [p-F(s,e)]u.grad e
+  <=nu integral_0^t integral |grad e|^2+K(u0,nu,H).
+Then J(t)<=J(0)+K(u0,nu,H).                             (681)
+```
+
+The unsigned right side of (680) is one possible way to pay (681), but
+is not required: favorable earlier work may finance later withdrawals.
+The constant cannot be defined by a supremum over the unknown future.
+
+The physical consumer is explicit. Set `Y=||grad u||_2^2`. Integration
+against -Delta u, interpolation, and Young's inequality give
+
+```text
+Y'<=C nu^(-7)||u||_4^8 Y<=C nu^(-7)J^2 Y,
+Y(t)<=Y(0)exp[C nu^(-7)H (J(0)+K)^2].                   (682)
+```
+
+This is the same analytic enstrophy-continuation mechanism used in (636).
+It applies to the fixed periodic domain and to the smooth finite-energy
+whole-space class with the usual integrations by parts. For the latter,
+use the PDE definition of C and the mass identity, not a nonexistent
+uniform probability distribution on R3. On a compact smooth prefix C
+and its spatial derivatives are bounded, C has finite trace mass, and
+the cutoff integrations follow by the existing augmented-stress
+argument; for (680)--(681) the fixed affine choice below suffices.
+The conditional-expectation formula (679) is stated only on the torus.
+These consumer arguments are analytic; this section adds no Lean theorem
+asserting (681) for arbitrary data. The existing whole-space theorem
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` in
+`MettapediaNS.WholeSpaceEnstrophyContinuation` has the corresponding
+quantifiers: for every horizon H, one Z must bound order-one energy
+on every smooth prefix from the same initial datum. The analytic bridge
+from (681) to that exact hypothesis still requires formalization.
+
+### The complete evolving alignment defect
+
+Use canonical zero-mean pressure on the torus and define
+
+```text
+r=p+(e-E0)/2,
+D r=h,              h=(partial_t-nu Delta)p.            (683)
+```
+
+On R3 use `r=p+e/2`; the removed spatial constant does not affect the
+calculation. The advected pressure terms cancel exactly in (683).
+Writing `B=grad u`, `P=Hess p`, and `s=tr(B^2)=-Delta p`, the actual
+pressure source is
+
+```text
+h=(-Delta)^(-1)[-u.grad s-2tr(B^3)-2tr(BP)
+                         -2nu sum_j tr((partial_j B)^2)]. (684)
+```
+
+All four terms remain. This follows by differentiating the canonical
+pressure equation and the full velocity-gradient equation. The periodic
+source has zero mean. It is not the pressure of an independently chosen
+control, nor a replacement of the pressure by a local strain model.
+
+Across a seam s the exact evolution is
+`r(t)=U_u(t,s)r(s)+integral_s^t U_u(t,z)h(z)dz`.
+Both r(s) and the existing matrix C(s) must be retained. In a forced
+fluid, the right side of (683) additionally contains u.f, while the
+mass of e includes twice the accumulated force work. There is no
+inference here that finite force work would pay the concentration norm.
+
+### An all-time payment for arbitrary-amplitude Beltrami parents
+
+Let U be any smooth periodic field with `curl U=kappa U`, kappa nonzero,
+and put `lambda=kappa^2`, `E0=integral |U|^2`. Such a field is a finite
+Fourier sum on its Laplacian shell. Its classical exact unforced flow is
+
+```text
+u(t)=exp(-nu lambda t)U,
+p(t)=exp(-2nu lambda t)p0,     p0=-(|U|^2-E0)/2.
+G0=|grad U|_F^2,
+h=nu exp(-2nu lambda t)(G0-lambda E0),      r(0)=0.       (685)
+```
+
+The last identity uses `Delta|U|^2=2G0-2lambda|U|^2` and retains the
+complete nonlinear transport of r. Let
+`M=||G0-lambda E0||_infinity`. The scalar maximum principle, valid at
+every amplitude, gives
+
+```text
+||r(t)||_infinity <= [M/(2lambda)](1-exp(-2nu lambda t)),
+0<=e(t,x)<=K_e,
+K_e=max(E0,||U||_infinity^2)+M/lambda,
+J(t)<=E0 K_e,                                           (686)
+integral_0^infinity integral r^2 |u|^2
+  <=E0 M^2/(24nu lambda^3).
+```
+
+Indeed, `e=E0+exp(-2nu lambda t)(|U|^2-E0)+2r`. Positivity and the
+fixed mass in (678) give the J bound. For the last estimate use the
+first line, `||u(t)||_2^2=E0 exp(-2nu lambda t)`, and
+`integral_0^infinity exp(-s)(1-exp(-s))^2 ds=1/3`.
+The sharper direct cap `E0 K_e` is independent of viscosity; the
+unsigned estimate in (680) need not achieve that sharper dependence.
+
+Thus `E0 K_e-J(t)>=0` is a finite original-data reserve for the signed
+net concentration production along this whole history. It can rise or
+fall. The estimate covers an entire class with unequal parent amplitudes
+and oblique wave vectors, not just a finite list of coefficients. It
+does not establish new regularity of Beltrami flows, which are explicit
+global solutions. Their velocity has a common decaying shape; mutually
+regenerating velocity parents are outside this proof.
+
+The oblique fixture uses wave vectors (3,4,0) and (0,3,4), transverse
+cosine polarizations (0,0,1) and (1,0,0), and sine polarizations
+`-wave cross polarization/5`. Both waves have curl eigenvalue five.
+For their sum, E0=2 and
+`||G0-25E0||_2^2=110736/625>0`, so exact alignment is genuinely lost.
+The check supplies `M<=768/25`. This loss is paid by the viscous source
+in (685), without dropping the advecting fluid or resetting r.
+
+### Exact heat concentration despite a growing fourth moment
+
+For the classical ABC family
+
+```text
+U=(a sin(kz)+c cos(ky), b sin(kx)+a cos(kz),
+                              c sin(ky)+b cos(kx)),
+S=a^2+b^2+c^2,              lambda=k^2,
+|grad U|^2=lambda S,        tr C=S(1-exp(-2nu lambda t)),
+e=S+exp(-2nu lambda t)(|U|^2-S),
+p=-(e-S)/2,                partial_t e=nu Delta e,
+J(t)=S^2+(a^2 b^2+b^2 c^2+c^2 a^2)exp(-4nu lambda t).   (687)
+```
+
+These identities hold for all real amplitudes, all positive integer k,
+all nu>0, and all t>=0. The tensor C need not be isotropic or spatially
+constant; only its trace has the stated form. For every seam, the
+remaining concentration `J(s)-S^2` pays exactly
+`2nu integral_s^infinity ||grad e||_2^2`. The stochastic memory is
+essential to the pressure/energy alignment; it was not reset.
+
+There is a strict comparison with the earlier fourth-moment observer.
+For `(a,b,c)=(1,2,3)`, k=1 and nu=2/7, let `K4=E|Z|^4` for the same
+actual history, without an added initial Gaussian. Complete raw-moment
+jets give
+
+```text
+J(t)=196+49exp(-8t/7)<245,                         t>0,
+K4(0)=245,  K4'(0)=K4''(0)=0,  K4'''(0)=4624/7,
+K4(t)=245+(2312/21)t^3+O(t^4)>245                  for small t>0. (688)
+```
+
+An independent backward Itô-generator calculation on (X,Z), applied
+three times to `|Z|^4` before substituting Z(0)=U, gives the same
+derivatives without using the conditional raw-moment equations.
+
+The ABC velocity and pressure above are global exact solutions. Their
+linear raw-moment equations have bounded smooth coefficients on compact
+intervals and bounded sources recursively, so the displayed derivatives
+have a genuine Taylor remainder. No small-amplitude or inviscid
+comparison is used in (688). This is an actual-flow reason to control J
+rather than demand monotone decay of the more expensive K4. Neither
+observer growth nor this comparison is evidence of fluid blowup.
+
+### Changing parents can still exhaust the initial monotone allowance
+
+The assertion `J(t)<=J(0)` for every unforced datum is false. Use the
+same fixed smooth cyclic datum `U_*=(sin y,sin(4z),sin x)` as before,
+but now evolve the complete memory C as well as the fluid. Exact full
+jets, including every generated pressure mode, give
+
+```text
+J_nu(0)=21/8,          J_nu'(0)=-18nu,
+J_0'(0)=J_0''(0)=J_0'''(0)=0,
+J_0''''(0)=7184/15015>0.                                (689)
+```
+
+Here the subscript zero is the auxiliary Euler comparison. To pass to
+an actual viscous interval, the common local H40 energy estimate used
+in (673)--(674) gives an interval T and bounds independent of
+0<=nu<=1, fixed from this one datum. Transport-diffusion estimates for
+C and the NS/Euler difference then give
+`||e_nu-e_0||_2<=C nu t` on that interval: the memory trace has source
+`2nu|grad u|^2` and zero initial data, and the velocity difference has
+source nu Delta u. Uniform higher Sobolev bounds also bound the fifth
+time derivative of J_0.
+
+Write `c4=(7184/15015)/24`. Choose a fixed sufficiently small
+`0<t_*<=T` so that `J_0(t_*)-J_0(0)>=c4 t_*^4/2`.
+There is a datum-fixed C_* with
+`|J_nu(t_*)-J_0(t_*)|<=C_*nu t_*`. Consequently, for every
+`0<nu<=min(1,c4 t_*^3/[4(1+C_*)])`,
+`J_nu(t_*)>=J_nu(0)+c4 t_*^4/4`, although its initial derivative is
+strictly negative. Continuity supplies positive-duration intervals
+with both signs. The memory is the original one throughout.
+
+This refutes the stated universal monotone reserve even after the
+fourth-moment overcharge is removed. It does not refute a larger
+full-datum allowance such as (681), the earlier cyclic value envelope
+(666), or arbitrary-data global regularity. A nonperturbative payment
+for (684) under genuinely evolving parents is still missing. It must
+allow transient loss of alignment and preserve savings across seams;
+proving the identities alone does not pay that work.
+
+Run `python3 -O labs/retained_energy_alignment.py`. The exact checker
+compares the full tensor moment jets with the scalar equations, checks
+the pressure source and concentration balances, verifies the ABC and
+oblique Fourier identities, and computes both interval sign fixtures.
+The stochastic identification, maximum-principle bounds, continuation
+argument and actual viscous intervals remain analytic, not newly
+Lean-certified. No numerical trajectory or new Lean axiom is used.

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [retained-energy alignment test](labs/README.md#retained-energy-concentration-and-pressure-alignment)
+removes part of the stochastic fourth-moment overcharge while keeping a
+sufficient continuation norm. For arbitrary-amplitude ABC histories, the
+retained energy follows the heat equation even when the fourth moment grows.
+General single-shell Beltrami histories have an explicit all-time payment for
+their alignment defect. Changing cyclic parents can nevertheless make the
+weaker concentration first decrease and then exceed its initial value.
+The complete pressure defect and its signed work remain the arbitrary-history
+obligation. These are analytic results with exact algebraic checks, not new
+Lean certificates or a proof of arbitrary-data global regularity.
+
 The [combined pressure envelope](labs/README.md#a-combined-pressure-bound-beyond-the-first-return)
 pays the favorable and adverse feedback terms together. It gives an analytic
 all-time comparison at small amplitude and a uniform initial interval on the
