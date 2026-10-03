@@ -1,5 +1,20 @@
 # Classical Four Colour and compositional reconstruction
 
+The [four-triangle core theorem](MettapediaFourColor/FourTriangleCore.lean)
+now handles both the D0051 fan and D0052 tripod with one facial-interval
+argument. Their exact source stars retain all shared vertices. Proper
+rotation intervals exclude collisions; facial triangles exclude extra core
+edges. The [actual-map consumer](MettapediaFourColor/FourTriangleRecognition.lean)
+supplies these geometric laws from vertex minimality. Complete ten-port
+occurrences and colouring repair remain separate obligations.
+The target comes from a replayed spherical example with adjacent flat
+sevens: none of the tested diamond, chain or one/two-five wheel cores lies
+within radius three of either centre, while D0052 lies within radius two.
+Only the two centres are required to be flat in this experiment; it does
+not refute the stronger shared-fan coverage target.
+Replay `lake build kernelFourTriangleCore`; see the
+[receipt](../../tools/fourcolor/near-linear/four-triangle-measurements.json).
+
 The [second side of the shared fan](MettapediaFourColor/SecondFanResidual.lean)
 now has an exact geometric classification. At a flat degree-seven second
 free centre, either a new high neighbour occurs within radius three, or

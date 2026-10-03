@@ -1,9 +1,22 @@
 # Compositional Four Colour: proof plan and current results
 
-Updated 2 October 2026. Original complete assembly: `b99eaf006`.
+Updated 3 October 2026. Original complete assembly: `b99eaf006`.
 The current assembly additionally consumes a shared joint-profile certificate
 for the diamond cores and a general boundary-split law transferring repair from
 configuration 2 to configuration 1, and configuration 6 to configuration 3.
+
+The next joint-neighbourhood test has identified two concrete four-triangle
+cores, the D0051 fan and D0052 tripod. One
+[Lean geometry proof](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCore.lean)
+now handles both shapes: the four face readings retain their shared
+vertices, cyclic intervals prevent collisions, and the minimal-map facial
+law excludes additional core edges. This is a reusable part of recognition,
+with boundary completion and colouring repair still to be supplied.
+The motivating spherical example also separates a larger observation
+radius from a larger repair vocabulary: widening to radius three still
+misses all the tested diamond, chain and wheel cores, while the new tripod
+core lies within radius two. Only the two selected centres are flat there;
+the full shared-fan coverage conjecture retains stronger hypotheses.
 
 The open-piece idea in Goertzel and Fable's compositional note now has a
 kernel-checked realization: graph constructions carry actual colouring

@@ -1,5 +1,28 @@
 # Near-linear Four Colour catalogue bridges
 
+The [four-triangle geometry](four-triangle-measurements.json) shares one
+injectivity and inducedness proof between the distinct D0051 fan and D0052
+tripod cores. Both full source files, degree profiles and core facial
+intervals are checked; the actual minimal-map consumer is kernel certified.
+The ten-port boundary completions, repairs and coverage classification
+remain open. No configuration certificate has been replaced by this step.
+Replay the source audit with
+`python3 tools/fourcolor/near-linear/audit_four_triangle_sources.py`.
+
+The [seven-pair example](seven-pair-four-triangle-example.json) explains the
+choice of these cores. It is a 162-vertex sphere obtained by 1,625 legal
+edge flips. Independent matchers agree on all 4,704 rooted rule tests for
+the two flat seven-valent centres in both orientations. All 1,819 short
+cycles pass the obstruction test. There is no tested diamond, D0004/D0006
+chain or one/two-five seven-wheel core in the union of their radius-three
+balls. An injective D0052 core occurs within radius two, and D0051 within
+radius three. Their complete source images need radii three and four,
+respectively. This is a program check of a restricted family inventory,
+not a counterexample to universal reducibility or to the stronger
+shared-fan/flat-neighbourhood hypotheses. Replay it with
+`python3 tools/fourcolor/near-linear/audit_seven_pair_example.py`; see the
+[receipt](seven-pair-four-triangle-audit.json).
+
 The [second-fan classification](second-fan-measurements.json) retains the
 other side of the same six-star: a flat seven either supplies a new high
 neighbour, has the single-five D3009 profile, or has exactly two fives with

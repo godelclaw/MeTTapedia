@@ -1,0 +1,72 @@
+{
+  "status": "Kernel-certified source cores and actual-map recognition. Complete ten-port embeddings, repair and joint flat-pair classification remain open.",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FourTriangleCore",
+      "source_sha256": "79e72d24c1d3dc95f7d122b619f7c4476557d0aea0e56186b2a047811e441f82",
+      "exit_code": 0,
+      "frontend_wall_seconds": 15.732,
+      "olean_bytes": 393456,
+      "olean_sha256": "ca58f2bf0ddb72bcf9b45217a19df16fdabef99fdc9faa7005b0e044628e9fe8"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleRecognition",
+      "source_sha256": "7916fb10c3df02cbc4835df6eac1dd6fa01425e8e32846f03dbe26b2c6f76e8c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.445,
+      "olean_bytes": 36008,
+      "olean_sha256": "6075f3f7f9669a88a812a77b99b4f1e9820a47c74b48b3558d28ebee55908268"
+    },
+    {
+      "module": "MettapediaFourColor.FourTriangleAudit",
+      "source_sha256": "88f15a4da8b439a47ff037384f7377113bdb42a450996ed26567511e5b8b786d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.429,
+      "olean_bytes": 2600,
+      "olean_sha256": "ad25f93d713e999b21987ecd662bc8c5c6a99d80cfa5144466e92d898bf7776b"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 6,
+    "declarations": 24232,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "retained_configuration_certificates": []
+  },
+  "sources": [
+    "D0051",
+    "D0052"
+  ],
+  "geometry": {
+    "core_vertices": 6,
+    "facial_triangles": 4,
+    "boundary_ports": 10,
+    "shapes": [
+      "fan",
+      "tripod"
+    ],
+    "shared_argument": "Consecutive proper star intervals and source distance at most two give injectivity; facial triangles imply adjacency reflection.",
+    "domain": "An actual joint reading of all four faces. Variable ambient degrees larger than the source core intervals; the pinned degree profiles are consumers.",
+    "actual_consumer": "FourTriangleRecognition.embedded uses the same graph-backed vertex-minimal source to supply geometry."
+  },
+  "experiment": {
+    "receipt": "seven-pair-four-triangle-audit.json",
+    "scope": "Two flat adjacent degree-seven centres; other nearby vertices need not be flat. Excludes only the named diamond, chain and wheel core patterns in the radius-three union."
+  },
+  "checks": [
+    "kernelFourTriangleCore kernelComplete",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "catalogue_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0,
+  "remaining": [
+    "Complete ten-port occurrence and boundary order",
+    "Actual strict reduction and compatible colouring reconstruction",
+    "Universal joint-neighbourhood supply"
+  ]
+}

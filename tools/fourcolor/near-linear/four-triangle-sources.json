@@ -1,0 +1,21 @@
+{
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "paper": "https://arxiv.org/abs/2603.24880",
+  "license": "MIT; see LICENSE",
+  "files": {
+    "LICENSE": {
+      "upstream_path": "LICENSE",
+      "sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+    },
+    "D0051.conf": {
+      "upstream_path": "D/D0051.conf",
+      "sha256": "fce1f18ff6b5292df95b9df03868ce6385bec24926c090203d473c95695779e0"
+    },
+    "D0052.conf": {
+      "upstream_path": "D/D0052.conf",
+      "sha256": "bcfaf0d5ed4a98742f5d434270029b6afbf79006e98238d6b465ae69603cd6db"
+    }
+  },
+  "scope": "Four facial triangles in fan and tripod shapes. Exact source and core geometry only; ambient boundary completion and colouring repair are separate obligations."
+}

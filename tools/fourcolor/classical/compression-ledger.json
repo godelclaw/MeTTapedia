@@ -2901,6 +2901,14 @@
       ],
       "provenance": "Local experiment scripts and receipts inspected; restricted 1997 source files are not redistributed.",
       "credited_compression": false
+    },
+    {
+      "name": "Flat seven pair beyond the tested diamond, chain and wheel core inventory",
+      "record": "../near-linear/seven-pair-four-triangle-audit.json",
+      "status": "Exact spherical fixture replayed; D0051/D0052 source occurrences selected. Their shared core geometry is kernel certified separately.",
+      "evidence": "Independent program check; all 4704 rooted rule comparisons and 1819 short cycles checked.",
+      "credited_compression": false,
+      "scope": "Two flat centres and ambient degrees 5..7; not a counterexample to the stronger shared-fan/full-neighbourhood-flatness target."
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. The arity-nine through eleven sharing saves 231 member checks (87 plus 82 plus 62). The integrated degree-seven region replaces 112 original member checks with seven, saving a further 105, for 336 fewer independent member-check obligations in the complete proof. Local and whole-assembly savings overlap and must not be added. The earlier conditional Orbit9 assembly still has only the 231 savings. Sixteen degree-seven fits become one; fit and member counts are separate metrics. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",
@@ -3987,6 +3995,78 @@
       "Supply that repair to the geometric consumers.",
       "Prove the joint unique-neighbour, induced-path and facial-triangle closing laws over a justified domain.",
       "Establish initial fan supply or alternative reductions for the entire intended coverage class."
+    ]
+  },
+  "four_triangle_core_recognition": {
+    "status": "Kernel-certified source cores and actual-map recognition. Complete ten-port embeddings, repair and joint flat-pair classification remain open.",
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "modules": [
+      {
+        "module": "MettapediaFourColor.FourTriangleCore",
+        "source_sha256": "79e72d24c1d3dc95f7d122b619f7c4476557d0aea0e56186b2a047811e441f82",
+        "exit_code": 0,
+        "frontend_wall_seconds": 15.732,
+        "olean_bytes": 393456,
+        "olean_sha256": "ca58f2bf0ddb72bcf9b45217a19df16fdabef99fdc9faa7005b0e044628e9fe8"
+      },
+      {
+        "module": "MettapediaFourColor.FourTriangleRecognition",
+        "source_sha256": "7916fb10c3df02cbc4835df6eac1dd6fa01425e8e32846f03dbe26b2c6f76e8c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.445,
+        "olean_bytes": 36008,
+        "olean_sha256": "6075f3f7f9669a88a812a77b99b4f1e9820a47c74b48b3558d28ebee55908268"
+      },
+      {
+        "module": "MettapediaFourColor.FourTriangleAudit",
+        "source_sha256": "88f15a4da8b439a47ff037384f7377113bdb42a450996ed26567511e5b8b786d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.429,
+        "olean_bytes": 2600,
+        "olean_sha256": "ad25f93d713e999b21987ecd662bc8c5c6a99d80cfa5144466e92d898bf7776b"
+      }
+    ],
+    "native_code_generation": false,
+    "audit": {
+      "roots": 6,
+      "declarations": 24232,
+      "allowed_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "retained_configuration_certificates": []
+    },
+    "sources": [
+      "D0051",
+      "D0052"
+    ],
+    "geometry": {
+      "core_vertices": 6,
+      "facial_triangles": 4,
+      "boundary_ports": 10,
+      "shapes": [
+        "fan",
+        "tripod"
+      ],
+      "shared_argument": "Consecutive proper star intervals and source distance at most two give injectivity; facial triangles imply adjacency reflection.",
+      "domain": "An actual joint reading of all four faces. Variable ambient degrees larger than the source core intervals; the pinned degree profiles are consumers.",
+      "actual_consumer": "FourTriangleRecognition.embedded uses the same graph-backed vertex-minimal source to supply geometry."
+    },
+    "experiment": {
+      "receipt": "seven-pair-four-triangle-audit.json",
+      "scope": "Two flat adjacent degree-seven centres; other nearby vertices need not be flat. Excludes only the named diamond, chain and wheel core patterns in the radius-three union."
+    },
+    "checks": [
+      "kernelFourTriangleCore kernelComplete",
+      "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "remaining": [
+      "Complete ten-port occurrence and boundary order",
+      "Actual strict reduction and compatible colouring reconstruction",
+      "Universal joint-neighbourhood supply"
     ]
   }
 }

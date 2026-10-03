@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the common facial geometry of two four-triangle source cores. -/
+target kernelFourTriangleCore pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/four-triangle-core",
+        "--library-output", ".lake/build/lib/lean", "--modules", "FourTriangleCore",
+        "FourTriangleRecognition", "FourTriangleAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the shared fan's adjacent seven-centre and joint-view supply. -/
 target kernelRuleFanSevenCluster pkg : Unit := do
   let env ← getAugmentedEnv

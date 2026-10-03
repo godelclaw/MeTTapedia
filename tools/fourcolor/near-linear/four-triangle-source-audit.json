@@ -1,0 +1,40 @@
+{
+  "evidence": "Independent source-fidelity check; core geometry certified separately in Lean.",
+  "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+  "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "entries": [
+    {
+      "configuration": "D0051",
+      "vertices": 16,
+      "ring": 10,
+      "core_vertices": 6,
+      "edges": 35,
+      "prescribed_core_degrees": [
+        5,
+        6,
+        7,
+        6,
+        5,
+        5
+      ]
+    },
+    {
+      "configuration": "D0052",
+      "vertices": 16,
+      "ring": 10,
+      "core_vertices": 6,
+      "edges": 35,
+      "prescribed_core_degrees": [
+        5,
+        6,
+        6,
+        7,
+        5,
+        5
+      ]
+    }
+  ],
+  "lean_source_sha256": "79e72d24c1d3dc95f7d122b619f7c4476557d0aea0e56186b2a047811e441f82",
+  "verifier_sha256": "169408d38ec453c0c8fcf40013a27474991246b0d865f9b455906991ba32d89b",
+  "shared_parser_sha256": "6d18cbf85974f18bf70599aa43e4c7a78a9c63be953961bdad1e0823c34c2349"
+}
