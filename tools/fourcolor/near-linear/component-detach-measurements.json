@@ -1,0 +1,77 @@
+{
+  "evidence": "General component detachment and two specified physical histories with whole-graph reconstruction are Lean checked. Exact spherical geometry and the exhaustive bounded obstruction are independent program evidence.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.ComponentDetach",
+      "source_bytes": 2663,
+      "source_sha256": "7940f3725c9055998935190583741aa655e6a5eeb840f9c30dabd343c65eff6d",
+      "build_seconds": 2.1,
+      "olean_bytes": 49784,
+      "olean_sha256": "f56d03c159aca3d609e99a5df30445e01961530b9fa04bdbe22c280a1a33b19b"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.Chain",
+      "source_bytes": 3120,
+      "source_sha256": "d3bc83cee961a35b8927c5ed31c3e9f6d143a58c066db0322ef9165217731196",
+      "build_seconds": 1.5,
+      "olean_bytes": 95328,
+      "olean_sha256": "94a3753594b406d23695a188ec0dbfe138038830dc30feda8994682c18832356"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ComponentDetachExample",
+      "source_bytes": 23926,
+      "source_sha256": "93dcdf7af592ef1c42f83d74db0d7b8bdbccc83f23dcb776687ea079ff13a710",
+      "build_seconds": 84,
+      "olean_bytes": 3844080,
+      "olean_sha256": "2dcb411d538f7d11f75bb351ac80825e7907c49c807cbeb0f8d47d05beeb4537"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ComponentDetachAudit",
+      "source_bytes": 2887,
+      "source_sha256": "ba42bc86c559214c8e2b750eff713edc96759818dad8c610b1a6bef4fb1d706b",
+      "build_seconds": 3.2,
+      "olean_bytes": 11664,
+      "olean_sha256": "9bc9d2d14bc4bb4fe7f1fc0fc3cf305ce4443c86ca2e2c1aa1a1bec8f8b56299"
+    }
+  ],
+  "audit": {
+    "roots": 15,
+    "dependency_declarations": 3206,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "bulk_repair_certificates_used": false,
+    "consumer_requires_general_detachment_theorem": true
+  },
+  "program": {
+    "seconds": 1.088,
+    "input_bytes": 7406,
+    "input_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+    "script_sha256": "d3ed576ba36f1349feff5a4b575d9096f421e8e621d8549b3061aa4c71a8b3c7",
+    "all_silent_components_tested": 17,
+    "separately_checked_simultaneous_phase_success": true
+  },
+  "build_gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "passed": true
+  },
+  "programme_counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_check_obligations_replaced": 336,
+    "additional_removals_credited": 0
+  },
+  "scope": [
+    "The bounded failure concerns one silent component followed by one fixed-pair phase and the stated count vector. It is not a barrier to a simultaneous silent phase, which succeeds on this very example.",
+    "The two Lean histories use different first components and differently sized detached regions in the same graph. This is not a universal repair theorem for the source configuration.",
+    "The general law has no size, finiteness or planarity assumption. Its active-exit and no-entry hypotheses still need supply from geometry.",
+    "The finite consumer verifies literal induced exterior adjacency, actual component switches, two boundary-silent preparations and reconstruction. Spherical embedding and short-cycle classification remain program checks.",
+    "No uniform preparation bound, termination measure, new coverage entry, kernel saving or complete-proof dependency removal is claimed."
+  ]
+}

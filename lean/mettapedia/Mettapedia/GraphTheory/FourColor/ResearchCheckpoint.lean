@@ -74,6 +74,7 @@ import Mettapedia.GraphTheory.Kempe.ListPropagation
 import Mettapedia.GraphTheory.Kempe.PairHistory
 import Mettapedia.GraphTheory.FourColor.CliqueFillAudit
 import Mettapedia.GraphTheory.FourColor.OddMeshAudit
+import Mettapedia.GraphTheory.FourColor.ComponentDetachAudit
 import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
 import Mettapedia.GraphTheory.FourColor.FacialRollbackLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth

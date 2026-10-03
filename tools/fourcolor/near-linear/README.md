@@ -1096,6 +1096,77 @@ preparation nor a uniform two-switch repair bound. Complete-proof counts
 remain 633 coverage entries, 629 original configuration certificates and
 336 replaced member-check obligations.
 
+## Detachment enables a second silent preparation
+
+The [detachment replay](component-detach-audit.json) tests the proposed
+bound of one boundary-silent component switch followed by an arbitrarily
+long fixed-pair phase. It fails on a retained D0092 occurrence in a
+162-vertex sphere. The exhaustive census finds no obstructing short cycle:
+320 triangles, 480 four-cycles and 1,040 five-cycles. Complete source stars,
+prescribed degrees, cyclic order and the ordered eleven-port boundary are
+unchanged. Geometry and the following exhaustive failure are program
+checks, not Lean theorems about all embedded maps.
+
+None of the initial fixed-pair phases increases the near-extension count
+vector. There are exactly 17 boundary-silent components over all six colour
+pairs. After each possible single switch, every subsequent fixed-pair
+boundary choice still fails to increase that vector. This refutes the
+specified **one-component preparation bound**. It does not refute one
+simultaneous silent phase, longer preparations, other potentials or a
+compact compositional proof.
+Indeed, switching two disjoint silent components of colours 1,3 in one
+phase, then a 0,3 component, also reconstructs this example. The replay
+checks that separate successful phase explicitly.
+
+Two sequential silent preparations succeed. The first removes the only
+active exit of a larger region. That region becomes a new silent component,
+which can be switched before the final boundary repair:
+
+| History | First silent component | Newly detached component | Final component | Core extensions |
+| --- | --- | --- | --- | --- |
+| A | Colours 0,2; 2 vertices | Colours 0,1; 21 vertices | Colours 0,3; 67 vertices | 0 → 0 → 0 → 2 |
+| B | Colours 0,3; 2 vertices | Colours 0,1; 16 vertices | Colours 0,3; 66 vertices | 0 → 0 → 0 → 2 |
+
+Both histories start from the same full exterior colouring and end with
+the same boundary word. They use different first components and different
+detached regions. The two preparatory steps retain every boundary colour;
+the final step permits reconstruction of a proper colouring of all 162
+vertices. No search is needed to replay these supplied successful histories.
+
+[ComponentDetach](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ComponentDetach.lean)
+proves the shared law for arbitrary graphs and palettes. Suppose a set uses
+colours `a,c`, and all its active exits enter a separate `a,b` component.
+If no `b`-coloured vertex of that component is adjacent to the set, switching
+it removes the old exits and introduces none. Existing internal paths then
+identify a new physical `a,c` component. No bound on either set's size,
+planarity assumption or precomputed repair table is needed.
+
+[ComponentDetachExample](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ComponentDetachExample.lean)
+checks both physical histories and whole-graph colouring reconstruction.
+It also verifies that the 155-vertex exterior is an induced subgraph of the
+162-vertex graph. Colourings are stored as two-bit words, one per state;
+the replay checks every data literal against the spherical fixture.
+Crucially, the middle component's closure consumes the general detachment
+law and observations from **before** the first switch. It is not assumed or
+rechecked as an independent saturated component. The
+[audit](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/ComponentDetachAudit.lean)
+connects these physical histories to the existing proof-relevant GSLT route
+type and checks the theorem dependencies. The
+[receipt](component-detach-measurements.json) records the finite data and
+kernel costs separately from the program census.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_component_detach.py \
+  --output tools/fourcolor/near-linear/component-detach-audit.json
+```
+
+Run `lake build Mettapedia.GraphTheory.FourColor.ComponentDetachAudit` in the
+main Lean package. The next missing statement is a supply theorem: under
+which geometric or connectivity conditions can useful detachment steps be
+found, and what prevents preparation from cycling indefinitely? The two
+consumers establish neither a universal preparation bound nor coverage.
+Complete-proof counts remain 633 / 629 / 336.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

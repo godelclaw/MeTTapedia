@@ -1,0 +1,1473 @@
+{
+  "evidence": "Spherical geometry and exhaustive bounded failure are program checked; the detachment law and two successful histories have separate Lean proofs.",
+  "fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "lean_example_sha256": "93dcdf7af592ef1c42f83d74db0d7b8bdbccc83f23dcb776687ea079ff13a710",
+  "geometry": {
+    "vertices": 162,
+    "faces": 320,
+    "minimum_degree": 5,
+    "cycles_by_length": {
+      "3": 320,
+      "4": 480,
+      "5": 1040
+    },
+    "shore_counts": [
+      {
+        "length": 3,
+        "side_vertices": [
+          0,
+          159
+        ],
+        "cycles": 320
+      },
+      {
+        "length": 4,
+        "side_vertices": [
+          0,
+          158
+        ],
+        "cycles": 480
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          0,
+          157
+        ],
+        "cycles": 960
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          1,
+          156
+        ],
+        "cycles": 80
+      }
+    ],
+    "obstructing_cycles": 0,
+    "first_obstruction": null
+  },
+  "initial_phase_census": [
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "boundary_components": 4,
+      "equal": 2,
+      "worse": 14
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "boundary_components": 2,
+      "equal": 2,
+      "worse": 2
+    },
+    {
+      "pair": [
+        0,
+        3
+      ],
+      "boundary_components": 1,
+      "equal": 2
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "boundary_components": 4,
+      "equal": 2,
+      "worse": 14
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "boundary_components": 2,
+      "equal": 2,
+      "worse": 2
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "boundary_components": 1,
+      "equal": 2
+    }
+  ],
+  "all_boundary_silent_preparations": [
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "root": 20,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "root": 22,
+      "size": 3,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "root": 124,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "root": 130,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "root": 10,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "root": 21,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        0,
+        3
+      ],
+      "root": 64,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        0,
+        3
+      ],
+      "root": 92,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "root": 9,
+      "size": 17,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "root": 17,
+      "size": 4,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "root": 30,
+      "size": 4,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "root": 72,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "root": 2,
+      "size": 18,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "root": 4,
+      "size": 9,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "root": 82,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "root": 70,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "root": 144,
+      "size": 2,
+      "following_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "equal": 2,
+          "worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "equal": 2,
+          "worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "equal": 2
+        }
+      ]
+    }
+  ],
+  "repairs": [
+    {
+      "commands": [
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "root": 21,
+          "size": 2
+        },
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 8,
+          "size": 21
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 0
+        }
+      ],
+      "component_sizes": [
+        2,
+        21,
+        67
+      ],
+      "old_active_exit_edges": [
+        [
+          141,
+          142
+        ]
+      ],
+      "old_component_boundary": [
+        48
+      ],
+      "detached_component_boundary": [],
+      "final_boundary": [
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        3,
+        0,
+        2,
+        0,
+        2
+      ],
+      "initial_profile": [
+        0,
+        7,
+        30,
+        68,
+        88,
+        92,
+        60,
+        28,
+        10,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prepared_profiles": [
+        [
+          0,
+          7,
+          30,
+          68,
+          88,
+          92,
+          60,
+          28,
+          10,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          7,
+          30,
+          68,
+          88,
+          92,
+          60,
+          28,
+          10,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "final_profile": [
+        2,
+        13,
+        30,
+        60,
+        88,
+        86,
+        56,
+        36,
+        12,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "whole_colouring_reconstructed": true
+    },
+    {
+      "commands": [
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 92,
+          "size": 2
+        },
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "root": 8,
+          "size": 16
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "root": 0
+        }
+      ],
+      "component_sizes": [
+        2,
+        16,
+        66
+      ],
+      "old_active_exit_edges": [
+        [
+          88,
+          92
+        ]
+      ],
+      "old_component_boundary": [
+        48
+      ],
+      "detached_component_boundary": [],
+      "final_boundary": [
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        3,
+        0,
+        2,
+        0,
+        2
+      ],
+      "initial_profile": [
+        0,
+        7,
+        30,
+        68,
+        88,
+        92,
+        60,
+        28,
+        10,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "prepared_profiles": [
+        [
+          0,
+          7,
+          30,
+          68,
+          88,
+          92,
+          60,
+          28,
+          10,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          7,
+          30,
+          68,
+          88,
+          92,
+          60,
+          28,
+          10,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "final_profile": [
+        2,
+        13,
+        30,
+        60,
+        88,
+        86,
+        56,
+        36,
+        12,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "whole_colouring_reconstructed": true
+    }
+  ],
+  "one_simultaneous_silent_phase_also_succeeds": {
+    "commands": {
+      "pair": [
+        1,
+        3
+      ],
+      "roots": [
+        2,
+        4
+      ],
+      "sizes": [
+        18,
+        9
+      ],
+      "finish": {
+        "pair": [
+          0,
+          3
+        ],
+        "root": 0
+      }
+    },
+    "whole_colouring_reconstructed": true,
+    "evidence": "Program checked; distinct from the two Lean detachment histories."
+  },
+  "scope": "Refutes at most one silent component followed by one fixed-pair phase as a universally improving count-potential strategy on this source domain. Two specified silent preparations and one further switch reconstruct the whole colouring. A single simultaneous silent phase also succeeds here. Does not rule out other potentials, temporary decrease, longer preparations or compact compositional Four Colour proofs. No coverage reduction."
+}
