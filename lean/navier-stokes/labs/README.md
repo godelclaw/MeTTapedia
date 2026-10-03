@@ -31258,3 +31258,215 @@ kinetic-energy decay and rational sign certificates. It also checks the
 algebra of the complete planar allowance. Local PDE evolution, packet
 localization, Fourier-limit inequalities and the all-time payment are
 analytic here. No new Lean declarations or axioms are introduced.
+
+## Phase-sensitive second return of the complete helical flow
+
+The helical calculation (497)--(500) creates negative-helicity mass from
+positive-helicity initial data. The next question is whether its nonlinear
+return depletes further creation. For an entire two-amplitude family the
+answer is yes, relative to the first Picard forecast. Changing a single
+joint phase gives another entire family with the opposite answer. All
+initial spectral energies and helicity are unchanged by that phase change.
+Both statements concern actual unforced viscous NS on the torus, on a
+short interval supplied by smooth local existence. They do not assume that
+the four original parents form a closed dynamical system.
+
+### The physical family and the comparison
+
+Use normalized volume on the torus with period 2 pi. Write
+`N(v)=Psol(v cross curl v)`, `L=nu Delta`, `Lambda=sqrt(-Delta)` and
+`M_minus(v)=<Lambda P_minus v,P_minus v>`. For the fixed rotation
+`R(x,y,z)=(-y,x,z)`, take
+
+```text
+p=(12,0,16), q=(-12,0,9), A=(16,20i,-12), B=(9,15i,12),
+U_hat(p)=a A/2,       U_hat(q)=b B/2,
+U_hat(Rp)=a zeta RA/2, U_hat(Rq)=b RB/2,           (513)
+```
+
+with the conjugate coefficients at the negative modes, real `a,b`, and
+`zeta=-i` or `zeta=+i`. Each mode has positive helicity. For `ab!=0`,
+the support spans all three spatial directions. Both phases have
+
+```text
+||U||_2^2=800 a^2+450 b^2,
+||Lambda^(1/2)U||_2^2=H(U)=16000 a^2+6750 b^2,
+||Lambda^(3/2)U||_2^2=6400000 a^2+1518750 b^2.
+```
+
+Indeed every initial norm `||m(D)U||_2`, with m a scalar Fourier multiplier,
+is the same in the two cases. These observations retain no relative parent phase.
+
+For every fixed positive viscosity, let `u` be the actual local NS solution
+with datum U. Define the original heat flow and its first generated field
+without restarting either at a later time:
+
+```text
+v(t)=exp(tL)U,
+r1(t)=integral_0^t exp((t-s)L) N(v(s)) ds,
+u_first(t)=v(t)+r1(t).                              (514)
+```
+
+The forecast `u_first` is an auxiliary Picard iterate, not another claimed
+unforced solution. The heat field remains exactly positive-helicity, so
+`M_minus(u_first)=M_minus(r1)`.
+
+The exact initial jets give
+
+```text
+M_minus(u(t))-M_minus(u_first(t))
+  = a^2 b^2 [c42(zeta) a^2+c24(zeta) b^2] t^4
+      + O(t^5).                                    (515)
+```
+
+The constants do not depend on viscosity. The following are strict rational
+enclosures, not rounded sign tests; the entries are in units of one million:
+
+| Parent phase | c42 / 10^6 | c24 / 10^6 | Actual negative-sector mass relative to its own first forecast |
+| --- | --- | --- | --- |
+| `-i` | `(-18662,-18661)` | `(-11474,-11473)` | Strictly smaller for all sufficiently small positive t |
+| `+i` | `(77464,77465)` | `(65065,65066)` | Strictly larger for all sufficiently small positive t |
+
+These inequalities hold for every fixed real `a,b` with `ab!=0` and every
+fixed `nu>0`. The interval may depend on all three parameters. If either
+amplitude is zero, the remaining single-shell field is Beltrami and its
+evolution is exactly the heat flow. No amplitude-uniform time interval is
+claimed.
+
+In both families the negative-sector mass itself initially grows, with a
+strictly positive t^2 coefficient. "Depleting" here means smaller than
+the corresponding forecast, not a decreasing negative-sector mass.
+
+### Complete return, including the new square
+
+The coefficients in (515) have a short exact definition which makes clear
+what the computation retains. With derivatives of N taken as maps of vector
+fields, set
+
+```text
+b0=N(U),
+c0=N'(U)b0,
+d0=N'(U)c0+2N(b0),
+C(U)=(1/3)<Lambda P_minus b0,P_minus d0>
+         +(1/4)||Lambda^(1/2)P_minus c0||_2^2.       (516)
+```
+
+Then `C(U)=a^2 b^2(c42 a^2+c24 b^2)`. This finite Fourier expression,
+with U given explicitly in (513), defines each radical coefficient exactly.
+`helical_second_return.py` also prints the expanded rational combinations
+of square roots and rational upper and lower certificates.
+
+The two contributions matter separately. The table gives approximate
+coefficients in units of one billion, only for interpretation; their signs
+and the signs of their sums are checked by rational enclosures:
+
+| Phase | Amplitude monomial | Mixed first/third jet | Positive second-jet square | Complete coefficient |
+| --- | --- | ---: | ---: | ---: |
+| `-i` | `a^4 b^2` | -554.821419 | 536.159828 | -18.661590 |
+| `-i` | `a^2 b^4` | -357.222738 | 345.749540 | -11.473198 |
+| `+i` | `a^4 b^2` | -99.356173 | 176.821164 | 77.464991 |
+| `+i` | `a^2 b^4` | -30.699918 | 95.765094 | 65.065176 |
+
+Thus the mixed return is negative in both families. It is not sufficient
+to establish depletion of the complete observation: the newly generated
+second-order field carries its own positive square. In the second family
+that square more than pays back the favorable mixed term.
+
+For completeness, (516) can be derived without dropping viscosity from
+the actual equation. The full initial time jets satisfy
+
+```text
+u^(n+1)(0)=L u^(n)(0)
+  +Psol sum_(j=0)^n binomial(n,j)
+       [u^(j)(0) cross curl u^(n-j)(0)].             (517)
+```
+
+The first forecast uses heat jets in the quadratic source in (517), and
+its own previous jet in the L term. Since `P_minus U=0`, the fourth
+derivative of negative-sector mass only needs velocity jets through order
+three: its nonzero terms are
+`8<Lambda P_minus u'(0),P_minus u'''(0)>`
+and `6||Lambda^(1/2)P_minus u''(0)||_2^2`.
+
+The checker represents each vector jet as a polynomial in a, b and nu
+with exact Gaussian-rational Fourier coefficients. Subtracting the
+forecast cancels the coefficients of orders zero through three. At order
+four, every viscosity-dependent monomial vanishes and only `a^4 b^2` and
+`a^2 b^4` remain. This proves a polynomial identity in all three
+parameters; it is not an interpolation from chosen numerical samples.
+Its viscosity-free coefficient is (516). The negative mixed term and
+the new positive square are both retained.
+
+Independently, the checker computes actual jets using the advective NS
+equation and its canonical pressure, for positive viscosities 1, 3/2 and 2,
+unequal amplitudes, a negative amplitude and a single-shell limit. For the
+nondegenerate samples it retains 8, 20, 60 and 148 velocity modes at orders
+zero through three, and 18, 66 and 152 pressure modes. Their jets equal the
+polynomial recurrence exactly and satisfy the kinetic-energy identity.
+No intermediate output is projected back onto the four-parent support.
+
+Trigonometric-polynomial initial data give an actual local smooth viscous
+solution with sufficiently many time derivatives in Sobolev spaces to
+apply Taylor's theorem to this quadratic observation. The integral
+forecast is also smooth there. Consequently the remainder in (515) is
+bounded by a finite constant times t^5 on a sufficiently short interval.
+Since the fourth-order coefficient is strictly nonzero whenever `ab!=0`,
+its certified sign proves the strict short-time comparisons above. This
+local PDE and remainder argument is analytic, not a new Lean theorem.
+
+The comparison also reaches the signed production in (493)--(494).
+Define the forecast production
+`J_first=<Lambda P_minus r1,P_minus N(v)>` and
+`L_minus(w)=||Lambda^(3/2)P_minus w||_2^2`. The actual and forecast balances
+are respectively `M_minus(u)'+2nu L_minus(u)=2J(u)` and
+`M_minus(r1)'+2nu L_minus(r1)=2J_first`. The same polynomial check shows
+that `L_minus(u)-L_minus(r1)` vanishes through order three. Hence
+
+```text
+J(u(t))-J_first(t)=2 C(U)t^3+O(t^4).
+```
+
+Thus the opposite signs also hold for the first return of the actual
+critical production relative to its own forecast. J_first is the source
+work in (514); it is not asserted to equal J evaluated on u_first, since
+u_first does not solve unforced NS. No all-time integral comparison follows.
+
+### The joint phase and the remaining history question
+
+The four wavevectors obey `p+q=Rp+Rq`. Relative to the explicitly fixed
+polarizations in (513), their scalar amplitudes have the quartet product
+
+```text
+alpha_p alpha_q conjugate(alpha_Rp alpha_Rq)
+      = a^2 b^2 conjugate(zeta).                    (518)
+```
+
+This product is unchanged by spatial translation: the four translation
+phases cancel. It distinguishes the two families although their entire
+initial scalar energy spectra agree. An interface intended to reconstruct
+this return therefore cannot retain just the individual modal energies.
+This is a concrete necessary observation, not a proof that one quartet
+is a sufficient boundary state for subsequent evolution.
+
+The positive family refutes automatic depletion of the first complete
+return for arbitrary positive-helicity parents. It does not refute a
+finite allowance depending on the full datum. The negative family supplies
+a physical instance of nonlinear depletion despite initial negative-sector
+creation. Neither result establishes payment from viscosity: viscosity is
+present in both actual evolutions, but cancels from this leading difference.
+Helicity sign alone is not the sign of physical enstrophy stretching.
+
+The remaining target is still (494): control the accumulated actual
+production J, with a fixed dissipation fraction and an allowance determined
+by the original full datum. The next relevant phase equation must retain
+the other modes which the quartet creates and the parents they feed back
+into. Reapplying (515) as though the evolved state still had the form (513)
+would reset its history and is invalid. An arbitrary-horizon payment and
+an extension of this short-time comparison to whole-space fields are not
+established here.
+
+Run `python3 -O labs/helical_second_return.py`. It checks both full
+amplitude/viscosity polynomial families, exact radical signs, the two
+return contributions, independent pressure jets and the shared initial
+resources. These algebraic checks support the analytic local comparison;
+no Lean declaration or axiom changes.

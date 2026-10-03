@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [phase-sensitive second return](labs/README.md#phase-sensitive-second-return-of-the-complete-helical-flow)
+compares actual 3D unforced evolution with its first Picard forecast. Two
+families have identical initial spectral energies and helicity: one has a
+strictly depleting fourth-order correction to negative-helicity mass, while
+the other has a strictly amplifying correction. Both retain every generated
+mode and pressure, at arbitrary fixed amplitudes and positive viscosity.
+The sign depends on a joint parent phase. Negative mixed feedback alone
+does not settle it, because the new second-generation square also contributes.
+These are analytic short-time comparisons with exact polynomial checks;
+the complete-history continuation allowance remains open.
+
 The [complete-source helicity test](labs/README.md#complete-source-helicity-and-a-paid-changing-geometry)
 shows that the full generated field can favor the opposite helicity even
 when every initial mode has positive helicity. An explicit 3D periodic
