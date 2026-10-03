@@ -136,8 +136,12 @@ def norm_polynomial(coefficients, weight=1, denominator=1, radii=None, cells=8):
                 coefficient_radius_sum=rational_upper(sum(map(Q, radii))))
 
 
-def residual_bounds(residual, radii=None, cells=8):
-    """Use precisely the six norms required by the physical comparison."""
+def residual_bounds(residual, radii=None, cells=8, normalized=False):
+    """Use the six physical norms; supplied radii are always normalized.
+
+    With normalized=True, coefficient arrays already use normalized Fourier
+    coordinates. Otherwise their squared inner products are divided by m^6.
+    """
     m = residual[0].shape[0]
     require(all(a.shape == (m, m, m, 16) for a in residual), 'Complete residual fields')
     k2 = np.sum(frequency_grid(m)**2, axis=-1)
@@ -149,7 +153,7 @@ def residual_bounds(residual, radii=None, cells=8):
     for key, block, weight in groups:
         coeff = [a[..., block] if block is not None else a[0, 0, 0, 15:16]
                  for a in residual]
-        result[key] = norm_polynomial(coeff, weight, m**6,
+        result[key] = norm_polynomial(coeff, weight, 1 if normalized else m**6,
                                      None if radii is None else radii[key], cells)
     return result
 
@@ -212,6 +216,17 @@ def shared_reference(raw):
 
 def exact_checks():
     arithmetic_check()
+    field = np.zeros((4, 4, 4, 16), complex)
+    field[1, 0, 0, 1] = field[3, 0, 0, 1] = .5
+    offdiagonal = next(j for j, (p, q) in enumerate(PAIRS) if p != q)
+    field[0, 0, 0, 6+offdiagonal] = 1
+    normalized = residual_bounds([field], normalized=True)
+    unnormalized = residual_bounds([64*field])
+    for key, square in [('epsilon0', Q(1, 2)), ('epsilon1', Q(1, 2)), ('rQ', Q(2))]:
+        require(Q(normalized[key]['bound'])**2 >= square,
+                'Exact physical norm of normalized cosine/tensor fixture')
+        require(abs(normalized[key]['bound']-unnormalized[key]['bound']) < 1e-12,
+                'Normalized and unnormalized storage have identical physical units')
     cases = [([1., 1., 1.], [2.**80, 1., -2.**80], [1, 1, 1]),
              ([2.**-1074, 2.**-700], [2.**-1074, -2.**-700], [2, 2]),
              ([2.**-1074], [2.**1023], [1]),

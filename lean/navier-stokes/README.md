@@ -36,6 +36,14 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete pressure operator enclosure](labs/README.md#full-operator-balls-for-shared-pressure-histories)
+retains every generated Fourier mode and encloses reconstruction, transforms,
+pressure and all conditional-moment sources for the same shared reference.
+Independent rational checks cover all sixteen time coefficients. On the
+first grid-40 reciprocal interval, the largest relative arithmetic allowance
+is 4.73 percent, in the velocity H1 residual. Outward field majorants and
+complete history controls remain necessary for a physical prefix certificate.
+
 The [correlated residual arithmetic](labs/README.md#outward-arithmetic-for-correlated-pressure-residuals)
 encloses signed inner products and complete time-polynomial norm bounds
 with explicit rounding errors. Its first reciprocal-flow interval loses

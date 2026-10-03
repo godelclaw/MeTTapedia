@@ -38411,3 +38411,124 @@ shared endpoints and all reconstructed field balls. Run
 `python3 -O labs/pressure_polynomial_enclosure.py --probe` for the bounded
 physical-interval arithmetic test. No Lean declarations or axioms change.
 The arbitrary-parent renewal estimate remains open.
+
+## Full operator balls for shared pressure histories
+
+`pressure_operator_enclosure.py` connects the shared Bernstein reference
+of (802) to the residual-norm consumer (803). It encloses the complete
+Navier--Stokes and conditional pressure-moment operator, including every
+quadratic and cubic spatial output. The reference-field majorants and
+complete pressure-history scalar propagation are separate requirements;
+this operator enclosure alone does not certify a physical prefix.
+
+### The same reference, with complete Fourier support
+
+Let the exact reconstructed reference coefficients have coordinatewise
+Fourier support |k_j|<=b. Velocity, first, second and third conditional
+moments each have time degree five. The canonical pressure gradient is
+computed from that same velocity:
+
+```text
+g_v = -Q_grad(v.grad v),                               (805)
+```
+
+where Q_grad is the orthogonal projection onto gradients. Transport and g_v
+have spatial support at most 2b and time degree ten. The second/third
+moment sources and the fourth-moment rate have support at most 3b and
+time degree fifteen. An explicit radix-two transform on a grid N>6b
+retains every generated frequency. The products' exact discrete Fourier
+coefficients therefore equal their continuous Fourier coefficients.
+
+For retained grid 40, b=13, the transform grid is 128 and final coefficient
+storage is 80. Cropping beyond the proved support projects the numerical
+error orthogonally; it removes no true operator output. In particular,
+pressure is not projected back to the original input band. Conditional
+moment means are retained throughout.
+
+### Propagating field errors through the physical sources
+
+A field ball consists of a midpoint and a radius in normalized L2, either
+in Fourier coordinates or on the complete physical grid. Suppose a and b
+have midpoint maxima A and B, radii r_a,r_b, and a pointwise bilinear map
+has Euclidean bound L. Its product error is at most
+
+```text
+L (A r_b + B r_a + N^(3/2) r_a r_b)
+  + the enclosed arithmetic error.                    (806)
+```
+
+The last term inside parentheses uses the exact finite-grid inequality
+||e||infinity<=N^(3/2)||e||2. It is an error estimate on this computational
+grid, not a new continuum Sobolev claim. Each Fourier transform then uses
+the explicit butterfly enclosure from `pressure_prefix_certificate.py`.
+
+The physical maps and sufficient constants are:
+
+| map | stored inputs | L |
+|---|---|---|
+| one transport direction | v_d and partial_d field | 1 |
+| symmetric second-moment source | I and g | 2 |
+| third-moment source | six symmetric Q entries and g | 5 |
+| fourth-moment source | T and g | 4 |
+
+The third source is 2Qg+tr(Q)g. Its bound follows from
+2sqrt(2)+sqrt(3)<5 when the six stored entries use their unweighted norm.
+The final residual consumer restores the Frobenius norm by weighting
+off-diagonal entries twice. All tensor contractions, additions and
+projection errors are included; the same g_v enters every source.
+
+Time differentiation, viscous diffusion and transport are then assembled
+coefficient by coefficient. There are sixteen coefficients for the joint
+residual; velocity and first-moment coefficients above degree ten vanish
+exactly. If r is an L2 error radius for a velocity residual coefficient,
+its support gives
+
+```text
+H1 error <= 2sqrt(3)b r.                               (807)
+```
+
+This support bound includes the quadratic generated modes. The scalar
+fourth-moment source is integrated with an enclosed signed sum. Its
+spatial mean is exact quadrature for the full cubic source, and its
+reference time derivative is retained. No history is restarted.
+
+### Independent check of every time coefficient
+
+A separate Gaussian-rational Fourier calculation reconstructs the exact
+reference from the stored Bernstein control points and solves its pressure
+Poisson equation. It expands every convolution without using the FFT
+implementation. All sixteen time coefficients, all spatial outputs and
+all six requested residual norms are compared against their returned
+balls. The fixture includes changing phases, a nontrivial Leray projection
+and nonzero tensor means. Each residual group has a nonzero coefficient
+at its highest possible time degree, including the fourth-moment source.
+Its auxiliary moment fields are an operator
+fixture, not asserted to be realizable conditional moments of a fluid.
+
+These comparisons pass, as does a retained-grid-12 physical interval
+probe. Run `python3 -O labs/pressure_operator_enclosure.py` for the exact
+fixtures, and `python3 -O labs/pressure_operator_enclosure.py --probe --n 40`
+for the first reciprocal-flow interval. The arithmetic claim uses the
+stated IEEE model and analytic transform/product estimates. It is not
+newly Lean-certified and does not establish the arbitrary-history budget.
+
+For the first balanced unit reciprocal interval, nu=1/4, h=1/16 and
+integrator step 1/128, the complete grid-40 operator enclosure gives:
+
+| residual norm | stored-polynomial bound | full coefficient-ball bound |
+|---|---|---|
+| velocity L2 | 1.36733770e-8 | 1.37210758e-8 |
+| velocity H1 | 4.54910868e-8 | 4.76391232e-8 |
+| first moment L2 | 6.73931047e-8 | 6.74028838e-8 |
+| second moment Frobenius L2 | 1.97112107e-7 | 1.97115604e-7 |
+| third moment L2 | 2.45646053e-7 | 2.45646783e-7 |
+| scalar fourth-moment rate | 4.09634685e-8 | 4.09660238e-8 |
+
+The largest inflation is about 4.72 percent, in the H1 residual. Its
+coefficient-error contribution is 2.14803640e-9. All six norms therefore
+meet the bounded test's factor-two acceptance criterion. The full bound
+covers this whole interval and the complete spatial operator under the
+stated arithmetic model; it is not inferred from residual samples.
+This does not extrapolate the measured inflation to later intervals.
+The stronger finite-prefix pressure payment still needs the other field
+majorants and its controls enclosed over the complete original history.
