@@ -32494,3 +32494,263 @@ reserve algebra, including the first generation of directional work.
 The analytic PDE comparison, general commutator estimate,
 all-time payment and continuous-dependence extension are not Lean-certified.
 No Lean declaration or axiom changes.
+
+## Material coordinates, critical diffusion and a paid physical metric
+
+The directional resource in (568) only decays because its derivative
+commutes with a particular parent flow. Following the ACTUAL fluid removes
+advection more generally, but changes the diffusion operator. A fixed
+Euclidean critical norm in the material labels need not decrease under
+that diffusion. This section proves an increase ABOVE its initial value
+on an actual unforced positive-viscosity flow with zero pressure.
+
+Retaining the physical metric restores the correct negative diffusion
+term. Its deformation then has a separate cost. For the shear class that
+cost has an explicit original-data payment, giving a direct bound for
+the COMPLETE critical continuation criterion and arbitrary smooth passive
+profiles. For arbitrary interacting parents the metric cost remains open.
+
+### The actual material flow and its diffusion operator
+
+Consider the exact unforced NS solution on the normalized 2*pi torus
+
+```text
+u=(A exp(-nu t)sin y,0,w(t,x,y)),
+w_t+A exp(-nu t)sin y w_x=nu Delta w, w(0)=w0,
+theta(t)=A(1-exp(-nu t))/nu,
+T_theta f(x,y)=f(x+theta sin y,y), h=T_theta w.   (574)
+```
+
+Its pressure is zero. The FULL material flow has
+`Phi_x=x+theta sin y`, `Phi_y=y` and
+`Phi_z=z+integral_0^t w(s,Phi_x(s),y) ds`.
+The z coordinate is retained but does not enter these z-independent
+velocity components. The flow preserves volume. The operator T_theta
+is unitary on scalar L2, and the exact material equation is
+
+```text
+h_t=nu L_theta h,
+L_theta=T_theta Delta T_theta^(-1)
+ =partial_x^2+(partial_y-theta cos y partial_x)^2
+ =Delta-2theta cos y partial_xy+theta sin y partial_x
+        +theta^2 cos^2 y partial_xx,
+<h,L_theta h>=-||h_x||_2^2-||h_y-theta cos y h_x||_2^2.    (575)
+```
+
+Thus kinetic energy still decreases. The diffusion matrix has determinant
+one, but this does not make its pairing with the FIXED label operator
+Lambda=(-Delta_label)^(1/2) negative. Viscosity in these coordinates has
+the two noise directions displayed by the sum of squares in (575), not
+an unchanged isotropic label Laplacian. This transformation introduces no
+external force into the fluid.
+
+### An exact negative multiplication form
+
+Let
+
+```text
+h0(x,y)=cos x q(y),
+q(y)=11-14cos(2y)+8cos(4y)-4cos(6y)+2cos(8y),
+a_0=11, a_(+/-2)=-7, a_(+/-4)=4, a_(+/-6)=-2, a_(+/-8)=1,
+P0=sum_n (1+n^2)^(3/2) a_n^2
+  =121+490sqrt(5)+544sqrt(17)+296sqrt(37)+130sqrt(65),
+P2=sum_n sqrt(1+n^2) a_n [a_n/2+(a_(n-2)+a_(n+2))/4]
+  =22-(7/2)sqrt(5)-2sqrt(17)-sqrt(37),
+-4/25<P2<-3/20,
+<Lambda h0,L_theta h0>=-(P0+theta^2 P2)/2.        (576)
+```
+
+The coefficient linear in theta vanishes by Fourier parity. At theta=256
+the last expression exceeds 1900. These are exact rational/radical
+identities. All generated Fourier modes are retained. A positive value
+at a selected field and metric alone would not establish an actual-history
+counterexample; the next argument supplies that connection.
+
+### The full viscous material velocity exceeds its initial critical mass
+
+Fix nu>0, take A>0, set w0=A h0 and rescale sigma=At, mu=nu/A. Write
+`h=A H_mu`. Then
+
+```text
+theta_mu(sigma)=(1-exp(-mu sigma))/mu,
+partial_sigma H_mu=mu L_(theta_mu) H_mu, H_mu(0)=h0,
+G(sigma)=integral_0^sigma L_s h0 ds,
+H_mu(sigma)=h0+mu G(sigma)+O_H1(mu^2)             (577)
+```
+
+uniformly on the FIXED interval 0<=sigma<=S=512. The first variation
+includes the actual viscosity dependence of theta; replacing it by
+sigma contributes only to the controlled second-order remainder.
+
+The complete velocity composed with its full material flow is
+`A(exp(-mu sigma)sin y,0,H_mu(sigma))`. Hence its fixed-label critical
+mass, including the decaying parent, obeys
+
+```text
+M_label(S/A)-M_label(0)=A^2[mu Gamma_S+O(mu^2)],
+Gamma_S=-S(1+P0)-(S^3/3)P2>3000000, S=512.       (578)
+```
+
+This is an expansion in the viscosity/amplitude ratio on a controlled
+interval, not a Taylor forecast in time of an unknown long trajectory.
+Here is one explicit, deliberately coarse remainder bound. All functions
+remain in the x frequencies +/-1. For 0<=theta<=S the H1 energy estimate
+for `v_sigma=mu L_theta v+F` gives
+
+```text
+(||v||_H1)'<=mu c_S ||v||_H1+||F||_H1,
+c_S=S+2S^2.                                    (579)
+```
+
+The only potentially positive derivative pairing comes from
+`[partial_y,L_theta]v`. Its highest derivative term is
+`2theta sin y partial_x partial_y v`, whose real pairing with v_y
+vanishes. The remaining terms are bounded by
+`(theta+2theta^2)||v_y||_2 ||v||_2`; the other diffusion pairings are
+nonpositive. The x derivative commutes with L_theta. Regularizing the
+norm justifies (579) at zero.
+
+In Fourier Hm norms, multiplication by sin y or cos y has norm at most
+2^m, and multiplication by cos^2 y at most 4^m. For m=1,3 these give
+
+```text
+a_S=1+24S+64S^2, b_S=12S^2+64S^3,
+||L_theta f||_Hm<=a_S ||f||_H(m+2),
+||[L_(theta_mu(sigma))-L_sigma]h0||_H1
+ <=mu b_S ||h0||_H3.                            (580)
+```
+
+The second line uses
+`0<=sigma-theta_mu(sigma)<=mu sigma^2/2` and
+`|theta_mu(sigma)^2-sigma^2|<=mu sigma^3`. Let
+
+```text
+R=39*66^3, G_star=S a_S R,
+C=3S R(b_S+S a_S^2),
+E=(R+G_star+C)^2+S^2,
+mu_star=1/[2(E+c_S S+1)].                        (581)
+```
+
+Since h0 has `1+|k|^2<=66` and Fourier l1 norm 39,
+`||h0||_H5<=R`. Set e=H_mu-h0-mu G. Its exact forced equation is
+
+```text
+e_sigma-mu L_(theta_mu) e
+ =mu[L_(theta_mu)-L_sigma]h0+mu^2 L_(theta_mu)G,
+e(0)=0.                                        (582)
+```
+
+For mu c_S S<=1, (579)--(580) yield `||e||_H1<=C mu^2` on the
+entire interval. Also `||G||_H1<=G_star`. Expanding the quadratic
+critical mass and using Cauchy--Schwarz bounds its remainder by
+`(R+G_star+C)^2 mu^2` for mu<=1. The remaining S^2 term in E pays
+the second-order remainder of the parent's exponential decay. Thus
+
+```text
+0<mu<=mu_star implies
+M_label(S/A)-M_label(0)>A^2 mu/2>0.              (583)
+```
+
+For EVERY fixed nu>0 choose a finite A>=nu/mu_star. This gives an
+actual smooth global unforced NS history satisfying (583). No backward
+parabolic reconstruction or Galerkin closure is used. The constants
+are very conservative; they establish existence of a strict failure,
+not its optimal amplitude threshold. The failed claim is contraction
+of the fixed Euclidean critical norm in material labels. Neither
+kinetic-energy decay nor the full-data continuation budget is refuted.
+
+### Retaining the physical metric restores the correct cost
+
+Define the nonnegative self-adjoint operator
+`A_theta=T_theta Lambda T_theta^(-1)`. Unitary conjugation gives
+`A_theta^2=-L_theta`. The PHYSICAL critical mass of the passive component
+is `M_w=<h,A_theta h>`, not `<h,Lambda h>`. If X=sin y partial_x,
+
+```text
+A_theta'=theta'[X,A_theta],
+M_w'= <h,A_theta' h>-2nu<h,A_theta^3 h>,
+<h,A_theta' h>=-2theta'<Lambda w,sin y w_x>.      (584)
+```
+
+The diffusion term now has its correct negative sign. The deformation
+of the metric has not disappeared. The adjacent-mode estimate (567),
+with coordinates exchanged and applied to the ACTUAL w, gives
+
+```text
+K_x(t)=|| |partial_x|^(1/2) w(t)||_2^2,
+K_x(t)<=exp(-2nu t)K_x(0),
+|<h,A_theta' h>|<=|theta'|K_x(t)
+                  <=|A|K_x(0)exp(-3nu t),
+integral_0^infinity |<h,A_theta' h>|
+                  <=|A|K_x(0)/(3nu).            (585)
+```
+
+This holds for ANY smooth real periodic w0(x,y), with no amplitude
+smallness. The directional derivative commutes with the actual shear;
+its nonzero x frequencies justify Poincare. Its zero x frequencies
+contribute no metric work. This is an original-data payment for the
+physical metric, not a replacement of the evolving w by heat parents.
+
+For the FULL field, including the shear, the critical balance is
+`M'+2nu L=<h,A_theta' h>`. Therefore, for 0<alpha<1, the complete
+criterion (494) has the allowance
+
+```text
+C_H(t)=M(t)-M0+2(1-alpha)nu integral_0^t L
+      <=B_metric:=|A|K_x(0)/(3nu), for all t>=0,
+R_source(t)=B_metric exp(-3nu t)>=0,
+-R_source'>=|<h,A_theta' h>|.                    (586)
+```
+
+No reserve is replenished between segments. The resulting critical
+continuation reserve is also `R_H=M+B_metric-C_H>=0`, as in (494).
+For w0=B cos x this gives `B_metric=|A|B^2/(6nu)`. For the fixture
+w0=A h0 it gives `B_metric=87A^3/(2nu)`. These whole-history bounds
+coexist with the material-norm increase (583). A sinusoidal receiver can
+use the minimum of this bound and (552); the new bound is smaller in the
+large-shear regime. No optimal constant is claimed. These estimates stay
+within a known regular class and do not establish regularity for arbitrary
+three-dimensional data.
+
+### The exact arbitrary-flow bridge and its remaining obligation
+
+The physical metric identity has a direct counterpart on EVERY available
+smooth periodic unforced NS prefix. Let Phi_t be its actual volume-preserving
+material flow, T_t f=f composed with Phi_t, V=T_t u and
+`A_t=T_t Lambda T_t^(-1)`. These are actual fluid-derived operators.
+Then
+
+```text
+A_t'=T_t[u dot grad,Lambda]T_t^(-1),
+d/dt <V,A_t V>
+ =<V,A_t' V>-2nu<V,A_t^3 V>,
+<V,A_t' V>=-2<Lambda u,(u dot grad)u>=4J.        (587)
+```
+
+Indeed `V'=T_t(nu Delta u-grad p)`. The pressure term in this
+pairing is `-2<Lambda u,grad p>=0` by physical incompressibility;
+it is not removed from the underlying evolution. Differentiating the
+unitary conjugation and using skew-adjointness of u dot grad proves
+the last equality. All identities are understood on smooth fields on
+that prefix; they do not assume a global material flow already exists.
+
+Thus a full-data bound on the signed metric-deformation cost, after its
+viscous payment, is exactly the remaining critical history obligation.
+Equation (586) proves that bound in a commuting geometry. Arbitrary
+parents regenerate the directional variation, as (572) already shows.
+Following them removes advection from the material equation but does not
+give (585) for free. Even a bound in fixed labels would need metric control
+before becoming a physical continuation estimate. In the shear example,
+interpolation of the unitary L2 bound with
+`||grad T_theta f||_2<=(1+|theta|)||grad f||_2` gives
+`(1+|theta|)^(-1) M(w)<=M_label(h)<=(1+|theta|)M(w)`.
+For general material flows the corresponding distortion is itself part
+of the unpaid history.
+
+Run `python3 -O labs/material_critical_history.py`. It checks the actual
+coordinate chain rule, factorized diffusion and L2 balance, complete Fourier
+quadratic forms, strict rational sign bounds, interval remainder constants
+including parent decay, and the full physical allowance algebra. The PDE
+comparison, fractional interpolation, operator identities on smooth flows
+and all-history estimates remain analytic, not Lean-certified. No Lean
+declaration or axiom changes.

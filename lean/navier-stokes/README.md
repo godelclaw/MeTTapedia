@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [material critical-history test](labs/README.md#material-coordinates-critical-diffusion-and-a-paid-physical-metric)
+shows why following the actual fluid does not remove the geometric cost:
+an unforced positive-viscosity flow can increase its critical norm measured
+in fixed material labels, even with zero pressure. Retaining the evolving
+physical metric restores the negative diffusion term. For arbitrary smooth
+profiles transported by the stated shear, its deformation has an explicit
+original-data payment for the complete continuation criterion. The exact
+metric identity also holds along arbitrary smooth NS prefixes; paying its
+deformation under unrestricted interacting parents remains open. These are
+analytic statements with exact checks, not new Lean certificates.
+
 The [relative self-work history test](labs/README.md#a-change-of-self-interaction-sign-with-finite-history-payment)
 finds a sign reversal on an actual unforced viscous history: an initially
 Beltrami perturbation first depletes, then produces, critical difference
