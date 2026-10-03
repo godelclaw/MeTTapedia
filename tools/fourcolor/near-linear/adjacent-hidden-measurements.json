@@ -1,0 +1,123 @@
+{
+  "evidence": "Kernel-checked separation of connected fibres from extendable step lifting, and a physical repair with temporary boundary motion.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.TwoVertexFibre",
+      "source_sha256": "eeb725d30b7425dbae83a3392b08f5514fb0b53a2c938c83ac52ba58b55c103c",
+      "source_bytes": 2846,
+      "lake_build_seconds": 1.7,
+      "olean_bytes": 97744,
+      "olean_sha256": "9f52407dfb9238e5c385bbce571a56d82151b74ed12a1863a0a70b63fb87df8d"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.AdjacentHiddenObstruction",
+      "source_sha256": "b92eef710a147bd8b8a6d660f5a57d3dd6eac6d67d39755e6875ae409312d898",
+      "source_bytes": 8988,
+      "lake_build_seconds": 3.3,
+      "olean_bytes": 370144,
+      "olean_sha256": "cc8797edc6fe090dc046cc7bc17a1adac8f2524e61331fbc1a6a5aaf18b4875e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.AdjacentHiddenObstructionAudit",
+      "source_sha256": "4521db4ebea861f97c280a95b8b667eb0c1e02eaaebad6ef4e735ef0bf152c61",
+      "source_bytes": 2450,
+      "lake_build_seconds": 3.2,
+      "olean_bytes": 2808,
+      "olean_sha256": "44c0f5aa82ec0bb2f9a7e19a5146e0aae834ebcc74da53ccce2af67f85ca5779"
+    }
+  ],
+  "audit": {
+    "roots": 11,
+    "dependency_declarations": 3841,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "For every finite graph and palette, any two proper colourings agreeing outside two vertices are Kempe connected without touching that exterior.",
+    "A nine-vertex four-colour graph has connected restriction fibres but an actual retained component move to an extendable target has no full lift with six leaves fixed.",
+    "The same witness refutes the joint-operation on-image lifting contract without independence.",
+    "Three full component switches reach the target when one boundary leaf may change temporarily. All other leaves stay fixed and the full boundary is restored at the endpoint."
+  ],
+  "witness": {
+    "vertices": 9,
+    "edges": 9,
+    "hidden": [
+      0,
+      1
+    ],
+    "protected": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "initial": [
+      0,
+      2,
+      1,
+      1,
+      0,
+      2,
+      3,
+      3,
+      3
+    ],
+    "target": [
+      2,
+      1,
+      0,
+      1,
+      0,
+      2,
+      3,
+      3,
+      3
+    ],
+    "repair": [
+      {
+        "pair": [
+          0,
+          1
+        ],
+        "component": [
+          2,
+          0,
+          3
+        ]
+      },
+      {
+        "pair": [
+          0,
+          2
+        ],
+        "component": [
+          3
+        ]
+      },
+      {
+        "pair": [
+          1,
+          2
+        ],
+        "component": [
+          1,
+          0,
+          3
+        ]
+      }
+    ]
+  },
+  "scope": "Refutes a specified boundary-fixed lifting contract on arbitrary finite graphs. Degree-one leaves do not satisfy minimal-counterexample geometry; no Lean planarity or embedding theorem is claimed for this example. Temporary context motion requires compatibility with any larger exterior. No impossibility of compact compositional proofs follows.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.Kempe.TwoVertexFibre",
+    "lake build Mettapedia.GraphTheory.FourColor.AdjacentHiddenObstructionAudit",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "credited_compression": false
+}

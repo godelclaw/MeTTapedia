@@ -297,6 +297,60 @@ in the main package and
 `python3 tools/fourcolor/near-linear/audit_independent_repair.py` from the
 repository root.
 
+## Adjacent interiors: extension and step lifting separate
+
+The [two-vertex fibre theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/TwoVertexFibre.lean)
+proves that any two proper colourings of a finite graph agreeing outside two
+vertices are connected by Kempe switches avoiding that exterior. The palette
+and degrees are unrestricted; the two hidden vertices may be adjacent.
+Either one vertex can be recoloured first, or a two-colour interchange repairs
+both. This is a uniform proof without a colouring-state table.
+
+Nevertheless, [an exact nine-vertex example](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AdjacentHiddenObstruction.lean)
+shows that connected fibres and extendable targets do not suffice for lifting
+moves between different retained colourings. Its core is the triangle `0,1,2`,
+with leaves `3,6` at `0`, `4,7` at `1`, and `5,8` at `2`. Hide `0,1` and protect
+all six leaves. Both full colourings
+
+```text
+vertex:   0 1 2 | 3 4 5 6 7 8
+initial:  0 2 1 | 1 0 2 3 3 3
+target:   2 1 0 | 1 0 2 3 3 3
+```
+
+are proper. In the retained graph, switching colours `0,1` at vertex `2`
+produces the target restriction in one component move. Yet every nontrivial
+full component at the initial state touches a protected leaf. Consequently
+**no history fixing that context reaches any extension of the target**.
+Lean proves this by a local transparency invariant and induction on arbitrary
+histories. The results refute both single-component and joint-operation
+on-image lifting without the independent-set hypothesis.
+
+The same example has a precise repair. Permit only leaf `3` to change
+temporarily and switch these actual full components in sequence:
+
+| Colour pair | Component vertices | Colour at leaf 3 afterward |
+| --- | --- | --- |
+| `0,1` | `2,0,3` | `0` |
+| `0,2` | `3` | `2` |
+| `1,2` | `1,0,3` | `1` |
+
+This reaches the stated target and restores the entire boundary. The other
+five leaves remain fixed throughout. Saturated path witnesses certify all
+three physical components; the repair also yields a GSLT history.
+
+Thus repeated elimination needs control of allowed transitions as well as
+endpoint extension. Temporarily changing a context vertex must itself be
+justified when the patch is placed in a larger graph. The example has
+degree-one leaves; it does not establish an obstruction in the stronger
+minimal-counterexample geometry, rule out alternative decompositions, or
+prove compact compositional Four Colour proofs impossible. No coverage entry
+or original certificate dependency is removed.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.AdjacentHiddenObstructionAudit`.
+The [measurement receipt](adjacent-hidden-measurements.json) records eleven
+audited roots and costs. No external configuration certificate is used.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)
