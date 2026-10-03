@@ -1,0 +1,223 @@
+{
+  "evidence": "Exact program replay of joint operations, physical lifts and actual reconstruction.",
+  "cases": [
+    {
+      "source_fixture": "flat-seven-return-example.json",
+      "configuration": "D0092.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "hidden_vertices": 33,
+      "retained_vertices": 122,
+      "availability_clauses": 33,
+      "clause_widths": [
+        5,
+        6,
+        7
+      ],
+      "flat_centres": [
+        51,
+        118,
+        48
+      ],
+      "obstructing_short_cycles": 0,
+      "initial_word_does_not_extend": true,
+      "joint_operations": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "retained_components": 1,
+          "individual_components_with_invalid_targets": 0,
+          "phases": [
+            {
+              "phase": "prepare",
+              "switches": []
+            },
+            {
+              "phase": "joint",
+              "switches": [
+                {
+                  "pair": [
+                    0,
+                    1
+                  ],
+                  "root": 0,
+                  "size": 3
+                }
+              ]
+            },
+            {
+              "phase": "finish",
+              "switches": []
+            }
+          ]
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "retained_components": 18,
+          "individual_components_with_invalid_targets": 18,
+          "phases": [
+            {
+              "phase": "prepare",
+              "switches": []
+            },
+            {
+              "phase": "joint",
+              "switches": [
+                {
+                  "pair": [
+                    1,
+                    2
+                  ],
+                  "root": 2,
+                  "size": 70
+                }
+              ]
+            },
+            {
+              "phase": "finish",
+              "switches": []
+            }
+          ]
+        }
+      ],
+      "full_ambient_reconstruction": true,
+      "patch_witness": [
+        3,
+        2,
+        3,
+        2,
+        0,
+        3,
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        1,
+        2,
+        3,
+        0,
+        3,
+        1
+      ],
+      "geometry_and_consumer_kernel_certified": false
+    },
+    {
+      "source_fixture": "flat-seven-return-extension-example.json",
+      "configuration": "D0063.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "hidden_vertices": 33,
+      "retained_vertices": 122,
+      "availability_clauses": 33,
+      "clause_widths": [
+        5,
+        6,
+        7
+      ],
+      "flat_centres": [
+        146,
+        68,
+        70
+      ],
+      "obstructing_short_cycles": 0,
+      "initial_word_does_not_extend": true,
+      "joint_operations": [
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "retained_components": 4,
+          "individual_components_with_invalid_targets": 4,
+          "phases": [
+            {
+              "phase": "prepare",
+              "switches": []
+            },
+            {
+              "phase": "joint",
+              "switches": [
+                {
+                  "pair": [
+                    0,
+                    3
+                  ],
+                  "root": 10,
+                  "size": 32
+                }
+              ]
+            },
+            {
+              "phase": "finish",
+              "switches": []
+            }
+          ]
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "retained_components": 28,
+          "individual_components_with_invalid_targets": 28,
+          "phases": [
+            {
+              "phase": "prepare",
+              "switches": []
+            },
+            {
+              "phase": "joint",
+              "switches": [
+                {
+                  "pair": [
+                    1,
+                    2
+                  ],
+                  "root": 0,
+                  "size": 68
+                }
+              ]
+            },
+            {
+              "phase": "finish",
+              "switches": []
+            }
+          ]
+        }
+      ],
+      "full_ambient_reconstruction": true,
+      "patch_witness": [
+        2,
+        1,
+        2,
+        0,
+        2,
+        3,
+        1,
+        3,
+        2,
+        0,
+        1,
+        1,
+        0,
+        0,
+        2,
+        3,
+        3
+      ],
+      "geometry_and_consumer_kernel_certified": false
+    }
+  ],
+  "generic_lean_theorem": "SimpleGraph.KempeIndependentLift.projected_history_iff",
+  "scope": "Two initial exterior colourings. No repair of every exterior colouring, geometric coverage, catalogue compression or standalone Four Colour reduction is claimed.",
+  "fixture_sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e",
+  "verifier_sha256": "38b707d25127f09eb396d35ae3628bd1fbf2230a25fb8cdeb18fa93f653d1578",
+  "credited_compression": false
+}

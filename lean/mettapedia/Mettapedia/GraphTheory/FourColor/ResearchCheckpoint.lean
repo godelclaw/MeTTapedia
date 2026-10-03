@@ -58,6 +58,7 @@ import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
 import Mettapedia.GraphTheory.FourColor.KempePaletteRigidity
 import Mettapedia.GraphTheory.FourColor.OrderedFanKempe
 import Mettapedia.GraphTheory.FourColor.KempeBoundaryObservationAudit
+import Mettapedia.GraphTheory.FourColor.IndependentBoundaryRepairAudit
 import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
 import Mettapedia.GraphTheory.FourColor.FacialRollbackLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth

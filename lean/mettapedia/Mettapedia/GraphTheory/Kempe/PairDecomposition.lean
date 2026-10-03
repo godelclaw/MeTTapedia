@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.Kempe.Symm
+import Mettapedia.GraphTheory.Kempe.Boundary
 
 /-!
 # Decomposing a proper partial colour transposition
@@ -42,18 +42,20 @@ theorem component_changed_of_pointwise_swap
 
 /-- A pointwise partial transposition between proper colourings is a
 finite sequence of ordinary component switches. -/
-theorem mem_kempeClosure_of_pointwise_swap [Fintype V]
+theorem avoiding_of_pointwise_swap [Fintype V] (B : Set V)
+    (fixed : ∀ v ∈ B, C v = D v)
     (hpair : ∀ v, D v = C v ∨ D v = Equiv.swap a b (C v)) :
-    D ∈ G.KempeClosure C := by
+    Relation.ReflTransGen (G.KempeStepAvoiding B) C D := by
   classical
   suffices ∀ n : ℕ, ∀ C : G.Coloring α,
       (Finset.univ.filter fun v => C v ≠ D v).card = n →
       (∀ v, D v = C v ∨ D v = Equiv.swap a b (C v)) →
-      D ∈ G.KempeClosure C from this _ C rfl hpair
+      (∀ v ∈ B, C v = D v) →
+      Relation.ReflTransGen (G.KempeStepAvoiding B) C D from this _ C rfl hpair fixed
   intro n
   induction n using Nat.strong_induction_on with
   | h n ih =>
-    intro C hcard hpair
+    intro C hcard hpair hfixed
     by_cases heq : C = D
     · subst C
       exact .refl
@@ -90,7 +92,21 @@ theorem mem_kempeClosure_of_pointwise_swap [Fintype V]
         rw [← hcard]
         exact Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr
           ⟨hsub, fun h => hun (h.symm ▸ hub)⟩)
-      exact (Relation.ReflTransGen.single (G.kempeStep_swapOnKempeComponent C a b K)).trans
-        (ih smaller.card hlt next rfl hnext)
+      have avoids : Disjoint (C.kempeComponentSet a b K) B :=
+        Set.disjoint_left.mpr fun v hv hvB => hchanged hv (hfixed v hvB).symm
+      have stays : ∀ v ∈ B, next v = D v := fun v hv =>
+        (C.swapOnKempeComponent_apply_of_not_mem (Set.disjoint_right.mp avoids hv)).trans
+          (hfixed v hv)
+      exact (Relation.ReflTransGen.single
+        (G.kempeStepAvoiding_swapOnKempeComponent C a b K avoids)).trans
+        (ih smaller.card hlt next rfl hnext stays)
+
+/-- A proper pointwise partial transposition is a finite sequence of actual
+component switches. The stronger theorem also preserves a fixed boundary. -/
+theorem mem_kempeClosure_of_pointwise_swap [Fintype V]
+    (hpair : ∀ v, D v = C v ∨ D v = Equiv.swap a b (C v)) :
+    D ∈ G.KempeClosure C :=
+  Relation.ReflTransGen.mono (fun _ _ h => h.kempeStep) _ _
+    (avoiding_of_pointwise_swap C D a b ∅ (by simp) hpair)
 
 end SimpleGraph.Coloring

@@ -238,6 +238,65 @@ colouring and two rooted commands per case. The shared boundary command is
 executed in both states. No table of possible histories is stored. No coverage
 entry or original certificate dependency is removed.
 
+## Exact independent elimination with joint repair choices
+
+The [independent lifting theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/IndependentLift.lean)
+provides a positive alternative to deterministic partition updates. Let `S`
+be any finite independent set of hidden vertices in a finite graph, with an
+arbitrary colour palette. The retained graph and hidden degrees are unrestricted.
+Its interface consists of the retained graph and the joint constraints
+
+```text
+for every hidden vertex v:
+    some colour is absent from all retained neighbours of v.
+```
+
+These constraints characterize extension exactly. A joint operation may switch
+any union of components of one colour pair, provided its target still satisfies
+all the constraints. Every such history lifts to an actual Kempe history
+between the specified full endpoints. Conversely, every actual history projects
+to such a joint history. A designated retained boundary can stay fixed through
+every physical move. The proof prepares hidden colours, decomposes a proper
+partial transposition into actual components, then finishes the hidden colours.
+It uses the existing fibration and path-composition theorems. No table of
+colouring states or histories occurs in the proof.
+
+The [certified consumers](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/IndependentBoundaryRepair.lean)
+include the preceding four-cycle example and a five-vertex star. In the star,
+the hidden hub sees leaf colours `(1,1,2,3)`. Changing either first leaf alone
+to `0` leaves no colour for the hub. Changing both together to `0` is valid:
+the hub changes from `0` to `1`, while the last two leaves stay fixed. Lean
+proves both individual extension failures and the joint physical repair.
+Thus requiring every retained component to move separately is too restrictive.
+
+The [spherical consumers](independent-repair-audit.json) replay this mechanism
+on the two complete punctured exteriors. Each eliminates 33 independent
+vertices from a 155-vertex exterior, retaining 122 vertices and 33 availability
+constraints of widths 5 through 7. Both starting boundary words fail to extend
+to their seven-vertex patches. Two joint operations per example reach words
+that reconstruct proper colourings of the entire 162-vertex ambient sphere.
+All preparation, component switching, finishing, and final ambient edges are
+checked. In the D0092 second operation all 18 selected retained components
+have invalid targets individually; the joint target is valid. In the D0063
+second operation the same holds for all 28 selected components. Each joint
+operation in these fixtures lifts to one full-exterior component switch.
+The fixtures store only the initial colouring, the hidden set and two commands.
+These geometric applications remain independent program evidence; the generic
+law and the four-cycle/star consumers are kernel checked.
+
+This is elimination into a graph **with retained constraints**. It is not a
+standalone ordinary Four Colour reduction, and it does not prove all starting
+colourings of these exteriors repair. Iterating elimination requires preserving
+the accumulated constraints; closure in a compact family is not established.
+No catalogue entry or original configuration certificate is removed. The
+[measurement receipt](independent-repair-measurements.json) distinguishes these
+claims and records the audit and costs.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.IndependentBoundaryRepairAudit`
+in the main package and
+`python3 tools/fourcolor/near-linear/audit_independent_repair.py` from the
+repository root.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

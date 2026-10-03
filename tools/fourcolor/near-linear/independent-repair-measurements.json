@@ -1,0 +1,63 @@
+{
+  "evidence": "Kernel-checked exact support and physical reachability after an independent deletion.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.PairDecomposition",
+      "source_sha256": "afb793466cb8f220c3b09af1f284295835e5192f6eb02c36089bbdfa38852d00",
+      "source_bytes": 5441,
+      "lake_build_seconds": 1.7,
+      "olean_bytes": 139992,
+      "olean_sha256": "8bba4ea6a43e71ea8b74fcb93435a99c52b02bbe9a92bfbe8f377cb0da4b209e"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.IndependentLift",
+      "source_sha256": "e0ac110cee8c36f4f8fa29a91cb83f4b0072dfceff531c14f319c1fd42172f96",
+      "source_bytes": 13713,
+      "lake_build_seconds": 2.2,
+      "olean_bytes": 356672,
+      "olean_sha256": "2681980d6ab658a64221f2b4aa72a028a6c99a6ce31319f789a7b02bcc4e2b89"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.IndependentBoundaryRepair",
+      "source_sha256": "b43ab04a49d1db1eb51a80b54a32fa6768994c79314113ffbf9e22b8378f29a6",
+      "source_bytes": 5042,
+      "lake_build_seconds": 3.2,
+      "olean_bytes": 169344,
+      "olean_sha256": "ec8762af982d53fd5dce20360f4f0f1f4ec6e90199d87a59720d65989683bbd4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.IndependentBoundaryRepairAudit",
+      "source_sha256": "24dcc61c16c0fd39c092a43d350cafd14380745ddcbc10745440dbb08ee024c8",
+      "source_bytes": 2752,
+      "lake_build_seconds": 3.4,
+      "olean_bytes": 2808,
+      "olean_sha256": "5f314efb4ee410cc6dd6e2eefc37e8597807e8deef1165dc446b7ed9ac5f16ba"
+    }
+  ],
+  "audit": {
+    "roots": 14,
+    "dependency_declarations": 3592,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "For any finite graph, arbitrary palette and independent hidden set, extension is equivalent to one colour-availability constraint per hidden vertex.",
+    "Compatible joint partial transpositions lift to actual component histories; a designated retained boundary stays fixed.",
+    "Physical histories project to compatible joint histories. The resulting reachability equivalence preserves specified full endpoints.",
+    "The four-cycle summary obstruction has a uniform relational repair.",
+    "On a five-vertex star, two individual retained switches do not extend while their coupled switch repairs."
+  ],
+  "program_applications": "independent-repair-audit.json",
+  "scope": "Elimination retains the joint constraints. It does not establish an unconstrained graph reduction, universal repair of the spherical exteriors, compact closure under successive eliminations, or geometric coverage.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.IndependentBoundaryRepairAudit",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "lake build kernelFiveTrianglePuncturedRepair kernelComplete",
+    "python3 tools/fourcolor/near-linear/audit_independent_repair.py"
+  ],
+  "credited_compression": false
+}
