@@ -36,6 +36,14 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [correlated residual arithmetic](labs/README.md#outward-arithmetic-for-correlated-pressure-residuals)
+encloses signed inner products and complete time-polynomial norm bounds
+with explicit rounding errors. Its first reciprocal-flow interval loses
+less than seven parts per billion to this scalar arithmetic. A shared
+Bernstein reference preserves exact interval seams and inherited moment
+means. The physical operator's coefficient errors and complete pressure
+controls remain separate obligations; no stronger prefix is certified.
+
 The [complete-time residual test](labs/README.md#a-pressure-history-residual-needs-its-complete-time-polynomial)
 exhibits an exact decaying NS shear whose inaccurate quintic reference
 has zero residual at both endpoints and the midpoint, even with matching

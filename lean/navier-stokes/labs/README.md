@@ -38299,3 +38299,115 @@ not cover the sampled grid 80 transform; an appropriate supported grid
 or a separately proved transform enclosure is required. No Lean
 statements or axioms change. The arbitrary-data history estimate remains
 open.
+
+## Outward arithmetic for correlated pressure residuals
+
+The complete-time residual construction (797)--(801) has two distinct
+arithmetic obligations: generate enclosures of the physical residual
+coefficients, then bound the norm of their polynomial on a whole interval.
+`pressure_polynomial_enclosure.py` supplies the second consumer and the
+shared-reference reconstruction needed by the first. It does not yet
+supply the complete physical coefficient enclosures or certify a stronger
+pressure-history prefix.
+
+### A continuous reference across interval boundaries
+
+Let b_0,...,b_5 be stored, normalized Fourier arrays, interpreted as exact
+binary rationals. The reference is the degree-five Bernstein curve after
+one fixed linear reconstruction: Hermitian symmetrization followed by
+Leray projection and mean removal for velocity, Hermitian symmetrization
+for the conditional moments. The integrated fourth moment is a real scalar.
+The other moments retain their zero modes. Adjacent intervals sharing the
+same stored endpoint therefore share the same exact reconstructed state.
+
+The computational centered-power coefficients enclose that reference;
+they do not redefine it. This distinction prevents a concrete seam error.
+For scalar Bernstein control points
+
+```text
+(1,0,0,0,0,2^-54),
+```
+
+rounding each exact centered-power coefficient separately to binary64 gives
+a polynomial whose value at the right endpoint is exactly zero, instead
+of 2^-54. Joining that polynomial to the constant next interval would
+introduce a jump. A piecewise smooth continuous reference suffices for the
+physical differential comparisons, but such unpaid jumps do not.
+
+The exact change of basis used in the enclosure is
+
+```text
+B_i^5((1+s)/2) = binom(5,i)(1+s)^i(1-s)^(5-i)/32.       (802)
+```
+
+The existing projection and linear-combination ball routines bound its
+rounding errors. Independent rational Fourier fixtures check every field
+block, including nontrivial Leray denominators and retained moment means.
+
+### A norm enclosure that retains cancellation
+
+For supplied residual centers a_i and certified radii r_i in the required
+weighted, normalized Hilbert norm, write the exact coefficients as a_i+e_i,
+with ||e_i||<=r_i. On -1<=s<=1,
+
+```text
+||sum_i (a_i+e_i)s^i||
+  <= sqrt(sup_s sum_(i,j) Re<a_i,a_j>s^(i+j))
+       + sum_i r_i.                                   (803)
+```
+
+The signed inner products are enclosed before conversion to Bernstein
+form. The implementation explicitly computes real/imaginary products and
+a sum, instead of assuming an unspecified BLAS dot-product error. With M
+complex entries, exact nonnegative integer weights and unit roundoff
+u=2^-53, it uses the conservative enclosure
+
+```text
+|computed inner product - exact inner product|
+  <= gamma * A + 10^-290,
+gamma = 8(M+1)u / (1-8(M+1)u),                         (804)
+```
+
+where A bounds the sum of the absolute weighted real and imaginary
+products. Guards restrict M<=2^28, weights<=2^30 and exclude overflow.
+The absolute allowance exceeds the accumulated subnormal error in this
+domain. Both the Fourier H1 weights and symmetric-tensor multiplicities
+are retained. Fourier normalization is divided out as an exact rational.
+
+Every subsequent signed polynomial conversion uses rational intervals.
+For each subinterval, an exact matrix converts centered powers to
+Bernstein coefficients. Multiplying a negative matrix entry uses the
+opposite interval endpoint. Bernstein convexity then gives (803), with
+its final square root checked by an exact rational square comparison.
+No assumption about a transcendental library's square-root accuracy is
+needed for that returned bound. This is an explicit arithmetic argument
+and executable check, not a new Lean kernel certificate.
+
+### Bounded test and remaining physical work
+
+For the first interval of the balanced unit reciprocal flow at nu=1/4,
+retained grid 40^3, step 1/128 and interval length 1/16, the signed arithmetic
+enclosure adds less than seven parts per billion to each of the six
+stored-polynomial norm bounds. The velocity H1 residual bound remains
+about 4.54911e-8. Thus enclosing these inner products and scalar conversions
+does not erase the previously observed benefit of retaining correlations.
+The separate shared-reference coefficient balls are also computed; the
+largest velocity coefficient radius is below 3.2e-14 in normalized L2.
+
+These figures enclose the stored residual polynomial ONLY. The probe's
+rescaling, Fourier transforms and physical nonlinear operator still need
+error propagation from the reference coefficient balls. Setting zero
+radii in this probe means that its stored coefficients are its exact
+input; it does not assert that the physical residual has zero arithmetic
+error. The required remaining pieces are the full operator/pressure
+coefficient balls, outward reference-field bounds, and outward propagation
+of all pressure-history scalar controls. The earlier three-sample run and
+the complete-time floating run cannot substitute for these obligations.
+
+Default checks include exact cancellation, subnormal products, rational
+reconstruction of every degree-30 monomial, weighted complex fixtures,
+shared endpoints and all reconstructed field balls. Run
+`python3 -O labs/pressure_polynomial_enclosure.py` for these checks and
+`python3 -O labs/pressure_polynomial_enclosure.py --probe` for the bounded
+physical-interval arithmetic test. No Lean declarations or axioms change.
+The arbitrary-parent renewal estimate remains open.
