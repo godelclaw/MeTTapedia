@@ -1,5 +1,41 @@
 # Near-linear Four Colour catalogue bridges
 
+## An extra changed port defeats the fixed preparation strategy
+
+[PortPreparationObstruction](../../../lean/fourcolor-classical/MettapediaFourColor/PortPreparationObstruction.lean)
+tests the proposed extension of the free-port repair: switch the entire
+one/two component through port two, then finish with zero/two switches.
+That component can also contain port four. The resulting two active
+boundary runs have four possible joint choices, and none extends into
+D0092. Five forced core colours prove this directly. The general
+`no_tail_phase` theorem rules out every finite following zero/two history,
+uniformly in the exterior size.
+
+[The concrete consumer](../../../lean/fourcolor-classical/MettapediaFourColor/PortPreparationObstructionExample.lean)
+uses the existing 155-vertex exterior. Its preparing component has 52
+vertices and changes exactly ports two and four. A one/three path from
+port one to port six survives, so retaining that path alone does not
+justify the proposed finishing operation. `failed_whole_preparation`
+proves that no endpoint of the restricted history extends to the actual
+162-vertex ambient graph.
+
+The same input admits a different two-step repair: switch the two-vertex
+zero/two component at port five, then the singleton one/two component at
+port eight. `alternative_repair` proves both physical component switches
+and a complete ambient colouring agreeing with their result.
+
+The [independent replay](port-preparation-obstruction-audit.json) verifies
+the pinned sphere, source stars and cyclic order, residual connectivity,
+and absence of an immediate one-switch repair. It also matches the Lean
+graph, colouring and component literals to the replayed inputs. The
+concrete spherical representation and the exhaustive one-step census are
+program evidence; the arbitrary-length phase obstruction, actual component
+switches and ambient colourings are kernel checked.
+
+This excludes one fixed preparation strategy. A uniform structural repair
+for this boundary class and compact geometric coverage remain open. No catalogue entry or original
+certificate is removed by this obstruction.
+
 ## A free port supplies a two-step residual repair
 
 [ResidualPortPreparation](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualPortPreparation.lean)

@@ -1,0 +1,71 @@
+{
+  "source_fixture": "component-detach-example.json",
+  "source_fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "exterior_colouring": "03203130002212311302021120002330120030133021002222123231302101023311332103203233211222233310030012321122000110323100320301031321223330203323200311131131213",
+  "preparing_pair": [
+    1,
+    2
+  ],
+  "preparing_port": 2,
+  "preparing_boundary": [
+    2,
+    4
+  ],
+  "alternative_commands": [
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "port": 5
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "port": 8
+    }
+  ],
+  "alternative_component_sizes": [
+    2,
+    1
+  ],
+  "alternative_source_assignment": [
+    1,
+    3,
+    2,
+    3,
+    1,
+    2,
+    3,
+    0,
+    1,
+    0,
+    2,
+    2,
+    0,
+    1,
+    3,
+    1,
+    3,
+    0
+  ],
+  "post_preparation_path": [
+    40,
+    43,
+    79,
+    107,
+    154,
+    2,
+    4,
+    51,
+    30,
+    47,
+    137,
+    21,
+    68,
+    99,
+    17
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "evidence": "Exact program replay alongside parameterized and finite Lean theorems.",
+  "fixture_sha256": "ea08bcf0d435af302769e589754f105370b518afadc4e9884d866f67f3563fbe",
+  "source_fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "lean_example_sha256": "8523a8bdcb83d32401bca5e47a67f045457f2d3d5bc13f40b36865030d52b3e8",
+  "lean_graph_and_colour_literals_match": true,
+  "ambient_vertices": 162,
+  "exterior_vertices": 155,
+  "source_core_vertices": 7,
+  "source_geometry": "Pinned oriented sphere, exact source stars and cyclic order; the base data replay includes every simple cycle of lengths 3 through 5.",
+  "initial_residual": true,
+  "initial_components": 36,
+  "one_switch_repairs": 0,
+  "failed_preparing_component_size": 52,
+  "failed_preparing_ports": [
+    2,
+    4
+  ],
+  "post_preparation_complementary_path_edges": 14,
+  "all_four_phase_words_reject": [
+    [
+      1,
+      3,
+      1,
+      3,
+      2,
+      0,
+      3,
+      0,
+      2,
+      0,
+      2
+    ],
+    [
+      1,
+      3,
+      1,
+      3,
+      2,
+      0,
+      3,
+      2,
+      0,
+      2,
+      0
+    ],
+    [
+      1,
+      3,
+      1,
+      3,
+      0,
+      2,
+      3,
+      0,
+      2,
+      0,
+      2
+    ],
+    [
+      1,
+      3,
+      1,
+      3,
+      0,
+      2,
+      3,
+      2,
+      0,
+      2,
+      0
+    ]
+  ],
+  "alternative_moves": [
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "port": 5,
+      "size": 2,
+      "changed_ports": [
+        5
+      ]
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "port": 8,
+      "size": 1,
+      "changed_ports": [
+        8
+      ]
+    }
+  ],
+  "whole_colouring_reconstructed": true,
+  "scope": "The fixed one/two preparation followed by arbitrary zero/two phases fails. Two different physical component switches repair the same input. No obstruction to arbitrary mixed-pair repair or compositional coverage is claimed.",
+  "catalogue_entries_removed": 0,
+  "original_certificates_removed": 0
+}

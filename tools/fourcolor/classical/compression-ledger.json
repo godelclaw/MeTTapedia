@@ -5316,5 +5316,35 @@
       "Other boundary words and source families.",
       "Universal geometric coverage and termination."
     ]
+  },
+  "port_preparation_obstruction": {
+    "theorem": "FourColor.PortPreparationObstruction.no_tail_phase",
+    "scope": "After a one/two component changes exactly ports 2 and 4 of the retained D0092 word, every finite following zero/two phase fails to extend. The phase theorem allows arbitrary exterior size.",
+    "mechanism": "Properness leaves two Boolean boundary-run choices. Five forced core colours reject all four combinations.",
+    "finite_lean_obstruction": "FourColor.PortPreparationObstruction.Example.failed_whole_preparation",
+    "finite_lean_alternative": "FourColor.PortPreparationObstruction.Example.alternative_repair",
+    "physical_example": {
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "preparing_component_size": 52,
+      "post_preparation_complementary_path_survives": true,
+      "alternative_component_sizes": [
+        2,
+        1
+      ]
+    },
+    "program_receipt": "tools/fourcolor/near-linear/port-preparation-obstruction-audit.json",
+    "measurement_receipt": "tools/fourcolor/near-linear/port-preparation-obstruction-measurements.json",
+    "new_bulk_colouring_table": false,
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false,
+    "decision": "Do not generalize the free-port supplier by blindly switching its whole one/two component. Any broader supplier must account for all changed ports and choose a compatible continuation.",
+    "open": [
+      "Uniform mixed-pair repair for the retained boundary class.",
+      "Other boundary words and source families.",
+      "Universal geometric coverage and termination."
+    ]
   }
 }

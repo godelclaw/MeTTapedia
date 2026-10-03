@@ -1,0 +1,73 @@
+{
+  "classification": "FIXED_PREPARATION_STRATEGY_OBSTRUCTION_WITH_PHYSICAL_ALTERNATIVE",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.PortPreparationObstruction",
+      "source_bytes": 6380,
+      "source_sha256": "53edc474cd2cd7af8fac8f341070e337799a1e156f43998637b5a876411b1e9f",
+      "build_frontend_seconds_rounded": 19.0,
+      "olean_bytes": 400440,
+      "olean_sha256": "68ddc5b08aed630733518a8b90312292f2017ef3012cb993c27c05493e081a38"
+    },
+    {
+      "module": "MettapediaFourColor.PortPreparationObstructionExample",
+      "source_bytes": 9331,
+      "source_sha256": "8523a8bdcb83d32401bca5e47a67f045457f2d3d5bc13f40b36865030d52b3e8",
+      "build_frontend_seconds_rounded": 20.0,
+      "olean_bytes": 559408,
+      "olean_sha256": "4b89d635726b5c6d2bd41841f9d3c57b86d5276bc91305d866995df713553e8f"
+    },
+    {
+      "module": "MettapediaFourColor.PortPreparationObstructionAudit",
+      "source_bytes": 2464,
+      "source_sha256": "388798fbf6e4d8d63b2ed45392d6e655f20a3d6332d2dd2b4e0be115556a8c53",
+      "build_frontend_seconds_rounded": 2.7,
+      "olean_bytes": 3248,
+      "olean_sha256": "b388874049d1c756aec31c02adc066c636b618204b8a7eef80a050af90b11898"
+    }
+  ],
+  "new_lean_source_bytes": 18175,
+  "new_fixture_bytes": 997,
+  "mathematical_result": "Five forced core colours rule out all four boundary-run choices after the extra-port preparation. The fixed-pair history theorem covers arbitrarily many following zero/two switches. A checked 52-vertex preparing component realizes the failed observation; a different two-step history switches components of sizes two and one and reconstructs the actual ambient graph.",
+  "audit": {
+    "roots": 14,
+    "dependency_declarations": 3668,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "full_four_colour_theorem_used": false,
+    "new_bulk_colouring_table": false
+  },
+  "program": {
+    "script_sha256": "cff3cc7c4e5502d9aa5e1c3e5cab4b5dd004fb081bc78d13d724b707e51b35cb",
+    "receipt_sha256": "76fcb770f9bf23380b7088a3eb98106f2ba91a239ad4a53e9e913acfc220add3",
+    "ambient_vertices": 162,
+    "initial_components": 36,
+    "one_step_repairs": 0,
+    "concrete_sphere_geometry_kernel_checked": false,
+    "graph_and_colour_literals_match_lean": true
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.PortPreparationObstructionAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "open": [
+    "Uniform mixed-pair repair for the entire retained boundary class.",
+    "Other boundary words and source families.",
+    "Geometric coverage and termination for the intended graph class."
+  ]
+}
