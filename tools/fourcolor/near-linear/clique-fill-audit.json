@@ -1,0 +1,468 @@
+{
+  "evidence": "Exact program replay of spherical fillings, failed monotone count potential and successful physical repairs. General clique history lifting is separately Lean checked.",
+  "fixture_sha256": "15be415f794887e1588307364c73e5cf19074eaf0f827c71096e861449c5e39c",
+  "lean_filling_source_sha256": "7db680b112d447c692b22ad428fac6aadf84f571b3507245c38909c51f5062d5",
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        3,
+        2,
+        0,
+        2,
+        3
+      ],
+      "small_vertices": 18,
+      "initial_near_extension_profile": [
+        0,
+        5,
+        15,
+        56,
+        118,
+        107,
+        63,
+        20,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "proper_core_colourings": 384,
+      "fixed_pair_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 2,
+          "palette_only": 2,
+          "strictly_worse": 2
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "palette_only": 2,
+          "strictly_worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 2,
+          "palette_only": 2,
+          "strictly_worse": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 4,
+          "palette_only": 2,
+          "strictly_worse": 14
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 3,
+          "palette_only": 2,
+          "strictly_worse": 6
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "palette_only": 2
+        }
+      ],
+      "filled_examples": [
+        {
+          "vertices": 99,
+          "faces": 194,
+          "minimum_degree": 5,
+          "exact_source_stars_preserved": true,
+          "phase_choices_preserved": true,
+          "repair_steps": [
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "root": 0,
+              "component_size": 6,
+              "near_extension_profile": [
+                0,
+                2,
+                20,
+                64,
+                105,
+                109,
+                59,
+                25,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "root": 2,
+              "component_size": 29,
+              "near_extension_profile": [
+                2,
+                7,
+                33,
+                64,
+                79,
+                80,
+                90,
+                25,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "whole_colouring_reconstructed": true
+        },
+        {
+          "vertices": 108,
+          "faces": 212,
+          "minimum_degree": 5,
+          "exact_source_stars_preserved": true,
+          "phase_choices_preserved": true,
+          "repair_steps": [
+            {
+              "pair": [
+                0,
+                2
+              ],
+              "root": 0,
+              "component_size": 6,
+              "near_extension_profile": [
+                0,
+                2,
+                20,
+                64,
+                105,
+                109,
+                59,
+                25,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "root": 2,
+              "component_size": 34,
+              "near_extension_profile": [
+                2,
+                7,
+                33,
+                64,
+                79,
+                80,
+                90,
+                25,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "whole_colouring_reconstructed": true
+        }
+      ],
+      "scope": "These spheres have separating triangles. Minimum degree five does not establish the stronger connectivity hypotheses of a minimal counterexample."
+    },
+    {
+      "configuration": "D0063.conf",
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        2,
+        0,
+        2,
+        1,
+        3
+      ],
+      "small_vertices": 17,
+      "initial_near_extension_profile": [
+        0,
+        6,
+        25,
+        78,
+        109,
+        102,
+        53,
+        10,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "proper_core_colourings": 384,
+      "fixed_pair_phases": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "boundary_components": 3,
+          "palette_only": 2,
+          "strictly_worse": 6
+        },
+        {
+          "pair": [
+            0,
+            2
+          ],
+          "boundary_components": 2,
+          "palette_only": 2,
+          "strictly_worse": 2
+        },
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "boundary_components": 2,
+          "palette_only": 2,
+          "strictly_worse": 2
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "boundary_components": 3,
+          "palette_only": 2,
+          "strictly_worse": 6
+        },
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "boundary_components": 2,
+          "palette_only": 2,
+          "strictly_worse": 2
+        },
+        {
+          "pair": [
+            2,
+            3
+          ],
+          "boundary_components": 1,
+          "palette_only": 2
+        }
+      ],
+      "filled_examples": [
+        {
+          "vertices": 89,
+          "faces": 174,
+          "minimum_degree": 5,
+          "exact_source_stars_preserved": true,
+          "phase_choices_preserved": true,
+          "repair_steps": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "root": 0,
+              "component_size": 26,
+              "near_extension_profile": [
+                0,
+                5,
+                19,
+                62,
+                132,
+                125,
+                37,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "root": 1,
+              "component_size": 29,
+              "near_extension_profile": [
+                1,
+                5,
+                22,
+                64,
+                123,
+                121,
+                42,
+                6,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "whole_colouring_reconstructed": true
+        },
+        {
+          "vertices": 98,
+          "faces": 192,
+          "minimum_degree": 5,
+          "exact_source_stars_preserved": true,
+          "phase_choices_preserved": true,
+          "repair_steps": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "root": 0,
+              "component_size": 26,
+              "near_extension_profile": [
+                0,
+                5,
+                19,
+                62,
+                132,
+                125,
+                37,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "root": 1,
+              "component_size": 33,
+              "near_extension_profile": [
+                1,
+                5,
+                22,
+                64,
+                123,
+                121,
+                42,
+                6,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "whole_colouring_reconstructed": true
+        }
+      ],
+      "scope": "These spheres have separating triangles. Minimum degree five does not establish the stronger connectivity hypotheses of a minimal counterexample."
+    }
+  ],
+  "scope": "Refutes monotone improvement of this specified near-extension count vector on these inputs. Does not refute other potentials, nonmonotone repair, or a compositional Four Colour proof. No coverage or certificate-dependency reduction."
+}

@@ -956,6 +956,65 @@ audit. The program revalidates the previous source fixtures and generated Lean t
 the bounded sample and the exhaustive phase census are separate evidence.
 Complete-proof counts and catalogue dependencies remain unchanged.
 
+## Clique fillings transport complete repair histories
+
+[The clique lifting theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/CliqueLift.lean)
+handles a finite hidden patch of arbitrary size and internal graph, attached
+only along a retained clique. A proper partial transposition on a clique
+acts either as the identity or as the full transposition. Applying that
+same permutation throughout the hidden patch constructs a proper full
+endpoint. The existing component-decomposition theorem realizes this as
+physical Kempe switches, preserving any protected retained boundary.
+
+`history_iff` gives exact reachability of retained targets from a specified
+full starting colouring. It composes through the existing `LiftsSteps`
+interface. It does not require connected hidden fibres and does not claim
+that an arbitrary preselected hidden endpoint is reachable. This is a
+specialization of clique gluing to colouring dynamics, with no enumeration
+of the hidden colouring space.
+
+[The finite consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CliqueFillAudit.lean)
+checks an icosahedron: its nine interior vertices attach along one retained
+triangle, every vertex has degree five, and an explicit four-colouring is
+proper. Its repair-lifting theorem quantifies over all starting colourings
+and retained histories and invokes the general clique theorem. The two
+modules build in 1.9 and 2.0 seconds; nine audited roots use standard axioms.
+
+The [source replay](clique-fill-audit.json) uses the same filling in actual
+spherical triangulations. D0092 has examples with 99 and 108 vertices;
+D0063 has examples with 89 and 98. All have minimum degree five, with exact
+source core degrees and cyclic stars preserved. The larger example in each
+pair nests one further filling. Two specified physical switches reconstruct
+a whole colouring in each case. These examples have separating triangles;
+they do not establish the stronger connectivity of a minimal counterexample.
+
+The experiment also refutes a specific proposed progress measure. Count
+proper core colourings by their number of conflicting boundary attachments,
+ordering the coefficient vector lexicographically from zero conflicts upward.
+There are 384 proper core colourings in each source. Across all fixed-pair
+phases of each initial small exterior, this vector never increases; equality
+only renames the boundary palette. The fillings preserve these choices.
+A successful repair must therefore leave this plateau through a worse value.
+The displayed first moves reduce the number of one-conflict colourings from
+5 to 2 and from 6 to 5 respectively; the second moves reach actual extensions.
+
+This failure concerns that count vector and monotone improvement under
+fixed-pair phases. It permits other potentials and nonmonotone combined
+operations. The gluing theorem is kernel checked; the counts and larger
+spherical examples are separately checked by the replay program. The program
+matches its filling incidence and colouring to the Lean consumer and performs
+no search for repair commands on replay.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_clique_fill.py \
+  --output tools/fourcolor/near-linear/clique-fill-audit.json
+```
+
+Run `lake build Mettapedia.GraphTheory.FourColor.CliqueFillAudit` in the main
+Lean package. The [measurement receipt](clique-fill-measurements.json) records
+sizes, timings and scope. No catalogue or complete-proof dependency saving
+is credited.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

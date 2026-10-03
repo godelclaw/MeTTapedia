@@ -1,0 +1,84 @@
+{
+  "evidence": "General clique-attachment history lifting and an exact finite cap consumer kernel checked. Spherical reconstruction and failure of the specified near-extension count potential are program evidence.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.CliqueLift",
+      "source_bytes": 5684,
+      "source_sha256": "0a26b9bf527fcd6b3aaaa69dd92bbdb58e51d62caa51f98346208d09910742cf",
+      "lake_build_seconds": 1.9,
+      "olean_bytes": 154824,
+      "olean_sha256": "ca43baa6358844110a0f9ad63508991932ef9bfb408e2c576202b3f556fbada3"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CliqueFillAudit",
+      "source_bytes": 4263,
+      "source_sha256": "7db680b112d447c692b22ad428fac6aadf84f571b3507245c38909c51f5062d5",
+      "lake_build_seconds": 2.0,
+      "olean_bytes": 229648,
+      "olean_sha256": "f171a0b6944d97e2584d622afa70f1421367f93e7dc4a21ed0dee54872935362"
+    }
+  ],
+  "audit": {
+    "roots": 9,
+    "dependency_declarations": 3553,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_consumer_dependency": "KempeCliqueLift.history_iff",
+    "bulk_repair_certificates_used": false
+  },
+  "program_receipt": "clique-fill-audit.json",
+  "fixture": "clique-fill-example.json",
+  "verifier_sha256": "550a774dbdc35246bab0b611dd8909fc5b359271d3cf652a489e162b31eef110",
+  "proved": [
+    "A proper partial transposition acts on a clique uniformly: identity on every clique vertex or the same transposition on every clique vertex.",
+    "For a finite graph, any hidden patch attached only along a retained clique lifts every retained pair move from any specified full colouring. The hidden colouring is constructed using the common permutation.",
+    "Every finite retained pair history lifts to a physical Kempe history; conversely physical histories project. This preserves reachability of retained targets with a fixed surrounding boundary. It does not assert connectivity between all specified hidden endpoints.",
+    "The explicit twelve-vertex filling has degree five, a proper four-colouring and a nine-vertex hidden patch attached only along its retained triangle. Its all-colourings repair-lifting theorem consumes the general result."
+  ],
+  "program_checked": [
+    "Exact oriented connected spherical geometry, cyclic stars and unchanged source core degrees for D0092 and D0063 after filling exterior triangles, including a nested filling.",
+    "The near-extension coefficient vector counts all 384 proper core colourings by their number of conflicting boundary attachments.",
+    "All fixed-pair phase choices on each small exterior weakly decrease this vector. Equality occurs only for global palette renaming of the boundary. The same phase choices are retained in all four filled spheres.",
+    "Two specified physical switches reconstruct each complete colouring. The first worsens the count vector; the second reaches a genuine core extension."
+  ],
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "small_vertices": 18,
+      "filled_vertices": [
+        99,
+        108
+      ],
+      "minimum_degree": 5,
+      "phase_subsets": 38,
+      "strictly_worse_choices": 26,
+      "equal_choices_palette_only": 12
+    },
+    {
+      "configuration": "D0063.conf",
+      "small_vertices": 17,
+      "filled_vertices": [
+        89,
+        98
+      ],
+      "minimum_degree": 5,
+      "phase_subsets": 30,
+      "strictly_worse_choices": 18,
+      "equal_choices_palette_only": 12
+    }
+  ],
+  "scope": "The gluing law handles arbitrary finite patch interiors along cliques and has no colouring-state enumeration. The count-potential obstruction is separately program checked on explicit source examples. They have separating triangles; minimum degree five does not establish internal six-connectivity or minimal-counterexample hypotheses. No universal mixed-pair selector, coverage or impossibility of compositional proof follows.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.CliqueFillAudit FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_clique_fill.py --output tools/fourcolor/near-linear/clique-fill-audit.json"
+  ],
+  "credited_compression": false,
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_saved": 336
+  }
+}
