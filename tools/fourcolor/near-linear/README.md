@@ -1,5 +1,62 @@
 # Near-linear Four Colour catalogue bridges
 
+## A compact mixed-pair repair for the retained D0092 seed
+
+[The checked strategy](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualSeedRepairChecked.lean)
+repairs the boundary word `(1,3,2,3,1,0,3,0,2,0,2)` against every Kempe-closed
+exterior that contains its edge trace. Direct extension of this word is
+impossible, as `seed_not_direct` proves from the symbolic three-run core law.
+The strategy can change colour pairs and retains the complete joint exterior
+relation at each step. The failed fixed-pair preparation below is therefore
+not an obstruction to all compatible repairs of this seed.
+
+```text
+actual noncrossing physical exterior
+                |
+     Kempe-closed joint observation
+                |
+    7 decisions / 161 matching cases
+                |
+  34 genuine complete source colourings
+                |
+  source and exterior share one whole trace
+```
+
+The generator's initial strategy has 674 reachable states and 3,157 matching
+cases. Sharing lower-rank answers reduces these to 41 states and 161 cases.
+The encoded records occupy 1,707 bytes; the complete Lean data module is
+5,129 bytes. The module checking every answer and terminal witness built in
+15 seconds in the recorded run. These are local costs, not measured savings
+in the complete classical proof. Applications use the proved theorem without
+repeating the discovery search.
+
+[The witness consumers](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualSeedRepairReconstruction.lean)
+separate two representations. `physical_exterior` derives closure from
+cubic open-tangle geometry and noncrossing physical component pairings, then
+returns actual source and exterior colourings with equal complete traces.
+`whole_repair` uses exact source stars, exterior coverage and colour alignment
+to reconstruct the entire embedded graph. Kempe closure for that vertex-graph
+exterior remains an explicit hypothesis; the bridge from its spherical
+geometry to the open-tangle representation is not supplied by this result.
+
+Only this seed and its retained dependency closure are certified. This is
+not complete D0092 reducibility, an unbounded family of source reductions,
+proof of occurrence supply, or a bound of five individual Kempe switches.
+The rank bound applies to abstract matching rounds, each of which may change
+several components. Other boundary classes, the actual exterior bridge and
+universal coverage remain open. Catalogue counts remain 633 / 629.
+
+```sh
+python3 tools/fourcolor/near-linear/generate_residual_seed_repair.py \
+  --output ResidualSeedRepairData.lean --report residual-seed-discovery.json
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.ResidualSeedRepairAudit
+```
+
+The [discovery receipt](residual-seed-repair-discovery.json) is untrusted
+program evidence; [measurements](residual-seed-repair-measurements.json)
+record the separate kernel audit, consumers, costs and unchanged ledger.
+
 ## An extra changed port defeats the fixed preparation strategy
 
 [PortPreparationObstruction](../../../lean/fourcolor-classical/MettapediaFourColor/PortPreparationObstruction.lean)

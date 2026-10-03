@@ -1,0 +1,98 @@
+{
+  "classification": "CHECKED_FINITE_SEED_STRATEGY_WITH_WITNESS_CONSUMERS",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ResidualSeedRepairData",
+      "source_bytes": 5129,
+      "source_sha256": "836fd6ca318d624856fb12c8cfd7af81a5d1798d09a05da0cdf1af3f7c39924a",
+      "olean_bytes": 149416,
+      "olean_sha256": "e9a7f9d3ddb6db805ef5bd83b3dc35720040c15cd508979686278e663650415e",
+      "build_frontend_seconds_rounded": 0.462
+    },
+    {
+      "module": "MettapediaFourColor.ResidualSeedRepairCertificate",
+      "source_bytes": 4823,
+      "source_sha256": "e22132ca2d74238847357ac757929ccef446da611b7575179e1acaff81eb139a",
+      "olean_bytes": 320576,
+      "olean_sha256": "a9c64f3c6dc553570a3b6223ec9acf13a605b4e9778b093106709ca766c9fb38",
+      "build_frontend_seconds_rounded": 4.6
+    },
+    {
+      "module": "MettapediaFourColor.ResidualSeedRepairChecked",
+      "source_bytes": 1402,
+      "source_sha256": "2912fa9b8c17f35eda298eb24a916cb9abc3e0cf01968055dc4e66b42500a685",
+      "olean_bytes": 32440,
+      "olean_sha256": "4cc939706e6987bb6f9fd867d87ee612ceddfc6ff9840471d5e06df637240729",
+      "build_frontend_seconds_rounded": 15
+    },
+    {
+      "module": "MettapediaFourColor.ResidualSeedRepairReconstruction",
+      "source_bytes": 5170,
+      "source_sha256": "26372b1d599f14677b7decc79525d8a8f464fb764897c99dc7610106df87cd25",
+      "olean_bytes": 127552,
+      "olean_sha256": "403e2c75924c83c7a8172a7ac79f282fff544e948baf59fc3a4cbf65d10aac40",
+      "build_frontend_seconds_rounded": 2.6
+    },
+    {
+      "module": "MettapediaFourColor.ResidualSeedRepairAudit",
+      "source_bytes": 2524,
+      "source_sha256": "5d9642b56ee35941aeb8ee884ea6002550ddfe6aa7435eeef76414df311ac51c",
+      "olean_bytes": 3256,
+      "olean_sha256": "c23ccb97e41b7e78cc3d1989fe67e0fc8d5d7fa1167a99fa674ea7eefcc9c68b",
+      "build_frontend_seconds_rounded": 3.6
+    }
+  ],
+  "new_lean_source_bytes": 19048,
+  "certificate": {
+    "states": 41,
+    "terminals": 34,
+    "nonterminal_decisions": 7,
+    "matching_cases": 161,
+    "max_rank": 5,
+    "encoded_bytes": 1707,
+    "initial_discovery_states": 674,
+    "initial_discovery_matching_cases": 3157,
+    "uncompressed_kernel_time_measured": false,
+    "discovery_seconds": 3.436,
+    "runtime_scope": "Maximum rank is for abstract matching rounds, not individual physical Kempe switches."
+  },
+  "audit": {
+    "roots": 11,
+    "dependency_declarations": 11387,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "other_configuration_tables_used": false
+  },
+  "mathematical_scope": {
+    "seed": "Vertex boundary (1,3,2,3,1,0,3,0,2,0,2), with its complete edge trace.",
+    "theorem": "Every Kempe-closed exterior observation containing the seed shares a trace with an actual source colouring. Later uses invoke the theorem without running discovery.",
+    "nontriviality": "seed_not_direct derives impossibility of direct extension from the symbolic three-run core law.",
+    "physical_consumer": "Cubic open tangles with noncrossing actual bichromatic pairings supply closure and genuine exterior colourings.",
+    "graph_consumer": "Exact source stars and exterior coverage reconstruct the ambient graph after trace alignment; Kempe closure of the vertex-graph exterior remains explicit.",
+    "limitations": [
+      "Not a complete D0092 reducibility certificate.",
+      "The bridge from the punctured spherical vertex graph to the physical open-tangle exterior is not supplied.",
+      "No universal source-family coverage, rule-count reduction, or complexity theorem."
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.ResidualSeedRepairAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  }
+}

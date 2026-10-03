@@ -5346,5 +5346,54 @@
       "Other boundary words and source families.",
       "Universal geometric coverage and termination."
     ]
+  },
+  "residual_seed_repair": {
+    "measurements": "../near-linear/residual-seed-repair-measurements.json",
+    "classification": "CHECKED_FINITE_SEED_STRATEGY_WITH_WITNESS_CONSUMERS",
+    "scope": {
+      "seed": "Vertex boundary (1,3,2,3,1,0,3,0,2,0,2), with its complete edge trace.",
+      "theorem": "Every Kempe-closed exterior observation containing the seed shares a trace with an actual source colouring. Later uses invoke the theorem without running discovery.",
+      "nontriviality": "seed_not_direct derives impossibility of direct extension from the symbolic three-run core law.",
+      "physical_consumer": "Cubic open tangles with noncrossing actual bichromatic pairings supply closure and genuine exterior colourings.",
+      "graph_consumer": "Exact source stars and exterior coverage reconstruct the ambient graph after trace alignment; Kempe closure of the vertex-graph exterior remains explicit.",
+      "limitations": [
+        "Not a complete D0092 reducibility certificate.",
+        "The bridge from the punctured spherical vertex graph to the physical open-tangle exterior is not supplied.",
+        "No universal source-family coverage, rule-count reduction, or complexity theorem."
+      ]
+    },
+    "certificate": {
+      "states": 41,
+      "terminals": 34,
+      "nonterminal_decisions": 7,
+      "matching_cases": 161,
+      "max_rank": 5,
+      "encoded_bytes": 1707,
+      "initial_discovery_states": 674,
+      "initial_discovery_matching_cases": 3157,
+      "uncompressed_kernel_time_measured": false,
+      "discovery_seconds": 3.436,
+      "runtime_scope": "Maximum rank is for abstract matching rounds, not individual physical Kempe switches."
+    },
+    "audit": {
+      "roots": 11,
+      "dependency_declarations": 11387,
+      "allowed_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "complete_four_colour_theorem_used": false,
+      "other_configuration_tables_used": false
+    },
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false,
+    "open": [
+      "Derive vertex-graph exterior closure from the actual spherical occurrence.",
+      "Other boundary words and source families.",
+      "Universal geometric coverage and termination."
+    ]
   }
 }
