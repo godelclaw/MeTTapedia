@@ -1,0 +1,72 @@
+{
+  "classification": "CHECKED_GEOMETRIC_CLOSURE_AND_SEED_RECONSTRUCTION",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.PlanarGraphBoundaryClosure",
+      "source_bytes": 5354,
+      "source_sha256": "ad97f6daf7c9a742ebe137a8f5da8481a00aa53bd5c00b47c71d7bf1d548a548",
+      "olean_bytes": 114240,
+      "olean_sha256": "acead9df85102e9930a6c325ca7cb60c70c999dfbdea8b5f8acc8838be51d790",
+      "build_frontend_seconds_rounded": 3.3
+    },
+    {
+      "module": "MettapediaFourColor.ResidualSeedPlanarReconstruction",
+      "source_bytes": 2352,
+      "source_sha256": "8595cbdbbc687a732c37286b835caf436f60266b213f125e714928ce0c4755b2",
+      "olean_bytes": 49296,
+      "olean_sha256": "5055e81394849cc371a624bafed797446aed3e7de9ae4060fc910d0894e36b8c",
+      "build_frontend_seconds_rounded": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.PlanarGraphBoundaryAudit",
+      "source_bytes": 2291,
+      "source_sha256": "8128a939bfc862fd84e1fa97525b5fdb90b02ec8e6fdd1ca35d96290e675f866",
+      "olean_bytes": 3248,
+      "olean_sha256": "2feba2c52d5dc2424cc9e2567a33c0b1b26e6b3d70cf2e741585e83670721d58",
+      "build_frontend_seconds_rounded": 4.1
+    }
+  ],
+  "new_lean_source_bytes": 9997,
+  "new_repair_certificate_bytes": 0,
+  "audit": {
+    "roots": 6,
+    "dependency_declarations": 11716,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false,
+    "retained_seed_certificate": "residual-seed-repair-measurements.json"
+  },
+  "mathematical_scope": {
+    "closure": "Every finite simple graph represented by a planar dart hypermap, with vertexwise node orbits, a duplicate-free facial dart boundary and triangular other faces, has a Kempe-closed complete ordered vertex-boundary trace relation.",
+    "colouring_bridge": "Exact witness transport in both directions through the mirrored dual preserves forward port order.",
+    "reconstruction": "whole_repair_of_planar_disk fills the seven source vertices after a compatible exterior repair for the retained eleven-port seed, given complete source stars and exterior coverage.",
+    "limitations": [
+      "The particular retained exterior geometry is program-checked, not kernel-certified.",
+      "Uniform patch-deletion geometry and geometric occurrence supply are unproved.",
+      "Other seed classes, complete D0092 reducibility and compact universal coverage remain open."
+    ]
+  },
+  "geometry_diagnostic": "planar-exterior-disk-audit.json",
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.PlanarGraphBoundaryAudit",
+    "new_passed": true,
+    "adapters": "lake build kernelAdapters",
+    "adapters_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  }
+}

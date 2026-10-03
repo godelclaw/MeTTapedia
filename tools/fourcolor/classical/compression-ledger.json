@@ -5395,5 +5395,36 @@
       "Other boundary words and source families.",
       "Universal geometric coverage and termination."
     ]
+  },
+  "planar_exterior_closure": {
+    "measurements": "../near-linear/planar-boundary-closure-measurements.json",
+    "classification": "CHECKED_GEOMETRIC_CLOSURE_AND_SEED_RECONSTRUCTION",
+    "scope": {
+      "closure": "Every finite simple graph represented by a planar dart hypermap, with vertexwise node orbits, a duplicate-free facial dart boundary and triangular other faces, has a Kempe-closed complete ordered vertex-boundary trace relation.",
+      "colouring_bridge": "Exact witness transport in both directions through the mirrored dual preserves forward port order.",
+      "reconstruction": "whole_repair_of_planar_disk fills the seven source vertices after a compatible exterior repair for the retained eleven-port seed, given complete source stars and exterior coverage.",
+      "limitations": [
+        "The particular retained exterior geometry is program-checked, not kernel-certified.",
+        "Uniform patch-deletion geometry and geometric occurrence supply are unproved.",
+        "Other seed classes, complete D0092 reducibility and compact universal coverage remain open."
+      ]
+    },
+    "audit": {
+      "roots": 6,
+      "dependency_declarations": 11716,
+      "allowed_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "complete_four_colour_theorem_used": false,
+      "large_repair_tables_used": false,
+      "retained_seed_certificate": "residual-seed-repair-measurements.json"
+    },
+    "new_repair_certificate_bytes": 0,
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

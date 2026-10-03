@@ -1,5 +1,43 @@
 # Near-linear Four Colour catalogue bridges
 
+## Planar exterior geometry supplies the joint repair relation
+
+[PlanarGraphBoundaryClosure](../../../lean/fourcolor-classical/MettapediaFourColor/PlanarGraphBoundaryClosure.lean)
+proves that a finite planar vertex graph with a duplicate-free facial dart
+boundary and triangular remaining faces has a Kempe-closed joint boundary
+observation. Vertex rotation orbits must coincide with actual vertices.
+The mirrored dual preserves the forward port order, and both directions
+of the colouring correspondence retain every boundary colour.
+
+This uses the Gonthier/Emery Kempe theorem, without using a complete Four
+Colour existence theorem. The argument is uniform in exterior size and
+boundary length; it generates no new repair table.
+
+[The reconstruction consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualSeedPlanarReconstruction.lean)
+discharges the closure premise of the compact eleven-port seed repair from
+these geometric hypotheses. Complete source stars and exterior coverage
+then give an actual colouring of the ambient graph, agreeing with the
+repaired exterior. Supply of the disk geometry after deletion, other seed
+classes and universal coverage remain open.
+
+The [punctured-rotation diagnostic](planar-exterior-disk-audit.json) checks
+the retained example: 155 vertices, 451 edges, 297 triangular faces and one
+eleven-edge boundary in the source port order. It verifies connectedness,
+the Euler equation and equality with the existing Lean graph and ordered
+ports. This particular geometry is program evidence, not a kernel-certified
+instance of the disk hypotheses.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_planar_exterior_disk.py
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.PlanarGraphBoundaryAudit
+```
+
+The [measurement receipt](planar-boundary-closure-measurements.json) records
+the six-root dependency audit and local build costs. Coverage entries,
+original certificate dependencies and replaced member checks remain
+633 / 629 / 336.
+
 ## A compact mixed-pair repair for the retained D0092 seed
 
 [The checked strategy](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualSeedRepairChecked.lean)
@@ -35,16 +73,17 @@ separate two representations. `physical_exterior` derives closure from
 cubic open-tangle geometry and noncrossing physical component pairings, then
 returns actual source and exterior colourings with equal complete traces.
 `whole_repair` uses exact source stars, exterior coverage and colour alignment
-to reconstruct the entire embedded graph. Kempe closure for that vertex-graph
-exterior remains an explicit hypothesis; the bridge from its spherical
-geometry to the open-tangle representation is not supplied by this result.
+to reconstruct the entire embedded graph. Its explicit closure hypothesis
+is supplied by the planar disk bridge above when the exterior satisfies
+that bridge's geometric hypotheses.
 
 Only this seed and its retained dependency closure are certified. This is
 not complete D0092 reducibility, an unbounded family of source reductions,
 proof of occurrence supply, or a bound of five individual Kempe switches.
 The rank bound applies to abstract matching rounds, each of which may change
-several components. Other boundary classes, the actual exterior bridge and
-universal coverage remain open. Catalogue counts remain 633 / 629.
+several components. Other boundary classes, recognition of the exterior
+disk after deletion and universal coverage remain open. Catalogue counts
+remain 633 / 629.
 
 ```sh
 python3 tools/fourcolor/near-linear/generate_residual_seed_repair.py \

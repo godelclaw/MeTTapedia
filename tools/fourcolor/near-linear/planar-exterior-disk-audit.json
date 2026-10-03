@@ -1,0 +1,33 @@
+{
+  "classification": "PROGRAM_CHECKED_EXTERIOR_DISK_GEOMETRY",
+  "fixture": "component-detach-example.json",
+  "fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "vertices_removed": 7,
+  "vertices": 155,
+  "edges": 451,
+  "darts": 902,
+  "faces": 298,
+  "face_lengths": {
+    "3": 297,
+    "11": 1
+  },
+  "euler_characteristic": 2,
+  "connected": true,
+  "one_rotation_cycle_per_vertex": true,
+  "ordered_boundary": [
+    45,
+    42,
+    102,
+    104,
+    18,
+    121,
+    19,
+    48,
+    51,
+    113,
+    15
+  ],
+  "lean_graph_and_order_match": true,
+  "lean_geometry_certified": false,
+  "scope": "One retained exterior. Uniform patch-deletion geometry is not proved."
+}
