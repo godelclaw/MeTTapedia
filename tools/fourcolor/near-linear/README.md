@@ -580,6 +580,66 @@ and `python3 tools/fourcolor/near-linear/audit_hidden_triangle.py`. The
 small observer maps. The [receipt](hidden-triangle-measurements.json) records
 the two-root audit and the exact scope.
 
+## Uniform repair through arbitrary hidden forests
+
+[ForestFibre](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ForestFibre.lean)
+proves that any two full proper colourings agreeing outside an induced forest
+are joined by actual Kempe switches that fix the entire exterior. The forest,
+ambient graph and palette have unrestricted size. The proof uses leaf
+induction with arbitrary allowed colour sets, not a table of forest colourings.
+
+The leaf argument preserves the two specified endpoints. If their colours at
+the leaf agree, that colour is fixed and excluded at its neighbour. If they
+differ, at least one of those two colours extends every colouring of the
+remaining forest, since the leaf has at most one remaining neighbour. A
+compatible colour bridge lifts each move. Proper partial transpositions then
+decompose into actual component switches in the original ambient graph.
+
+[ForestGuard](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ForestGuard.lean)
+represents a joint transition by one old colour and one switch bit per hidden
+vertex: eight labels for four colours. Unary constraints check all retained
+neighbours at both endpoints; binary constraints check every hidden edge at
+both endpoints. Its exact leaf-elimination theorem sends a unary constraint
+to the remaining neighbour and reconstructs the removed vertex. Both edge
+orientations and one shared assignment are retained. Forest recognition
+supplies leaves, and each removal strictly decreases the vertex count.
+
+The [program replay](forest-repair-audit.json) applies these laws to two actual
+spherical repair examples:
+
+| Configuration | Hidden vertices | Retained vertices | Hidden edges | Cross-interface edges | Physical switches |
+|---|---:|---:|---:|---:|---:|
+| D0092 | 74 | 81 | 72 | 281 | 11 |
+| D0063 | 74 | 81 | 72 | 283 | 2 |
+
+Each hidden set consists of two induced trees, with maximum hidden degree
+three. Both known obstructed commands are rejected. Successful guards are
+checked by leaf messages, without enumerating products of tree colourings;
+their assignments lift to actual component switches and reconstruct the
+complete 162-vertex spherical colouring. The generic theorems are kernel
+checked. The concrete geometry and Python executions are program evidence.
+
+The carrier is smaller than in the separated-pair examples, which retained
+102 and 103 vertices. The interface still contains all the indicated crossing
+edges, and D0092 needs additional preparation and finishing switches. No net
+storage or runtime saving is claimed. Eight labels per hidden vertex do not
+mean eight states for the whole boundary. The guard evaluator's leaf identity
+is proved; the Python implementation is not itself kernel-certified.
+
+The hidden-triangle obstruction explains a limit of this result. A forest
+has no lost fixed-exterior physical class; adding a cycle can introduce one.
+Retaining vertices that break all hidden cycles permits the forest theorem
+to apply to the remainder. Controlling how much information such retained
+vertices and their shared exterior require under further composition is a
+separate task. No ordinary smaller-map reduction, global geometric coverage
+or catalogue saving follows from the forest theorem alone.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.ForestGuardAudit` and
+`python3 tools/fourcolor/near-linear/audit_forest_repair.py`. The
+[fixture](forest-repair-example.json) pins the two selected forests; the
+[receipt](forest-guard-measurements.json) records the nine-root dependency
+audit, costs and scope. The source repair and attribution chain are retained.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

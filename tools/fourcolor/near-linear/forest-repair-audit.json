@@ -1,0 +1,98 @@
+{
+  "evidence": "Independent replay of exact leaf guards and actual component switches.",
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "hidden_vertices": 74,
+      "retained_vertices": 81,
+      "forest_edges": 72,
+      "forest_components": 2,
+      "max_hidden_degree": 3,
+      "cross_interface_edges": 281,
+      "eight_state_labels_per_vertex": true,
+      "peeling_steps": 74,
+      "rejected_command": {
+        "forward_edge_comparisons": 182,
+        "failure_vertex": 149
+      },
+      "successful_transitions": [
+        {
+          "forward_edge_comparisons": 230,
+          "max_local_labels": 8,
+          "leaf_messages": 72,
+          "switches_by_phase": {
+            "prepare": 2,
+            "joint": 1,
+            "finish": 2
+          },
+          "largest_component": 3
+        },
+        {
+          "forward_edge_comparisons": 224,
+          "max_local_labels": 8,
+          "leaf_messages": 72,
+          "switches_by_phase": {
+            "prepare": 2,
+            "joint": 2,
+            "finish": 2
+          },
+          "largest_component": 68
+        }
+      ],
+      "full_sphere_reconstructed": true
+    },
+    {
+      "configuration": "D0063.conf",
+      "ambient_vertices": 162,
+      "exterior_vertices": 155,
+      "hidden_vertices": 74,
+      "retained_vertices": 81,
+      "forest_edges": 72,
+      "forest_components": 2,
+      "max_hidden_degree": 3,
+      "cross_interface_edges": 283,
+      "eight_state_labels_per_vertex": true,
+      "peeling_steps": 74,
+      "rejected_command": {
+        "forward_edge_comparisons": 77,
+        "failure_vertex": 42
+      },
+      "successful_transitions": [
+        {
+          "forward_edge_comparisons": 250,
+          "max_local_labels": 8,
+          "leaf_messages": 72,
+          "switches_by_phase": {
+            "prepare": 0,
+            "joint": 1,
+            "finish": 0
+          },
+          "largest_component": 32
+        },
+        {
+          "forward_edge_comparisons": 214,
+          "max_local_labels": 8,
+          "leaf_messages": 72,
+          "switches_by_phase": {
+            "prepare": 0,
+            "joint": 1,
+            "finish": 0
+          },
+          "largest_component": 68
+        }
+      ],
+      "full_sphere_reconstructed": true
+    }
+  ],
+  "prior_pair_consumers_replayed": 2,
+  "kernel_theorems": [
+    "SimpleGraph.KempeForestFibre.history_iff",
+    "SimpleGraph.KempeForestGuard.peel_transition_iff"
+  ],
+  "scope": "An induced forest has no hidden physical-class obstruction. Exact guards remain constraints on a shared exterior, not ordinary graph edges. No repeated arbitrary elimination, global coverage, catalogue reduction or near-linear physical history bound is asserted. Concrete instances are program checked, not kernel certified.",
+  "fixture_sha256": "010ddcdea8d107842986f3f3817c1c5fd079755bb0abd50b82b16ca5ab4ad24c",
+  "verifier_sha256": "16b9fd03dc4882afe6d262cd965e2eef10526b873f341eeddc9c9406c2a5ada3",
+  "credited_compression": false
+}

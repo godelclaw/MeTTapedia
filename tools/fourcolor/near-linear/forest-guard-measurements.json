@@ -1,0 +1,59 @@
+{
+  "evidence": "Kernel-proved forest fibre connectivity and exact leaf elimination for the joint transition guard, with two complete spherical program consumers.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.ForestFibre",
+      "source_sha256": "4f28a06f4dc75fa92551a4a99532f755be44c88b9c8d84adf3ed9a1b3888f7d4",
+      "source_bytes": 11920,
+      "lake_build_seconds": 1.8,
+      "olean_bytes": 416064,
+      "olean_sha256": "f1d19645f09f96da56475bb79bf7baf643b8ac796a2aee085596f96fb5e59be1"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.ForestGuard",
+      "source_sha256": "bd9a8018a023060bf467ce2eca3cb5963168d93dbbbce4919f0c54a69124e0d9",
+      "source_bytes": 5983,
+      "lake_build_seconds": 1.7,
+      "olean_bytes": 192576,
+      "olean_sha256": "7a7f049e70ebdd7377c31b66c2485a7d3ea4a63812972188db2e6ae099e112d5"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.ForestGuardAudit",
+      "source_sha256": "0739906a1489a8c1872d7c67d1743ee66be883170ac9f1b07c652fa969025779",
+      "source_bytes": 2087,
+      "lake_build_seconds": 2.6,
+      "olean_bytes": 2784,
+      "olean_sha256": "5924c03a669da0c8d4dd3b17f9577e8d60416d9a767d9cb3a157830e03d03213"
+    }
+  ],
+  "audit": {
+    "roots": 9,
+    "dependency_declarations": 6206,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "List-compatible proper colourings of every finite forest are connected by list-compatible partial colour transpositions, for arbitrary palettes and arbitrary lists.",
+    "Any two full colourings agreeing outside an induced hidden forest are joined by actual Kempe switches fixing the entire exterior.",
+    "Guarded histories coincide exactly with physical histories for arbitrary hidden forests.",
+    "The joint guard is exactly a binary constraint problem over old-colour/switch-bit labels; for four colours there are eight labels per hidden vertex.",
+    "Removing a leaf preserves satisfiability and reconstructs a genuine assignment, replacing its incident constraints by a unary message. The remaining binary constraints have unchanged arity."
+  ],
+  "program_applications": "forest-repair-audit.json",
+  "program_scope": "In each 155-vertex exterior, 74 hidden vertices form two induced trees with 72 edges and maximum hidden degree three. Both previous bad commands are rejected; both full 162-vertex spheres reconstruct. Forward guard checks use 214\u2013250 binary comparisons per successful command, excluding unary filtering, reconstruction checks and source replay. The D0092 execution uses 11 physical switches rather than the original two; D0063 uses two.",
+  "interface_tradeoff": "Retained vertices fall from 102/103 under separated pairs to 81 in both examples. Cross-interface constraints remain: 281 and 283 original edges. No net storage, runtime or full-proof dependency saving is credited.",
+  "validation": {
+    "finite_discovery_test": "321110 one/two-colour list assignments on every nonisomorphic tree through five vertices; 214650 nontrivial fibres, none disconnected. Not used by the kernel proof.",
+    "independent_guard_crosscheck": "200 bounded random forest guard instances compared to exhaustive global assignment search: 157 satisfiable, 43 unsatisfiable; all agree. A triangle is rejected by forest recognition."
+  },
+  "scope": "An unbounded exact constrained-interface law. Does not produce an ordinary smaller map, bound interface width, prove closure under arbitrary repeated elimination, or supply global geometric coverage. Leaf guard mathematics is kernel checked; the Python evaluator and concrete spherical instances are program evidence. No near-linear bound on physical recolouring histories is asserted.",
+  "checks": [
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_forest_repair.py"
+  ],
+  "credited_compression": false
+}
