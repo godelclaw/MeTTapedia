@@ -2909,6 +2909,30 @@
       "evidence": "Independent program check; all 4704 rooted rule comparisons and 1819 short cycles checked.",
       "credited_compression": false,
       "scope": "Two flat centres and ambient degrees 5..7; not a counterexample to the stronger shared-fan/full-neighbourhood-flatness target."
+    },
+    {
+      "name": "Flat-seven facial returns and a shared core with different boundary attachments",
+      "date": "2026-10-03",
+      "status": "Two exact spherical program fixtures; no Lean certification or new reduction.",
+      "records": [
+        "../near-linear/flat-seven-return-audit.json",
+        "../near-linear/flat-seven-return-extension-audit.json"
+      ],
+      "evidence": {
+        "geometry": "Each 162-vertex sphere has degrees 5..7 and three flat seven-centres forming a facial triangle. All 1815 and 1823 short cycles pass the obstruction test.",
+        "first_inventory": "D0000,D0001,D0004,D0006,D0051,D0052,D3009 have no complete-core reading inside the joint radius-two union.",
+        "extended_inventory": "The second fixture also excludes D0092 and D0142 in that union.",
+        "positive_occurrences": "Full D0092 and D0063 source occurrences, with induced seven-vertex cores, 11 and 10 boundary ports, and radius-three complete support.",
+        "shared_structure": "An explicit core bijection preserves 11 edges, cyclic order and five facial triangles after reflection; four prescribed degrees change."
+      },
+      "open_obligation": "A common repair theorem must account for the different degrees and complete joint boundary relations; internal shape equivalence alone supplies no repair transport.",
+      "limitations": [
+        "The entire radius-three neighbourhood is not asserted flat.",
+        "The exact SevenPairSector continuation theorem is not refuted.",
+        "The finite vocabulary is not the whole reduction library.",
+        "No impossibility of compositional Four Colour proofs is claimed."
+      ],
+      "credited_compression": false
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. The arity-nine through eleven sharing saves 231 member checks (87 plus 82 plus 62). The integrated degree-seven region replaces 112 original member checks with seven, saving a further 105, for 336 fewer independent member-check obligations in the complete proof. Local and whole-assembly savings overlap and must not be added. The earlier conditional Orbit9 assembly still has only the 231 savings. Sixteen degree-seven fits become one; fit and member counts are separate metrics. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",

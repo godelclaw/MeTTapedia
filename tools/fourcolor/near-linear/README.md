@@ -1,5 +1,65 @@
 # Near-linear Four Colour catalogue bridges
 
+## Flat-seven returns and a shared-core test
+
+Two small replay recipes test the proposed continuation through flat
+degree-seven centres. Each gives a 162-vertex triangulated sphere of degrees
+five through seven containing a facial triangle of three flat sevens.
+All cycles of length three through five pass the short-cycle obstruction
+test: a three- or four-cycle has an empty side, and a five-cycle has a side
+containing at most one vertex. Flat sevens therefore need not form an
+acyclic graph under these hypotheses. This does not refute continuation
+with additional hypotheses or a separately justified progress measure.
+
+| Recipe | Legal flips | Short cycles checked | Source occurrence | Boundary ports |
+|---|---:|---:|---|---:|
+| [First return](flat-seven-return-example.json) | 70 | 1,815 | D0092 | 11 |
+| [Second return](flat-seven-return-extension-example.json) | 310 | 1,823 | D0063 | 10 |
+
+In the first example, the union of radius-two balls at the three centres
+contains no complete-core reading of D0000, D0001, D0004, D0006, D0051,
+D0052 or D3009. The second example excludes those same readings and also
+D0092 and D0142. All rooted darts and both orientations are tested;
+boundary identifications are permitted in the negative search. The simple
+diamond, chain and one/two-five wheel profiles are absent in both unions.
+These are specified local inventories, not the entire reduction library.
+Only the three centres are asserted flat; flatness of their entire
+neighbourhoods is not assumed or established.
+
+The positive D0092 and D0063 occurrences retain every source vertex,
+ordered boundary edges, full core stars and cyclic order. Their induced
+seven-vertex cores lie within radius two, and their full boundaries within
+radius three. Their [core correspondence](flat-seven-return-core-map.json)
+preserves all eleven internal edges and five internal facial triangles,
+with one global reflection. Four prescribed degrees change and the
+boundaries have different lengths. This supplies a concrete candidate for
+a common family argument; it does **not** establish boundary transport,
+colouring repair or a new reduction.
+
+The [verifier](audit_flat_seven_return.py) replays legal flips from the
+existing sphere fixture, compares compiled and breadth-first rule matching,
+checks all short cycles, and verifies the supplied core map without an
+isomorphism search. The [first receipt](flat-seven-return-audit.json) and
+[second receipt](flat-seven-return-extension-audit.json) are exact program
+checks, not Lean certification. No coverage entry or proof dependency is
+removed. Replay from the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_flat_seven_return.py
+python3 tools/fourcolor/near-linear/audit_flat_seven_return.py --fixture flat-seven-return-extension-example.json
+```
+
+D0063, D0092 and D0142 are copied unchanged from the
+[near-linear catalogue](https://github.com/near-linear-4ct/reducible-configurations/tree/c2ce7a96e35256201526e2abb51a39d04a588b53/D)
+at revision `c2ce7a96e35256201526e2abb51a39d04a588b53`, under its retained
+[MIT licence](LICENSE). The recipes pin their hashes and the existing
+discharging-rule revision. These examples concern the flat facial
+seven-triangle setting of
+[Lemma 8.5](https://arxiv.org/html/2603.24880v1#S8.Thmthm5);
+they do not contradict the paper's larger catalogue coverage.
+
+## Existing certified components
+
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)
 records a rooted construction of the same shared seven-pair sector.
 One actual edge, triangle attachments and a general degree-closing theorem

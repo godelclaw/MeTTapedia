@@ -1,0 +1,54 @@
+{
+  "evidence": "Independent program fixture; no Lean certification or universal coverage claim.",
+  "source_fixture": "seven-pair-four-triangle-example.json",
+  "source_fixture_sha256": "5639ca17d0eb311814d4c183c7c034bc0a0ee7b14020df6b510b56d352f3bf75",
+  "edge_flip_prefix": 310,
+  "centres": [
+    146,
+    68,
+    70
+  ],
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "source_occurrence": {
+    "configuration": "D0063.conf",
+    "images": [
+      115,
+      13,
+      104,
+      18,
+      121,
+      124,
+      70,
+      146,
+      69,
+      71,
+      5,
+      107,
+      122,
+      108,
+      68,
+      67,
+      34
+    ],
+    "orientation": "source"
+  },
+  "configuration_source": {
+    "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "upstream_path": "D/D0063.conf",
+    "sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d",
+    "license": "MIT; see LICENSE",
+    "license_sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+  },
+  "tested_configuration_sources": {
+    "D0000.conf": "d849e1d37b84fe8f37def9fbf292ead6de3a11c1d34c08b07d576d5dfaa022be",
+    "D0001.conf": "5a25f39fbc901852feb35f6ca4ad3416a5c555e808d6f0624257c2bfb8f97119",
+    "D0004.conf": "8be840f6bb62324656880e63c18c797209720e80ece856d2b770c3ce71d6ed0d",
+    "D0006.conf": "c3e49d7afeb2e67d00712cdea06bdf7ae15e29453f097340ad136a388a8daa7b",
+    "D0051.conf": "fce1f18ff6b5292df95b9df03868ce6385bec24926c090203d473c95695779e0",
+    "D0052.conf": "bcfaf0d5ed4a98742f5d434270029b6afbf79006e98238d6b465ae69603cd6db",
+    "D3009.conf": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f",
+    "D0092.conf": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "D0142.conf": "33c08740fa5b0c7b0c9a715521c8b2b71bd92dbf269879d33bbe6efe6eafb6e1"
+  }
+}

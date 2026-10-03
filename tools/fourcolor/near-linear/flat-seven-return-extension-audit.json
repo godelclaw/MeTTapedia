@@ -1,0 +1,364 @@
+{
+  "evidence": "Independent exact program replay; no Lean certification.",
+  "claim_tested": "Flat seven-centres in a spherical triangulation of degrees 5..7 need not form an acyclic graph, even without obstructing cycles of length 3..5.",
+  "vertices": 162,
+  "faces": 320,
+  "edge_flips": 310,
+  "centres": [
+    146,
+    68,
+    70
+  ],
+  "degrees": [
+    7,
+    7,
+    7
+  ],
+  "charges": [
+    0,
+    0,
+    0
+  ],
+  "facial_triangle": true,
+  "short_cycles_checked": 1823,
+  "obstructing_short_cycles": 0,
+  "independent_rule_tests": 3528,
+  "joint_radius_two_vertices": 31,
+  "simple_core_hits": [],
+  "tested_configuration_sources": {
+    "D0000.conf": "d849e1d37b84fe8f37def9fbf292ead6de3a11c1d34c08b07d576d5dfaa022be",
+    "D0001.conf": "5a25f39fbc901852feb35f6ca4ad3416a5c555e808d6f0624257c2bfb8f97119",
+    "D0004.conf": "8be840f6bb62324656880e63c18c797209720e80ece856d2b770c3ce71d6ed0d",
+    "D0006.conf": "c3e49d7afeb2e67d00712cdea06bdf7ae15e29453f097340ad136a388a8daa7b",
+    "D0051.conf": "fce1f18ff6b5292df95b9df03868ce6385bec24926c090203d473c95695779e0",
+    "D0052.conf": "bcfaf0d5ed4a98742f5d434270029b6afbf79006e98238d6b465ae69603cd6db",
+    "D0092.conf": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "D0142.conf": "33c08740fa5b0c7b0c9a715521c8b2b71bd92dbf269879d33bbe6efe6eafb6e1",
+    "D3009.conf": "5453856a156bd63835ddac419ebbe276ac6ae81b0a11b909cf928bf0b1686a3f"
+  },
+  "configuration_tests": 17280,
+  "tested_configuration_hits": 0,
+  "positive_occurrence": {
+    "configuration": "D0063.conf",
+    "core_vertices": 7,
+    "ordered_boundary_ports": 10,
+    "core_radius": 2,
+    "complete_radius": 3,
+    "injective_induced_core": true,
+    "reducibility_reproved_here": false
+  },
+  "not_claimed": [
+    "Flatness of every vertex in the radius-three neighbourhoods",
+    "A counterexample to the exact SevenPairSector continuation theorem",
+    "Failure of every existing reduction or of compositional Four Colour proofs"
+  ],
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "transfers": [
+    {
+      "centre": 146,
+      "signed_rule_applications": [
+        [
+          "rule004_1.rule",
+          30,
+          146,
+          1
+        ],
+        [
+          "rule002_2.rule",
+          63,
+          146,
+          1
+        ],
+        [
+          "rule008_2.rule",
+          68,
+          146,
+          1
+        ],
+        [
+          "rule021_2.rule",
+          68,
+          146,
+          1
+        ],
+        [
+          "rule009_1.rule",
+          146,
+          68,
+          -1
+        ],
+        [
+          "rule002_1.rule",
+          69,
+          146,
+          1
+        ],
+        [
+          "rule003_2.rule",
+          69,
+          146,
+          1
+        ],
+        [
+          "rule008_1.rule",
+          70,
+          146,
+          1
+        ],
+        [
+          "rule009_1.rule",
+          70,
+          146,
+          1
+        ],
+        [
+          "rule021_1.rule",
+          70,
+          146,
+          1
+        ],
+        [
+          "rule009_2.rule",
+          146,
+          70,
+          -1
+        ],
+        [
+          "rule001.rule",
+          144,
+          146,
+          2
+        ],
+        [
+          "rule003_1.rule",
+          144,
+          146,
+          1
+        ]
+      ]
+    },
+    {
+      "centre": 68,
+      "signed_rule_applications": [
+        [
+          "rule002_2.rule",
+          5,
+          68,
+          1
+        ],
+        [
+          "rule003_1.rule",
+          5,
+          68,
+          1
+        ],
+        [
+          "rule002_1.rule",
+          67,
+          68,
+          1
+        ],
+        [
+          "rule002_2.rule",
+          67,
+          68,
+          1
+        ],
+        [
+          "rule008_1.rule",
+          68,
+          70,
+          -1
+        ],
+        [
+          "rule017_1.rule",
+          68,
+          70,
+          -1
+        ],
+        [
+          "rule001.rule",
+          107,
+          68,
+          2
+        ],
+        [
+          "rule002_2.rule",
+          107,
+          68,
+          1
+        ],
+        [
+          "rule001.rule",
+          108,
+          68,
+          2
+        ],
+        [
+          "rule003_2.rule",
+          108,
+          68,
+          1
+        ],
+        [
+          "rule001.rule",
+          122,
+          68,
+          2
+        ],
+        [
+          "rule002_1.rule",
+          122,
+          68,
+          1
+        ],
+        [
+          "rule009_1.rule",
+          146,
+          68,
+          1
+        ],
+        [
+          "rule008_2.rule",
+          68,
+          146,
+          -1
+        ],
+        [
+          "rule021_2.rule",
+          68,
+          146,
+          -1
+        ]
+      ]
+    },
+    {
+      "centre": 70,
+      "signed_rule_applications": [
+        [
+          "rule002_1.rule",
+          30,
+          70,
+          1
+        ],
+        [
+          "rule001.rule",
+          33,
+          70,
+          2
+        ],
+        [
+          "rule002_2.rule",
+          33,
+          70,
+          1
+        ],
+        [
+          "rule003_1.rule",
+          33,
+          70,
+          1
+        ],
+        [
+          "rule008_1.rule",
+          68,
+          70,
+          1
+        ],
+        [
+          "rule017_1.rule",
+          68,
+          70,
+          1
+        ],
+        [
+          "rule001.rule",
+          122,
+          70,
+          2
+        ],
+        [
+          "rule010_2.rule",
+          124,
+          70,
+          1
+        ],
+        [
+          "rule008_2.rule",
+          70,
+          124,
+          -1
+        ],
+        [
+          "rule010_2.rule",
+          70,
+          124,
+          -1
+        ],
+        [
+          "rule009_2.rule",
+          146,
+          70,
+          1
+        ],
+        [
+          "rule008_1.rule",
+          70,
+          146,
+          -1
+        ],
+        [
+          "rule009_1.rule",
+          70,
+          146,
+          -1
+        ],
+        [
+          "rule021_1.rule",
+          70,
+          146,
+          -1
+        ],
+        [
+          "rule001.rule",
+          148,
+          70,
+          2
+        ],
+        [
+          "rule002_1.rule",
+          148,
+          70,
+          1
+        ],
+        [
+          "rule003_2.rule",
+          148,
+          70,
+          1
+        ]
+      ]
+    }
+  ],
+  "shared_core_comparison": {
+    "source": "D0092.conf",
+    "target": "D0063.conf",
+    "source_sha256": {
+      "D0092.conf": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+      "D0063.conf": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d"
+    },
+    "core_vertices": 7,
+    "core_edges": 11,
+    "core_facial_triangles": 5,
+    "global_reflection": true,
+    "prescribed_degree_changes": 4,
+    "ordered_boundary_ports": [
+      11,
+      10
+    ],
+    "boundary_map_or_repair_transfer_claimed": false,
+    "map_sha256": "5b54f0fe228dbf0819ccfb2958c7f004aad0943d2f12f94cedd84d80cc26db56"
+  },
+  "fixture_sha256": "e299cca5e72f30cfb4cf9d155b6675ac77f76399bc4057040c2027dc7d536f6d",
+  "verifier_sha256": "0706cd7cafcde24b03dc16e606d01c9036042848972fb712819499534439a277"
+}

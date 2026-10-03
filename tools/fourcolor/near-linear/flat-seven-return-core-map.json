@@ -1,0 +1,59 @@
+{
+  "evidence": "Internal adjacency and oriented core triangles only; not a repair transfer.",
+  "source": "D0092.conf",
+  "target": "D0063.conf",
+  "map": {
+    "15": 11,
+    "14": 17,
+    "13": 14,
+    "12": 15,
+    "18": 12,
+    "17": 13,
+    "16": 16
+  },
+  "reversed": true,
+  "prescribed_degrees": [
+    {
+      "source": 12,
+      "target": 15,
+      "source_degree": 6,
+      "target_degree": 7
+    },
+    {
+      "source": 13,
+      "target": 14,
+      "source_degree": 7,
+      "target_degree": 5
+    },
+    {
+      "source": 14,
+      "target": 17,
+      "source_degree": 5,
+      "target_degree": 5
+    },
+    {
+      "source": 15,
+      "target": 11,
+      "source_degree": 5,
+      "target_degree": 6
+    },
+    {
+      "source": 16,
+      "target": 16,
+      "source_degree": 6,
+      "target_degree": 6
+    },
+    {
+      "source": 17,
+      "target": 13,
+      "source_degree": 5,
+      "target_degree": 5
+    },
+    {
+      "source": 18,
+      "target": 12,
+      "source_degree": 6,
+      "target_degree": 5
+    }
+  ]
+}
