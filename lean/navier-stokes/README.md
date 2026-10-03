@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [rotating-core pooling test](labs/README.md#a-rational-pressure-allowance-is-not-preserved-by-pooling-rotating-cores)
+refutes a universal extension of the first-two-coefficient rational pressure
+allowance. Each isolated smooth core passes its local comparison; combining
+two cores at different rotation scales reverses it on an actual unforced
+positive-viscosity interval. The first two Euler time coefficients stay fixed
+while the next one grows. These planar flows have zero vortex stretching.
+An exact mixture identity identifies the cost lost by pooling; labelled
+moments restore a valid initial comparison on the same actual fluid history.
+Their subsequent coupled payment remains open. The result is analytic with
+exact algebraic checks, not a new Lean certificate or a refutation of the equal-scale cyclic
+envelope or of arbitrary-data regularity.
+
 The [complete cyclic history certificate](labs/README.md#complete-time-slabs-and-rounding-in-a-cyclic-history-certificate)
 closes an all-time signed-renewal budget for the actual unforced periodic
 datum `(sin y,sin z,sin x)` at viscosity 1/4. Its allowance is 132.

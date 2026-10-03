@@ -36756,3 +36756,297 @@ fourth-moment envelope, larger nonlinear-to-viscous ratios, or arbitrary
 whole-space or periodic initial data. The remaining physical question is
 whether a full-datum reserve can pay repeated concentration and renewed
 stretching outside such validated families.
+
+## A rational pressure allowance is not preserved by pooling rotating cores
+
+`pressure_envelope_mixture.py` tests a possible extension of the combined
+pressure envelope (666): use the first two nonzero amplitude coefficients
+of the actual pressure-impulse fourth moment to form a rational upper bound.
+Two smooth rotating cores show that this rule is not valid for arbitrary
+initial data. Each isolated core passes its initial comparison, while the
+combined initial datum fails on an actual unforced positive-viscosity
+interval. The failure occurs in planar flows, whose vortex stretching is
+identically zero. It refutes this particular pressure allowance, not global
+regularity, the sufficient pressure-moment criterion, or every allowance
+which depends on the full initial datum.
+
+The preceding cyclic tests remain favorable. Complete material pressure
+jets for frequencies `(1,k,1)`, k=1,2,4,6, for each placement of amplitudes
+4:1:1 at k=4,8, and for an added third harmonic of amplitude +/-1/2 or +/-1
+all retain a negative first unmatched envelope coefficient. These fourteen
+checks do not establish the cyclic envelope at later times. The two-core
+construction below tests a different, precise generalization.
+
+### The proposed rule and the actual observation
+
+On the normalized period-2pi torus, let u be the actual unforced solution
+from epsilon U at viscosity nu>0. The forward stochastic flow has drift u
+and diffusivity nu, and starts from a uniform label. Keep the original
+pressure impulse and its fourth moment:
+
+```text
+P_t=integral_0^t grad p(s,X_s)ds,  Phi_epsilon(t)=E|P_t|^4.
+Phi_epsilon=epsilon^8 F_8+epsilon^10 F_10
+                         +epsilon^12 F_12+...,
+a=F_8, b=F_10,
+B_epsilon=epsilon^8 a^2/(a-epsilon^2 b).                (746)
+```
+
+The even expansion will follow from an exact reflection of these data.
+Here pressure starts at amplitude degree two, unlike the cyclic seed of
+(666), where it starts at degree three. Thus F_8 and F_10 are the relevant
+complete coefficients. They are obtained from the same heat/Duhamel and
+conditional-moment recurrences, retaining every generated mode and the
+actual pressure. They are not fitted constants or coefficients from a
+frozen-pressure dynamics. Parameter expansions of the periodic NS equation
+use the established framework of
+[Morosi and Pizzocchero](https://arxiv.org/abs/1304.2972); the pressure-moment
+extension and the counterexample here are derived below. No claim about
+convergence on arbitrary horizons is needed.
+
+### Smooth physical data with two different rotation scales
+
+Choose a smooth function phi on [0,infinity), between zero and one, equal
+to one on [0,15/16], and identically zero on [1,infinity). It can be chosen
+flat at both transition endpoints using the usual exp(-1/s) smooth cutoff.
+For a disc of radius R_i centered at (c_i,0), put
+
+```text
+r_i^2=(x-c_i)^2+y^2,
+omega_i(r)=Omega_i phi(r/R_i),
+U_i=omega_i(r_i)(-y,x-c_i,0),
+p_i(r)=-integral_r^(R_i) s omega_i(s)^2 ds  for r<R_i,
+p_i=0 outside the disc.                                (747)
+```
+
+Both fields extend smoothly. U_i is divergence free and mean zero;
+`(U_i.grad)U_i=-grad p_i`. Choose c_1=-1, c_2=1 and R=1/4, with the
+radii below. Their supports are disjoint and lie inside one periodic
+coordinate chart. The sum U=U_1+U_2 is an exact steady Euler datum, with
+pressure p_1+p_2 up to its mean. Cross advection vanishes by disjoint
+support. The datum is independent of z and has zero vertical velocity.
+
+This is not a superposition of separately evolved viscous solutions.
+At nu>0 there is one actual NS solution from epsilon(U_1+U_2); viscosity
+and the resulting common pressure are retained in the argument below.
+Planarity is preserved. The standard two-dimensional global theory applies;
+the existing `FourierPlanarRegularity` module proves planarity preservation
+and `stretchingDensity_planar` in its periodic Fourier setting. Directly,
+`omega.grad u=0` on this whole evolution. In particular the signed
+vortex-stretching budget itself has zero cost here. The new pressure-moment
+counterexample is not already a consequence certified by that module.
+
+For Euler a particle in one disc keeps its radius and rotates at angular
+speed omega_i(r). Its exact pressure impulse is the difference between its
+original and current velocity, so
+
+```text
+|P_t|^4=16 r^4 omega(r)^4 sin^4(omega(r)t/2)
+ =r^4[omega^8 t^4-omega^10 t^6/6
+                         +omega^12 t^8/80]+O(t^10).    (748)
+```
+
+Let `M_j=integral_0^1 rho^5 phi(rho)^j drho` for j=8,10,12.
+Normalized integration over each disc and over z gives the three Euler
+coefficients
+
+```text
+A=(M_8/(2pi)) sum_i R_i^6 Omega_i^8,
+B=-(M_10/(12pi)) sum_i R_i^6 Omega_i^10,
+D=(M_12/(160pi)) sum_i R_i^6 Omega_i^12.                 (749)
+```
+
+Cauchy--Schwarz and the cutoff plateau give
+
+```text
+M_10^2<=M_8 M_12,
+(15/16)^6/6<=M_j<=1/6,
+1<=M_8 M_12/M_10^2<20/9,                               (750)
+```
+
+where the strict upper bound follows from `(16/15)^12<20/9`.
+For each isolated core, its first unmatched rational-envelope coefficient
+is therefore strictly negative:
+
+```text
+Delta_i=R_i^6 Omega_i^12/(2pi)
+                  [M_12/80-M_10^2/(36M_8)]<0.           (751)
+```
+
+### The combined profile reverses that sign
+
+For any integer L>=3, take speeds Omega_1=1, Omega_2=L and radii
+
+```text
+x=(2L^2-3)/(L^2-1), y=1/[(L^2-1)L^8],
+R_1=R x^(1/6), R_2=R y^(1/6), C=R^6/(2pi).
+x+y L^8=2, x+y L^10=3, x+y L^12=L^2+3.
+A=2C M_8, B=-C M_10/2, D=C M_12(L^2+3)/80.             (752)
+```
+
+The first two Euler coefficients A,B are exactly fixed across this
+family. The third increases without bound. These are leading time
+coefficients; the full viscous functions F_8(t),F_10(t) are not asserted
+to be identical across L. The actual next difference from (746) is
+
+```text
+Delta=D-B^2/A
+ =C[(L^2+3)M_12/80-M_10^2/(8M_8)]
+ >=C(M_10^2/M_8)(L^2-7)/80>0.                           (753)
+```
+
+The individual signs (751) thus do not survive the pooled rule.
+The initial speeds are nevertheless uniformly bounded: R_1<2R and
+L R_2<R imply `||U||infinity<=2R`, hence a uniform kinetic-energy bound
+on the normalized torus. Derivatives of the small core grow with L.
+An unbounded Taylor coefficient does not imply an unbounded observation
+at a fixed positive time; the controlled initial interval may shrink.
+
+### Why this is a positive-viscosity counterexample
+
+Fix L, epsilon!=0 and any nu>0. Reflection in y=0, with the corresponding
+reflection of vector components, sends U to -U and preserves the scalar
+pressure-history observation. Uniqueness and invariance of Brownian motion
+under this isometry give `Phi_epsilon=Phi_(-epsilon)`. The odd amplitude
+coefficients vanish, including their complete viscous corrections.
+
+The finite heat/Duhamel coefficient equations give velocity degree n
+starting at time order n-1 and pressure degree n starting at n-2.
+The raw pressure moments satisfy the identified triangular transport-
+diffusion equations. Their fourth amplitude coefficient F_n starts no
+earlier than time order n-4. At that first time order all available
+operations raise amplitude degree; diffusion cannot contribute there.
+Consequently (749) gives, at every fixed viscosity,
+
+```text
+F_8(t)=A t^4+O(t^5), F_10(t)=B t^6+O(t^7),
+F_12(t)=D t^8+O(t^9),
+Phi_epsilon(t)-B_epsilon(t)
+                  =epsilon^12 Delta t^8+O(t^9).        (754)
+```
+
+One can obtain (754) from finite time jets without assuming an infinite
+amplitude series converges at the prescribed epsilon. The j-th velocity
+time jet has amplitude degree at most j+1, the pressure jet at most j+2,
+and the fourth-moment jet at most j+4. Through time order eight, the
+complete even coefficients below degree twelve are exactly F_8 and F_10;
+the degree-twelve leading coefficient is the Euler one. Expanding the
+rational expression in `epsilon^2 F_10/F_8=O(t^2)` produces B^2/A.
+All higher terms start later. The lower-degree viscous terms are retained
+in the entire functions F_8,F_10, not omitted from the comparison.
+
+For completeness the remainder is controlled on an actual smooth interval.
+Local Sobolev existence from the fixed smooth datum supplies a common
+short interval and high spatial bounds for u, pressure and the finite
+moment hierarchy. Differentiating these equations nine times, starting
+with sufficiently high initial Sobolev regularity, supplies a finite
+Taylor remainder constant. The coefficient heat equations supply the
+same regularity for F_8,F_10. Factoring t^4 out of the denominator leaves
+a smooth function with positive initial value A. Thus there are constants
+T>0 and M<infinity, obtained from these initial-data local estimates, with
+absolute remainder at most M t^9 on [0,T]. Reduce T to ensure the positive
+denominator. With
+`tau=min(T,epsilon^12 Delta/[2(1+M)])`, (753)--(754) imply
+
+```text
+Phi_epsilon(t)-B_epsilon(t)
+       >=(epsilon^12 Delta/2)t^8>0,       0<t<=tau.      (755)
+```
+
+The same argument with (751) proves the favorable initial comparison for
+each isolated core. No inviscid limit is substituted for a viscous
+trajectory, and no unknown long-time bound is assumed. The size of tau
+has not been numerically optimized. The PDE regularity, coefficient grading
+and remainder argument are analytic, not newly Lean-certified.
+
+As an independent viscosity check, the script also computes the exact
+solid-rotation SDE. Its pressure impulse has isotropic noise variance
+`v=4nu Omega(Omega t-sin(Omega t))`. With deterministic mean square
+`m2=2r^2 Omega^2(1-cos(Omega t))`, its fourth moment is
+`m2^2+8v m2+8v^2`. Nonzero viscous corrections are present, while the
+highest-amplitude leading coefficients in (754) remain (748). This is
+an algebraic local fixture, not a claim that unbounded solid rotation
+is admissible periodic initial data.
+
+### The exact lost cost and a compatible repair obligation
+
+For positive a_i and nonnegative d_i, pooling before division loses
+
+```text
+sum_(i=1,2) a_i^2/(a_i+d_i)
+ -(a_1+a_2)^2/(a_1+a_2+d_1+d_2)
+ =(a_1 d_2-a_2 d_1)^2/
+       [(a_1+d_1)(a_2+d_2)(a_1+a_2+d_1+d_2)]>=0.       (756)
+```
+
+The leading loss is a weighted variance of the component ratios. Two
+pooled numbers do not retain it. Keeping the component ratios or adding
+the exact missing term preserves the sum of already proved component
+allowances. It does not by itself prove those allowances under interacting
+NS dynamics.
+
+There is a physically identified way to retain component histories without
+superposing independent fluids. Label particles once from their original
+positions, with a finite smooth partition of nonnegative probabilities.
+Use the SAME actual velocity, pressure and Brownian flow for every label.
+Let rho_i be its transported density and I_i,Q_i,T_i,K_i its unnormalized
+first, second, contracted third and fourth pressure-impulse moments. With
+`D_u=partial_t+u.grad-nu Delta` and g=grad p, they satisfy
+
+```text
+D_u rho_i=0,                        sum_i rho_i=1,
+D_u I_i=rho_i g,
+D_u Q_i=I_i tensor g+g tensor I_i,
+D_u T_i=2 Q_i g+(tr Q_i)g,
+D_u K_i=4g.T_i,                     Phi=sum_i integral K_i. (757)
+```
+
+Each impulse starts at zero only at the original initial time. These
+identities follow by integrating the joint spatial/impulse Fokker--Planck
+equation against the indicated polynomials. Keeping unnormalized moments
+avoids discarding derivatives of a normalization by rho_i. Sums preserve
+the complete original moment equations; pressure still couples all labels.
+At every time seam carry rho_i and every existing moment forward. Dividing
+into new independent fluids or resetting a label's impulse would invalidate
+(757).
+
+For this two-core witness, retaining labels also repairs the initial
+actual-flow comparison. Choose smooth radial label functions chi_1,chi_2 equal to one
+on the respective closed velocity supports, with disjoint slightly larger
+supports, and chi_0=1-chi_1-chi_2. Let a_i,b_i be the complete amplitude
+coefficients of degree eight and ten of `Phi_i=integral K_i`, using the
+same evolving u,p and transported label density in (757). Define
+
+```text
+B_label=epsilon^8 a_0+epsilon^10 b_0
+          +epsilon^8 sum_(i=1,2) a_i^2/(a_i-epsilon^2 b_i).
+Phi_epsilon-B_label
+ =epsilon^12 C(L^2+3)[M_12/80-M_10^2/(36M_8)]t^8
+                                                   +O(t^9)<0. (758)
+```
+
+The subscript zero here denotes the exterior label. Its first two complete
+coefficients are retained as a signed term. Its degree-twelve leading
+Euler coefficient is zero, because those original particles have zero
+velocity and pressure gradient and stay outside the cores. The two core
+labels have exactly the leading coefficients in (749). All lower even
+amplitudes match because the labelled moments sum to the full moment;
+(751) then gives the negative coefficient in (758). The same finite-jet
+and local remainder argument used for (755) makes (758) an actual
+positive-viscosity initial-interval inequality. In particular B_label is
+nonnegative there because it bounds Phi_epsilon. These labelled coefficient
+functions come from the full coupled fluid, not from independently evolved
+single-core solutions. No later-time comparison is asserted.
+
+The next physical obligation is to pay the evolution of these retained
+conditional costs, including cross-component pressure and renewed parents.
+Equation (756) repairs a specific loss of information, and (758) verifies
+its initial physical use. They do not supply the arbitrary-data continuation
+allowance. They also do not refute the original equal-scale cyclic
+envelope (666).
+
+Run `python3 -O labs/pressure_envelope_mixture.py` for the exact radial,
+viscous-fixture, mixture and moment-source identities, or add
+`--cyclic-probes` to reproduce the fourteen complete initial jet tests.
+Python compilation and the exact checks are distinct from the analytic
+actual-solution argument. No Lean declarations or axioms change.
