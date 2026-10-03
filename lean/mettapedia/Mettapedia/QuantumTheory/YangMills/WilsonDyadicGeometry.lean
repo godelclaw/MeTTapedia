@@ -445,6 +445,36 @@ theorem coarseSpacing_pos {a : ℝ} (ha : 0 < a) (j : ℕ) : 0 < coarseSpacing a
   unfold coarseSpacing
   positivity
 
+/-- An eliminated scale, indexed backwards from the stopping scale, has
+spacing smaller by exactly the corresponding power of two. -/
+theorem coarseSpacing_rev (a : ℝ) {j : ℕ} (i : Fin j) :
+    coarseSpacing a (Fin.rev i).val * (2 : ℝ)^(i.val+1) = coarseSpacing a j := by
+  have he : (Fin.rev i).val + (i.val+1) = j := by
+    simp only [Fin.val_rev]
+    omega
+  unfold coarseSpacing
+  rw [mul_right_comm, ← pow_add, he]
+
+/-- The lattice rate at every discarded scale is converted using the
+same physical upper stopping scale, without a depth-dependent loss. -/
+theorem decay_scale_le_stopping {η a rMax D : ℝ} (hη : 0 ≤ η) (ha : 0 < a)
+    {j : ℕ} (hr : coarseSpacing a j ≤ rMax) (hD : 0 ≤ D) (i : Fin j) :
+    Real.exp (-(η / coarseSpacing a (Fin.rev i).val) * D) ≤
+      Real.exp (-((η/rMax)*D) * (2 : ℝ)^(i.val+1)) := by
+  have hs := coarseSpacing_pos ha (Fin.rev i).val
+  have hm := (coarseSpacing_pos ha j).trans_le hr
+  have hp : 0 < (2 : ℝ)^(i.val+1) := by positivity
+  have hsp : coarseSpacing a (Fin.rev i).val * (2 : ℝ)^(i.val+1) ≤ rMax := by
+    rw [coarseSpacing_rev]
+    exact hr
+  have hrate : (η/rMax)*(2 : ℝ)^(i.val+1) ≤ η / coarseSpacing a (Fin.rev i).val := by
+    apply (le_div_iff₀ hs).mpr
+    have hh := mul_le_mul_of_nonneg_left hsp (div_nonneg hη hm.le)
+    rw [div_mul_cancel₀ _ hm.ne'] at hh
+    nlinarith
+  apply Real.exp_le_exp.mpr
+  nlinarith [mul_le_mul_of_nonneg_right hrate hD]
+
 /-- Physical separation is measured between the anchors of coarse supports. -/
 def physicalSeparation {d n : ℕ} (a : ℝ) (j : ℕ) (S T : Finset (Link d n)) : ℝ :=
   coarseSpacing a j * polymerDist S T

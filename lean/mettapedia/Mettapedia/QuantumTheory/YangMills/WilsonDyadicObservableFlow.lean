@@ -683,6 +683,28 @@ theorem directRemainder_le_of_dyadicScaleBounds (n j : ℕ)
       mul_le_mul_of_nonneg_left (dyadic_exp_sum_le j hδ hD) hA
     _ = _ := by rw [neg_mul]; ring
 
+/-- Sufficient per-scale estimates in physical units. The same A and eta
+must bound every generated conditional contribution. No fine-volume or
+elimination-depth factor appears in the resulting remainder bound. -/
+theorem directRemainder_le_of_physicalScaleBounds (n j : ℕ)
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(Link 4 (scaleIndex n j) → SU2, ℝ)) {A η a rMax D D₀ : ℝ}
+    (hA : 0 ≤ A) (hη : 0 < η) (ha : 0 < a) (hr : coarseSpacing a j ≤ rMax)
+    (hD₀ : 0 < D₀) (hD : D₀ ≤ D)
+    (hscale : ∀ i : Fin j, |scaleCovarianceContribution n j W hW F G i| ≤
+      A * Real.exp (-(η / coarseSpacing a i.val)*D)) :
+    |expectation volume (directDensity n j W)
+      (directProject n j W hW (F*G) - directProject n j W hW F * directProject n j W hW G)| ≤
+      (A * Real.exp (-(η/rMax)*D₀) / (1-Real.exp (-(η/rMax)*D₀))) *
+        Real.exp (-(η/rMax)*D) := by
+  have hm : 0 < η/rMax := div_pos hη ((coarseSpacing_pos ha j).trans_le hr)
+  have hs (i : Fin j) : |scaleCovarianceContribution n j W hW F G (Fin.rev i)| ≤
+      A * Real.exp (-((η/rMax)*D)*(2 : ℝ)^(i.val+1)) :=
+    (hscale (Fin.rev i)).trans (mul_le_mul_of_nonneg_left
+      (decay_scale_le_stopping hη.le ha hr (hD₀.le.trans hD) i) hA)
+  simpa only [neg_mul] using directRemainder_le_of_dyadicScaleBounds n j W hW F G hA
+    (mul_pos hm hD₀) (mul_le_mul_of_nonneg_left hD hm.le) hs
+
 
 open SU2BoundaryResponse WilsonLocalResponse
 open Mettapedia.Combinatorics.PolymerGas (polymerDist)
@@ -1217,6 +1239,51 @@ theorem covarianceRemainder_bound (k : ι) (n : ℕ)
     |expectation volume (h.state k n).density (h.covarianceRemainder k n F G)| ≤ 2*B*C := by
   apply abs_expectation_le volume _ _ (h.state k n).density_pos
   exact abs_directRemainder_le n (h.depth k) _ (h.fineDensity_pos k n) F G hB hC hF hG
+
+/-- A sufficient repair of the remainder obligation in TransportControl.
+Far contributions are summed using their actual lattice spacing; near and
+coincident marks use the original amplitude bound. The per-scale hypothesis
+is on the averaged conditional covariance under each generated law, rather
+than on every possible retained configuration. It is not implied by entrance
+of the final density into the small interaction radius. -/
+theorem covarianceRemainder_le_of_scaleBounds {A B C D₀ : ℝ}
+    (hA : 0 ≤ A) (hB : 0 ≤ B) (hC : 0 ≤ C) (hD₀ : 0 < D₀)
+    (k : ι) (n : ℕ) (F G : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ)) (D : ℝ)
+    (hF : ∀ U, |F U| ≤ B) (hG : ∀ U, |G U| ≤ C)
+    (hscale : D₀ ≤ D → ∀ i : Fin (h.depth k),
+      |scaleCovarianceContribution n (h.depth k) (h.fineDensity k n)
+        (h.fineDensity_pos k n) F G i| ≤
+        A * Real.exp (-(η / coarseSpacing (a k) i.val)*D)) :
+    |expectation volume (h.state k n).density (h.covarianceRemainder k n F G)| ≤
+      (2*B*C*Real.exp ((η/rMax)*D₀) +
+        A*Real.exp (-(η/rMax)*D₀)/(1-Real.exp (-(η/rMax)*D₀))) * Real.exp (-(η/rMax)*D) := by
+  have hm := h.physical_rate_pos k
+  have hden : 0 < 1-Real.exp (-(η/rMax)*D₀) := by
+    apply sub_pos.mpr
+    apply Real.exp_lt_one_iff.mpr
+    nlinarith [mul_pos hm hD₀]
+  have hfarConstant : 0 ≤ A*Real.exp (-(η/rMax)*D₀)/(1-Real.exp (-(η/rMax)*D₀)) :=
+    div_nonneg (mul_nonneg hA (Real.exp_pos _).le) hden.le
+  by_cases hfar : D₀ ≤ D
+  · have hh := directRemainder_le_of_physicalScaleBounds n (h.depth k)
+      (h.fineDensity k n) (h.fineDensity_pos k n) F G hA h.rate_pos
+      (h.spacing_pos k) (h.scale_upper k) hD₀ hfar (hscale hfar)
+    have hh' : |expectation volume (h.state k n).density (h.covarianceRemainder k n F G)| ≤
+        (A*Real.exp (-(η/rMax)*D₀)/(1-Real.exp (-(η/rMax)*D₀))) * Real.exp (-(η/rMax)*D) := by
+      simpa only [covarianceRemainder, projected, h.generated_fineDensity] using hh
+    apply hh'.trans
+    apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+    exact le_add_of_nonneg_left (by positivity)
+  · have he : 1 ≤ Real.exp ((η/rMax)*D₀) * Real.exp (-(η/rMax)*D) := by
+      rw [← Real.exp_add]
+      apply Real.one_le_exp_iff.mpr
+      have hd : D < D₀ := lt_of_not_ge hfar
+      nlinarith
+    calc
+      _ ≤ 2*B*C := h.covarianceRemainder_bound k n F G hB hC hF hG
+      _ ≤ (2*B*C*Real.exp ((η/rMax)*D₀)) * Real.exp (-(η/rMax)*D) := by
+        nlinarith [mul_le_mul_of_nonneg_left he (show 0 ≤ 2*B*C by positivity)]
+      _ ≤ _ := mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hfarConstant) (Real.exp_pos _).le
 
 theorem covariance_le_of_local_approximation (k : ι) (n : ℕ)
     (F G : C(Link 4 (scaleIndex n (h.depth k)) → SU2, ℝ))

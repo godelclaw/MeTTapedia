@@ -92,7 +92,11 @@ Current status:
   free energy stays away from zero is not crossing; the winding hypothesis is
   stated, not derived. `MarginalBlindness.lean` proves that one-site marginal
   criteria admitting a nonzero one-site covariance cannot by themselves imply
-  clustering. `TwistCost.lean` and
+  clustering. Its `SU2Blocking` calibration also uses the actual scale-two
+  Haar map: a positive gauge-invariant fine density has a constant complete
+  coarse density, nondegenerate retained plaquettes and nondecaying distant
+  fine plaquette correlations. This engineered density is not the Wilson
+  action. `TwistCost.lean` and
   `TwistEater.lean` compare the classical cost of a centre twist: at least
   `2βL^{d-4}` for every `U(1)` configuration, zero for `SU(2)`, where the
   anticommuting `iσ₁`, `iσ₂` absorb it. `StrongCouplingCrossing.lean` proves
@@ -401,6 +405,25 @@ for every continuous generated fine density. The labelled polymer integration
 identity keeps these dependency supports distinct from the retained coarse
 supports, which contain only complete fine pairs.
 
+The actual one-step Wilson conditional law now has a spatial bound.
+`conditionalWilsonInteraction_spatial_norm_le` gives
+`128 |beta| exp(4 a + 12 eta)` for its interaction norm with support weight
+`a >= 0` and spatial rate `eta >= 0`, uniformly in volume and every retained
+field. Thus `conditionalCovarianceBeta eta = 1/(256 exp(32+12 eta))` is a
+positive sufficient threshold. If `|beta| <= conditionalCovarianceBeta eta`,
+`conditionalCovariance_spatial_le` proves, for nonempty supports and continuous
+local marks bounded by `B,C`,
+
+`|P(FG)-PF PG| <= 3 B C exp(3|S|+3|T|) exp(-eta(dist(S,T)-2))`.
+
+The same bound holds after averaging under the exact generated coarse density.
+`wilsonPlaquetteMark` centers a plaquette under the original Wilson law and
+retains its normalization `z` explicitly. It is gauge invariant, local and
+bounded by `2|z|`; for two such marks the prefactor is
+`12 |z| |w| exp(24)`. Coincident and nearby plaquettes are included. This is
+an estimate for the first actual Wilson step; later steps have generated
+interactions and transported marks, and require their own estimates.
+
 The coordinate-rescaling lemmas in `WilsonBoundaryResponse.lean` prove that
 an injective coordinate map with `d_fine = s · d_coarse` changes the admissible
 exponent to `η_coarse = sη_fine`, without a volume factor. The two-separator assembly
@@ -453,12 +476,64 @@ conditional-covariance obligation with error zero (`transportControl_pullbacks`)
 projected marks by single local functions; those localization errors are charged
 explicitly rather than discarded.
 
+`covariance_eq_direct_add_scaleContributions` expands the original covariance
+at every finite blocking depth into the final coarse covariance and the sum of
+all discarded conditional-covariance contributions. Each contribution uses the
+actual generated density and the transported original marks at that scale.
+`wilsonPlaquette_covariance_scales` specializes this identity to centered,
+gauge-invariant plaquettes at arbitrary positions and any real coupling.
+
+The remainder can be bounded independently of depth if its per-scale spatial
+estimate is uniform. Write `r_i = 2^i a`, `m = eta/rMax`, and `c_i` for the
+contribution at scale `i`, ordered from fine to coarse. Fix `A >= 0` and
+`D0 > 0` before cutoff and volume. The sufficient hypothesis is
+
+`D >= D0  ==>  |c_i| <= A exp(-eta D/r_i)` for every eliminated scale.
+
+`coarseSpacing_rev` proves the exact relation between each `r_i` and the
+stopping spacing. `directRemainder_le_of_physicalScaleBounds` sums the estimates
+without a depth factor: away from the diagonal its prefactor is
+`A exp(-m D0)/(1-exp(-m D0))`. If the original marks are uniformly bounded by
+`B0,C0`, `StoppingScaleEntrance.covarianceRemainder_le_of_scaleBounds` covers
+near and coincident points as well, with
+
+`epsilon = 2 B0 C0 exp(m D0) + A exp(-m D0)/(1-exp(-m D0))`.
+
+This supplies the remainder field of `TransportControl` once the per-scale
+inequality is proved. The hypothesis is on the averaged covariance, so a
+bound for every retained configuration is sufficient but unnecessary. Uniform
+anchored budgets for the final projected marks remain a separate requirement.
+The separate absolute-value bounds may lose cancellations between scales;
+they are sufficient conditions, not necessary consequences of clustering.
+Cutoff-dependent plaquette normalizations are not absorbed into uniform constants.
+The contact estimate requires bounded original amplitudes. For renormalized
+point fields with growing normalization, uniform contact control is not asserted;
+the theorem at positive physical separation does not require those contact bounds.
+
+The necessity of the remainder control is concrete. In
+`MarginalBlindness.SU2Blocking`, let `F,G` be Haar-centered plaquette traces
+at support distance greater than one and take `W = 1 + epsilon F G`,
+`|epsilon| < 1`. Under the actual paired Haar map, `B(W)=1`, `PF=PG=0`,
+but `P(FG)=epsilon v^2` and `Cov_W(F,G)=epsilon v^2`, where the fixed
+four-link Haar variance `v` is strictly positive. Opposite transverse
+plaquettes have distance at least `n+3` on side `2(n+3)`;
+`no_uniform_covariance_bound` rules out a volume-uniform exponential bound
+at `epsilon=1/2`. Retained coarse Wilson plaquettes still have variance `v`.
+This rules out reliance on the coarse density and transported means alone.
+The calibration family cannot satisfy the uniform positive-rate small
+fine-interaction hypotheses: those would force the exponential bound just
+ruled out. It does not refute the actual Wilson trajectory.
+
 `strongCouplingEntrance` constructs an actual entrance family with fixed small
 Wilson coupling, `a(k)=2^(-k)`, depth `k`, and stopping spacing one. This proves
 the stopping interface is nonempty. `WeakCouplingEntranceObligation` separately
 states the unproved target with `a(k) -> 0` and `beta(k) -> infinity`. Its
-existence, the needed observable budgets and conditional-covariance decay along
-such a trajectory are open. Nonzero observables at each finite cutoff do not
+existence, the needed observable budgets and the uniform per-scale inequality
+above along such a trajectory are open. The generated conditional law at scale
+`i` has density `W_i(chart(c,f))/W_(i+1)(c)` against fluctuation Haar measure;
+its outer average uses the normalized generated density `W_(i+1)`.
+Smallness of the final density alone gives neither this bound nor control of
+the transported observables. Nonzero observables at each finite cutoff do not
 establish a nontrivial continuum limit. Construction, Euclidean covariance,
 reflection compatibility and quantum-field reconstruction remain separate.
 
@@ -468,7 +543,18 @@ formulas, quadrature and sampled direct/staged Haar integrals. It tests coupling
 from zero to 16, checks ordered-product gauge identities, and records generated
 non-Wilson logarithmic components. Mode and quadrature refinements and sampling
 errors are reported. These finite computations do not certify four-dimensional
-uniform bounds. The planar setting is the open-boundary Euclidean example in
+uniform bounds. The `--covariance` mode records both terms of the covariance
+identity, original and retained variances, and the two-scale contribution sum.
+For independent original plaquettes, the nonzero coarse covariance cancels the
+averaged conditional covariance; either term alone misrepresents the original
+correlation. The planar setting is the open-boundary Euclidean example in
 [Kanwar and Wagman](https://arxiv.org/abs/2103.02602); the spatial polymer estimates
 are proved separately in Lean. [Ueltschi's cluster-expansion criteria](https://arxiv.org/abs/math-ph/0304003)
 likewise require strengthened weighted hypotheses to obtain spatial decay.
+For a rigorous example of loss of locality under blocking,
+[van Enter, Fernandez and Sokal](https://arxiv.org/abs/hep-lat/9210032),
+Theorem 4.1, treats scale-two decimation of the two-dimensional nearest-neighbour
+Ising model at zero field and coupling greater than
+`arcosh(1+sqrt(2))/2`. Its image has no quasilocal specification. These hypotheses
+do not establish a corresponding pathology for compact SU(2); they distinguish
+existence of an exact marginal from the uniform locality needed for iteration.
