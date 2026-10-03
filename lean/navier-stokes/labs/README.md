@@ -29669,3 +29669,219 @@ complete source (435) by another route. The new observation removes
 irrelevant parallel and depleting components and has an explicit
 continuation consumer. It leaves pressure-driven reorientation and
 repeated coupled renewal as the quantitative open obligation.
+
+## Viscous creation of signed geometric cost
+
+The positive signed observation (449) retains useful cancellations, but its
+viscous chain-rule contribution need not be negative. An exact, globally
+regular cellular flow violates that proposed sign for every amplitude,
+positive viscosity and fixed vorticity regularizer. The example also defeats
+adding any finite spatially constant multiple of the impulse's squared norm
+as a repair of that particular sign. This does not refute the original-data
+history allowance, nor say that increasing viscosity increases the full
+solution's cost: all the other evolving terms remain in the equation.
+
+### The precise local sign under test
+
+Use the original passive H and I=H-u, with D_u I=grad p, as above. For
+Y=(I,omega,c), c=curl omega, and delta>0 fixed from the original datum,
+write, on the region J=-(I cross omega).c>0 and c!=0,
+
+```text
+Phi=F(Y)=J^2/[(|omega|^2+delta)|c|^2],
+D_u Phi=F_I.grad p+F_omega.(B omega)+F_c.F_curl+V_nu,
+F_curl=grad Delta p-Bc+2 sum_j B_j u_j,
+V_nu=-nu sum_j Hess_Y F[partial_j Y,partial_j Y].    (457)
+```
+
+Here F_c means the derivative of F in its third vector argument, while
+F_curl is the physical source of c. Pressure and the transport commutator
+have not been classified as diffusion or discarded. Equation (457) is the
+ordinary chain rule for the common Laplacian on the three actual fields.
+The proposed local ingredient was V_nu<=0. It is false even on actual
+unforced histories, as the following computation shows.
+
+### An all-amplitude physical counterexample to the viscous sign
+
+For any a,nu>0, on the fixed 2pi torus take the known exact solution
+
+```text
+u(t)=a exp(-2nu t)(sin x cos y,-cos x sin y,0),
+p(t)=a^2 exp(-4nu t)(cos(2x)+cos(2y))/4.
+```
+
+This solves the full unforced equation for all time. Its actual vortex
+stretching omega.Bomega is identically zero. Its full Lamb work
+`(u cross omega).c` is also zero pointwise, since c=2u. The pressure is
+nonconstant, so the original passive H cannot be replaced by u.
+
+At x_*=(pi/4,pi/4,0), let G=grad p(0). Direct differentiation gives
+
+```text
+G=(-a^2/2,-a^2/2,0),       Hess p(0)=0,
+omega0=(0,0,a),           c0=(a,-a,0),
+partial_x omega0=partial_y omega0=(0,0,a),
+partial_x c0=(a,a,0),     partial_y c0=(-a,-a,0).
+```
+
+The original impulse equation, with I(0)=0, gives
+`I(t)=t G+O(t^2)` in all the needed spatial derivatives. Hence at this
+fixed receiver `grad I(t)=O(t^2)`, while
+
+```text
+J(t,x_*)=a^4 t+O(t^2)>0,
+Phi(t,x_*)=a^6 t^2/[2(a^2+delta)]+O(t^3),
+V_nu(t,x_*)=
+  2nu a^8(a^2+5delta)t^2/(a^2+delta)^3+O(t^3)>0.    (458)
+```
+
+The coefficient is positive for EVERY a,nu,delta>0. One independent
+calculation differentiates F along the literal joint spatial directions
+`(G,omega0,c0)+epsilon(partial_j G,partial_j omega0,partial_j c0)`.
+Its second derivative in each of the x and y directions is
+`-a^8(a^2+5delta)/(a^2+delta)^3`; the z contribution is zero.
+Homogeneity in I and the actual short-time expansion then give (458).
+
+For any finite spatially constant kappa, the additional viscous source
+of kappa|I|^2 is `-2nu kappa|grad I|^2=O(t^4)`. It cannot cancel the
+strict positive leading term in (458). The coefficient may depend on
+the original datum, viscosity, regularizer and prescribed horizon; the
+failure still holds for each such finite choice. This concerns the
+viscous sign, not the full Bellman derivative or every possible reserve.
+Gradient-dependent or nonlocal corrections are not excluded.
+
+The failure is not confined to planar data. For the full three-dimensional
+pressure-start datum in the preceding section, with delta=1, at
+`(0,pi/2,pi/4)` the exact full pressure gives
+
+```text
+partial_t J(0)=7424,
+V_nu(t)=nu (42181805312/8214057)t^2+O(t^3)>0.
+```
+
+Both interval conclusions use actual smooth local evolution and passive
+transport. A finite Fourier jet is used to compute the coefficients;
+it is not substituted for the subsequent nonlinear solution.
+
+### A smooth joint direction and a paid part of its source
+
+The observation can also be regularized at c=0. Fix mu>0 and define
+
+```text
+n=omega/sqrt(|omega|^2+delta),
+m=c/sqrt(|c|^2+mu), b=n cross m,
+q=-I.b, Phi_mu=(q_+)^2.                            (459)
+```
+
+The vector b is smooth in the primitive fields. The squared positive
+part is C1 with a locally bounded weak second derivative; the following
+identities hold on each sign region and almost everywhere in the weak
+chain rule. No singular positive-part boundary term is omitted.
+For each spatial direction set
+
+```text
+b_j=partial_j b,
+K_b=sum_j Hess_(omega,c) b[
+             (partial_j omega,partial_j c),
+             (partial_j omega,partial_j c)].
+```
+
+K_b is the chain-rule Hessian term, not Delta b: the latter also contains
+the first derivatives of b applied to Delta omega and Delta c. Thus the
+viscous chain source of b is -nu K_b. The complete nonviscous source is
+`S_b=(partial_omega b)(Bomega)+(partial_c b)F_curl`, and
+
+```text
+D_u Phi_mu=-2q_+[grad p.b+I.S_b]+V_nu,mu,
+V_nu,mu+2nu|grad(q_+)|^2
+ =2nu q_+ I.K_b+4nu q_+ sum_j I_j.b_j
+ =2nu q_+ I.K_b+2nu|grad I|^2+2nu q_+^2|grad b|^2
+                         -2nu sum_j |I_j-q_+ b_j|^2. (460)
+```
+
+The same actual fields occur in all terms. With |b|<=1 and
+`q_+<=|I||b|`, put
+`G_b=|b||K_b|+|b|^2|grad b|^2`. Cauchy--Schwarz yields the pointwise
+bound and, using the existing original passive-history payment, its
+spatially integrated consequence:
+
+```text
+(V_nu,mu)_+ <=2nu|grad I|^2+2nu|I|^2 G_b,
+int_0^t int (V_nu,mu)_+
+ <=4E0+2nu int_0^t int |I|^2 G_b.                  (461)
+```
+
+This reuses `PressureImpulseHistory.PassiveHistory.impulse_paid`: its
+hypotheses include the literal passive PDE and original initial value,
+and it proves `||I(t)||_2^2+2nu int_0^t||grad I||_2^2<=4E0` on R3.
+The corresponding periodic estimate follows from the same two energy
+balances. The new geometric chain rule and its spatial integration are
+analytic, not newly Lean-certified. The allowance is spent across the
+whole original history, not supplied afresh to each component or segment.
+
+The first term in (461) therefore has a datum-only payment without a
+smallness assumption. The weighted JOINT angular term remains open,
+as does the physical pressure/strain source in (460). This is a spatial
+integral bound, not the L-infinity-in-space history estimate required
+by B_geo. Concentrated receivers need further control.
+
+Joint geometry matters to the estimate. If omega=c as in the entire
+ABC calibration, then b=0, b_j=0 and K_b=0 along its compatible spatial
+variations. The angular cost in (461) is zero. Bounding the two directions
+independently would obscure this exact cancellation.
+
+For mu>0 the cellular calculation remains informative. Its viscous
+coefficient, before multiplication by nu*t^2, is
+
+```text
+4a^8[2a^6+10a^4delta+3a^2delta mu-delta^2 mu]
+ /[(a^2+delta)^3(2a^2+mu)^2].
+```
+
+At delta=a^2 this is `a^6(6a^2+mu)/(2a^2+mu)^2>0` for every mu>0.
+Consequently the sign failure is not caused by a singular convention at
+c=0. As mu decreases to zero, Phi_mu increases to Phi with its zero
+convention. A bound uniform in mu for the ORIGINAL critical history norm
+would pass to the limit. Neither such a bound nor uniform control of
+K_b near c=0 has been proved by (461).
+
+### Why a convex local replacement loses some aligned zeros
+
+There is also a small algebraic obstruction to a particular repair.
+Keep I=-e1 and compare the two joint states
+
+```text
+(omega,c)=(e2,e2),      (omega,c)=(e3,2e3).
+```
+
+Both have Phi_mu=0, since omega and c are parallel. At their midpoint,
+J=1/4 and
+
+```text
+Phi_mu=1/[16(delta+1/2)(mu+5/4)]>0.                 (462)
+```
+
+A jointly convex local majorant of Phi_mu cannot be zero at both
+endpoints: convexity would make its midpoint value nonpositive. This
+is an obstruction to convexification on that joint state domain, not a
+proof that these states are freely selectable NS histories or that all
+history-dependent reserves fail. Reconstruction must retain which
+orientations and amplitudes were paired before averaging.
+
+### Verification and the next physical obligation
+
+Run `python3 -O labs/geometric_diffusion_cost.py`. It checks the complete
+unforced cellular PDE, vorticity and curl-observer equations; independent
+Hessian calculations for all positive parameters; the smooth-regularizer
+coefficient; the exact 3D source; the joint square in (460); and the strict
+convexification gap. Python compilation is also checked. No new Lean
+axioms, declarations, numerical trajectories or singular solutions are
+introduced.
+
+The failed assertion is nonpositivity of the LOCAL viscous chain source,
+including its repair by a finite multiple of |I|^2. The global finite-datum
+allowance is not refuted. A continuation proof must pay the combined
+pressure and joint angular history, with spatial concentration controlled,
+or use the earlier signed deformation target to avoid overcharging this
+observation. The harmless cellular flow remains an essential calibration:
+its geometric observation can grow although its actual stretching is zero.

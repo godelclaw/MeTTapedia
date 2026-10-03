@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [viscous geometric-cost test](labs/README.md#viscous-creation-of-signed-geometric-cost)
+shows that diffusion can increase the signed directional observation on
+an exact unforced cellular flow with zero actual stretching. The failure
+holds at every amplitude and positive viscosity, and persists after
+smooth regularization. A complete joint square pays one derivative term
+from the existing initial-energy reserve; its angular and pressure
+sources remain unpaid. This distinguishes a local diffusion-sign
+shortcut from the open arbitrary-history estimate. The new results are
+analytic with exact checks, not new Lean-certified physical bounds.
+
 The [signed impulse geometry calculation](labs/README.md#signed-impulse-geometry-and-a-physical-continuation-allowance)
 adapts the Chae--Lee geometric energy criterion to the original passive
 parent and pressure impulse. A datum-controlled time integral of one
