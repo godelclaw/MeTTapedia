@@ -35624,3 +35624,195 @@ the complete joint jets, exact matrix limits, coordinate change, Schur
 identity, and pressure-parent/diffusion coefficients. The matrix interval,
 viscous comparison, physical scaling and paid interval are analytic.
 No new Lean declarations, axioms or numerical trajectories are introduced.
+
+## Renewal beyond the first pressure-generating parent
+
+The local repair (697)--(701) does not extend to every interacting scale.
+A complete symbolic frequency calculation separates two contributions:
+the original pressure-generating field has a favorable return at every
+frequency, while newly generated Fourier components can outweigh it.
+For an unbounded family of actual positive-viscosity histories, both J
+and H exceed their original values on the same interval. Thus adding
+any nonnegative fixed multiple of H cannot make J a monotone reserve.
+
+This tests the proposed sufficient reserve, not global regularity. It
+does not exclude a larger original-data allowance or a reserve using
+joint signed histories. The scalar pressure fields below are identified
+from the actual unforced PDE, with the original memory C retained.
+
+### A complete frequency law
+
+Let `U_k=(sin y,sin(kz),sin x)`, for a positive integer k on the normalized
+periodic torus. Use canonical zero-mean pressure. For the auxiliary Euler
+flow write `p_j=partial_t^j p(0)`. Then
+
+```text
+p_0=0,       p_1= -6k/(k^2+2) cos x cos y cos(kz),
+h=p_t,      H=int h^2,       H(0)=9k^2/[2(k^2+2)^2],
+int p_1 p_2=0,
+N_k=int p_2^2,               R_k=-int p_1 p_3,
+H'(0)=0,                    H''(0)=2(N_k-R_k).          (702)
+```
+
+Here p_2 occupies Fourier modes disjoint from those of p_1. These are
+new directions in the space of scalar pressure-generating fields, not
+a claim about rotation of a pointwise vorticity vector. The complete
+third pressure derivative includes every velocity and pressure feedback.
+Writing z=k^2, exact calculation gives
+
+```text
+N_k = 9z(4z^4+8z^3+9z^2+2z+13)
+       /[2(z+2)(z+5)^2(2z+1)^2],
+R_k = 9z(6z^4+65z^3+171z^2+222z+58)
+       /[8(z+2)^3(z+5)(2z+1)].                         (703)
+```
+
+Both are strictly positive for every k>0. In particular the original
+field's signed return is ALWAYS favorable. Let Pi be the fixed L2
+orthogonal projection onto the span of p_1. Taylor expansion yields
+
+```text
+||Pi h(t)||_2^2=H(0)-R_k t^2+O(t^3),
+||(I-Pi)h(t)||_2^2=N_k t^2+O(t^3).
+N_k -> 9/2,       R_k -> 27/8,       R_k/N_k -> 3/4.     (704)
+```
+
+These are exact derivatives of the complete flow. They are not an
+assumption that the original Fourier support stays closed. At large
+frequency, old-direction depletion pays only three quarters of the
+newly generated square in this second-return calculation.
+
+For the retained concentration J, the first three Euler derivatives
+vanish. Its fourth derivative and the complete H return are
+
+```text
+P_J(z)=112z^4-1158z^3-6845z^2-2259z-200,
+P_H(z)=4z^6-100z^5-859z^4-2370z^3-3185z^2-1508z-82,
+J(0)=21/8,                  J'(0)=J''(0)=J'''(0)=0,
+J''''(0)=3z P_J(z)/[5(z+2)(z+4)(z+5)(2z+1)(4z+1)],
+H''(0)=9z P_H(z)/[4(z+2)^3(z+5)^2(2z+1)^2].            (705)
+```
+
+Every coefficient of `P_J(w+16)` and `P_H(w+36)` is positive for w>=0.
+The remaining small integer cases have the opposite signs. Therefore
+
+```text
+k=1,2,3:     J''''(0)<0;      every integer k>=4: J''''(0)>0,
+k=1,...,5:   H''(0)<0;        every integer k>=6: H''(0)>0. (706)
+```
+
+In particular the k=4 parent that paid (700) loses that favorable TOTAL
+return when replaced by k=6, although its old-direction return stays
+favorable. The integer threshold here is a property of this explicit
+family and observation, not a universal physical regularity threshold.
+
+### Transfer to one actual unforced viscous interval
+
+Fix any integer k>=6. Denote the Euler coefficients by
+`c_k=J''''(0)/24>0` and `d_k=H''(0)/2>0`. Smooth local Euler existence
+and the complete jets give
+
+```text
+J^0(t)-J^0(0)=c_k t^4+O(t^5),     (J^0)'(t)=4c_k t^3+O(t^4),
+H^0(t)-H^0(0)=d_k t^2+O(t^3),     (H^0)'(t)=2d_k t+O(t^2). (707)
+```
+
+The same local Sobolev argument used in (694) applies to h as well:
+its expression (684) uses the full velocity and canonical pressure,
+with finitely many spatial derivatives. For mu in [0,1], a common
+local H40 interval and bounds depend only on U_k. The NS/Euler difference
+is O(mu t) in sufficiently high lower Sobolev norms. In general h can
+have an explicit O(mu) difference already at t=0. For THIS datum p_0=0
+and p_1 is independent of mu, so h^mu(0)=h^0(0). Bounded differences of
+the h evolution integrate to O(mu t). The viscous initial tangent only
+rescales the three cyclic components; each pair still has zero contribution
+to the pressure source, which justifies that initial independence of mu.
+Consequently one constant C_k
+controls each of the J,H value differences by C_k mu t, and each of
+their rate differences by C_k mu. No estimate up to an unknown future
+singular time is assumed.
+
+For a sufficiently small T_k<=1 there is delta_k>0 such that the four
+Euler quantities in (707) are bounded below respectively by
+`delta_k t^4, delta_k t^3, delta_k t^2, delta_k t`. Choose
+
+```text
+0<tau<=T_k/2,
+0<mu<=min(1, delta_k tau^3/[4(1+C_k)]).
+```
+
+On the WHOLE interval [tau,2tau], the actual smooth unforced history has
+
+```text
+J^mu(t)>J^mu(0),       (J^mu)'(t)>0,
+H^mu(t)>H^mu(0),       (H^mu)'(t)>0.                    (708)
+```
+
+The interval and viscosity range do not depend on the weight alpha.
+Thus simultaneously for EVERY fixed alpha>=0, including alpha chosen
+from the full original datum, viscosity and horizon,
+
+```text
+V_alpha=J+alpha H,
+V_alpha(t)>V_alpha(0),                 V_alpha'(t)>0.    (709)
+```
+
+The same value obstruction applies to a function F(J,H) that is
+nondecreasing in each argument and strictly increasing in J. This
+does not rule out cross-correlations of the underlying fields, adaptive
+coefficients with their full derivative costs, or signed savings.
+It rules out a monotone scalar aggregation of these two norm values.
+Adding the nonnegative accumulated diffusion to the left side of a
+claimed V_alpha payment cannot repair the strict value violation.
+It does NOT follow that the weaker concentration-only allowance
+`J(t)<=J(0)+alpha H(0)` is violated: that is a different assertion.
+
+The old-direction depletion in (704) also persists on a possibly
+smaller common interval: its Euler decrease has a strict R_k t^2
+margin and the same local viscous comparison applies. Thus (708) can
+hold while `||Pi h^mu(t)||_2^2<H(0)`. Pi is fixed by the original datum;
+there is no reset to a new favorable direction at the later seam.
+
+An independent polynomial-viscosity check at k=6 gives
+
+```text
+J^mu(0)=21/8,       (J^mu)'(0)=-38mu,
+H^mu(0)=81/722,     (H^mu)'(0)=-(162/19)mu,
+(H^mu)''(0)=648mu^2+44670072375/245773032364.             (710)
+```
+
+At k=6, every V_alpha therefore initially decreases at positive viscosity,
+then exceeds its initial value on the interval (708). Pressure, the
+memory C and all generated modes persist through that history.
+
+For any prescribed physical viscosity nu>0, choose a finite amplitude
+A with mu=nu/A in the proved range and set
+`u_phys(t,x)=A u^mu(At,x)`. Then J_phys=A^4 J^mu and H_phys=A^6 H^mu.
+Since (709) holds for every nonnegative coefficient, it also holds for
+every fixed coefficient in `J_phys+alpha H_phys` on [tau/A,2tau/A].
+The earlier amplitude-normalized choice alpha=A^-2 is included.
+The initial data are smooth, divergence free, mean zero and finite
+energy. All stated intervals have conservative analytic constants;
+no numerical duration or full pattern cycle is asserted.
+
+### Consequence for a complete history reserve
+
+A favorable return into an existing parent is insufficient to fund its
+newly generated components. The signed source pairing and the new square
+must be controlled together. Replacing h by another scalar squared
+parent norm would require a new physical payment argument; the calculation
+does not license an indefinitely extended hierarchy of unpaid resources.
+
+The actual continuation target (681)--(682) is unchanged: an original-data
+bound must pay every compatible smooth prefix up to a prescribed horizon.
+No such arbitrary-history estimate is proved here, and the constructed
+intervals contain no singularity. A finite adverse burst and a failed
+monotone reserve are not a counterexample to global regularity.
+
+Run `python3 -O labs/pressure_parent_renewal.py`. Symbolic phase derivatives
+and inverse Laplacians use the actual frequency throughout. All physical
+velocity and pressure jets specialize to the independent rational Fourier
+recurrence at k=4,6,8. Positive shifted polynomials certify the unbounded
+integer ranges, and viscosity is an exact polynomial variable in (710).
+The local PDE comparisons and amplitude scaling remain analytic. No new
+Lean declaration, axiom or numerical trajectory is introduced.

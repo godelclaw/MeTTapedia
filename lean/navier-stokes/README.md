@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-parent renewal test](labs/README.md#renewal-beyond-the-first-pressure-generating-parent)
+finds the limit of that extra reserve. Across an unbounded cyclic frequency
+family, the first return into the original pressure-generating field is
+depleting. Newly generated Fourier components nevertheless outweigh it from
+frequency six onward. On one actual viscous interval both retained-energy
+concentration and the full pressure-generation norm increase, defeating
+every nonnegative weighting of those two norms. The old-direction return
+pays only three quarters of the generated square in the high-frequency
+limit. This is an analytic obstruction to the monotone reserve, with exact
+symbolic checks; a larger original-data history allowance remains open.
+
 The [joint pressure correction test](labs/README.md#joint-pressure-corrections-and-a-paid-generating-parent)
 rules out every fixed positive quadratic combination of retained energy and
 pressure as a universally decreasing reserve. One actual coupled flow defeats
