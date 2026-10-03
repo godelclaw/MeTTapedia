@@ -1,5 +1,60 @@
 # Near-linear Four Colour catalogue bridges
 
+## A composed repair covers all eight three-run choices
+
+[ThreeBlockRepairTransfer](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockRepairTransfer.lean)
+proves repair for every Boolean triple in `ThreeBlockCore.word`. Two words
+extend directly, two reuse the original seed theorem up to colour symmetry,
+and the other four use three shared decisions. The extension contains six
+direct source witnesses, eight references to existing checked seed states,
+and 52 checked matching answers, encoded in 651 bytes.
+
+[Repair composition](../../../lean/fourcolor-classical/MettapediaFourColor/KempeRepairComposition.lean)
+retains the same exterior predicate when an answer invokes an earlier
+repair. The old strategy is not copied, and applications use the checked
+theorem without rerunning discovery. The new rank bounds three additional
+abstract rounds before a leaf; it is not a physical switch-count bound.
+
+```text
+actual induced exterior + any of the eight joint boundary choices
+                              |
+             direct extension / old seed / three new decisions
+                              |
+                  compatible source and exterior witnesses
+                              |
+                  reconstruct all seven deleted vertices
+```
+
+[The uniform consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockFamilyReconstruction.lean)
+uses the ambient geometry theorem below. It retains the complete joint
+boundary relation and reconstructs a genuine colouring for any exterior
+size. The full cyclic source occurrence and the initial three-run boundary
+class remain hypotheses; exterior planarity is derived.
+
+[One explicit 18-vertex sphere](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockFamilyExample.lean)
+realizes both new trace classes on its 11-vertex exterior. Neither initial
+colouring extends while fixed. `changed_reconstruction` obtains a complete
+ambient colouring and proves that its selected exterior differs somewhere
+from the initial one. This example does not satisfy all possible
+minimal-counterexample restrictions, nor supply a physical switch history.
+
+This closes the immediate repair gap for the eight-word family. It does
+not prove full D0092 reducibility or occurrence supply. A separate program
+inventory finds 7,381 proper eleven-edge trace classes modulo colour
+permutation, of which 1,303 extend directly; the family theorem does not
+classify the rest. No coverage entry or original configuration certificate
+is removed. The [discovery record](three-block-repair-transfer-discovery.json)
+is untrusted program evidence; the
+[measurement receipt](three-block-family-measurements.json) records the
+Lean audit and costs.
+
+```sh
+python3 tools/fourcolor/near-linear/generate_three_block_repair_transfer.py \
+  --output ThreeBlockRepairTransferData.lean --report three-block-transfer.json
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.ThreeBlockFamilyAudit
+```
+
 ## Ambient geometry now supplies the complete deletion contract
 
 [ThreeBlockExteriorPlanar](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockExteriorPlanar.lean)

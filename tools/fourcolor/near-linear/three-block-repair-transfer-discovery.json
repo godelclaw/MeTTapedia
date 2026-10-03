@@ -1,0 +1,61 @@
+{
+  "status": "UNTRUSTED_DISCOVERY_SEPARATE_LEAN_CHECK_REQUIRED",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+  "previous_seed_data_sha256": "836fd6ca318d624856fb12c8cfd7af81a5d1798d09a05da0cdf1af3f7c39924a",
+  "roots": [
+    {
+      "trace": "12213221112",
+      "state": 9
+    },
+    {
+      "trace": "12213231113",
+      "state": 10
+    }
+  ],
+  "states": 17,
+  "search_states": 697,
+  "kinds": {
+    "old_repair": 8,
+    "direct": 6,
+    "decision": 3
+  },
+  "matching_cases": 52,
+  "max_additional_rank": 3,
+  "encoded_bytes": 651,
+  "data_sha256": "b931a9d24fb5cca1ba5d80770c239c9c93d34c009656b8993d6485fa4d35b43b",
+  "boundary_inventory": {
+    "canonical_proper_traces": 7381,
+    "directly_extendible": 1303,
+    "not_directly_extendible": 6078,
+    "scope": "Program enumeration modulo colour permutations, preserving every boundary position."
+  },
+  "decisions": [
+    {
+      "trace": "12213221112",
+      "rank": 2,
+      "fixed_colour": 2,
+      "matching_cases": 5,
+      "distinct_targets": 3
+    },
+    {
+      "trace": "12213231113",
+      "rank": 3,
+      "fixed_colour": 1,
+      "matching_cases": 5,
+      "distinct_targets": 4
+    },
+    {
+      "trace": "12231221112",
+      "rank": 1,
+      "fixed_colour": 3,
+      "matching_cases": 42,
+      "distinct_targets": 9
+    }
+  ],
+  "limits": [
+    "Only the symbolic three-run family, not every D0092 boundary word.",
+    "Rank counts additional abstract rounds before invoking a leaf repair.",
+    "No physical switch count, occurrence supply or catalogue saving."
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "classification": "CHECKED_EIGHT_WORD_FAMILY_BY_COMPOSED_REPAIR",
+  "source": {
+    "configuration": "D0092",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "attribution": "Yuta Inoue, 2026; MIT",
+    "decoder": "MettapediaFourColor.FiveTriangleCollapseObstruction.upper"
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.KempeRepairComposition",
+      "source_bytes": 1112,
+      "source_sha256": "dbf8f69f33e0f715e94f1fd39b5dd74eb3ee44299796a0fdb6e003773898f62d",
+      "olean_bytes": 18488,
+      "olean_sha256": "96a0ffc19dbed50893be2285e61c2cfb79dceeb46e9c5896c88f61f8b75b335d",
+      "build_frontend_seconds_rounded": 2.6
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockRepairTransferData",
+      "source_bytes": 1136,
+      "source_sha256": "b931a9d24fb5cca1ba5d80770c239c9c93d34c009656b8993d6485fa4d35b43b",
+      "olean_bytes": 9872,
+      "olean_sha256": "7e0820e399c1a802ede1b81e41a11dce5f8fef77c60d860aa80dbb941e75f8e6",
+      "build_frontend_seconds_rounded": 0.429
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockRepairTransfer",
+      "source_bytes": 6155,
+      "source_sha256": "da82985faad4cb64c3e23e6f5f3d97916a624e9838f5eae509c9f2cd66df9409",
+      "olean_bytes": 189976,
+      "olean_sha256": "72a634538611ff3448edd929a4c1a6d1af7c3b7f9d10a765dbb3ae22d2406619",
+      "build_frontend_seconds_rounded": 30.0
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockFamilyReconstruction",
+      "source_bytes": 3029,
+      "source_sha256": "9f80f0bf4213c9fde0241b422ea706229d6d0f9a16a3e1dc388ddb860fcc5e3e",
+      "olean_bytes": 90648,
+      "olean_sha256": "6b1aba2ce747f31e40d7a4d0b05a2292d5ecb73042e11c77a04d52f8fa76e5fb",
+      "build_frontend_seconds_rounded": 3.3
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockFamilyExample",
+      "source_bytes": 5400,
+      "source_sha256": "e7deef531bf31c2cc4836d8007feebd3b8f03e248270dc0753916b2caf22e125",
+      "olean_bytes": 377928,
+      "olean_sha256": "37ba403ebe2c8dc9f81019a6c0b537715fe720be35d16ddbbc1a52b0dbf1d640",
+      "build_frontend_seconds_rounded": 10.0
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockFamilyAudit",
+      "source_bytes": 4151,
+      "source_sha256": "3c0b23b2c7de3bebbe3243bf4be00047070acbbf2e341f05c379bae20267e7ff",
+      "olean_bytes": 3224,
+      "olean_sha256": "966df31e15276a1890a7cf8ec808733c1118acea96af433ca57693f41e6d2024",
+      "build_frontend_seconds_rounded": 6.1
+    }
+  ],
+  "new_lean_source_bytes": 20983,
+  "new_repair_certificate_bytes": 651,
+  "retained_seed_certificate_bytes": 1707,
+  "cost_scope": "Rounded Lake frontend times of final successful individual modules across incremental builds; no whole-proof time saving is claimed.",
+  "repair": {
+    "boundary_words": 8,
+    "canonical_trace_classes": 4,
+    "new_decisions": 3,
+    "new_direct_source_witnesses": 6,
+    "references_to_existing_seed_states": 8,
+    "new_matching_answers": 52,
+    "new_states": 17,
+    "max_additional_rank": 3,
+    "rank_scope": "Additional abstract rounds before a leaf repair; earlier leaf strategies retain their own proof. Not a physical switch count.",
+    "composition": "The same actual exterior predicate is preserved while an answer invokes a previously proved repair theorem. Earlier strategies are referenced, not copied."
+  },
+  "mathematical_scope": {
+    "input": "A finite connected simple graph with a planar triangular vertexwise-cyclic rotation, an injective full D0092 core reading, and an exterior colouring in ThreeBlockCore.word a b c for arbitrary Booleans a,b,c.",
+    "output": "A genuine ambient colouring agreeing everywhere on the retained vertices with a selected repaired exterior colouring. Exactly seven deleted vertices are filled.",
+    "geometry": "All exterior geometry is supplied by the preceding uniform deletion theorem.",
+    "example": {
+      "ambient_vertices": 18,
+      "ambient_darts": 96,
+      "exterior_vertices": 11,
+      "initial_trace_classes": 2,
+      "initial_exterior_cannot_extend_while_fixed": true,
+      "changed_reconstruction": true
+    },
+    "limitations": [
+      "Not every D0092 boundary word is covered.",
+      "No theorem supplies such occurrences throughout the intended planar graph class.",
+      "The example is not claimed to satisfy all minimal-counterexample restrictions.",
+      "No physical recolouring history or switch-count bound is supplied."
+    ]
+  },
+  "audit": {
+    "roots": 15,
+    "dependency_declarations": 12867,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false,
+    "repair_data_in_geometry_and_fixed_extension_obstruction": false,
+    "required_dependencies": [
+      "KempeRepairComposition.sound",
+      "Earlier checked seed states",
+      "Whole-chord matching soundness",
+      "Uniform exterior planarity",
+      "Joint graph-trace alignment",
+      "Actual source/exterior reconstruction",
+      "Concrete initial colourings and failure of fixed extension"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.ThreeBlockFamilyAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  },
+  "exploration": "three-block-repair-transfer-discovery.json"
+}
