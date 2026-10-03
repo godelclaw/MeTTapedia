@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [compatible score-control calculation](labs/README.md#compatible-score-controls-and-stochastic-pressure-history)
+combines the receiver reserve with relative entropy without spending the
+sampling penalty twice. An exact unforced shear shows that the formal
+pointwise maximizer need not be the gradient of any density; a retained
+projection square measures this incompatibility. A stochastic
+integration-by-parts formula identifies the actual score as Brownian
+motion, a bounded original passive contribution, and pressure/rotation
+noise along the same history. It also gives a finite entrance allowance
+for the joint reserve on arbitrary smooth prefixes. Brownian and passive
+terms have explicit payments; the remaining exponential noise moment and
+the complete stretching history are open. The arguments are analytic
+with exact algebra checks, not new Lean theorems.
+
 The [normalized pressure-score calculation](labs/README.md#normalized-pressure-score-histories-and-the-point-kernel-endpoint)
 derives the complete directional and mixed pressure equations, retaining
 their spatial flux under controlled sampling. Normalization restores a

@@ -27931,3 +27931,270 @@ retain the normalized growth, actual pressure and inherited impulse,
 and pay its controlled history from the original data. The weighted
 uncontrolled payment (389) remains valid and is not promoted to this
 stronger claim. The sufficient exponential target (379) remains open.
+
+## Compatible score controls and stochastic pressure history
+
+`score_compatibility.py` checks the algebra in this continuation of
+(383a) and (394)--(403). The setting is a smooth unforced NS prefix on
+R3 or the fixed flat torus, with positive viscosity and bounded spatial
+derivatives on that prefix. H and I retain their original construction
+(374); they are never restarted. Stochastic and PDE conclusions below
+are analytic.
+
+### The combined reserve and compatible density gradients
+
+Fix a physical endpoint `(t,x)` and sampling age r. Let q be the actual
+point-source density of drift `-u(t-r)`, and rho the density with added
+sampling drift gamma. For r>0 retain
+
+```text
+k=grad log q, K=Hess log q, h=grad log(rho/q),
+n=omega/sqrt(|omega|^2+delta), W=grad omega/sqrt(|omega|^2+delta),
+R=Id-2nn^T, d=I.n, z=n.k, b=8dn/nu,
+V=|n|^2(|RI|^2+16d^2)/nu,
+Q=|I|^2/nu+2beta dz+alpha nu z^2, P=rQ,
+J(r)=(1/2)Ent(rho|q)+E_rho P,
+alpha>=beta^2, delta>0 fixed from the original datum.
+```
+
+Q and J are nonnegative. Set `D_Q=grad Q` and keep the full flux
+`F_Q=(4beta nu d+4alpha nu^2 z)K n` and bulk `B_Q` from (398).
+On the torus, for smooth bounded Markov sampling controls, combining
+(383a) and (398) and completing the squares gives
+
+```text
+h_* = b+(2r/nu)(nu D_Q-F_Q),
+C = V+4dz+Q+r B_Q+nu r^2|D_Q|^2
+               +(r^2/nu)|nu D_Q-F_Q|^2+r b.(nu D_Q-F_Q),
+
+E_rho[2r_I-|gamma|^2/(4nu)]+J'(r)
+ =E_rho[C-4nu|W-(RI tensor n)/(2nu)|^2
+            -(nu/4)|h-h_*|^2
+            -|gamma-nu h-2nu r D_Q|^2/(4nu)].          (404)
+```
+
+r_I is the reaction in (378); r without a subscript is sampling age.
+The control penalty occurs once. On R3, entropy and flux integrability
+are additionally required to discard boundary terms; on a patch those
+terms remain. Equation (404) does not authorize independent choices
+of h and gamma: h is the gradient of a single scalar and rho must
+evolve under the specified drift.
+
+In the exact shear of (400), I=0 and `q=q_xy p_nu(r,z)`. At fixed r>0
+write `m(y)=n_z(r,y)^2`, `ell(z)=(partial_z log p_nu(r,z))^2`.
+Then `Q=alpha nu m ell` and
+
+```text
+(h_*)_y=2alpha nu r m_y ell,
+(h_*)_z=-2alpha nu r m ell_z,
+curl_x h_*=-4alpha nu r m_y ell_z,
+closed_rectangle_integral h_*=-4alpha nu r Delta(m) Delta(ell).
+                                                            (405)
+```
+
+All four edges are included. Choose y0=0, y1=pi/2, z0=0 and z1 with
+ell(z1)>0. Such z1 exists at every finite age: the heat kernel's first
+Fourier coefficient is nonzero. Since m(y0)>0, m(y1)=0 and ell(0)=0,
+the circulation is strictly positive for alpha>0. This contractible
+rectangle proves that no positive smooth periodic rho can satisfy
+`h=h_*`. The test uses an actual point-source sampler in an exact
+unforced solution, not an independently prescribed receiver.
+
+There is also a quantitative retained square. For any smooth
+divergence-free periodic test vector a, `integral h.a=0`, so weighted
+Cauchy--Schwarz gives, when the denominator is positive,
+
+```text
+integral rho |h-h_*|^2
+ >=(integral h_*.a)^2 / integral (|a|^2/rho).           (406)
+```
+
+For (405), choose `psi=m_y ell_z` and
+`a=(0,partial_z psi,-partial_y psi)`. Then div a=0 and
+`integral h_*.a=-4alpha nu r integral (m_y ell_z)^2` is nonzero.
+Thus each fixed positive rho gives a strictly positive deduction in
+(404). There is no uniform datum-controlled lower bound here: the
+denominator in (406) can deteriorate as rho concentrates. Temporal
+compatibility imposes further restrictions. Neither observation yet
+pays C over a complete history.
+
+### The actual diffusion score and its original passive contribution
+
+We reuse terminal-shift integration by parts, specifically the
+coupling-by-change-of-measure method in Feng-Yu Wang's
+[Integration by Parts Formula and Shift Harnack Inequality for Stochastic Equations](https://arxiv.org/abs/1203.4023),
+Theorem 2.1(2). This terminal derivative differs from the initial-point
+derivative in the usual Bismut formula. Here is the specialization,
+including its signs and transpose.
+
+For `0<=s<=r<=t`, let
+
+```text
+dX_s=-u(t-s,X_s)ds+sqrt(2nu)dW_s, X_0=x,
+B_s=grad u(t-s,X_s).
+```
+
+Translate the path by `epsilon (s/r)e`. Relative to b=-u, the derivative
+of its added drift is `e/r-(s/r)(grad b)e=(Id+s B_s)e/r`.
+Girsanov and differentiation at epsilon=0 give
+
+```text
+E partial_e f(X_r)
+ =E f(X_r) [e . integral_0^r (Id+s B_s)^T dW_s]/(sqrt(2nu)r).
+```
+
+Bounded derivatives on the fixed prefix justify differentiating the
+density change. Integration by parts against the positive transition
+density identifies the terminal score:
+
+```text
+k(r,y)=-1/(sqrt(2nu)r)
+         E[W_r+integral_0^r s B_s^T dW_s | X_r=y].     (407)
+```
+
+On the torus use a periodic lift and periodic test functions; W remains
+real three-dimensional Brownian motion. The drift is the actual NS
+velocity. Prefix derivative bounds justify the identity; they are not
+proposed as a priori payment constants.
+
+Let `Omega_s v=omega(t-s,X_s) cross v`, `A_s=grad I(t-s,X_s)`.
+The identities `B-B^T=Omega` and `grad H=B+A` give
+`grad H-B^T=A+Omega`. Passivity of H gives
+`dH_s=sqrt(2nu)(grad H)_s dW_s`. Integrating s dH_s yields
+
+```text
+N_r=integral_0^r s(A_s+Omega_s)dW_s,
+integral_0^r s B_s^T dW_s
+ =(r H_r-integral_0^r H_s ds)/sqrt(2nu)-N_r,
+
+k(r,y)=-E[W_r|X_r=y]/(sqrt(2nu)r)-G_H(r,y)
+                              +E[N_r|X_r=y]/(sqrt(2nu)r),
+G_H(r,y)=[H(t-r,y)-r^(-1)E[integral_0^r H_s ds|X_r=y]]/(2nu),
+|G_H(r,y)|<=M/nu, M>=||u0||_infinity.                 (408)
+```
+
+The final bound uses the original passive maximum principle, with no
+future gradient norm. N_r keeps the inherited pressure-impulse gradient
+and rotation on the SAME path. In `n(t-r,X_r).N_r`, the terminal
+direction is generally not adapted at earlier times. Moving it inside
+an Ito integral as an adapted integrand would change the claim.
+
+For planar flows `u=(u1,u2,0)` independent of z, H and I are horizontal
+and omega is vertical. The terminal projections of G_H and N_r vanish,
+recovering (402)'s heat direction. Arbitrary 3D flows need not have this
+cancellation. With forcing, `D I=grad p-f`; (408)'s spatial split still
+holds but inherits that forcing. The representation alone therefore
+does not distinguish forced blowup from unforced history.
+
+### Finite entrance on arbitrary smooth prefixes
+
+Fix a smooth physical endpoint `(t,x)`. Set `Z_r=W_r/sqrt(r)` and
+`R_r=r^(-1/2)integral_0^r s B_s^T dW_s`. Equation (407) and Ito
+isometry give
+
+```text
+sqrt(2nu r) k(r,X_r)=-E[Z_r+R_r|X_r],
+E|R_r|^2<=(sup |B|_F)^2 r^2/3.
+```
+
+The SDE gives `Z_r-(X_r-x)/sqrt(2nu r)=O(sqrt(r))` in L2 on R3.
+Conditional expectation is the best L2 projection onto functions of
+X_r, hence `Z_r-E[Z_r|X_r]` tends to zero in L2. On the torus use
+the nearest lift relative to x; bounded drift and the Gaussian tail
+make its wrap error tend to zero in L2. Continuity of n, |n|<=1 and
+the fixed Gaussian fourth moment now give
+
+```text
+lim_(r->0) nu r E_q[(n(t-r,X_r).k(r,X_r))^2]
+                                      =|n(t,x)|^2/2.  (409)
+```
+
+The conditional formula and the fourth-moment Ito estimate also bound
+`sqrt(r)k(r,X_r)` in L4 at small age. Since I is bounded on the fixed
+prefix, `r E|I|^2/nu ->0` and `r E|(I.n)(n.k)| ->0`. Thus
+`E_q P ->alpha |n(t,x)|^2/2`.
+
+For each FIXED bounded sampling control gamma, its Girsanov likelihood
+tends to one in L2. The preceding estimate bounds P in L2, so its
+controlled expectation has the same limit. Also
+`Ent(rho|q)<=E_gamma integral_0^r |gamma|^2/(4nu)=O(r)`. In particular,
+for the smooth Markov controls of (404),
+
+```text
+lim_(r->0) J(r)=alpha |n(t,x)|^2/2<=alpha/2.           (410)
+```
+
+Prefix and control bounds justify the limit but do not enter the
+allowance alpha/2. No uniform convergence rate over controls or prefixes
+is asserted, nor an entrance theorem for all unbounded finite-action
+controls. One may integrate (404) from epsilon and take epsilon to zero
+for each fixed bounded control; its remaining source still needs
+payment. The shear entrance alpha/10 is recovered from |n(t,x)|^2=1/5.
+
+### Two paid score contributions and the remaining noise moment
+
+Decompose `sqrt(nu r)n.k=a_0+a_H+a_N` using (408). Under the actual
+uncontrolled path law,
+
+```text
+a_0=-n.E[Z_r|X_r]/sqrt(2),
+|a_H|<=M sqrt(r/nu),
+a_N=n.E[N_r|X_r]/sqrt(2r), |n|<=1.
+```
+
+Use `(a_0+a_H+a_N)^2<=3(a_0^2+a_H^2+a_N^2)`, then Cauchy--Schwarz
+and conditional Jensen. For `0<eta<1/6`, the Brownian factor is at most
+`E exp(3eta|Z_r|^2)=(1-6eta)^(-3/2)`. The other factor retains the
+joint terminal direction and the full stochastic integral. It follows
+that
+
+```text
+log E exp[eta nu r(n.k)^2]
+ <=3eta M^2 r/nu-(3/4)log(1-6eta)
+       +(1/2)log E exp[(3eta/r)(n(t-r,X_r).N_r)^2].
+                                                            (411)
+```
+
+All expectations refer to the SAME actual fluid kernel and history.
+At eta=1/12, the path-entropy inequality with control share theta=1/2
+gives, for each bounded adapted sampling control,
+
+```text
+E_gamma[(nu r/24)(n.k)^2]
+ -(1/2)E_gamma integral_0^r |gamma|^2/(4nu)
+ <=M^2 r/(8nu)+(3/8)log(2)
+    +(1/4)log E exp[(n(t-r,X_r).N_r)^2/(4r)].           (412)
+```
+
+This is a finite bound only when its remaining exponential moment is
+finite. No datum-controlled bound for that moment is proved here;
+smoothness alone is not being used to promise the displayed exponential
+coefficient at every age. The density q and physical fields stay
+uncontrolled. The auxiliary sampling control spends part of the action
+and is not a force on the fluid. This terminal estimate neither pays
+the other terms of Q nor alone implies the integrated target (379).
+
+The coefficient in (412) matches the score term of P at alpha=1/24
+and beta=0. It does not pay the larger alpha=1/2 coefficient used for
+the exact shear in (403), nor the impulse term at either coefficient.
+
+### Verification and the next physical estimate
+
+Run `python3 -O labs/score_compatibility.py`. It checks the combined
+squares, complete shear circulation, projection algebra, Gaussian
+constants and entrance coefficients. Four exact NS Fourier fixtures
+retain canonical pressure and all convolution outputs when checking
+`grad H-(grad u)^T=grad I+cross(omega)` and its actual first time
+derivative. A non-normal linear Gaussian diffusion verifies the
+terminal-score covariance and detects an omitted transpose. That
+calibration has unbounded drift and is not a finite-energy NS example.
+Stochastic identification, density arguments and limits remain analytic,
+not Lean-certified. No Lean declarations or axioms change.
+
+The entrance is finite without a perturbative assumption, and the
+Brownian and original passive score contributions have explicit
+payments. The next estimate must control the inherited pressure/rotation
+noise and the signed source in (404), retaining endpoint alignment and
+compatible histories. The denominator in (406) and moment in (412) are
+unpaid obligations, not new assumed reserves. The arbitrary-data
+continuation target (379) remains open.
