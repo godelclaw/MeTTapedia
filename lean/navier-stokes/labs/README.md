@@ -29377,3 +29377,295 @@ bulk (435). The forced obstruction shows why a bounded external input
 or an endpoint score alone is insufficient. The unforced arbitrary-data
 exponential bound (379), and hence its continuation consequence, remain
 open.
+
+## Signed impulse geometry and a physical continuation allowance
+
+The remaining history question has a geometric formulation with a direct
+signed-renewal consumer. Only the impulse component contributing positively
+to the Lamb-vector energy pairing needs to be measured. Impulse parallel
+to vorticity, and transverse impulse with the opposite sign in that pairing,
+are excluded. A finite original-data bound for the resulting time integral
+would close the existing continuation argument. That bound is still open.
+
+This uses the established geometric energy method of
+[Chae--Lee, Theorem 1, beta=2](https://arxiv.org/html/1606.08126): their
+criterion retains the positive part of a signed velocity--vorticity--curl
+triple product. Below the bounded original passive parent is separated,
+and vorticity is regularized without adding infinite constant mass on R3.
+This adaptation and its physical source calculations are analytic, not a
+new Lean formalization of the cited regularity theorem.
+
+### The signed observation and its actual energy consumer
+
+Work on an available smooth unforced prefix on R3 or the fixed 2pi torus,
+with the regularity and decay needed for the usual energy identities.
+Retain the SAME original passive H and impulse I=H-u. Fix delta>0 from
+the original datum, once. Set
+
+```text
+omega=curl u, B=grad u, c=curl omega=-Delta u,
+s=|omega|^2+delta, L=I cross omega, J=-L.c,
+a_delta=J_+/(sqrt(s)|c|) if |c|>0, and 0 if c=0,
+A(t)=||a_delta(t)||_infinity,
+E0=||u0||_2^2, M=||u0||_infinity,
+Z(t)=||omega(t)||_2^2, D_omega(t)=||grad omega(t)||_2^2,
+g(t)=integral omega.Bomega.                         (449)
+```
+
+The stochastic meaning is unchanged. Along the actual backward diffusion
+`dX_r=-u(t-r,X_r)dr+sqrt(2nu)dW_r`, starting at x,
+
+```text
+H(t,x)=E[u0(X_t)],
+I(t,x)=E integral_0^t grad p(t-r,X_r)dr.
+```
+
+These formulas use the original datum and the full unforced pressure
+history. They follow from the passive and impulse equations on each
+smooth prefix. Subdividing that prefix does not discard the inherited
+impulse or replace the drift by independently controlled parents.
+
+The L-infinity norm can be read as essential supremum. The observation
+is measurable and bounded by |I| on each smooth prefix. It need not be
+continuous at c=0; the zero convention is sufficient for the estimates,
+and no derivative of this positive-part quotient is taken below.
+Its unnormalized numerator and both denominator fields have the full
+evolution equations recorded later.
+
+Incompressibility, integration by parts and curl omega=-Delta u imply
+
+```text
+Z'=2g-2nu D_omega,
+g=integral(u cross omega).c,
+||c||_2^2=D_omega,
+(u cross omega).c=(H cross omega).c+J.
+```
+
+These are spatial integral identities; the Lamb and stretching integrands
+are not asserted equal pointwise. On a proper subregion their boundary
+fluxes must be retained. The original passive maximum principle and L2
+energy identity give `||H||_infinity<=M`, `||H||_2<=sqrt(E0)` and hence
+`||I||_2^2<=4E0`. No restarted passive field is used.
+
+Since J<=J_+=a_delta sqrt(s)|c|, Cauchy--Schwarz gives
+
+```text
+g <=sqrt(D_omega)[M sqrt(Z)+sqrt(A^2 Z+4delta E0)].
+```
+
+Here the low-vorticity remainder is
+`delta integral a_delta^2<=delta||I||_2^2<=4delta E0`.
+Replacing it by `delta A^2 integral 1` would be invalid on R3.
+Young's inequality, with half of full vorticity dissipation retained,
+therefore gives on BOTH domains
+
+```text
+Z'+nu D_omega <=q(t) Z+F,
+q(t)=(2/nu)(M^2+A(t)^2), F=8delta E0/nu.            (450)
+```
+
+In particular, suppose one finite number B_geo, fixed from u0,nu and a
+prescribed horizon T, bounds `integral_0^t A(s)^2 ds` for every t<=T on
+every available same-datum smooth prefix. Then
+
+```text
+Z(t)+nu integral_0^t D_omega
+ <=(Z(0)+F t) exp[(2/nu)(M^2 t+integral_0^t A^2)].  (451)
+```
+
+One proof first drops dissipation and applies scalar Gronwall, then
+integrates (450), using
+`Z(s)<=(Z(0)+F t)exp(integral_0^s q)` for s<=t. All coefficients in
+this conclusion are prescribed original resources except the explicitly
+unpaid integral of A^2.
+
+### A nonnegative reserve spending the geometric budget once
+
+The consumer can be written as a reserve on compatible actual histories.
+Under the stated hypothesis let
+
+```text
+ell(t)=B_geo-integral_0^t A(s)^2 ds >=0,
+r(t)=(2/nu)[M^2(T-t)+ell(t)],
+R(t)=exp(r(t))[Z(t)+F(T-t)]-Z(t) >=0.               (452)
+```
+
+ell records the unspent part of the one original geometric allowance.
+It cannot be reset when histories are composed. With
+`gap=qZ+F-(Z'+nu D_omega)>=0`, direct differentiation gives, almost
+everywhere,
+
+```text
+R'+2g-nu D_omega
+ =-exp(r)gap-nu(exp(r)-1)D_omega
+                         -exp(r)qF(T-t) <=0.       (453)
+```
+
+Every sign follows from t<=T, ell>=0, nu>0, and the actual enstrophy
+balance. Thus one explicit allowance for the original signed renewal is
+
+```text
+2 integral_0^t [g(s)-g(0)] ds
+ <=nu integral_0^t D_omega ds+K,
+K=exp[(2/nu)(M^2 T+B_geo)](Z(0)+F T)-Z(0)
+                                      +2T|g(0)|.  (454)
+```
+
+On R3, `Z=orderEnergy 1` and `D_omega=orderEnergy 2` for solenoidal
+fields, so this matches the hypothesis of
+`JointCubicRenewal.hasNSEvolution_of_signed_renewal`. On the torus it
+supplies the corresponding uniform H1 bound for the existing continuation
+criterion. The spatial identification, integration and passive construction
+in this section remain analytic. The existing Lean consumer does not
+certify these new antecedents automatically.
+
+This is a sufficient alternative geometric history target, not a proof
+of its missing B_geo or a claim that it is equivalent to the exponential
+pressure-history target (379). Defining B_geo by an unknown-future
+supremum would not establish the needed estimate.
+
+### Pressure and all generated parents remain in the source
+
+Let the material diffusion operator be `D_u=partial_t+u.grad-nu Delta`,
+and write `I_j=partial_j I`, `omega_j=partial_j omega`, `B_j=partial_j B`,
+`u_j=partial_j u`. The exact unforced equations give
+
+```text
+D_u L=grad p cross omega+I cross(B omega)
+                         -2nu sum_j I_j cross omega_j =: F_L,
+D_u c=grad Delta p-B c+2 sum_j B_j u_j =: F_c,
+D_u J=-F_L.c-L.F_c+2nu sum_j partial_j L.partial_j c. (455)
+```
+
+Thus pressure gradient, pressure Laplacian, strain and mixed diffusion
+must all be retained. The actual pressure is determined by the full
+velocity; these are not independently chosen coefficients. Along with
+the actual normalized-vorticity equation, (455) specifies the fields
+entering (449), including their changing alignment. It does not give
+them a favorable sign or an original-data bound.
+
+For the fixed Fourier split eta,zeta of (447), define
+`L_eta=I cross eta`, `L_zeta=I cross zeta`. Their exact sources include
+respectively `+I cross Xi_P` and `-I cross Xi_P`. They cancel in the
+SUM L, but
+
+```text
+|L|^2=|L_eta|^2+|L_zeta|^2+2L_eta.L_zeta.           (456)
+```
+
+The shared denominator in (449) also uses the full omega=eta+zeta.
+Taking independent positive parts or independently normalizing the two
+components destroys these cancellations. Reconstructing (455) from
+the joint components is an identity, not a new coercive estimate.
+More explicitly, J is the sum of all four terms
+`-(I cross omega_a).curl(omega_b)`, with a,b ranging over the two
+components. Its positive part is taken only after that sum.
+
+The signed observation can genuinely be created by an unforced flow.
+For the earlier explicit pressure-start datum
+
+```text
+u0=(-4sin(x)cos(z)-8sin(y),
+       8sin(x)+4sin(y)cos(z),
+       4(cos(x)-cos(y))sin(z)),
+```
+
+at `x0=(0,pi/4,0)` the full canonical pressure yields
+
+```text
+I(0)=L(0)=J(0)=0,
+partial_t J(0,x0)=(6400+2816sqrt(2))/3 >0,
+|omega0(x0)|^2=(8+4sqrt(2))^2, |c0(x0)|^2=64.
+```
+
+Smooth local existence, with positive viscosity, makes a_delta(t,x0)
+strictly positive on a short interval. For any fixed delta>0 its first
+coefficient is the displayed J derivative divided by
+`8sqrt(delta+(8+4sqrt(2))^2)`.
+The corresponding small-time integral of A^2 has a positive contribution
+of order t^3. Thus zero initial impulse does not imply a zero future
+geometric cost. This finite burst does not refute a full-datum B_geo.
+
+### Exact positive calibrations and the forced obstruction
+
+The criterion retains a whole family with arbitrary amplitude. Let U be
+a smooth divergence-free periodic steady Euler field with
+`-Delta U=k^2 U`, k>0. Then
+`u=a_* exp(-nu k^2 t)U`, with the correspondingly decaying steady pressure,
+is an exact unforced evolution. Its curl observer satisfies `c=k^2 u`,
+so `(u cross omega).c=0` pointwise. Consequently
+
+```text
+J=-(H cross omega).c,
+a_delta<=|H|<=M, integral_0^t A(s)^2 ds<=M^2 t.
+```
+
+The original H is generally NOT u when
+pressure is nonconstant. The proof uses its actual passive maximum
+principle, not a false explicit formula for H. The checker verifies
+both a three-dimensional ABC family and a planar cellular family with
+nonconstant pressure. These are known regular solution families,
+used to calibrate the history target rather than claim new regularity.
+
+For the ABC family, omega=c=u, so a_delta is identically ZERO for every
+actual H, a stronger statement than the displayed bound. In particular,
+this observation does not reproduce the false obstruction of the
+unconditioned noise moment (414) on that same regular flow.
+
+The joint cancellation has a strict physical test. Write the standard
+ABC field as `U1+U2`, where `U1=(0,sin(x),cos(x))` is its Fourier pair
+at frequencies +/-e1. Both parts satisfy curl U_i=U_i. The diagonal
+signed terms vanish and the off-diagonal terms are opposite at every
+time, with the SAME inherited I. At `(0,pi/2,0)`, the actual initial
+pressure gradient gives their first time derivatives
+
+```text
+partial_t J_12(0)=-a_*^4, partial_t J_21(0)=a_*^4.
+```
+
+Thus `[J_12]_++[J_21]_+=a_*^4 t+O(t^2)>0` on a short actual unforced
+interval, while `[J_12+J_21]_+=0` for the entire flow. This is a strict
+loss from charging parents separately. It does not refute every finite
+budget for that larger observation; it identifies cancellation the
+joint history should preserve before estimating a cost.
+
+For the actual imported whole-space forced candidate, H=0 and I=-u.
+Thus a_delta is exactly the positive normalized velocity Lamb triple.
+Write `E_star=sup_t||u(t)||_2^2<infinity`. Its smooth compact force has
+`F_star=sup_t||f(t)||_2^2<infinity`. The forced enstrophy balance, now
+including `2 integral c.f`, gives
+
+```text
+Z'+nu D_omega <=(2/nu)A(t)^2 Z
+                              +(2/nu)(delta E_star+F_star).
+```
+
+Allocate nu/2 of dissipation to each of the Lamb and force terms to
+obtain this inequality. A finite integral of A^2 through time1 would
+therefore bound Z uniformly. This contradicts the already certified
+`ForcedCandidatePancake.no_uniform_gradient_energy` for this SAME
+candidate, together with the solenoidal enstrophy identity. Hence its
+new geometric integral must diverge for every fixed delta>0.
+This argument uses the existing gradient-energy obstruction, not an
+unsupported inference from unbounded speed to unbounded H1 norm.
+It neither constructs internal realization nor excludes it in an
+arbitrary nonzero-datum unforced flow.
+
+### Verification and the remaining estimate
+
+Run `python3 -O labs/signed_impulse_geometry.py`. The exact checker
+verifies the reserve identity (453), dissipation allocation, both
+all-time eigenflow calibrations, the integrated Lamb identity and its
+first evolving derivative, and the complete source (455) on four full
+NS data through the required time derivatives. Canonical pressure,
+viscosity and all convolution outputs remain. It also verifies the
+nonzero internal cross sources and the retained cross observation (456).
+The explicit positive-creation fixture uses exact trigonometric values.
+No numerical trajectory or finite closed cascade is substituted for NS.
+
+The next estimate must pay the positive impulse geometry (449) from
+the original fluid while respecting (455)--(456), or pay the previous
+complete source (435) by another route. The new observation removes
+irrelevant parallel and depleting components and has an explicit
+continuation consumer. It leaves pressure-driven reorientation and
+repeated coupled renewal as the quantitative open obligation.

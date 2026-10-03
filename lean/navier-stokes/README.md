@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [signed impulse geometry calculation](labs/README.md#signed-impulse-geometry-and-a-physical-continuation-allowance)
+adapts the Chae--Lee geometric energy criterion to the original passive
+parent and pressure impulse. A datum-controlled time integral of one
+positive signed triple product would give an explicit nonnegative
+reserve and the existing signed-renewal continuation allowance on both
+domains. The complete pressure and mixed-diffusion sources are retained.
+Exact decaying eigenflow families pass the test; actual unforced data
+can create positive cost from zero initial impulse; the imported forced
+candidate has infinite total cost. The arbitrary-data unforced payment
+remains open. These are analytic arguments with exact checks, not new
+Lean-certified physical estimates.
+
 The [physical forcing test](labs/README.md#physical-forcing-defects-and-compatible-internal-sources)
 shows analytically that the imported whole-space forced candidate defeats
 the exact remaining exponential pressure-history bound, although its
