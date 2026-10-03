@@ -1,0 +1,54 @@
+{
+  "evidence": "Kernel-checked exact guarded transport across two hidden vertices and independent program replay in two spherical exteriors.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.GuardedLift",
+      "source_sha256": "e81c8c597db5b8a9467d5713bf5960d11c6ca8e7041df83ca975a606404b99e3",
+      "source_bytes": 7795,
+      "lake_build_seconds": 1.7,
+      "olean_bytes": 228888,
+      "olean_sha256": "6f8c96fc4344f2bf386a0c29f6c225ff1e1bf700db960b08781f05fe8c236bac"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GuardedBoundaryRepair",
+      "source_sha256": "0776daed620bc05357f23ea6e565518543507ebd9fd5486fadc403ada5994d6c",
+      "source_bytes": 2101,
+      "lake_build_seconds": 2.8,
+      "olean_bytes": 25360,
+      "olean_sha256": "01dcf18452acd5ecfab92096140a2fa620d4288d19f4f401af9e50a7a4f5b3d4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.GuardedBoundaryRepairAudit",
+      "source_sha256": "84df69a9df4284d8e7ff6cd113aaf5fcd4ff7ed899dd7f4385b572887c3a9239",
+      "source_bytes": 2578,
+      "lake_build_seconds": 3.5,
+      "olean_bytes": 2800,
+      "olean_sha256": "fe9b5a7cbe0cf886c3d7e821fe21df2cfbef30a62a3896bee8e2eaa5eb8f5e78"
+    }
+  ],
+  "audit": {
+    "roots": 9,
+    "dependency_declarations": 3779,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "Joint compatible before/after hidden colour assignments suffice to realize a retained partial transposition when restriction fibres are connected.",
+    "Every physical switch projects to a guarded step.",
+    "For any two hidden vertices of any finite graph, connected fibres are proved and guarded histories are equivalent to physical histories with the specified retained boundary fixed.",
+    "The nine-vertex fixed-context obstruction rejects all guarded histories, while its three-switch repair survives when one leaf may cooperate."
+  ],
+  "program_applications": "transition-guard-audit.json",
+  "program_scope": "Two adjacent hidden pairs in complete 155-vertex exteriors. Both blocked commands are rejected; both successful two-switch repairs reconstruct the original 162-vertex spheres. Removing the internal hidden edge admits both invalid commands.",
+  "scope": "An exact constrained transition interface. No unconditional theorem for larger hidden sets, closure under arbitrary repeated elimination, smaller ordinary graph reduction, geometric supply or coverage is asserted.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.GuardedBoundaryRepair",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_transition_guard.py"
+  ],
+  "credited_compression": false
+}

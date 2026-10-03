@@ -442,6 +442,56 @@ and stores only the observer map and reduced command. The
 [measurement receipt](frozen-observer-measurements.json) separates the five-root
 kernel audit from the concrete program checks.
 
+## Exact guarded repair across an interacting hidden pair
+
+[GuardedLift](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/GuardedLift.lean)
+repairs the failed endpoint-only contract. For hidden adjacent vertices `u,v`,
+let `A_u(C)` and `A_v(C)` be the colours absent from their retained neighbours
+in colouring `C`. For a proposed retained partial transposition `σ`, the guard
+asks for colours `x,y` before and `x',y'` after such that
+
+```text
+x ∈ A_u(C),  y ∈ A_v(C),  x ≠ y
+x' ∈ A_u(D), y' ∈ A_v(D), x' ≠ y'
+x' = x or σ(x);  y' = y or σ(y).
+```
+
+These are local colour conditions, not a hypothesis about an unknown repair
+history. The kernel theorem proves that guarded histories are equivalent to
+physical Kempe histories for every finite graph, every palette, and every
+choice of two hidden vertices. The proof prepares the hidden colours, realizes
+a proper partial transposition as actual component switches, and finishes at
+the requested extension. The proved two-vertex fibre theorem ensures that
+successive witnesses compose.
+
+The general construction applies to larger hidden sets only when the
+corresponding fibre-connectivity hypothesis is separately proved. Subsequent
+elimination must preserve the generated transition guards; a constrained
+interface cannot be silently treated as an ordinary graph.
+
+[GuardedBoundaryRepair](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/GuardedBoundaryRepair.lean)
+certifies that the nine-vertex obstruction has neither a guarded step nor a
+guarded history with its boundary fixed. Its three-switch repair still passes
+through the same interface when the cooperating leaf may temporarily move.
+
+The [concrete replay](transition-guard-audit.json) checks both spherical
+exteriors again. It rejects each frozen-observer command and reconstructs
+the two successful physical switches that restore the original patch in each
+162-vertex sphere. The hidden pair's guard observes six retained neighbours
+in D0092 and eight in D0063. Deleting the hidden edge makes both bad commands
+pass: independent marginal choices lose exactly the relevant constraint.
+
+The four-colour program checks at most 16 before assignments and four after
+choices for each one, with no search through histories. The actual geometry
+and reconstruction instances remain program evidence. This result establishes
+a faithful interface contract, not a new coverage theorem or a smaller
+unavoidable set; no catalogue or certificate saving is credited.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.GuardedBoundaryRepairAudit`
+and `python3 tools/fourcolor/near-linear/audit_transition_guard.py`.
+The [measurement receipt](transition-guard-measurements.json) records the
+universal theorem and the separate finite applications.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

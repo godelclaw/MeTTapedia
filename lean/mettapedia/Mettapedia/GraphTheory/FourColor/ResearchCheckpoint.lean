@@ -62,6 +62,7 @@ import Mettapedia.GraphTheory.FourColor.IndependentBoundaryRepairAudit
 import Mettapedia.GraphTheory.FourColor.AdjacentHiddenObstructionAudit
 import Mettapedia.GraphTheory.FourColor.BoundaryCooperationAudit
 import Mettapedia.GraphTheory.FourColor.FrozenBoundaryObserverAudit
+import Mettapedia.GraphTheory.FourColor.GuardedBoundaryRepairAudit
 import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
 import Mettapedia.GraphTheory.FourColor.FacialRollbackLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth

@@ -1,0 +1,140 @@
+{
+  "evidence": "Independent program replay of guards and reconstructed physical histories.",
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "hidden_pair": [
+        66,
+        149
+      ],
+      "ambient_vertices": 162,
+      "retained_exterior_vertices": 153,
+      "guard_neighbours": 6,
+      "blocked_command_rejected": true,
+      "dropping_hidden_edge_admits_bad_move": true,
+      "successful_guarded_transitions": [
+        {
+          "pair": [
+            0,
+            1
+          ],
+          "hidden_choices": [
+            3,
+            0,
+            3,
+            0
+          ],
+          "retained_vertices_changed": 3,
+          "reconstructed_moves": [
+            {
+              "pair": [
+                0,
+                1
+              ],
+              "root": 0,
+              "size": 3,
+              "silent": false
+            }
+          ]
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "hidden_choices": [
+            3,
+            0,
+            3,
+            0
+          ],
+          "retained_vertices_changed": 70,
+          "reconstructed_moves": [
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "root": 2,
+              "size": 70,
+              "silent": false
+            }
+          ]
+        }
+      ],
+      "full_sphere_reconstructed": true
+    },
+    {
+      "configuration": "D0063.conf",
+      "hidden_pair": [
+        42,
+        102
+      ],
+      "ambient_vertices": 162,
+      "retained_exterior_vertices": 153,
+      "guard_neighbours": 8,
+      "blocked_command_rejected": true,
+      "dropping_hidden_edge_admits_bad_move": true,
+      "successful_guarded_transitions": [
+        {
+          "pair": [
+            0,
+            3
+          ],
+          "hidden_choices": [
+            3,
+            2,
+            3,
+            2
+          ],
+          "retained_vertices_changed": 32,
+          "reconstructed_moves": [
+            {
+              "pair": [
+                0,
+                3
+              ],
+              "root": 10,
+              "size": 32,
+              "silent": false
+            }
+          ]
+        },
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "hidden_choices": [
+            3,
+            2,
+            3,
+            1
+          ],
+          "retained_vertices_changed": 67,
+          "reconstructed_moves": [
+            {
+              "pair": [
+                1,
+                2
+              ],
+              "root": 0,
+              "size": 68,
+              "silent": false
+            }
+          ]
+        }
+      ],
+      "full_sphere_reconstructed": true
+    }
+  ],
+  "observer_cases_replayed": 2,
+  "generic_lean_theorem": "SimpleGraph.KempeGuardedLift.two_vertex_history_iff",
+  "scope": "Two concrete exteriors. The generic guard theorem is kernel proved; these graph instances and their geometry are program checked. No recognition, coverage, strict ordinary graph reduction or catalogue saving is claimed.",
+  "source_sha256": {
+    "frozen-observer-example.json": "89c7f88d301721a7c4cd843e00ae7b12cc95c7ed7296c3db67f4dc435bda802d",
+    "independent-repair-example.json": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e"
+  },
+  "verifier_sha256": "3c3ec2b6cbdb168da7b0e06d89b55bb4f6a662eae3ff80f9da9ac3c643c10a79",
+  "credited_compression": false
+}
