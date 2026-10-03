@@ -1,5 +1,57 @@
 # Near-linear Four Colour catalogue bridges
 
+## A free port supplies a two-step residual repair
+
+[ResidualPortPreparation](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualPortPreparation.lean)
+handles a subclass of the remaining D0092 three-run boundary case. Ports
+three and six share a one/three component. If port two has no exterior
+neighbour of colour one, recolouring that port from two to one joins the
+path to port one. The existing spherical separation theorem then forces
+the zero/two component through port seven to avoid the first boundary runs.
+Switching it gives the displayed proper core assignment and reconstructs
+a colouring of the entire ambient graph.
+
+The theorem permits arbitrary exterior size and path length. Its first
+move supplies the separator used by the second; neither the final component
+observation nor a successful colouring is assumed. The earlier one-step
+branches and this supplier combine in `whole_repair_or_neighbor`: the
+remaining case must also have a colour-one neighbour at port two.
+
+[The finite consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualPortPreparationExample.lean)
+checks the free-port condition and old path on the retained 155-vertex
+exterior, then invokes the general preparation law. The concrete spherical
+representation and full reconstruction instances are checked separately by
+the [program replay](residual-port-preparation-audit.json).
+
+| Sphere vertices | First component | Second component | Successful immediate repairs |
+| ---: | ---: | ---: | ---: |
+| 162 | 1 | 62 | 0 |
+| 3,759 | 1 | 476 | 0 |
+| 12,097 | 1 | 1,136 | 0 |
+
+Each replay uses the same two commands and direct seven-vertex core
+assignment, without searching for a successful history. The larger spheres
+preserve the exact core stars and their cyclic order; a new short-cycle
+census is not claimed for them.
+
+The local guard is not universal. A second colouring of the original sphere
+has a colour-one neighbour at port two and still has no immediate repair.
+Switching the two-vertex component containing port two, followed by the
+36-vertex finishing component, repairs it. This is an explicit program
+example beyond the singleton supplier, not a proof of that more general
+supplier. Universal two-step repair and geometric coverage remain open.
+No catalogue entry or original configuration certificate is removed.
+
+Replay `lake build MettapediaFourColor.ResidualPortPreparationAudit` in the
+classical package, and from the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_residual_port_preparation.py
+```
+
+The [measurement receipt](residual-port-preparation-measurements.json)
+separates the parameterized proof, finite consumer and program instances.
+
 ## Flat-seven returns and a shared-core test
 
 Two small replay recipes test the proposed continuation through flat

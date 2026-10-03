@@ -5296,5 +5296,25 @@
       "A new strict reduction or universal geometric coverage"
     ],
     "receipt": "tools/fourcolor/near-linear/seven-pair-recognition-measurements.json"
+  },
+  "residual_free_port_supplier": {
+    "theorem": "FourColor.ResidualPortPreparation.whole_repair_of_free_port",
+    "scope": "The retained D0092 boundary word, with an actual one/three path between ports 3 and 6 and no colour-one exterior neighbour at port 2. Arbitrary exterior size, exact embedded source, complete core stars, spherical separation and genuine starting exterior colouring.",
+    "mechanism": "A physical singleton switch at port 2 constructs a one/three path from port 1 to port 6. Spherical separation supplies the final zero/two component observation; a direct source assignment and exact reconstruction glue the whole colouring.",
+    "residual_theorem": "FourColor.ResidualPortPreparation.whole_repair_or_neighbor",
+    "residual": "The previous one/three component case plus a colour-one exterior neighbour at port 2. An exact program example satisfies this stronger residual and still admits a two-component repair beyond the singleton theorem.",
+    "finite_lean_consumer": "FourColor.ResidualPortPreparation.Example.physical_preparation",
+    "program_receipt": "tools/fourcolor/near-linear/residual-port-preparation-audit.json",
+    "measurement_receipt": "tools/fourcolor/near-linear/residual-port-preparation-measurements.json",
+    "new_bulk_colouring_table": false,
+    "new_coverage_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false,
+    "open": [
+      "Uniform supply when port 2 has a colour-one neighbour.",
+      "Other boundary words and source families.",
+      "Universal geometric coverage and termination."
+    ]
   }
 }

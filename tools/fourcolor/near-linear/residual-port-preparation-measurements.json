@@ -1,0 +1,105 @@
+{
+  "classification": "PARAMETERIZED_RESIDUAL_REPAIR_WITH_EXPLICIT_LOCAL_GUARD",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ResidualPortPreparation",
+      "source_bytes": 10762,
+      "source_sha256": "f509eeed4d81f46494e31e4c2843d5755bb34321d18d8adbadaa2be8981d0a5f",
+      "build_frontend_seconds": 4.6,
+      "olean_bytes": 563976,
+      "olean_sha256": "63fac6ebda29a61ce30250a73f5247a931023624c9901631f31b366ab23d8113"
+    },
+    {
+      "module": "MettapediaFourColor.ResidualPortPreparationExample",
+      "source_bytes": 2717,
+      "source_sha256": "f5a493fb15dd1a70d7e091d38feaa4aa3484ec310c58be3324409078d7bae6df",
+      "build_frontend_seconds": 3.0,
+      "olean_bytes": 116456,
+      "olean_sha256": "21de89bec7d1d41712b47a811f15634d47f701ced02f2cbb46d7b8977963202d"
+    },
+    {
+      "module": "MettapediaFourColor.ResidualPortPreparationAudit",
+      "source_bytes": 2647,
+      "source_sha256": "a1f70730e29caebf5e1f5e4d5bc350c59f5f0acaf199da6a497c533f6c041aae",
+      "build_frontend_seconds": 5.1,
+      "olean_bytes": 3448,
+      "olean_sha256": "cc64550cab8cc502dcf943018df7fca312ac10036b105c510d252938558b8d0a"
+    }
+  ],
+  "new_lean_source_bytes": 16126,
+  "new_fixture_bytes": 1790,
+  "source_scope": "The exact D0092 core and retained eleven-port word; arbitrary exterior size under the geometric and local neighbour hypotheses.",
+  "mathematical_result": "A singleton preparation joins the complementary path required by spherical separation. One further actual component switch admits a direct core assignment and exact whole-map reconstruction. The combined alternatives force a colour-one exterior neighbour at port two in the remaining case.",
+  "audit": {
+    "roots": 10,
+    "dependency_declarations": 18564,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_dependencies": [
+      "physical singleton switch",
+      "spherical path separation",
+      "actual final component switch",
+      "direct source assignment",
+      "whole-map reconstruction",
+      "previous one-step repair alternatives"
+    ],
+    "full_four_colour_theorem_used": false,
+    "new_bulk_colouring_table": false
+  },
+  "program": {
+    "script_sha256": "b59e65fd75d61057d4fd4ab02ef561d012d321cf7537a16cc3d7fedb504fe01b",
+    "receipt_sha256": "65374f2322ea2dbd922557da621e379ae7d07250425acba118fead7dd012afe2",
+    "guarded_sphere_vertices": [
+      162,
+      3759,
+      12097
+    ],
+    "component_sizes": [
+      [
+        1,
+        62
+      ],
+      [
+        1,
+        476
+      ],
+      [
+        1,
+        1136
+      ]
+    ],
+    "all_guarded_one_step_repairs": 0,
+    "blocked_guard_vertices": 162,
+    "blocked_guard_component_sizes": [
+      2,
+      36
+    ],
+    "larger_mesh_short_cycle_census": false,
+    "concrete_sphere_rotation_and_source_instantiation_kernel_checked": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.ResidualPortPreparationAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "open": [
+    "Supply of a repair when the local free-port guard fails.",
+    "Uniform two-step repair for the entire retained boundary class.",
+    "Other boundary classes and configuration families.",
+    "Geometric coverage and termination for the intended graph class."
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "evidence": "Exact program replay; geometric instances are separate from the parameterized Lean theorem.",
+  "fixture_sha256": "a70754af34d4290e850f65d15f0e12ff4cd40ea21935adfaa3af3531a828620e",
+  "source_fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "guarded_cases": [
+    {
+      "vertices": 162,
+      "exterior_vertices": 155,
+      "faces": 320,
+      "minimum_degree": 5,
+      "residual_connectivity": true,
+      "core_adjacency_and_cyclic_order_preserved": true,
+      "all_initial_components": 31,
+      "one_switch_repairs": 0,
+      "colour_one_neighbours_of_port_two": [],
+      "component_sizes": [
+        1,
+        62
+      ],
+      "changed_ports": [
+        [
+          2
+        ],
+        [
+          7,
+          8,
+          9,
+          10
+        ]
+      ],
+      "whole_colouring_reconstructed": true,
+      "mesh_width": 1,
+      "short_cycle_census": "retained base checked by data()"
+    },
+    {
+      "vertices": 3759,
+      "exterior_vertices": 3752,
+      "faces": 7514,
+      "minimum_degree": 5,
+      "residual_connectivity": true,
+      "core_adjacency_and_cyclic_order_preserved": true,
+      "all_initial_components": 124,
+      "one_switch_repairs": 0,
+      "colour_one_neighbours_of_port_two": [],
+      "component_sizes": [
+        1,
+        476
+      ],
+      "changed_ports": [
+        [
+          2
+        ],
+        [
+          7,
+          8,
+          9,
+          10
+        ]
+      ],
+      "whole_colouring_reconstructed": true,
+      "mesh_width": 5,
+      "short_cycle_census": "not performed"
+    },
+    {
+      "vertices": 12097,
+      "exterior_vertices": 12090,
+      "faces": 24190,
+      "minimum_degree": 5,
+      "residual_connectivity": true,
+      "core_adjacency_and_cyclic_order_preserved": true,
+      "all_initial_components": 206,
+      "one_switch_repairs": 0,
+      "colour_one_neighbours_of_port_two": [],
+      "component_sizes": [
+        1,
+        1136
+      ],
+      "changed_ports": [
+        [
+          2
+        ],
+        [
+          7,
+          8,
+          9,
+          10
+        ]
+      ],
+      "whole_colouring_reconstructed": true,
+      "mesh_width": 9,
+      "short_cycle_census": "not performed"
+    }
+  ],
+  "guard_counterexample": {
+    "vertices": 162,
+    "exterior_vertices": 155,
+    "faces": 320,
+    "minimum_degree": 5,
+    "residual_connectivity": true,
+    "core_adjacency_and_cyclic_order_preserved": true,
+    "all_initial_components": 33,
+    "one_switch_repairs": 0,
+    "colour_one_neighbours_of_port_two": [
+      20
+    ],
+    "component_sizes": [
+      2,
+      36
+    ],
+    "changed_ports": [
+      [
+        2
+      ],
+      [
+        7,
+        8,
+        9,
+        10
+      ]
+    ],
+    "whole_colouring_reconstructed": true
+  },
+  "scope": "No immediate repair succeeds on these inputs. The free-port supplier applies to the guarded cases. The counterexample refutes universal availability of that local guard; its two-vertex preparation also succeeds, but is not covered by the free-port theorem. Larger meshes are checked oriented triangulated spheres with preserved core stars, without a new short-cycle census.",
+  "catalogue_entries_removed": 0,
+  "original_certificates_removed": 0
+}
