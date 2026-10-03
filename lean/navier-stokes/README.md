@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint renewal test](labs/README.md#balanced-reciprocal-parents-defeat-the-joint-rational-allowance)
+finds a whole-fluid failure of the two-coefficient rational pressure allowance.
+For an interval of balanced three-dimensional parent ratios, the first complete
+correction is favorable but the next complete return exceeds the predicted
+saving. The comparison fails on an actual short unforced interval at every
+positive viscosity. Nonconstant original labels related by physical symmetry
+have equal costs, so summing their allowances gives the same failure with zero
+pooling loss. Exact full-output jets and a separate viscous moment recurrence
+are checked; the actual interval and symmetry identification remain analytic.
+This refutes the specific rational payment, not the coarser heat forecast or
+the existence of a larger full-datum history bound.
+
 The [labelled later-return test](labs/README.md#a-retained-label-can-pass-its-initial-payment-and-fail-later)
 shows why retaining component labels does not finish the pressure payment.
 On one actual unforced positive-viscosity history, the complete two-coefficient
