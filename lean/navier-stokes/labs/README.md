@@ -31712,3 +31712,225 @@ enclosures verify the adverse angular direction. The scalar reserve
 identities and explicit constants are also checked. The local PDE,
 Fourier estimates and all-prefix payment above are analytic arguments;
 no new Lean declaration or axiom is introduced.
+
+## Fixed-energy concentration of the actual critical history
+
+The fixed-quartet payments (527)--(531) are valid along arbitrary smooth
+periodic unforced prefixes. Their payment, however, comes from kinetic
+energy. A uniformly finite energy-funded sum of these observations cannot
+dominate the complete critical cost (494). This obstruction concerns the
+ACTUAL velocity and its critical history; it is distinct from the earlier
+counterexamples for auxiliary caloric renewal functionals.
+
+The analytic statement is: on R3 and on the fixed normalized 2*pi torus,
+for any prescribed nu>0, horizon T>0 and 0<=alpha<1, there are smooth
+divergence-free initial data with E0=1, exactly positive initial helicity,
+and actual unforced smooth evolutions through times t_lambda<=T such that
+
+```text
+C_H(t_lambda)=4 integral_0^t_lambda J
+                 -2alpha nu integral_0^t_lambda L >= c lambda,
+t_lambda=tau0 lambda^(-5/2),
+0<=1-E(t_lambda)<=C nu lambda^(-1/2).              (532)
+```
+
+Here c,tau0,C>0 are fixed independently of sufficiently large lambda;
+J,L,M and C_H have exactly the meanings in (492)--(494). Each lambda
+uses DIFFERENT original data. This proves neither indefinite renewal from
+one datum nor an unforced singularity. It rules out an energy-only uniform
+allowance for this particular sufficient criterion. The full-data allowance
+in (494) remains open.
+
+### A uniform physical interval with critical-mass growth
+
+Reuse the localized seed (507)--(508), fixing its envelope size sufficiently
+large, then normalizing its kinetic energy. This gives a real divergence-free
+Schwartz field U on R3, with smooth compact Fourier support away from zero,
+P_+U=U, E(U)=1, and H(N(U))<0, where N(U)=P_sol(U cross curl U).
+In particular,
+
+```text
+b=N(U), A=||Lambda^(1/2)P_-b||_2^2>0.             (533)
+```
+
+The strict inequality follows from 2A=M(b)-H(b)>0; no sign of the
+helicity of the total evolving velocity is assumed. For viscosity
+0<mu<=1 let v_mu be the actual local unforced solution from U.
+The usual differentiated H^m energy estimate, for a fixed sufficiently
+large m (m=12 suffices), has a nonpositive viscous term and gives a common
+existence interval and uniform H^m bound independent of mu. The projected
+equation then bounds v_mu'' in H^(1/2) uniformly there: differentiating
+twice costs at most four spatial derivatives and mu<=1. Consequently
+
+```text
+P_-v_mu(tau)=tau P_-b+e_mu(tau),
+||Lambda^(1/2)e_mu(tau)||_2<=K tau^2,
+L(v_mu(tau))<=L_star.                             (534)
+```
+
+The initial viscous derivative has no negative sector because P_-U=0.
+All nonlinear outputs and pressure are retained in (534); this is not an
+evolution on a closed set of modes. These local estimates can be obtained
+directly from the transport energy inequality and local existence; no
+global regularity or controlled future norm is assumed.
+
+More generally suppose the initial negative-source norm squared is at
+least a>0, with the constants in (534) uniform over a family. Choose one
+tau0 in the common interval with K tau0<=sqrt(a)/2. Then
+
+```text
+M_-(v_mu(tau0)) >= a tau0^2/4,
+H(v_mu(tau0))-H(U) >= -2mu L_star tau0,
+M(v_mu(tau0))-M(U)
+  >= a tau0^2/2-2mu L_star tau0 >= delta,
+delta=a tau0^2/4>0,
+provided mu<=a tau0/(8L_star).                    (535)
+```
+
+The second line uses the exact viscous helicity balance (493), and the
+third uses M=H+2M_- and M_-(U)=0. Thus the initial critical mass can
+increase on a common interval even though its initial derivative is
+negative. For comparison, the complete initial derivatives are
+
+```text
+M'(0)=-2mu L(U),
+M''(0)=4A-4mu <Lambda^3 U,b>
+                 +4mu^2 ||Lambda^(5/2)U||_2^2.   (536)
+```
+
+The checker verifies the entire viscosity polynomial in (536), including
+a fixture with <Lambda^3 U,b>=-72. Discarding the mixed viscous term is
+unnecessary and would be incorrect for that fixture. The proof of (535)
+uses the controlled interval (534), not the initial derivatives alone.
+
+### Exact concentration on R3
+
+Set mu=nu/sqrt(lambda) and rescale the full solution and pressure by
+
+```text
+u_lambda(t,x)=lambda^(3/2)
+                  v_mu(lambda^(5/2)t,lambda x),
+p_lambda(t,x)=lambda^3 p_mu(lambda^(5/2)t,lambda x).
+E(u_lambda)=E(v_mu), M(u_lambda)=lambda M(v_mu),
+L(u_lambda)=lambda^3 L(v_mu),
+J(u_lambda)=lambda^(7/2) J(v_mu).                 (537)
+```
+
+Both the time derivative and the complete convection/pressure terms have
+factor lambda^4; the viscous coefficient becomes nu as required. Thus
+these are actual unforced solutions at the SAME prescribed viscosity.
+Take lambda sufficiently large for (535) and t_lambda<=T. Integrating
+(493) gives
+
+```text
+C_H(t_lambda)
+ =lambda [M(v_mu(tau0))-M(U)
+          +2(1-alpha)mu integral_0^tau0 L(v_mu)]
+ >=delta lambda.                                 (538)
+```
+
+The kinetic balance gives the other part of (532): if Z(v_mu)<=Z_star
+on the common interval, then
+`1-E(u_lambda(t_lambda))<=2nu Z_star tau0/sqrt(lambda)`.
+There is no replenishing force. A vanishing kinetic-energy expenditure
+can accompany a large change in a norm which weights small scales more
+heavily. The original critical mass itself is lambda M(U); this family
+requires a critical-history allowance at least a fixed positive multiple
+of that initial resource. It does not rule out such an allowance.
+
+### The same obstruction on the fixed torus
+
+To connect the result to the PERIODIC quartet payments, a whole-space
+example alone does not suffice. Use the same Schwartz seed and define on
+the torus of side 2*pi*lambda
+
+```text
+W_lambda(y)=rho_lambda sum_(n in Z^3) U(y+2pi lambda n),
+rho_lambda>0 chosen so E(W_lambda)=1.             (539)
+```
+
+For this comparison, use the fixed measure density (2*pi)^(-3)dy on
+R3 AND on every expanding torus, not the mean over each expanding box.
+Normalize U in that convention. With
+`U_hat(xi)=(2pi)^(-3) integral U(y)exp(-i xi.y)dy`, the coefficients
+in (539) are `rho_lambda lambda^(-3) U_hat(k/lambda)`.
+Parseval and Riemann sums give rho_lambda->1 and convergence of every
+fixed Sobolev norm to its whole-space value. The initial data are finite
+Fourier polynomials, real, exactly solenoidal, mean-zero and exactly
+positive-helicity: the multiplier is evaluated at the same k/lambda as
+the sampled coefficient, and U_hat vanishes near zero.
+
+The full source also converges in the norm needed in (533). Its Fourier
+convolution is a Riemann sum of smooth compactly supported factors.
+The Leray multiplier is bounded uniformly. At zero output the divergence
+form of the source contributes a factor |xi|; hence the source tends to
+zero there. Applying the bounded helical projection and weighting by
+|xi| in its squared norm introduces no low-frequency singularity.
+It follows that
+`||Lambda^(1/2)P_-N(W_lambda)||_2^2->A>0`.
+
+The H^m local estimates used for (534) are uniform on these expanding
+tori. For example, the Fourier proof of the Sobolev embedding uses
+
+```text
+lambda^(-3) sum_(k in Z^3)
+    (1+|k/lambda|^2)^(-s)<=C_s, s>3/2, lambda>=1. (540)
+```
+
+Thus the Sobolev/product constants, the norm-one Leray projection and
+the initial H^m bounds are all uniform. The same transport estimate
+and projected-equation time derivatives give uniform K,L_star,Z_star
+and a common interval. With a=A/2, (535) holds for all sufficiently
+large lambda at sufficiently small mu, using the same tau0,delta.
+This step only constructs local viscous solutions.
+
+Solve from W_lambda at viscosity mu=nu/sqrt(lambda) on its expanding
+torus, then apply (537). The resulting velocity lives on the ORIGINAL
+2*pi torus, has exactly unit initial normalized energy, and obeys
+(532) and (538). Its initial critical mass is
+`lambda M(W_lambda)`, asymptotic to lambda M(U). This establishes the
+fixed-domain obstruction rather than changing the domain in the final
+claim. Periodization and the uniform PDE interval are analytic here,
+not finite Fourier computation or Lean certification.
+
+### Consequence for sums of paid phase observations
+
+For quartet i in (527)--(530), write c_i=product_j s_ij and
+K_i=c_i sum_j |k_ij|. Then its nonnegative accumulated observation cost
+P_i(t)=integral_0^t [nu kappa_i |Q_i|+q_i] satisfies
+
+```text
+P_i(t)<=S_i(0)<=c_i E0^2+2K_i E0^(5/2)/(5nu).
+For w_i>=0, A0=sum_i w_i c_i<infinity,
+            A1=sum_i w_i K_i<infinity,
+sum_i w_i P_i(t)<=A0 E0^2+2A1 E0^(5/2)/(5nu).    (541)
+```
+
+Tonelli justifies the countable sum. If A0,A1 have bounds depending
+only on E0,nu,T, the right side is uniformly finite at E0=1. Therefore
+there cannot be a universal estimate
+
+```text
+C_H(t)<=D(E0,nu,T)+C(E0,nu,T) sum_i w_i P_i(t)     (542)
+```
+
+with finite D and finite C>=0 and those uniform price bounds, for all
+smooth unforced periodic data and available prefixes. Equation (532)
+contradicts it. This conclusion allows weights selected from the datum
+if their TOTAL price is still uniformly bounded by energy alone.
+
+It does not exclude a joint observation with an initial price that grows
+with the datum's critical mass or finer geometry, nor a different sufficient
+regularity criterion. The next constructive obligation is a payment from
+such a full-data resource that survives changing scales and interacting
+parents. Merely summing more of the current energy-funded accounts cannot
+supply that obligation. This is a restriction on one proposed bridge to
+(494), not a disproof of arbitrary-data regularity.
+
+Run `python3 -O labs/critical_history_concentration.py`. It checks the
+full viscosity-polynomial identities against independent advective NS
+jets, strictly positive source norms with rational radical enclosures,
+and the scaling and scalar payment calculations. It reuses the localized
+seed established analytically in (507)--(508). The uniform local interval,
+Schwartz localization and expanding-torus limit remain analytic arguments.
+No new Lean declaration or axiom is introduced.

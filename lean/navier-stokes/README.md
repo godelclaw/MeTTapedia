@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [critical-history concentration test](labs/README.md#fixed-energy-concentration-of-the-actual-critical-history)
+limits what energy-funded boundary observations can establish. On both R3
+and the fixed torus, actual smooth unforced solutions with unit initial
+kinetic energy can have arbitrarily large short bursts in the critical
+history cost (494). Their kinetic energy loss tends to zero along this
+family. Therefore a uniformly finite energy-only sum of quartet payments
+cannot dominate that cost. An allowance from the full initial datum remains
+open; these examples require a payment comparable to its initial critical
+mass. The PDE interval and periodization arguments are analytic, supported
+by exact source, viscosity-polynomial and scaling checks, not Lean-certified.
+
 The [quartet phase-history bound](labs/README.md#actual-quartet-phase-dynamics-and-a-paid-observation-history)
 derives the actual phase torque, shows uniform initial depletion of the
 higher-frequency original parents, and tests the proposed angular alignment.
