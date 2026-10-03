@@ -37050,3 +37050,300 @@ viscous-fixture, mixture and moment-source identities, or add
 `--cyclic-probes` to reproduce the fourteen complete initial jet tests.
 Python compilation and the exact checks are distinct from the analytic
 actual-solution argument. No Lean declarations or axioms change.
+
+## A retained label can pass its initial payment and fail later
+
+`labelled_pressure_return.py` tests the next obligation after (758).
+Retaining an original label repairs the pooling error there, but does
+not make a component's two-coefficient allowance valid on every later
+prefix. The example below starts with a favorable comparison and then
+crosses the allowance at a strictly positive time. It persists on actual
+unforced positive-viscosity three-dimensional flows with reciprocal
+nonlinear feedback. No history is restarted at the crossing.
+
+The failed assertion is the componentwise extension of (758). This is
+not a failure of the sum after all other labels' savings are included,
+nor of an arbitrary finite allowance depending on the full datum. The
+reference flow is explicitly globally regular. The result identifies
+a later-history defect in this particular proposed payment.
+
+### The precise component candidate and its full derivative
+
+Work on the normalized period-2pi torus. Choose one smooth original
+particle label `0<=chi<=1`, of mass m>0. Its complement is another
+label, so the full spatial marginal remains uniform. Use the actual
+velocity, canonical pressure and diffusivity nu for both labels. For
+initial datum epsilon U, set
+
+```text
+Phi_chi(epsilon,t)=(1/m) E[chi(a)|P_t|^4],
+P_t=integral_0^t grad p(s,X_s) ds,
+F_n(t)=(1/n!) partial_epsilon^n Phi_chi(0,t),
+a=F_8, b=F_10, B(epsilon,t)=epsilon^8 a^2/(a-epsilon^2 b).
+                                                               (759)
+```
+
+The division is by the constant ORIGINAL label mass, not by its evolving
+spatial density. Multiplying all expressions by m gives the unnormalized
+convention of (757). The label, density and every accumulated moment
+persist throughout the evolution. The example has an exact symmetry
+removing odd amplitude coefficients; pressure starts at degree two.
+Both a and b are the complete viscous coefficient functions, including
+pressure renewal, transport and the evolving label. They are not just
+their first time monomials.
+
+For epsilon=1 the exact later-time comparison defect is
+
+```text
+(Phi_chi-B)' = (4/m) integral grad p . T_chi
+              -[(a^2-2ab)a'+a^2 b']/(a-b)^2.             (760)
+```
+
+Here T_chi is the unnormalized contracted third moment in (757).
+Integrating transport and diffusion in the fourth-moment equation gives
+the first term; diffusion still acts in the complete equations for
+rho,I,Q,T and the coefficient functions. Formula (760) omits none of
+those effects. At a seam s, the value gap at t is its existing value
+at s plus the integral of (760). An initially negative gap cannot
+be reset to zero or used repeatedly as a fresh reserve.
+
+### An explicit reference with a later value crossing
+
+Take the classical cellular velocity and its canonical pressure
+
+```text
+U=(sin y,sin x,0), p_0=cos x cos y,
+U.grad U=-grad p_0, Delta U=-U.
+u_nu(t)=exp(-nu t)U, p_nu(t)=exp(-2nu t)p_0.              (761)
+```
+
+Thus (761) is an exact unforced viscous solution, not a forced
+stationary flow. Begin the calculation at nu=0, and below transfer
+the strict inequalities to the complete nu>0 histories.
+
+Let theta satisfy `cos theta=c=5/9`, with `0<theta<pi/2`.
+Start a reference particle at `(theta,theta,0)` on the separatrix
+x=y. Its equation is x'=sin x, so
+
+```text
+sin x(t)/sin theta = h_+(t)=1/(cosh t-c sinh t).
+```
+
+The translated point `(theta,theta,0)+(pi,pi,pi)` follows the reversed
+cellular velocity. Its speed ratio is
+`h_-(t)=1/(cosh t+c sinh t)`. Along a steady Euler trajectory,
+`P_t=U(a)-U(X_t)` exactly. Averaging these two original particles gives
+
+```text
+phi(t)=4 sin(theta)^4 f(t),
+f(t)=[(1-h_+(t))^4+(1-h_-(t))^4]/2
+    =A t^4+B t^6+D t^8+O(t^10),
+A=c^4,
+B=c^2(60c^4-56c^2+9)/6,
+D=(2800c^8-4800c^6+2416c^4-340c^2+5)/80.
+For c=5/9:
+A=625/6561, B=-140425/1062882,
+D=124769021/688747536,
+D-B^2/A=-1433735/688747536<0.                           (762)
+```
+
+The common factor `4 sin(theta)^4` multiplies both the actual moment
+and its rational allowance. The initial comparison is strictly
+favorable. For this Euler reference, amplitude scaling gives
+`Phi(epsilon,t)=epsilon^4 phi(epsilon t)`, so the COMPLETE first two
+amplitude coefficients are precisely the multiples of A t^4 and B t^6.
+
+Now take T=log4. This time has exact hyperbolic values
+`cosh T=17/8`, `sinh T=15/8`, hence
+
+```text
+h_+(T)=12/13, h_-(T)=6/19,
+f(T)=[(1/13)^4+(13/19)^4]/2=407930521/3722098081.
+```
+
+The normalized candidate `A t^4/(1-(B/A)t^2)` is increasing for t>0.
+The first six positive terms of exp(7/5) already sum to more than four,
+so T<7/5. Therefore
+
+```text
+A T^4/(1-(B/A)T^2) < 3001250/30495123,
+f(T)-A T^4/(1-(B/A)T^2)
+ >1268944547747833/113505838798158963 >1/100.              (763)
+```
+
+These are exact rational bounds; no sampled time or floating-point
+sign decides the crossing. The same component that saves initially
+has spent more than its proposed allowance by T. In physical terms,
+particles at different phases move through the same cellular geometry;
+the later change of speed is not paid by this first-return forecast.
+
+### Smooth labels and positive viscosity, with an actual solution
+
+The paired atoms above are only a reference calculation. Replace them
+by two identical nonnegative smooth bumps, supported in small disjoint
+balls about the stated points, and let chi be their sum. Choose their
+height at most one, and use chi_0=1-chi as the exterior label. Then
+`chi(x+(pi,pi,pi))=chi(x)`. Normalized integration against chi converges
+to the paired reference as the balls shrink.
+
+All material coefficients in (762), and the reference observation at T,
+are smooth functions of the original particle position. Consequently
+one can FIX a positive bump radius, using only the explicit reference,
+for which A_chi>0, B_chi<0,
+`D_chi-B_chi^2/A_chi<0`, and the later strict gap in (763) remains
+positive. No label is chosen from a subsequent unknown NS solution.
+The constant initial normalization commutes with these limits.
+
+Next use (761) at nu>0. The actual forward stochastic paths have drift
+`exp(-nu t)U` and noise `sqrt(2nu)dW`; their pressure is
+`exp(-2nu t)p_0`. Coupling them to the reference Euler paths from the
+SAME initial positions gives convergence on [0,T]. For example the
+bounded Lipschitz constants of U and grad p_0, Brownian maximal-moment
+bounds and Gronwall give an L4 path/impulse error at most
+`C_T(sqrt(nu)+nu)`. The fourth moments converge as well, since the
+pressure gradients on this fixed interval are uniformly bounded.
+
+The complete coefficient functions also converge, not only the actual
+observation. Differentiate the finite heat/Duhamel velocity equations
+and the labelled hierarchy (757) through amplitude degree ten. This
+gives finitely many triangular, smooth transport/diffusion source
+equations, with the fixed initial U and chi. Their difference from the
+nu=0 equations is bounded by `C nu` on [0,T] in sufficiently high
+spatial norms. One proves this by induction on amplitude degree,
+retaining each pressure projection and every generated product.
+The needed extra derivatives of U and chi are finite from the outset.
+
+Their time grading gives continuous extensions of a/t^4 and b/t^6 at
+zero. The same integral equations show convergence of these factored
+coefficients uniformly on [0,T]. In particular, for sufficiently small
+positive nu, a>0 and b<0 on the entire interval 0<t<=T. Their quotient
+in (759) converges at T to the reference quotient. Thus the later
+crossing survives with its full viscous coefficients and Brownian
+history. Choosing nu after fixing the smooth label is essential; no
+uniform assertion as the bump radius tends to zero is used.
+
+The initial favorable sign survives too. Finite time jets of a smooth
+NS solution give velocity amplitude degree at most j+1 at time order j,
+and pressure degree at most j+2. The labelled fourth moment of degree n
+starts no earlier than time order n-4. The leading terms at that time
+contain no diffusion. Translation by (pi,pi,pi) reverses the initial
+velocity and preserves chi, so uniqueness makes the observation even
+in epsilon, including at nu>0. Consequently, with COMPLETE a,b,
+
+```text
+Phi_chi(1,t)-B(1,t)
+ =[D_chi-B_chi^2/A_chi]t^8+O(t^9)<0
+                   on a sufficiently short positive interval, (764)
+Phi_chi(1,T)-B(1,T)>0.
+```
+
+This is a value crossing on one physical history. The remainder in
+(764) is bounded by local high-Sobolev estimates for the actual
+solution and the finite labelled moment equations. It is not an
+assumption that an infinite amplitude expansion converges at epsilon=1.
+Here the reference solution itself is explicit for every nu, so no
+long-time regularity premise enters this step.
+
+### Persistence with genuine reciprocal three-dimensional parents
+
+The crossing is not confined to a flow with identically zero vortex
+stretching. Perturb the original velocity to
+
+```text
+U_delta=(sin y+delta sin z, sin x, delta sin x),
+p_delta=cos x cos y+delta^2 cos x cos z,
+N_delta=-U_delta.grad U_delta-grad p_delta
+       =(0,-delta sin z cos x,-delta sin y cos x).        (765)
+```
+
+This is smooth, mean-zero and divergence-free. For delta!=0 its
+nonzero spatial frequencies span all three directions. It preserves
+the translation symmetry used for the SAME smooth paired label.
+Neither the velocity nor the pressure is held to the reference
+evolution after the initial time. Complete unforced jets give
+
+```text
+partial_t p(0)=-2nu p_delta
+ +(2/3)sin x[delta^2 sin y cos z+delta sin z cos y],
+partial_t^2 u_1(0)-nu^2 (U_delta)_1
+ =(delta/3)cos x[delta sin y cos z+sin z cos y].          (766)
+```
+
+The first generated parent outputs in (765) therefore return into
+the first component at the next step. The canonical pressure
+derivative in (766) is retained in that calculation. In addition,
+writing `g(t)=integral omega.grad u.omega`, exact integration gives
+
+```text
+g(0)=0,                  g'(0)=delta^2/2>0.              (767)
+```
+
+The equality holds at every viscosity: the initial velocity has one
+Laplacian eigenvalue, and the viscous contribution is -3nu g(0)=0.
+Thus these actual smooth histories have positive integrated vortex
+stretching for a short positive interval. This says nothing by itself
+about exceeding the viscous or full-datum renewal allowance.
+
+To justify the finite interval, fix the positive viscosity chosen
+above and compare the perturbed NS solution to the explicit smooth
+reference (761). For any sufficiently high Sobolev order s, the
+standard difference energy estimate, retaining the favorable viscous
+term, bounds their difference y on a bootstrap region y<=1 by
+`y'<=C_s(U,nu,T)y`. Hence choosing the original
+`|delta| ||(sin z,0,sin x)||_{H^s} exp(C_s T)` sufficiently small
+gives existence and closeness throughout [0,T]. Local existence and
+this bound extend the prefix; existence up to T is not assumed.
+The pressure gradient and the finite moment/coefficient equations
+depend continuously on this prefix in their required norms.
+
+The strictly negative initial coefficient, strictly positive later
+gap, and the signs a>0,b<0 therefore persist for all sufficiently
+small nonzero delta. Local derivative bounds supply the remainder in
+(764) for this perturbed flow as well. These are ONE full NS solution
+and its original histories, not independently evolved components
+superposed at a seam. The perturbation size has not been optimized.
+
+The construction applies at any prescribed viscosity nu_target>0
+after increasing initial amplitude. If the above witness has viscosity
+mu, choose A=nu_target/mu and use `u(t,x)=A v(A t,x)` with initial
+`A U_delta`. Its pressure impulse and fourth moment scale by A and
+A^4, respectively. Its complete amplitude coefficients a,b also
+scale by A^4 after evaluating at A t, so both comparison signs are
+preserved and the crossing time is T/A. This is not a uniform time
+or amplitude claim over all data.
+
+### The surviving payment and the remaining physical obligation
+
+For the exact planar reference (761), `||grad p_0||infinity<=1`.
+Every stochastic path therefore satisfies the entirely explicit bound
+
+```text
+|P_t| <= (1-exp(-2nu t))/(2nu),
+Phi_chi(t) <= (2nu)^(-4)                  for all t>=0.  (768)
+```
+
+This finite initial-data payment coexists with the rational-envelope
+failure. For initial A U the corresponding bound is `(A^2/(2nu))^4`.
+It uses autonomous decay of this exact reference; it is not asserted
+for the perturbed parents or arbitrary flows. The perturbed crossing
+has only the fixed-interval statement proved above.
+
+The example refutes propagation of the particular component payment
+from its favorable initial return. It does not refute the original
+two-core local repair (758), the equal-scale cyclic envelope (666),
+the sum of allowances after exterior savings are retained, or the
+existence of a larger full-datum budget. Its practical constraint on
+a later Bellman control is precise: original labels and the first
+two complete amplitude coefficients do not certify that a component
+can pay every subsequent geometry change with this formula. The
+unpaid term is the integral of the physical defect (760), with the
+actual third moment and inherited impulse. A useful repair must pay
+that term or transfer a certified existing reserve to it.
+
+Run `python3 -O labs/labelled_pressure_return.py` for the exact
+reference, rational margins, complete three-dimensional pressure and
+velocity jets, positive stretching derivative and allowance derivative.
+The smooth-label limit, positive-viscosity persistence, fixed-interval
+stability and continuation implications remain ANALYTIC. The checker
+does not certify those PDE arguments or an explicit numerical value
+of nu or delta. No Lean declarations or axioms change.

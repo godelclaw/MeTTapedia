@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [labelled later-return test](labs/README.md#a-retained-label-can-pass-its-initial-payment-and-fail-later)
+shows why retaining component labels does not finish the pressure payment.
+On one actual unforced positive-viscosity history, the complete two-coefficient
+component allowance is initially favorable and is later exceeded. The strict
+crossing persists for genuinely three-dimensional perturbations with generated
+reciprocal parents and positive initial growth of integrated vortex stretching.
+The reference crossing and full NS jets have exact algebraic checks; smooth
+labels, viscous persistence and the fixed-interval perturbation argument remain
+analytic. This refutes the componentwise extension, not the total sum of all
+component allowances or a larger full-datum reserve. The explicit planar
+reference still has a finite all-time pressure allowance.
+
 The [rotating-core pooling test](labs/README.md#a-rational-pressure-allowance-is-not-preserved-by-pooling-rotating-cores)
 refutes a universal extension of the first-two-coefficient rational pressure
 allowance. Each isolated smooth core passes its local comparison; combining
