@@ -1,0 +1,124 @@
+{
+  "evidence": "Kernel-proved arbitrary-length fixed-pair history invariant and decoded source phase rejections. Correspondence to the spherical exterior components is separate program evidence.",
+  "modules": [
+    {
+      "project": "mettapedia",
+      "module": "Mettapedia.GraphTheory.Kempe.PairHistory",
+      "source_bytes": 2398,
+      "source_sha256": "1209af0fa7a4fce406c173d846464b14a585297dc7ff905c7a014c565a1583ed",
+      "lake_build_seconds": 1.6,
+      "olean_bytes": 58248,
+      "olean_sha256": "e271604bfb0c276d86ef7ec17e278f1835daa90421c1912163654c03dd910955"
+    },
+    {
+      "project": "fourcolor-classical",
+      "module": "MettapediaFourColor.PairPhaseCore",
+      "source_bytes": 7060,
+      "source_sha256": "746752fba8dc9660cafd256eb2d0e21186e86066baca4d5a5a1939aaffb1ad9b",
+      "lake_build_seconds": 6.2,
+      "olean_bytes": 689056,
+      "olean_sha256": "8ca2c5505f568a232c6ca7dc3bbce7adb7462b582caf18a978362ee55f6be09a"
+    },
+    {
+      "project": "fourcolor-classical",
+      "module": "MettapediaFourColor.PairPhaseAudit",
+      "source_bytes": 2359,
+      "source_sha256": "d4afcca00efb25f799e888d4445b9505b8fa05de9c4d06fb1bb56919c39b16ca",
+      "lake_build_seconds": 2.3,
+      "olean_bytes": 2640,
+      "olean_sha256": "20515c8a825e99bd408aba7a77deda2ed473fcd8a85ccc49317c6eef2eee987f"
+    }
+  ],
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 3790,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "required_dependencies": [
+      "decoded source graph",
+      "ColoringListPropagation.empty_refutes",
+      "Coloring.component_changed_of_pointwise_swap"
+    ],
+    "bulk_repair_certificates_used": false
+  },
+  "program_receipt": "pair-phase-audit.json",
+  "source_fixture": "two-step-core-example.json",
+  "verifier_sha256": "c15448c9d49ac937174e2491ca3f220d8f83984b0da3a744ad747ffd1711a0a2",
+  "proved": [
+    "Every finite history using one fixed colour pair ends in a proper pointwise partial transposition. Changed vertices force their entire original bichromatic component to change.",
+    "Every listed component-mask boundary word fails to extend through its decoded D0092 or D0063 source. Injective palette renaming reuses 29 earlier rejection words; only three further words need the shared four-edge propagation trace.",
+    "A proper D0092 source colouring differs from the rejected initial boundary at exactly one port."
+  ],
+  "program_checked": [
+    "Previous whole-sphere geometry, complete source stars, cyclic order, ordered ports and mixed-pair repairs are revalidated.",
+    "The six unordered pairs have 40 boundary-component subsets in D0092 and 32 in D0063, including empty subsets. They produce 35 and 27 distinct boundary words. None extends.",
+    "Each selected subset is replayed as actual component switches, checking that its remaining fixed-pair components are unchanged."
+  ],
+  "cases": [
+    {
+      "configuration": "D0092.conf",
+      "boundary_component_counts": [
+        1,
+        3,
+        4,
+        1,
+        2,
+        3
+      ],
+      "subsets_including_empty": 40,
+      "distinct_boundary_endpoints": 35,
+      "additional_rejection_words": 3,
+      "bounded_sample": {
+        "seed": 2026100300,
+        "nonextendible_colourings": 100,
+        "distinct_modulo_global_palette": true,
+        "walk_steps": 130,
+        "shortest_switch_counts": {
+          "1": 60,
+          "2": 40
+        },
+        "scope": "One deterministic Kempe walk on a fixed spherical exterior; no uniform bound."
+      }
+    },
+    {
+      "configuration": "D0063.conf",
+      "boundary_component_counts": [
+        1,
+        1,
+        3,
+        2,
+        3,
+        3
+      ],
+      "subsets_including_empty": 32,
+      "distinct_boundary_endpoints": 27,
+      "additional_rejection_words": 0,
+      "bounded_sample": {
+        "seed": 2026100301,
+        "nonextendible_colourings": 100,
+        "distinct_modulo_global_palette": true,
+        "walk_steps": 139,
+        "shortest_switch_counts": {
+          "1": 72,
+          "2": 28
+        },
+        "scope": "One deterministic Kempe walk on a fixed spherical exterior; no uniform bound."
+      }
+    }
+  ],
+  "scope": "These original exteriors cannot be repaired by any finite fixed-pair history, although their existing two-switch mixed-pair repairs succeed. D0092 also rules out strictly decreasing boundary Hamming distance to extension after every such phase. The whole-sphere instance correspondence is program evidence. The 100-state sample on each exterior follows one initial Kempe class and does not prove a universal two-switch bound, geometric coverage, or impossibility of a compositional proof.",
+  "checks": [
+    "lake build MettapediaFourColor.PairPhaseAudit",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_pair_phase.py --check-lean lean/fourcolor-classical/MettapediaFourColor/PairPhaseCore.lean"
+  ],
+  "credited_compression": false,
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_saved": 336
+  }
+}

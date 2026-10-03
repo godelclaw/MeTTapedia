@@ -905,6 +905,57 @@ only explicit repair commands. The [receipt](two-step-core-measurements.json)
 separates the kernel claims, exhaustive one-step program census and bounded
 search used to discover the displayed two-step repairs.
 
+## A whole fixed-pair phase is insufficient on the original exteriors
+
+[PairHistory](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/PairHistory.lean)
+proves a normal form for any finite history of switches using one fixed
+colour pair, on any graph and palette. The endpoint is a proper partial
+transposition of the initial colouring. If one vertex changes, its whole
+original bichromatic component changes. Arbitrarily long repetition is
+therefore represented by a subset of the original components meeting the
+boundary; components missing the boundary contribute no new boundary word.
+
+The [phase replay](pair-phase-audit.json) exhausts those choices for the same
+two original spherical exteriors. D0092 has 40 subsets across the six pairs,
+giving 35 distinct boundary words. D0063 has 32 subsets, giving 27 words.
+None extends through its source core. Changing the colour pair is necessary
+for repair of these inputs; the existing two-switch mixed-pair repairs succeed.
+
+[PairPhaseCore](../../../lean/fourcolor-classical/MettapediaFourColor/PairPhaseCore.lean)
+checks all component-mask boundary expressions against the exact decoded
+cores. Injective palette renaming reuses the earlier rejection proofs;
+only three additional words remain, all rejected by the same four-edge
+propagation trace. The source module builds in 6.2 seconds and the general
+history module in 1.6 seconds. The component labels' correspondence to the
+spherical exteriors remains program evidence, not a kernel-certified embedding.
+
+Lean also checks a D0092 source colouring whose boundary differs from the
+initial word at exactly one port. Thus the minimum number of boundary-colour
+edits needed for extension is one, although no physical fixed-pair phase
+reaches any extension. A repair method requiring this edit distance to
+strictly decrease after every phase would stall here. This does not rule
+out a finer potential or progress across mixed-pair composite operations.
+
+A bounded deterministic experiment tests 100 distinct nonextendible
+colourings, modulo global palette renaming, in the initial Kempe class of
+each exterior. In D0092, 60 have a one-switch repair and 40 require two;
+in D0063, the counts are 72 and 28. These include the initial colourings.
+The samples follow one Kempe walk on each fixed graph. They do not prove a
+uniform two-switch bound, cover other Kempe classes or supply geometric coverage.
+
+Replay `lake build MettapediaFourColor.PairPhaseAudit` in the classical
+package and, from the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_pair_phase.py \
+  --check-lean lean/fourcolor-classical/MettapediaFourColor/PairPhaseCore.lean
+```
+
+The [receipt](pair-phase-measurements.json) records the eight-root dependency
+audit. The program revalidates the previous source fixtures and generated Lean text;
+the bounded sample and the exhaustive phase census are separate evidence.
+Complete-proof counts and catalogue dependencies remain unchanged.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)
