@@ -1,0 +1,9 @@
+{
+  "base_fixture": "component-detach-example.json",
+  "base_fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "commands": [
+    {"pair": [1, 2], "root": 133, "size": 4},
+    {"pair": [0, 1], "root": 43, "size": 1},
+    {"pair": [0, 2], "root": 7, "size": 53}
+  ]
+}

@@ -1225,6 +1225,59 @@ Neither bipartiteness alone nor the existence of some larger repaired region
 establishes that supply. No coverage entries, independent certificates or
 member-check obligations are removed here; counts remain 633 / 629 / 336.
 
+## Two detachments compose into a five-vertex preparation
+
+The [cascading repair](cascading-detach-audit.json) reuses the same sphere,
+source occurrence and initial colouring. A different choice of starting
+region gives a smaller preparation:
+
+| Stage | Physical component | Effect |
+| --- | --- | --- |
+| First silent switch | Four vertices, colours 1,2 | Removes the only active exit of vertex 43 |
+| Second silent switch | Vertex 43, colours 0,1 | Removes a separator from the 0,2 graph |
+| Final switch | 53 vertices, colours 0,2 | Produces a boundary word with a genuine core extension |
+
+Both preparatory switches fix all eleven ports. Their combined support has
+five vertices, compared with 23 and 18 in the two earlier displayed histories.
+The final graph has a verified proper colouring of all 162 vertices. This
+does not assert global optimality of the smaller preparation.
+
+[CascadingDetach](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CascadingDetach.lean)
+uses the existing general detachment law twice. The first application derives
+the singleton's closure from its old exit. The second derives the final
+component's closure because its three old active exit edges all end at that
+singleton. Neither newly available component is independently checked for
+saturation after its preceding switch. The existing physical-history and
+GSLT interfaces compose these operations and retain whole-graph reconstruction.
+The [audit](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/CascadingDetachAudit.lean)
+requires the final consumer to depend on both the earlier detachment and the
+general theorem.
+
+The bounded census explains why local availability is not enough. Among the
+24 directly detachable one-exit regions in the original colouring, only six
+enable extension after switching the detached region and then performing
+one fixed-pair phase. Every boundary outcome of that final phase is checked.
+This census concerns the stated three-stage shape, not arbitrary histories.
+
+Region growth is also nonmonotone: a detachable nine-vertex region containing
+vertex 8 lies inside an eleven-vertex region whose external neighbours contain
+an odd cycle. That larger region cannot be isolated under any four-colouring,
+by the general parity theorem. Successful choices therefore require more
+than repeatedly enlarging a region or testing whether its boundary is bipartite.
+These finite census and geometric observations are program evidence; the
+selected physical repair and its five-vertex support are Lean checked.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_cascading_detach.py \
+  --output tools/fourcolor/near-linear/cascading-detach-audit.json
+```
+
+Run `lake build Mettapedia.GraphTheory.FourColor.CascadingDetachAudit` in the
+main Lean package. The [receipt](cascading-detach-measurements.json) records
+the checks and source sizes. This additional repair establishes no universal
+geometric supply, progress bound or new catalogue reduction. Complete-proof
+counts remain 633 / 629 / 336.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

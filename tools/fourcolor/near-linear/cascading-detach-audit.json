@@ -1,0 +1,503 @@
+{
+  "evidence": "Selected physical history, five-vertex preparation support and whole reconstruction are Lean checked. The exhaustive restricted census and nested-region geometry are program evidence.",
+  "fixture_sha256": "374fb2662867c1774b213e93ebd73fd662855e8a3bd9eede4076c269025398a6",
+  "lean_sha256": "5b58846260c15ac590643c4cfe376502803a052ddaee96f59a4875647e56e973",
+  "commands": [
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "root": 133,
+      "size": 4
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "root": 43,
+      "size": 1
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "root": 7,
+      "size": 53
+    }
+  ],
+  "detachment_links": [
+    {
+      "old_active_exits": [
+        [
+          43,
+          133
+        ]
+      ],
+      "preceding_component_size": 4,
+      "new_component_size": 1
+    },
+    {
+      "old_active_exits": [
+        [
+          26,
+          43
+        ],
+        [
+          35,
+          43
+        ],
+        [
+          133,
+          43
+        ]
+      ],
+      "preceding_component_size": 1,
+      "new_component_size": 53
+    }
+  ],
+  "preparation_vertices": [
+    17,
+    43,
+    58,
+    122,
+    133
+  ],
+  "final_boundary": [
+    1,
+    3,
+    2,
+    3,
+    1,
+    0,
+    3,
+    2,
+    0,
+    2,
+    0
+  ],
+  "initial_profile": [
+    0,
+    7,
+    30,
+    68,
+    88,
+    92,
+    60,
+    28,
+    10,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "final_profile": [
+    1,
+    10,
+    24,
+    73,
+    67,
+    104,
+    76,
+    25,
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "whole_graph_vertices": 162,
+  "whole_colouring_reconstructed": true,
+  "detachable_candidates": 24,
+  "candidates_enabling_extension_after_one_phase": 6,
+  "candidate_census": [
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 1,
+      "exit": [
+        43,
+        133
+      ],
+      "first_size": 4,
+      "improving_outcomes": 4,
+      "extending_outcomes": 2
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 9,
+      "exit": [
+        78,
+        64
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 18,
+      "exit": [
+        92,
+        82
+      ],
+      "first_size": 2,
+      "improving_outcomes": 2,
+      "extending_outcomes": 2
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 16,
+      "exit": [
+        88,
+        92
+      ],
+      "first_size": 2,
+      "improving_outcomes": 2,
+      "extending_outcomes": 2
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 13,
+      "exit": [
+        111,
+        136
+      ],
+      "first_size": 17,
+      "improving_outcomes": 6,
+      "extending_outcomes": 4
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 2,
+      "exit": [
+        120,
+        133
+      ],
+      "first_size": 4,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 24,
+      "exit": [
+        142,
+        133
+      ],
+      "first_size": 4,
+      "improving_outcomes": 2,
+      "extending_outcomes": 2
+    },
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "region_size": 21,
+      "exit": [
+        141,
+        142
+      ],
+      "first_size": 2,
+      "improving_outcomes": 2,
+      "extending_outcomes": 2
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "region_size": 4,
+      "exit": [
+        68,
+        20
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "region_size": 1,
+      "exit": [
+        116,
+        64
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        0,
+        3
+      ],
+      "region_size": 2,
+      "exit": [
+        140,
+        2
+      ],
+      "first_size": 18,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        0,
+        3
+      ],
+      "region_size": 2,
+      "exit": [
+        126,
+        53
+      ],
+      "first_size": 3,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        0,
+        3
+      ],
+      "region_size": 2,
+      "exit": [
+        90,
+        154
+      ],
+      "first_size": 9,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "region_size": 2,
+      "exit": [
+        152,
+        150
+      ],
+      "first_size": 9,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "region_size": 2,
+      "exit": [
+        22,
+        21
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "region_size": 2,
+      "exit": [
+        58,
+        17
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "region_size": 2,
+      "exit": [
+        30,
+        70
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "region_size": 16,
+      "exit": [
+        83,
+        28
+      ],
+      "first_size": 3,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "region_size": 14,
+      "exit": [
+        31,
+        136
+      ],
+      "first_size": 17,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "region_size": 2,
+      "exit": [
+        110,
+        81
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "region_size": 1,
+      "exit": [
+        87,
+        30
+      ],
+      "first_size": 4,
+      "improving_outcomes": 2,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "region_size": 3,
+      "exit": [
+        115,
+        109
+      ],
+      "first_size": 2,
+      "improving_outcomes": 2,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "region_size": 2,
+      "exit": [
+        85,
+        59
+      ],
+      "first_size": 18,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "region_size": 20,
+      "exit": [
+        160,
+        81
+      ],
+      "first_size": 2,
+      "improving_outcomes": 0,
+      "extending_outcomes": 0
+    }
+  ],
+  "enlargement_can_create_an_odd_boundary": [
+    {
+      "region": [
+        8,
+        78,
+        90,
+        99,
+        112,
+        134,
+        147,
+        150,
+        156
+      ],
+      "odd_external_cycle": null
+    },
+    {
+      "region": [
+        8,
+        64,
+        78,
+        79,
+        90,
+        99,
+        112,
+        134,
+        147,
+        150,
+        156
+      ],
+      "odd_external_cycle": [
+        80,
+        11,
+        94,
+        80
+      ]
+    }
+  ],
+  "scope": "The same general law is consumed twice, on the same exterior. This is one additional checked repair, not a universal source repair theorem. Five preparation vertices improves the displayed histories; no global optimality claim. The census is restricted to one-exit regions and the stated three-stage shape. No coverage or catalogue dependency is removed."
+}

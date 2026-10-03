@@ -1,0 +1,75 @@
+{
+  "evidence": "An additional physical repair composes the existing general component-detachment law twice. Both preparations avoid the boundary; the final exterior colouring reconstructs the whole graph.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CascadingDetach",
+      "source_bytes": 10911,
+      "source_sha256": "5b58846260c15ac590643c4cfe376502803a052ddaee96f59a4875647e56e973",
+      "build_seconds": 21,
+      "olean_bytes": 510816,
+      "olean_sha256": "8be1e6da583d61fd3d5edbd9a4c76541b7d7599651a8fafdb5f0f657e639a6d6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CascadingDetachAudit",
+      "source_bytes": 2537,
+      "source_sha256": "29688dda96c3a2c587846de6b6c44b2290ae29a6aa4a9beb389bb7cd06998760",
+      "build_seconds": 3.2,
+      "olean_bytes": 3568,
+      "olean_sha256": "d13898c2b1d5c2aeb9d96b76549d9ab1cb069998067914d95cf78a310721f538"
+    }
+  ],
+  "audit": {
+    "roots": 15,
+    "dependency_declarations": 4668,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "bulk_repair_certificates_used": false,
+    "final_consumer_requires_previous_detachment_and_general_law": true
+  },
+  "program": {
+    "seconds": 1.017,
+    "fixture_bytes": 303,
+    "fixture_sha256": "374fb2662867c1774b213e93ebd73fd662855e8a3bd9eede4076c269025398a6",
+    "script_sha256": "3c8f924af27520a3f4b644433996d9cb0109ea7686436c545653674c6d2aef4a",
+    "detachable_one_exit_candidates": 24,
+    "candidates_enabling_extension": 6
+  },
+  "repair": {
+    "component_sizes": [
+      4,
+      1,
+      53
+    ],
+    "distinct_preparation_vertices": 5,
+    "previous_displayed_preparation_sizes": [
+      23,
+      18
+    ],
+    "whole_graph_vertices": 162,
+    "globally_optimal_preparation_claimed": false
+  },
+  "build_gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "passed": true
+  },
+  "programme_counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_check_obligations_replaced": 336,
+    "additional_removals_credited": 0
+  },
+  "scope": [
+    "The new proof reuses the already established arbitrary-graph detachment law at both links. No new general supply theorem is claimed.",
+    "The actual exterior and whole graph, starting colouring and geometry fixture are reused. This is an additional repair on the same source instance, not an independent geometric family.",
+    "The 24-candidate census is restricted to initial one-exit regions, a single transverse preparation, switching the detached region and one subsequent fixed-pair phase. It says nothing exhaustive about longer mixed histories.",
+    "A nine-vertex detachable region lies in an eleven-vertex region with an odd external cycle. This refutes monotonicity of detachment under region enlargement; it does not rule out selective growth or changing the seed.",
+    "The smaller displayed preparation improves touched-vertex count, not catalogue size, universal coverage, asymptotic runtime or complete-proof kernel cost."
+  ]
+}
