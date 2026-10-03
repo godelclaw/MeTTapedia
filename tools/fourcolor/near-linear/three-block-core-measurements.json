@@ -1,0 +1,71 @@
+{
+  "evidence": "Exact symbolic source reconstruction criterion with an actual physical-history consumer; complementary separation and bounded supply are separate program evidence.",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ThreeBlockCore",
+      "source_bytes": 6387,
+      "source_sha256": "9a4aa2797a4476f9119133030263e3e4474c8ee499089f677b497be1d7041c71",
+      "build_seconds": 23,
+      "olean_bytes": 252368,
+      "olean_sha256": "6335a1c3add73993e752826dcfe54c9eb8a4d6fc65384fab4bec42678e1e77ef"
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockCoreAudit",
+      "source_bytes": 3708,
+      "source_sha256": "e7c10e861d5de264031ce34a307a0adce0be65f9c57be4c25fd1605a7f79f5f2",
+      "build_seconds": 3.2,
+      "olean_bytes": 45600,
+      "olean_sha256": "ea720daba9c12efe52b2c225228a589dd16aa76bcc2fece5687d672e0951a358"
+    }
+  ],
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 3550,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "bulk_repair_certificates_used": false,
+    "physical_consumer_requires_symbolic_assignment_and_general_detachment": true
+  },
+  "program": {
+    "seconds": 4.645,
+    "script_sha256": "c876a5f625e4d866f4177b2ba865359a606d04dbbbfbe0ce551cdb02bdce9df1",
+    "receipt_sha256": "743e527dd83057b0f8e421e128b22bc935c35686c0027a989acfcb0417570e63",
+    "new_graph_fixtures": 0,
+    "boundary_choice_bits": 3,
+    "noncrossing_partition_pairs": 12,
+    "retained_pivots": {
+      "preparations_including_identity": 18,
+      "pivots": 3,
+      "pivots_allowing_extension": 1,
+      "pivots_merging_boundary_blocks": 2,
+      "merging_pivots_without_extending_phase": 1
+    },
+    "additional_mesh_samples": 4
+  },
+  "gates": {
+    "new_source_and_consumer": "lake build MettapediaFourColor.ThreeBlockCoreAudit",
+    "new_gate_passed": true,
+    "classical_regression": "lake build kernelComplete",
+    "classical_gate_passed": true,
+    "main_regression": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_gate_passed": true,
+    "main_gate_jobs": 11245
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "open": [
+    "Lean bridge from a planar complementary-colour path to separation of the source boundary runs.",
+    "Geometric supply of the useful path or an alternative certified reduction.",
+    "Uniform progress and coverage for the intended planar class."
+  ],
+  "scope": "The source class fixes one boundary word up to its three 0/2 run switches. The component-label criterion is algebraic; it does not assume or prove that a useful label partition occurs. The selected consumer retains the actual exterior history. The bounded negative pivot excludes one following fixed-pair phase, not arbitrary mixed histories."
+}

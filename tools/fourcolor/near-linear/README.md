@@ -1278,6 +1278,60 @@ the checks and source sizes. This additional repair establishes no universal
 geometric supply, progress bound or new catalogue reduction. Complete-proof
 counts remain 633 / 629 / 336.
 
+## Which boundary separation makes the pivot useful?
+
+[ThreeBlockCore](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockCore.lean)
+proves a small exact law for the D0092 boundary word
+`[1,3,2,3,1,0,3,0,2,0,2]`. Its three connected runs in colours 0,2 are
+A = port 2, B = port 5, and C = ports 7–10. If their switch choices are
+`a,b,c`, the core extends **if and only if `a = b` and `b ≠ c`**. Necessity
+forces colours along actual source edges; sufficiency constructs the source
+colouring. This is not an enumeration of every core colouring.
+
+Consequently the required phase is possible exactly when C's component is
+distinct from both A's and B's; A and B may share a component. The theorem
+`component_choices_iff` states this algebraic observation contract for arbitrary
+component labels. It does not establish a planar realization or supply of
+those labels. The [consumer and audit](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockCoreAudit.lean)
+apply the source rule to the actual cascading repair, retaining its physical
+history and all eleven port colours.
+
+This identifies a specific geometric target. A complementary 1,3 path
+joining ports 1 and 6 separates C from A and B in a disk. The
+[program replay](three-block-core-audit.json) checks all twelve compatible
+pairs of noncrossing partitions of these six boundary runs: every partition
+with that complementary connection permits the required phase. It also
+extracts an actual 1,3 path through pivot 43 in the retained sphere. The
+connection is absent before the pivot. A general Lean bridge from planar
+embedding to this complementary path separation remains open.
+
+Merely joining boundary components is insufficient. Another boundary-silent
+preparation frees the degree-six pivot 87. Recolouring it merges two 1,2
+boundary components, but no subsequent fixed-pair phase extends to the core.
+The replay checks every boundary outcome of every such phase; it does not
+exclude longer histories that change colour pairs again. Among the three
+available singleton pivots after at most one silent component switch on the
+retained exterior, only pivot 43 enables the tested final phase.
+
+Four additional bounded samples use the previously checked width-five and
+width-seven meshes of D0092 and D0063. Each has useful pivots, and each also
+has pivots which merge boundary components without enabling extension in
+one final phase. This supplies positive and negative controls, not a
+universal occurrence theorem.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_three_block_core.py \
+  --output tools/fourcolor/near-linear/three-block-core-audit.json
+```
+
+Run `lake build MettapediaFourColor.ThreeBlockCoreAudit` in the classical Lean
+package. The [measurement receipt](three-block-core-measurements.json)
+separates the checked source law from the program's geometric interpretation
+and supply census. The next obligation is to derive the useful complementary
+connection from a justified source class, or provide an alternative reduction.
+No coverage entry, original configuration certificate or existing member
+check is removed; counts remain 633 / 629 / 336.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

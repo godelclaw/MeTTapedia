@@ -1,0 +1,425 @@
+{
+  "evidence": "The core law and selected physical source consumer are Lean checked. Crosscut interpretation, bounded supply census and negative pivot are program evidence.",
+  "source_sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+  "base_fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "lean_sha256": "9a4aa2797a4476f9119133030263e3e4474c8ee499089f677b497be1d7041c71",
+  "core_choices": [
+    {
+      "choices": [
+        false,
+        false,
+        false
+      ],
+      "extends": false
+    },
+    {
+      "choices": [
+        false,
+        false,
+        true
+      ],
+      "extends": true
+    },
+    {
+      "choices": [
+        false,
+        true,
+        false
+      ],
+      "extends": false
+    },
+    {
+      "choices": [
+        false,
+        true,
+        true
+      ],
+      "extends": false
+    },
+    {
+      "choices": [
+        true,
+        false,
+        false
+      ],
+      "extends": false
+    },
+    {
+      "choices": [
+        true,
+        false,
+        true
+      ],
+      "extends": false
+    },
+    {
+      "choices": [
+        true,
+        true,
+        false
+      ],
+      "extends": true
+    },
+    {
+      "choices": [
+        true,
+        true,
+        true
+      ],
+      "extends": false
+    }
+  ],
+  "compatible_noncrossing_partitions": [
+    {
+      "zero_two": [
+        0,
+        0,
+        0
+      ],
+      "one_three": [
+        0,
+        1,
+        2
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": false
+    },
+    {
+      "zero_two": [
+        0,
+        0,
+        1
+      ],
+      "one_three": [
+        0,
+        1,
+        0
+      ],
+      "crosscut_1_to_6": true,
+      "phase_extends": true
+    },
+    {
+      "zero_two": [
+        0,
+        0,
+        1
+      ],
+      "one_three": [
+        0,
+        1,
+        2
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": true
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        0
+      ],
+      "one_three": [
+        0,
+        1,
+        1
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": false
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        0
+      ],
+      "one_three": [
+        0,
+        1,
+        2
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": false
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        1
+      ],
+      "one_three": [
+        0,
+        0,
+        1
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": false
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        1
+      ],
+      "one_three": [
+        0,
+        1,
+        2
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": false
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        2
+      ],
+      "one_three": [
+        0,
+        0,
+        0
+      ],
+      "crosscut_1_to_6": true,
+      "phase_extends": true
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        2
+      ],
+      "one_three": [
+        0,
+        0,
+        1
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": true
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        2
+      ],
+      "one_three": [
+        0,
+        1,
+        0
+      ],
+      "crosscut_1_to_6": true,
+      "phase_extends": true
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        2
+      ],
+      "one_three": [
+        0,
+        1,
+        1
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": true
+    },
+    {
+      "zero_two": [
+        0,
+        1,
+        2
+      ],
+      "one_three": [
+        0,
+        1,
+        2
+      ],
+      "crosscut_1_to_6": false,
+      "phase_extends": true
+    }
+  ],
+  "positive_crosscut": {
+    "boundary_ports": [
+      1,
+      6
+    ],
+    "pair": [
+      1,
+      3
+    ],
+    "route": [
+      42,
+      45,
+      84,
+      114,
+      137,
+      43,
+      138,
+      30,
+      139,
+      17,
+      37,
+      119,
+      107,
+      9,
+      74,
+      122,
+      115,
+      109,
+      104,
+      18,
+      69,
+      33,
+      144,
+      23,
+      73,
+      76,
+      19
+    ],
+    "after_pivot_partition": [
+      [
+        2
+      ],
+      [
+        5
+      ],
+      [
+        7,
+        8,
+        9,
+        10
+      ]
+    ]
+  },
+  "retained_census": {
+    "preparations_including_identity": 18,
+    "pivots": 3,
+    "pivots_allowing_extension": 1,
+    "pivots_merging_boundary_blocks": 2,
+    "merging_pivots_without_extending_phase": 1
+  },
+  "retained_pivots": [
+    {
+      "preparation": [
+        [
+          0,
+          3
+        ],
+        64
+      ],
+      "pivot": 116,
+      "degree": 6,
+      "old_colour": 2,
+      "new_colour": 0,
+      "boundary_merges": [],
+      "extending_phase_outcomes": 0
+    },
+    {
+      "preparation": [
+        [
+          1,
+          2
+        ],
+        17
+      ],
+      "pivot": 43,
+      "degree": 8,
+      "old_colour": 0,
+      "new_colour": 1,
+      "boundary_merges": [
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "old_boundary_blocks": [
+            [
+              0,
+              1
+            ],
+            [
+              3,
+              4,
+              6
+            ]
+          ]
+        }
+      ],
+      "extending_phase_outcomes": 2
+    },
+    {
+      "preparation": [
+        [
+          1,
+          2
+        ],
+        30
+      ],
+      "pivot": 87,
+      "degree": 6,
+      "old_colour": 3,
+      "new_colour": 1,
+      "boundary_merges": [
+        {
+          "pair": [
+            1,
+            2
+          ],
+          "old_boundary_blocks": [
+            [
+              4
+            ],
+            [
+              2
+            ]
+          ]
+        }
+      ],
+      "extending_phase_outcomes": 0
+    }
+  ],
+  "mesh_census": [
+    {
+      "configuration": "D0092.conf",
+      "width": 5,
+      "exterior_vertices": 152,
+      "preparations_including_identity": 26,
+      "pivots": 258,
+      "pivots_allowing_extension": 38,
+      "pivots_merging_boundary_blocks": 30,
+      "merging_pivots_without_extending_phase": 10
+    },
+    {
+      "configuration": "D0092.conf",
+      "width": 7,
+      "exterior_vertices": 271,
+      "preparations_including_identity": 33,
+      "pivots": 321,
+      "pivots_allowing_extension": 57,
+      "pivots_merging_boundary_blocks": 45,
+      "merging_pivots_without_extending_phase": 15
+    },
+    {
+      "configuration": "D0063.conf",
+      "width": 5,
+      "exterior_vertices": 136,
+      "preparations_including_identity": 27,
+      "pivots": 238,
+      "pivots_allowing_extension": 44,
+      "pivots_merging_boundary_blocks": 26,
+      "merging_pivots_without_extending_phase": 8
+    },
+    {
+      "configuration": "D0063.conf",
+      "width": 7,
+      "exterior_vertices": 242,
+      "preparations_including_identity": 35,
+      "pivots": 302,
+      "pivots_allowing_extension": 66,
+      "pivots_merging_boundary_blocks": 39,
+      "merging_pivots_without_extending_phase": 12
+    }
+  ],
+  "scope": "A merge of arbitrary boundary blocks does not guarantee extension after one following fixed-pair phase. The negative census covers all phase boundary outcomes, not arbitrary mixed histories. The useful 1/3 crosscut gives a sufficient abstract noncrossing condition; its general planar bridge and geometric supply are not yet Lean proved. No coverage entry or existing complete-proof dependency is removed."
+}
