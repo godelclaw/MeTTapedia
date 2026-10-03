@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete-source helicity test](labs/README.md#complete-source-helicity-and-a-paid-changing-geometry)
+shows that the full generated field can favor the opposite helicity even
+when every initial mode has positive helicity. An explicit 3D periodic
+datum and a whole-space localization retain all outputs and pressure.
+The two-coordinate calibration nevertheless has an explicit all-time
+allowance for the same signed production, at arbitrary amplitude. Thus
+the failed source-sign rule does not prevent a complete history payment.
+General 3D feedback remains unpaid. These are analytic results with exact
+checks, not new Lean certificates.
+
 The [helical renewal test](labs/README.md#helical-geometry-coherent-children-and-a-critical-history-reserve)
 uses the classical helical decomposition while retaining the full NS equation.
 Two same-sign parent pairs each produce a child with negative-helicity fraction

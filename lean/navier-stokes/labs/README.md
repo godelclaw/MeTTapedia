@@ -30826,6 +30826,12 @@ M_+'+2nu L_+=2J, M_-'+2nu L_-=2J,
 M'+2nu L=4J, H'=-2nu(L_+-L_-).                    (493)
 ```
 
+The integrated difference of the two sector balances is the critical-helicity
+identity of [Lei--Lin--Zhou, Theorem 1.1](https://arxiv.org/abs/1505.00142).
+Its signed difference and the nonnegative sum have different coercivity
+properties. Their large-data constructions impose additional geometric
+conditions; initial positive helicity alone is not their global theorem.
+
 For example, pairing the negative sector with Lambda u_- eliminates the
 term u cross Lambda u_- pointwise, leaving J. The positive-sector pairing
 gives the same J by the scalar triple-product identity. Pressure is removed
@@ -31019,3 +31025,236 @@ triad identity, the full four-parent cancellation, every source mode,
 two viscosities of complete NS return jets, and the conditional reserve
 algebra. The local-time and continuation arguments remain analytic;
 no new Lean declarations or axioms are introduced.
+
+## Complete-source helicity and a paid changing geometry
+
+The cancellation at a selected child in (498) leaves a natural question:
+do the other children restore a favorable helicity balance for the ENTIRE
+nonlinear source? This section tests the precise proposed inequality
+
+```text
+u=P_+u, b=P_sol(u cross curl u)
+    ==> H(b):=integral b.curl b >=0.               (501)
+```
+
+Equivalently, the negative critical magnitude of b would not exceed its
+positive critical magnitude. The assertion is false. The counterexample
+below retains every source mode, and also has a known regular calibration
+whose complete history pays the signed source J in (494). Helicity sign
+continues to mean Fourier polarization, not the sign of physical stretching.
+
+### An exact complete-field counterexample
+
+Use normalized volume on the 2*pi torus. Let psi have the following real
+Fourier coefficients at (kx,ky,0), invariant under exchange of kx,ky and
+independent changes of their signs. All other coefficients are zero.
+Repeated orbit elements are included once, rather than summed again.
+
+| Representative (kx,ky) | psi_hat |
+|---|---:|
+| (0,1) | 1 |
+| (0,2) | -2/7 |
+| (0,3) | 1/20 |
+| (1,1) | -9/14 |
+| (2,2) | -1/6 |
+| (1,3) | -3/40 |
+
+There are 28 wave vectors. Write Lambda_h=sqrt(-Delta_h), and define
+
+```text
+v=(psi_y,-psi_x,Lambda_h psi),
+h=(cos z,-sin z,0), U_epsilon=v+epsilon h.          (502)
+```
+
+Both v and h have positive helicity at every nonzero mode:
+curl v=Lambda v and curl h=h. They are real, smooth, divergence free
+and mean zero. For epsilon!=0 the initial Fourier support spans R3.
+
+There is a short independent way to evaluate the entire source. Put
+w=Lambda_h psi, q=-Delta_h psi, and A f=(psi_y,-psi_x).grad_h f.
+For b_v=P_sol(v cross curl v), the two-coordinate equations give
+
+```text
+(b_v)_3=-A w, (curl b_v)_3=-A q,
+H(b_v)=2 integral (A w)(A q).                       (503)
+```
+
+The horizontal pressure projection is retained. Integration by parts
+identifies the horizontal contribution to H with the vertical one,
+giving the factor 2. Positivity of Lambda does not fix the sign of this
+correlation: the advecting operator A does not commute with Lambda.
+
+Exact convolution over ALL output wave vectors gives
+
+```text
+H(b_v)=-350383 sqrt(2)/180075+378244847/864360000
+                  +9824477 sqrt(10)/13720000 < -49/1000.
+c=P_sol(v cross curl h+h cross curl v),
+H(c)=-362501/44100+81 sqrt(10)/20+6946 sqrt(2)/441,
+H(b_epsilon)=H(b_v)+epsilon^2 H(c),
+b_epsilon=P_sol(U_epsilon cross curl U_epsilon).    (504)
+```
+
+Indeed h has zero nonlinear source. The sources b_v and c have disjoint
+vertical frequencies, respectively 0 and +/-1, so their integrated
+helicity cross terms vanish. At epsilon=1/100 the literal value is
+
+```text
+H(b_epsilon)=-210059623 sqrt(2)/108045000
+           +524353257/1200500000+6143771 sqrt(10)/8575000
+           < -47/1000.                             (505)
+```
+
+The two cases have respectively 80 and 128 full source wave vectors.
+Their canonical pressures have 116 and 172 modes. Nothing is discarded
+to produce the negative sign. In particular, for F=U cross curl U,
+`integral P_sol F.curl(P_sol F)=integral F.curl F`; the omitted part
+in this ONE integral is an orthogonal gradient, not absent pressure
+in the evolving flow. The checker independently reconstructs
+`b=-U.grad U-grad p`, with the canonical pressure solving
+`-Delta p=div(U.grad U)`.
+
+The strict inequalities use exact rational enclosures for sqrt(2) and
+sqrt(10), verified by squaring their endpoints. Floating-point optimization
+helped select the fixture but is not evidence for its final sign.
+
+### Actual viscous histories and a finite-energy whole-space version
+
+For every prescribed nu>0, smooth local NS existence from U_epsilon gives
+an actual unforced solution. Keep the same original heat evolution and set
+
+```text
+r(t)=u(t)-exp(nu t Delta)U_epsilon,
+r(t)=t b_epsilon+O_H1(t^2),
+H(r(t))=t^2 H(b_epsilon)+O(t^3)<0                  (506)
+```
+
+for all sufficiently small positive t. The inequality is for the FULL
+generated remainder, not one selected child or a closed collection of
+modes. It says that the negative critical magnitude of that remainder
+exceeds its positive magnitude. It does not say that the total velocity
+has negative helicity, that either helicity sign alone is dangerous, or
+that repeated unbounded production occurs. The original parents
+and their later returns remain in the full equation. The finite-interval
+conclusion uses local PDE regularity and Taylor's theorem, not merely a
+finite Fourier computation.
+
+The failure of (501) is not confined to infinite-energy whole-space
+periodic fields. Choose a nonzero real Schwartz envelope chi whose
+Fourier transform is smooth and supported in a ball of radius 1/10.
+For L sufficiently large define on R3
+
+```text
+u_L=P_+[chi(x/L) U_(1/100)(x)].                    (507)
+```
+
+This is a real, finite-energy Schwartz field with EXACT positive helicity.
+Its Fourier support is a union of small packets about the finitely many
+nonzero modes in (502), separated from zero. On each packet the symbol
+P_+ is smooth. Taylor expansion of that symbol, or Fourier inversion with
+Schwartz seminorms, gives, for any fixed derivative order and 1<=p<=infinity,
+
+```text
+||partial^a[u_L-chi(x/L)U_(1/100)]||_p=O(L^(3/p-1)).
+```
+
+Let F_L=u_L cross curl u_L and F=U_(1/100) cross curl U_(1/100).
+The product rule then gives
+`||F_L-chi(x/L)^2 F||_H1=O(L^(1/2))`, while the leading term has
+H1 norm O(L^(3/2)). Removing gradients only in the helicity integral gives
+
+```text
+H(P_sol F_L)
+ =L^3 [integral_R3 chi^4] H(b_(1/100))+O(L^2)<0     (508)
+```
+
+for all sufficiently large L. In the leading product the derivative of
+chi^2 contributes zero, since F.(grad chi^2 cross F)=0. Averaging the
+remaining finite periodic polynomial against chi(x/L)^4 leaves its
+normalized mean; every nonzero Fourier term decays faster than any
+inverse power of L after rescaling. Local whole-space NS existence and
+the same H1 expansion as (506) give actual unforced viscous histories
+with this negative-helicity generated remainder. This localization is
+analytic, not a finite-checker or Lean-certified result.
+
+### The calibration pays its complete history despite the sign reversal
+
+An unfavorable complete-source sign need not prevent a finite reserve.
+For ANY mean-zero smooth two-coordinate torus datum u0=(v_h0,w0), write
+u(t)=(v_h(t,x,y),w(t,x,y)), with no z dependence. The exact equations are
+two-dimensional NS for v_h and
+`w_t+v_h.grad_h w=nu Delta_h w`. Define
+
+```text
+E_h=||v_h||_2^2, Z_h=||curl_h v_h||_2^2,
+D_h=||grad_h curl_h v_h||_2^2,
+X=||grad_h w||_2^2, Y=||Delta_h w||_2^2.
+E_h'+2nu Z_h=0, Z_h'+2nu D_h=0,
+X'+nu Y<=nu^(-1)||v_h||_infinity^2 X.              (509)
+```
+
+For the last inequality, pair the passive scalar equation with -Delta w;
+the advection is bounded by
+`2||v_h||_infinity sqrt(X Y)<=nu Y+nu^(-1)||v_h||_infinity^2 X`.
+The existing lattice theorem `FourierAgmon.sq_sum_le_agmon`, followed
+by the smooth Fourier limit, gives the same bound used in (476):
+
+```text
+integral_0^t ||v_h||_infinity^2
+ <=104 sqrt[(integral Z_h)(integral D_h)]
+ <=52 sqrt(E_h0 Z_h0)/nu=:A0.
+X_star=X0 exp(A0/nu),
+X(t)<=X_star, integral_0^t Y<=X_star/nu.            (510)
+```
+
+The integrating factor proves BOTH conclusions in (510). These constants
+are fixed by the full original datum and nu, independent of t and of
+how a history is divided into compatible segments. They permit arbitrary
+amplitude and actual changing geometry. With E0=||u0||_2^2, the full
+vorticity and gradient quantities from (495) satisfy
+
+```text
+Z<=Z_star:=Z_h0+X_star,
+integral D<=D_star:=(Z_h0/2+X_star)/nu,
+integral Z<=E0/(2nu).
+M<=sqrt(E0 Z_star),
+integral L<=sqrt[(E0/(2nu)) D_star].               (511)
+```
+
+The last two steps are Fourier interpolation: M^2<=E Z and L^2<=Z D,
+with M=||Lambda^(1/2)u||_2^2 and L=||Lambda^(3/2)u||_2^2 as before.
+For any fixed 0<kappa<=1, alpha=1-kappa, define
+
+```text
+B_plane=sqrt(E0 Z_star)+kappa sqrt(E0(Z_h0+2X_star)).
+C_H(t)=4 integral_0^t J-2alpha nu integral_0^t L
+      =M(t)-M0+2kappa nu integral_0^t L<=B_plane.
+R_H=M+B_plane-C_H>=0, R_H'=-2kappa nu L.            (512)
+```
+
+This proves the proposed allowance (494) for the ENTIRE compatible history
+of this known regular class, uniformly over all available prefixes and
+all horizons. Applying the existing continuation argument does not assume
+global existence beforehand. No new regularity class is claimed. For the
+specific v in (502), the original quantities are
+`E_h0=221407/22050`, `Z_h0=X0=1246171/44100`, `E0=2E_h0`.
+It is therefore a concrete paid history with the adverse sign in (504).
+Its proof does not require source helicity to have a favorable sign.
+
+This payment is not assigned to the 3D perturbation or the localized
+whole-space fields. For general 3D flow, an actual coordinate average
+receives the Reynolds source `-div average_z(w_fluc tensor w_fluc)`, where
+`w_fluc=u-average_z u`. Equations (478) retain the resulting energy and enstrophy
+work. One must pay that generated work before using (510) for the average.
+The arbitrary-data joint history allowance in (494), or the alternative
+fixed-band signed allowance in (485), remains open. The next correction
+must control the complete signed creation and feedback; the sign of the
+entire generated helicity is not a valid substitute.
+
+Run `python3 -O labs/helical_source_balance.py`. It checks the exact
+coefficients, all source modes, the independent scalar-bracket identity,
+the canonical pressure, positive initial helicity, spatial rank, literal
+kinetic-energy decay and rational sign certificates. It also checks the
+algebra of the complete planar allowance. Local PDE evolution, packet
+localization, Fourier-limit inequalities and the all-time payment are
+analytic here. No new Lean declarations or axioms are introduced.
