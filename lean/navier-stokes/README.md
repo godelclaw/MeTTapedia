@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [physical kernel-score budget](labs/README.md#physical-kernel-entropy-and-the-joint-vorticity-score)
+pays time-weighted Fisher information for point-source sampling along
+arbitrary available smooth prefixes. Its allowance uses viscosity and
+the original energy on whole space, and only viscosity and the fixed
+domain on the torus. It also pays the time-weighted, uncontrolled
+pressure-score observation. A joint vorticity-score equation cancels
+explicit strain but retains an adverse geometric diffusion term. An
+exact decaying unforced shear increases Fisher information for a smooth
+receiver while its pressure impulse stays zero. Removing the time weight
+and controlling the full Bellman histories remain open. These results
+are analytic with exact algebra checks; no new Lean declarations are added.
+
 The [pressure-impulse receiver calculation](labs/README.md#pressure-impulse-flux-and-the-receivers-entropy)
 retains the exact spatial flux of the remaining stretching. Its bulk
 derivative terms combine with diffusion into squares; a controlled

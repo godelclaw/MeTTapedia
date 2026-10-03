@@ -27337,3 +27337,285 @@ obligation for the pressure-impulse history. To close (379), its density
 and orientation costs must be paid uniformly for point receivers from
 the full original fluid; neither zero initial impulse nor a magnitude
 summary at a receiver provides that payment.
+
+## Physical kernel entropy and the joint vorticity score
+
+`kernel_score_budget.py` checks the algebra of a time-weighted payment
+for the physical kernel score left in (383a). The payment holds on
+arbitrary available smooth unforced prefixes, without a perturbative
+restriction. It is an UNCONTROLLED first-moment estimate. The pressure
+history's exponential moment in (379), and the corresponding controlled
+receiver estimate, remain open. The kernel estimates, entropy limits and
+positive-time PDE statements below are analytic, not Lean-certified.
+
+### A point-source entropy balance with finite weighted cost
+
+Fix an endpoint (t,x) in an available smooth prefix. Let q(r,y) be the
+density of its physical backward diffusion
+
+```text
+dX_r=-u(t-r,X_r)dr+sqrt(2nu)dW_r,    X_0=x,
+partial_r q=nu Delta q+u(t-r).grad q,
+k=grad log q,       F_q(r)=integral q|k|^2,
+E_q(r)=integral q log q.
+```
+
+On the torus use normalized volume; on R3 use Lebesgue measure. For
+r>0 the kernel is positive and smooth. Incompressibility yields
+`E_q'=-nu F_q`. First integrate on [epsilon,t], where every entropy is
+finite. The bounds below imply epsilon E_q(epsilon) tends to zero, and
+give the point-source identity
+
+```text
+nu integral_0^t r F_q(r)dr
+ =-t E_q(t)+integral_0^t E_q(r)dr.                    (386)
+```
+
+Thus the singular initial entropy is not assigned a finite value. The
+factor r removes its boundary contribution. Smooth bounded drift on
+each fixed prefix justifies the kernel and integration identities; no
+bound for its future derivatives enters the resulting allowances.
+On R3 one may first localize and use the finite-prefix kernel tails to
+remove spatial boundary terms.
+
+On the canonical torus (R/2pi Z)^3, the fixed-domain Nash smoothing
+estimate used in (356) gives, for C_T>=1 independent of the drift,
+
+```text
+||q(r)||_infinity <= C_T[1+(nu r)^(-3/2)],
+0<=E_q(r)<=log[C_T(1+(nu r)^(-3/2))].
+```
+
+The finite-horizon consequence of (386) is
+
+```text
+nu integral_0^t r F_q(r)dr
+ <=t{log[C_T(1+(nu t)^(-3/2))]+3/2}.
+```
+
+There is also a bound uniform in the duration of the available prefix.
+Put tau=1/nu. The entropy integral before tau is at most
+`[log(2C_T)+3/2]/nu`. If the prefix extends beyond tau, then
+`||q(tau)-1||_2^2<=2C_T-1`. Incompressibility, scalar L2 dissipation
+and the torus Poincare constant 1 give
+
+```text
+E_q(r)<=||q(r)-1||_2^2
+       <=(2C_T-1)exp[-2nu(r-tau)],     r>=tau.
+```
+
+The first inequality follows from log q<=q-1. Integrating this tail
+and dropping only the nonpositive term -t E_q(t) in (386) proves
+
+```text
+integral_0^t r F_q(r)dr
+ <=[log(2C_T)+C_T+1]/nu^2 =: R_T.                   (387)
+```
+
+For t<tau use the truncated early integral. No extension of the fluid
+beyond its smooth prefix is assumed. This bound holds for arbitrary
+smooth incompressible drifts, including those supplied by forced flows;
+it is not itself a mechanism distinguishing unforced renewal.
+
+### Whole-space payment from original energy and displacement
+
+For R3 let E0=||u0||_2^2. Reuse (365) and the
+[Hess-Childs--Raquepas--Rowan concentration theorem, Corollary 1.10](https://arxiv.org/html/2503.16723v1).
+After rescaling its unit diffusivity, the L-infinity and entropy
+comparisons with a point-source heat kernel give
+
+```text
+||q(r)||_infinity<=(4pi nu r)^(-3/2),
+E_q(r)<=-(3/2)[1+log(4pi nu r)].
+```
+
+The entropy comparison has this sign because E_q is negative Shannon
+entropy. The sharp Euclidean bounds are not asserted on the torus.
+The original energy inequality and (365) bound the first displacement:
+
+```text
+E|X_r-x|<=B(r):=sqrt(6nu r)+L r^(1/4),
+L=4sqrt(E0)(8pi nu)^(-3/4).
+```
+
+Indeed Brownian motion contributes at most sqrt(6nu r), and the
+integrated drift magnitude at most L r^(1/4). Compare q with the
+normalized radial density
+`g_r(y)=exp(-|y-x|/B(r))/(8pi B(r)^3)`. Nonnegativity of relative
+entropy and the displacement bound yield
+
+```text
+E_q(r)>=-log(8pi B(r)^3)-1.
+```
+
+These upper and lower bounds justify both integrability of E_q near
+zero and the vanishing boundary term in (386). Since the integral of
+the sharp entropy upper bound is `-(3/2)t log(4pi nu t)`, (386) gives
+
+```text
+integral_0^t r F_q(r)dr
+ <=(t/nu){log[8pi B(t)^3/(4pi nu t)^(3/2)]+1}
+ =: R_R(t).                                         (388)
+```
+
+This is finite, explicit in E0,nu,t, and uniform in the endpoint and
+the available prefix. Its limit at t=0 is zero. Taking its maximum
+on a prescribed finite interval uses only this explicit function of
+the original data, not a supremum over the unknown future solution.
+Using only the L-infinity kernel bound instead of the sharper entropy
+comparison would give the weaker additive constant 5/2 in (388).
+
+### The pressure-score observation that this payment controls
+
+Keep the original H and I=H-u from (374), and n,d,R,V from (380)--(383a).
+The passive and kinetic energy laws give ||I(s)||_2^2<=4E0. Write
+K_infinity(r) for the appropriate kernel upper bound and put
+
+```text
+A(t)=integral_0^t r K_infinity(r)dr
+    =2(4pi nu)^(-3/2)sqrt(t)                    on R3,
+    =C_T[t^2/2+2nu^(-3/2)sqrt(t)]              on T3.
+```
+
+All fluid fields in the following expectations are evaluated at
+(t-r,X_r), on the SAME uncontrolled diffusion. With R(t)=R_R(t) or
+R_T as appropriate, Cauchy--Schwarz and |n|<=1 give
+
+```text
+E_(P_u) integral_0^t r V dr <=68E0 A(t)/nu,
+E_(P_u) integral_0^t r |4(I.n)n.k|dr
+                         <=8sqrt(E0 A(t)R(t)).      (389)
+```
+
+For the second inequality, apply Cauchy--Schwarz to r q dr dy,
+using `integral r E|I|^2<=4E0 A(t)` and (387) or (388).
+This pays the absolute weighted first moment of both observations
+remaining in (383a), even for a point initial receiver. It does not
+pay their unweighted controlled expectations under rho. A bound under
+q cannot simply be substituted into an integral under rho, nor does
+a first-moment bound establish the exponential estimate (379).
+
+Time weighting suppresses the short sampling interval closest to the
+observation endpoint. Removing that weight needs additional structure.
+The existing delayed whole-reaction first moment (357a) remains a
+different paid observation; (389) is not a stronger continuation theorem.
+Composition must retain the original passive field, incoming kernel
+density and elapsed sampling time. Restarting the kernel or the weight
+at every seam would change the observation being bounded.
+
+### Fisher information can increase in an exact unforced shear
+
+For any smooth positive initial receiver, direct differentiation gives
+
+```text
+F_q'=-2nu integral q|Hess log q|^2
+                         +2integral q k.(grad u)k. (390)
+```
+
+In the notation of (392), its local balance is
+`L|k|^2-(4nu/q)div(q Kk)=2k.(grad u)k-2nu|K|^2`;
+integration removes precisely this spatial flux on the torus.
+
+Thus decreasing entropy does not require decreasing Fisher information.
+This failure occurs in an exact unforced periodic solution, not just
+an arbitrary manufactured drift. Take
+
+```text
+u(s,y)=160nu exp(-nu s)sin(y_2)e_1,   p=0,
+t=log(2)/nu,
+phi=cos(y_1+y_3)+cos(y_1+y_2+y_3),
+q(0,y)=exp(epsilon phi)/Z,           epsilon=1/100.
+```
+
+Here Z is the normalized-volume integral. The fluid has nonzero
+viscosity, finite initial energy and no force. Its self-transport is
+zero; its original passive field equals u and I=0 for all time.
+At the endpoint u(t)=80nu sin(y_2)e_1. Uniform spatial averages are
+
+```text
+average[2cos(y_2)phi_1 phi_2]=1/2,
+average[2|Hess phi|^2]=13.
+```
+
+Since |phi|<=2, `|q(0)-1|<=exp(1/25)-1<=1/24`.
+For a shear amplitude A the absolute integrand in (390), after
+dividing by epsilon^2, is at most 4A+50nu: use |phi_1|<=2,
+|phi_2|<=1 and |Hess phi|<=5. Consequently
+
+```text
+F_q'(0)>=nu epsilon^2[40-13-370/24]
+         =(139/12)nu epsilon^2>0.                  (391)
+```
+
+Smoothness gives a positive interval of increasing Fisher information.
+The receiver is genuinely three-dimensional while the exact fluid
+calibration is planar. This tests smooth-receiver monotonicity; it
+does not refute a separate claim restricted to point-source kernels.
+Although the sampler develops finer structure, the pressure-score
+coupling in (383a) is zero here because I=0. A scalar score bound alone
+therefore loses useful information about its actual fluid partner.
+
+### A joint vorticity-score law cancels explicit strain
+
+Let w(r,y)=omega(t-r,y), G=grad w, K=Hess log q, and c=w.k. Set
+`L=partial_r-u.grad+nu Delta`, the backward-sampling generator acting
+on time-dependent observations. For the actual unforced vorticity
+equation and the uncontrolled density equation,
+
+```text
+Lw=-(grad u)w,
+Lk=2nu Delta k+2nu Kk+(grad u)^T k,
+Lc=2nu[w.Delta k+w.Kk+G:K].
+```
+
+The vector and covector deformation terms cancel. Retaining the full
+diffusion product and spatial flux yields the local identity
+
+```text
+L(c^2)-(4nu/q)div(q c K w)
+              =2nu[|G^T k|^2-|K w|^2].             (392)
+```
+
+For a smooth positive receiver on the whole torus, integration gives
+
+```text
+d/dr integral q(w.k)^2
+      =2nu integral q[|(grad w)^T k|^2-|K w|^2].    (393)
+```
+
+The same identity holds for positive r along a point-source kernel;
+no finite value for its directional cost at r=0 is asserted. Spatial
+subregions retain the flux in (392). Whole-space integration additionally
+requires integrability and vanishing boundary flux. This is a signed
+identity, not a monotonicity theorem: the positive geometric derivative
+term remains. An applied fluid force would also add
+`-2integral q c(curl f).k` to (393), since w uses reversed physical time.
+
+The checker uses the actual NS time derivative with canonical pressure
+on the original pressure-start, vorticity-maximum, simple-carrier and
+resonant-carrier data. All Fourier outputs are retained. It verifies
+the local strain cancellation and complete flux identity at their
+stated receivers. The simple-carrier fixture has strictly positive
+`|(grad w)^T k|^2` and zero `|K w|^2` there, so simply discarding the
+positive local term is not justified. This pointwise test makes no
+claim about the sign of its whole-domain integral.
+
+The directional equation supplies a concrete next obligation for
+(383a): its vorticity direction and kernel score must be kept joint,
+with the derivative of the normalization and the impulse included.
+Replacing w by n or q by a controlled rho introduces further terms;
+neither replacement is covered silently by (392). A payment for the
+resulting controlled pressure history must still be uniform at the
+point receiver and use a finite allowance from the full original datum.
+
+### Verification scope
+
+Run `python3 -O labs/kernel_score_budget.py`. The checker includes
+the heat-kernel entropy identity, a positive periodic heat density,
+the radial reference normalization, the budget constants, the exact
+unforced shear and its strict Fisher-production margin, and four
+complete actual-NS initial-jet fixtures for (392). Their prescribed
+smooth receiver is not presented as a numerically evolved point kernel.
+The kernel comparisons, entropy limit, positive-time shear statement,
+and all general PDE inequalities are analytic. No Lean declarations or
+axioms change, and no arbitrary-data continuation estimate is claimed.
