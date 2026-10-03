@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [fixed-band renewal calculation](labs/README.md#fixed-spectral-bands-and-coherent-generation-of-stretching)
+absorbs any fixed finite band of vertical frequencies using the full energy
+reserve, while retaining all interactions. Two elliptically polarized
+parents generate positive signed stretching in an initially empty tail;
+their shared cross term reverses the separate polarization signs. Actual
+short unforced histories refute automatic pointwise viscous payment of
+that tail. A two-coordinate version nevertheless has an explicit full-data
+finite-horizon allowance. The genuinely 3D history payment remains open.
+These are analytic results with exact checks, not new Lean certificates.
+
 The [solenoidal geometric observation](labs/README.md#solenoidal-geometric-observations-and-a-complete-two-coordinate-payment)
 discards gradients and nonpositive stretching directions before charging
 the joint geometry. It has an explicit all-time payment for arbitrary

@@ -30542,3 +30542,249 @@ The mean contribution has been absorbed without an autonomous-parent
 hypothesis. This does not pay theta_w or complete arbitrary-data
 regularity; the full vorticity and curl in that remaining cost are
 essential to its physical meaning.
+
+
+## Fixed spectral bands and coherent generation of stretching
+
+The mean payment extends to any fixed finite band of vertical frequencies,
+even while those modes exchange energy with the rest of an actual NS flow.
+The resulting tail cannot be assumed to start dissipatively: two elliptically
+polarized parent waves generate positive signed tail stretching from an empty
+tail. Separating their polarization contributions loses the term responsible
+for that sign. A two-coordinate version has a complete finite-horizon payment;
+adding a third-coordinate parent retains the positive onset, but its general
+history payment remains open. The PDE results here are analytic, with exact
+algebraic checks, not new Lean certificates.
+
+### A fixed band can be paid without closing its dynamics
+
+Keep the normalized 2*pi torus and the original zero-mean Galilean frame.
+Choose an integer N>=0 before examining any future solution prefix. Let
+P_N retain all frequencies with |k_z|<=N, set V=P_N u, w=u-V and m=2N+1.
+This band has infinitely many horizontal frequencies; it is not a finite
+Galerkin state. The actual equation for V retains every interaction with w.
+
+Write Z_V=||grad V||_2^2, D_V=||Delta V||_2^2. Fourier orthogonality gives
+Z_V<=Z and D_V<=D, while the FULL energy satisfies E'=-2nu Z. The periodic
+logarithmic estimate used in (480) becomes
+
+```text
+||V||_infinity^2 <= 48m Z_V log(e+D_V/Z_V).          (484)
+```
+
+For completeness, a horizontal shell of sup radius j contains at most
+8mj frequencies in this band. Frequencies on the vertical axis contribute
+at most `2 sum_{j>=1}1/j^2<=4` to the inverse-square sum. Splitting at
+horizontal radius L>=1 therefore gives
+
+```text
+(sum_low |V_hat|)^2 <= Z_V[8m(1+log L)+4],
+(sum_high |V_hat|)^2 <= 4m D_V/L^2.
+```
+
+For Z_V>0, put r=D_V/Z_V>=1 and L=ceil(sqrt r). Twice the sum of these
+bounds is at most `m Z_V[32+16log2+8log r]`, which is bounded by (484).
+Indeed `48log(e+r)-8log r` is increasing for r>=1 and exceeds48 at r=1,
+whereas `32+16log2<48`. If Z_V=0 the mean-zero V vanishes. This derivation
+uses the same logarithmic Fourier mechanism as Brézis--Gallouët above.
+
+With the FULL omega and c from (471), define
+
+```text
+theta_N=||Q_c(w cross omega)||_2^2/Y,
+C_N(t)=integral_0^t[theta_N-alpha nu^2 D/Y],
+0<=alpha<1, kappa=1-alpha.                         (485)
+```
+
+The remaining hypothesis is ONE finite B_N(u0,nu,T)>=0 with C_N<=B_N
+for every available same-datum prefix through T. N, alpha and zeta>0
+are fixed from original resources. There is no such arbitrary-data
+bound proved here. Substituting (484) into the argument of (482) gives
+
+```text
+ell_N=log(e+384m zeta/(kappa^2 nu^2)), h=log(Y/zeta),
+h'+kappa nu d/4 <= C_N'/nu + 96m Z_V(ell_N+h)/(kappa nu),
+R_N=exp[48m E/(kappa nu^2)] [ell_N+h+(B_N-C_N)/nu],
+R_N' <= -(kappa nu/4) exp[48m E/(kappa nu^2)] d.    (486)
+```
+
+After dividing the derivative by the exponential, the additional terms are
+`-96m[(Z-Z_V)(ell_N+h)+Z(B_N-C_N)/nu]/(kappa nu)`, hence nonpositive.
+Only the full energy law is used; the band's own energy can increase.
+Putting h_max=R_N(0)-ell_N gives Y_max=zeta exp(h_max) and
+Q_star=4h_max/(kappa nu). These bound Y, integral d and integral D exactly
+as after (483), and supply the same explicit signed-renewal allowance K.
+All constants depend on original resources IF the open B_N is supplied.
+The factors grow with N. Letting N tend to infinity does not give a bound.
+
+A weaker, directly signed observation also suffices in (485)--(486):
+replace theta_N by
+`sigma_N=(s_N)_+^2/(D Y)`, where `s_N=<w cross omega,c>` and sigma_N=0
+when D=0. Indeed s_N<=sqrt(YD sigma_N), and sigma_N<=theta_N. This option
+retains cancellation in the actual integrated work; no independent bounds
+on spatial positive parts are necessary for this consumer. Its arbitrary
+original-data payment is also open.
+
+### A favorable isolated interaction and its exact limitation
+
+Consider two nonparallel Fourier waves, each with a single REAL polarization,
+`A cos(p.x)` and `B cos(q.x)`, with p.A=q.B=0. Common phase shifts do not
+change the following coefficient calculation. The newly generated sum mode
+has NS tangent `b sin((p+q).x)`, where
+`b=P_{p+q}[(A.q)B+(B.p)A]/2` and P_k is the solenoidal Fourier projection.
+Its first signed contribution to `<w cross omega,c>` is
+
+```text
+L=-[|q|^2 (b cross (p cross A)).B
+    +|p|^2 (b cross (q cross B)).A]/4 <=0.          (487)
+```
+
+There is an explicit sum of squares. In an orthonormal basis for the
+coefficient algebra, write p=(P,0,0), q=(Q,R,0), A=(0,a,b0),
+B=(R c0,-Q c0,d0), K=(P+Q)^2+R^2 and M=Q+2P R^2/K. Then
+
+```text
+L=-(P^2 R^2/8) [(a d0+M b0 c0)^2
+               +R^2(P^2-Q^2-R^2)^2(b0 c0)^2/K^2].
+```
+
+Choosing this basis only evaluates rotationally invariant coefficient
+algebra; it does not rotate the periodic lattice into a different domain.
+The parallel case has zero interaction. Replacing q by -q handles the
+difference daughter. Viscosity contributes no initially absent mode, so
+this first-order sign holds at every positive viscosity. It concerns this
+signed work and this initial interaction, not the whole cone cost or later
+returns. In particular, it does not cover elliptic polarization.
+
+Here is the limitation on actual unforced data. Put P=2x+z and take
+
+```text
+u0=(cos z-cos P+epsilon cos y,
+    -a sin P-b sin z,
+    2 cos P).                                    (488)
+```
+
+This smooth mean-zero datum is divergence free. All its vertical frequencies
+satisfy |k_z|<=1, so w(0)=0 for N=1. The complete pressure-projected equation
+generates tail modes (+/-2,0,+/-2), with equal signs in those tuples. Exact
+calculation gives, independently of epsilon and positive viscosity,
+
+```text
+s_1'(0)=-(a^2+8ab+5b^2)/2.
+a=-2,b=1:  -2 -5/2 +8 = 7/2 >0.
+a= 2,b=1:                  -25/2 <0.              (489)
+```
+
+The first two terms in the positive case are the separate polarization
+contributions. The shared child's cross term is +8 and reverses their
+combined sign. It is lost by adding separately estimated parent responses.
+The two data have the same spectral kinetic energies at every frequency.
+They nevertheless have opposite signed transfer into the stretching
+observation. This is a finite, physical example of necessary joint phase
+information.
+
+For epsilon=1, both data depend on all three coordinates, with E0=6,
+Z0=24 and D0=114. At nu=1 the positive case has s_1''(0)=-91,
+||w'(0)||_2^2=3/2 and g'(0)=37/4. The second full velocity derivative
+already generates |k_z|=3, so the calculation has not closed the band.
+The negative case has g'(0)=85/4: the sign of this tail contribution is
+not the sign of the complete stretching derivative. Smooth local existence
+and continuity give actual intervals with s_1>0 or s_1<0, respectively.
+For the positive case and zeta=Z0,
+`theta_1(t)>=sigma_1(t)=(49/21888)t^2+O(t^3)`.
+No differentiability of the moving cone projection is assumed here.
+
+### Positive viscosity does not automatically pay newly generated modes
+
+The initial calculation gives a genuine obstruction to a pointwise payment,
+not merely a formal tangent. Fix the positive epsilon=1 datum Phi in (488).
+For 0<mu<=1, standard local Sobolev energy estimates give a common interval
+for the smooth NS solution v_mu starting at Phi. Their bounds are uniform
+in mu: viscosity is dissipative in the velocity estimate. Choose sufficiently
+many Sobolev derivatives, for example H^12, so the first two time derivatives
+of s_1 are uniformly bounded as well. Thus there is a fixed small tau0>0
+and an interval J=[tau0/2,tau0] on which s_1(v_mu)>=c0>0 and D(v_mu)<=D_*
+for every 0<mu<=1. These constants come from the fixed smooth datum, not an
+assumed future regularity bound. D stays positive after shortening tau0.
+
+For any prescribed nu>0 and amplitude A>=nu, set
+`u_A(t)=A v_{nu/A}(At)`. This is an ACTUAL unforced NS solution at viscosity
+nu, with datum A Phi and the SAME initially empty N=1 tail. On J/A,
+
+```text
+theta_1/(nu^2 d) >= sigma_1/(nu^2 d)
+                  =s_1(u_A)^2/(nu^2 D(u_A)^2)
+                  >=A^2 c0^2/(nu^2 D_*^2).        (490)
+```
+
+Here the positive signed work scales as A^3 and D as A^2. The comparison
+is independent of the choice of zeta>0. Consequently no fixed alpha<1
+gives theta_1<=alpha nu^2 d on all these histories merely because the tail
+was initially empty. The sharper signed observation fails that claim too.
+The failure is in genuine three-dimensional unforced dynamics.
+
+With zeta=Z(u_A(0))=24A^2, the same local bounds give constants c,C>0,
+independent of A and nu, such that at t=tau0/A
+`C_1(t)>=c A-C nu^2/A`. In obtaining this cumulative bound, integrate the
+positive cost over J/A and bound the negative diffusion term on the ENTIRE
+interval [0,tau0/A]. For any fixed positive horizon these endpoints lie
+inside it once A is large. Thus an allowance based only on the empty initial
+tail, the prescribed cutoff, viscosity and horizon cannot pay these bursts.
+This does not refute an allowance depending on the FULL datum or a different
+datum-chosen cutoff. It does not construct indefinite renewal or blowup.
+
+### A full-data payment for the two-coordinate version
+
+The epsilon=0 positive example has a useful complete payment. Its (x,z)
+velocity is an autonomous planar NS flow; its y component is a passive
+scalar. For the unscaled datum their planar energy and enstrophy are
+E_h0=3 and Z_h0=13, and the passive supremum is at most3. The actual prefix
+energy/enstrophy estimates used in (476) give
+`integral ||u_h||_infinity^2<=52sqrt(E_h0 Z_h0)/nu`, while the passive
+maximum principle gives ||u_y(t)||_infinity<=||u_y0||_infinity.
+
+For any fixed N the Fourier projection obeys ||P_N||_{L-infinity->L-infinity}
+<=m, by its Dirichlet kernel or the sum of its m coefficient projections.
+Hence ||w||_infinity<=(m+1)||u||_infinity and theta_N<=||w||_infinity^2.
+For N=1 and datum A Phi with epsilon=0 this proves, on every prefix through T,
+
+```text
+integral theta_1 <=16 A^2 [52sqrt(39)/nu+9T].       (491)
+```
+
+This supplies B_1 in (485), even with alpha=0, at EVERY amplitude. The finite
+burst is paid by its original parents despite the failed pointwise diffusion
+claim. This is a calibration in a known regular class, not new general
+regularity. Adding epsilon cos y retains (489) but destroys this autonomous
+planar/passive decomposition; no corresponding all-amplitude payment is
+established here for that genuinely 3D case.
+
+### The remaining history must keep the shared child
+
+The exact tail equation can be written
+
+```text
+w(t)=exp(nu t Delta)w0
+     +integral_0^t exp(nu(t-s)Delta)(1-P_N)P_sol[u(s) cross omega(s)] ds.
+```
+
+Its signed stretching uses this SAME w(t), omega(t) and c(t). In particular,
+each source time is paired with the actual receiver at t; independent phase
+averages do not reconstruct the observed +8 term. This is related to the
+hidden-mode history addressed by [Hald--Stinis's t-model analysis](https://doi.org/10.1073/pnas.0700084104).
+That work proves properties of a reduced model; it does not supply the
+arbitrary NS tail payment used here. We retain the exact evolution and do
+not substitute a first memory term for its later history.
+
+The next physical estimate must pay the coherent cross term and subsequent
+returns together, after the full band contribution has been absorbed by
+(486). Neither isolated damping of polarization channels nor energy exchange
+alone proves that estimate. The original-data allowance remains open on T3;
+no infinite-axis average or finite-band argument on R3 is asserted.
+
+Run `python3 -O labs/finite_band_renewal.py`. The checker verifies the general
+linear-pair sum of squares, the elliptic-pair formula, four full NS jet
+fixtures, their pressure and higher generated modes, the conditional reserve
+and the normalization of (491). The local uniform PDE estimates, logarithmic
+Fourier argument and physical continuation assembly are analytic obligations,
+not proved by the finite checker. No Lean declarations or axioms change.
