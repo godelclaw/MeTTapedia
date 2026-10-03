@@ -1,0 +1,64 @@
+{
+  "evidence": "General external-boundary obstruction and mandatory absorption are Lean checked. Two singleton instances consume these laws and connect to existing larger-region repairs with whole-graph reconstruction. The full finite census and spherical geometry are program evidence.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.BoundaryParity",
+      "source_bytes": 4562,
+      "source_sha256": "07ca36b91b10524caa159427a1e5c5cc75dfecc433ae8f3bac44f0c86cf067e9",
+      "build_seconds": 1.7,
+      "olean_bytes": 125288,
+      "olean_sha256": "53819a9c86340071f8e455d41bd54524acc5180e78c11339e7364ad198f81ba3"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryParityAudit",
+      "source_bytes": 6591,
+      "source_sha256": "1f4662d97c7b36cbe04b7d580c40e2ab643ef26066df75397f96fd9992d59ad7",
+      "build_seconds": 4.8,
+      "olean_bytes": 150104,
+      "olean_sha256": "61db4cb31517651dd46f19b581171915bd13beb6f3a3291cd12cfff605c8b4d5"
+    }
+  ],
+  "audit": {
+    "roots": 12,
+    "dependency_declarations": 6628,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "bulk_repair_certificates_used": false,
+    "strict_enlargement_consumer_requires_parity_theorem": true
+  },
+  "program": {
+    "seconds": 1.049,
+    "script_sha256": "f57ca14703d672686ffffe9b5a81835e0d4e0387d575ba6d69dd54600f5efa3d",
+    "fixture_reused": "component-detach-example.json",
+    "census": {
+      "oriented_one_exit_regions": 332,
+      "one_switch_detachments": 24,
+      "odd_external_boundary_obstructions": 233,
+      "bipartite_boundary_one_switch_failures": 75
+    }
+  },
+  "build_gate": {
+    "project": "lean/mettapedia",
+    "targets": [
+      "FourColorLane",
+      "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+    ],
+    "passed": true
+  },
+  "programme_counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates_retained": 629,
+    "member_check_obligations_replaced": 336,
+    "additional_removals_credited": 0
+  },
+  "scope": [
+    "An odd external boundary forbids keeping the proposed region fixed under every proper four-colouring, hence under arbitrary preparation histories. This is not an impossibility theorem for adaptive regions or compositional Four Colour proofs.",
+    "Every closed enlargement must absorb at least one vertex of each obstructing odd walk. The theorem supplies a necessary condition, not compatible choices, a bound on growth or termination.",
+    "Both successful histories already existed. The new consumer shows why each uses a strictly larger region than either obstructed singleton; it is not a newly discovered repair.",
+    "The 75 bipartite-boundary cases that fail one transverse switch have no arbitrary-history obstruction established by this work.",
+    "No new configuration reduction, source catalogue removal or kernel saving is claimed."
+  ]
+}

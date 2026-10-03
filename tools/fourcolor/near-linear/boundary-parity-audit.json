@@ -1,0 +1,174 @@
+{
+  "evidence": "Finite geometry and census are program checked. The arbitrary-colouring obstruction and two consumed singleton instances are Lean checked.",
+  "fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "lean_consumer_sha256": "1f4662d97c7b36cbe04b7d580c40e2ab643ef26066df75397f96fd9992d59ad7",
+  "geometry": {
+    "vertices": 162,
+    "faces": 320,
+    "minimum_degree": 5,
+    "cycles_by_length": {
+      "3": 320,
+      "4": 480,
+      "5": 1040
+    },
+    "shore_counts": [
+      {
+        "length": 3,
+        "side_vertices": [
+          0,
+          159
+        ],
+        "cycles": 320
+      },
+      {
+        "length": 4,
+        "side_vertices": [
+          0,
+          158
+        ],
+        "cycles": 480
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          0,
+          157
+        ],
+        "cycles": 960
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          1,
+          156
+        ],
+        "cycles": 80
+      }
+    ],
+    "obstructing_cycles": 0,
+    "first_obstruction": null
+  },
+  "counts": {
+    "oriented_one_exit_regions": 332,
+    "one_switch_detachments": 24,
+    "odd_external_boundary_obstructions": 233,
+    "bipartite_boundary_one_switch_failures": 75
+  },
+  "census_sha256": "82cd96531af19133e6915e2233593f7cb678e19e530bc384793d5c44a769db1f",
+  "supply_counterexample": {
+    "pair": [
+      0,
+      2
+    ],
+    "region": [
+      62
+    ],
+    "exit": [
+      62,
+      70
+    ],
+    "facial_corners": [
+      101,
+      30
+    ],
+    "corner_colours": [
+      3,
+      1
+    ],
+    "choices": [
+      {
+        "transverse_colour": 1,
+        "component": [
+          30,
+          63,
+          70,
+          71
+        ],
+        "boundary_hits": [],
+        "entries": [
+          [
+            62,
+            30
+          ]
+        ],
+        "detaches": false
+      },
+      {
+        "transverse_colour": 3,
+        "component": [
+          70,
+          101
+        ],
+        "boundary_hits": [],
+        "entries": [
+          [
+            62,
+            101
+          ]
+        ],
+        "detaches": false
+      }
+    ],
+    "odd_external_cycle": [
+      101,
+      70,
+      30,
+      139,
+      58,
+      101
+    ],
+    "detaches": false
+  },
+  "lean_consumers": [
+    {
+      "sphere_seed": 79,
+      "exterior_seed": 74,
+      "neighbour_cycle_sphere": [
+        16,
+        77,
+        81,
+        64,
+        116,
+        16
+      ],
+      "neighbour_cycle_exterior": [
+        14,
+        72,
+        76,
+        59,
+        109,
+        14
+      ],
+      "successful_larger_region_sizes": [
+        21,
+        16
+      ]
+    },
+    {
+      "sphere_seed": 112,
+      "exterior_seed": 105,
+      "neighbour_cycle_sphere": [
+        94,
+        155,
+        159,
+        150,
+        152,
+        94
+      ],
+      "neighbour_cycle_exterior": [
+        89,
+        148,
+        152,
+        143,
+        145,
+        89
+      ],
+      "successful_larger_region_sizes": [
+        21,
+        16
+      ]
+    }
+  ],
+  "reconstructed_colouring_count": 2,
+  "scope": "An odd external boundary forbids a fixed region from being a two-colour component in every proper four-colouring. It does not forbid a larger region or other decompositions. Bipartite external boundary alone supplies neither detachment nor progress. No new coverage or complete-proof certificate removal is claimed."
+}

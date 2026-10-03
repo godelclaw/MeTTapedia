@@ -1167,6 +1167,64 @@ found, and what prevents preparation from cycling indefinitely? The two
 consumers establish neither a universal preparation bound nor coverage.
 Complete-proof counts remain 633 / 629 / 336.
 
+## Odd external boundaries require changing the region
+
+[BoundaryParity](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/BoundaryParity.lean)
+proves a necessary condition for detachment in every proper four-colouring.
+If a region is closed under neighbours of two distinct selected colours,
+its external neighbours use only the other two colours. Their induced graph
+must therefore be bipartite. An odd closed walk among those neighbours
+prevents the region from being an entire Kempe component, regardless of the
+length or choice of preparatory recolourings. The theorem applies to arbitrary
+graphs and sets; it assumes neither planarity nor finiteness.
+
+A second theorem specifies how an enlargement must respond: a closed
+superset must absorb a vertex of every such odd walk. This is a necessary
+condition, not an algorithm for choosing compatible enlargements or a proof
+that enlargement terminates before reaching protected ports.
+
+The [actual consumer](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryParityAudit.lean)
+checks two pentagonal neighbour walks in the existing exterior. Neither
+singleton can be isolated in any proper four-colouring. Both nevertheless
+belong to each of the already verified 21- and 16-vertex detached regions.
+The combined theorem proves strict enlargement and physical repair with
+whole-graph reconstruction for the same histories. This obstruction therefore
+rules out keeping those regions fixed, while the successful larger regions
+remain explicit positive evidence.
+
+The [program census](boundary-parity-audit.json) checks all connected,
+boundary-disjoint bichromatic regions with one active exit in the retained
+162-vertex example. Such a region is a shore of a bridge in its original
+two-colour component.
+
+| Outcome | Oriented regions |
+| --- | --- |
+| One transverse component detaches the region directly | 24 |
+| An odd external cycle forbids detachment in every colouring | 233 |
+| External graph is bipartite, but neither proposed single switch works | 75 |
+| Total | 332 |
+
+Every reported odd obstruction has an explicitly reconstructed and checked
+cycle. Bipartite external graphs are independently two-coloured. One tiny
+counterexample has both transverse components available away from the ports,
+yet either switch creates a new active exit through a facial corner. This
+disproves the proposed local supply assertion on the tested source domain.
+The full census and spherical geometry are program evidence; the general
+theorems and two consumed singleton instances are Lean checked.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_boundary_parity.py \
+  --output tools/fourcolor/near-linear/boundary-parity-audit.json
+```
+
+Run `lake build Mettapedia.GraphTheory.FourColor.BoundaryParityAudit` in the
+main Lean package. The [receipt](boundary-parity-measurements.json) records
+the short general proof and consumer checks. The next mathematical obligation
+is to supply useful changing regions with a justified progress measure.
+Neither bipartiteness alone nor the existence of some larger repaired region
+establishes that supply. No coverage entries, independent certificates or
+member-check obligations are removed here; counts remain 633 / 629 / 336.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)
