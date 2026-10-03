@@ -31934,3 +31934,262 @@ and the scaling and scalar payment calculations. It reuses the localized
 seed established analytically in (507)--(508). The uniform local interval,
 Schwartz localization and expanding-torus limit remain analytic arguments.
 No new Lean declaration or axiom is introduced.
+
+## Critical amplification in a paid unforced mixing history
+
+The concentration result (532) requires an allowance beyond kinetic energy
+alone. A fixed multiple of the original critical mass M0 is still too
+restrictive. Even globally regular unforced flows can amplify M by an
+arbitrarily large factor. This section tests that precise stronger candidate
+and gives a NONLINEAR original-data payment for the entire reference history.
+All norms are on the normalized 2*pi torus; no R3 extension is claimed here.
+
+Shear mixing and enhanced dissipation have an extensive theory, including
+[Bedrossian--Coti Zelati](https://arxiv.org/abs/1510.08098). Their stationary
+shear semigroups are not the time-decaying fluid used below. The elementary
+comparison here retains that time dependence and connects the mixing directly
+to the critical NS criterion (494). No optimal enhanced-dissipation rate or
+new general regularity theorem is claimed.
+
+### An actual unforced history and its stochastic representation
+
+For A,B>0 and nu>0, consider
+
+```text
+U(t,x,y,z)=(V(t,y),0,w(t,x,y)),
+V=A exp(-nu t) sin y,
+w_t+V w_x=nu(w_xx+w_yy), w(0,x,y)=B cos x.        (543)
+```
+
+This is an exact global smooth unforced 3D NS solution with zero pressure.
+It has genuine vorticity stretching, although only two-coordinate spatial
+dependence and no return from w into V. The global existence here follows
+from the explicit shear and a linear parabolic equation, independently of
+any arbitrary-data NS hypothesis.
+
+Write `w=B Re[exp(ix) psi(t,y)]`. If W_s is standard one-dimensional
+Brownian motion, the exact Feynman--Kac representation is
+
+```text
+psi_t=nu psi_yy-nu psi-i V psi, psi(0,y)=1,
+psi(t,y)=exp(-nu t) Expectation exp(
+  -i integral_0^t V(t-s,y+sqrt(2nu) W_s) ds),
+zeta(t)=A(1-exp(-nu t))/nu,
+|psi|<=exp(-nu t),
+|psi_y|<=exp(-nu t) zeta(t).                      (544)
+```
+
+Differentiation under the expectation is justified by the bounded smooth
+shear. The phase and its derivative stay in the SAME expectation; bounding
+its absolute value does not replace it by independent expectations. This
+is an auxiliary stochastic representation of the actual viscous equation,
+not a force applied to the fluid. Higher y derivatives give bounds of the
+form `exp(-nu t) P_j(zeta)` with finite polynomials P_j. Thus the reference
+decays to zero in every fixed Sobolev norm.
+
+### A positive-viscosity lower bound for critical amplification
+
+The transported reference
+`w_tr=B cos(x-zeta(t) sin y)` solves `w_tr,t+V w_tr,x=0`.
+Let e=w-w_tr. Its forced linear error equation and the divergence-free
+transport energy estimate give
+
+```text
+||e(t)||_2<=nu integral_0^t ||Delta w_tr(s)||_2 ds
+ <=(B/sqrt(2)) nu [t+A^2 t^3/3].                 (545)
+```
+
+Indeed, direct integration gives
+`||Delta w_tr||_2^2/B^2=1/2+3zeta^2/4+3zeta^4/16`
+and hence `||Delta w_tr||_2<=(B/sqrt(2))(1+zeta^2)`;
+also zeta(s)<=As. This controls the actual viscous solution on the
+whole stated interval, not just its initial Taylor coefficients.
+
+Let c_n be the Fourier coefficients of `exp(-i zeta sin y)`. Parseval gives
+
+```text
+sum |c_n|^2=1,
+sum n^2 |c_n|^2=zeta^2/2,
+sum n^4 |c_n|^2=zeta^2/2+3zeta^4/8.               (546)
+```
+
+Cauchy--Schwarz, after removing the contribution from |n|<zeta/2,
+implies
+
+```text
+sum_(|n|>=zeta/2) |c_n|^2
+ >=zeta^2/(8+6zeta^2)>=1/14>1/16, for zeta>=1.   (547)
+```
+
+For Re=A/nu>=8000 choose
+
+```text
+t_star=(1/(10nu)) Re^(-2/3),
+Re^(1/3)/20<=zeta(t_star)<=Re^(1/3)/10,
+||e(t_star)||_2/(B/sqrt(2))
+ <=1/10+1/3000=301/3000<1/8.                     (548)
+```
+
+The phase lower bound follows from 1-exp(-r)>=r/2 for 0<=r<=1.
+By (547), the high-y-frequency part of w_tr has norm at least
+B/(4sqrt(2)). Equations (545)--(548) leave at least B/(8sqrt(2))
+in the SAME projection of the actual w. On that projection |k|>=zeta/2,
+so the actual critical mass satisfies
+
+```text
+M(U(t_star))>=B^2 zeta(t_star)/256
+             >=B^2 Re^(1/3)/5120.                (549)
+```
+
+Set B=A. All initial modes have length one, and E0=M0=Z0=A^2.
+Consequently M(t_star)/M0 is unbounded as A/nu grows at fixed nu.
+Every prescribed positive horizon contains t_star for sufficiently large A.
+Since `C_H=M-M0+2(1-alpha)nu integral L>=M-M0`, no finite constant
+C(nu,T,alpha) can give `C_H(t)<=C(nu,T,alpha) M0` for all data and
+available prefixes. The same example excludes fixed finite linear
+combinations of initial Sobolev energies as the sole allowance: every
+homogeneous Sobolev energy of this datum equals A^2.
+
+This does NOT exclude a nonlinear function of M0 and nu, or an allowance
+depending on the full datum. In contrast to (532), the initial energy
+here grows with A. These are two different restrictions on proposed
+payments, and neither constructs blowup.
+
+### The entire reference history has an explicit finite payment
+
+The same stochastic formula that permits large mixing supplies its payment.
+Put E_w=||w||_2^2, Z_w=||grad w||_2^2 and D_w=||Delta w||_2^2. Equation
+(544) gives
+
+```text
+E_w<=B^2 exp(-2nu t)/2,
+Z_w<=B^2 exp(-2nu t)(1+zeta^2)/2,
+M_w<=B^2 sqrt(1+Re^2)/2.                         (550)
+```
+
+The actual scalar energy and gradient-energy identities are
+
+```text
+E_w'+2nu Z_w=0,
+Z_w'+2nu D_w=-2 integral V_y w_x w_y
+             <=A B^2 zeta exp(-3nu t).
+integral_0^infinity Z_w<=B^2/(4nu),
+integral_0^infinity D_w<=B^2(1+Re^2/6)/(4nu),
+integral_0^infinity L_w
+ <=B^2 sqrt(1+Re^2/6)/(4nu).                      (551)
+```
+
+The D_w bound uses `integral zeta exp(-3nu t)=Re/(12nu)`.
+The last bound follows from `L_w<=sqrt(Z_w D_w)` and time Cauchy--Schwarz.
+The remaining shear has M_V(t)=A^2 exp(-2nu t)/2 and
+`integral_0^infinity L_V=A^2/(4nu)`. Therefore, for kappa=1-alpha>0,
+the FULL critical history of U satisfies, for every t>=0,
+
+```text
+C_H(t)<=B_mix,
+B_mix=B^2/2 [sqrt(1+Re^2)-1]
+       +kappa/2 [A^2+B^2 sqrt(1+Re^2/6)],
+R_mix=M+B_mix-C_H>=0,
+R_mix'=-2kappa nu L.                             (552)
+```
+
+This is a single reserve fixed by the original A,B,nu,alpha. Successive
+segments use this SAME reserve and do not reset the original shear. It
+pays the sufficient criterion (494) despite the arbitrarily large relative
+amplification in (549). For B=A its leading allowance is of order A^3/nu,
+whereas the demonstrated lower growth is of order A^2 Re^(1/3). These
+upper and lower bounds are not asserted to be optimal or matching.
+
+### Genuine three-dimensional feedback preserves the obstruction
+
+The failure of the linear M0 allowance is not limited to zero feedback.
+Take initial data
+
+```text
+U_epsilon(0)=(A sin y+epsilon cos z,
+               epsilon sin z, A cos x).          (553)
+```
+
+For epsilon nonzero these data depend genuinely on all three coordinates;
+E0=M0=Z0=A^2+epsilon^2. Let a(t) denote twice the negative imaginary
+part of the x-component Fourier coefficient at (0,1,0), so a(0)=A.
+The COMPLETE projected NS equation gives
+
+```text
+a(t)=A exp(-nu t)-A epsilon^2 t^2/4+O(t^3).       (554)
+```
+
+This is a nonzero return into the original shear. The pressure and all
+generated modes are retained. The checker proves the entire A,epsilon,nu
+polynomial identity and independently compares full advective NS jets at
+positive viscosity. Equation (554) does not describe a closed scalar ODE
+or assert the sign of all later returns.
+
+For each fixed finite A and nu, choose epsilon sufficiently small. Reuse
+the actual H^3 difference estimate (122)--(123) from the coupled-cycle
+construction, now with the Fourier norm having weight (1+|k|^2)^3.
+Equation (544) bounds the reference by `||U(t)||_H4<=Q exp(-nu t)`,
+where Q is finite from A,nu; one may take `Q=C4 A(1+Re^4)` for a fixed
+norm constant C4. Put d=U_epsilon-U, Y=||d||_H3^2 and
+`K=C3 Q/nu`, where C3 is the fixed difference-estimate constant. Then
+
+```text
+Y'+2nu ||grad d||_H3^2
+ <=C3 ||U||_H4 Y+C3 Y^(3/2),
+sqrt(Y0) exp(K/2)<=nu/(2C3)
+  implies Y(t)<=Y0 exp[K(1-exp(-nu t))-nu t].
+Y0=8epsilon^2.                                   (555)
+```
+
+Poincare and the bootstrap `sqrt(Y)<nu/C3` absorb the COMPLETE self
+interaction in (555), as in (123). Local existence and H^3 continuation
+then construct the global smooth solution. Every constant comes from the
+known reference and nu, not an assumed future bound for the perturbed
+solution. This retains the pressure difference in the physical equation;
+its solenoidal energy pairing cancels. The stability argument is analytic.
+
+Put `ell=A^2 Re^(1/3)/5120`. By also requiring
+`sqrt(Y0)exp(K/2)<=sqrt(ell)/4`, the H^(1/2) triangle inequality preserves
+at least half the lower bound (549). Require |epsilon|<=A as well, giving
+M0<=2A^2. Thus the genuine 3D globally regular solutions can satisfy
+
+```text
+M(U_epsilon(t_star))/M(U_epsilon(0))
+                  >=Re^(1/3)/20480.              (556)
+```
+
+This ratio is arbitrarily large. The permissible nonzero epsilon depends
+on A,nu and the reference history and may be extremely small.
+
+The coupled solution also has a more conservative explicit history payment.
+In the Fourier H^3 convention, M(d),L(d)<=Y. Consequently (555) gives
+`sup M(d)<=Y0 exp(K)` and `integral L(d)<=Y0 exp(K)/nu`.
+Use the squared triangle inequalities `M(U_epsilon)<=2M(U)+2M(d)`
+and `L(U_epsilon)<=2L(U)+2L(d)`, and retain its exact initial mass
+A^2+epsilon^2. Equations (550)--(552) imply
+
+```text
+C_H[U_epsilon](t)<=B_3D, for every t>=0,
+B_3D=A^2+2B_mix+(2+4kappa)Y0 exp(K),              (557)
+```
+
+where B_mix is evaluated at B=A. This is a payment for ACTUAL coupled
+histories, under the explicit perturbation condition (555). It includes
+the original data's feedback through all times and all generated modes;
+it does not assert a uniform large-perturbation payment. The sharper
+B_mix itself is not transferred unchanged to the perturbed solution.
+Uniqueness makes the same allowance apply to every available smooth prefix
+from these initial data. No reserve is replenished at a segment boundary.
+
+The remaining task is a nonlinear original-data reserve for unrestricted
+mutually amplifying parents. This example requires such a reserve to permit
+large transient amplification, retain the original parent's history, and
+remain valid after that parent becomes dynamically coupled. A constant
+multiplicative cap on the initial critical mass cannot meet that obligation.
+
+Run `python3 -O labs/critical_shear_mixing.py`. Fourier moment identities,
+the positive-viscosity error constants, the complete polynomial parent
+return and the allowance algebra are checked exactly. The stochastic
+identification, PDE comparison, all-time payment and small-perturbation
+global stability remain analytic arguments, not Lean-certified statements.
+No new Lean declaration or axiom is introduced.

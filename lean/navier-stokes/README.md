@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [critical shear-mixing test](labs/README.md#critical-amplification-in-a-paid-unforced-mixing-history)
+shows that a fixed multiple of the initial critical mass is also insufficient.
+Actual globally regular periodic flows can amplify that mass by an arbitrarily
+large factor. A stochastic representation nevertheless gives an explicit
+nonlinear initial-data allowance for the entire triangular reference history.
+The amplification persists in genuinely three-dimensional, globally regular
+perturbations with nonzero feedback into the original shear. A more
+conservative allowance pays their complete coupled histories under the
+explicit stability condition, which can require a very small perturbation.
+No arbitrary-coupling payment is asserted. These are analytic PDE arguments
+with exact checks, not new Lean certificates.
+
 The [critical-history concentration test](labs/README.md#fixed-energy-concentration-of-the-actual-critical-history)
 limits what energy-funded boundary observations can establish. On both R3
 and the fixed torus, actual smooth unforced solutions with unit initial
