@@ -36110,3 +36110,369 @@ history handoff. Exact reserve and cellular algebra, rational exponential
 bounds, comparison of the FFT operator with exact coefficients, numerical
 prefixes and Python compilation passed. No Lean declaration or axiom
 changed; the new PDE arguments have not been checked by Lean.
+
+## Prefix validation with transport cancellation
+
+`pressure_prefix_control.py` tests the velocity enclosure needed before
+applying the pressure-history handoff (720). It follows the established
+residual/control-inequality approach of
+[Morosi and Pizzocchero, On approximate solutions of the incompressible Euler and Navier-Stokes equations](https://arxiv.org/abs/1104.3832),
+Section4, with a separate obligation for the original stochastic moments.
+Their theory compares an approximate trajectory with an actual solution;
+a small residual without a controlled error evolution is insufficient.
+The estimates below are derived explicitly for the norms used here.
+The sampled experiments are not rigorous trajectory enclosures.
+
+### A complete velocity residual and a scalar Fourier control
+
+On the normalized period-2pi torus let v(t) be a smooth, mean-zero,
+solenoidal approximate velocity. Its continuous residual is
+
+```text
+r=v_t-nu Delta v+P(v.grad v),
+w=u-v,
+w_t=nu Delta w-P(v.grad w+w.grad v+w.grad w)-r.         (724)
+```
+
+P is the Leray projection. The actual solution u is unforced; r is the
+error of the approximation, not a freely imposed force on that fluid.
+Retain the full residual, including discarded Fourier modes and error
+between time steps. Let A=||v||W0, C=||v||W1, e=||w||W0,
+c=||w||W1, d=||w||W2, where Wj sums |k|^j times Euclidean coefficient
+norms. Then
+
+```text
+e'<=-nu d+(A+e)c+C e+||r||W0,
+c^2<=e d,                    d>=e.                    (725)
+```
+
+For e>0 put z=sqrt(d/e)>=1 and maximize `-nu z^2+(A+e)z`.
+This gives the explicit control coefficient
+
+```text
+L_nu(A,C,e)=C+{ A+e-nu,          A+e<=2nu,
+              { (A+e)^2/(4nu),  A+e>=2nu.
+e'<=L_nu(A,C,e)e+||r||W0.                             (726)
+```
+
+The two formulas agree at the boundary. At e=0 use the corresponding
+Dini derivative inequality. A supersolution with original datum error
+as its initial value bounds e on every available actual prefix. If it
+stays finite on a prescribed finite interval, it also bounds ||u||infinity
+there by A+e. The usual viscous continuation criterion then extends the
+actual solution through that interval. This is a conditional validation
+criterion, not a proof that its scalar control remains finite.
+
+The diffusion optimization in (726) is exact for the preceding scalar
+inequalities. Those inequalities have already discarded signed transport
+and phase correlations. Their sharp optimization does not restore the
+lost information.
+
+### An actual-flow calibration of the overcharge
+
+For any phase theta and amplitude a(t)=a0 exp(-2nu t), define
+
+```text
+U_theta=(sin(x+theta)cos y,-cos(x+theta)sin y,0),
+u_theta(t)=a(t) U_theta,
+p_theta(t)=a(t)^2[cos(2x+2theta)+cos(2y)]/4.            (727)
+```
+
+Each is an exact global unforced NS solution: its projected nonlinearity
+vanishes and Delta U_theta=-2U_theta. For any nontrivial translation,
+the difference u_theta-u_0 decays EXACTLY as exp(-2nu t), in every fixed
+homogeneous norm. The reference v=u_0 nevertheless has
+`A=sqrt(2)a` and `C=2a`, so the zero-error linear coefficient in (726)
+is `2a+a^2/(2nu)` while a>=sqrt(2)nu. With rho=a0/nu>sqrt(2), let
+`s=log(rho/sqrt(2))/(2nu)`. Over the same interval [0,s],
+
+```text
+actual error factor = sqrt(2)/rho,
+scalar linear-control factor
+ =exp[rho-sqrt(2)+(rho^2-2)/8].                        (728)
+```
+
+Thus the chosen majorant can amplify a perturbation exponentially in
+rho squared while the actual perturbation decreases. A nonlinear scalar
+control with positive initial error is at least as large as this linear
+one until its own blowup. The example is an obstruction to treating
+this majorant's growth as evidence of physical instability. It does not
+invalidate the upper-bound inequality, and it does not establish a
+universal contracting error norm. All pressure and viscosity terms in
+(727) are retained.
+
+### A triangular energy and gradient control
+
+There is a less wasteful physical estimate. Define
+
+```text
+X=||w||2,       Y=||grad w||2,       Z=||Delta w||2,
+S(t)=sup_x lambda_max(-sym grad v(t,x)),
+D(t)=sum_{k!=0}|k|^2 |v_hat(k,t)|.
+```
+
+Incompressibility cancels the energy pairings of both v.grad w and
+w.grad w. The remaining linear term is the signed strain pairing.
+Poincare's inequality then gives
+
+```text
+X' <= (S-nu)X+||r||2.                                (729)
+```
+
+For the gradient energy, differentiating v.grad w and w.grad v gives
+two quadratic strain terms, each bounded above by S Y^2, and the
+remaining term with two derivatives of v, bounded by D X Y. The
+principal transport cancels under integration. The self-interaction
+obeys `|<w.grad w,Delta w>|<=||w||infinity Y Z`.
+An explicit periodic Agmon bound suffices:
+
+```text
+||w||infinity <= sqrt(26pi) sqrt(Y Z).                 (730)
+```
+
+To check its constant, apply Fourier Cauchy--Schwarz with weight
+`alpha |k|^2+|k|^4`. The cubic shell ||k||infinity=n contains
+24n^2+2 points, so
+
+```text
+sum_{k!=0} 1/[alpha |k|^2+|k|^4]
+ <=26 sum_{n>=1}1/(alpha+n^2)<=13pi/sqrt(alpha).
+```
+
+Choosing alpha=Z^2/Y^2 gives (730); the zero case follows by mean zero.
+The exact Young inequality
+`c Y^(3/2) Z^(3/2)<=nu Z^2/2+27 c^4 Y^6/(32nu^3)`
+retains half the diffusion. Its normalized remainder factors as
+`z^4/2-z^3+27/32=(2z-3)^2(4z^2+4z+3)/32>=0`.
+Consequently
+
+```text
+Y' <= (2S-nu/2)Y+D X
+      +[27(26pi)^2/(32nu^3)]Y^5+||grad r||2.           (731)
+```
+
+Equations (729)--(731) give a cooperative two-variable control system:
+the energy error feeds the gradient error. The Hessian cost D multiplies
+X, rather than being turned into an additional large exponential rate
+on Y. The actual full fields and their compatible initial errors persist
+through each segment. No pressure-memory state or allowance is reset.
+
+If nonnegative supersolutions Xbar,Ybar stay finite through a prescribed
+interval, the actual H1 norm is bounded by the known H1 norm of v plus
+Ybar. Smooth local existence and the viscous H1 continuation criterion
+then validate existence through that interval. These are analytic
+comparison statements, not new Lean theorems. They alone do not give
+an error bound on Phi or its comparison with B. They also do not give
+a Wiener error bound from the H1 error in three dimensions; a separate
+smoothing or higher-norm estimate is required for that handoff.
+
+The strain bound used in the experiment retains some geometry of v.
+A solenoidal Fourier coefficient has symmetric-gradient operator norm
+`|k||v_hat(k)|/2`, including complex coefficients. Rotate the real k
+direction to the first coordinate; the remaining block is
+`[[0,a,b],[a,0,0],[b,0,0]]/2`, whose squared singular values are
+`0,(|a|^2+|b|^2)/4,(|a|^2+|b|^2)/4`. Hence
+
+```text
+S <= C/2,
+S <= max_grid lambda_max(-sym grad v)+sqrt(3)pi D/(2M)  (732)
+```
+
+on a uniform M^3 spatial grid. The second bound uses nearest-grid-point
+distance sqrt(3)pi/M and strain Lipschitz constant D/2. It is a spatial
+inequality for the entire finite Fourier field, not merely an observed
+maximum. Floating-point evaluations and time sampling still need their
+own enclosures before its computed values are proof premises.
+
+### Measuring time error as well as projection error
+
+The velocity integrator is the existing Lawson RK4 scheme. On each
+selected time slab, a quintic Hermite polynomial matches the endpoint
+states and their first two projected-ODE derivatives. The second jet is
+`nu Delta f+B(v,f)+B(f,v)`, where f is the first jet and B is the
+projected bilinear advection. Independent rational Fourier differentiation
+checks both jets at the cyclic initial datum. Symbolic identities check
+all six endpoint conditions.
+
+The experiment evaluates the polynomial's time derivative, heat term
+and FULL nonlinear NS operator on an enlarged spatial grid. Its residual
+therefore includes both temporal interpolation error and omitted spatial
+modes. The reported slab values are maxima at five time samples; omitted
+slabs and values between samples are NOT enclosed. Piecewise interpolation
+of these reports in the scalar ODE is a feasibility calculation only.
+A rigorous certificate needs uniform time enclosures, rounding bounds,
+and exact reconstruction of the real solenoidal approximate field.
+
+### A gradient tail that the new control can actually consume
+
+A validated gradient enclosure can use its own continuation target instead
+of being mislabeled as a pressure-moment enclosure. For an actual unforced
+velocity at a smooth seam s, let h=||grad u||2 and z=||Delta u||2. The same
+Agmon and Young estimate with zero reference gives
+
+```text
+(1/2)(h^2)' <= -(nu/2)z^2+kappa_nu h^6,
+kappa_nu=27(26pi)^2/(32nu^3).
+```
+
+If an upper bound h0>=h(s) satisfies `theta=2 kappa_nu h0^4/nu<1`, a
+first-exit argument and Poincare yield
+
+```text
+h(t)<=h0 exp[-nu(1-theta)(t-s)/2],
+integral_s^infinity z(t)^2 dt <= h0^2/[nu(1-theta)].    (733)
+```
+
+This proves global continuation from that seam. It also pays the critical
+velocity observation, since (730) and time Cauchy--Schwarz give
+
+```text
+integral_s^infinity ||u(t)||infinity^2 dt
+ <=26pi h0^2/[nu(1-theta)].                            (734)
+```
+
+For a convenient exact tolerance at nu=1/4, a certified h(s)<=1/64
+implies theta<3/10, using only pi<4. Equations (733)--(734) then give
+`integral_s^infinity z^2<=5/3584` and
+`integral_s^infinity ||u||infinity^2<=65/448`.
+The checker verifies these rational inequalities. This is a tolerance
+for the ACTUAL gradient norm, not for its numerical approximation alone.
+
+For the preceding interval, retaining the diffusion before discarding
+it in (731) gives an explicit bound on the gradient error's full
+second-derivative cost:
+
+```text
+Y(t)^2+nu integral_0^t Z^2
+ <=Y(0)^2+integral_0^t [4S Y^2+2D X Y
+                       +2 kappa_nu Y^6+2||grad r||2 Y]. (735)
+```
+
+Certified upper controls can replace X,Y on the right. Combining (735)
+with `||Delta u||2^2<=2||Delta v||2^2+2Z^2` and (733) pays the complete
+viscous cost. The exact enstrophy balance then yields a signed-renewal
+allowance for that original history. For example, if Emax bounds
+`||curl u||2^2` and L bounds `integral_0^infinity ||grad curl u||2^2`,
+then on each prescribed horizon H the sufficient allowance
+`K=Emax+nu L+2H|g(0)|` follows directly. The cyclic initial datum has
+g(0)=0. These bounds depend on a certified prefix and its original datum;
+they are not obtained by taking a supremum over an unknown solution.
+
+This is a separate, explicitly sufficient consumer of a successful
+velocity validation. The sharper original pressure envelope remains a
+separate claim with its own conditional-moment error obligations. Neither
+consumer supplies validated prefixes for arbitrary initial data.
+
+### Turning the sampled test into finite interval obligations
+
+There is a direct route to enclosing each complete time slab. Represent
+the quintic approximation as `v(t)=sum_i b_i B_i^5(tau)` in the Bernstein
+basis, with tau in [0,1] and slab length h. Its coefficients are
+
+```text
+b0=v0, b1=v0+h f0/5, b2=v0+2h f0/5+h^2 j0/20,
+b3=v1-2h f1/5+h^2 j1/20, b4=v1-h f1/5, b5=v1.         (736)
+```
+
+For any bilinear operation, including projected advection,
+
+```text
+B(v,v)=sum_{k=0}^{10} c_k B_k^10,
+c_k=sum_{i+j=k} [binom(5,i)binom(5,j)/binom(10,k)]B(b_i,b_j).
+```
+
+After degree elevation of v_t and Delta v, the FULL residual is a
+polynomial with eleven Bernstein coefficients r_k. Positivity and the
+unit sum of the basis give, uniformly throughout the slab,
+
+```text
+||r(t)||Hj <= max_k ||r_k||Hj,
+S(v(t)) <= max_i S(b_i),     D(v(t)) <= max_i D(b_i).   (737)
+```
+
+These are exact finite algebraic obligations, replacing selected time
+samples. For the conditional pressure system, grad p is quadratic in
+velocity and its moment sources have degree at most three in the joint
+state; a joint quintic reconstruction therefore has residual degree at
+most fifteen. Its shared velocity and pressure coefficients must be used
+throughout, and moments must agree at adjoining endpoints.
+
+The integrator need not itself be verified to exploit this approach:
+one may define the approximation from its recorded numbers interpreted
+as exact rationals. Reality, zero mean and solenoidality can be imposed
+by exact conjugate symmetrization and the rational Fourier Leray
+projection. Residual norms, spatial strain bounds and the control ODE
+then require certified enclosures for this precisely reconstructed curve.
+This does not eliminate rounding obligations in evaluating those bounds,
+and the current script does not implement such a full certificate.
+
+### Outcome of the bounded feasibility test
+
+For the original unit cyclic datum at nu=1/4, the unsigned Fourier control
+reaches its diagnostic error threshold 1 well before the proposed seam:
+
+| grid | time step | sampled interval | time W0 control reaches 1 | integrated linear W0 coefficient |
+|---|---|---|---|---|
+| 24^3 | 0.01 | [0,12] | 1.10465 | 65.8456 |
+| 32^3 | 0.005 | [0,12] | 1.23505 | 65.8616 |
+| 32^3 | 0.0025 | [0,16] | 1.35851 | 65.1681 |
+
+The final column is the logarithm of the scalar homogeneous amplification,
+not a growth rate of the actual fluid. The W0 control is stopped at the
+stated finite threshold; this is not a computed physical singularity or
+a proof of finite-time blowup of the scalar equation.
+
+Retaining transport gives a different feasibility outcome. At 32^3,
+dt=0.005, the triangular gradient control reaches time12 with final
+Ybar=6.28e-5 and maximum Ybar=6.90e-5. Its energy-error control ends
+at about 1.29e-8. The peak sampled full residual H1 norm is 4.28e-8.
+These numbers include discarded spatial modes and the interpolant's time
+residual at the sampled points.
+
+Halving the integration step and extending to time16 gives
+
+```text
+||grad v(16)||2 approximately 0.007641709058,
+Ybar(16) approximately 0.000040236636,
+||grad v(16)||2+Ybar(16) approximately 0.007681945694,
+maximum sampled-control Ybar approximately 0.000064072192,
+theta from this candidate seam approximately 0.0100373. (738)
+```
+
+The candidate seam lies below the exact tolerance 1/64 from (734), and
+the gradient control reaches the end of the interval. The numerical
+velocity Fourier norm at time12 agrees with the preceding full-moment
+run: 0.0720464920752. The new velocity-only stage does not evolve or
+validate the conditional pressure moments. Its purpose is to test the
+first necessary velocity enclosure before spending more on them.
+
+This is evidence that retaining transport makes the intended validation
+feasible. It does NOT establish that an actual trajectory satisfies
+(738). The omitted time slabs, within-slab extrema, rounding and exact
+solenoidal reconstruction remain obligations. Equations (736)--(737)
+identify finite checks that can discharge them, followed by verified
+upper integration of the cooperative control. Until those checks pass,
+no new global-regularity claim for this cyclic datum is made.
+
+The exact checker verifies interpolation and Bernstein product identities,
+the diffusion optimization, the explicit nonlinear Young constant, the
+complex transverse-strain singular values, and the rational small-gradient
+tail tolerance. Its independent exact Fourier jets agree with the FFT
+jets below 7e-16 relative error. It also verifies the translated actual
+flow identity (727) and the amplification comparison (728). The algebra
+and actual-flow derivations are separate from the numerical prefix checks;
+none adds a Lean declaration or changes an axiom.
+
+From the package directory, run
+
+```sh
+python3 -O labs/pressure_prefix_control.py
+python3 labs/pressure_prefix_control.py --prefix --n 32 --nu .25 --dt .005 --final 12 --sample-every 25
+python3 labs/pressure_prefix_control.py --prefix --n 32 --nu .25 --dt .0025 --final 16 --sample-every 50
+```
+
+The general arbitrary-data history budget remains open. This test locates
+an avoidable loss in a proposed error control and supplies a more faithful
+physical replacement with a named continuation consumer. It does not show
+that every interacting fluid history admits such a certified approximation
+or reaches a small-gradient seam before any potential breakdown.

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [prefix control test](labs/README.md#prefix-validation-with-transport-cancellation)
+shows why a small observed numerical error is not enough for a history
+certificate. An unsigned Fourier error control overcharges transport and
+can grow enormously even between two exact decaying unforced flows.
+A coupled energy and gradient control retains the transport cancellation,
+with explicit strain, Hessian and viscous costs. It survives the sampled
+cyclic test and has a sufficient small-gradient continuation target.
+Continuous-time and rounding enclosures remain open; the conditional
+pressure-moment comparison is a separate obligation. The new identities
+are analytic with algebraic checks, not additional Lean certificates.
+
 The [pressure-history handoff](labs/README.md#a-finite-pressure-history-handoff-and-a-projection-blind-spot)
 gives an explicit future reserve once an actual mean-zero periodic flow has
 velocity Fourier norm below viscosity, in period-2pi units. It pays the full
