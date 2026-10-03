@@ -78,6 +78,7 @@ import Mettapedia.GraphTheory.FourColor.ComponentDetachAudit
 import Mettapedia.GraphTheory.FourColor.BoundaryParityAudit
 import Mettapedia.GraphTheory.FourColor.CascadingDetachAudit
 import Mettapedia.GraphTheory.FourColor.PrimalPathSeparation
+import Mettapedia.GraphTheory.FourColor.AnchoredBoundaryExample
 import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
 import Mettapedia.GraphTheory.FourColor.FacialRollbackLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth

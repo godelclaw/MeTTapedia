@@ -1,0 +1,107 @@
+{
+  "evidence": "Parameterized laws and the finite exterior component certificate checked in Lean. Concrete sphere geometry and whole-colouring instantiation independently checked by a program.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.AnchoredChains",
+      "source_bytes": 2768,
+      "source_sha256": "1b6aabbcd0afd1de4b048f763fe6b352eeca08401d93a20dfc07726dfb424983",
+      "build_frontend_seconds": 1.5,
+      "olean_bytes": 111600,
+      "olean_sha256": "aefa119fe61c8a7dd5ffdcc82df648805c9d0e62ec9c14a72468bfa6677082cb"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.AnchoredBoundaryExample",
+      "source_bytes": 12929,
+      "source_sha256": "d847fe48342024d06762d9cd0d45812870fb12dbd03d6aaecb035b8bb6431698",
+      "build_frontend_seconds": 42.0,
+      "olean_bytes": 2839056,
+      "olean_sha256": "2cd967a17f371019b8ec9a9d37b938957e87306c88dce95900b8aa7c383acab5"
+    },
+    {
+      "module": "MettapediaFourColor.VisiblePortRepair",
+      "source_bytes": 11754,
+      "source_sha256": "3b23b5f25b1cd010d8d0a57c1faf13406bf3a19b018c86a01c510a6423e30e93",
+      "build_frontend_seconds": 4.2,
+      "olean_bytes": 446960,
+      "olean_sha256": "4de3e14b0437fd055a2fb213639c7e98868ac7ddbfcdcb6fa61e79effd882d2b"
+    },
+    {
+      "module": "MettapediaFourColor.VisiblePortRepairAudit",
+      "source_bytes": 3609,
+      "source_sha256": "73e4c6140ebb3fb50d425dde08810da24dcacbf1971a8eacbb0840035b060301",
+      "build_frontend_seconds": 3.8,
+      "olean_bytes": 3496,
+      "olean_sha256": "11f2c80ce40b0060b2c7a161e722dfe96f0b3f7bd5960fa9d81c404c3bf950e7"
+    }
+  ],
+  "new_lean_source_bytes": 31060,
+  "new_fixture_bytes": 4015,
+  "audit": {
+    "roots": 20,
+    "dependency_declarations": 18623,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "obstruction_requires": [
+      "anchored-chain coverage",
+      "transparency invariant",
+      "arbitrary fixed-pair history normal form",
+      "symbolic source necessity"
+    ],
+    "repair_requires": [
+      "actual component switch",
+      "direct source assignment",
+      "exact whole-map reconstruction"
+    ],
+    "combined_consumer_requires": [
+      "complementary-path whole-map repair",
+      "isolated-port whole-map repair"
+    ],
+    "bulk_colouring_tables_used": false
+  },
+  "program": {
+    "script_sha256": "ab02379976ac0860969f2a428da88a43a7387bfccd91e63e12d07eebf89c6c9d",
+    "receipt_sha256": "5d62d01dec4b8a15e7a4acef4e281a6562a0cea99bba906d79e28c8fa5af08cd",
+    "ambient_vertices": 162,
+    "exterior_vertices": 155,
+    "chain_certificates": 14,
+    "chain_vertex_entries": 916,
+    "silent_components": 0,
+    "repair_support_vertices": 3,
+    "changed_ports": [
+      6
+    ],
+    "cycles_checked": {
+      "3": 320,
+      "4": 480,
+      "5": 1032
+    },
+    "prohibited_short_cycle_shores": 0
+  },
+  "gates": {
+    "new_theorems": "lake build MettapediaFourColor.VisiblePortRepairAudit",
+    "new_gate_passed": true,
+    "main_regression": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_gate_passed": true,
+    "main_gate_jobs": 11248,
+    "classical_regression": "lake build kernelComplete",
+    "classical_gate_passed": true
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "scope": "All finite histories fixing the eleven boundary colours at each intermediate step freeze the displayed exterior. Such preparation followed by any length of zero/two finishing cannot extend the source. A single one/three switch on three vertices changes port six and does extend. The general whole-map repair permits any exterior size with the stated component boundary observation and exact source reading.",
+  "open": [
+    "Uniform repair for the residual one/three component joining ports 6 and 3 but not port 1.",
+    "Other source boundary words and other configuration families.",
+    "Universal geometric supply, coverage and termination.",
+    "Separate kernel instantiation of the concrete sphere rotation system and its short-cycle census."
+  ]
+}

@@ -1394,6 +1394,61 @@ a preparation creating it, or an alternative reduction in a justified
 geometric class. The exact boundary class and retained joint choices cannot
 be discarded. Coverage and certificate counts remain 633 / 629 / 336.
 
+## Boundary-preserving preparation fails, but a visible repair succeeds
+
+[AnchoredBoundaryExample](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/AnchoredBoundaryExample.lean)
+gives an exterior with the same nonextending D0092 boundary word in which
+every bichromatic component meets a boundary port. Fourteen connected
+chains certify this in Lean. The general anchored-chain theorem and the
+existing transparency law prove that every finite history preserving all
+eleven boundary colours at each step leaves the entire exterior unchanged.
+This conclusion has no search-depth bound.
+
+There is only one initial 0,2 component. `phase_global` proves that an
+arbitrarily long phase using that pair either swaps every active vertex or
+none. Both boundary endpoints fail the symbolic three-run core law.
+`no_silent_then_tail_phase` therefore excludes arbitrary boundary-preserving
+preparation followed by arbitrary 0,2 finishing. It does not exclude other
+finishing pairs or histories with intermediate boundary changes.
+
+The same example has an actual 1,3 component with just three vertices.
+Switching it changes port 6 alone, from colour 3 to colour 1. The direct
+source assignment in
+[VisiblePortRepair](../../../lean/fourcolor-classical/MettapediaFourColor/VisiblePortRepair.lean)
+then reconstructs the core. This gives a physical repair of the very example
+that obstructs boundary-preserving preparation. The source assignment and
+the actual component switch are kernel-checked.
+
+The general `whole_repair_of_isolated_port` consumes this alternative for
+any exterior size, through the existing exact core/exterior gluing theorem.
+Together with complementary-path repair, `whole_repair_or_residual` leaves
+one explicit case for this boundary word: the 1,3 component of port 6 joins
+port 3 but not port 1. That case really occurs in the earlier retained
+example. A uniform repair for it remains open; no universal supply theorem
+has been established.
+
+The [4 KB fixture](anchored-boundary-example.json) is another 162-vertex
+triangulated sphere with 155 exterior vertices and the same complete source
+core stars. The [program replay](anchored-boundary-audit.json) checks the
+ordered source reading, Euler characteristic, minimum degree five, and all
+320 triangles, 480 four-cycles and 1,032 five-cycles. None has a prohibited
+short-cycle shore. These concrete geometric assertions are program evidence,
+separate from the kernel-checked graph, component and source-repair results.
+The program also checks reconstruction of a proper whole-map colouring.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_anchored_boundary.py
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.VisiblePortRepairAudit
+```
+
+The [measurement receipt](anchored-boundary-measurements.json) separates the
+reusable theorems, finite component certificate, geometric program checks
+and costs. No colouring table or history search is needed for replay.
+Coverage and certificate counts remain 633 / 629 / 336. This is an
+obstruction to a specific repair restriction and a certified alternative,
+not an impossibility result for compositional Four Colour proofs.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)
