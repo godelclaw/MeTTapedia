@@ -28198,3 +28198,299 @@ noise and the signed source in (404), retaining endpoint alignment and
 compatible histories. The denominator in (406) and moment in (412) are
 unpaid obligations, not new assumed reserves. The arbitrary-data
 continuation target (379) remains open.
+
+## Projected score noise and conditioning on the endpoint
+
+`projected_score_noise.py` tests the remaining moment in (412) on actual
+unforced flows. It derives the joint projected-noise law and gives an
+analytic counterexample to finiteness of that particular moment, even
+with an allowance depending on the full datum. The counterexample is a
+globally smooth flow. The actual conditional score has no corresponding
+divergence. A rotating shear provides a positive controlled payment.
+
+### The full joint law retains changing direction
+
+Use the actual uncontrolled sampler of (407). Along it put
+`A=grad I`, `Omega v=omega cross v`, `C=A+Omega`, `G=grad n` and
+`N_s=integral_0^s a C_a dW_a`. All pressure impulse is inherited from
+the original construction (374). From (394), the drift of n is
+
+```text
+a_n=-B n+chi n-2nu G j,
+j=W^T n, chi=v/2+nu|j|^2,
+v=2n.Bn-2nu|W|^2, W=grad omega/sqrt(|omega|^2+delta).
+```
+
+Here s is sampling age; W without a time index denotes the normalized
+vorticity gradient, while W_s is the driving Brownian motion. The
+diffusion coefficients of n and N are `sqrt(2nu)G` and `s C`.
+The scalar `y_s=n_s.N_s` therefore satisfies
+
+```text
+dy_s=b_y ds+c_y.dW_s,
+b_y=N_s.a_n+sqrt(2nu)s G:C,
+c_y=s A^T n+sqrt(2nu)G^T N_s.                        (413)
+```
+
+The instantaneous term `Omega^T n` vanishes, but neither the change of
+direction nor its quadratic covariation vanishes. In particular, for
+s>0, the local Ito drift of `exp(y_s^2/(4s))`, divided by that
+exponential, is
+
+```text
+y_s b_y/(2s)+|c_y|^2/(4s)-y_s^2/(4s^2)
+                              +y_s^2|c_y|^2/(8s^2).
+```
+
+These are local, or stopped, identities. They do not justify removing
+a local martingale from an expectation without the necessary
+integrability. The next example shows why this distinction matters.
+
+### An exact regular 3D flow with infinite unconditioned noise moment
+
+Reuse the all-time Beltrami calibration already checked in
+`transported_frame_metric.py` and `cubic_parent_renewal.py`. On
+`(R/2pi Z)^3`, with nu=1, take
+
+```text
+U=(sin z+cos y, sin x+cos z, sin y+cos x),
+u(t)=a exp(-t)U, p=-|u|^2/2, a=100, delta=12a^2.
+```
+
+Here div U=0, curl U=U, Delta U=-U, and
+`(u.grad)u=grad(|u|^2/2)`. Thus this is a literal unforced NS solution
+for all t>=0, including its nonconstant pressure. All three spatial
+coordinates occur. Moreover `|U|<=sqrt(12)` and `|DU|_F^2=3`, so the
+regularizer dominates the ORIGINAL vorticity maximum. Its normalized
+mean squared velocity is `3a^2 exp(-2t)`, and
+`integral_0^infinity ||omega(t)||_infinity dt<=sqrt(12)a`.
+The fluid is decaying and satisfies continuation explicitly.
+
+Fix physical endpoint `(t,x)=(1,0)` and sampling age r=1. The claim is
+
+```text
+E_phys exp[(n(0,X_1).N_1)^2/4]=infinity,
+sup_y |n(0,y).grad log q(1,y)|<infinity.               (414)
+```
+
+The second assertion follows from the smooth positive transition
+density on the compact torus for this fixed smooth drift. It proves
+that the stronger unconditioned noise proxy can fail while every
+exponential moment of the actual terminal score is finite.
+
+Here is a probability lower bound for the first assertion. Lift the
+sampler to R3 and let ell be the constant-speed, unit-period loop
+around the rectangle `(x,z) in [0,pi]^2`, y=0, starting and ending
+at the origin. Its orientation first increases x, then z, then
+decreases x, then z. Its length is L=4pi. Put
+`n_*=n(0,0)=(1,1,1)/sqrt(15)`. All four edges give
+
+```text
+integral_loop (DU n_*).dell=2pi/sqrt(15),
+integral_0^1 s exp(s-1) ds=1/e.                      (415)
+```
+
+For an integer m>=1, set `h_m(s)=ell(ms)`, making m loops in unit
+time. Periodic averaging of the loop integrand gives
+
+```text
+(1/sqrt(2)) integral_0^1
+  s n_*.B(1-s,h_m(s))^T h_m'(s) ds = c m+O_a(1),
+c=2pi a/(e sqrt(30)).
+```
+
+For completeness, the averaging error is bounded independently of m:
+subtract the mean from the unit-period integrand, take its bounded
+periodic primitive, and integrate by parts against `s exp(s-1)`.
+The piecewise smooth corners cause no additional term; the loop is
+absolutely continuous with speed L almost everywhere.
+
+Under the auxiliary law Q_m, let
+`X_s=h_m(s)+sqrt(2)Z_s`, with Z standard Brownian motion, and use the
+bounded adapted sampling control
+`gamma_m=h_m'+u(1-s,X_s)`. Under the original law P the process has
+drift -u. Boundedness of gamma_m for EACH m permits Girsanov, with
+
+```text
+dP/dQ_m=exp[-M_m-(1/4)integral_0^1 |gamma_m|^2 ds],
+M_m=(1/sqrt(2))integral_0^1 gamma_m.dZ_s,
+integral_0^1 |gamma_m|^2/4
+ <=4pi^2 m^2+C_a m+C_a,
+E_(Q_m) M_m^2=O_a(m^2).
+```
+
+All constants C_a here are finite and independent of m. This control
+changes only the measure on sampling paths; u and p are unchanged.
+The resulting law P is the same original NS diffusion for every m.
+
+It remains to bound the actual N on these paths, including its impulse.
+Use (408) as a semimartingale identity under the equivalent law Q_m:
+
+```text
+N_1=(H(0,X_1)-integral_0^1 H(1-s,X_s)ds)/sqrt(2)
+    -Y_m-(1/sqrt(2))integral_0^1 s B(1-s,X_s)^T gamma_m ds,
+Y_m=integral_0^1 s B(1-s,X_s)^T dZ_s,
+E_(Q_m)|Y_m|^2<=a^2.
+```
+
+The first term is bounded by the ORIGINAL passive maximum; the part
+containing `B^T u` is bounded by C_a. Neither bound depends on m.
+Thus no pressure term or original parent has been reset or discarded.
+Only the `B^T h_m'` part can have leading size m.
+
+Choose a fixed epsilon>0 so small that on the Brownian tube
+`sup_s |sqrt(2)Z_s|<=epsilon` the combined errors from replacing X_s
+by h_m(s) and n(0,X_1) by n_* contribute at most c m/8. This uses
+the bounded derivatives of the explicit periodic fields and
+`integral |h_m'|=Lm`. The tube has probability p_epsilon>0 independent
+of m. Intersect it with
+
+```text
+|Y_m|<=c m/8,  M_m<=4pi^2 m^2.
+```
+
+Chebyshev and the two displayed second-moment bounds remove only
+O_a(m^(-2)) probability, without any independence assumption. Hence
+for sufficiently large m this event E_m has Q_m probability at least
+p_epsilon/2. Absorbing the bounded drift and averaging errors for
+large m gives
+
+```text
+|n(0,X_1).N_1|>=c m/2 on E_m,
+P(E_m)>=(p_epsilon/2)
+            exp[-8pi^2 m^2-C_a m-C_a].               (416)
+```
+
+Consequently, for every sufficiently large integer m,
+
+```text
+E_P exp[(n(0,X_1).N_1)^2/4]
+ >=(p_epsilon/2)exp[(c^2/16-8pi^2)m^2-C_a m-C_a],
+c^2/16-8pi^2
+ =pi^2[a^2/(120e^2)-8]>(34/27)pi^2>0,  a=100.        (417)
+```
+
+The strict bound uses e<3. Letting m grow proves (414); disjointness
+of the events is unnecessary. These loops are paths of the stochastic
+sampler, not a claim of infinitely many physical fluid cycles.
+The same fixed, globally smooth datum has been used throughout.
+
+This refutes the proposed finite allowance for the last moment in
+(412) with the displayed regularizer and exponent, even if the allowance
+depends on the full datum, viscosity and horizon. A larger regularizer
+or smaller exponent chosen from the datum is a different candidate;
+its possible success is not excluded by this example.
+It does not refute (411)--(412), which remain valid with infinite
+right sides. Nor does it refute their conditional predecessor (408),
+the reserve identity (404), or the sufficient continuation target (379).
+Taking the exponential before averaging paths with the same endpoint
+has removed cancellation essential to this example.
+
+### A positive payment with spatially rotating vorticity direction
+
+For comparison, take any a,nu>0 and the exact helical shear
+
+```text
+u(t,x,y,z)=a exp(-nu t)(cos z,sin z,0), p=0,
+omega=-u, H=u, I=0, delta>=a^2.
+```
+
+Its vorticity direction varies with z. Nevertheless B has only its
+third column nonzero, and every terminal n is horizontal. Thus for
+each fixed terminal y, `B_s n(t-r,y)=0` along every sampling path.
+Equation (407) gives
+
+```text
+n(t-r,y).k(r,y)
+ =-E[n(t-r,y).W_r | X_r=y]/(sqrt(2nu)r).
+```
+
+The vertical sampler is free Brownian motion because u_z=0. Its
+terminal angle determines the unit horizontal direction e_r, which
+is independent of the horizontal Brownian displacement. Therefore
+`G=e_r.(W_r^x,W_r^y)/sqrt(r)` is a scalar standard Gaussian. The
+norm of n is spatially constant at the terminal time and at most
+1/sqrt(2), by the original regularizer. Conditional Jensen now gives
+the same finite payment as (402)--(403), despite rotating direction:
+
+```text
+P=alpha nu r(n.k)^2, 0<alpha<2theta,
+E_phys exp(P/theta)<=(1-alpha/(2theta))^(-1/2),
+E_gamma P-theta E_gamma integral_0^r |gamma|^2/(4nu)
+ <=-(theta/2)log(1-alpha/(2theta)).                   (418)
+```
+
+At alpha=theta=1/2 this is log(2)/4 for every bounded adapted sampling
+control, uniform in the endpoint and `0<r<=t`. The same uncontrolled
+kernel remains in P. The control does not alter the fluid. Although
+the terminal direction depends on the path, its independence from the
+horizontal Brownian displacement is proved for this flow; it is not
+assumed for arbitrary fluid histories.
+
+### Verification and the revised physical target
+
+There is an exact deterministic representation of the conditional
+quantity that survived this test. Keep C=A+Omega and the original
+physical density q. Define the vector density m weakly by
+`integral f(y)m(r,y)dy=E[f(X_r)N_r]`. Applying Ito to the product of
+f(X_r) and N_r, including their cross variation, gives
+
+```text
+partial_r m=nu Delta m+u(t-r).grad m
+                         -sqrt(2nu)r div(q C),
+m(0)=0, div(q C)_i=sum_j partial_j(q C_ij),
+v_N=m/q=E[N_r|X_r=y],
+partial_r v_N=nu Delta v_N+(u+2nu k).grad v_N
+                         -sqrt(2nu)r[div C+C k].      (419)
+```
+
+This is a weak initial-value equation with the original point source
+in q; its conditional quotient is used only for r>0. It retains the
+same q in every term. On a fixed smooth periodic prefix, the parabolic
+kernel construction gives a smooth m at every positive age: the source
+is a spatial divergence of r q times smooth bounded C, and the
+initial weighted source is integrable in the weak formulation.
+Equivalently, the equation for the joint diffusion's first moment gives
+that construction. Since q is positive, v_N is then smooth and bounded
+at each fixed positive age. These regularity bounds depend on the
+fixed prefix and are not the missing original-data allowance.
+
+In deriving (411), retain this conditional mean instead of applying
+Jensen once more to N. The other two steps are unchanged, yielding
+
+```text
+E_gamma[(nu r/24)(n.k)^2]
+ -(1/2)E_gamma integral_0^r |gamma|^2/(4nu)
+ <=M^2 r/(8nu)+(3/8)log(2)
+    +(1/4)log integral q exp[(n.v_N)^2/(4r)].         (420)
+```
+
+This right side is finite for the fixed-age ABC test. Equation (419)
+is closed for m once the actual NS fields and q are supplied; it is
+not a closed finite-dimensional model of those NS fields. Estimating
+its quotient without retaining q can again introduce artificial
+concentration costs. A bound uniform over all available prefixes from
+one datum is still unproved, as is the connection of this terminal
+estimate to the complete integrated source (404).
+
+At a compatible sampling seam, retain the incoming q, m and elapsed
+age. The zero condition for m belongs only to the original sampling
+origin; it is not a new allowance at each segment.
+
+Run `python3 -O labs/projected_score_noise.py`. Exact checks cover the
+joint Ito product and exponential drift, the full ABC NS equation with
+pressure, its original regularizer, all four loop edges, the time
+weight and strict exponent margin. The rotating-shear equation,
+Gaussian constant and conditional-moment quotient are checked separately.
+The probability lower bound, moment divergence and controlled payment
+remain analytic. No Lean
+declarations or axioms change.
+
+The tested unconditioned-noise sub-target is rejected. The next
+estimate must preserve the conditional expectation through (419)--(420)
+or derive a different physical payment for (404). The joint law (413)
+retains the orientation and pressure defects needed for that work; it
+is not itself a bound. A successful correction must reproduce both
+the finite rotating-shear payment and the finite actual ABC score
+without demanding its infinite noise moment. The full integrated
+arbitrary-data pressure-history estimate (379) remains open.

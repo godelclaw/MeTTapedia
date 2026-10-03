@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [projected-noise test](labs/README.md#projected-score-noise-and-conditioning-on-the-endpoint)
+retains the complete joint evolution of vorticity direction and score
+noise. Its proposed unconditioned exponential moment is infinite on an
+explicit, globally smooth, decaying 3D Beltrami flow, while the actual
+terminal score remains bounded. A change-of-measure argument identifies
+the repeated sampling loops responsible for the failure. An exact
+linear density equation retains the endpoint-conditional memory and
+gives a sharper replacement for the failed bound. A rotating helical
+shear supplies a positive calibration: the controlled directional-score
+payment stays finite despite spatially varying vorticity direction.
+These results are analytic with exact checks; they refute the tested
+stronger noise-moment relaxation,
+not the arbitrary-data continuation target.
+
 The [compatible score-control calculation](labs/README.md#compatible-score-controls-and-stochastic-pressure-history)
 combines the receiver reserve with relative entropy without spending the
 sampling penalty twice. An exact unforced shear shows that the formal
