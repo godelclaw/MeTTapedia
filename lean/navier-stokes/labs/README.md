@@ -27619,3 +27619,315 @@ smooth receiver is not presented as a numerically evolved point kernel.
 The kernel comparisons, entropy limit, positive-time shear statement,
 and all general PDE inequalities are analytic. No Lean declarations or
 axioms change, and no arbitrary-data continuation estimate is claimed.
+
+## Normalized pressure-score histories and the point-kernel endpoint
+
+`normalized_score_history.py` checks the normalized version of (392)
+and the mixed pressure-score equation needed by (383a). Their full
+controlled-density identity retains the spatial flux. An exact unforced
+shear then tests a family of positive quadratic Bellman certificates
+using its ACTUAL point-source sampling kernel. The family fails a
+pointwise bounded-source test; this does not rule out integrated reserves
+which retain the density and flux. The general PDE and kernel statements
+here are analytic, with exact algebra and initial-jet checks, not new
+Lean proofs. The arbitrary-data history estimate remains open.
+
+### Normalization retains the physical growth rate
+
+Fix an available smooth unforced prefix and its endpoint (t,x). Retain
+the original passive H and impulse I=H-u. All fluid fields below are
+evaluated at physical time t-r; q is the uncontrolled sampling density.
+Use positive r for a point initial receiver, or a smooth positive initial
+density. Define
+
+```text
+B=grad u,    A=grad I,    p_1=grad p,
+s=|omega|^2+delta,       n=omega/sqrt(s),
+W=grad omega/sqrt(s),   j=W^T n,
+N=grad n=W-n tensor j, R=Id-2n tensor n,
+k=grad log q,          K=Hess log q,
+z=n.k,                d=I.n,
+v=2n.Bn-2nu|W|^2,     chi=v/2+nu|j|^2,
+L=partial_r-u.grad+nu Delta.
+```
+
+Here delta is the same positive original-data regularizer throughout.
+The original equations, including pressure, give
+
+```text
+LI=-p_1,
+Ln=-Bn+chi n-2nu N j,
+Lk=2nu Delta k+2nu Kk+B^T k,
+Lz=chi z-2nu k.Nj+2nu[n.Delta k+n.Kk+N:K].          (394)
+```
+
+The B terms still cancel in the scalar pairing. Unlike the unnormalized
+pairing, normalization introduces chi and its complete diffusion terms.
+In particular, v is the full normalized vorticity-growth rate already
+split as v_H+r_I in (374). It is not a newly bounded coefficient.
+Completing the geometric square gives
+
+```text
+L(z^2)-(4nu/q)div(q z K n)
+ =v z^2+2nu|W^T Rk|^2-2nu|K n|^2 =: T_z.           (395)
+```
+
+For example, with an uncontrolled smooth periodic receiver,
+`d/dr integral q z^2=integral q T_z`. The positive geometric term
+and the signed growth factor are both retained. Neither may be erased
+by invoking the unnormalized cancellation (392).
+
+### Mixed pressure work and the complete controlled identity
+
+Set `g_d=grad d=A^T n+N^T I` and `g_z=grad z=N^T k+K n`. Then
+
+```text
+Ld=-n.p_1-I.Bn+chi d-2nu I.Nj+2nu A:N,
+L(dz)-(2nu/q)div(q d K n)=M_dz,
+M_dz=2chi dz-2nu d k.Nj
+     +z[-n.p_1-I.Bn-2nu I.Nj+2nu A:N]
+     +2nu g_d.(N^T k).                              (396)
+```
+
+Thus actual pressure work, parent deformation and normalization remain
+in the mixed term. In the initial-jet fixtures I=A=0 because the passive
+field starts from the ORIGINAL u0; the mixed rate then includes
+`-z n.grad p0`. The general formula retains nonzero inherited I and A.
+
+For real constants alpha>=beta^2 define the candidate
+
+```text
+Q=|I|^2/nu+2beta dz+alpha nu z^2,
+P(r,y)=r Q(r,y).
+```
+
+It is nonnegative, since
+
+```text
+Q=(|I|^2-d^2)/nu
+   +(d/sqrt(nu)+beta sqrt(nu)z)^2
+   +(alpha-beta^2)nu z^2 >=0.                       (397)
+```
+
+The first term is nonnegative because |n|<=1. Positivity alone is not
+a payment theorem. Define the remaining source and flux explicitly:
+
+```text
+B_Q=-2I.p_1/nu+2|A|^2+2beta M_dz+alpha nu T_z,
+F_Q=(4beta nu d+4alpha nu^2 z)K n,
+LQ=B_Q+(1/q)div(q F_Q),
+grad Q=2A^T I/nu+2beta(d g_z+z g_d)+2alpha nu z g_z.
+```
+
+Let rho be the density of sampling with drift -u+gamma in the SAME
+fluid and let h=grad log(rho/q). For smooth positive periodic densities,
+integration by parts yields the complete identity
+
+```text
+d/dr integral rho P
+ =integral rho[Q+r(B_Q+gamma.grad Q-h.F_Q)].        (398)
+```
+
+Indeed `integral (rho/q)div(q F_Q)=-integral rho h.F_Q` on the
+whole torus. A spatial subregion also retains its boundary integral.
+This is exactly the relative-density gradient appearing in (383a),
+not an independent free variable. Setting h=0 while retaining a general
+controlled rho is invalid. Whole-space integration needs its own
+integrability and vanishing-boundary hypotheses.
+
+Equation (398) provides the complete terms that a density-integrated
+reserve would have to combine with the three negative squares in
+(383a). No sign or datum-fixed bound for its remaining source is
+asserted. In particular, it is not a continuation theorem.
+
+### An actual kernel defeats the pointwise quadratic certificate
+
+A possible stronger route would seek finite coefficients C_0,C_H,C_u,
+fixed from the original datum, viscosity and horizon, such that
+
+```text
+2r_I+LP+(nu/theta)|grad P|^2
+ <=C_0+C_H|grad H|+C_u|u|,       0<theta<=1,        (399)
+```
+
+uniformly in positive sampling age and position. Completing the control
+square shows that the left side is the supremum of
+`2r_I+L_gamma P-theta|gamma|^2/(4nu)`, where
+`L_gamma=L+gamma.grad`. A successful closure would reserve a positive
+share of the original action to pay the right-side observations using
+(366) and (377). The following obstruction already holds with theta=1,
+the most generous allocation to P, and hence also for every smaller
+positive theta.
+
+For ANY nu>0 use the exact periodic unforced solution
+
+```text
+u(s,x,y,z)=2exp(-nu s)sin(y)e_x,   p=0,
+H=u, I=0, delta=4,              t=log(2)/nu,
+X_0=(0,0,0).
+```
+
+Its pressure impulse is zero everywhere and for all time. The fluid's
+z drift is zero and its other components are independent of z. Thus
+the actual reversed diffusion has density
+`q(r,x,y,z)=q_xy(r,x,y) p_nu(r,z)`, where p_nu is the one-dimensional
+periodic heat kernel. This is an exact factorization of the physical
+sampler, not a replacement by an arbitrary smooth receiver.
+
+Write `k_z=partial_z log p_nu` and
+`kappa(r)=partial_zz log p_nu(r,0)`. The vorticity points in the
+z direction, with
+
+```text
+n_z(r,y)=-exp(nu r)cos(y)/sqrt(exp(2nu r)cos(y)^2+4),
+a(r):=n_z(r,0)^2=exp(2nu r)/(exp(2nu r)+4).
+```
+
+Every member of (397) with alpha>0, regardless of beta, becomes
+`P=alpha nu r n_z^2 k_z^2`. Evenness of the heat kernel gives k_z(r,0)=0.
+At the centre, P, its time derivative and its spatial gradient vanish,
+and r_I=0 because grad omega=0 there. Its z Laplacian remains positive:
+
+```text
+[2r_I+LP+(nu/theta)|grad P|^2](r,0)
+ =2alpha nu^2 r a(r) kappa(r)^2.                   (400)
+```
+
+The periodized Gaussian formula for the normalized-volume heat kernel is
+
+```text
+p_nu(r,z)=2pi/sqrt(4pi nu r)
+                sum_(m in Z) exp[-(z-2pi m)^2/(4nu r)].
+```
+
+The series and its derivatives converge for r>0. It solves the periodic
+heat equation, has mass one and tends to the unit point mass. At z=0,
+with b=pi^2/(nu r), differentiation gives
+
+```text
+kappa(r)=-1/(2nu r)
+ +pi^2/(nu^2 r^2)
+       [sum m^2 exp(-b m^2)]/[sum exp(-b m^2)].
+```
+
+For b>=8 the quotient is at most `2h(1+h)/(1-h)^3`, h=exp(-b).
+Indeed m^2>=m for integers m>=1 and
+`sum_(m>=1) m^2 h^m=h(1+h)/(1-h)^3`. The elementary bounds
+`h<=1/256`, `b h<=1/32` and `(1+h)/(1-h)^3<2` give
+`b` times that quotient at most 1/8. In particular
+`|kappa(r)|>=1/(4nu r)`. Since a(r)>=1/5, (400) implies
+
+```text
+[2r_I+LP+(nu/theta)|grad P|^2](r,0)>=alpha/(40r),
+0<r<min(t,pi^2/(8nu)),
+lim_(r->0) r[2r_I+LP+(nu/theta)|grad P|^2](r,0)
+                                                    =alpha/10. (401)
+```
+
+The right side of (399) stays bounded: u=0 at the centre and
+|grad H|=exp(nu r)<=2 for r<t. Hence no finite C_0,C_H,C_u make
+(399) hold for this fixed smooth unforced datum when alpha>0, even if
+all coefficients are chosen from that full datum. If alpha=0,
+positivity forces beta=0 and the candidate contains no score term.
+Allowing coefficients to vary with the sampling age is a different
+candidate and requires their full derivative cost.
+
+This failure is an endpoint defect of the certificate, not fluid blowup
+or a counterexample to the integrated full-datum allowance. It occurs
+even before using a nonzero control. The spatial flux in (395) is
+essential: at the centre it outweighs the negative geometric square,
+whereas its whole-domain q-weighted integral vanishes.
+
+There is also a nonzero stochastic entrance cost. Independence of the
+z component gives
+`E P=alpha nu r E[n_z(r,Y_r)^2] integral p_nu k_z^2`.
+The same periodized Gaussian formula gives
+`r integral p_nu k_z^2 ->1/(2nu)`, while boundedness and continuity
+give `E n_z^2 ->1/5`. Therefore `E P ->alpha/10` as r tends to zero.
+Its pointwise value along the centre line is always zero. One cannot
+replace the stochastic entrance value by that centre-line value, or
+argue that multiplication by r makes every singular term vanish.
+
+### The same shear has a positive controlled terminal payment
+
+The failed pointwise certificate does not prevent paying this candidate
+by a complete history argument. For this exact shear, the original
+delta=4 and |omega|<=2 give |n|^2<=1/2 for all physical time. The
+periodic heat score has a useful exact representation. If Z is a real
+Gaussian with variance 2nu r and its reduction modulo 2pi is z, then
+
+```text
+k_z(r,z)=-E[Z | Z modulo 2pi=z]/(2nu r).
+```
+
+This follows directly by differentiating the periodized Gaussian sum.
+Let G=Z/sqrt(2nu r), a standard Gaussian. For 0<alpha<2theta,
+conditional Jensen applied to the convex function
+`a -> exp[alpha a^2/(4theta)]` gives
+
+```text
+E_(P_u) exp[P(r,X_r)/theta]
+ <=E exp[alpha G^2/(4theta)]
+ =(1-alpha/(2theta))^(-1/2).                         (402)
+```
+
+The inequality first uses P<=alpha nu r k_z^2/2. Integrating the
+conditional expectation restores the original Gaussian law. The other
+fluid coordinates need no independence assumption beyond the exact
+heat marginal already established. This estimate is uniform in positive
+sampling duration and in the observation endpoint for the same shear;
+it does not involve a future derivative norm.
+
+Now let gamma be any bounded adapted sampling control, and retain the
+same uncontrolled q in P. The relative-entropy argument in (366), with
+the control share theta, turns (402) into
+
+```text
+E_gamma P(r,X_r)
+ -theta E_gamma integral_0^r |gamma|^2/(4nu)
+ <=-(theta/2)log[1-alpha/(2theta)].                  (403)
+```
+
+In particular, alpha=theta=1/2 pays the terminal quadratic by
+`log(2)/4` while retaining half the original sampling penalty for other
+observations. The coefficient beta can be any value allowed by (397),
+since the actual impulse I is zero here. This is a payment for all
+these controlled samplers on an actual unforced flow, not just an
+uncontrolled average or a fitted receiver.
+
+The auxiliary control changes the sampling law, not the fluid equation.
+The kernel in the terminal functional remains the original physical
+kernel; it is not replaced by the controlled density. Compatible
+segments keep their incoming density, the original elapsed time and
+the same q. Equation (403) supplies one allowance for the whole sampling
+history, not a fresh allowance at every seam.
+
+This is an exact calibration of the candidate's endpoint, not a bound
+for the pressure reaction on arbitrary flows. In this shear r_I is
+already nonpositive. The Gaussian conditional-score argument does not
+identify the score of a general NS kernel. The latter would require
+additional information about the evolving stochastic deformation.
+Thus (403) repairs the endpoint accounting in the test where (399)
+fails, while leaving the general mixed pressure history open.
+
+### Verification and the remaining physical obligation
+
+Run `python3 -O labs/normalized_score_history.py`. General symbolic
+checks cover (395)--(398)'s product/flux algebra, positivity (397) and
+the exact Bellman control square for every positive theta. Four actual
+NS initial-jet fixtures independently compute normalization from the
+literal vorticity and its time derivative, retaining canonical pressure
+and all Fourier products. They use prescribed smooth receivers and are
+not described as point-source kernels. The analytic shear example uses
+the actual point-source kernel and needs no perturbative approximation.
+Its kernel factorization, image-tail bound, stochastic entrance limit,
+impossibility argument and controlled terminal payment remain analytic;
+the constants and Gaussian moment have exact checks. No Lean
+declarations or axioms change.
+
+The next estimate must use the full density/flux identity (398), or a
+different reserve with a justified point-source entrance law. It must
+retain the normalized growth, actual pressure and inherited impulse,
+and pay its controlled history from the original data. The weighted
+uncontrolled payment (389) remains valid and is not promoted to this
+stronger claim. The sufficient exponential target (379) remains open.

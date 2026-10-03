@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [normalized pressure-score calculation](labs/README.md#normalized-pressure-score-histories-and-the-point-kernel-endpoint)
+derives the complete directional and mixed pressure equations, retaining
+their spatial flux under controlled sampling. Normalization restores a
+vorticity-growth factor beside the signed geometric diffusion. An actual
+point-source kernel in an exact decaying unforced shear defeats a family
+of positive quadratic pointwise Bellman certificates: their source grows
+like inverse sampling time, although the pressure impulse vanishes.
+The same candidate's terminal cost nevertheless has a finite payment for
+every controlled sampling history of that shear, using half the control
+penalty. Its stochastic entrance cost is also finite and nonzero. These
+results distinguish local certificates from complete history payments;
+the general full-datum allowance remains open. They are analytic with
+exact algebra checks; no new Lean declarations are added.
+
 The [physical kernel-score budget](labs/README.md#physical-kernel-entropy-and-the-joint-vorticity-score)
 pays time-weighted Fisher information for point-source sampling along
 arbitrary available smooth prefixes. Its allowance uses viscosity and
