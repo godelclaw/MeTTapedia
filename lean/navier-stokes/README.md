@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [solenoidal geometric observation](labs/README.md#solenoidal-geometric-observations-and-a-complete-two-coordinate-payment)
+discards gradients and nonpositive stretching directions before charging
+the joint geometry. It has an explicit all-time payment for arbitrary
+amplitudes of the known three-component, two-coordinate class, including
+positive stretching. Actual 3D hidden modes introduce retained Reynolds
+sources; an exact example makes the averaged parent's energy and enstrophy
+grow. A logarithmic Fourier estimate nevertheless absorbs the actual
+coordinate average using the full energy reserve. The remaining fluctuation
+cost retains the full vorticity and curl; its original-data payment is open.
+These are analytic arguments with exact checks, reusing the existing
+certified Fourier inequality; no new Lean theorem is asserted.
+
 The [physical enstrophy receiver](labs/README.md#physical-enstrophy-receiver-and-a-diffusion-feedback-budget)
 retains the actual vorticity weighting in the geometric continuation
 estimate. A finite original-data allowance for its cost, even with feedback

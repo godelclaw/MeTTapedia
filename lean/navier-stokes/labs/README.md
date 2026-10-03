@@ -30146,3 +30146,399 @@ geometry to pay (465). It need not first prove the stronger maximum over
 arbitrary spatial samplers. The old targets (379), (435) and (449) remain
 available alternatives; no equivalence or completed regularity proof is
 asserted by this reformulation.
+
+
+## Solenoidal geometric observations and a complete two-coordinate payment
+
+A geometric observation should discard fields that do no integrated
+stretching work before charging their positive part. This can be done
+exactly, using the Hilbert-space cone projection of
+[Moreau](https://www.numdam.org/article/BSMF_1965__93__273_0.pdf).
+The resulting observation has a complete original-data payment for the
+known three-component, two-coordinate NS class. The arbitrary 3D
+history payment remains open. The argument below and its physical
+integration are analytic, not new Lean-certified regularity results.
+
+### The actual curl imposes a compatibility constraint
+
+On R3 or the fixed normalized 2*pi torus, let
+`F=u cross omega=(H-I) cross omega`, `c=curl omega` and `Y=Z+zeta`
+as above. All products belong to L2 on a smooth prefix. In the real
+Hilbert space of L2 vector fields, set
+
+```text
+C_c={a c: a>=0 measurable, a c in L2},
+S={v in L2: div v=0 distributionally},
+K_c=C_c intersect S,
+Q_c(F)=projection of F onto K_c,
+Theta_Q=||Q_c(F)||_2^2/Y.                           (471)
+```
+
+Each ray cone C_c is closed and convex: use an almost-everywhere
+convergent subsequence of any strongly convergent L2 sequence, with
+zero value required where c=0. S is a closed linear subspace. Thus K_c
+is a closed convex cone containing 0 and the actual c. Moreau's polar
+decomposition gives
+
+```text
+<F,c> <= <Q_c(F),c> <= ||Q_c(F)||_2 ||c||_2,
+||Q_c(F)||_2=sup{<F,v>: v in K_c, ||v||_2<=1}.
+```
+
+Here `<F,c>` is precisely the integrated vorticity stretching g. The
+constraint is spatial and joint: for smooth a, `div(a c)=c.grad a=0`.
+Thus admissible weights must agree along the actual c curves. They
+are not independently selected positive weights in separate patches,
+and these c curves are not asserted to be material trajectories.
+
+There is also a constructive upper-bound form. Let G=S-perp be the
+closed L2 space of gradients, and put
+
+```text
+P_c(V)=integral [(V.c)_+]^2/|c|^2, with value0 at c=0.
+||Q_c(F)||_2^2=inf_{g in G} P_c(F-g).                (472)
+```
+
+Indeed, C_c's polar consists of fields r with r.c<=0. The polar of
+K_c is the closure of G plus that polar cone. Distance to this closure
+and Moreau's decomposition give (472). The sum need not be closed;
+no minimizing smooth potential is assumed. Every explicit gradient
+witness g gives a rigorous upper bound. A countable dense subset of G
+suffices because the ray-cone projection is nonexpansive. This also
+makes Theta_Q measurable along smooth prefixes, including changing
+zero sets of c. The projection norm is bounded by ||F||_2, so the cost is locally
+integrable on each smooth prefix. Derivatives involving its cumulative
+cost are understood almost everywhere; the reserves are locally absolutely
+continuous. No time derivative of the moving projection is used.
+
+Both gradients and fields pointwise orthogonal to c can therefore be
+removed. Plain Leray projection removes only the former. The exact
+checker below includes an actual planar datum with nonzero Leray Lamb
+energy but zero cost in (471).
+
+The original passive/impulse split remains available. Applying (471)
+to `-I cross omega` gives a cost no greater than Theta in (463), since
+K_c is contained in C_c. For the FULL joint cost,
+
+```text
+sqrt(Theta_Q)<=M sqrt(Z/Y)+sqrt(Theta).
+```
+
+This is a quantitative comparison, not an assertion that every feedback
+hypothesis with the same alpha transfers unchanged. Taking positive
+parts of independent parents still loses their joint cancellation.
+
+### The finite-history consumer
+
+For an actual unforced prefix, g<=sqrt(Y D Theta_Q) and
+`Y'=2g-2nu D`. Fix one 0<=alpha<1, write kappa=1-alpha and suppose
+
+```text
+C_Q(t)=integral_0^t[Theta_Q-alpha nu^2 D/Y]<=B_Q,
+R_Q=log(Y/zeta)+(B_Q-C_Q)/nu>=0,
+R_Q'+kappa nu D/Y<=0.                               (473)
+```
+
+The FIRST line is the OPEN arbitrary-data estimate; the remaining
+lines follow from it. B_Q must be fixed from the original datum,
+viscosity and prescribed horizon, uniformly over every available
+same-datum prefix. It is not defined by an uncontrolled future supremum.
+The exact derivative defect is
+`-gap-(sqrt(Theta_Q/nu)-sqrt(nu D/Y))^2`, where
+`gap=2sqrt(Theta_Q D/Y)-[(log Y)'+2nu D/Y]>=0`.
+
+Consequently
+
+```text
+Y<=Y_max=Y0 exp(B_Q/nu),
+integral D/Y<=Q_star=[log(Y0/zeta)+B_Q/nu]/(kappa nu),
+integral D<=Y_max Q_star,
+K=(Y_max-Y0)+nu Y_max Q_star+2T|g(0)|.
+```
+
+This K supplies the same signed-renewal consumer as (467). The analytic
+R3 and periodic continuation connections are unchanged. The original
+H, I, zeta, actual solution and accumulated expenditure remain the same
+at every join; projecting an observation does not reconstruct or alter
+the fluid. The new projection is not an additional stochastic control.
+
+### An exact cancellation for every planar nonlinear flow
+
+Work on the torus in the frame that removes the original constant
+horizontal mean. For arbitrary smooth functions psi(x,y), v(x,y), let
+
+```text
+u=(psi_y,-psi_x,v), q=-Delta_h psi,
+omega=(v_y,-v_x,q), c=(q_y,-q_x,-Delta_h v),
+chi=-psi q+v^2/2,
+F-grad chi=(psi q_x,psi q_y,-u_h.grad_h v),
+(F-grad chi).c=(u_h.grad_h v) Delta_h v.              (474)
+```
+
+These are pointwise identities, with no assumption that psi is steady,
+small, or confined to one Laplacian eigenspace. If v=0, the residual is
+orthogonal to c everywhere. The explicit gradient witness in (472)
+proves Theta_Q=0 for EVERY such planar state, and hence along its
+entire actual nonlinear history. No artificial positive geometric
+charge remains on the cellular example.
+
+The checker uses
+`psi=sin x sin y+(sin 2x)/3`. Its raw signed observation is nonzero,
+its Leray-projected Lamb energy is 1/15, but its reduced cost is zero.
+This distinguishes the joint cancellation from a mere pressure projection.
+
+### Full payment for the three-component two-coordinate class
+
+For an actual unforced flow of the form (474), u_h obeys autonomous
+2D NS and v obeys its passive advection-diffusion equation. Write
+
+```text
+E_h=||u_h||_2^2, Z_h=||q||_2^2, D_h=||grad_h q||_2^2.
+E_h'+2nu Z_h=0, Z_h'+2nu D_h=0,
+Theta_Q<=||u_h||_infinity^2 ||grad_h v||_2^2/Y
+       <=||u_h||_infinity^2.                        (475)
+```
+
+The first inequality uses the explicit witness (474) and
+`|Delta_h v|<=|c|`, including zero sets. The existing Lean lattice
+inequality `FourierAgmon.sq_sum_le_agmon` has constant104. Applied to
+the nonzero Fourier amplitudes of u_h, then passed to the smooth
+Fourier limit on the normalized 2*pi torus, it gives
+
+```text
+||u_h||_infinity^2<=104 sqrt(Z_h D_h),
+integral_0^t Theta_Q
+ <=104 sqrt[(integral_0^t Z_h)(integral_0^t D_h)]
+ <=(52/nu)sqrt(E_h(0)Z_h(0))=:B_plane.              (476)
+```
+
+The Fourier limit and PDE application are analytic here; the lattice
+inequality itself is already Lean-certified. This bound holds on every
+available prefix, with the SAME constant independent of its length.
+There is no smallness restriction on either horizontal motion or v.
+Combining (473) at alpha=0 with (476) yields uniform enstrophy and a
+finite total dissipation allowance; continuation closes this known
+regular class. This is a new calibration of the observation, not a
+claim to have newly discovered regularity of two-coordinate flows.
+
+The vertical component need not have zero stretching. For the same psi
+and `v=sin x-sin(2x+y)`, the actual initial g is 1/2. Thus (476) pays
+real amplification as well as changing horizontal geometry. The exact
+checker retains its evolving pressure and the first evolving identity
+(474). No closed finite Fourier system is substituted for the NS flow.
+
+### The precise defect when hidden modes feed the parent
+
+For a genuine 3D flow, let U be its actual average in z, w=u-U,
+Omega=curl U, eta=curl w, C=curl Omega and c_w=curl eta. Retain every
+term in
+
+```text
+N=U cross eta+w cross Omega+w cross eta,
+F(u)-grad chi_U=R_U+N,
+(F(u)-grad chi_U).c
+ =(U_h.grad_h U_3)Delta_h U_3+R_U.c_w+N.(C+c_w),    (477)
+```
+
+where R_U is the explicit residual in (474) for U. The last two terms
+measure what the exact two-coordinate cancellation leaves on the
+ACTUAL full curl observer. Projecting separately onto cones made from
+C and c_w would change the observation.
+
+Moreover U is not an autonomous solution. With Sigma=average_z(w tensor w),
+
+```text
+U_t+(U.grad)U+grad p_bar-nu Delta U=-div Sigma=:f_R,
+E_h'+2nu Z_h=2 integral U_h.f_R,h,
+Z_h'+2nu D_h=2 integral q (curl f_R)_3.             (478)
+```
+
+The sources in (478) are generated by the SAME unforced fluid. Their
+payment is required before reusing B_plane; the pressure and source
+cannot be dropped by calling U a known planar parent.
+
+A small exact construction makes this obstruction active. Set
+
+```text
+p=sin(x+z), r=sin(y-z), w=(p+r,r,-p+r),
+U_plus=(-sin(x+y),sin(x+y),0)/8,
+U_minus=-U_plus, u_plus/minus=U_plus/minus+w.
+```
+
+These are smooth divergence-free NS initial data at nu=1, with zero
+z-average of w. Both have E_h(0)=1/64 and Z_h(0)=1/32. The hidden stress
+gives horizontal energy sources +1/8 and -1/8 and enstrophy sources
++1/4 and -1/4 respectively. Consequently the plus case has ACTUAL
+`E_h'(0)=1/16` and `Z_h'(0)=1/8`: the parent grows while the whole
+fluid's kinetic energy decreases. The return case has rates -3/16 and
+-3/8. Continuity supplies genuine short intervals with these strict signs.
+This is internal energy transfer, not external forcing or a singularity.
+
+There is also actual creation of the improved geometric cost. Both data
+satisfy c=2u initially, so F.c=0 pointwise and Theta_Q(0)=0. Nevertheless
+the complete NS derivative gives `g'(0)=547/128>0` in both cases. With
+zeta=Z0=161/32, the lower bound
+`Theta_Q>=g_+^2/(D Y)` yields
+
+```text
+Theta_Q(t)>=(299209/1658944)t^2+O(t^3)
+```
+
+on their actual short histories. The zero-cost set is not invariant under
+unforced evolution. The two cases even have the same initial onset of
+stretching despite opposite energy transfers into the average. These are
+finite bursts paid by their full datum; no failure of a finite integrated
+allowance is inferred. Scaling the entire initial datum by A>0 gives
+`g'(0)=A^4(547/128)` at every positive viscosity, since the initial cubic
+g is zero and the viscous tangent is -2nu u. In the plus case the parent
+energy rate is `A^2(2A-nu)/16`, positive whenever A>nu/2.
+
+### Pressure is retained in the evolving physical state
+
+For arbitrary unforced flow the literal equation is
+
+```text
+F=u_t+nu c+grad(p+|u|^2/2).                         (479)
+```
+
+A gradient is invisible to (471), but pressure still determines u and
+c through their evolution. Removing a gradient from an observation does
+not remove pressure, hidden memory or covariance from that evolution.
+With an applied force, (479) has the additional term -f on its right.
+
+For the one imported forced whole-space candidate, the enstrophy
+inequality for (471) is (470), with Theta replaced by Theta_Q and
+`F_star=sup||f||_2^2<infinity`. The same argument with the force term
+retained shows that a finite bound for C_Q for any fixed alpha<1 would
+contradict `ForcedCandidatePancake.no_uniform_gradient_energy` on that
+candidate. Thus this improved observation still fails the necessary
+forced test. No exclusion of arbitrary internal realization follows.
+
+Run `python3 -O labs/solenoidal_geometric_cost.py`. Exact checks cover
+the conditional reserve, constant52, planar and three-component witness
+identities and their first evolving derivative, four complete 3D pressure
+fixtures, Reynolds forcing, the planted transfers and the evolving
+acceleration identity. The Hilbert reduction, general physical prefix
+arguments, stochastic identification and arbitrary-data payment are not
+certified by those finite checks. No Lean declarations are changed.
+
+### The actual internally fed mean can still be absorbed
+
+The loss of autonomy in (478) need not prevent a payment for U's
+contribution. On the torus, keep the full three-component U=average_z u
+in the once-fixed zero-mean frame. Let
+`Z_U=||grad U||_2^2`, `D_U=||Delta U||_2^2`, and E=||u||_2^2.
+Orthogonality of the coordinate average gives
+
+```text
+Z_U<=Z, D_U<=D, E'=-2nu Z,
+integral_0^t Z_U<=E0/(2nu).
+```
+
+None of these statements assumes that U is autonomous or that its
+own energy or enstrophy decreases. The planted example satisfies them.
+
+A two-dimensional logarithmic Fourier estimate supplies the remaining
+spatial step. It is a periodic version of the
+[Brézis--Gallouët logarithmic estimate](https://doi.org/10.1016/0362-546X(80)90068-1).
+For Z_U>0,
+
+```text
+||U||_infinity^2<=48 Z_U log(e+D_U/Z_U).             (480)
+```
+
+Here is a direct constant check for the normalized 2*pi torus. A square
+Fourier shell of sup radius j contains 8j nonzero lattice points. A
+cutoff at integer N>=1 gives
+
+```text
+(sum_low |U_hat|)^2<=8 Z_U(1+log N),
+(sum_high |U_hat|)^2<=4 D_U/N^2,
+||U||_infinity^2<=16 Z_U(1+log N)+8 D_U/N^2.
+```
+
+Take N=ceil(sqrt(D_U/Z_U)); D_U>=Z_U implies
+`N<=2sqrt(D_U/Z_U)`. The right side is at most
+`Z_U[24+16log2+8log(D_U/Z_U)]`, which is bounded by (480).
+This applies to vector amplitudes and all three components of U.
+If Z_U=0, the mean-zero U vanishes and the estimate is unnecessary.
+The infinite Fourier passage is analytic, not a new Lean declaration.
+
+Fix 0<=alpha<1 before considering any future prefix. Retain the SAME
+full c and omega in the fluctuation cost
+
+```text
+w=u-U, theta_w=||Q_c(w cross omega)||_2^2/Y,
+C_w(t)=integral_0^t[theta_w-alpha nu^2 d]<=B_w,
+d=D/Y, kappa=1-alpha>0.                             (481)
+```
+
+The second line is the remaining OPEN original-data hypothesis, uniformly
+on all same-datum prefixes. w is the actual fluctuation; it is not an
+independently evolving fluid, and omega and c are not replaced by its
+own vorticity or curl. Subadditivity of the support function in (471)
+gives the physical inequality
+`g<=sqrt(YD)(||U||_infinity+sqrt(theta_w))`.
+This split can overcharge cancellation between U and w; no inequality
+`theta_w<=Theta_Q` is asserted. The mean contribution is retained and
+paid by the following estimate. Neither component is chosen independently.
+
+Put h=log(Y/zeta), `ell=log(e+384zeta/(kappa^2 nu^2))` and
+`A=96/(kappa nu)`. For every epsilon>0,
+`log(e+r)<=epsilon r+log(e+1/epsilon)`. Applying this with
+`epsilon=kappa^2 nu^2/(384Y)` in (480) yields
+
+```text
+||U||_infinity^2<=(kappa^2 nu^2/8)d+48 Z_U(ell+h),
+h'+(kappa nu/4)d<=C_w'/nu+A Z_U(ell+h).             (482)
+```
+
+The second inequality uses the two Young squares for the fluctuation
+and mean terms in the actual enstrophy equation. In particular, the
+logarithmic factor has not been replaced by an assumed future norm.
+It is paid by the explicit nonnegative reserve
+
+```text
+R=exp[48E/(kappa nu^2)] [ell+h+(B_w-C_w)/nu],
+R'<=-(kappa nu/4)exp[48E/(kappa nu^2)]d.             (483)
+```
+
+To check the source sign, write b=(B_w-C_w)/nu>=0. After removing
+the nonnegative gap in (482), the derivative divided by the exponential
+is at most
+
+```text
+-(kappa nu/4)d-A[(Z-Z_U)(ell+h)+Z b].
+```
+
+Every bracket is nonnegative. This uses the ACTUAL full energy law;
+it does not restart an energy reserve for the averaged parent or drop
+its Reynolds stress. Thus the mean's contribution can be absorbed even
+when hidden modes repeatedly feed it, subject to the remaining fluctuation
+allowance. No independent bound on its future supremum is assumed.
+
+All resulting constants are original resources IF (481) holds. Set
+
+```text
+R0=exp[48E0/(kappa nu^2)] [ell+log(Y0/zeta)+B_w/nu],
+h_max=R0-ell, Y_max=zeta exp(h_max),
+Q_star=4h_max/(kappa nu).
+```
+
+Since R>=ell, (483) gives `Y<=Y_max`, `integral d<=Q_star` and
+`integral D<=Y_max Q_star`. The signed-renewal allowance K has the same
+explicit form as after (473). This mean/fluctuation reduction is
+periodic; no coordinate average over an infinite R3 axis is substituted.
+The full-space criterion (473) remains a separate available target.
+
+The checker retains the average/fluctuation orthogonality and full
+energy identity on all four physical 3D fixtures, as well as the exact
+reserve and its source signs. The generic logarithmic inequality,
+PDE integration and continuation assembly remain analytic.
+
+The next physical task is now sharper: pay the fluctuation budget (481)
+from the original FULL fluid, retaining the actual interactions with U.
+The mean contribution has been absorbed without an autonomous-parent
+hypothesis. This does not pay theta_w or complete arbitrary-data
+regularity; the full vorticity and curl in that remaining cost are
+essential to its physical meaning.
