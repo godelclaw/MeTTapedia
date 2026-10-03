@@ -29151,3 +29151,229 @@ reintroduce the missing estimate. The revised reserve keeps its incoming
 q, rho, H, I and elapsed age. Its complete pressure, orientation and
 relative-density terms are the next physical obligations, with the
 boundary cost now explicitly separated.
+
+## Physical forcing defects and compatible internal sources
+
+The imported whole-space forced construction fails the exact exponential
+pressure-impulse target (379), even after its direct normalized curl-force
+contribution is paid by a finite constant. This is an analytic consequence
+of the imported candidate's stated properties, not a new singular solution.
+The distinction identifies a necessary limitation of a force-insensitive
+history estimate. It does not refute the unforced target.
+
+`forced_history_defect.py` also checks the force correction in the complete
+reserve (435), a smooth rotating forced calibration, and the exact internal
+sources obtained by splitting an actual unforced flow. The stochastic and
+PDE arguments below are analytic; no new Lean declarations are introduced.
+
+### The full force correction, including orientation
+
+Use the same original passive H, impulse I=H-u, delta, physical point-source
+sampler, densities q,rho, and spatial scores as in (374)--(435). Let the
+physical equation have force f and put
+
+```text
+D=partial_t+u.grad-nu Delta, B=grad u,
+D u=-grad p+f, D H=0, H(0)=u0,
+D I=grad p-f, D omega=B omega+curl f,
+s_omega=|omega|^2+delta, n=omega/sqrt(s_omega),
+c_f=curl f/sqrt(s_omega), g_f=2n.c_f,
+F_n=-(Id-nn^T)c_f.                                (441)
+```
+
+Here p is the actual forced pressure. In backward sampling time the
+observation generator L gains +f in LI and F_n in Ln. The density's
+equation still uses the actual drift -u; there is no additional explicit
+force term in Lk. This is a comparison of generator formulas at identical
+instantaneous fields, not a claim that forced and unforced flows have the
+same fields or transition law.
+
+Let d=I.n, z=n.k and keep the nonnegative quadratic Q from (397).
+Differentiate Q directly in raw omega and I. Relative to the unforced
+expression B_Q of (398), the extra source is
+
+```text
+E_f=2I.f/nu+2beta z(n.f)
+       +(2beta z I+2beta d k+2alpha nu z k).F_n,
+LQ=B_Q+E_f+(1/q)div(q F_Q).                        (442)
+```
+
+When evaluating B_Q, use the unforced algebraic reaction
+`v=2n.Bn-2nu|W|^2` in chi and T_z. Substituting v+g_f there and also
+adding E_f would double count part of the force. All fields, including
+pressure and their spatial derivatives, are the actual forced ones.
+The spatial flux F_Q and the control/gradient square completions retain
+their formulas. In particular, if S_a denotes the sum of the three
+nonnegative squares subtracted in (435), its full forced counterpart is
+
+```text
+E_rho[2(r_I+g_f)-|gamma|^2/(4nu)]+J_a'
+ =E_rho[C_a-S_a+2g_f+a E_f].                       (443)
+```
+
+The hypotheses for integrated density identities and boundary flux are
+unchanged. The reward here is explicitly r_I+g_f; the target (379) uses
+r_I alone. Also, the time scale in an initial-interval argument for a
+forced flow must be justified for that forced flow. The unforced Picard
+constant (432) cannot be reused without its hypotheses.
+
+A calibration shows why amplitude work alone misses orientation. On the
+2pi torus let A,nu,Omega>0 and
+
+```text
+u=A exp(-nu t)sin(z)(cos(Omega t),sin(Omega t),0), p=0,
+f=A Omega exp(-nu t)sin(z)(-sin(Omega t),cos(Omega t),0).
+```
+
+This is an exact smooth forced NS solution for all nonnegative time:
+advection vanishes and f supplies only the rotating part of the time
+derivative. Pointwise `u.f=0` and `omega.curl f=0`, but curl f is nonzero
+and rotates the vorticity. The original passive field is
+`H=A exp(-nu t)sin(z)(1,0,0)`; it is not reset to the rotating velocity.
+There is no vortex stretching in this calibration, and
+`r_I=-2nu|grad omega|^2/s_omega<=0`. Thus it verifies a force channel,
+not growth or blowup. This smooth periodic force is not the force class
+of the imported whole-space singular construction.
+
+### The imported forced flow defeats the remaining history bound
+
+Use precisely `NavierStokesR3.ProblemStatement.CandidateProperties` and
+`NavierStokesR3.theorem_1_1_with_initial_rest` from the pinned
+OpenAI/NavierStokesAndEuler package. The same whole-space u,p,f have:
+positive viscosity; smooth velocity and pressure on every prefix before
+1; a common compact spatial support; zero original velocity; globally
+smooth force with compact spacetime support inside positive time; one
+uniform kinetic-energy bound; and speed unbounded as t approaches 1.
+The stronger imported theorem supplies initial rest through time 3/8.
+No hypothesis on a manufactured or periodic substitute is used here.
+The existing `ForcedCandidatePancake` and `ForcedSignedBudget` modules
+connect these candidate properties to physical slices and other budgets;
+the stochastic implication in this section is additional analytic work.
+
+Fix ANY delta>0 once for this one candidate. Its original passive H is
+identically zero by uniqueness, so I=-u and v_H=0. Compact support and
+global smoothness of f imply
+`F_curl=sup_(t,x)|curl f(t,x)|<infinity`. The elementary inequality
+`2sqrt(delta)|omega|<=|omega|^2+delta` gives
+
+```text
+|g_f(t,x)|<=G_f:=F_curl/sqrt(delta).                (444)
+```
+
+Thus every path pays the absolute integral of g_f by G_f t. This also
+bounds every fixed exponential order of that direct contribution.
+It does not bound the work E_f in (442) or the history created by f.
+
+On every fixed prefix [0,t], t<1, all spatial coefficients are bounded
+by smoothness and the common compact support. The normalized scalar
+vorticity equation and its ordinary backward Feynman--Kac formula give
+
+```text
+D s_omega=(r_I+g_f)s_omega, s_omega(0)=delta,
+s_omega(t,x)=delta E_phys_(t,x) exp integral_0^t(r_I+g_f).
+```
+
+Using (444) and Cauchy--Schwarz on this SAME sampling law yields
+
+```text
+log E_phys_(t,x) exp[2 integral_0^t r_I]
+ >=2log(s_omega(t,x)/delta)-2G_f t.                (445)
+```
+
+All moments in (445) are finite at each fixed endpoint before 1. The
+claim concerns their failure to have one finite uniform bound through
+the prescribed horizon 1, without restarting the initial datum.
+
+For completeness, the imported unbounded speed really implies the
+unbounded vorticity needed here. For any smooth compactly supported
+solenoidal field on R3, curl omega=-Delta u, and for any R>0 the heat
+identity gives
+
+```text
+u=exp(R^2 Delta)u+integral_0^(R^2) curl exp(s Delta)omega ds,
+||u||_infinity <= (8pi)^(-3/4)R^(-3/2)||u||_2
+                    +(4/sqrt(pi))R||omega||_infinity. (446)
+```
+
+The heat kernel has L2 norm `(8pi s)^(-3/4)` and its gradient has L1
+norm `2/sqrt(pi s)`. Young's inequality proves (446), including the
+integrable endpoint at s=0. Taking R=1 already shows that bounded L2
+norm and bounded vorticity would bound the speed. Balancing the two
+terms also gives the usual powers `||u||_2^(2/5)||omega||_infinity^(3/5)`.
+No hypothetical regularity of a continuation is assumed.
+
+Consequently the right side of (445) is unbounded over t<1 and x.
+For this SAME imported forced candidate, every fixed delta>0 and every
+finite K fail the uniform exponential inequality of (379). Allowing K
+to depend on the entire fixed force does not change this conclusion.
+The direct curl-force payment G_f is nevertheless finite. In fact the
+original endpoint score cost in (434) vanishes because omega0=0.
+
+This does not say that the explicit source 2g_f+a E_f alone must have
+an infinite integral: the fields entering C_a change as the forced
+history evolves. Nor is it a counterexample from a nonzero unforced
+initial datum. Removing the force from this zero datum gives the zero
+flow. Restarting at a later time with a nonzero datum produces a
+different evolution and is not a proof of internal realization.
+The result excludes a proposed argument that would pay (379) for this
+forced class merely by also paying the bounded direct curl reaction.
+
+### Effective internal sources must come from the same full evolution
+
+There is a concrete compatibility condition when decomposing an unforced
+flow. Let P be a fixed Fourier projector commuting with spatial derivatives,
+eta=Pomega and zeta=(Id-P)omega. Keep the SAME full drift u and deformation
+B=grad u in both equations. Directly applying P to the unforced vorticity
+equation gives, throughout every smooth prefix,
+
+```text
+D eta=B eta+Xi_P,      D zeta=B zeta-Xi_P,
+Xi_P=P(B omega)-B(Pomega)
+          +u.grad(Pomega)-P(u.grad omega).         (447)
+```
+
+This is an observation of the full PDE, not a projected evolution. The
+unobserved modes, all convolution outputs and the actual pressure remain
+in u and its evolution. An arbitrary time series Xi_P cannot be inserted
+without constructing the same full u satisfying (447).
+
+Opposite vector sources do not cancel in separately squared observations.
+Their source contributions are exactly
+
+```text
+in D(|eta|^2+|zeta|^2):      2(eta-zeta).Xi_P,
+in D(2eta.zeta):           -2(eta-zeta).Xi_P.       (448)
+```
+
+The retained cross term restores the full |omega|^2 identity. Its
+stretching and gradient-diffusion terms must also be retained. For a
+normalized eta the backward orientation correction is
+`-(Id-n_eta n_eta^T)Xi_P/sqrt(|eta|^2+delta_eta)`, with a fixed positive
+delta_eta; the hidden component has the opposite unnormalized source
+but a different normalization. These formulas expose the relevant
+shared geometric information. They do not bound Xi_P or its history.
+One must not substitute Xi_P for a physical force in every equation of
+(441): eta is a component of vorticity transported by the full u, not
+the vorticity of an independent fluid with its own NS drift and pressure.
+
+The checker verifies (447) and its first physical time derivative on
+four existing smooth NS data with cutoff-squared values 1,1,10,3 fixed
+from the original data. It retains canonical pressure, viscosity and
+all generated modes through two time derivatives. The nonzero sources
+and (448) are checked exactly. Local smooth existence turns these data
+into actual short histories; the general algebra proves (447) throughout
+each such history. Finite jets do not establish a long-time payment.
+
+Run `python3 -O labs/forced_history_defect.py`. Independent raw-variable
+differentiation verifies (442)--(443); the literal rotating shear checks
+the equation, passive field, work and orientation claims. Exact Gaussian
+integrals check the constants in (446). The candidate's Feynman--Kac
+obstruction and the general PDE consequences remain analytic, not
+Lean-certified. No numerical approximation or new axiom is used.
+
+The next physical task is to exploit the compatibility in (447), with
+its cross geometry and evolving pressure, in a payment for the complete
+bulk (435). The forced obstruction shows why a bounded external input
+or an endpoint score alone is insufficient. The unforced arbitrary-data
+exponential bound (379), and hence its continuation consequence, remain
+open.

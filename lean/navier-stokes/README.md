@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [physical forcing test](labs/README.md#physical-forcing-defects-and-compatible-internal-sources)
+shows analytically that the imported whole-space forced candidate defeats
+the exact remaining exponential pressure-history bound, although its
+direct normalized curl-force contribution has a finite allowance. The
+complete reserve acquires an explicit orientation and impulse correction.
+For an unforced flow, a fixed Fourier split instead produces two coupled
+vorticity equations with opposite internal sources; their cross correlation
+is necessary to recover the full squared-vorticity equation. Exact NS jets
+and a smooth rotating forced shear check these identities. This identifies
+constraints a history payment must use; it does not bound arbitrary
+unforced histories or certify a new Lean theorem.
+
 The [original-data boundary estimate](labs/README.md#original-data-boundary-smoothing-and-unrestricted-controls)
 pays the endpoint score of every complete backward sampling history
 using only the short regular interval guaranteed by the original datum.
