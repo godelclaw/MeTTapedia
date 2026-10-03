@@ -1,0 +1,66 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FiveTriangleCollapseObstruction",
+      "source_sha256": "09f0174d50909c64428f8a6a46b698521b9f76ef512c511b61aba422cfdec206",
+      "exit_code": 0,
+      "frontend_wall_seconds": 14.943,
+      "olean_bytes": 162248,
+      "olean_sha256": "fc3fcef23cc4454ec36b0fa4820e0831d80ac9ff91f5642797728ec2644b41e4"
+    },
+    {
+      "module": "MettapediaFourColor.FiveTriangleJointChoice",
+      "source_sha256": "f96be53143035944c2b60fc99e5029900e369ad2102595383d41768857d0c981",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.937,
+      "olean_bytes": 275216,
+      "olean_sha256": "ad2ea33dc29a6ecf3b32c66e55ef4d4f9f828a83a628c6ed5b30623494441ce1"
+    },
+    {
+      "module": "MettapediaFourColor.FiveTriangleCollapseAudit",
+      "source_sha256": "0c038f0cdf295be2aa3a997919de6ccc56d7b3b365667648cb4501fef2b231e9",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.457,
+      "olean_bytes": 2600,
+      "olean_sha256": "e0fad1a0bea5bd34270089f3750427a27a8b1b335388ab3b769ebf0d3932dcd4"
+    }
+  ],
+  "evidence": "Kernel-certified fixed-alignment obstruction and one concrete context-compatible repair; independent program checks establish the broader finite choice tests.",
+  "audit": {
+    "roots": 7,
+    "dependency_declarations": 3592,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "checks": [
+    "lake build kernelFiveTriangleCollapse kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_five_triangle_collapse.py"
+  ],
+  "scope": {
+    "obstruction": "One fixed D0092-to-D0063 boundary-collapse reconstruction contract is false.",
+    "positive_witness": "A whole two-vertex Kempe component switch in the source with its retained fan exterior yields an actual target colouring with the same boundary colours.",
+    "program_only": "All 220 fixed alignments fail; all 7818 source traces have some interior-compatible alignment; a fixed source state has 16 interior choices, 6 exterior choices and no joint choice among its 40 collapsed traces.",
+    "not_proved": [
+      "Uniform family repair",
+      "Arbitrary exterior coordination",
+      "Strict reduction with reconstruction for every colouring",
+      "Geometric coverage"
+    ]
+  },
+  "credited_compression": false
+}

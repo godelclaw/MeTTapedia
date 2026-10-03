@@ -58,6 +58,54 @@ seven-triangle setting of
 [Lemma 8.5](https://arxiv.org/html/2603.24880v1#S8.Thmthm5);
 they do not contradict the paper's larger catalogue coverage.
 
+## Boundary choice versus coordinated recolouring
+
+The shared five-triangle core does not justify a fixed boundary-collapse
+transfer from D0092 to D0063. Three explicit source colourings exclude all
+220 choices of source seam, target rotation and reflection. Each failure
+has a short forced-colour explanation and an independent exhaustive check
+of the seven target interior vertices. The
+[Lean obstruction](../../../lean/fourcolor-classical/MettapediaFourColor/FiveTriangleCollapseObstruction.lean)
+certifies one fixed alignment: a genuine source colouring would leave a
+target triangle with only two available colours.
+
+Adaptive interior choices fare differently. The
+[program audit](five-triangle-collapse-audit.json) enumerates all source
+and target colourings with one vertex fixed to colour zero, giving 7,818
+and 3,732 distinct edge traces. Every source trace has some successful
+collapse and alignment. This assertion concerns interior extension only.
+
+An explicit planar exterior exposes the missing coupling. For one source
+colouring, there are 40 distinct proper collapsed traces. Six extend through
+a decagon triangulated as a fan, and sixteen extend into D0063, but no trace
+does both. The source colouring is held fixed in this test. The glued target
+and fan themselves have 414 compatible traces outside this restricted set,
+so the obstruction concerns the proposed transport choices, not colourability.
+
+A coordinated recolouring resolves this particular obstruction. Keep one
+fixed seam and the same fan exterior, and switch the complete two-vertex
+component with colours zero and three in the glued source graph. The new
+boundary extends into D0063 while agreeing with that exterior at every
+retained vertex. The
+[Lean witness](../../../lean/fourcolor-classical/MettapediaFourColor/FiveTriangleJointChoice.lean)
+checks the initial and final proper colourings, the complete component, the
+exact fan adjacency on both interfaces and the common boundary colours.
+The [seven-root audit](five-triangle-collapse-measurements.json) uses only
+standard axioms and no configuration rank or repair table.
+
+This is one compatible repair in a specified context. It proves no uniform
+family reduction, arbitrary-exterior repair law or geometric coverage.
+The next contract must coordinate the retained exterior Kempe components
+with recolouring and seam selection. Separate existence of an interior
+choice and an exterior choice is insufficient. No catalogue entry or
+certificate dependency is removed by this test.
+
+Replay `lake build kernelFiveTriangleCollapse` in the classical package,
+and from the repository root run
+`python3 tools/fourcolor/near-linear/audit_five_triangle_collapse.py`.
+The [fixture](five-triangle-collapse-example.json) stores explicit colouring
+witnesses and the one-step repair; its repair search is not replayed.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

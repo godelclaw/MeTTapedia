@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay a short explicit obstruction to fixed boundary-collapse transport. -/
+target kernelFiveTriangleCollapse pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/five-triangle-collapse",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "FiveTriangleCollapseObstruction", "FiveTriangleJointChoice",
+        "FiveTriangleCollapseAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay constructive recognition of the shared facial sector. -/
 target kernelSevenPairRecognition pkg : Unit := do
   let env ← getAugmentedEnv

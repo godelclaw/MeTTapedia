@@ -1,0 +1,151 @@
+{
+  "evidence": "Exact independent program checks; one fixed-alignment obstruction is separately proved in Lean.",
+  "source": "D0092.conf",
+  "target": "D0063.conf",
+  "covering_source_colourings": 3,
+  "fixed_alignments_excluded": 220,
+  "alignments_per_witness": {
+    "0": 172,
+    "1": 45,
+    "2": 3
+  },
+  "local_obstructions": {
+    "forced_colour": 220
+  },
+  "max_forced_colour_steps": 8,
+  "independent_target_searches": 221,
+  "independent_joint_target_searches": 40,
+  "adaptive_interior_choice": {
+    "source_colourings_fixing_vertex_zero": 10620,
+    "target_colourings_fixing_vertex_zero": 4788,
+    "source_boundary_traces": 7818,
+    "target_boundary_traces": 3732,
+    "all_source_traces_have_some_successful_alignment": true,
+    "compatible_exterior_choice_established": false,
+    "graph_operation_or_Kempe_transport_established": false
+  },
+  "joint_choice_obstruction": {
+    "source_word": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      3
+    ],
+    "distinct_proper_collapses": 40,
+    "interior_compatible": 16,
+    "exterior_compatible": 6,
+    "jointly_compatible": 0,
+    "interior_example": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      1,
+      1,
+      2
+    ],
+    "exterior_example": [
+      1,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2
+    ],
+    "exterior": "Planar decagon triangulated by a fan at boundary vertex zero",
+    "unrestricted_joint_traces": 414,
+    "unrestricted_joint_example": [
+      1,
+      2,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      1
+    ],
+    "scope": "The source colouring is held fixed. Recolouring the source or using another boundary operation is not excluded."
+  },
+  "coordinated_repair": {
+    "kempe_steps": 1,
+    "switched_vertices": [
+      [
+        2,
+        15
+      ]
+    ],
+    "whole_components_in_glued_graph": true,
+    "source_and_target_include_same_fan": true,
+    "actual_boundary_vertex_colours_agree": true,
+    "uniform_repair_or_strict_reduction_claimed": false
+  },
+  "fixed_alignment": {
+    "source_word": [
+      1,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      2,
+      1,
+      1,
+      3
+    ],
+    "collapsed_word": [
+      3,
+      2,
+      2,
+      2,
+      1,
+      1,
+      2,
+      1,
+      1,
+      3
+    ],
+    "target_boundary_colours": [
+      0,
+      3,
+      1,
+      3,
+      1,
+      0,
+      1,
+      3,
+      2,
+      3
+    ],
+    "triangle_source_labels": [
+      12,
+      15,
+      16
+    ],
+    "allowed_colours": [
+      0,
+      2
+    ]
+  },
+  "scope": "No fixed seam/dihedral alignment satisfies unconditional successful-trace reconstruction. Pointwise adaptive interior choices exist. An explicit planar exterior defeats joint selection from one fixed source colouring; coordinated recolouring is not excluded.",
+  "fixture_sha256": "4022addf57510cfdf31f3fbb3c7c5858a0f81a603c2aacfd8ab081ef62cac7e3",
+  "lean_source_sha256": "09f0174d50909c64428f8a6a46b698521b9f76ef512c511b61aba422cfdec206",
+  "joint_lean_source_sha256": "f96be53143035944c2b60fc99e5029900e369ad2102595383d41768857d0c981",
+  "verifier_sha256": "658bf8b10afde2edb48dd6d6ca2aa23bdb28fea6e0a0f552b3b0e33c0fc79a5c"
+}
