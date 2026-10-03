@@ -33939,3 +33939,302 @@ with Python assertions disabled. Density construction, entropy balance,
 Gibbs coercivity, the local positive-viscosity comparison and the
 continuation consumer remain analytic. No Lean declarations or axioms
 change.
+
+## A Bellman payment for complete stochastic pressure histories
+
+`pressure_parent_bellman.py` checks an explicit Bellman bound and its
+identification with the physical pressure histories (626). It supplies an
+all-time payment for entire exact flow families, including genuine 3D
+Beltrami parents. A separate example has increasing quartic entropy but
+still satisfies this payment. The argument does not assume that its
+stochastic histories are Gaussian or that amplification is absent.
+
+The Bellman verification method is classical; see
+[Nazarov, Treil and Volberg](https://www.math.brown.edu/streil/papers/Name/name1.pdf)
+for its relation to stochastic control and martingale inequalities.
+The ABC family is also classical; see
+[Dombre et al., 1986](https://doi.org/10.1017/S0022112086002859).
+The calculations below identify the particular physical history, original
+resource and remaining arbitrary-flow obligation. They do not claim new
+regularity for these already known global solution families.
+
+### A direct continuation target in the actual pressure impulse
+
+Keep the actual forward spatial flow X of (626), with uniform initial
+label a, and define the pressure impulse without auxiliary Gaussian noise:
+
+```text
+P_t=integral_0^t grad p(s,X_s)ds,  Z_t=u_0(a)-P_t,
+E[Z_t | X_t=x]=u(t,x),
+E|Z_t|^2=E_0,                    E|P_t|^2<=4E_0,
+||u(t)||_4 <= ||u_0||_4+(E|P_t|^4)^(1/4).                 (636)
+```
+
+The conditional mean solves the same linear advection-diffusion equation
+as the actual NS velocity. The spatial marginal stays uniform. Thus
+`(E|Z|^2)'=-2 integral u.grad p=0`; the pressure-impulse second-moment
+bound follows by the triangle inequality in L2. This recovers the existing
+pressure-history energy payment. The last line is conditional Jensen and
+Minkowski, with no Gaussian hypothesis.
+
+Consequently an original-data bound B_P(u_0,nu,H) for E|P_t|^4, uniform over
+all available prefixes and t<=H, would give the enstrophy continuation bound
+
+```text
+E_1(t)<=E_1(0) exp(C nu^(-7) H [||u_0||_4+B_P^(1/4)]^8).
+```
+
+The physical Sobolev argument is the same nonendpoint estimate following
+(630). This is an analytic sufficient criterion, not a new Lean consumer.
+The fourth moment of the ACTUAL signed pressure impulse is the unpaid
+input. An integral of absolute pressure-gradient norms is a stronger
+sufficient assumption, but would discard the time cancellations retained
+in P. Its second-moment bound alone does not supply its fourth moment.
+
+### Why subtracting stored pressure is not automatically a payment
+
+An initially tempting correction is
+`J_gamma=H_kappa-gamma kappa ||p||_2^2`, for 0<gamma<1/2.
+The canonical pressure projection is an L2 contraction from u tensor u:
+Fourier Cauchy--Schwarz at every nonzero wave number gives
+`||p||_2^2<=integral |u|^4<=integral K`. Thus (630) proves
+
+```text
+J_gamma+(3/4)log2 >= kappa(1/2-gamma)integral K>=0.         (637)
+```
+
+This is a coercive observation, but its pressure credit can disappear.
+For equal-amplitude ABC initial data of amplitude L and wave number k,
+eta=kappa=1, the exact viscous solution below has
+`||p_0||_2^2=3L^4/4` and `integral |grad u_0|^2=3k^2 L^2`.
+Its initial integrated quartic pressure work is zero. Therefore
+
+```text
+J_gamma'(0)=3nu k^2 L^2(gamma L^2-1).
+For gamma=1/4 and L=3: J_gamma'(0)=(135/4)nu k^2>0.       (638)
+```
+
+The field is globally regular and its physical kinetic energy decays.
+This refutes automatic monotonicity for the stated fixed correction and
+parameters. It does not refute every datum-dependent choice of eta,kappa,
+gamma, a time-dependent correction with its derivative accounted for,
+or a finite allowance for J_gamma. The positive result below pays history
+with an explicit initial stock instead.
+
+### The Bellman function, its exact drift and compatible composition
+
+Let N be a vector martingale with dN=sigma dW. Let q>=0 be its unspent
+variance allowance, with dq=-a dt, where a>=tr(sigma sigma^T). Set
+C=sigma sigma^T and d=a-tr C>=0. Define
+
+```text
+B(m,q)=|m|^4+6q|m|^2+3q^2,
+(partial_t+generator) B(N,q)
+ =-4 sum_(ell,i<j)(N_i sigma_jell-N_j sigma_iell)^2
+   -6d(|N|^2+q) <=0.                                    (639)
+```
+
+The left side denotes the finite-variation drift in Ito's formula;
+its martingale term is omitted only after taking conditional expectations.
+The displayed equality is a polynomial identity for arbitrary sigma, N
+and q. In particular it retains diffusion in every component and arbitrary
+adapted rotations of the noise. The squares measure transverse variation
+relative to N; they are not asserted to be vorticity-direction coherence.
+
+There is an exact control interpretation. The Hessian is
+`8m tensor m+(4|m|^2+12q)I`, whose largest eigenvalue is
+`12(|m|^2+q)`. Hence
+
+```text
+partial_q B = sup_(C>=0, tr C<=1) (1/2) C:Hess_m B,
+B(m,0)=|m|^4.                                           (640)
+```
+
+The supremum is attained by rank-one noise in the direction of m (any
+unit direction at m=0). Equivalently, from a given m, keeping that noise
+on the line through m for variance time q gives expected terminal fourth
+power B(m,q). Thus the finite polynomial realizes the martingale control
+bound; it is not an unproved future supremum. The controlled noises form
+a relaxation containing the physical noise identified below. They are
+not forces applied to the fluid, and no claim that every controller is
+an NS evolution is needed.
+
+Localization of Ito's formula and nonnegativity give, for s<=t,
+`E[B(N_t,q_t)|F_s]<=B(N_s,q_s)`. The deterministic trace bounds used below
+also give the required finite moments on finite intervals. In particular,
+if N_0=-zeta for a centered three-dimensional Gaussian zeta with covariance
+eta I, and q_0=Q_0,
+
+```text
+E|N_t|^4 <= E B(N_t,q_t)
+          <= R_0=15eta^2+18eta Q_0+3Q_0^2.               (641)
+```
+
+With N_0=0 the initial stock is instead 3Q_0^2. Joining successive
+segments retains N_s and the SAME unspent q_s. Resetting either one would
+change the process and its funding. Conditional expectations compose this
+bound without requiring independent segments. This certifies a cost for
+a specified observation; it does not identify full physical histories
+from the two summary variables alone.
+
+### Identification and payment for exact viscous parents
+
+Let U,p_* be a smooth periodic steady Euler field and canonical pressure,
+with lambda>0 and
+`div U=0`, `-Delta U=lambda U`, `U.grad U+grad p_*=0`.
+Then the complete unforced NS evolution is
+
+```text
+u(t)=exp(-nu lambda t)U,
+p(t)=exp(-2nu lambda t)p_*.                                (642)
+```
+
+Let L_0=||U||_infinity and L_1=||grad U||_(infinity,F).
+On the actual spatial flow dX=u dt+sqrt(2nu)dW, set
+
+```text
+M_t=sqrt(2nu) integral_0^t grad u(s,X_s)dW_s,
+q_t=(L_1^2/lambda)exp(-2nu lambda t),  Q_0=L_1^2/lambda,
+a_t=2nu L_1^2 exp(-2nu lambda t),
+D_t=u(t,X_t)+2nu lambda integral_0^t u(s,X_s)ds.
+```
+
+The noise covariance satisfies tr C_t<=a_t=-q_t'. Forward Ito sampling
+adds nu Delta to the material NS equation. It gives
+`du(t,X_t)=(-grad p+2nu Delta u)dt+sqrt(2nu)grad u dW`.
+Using (642) yields the EXACT decompositions
+
+```text
+Z_t=D_t-M_t,       V_t=D_t-N_t,       N_t=M_t-zeta,
+|D_t|<=L_0[2-exp(-nu lambda t)]<=2L_0.                   (643)
+```
+
+The factor 2 in the viscous integral is essential; a backward sampler
+would require a different derivation. All pressure is retained through
+the actual equation, rather than discarded or independently averaged.
+Applying (641) and Minkowski gives the full kinetic fourth-moment bound
+and, separately, a pressure-impulse bound without Gaussian noise:
+
+```text
+integral_x K(t)=E|V_t|^4 <= K_*=[2L_0+R_0^(1/4)]^4,
+(E|P_t|^4)^(1/4) <= ||U||_4+2L_0+3^(1/4)sqrt(Q_0),
+H_kappa(t)+nu integral_0^t I_x
+ <= H_kappa(0)+kappa[K_*-K_0],       all t>=0.            (644)
+```
+
+Here K_0=integral_x K(0) is the original Gaussian fourth moment in (629).
+The last inequality is the exact entropy identity, using
+`H_kappa(t)+nu integral I_x=H_kappa(0)+kappa[integral K(t)-K_0]`.
+Thus it pays the complete signed pressure history (635), and retains its
+full Fisher loss. Since K_*>=K_0, its allowance is nonnegative and finite
+from original data. There is no amplitude smallness, future solution norm,
+Gaussian closure or renewal of q at an intermediate time.
+
+### A genuine three-dimensional family, uniform across common scales
+
+For any real A,B,C and integer k>=1, take the classical ABC field
+
+```text
+U=(A sin(kz)+C cos(ky),
+   B sin(kx)+A cos(kz),
+   C sin(ky)+B cos(kx)),
+S=A^2+B^2+C^2,
+curl U=kU,  lambda=k^2,  p_*=(S-|U|^2)/2,
+|grad U|_F^2=k^2 S,  |U|^2<=2S,  Q_0=S.                 (645)
+```
+
+With all three amplitudes nonzero this depends on all three coordinates.
+The identities give (642) directly, including its pressure and nonlinear
+convection. The gradient-square identity is pointwise, not an average.
+The checker verifies it symbolically for arbitrary amplitudes and physical
+k derivatives, as well as by complete Fourier NS fixtures. The speed
+bound follows by adding the three squared differences complementary to
+the three squared sums in |U|^2.
+
+Consequently (644) has the explicit bound
+`K_*=[2sqrt(2S)+(15eta^2+18eta S+3S^2)^(1/4)]^4`.
+It is independent of nu>0 and k, for fixed amplitudes and eta. The stronger
+noise gradient at higher k is paid by its shorter viscous lifetime;
+smaller viscosity gives a longer lifetime but a smaller noise rate. These
+are exact cancellations in q, not an estimate extrapolated from samples.
+The family has a fixed decaying spatial profile. Its existence does not
+show that newly generated, interacting profiles have the same allowance.
+
+### A paid history whose stronger entropy actually increases
+
+The same mechanism applies to the cellular class (594) with ANY smooth
+periodic w_0(x,y). Its horizontal parent is
+`a(t)v`, where a=A exp(-2nu t) and
+`v=(sin x cos y,-cos x sin y)`, with A>0. Its pressure is independent of
+w. For the two-component horizontal martingale,
+`Q_0=A^2`, `|D_h|<=2A`, and the initial Gaussian stock is
+`R_h=8eta^2+12eta A^2+3A^4`.
+The vertical history is exactly `V_3=w_0(a)+zeta_3` because partial_z p=0.
+No independence between that history and the horizontal history is used.
+Minkowski supplies
+
+```text
+K_*=[2A+R_h^(1/4)
+       +(integral w_0^4+6eta integral w_0^2+3eta^2)^(1/4)]^4. (646)
+```
+
+Equation (644)'s entropy and Fisher payment follows for all t>=0. The
+pressure impulse is horizontal and satisfies the simpler bound
+`(E|P_t|^4)^(1/4)<=(3+3^(1/4))A`, independent of w_0 and nu.
+This is a three-component flow with two-coordinate dependence; the passive
+component does not feed the horizontal parent. It is distinct from the
+fully three-dimensional family (645).
+
+To test that the payment allows real production, reuse the explicit
+profile in (596). Put p_*=(cos(2x)+cos(2y))/4, F=v.grad p_*, and
+`w_0=16A sin x(1-F)`. Exact spatial integration gives
+
+```text
+integral sin^2(x)F^2=3/256,
+-4 integral |u_0|^2 u_0.grad p_0=24A^5,
+integral |grad u_0|^2=164A^2.
+```
+
+Choose the fixed original-data parameters eta=A^2, kappa=A^(-4).
+The COMPLETE initial entropy derivative (629) is
+
+```text
+H_kappa'(0)=24A-164nu.
+At A=7nu it equals 4nu>0.                               (647)
+```
+
+Continuity of the globally smooth actual solution gives an interval of
+strict increase. Nevertheless (646) pays its entire history, without
+resetting the initial stock. The physical flow has nonzero pressure and
+transport, and every generated passive mode is retained. This tests an
+actual viscous evolution; it is not a Gaussian closure or a finite-mode
+approximation. The vertical moments at unit A are respectively 131 and
+110751/4, so every constant in this fixture's allowance is explicit.
+
+### The arbitrary-parent obligation remains physical
+
+The controller in (640) already allows arbitrary adapted changes in noise
+orientation. The unproved step for general NS is furnishing a finite
+original-data allowance for the evolving parent history. In (642), both
+the remaining trace variation and the drift in (643) are explicit. Under
+mutually regenerating parents, neither the exponential law nor its drift
+identity can simply be restarted. Assuming a future bound on
+`nu integral ||grad u||_infinity^2` would already assume strong regularity
+control; it is not a derivation of the missing estimate.
+
+The direct arbitrary-flow target (636) avoids imposing that particular
+pointwise cap: bound the fourth moment of the actual signed pressure
+impulse, retaining its correlations and cancellations. The existing
+second-moment payment is genuinely weaker. Whether concentrated histories
+can repeatedly produce large fourth-moment contributions without a finite
+full-data allowance remains open. A proposed correction must be tested on
+these actual histories, including the entropy increase (647), and retain
+whatever original resource it spends.
+
+Run `python3 -O labs/pressure_parent_bellman.py`. The exact Bellman drift,
+Gaussian initial stocks, symbolic ABC family, Fourier pressure identities,
+viscous clock and both entropy-derivative fixtures pass. The stochastic
+identification, conditional composition, all-time physical payment and
+continuation consumer are analytic, not Lean-certified. No Lean declarations
+or axioms change. These new statements use normalized periodic measure;
+no whole-space uniform-probability claim is made.

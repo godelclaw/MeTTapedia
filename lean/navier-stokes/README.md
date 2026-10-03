@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [physical Bellman payment](labs/README.md#a-bellman-payment-for-complete-stochastic-pressure-histories)
+bounds the full stochastic pressure history for steady Euler Laplace
+eigenparents, including genuinely three-dimensional ABC flows of arbitrary
+amplitude and common wave number. Its initial allowance is independent of
+viscosity and that wave number. A second application allows an arbitrary
+smooth passive vertical component; the stronger entropy can increase there
+while its entire history remains paid. The Bellman state retains both the
+accumulated martingale and its unspent variation. For arbitrary flows,
+the exact remaining target is an initial-data bound on the fourth moment
+of the actual pressure impulse. Energy already pays its second moment.
+These stochastic and PDE results are analytic with exact checks, not new
+Lean certificates or a bound for mutually regenerating parents.
+
 The [stochastic pressure-history entropy test](labs/README.md#stochastic-pressure-histories-entropy-and-a-coercive-moment)
 identifies an auxiliary velocity distribution whose mean is the actual fluid.
 Gaussian relative entropy pays its full spatial Fisher dissipation from the
