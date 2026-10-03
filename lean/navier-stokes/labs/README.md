@@ -35397,3 +35397,230 @@ oblique Fourier identities, and computes both interval sign fixtures.
 The stochastic identification, maximum-principle bounds, continuation
 argument and actual viscous intervals remain analytic, not newly
 Lean-certified. No numerical trajectory or new Lean axiom is used.
+
+## Joint pressure corrections and a paid generating parent
+
+The concentration failure in (689) cannot be repaired by choosing a better
+fixed positive quadratic combination of retained energy and pressure.
+All such combinations fail on one common actual viscous interval, even
+when their coefficients are chosen from the full original datum. There
+is nevertheless a constructive correction on that same interval: the
+initial ability to generate pressure supplies a finite reserve. This
+section retains the whole changing-parent evolution and the original
+memory C. It proves a local payment, not an arbitrary-horizon bound.
+
+### The complete joint observation
+
+On the normalized torus let `x=e-E0`, where e is (678), and form
+
+```text
+G(t)=integral [[x^2, xp], [xp,p^2]],
+Q_W(t)=tr(W G(t)),             W>=0, W nonzero.           (690)
+```
+
+Here W is any constant real symmetric positive semidefinite two-by-two
+matrix. It may depend on the original datum, viscosity and horizon.
+Negative off-diagonal entries and rank-one squares are included. The
+claim being tested is monotonicity of Q_W, not merely the existence of
+some larger finite allowance. The coercive members of this class are
+included, but not every member is itself a sufficient fluid observation.
+
+Replacing x by uncentered e adds only the constant `W00 E0^2`, because
+pressure has zero mean and the mass of e is fixed. Replacing p by the
+retained defect `r=p+x/2` is an invertible linear change of coordinates.
+It preserves the full joint matrix by congruence; dropping xp would
+change the question.
+
+Use `U_*=(sin y,sin(4z),sin x)`. Write G^mu for the actual evolution
+with viscosity mu, including its original C. The auxiliary Euler
+calculation has
+
+```text
+G^0(0)=[[3/8,0],[0,0]],
+G^0_00(t)=3/8+c t^4+O(t^5),       c=898/45045>0,
+G^0_01(t)=O(t^4),
+G^0_11(t)=b t^2+O(t^4),           b=2/9.                 (691)
+```
+
+These are full physical time derivatives, not a closed Fourier-mode
+evolution. In particular every derivative through order three of the
+cross moment is zero. The leading pressure is nonzero:
+`p_t(0)=-(4/3)cos x cos y cos(4z)`.
+
+Let `D(t)=G^0(t)-G^0(0)` and `L(t)=(G^0)'(t)`. Congruence with the
+diagonal time scalings gives
+
+```text
+diag(t^-2,t^-1) D(t) diag(t^-2,t^-1) -> diag(c,b),
+diag(t^-3/2,t^-1/2) L(t) diag(t^-3/2,t^-1/2)
+                                      -> diag(4c,2b).  (692)
+```
+
+Both limits are strictly positive definite. The determinant coefficients
+are respectively `cb=1796/405405` and `8cb=14368/405405`. Thus for
+delta=c/2 and a sufficiently small datum-fixed T>0,
+
+```text
+D(t)>=delta diag(t^4,t^2),
+L(t)>=delta diag(t^3,t),                         0<t<=T. (693)
+```
+
+The unit-frequency cyclic comparison gives the opposite sign in the
+first diagonal limit, since its fourth energy derivative is -23/5.
+The obstruction depends on the interacting spatial scales, although
+the two original speed distributions are identical.
+
+### One actual viscous interval defeats every constant weight
+
+The same uniform local H40 estimates as in (689) give, on a fixed
+interval and for 0<=mu<=1,
+
+```text
+||G^mu(t)-G^0(t)||_op <= C mu t,
+||(G^mu)'(t)-(G^0)'(t)||_op <= C mu.                     (694)
+```
+
+Indeed the NS/Euler difference, canonical pressure difference and
+retained memory are O(mu t) in the needed Sobolev norms. Their first
+time derivatives differ by O(mu). Products and spatial integration
+then give (694). The constants are derived on the common local interval
+from U_*, rather than assumed up to an unknown singular time.
+
+Fix `0<tau<=min(T/2,1/2)`. For
+`0<mu<=min(1,delta tau^3/[4(1+C)])`, (693)--(694) imply on the WHOLE
+interval `[tau,2tau]`
+
+```text
+G^mu(t)-G^mu(0)>=(delta tau^4/2)I,
+(G^mu)'(t)>=(delta tau^3/2)I.                            (695)
+```
+
+For every nonzero W>=0 simultaneously, taking traces gives
+`Q_W(t)>Q_W(0)` and `Q_W'(t)>0` there. Initially
+`Q_W'(0)=-18mu W00`, so every member with W00>0 starts by decreasing.
+The universal quantifier over W comes from a single matrix inequality;
+it is not an extrapolation from finitely many sampled coefficients.
+One can prove the trace implication by decomposing W into rank-one
+positive summands and applying the quadratic lower bound in (695).
+
+This also defeats an optimally chosen instantaneous linear pressure
+correction with fixed coefficient one on x:
+
+```text
+S(t)=inf_beta integral (x+beta p)^2
+    =G00-G01^2/G11,                       when G11(t)>0,
+S(0)=3/8,
+S(t)>=3/8+delta tau^4/2                 on [tau,2tau].   (696)
+```
+
+Complete the square in beta for the formula; (695) ensures G11>0 on
+the stated interval and gives the uniform lower bound on (1,beta).
+Thus allowing beta to vary with time does
+not make this Schur minimum stay below its initial value. This is an
+optimization of the observer, not permission to change the physical
+pressure. The minimum need not retain coercivity, which is a separate
+obligation even if its monotonicity had passed.
+
+### A pressure-generating parent pays the same interaction
+
+The initially absent pressure is not an absent parent resource. Define
+the actual fields and their complete next defect by
+
+```text
+h=(partial_t-mu Delta)p,       q=(partial_t-mu Delta)h,
+H=int h^2,                    V=J+H,
+D_e=int|grad e|^2,            D_h=int|grad h|^2,
+V'=-2mu(D_e+D_h)+4int r u.grad e+2int h q.               (697)
+```
+
+The h in (697) is precisely the identified source in (683)--(684),
+computed from the same full fluid. The equation for q contains its
+evolving parents; neither h nor q is an external force or an auxiliary
+control. The coefficient of H is one in this unit-amplitude clock.
+
+For U_*, complete jets give, with `d=645625/480249>0`,
+
+```text
+H(0)=2/9,       H'(0)=-8mu,       H''(0)=288mu^2-d,
+V(0)=205/72,   V'(0)=-26mu,      V''(0)=2352mu^2-d,
+D_e(0)+D_h(0)=13,
+(D_e+D_h)'(0)=-1176mu.                                 (698)
+```
+
+The viscosity formulas are polynomials of degree at most two: p(0)=0,
+p_t(0) is independent of mu, and each further time derivative adds
+at most one power of mu. The checker evaluates the complete polynomial
+at three distinct rational viscosities, which identifies it exactly.
+It also verifies the full h-energy balance independently from q(0).
+
+Set `B(t,mu)=V'(t)+mu(D_e(t)+D_h(t))`. Then
+`B(0,mu)=-13mu` and `partial_t B(0,mu)=1176mu^2-d`.
+For 0<=mu<=1/64 this last quantity is below -d/2. Uniform local
+Sobolev bounds give a finite datum-fixed M with
+`|partial_t^2 B|<=M`. Shrink the common interval to
+`T1<=d/[4(1+M)]`. It follows that
+
+```text
+V'+mu(D_e+D_h)<=-13mu-(d/4)t,                  0<=t<=T1,
+V(t)+mu integral_0^t(D_e+D_h)
+  <=205/72-13mu t-(d/8)t^2.                            (699)
+```
+
+Choose tau above small enough that `2tau<=T1` as well, and restrict mu
+to the intersection of the ranges in (695) and (699). Thus the SAME
+actual interval where every fixed pressure/energy quadratic increases
+has a decreasing corrected reserve V, with half the diffusion retained.
+The original finite parent allowance pays exactly the required type
+of signed concentration work:
+
+```text
+4 integral_0^t int r u.grad e
+  <=mu integral_0^t D_e+H(0)-H(t)-mu integral_0^t D_h
+  <=mu integral_0^t D_e+2/9,                   0<=t<=T1. (700)
+```
+
+This is a concrete local instance of (681), not just a decreasing
+quantity with no continuation consumer. The original covariance,
+pressure, h and all generated velocity modes remain present. It pays
+the interaction because the complete initial return of H is depleting;
+that sign is not assumed for a later regenerated parent.
+
+### Physical scaling, composition and the remaining obligation
+
+For any prescribed viscosity nu>0, choose a finite amplitude A so that
+`mu=nu/A` lies in the indicated small interval, and let
+`u_phys(t,x)=A u^mu(At,x)`. Then
+
+```text
+e_phys=A^2 e^mu,   p_phys=A^2 p^mu,   h_phys=A^3 h^mu,
+G_phys=A^4 G^mu,   V_phys=J_phys+A^-2 H_phys,
+V_phys(0)=(205/72)A^4,
+K_parent=A^-2 H_phys(0)=(2/9)A^4.                       (701)
+```
+
+The matrix obstruction holds on `[tau/A,2tau/A]`, while (700) holds
+through T1/A with the original-data allowance K_parent and physical
+viscosity nu. Thus these are strictly positive-viscosity statements at
+any prescribed viscosity, not conclusions only about Euler flow. The
+coefficient A^-2 is fixed from the original datum, not adjusted at seams.
+The total starting energy is finite and decreases along the flow.
+
+All times and viscosity cutoffs here are conservative analytic constants,
+not numerically evaluated windows. The interval may be extremely short;
+it need not contain a full pattern cycle. To extend the payment to
+arbitrary horizons one must control the later signed work `int h q`
+and its interaction with `int r u.grad e`, without reinitializing H
+or C. The present proof does not control that repeated renewal.
+
+The failed assertion is a monotone repair using only the stated current
+energy/pressure quadratic information, including its normalized Schur
+minimum. Extra initial resources, genuine additional state, suitably
+accounted adaptive weights, and signed reserves with earlier savings
+are not ruled out. In particular this construction is not a counterexample
+to global regularity or the previous cyclic value envelope (666).
+
+Run `python3 -O labs/pressure_energy_quadratic.py`. The checker verifies
+the complete joint jets, exact matrix limits, coordinate change, Schur
+identity, and pressure-parent/diffusion coefficients. The matrix interval,
+viscous comparison, physical scaling and paid interval are analytic.
+No new Lean declarations, axioms or numerical trajectories are introduced.

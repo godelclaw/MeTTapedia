@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint pressure correction test](labs/README.md#joint-pressure-corrections-and-a-paid-generating-parent)
+rules out every fixed positive quadratic combination of retained energy and
+pressure as a universally decreasing reserve. One actual coupled flow defeats
+all such weights on the same positive-viscosity interval, including weights
+chosen from its original datum. Remembering the pressure-generating parent
+repairs that interval: its initial squared size pays the signed concentration
+work while retaining half the diffusion. The amplitude-scaled allowance is
+explicit, but the conservative time window is not numerically evaluated.
+Later renewal of that parent remains unpaid. These are analytic interval
+results with exact full Fourier checks, not new Lean certificates or a
+counterexample to global regularity.
+
 The [retained-energy alignment test](labs/README.md#retained-energy-concentration-and-pressure-alignment)
 removes part of the stochastic fourth-moment overcharge while keeping a
 sufficient continuation norm. For arbitrary-amplitude ABC histories, the
