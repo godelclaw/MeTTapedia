@@ -104,7 +104,7 @@ def material_check():
                 coefficients={n: str(v) for n, v in expected.items()})
 
 
-def numerical_prefixes(n, viscosities, dt, final):
+def numerical_prefixes(n, viscosities, dt, final, residuals=False):
     import time
     import mpmath as mp
     import numpy as np
@@ -114,6 +114,7 @@ def numerical_prefixes(n, viscosities, dt, final):
 
     mp.mp.dps = 60
     coefficients = history(1)
+    derivatives = {degree: e.derivative(field) for degree, field in coefficients.items()}
 
     def evaluate(field, t):
         return mp.fsum(mp.mpf(c.numerator)/c.denominator*t**j*mp.exp(-rate*t)
@@ -129,6 +130,19 @@ def numerical_prefixes(n, viscosities, dt, final):
         v = mp.mpf(str(nu))
         a, b = evaluate(coefficients[12], v*t), evaluate(coefficients[14], v*t)
         return float(v**-8*a*a/(a-v**-2*b))
+
+    def bound_rate(nu, t):
+        if not t:
+            return 0.
+        t = mp.mpf(str(t))
+        if not nu:
+            a, d = mp.mpf(99)/512, mp.mpf(20641)/152064
+            return float(a*a*(8*a*t**7+6*d*t**9)/(a+d*t*t)**2)
+        v = mp.mpf(str(nu))
+        a, b = evaluate(coefficients[12], v*t), evaluate(coefficients[14], v*t)
+        da, db = evaluate(derivatives[12], v*t), evaluate(derivatives[14], v*t)
+        denominator = a-v**-2*b
+        return float(v**-7*(2*a*da*denominator-a*a*(da-v**-2*db))/denominator**2)
 
     class ImpulseFlow(Flow):
         def __init__(self, nu):
@@ -169,7 +183,7 @@ def numerical_prefixes(n, viscosities, dt, final):
             loss = self.nu*np.mean(sum(np.sum(q[..., :3]**2, axis=-1) for q in gradient))
             return result, np.array([loss])
 
-        def report(self, t, state, spent):
+        def report(self, t, state, spent, diagnose=False):
             values = self.ifft(state)
             first = values[..., 3:6]
             second = np.zeros(values.shape[:-1]+(3, 3))
@@ -180,13 +194,38 @@ def numerical_prefixes(n, viscosities, dt, final):
             energy = np.mean(np.sum(values[..., :3]**2, axis=-1))/2
             phi = state[0, 0, 0, 15].real/n**3
             envelope = bound(self.nu, t)
-            return dict(time=t, phi=float(phi), envelope=envelope,
+            nonlinear, _ = self.rhs(state)
+            rate = float(nonlinear[0, 0, 0, 15].real/n**3)
+            envelope_rate = bound_rate(self.nu, t)
+            wiener = float(np.sum(np.sqrt(np.sum(abs(state[..., :3])**2, axis=-1)))/n**3)
+            report = dict(time=t, phi=float(phi), envelope=envelope,
                         ratio=float(phi/envelope) if envelope else 0.,
+                        savings=float(envelope-phi), phi_rate=rate,
+                        envelope_rate=envelope_rate, rate_excess=rate-envelope_rate,
                         energy_balance=float(energy+spent-.75),
+                        velocity_wiener=wiener,
                         high_velocity_fraction=float(np.sum(ud[self.high])/max(np.sum(ud), 1e-300)),
                         high_moment_fraction=float(np.sum(md[self.high])/max(np.sum(md), 1e-300)),
+                        fourth_second_jensen_gap=float(phi-np.mean(np.trace(second, axis1=-2, axis2=-1)**2)),
                         minimum_covariance=float(np.linalg.eigvalsh(
                             second-first[..., None]*first[..., None, :]).min()))
+            if 0 <= wiener < self.nu and phi >= 0:
+                from pressure_history_tail import tail_radius, envelope_floor
+                radius = tail_radius(str(wiener), str(self.nu))
+                v = mp.mpf(str(self.nu))
+                a_now = v**-8*evaluate(coefficients[12], v*mp.mpf(str(t)))
+                b_limit = coefficients[14][(0, 0)]
+                d_limit = -v**-10*mp.mpf(b_limit.numerator)/b_limit.denominator
+                lower = envelope_floor(a_now, d_limit)
+                completed = (mp.mpf(str(phi))**mp.mpf('.25')+radius)**4
+                report['approximate_tail_gate'] = dict(radius=float(radius),
+                    completed_bound=float(completed), future_envelope_floor=float(lower),
+                    passes=bool(completed <= lower),
+                    scope='Numerical seam only; continuum norm, moment and prefix enclosures required')
+            if diagnose:
+                from pressure_history_residual import spatial_residual
+                report['spatial_residual'] = spatial_residual(state, nonlinear)
+            return report
 
     require(n >= 12 and n % 2 == 0 and dt > 0 and final > 0
             and all(v >= 0 for v in viscosities), 'Valid numerical discovery parameters')
@@ -199,7 +238,8 @@ def numerical_prefixes(n, viscosities, dt, final):
             state, cost = flow.step(state, dt)
             spent += cost[0]
             if step % max(1, round(.125/dt)) == 0 or step == steps:
-                observations.append(flow.report(step*dt, state, spent))
+                observations.append(flow.report(step*dt, state, spent,
+                                                diagnose=residuals and step == steps))
         yield dict(scope='dealiased Fourier approximation; no continuum error enclosure',
                    n=n, nu=nu, dt=dt, elapsed=time.time()-start, observations=observations)
 
@@ -208,6 +248,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--prefix', action='store_true', help='run numerical discovery prefixes instead of exact certificates')
     parser.add_argument('--material-check', action='store_true', help='check the leading terms independently on Euler material paths')
+    parser.add_argument('--residuals', action='store_true', help='report the final complete spatial operator mismatch on an enlarged grid')
     parser.add_argument('--n', type=int, default=24)
     parser.add_argument('--nu', type=float, nargs='+', default=[.05, .25, 1.])
     parser.add_argument('--dt', type=float, default=.005)
@@ -217,7 +258,7 @@ if __name__ == '__main__':
         require(not args.prefix, 'Select either the independent material check or numerical prefixes')
         print(json.dumps(material_check(), indent=2))
     elif args.prefix:
-        for result in numerical_prefixes(args.n, args.nu, args.dt, args.final):
+        for result in numerical_prefixes(args.n, args.nu, args.dt, args.final, args.residuals):
             print(json.dumps(result), flush=True)
     else:
         print(json.dumps(exact_checks(), indent=2))

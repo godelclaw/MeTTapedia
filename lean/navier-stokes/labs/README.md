@@ -35816,3 +35816,297 @@ recurrence at k=4,6,8. Positive shifted polynomials certify the unbounded
 integer ranges, and viscosity is an exact polynomial variable in (710).
 The local PDE comparisons and amplitude scaling remain analytic. No new
 Lean declaration, axiom or numerical trajectory is introduced.
+
+## A finite pressure-history handoff and a projection blind spot
+
+`pressure_history_tail.py` checks the algebra of an explicit reserve for
+future pressure impulse. `pressure_history_residual.py` compares the
+projected conditional-moment equations with the complete spatial operator
+and checks an exact flow on which the projected pressure history vanishes
+incorrectly. The physical estimates below are analytic, not Lean-certified.
+They supply a concrete continuation of the combined envelope test (666);
+they do not establish entry into the required region for arbitrary data.
+
+### A reserve that retains the original stochastic impulse
+
+Work on the period-2pi torus with normalized volume and a smooth, mean-zero,
+divergence-free, unforced solution with viscosity nu>0. Use Euclidean norms
+of complex vector Fourier coefficients, and define
+
+```text
+A(t)=sum_{k!=0} |u_hat(k,t)|,
+C(t)=sum_{k!=0} |k| |u_hat(k,t)|,
+D(t)=sum_{k!=0} |k|^2 |u_hat(k,t)|,
+G(t)=sum_k |(grad p)_hat(k,t)|.                          (711)
+```
+
+Here p is the canonical zero-mean pressure. The Fourier Leray projection
+and its complementary gradient projection have norm at most one. The
+convolution estimate for u.grad u gives, in the upper Dini sense (or almost
+everywhere after the usual norm regularization),
+
+```text
+A'+nu D <= A C,       G <= A C,       C<=D,       A<=D.   (712)
+```
+
+The last two inequalities use the nonzero integer frequency gap. They are
+not whole-space inequalities. If an ACTUAL smooth prefix reaches a seam s
+with a=A(s)<nu, a first-exit argument keeps A<nu. With gamma=nu-a>0,
+
+```text
+A(t)<=a exp(-gamma(t-s)),
+integral_s^t D(r)dr <= a/gamma.                         (713)
+```
+
+This also bounds the accumulated velocity-gradient supremum by the same
+finite quantity. Local smooth existence and continuation therefore extend
+this solution for every future time. The reasoning starts at the given
+smooth seam and proves its future bounds; it does not assume a global
+solution in order to define the payment.
+
+For 0<=A<nu put
+
+```text
+R_nu(A)=nu log(nu/(nu-A))-A,
+R_nu(0)=0,       R_nu'(A)=A/(nu-A),       R_nu(A)>=0.
+d/dt R_nu(A(t))+G(t) <= 0.                             (714)
+```
+
+Indeed (712) gives A'<=-(nu-A)D, so the derivative in (714) is at most
+-A D, while G<=A C<=A D. Near zero the reserve is A^2/(2nu)+O(A^3).
+It is finite at any strict seam a<nu and diverges as a approaches nu;
+the threshold cannot be silently replaced by a non-strict inequality.
+This is a Fourier small-state payment, not an arbitrary-data geometric
+coercivity theorem.
+
+Retain the SAME original stochastic pressure impulse
+`P_t=integral_0^t grad p(r,X_r)dr`, and `Phi(t)=E|P_t|^4` used in (679).
+Along every stochastic path, (714) bounds all future increments, regardless
+of their correlation with the original history:
+
+```text
+|P_t-P_s| <= R_nu(A(s))-R_nu(A(t)),
+|P_t|+R_nu(A(t)) <= |P_s|+R_nu(A(s)).                   (715)
+```
+
+Thus `( |P|+R_nu(A) )^4` is an explicit nonnegative Bellman upper reserve
+for the remaining pressure-history observation on this domain. Minkowski
+on the joint path probability space yields
+
+```text
+Phi(t)^(1/4) <= Phi(s)^(1/4)+R_nu(A(s)),
+Phi(t) <= [Phi(s)^(1/4)+R_nu(A(s))]^4,       t>=s.        (716)
+```
+
+There is no restart of P at s, no independent-parent assumption and no
+Gaussian closure. For inherited allowance x and future allowance y, the
+completed fourth power includes `4x^3y+6x^2y^2+4xy^3`. Omitting those
+mixed terms would not preserve the complete observation. Via (679), (716)
+also bounds the retained-energy concentration J and hence the velocity
+fourth norm on the future interval. The direct continuation bound (713)
+is already sufficient in this small-state region.
+
+The role of no external forcing is explicit. If a mean-zero solenoidal
+body force has Fourier norm F(t), (712) gains +F on its right. As long as
+A<nu, the same calculation gives only
+
+```text
+d/dt R_nu(A(t))+G(t) <= A(t) F(t)/(nu-A(t)).             (717)
+```
+
+The force can supply extra resource. For a general non-solenoidal force
+its contribution to the pressure equation must be retained as well;
+(717) is not a statement about all forced constructions. Conversely,
+unforced does not imply small A or establish a paid history before s.
+The actual internal parents are all included in the full velocity in
+(711), rather than supplied as independent controls.
+
+### A future envelope floor without monotonicity
+
+For the unit cyclic seed and viscosity mu, the combined candidate is
+`B_mu(t)=a_mu(t)^2/(a_mu(t)-b_mu(t))`, where
+`a_mu=mu^(-8) F_12(mu t)` and `b_mu=mu^(-10) F_14(mu t)`.
+The earlier exact sign certificates give increasing positive a_mu and
+increasing positive `d_mu=-b_mu`, with finite limiting d_infinity.
+Consequently, for each s>0 and every t>=s,
+
+```text
+B_mu(t) >= L_mu(s),
+L_mu(s)=a_mu(s)^2/(a_mu(s)+d_infinity).                 (718)
+```
+
+For completeness, if x>=y>0 and 0<=d<=D, the numerator of the required
+cross-multiplied difference is
+
+```text
+x^2(y+D)-y^2(x+d)
+ = (x-y)[xy+D(x+y)]+y^2(D-d) >= 0.
+```
+
+This argument does not require B_mu itself to increase. In fact the
+exact exponential coefficients give `B_(1/4)'(12)<0`. At coefficient
+clock3 its derivative has, up to positive factors, the numerator
+
+```text
+F_12 F_12' + 16(F_12 F_14'-2 F_12' F_14) < 0.           (719)
+```
+
+The checker encloses this expression by rational bounds for exp(-3);
+the upper endpoint is strictly negative. Earlier accumulated savings
+therefore matter even when the remaining instantaneous costs are small.
+
+A precise sufficient handoff for the complete candidate is now:
+
+```text
+actual Phi(t)<=B_mu(t) for 0<=t<=s,
+actual A(s)<mu,
+[Phi(s)^(1/4)+R_mu(A(s))]^4 <= L_mu(s).                 (720)
+```
+
+Equations (713), (716), (718) then establish the same candidate for all
+future time, on the same original unforced solution and stochastic
+history. To apply this to an approximate prefix, upper enclosures for
+A(s), Phi(s), and the entire preceding history are required. Sampled
+values or a successful finite-dimensional trajectory do not discharge
+these hypotheses. Different Fourier vector norms and torus conventions
+in existing Lean consumers also require an explicit conversion before
+these numerical constants can be imported.
+
+There is also a deliberately conservative, exact seam box at mu=1/4,
+s=12. Rational exponential bounds in (718) give `L_(1/4)(12)>1647/2000`.
+If actual `A(12)<=1/10` and `Phi(12)<=2/5`, the positive series for
+`-log(1-2/5)` gives `R_(1/4)(A(12))<7/250`, while
+`Phi(12)^(1/4)<4/5`. Hence the completed bound is less than
+`(207/250)^4<4/5<L_(1/4)(12)`. These rational tolerances are certified
+algebraically. Their satisfaction by the actual solution, and the
+candidate on the preceding interval, are separate obligations.
+
+### Exact velocity can conceal a completely missing pressure history
+
+Let m>=2 be an integer and take the actual unforced periodic solution
+
+```text
+U_m=(sin(mx)cos(my), -cos(mx)sin(my), 0),
+u(t)=exp(-2nu m^2 t) U_m,
+p(t)=exp(-4nu m^2 t)[cos(2mx)+cos(2my)]/4.              (721)
+```
+
+Here `U_m.grad U_m+grad p(0)=0` and `Delta U_m=-2m^2 U_m`, so the
+formula solves the complete equation globally. On a grid n=6m with
+retained band `|k_i|<n/3=2m`, every velocity mode is retained, while
+every nonzero pressure-gradient mode lies outside that band. The
+projected history RHS used by the discovery experiment projects grad p
+into this same band. Its first, second and third conditional moments
+remain zero, and it reports `Phi_projected(t)=0` for all time. Its velocity
+is nevertheless the exact solution (721).
+
+For the ACTUAL stochastic impulse, the complete moment equations give
+
+```text
+Phi(t)=integral |grad p(0)|^4 t^4+O(t^5)
+      =(5m^4/64)t^4+O(t^5)>0 for sufficiently small t>0. (722)
+```
+
+All initial moments are zero. Their evolution successively generates
+`I=g_0 t+O(t^2)`, `Q=g_0 tensor g_0 t^2+O(t^3)`,
+`T=|g_0|^2 g_0 t^3+O(t^4)`, giving (722). These expansions include
+positive viscosity; its higher-order terms do not remove the leading
+coefficient. The usual outer-band velocity fraction is exactly zero:
+the velocity frequencies m are below 0.8 times the cutoff 2m. The
+projected moments also have zero outer-band fraction and nonnegative
+covariance. Energy balance, those fractions and covariance positivity
+all fail to detect this lost observation.
+
+This is a counterexample to the sufficiency of those diagnostics, not
+to global regularity or to (666), which uses a different original datum.
+For a fixed datum, resolution refinement eventually retains these modes;
+the example does not assert that the scheme cannot converge. It shows
+why preserving velocity alone does not preserve the required boundary
+history. A reduced interface must retain these hidden channels or bound
+their effect on the actual observation.
+
+The new residual calculation pads the retained fields from n to 2n,
+reconstructs the FULL canonical pressure, and evaluates every nonlinear
+velocity and moment source without projection. Input frequencies have
+`|k_i|<n/3`, and the largest products have three such factors; their
+frequencies therefore fit on the enlarged grid. The identical Fourier
+heat operator cancels from the difference. Grouped L2 and H3 residuals
+use the full Frobenius weight for the symmetric second tensor. A separate
+scalar report checks the integrated fourth-moment rate. That rate can
+agree by orthogonality even when its hidden predecessor equations have
+nonzero residuals.
+
+A Gaussian-rational Fourier fixture checks all complete operator
+coefficients; the FFT implementation agrees to relative error below
+3e-16 in the recorded run. The cellular fixture checks (721)--(722)
+exactly at m=2. The general family argument follows from the displayed
+trigonometric identities. The residual is an instantaneous SPATIAL
+operator discrepancy only. Time-discretization errors and their
+continuum stability amplification still need estimates.
+
+### Extended discovery prefixes and remaining certification
+
+The same unit cyclic datum, original moments and Lawson RK4 scheme give:
+
+| viscosity | grid | time step | final time | final Phi | Phi/B |
+|---|---|---|---|---|---|
+| 0.05 | 32^3 | 0.004 | 4 | 7.81851425125 | 0.04218496775 |
+| 0.05 | 48^3 | 0.004 | 4 | 7.81851449895 | 0.04218496909 |
+| 0.25 | 24^3 | 0.01 | 12 | 0.279586411130 | 0.33944338153 |
+| 0.25 | 32^3 | 0.005 | 12 | 0.279586411151 | 0.33944338155 |
+
+The final low-viscosity scalar comparison changes by 3.2e-8 relatively
+under spatial refinement. At 48^3 its velocity and moment outer-band
+fractions are about 1.3e-7, yet the full spatial H3 residuals at t=4 are
+approximately 0.388, 2.968, 5.797 and 13.349 for velocity, first, second
+and third moments. Their L2 residuals are about 5.1e-5, 3.8e-4, 7.6e-4
+and 1.8e-3. The scalar fourth-rate discrepancy is only 5.3e-16. This
+is a practical instance of the distinction exposed by (721): agreement
+of the scalar observation does not certify the hidden equations.
+
+At viscosity0.25 the combined space/time refinement changes final Phi
+by 7.8e-11 relatively and final A by 1.3e-12 absolutely. On the finer run,
+
+```text
+A(12) approximately 0.07204649208,
+Phi(12) approximately 0.2795864112,
+R_(1/4)(A(12)) approximately 0.01293815620,
+[Phi(12)^(1/4)+R_(1/4)(A(12))]^4 approximately 0.3000222696,
+L_(1/4)(12) approximately 0.8235971293.                 (723)
+```
+
+These values fall within the exact seam tolerances following (720).
+The sampled numerical tail test first succeeds at t=9. At t=12 the
+spatial H3 residuals are at rounding level, below 3.5e-15, but that does
+not enclose the earlier accumulated error. Phi is still increasing
+slightly while B is decreasing: the rates are approximately 3.73e-7
+and -5.87e-6. The favorable value margin has not been replaced by a
+false instantaneous-rate claim. Every sampled value lies below B,
+and sampled covariance and the fourth-versus-second Jensen gap stay
+positive. None of these sampled facts is a continuum certificate.
+
+The next physical obligation is a finite-prefix enclosure reaching the
+seam tolerances and, for the specific candidate, controlling Phi-B over
+the entire preceding interval. The existing analytic initial interval
+handles the vanishing initial margin; a middle-interval argument must
+pay every velocity and moment residual without discarding old memory.
+A successful proof would certify this particular nonlinear history and
+its tail, not arbitrary-data entry. A failed error majorant would show
+that the majorant is inadequate, not that the actual flow violates the
+candidate. The broader signed history budget on R3 and T3 remains open.
+
+Reproduce the new checks from the package directory:
+
+```sh
+python3 -O labs/pressure_history_tail.py
+python3 -O labs/pressure_history_residual.py
+python3 labs/pressure_impulse_envelope.py --prefix --residuals --n 48 --nu .05 --dt .004 --final 4
+python3 labs/pressure_impulse_envelope.py --prefix --residuals --n 32 --nu .25 --dt .005 --final 12
+```
+
+The new reports do not change the discovery integrator or its projected
+RHS. They expose its complete spatial discrepancy and a proposed actual
+history handoff. Exact reserve and cellular algebra, rational exponential
+bounds, comparison of the FFT operator with exact coefficients, numerical
+prefixes and Python compilation passed. No Lean declaration or axiom
+changed; the new PDE arguments have not been checked by Lean.

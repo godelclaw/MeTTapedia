@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-history handoff](labs/README.md#a-finite-pressure-history-handoff-and-a-projection-blind-spot)
+gives an explicit future reserve once an actual mean-zero periodic flow has
+velocity Fourier norm below viscosity, in period-2pi units. It pays the full
+remaining pressure impulse while preserving the original accumulated impulse
+and its mixed fourth-moment costs. Entry and the preceding history still need
+certified bounds. A separate exact cellular example exposes a measurement
+failure: a projection can reproduce the velocity exactly while deleting its
+entire pressure history. The new full spatial residual checks those hidden
+channels. The physical reserve is analytic; the algebraic fixtures and
+numerical discovery prefixes are not new Lean certificates.
+
 The [pressure-parent renewal test](labs/README.md#renewal-beyond-the-first-pressure-generating-parent)
 finds the limit of that extra reserve. Across an unbounded cyclic frequency
 family, the first return into the original pressure-generating field is
