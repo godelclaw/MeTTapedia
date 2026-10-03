@@ -1,0 +1,900 @@
+{
+  "status": "UNTRUSTED_BOUNDED_TRANSFER_PROBE",
+  "source_sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+  "checked_seed_data_sha256": "836fd6ca318d624856fb12c8cfd7af81a5d1798d09a05da0cdf1af3f7c39924a",
+  "retained_seed_states": 41,
+  "acceptance_set": "Direct source extension or a colour permutation of an existing checked seed state.",
+  "symbolic_classes": [
+    {
+      "choices": [
+        false,
+        false,
+        false
+      ],
+      "vertex_word": "13231030202",
+      "canonical_trace": "12212331113",
+      "direct_extension": false,
+      "retained_seed_state": true
+    },
+    {
+      "choices": [
+        false,
+        false,
+        true
+      ],
+      "vertex_word": "13231032020",
+      "canonical_trace": "12212321112",
+      "direct_extension": true,
+      "retained_seed_state": false
+    },
+    {
+      "choices": [
+        false,
+        true,
+        false
+      ],
+      "vertex_word": "13231230202",
+      "canonical_trace": "12213231113",
+      "direct_extension": false,
+      "retained_seed_state": false
+    },
+    {
+      "choices": [
+        false,
+        true,
+        true
+      ],
+      "vertex_word": "13231232020",
+      "canonical_trace": "12213221112",
+      "direct_extension": false,
+      "retained_seed_state": false
+    },
+    {
+      "choices": [
+        true,
+        false,
+        false
+      ],
+      "vertex_word": "13031030202",
+      "canonical_trace": "12213221112",
+      "direct_extension": false,
+      "retained_seed_state": false
+    },
+    {
+      "choices": [
+        true,
+        false,
+        true
+      ],
+      "vertex_word": "13031032020",
+      "canonical_trace": "12213231113",
+      "direct_extension": false,
+      "retained_seed_state": false
+    },
+    {
+      "choices": [
+        true,
+        true,
+        false
+      ],
+      "vertex_word": "13031230202",
+      "canonical_trace": "12212321112",
+      "direct_extension": true,
+      "retained_seed_state": false
+    },
+    {
+      "choices": [
+        true,
+        true,
+        true
+      ],
+      "vertex_word": "13031232020",
+      "canonical_trace": "12212331113",
+      "direct_extension": false,
+      "retained_seed_state": true
+    }
+  ],
+  "uncovered_canonical_classes": [
+    {
+      "word": "12213221112",
+      "rounds": [
+        {
+          "fixed_edge_colour": 1,
+          "active_positions": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            10
+          ],
+          "matching_cases": 5,
+          "failed_cases": 1,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12213221112",
+              "12213231113",
+              "12312221112",
+              "12312231113"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 2,
+          "active_positions": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            9
+          ],
+          "matching_cases": 5,
+          "failed_cases": 2,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12213221112",
+              "12213221332",
+              "12231221112",
+              "12231221332"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 3,
+          "active_positions": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "matching_cases": 42,
+          "failed_cases": 9,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                5
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                6,
+                9
+              ],
+              [
+                7,
+                8
+              ]
+            ],
+            "targets": [
+              "11112331113",
+              "11112331333",
+              "11112333111",
+              "11112333331",
+              "11123121112",
+              "11123121222",
+              "11123122111",
+              "11123122221",
+              "12213221112",
+              "12213221222",
+              "12213222111",
+              "12213222221",
+              "12223121112",
+              "12223121222",
+              "12223122111",
+              "12223122221"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "word": "12213231113",
+      "rounds": [
+        {
+          "fixed_edge_colour": 1,
+          "active_positions": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            10
+          ],
+          "matching_cases": 5,
+          "failed_cases": 1,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12213221112",
+              "12213231113",
+              "12312221112",
+              "12312231113"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 2,
+          "active_positions": [
+            0,
+            3,
+            4,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "matching_cases": 14,
+          "failed_cases": 11,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                7
+              ],
+              [
+                5,
+                6
+              ]
+            ],
+            "targets": [
+              "12211211113",
+              "12211211333",
+              "12211213111",
+              "12211213331",
+              "12213231113",
+              "12213231333",
+              "12213233111",
+              "12213233331"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 3,
+          "active_positions": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            7,
+            8,
+            9
+          ],
+          "matching_cases": 14,
+          "failed_cases": 2,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ]
+            ],
+            "targets": [
+              "12123132113",
+              "12123132223",
+              "12123231113",
+              "12123231223",
+              "12213132113",
+              "12213132223",
+              "12213231113",
+              "12213231223"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "selected_intermediate_tests": [
+    {
+      "word": "12213221112",
+      "rounds": [
+        {
+          "fixed_edge_colour": 1,
+          "active_positions": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            10
+          ],
+          "matching_cases": 5,
+          "failed_cases": 1,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12213221112",
+              "12213231113",
+              "12312221112",
+              "12312231113"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 2,
+          "active_positions": [
+            0,
+            3,
+            4,
+            7,
+            8,
+            9
+          ],
+          "matching_cases": 5,
+          "failed_cases": 2,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12213221112",
+              "12213221332",
+              "12231221112",
+              "12231221332"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 3,
+          "active_positions": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "matching_cases": 42,
+          "failed_cases": 9,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                5
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                6,
+                9
+              ],
+              [
+                7,
+                8
+              ]
+            ],
+            "targets": [
+              "11112331113",
+              "11112331333",
+              "11112333111",
+              "11112333331",
+              "11123121112",
+              "11123121222",
+              "11123122111",
+              "11123122221",
+              "12213221112",
+              "12213221222",
+              "12213222111",
+              "12213222221",
+              "12223121112",
+              "12223121222",
+              "12223122111",
+              "12223122221"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "word": "12213231113",
+      "rounds": [
+        {
+          "fixed_edge_colour": 1,
+          "active_positions": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            10
+          ],
+          "matching_cases": 5,
+          "failed_cases": 1,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12213221112",
+              "12213231113",
+              "12312221112",
+              "12312231113"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 2,
+          "active_positions": [
+            0,
+            3,
+            4,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "matching_cases": 14,
+          "failed_cases": 11,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                7
+              ],
+              [
+                5,
+                6
+              ]
+            ],
+            "targets": [
+              "12211211113",
+              "12211211333",
+              "12211213111",
+              "12211213331",
+              "12213231113",
+              "12213231333",
+              "12213233111",
+              "12213233331"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 3,
+          "active_positions": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            7,
+            8,
+            9
+          ],
+          "matching_cases": 14,
+          "failed_cases": 2,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ]
+            ],
+            "targets": [
+              "12123132113",
+              "12123132223",
+              "12123231113",
+              "12123231223",
+              "12213132113",
+              "12213132223",
+              "12213231113",
+              "12213231223"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "word": "12312221112",
+      "rounds": [
+        {
+          "fixed_edge_colour": 1,
+          "active_positions": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            10
+          ],
+          "matching_cases": 5,
+          "failed_cases": 2,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                5
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            "targets": [
+              "12312221112",
+              "12312331112",
+              "12313221113",
+              "12313331113"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 2,
+          "active_positions": [
+            0,
+            2,
+            3,
+            7,
+            8,
+            9
+          ],
+          "matching_cases": 5,
+          "failed_cases": 5,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12312221112",
+              "12312221332",
+              "12332223112",
+              "12332223332"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 3,
+          "active_positions": [
+            0,
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "matching_cases": 42,
+          "failed_cases": 3,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ],
+              [
+                8,
+                9
+              ]
+            ],
+            "targets": [
+              "11233111113",
+              "11233111131",
+              "11233113313",
+              "11233113331",
+              "11233331113",
+              "11233331131",
+              "11233333313",
+              "11233333331",
+              "12312111112",
+              "12312111121",
+              "12312112212",
+              "12312112221",
+              "12312221112",
+              "12312221121",
+              "12312222212",
+              "12312222221"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "word": "12312231113",
+      "rounds": [
+        {
+          "fixed_edge_colour": 1,
+          "active_positions": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            10
+          ],
+          "matching_cases": 5,
+          "failed_cases": 1,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                3
+              ],
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "targets": [
+              "12213221112",
+              "12213231113",
+              "12312221112",
+              "12312231113"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 2,
+          "active_positions": [
+            0,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "matching_cases": 14,
+          "failed_cases": 14,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ]
+            ],
+            "targets": [
+              "12312231113",
+              "12312231131",
+              "12312233313",
+              "12312233331",
+              "12332211113",
+              "12332211131",
+              "12332213313",
+              "12332213331"
+            ]
+          }
+        },
+        {
+          "fixed_edge_colour": 3,
+          "active_positions": [
+            0,
+            1,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9
+          ],
+          "matching_cases": 14,
+          "failed_cases": 14,
+          "first_failure": {
+            "pairs_on_active_slots": [
+              [
+                0,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                4,
+                5
+              ],
+              [
+                6,
+                7
+              ]
+            ],
+            "targets": [
+              "12312132113",
+              "12312132223",
+              "12312231113",
+              "12312231223",
+              "12321132113",
+              "12321132223",
+              "12321231113",
+              "12321231223"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "No claim that the failed unsigned matching is realized by a planar exterior.",
+    "Does not exclude longer or differently chosen mixed-pair strategies.",
+    "Does not refute D0092 reducibility, compact family repair, or compositional proofs.",
+    "No new repair data, Lean theorem, or catalogue saving."
+  ],
+  "word_encoding": "Ordered colour digits; no port or edge is omitted."
+}

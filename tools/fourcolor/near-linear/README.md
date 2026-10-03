@@ -50,6 +50,34 @@ cd lean/fourcolor-classical
 lake build MettapediaFourColor.ThreeBlockExteriorAudit
 ```
 
+### Bounded test of repair reuse
+
+[The transfer probe](probe_three_block_seed_transfer.py) reads the existing
+41 checked seed states, pinned by their source hash. It adds no repair
+records. Of the eight symbolic three-run boundary words, two extend
+directly and two are colour permutations of the seed. Four remain outside
+both sets, representing two edge-trace classes modulo colour permutation.
+
+For each remaining class and each fixed edge colour, the probe tests every
+noncrossing matching and every subset of whole chords. Each fixed colour
+has a matching for which no answer reaches direct extension or a retained
+seed state. The first failed matching for fixed colour 1 exposes the same
+four-state set for both classes. None of those four states has a one-round
+transfer into the accepted set. Direct extension is checked independently
+by relational elimination and backtracking over the seven core vertices.
+
+These are bounded program results. A failed unsigned matching has not been
+realized by a planar exterior; the result does not rule out a longer or
+differently chosen mixed-pair repair. It identifies a limitation of immediate
+reuse, not an obstruction to D0092 reducibility or compact composition.
+The [record](three-block-seed-transfer-probe.json) includes failed matchings
+and all their answer traces.
+
+```sh
+python3 tools/fourcolor/near-linear/probe_three_block_seed_transfer.py \
+  --output three-block-seed-transfer-probe.json
+```
+
 ## Uniform boundary and complete stars after core deletion
 
 [ThreeBlockDiskDeletion](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockDiskDeletion.lean)
