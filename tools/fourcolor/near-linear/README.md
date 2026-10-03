@@ -1,5 +1,55 @@
 # Near-linear Four Colour catalogue bridges
 
+## Ambient geometry now supplies the complete deletion contract
+
+[ThreeBlockExteriorPlanar](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockExteriorPlanar.lean)
+proves that an injective full D0092 core reading in a connected planar
+triangular rotation supplies a connected planar exterior, with the ordered
+eleven-port facial boundary and triangular remaining faces. These exterior
+properties are conclusions. The ambient graph has no size bound.
+
+The argument preserves actual graph darts. An affected retained face step
+must belong to the specified boundary; every other triangular face survives
+unchanged. Every surviving neighbour of the deleted core is a boundary
+port, so the retained boundary connects all attachments. A bijection with
+source darts counts exactly seven vertices and 29 edges removed. The
+Gonthier/Emery Euler formulas then establish exterior planarity.
+
+```text
+connected planar triangulation + injective full cyclic core reading
+                              |
+                delete seven vertices and 29 edges
+                              |
+      connected planar exterior + ordered eleven-port boundary
+                              |
+               closed joint boundary colouring relation
+                              |
+      existing seed repair -> compatible ambient colouring
+```
+
+`repair_of_ambient` consumes this geometry in the existing compact seed
+repair. It reconstructs every deleted vertex and agrees with the chosen
+repaired exterior on every retained vertex. It still requires an initial
+exterior colouring in the specified seed class. The geometry and closure
+theorems themselves have no colouring or repair premise.
+
+[The concrete source cone](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockExteriorPlanarExample.lean)
+has 19 vertices and 51 edges; the theorem supplies its 12-vertex, 22-edge
+exterior. This checks that the geometric hypotheses are inhabited. It
+does not assert that this example supplies the specified seed colouring.
+
+The remaining local obligation is repair for the other necessary boundary
+classes. Occurrence supply and universal coverage remain separate open
+obligations. No new repair table is added, and no catalogue removal or
+whole-proof kernel saving is credited. The
+[receipt](three-block-exterior-measurements.json) records the dependency
+audit and module costs.
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.ThreeBlockExteriorAudit
+```
+
 ## Uniform boundary and complete stars after core deletion
 
 [ThreeBlockDiskDeletion](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockDiskDeletion.lean)
@@ -24,7 +74,7 @@ injective source + complete cyclic core turns + triangular faces
                               |
        actual induced graph + exact ordered facial boundary
                               |
-       planar exterior + triangular remaining faces [OPEN]
+       planar exterior + triangular remaining faces
                               |
               existing seed repair and reconstruction
 ```
@@ -34,7 +84,8 @@ uses these results to discharge exterior coverage, complete stars, vertex
 cyclicity, boundary order and boundary distinctness. It also derives the
 exact seven-vertex decrease using the existing counting theorem. Exterior
 planarity, triangular remaining faces and the specified initial seed
-colouring remain explicit inputs. This is a uniform geometric step for
+colouring are explicit inputs of this intermediate consumer. The newer
+ambient theorem above supplies both exterior geometry inputs. This remains
 one source shape, not full D0092 reducibility or a new coverage theorem.
 
 A 19-vertex source cone supplies a checked instance of the complete core

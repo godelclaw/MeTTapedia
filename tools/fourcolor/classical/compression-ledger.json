@@ -5511,5 +5511,58 @@
     "new_original_certificate_dependencies_removed": 0,
     "new_member_checks_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "three_block_exterior_geometry": {
+    "measurements": "../near-linear/three-block-exterior-measurements.json",
+    "classification": "CHECKED_UNIFORM_EXTERIOR_GEOMETRY_AND_SEED_RECONSTRUCTION",
+    "scope": {
+      "input": "A finite connected simple graph with a planar triangular vertexwise-cyclic rotation, and an injective full cyclic D0092 core reading.",
+      "remaining_faces": "Every retained dart off the proved boundary keeps its original triangular face under first return. No planarity is needed for this conclusion.",
+      "connectedness": "Every exterior attachment to the deleted core is a boundary port; the retained boundary bypasses core excursions in ambient paths.",
+      "counts": "Exactly seven vertices and 58 darts (29 undirected edges) are removed. The removed-dart correspondence is a proved bijection.",
+      "planarity": "Gonthier/Emery cubic and quasicubic Euler formulas, connectedness and exact counts establish planarity of the actual induced rotation.",
+      "closure": "The actual exterior joint boundary relation is Kempe-closed, without a seed colouring or repair premise.",
+      "reconstruction": "repair_of_ambient supplies every exterior geometry hypothesis to the existing seed repair and reconstructs a colouring on the original graph, agreeing with the selected repaired exterior at every retained vertex.",
+      "example": {
+        "ambient_vertices": 19,
+        "ambient_darts": 102,
+        "exterior_vertices": 12,
+        "exterior_darts": 44,
+        "boundary_ports": 11,
+        "seed_colouring_supplied": false
+      },
+      "limitations": [
+        "The reconstruction theorem still requires an exterior colouring in the specified seed class.",
+        "Remaining boundary classes, full core-reading occurrence supply and universal coverage remain open.",
+        "This is not full D0092 reducibility or an unconditional strict reduction from an arbitrary exterior colouring.",
+        "No physical Kempe-switch history or runtime bound is established."
+      ]
+    },
+    "audit": {
+      "roots": 15,
+      "dependency_declarations": 12786,
+      "allowed_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "complete_four_colour_theorem_used": false,
+      "large_repair_tables_used": false,
+      "repair_certificates_in_geometry_roots": false,
+      "retained_seed_certificate": "residual-seed-repair-measurements.json",
+      "required_dependencies": [
+        "Actual retained face-step inclusion",
+        "Complete core stars",
+        "Boundary bypass connectedness",
+        "Removed-dart bijection",
+        "Gonthier/Emery cubic and quasicubic Euler formulas",
+        "Existing compact seed repair and actual ambient reconstruction"
+      ]
+    },
+    "new_repair_certificate_bytes": 0,
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

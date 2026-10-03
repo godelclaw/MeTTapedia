@@ -1,0 +1,140 @@
+{
+  "classification": "CHECKED_UNIFORM_EXTERIOR_GEOMETRY_AND_SEED_RECONSTRUCTION",
+  "source": {
+    "configuration": "D0092",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "attribution": "Yuta Inoue, 2026; MIT",
+    "decoder": "MettapediaFourColor.FiveTriangleCollapseObstruction.upper"
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.InducedGraphFaces",
+      "source_bytes": 1195,
+      "source_sha256": "62a88f961ea0f2dbdbf8b0c3ba134ee4c4ab61c0b2db90d22153b2b0a08ae3f0",
+      "olean_bytes": 49752,
+      "olean_sha256": "c868d08c982ed7dc561d0621af06fcf2e10223c4b9aadacdbdc1b4642d0ea082",
+      "build_frontend_seconds_rounded": 3.9
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockRemainingFaces",
+      "source_bytes": 4720,
+      "source_sha256": "80aae8e60bb630203f7db7c5a95e4cd6b45bc51ec1a6df4f5b4ea1f34f79398c",
+      "olean_bytes": 163736,
+      "olean_sha256": "a065eda521f9cd1e87d5cf3c27232247654dfe27060b8dff03f9e6456ba13d24",
+      "build_frontend_seconds_rounded": 6.7
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockExteriorConnected",
+      "source_bytes": 3371,
+      "source_sha256": "f180525cad5b9ae7c5ae050fe432f88bfe3dde36350e75f4be007286a65d7b92",
+      "olean_bytes": 117112,
+      "olean_sha256": "8b7fcfc55109b459418d5196e8624710c45571f3939682154ed9e522ece085c0",
+      "build_frontend_seconds_rounded": 3.6
+    },
+    {
+      "module": "MettapediaFourColor.GraphTriangulationEuler",
+      "source_bytes": 2388,
+      "source_sha256": "29934211c9e29a4d7e1844f9ebe7c21412ddf719c361c49def91170ec3a30510",
+      "olean_bytes": 44656,
+      "olean_sha256": "c10bc11c4a423666519dc6cd4c1db47ade53e7b3620dbabfbf2389e742352b77",
+      "build_frontend_seconds_rounded": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDeletionCount",
+      "source_bytes": 3689,
+      "source_sha256": "520a1ef2b3c865833f3afcb6b976ddc40472ee817de1392a3dfc669f2ff02273",
+      "olean_bytes": 152272,
+      "olean_sha256": "c9018186cada4d40f66c800c1c9ebd31415859a60bf5954ff990faaf6d5b3ad4",
+      "build_frontend_seconds_rounded": 4.6
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockExteriorPlanar",
+      "source_bytes": 3382,
+      "source_sha256": "7e23b89ec7f90a1867a634260b5db8e29c9fe34b765b5353fd28f0d9f66537a0",
+      "olean_bytes": 111744,
+      "olean_sha256": "7b1775184ba0dfef06fffc29210aa33f6495f14f2f5498b44bca23e131875e1f",
+      "build_frontend_seconds_rounded": 2.0
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockExteriorPlanarExample",
+      "source_bytes": 2441,
+      "source_sha256": "cb52f11f473517c85881088a6c0ff9e12eaded05a2d22899e4c8fecef205c963",
+      "olean_bytes": 83664,
+      "olean_sha256": "e4dab47062b4a415ae668711cf353add50fcb4aa4ff03d477d2ab07de2aff8a2",
+      "build_frontend_seconds_rounded": 5.3
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockExteriorAudit",
+      "source_bytes": 3969,
+      "source_sha256": "8729c8371ec882affa845f6514269397a56180b8071c4a0f5c754051ac891bce",
+      "olean_bytes": 3232,
+      "olean_sha256": "bfeaa72afde17af5084ba92ffe8a62c3ebd265733c0115c6c251c32b29e4aa30",
+      "build_frontend_seconds_rounded": 6.6
+    }
+  ],
+  "new_lean_source_bytes": 25155,
+  "new_repair_certificate_bytes": 0,
+  "cost_scope": "Rounded Lake frontend times for the final successful individual modules across incremental builds. Not a clean end-to-end time or a saving in the complete classical proof.",
+  "mathematical_scope": {
+    "input": "A finite connected simple graph with a planar triangular vertexwise-cyclic rotation, and an injective full cyclic D0092 core reading.",
+    "remaining_faces": "Every retained dart off the proved boundary keeps its original triangular face under first return. No planarity is needed for this conclusion.",
+    "connectedness": "Every exterior attachment to the deleted core is a boundary port; the retained boundary bypasses core excursions in ambient paths.",
+    "counts": "Exactly seven vertices and 58 darts (29 undirected edges) are removed. The removed-dart correspondence is a proved bijection.",
+    "planarity": "Gonthier/Emery cubic and quasicubic Euler formulas, connectedness and exact counts establish planarity of the actual induced rotation.",
+    "closure": "The actual exterior joint boundary relation is Kempe-closed, without a seed colouring or repair premise.",
+    "reconstruction": "repair_of_ambient supplies every exterior geometry hypothesis to the existing seed repair and reconstructs a colouring on the original graph, agreeing with the selected repaired exterior at every retained vertex.",
+    "example": {
+      "ambient_vertices": 19,
+      "ambient_darts": 102,
+      "exterior_vertices": 12,
+      "exterior_darts": 44,
+      "boundary_ports": 11,
+      "seed_colouring_supplied": false
+    },
+    "limitations": [
+      "The reconstruction theorem still requires an exterior colouring in the specified seed class.",
+      "Remaining boundary classes, full core-reading occurrence supply and universal coverage remain open.",
+      "This is not full D0092 reducibility or an unconditional strict reduction from an arbitrary exterior colouring.",
+      "No physical Kempe-switch history or runtime bound is established."
+    ]
+  },
+  "audit": {
+    "roots": 15,
+    "dependency_declarations": 12786,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false,
+    "repair_certificates_in_geometry_roots": false,
+    "retained_seed_certificate": "residual-seed-repair-measurements.json",
+    "required_dependencies": [
+      "Actual retained face-step inclusion",
+      "Complete core stars",
+      "Boundary bypass connectedness",
+      "Removed-dart bijection",
+      "Gonthier/Emery cubic and quasicubic Euler formulas",
+      "Existing compact seed repair and actual ambient reconstruction"
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.ThreeBlockExteriorAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  }
+}
