@@ -16,6 +16,21 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay exact charge with high-neighbour boundary transfers retained. -/
+target kernelPuncturedCharge pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/punctured-charge",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "PuncturedCyclicCharge", "PuncturedPairCharge",
+        "PuncturedChargeExample", "PuncturedChargeAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay a tripod reduction supplied by joint source-rule matches. -/
 target kernelJointTripodRules pkg : Unit := do
   let env ← getAugmentedEnv
@@ -347,7 +362,8 @@ target kernelExactCyclicCharge pkg : Unit := do
         "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
         "--package", ".", "--output", ".lake/exact-cyclic-charge-audit",
         "--library-output", ".lake/build/lib/lean", "--modules",
-        "ExactCyclicCharge", "ExactFanResidual", "ExactChargeExample", "ExactChargeAudit"]
+        "LocalCyclicRules", "ExactCyclicCharge", "ExactFanResidual",
+        "ExactChargeExample", "ExactChargeAudit"]
       cwd := pkg.dir
       env := env }
 

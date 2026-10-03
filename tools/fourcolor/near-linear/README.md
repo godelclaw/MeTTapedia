@@ -52,6 +52,31 @@ it checks all source core edges, corners and ambient degrees. It does
 not assert the full flat-neighbourhood hypothesis. Replay with
 `python3 tools/fourcolor/near-linear/audit_rule_fan_tripod.py`.
 
+The [exact high-boundary receipt](punctured-charge-measurements.json)
+extends the cyclic rule formula to a high receiver with high neighbours.
+Low-edge contributions retain the actual adjacent degree guards; all high
+transfers remain signed boundary observations. For the actual retained
+flat-seven pair, the first low budget plus its unique high-edge input is
+ten. With no other high neighbours at either end, the two low budgets sum
+to twenty by cancellation of that same edge. The second centre's additional
+high neighbours otherwise remain explicit. The same local rule equivalence
+turns a `5–6–6–5` rim segment into the three tripod matches whenever the
+intermediate outer tip has degree five, excluding this tip in a minimal map.
+Replay `lake build kernelExactCyclicCharge` first, then
+`lake build kernelPuncturedCharge`. The concrete Lean instances keep their
+exact executable sums symbolic; their numerical values are program evidence.
+
+The [finite boundary audit](punctured-charge-audit.json) compares two source
+matchers on 235 low-to-high edges at 47 receivers. In its retained flat
+pair, the first low budget is twelve and it exports two units to the second;
+the second low budget is nine and it exports one further unit to another
+high vertex. Thus the combined low budget is twenty-one, with external
+boundary contribution minus one. Only the selected pair is asserted flat;
+this fixture does not satisfy the full original flat-ball hypothesis.
+Replay `python3 tools/fourcolor/near-linear/audit_punctured_charge.py`.
+This establishes exact accounting and a local forbidden pattern, leaving
+joint geometric classification and catalogue compression open.
+
 The [joint-rule receipt](joint-tripod-rules-measurements.json) records a
 second recognition law: `002_1` and `003_1` on one six-to-seven dart,
 together with `002_2` on its rotation-determined adjacent dart, force the

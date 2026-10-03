@@ -185,6 +185,26 @@ counts stay at 633 coverage entries /629 original certificates. Replay
 `lake build kernelWheelEmbedding`; see the
 [geometry receipt](../../tools/fourcolor/near-linear/wheel-embedding-measurements.json).
 
+The [guarded local rule law](MettapediaFourColor/LocalCyclicRules.lean)
+now extends that accounting to high receivers that have high neighbours.
+Each outer-tip contribution retains both adjacent low-degree guards.
+The [exact formula](MettapediaFourColor/PuncturedCyclicCharge.lean) separates
+the low-neighbour budget from the signed high-edge boundary; it does not
+choose incoming and outgoing transfers independently. Applied to the
+[retained flat-seven pair](MettapediaFourColor/PuncturedPairCharge.lean),
+the first budget plus its one high-edge transfer equals ten. If that edge
+is the only high edge at both ends, the shared transfer cancels and the
+two low budgets sum to twenty. Further high neighbours stay in the boundary.
+The same local source law constructs the tripod rule matches directly
+from a consecutive `5–6–6–5` neighbour segment at a seven: its outer tip
+between the two sixes cannot have degree five in a minimal counterexample.
+The full flat-pair classification remains open. See the
+[receipt](../../tools/fourcolor/near-linear/punctured-charge-measurements.json).
+Replay `lake build kernelExactCyclicCharge` first, checking the shared local
+law and the earlier consumers, then `lake build kernelPuncturedCharge`.
+The two finite Lean examples retain their executable rule sums symbolically;
+their numerical charges are separate program checks.
+
 The [exact cyclic charge law](MettapediaFourColor/ExactCyclicCharge.lean)
 now accounts for every transfer at a receiver of degree `d >= 7` with only
 five- and six-valent neighbours:

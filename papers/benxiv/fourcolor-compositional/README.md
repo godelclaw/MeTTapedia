@@ -42,6 +42,23 @@ flat-neighbourhood classification still has to show that its residual
 cases violate this or another proved constraint. The classical coverage
 count is unchanged.
 
+The [next exact identity](../../../lean/fourcolor-classical/MettapediaFourColor/PuncturedCyclicCharge.lean)
+retains the high-neighbour boundary of this charge calculation. Low
+neighbours can be accounted for locally, provided each tip retains its
+adjacent degree guards. Transfers between high vertices stay signed.
+When two views are joined, their shared transfer cancels; any additional
+high-neighbour input remains visible. In particular, two flat sevens
+whose only high edge joins them have combined low budget twenty.
+The [actual-map consumer](../../../lean/fourcolor-classical/MettapediaFourColor/PuncturedPairCharge.lean)
+also derives the preceding tripod constraint directly from a consecutive
+`5–6–6–5` neighbour segment: a degree-five outer tip between the sixes
+would supply the full reducible tripod. This is a local constraint for the
+joint classification, not yet its closing theorem. The remaining task is
+to show that every residual flat pair, path or triangle violates some
+proved constraint while retaining its genuine shared boundary. The
+[receipt](../../../tools/fourcolor/near-linear/punctured-charge-measurements.json)
+separates these Lean laws from finite tests and unchanged coverage counts.
+
 The next joint-neighbourhood test has identified two concrete four-triangle
 cores, the D0051 fan and D0052 tripod. One
 [Lean geometry proof](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCore.lean)

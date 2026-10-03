@@ -90,7 +90,7 @@
   "audit": {
     "status": "passed",
     "roots": 13,
-    "dependency_declarations": 34946,
+    "dependency_declarations": 34979,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -139,18 +139,26 @@
     "completed": true,
     "modules": [
       {
-        "module": "MettapediaFourColor.ExactCyclicCharge",
-        "source_sha256": "aa202eef1c78702d6c9253d7e0f70e10bf57a9e9b84337c809f3ce53db792821",
+        "module": "MettapediaFourColor.LocalCyclicRules",
+        "source_sha256": "e00b942e67956dde5dfe2c5f4000a740779163720cc58bfbcc89927fcc035021",
         "exit_code": 0,
-        "frontend_wall_seconds": 109.074,
-        "olean_bytes": 987488,
-        "olean_sha256": "b7bab5452ed2ac8b364dbbf3cb938d30790ef7ba89e2e944ba559177b4d99e43"
+        "frontend_wall_seconds": 11.043,
+        "olean_bytes": 359656,
+        "olean_sha256": "5a4547dd5afd4df9ef2ff4c142a3ef95dcf7e732bff12e0f6fa2d6418811cab1"
+      },
+      {
+        "module": "MettapediaFourColor.ExactCyclicCharge",
+        "source_sha256": "83aaf39bb4bb7c43e9ffb6061840df2d640340e24fba530b8f3dbcda09a7b0a9",
+        "exit_code": 0,
+        "frontend_wall_seconds": 112.39,
+        "olean_bytes": 787776,
+        "olean_sha256": "072d4f5789df8d1f248fd3c9bc5517196d492ad8866b695da7690f4e01358e13"
       },
       {
         "module": "MettapediaFourColor.ExactFanResidual",
         "source_sha256": "4a856715b60d62c899246e20dbb7d0ca99730decefff36847cc9dd8901719f3d",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.214,
+        "frontend_wall_seconds": 5.523,
         "olean_bytes": 76576,
         "olean_sha256": "d710c0cc847e8cb96fe9a3b4902e87d5e458f3f5b187eceb61316dd242a43b04"
       },
@@ -158,7 +166,7 @@
         "module": "MettapediaFourColor.ExactChargeExample",
         "source_sha256": "5e94231dbef9ce72f0975840a66f4d65b08e38425d189d8816148ac9c6e0eb1a",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.242,
+        "frontend_wall_seconds": 4.143,
         "olean_bytes": 40072,
         "olean_sha256": "14b564f1082cf936b29241c1aabfd7c158c972ab3a94af8f421af6a1f08e336e"
       },
@@ -166,7 +174,7 @@
         "module": "MettapediaFourColor.ExactChargeAudit",
         "source_sha256": "92bc802fee5f938a8272e9800cbefb39f9695103863d6efc365e4052a375dc48",
         "exit_code": 0,
-        "frontend_wall_seconds": 8.728,
+        "frontend_wall_seconds": 7.836,
         "olean_bytes": 2600,
         "olean_sha256": "9d42a5214986c24531f2f3051a5ccb3ff0d2d77d4366c0d7b6d94c94f0f29eef"
       }
@@ -175,5 +183,10 @@
   "regressions": {
     "kernelComplete": "passed",
     "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint": "passed (11195 jobs)"
+  },
+  "local_rule_refactor": {
+    "shared_module": "LocalCyclicRules",
+    "scope": "The original all-low-neighbour theorem now consumes the guarded local equivalences also used by PuncturedCyclicCharge; its statement is unchanged.",
+    "regression": "kernelExactCyclicCharge kernelComplete"
   }
 }

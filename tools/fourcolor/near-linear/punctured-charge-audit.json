@@ -1,0 +1,72 @@
+{
+  "evidence": "Independent finite source-rule and spherical checks.",
+  "fixture_sha256": "5639ca17d0eb311814d4c183c7c034bc0a0ee7b14020df6b510b56d352f3bf75",
+  "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+  "low_edge_tests": 235,
+  "high_receivers": 47,
+  "independent_rule_tests": 47376,
+  "selected_profiles": [
+    {
+      "vertex": 39,
+      "degree": 7,
+      "low_budget": 12,
+      "high_boundary": [
+        [
+          90,
+          -2
+        ]
+      ],
+      "final_charge": 0
+    },
+    {
+      "vertex": 90,
+      "degree": 7,
+      "low_budget": 9,
+      "high_boundary": [
+        [
+          39,
+          2
+        ],
+        [
+          89,
+          -1
+        ]
+      ],
+      "final_charge": 0
+    }
+  ],
+  "paired_low_budget": 21,
+  "internal_high_exchange": 0,
+  "external_high_exchange": -1,
+  "paired_deficit": 20,
+  "sphere_obstructing_cycles": 0,
+  "scope": "The pair is flat, but the full original radius-three ball is not asserted flat.",
+  "chain_fixture_sha256": "d3d58d333640673262c768565f6db02b4c966c20d4560449917df780caaf0b20",
+  "chain_independent_rule_tests": 2352,
+  "chain_examples": [
+    {
+      "root": [
+        107,
+        104
+      ],
+      "low_budget": 13,
+      "incoming": 3,
+      "outgoing": 1,
+      "net": 2,
+      "final_charge": 5
+    },
+    {
+      "root": [
+        41,
+        32
+      ],
+      "low_budget": 13,
+      "incoming": 0,
+      "outgoing": 2,
+      "net": -2,
+      "final_charge": 1
+    }
+  ],
+  "chain_evidence": "Numerical rule sums are program checks; Lean retains them symbolically.",
+  "verifier_sha256": "2f15e6d5b25a492581a676fe6102a150ada697904dd9efb02f908601f27a36d4"
+}
