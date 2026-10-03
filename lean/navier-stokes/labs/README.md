@@ -31470,3 +31470,245 @@ amplitude/viscosity polynomial families, exact radical signs, the two
 return contributions, independent pressure jets and the shared initial
 resources. These algebraic checks support the analytic local comparison;
 no Lean declaration or axiom changes.
+
+## Actual quartet phase dynamics and a paid observation history
+
+The two returns in (515) differ in their joint phase. To test whether the
+actual dynamics automatically align the parents toward the depleting
+configuration, keep the same four wavevectors and polarizations as (513)
+but allow any `zeta=exp(i theta0)`. The calculation below retains every
+generated mode and the canonical pressure. It gives both a favorable
+amplitude effect and a failure of automatic favorable angular motion.
+A separate estimate then pays a fixed quartet's complete observation
+history for arbitrary unforced periodic flows, using the existing full
+energy identity.
+
+### Actual coefficients and their first nonlinear return
+
+For any actual velocity field, define alpha_p as the coefficient of the
+orthogonal projection of its p Fourier coefficient onto A/2, and similarly
+use B/2, RA/2 and RB/2 at q,Rp,Rq. These four complex observations do not
+discard any modes from the evolving PDE. At the family datum their values
+are `a,b,a*zeta,b`. Their product
+
+```text
+Q=alpha_p alpha_q conjugate(alpha_Rp alpha_Rq),
+theta=-arg(Q), theta(0)=theta0,                    (519)
+```
+
+uses a continuous local branch when `ab!=0`. It is invariant under spatial
+translation. In the following initial derivatives, theta means theta0.
+All first nonlinear parent sources vanish at this datum. Consequently
+`alpha_j'(0)/alpha_j(0)=-nu |k_j|^2` and `theta'(0)=0`.
+
+Put `ell_j=(log alpha_j)''(0)`. The exact full return is
+
+```text
+ell_p/b^2 = -3392375616/307681
+                   +(599616+2279700i) zeta/337,
+ell_q/a^2 =  1689009840/307681
+                   +(12960-2217960i) zeta/337,
+ell_Rp=conjugate(ell_p), ell_Rq=conjugate(ell_q).    (520)
+```
+
+These identities hold for all nonzero real a,b, all unit phases and all
+positive viscosities. They are Laurent polynomial identities in zeta and
+ordinary polynomial identities in a,b. The viscosity terms cancel from
+the logarithmic second derivatives: the second velocity jet consists of
+the original heat curvature, terms supported on two-parent outputs, and
+the full cubic return `N'(U)N(U)`. None of the two-parent outputs is an
+original mode. Subtracting `(alpha_j'/alpha_j)^2` removes the heat curvature.
+No inviscid evolution is substituted for the physical viscous solution.
+
+In particular the actual joint angle satisfies
+
+```text
+theta''(0)=[(4435920 a^2-4559400 b^2) cos(theta)
+                 -(25920 a^2+1199232 b^2) sin(theta)]/337.  (521)
+```
+
+The sign depends on the amplitude ratio as well as the phase.
+
+### A favorable parent loss, but not automatic favorable alignment
+
+The real part of the high-parent logarithmic curvature is
+
+```text
+Re ell_p = b^2 [-3392375616+547449408 cos(theta)
+                              -2081366100 sin(theta)]/307681
+          <= -763560108 b^2/307681 < 0.             (522)
+```
+
+Let E_high(t) count the full velocity energy at the four modes
+`+/-p,+/-Rp`, including any subsequently generated polarization there.
+For every fixed datum in this family and every fixed nu>0, actual smooth
+local NS gives
+
+```text
+E_high(t)-800a^2 exp(-800nu t)
+   =800a^2 Re(ell_p) t^2+O(t^3)<0                 (523)
+```
+
+for sufficiently small positive t. Thus the original higher-frequency
+parents initially supply energy beyond their own heat loss for EVERY
+phase, including phases which increase the critical production relative
+to its first forecast. The finite remainder follows from smooth local
+existence. The interval is not uniform over all amplitudes and viscosities.
+Later refeeding from other modes is retained in the equation and is not
+excluded by (523).
+
+The corresponding angular-descent shortcut fails. Let C(a,b,theta) be
+the complete fourth-order coefficient defined by (516), allowing a unit
+phase. It is a degree-six translation-invariant polynomial in the initial
+coefficients. The only primitive relation among the four positive input
+wavevectors is `p+q-Rp-Rq=0`. A phase harmonic of order n needs at least
+`4|n|` input factors, so
+
+```text
+C(a,b,theta)=C0(a,b)+Cc(a,b)cos(theta)+Cs(a,b)sin(theta).
+```
+
+This also rules out odd-degree zero-frequency contractions and justifies
+the cancellation of viscosity-dependent return terms for every phase,
+as in (515). For `a=2,b=1,theta=0`, exact computation gives
+
+```text
+theta''(0)=13184280/337>0,
+partial_theta C(2,1,0)
+   =[C(2,1,pi/2)-C(2,1,-pi/2)]/2 > 9*10^11.      (524)
+```
+
+The angular component of the actual return therefore moves toward a
+larger production coefficient at this datum. This refutes the proposed
+universal descent sign `theta'' partial_theta C<=0`. It does not freeze
+the amplitudes or assert that C evaluated on the complete evolving field
+obeys a closed angular equation. The favorable amplitude effect (522)
+is present at the same time. Their joint history must be analyzed.
+
+### A full-history reserve for a fixed quartet
+
+Now allow ANY smooth mean-zero unforced NS prefix on the normalized
+2*pi torus. The observations in (519) remain fixed; the velocity need
+not lie in the four-parent family. Write `n_j` for the corresponding
+linear observation of the COMPLETE nonlinear source N(u). Then
+
+```text
+alpha_j'=-nu |k_j|^2 alpha_j+n_j,
+Q'+nu kappa Q=F, kappa=sum_j |k_j|^2,              (525)
+```
+
+where F is the sum of four product-rule terms, replacing each alpha by
+its n and conjugating in the last two slots. It includes all modes of
+the surrounding fluid and their pressure-projected interactions.
+
+For a general fixed resonant quartet of nonzero modes, let s_j be the norm
+of its scalar coefficient observation. With `E=||u||_2^2`,
+`Z=||grad u||_2^2`, incompressibility,
+the norm-one Leray projection and Fourier Cauchy--Schwarz give
+
+```text
+|N(u)_k|<=|k| sum_p |u_p| |u_(k-p)|<=|k| E,
+|alpha_j|<=s_j sqrt(E), |n_j|<=s_j |k_j| E,
+|F|<=K E^(5/2), K=(product_j s_j) sum_j |k_j|.     (526)
+```
+
+This is the same full-energy Fourier estimate used in (274), here applied
+to the actual joint phase source rather than to an autonomous model of
+the original parents. The nonlinear source is not a freely specified force.
+
+The actual energy identity and the mean-zero Poincare inequality give
+`E'=-2nu Z`, `Z>=E`. Hence the nonnegative reserve
+
+```text
+R=K E^(5/2)/(5nu),
+R'=-K E^(3/2) Z <=-K E^(5/2)<=-|F|.               (527)
+```
+
+To count angular changes without dividing by a vanishing amplitude, define
+`q=|Im(conjugate(Q)F)|/|Q|` when Q is nonzero and q=0 otherwise.
+Where the phase is defined, `q=|Q| |theta'|`; always `q<=|F|`.
+The absolutely continuous modulus satisfies
+`(|Q|)'+nu kappa |Q|<=|F|` almost everywhere. Therefore
+
+```text
+S=|Q|+2R>=0,
+S'+nu kappa |Q|+q<=0,
+S(t)+integral_0^t [nu kappa |Q|+q] <= S(0).        (528)
+```
+
+This pays both maintenance against viscosity and the weighted absolute
+phase motion on EVERY available prefix from the original datum, uniformly
+over the horizon. It remains valid through zeros of Q; it does not bound
+unweighted winding near such zeros. Adjacent compatible segments use the
+same intermediate E,Q and telescope, without a new allowance at a seam.
+For the observations in (519), `s_j=sqrt(2)/|k_j|`, so
+
+```text
+kappa=1250, K=7/2250,
+S(0)=|Q(0)|+7 E0^(5/2)/(5625nu).                  (529)
+```
+
+A constant spatial mean can be removed by a Galilean change of coordinates.
+Its four advection phases cancel in Q because `p+q=Rp+Rq`; the same bound
+then uses the kinetic energy relative to that conserved mean.
+
+For a prescribed threshold `q_star>0`, this gives two useful consequences
+for actual histories. The total time with `|Q|>=q_star` is at most
+`S(0)/(nu kappa q_star)`. If N disjoint intervals each contain a complete
+phase turn, and `|Q|>=q_star` throughout those intervals, then
+
+```text
+2pi q_star N <= integral q <= S(0).                (530)
+```
+
+Thus the initial reserve bounds the number of these sustained, fixed-scale
+phase cycles, with either winding direction. These are cycles of the
+specified joint observation, not exact repetitions of the whole velocity.
+Phase motion near zero amplitude, or cycles at changing frequencies, are
+not excluded by this consequence.
+
+### What the paid observation does and does not control
+
+The bound (528) applies to arbitrary periodic unforced histories and to
+their full internally generated feedback, including repeated parent
+renewal. It supplies a physical Bellman upper bound for this fixed joint
+observation. Its proof reuses the ordinary energy reserve; it does not
+establish the critical continuation allowance (494).
+
+In particular the original critical production J observes all frequencies,
+with derivative weights, whereas (528) observes one prescribed quartet.
+For unit-norm coefficient observations, K grows with the observed wave
+numbers; summing all quartets requires additional summable weights. No
+bound converting such a paid sum into (494) has been proved. Allowing
+the observations or their weights to change also introduces derivative
+and seam costs. Treating a newly selected quartet as a fresh reserve would
+lose the resource already spent. Whole-space wave-packet observations
+are a separate extension, not asserted here.
+
+In particular, for successive fixed quartets along the SAME actual history,
+let `S_old,S_new` be their reserves at a switch time. The segment bounds give
+
+```text
+S_last(t)+sum_segments integral [nu kappa |Q|+q]
+  <= S_first(0)+sum_switches [S_new-S_old].         (531)
+```
+
+Any positive jump is an additional cost. No bound on the sum of these costs
+for arbitrary refinement, and no critical-production consumer for that sum,
+is asserted. The full velocity must supply both observations at the seam;
+matching only a phase label would not establish that compatibility.
+
+External forcing adds its own coefficient sources to F and work to the
+energy identity; these terms cannot be discarded when applying (527).
+This fixed-observation result neither refutes a forced singularity nor
+excludes every internal realization of a forced pattern at refining scales.
+The open task is to control the joint amplitude, phase and scale history
+strongly enough to pay the complete critical production.
+
+Run `python3 -O labs/quartet_phase_history.py`. Laurent coefficients prove
+the full unit-phase identities; independent advective NS jets check
+positive viscosity, canonical pressure and high-parent energy. Rational
+enclosures verify the adverse angular direction. The scalar reserve
+identities and explicit constants are also checked. The local PDE,
+Fourier estimates and all-prefix payment above are analytic arguments;
+no new Lean declaration or axiom is introduced.

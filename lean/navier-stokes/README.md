@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [quartet phase-history bound](labs/README.md#actual-quartet-phase-dynamics-and-a-paid-observation-history)
+derives the actual phase torque, shows uniform initial depletion of the
+higher-frequency original parents, and tests the proposed angular alignment.
+The angular feedback can point toward greater production. For any smooth
+unforced periodic history, however, a fixed quartet's weighted rotation and
+viscous maintenance have a finite allowance from the full initial energy.
+The source includes every surrounding mode. This supplies a concrete paid
+joint observation; it does not control the critical cost at arbitrary scales.
+The physical results are analytic with exact algebra checks.
+
 The [phase-sensitive second return](labs/README.md#phase-sensitive-second-return-of-the-complete-helical-flow)
 compares actual 3D unforced evolution with its first Picard forecast. Two
 families have identical initial spectral energies and helicity: one has a
