@@ -1249,7 +1249,14 @@ theorem clusterLogFamily_local [Measure.IsMulLeftInvariant ν]
 
 variable (hpos : ∀ Λ c, 0 < partitionFunction
   (plaquetteGraph (plaquetteSupport (fun p ↦ fluctuationSupport e (supp p))))
-  (fun C ↦ clusterActivity ν e supp Φ C c) Λ)
+    (fun C ↦ clusterActivity ν e supp Φ C c) Λ)
+
+theorem clusterLogFamily_univ (hne : ∀ p, (supp p).Nonempty)
+    (hΦ : ∀ p, DependsOn (supp p) (Φ p)) (c : I → E) :
+    clusterLogFamily ν e supp Φ hpos univ c =
+      Real.log (blockedDensity ν e (interactionDensity Φ) c) := by
+  simp only [clusterLogFamily, inter_univ, ContinuousMap.coe_mk]
+  rw [← clusterActivity_partitionFunction ν e supp Φ hne hΦ]
 
 theorem clusterLogFamily_root_budget (hne : ∀ p, (supp p).Nonempty)
     {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
@@ -1303,6 +1310,45 @@ theorem sum_clusterRemoval_retained_le_of_row (v : P → ℝ)
       · intro C hC hnot
         exact mul_nonneg (clusterMajorant_nonneg e supp v hv C) (Real.exp_pos _).le
     _ ≤ _ := clusterMajorant_through_fine_site e supp v hne hv hr hr1 hrow (e (.inl (.inl i)))
+
+/-- Charging a designated interaction retains its own amplitude instead of
+the volume-wide background radius. This is the source factor in a marked expansion. -/
+theorem sum_clusterRemoval_through_label_le_of_row (v : P → ℝ)
+    (hne : ∀ p, (supp p).Nonempty) (hv : ∀ p, 0 ≤ v p)
+    {r : ℝ} (hr : 0 ≤ r) (hr1 : r ≤ 1)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card) * v p ≤ r) (p : P) :
+    ∑ C ∈ univ.filter (fun C : Finset P => p ∈ C),
+      clusterRemovalWeight e supp v C ≤ v p * Real.exp (6 * (supp p).card) := by
+  let ds : P → Finset (I ⊕ J) := fun q => fluctuationSupport e (supp q)
+  let w : P → ℝ := fun q => v q * Real.exp (5 * (supp q).card)
+  calc
+    _ ≤ ∑ C ∈ univ.filter (fun C : Finset P => p ∈ C),
+        if C ∈ connectedPlaquettes ds then ∏ q ∈ C, w q else 0 := by
+      apply sum_le_sum
+      intro C _
+      apply le_trans _ (clusterMajorant_dressed_le e supp v hv C)
+      have hn : 0 ≤ clusterMajorant e supp v C * Real.exp ((plaquetteSupport ds C).card : ℝ) :=
+        mul_nonneg (clusterMajorant_nonneg e supp v hv C) (Real.exp_pos _).le
+      have h := Real.log_le_sub_one_of_pos (show 0 < 1 + clusterMajorant e supp v C *
+        Real.exp ((plaquetteSupport ds C).card : ℝ) by linarith)
+      exact (show Real.log _ ≤ _ from h).trans_eq (by ring)
+    _ = ∑ C ∈ (connectedPlaquettes ds).filter (fun C => ¬Disjoint C {p}), ∏ q ∈ C, w q := by
+      rw [← sum_filter]
+      congr 1
+      ext C
+      simp [and_comm]
+    _ ≤ ∑ q ∈ ({p} : Finset P), w q * Real.exp (1 * (ds q).card) :=
+      sum_connected_weight_meeting_labels_le ds (fun q => mul_nonneg (hv q) (Real.exp_pos _).le)
+        (connected_majorant_smallness e supp v hne hv hr hr1 hrow) {p}
+    _ ≤ _ := by
+      simp only [sum_singleton, one_mul, w, ds]
+      rw [mul_assoc, ← Real.exp_add]
+      apply mul_le_mul_of_nonneg_left _ (hv p)
+      apply Real.exp_le_exp.mpr
+      have hc : ((fluctuationSupport e (supp p)).card : ℝ) ≤ (supp p).card := by
+        exact_mod_cast card_fluctuationSupport_le e (supp p)
+      linarith
 
 
 theorem sum_clusterRemoval_retained_le (hne : ∀ p, (supp p).Nonempty)
@@ -1371,9 +1417,8 @@ theorem nonlinearInteraction_reconstruct
   simp only [ContinuousMap.add_apply, ContinuousMap.sum_apply, ContinuousMap.smul_apply,
     ContinuousMap.one_apply, smul_eq_mul, mul_one] at h
   have hlog : clusterLogFamily ν e supp Φ hpos univ c =
-      Real.log (blockedDensity ν e (interactionDensity Φ) c) := by
-    simp only [clusterLogFamily, inter_univ, ContinuousMap.coe_mk]
-    rw [← clusterActivity_partitionFunction ν e supp Φ hne hΦ]
+      Real.log (blockedDensity ν e (interactionDensity Φ) c) :=
+    clusterLogFamily_univ ν e supp Φ hpos hne hΦ c
   rw [hlog] at h
   have he : nonlinearVacuum ν e supp Φ hpos + ∑ T, nonlinearInteraction ν e supp Φ hpos T c =
       Real.log (blockedDensity ν e (interactionDensity Φ) c) := by
@@ -1620,21 +1665,47 @@ theorem projectedCluster_treeLength_le (supp : P → Finset X) (C : Finset P)
     _ ≤ _ := sum_le_sum (fun p _ => treeLength_image_le π hπd (supp p))
 
 include hπ₁ hπ₂ hπd in
-theorem retainedFamily_treeLength_le (supp : P → Finset X) (A : Finset (Finset P))
+theorem projectedFamily_treeLength_le (supp : P → Finset X) (A : Finset (Finset P))
     (ha : A ⊆ connectedPlaquettes (fun p => fluctuationSupport e (supp p)))
     (hc : ((plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p)))).induce
       (A : Set (Finset P))).Connected) :
-    treeLength (A.biUnion (clusterRetainedSupport e supp)) ≤
+    treeLength (A.biUnion (fun C => (plaquetteSupport supp C).image π)) ≤
       ∑ C ∈ A, ∑ p ∈ C, treeLength (supp p) := by
   calc
-    _ ≤ treeLength (A.biUnion (fun C => (plaquetteSupport supp C).image π)) :=
-      treeLength_mono (biUnion_mono (fun C _ => retainedSupport_subset_image e π hπ₁ _))
     _ ≤ ∑ C ∈ A, treeLength ((plaquetteSupport supp C).image π) := by
       apply treeLength_biUnion_le_of_connected _ _ _ A hc
       intro C D hCD
       apply projectedSupport_meet e π hπ₁ hπ₂
       simpa only [fluctuationSupport_biUnion] using hCD.2
     _ ≤ _ := sum_le_sum (fun C hC => projectedCluster_treeLength_le e π hπ₁ hπ₂ hπd supp C (ha hC))
+
+include hπ₁ hπ₂ hπd in
+theorem retainedFamily_treeLength_le (supp : P → Finset X) (A : Finset (Finset P))
+    (ha : A ⊆ connectedPlaquettes (fun p => fluctuationSupport e (supp p)))
+    (hc : ((plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p)))).induce
+      (A : Set (Finset P))).Connected) :
+    treeLength (A.biUnion (clusterRetainedSupport e supp)) ≤
+      ∑ C ∈ A, ∑ p ∈ C, treeLength (supp p) :=
+  (treeLength_mono (biUnion_mono (fun _ _ => retainedSupport_subset_image e π hπ₁ _))).trans
+    (projectedFamily_treeLength_le e π hπ₁ hπ₂ hπd supp A ha hc)
+
+include hπ₁ hπ₂ hπd in
+/-- The marked input support remains attached to the generated cluster.
+It may be absent from the retained support, so it must be included explicitly. -/
+theorem markedFamily_treeLength_le (supp : P → Finset X) (A : Finset (Finset P)) (p : P)
+    (hp : p ∈ A.biUnion id)
+    (ha : A ⊆ connectedPlaquettes (fun p => fluctuationSupport e (supp p)))
+    (hc : ((plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p)))).induce
+      (A : Set (Finset P))).Connected) :
+    treeLength (A.biUnion (clusterRetainedSupport e supp) ∪ (supp p).image π) ≤
+      ∑ C ∈ A, ∑ q ∈ C, treeLength (supp q) := by
+  apply le_trans (treeLength_mono _) (projectedFamily_treeLength_le e π hπ₁ hπ₂ hπd supp A ha hc)
+  apply union_subset
+  · exact biUnion_mono (fun C _ => retainedSupport_subset_image e π hπ₁ _)
+  · obtain ⟨C, hC, hpC⟩ := mem_biUnion.mp hp
+    intro x hx
+    exact mem_biUnion.mpr ⟨C, hC, image_subset_image
+      (fun y hy => mem_biUnion.mpr ⟨p, hpC, hy⟩) hx⟩
 
 variable {E : Type*} [Group E] [TopologicalSpace E] [IsTopologicalGroup E] [CompactSpace E]
   [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
@@ -1751,18 +1822,15 @@ theorem spatial_inflated_row_le {η R : ℝ}
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (hrow x) (by norm_num)
 
-include hπ₁ hπ₂ hπd in
-theorem clusterLogFamily_spatial_root_budget {η : ℝ} (hη : 0 ≤ η)
+theorem clusterLogFamily_spatialWeight_root_budget {η : ℝ} (hη : 0 ≤ η)
     (hne : ∀ p, (supp p).Nonempty)
     {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
     (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
       Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ ≤ R) (C : Finset P) :
     ∑ A ∈ univ.filter (fun A : Finset (Finset P) => C ∈ A),
-      Real.exp (8 * (A.biUnion (clusterRetainedSupport e supp)).card +
-        η * treeLength (A.biUnion (clusterRetainedSupport e supp))) *
+      spatialClusterWeight e supp η hη A *
         ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ ≤
       clusterRemovalWeight e supp (fun p => Real.exp (η * treeLength (supp p)) * (2 * ‖Φ p‖)) C := by
-  apply le_trans (sum_le_sum (fun A _ => spatialClusterWeight_controls_coefficient e π hπ₁ hπ₂ hπd ν supp Φ hpos hη A))
   apply sum_weighted_norm_log_coefficients_le
     (Λ := connectedPlaquettes (fun p => fluctuationSupport e (supp p)))
     _ (spatialClusterWeight e supp η hη) (clusterActivity ν e supp Φ)
@@ -1778,6 +1846,91 @@ theorem clusterLogFamily_spatial_root_budget {η : ℝ} (hη : 0 ≤ η)
         (spatial_clusterActivity_norm_le e ν supp Φ hη hn D)
   · intro A c
     simp only [clusterLogFamily, ContinuousMap.coe_mk, partitionFunction_continuous_apply, activatedLogPartition]
+
+include hπ₁ hπ₂ hπd in
+theorem clusterLogFamily_spatial_root_budget {η : ℝ} (hη : 0 ≤ η)
+    (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ ≤ R) (C : Finset P) :
+    ∑ A ∈ univ.filter (fun A : Finset (Finset P) => C ∈ A),
+      Real.exp (8 * (A.biUnion (clusterRetainedSupport e supp)).card +
+        η * treeLength (A.biUnion (clusterRetainedSupport e supp))) *
+        ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ ≤
+      clusterRemovalWeight e supp (fun p => Real.exp (η * treeLength (supp p)) * (2 * ‖Φ p‖)) C :=
+  (sum_le_sum (fun A _ => spatialClusterWeight_controls_coefficient e π hπ₁ hπ₂ hπd ν supp Φ hpos hη A)).trans
+    (clusterLogFamily_spatialWeight_root_budget e ν supp Φ hpos hη hne hR hR1 hrow C)
+
+include hπ₁ hπ₂ hπd in
+theorem spatialClusterWeight_controls_marked_coefficient {η : ℝ} (hη : 0 ≤ η)
+    (p : P) (A : Finset (Finset P)) (hp : p ∈ A.biUnion id) :
+    Real.exp (8 * (A.biUnion (clusterRetainedSupport e supp)).card +
+      η * treeLength (A.biUnion (clusterRetainedSupport e supp) ∪ (supp p).image π)) *
+        ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ ≤
+      spatialClusterWeight e supp η hη A * ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ := by
+  by_cases ha : A ⊆ connectedPlaquettes (fun p => fluctuationSupport e (supp p))
+  · by_cases hc : ((plaquetteGraph (plaquetteSupport (fun p => fluctuationSupport e (supp p)))).induce
+        (A : Set (Finset P))).Connected
+    · apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+      apply Real.exp_le_exp.mpr
+      dsimp only [spatialClusterWeight, supportCardinalityCostWeight]
+      rw [← mul_sum]
+      have h := mul_le_mul_of_nonneg_left
+        (markedFamily_treeLength_le e π hπ₁ hπ₂ hπd supp A p hp ha hc) hη
+      linarith
+    · rw [clusterLogFamily_coefficient_zero_of_not_connected e ν supp Φ hpos A hc]
+      simp
+  · rw [clusterLogFamily_coefficient_zero_of_not_active e ν supp Φ hpos A ha]
+    simp
+
+include hπ₁ hπ₂ hπd in
+/-- A spatial budget for all generated logarithmic coefficients containing a
+specified input interaction. The bound retains its amplitude and its location;
+it is not a derivative or an all-depth observable-transport assertion. -/
+theorem clusterLogFamily_marked_spatial_budget {η : ℝ} (hη : 0 ≤ η)
+    (hne : ∀ p, (supp p).Nonempty)
+    {R : ℝ} (hR : 0 ≤ R) (hR1 : R ≤ 1/2)
+    (hrow : ∀ x, ∑ p ∈ univ.filter (fun p => x ∈ supp p),
+      Real.exp (8 * (supp p).card + η * treeLength (supp p)) * ‖Φ p‖ ≤ R) (p : P) :
+    ∑ A ∈ univ.filter (fun A : Finset (Finset P) => p ∈ A.biUnion id),
+      Real.exp (8 * (A.biUnion (clusterRetainedSupport e supp)).card +
+        η * treeLength (A.biUnion (clusterRetainedSupport e supp) ∪ (supp p).image π)) *
+        ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖ ≤
+      2 * ‖Φ p‖ * Real.exp (6 * (supp p).card + η * treeLength (supp p)) := by
+  let f := fun A : Finset (Finset P) => spatialClusterWeight e supp η hη A *
+    ‖coefficient (clusterLogFamily ν e supp Φ hpos) A‖
+  have hf A : 0 ≤ f A := mul_nonneg (zero_le_one.trans ((spatialClusterWeight e supp η hη).one_le A)) (norm_nonneg _)
+  let v := fun q => Real.exp (η * treeLength (supp q)) * (2 * ‖Φ q‖)
+  calc
+    _ ≤ ∑ A ∈ univ.filter (fun A : Finset (Finset P) => p ∈ A.biUnion id), f A := by
+      apply sum_le_sum
+      intro A hA
+      exact spatialClusterWeight_controls_marked_coefficient e π hπ₁ hπ₂ hπd ν supp Φ hpos hη p A (mem_filter.mp hA).2
+    _ ≤ ∑ A : Finset (Finset P), ∑ C ∈ univ.filter (fun C : Finset P => p ∈ C),
+        if C ∈ A then f A else 0 := by
+      rw [sum_filter]
+      apply sum_le_sum
+      intro A _
+      split_ifs with hp
+      · obtain ⟨C, hC, hpC⟩ := mem_biUnion.mp hp
+        have h := single_le_sum (s := univ.filter (fun C : Finset P => p ∈ C))
+          (f := fun C => if C ∈ A then f A else 0)
+          (fun C _ => by split_ifs <;> first | exact hf A | rfl)
+          (mem_filter.mpr ⟨mem_univ C, hpC⟩)
+        simpa only [if_pos hC] using h
+      · exact sum_nonneg (fun C _ => by split_ifs <;> first | exact hf A | rfl)
+    _ = ∑ C ∈ univ.filter (fun C : Finset P => p ∈ C),
+        ∑ A ∈ univ.filter (fun A : Finset (Finset P) => C ∈ A), f A := by
+      rw [sum_comm]
+      simp only [sum_filter]
+    _ ≤ ∑ C ∈ univ.filter (fun C : Finset P => p ∈ C), clusterRemovalWeight e supp v C := by
+      apply sum_le_sum
+      intro C _
+      exact clusterLogFamily_spatialWeight_root_budget e ν supp Φ hpos hη hne hR hR1 hrow C
+    _ ≤ v p * Real.exp (6 * (supp p).card) :=
+      sum_clusterRemoval_through_label_le_of_row e supp v hne (fun q => by dsimp [v]; positivity)
+        (by positivity : 0 ≤ 2*R) (by linarith) (spatial_inflated_row_le supp Φ hrow) p
+    _ = _ := by dsimp [v]; rw [Real.exp_add]; ring
 
 include hπ₁ hπ₂ hπd in
 theorem nonlinearInteraction_spatial_norm_le {η : ℝ} (hη : 0 ≤ η)

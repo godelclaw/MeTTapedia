@@ -492,6 +492,24 @@ Neither the generated action nor its projected marks are replaced by a Wilson
 ansatz. This reconstruction identifies the full interaction; it does not by
 itself prove that a specified non-Wilson coefficient is nonzero.
 
+There is also a decomposition retaining original plaquette labels:
+`log_coarseDensity_eq_plaquetteLogFamily` includes the exact Wilson vacuum
+factor and the complete logarithmic cluster family. Fix `eta >= 0` and
+`|beta| <= 1/(128 exp(32+4 eta))`. For every volume and designated original
+plaquette `p`, `plaquetteLogFamily_marked_spatial_budget` proves
+
+`sum_(A containing p) exp(8|T_A| + eta treeLength(T_A union halfLink(supp p))) ||f_A||`
+`<= 2 |beta| exp(24+4 eta)`.
+
+Here `A` is a family of connected plaquette clusters, `p` belongs to its union,
+`T_A` is its retained coarse support, and `f_A` is its exact logarithmic
+coefficient. The norm is uniform over retained configurations. The tree length
+allows ambient connecting vertices. The designated plaquette's location is
+kept even when absent from `T_A`. The general compact-group theorem retains
+`2 ||Phi_p|| exp(6|supp p|+eta treeLength(supp p))` on the right. These are
+one-step coefficient bounds. Identifying and bounding source derivatives as
+transported observables remains an additional step.
+
 The second conditional law is now controlled as well. Fix `eta >= 0` and
 
 `beta2(eta) = 1/(256 exp(64+56 eta)) > 0`.

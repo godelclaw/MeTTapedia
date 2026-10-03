@@ -318,13 +318,13 @@ theorem wilsonInteraction_norm_le (n : ℕ) (β a : ℝ) (ha : 0 ≤ a) :
       nlinarith [mul_le_mul_of_nonneg_right hc (show 0 ≤ Real.exp (4*a) * |β| by positivity)]
 
 set_option maxHeartbeats 800000 in
-theorem wilsonInteraction_spatial_norm_le (n : ℕ) (β a η : ℝ) (ha : 0 ≤ a) (hη : 0 ≤ η) :
-    spatialInteractionNorm a η (wilsonInteraction n β) ≤ 64 * |β| * Real.exp (4*a + 4*η) := by
-  apply spatialInteractionNorm_le _ _ _ (by positivity)
-  intro l
-  refine (weightedInteractionRow_regroup_le support
-    (fun p : Plaquette 4 n => (-β) • plaquetteTrace p)
-    (fun S => Real.exp (a * S.card + η * treeLength S)) (fun _ => (Real.exp_pos _).le) l).trans ?_
+/-- Spatial incidence before regrouping, so a designated plaquette remains
+an individual source in the exact generated logarithm. -/
+theorem wilsonPlaquette_spatial_row_le (n : ℕ) (β a η : ℝ) (ha : 0 ≤ a) (hη : 0 ≤ η)
+    (l : Link 4 n) :
+    (∑ p ∈ univ.filter (fun p : Plaquette 4 n => l ∈ support p),
+      Real.exp (a*(support p).card+η*treeLength (support p)) * ‖(-β) • plaquetteTrace p‖) ≤
+        64 * |β| * Real.exp (4*a+4*η) := by
   calc
     _ ≤ ∑ p ∈ univ.filter (fun p : Plaquette 4 n => l ∈ support p), Real.exp (4*a+4*η) * |β| := by
       apply sum_le_sum
@@ -343,6 +343,16 @@ theorem wilsonInteraction_spatial_norm_le (n : ℕ) (β a η : ℝ) (ha : 0 ≤ 
       have hc : (((univ : Finset (Plaquette 4 n)).filter (fun p => l ∈ support p)).card : ℝ) ≤ 64 := by
         exact_mod_cast card_incident_le 4 n l
       nlinarith [mul_le_mul_of_nonneg_right hc (show 0 ≤ Real.exp (4*a+4*η) * |β| by positivity)]
+
+
+theorem wilsonInteraction_spatial_norm_le (n : ℕ) (β a η : ℝ) (ha : 0 ≤ a) (hη : 0 ≤ η) :
+    spatialInteractionNorm a η (wilsonInteraction n β) ≤ 64 * |β| * Real.exp (4*a + 4*η) := by
+  apply spatialInteractionNorm_le _ _ _ (by positivity)
+  intro l
+  exact (weightedInteractionRow_regroup_le support
+    (fun p : Plaquette 4 n => (-β) • plaquetteTrace p)
+    (fun S => Real.exp (a * S.card + η * treeLength S)) (fun _ => (Real.exp_pos _).le) l).trans
+      (wilsonPlaquette_spatial_row_le n β a η ha hη l)
 
 theorem wilsonInteraction_spatial_entry (a η ρ : ℝ) (ha : 0 ≤ a) (hη : 0 ≤ η)
     (n : ℕ) (β : ℝ) (hβ : |β| ≤ ρ / (64 * Real.exp (4*a+4*η))) :
@@ -1148,6 +1158,115 @@ theorem wilsonState_spatial_small {η : ℝ} (hη : 0 ≤ η) (n : ℕ) (β : �
   unfold spatialIterationBeta
   norm_num
   ring
+
+theorem wilsonPlaquette_spatial_row_small {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ spatialIterationBeta η) (n : ℕ) (l : Link 4 n) :
+    (∑ p ∈ univ.filter (fun p : Plaquette 4 n => l ∈ support p),
+      Real.exp (8*(support p).card+η*treeLength (support p)) * ‖(-β) • plaquetteTrace p‖) ≤ 1/2 := by
+  apply (wilsonPlaquette_spatial_row_le n β 8 η (by norm_num) hη l).trans
+  have h := (le_div_iff₀ (by positivity : 0 < 128*Real.exp (32+4*η))).mp hβ
+  norm_num only at *
+  nlinarith
+
+set_option maxHeartbeats 1200000 in
+set_option linter.defProp false in
+-- Inferring this private proof's type preserves the finite-set instance
+-- arguments of the generic positivity theorem without expensive conversions.
+private def wilsonPlaquette_partition_pos (n : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta) :=
+  clusterActivity_partition_pos volume (blockIndexEquiv 4 n) support
+    (fun p : Plaquette 4 (doubleIndex n) => (-β) • plaquetteTrace p) support_nonempty
+    (R := 1/2) (by norm_num) le_rfl (by
+      intro l
+      have hb : |β| ≤ spatialIterationBeta 0 := by
+        simpa [spatialIterationBeta, iterationBeta] using hβ
+      simpa only [zero_mul, add_zero] using
+        wilsonPlaquette_spatial_row_small (by norm_num) hb (doubleIndex n) l)
+
+set_option maxHeartbeats 1200000 in
+/-- The complete generated logarithm indexed by original plaquette labels.
+Keeping these labels identifies which generated coefficients contain a source. -/
+def plaquetteLogFamily (n : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta) :
+    Finset (Finset (Plaquette 4 (doubleIndex n))) → C(CoarseConfig n, ℝ) :=
+  clusterLogFamily volume (blockIndexEquiv 4 n) support
+    (fun p : Plaquette 4 (doubleIndex n) => (-β) • plaquetteTrace p)
+    (wilsonPlaquette_partition_pos n β hβ)
+
+theorem plaquetteLogFamily_local (n : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta)
+    (A : Finset (Finset (Plaquette 4 (doubleIndex n)))) :
+    DependsOn (A.biUnion (clusterRetainedSupport (blockIndexEquiv 4 n) support))
+      (plaquetteLogFamily n β hβ A) :=
+  clusterLogFamily_local volume (blockIndexEquiv 4 n) support
+    (fun p : Plaquette 4 (doubleIndex n) => (-β) • plaquetteTrace p)
+    (fun p U V h => congrArg (fun x : ℝ => -β*x) (plaquetteTrace_local p U V h))
+    (wilsonPlaquette_partition_pos n β hβ) A
+
+theorem plaquetteLogCoefficient_local (n : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta)
+    (A : Finset (Finset (Plaquette 4 (doubleIndex n)))) :
+    DependsOn (A.biUnion (clusterRetainedSupport (blockIndexEquiv 4 n) support))
+      (SubsetExpansion.coefficient (A := C(CoarseConfig n, ℝ)) (plaquetteLogFamily n β hβ) A) :=
+  coefficient_local _ _ (plaquetteLogFamily_local n β hβ) A
+
+set_option maxHeartbeats 1200000 in
+/-- Exact relation to the first Wilson marginal, including the vacuum factor. -/
+theorem log_coarseDensity_eq_plaquetteLogFamily (n : ℕ) (β : ℝ)
+    (hβ : |β| ≤ iterationBeta) (c : CoarseConfig n) :
+    Real.log (coarseDensity n β c) =
+      -β * Fintype.card (Plaquette 4 (doubleIndex n)) + plaquetteLogFamily n β hβ univ c := by
+  let Φ := fun p : Plaquette 4 (doubleIndex n) => (-β) • plaquetteTrace p
+  have hl := clusterLogFamily_univ volume (blockIndexEquiv 4 n) support Φ
+    (wilsonPlaquette_partition_pos n β hβ) support_nonempty
+    (fun p U V h => congrArg (fun x : ℝ => -β*x) (plaquetteTrace_local p U V h)) c
+  change plaquetteLogFamily n β hβ univ c =
+    Real.log (blockedDensity volume (blockIndexEquiv 4 n) (interactionDensity Φ) c) at hl
+  rw [hl]
+  have he : coarseDensity n β c = Real.exp (-β * Fintype.card (Plaquette 4 (doubleIndex n))) *
+      blockedDensity volume (blockIndexEquiv 4 n) (interactionDensity Φ) c := by
+    change (∫ f : Fluctuation n, fineDensity n β (chart n (c,f))) =
+      Real.exp (-β * Fintype.card (Plaquette 4 (doubleIndex n))) *
+        ∫ f : Fluctuation n, Real.exp (∑ p, -β * plaquetteTrace p (chart n (c,f)))
+    simp_rw [fineDensity, realDensity_eq_wilsonInteraction, sum_wilsonInteraction]
+    simp only [ContinuousMap.sum_apply, ContinuousMap.smul_apply, smul_eq_mul, Real.exp_add]
+    rw [integral_const_mul]
+  rw [he, Real.log_mul (Real.exp_pos _).ne'
+    (blockedDensity_pos volume (blockIndexEquiv 4 n) _ (interactionDensity_pos Φ) c).ne', Real.log_exp]
+
+theorem log_coarseDensity_eq_sum_plaquetteCoefficients (n : ℕ) (β : ℝ)
+    (hβ : |β| ≤ iterationBeta) (c : CoarseConfig n) :
+    Real.log (coarseDensity n β c) = -β * Fintype.card (Plaquette 4 (doubleIndex n)) +
+      ∑ A, SubsetExpansion.coefficient (plaquetteLogFamily n β hβ) A c := by
+  rw [log_coarseDensity_eq_plaquetteLogFamily n β hβ c]
+  congr 1
+  have h := congrArg (fun F : C(CoarseConfig n, ℝ) => F c)
+    (SubsetExpansion.zeta_coefficient (plaquetteLogFamily n β hβ) univ)
+  simpa only [SubsetExpansion.zeta, powerset_univ, ContinuousMap.sum_apply] using h.symm
+
+set_option maxHeartbeats 1200000 in
+/-- Every generated logarithmic coefficient carrying a designated original
+Wilson plaquette has a volume-uniform spatial budget, with its location retained. -/
+theorem plaquetteLogFamily_marked_spatial_budget {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ spatialIterationBeta η) (n : ℕ) (p : Plaquette 4 (doubleIndex n)) :
+    ∑ A ∈ univ.filter (fun A : Finset (Finset (Plaquette 4 (doubleIndex n))) => p ∈ A.biUnion id),
+      Real.exp (8*(A.biUnion (clusterRetainedSupport (blockIndexEquiv 4 n) support)).card +
+        η*treeLength (A.biUnion (clusterRetainedSupport (blockIndexEquiv 4 n) support) ∪
+          (support p).image halfLink)) *
+        ‖SubsetExpansion.coefficient (plaquetteLogFamily n β (hβ.trans (spatialIterationBeta_le hη))) A‖ ≤
+      2 * |β| * Real.exp (24+4*η) := by
+  have h := clusterLogFamily_marked_spatial_budget (blockIndexEquiv 4 n) halfLink
+    (fun i => halfLink_blockEdge i 0) (fun i => halfLink_blockEdge i 1) dist_halfLink_le volume support
+    (fun p : Plaquette 4 (doubleIndex n) => (-β) • plaquetteTrace p)
+    (wilsonPlaquette_partition_pos n β (hβ.trans (spatialIterationBeta_le hη))) hη support_nonempty
+    (R := 1/2) (by norm_num) le_rfl (wilsonPlaquette_spatial_row_small hη hβ (doubleIndex n)) p
+  apply h.trans
+  have hc : ((support p).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le p
+  have ht := treeLength_support_le p
+  have hn : ‖(-β) • plaquetteTrace p‖ ≤ |β| := by
+    rw [norm_smul, Real.norm_eq_abs, abs_neg]
+    exact (mul_le_mul_of_nonneg_left (norm_plaquetteTrace_le p) (abs_nonneg β)).trans_eq (mul_one _)
+  apply mul_le_mul
+  · exact mul_le_mul_of_nonneg_left hn (by norm_num)
+  · exact Real.exp_le_exp.mpr (by nlinarith)
+  · positivity
+  · positivity
 
 
 end ScaleTwo
