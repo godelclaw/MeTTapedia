@@ -1,0 +1,59 @@
+{
+  "evidence": "Kernel-proved separated colouring construction, frozen-family class lower bound and factored guarded history transport.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.BlockChoices",
+      "source_bytes": 3958,
+      "source_sha256": "77ec269087bbf306f17e052a190a1397555f9ba1c3b05da83df253d94c9688c4",
+      "lake_build_seconds": 1.7,
+      "olean_bytes": 75472,
+      "olean_sha256": "e58e69196400091eef2bc81b2beaa0b574df0854a8df5f471ec9927f5da91336"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FrozenCycleFamily",
+      "source_bytes": 4554,
+      "source_sha256": "c2b96c70f27bf80d7e41e941157688b80c45f86e6533907d3108adf2c5e121ec",
+      "lake_build_seconds": 3.0,
+      "olean_bytes": 259288,
+      "olean_sha256": "48446d704e69c5d18c0b5b0716e2f424d94c57aab68603fa340933ee5a6ca3a4"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleBlocksAudit",
+      "source_bytes": 2222,
+      "source_sha256": "f21eb4eafbe5f5642e06045f5c80784caef54788ca37d882e76cc10bbc71ddec",
+      "lake_build_seconds": 3.2,
+      "olean_bytes": 2800,
+      "olean_sha256": "bf6bc2b218eff5aaf9d9e7a6b8170ba9ce80346757a24774b786fb2e45b8a7c2"
+    }
+  ],
+  "audit": {
+    "roots": 6,
+    "dependency_declarations": 6726,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false,
+    "required_load_bearing_dependencies": [
+      "actual full-colouring construction",
+      "frozen observer obstruction",
+      "exact local guard factorization",
+      "physical forest reconstruction"
+    ]
+  },
+  "proved": [
+    "One alternative proper colouring per separated block assembles every Boolean combination into a proper full colouring with the same exterior.",
+    "Given k independently owned protected frozen observers and their alternatives, all 2^k Boolean choices are in different fixed-exterior physical classes.",
+    "Any finite summary with physically connected fibres needs at least 2^k states under those hypotheses.",
+    "After retaining a cycle-breaking set, histories using separate block guards are exactly full physical histories fixing the original exterior, provided all guards share the same retained endpoints and transposition."
+  ],
+  "program_applications": "cycle-blocks-audit.json",
+  "program_scope": "One through four spherical copies joined along unaffected triangular faces. Their 162/321/480/639 vertices have degrees 5 through 11. Each copy supplies a frozen triangle and repairable six-cycle. In the largest instance at least 16 classes coexist with 256 feasible joint anchor words, represented by 16 local anchor states and 128 crossing-edge constraints; four repairs compose into ten physical switches. No joint-colouring enumeration is used. Concrete geometry and executions are program evidence.",
+  "scope": "The exponential lower bound concerns summaries whose equal observations imply physical connectivity. It does not give a lower bound on symbolic representation or proof size, and does not apply automatically to summaries preserving only successful colouring existence. Separated blocks can share exterior neighbours, but arbitrary edges between hidden blocks invalidate the separation hypothesis. No universal geometric supply, ordinary strict graph reduction, catalogue or total proof-cost saving is established.",
+  "checks": [
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_cycle_blocks.py"
+  ],
+  "credited_compression": false
+}

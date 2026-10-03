@@ -678,6 +678,62 @@ Replay `lake build Mettapedia.GraphTheory.FourColor.CycleAnchorsAudit` and
 [fixture](cycle-anchors-example.json) pins both cycles; the
 [receipt](cycle-anchors-measurements.json) records theorem sizes and audits.
 
+## Many cyclic choices without a table of their product
+
+[BlockChoices](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/BlockChoices.lean)
+constructs proper full colourings from independent choices on separated
+hidden blocks. It needs one alternative per block, not one colouring for
+every combination. Blocks may share exterior neighbours. Retaining a
+cycle-breaking set makes the remaining forest guards factor exactly, and
+the resulting histories reconstruct physically. Each factor receives the
+same retained before/after colours and the same transposition; independent
+existential choices for those shared observations would not suffice.
+
+[FrozenCycleFamily](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FrozenCycleFamily.lean)
+supplies the complementary lower bound. Given `k` separated blocks with
+proper alternatives and protected frozen observers, the Boolean construction
+produces `2 ^ k` mutually unreachable full colourings of the same exterior.
+Any finite summary whose fibres are physically connected needs at least
+that many states. The theorem is conditional on explicit observer and
+separation data, which the concrete examples below check. It is a lower
+bound on state count, not on symbolic description, computation, or proof
+length; preserving only the existence of a successful choice is a weaker
+contract.
+
+The [program replay](cycle-blocks-audit.json) joins copies of the existing
+162-vertex sphere along unaffected triangular faces, matching colours and
+reversing boundary orientation. Every resulting rotation system is checked
+for connectedness, opposite darts, cyclic vertex stars and Euler
+characteristic two. Degrees remain between five and eleven in the joined
+examples. Each copy retains one frozen triangle and one repairable six-cycle.
+
+| Copies | Vertices | Physical classes, at least | Feasible joint anchor words | Local anchor states | Crossing-edge constraints | Composed switches |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 162 | 2 | 4 | 4 | 32 | 2 |
+| 2 | 321 | 4 | 16 | 8 | 64 | 5 |
+| 3 | 480 | 8 | 64 | 12 | 96 | 8 |
+| 4 | 639 | 16 | 256 | 16 | 128 | 10 |
+
+The guards reject every attempted change of a frozen choice. The working
+cycle histories compose while fixing the entire exterior of all selected
+cycles. Full witnesses for those commands are assembled from local witnesses
+and unchanged assignments in the other blocks. No joint colouring table is
+enumerated. Independent exhaustive checks are confined to each small cycle.
+The generic construction, lower bound and history transport are kernel
+checked; joined-sphere geometry and these executions remain program evidence.
+
+Thus exponential class counts are compatible with a compact factored
+interface for separated blocks. The retained exterior and crossing edges
+still cost space. Edges between hidden blocks require additional joint
+constraints; arbitrary interacting compositions, an ordinary smaller-map
+reduction and global geometric supply remain open. No catalogue dependency
+or whole-proof cost reduction is credited.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.CycleBlocksAudit` and
+`python3 tools/fourcolor/near-linear/audit_cycle_blocks.py`. The
+[fixture](cycle-blocks-example.json) pins the sources and gluing faces; the
+[receipt](cycle-blocks-measurements.json) records the six-root audit.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

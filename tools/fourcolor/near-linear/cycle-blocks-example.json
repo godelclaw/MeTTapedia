@@ -1,0 +1,29 @@
+{
+  "evidence": "Repeat a verified spherical source along two unaffected faces; retain frozen and repairable cycles.",
+  "sources": {
+    "repair": {
+      "file": "independent-repair-example.json",
+      "sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e"
+    },
+    "frozen": {
+      "file": "hidden-triangle-example.json",
+      "sha256": "a5927a8bac0e32733d467a8bdf1a790a395577706d553097c8e4005c270dd6d9"
+    },
+    "anchors": {
+      "file": "cycle-anchors-example.json",
+      "sha256": "ebd38ffd77ae421bf2aee90f9584c48c06d24e3e4094fcd6496f505b27ea7952"
+    }
+  },
+  "source_case": 1,
+  "incoming_face": [
+    12,
+    1,
+    49
+  ],
+  "outgoing_face": [
+    18,
+    67,
+    104
+  ],
+  "copies": 4
+}
