@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [relative self-work history test](labs/README.md#a-change-of-self-interaction-sign-with-finite-history-payment)
+finds a sign reversal on an actual unforced viscous history: an initially
+Beltrami perturbation first depletes, then produces, critical difference
+mass through its own nonlinear term. An explicit commutator bound nevertheless
+pays its absolute self-work over all time, for arbitrary smooth passive
+profiles in the specified shear class. The payment uses original directional
+variation and the parent's finite lifetime. Small genuine 3D feedback retains
+the sign reversal and a full-history allowance; unrestricted parent renewal
+remains open. These are analytic arguments with exact polynomial and rational
+checks, not new Lean certificates.
+
 The [critical shear-mixing test](labs/README.md#critical-amplification-in-a-paid-unforced-mixing-history)
 shows that a fixed multiple of the initial critical mass is also insufficient.
 Actual globally regular periodic flows can amplify that mass by an arbitrarily

@@ -32193,3 +32193,304 @@ return and the allowance algebra are checked exactly. The stochastic
 identification, PDE comparison, all-time payment and small-perturbation
 global stability remain analytic arguments, not Lean-certified statements.
 No new Lean declaration or axiom is introduced.
+
+## A change of self-interaction sign with finite history payment
+
+The unsigned difference estimate (555) charges C3 Y^(3/2) for the
+perturbation's complete self-interaction. This section tests a possible
+geometric improvement: does an initially nonlinear-free perturbation keep
+a favorable sign in the critical norm? It does not, even when it is
+initially Beltrami. An actual positive-viscosity unforced history first
+depletes, then produces, critical difference mass through this term.
+Nevertheless, a commutator bound pays its absolute value over the entire
+history. That payment extends to arbitrary smooth passive profiles in the
+specified triangular class. It does not require a small passive amplitude.
+
+All norms and inner products use the normalized 2*pi torus. Write
+N(v)=P_sol(v cross curl v), Lambda=(-Delta)^(1/2), and
+
+```text
+u(0)=(A sin y+C cos z, D sin z, B cos x),
+U(0)=(A sin y,0,B cos x), d=u-U,
+Sigma_p(d)=<Lambda^p d,N(d)>.                    (558)
+```
+
+Here u and U are the ACTUAL unforced solutions from the displayed data;
+U is the globally regular triangular solution (543). The reference is
+not reset or replaced by its initial heat flow when B is nonzero.
+The difference d is not an autonomous NS solution. Its equation contains
+the two cross interactions with U as well as N(d), and
+
+```text
+(1/2) M(d)' + nu L(d)
+ = Sigma_1(d)
+   + <Lambda d,P_sol(U cross curl d+d cross curl U)>.       (559)
+```
+
+Thus the sign of Sigma_1 alone does not determine the sign of M(d)',
+the full field's helicity transfer J, or its vorticity stretching g.
+This is one specific cost in an actual-history estimate.
+
+### The initial return distinguishes critical and high-norm work
+
+Initially d=(C cos z,D sin z,0) and N(d)=0. If C=D, curl d=-d.
+The complete A,B,C,D,nu polynomial jets of the projected NS equation give
+
+```text
+F=A^2 D^4+B^2 C^2 D^2,
+Sigma_p(d(t))=F [2+5^(p/2)-3*2^(p/2)] t^3/32+O(t^4),
+                 p=0,1,2,4,6,
+Sigma_H3(d(t))=151 F t^3/32+O(t^4),
+Sigma_H3=< (1-Delta)^3 d,N(d)>.                  (560)
+```
+
+Every coefficient through order two vanishes. The cubic coefficients
+are independent of viscosity, but the viscosity terms have been retained
+in the polynomial calculation and cancel. In particular
+`2+sqrt(5)-3sqrt(2)<0`, whereas the enstrophy and H3 coefficients are
+positive when F>0. The higher-norm bound can therefore hide a favorable
+critical interaction. This local fact does not persist automatically.
+The checker verifies the entire parameter polynomial and independently
+compares the full advective NS recurrence, including canonical pressure
+and all generated modes, at several positive-viscosity data.
+
+### The same positive-viscosity history subsequently reverses sign
+
+Set B=0 and A,D>0. The exact globally regular history is
+
+```text
+u=(C exp(-nu t)cos z+A f, D exp(-nu t)sin z,0),
+f_t+D exp(-nu t)sin z f_y=nu(f_yy+f_zz), f(0)=sin y,
+U=(A exp(-nu t)sin y,0,0), r=f-exp(-nu t)sin y,
+Sigma_1(d)=-A^2 D exp(-nu t)<Lambda r,sin z r_y>. (561)
+```
+
+Pressure is identically zero for this exact triangular subclass. The
+C component contributes no work in (561), by orthogonality of the
+y frequencies. Choose C=D to keep the initial perturbation Beltrami.
+
+Put sigma=Dt, mu=nu/D, and
+`F_mu(sigma)=-<Lambda r_mu,sin z partial_y r_mu>`.
+The zero-viscosity comparison is explicit:
+`r_0=sin(y-sigma sin z)-sin y`. For
+`q_n=(-1)^n J_n(sigma)-delta_(n,0)` and w_n=sqrt(1+n^2),
+Fourier pairing gives
+
+```text
+F_0(sigma)=-(1/4) sum_(n in Z) (w_(n+1)-w_n) q_n q_(n+1)
+ =-(sqrt(2)-1)(1-J_0(sigma))J_1(sigma)/2
+  +(1/2) sum_(n>=1) (w_(n+1)-w_n) J_n(sigma)J_(n+1)(sigma).
+1/100 < F_0(2) < 3/200.                          (562)
+```
+
+The classical generating function and power series are those in
+[DLMF 10.12.1](https://dlmf.nist.gov/10.12.E1) and
+[DLMF 10.2.2](https://dlmf.nist.gov/10.2.E2). At sigma=2,
+`J_n(2)=sum_j (-1)^j/(j!(n+j)!)`. Alternating partial sums enclose
+J_0,...,J_7 rationally. For n>=1,
+`n/(n+1)! <= J_n(2) <= 1/n!`, so all omitted positive-index
+pairs in (562) are positive. Keeping n=1,...,6 proves the lower
+bound; the upper tail is at most
+`[1/(2*7!*8!)]*72/71`. Rational square-root enclosures complete
+the strict bounds. This is an infinite-series sign proof with a
+controlled tail, not a floating-point or Galerkin observation.
+
+To transfer it to POSITIVE viscosity, let e=f_mu-f_0 on 0<=sigma<=2.
+Its exact equation is
+
+```text
+e_sigma+exp(-mu sigma)sin z e_y
+ =mu Delta e+mu Delta f_0
+   +(1-exp(-mu sigma))sin z partial_y f_0.        (563)
+```
+
+Pointwise differentiation of f_0 bounds
+`||Delta f_0||_H1<26` and `||sin z partial_y f_0||_H1<4`
+on this interval. For example the three components of the former
+are bounded by 7,7,24, and those of the latter by 1,1,3.
+Here H1 is the derivative norm, equal to the Fourier norm with weight
+1+|k|^2. The forcing in (563) has H1 norm at most 34mu. In the H1
+energy estimate the only transport commutator is
+`-exp(-mu sigma)<e_z,cos z e_y>`, whose absolute value is at most
+`(||e_y||_2^2+||e_z||_2^2)/2`. Therefore
+
+```text
+(||e||_H1)' <= (1/2)||e||_H1+34mu,
+||e||_H1 <=68mu(exp(sigma/2)-1)<136mu,
+||r_mu-r_0||_H1<138mu.                          (564)
+```
+
+The norm inequality at a zero norm follows by regularization. The final
+2mu pays the difference of the heat baseline and the original sin y;
+`||sin y||_H1=1`. Also `||r_0||_H1<4`. If mu<=1/138, then
+`||r_mu||_H1<5`, and Cauchy--Schwarz in the defining bilinear pairing
+gives `|F_mu-F_0|<1242mu`. Consequently
+
+```text
+D>=250000nu>0 implies F_mu(2)>1/200,
+Sigma_1(d(2/D))>A^2 D exp(-2nu/D)/200>0.         (565)
+```
+
+Equation (560) makes Sigma_1 strictly negative for sufficiently small
+positive t for these SAME data. Equation (565) proves a later positive
+value on their actual unforced viscous history. The constants are
+deliberately coarse and are not asserted to mark a sharp transition.
+The failed assertion is persistence of favorable self-work from initial
+Beltrami geometry. No integrated full-data allowance is refuted.
+
+### Absolute self-work is paid for an unbounded class of profiles
+
+Replace A sin y by any smooth real periodic w0(y,z). Let w solve
+`w_t+D exp(-nu t)sin z w_y=nu Delta w` from w0 and let
+`g=exp(nu t Delta)w0`. The actual unforced solutions
+
+```text
+u=(C exp(-nu t)cos z+w, D exp(-nu t)sin z,0),
+U=(g,0,0), r=w-g,
+K0=|| |partial_y|^(1/2) w0 ||_2^2              (566)
+```
+
+give the same identity (561), with A incorporated into r. Their difference
+r has zero y-average, since the y-average of both w and g obeys the same
+heat equation. In Fourier variables (m,n), let r_hat(m,n)=a_(m,n).
+An exact adjacent-frequency pairing gives
+
+```text
+-<Lambda r,sin z r_y>
+ =-(1/2) sum_(m,n) m [sqrt(m^2+(n+1)^2)-sqrt(m^2+n^2)]
+                         Re(conj(a_(m,n)) a_(m,n+1)),
+|<Lambda r,sin z r_y>| <=(1/2)|| |partial_y|^(1/2) r ||_2^2.  (567)
+```
+
+Indeed the absolute frequency-weight difference is at most one, by
+the reverse triangle inequality. Apply `2|ab|<=|a|^2+|b|^2`
+and sum; smoothness justifies every rearrangement. This estimate keeps
+the signed interaction between adjacent coefficients before taking its
+absolute value. It does not replace shared phases by separate averages.
+
+The directional operator |partial_y|^(1/2) commutes with this actual
+shear advection and with diffusion. The resulting field has |m|>=1,
+so its exact energy identity and Poincare inequality imply
+
+```text
+|| |partial_y|^(1/2) w(t) ||_2^2 <=exp(-2nu t)K0,
+|| |partial_y|^(1/2) g(t) ||_2^2 <=exp(-2nu t)K0,
+|| |partial_y|^(1/2) r(t) ||_2^2 <=4exp(-2nu t)K0,
+|Sigma_1(d(t))| <=2|D|K0 exp(-3nu t),
+integral_0^infinity |Sigma_1(d)| <=2|D|K0/(3nu). (568)
+```
+
+Thus `R_rel(t)=2|D|K0 exp(-3nu t)/(3nu)` is a single nonnegative
+reserve with `-R_rel'>=|Sigma_1|`. It pays both signs across every
+compatible segment. It never resets the original directional resource
+or the shear amplitude. For w0=A sin y, K0=A^2/2 and the allowance
+is A^2|D|/(3nu), at arbitrary A,C,D and positive viscosity.
+
+The positive result is a concrete bound for the critical difference
+self-interaction. It does not on its own control the cross work in (559).
+For the sinusoidal example, the full critical criterion is already paid
+by (552), with shear amplitude D and passive amplitude A. The additional
+C mode contributes exactly
+
+```text
+C_H[C exp(-nu t)cos z]=-alpha C^2(1-exp(-2nu t))/2<=0,
+C_H[u](t)<=B_mix(D,A).                          (569)
+```
+
+Here 0<alpha<1 and B_mix(D,A) denotes the allowance in (552) with
+that substitution. Thus the sign-reversing example pays the complete
+continuation criterion as well as the isolated self-work account.
+
+### Small genuine 3D feedback and the remaining obstruction
+
+The strict later sign survives a sufficiently small nonzero B cos x
+in (558). This follows from actual H3 continuous dependence on the
+known global B=0 flow, and the explicit linear dependence on B of
+the reference U. The cubic map d -> Sigma_1(d) is continuous in H3.
+The negative initial coefficient in (560) also persists. All generated
+modes and pressure are retained; there is no finite-mode closure.
+
+More explicitly, use (555) around the B=0 actual flow with
+`Y0=4B^2`, `Q=C4[|A|(1+(D/nu)^4)+|C|+D]` and K=C3Q/nu.
+For D>0 the stochastic derivative bounds (544) justify this Q after
+increasing the fixed norm constant C4. The stated smallness condition
+constructs a global perturbed solution. Decrease |B| further until the
+H3 continuity error in Sigma_1 at t=2/D is below half the positive
+margin (565). All constants are from known references and the original
+data. This gives genuinely three-coordinate unforced flows with the
+same sign reversal. The admissible B may be extremely small.
+
+The full history of that small perturbation is paid by the same
+triangle-inequality argument as (557):
+
+```text
+M0_ref=(A^2+C^2+D^2)/2,
+C_H[u_B](t)<=M0_ref+2B_mix(D,A)+(2+4kappa)Y0 exp(K).       (570)
+```
+
+In deriving this bound retain `M(u_B(0))=M0_ref+B^2/2`; dropping
+the favorable subtraction B^2/2 gives (570). Uniqueness transfers the
+same bounds to all smooth prefixes from that datum. Neither (568) nor
+(570) supplies a payment for arbitrary three-dimensional coupling.
+
+The structural reason (568) works is precise: the transported direction
+commutes with the known parent flow, so its initial fractional variation
+only decays. A general parent can generate variation in that direction,
+and a moving direction has its own derivative cost. The next physical
+obligation is to retain and pay these commutators and the parent's renewal
+from original data. Assuming the same decay after the parent becomes
+arbitrary would put the missing estimate into a hypothesis.
+
+This defect can be stated directly on arbitrary smooth periodic NS flows,
+without selecting a reference. For a fixed coordinate j, set
+T_j=|partial_j|^(1/2), K_j=||T_j u||_2^2 and
+Q_j=||grad T_j u||_2^2. Commutation with gradients and divergence removes
+pressure from the integrated identity, while incompressibility cancels
+the undifferentiated transport:
+
+```text
+K_j'+2nu Q_j=2W_j,
+W_j=-<T_j u,[T_j,u dot grad]u>
+   =<|partial_j|u,N(u)>,
+M<=sum_j K_j<=sqrt(3)M,
+L<=sum_j Q_j<=sqrt(3)L.                          (571)
+```
+
+The comparisons follow mode by mode from
+`|k|<=|k_x|+|k_y|+|k_z|<=sqrt(3)|k|`. For the FULL actual family
+(558), the complete polynomial calculation gives
+
+```text
+W_y(0)=0,
+W_y(t)=A^2 B^2 t/4+O(t^2).                      (572)
+```
+
+Thus the nonzero B component supplies a positive nonlinear source to the
+directional resource, whose evolution had only diffusion in (566). This
+does not assert that the source already exceeds diffusion. The calculation retains
+all C,D,nu terms; their cancellation in (572) is an identity, not an
+assumption. A transient positive W_y does not refute an integrated payment.
+
+There is a concrete continuation consumer for a successful repair. If a
+finite allowance B_dir from the full original datum, nu and horizon bounds
+
+```text
+2 integral_0^t sum_j W_j-2alpha nu integral_0^t sum_j Q_j<=B_dir
+                                                        (573)
+```
+
+on every same-datum smooth prefix, then (571) gives
+`M(t)+2(1-alpha)nu integral L<=sum_j K_j(0)+B_dir`.
+This pays (494) with allowance `sum_j K_j(0)-M0+B_dir`.
+The allowance in (573) is OPEN for arbitrary data. Equation (568) pays
+one specific relative self-work term in a commuting geometry; it is not
+a proof of (573). The next test must control the actual commutator's
+generation and return, rather than assume directional variation decays.
+
+Run `python3 -O labs/relative_selfwork_history.py`. It checks the complete
+jet polynomials, independent pressure-inclusive NS jets, strict rational
+Bessel bounds, viscous comparison constants, adjacent-mode pairing and
+reserve algebra, including the first generation of directional work.
+The analytic PDE comparison, general commutator estimate,
+all-time payment and continuous-dependence extension are not Lean-certified.
+No Lean declaration or axiom changes.
