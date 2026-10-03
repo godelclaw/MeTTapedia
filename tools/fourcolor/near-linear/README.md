@@ -640,6 +640,44 @@ Replay `lake build Mettapedia.GraphTheory.FourColor.ForestGuardAudit` and
 [receipt](forest-guard-measurements.json) records the nine-root dependency
 audit, costs and scope. The source repair and attribution chain are retained.
 
+## Cycle closure with retained colours
+
+[CycleAnchors](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/CycleAnchors.lean)
+proves that if deleting a retained set `K` from a hidden region `S` leaves
+a forest, any two full proper colourings agreeing on `K` and outside `S`
+are connected by actual Kempe switches fixing both. A family of pairwise
+unreachable extensions of the same exterior therefore has at most
+`q ^ |K|` members for a palette of size `q`. For one retained vertex and
+four colours the bound is four, independent of the size of `S`.
+
+This distinguishes classes without declaring different retained colours
+unreachable: some can communicate through exact joint forest guards.
+`history_iff` proves both projection and reconstruction of entire histories
+while the original exterior remains fixed. The retained colours may move;
+feasibility and each transition still have to be checked.
+
+The [program replay](cycle-anchors-audit.json) uses the existing complete
+162-vertex sphere, whose degrees are five through seven. The frozen triangle
+has two feasible retained colours and no transition between them. A six-cycle
+around an actual vertex has two feasible retained colours in one class;
+their transition reconstructs into two physical component switches and fixes
+all 156 vertices outside the cycle. The leaf guard uses fifteen forward
+binary comparisons, excluding unary filtering and reconstruction. Independent
+enumeration of the two tiny local fibres (two and four full assignments)
+agrees with the guarded class partitions. Neither enumeration is used by the
+generic kernel proof, and concrete geometry remains program evidence.
+
+This repairs the loss of hidden class information for the stated domain.
+The theorem does not bound `|K|` for arbitrary maps, require enumerating all
+anchor assignments, produce an ordinary smaller map, establish geometric
+coverage or remove a catalogue dependency. The growth of the joint retained
+information under composition remains open.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.CycleAnchorsAudit` and
+`python3 tools/fourcolor/near-linear/audit_cycle_anchors.py`. The
+[fixture](cycle-anchors-example.json) pins both cycles; the
+[receipt](cycle-anchors-measurements.json) records theorem sizes and audits.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

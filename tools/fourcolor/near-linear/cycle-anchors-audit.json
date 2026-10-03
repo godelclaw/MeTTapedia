@@ -1,0 +1,99 @@
+{
+  "evidence": "Independent program checks of the generic cycle-anchor contract.",
+  "cases": [
+    {
+      "cycle": [
+        33,
+        75,
+        76
+      ],
+      "anchor": 33,
+      "feasible": [
+        0,
+        2
+      ],
+      "classes": [
+        [
+          0
+        ],
+        [
+          2
+        ]
+      ],
+      "transitions": [],
+      "full_assignments": 2,
+      "physical_classes": 2,
+      "brute_crosscheck": true,
+      "name": "frozen_triangle",
+      "ambient_vertices": 162,
+      "exterior_vertices": 159,
+      "hidden_forest_vertices": 2,
+      "source_degree_range": [
+        5,
+        7
+      ],
+      "source_repair_replayed": true,
+      "concrete_instance_kernel_certified": false
+    },
+    {
+      "cycle": [
+        42,
+        45,
+        46,
+        106,
+        43,
+        102
+      ],
+      "anchor": 42,
+      "feasible": [
+        1,
+        3
+      ],
+      "classes": [
+        [
+          1,
+          3
+        ]
+      ],
+      "transitions": [
+        {
+          "pair": [
+            1,
+            3
+          ],
+          "forward_edge_comparisons": 15,
+          "max_local_labels": 8,
+          "leaf_messages": 4,
+          "switches_by_phase": {
+            "prepare": 0,
+            "joint": 1,
+            "finish": 1
+          },
+          "largest_component": 2
+        }
+      ],
+      "full_assignments": 4,
+      "physical_classes": 1,
+      "brute_crosscheck": true,
+      "name": "six_cycle",
+      "ambient_vertices": 162,
+      "exterior_vertices": 156,
+      "hidden_forest_vertices": 5,
+      "source_degree_range": [
+        5,
+        7
+      ],
+      "source_repair_replayed": true,
+      "concrete_instance_kernel_certified": false
+    }
+  ],
+  "kernel_theorems": [
+    "SimpleGraph.KempeCycleAnchors.same_anchor_path",
+    "SimpleGraph.KempeCycleAnchors.one_anchor_card_le_four",
+    "SimpleGraph.KempeCycleAnchors.history_iff"
+  ],
+  "scope": "Anchor colours distinguish fixed-exterior physical classes when their deletion leaves a forest. Exact guard transitions reconstruct actual histories. Neither all anchor colours nor all transitions need be feasible. No bounded anchor set for arbitrary maps, ordinary smaller-map reduction, global coverage or net proof-cost saving is asserted.",
+  "fixture_sha256": "ebd38ffd77ae421bf2aee90f9584c48c06d24e3e4094fcd6496f505b27ea7952",
+  "verifier_sha256": "700771296ea6ec7992e60755ce0f83cb9c4cea077c0a64d87bbfd0b5ce960f23",
+  "credited_compression": false
+}

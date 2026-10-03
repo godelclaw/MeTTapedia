@@ -1,0 +1,59 @@
+{
+  "evidence": "One retained vertex for a frozen triangle and a repairable six-cycle in an actual sphere.",
+  "source": "independent-repair-example.json",
+  "source_sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e",
+  "source_case": 1,
+  "cases": [
+    {
+      "name": "frozen_triangle",
+      "cycle": [
+        33,
+        75,
+        76
+      ],
+      "anchor": 33,
+      "feasible_colours": [
+        0,
+        2
+      ],
+      "transitions": [],
+      "classes": [
+        [
+          0
+        ],
+        [
+          2
+        ]
+      ]
+    },
+    {
+      "name": "six_cycle",
+      "cycle": [
+        42,
+        45,
+        46,
+        106,
+        43,
+        102
+      ],
+      "anchor": 42,
+      "centre": 0,
+      "feasible_colours": [
+        1,
+        3
+      ],
+      "transitions": [
+        [
+          1,
+          3
+        ]
+      ],
+      "classes": [
+        [
+          1,
+          3
+        ]
+      ]
+    }
+  ]
+}

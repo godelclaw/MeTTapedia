@@ -1,0 +1,46 @@
+{
+  "evidence": "Kernel-proved retained-anchor class bound and exact physical history transport; concrete spherical program consumers.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.CycleAnchors",
+      "source_bytes": 3866,
+      "source_sha256": "7682acaeae3536f5880aa8516577c70f49669b383cbebde925716c79f479035c",
+      "lake_build_seconds": 1.8,
+      "olean_bytes": 76552,
+      "olean_sha256": "05fc61f5f243546da660d1c65185f648293c6a54c30f93049aadf8a3861cc9a2"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.CycleAnchorsAudit",
+      "source_bytes": 1751,
+      "source_sha256": "a937b8a8785b601c0b59a5473d10dc6a83442d2cacb370a4d4d54ae417ce5a93",
+      "lake_build_seconds": 2.5,
+      "olean_bytes": 2784,
+      "olean_sha256": "55e12accd6a27cc06804383e79edd8f8368d049e4f4892bc1ba7cc0e15d04ac2"
+    }
+  ],
+  "audit": {
+    "roots": 4,
+    "dependency_declarations": 8109,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false,
+    "forest_induction_and_physical_reconstruction_required": true
+  },
+  "proved": [
+    "Equal exterior and equal colours on a cycle-breaking set imply a Kempe path fixing both.",
+    "Any pairwise unreachable family of full extensions of the same exterior has cardinality at most q^|K|.",
+    "For one retained vertex and four colours the bound is four, with no hidden-region size bound.",
+    "Jointly guarded histories on the retained graph are equivalent to actual histories fixing the original exterior."
+  ],
+  "program_applications": "cycle-anchors-audit.json",
+  "program_scope": "A frozen facial triangle has two feasible anchor colours in distinct classes. A six-cycle has two feasible anchor colours in one class; its accepted transition reconstructs into two actual switches while fixing all 156 exterior vertices. Both use the same complete 162-vertex sphere. Exhaustive checks on two and four full local assignments agree with both partitions. Concrete instances are program checked, not kernel certified.",
+  "scope": "The class bound does not make all anchor colours or transitions feasible. No uniform bound on anchor count for arbitrary maps, ordinary smaller-map reduction, global geometric supply, closure of compact joint constraints under arbitrary composition, or net complete-proof cost saving is established.",
+  "checks": [
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_cycle_anchors.py"
+  ],
+  "credited_compression": false
+}
