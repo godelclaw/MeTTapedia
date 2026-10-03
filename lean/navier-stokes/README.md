@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [original-data boundary estimate](labs/README.md#original-data-boundary-smoothing-and-unrestricted-controls)
+pays the endpoint score of every complete backward sampling history
+using only the short regular interval guaranteed by the original datum.
+A capped age weight gives a uniform payment for all bounded sampling
+controls on both R3 and T3, with no controlled-density ratio assumption.
+On the torus, kernel composition also pays the uncapped conditional
+exponential at this boundary. The revised pressure reserve retains the
+cap's derivative and all compatible squares. These analytic results
+remove an endpoint cost; the interior pressure-connected stretching
+source remains open. The kernel argument itself also allows forcing
+outside the certified initial interval, so it cannot alone establish
+the unforced regularity conclusion. Exact symbolic checks accompany
+the derivation; no new Lean declarations are added.
+
 The [conditional deformation payment](labs/README.md#conditional-deformation-and-an-original-energy-payment)
 removes precisely the part of stochastic deformation invisible to all
 endpoint observations. On the fixed torus, incompressibility and
