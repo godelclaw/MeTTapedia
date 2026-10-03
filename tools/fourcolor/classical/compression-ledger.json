@@ -5404,7 +5404,7 @@
       "colouring_bridge": "Exact witness transport in both directions through the mirrored dual preserves forward port order.",
       "reconstruction": "whole_repair_of_planar_disk fills the seven source vertices after a compatible exterior repair for the retained eleven-port seed, given complete source stars and exterior coverage.",
       "limitations": [
-        "The particular retained exterior geometry is program-checked, not kernel-certified.",
+        "The retained instance is now separately kernel-certified in residual_exterior_repair; uniform patch-deletion supply remains open.",
         "Uniform patch-deletion geometry and geometric occurrence supply are unproved.",
         "Other seed classes, complete D0092 reducibility and compact universal coverage remain open."
       ]
@@ -5421,6 +5421,41 @@
       "large_repair_tables_used": false,
       "retained_seed_certificate": "residual-seed-repair-measurements.json"
     },
+    "new_repair_certificate_bytes": 0,
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "residual_exterior_repair": {
+    "measurements": "../near-linear/residual-exterior-repair-measurements.json",
+    "classification": "CHECKED_ACTUAL_DISK_AND_JOINT_AMBIENT_RECONSTRUCTION",
+    "scope": {
+      "geometry": "The existing 155-vertex exterior is a connected planar rotation with one ordered eleven-dart face and triangular other faces. Complete row adjacency and spanning-tour checks connect the rotation to the exact existing graph.",
+      "reusable_theory": "Duplicate-free complete neighbour rows supply vertexwise cyclic graph rotations. A symbolic Euler balance supplies planarity for a connected triangulated disk with exact vertex cycles.",
+      "nontriviality": "initial_cannot_extend proves that the initial exterior colouring cannot be the restriction of any ambient colouring.",
+      "reconstruction": "reconstructed provides source, exterior and ambient colouring witnesses, with equality at every source image and every retained exterior vertex. No geometry, closure or successful repair premise remains for this fixture.",
+      "limitations": [
+        "One fixed retained occurrence and seed; not complete D0092 reducibility.",
+        "Uniform deletion geometry, occurrence supply and other boundary classes remain open.",
+        "No physical switch history or switch-count bound from the initial exterior to the selected exterior witness.",
+        "No new strict-reduction family, catalogue removal or whole-proof speedup."
+      ]
+    },
+    "audit": {
+      "roots": 10,
+      "dependency_declarations": 12563,
+      "allowed_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "complete_four_colour_theorem_used": false,
+      "large_repair_tables_used": false,
+      "retained_seed_certificate": "residual-seed-repair-measurements.json",
+      "initial_colouring_source": "MettapediaFourColor.ResidualPortPreparationExample"
+    },
+    "new_geometry_data_source_bytes": 5123,
     "new_repair_certificate_bytes": 0,
     "new_catalogue_entries_removed": 0,
     "new_original_certificate_dependencies_removed": 0,

@@ -1,5 +1,58 @@
 # Near-linear Four Colour catalogue bridges
 
+## An actual exterior disk and source reconstruct the ambient graph
+
+[The retained exterior](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualExteriorDiskGeometry.lean)
+now satisfies the planar disk contract in Lean: 155 vertices, 451 edges,
+297 triangular faces and one ordered eleven-edge boundary. Complete
+adjacency, cyclic neighbour rows and a spanning tour connect the compact
+rotation data to the existing graph. The general
+[row rotation](../../../lean/fourcolor-classical/MettapediaFourColor/GraphRotationRows.lean)
+and [Euler](../../../lean/fourcolor-classical/MettapediaFourColor/GraphDiskEuler.lean)
+lemmas establish vertex cyclicity and planarity without a table of all
+dart-pair orbit relations. The Euler argument reuses Gonthier/Emery.
+
+[The colouring consumer](../../../lean/fourcolor-classical/MettapediaFourColor/ResidualExteriorRepair.lean)
+proves two complementary facts. Keeping the initial exterior colouring
+fixed cannot colour the ambient graph. The joint seed repair nevertheless
+supplies compatible genuine source and exterior colourings; the same
+ambient colouring restricts to both of them. All seven deleted vertices
+are filled, and every retained exterior vertex keeps the chosen repaired
+colour. No geometry, closure or successful repair premise remains for this
+particular 162-vertex graph.
+
+```text
+exact exterior graph + cyclic rows + local faces + Euler balance
+                              |
+                  planar joint boundary relation
+                              |
+                   existing compact seed repair
+                              |
+              one source + one compatible exterior
+                              |
+                one complete ambient colouring
+```
+
+The new input is 155 packed neighbour rows and a spanning tour, not a
+colouring table. The previously checked 1,707-byte seed strategy and the
+existing initial exterior colouring are reused. This proves one actual
+consumer of the size-independent disk theorem. It is not a uniform
+patch-deletion supplier, complete D0092 reducibility, or universal coverage;
+it does not claim a physical Kempe-switch sequence from the initial
+colouring to the selected exterior witness.
+
+The [measurement receipt](residual-exterior-repair-measurements.json)
+records local build costs, exact source and artifact hashes, and the
+dependency audit. No complete Four Colour theorem or large repair table
+is used. The complete classical proof retains 633 coverage entries and
+629 original configuration certificates; 336 member checks are replaced.
+
+```sh
+python3 tools/fourcolor/near-linear/generate_exterior_disk_data.py
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.ResidualExteriorAudit
+```
+
 ## Planar exterior geometry supplies the joint repair relation
 
 [PlanarGraphBoundaryClosure](../../../lean/fourcolor-classical/MettapediaFourColor/PlanarGraphBoundaryClosure.lean)
@@ -24,8 +77,8 @@ The [punctured-rotation diagnostic](planar-exterior-disk-audit.json) checks
 the retained example: 155 vertices, 451 edges, 297 triangular faces and one
 eleven-edge boundary in the source port order. It verifies connectedness,
 the Euler equation and equality with the existing Lean graph and ordered
-ports. This particular geometry is program evidence, not a kernel-certified
-instance of the disk hypotheses.
+ports. That receipt records the earlier program diagnostic. The separate
+Lean instance and its colouring consumer are certified above.
 
 ```sh
 python3 tools/fourcolor/near-linear/audit_planar_exterior_disk.py

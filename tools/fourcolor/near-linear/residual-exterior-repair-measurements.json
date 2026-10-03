@@ -1,0 +1,126 @@
+{
+  "classification": "CHECKED_ACTUAL_DISK_AND_JOINT_AMBIENT_RECONSTRUCTION",
+  "fixture": "component-detach-example.json",
+  "fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.GraphRotationRows",
+      "source_bytes": 3565,
+      "source_sha256": "2c27650b2aeb82068ad7dcfe2edcddbbf616e4e4ac59e32da175290748ba6814",
+      "olean_bytes": 192512,
+      "olean_sha256": "39abc1ecb038309441fad8b66833f1f0862455ccf320c2718b8fe812259e4a90",
+      "build_frontend_seconds_rounded": 2.8
+    },
+    {
+      "module": "MettapediaFourColor.GraphDiskEuler",
+      "source_bytes": 3605,
+      "source_sha256": "22aed9d69594cb439384d119024b0bb1c8a1f89f2bbb72a1978097115da8b1cb",
+      "olean_bytes": 89304,
+      "olean_sha256": "47b433df6bfe96108fcbb7d54848ef7cbfac32587336224398df75423e13ac04",
+      "build_frontend_seconds_rounded": 2.8
+    },
+    {
+      "module": "MettapediaFourColor.ResidualExteriorDiskData",
+      "source_bytes": 5123,
+      "source_sha256": "5a153b6f9a987b4b1a9eddeaa779cc1d01cb46bcc940a1fef5bbb5e4fb7b4920",
+      "olean_bytes": 966088,
+      "olean_sha256": "dc15af58d9e39b1e466fdd458c97b435d928a54ade00bfea2332b72b07101869",
+      "build_frontend_seconds_rounded": 1.8
+    },
+    {
+      "module": "MettapediaFourColor.ResidualExteriorDiskChecked",
+      "source_bytes": 801,
+      "source_sha256": "0d8aab4cc8c9b4148b8ffba638928632f86b837bb27aaaef2f24601ac70251b3",
+      "olean_bytes": 23552,
+      "olean_sha256": "8fa1c92b15026303c74698c0cde783633408c4f072ffee7f247c2f69d153524e",
+      "build_frontend_seconds_rounded": 66.0
+    },
+    {
+      "module": "MettapediaFourColor.ResidualExteriorDiskRows",
+      "source_bytes": 1551,
+      "source_sha256": "b02252118c7b87f3245957f598f510fe2d69dc0eb8b180fa30cf50b821f8d901",
+      "olean_bytes": 100384,
+      "olean_sha256": "d5ba521433f1bc88fe699654906410c22e027520750e35e0af7c5f6d3e25cb8d",
+      "build_frontend_seconds_rounded": 4.2
+    },
+    {
+      "module": "MettapediaFourColor.ResidualExteriorDiskGeometry",
+      "source_bytes": 2976,
+      "source_sha256": "213611bfdd4ec6fa2ba10724f4b806b7c5c9dac313401e2febeda8ffe5f3a4d5",
+      "olean_bytes": 168632,
+      "olean_sha256": "d470a5432fcfcb05682ae19426f6df839e4dddc9124950b453d197e16d879e9a",
+      "build_frontend_seconds_rounded": 26.0
+    },
+    {
+      "module": "MettapediaFourColor.ResidualExteriorPatch",
+      "source_bytes": 4354,
+      "source_sha256": "d7b15900b498f6471074832d6bc060dad5101636b67a216e8215bb15aa6fc106",
+      "olean_bytes": 175376,
+      "olean_sha256": "8046ab419abd3a29ca2a18b81990103ca1296cecc4fd70e1dbf63e6ccdf04e6c",
+      "build_frontend_seconds_rounded": 12.0
+    },
+    {
+      "module": "MettapediaFourColor.ResidualExteriorRepair",
+      "source_bytes": 3194,
+      "source_sha256": "dfa5e884b12e2d83ca417751fea594a4d028e1e6f6e9773cf8d7b800c38ffa1f",
+      "olean_bytes": 56760,
+      "olean_sha256": "a08efa26075850803407b639594eb29ef06fec2a6fdde78ac4f66066f55de681",
+      "build_frontend_seconds_rounded": 3.2
+    },
+    {
+      "module": "MettapediaFourColor.ResidualExteriorAudit",
+      "source_bytes": 2870,
+      "source_sha256": "d7cbdfd9f2eb73c0a3578301a19c8f806310d3ae266abc99ba7c0dca902ede0a",
+      "olean_bytes": 3232,
+      "olean_sha256": "ed11cc134b35a3fb5aa91700a5c9549b1967cf5c94e0e85f9cf58a5989f860e3",
+      "build_frontend_seconds_rounded": 5.1
+    }
+  ],
+  "new_lean_source_bytes": 28039,
+  "new_geometry_data_source_bytes": 5123,
+  "new_repair_certificate_bytes": 0,
+  "cost_scope": "Rounded Lake frontend times of the final successful individual modules, measured across incremental builds. These are not a clean end-to-end time or savings in the classical proof.",
+  "generator": "generate_exterior_disk_data.py",
+  "generator_reproduction_matches": true,
+  "mathematical_scope": {
+    "geometry": "The existing 155-vertex exterior is a connected planar rotation with one ordered eleven-dart face and triangular other faces. Complete row adjacency and spanning-tour checks connect the rotation to the exact existing graph.",
+    "reusable_theory": "Duplicate-free complete neighbour rows supply vertexwise cyclic graph rotations. A symbolic Euler balance supplies planarity for a connected triangulated disk with exact vertex cycles.",
+    "nontriviality": "initial_cannot_extend proves that the initial exterior colouring cannot be the restriction of any ambient colouring.",
+    "reconstruction": "reconstructed provides source, exterior and ambient colouring witnesses, with equality at every source image and every retained exterior vertex. No geometry, closure or successful repair premise remains for this fixture.",
+    "limitations": [
+      "One fixed retained occurrence and seed; not complete D0092 reducibility.",
+      "Uniform deletion geometry, occurrence supply and other boundary classes remain open.",
+      "No physical switch history or switch-count bound from the initial exterior to the selected exterior witness.",
+      "No new strict-reduction family, catalogue removal or whole-proof speedup."
+    ]
+  },
+  "audit": {
+    "roots": 10,
+    "dependency_declarations": 12563,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false,
+    "retained_seed_certificate": "residual-seed-repair-measurements.json",
+    "initial_colouring_source": "MettapediaFourColor.ResidualPortPreparationExample"
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.ResidualExteriorAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  }
+}
