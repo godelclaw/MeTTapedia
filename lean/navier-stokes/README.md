@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [combined pressure envelope](labs/README.md#a-combined-pressure-bound-beyond-the-first-return)
+pays the favorable and adverse feedback terms together. It gives an analytic
+all-time comparison at small amplitude and a uniform initial interval on the
+nonlinear clock for strong amplitudes. An actual small-amplitude history
+nevertheless violates instantaneous domination of its cost rate by the
+envelope's rate: earlier savings must remain available to later intervals.
+The full value bound at arbitrary amplitudes and horizons remains open.
+Exact sign certificates and numerical discovery prefixes accompany the
+analytic arguments; none is a new Lean certificate.
+
 The [complete cyclic pressure payment](labs/README.md#whole-time-cyclic-pressure-depletion-and-a-funded-continuation)
 extends the favorable local return to an all-time comparison for sufficiently
 small, independently varying cyclic parent amplitudes in two frequency

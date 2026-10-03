@@ -34839,3 +34839,286 @@ analytic arguments. No Lean declarations or axioms change.
 Use `python3 -O labs/pressure_impulse_payment.py --next-coefficient`
 to check the complete degree-sixteen calculation and its positive
 whole-time certificate separately.
+
+## A combined pressure bound beyond the first return
+
+`pressure_impulse_envelope.py` tests whether the favorable and adverse
+returns in (665) can be paid together. It reuses the complete viscous
+amplitude recurrence and conditional pressure moments. The resulting
+comparison is proved analytically for all time at sufficiently small
+amplitude, and on an initial nonlinear time interval without amplitude
+smallness. Its extension to arbitrary amplitude over arbitrary horizons
+remains open. The calculation also gives an actual-flow obstruction to
+proving this comparison by domination of instantaneous rates.
+
+### One candidate keeps both signs
+
+For a nonzero real amplitude epsilon and initial datum
+`u_0=epsilon (sin y,sin z,sin x)` at viscosity one, keep the actual
+stochastic pressure impulse P and Phi=E|P|^4 of (656). Write
+`a(t)=F_0(t)`, `b(t)=F_14(t)` and `c(t)=F_16(t)` for the complete
+coefficients already computed in (665). In particular a>0, b<0 and
+c>0 at positive times. Define the original-data envelope
+
+```text
+B_epsilon(t)=epsilon^12 a(t)^2/[a(t)-epsilon^2 b(t)],
+B_epsilon(0)=0,
+0<B_epsilon(t)<=epsilon^12 a(t)<=epsilon^12 L_1.          (666)
+```
+
+Its denominator is positive. This is a proposed upper bound for the
+actual pressure history, not a new fluid evolution or a freedom to choose
+its pressure. It matches the first two amplitude terms of Phi, while
+including a positive degree-sixteen term. The first unmatched difference is
+
+```text
+Phi_epsilon-B_epsilon
+ =epsilon^16 G(t)+O(epsilon^18),
+G=c-b^2/a=H/a,                 H=ac-b^2.                 (667)
+```
+
+The complete degree-sixteen coefficient must be used: replacing it with
+independent repetitions of the first return would discard generated
+parents and existing conditional moments.
+
+### Exact combined depletion over the whole clock
+
+The finite exponential-polynomial certificate (659) gives
+
+```text
+H'(t)<0, H(t)<0, G(t)<0,                    every t>0.
+a(t)=a_0 t^8+O(t^9), b(t)=-d_0 t^10+O(t^11),
+c(t)=c_0 t^12+O(t^13),
+a_0=99/512, d_0=20641/152064,
+c_0=106168693607/2059433164800,
+q=d_0^2/a_0-c_0=2972406502169/67961294438400>0.           (668)
+```
+
+Thus the positive correction is strictly smaller than the amount
+provided by this particular combined expression. The H' certificate
+has 247 levels, maximum rate 56, and first strict datum at level 19.
+That datum equals `-20! a_0 q`. No time sampling is used to prove
+these signs. The pressure and all generated moment fields entering
+this calculation are checked against their complete coefficient equations.
+A separate Euler material-path calculation, using the full evolving velocity
+and pressure time jets, independently reproduces a_0,d_0,c_0. It does not
+use the stochastic moment recurrence or the exponential-polynomial evolution.
+
+The certificate supplies a quantitative margin. With
+`eta=a_0 q/3^56`, the argument of (660) gives
+`H<=-eta min(t^20,1)`. The forecast pressure gradient is
+`t exp(-3t)grad[-2 cos x cos y cos z]`; its norm is bounded by
+`2 sqrt(3)t`. Hence `a(t)<=9t^8`, and its exact infinite-time stock
+also satisfies `L_1<9`. Consequently
+
+```text
+G(t)<=-delta min(t^12,1),  delta=eta/9>0.                (669)
+```
+
+### Actual all-time comparison in a small neighborhood
+
+As in (661), the global complex small-data solution and the complete
+conditional moment equations depend analytically on epsilon. The ratio
+`b/a` is bounded over the whole half-line: near zero it is O(t^2),
+and away from zero use a's positive monotonicity and b's finite limit.
+Thus the denominator in (666) also stays nonzero in a sufficiently small
+complex amplitude disc, uniformly in time.
+
+After subtracting the exactly matched degree-twelve and degree-fourteen
+terms, analytic division gives
+
+```text
+Phi_epsilon-B_epsilon=epsilon^16 G+epsilon^18 W_epsilon,
+|W_epsilon(t)|<=C min(t^12,1).                           (670)
+```
+
+Here C is obtained from the same fixed-point and differentiated-equation
+majorants, using twelve time derivatives on [0,1]. The H^40 estimates
+leave enough spatial derivatives. The needed lower time jets vanish:
+a pressure coefficient of amplitude degree n>=3 starts no earlier than
+time order n-2; each impulse integration increases time order by one.
+Every fourth-moment contribution of degree n therefore starts no earlier
+than time order n-4. The odd total amplitude terms vanish by translation
+symmetry. The rational expression has the same property, since b/a is
+O(t^2). In particular the remainder in (670) has zero time derivatives
+through order eleven. Cauchy estimates and Taylor's integral remainder
+then give the stated uniform bound. This argument does not divide a
+bare uncontrolled error by epsilon or by a small value of a(t).
+
+Choose a positive epsilon_0 within that convergence disc and with
+`C epsilon_0^2<=delta/2`. For every `0<|epsilon|<=epsilon_0`,
+
+```text
+Phi_epsilon(t)<=B_epsilon(t)
+              -(delta/2)epsilon^16 min(t^12,1), t>=0.   (671)
+```
+
+This is an actual nonlinear stochastic-history comparison. The smallness
+threshold is conservative and not numerically evaluated. It strengthens
+the envelope for this family; it does not establish new small-data
+regularity or an arbitrary-data theorem.
+
+### A strong-amplitude initial interval
+
+There is also a comparison without smallness of the dimensional amplitude.
+For the unit cyclic datum at viscosity mu>=0, let Phi_mu denote the actual
+pressure-impulse fourth moment. At mu=0 the paths are deterministic Euler
+paths. Define
+
+```text
+a_mu(t)=mu^(-8)a(mu t), b_mu(t)=mu^(-10)b(mu t),
+B_mu(t)=a_mu(t)^2/[a_mu(t)-b_mu(t)]       when mu>0,
+a_0(t)=(99/512)t^8, b_0(t)=-(20641/152064)t^10,
+B_0(t)=(99/512)^2 t^8/[(99/512)+(20641/152064)t^2].       (672)
+```
+
+The subscript-zero functions in (672) refer to zero viscosity, whereas
+the constants a_0,d_0 in (668) are leading Taylor coefficients.
+The apparent singularities at mu=0 are removable. These functions can
+also be constructed directly from the finite coefficient heat equations,
+whose solutions are smooth in mu on any bounded time interval.
+
+Complete initial jets, including viscosity, give
+
+```text
+Phi_mu(t)-B_mu(t)=-q t^12+O(t^13).                       (673)
+```
+
+The leading coefficient is independent of mu. Terms of amplitude degree
+at least eighteen cannot enter before time order fourteen. The viscosity
+terms at lower amplitude degrees are already retained exactly in a_mu
+and b_mu; they are not silently omitted to obtain (673).
+
+This has a uniform actual-flow interpretation. Local existence on a
+viscosity-independent interval is classical; see
+[Kato's whole-space result](https://www.sciencedirect.com/science/article/pii/0022123672900031).
+For the periodic datum here, the Sobolev energy estimate gives the needed
+bound directly. With Y=||u||_(H^40), the dissipative viscous term and
+Sobolev embedding give `Y'<=C_40 Y^2`, uniformly for 0<=mu<=1.
+Thus `T_loc=1/(2 C_40 ||U||_(H^40))` supplies `Y<=2||U||_(H^40)`
+on one common interval. The fixed constants and original norm determine
+this bound before the future flow is known.
+
+The moment equations have uniform H^39 transport-diffusion estimates
+with the actual H^40 coefficients and H^39 pressure gradients. Their
+triangular source terms and Gronwall bounds use that same original-data
+majorant. Their differentiated equations, through thirteen time derivatives,
+have uniform bounds on a smaller common interval. At mu=0 they are the
+deterministic moment equations.
+After factoring t^8 from the denominator in (672), its remaining factor
+is uniformly positive near zero. Taylor remainders for the difference
+in (673) are therefore bounded by one fixed C_* t^13 with C_*>0. Taking
+`tau_0<=q/(2C_*)` within the common interval proves
+`Phi_mu-B_mu<=-(q/2)t^12` for 0<t<=tau_0, uniformly for 0<=mu<=1.
+These are local smooth-solution estimates, not an assumption about an
+unknown long-time solution.
+
+For physical data `A(sin(ell y),sin(ell z),sin(ell x))`, with A>0,
+integer ell>=1 and viscosity nu>0, put `mu=nu ell/A` and `tau=A ell t`.
+The pressure impulse scales by A. Thus, whenever A>=nu ell, the actual
+flow satisfies
+
+```text
+Phi_physical(t)<=A^4 B_mu(A ell t),
+0<=t<=tau_0/(A ell),
+Phi_physical(t)-A^4 B_mu(A ell t)
+ <=-(q/2)A^16 ell^12 t^12.                              (674)
+```
+
+The dimensionless nonlinear interval tau_0 is independent of A, nu and
+ell in this range. It need not contain a complete pattern cycle, and
+its numerical length has not been optimized. In particular it is not
+an arbitrary-horizon bound. The entire initial interval has the finite
+allowance `9A^4 tau_0^8`, since a_mu(t)<=9t^8 uniformly in mu>=0.
+Its shrinking physical duration is essential and cannot be discarded
+when attempting to compose subsequent intervals.
+
+### The instantaneous-rate proof fails on actual flows
+
+Even the all-time small-amplitude comparison (671) cannot be justified
+by requiring `Phi_epsilon'<=B_epsilon'` at every time. Differentiating
+the complete next difference gives
+
+```text
+G'=K/a^2,
+K=a^2 c'-2ab b'+b^2 a',
+3*10^(-41)<K(12)<4*10^(-41).                            (675)
+```
+
+The last enclosure is rational. The checker bounds exp(12) by a positive
+Taylor sum and a geometric tail, reciprocates the bounds, then evaluates
+each signed term of the exponential polynomial K with exact rational
+endpoints. It does not infer a sign from floating-point cancellation.
+
+Analytic dependence and its differentiated remainder now imply that,
+for all sufficiently small nonzero epsilon, the actual unforced
+positive-viscosity history has
+
+```text
+Phi_epsilon(12)<B_epsilon(12),
+Phi_epsilon'(12)>B_epsilon'(12).                         (676)
+```
+
+The effect is very late and small; it is a counterexample to the stated
+instantaneous-rate verification, not evidence of singularity. In terms
+of the nonnegative slack `S(t)=B_epsilon(t)-Phi_epsilon(t)`, earlier
+returns have accumulated savings and S is decreasing at this time.
+The compatible signed balance is
+
+```text
+integral_s^t [4 integral grad p.T - B_epsilon']
+ =S(s)-S(t)<=S(s).                                      (677)
+```
+
+Retain the original clock, actual fluid and pressure moments at the
+seam. Setting S(s)=0 or restarting the pressure impulse would erase the
+resource that pays this interval. This is a concrete reason to allow
+withdrawals from a history-dependent reserve. It refutes the stronger
+instantaneous comparison, not the proposed value bound (666).
+
+### Numerical adversarial checks and the remaining boundary
+
+The optional prefix mode evolves all three velocities, three first
+moments, six second moments, three third moments and the spatially
+integrated fourth moment. It reuses the existing dealiased Fourier
+operations and Lawson RK4 step. Canonical pressure and generated modes
+within the retained grid evolve together. The output reports the energy
+balance, high-mode fractions and the minimum eigenvalue of `Q-I I^T`.
+These are numerical diagnostics, not certified continuum error bounds.
+
+The strong-advection tests use the unit-amplitude nonlinear clock and
+viscosities 0.05,0.25,1, with comparisons to zero viscosity as a diagnostic.
+A low-resolution zero-viscosity run loses moment positivity; it cannot
+certify a physical stochastic distribution or be counted as a rigorous
+inequality test. Resolution and step refinement are required even when
+the scalar comparison has a large favorable margin.
+
+At nonlinear time two, the following approximations stay below the envelope:
+
+| viscosity | grid | time step | Phi | Phi/B |
+|---|---|---|---|---|
+| 0.05 | 48^3 | 0.005 | 2.203688882 | 0.4138902900 |
+| 0.25 | 32^3 | 0.0025 | 0.1292751102 | 0.6338462627 |
+| 1 | 32^3 | 0.005 | 0.000054028835 | 0.9787254505 |
+
+For viscosity 0.05 the final Phi changes relatively by 6.2e-8 from 32^3
+to 48^3. The latter run has positive conditional covariance at every sampled
+time, final high-moment fraction 6.4e-8, and energy-balance error below 9e-13.
+For viscosity 0.25 the relative change from 24^3 to 32^3 is 2.6e-11, and
+halving the time step at 32^3 changes Phi by 4.0e-11 relatively. These
+convergence comparisons do not provide rigorous errors against the PDE.
+
+The remaining target is still the combined value inequality (666) for
+arbitrary amplitudes and horizons, or a precise actual-flow counterexample
+to it. The local result (674) cannot be restarted after the initial
+geometry has changed. The small-amplitude result (671) does not remove
+that limitation for strong interacting parents. Neither exact finite
+coefficients nor successful numerical samples close this boundary.
+
+Run `python3 -O labs/pressure_impulse_envelope.py` for the exact checks,
+`python3 -O labs/pressure_impulse_envelope.py --material-check` for the
+independent material calculation, or
+`python3 -O labs/pressure_impulse_envelope.py --prefix --n 32 --nu .25 --dt .0025 --final 2`
+for a numerical prefix. Python compilation and exact
+algebra are separate from the analytic actual-flow remainder arguments.
+No Lean declarations or axioms change.
