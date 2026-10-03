@@ -38907,3 +38907,186 @@ symbolic frequency law, all amplitude coefficients, positive-polynomial
 certificates, the signed margin, independent full physical Fourier jets
 and the complete viscosity-polynomial moment fixtures. Local PDE
 intervals and stochastic identification remain analytic.
+
+## Oblique parents reverse the pressure-history correction
+
+The law (813) depends on more than initial zero pressure and a cyclic
+arrangement of parents. `pressure_oblique_return.py` gives a smooth
+periodic unforced example with those two properties for which the matched
+pressure-history comparison has the opposite sign. The forecast retains
+the complete heat evolution of the oblique waves. Its failure is not an
+artifact of applying the orthogonal resonance formula in new coordinates.
+
+### The physical datum and its matched original forecast
+
+On the normalized period-2pi torus take
+
+```text
+U=(sin y-4 sin z, sin z, sin(x+4y)).                    (820)
+```
+
+This is the pushforward of a cyclic field by an integer linear shear
+of determinant one. It is divergence-free and has initial canonical
+pressure zero. That shear is not a symmetry of the Euclidean NS equation:
+both the physical inverse Laplacian and diffusion must be recomputed.
+All calculations below use their ordinary Euclidean values. In particular,
+
+```text
+p_t(0)=-(1/9) cos(x+5y)cos z-(3/11) cos(x+3y)cos z.    (821)
+```
+
+For any fixed nu>0 define from the ORIGINAL datum
+
+```text
+H(t)=exp(nu t Delta)U,
+V_t-nu Delta V=-P[(H.grad)H],       V(0)=0,
+-Delta p3=div div(H tensor V+V tensor H),
+integral p3=0,                    g_gen=grad p3.       (822)
+```
+
+P is the solenoidal projection. For this datum H has pressure zero for
+every time, so the quadratic source in (822) is already solenoidal.
+H and V are the first two homogeneous amplitude terms of the actual NS
+solution, and p3 is its entire cubic pressure term. They are explicitly
+computable finite Fourier heat convolutions. No later state is substituted
+for U. In general `g_gen` is not `t exp(nu t Delta)grad p_t(0)` here,
+because the input and generated Laplace eigenvalues do not always add.
+
+Let Phi be the fourth pressure-impulse moment of the actual local unforced
+solution, sampled along `dX=u(t,X)dt+sqrt(2nu)dW` from uniform initial
+position. Let Phibar use g_gen along uniform Brownian paths with the SAME
+viscosity and no fluid drift. This auxiliary forecast is not a forced
+fluid. The conditional moments of both histories start at zero once.
+
+The forecast has a finite original-data stock. For example, let Mj be
+the initial Fourier Wiener sum `sum_q |q|^j |Uhat(q)|`, j=0,1,2.
+The mean of V is zero. Heat decay and contraction of P give
+
+```text
+W0(H)<=M0 exp(-nu t),      W1(H)<=M1 exp(-nu t),
+W0(V)<=M0 M1 t exp(-nu t),
+W1(V)<=(M1^2+M0 M2)t exp(-nu t).
+```
+
+The Fourier pressure multiplier then gives
+
+```text
+||g_gen(t)||infinity<=C(U)t exp(-2nu t),
+C(U)=4M0 M1^2+2M0^2 M2,
+Phibar(t)<=[C(U)/(4nu^2)]^4.                          (823)
+```
+
+This supplies a finite forecast without assumptions about the unknown
+future fluid. The counterexample below concerns its time-dependent
+comparison curve, not violation of the larger stock (823).
+
+### Complete positive-viscosity comparison failure
+
+The full moment equations, computed over QQ(i)[nu], give
+
+```text
+Phi(t)-Phibar(t)=delta t^10+O(t^11),
+delta=388474522689518625902918581
+      /128553647224867666773083481600 >0.              (824)
+```
+
+The coefficients through order nine cancel exactly. At order ten the
+complete viscosity-squared term also cancels; the remaining delta is
+independent of viscosity. To check the matching, the cubic forecast jets
+are derived directly from (822), separately from the full NS recurrence.
+They agree with the entire cubic-amplitude part of those full pressure
+jets. The independent rational-viscosity Fourier recurrence also checks
+the full velocity and canonical pressure fields.
+
+Local H40 bounds from U and nu, followed by the triangular conditional
+moment equations, bound eleven time derivatives on an original-data
+interval. If the difference remainder is at most M t^11, choose a
+smaller tau<=delta/[2(1+M)]. Then the ACTUAL solution satisfies
+
+```text
+Phi(t)-Phibar(t)>=(delta/2)t^10>0,       0<t<=tau,      (825)
+```
+
+for every fixed positive viscosity. This is an analytic local-solution
+argument supported by exact algebra, not a formal Lean interval theorem.
+
+The failure does not require the previously favorable contribution to
+turn positive. In the full material expansion `P=t^2 A+t^3 B+t^4 C+...`,
+write
+
+```text
+L=-4 integral |A|^2 A.C,
+Ppos=2 integral |A|^2 |B|^2+4 integral (A.B)^2.
+```
+
+Here L>0 and both terms in Ppos are strictly positive, but
+
+```text
+Ppos/L=3097380746164991847708492620
+        /2708906223475473221805574039 >1.              (826)
+```
+
+Thus the positive contributions exceed the signed payment by about
+14.34 percent. In contrast, (817) paid both terms with a uniform margin
+in the orthogonal family. For the tested shears 1,2,4,8 at k=1, the
+complete initial correction is respectively negative, negative, positive,
+negative. No monotone dependence on the shear is asserted. The pressure
+source and its material paths evolve together throughout this calculation.
+
+### The same failure occurs with a global diffusion payment
+
+For initial datum lambda U, lambda>0, rescaling amplitude and physical
+time gives the exact relation
+
+```text
+Phi_(lambda,nu)(t)-Phibar_(lambda,nu)(t)
+ =lambda^4 [Phi_(1,nu/lambda)(lambda t)
+            -Phibar_(1,nu/lambda)(lambda t)].          (827)
+```
+
+The first adverse coefficient is therefore delta lambda^14. It persists
+for arbitrarily small nonzero amplitudes at each positive viscosity.
+These small copies have an explicit GLOBAL positive payment from the
+existing gradient-energy argument (733) and pressure tail (795).
+Their original resources are
+
+```text
+||lambda U||2^2=(19/2)lambda^2,
+||grad(lambda U)||2^2=(35/2)lambda^2.
+```
+
+If `0<lambda<=nu/128`, the first-exit parameter in (733) obeys, using pi<4,
+
+```text
+theta=2 kappa_nu ||grad(lambda U)||2^4/nu
+ <5589675/268435456<1/40.
+```
+
+Consequently the actual unforced solution is globally smooth, its gradient
+decays, and its entire original pressure history satisfies
+
+```text
+Phi_(lambda,nu)(t)^(1/4)
+ <=(28000/13) lambda^2/nu,                 every t>=0. (828)
+```
+
+Indeed the total squared-Laplacian cost is at most
+`(40/39nu)*(35/2)lambda^2`; multiply by the conservative pressure factor
+120 from (795). The initial impulse is zero, so no past cost is omitted.
+This supplies an explicit finite reserve for the same geometry that
+violates the sharper forecast comparison. These examples have neither
+external forcing nor a singularity.
+
+The failed assertion is the extension of the orthogonal initial
+domination law to all pressure-free cyclic geometries. Neither the
+unbounded orthogonal-family theorem nor the possibility of a larger
+full-datum allowance is refuted. Subsequent general histories require
+payment of the positive geometric terms after parents change direction;
+one cannot reuse (817) solely because the interaction graph is cyclic.
+The small-gradient payment (828) does not solve that arbitrary-data task.
+
+Run `python3 -O labs/pressure_oblique_return.py`. It checks the explicit
+datum and pressure, independent matched-forecast jets, full viscous moment
+cancellation, signed decomposition, nearby exact geometries, initial
+resources and rational global-payment constants. PDE continuation and
+stochastic identification remain analytic; no Lean declarations change.

@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [oblique-parent test](labs/README.md#oblique-parents-reverse-the-pressure-history-correction)
+shows where the orthogonal return law stops applying. An explicit sheared
+cyclic datum has a favorable signed contribution, but its two positive
+costs exceed that payment. The complete pressure history exceeds its
+correctly matched cubic heat forecast on an actual initial interval at
+every positive viscosity. Scaled copies satisfy an explicit global
+diffusion payment, so this comparison failure also occurs in globally
+regular flows. A larger full-datum allowance remains possible.
+
 The [unequal-scale pressure return](labs/README.md#a-complete-pressure-return-depletes-across-unequal-scales)
 proves a favorable initial comparison for an unbounded cyclic family,
 with arbitrary independent parent strengths and positive viscosity.
