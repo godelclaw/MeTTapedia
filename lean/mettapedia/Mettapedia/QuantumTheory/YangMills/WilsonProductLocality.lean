@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.WilsonPinnedIntegral
+import Mathlib.Probability.Independence.Basic
 
 /-!
 # Exact cancellation of untouched product coordinates
@@ -23,6 +24,20 @@ export WilsonLocalResponse (DependsOn DependsOff)
 namespace DependsOn
 export WilsonLocalResponse.DependsOn (mul mono)
 end DependsOn
+
+/-- Selecting distinct coordinates preserves their product probability law. -/
+theorem measurePreserving_coordinateSelection {Y : Type*} [Fintype Y]
+    (ν₀ : Measure E) [IsProbabilityMeasure ν₀] (f : Y → X) (hf : Function.Injective f) :
+    MeasurePreserving (fun U : X → E => fun y => U (f y))
+      (Measure.pi fun _ : X => ν₀) (Measure.pi fun _ : Y => ν₀) := by
+  have hi := ProbabilityTheory.iIndepFun_pi
+    (μ := fun _ : X => ν₀) (X := fun _ : X => id) (fun _ => aemeasurable_id)
+  have hj := ProbabilityTheory.iIndepFun.precomp hf hi
+  refine ⟨measurable_pi_lambda _ (fun y => measurable_pi_apply (f y)), ?_⟩
+  rw [hj.map_fun_eq_pi_map (fun y => (measurable_pi_apply (f y)).aemeasurable)]
+  congr 1
+  funext y
+  exact (measurePreserving_eval (fun _ : X => ν₀) (f y)).map_eq
 
 /-- Real-valued product factorization, with dependence conditions referring
 to the original coordinates, rather than supplied independence hypotheses. -/

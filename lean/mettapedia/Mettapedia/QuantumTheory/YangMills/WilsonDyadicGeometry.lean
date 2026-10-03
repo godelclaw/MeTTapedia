@@ -485,4 +485,40 @@ theorem decay_le_physical {d n : ℕ} {η a rMax : ℝ} (hη : 0 ≤ η) (ha : 0
       Real.exp (-(η / rMax) * physicalSeparation a j S T) :=
   decay_distance_le_physical hη ha j hr (polymerDist_nonneg S T)
 
+/-- Finer scales see exponentially larger lattice separations at a fixed
+physical stopping scale. Uniform per-scale amplitudes therefore suffice
+away from the diagonal; this bound is independent of the number of scales. -/
+theorem dyadic_exp_sum_le (j : ℕ) {x δ : ℝ} (hδ : 0 < δ) (hx : δ ≤ x) :
+    (∑ k : Fin j, Real.exp (-x * (2 : ℝ)^(k.val+1))) ≤
+      Real.exp (-x) * Real.exp (-δ) / (1-Real.exp (-δ)) := by
+  have hx0 : 0 ≤ x := hδ.le.trans hx
+  have hr0 : 0 ≤ Real.exp (-δ) := (Real.exp_pos _).le
+  have hr1 : Real.exp (-δ) < 1 := Real.exp_lt_one_iff.mpr (by linarith)
+  have hs : (∑ k ∈ range j, Real.exp (-δ)^k) ≤ (1-Real.exp (-δ))⁻¹ := by
+    apply ((summable_geometric_of_lt_one hr0 hr1).sum_le_tsum (range j)
+      (fun k _ => pow_nonneg hr0 k)).trans_eq
+    exact tsum_geometric_of_lt_one hr0 hr1
+  rw [Fin.sum_univ_eq_sum_range (fun k => Real.exp (-x * (2 : ℝ)^(k+1))) j]
+  calc
+    _ ≤ ∑ k ∈ range j, Real.exp (-x) * Real.exp (-δ)^(k+1) := by
+      apply sum_le_sum
+      intro k _
+      have hn : k+2 ≤ 2^(k+1) := by
+        simpa only [Nat.add_assoc] using Nat.succ_le_of_lt (Nat.lt_two_pow_self (n := k+1))
+      have hp : (k : ℝ)+2 ≤ (2 : ℝ)^(k+1) := by exact_mod_cast hn
+      calc
+        _ ≤ Real.exp (-x + ((k+1 : ℕ) : ℝ)*(-δ)) := by
+          apply Real.exp_le_exp.mpr
+          push_cast
+          nlinarith [mul_nonneg hx0 (sub_nonneg.mpr hp),
+            mul_nonneg (sub_nonneg.mpr hx) (show 0 ≤ (k : ℝ)+1 by positivity)]
+        _ = _ := by rw [Real.exp_add, Real.exp_nat_mul]
+    _ = Real.exp (-x) * Real.exp (-δ) * (∑ k ∈ range j, Real.exp (-δ)^k) := by
+      simp only [pow_succ]
+      rw [← mul_sum, ← sum_mul]
+      ring
+    _ ≤ Real.exp (-x) * Real.exp (-δ) * (1-Real.exp (-δ))⁻¹ :=
+      mul_le_mul_of_nonneg_left hs (by positivity)
+    _ = _ := by rw [div_eq_mul_inv]
+
 end Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry

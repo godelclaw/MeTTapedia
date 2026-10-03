@@ -337,18 +337,25 @@ theorem blockedDensity_local (ν : Measure E) [IsProbabilityMeasure ν]
   filter_upwards [] with f
   exact (hF _ _ (chart_agree_on_support e S c c' hc f)).symm
 
-theorem blockedDensity_eq_zero (ν : Measure E) [IsProbabilityMeasure ν]
+theorem blockedDensity_eq_integral (ν : Measure E) [IsProbabilityMeasure ν]
     [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X)
     (S : Finset X) (F : C(X → E, ℝ)) (hlocal : DependsOn S F)
-    (hcenter : (∫ U, F U ∂Measure.pi (fun _ : X ↦ ν)) = 0)
-    (hsupport : retainedSupport e S = ∅) : blockedDensity ν e F = 0 := by
+    (hsupport : retainedSupport e S = ∅) :
+    blockedDensity ν e F = (∫ U, F U ∂Measure.pi (fun _ : X ↦ ν)) • 1 := by
   ext c
   have hl := blockedDensity_local ν e S F hlocal
   rw [hsupport] at hl
   have hc (c' : I → E) : blockedDensity ν e F c' = blockedDensity ν e F c := hl c' c (by simp)
   have hi := integral_blockedDensity ν e F
   simp_rw [hc] at hi
-  simpa [hcenter] using hi
+  simpa using hi
+
+theorem blockedDensity_eq_zero (ν : Measure E) [IsProbabilityMeasure ν]
+    [Measure.IsMulLeftInvariant ν] (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (S : Finset X) (F : C(X → E, ℝ)) (hlocal : DependsOn S F)
+    (hcenter : (∫ U, F U ∂Measure.pi (fun _ : X ↦ ν)) = 0)
+    (hsupport : retainedSupport e S = ∅) : blockedDensity ν e F = 0 := by
+  rw [blockedDensity_eq_integral ν e S F hlocal hsupport, hcenter, zero_smul]
 
 omit [Fintype X] [DecidableEq X] in
 theorem abs_blockedDensity_le (ν : Measure E) [IsProbabilityMeasure ν]

@@ -1,6 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.SU2WilsonBlockIntegration
 import Mettapedia.QuantumTheory.YangMills.WilsonSeparatedBoundaryResponse
 import Mettapedia.QuantumTheory.YangMills.WilsonPinnedIntegral
+import Mettapedia.QuantumTheory.YangMills.WilsonProductLocality
 
 /-!
 # Spatial decay of the genuine SU(2) boundary free energy
@@ -90,6 +91,45 @@ theorem integral_plaquetteTrace_zero (p : Plaquette 4 n) : (∫ U, plaquetteTrac
     (plaquetteTrace p) (plaquetteFlip p)
   simp only [plaquetteTrace_flip, integral_neg] at h
   linarith
+
+/-- The strictly positive Haar variance of one plaquette. Its four-link
+definition is independent of the lattice volume and the plaquette position. -/
+def plaquetteHaarVariance : ℝ :=
+  ∫ v : Fin 4 → SU2, (SU2WilsonBlockIntegration.traceScore (holonomy v))^2
+
+theorem plaquetteHaarVariance_pos : 0 < plaquetteHaarVariance := by
+  have hc : Continuous (fun v : Fin 4 → SU2 =>
+      (SU2WilsonBlockIntegration.traceScore (holonomy v))^2) := by
+    apply Continuous.pow
+    apply SU2WilsonBlockIntegration.continuous_traceScore.comp
+    unfold holonomy
+    fun_prop
+  apply integral_pos_of_integrable_nonneg_nonzero hc
+    (CompactTransferGap.IntegralKernel.integrable_continuous_fun volume hc)
+    (fun _ => sq_nonneg _) (x := fun _ => 1)
+  simp [holonomy]
+
+theorem integral_plaquetteTrace_sq (p : Plaquette 4 n) :
+    (∫ U, plaquetteTrace p U * plaquetteTrace p U) = plaquetteHaarVariance := by
+  have hm := WilsonProductLocality.measurePreserving_coordinateSelection
+    (volume : Measure SU2) (linkAt p) (linkAt_injective p)
+  have hc : Continuous (fun v : Fin 4 → SU2 =>
+      (SU2WilsonBlockIntegration.traceScore (holonomy v))^2) := by
+    apply Continuous.pow
+    apply SU2WilsonBlockIntegration.continuous_traceScore.comp
+    unfold holonomy
+    fun_prop
+  have hi := integral_map_of_stronglyMeasurable
+    (μ := Measure.pi fun _ : Link 4 n => (volume : Measure SU2)) hm.measurable hc.stronglyMeasurable
+  rw [hm.map_eq] at hi
+  simpa only [MeasureTheory.volume_pi, plaquetteTrace, ContinuousMap.coe_mk, plaquetteHaarVariance, pow_two]
+    using hi.symm
+
+theorem covariance_plaquetteTrace_haar (p : Plaquette 4 n) :
+    WilsonBlockElimination.covariance volume 1 (plaquetteTrace p) (plaquetteTrace p) =
+      plaquetteHaarVariance := by
+  simp [WilsonBlockElimination.covariance, WilsonBlockElimination.expectation,
+    integral_plaquetteTrace_sq, integral_plaquetteTrace_zero]
 
 end PlaquetteTrace
 

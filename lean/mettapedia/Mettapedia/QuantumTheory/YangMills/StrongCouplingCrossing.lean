@@ -85,6 +85,21 @@ theorem linkAt_eq_first_iff {d n : ℕ} (p : Plaquette d n) (i : Fin 4) :
     · simp
   · simp [linkAt, hνμ]
 
+/-- All four links of an elementary plaquette are distinct on these tori. -/
+theorem linkAt_injective {d n : ℕ} (p : Plaquette d n) : Function.Injective (linkAt p) := by
+  have hμν : p.2.1.1 ≠ p.2.1.2 := ne_of_lt p.2.2
+  have hνμ := hμν.symm
+  haveI : Fact (1 < n+3) := ⟨by omega⟩
+  have hstep (μ : Fin d) : (step μ : Site d n) ≠ 0 := by
+    intro h
+    have hh := congrFun h μ
+    simpa [step] using hh
+  intro i j hij
+  have hμ := congrArg (fun l : Link d n => l.1 p.2.1.1) hij
+  have hν := congrArg (fun l : Link d n => l.1 p.2.1.2) hij
+  have hdir := congrArg Prod.snd hij
+  fin_cases i <;> fin_cases j <;> simp_all [linkAt, step]
+
 
 /-- Embed a cyclic coordinate into the additive circle with the same period. -/
 def coordinateCircle (n : ℕ) : ZMod (n + 3) →+ AddCircle (n + 3 : ℝ) :=
