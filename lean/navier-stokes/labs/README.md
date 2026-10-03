@@ -36476,3 +36476,283 @@ an avoidable loss in a proposed error control and supplies a more faithful
 physical replacement with a named continuation consumer. It does not show
 that every interacting fluid history admits such a certified approximation
 or reaches a small-gradient seam before any potential breakdown.
+
+## Complete time slabs and rounding in a cyclic history certificate
+
+`pressure_prefix_certificate.py` implements the finite obligations in
+(736)--(737) for the unit cyclic datum `(sin y,sin z,sin x)` on the
+normalized period-2pi torus. It uses the transport-cancelling physical
+comparison (729)--(735), with viscosity 1/4 and the actual-gradient tail
+tolerance 1/64. This is an analytic/computational validation under the
+stated binary64 arithmetic model. It is not a Lean kernel certificate.
+The general arbitrary-data history bound and the separate pressure-moment
+envelope remain open.
+
+Here cyclic describes the three-way spatial coupling of the initial
+components. All H1 labels in this certificate denote the homogeneous norm
+`||grad f||2` with normalized spatial measure.
+
+This belongs to the established a posteriori programme of
+[Morosi and Pizzocchero](https://arxiv.org/abs/1104.3832).
+[Silva's 2026 preprint](https://arxiv.org/html/2609.16157v1),
+Theorems 2.2--2.3, also gives a finite-reference-path construction for
+cyclic-shear neighbourhoods. Its stated cyclic centre range is amplitude
+at most 7/10 at viscosity one, with an A2 perturbation bound. The datum
+checked here has amplitude four after that viscosity normalization.
+These are different parameter ranges and comparison norms; the preprint's
+theorem is not a premise certifying the present trajectory.
+
+### The exact curve being checked
+
+The numerical integrator supplies candidate coefficients only. Let c_i
+be the six stored Bernstein control arrays on a time slab. Interpret each
+binary64 real and imaginary component as an exact dyadic rational. Set
+
+```text
+H(c)_k=(c_k+conj(c_{-k}))/2 for k!=0,  H(c)_0=0,
+P_k=I-k k^T/|k|^2 for k!=0,
+b_i=P H(c_i),
+v(t)=sum_i b_i B_i^5((t-t_left)/h).                    (739)
+```
+
+Thus v is exactly real, mean zero and divergence free. Projection is part
+of the definition of the curve, not a claim that a rounded projection is
+exact. The implementation carries a norm radius around that exact
+projection. Neighboring slabs share the identical endpoint array before
+projection. Consequently v is continuous and piecewise smooth; derivative
+jumps at seams create no impulses in its residual. The energy comparisons
+apply on each open slab and compose through their common endpoint.
+
+For the cyclic initial datum (739) agrees exactly with the original data,
+so both initial comparison errors are zero. Rounded endpoint derivatives
+need not solve the physical equation: their entire error is measured by
+the residual of the curve actually defined in (739).
+
+The retained spatial support has `|k_j|<n/3`. Products are evaluated on
+the doubled grid, where their full support lies strictly below Nyquist.
+No product is projected back into the retained simulation box. Using
+`P(v.grad v)=-P(v cross curl v)`, the degree-ten residual coefficients are
+
+```text
+r_k = degree_elevate_4_to_10(5(b_{i+1}-b_i)/h)_k
+      +nu |frequency|^2 degree_elevate_5_to_10(b)_k
+      -P sum_{i+j=k} [binom(5,i)binom(5,j)/binom(10,k)]
+                        (b_i cross curl b_j).          (740)
+```
+
+The positive Bernstein basis sums to one. Therefore the maximum of the
+eleven enclosed residual L2 or H1 coefficient norms bounds that residual
+at **every** time in the slab. There is no interpolation of sampled
+residual norms and no assumption that a numerical time step was accurate.
+
+### Arithmetic obligations
+
+The verifier uses an explicit radix-two butterfly sequence for its Fourier
+transforms. The discovery integrator may use a different FFT; that FFT's
+accuracy is not a premise of the verification.
+
+The arithmetic model is IEEE binary64, round to nearest, with no overflow.
+Elementwise norm and scalar-control bounds use `nextafter` outward rounding.
+For a sum of N nonnegative terms, the reduction is bounded using
+`gamma_N=N u/(1-N u)`, where `u=2^-53`; the order of the reduction is
+irrelevant to this bound. A small absolute allowance covers subnormal
+butterfly errors. Square roots use correctly rounded binary64 arithmetic.
+
+Twiddles have an independent rational check. Machin's identity
+`pi=16 atan(1/5)-4 atan(1/239)` and alternating arctangent sums enclose pi.
+Degree-64/65 sine and cosine Taylor polynomials, with exact rational
+remainders and an angle-error bound, verify each stored twiddle component
+to absolute error below `2^-53`. No unbounded library-trigonometric error
+is assumed away.
+
+An exact butterfly has Euclidean norm amplification sqrt(2). The displayed
+real additions and multiplications differ from it by at most 16u times
+that amplification, including twiddle error. For L butterfly stages the
+relative transform error is at most `(1+16u)^L-1<=64Lu` in the admitted
+range. Forward normalization is a power of two. Physical-grid norms use
+normalized counting measure, so Fourier and physical error radii transfer
+by Parseval. For a product of real vector fields the additional error is
+bounded by
+
+```text
+||a cross b - a_mid cross b_mid||2
+ <= ||a_mid||infinity err_b + ||b_mid||infinity err_a
+      +sqrt(number_of_grid_nodes) err_a err_b.         (741)
+```
+
+The implementation adds the product's own rounding error, every rational
+Bernstein weight's rounding error, the Leray-projection error, and the
+derivative/diffusion summation errors. Multiplication by the largest grid
+frequency turns a Fourier L2 error radius into a safe H1 radius. This
+accounts for the high-frequency part of the arithmetic error too.
+
+The reference strain bound also covers space and time. A numerical
+eigenvalue calculation proposes a grid upper bound. Outward computations
+then check positive principal minors of `lambda I-(-sym grad v)` at every
+grid point. Sylvester's criterion certifies the proposal independently
+of the eigensolver's accuracy. Fourier evaluation errors and the full
+spatial Lipschitz margin are added. The implementation uses the rational
+margin `11D/(4M)`, larger than `sqrt(3)pi D/(2M)` on an M^3 grid.
+
+It bounds the other Bernstein control points by
+`S(b_i)<=S(b_0)+||b_i-b_0||W1/2`, and also retains the alternative `C/2`
+bound from (732). Convexity then covers every intermediate time. The same
+control-point maximum bounds the reference Hessian cost D.
+
+### A finite scalar comparison, with no reset at seams
+
+Let epsilon0 and epsilon1 be the complete residual bounds for a slab.
+With `a=S-nu`, the scalar endpoint bound is
+
+```text
+X_end <= X_left exp(a h)+epsilon0 h exp(max(a,0)h).
+X_max =max(X_left,X_end).                              (742)
+```
+
+For the gradient control put `b=2S-nu/2`. Propose an upper B, replace
+the quintic self-interaction by `kappa_nu B^5`, and enclose the linear
+endpoint using the same exponential formula and constant source
+`D X_max+epsilon1+kappa_nu B^5`. Accept B only if both the starting and
+enclosed ending values lie strictly below B. A first-exit argument then
+proves that the actual scalar solution never reaches B inside the slab.
+The implemented exponential bounds use outward Taylor sums and a
+geometric tail; no library exponential accuracy bound is required.
+
+Both endpoint errors are carried into the following slab. The original
+history is never restarted. Negative linear rates are retained at the
+endpoint, allowing the error allowance to decrease after the dangerous
+portion of the reference history. A failed bootstrap rejects the
+certificate; it does not diagnose a physical singularity.
+
+The actual error field is not spectrally truncated. Its full infinite set
+of possible modes is covered by the physical energy and Agmon inequalities
+in (729)--(731). This also permits a smooth, mean-zero, solenoidal initial
+perturbation with infinitely many modes: if its H1 norm is at most delta,
+Poincare bounds its L2 norm by delta too. Start both scalar controls at
+delta and recheck every slab. A successful replay proves the same
+continuation conclusion for that entire initial H1 ball. Its positive
+radius must be checked; the zero-error run alone supplies no numerical
+radius.
+
+### From accepted slabs to the original signed budget
+
+Suppose all slabs up to s have passed and the actual final H1 enclosure is
+at most 1/64. Equations (733)--(734) then give global smooth continuation
+and the tail bounds `5/3584` and `65/448` at viscosity 1/4. This is the
+actual unforced solution from the cyclic datum, not the approximate
+polynomial regarded as a forced solution.
+
+The preceding history also has an explicit payment. On each accepted slab
+use its certified maxima x,y,S,D and residual epsilon1 to bound
+
+```text
+Q_s=sum_slabs h [4S y^2+2Dxy+2kappa_nu y^6+2epsilon1 y],
+V_s=sum_slabs h D^2,
+L=2V_s+2Q_s/nu+5/3584,
+E=max_slabs (reference_H1+y)^2,
+K=ceil(E+nu L).                                       (743)
+```
+
+Here `||Delta v||2<=D`; this intentionally coarse inequality gives a
+finite explicit number without another hidden observer. Equation (735)
+and zero original error give `integral_0^s ||Delta(u-v)||2^2<=Q_s/nu`.
+Thus L bounds `integral_0^infinity ||grad curl u||2^2`. The initial
+cyclic stretching g(0) is zero, so enstrophy balance proves, for every t,
+
+```text
+2 integral_0^t [g(r)-g(0)] dr
+ <=nu integral_0^t ||grad curl u(r)||2^2 dr+K.          (744)
+```
+
+K comes from the original datum and accepted finite checks. It is not a
+supremum over an unknown future. This periodic analytic statement is not
+an instantiation of the Lean whole-space theorem
+`JointCubicRenewal.hasNSEvolution_of_signed_renewal`: its domain and the
+formalization of the physical certificate remain distinct obligations.
+
+For a successfully replayed H1 ball, add delta squared to Q_s in (743).
+The perturbed initial stretching need not vanish; the corresponding
+allowance on horizon H is `K+2H|g(u0)|`. This retains the full original
+datum rather than asserting that H1 alone bounds its initial cubic
+stretching.
+
+A successful viscosity-1/4 certificate also transports by the exact NS
+scaling. For any viscosity nu>0 and integer k>=1, define
+
+```text
+U(t,x)=4nu k u(4nu k^2 t,kx),
+P(t,x)=(4nu k)^2 p(4nu k^2 t,kx).                     (745)
+```
+
+All terms in the unforced equation acquire the same factor. The initial
+centre is `4nu k (sin(ky),sin(kz),sin(kx))`, the corresponding seam is
+`4/(nu k^2)`, and the centred signed-renewal allowance is multiplied by
+`16nu^2 k^4`. Integer dilation preserves normalized periodic integrals.
+For perturbations this assertion applies to the dilated certified ball;
+when k>1 its Fourier modes belong to the sublattice kZ^3. Amplitude divided
+by viscosity and fundamental frequency stays four. This transfer gives
+arbitrary scales within that fixed ratio, not a bound uniform over growing
+nonlinear-to-viscous ratios.
+
+### Independent checks and scope
+
+Exact symbolic checks verify Bernstein degree elevation. Independent
+rational DFT fixtures test both a small transform and the actual 64^3
+verification grid. Rational determinants separately check the strain
+eigenvalue validation. A stationary two-wave test has exact residual
+norms squared `5871/80` in L2 and `14901/16` in H1. Its discarded-mode
+H1 norm squared is 8. The verifier encloses the full rational norms,
+including those outputs outside the simulation box.
+
+From the package directory, run
+
+```sh
+python3 -O labs/pressure_prefix_certificate.py
+python3 -O labs/pressure_prefix_certificate.py --prefix --slab .0625 --final 16
+```
+
+The first command checks the arithmetic and physical fixtures. The second
+checks every time slab, printing a progress record for each. Its acceptance
+of the final seam is a separate condition from acceptance of the preceding
+slabs. No successful all-time claim is inferred from the fixture tests.
+
+### Completed certificate and its limits
+
+The full run accepted all 256 slabs of length 1/16 through time16, using
+a 32^3 retained grid and a 64^3 complete-product verification grid. The
+candidate integrator used time step 1/512. The maximum enclosed residual
+was `1.574e-8` in L2 and `4.821e-8` in homogeneous H1, with maximum H1
+arithmetic radius below `2.762e-10`. Those numbers include complete time
+intervals and all generated residual modes.
+
+| original datum | verified gradient norm at time16 | maximum gradient error | signed-renewal allowance on horizon H |
+|---|---:|---:|---|
+| U=(sin y,sin z,sin x) | <0.010355 | <0.004303 | 132 |
+| U+h, smooth mean-zero solenoidal h, `||grad h||2<=2^(-28)` | <0.012448 | <0.007592 | `132+2H|g(U+h)|` |
+
+Both final bounds lie below 1/64. The centre first reaches that tolerance
+at time14.1875. The perturbation statement follows by replaying the same
+certified reference with both original errors set to `2^(-28)`; it covers
+infinitely many possible perturbation modes. Its radius is small and is
+not asserted optimal. A larger trial radius `2^(-24)` fails this scalar
+bootstrap by time6; that failure is not a singularity result.
+
+The full-dissipation upper bounds in (743) are below 518.032 for both
+rows, giving the displayed integer allowances. They are deliberately
+coarse. All-time global continuation follows from the actual-gradient
+handoff, independently of how sharp those allowance constants are.
+
+[The result record](pressure_prefix_certificate_result.json) stores all
+256 accepted scalar premises and a hash of the complete reference-curve
+coefficient sequence. The full-prefix command regenerates and validates
+the curve. Calling `summarize` on the record independently replays the
+scalar controls and payment, but does not by itself recheck its Fourier
+premises. The arithmetic fixtures, scalar replay and Python compilation
+passed. No Lean declarations or axioms changed.
+
+The positive conclusion is for this specified periodic family and its
+scalings (745). It does not certify the sharper stochastic pressure
+fourth-moment envelope, larger nonlinear-to-viscous ratios, or arbitrary
+whole-space or periodic initial data. The remaining physical question is
+whether a full-datum reserve can pay repeated concentration and renewed
+stretching outside such validated families.

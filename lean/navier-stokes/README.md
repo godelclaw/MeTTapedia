@@ -36,16 +36,22 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
-The [prefix control test](labs/README.md#prefix-validation-with-transport-cancellation)
-shows why a small observed numerical error is not enough for a history
-certificate. An unsigned Fourier error control overcharges transport and
-can grow enormously even between two exact decaying unforced flows.
-A coupled energy and gradient control retains the transport cancellation,
-with explicit strain, Hessian and viscous costs. It survives the sampled
-cyclic test and has a sufficient small-gradient continuation target.
-Continuous-time and rounding enclosures remain open; the conditional
-pressure-moment comparison is a separate obligation. The new identities
-are analytic with algebraic checks, not additional Lean certificates.
+The [complete cyclic history certificate](labs/README.md#complete-time-slabs-and-rounding-in-a-cyclic-history-certificate)
+closes an all-time signed-renewal budget for the actual unforced periodic
+datum `(sin y,sin z,sin x)` at viscosity 1/4. Its allowance is 132.
+The same comparison accepts every smooth mean-zero solenoidal perturbation
+with gradient L2 norm at most `2^(-28)`, retaining the additional original-datum
+term `2H|g(u0)|`. Entire time slabs, generated modes and rounding errors
+are enclosed before a small-gradient tail proves global continuation.
+This is an analytic/computational certificate under an explicit IEEE
+arithmetic model, not a new Lean certificate. The arbitrary-data history
+bound and the sharper pressure-moment comparison remain open.
+
+The [preceding prefix calibration](labs/README.md#prefix-validation-with-transport-cancellation)
+explains the choice of control: an unsigned Fourier estimate can grow
+enormously between two exact decaying unforced flows. The coupled energy
+and gradient comparison retains transport cancellation, strain, Hessian
+and viscous costs. Its complete-time validation is the certificate above.
 
 The [pressure-history handoff](labs/README.md#a-finite-pressure-history-handoff-and-a-projection-blind-spot)
 gives an explicit future reserve once an actual mean-zero periodic flow has
