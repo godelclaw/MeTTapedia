@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [stochastic pressure-history entropy test](labs/README.md#stochastic-pressure-histories-entropy-and-a-coercive-moment)
+identifies an auxiliary velocity distribution whose mean is the actual fluid.
+Gaussian relative entropy pays its full spatial Fisher dissipation from the
+original kinetic energy, but cannot control concentration. Quartic Gibbs
+entropy controls a sufficient continuation norm; its pressure work remains
+unpaid. An actual unforced positive-viscosity history makes this stronger
+entropy first decrease and then exceed its initial value. Even an exact
+decaying shear generates a nonzero third central moment, ruling out an
+automatic Gaussian closure. The density, entropy and interval arguments are
+analytic, supported by exact moment and complete Fourier-jet checks; they
+are periodic statements, not new Lean certificates or a blowup construction.
+
 The [cyclic entropy law and its scale boundary](labs/README.md#cyclic-entropy-depletion-and-its-scale-boundary)
 proves a negative first nonlinear velocity-moment return for every positive
 choice of three cyclic parent amplitudes at a common spatial scale. Changing

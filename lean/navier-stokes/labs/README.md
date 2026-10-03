@@ -33594,3 +33594,348 @@ remainder and two exact weighted enclosures pass. The integration-by-parts
 argument, common local interval, derivative envelopes and positive-viscosity
 comparison are analytic, not Lean-certified. No Lean declarations or
 axioms change.
+
+## Stochastic pressure histories, entropy and a coercive moment
+
+`kinetic_pressure_entropy.py` checks a pressure-history lift of actual
+unforced periodic NS. It reuses the pressure-compensated stochastic
+representation and its viscous covariance, rather than identifying an
+arbitrary stochastic control with a fluid. Two choices of reference
+measure distinguish a paid entropy from a coercive one. The first has an
+exact original-energy allowance but is too weak for continuation. The
+second controls a sufficient regularity norm, but actual internal pressure
+can increase it despite its complete Fisher dissipation.
+
+These are analytic statements on each available smooth solution prefix.
+The checker certifies their finite Gaussian-moment algebra, complete NS
+jets and a non-Gaussian shear fixture; it does not certify the PDE or
+stochastic interval arguments in Lean. No global arbitrary-data estimate
+is asserted. The stochastic fluctuation-dissipation background includes
+[Drivas and Eyink, 2017](https://arxiv.org/abs/1606.00729); the existing
+Constantin--Iyer reconstruction and pressure-impulse identities retain
+their separate hypotheses. The auxiliary velocity below is a history
+variable, not the velocity driving particle positions.
+
+### Identification with the actual fluid
+
+Use normalized spatial measure on the 2*pi torus. Let u,p solve unforced
+NS with viscosity nu>0 on a smooth prefix, and fix eta>0 from the original
+datum. Write G_eta for the centered three-dimensional Gaussian density
+with covariance eta I. With a uniform initial label a and an independent
+Gaussian zeta, define
+
+```text
+dX_t=u(t,X_t)dt+sqrt(2nu)dW_t,       X_0=a,
+dV_t=-grad p(t,X_t)dt,              V_0=u_0(a)+zeta,
+zeta ~ N(0,eta I),
+
+partial_t f+u.grad_x f-grad p.grad_v f=nu Delta_x f,
+f(0,x,v)=G_eta(v-u_0(x)).                                  (626)
+```
+
+The flow in x is volume preserving for every common Brownian realization:
+its spatial derivative solves the usual variational equation with trace
+zero. Its law, with the independent initial Gaussian spread, constructs
+f. In particular f is positive and smooth in x,v on every such prefix.
+The pressure impulse and its spatial derivatives are bounded there, so
+Gaussian tails justify the following integrations by parts, first with
+velocity cutoffs and then by passage to the limit. This construction uses
+an already available smooth prefix and does not assume its continuation.
+
+Let D=partial_t+u.grad_x-nu Delta_x and g=grad p. Integrating (626) gives
+D rho=0 for rho=integral_v f, with rho(0)=1; hence rho=1. The first moment
+m=integral_v vf satisfies Dm=-rho g with m(0)=u_0. The actual NS velocity
+satisfies Du=-g. Uniqueness for this linear parabolic equation proves m=u.
+Thus the lift reconstructs the actual velocity and retains its canonical
+pressure. No auxiliary control or force is applied to the fluid.
+
+Define the raw moments and covariance
+
+```text
+L=integral_v v tensor v f,   T=integral_v |v|^2 v f,
+K=integral_v |v|^4 f,        Sigma=L-u tensor u,
+B=grad u,
+
+D L=-u tensor g-g tensor u,
+D T=-(2L+tr(L)I)g,          D K=-4g.T,
+D Sigma=2nu B B^T,          Sigma(0)=eta I,
+integral_x tr L(t)=E_0+3eta,  E_0=||u_0||_2^2.             (627)
+```
+
+The last identity uses integral u.grad p=0. Sigma is eta I plus the
+already identified viscous-memory covariance. The augmented second
+moment is conserved while the mean fluid loses energy: that loss appears
+in the covariance. This is not replenishment of the physical energy.
+The equations through K retain all their lower moments; they do not
+impose a Gaussian closure.
+
+At a joining time the entire evolved f, or a proved sufficient collection
+of joint moments for a specified consumer, must be retained. Restarting
+with G_eta(v-u(t,x)) discards generated covariance and higher moments.
+The linear transition kernels for the same actual u,p compose with the
+evolved density as their input. Matching only their means does not give
+that compatibility or preserve the entropy history.
+
+### An entropy paid by energy, and why it is insufficient
+
+All entropies below integrate over x and v. Set
+
+```text
+H_G=integral f log(f/G_eta),
+I_x=integral f |grad_x log f|^2,
+H_G(t)+nu integral_0^t I_x = E_0/(2eta).                   (628)
+```
+
+Indeed the phase-space drift in (626) is divergence free, so
+`(integral f log f)'=-nu I_x`. The Gaussian cross-entropy depends only on
+the conserved augmented second moment (627). The initial translated
+Gaussians give H_G(0)=E_0/(2eta), and H_G>=0. Thus (628) pays the full
+spatial Fisher information on every available prefix from original data,
+without taking a future supremum.
+
+There is also an exact connection to the existing covariance reserve.
+Let q_x be the Gaussian with the SAME mean u(x) and covariance Sigma(x)
+as f(x,.). Moment matching gives
+`H_G=integral_x KL(f(x,.) || q_x)+R_eta/(2eta)`, where
+`R_eta=integral_x [|u|^2+tr(Sigma-eta I)-eta log det(Sigma/eta)]`
+is the previous viscous-memory entropy. The remainder is nonnegative;
+its vanishing would require the Gaussian closure tested below. This
+identity does not assert that the remainder decreases on its own.
+
+Nevertheless H_G cannot control a quartic velocity moment using this
+allowance alone. Choose an odd smooth nonzero function phi supported in
+(-1,1), I_j=integral phi^j for j=2,4, and a small epsilon>0. The periodic
+shear datum
+`u_epsilon(y)=A_epsilon phi(y/epsilon)e_1`, with
+`A_epsilon^2=2pi/(epsilon I_2)`, has
+
+```text
+||u_epsilon||_2^2=1,
+||u_epsilon||_4^4=(2pi I_4/I_2^2)/epsilon.
+```
+
+It evolves globally by the one-dimensional heat equation with p=0.
+Every datum has the same Gaussian entropy 1/(2eta), whereas its fourth
+moment is unbounded along the family. This refutes energy-only coercivity,
+not an allowance depending on the full initial datum. It also illustrates
+why a finite entropy budget is useful only after its physical observation
+has been identified.
+
+### A coercive entropy and its exact pressure defect
+
+Instead fix kappa>0 from the original datum and use
+`g_kappa(v)=Z_kappa^(-1)exp(-kappa|v|^4)`, where
+`Z_kappa=pi Gamma(3/4) kappa^(-3/4)`. Its relative entropy obeys
+
+```text
+H_kappa=integral f log(f/g_kappa)>=0,
+H_kappa'=-nu I_x-4kappa integral_x g.T,
+
+H_kappa(0)=kappa[||u_0||_4^4+10eta E_0+15eta^2]
+           -(3/2)log(2pi eta)-3/2+log Z_kappa.            (629)
+```
+
+The initial Gaussian moments are
+`L_0=u_0 tensor u_0+eta I`,
+`T_0=(|u_0|^2+5eta)u_0`, and
+`K_0=|u_0|^4+10eta|u_0|^2+15eta^2`.
+All constants in H_kappa(0) are finite original-data quantities.
+Pressure no longer cancels: it couples to T, not just to the mean u.
+
+The Gibbs variational inequality with test `(kappa/2)|v|^4` gives
+`H_kappa>=(kappa/2)integral_x K-(3/4)log2`, since
+`Z_(kappa/2)/Z_kappa=2^(3/4)`. Conditional Jensen and rho=1 then give
+
+```text
+||u(t)||_4^4 <= integral_x K(t)
+             <= (2/kappa)[H_kappa(t)+(3/4)log2].          (630)
+```
+
+This has a concrete continuation consumer. If H_kappa<=B uniformly on
+all available prefixes of a prescribed horizon H, put
+`K_4=(2/kappa)[B+(3/4)log2]`. For E_1=||grad u||_2^2 and
+E_2=||Delta u||_2^2, the periodic enstrophy estimate gives
+
+```text
+E_1'+nu E_2 <= C nu^(-7)||u||_4^8 E_1,
+E_1(t) <= E_1(0) exp(C nu^(-7) H K_4^2).
+```
+
+For completeness, convection is at most
+`C||u||_4 E_1^(1/8)E_2^(7/8)` by Holder and the periodic
+Gagliardo--Nirenberg estimate for grad u. Its zero spatial mean removes
+the constant-mode term. Young's inequality absorbs diffusion and leaves
+the displayed power eight. This is the usual nonendpoint continuation
+argument, not a new Lean theorem. The genuinely missing input is the
+uniform bound B from original data, rather than finiteness on each
+already smooth prefix.
+
+### The third central moment is real history
+
+Let C_ijk be the third central velocity moment and let c_i=sum_j C_ijj.
+Without assuming f Gaussian, product differentiation in (627) gives
+
+```text
+T=(|u|^2+tr Sigma)u+2Sigma u+c,
+D C_ijk=2nu sum_l [ (partial_l u_i)(partial_l Sigma_jk)
+                  +(partial_l u_j)(partial_l Sigma_ik)
+                  +(partial_l u_k)(partial_l Sigma_ij) ]. (631)
+```
+
+The third central moment starts at zero but need not remain zero.
+Explicit pressure terms cancel in the centered equation; pressure still
+influences the evolving u and Sigma. Every cross-gradient term in D's
+product rule is retained. The checker verifies this identity for arbitrary
+symbolic u, one arbitrary spatial gradient, and symmetric raw second
+moments and covariance gradients. Summing over spatial directions gives
+(631).
+
+There is an exact positive-viscosity example, not merely an initial jet.
+Take the globally regular shear
+`u=A exp(-nu k^2 t)sin(ky)e_1`, p=0, with integer k>=1. The conditional
+law in (626) is a mixture of Gaussians centered at
+`A sin(k(y+sqrt(2nu)W_t))e_1`. At ky=pi/6, write
+q=exp(-nu k^2 t). The first three moments of the sine center, divided by
+A, A^2 and A^3 respectively, are
+`q/2`, `(1-q^4/2)/2`, and `(3q/2-q^9)/4`.
+At the positive time `nu k^2 t=log2`, their third central moment is
+
+```text
+c_1=-297 A^3/2048,     c_2=c_3=0,     for every eta>0.
+```
+
+Independent Gaussian spread changes neither this third central moment
+nor its sign. Thus a Gaussian replacement for f loses actual history
+already on a regular decaying flow. This shear has zero pressure work;
+its role is to test the proposed closure, not to produce amplification.
+
+### Actual pressure can overcome the full entropy dissipation
+
+Use the unequal-scale cyclic datum U_*=(sin y,sin(4z),sin x), with
+eta=kappa=1. For the Euler calibration, let F=integral |u|^4. Full
+canonical-pressure time jets give
+
+```text
+F'(0)=F''(0)=F'''(0)=0,     F''''(0)=7184/15015>1/3.
+For U=(sin y,sin z,sin x), F''''(0)=-23/5.                 (632)
+```
+
+The checker computes both the raw-moment system (627) and the complete
+material derivatives of the physical quartic observation. For Euler,
+`f(t,x,v)=G_1(v-u(t,x))`: the pressure-compensated velocity follows the
+same deterministic material equation as u, plus its independent constant
+Gaussian offset. Hence `H_1(t)-H_1(0)=F(t)-F(0)` in this calibration.
+The integrated raw fourth moment starts at 261/8, and its first three
+derivatives vanish. Every generated Fourier output is retained. The
+pressure derivatives have respectively 0,8,24,68 modes. Positive-viscosity
+moment fixtures at nu=2/7 provide a separate algebra check; the interval
+argument below does not substitute Euler for viscous evolution.
+
+Apply the uniform local H16 estimate (613) to this fixed U_* and viscosity
+mu in [0,1]. It supplies a common interval [0,tau], bounds for the velocity,
+pressure and their spatial derivatives, and a fifth-derivative envelope M
+for the Euler F, all from the original profile. With delta=1/3 and
+`s=min(tau,1,5delta/[2(1+M)])`, Taylor gives
+`F^0(s)-F^0(0)>=delta s^4/48`.
+
+Here is a bound for the FULL Fisher loss of the kinetic law. Use a common
+Brownian motion for all labels and define
+`Z_t(a)=U_*(a)-integral_0^t grad p^mu(r,X_r(a))dr`.
+For the inverse spatial flow A_t, put z_t(x)=Z_t(A_t(x)). Pathwise volume
+preservation gives
+`f^mu(t,x,v)=E G_1(v-z_t(x))`. Let K_u bound ||grad u^mu||_infinity,
+P bound ||Hess p^mu||_infinity and U_1 bound ||grad U_*||_infinity, using
+compatible operator/Frobenius norms. Then
+
+```text
+||grad X_t||, ||grad A_t|| <= exp(K_u tau),
+||grad z_t||_F <= L_z=exp(K_u tau)[U_1+tau P exp(K_u tau)],
+I_x(f^mu(t)) <= L_z^2.                                   (633)
+```
+
+The last inequality follows from convexity of Fisher information under
+mixtures and the exact shifted-Gaussian formula
+`integral_v G_eta(v-z)|grad_x log G_eta(v-z)|^2
+ =||grad z||_F^2/eta`.
+These are pathwise bounds, since the common additive noise disappears
+from the spatial variational equation. Their constants are furnished by
+the common local estimate, not by an unknown long-time solution bound.
+
+Couple X^mu with the deterministic Euler flow from the same label. The
+H14 inviscid estimate below (614), the uniform pressure-gradient bounds,
+and Brownian maximal estimates give
+`E sup_(t<=tau)|X_t^mu-X_t^0|<=C sqrt(mu)` and the same bound for
+`E|Z_t^mu-Z_t^0|`. This may be evaluated on periodic lifts. The centers
+Z_t are uniformly bounded; integrating their Gaussian fourth moments
+therefore yields
+`|integral K^mu(s)-integral K^0(s)|<=C_4 sqrt(mu)`.
+Here and in (633), C_4,L_z depend only on the original profile and the
+chosen local interval. In particular all stochastic spreading and
+viscous pressure changes are retained.
+
+The exact Boltzmann-entropy loss from (629) now gives
+
+```text
+H_1^mu(s)-H_1^mu(0)
+ >= delta s^4/48-C_4 sqrt(mu)-mu s L_z^2
+ >= delta s^4/96>0                                      (634)
+```
+
+whenever
+`0<mu<=min(1,[delta s^4/(192(1+C_4))]^2,
+                 delta s^4/[192(1+s L_z^2)])=:mu_*`.
+At the initial time p=0, so H_1'(0)=-mu I_x(0)<0. Thus it first falls
+and later lies strictly above its initial value on the SAME actual
+unforced smooth history. The full Fisher dissipation, not merely its
+initial value, has been subtracted in (634).
+
+For any prescribed physical viscosity nu>0 choose a finite A>=nu/mu_*.
+The actual datum A U_* and solution `u(t)=A u^(nu/A)(At)` have this same
+behavior using original-data parameters eta=A^2 and kappa=A^(-4).
+The density is `f_phys(t,x,v)=A^(-3)f^(nu/A)(At,x,v/A)`, and its reference
+quartic density scales by the same factor. Relative entropy is invariant
+under that velocity change, so (634) holds at t=s/A. These parameters are
+fixed once and retained across the entire history. No external force,
+parent reset, backward viscous solve or finite-mode trajectory is used.
+The conclusion concerns a local smooth interval; it is not a proof of
+global regularity or singularity for the cyclic datum.
+
+### The remaining finite-history payment
+
+The exact sufficient target supplied by this lift is
+
+```text
+-4kappa integral_0^t integral_x grad p.T
+       -nu integral_0^t I_x <= A(u_0,nu,H,eta,kappa)
+for every available smooth prefix and 0<=t<=H.            (635)
+```
+
+A finite allowance chosen from the full original datum and prescribed
+horizon gives H_kappa<=H_kappa(0)+A and hence (630)'s continuation bound.
+This allowance remains OPEN. Equation (634) refutes zero allowance or
+automatic monotonicity, not every finite full-data payment. Equation
+(631) identifies a specific piece of history that a Gaussian closure
+would discard. It does not assign all the adverse pressure work to that
+piece: the mean and covariance terms in T must also be retained.
+
+In particular a nonnegative correction R with R(0)=0 cannot make
+H_kappa+R nonincreasing on the witness (634). Such a repair would imply
+H_kappa(t)<=H_kappa(0), contradicting the actual burst. A successful
+reserve therefore needs an initially funded allowance, a different
+coercive observation, or signed cross terms whose total positivity and
+evolution are proved. Simply adding positive generated-memory costs
+without initial funding cannot repair this candidate.
+
+This construction places the physical identification and the observation
+needed for continuation on the same probability law. It does not establish
+an optimal-control or Schrodinger-bridge identification, nor a Bellman
+supersolution paying (635). The new entropy argument uses a uniform
+spatial probability measure on the torus. It makes no whole-space claim
+with an infinite constant spatial background. Neither one entropy burst
+nor independently concatenated initial jets demonstrates infinite renewal.
+
+Run `python3 -O labs/kinetic_pressure_entropy.py`. The exact checks pass
+with Python assertions disabled. Density construction, entropy balance,
+Gibbs coercivity, the local positive-viscosity comparison and the
+continuation consumer remain analytic. No Lean declarations or axioms
+change.
