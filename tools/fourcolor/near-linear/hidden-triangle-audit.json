@@ -1,0 +1,163 @@
+{
+  "evidence": "Exact program verification of the premises of a kernel-proved frozen-fibre theorem.",
+  "cases": [
+    {
+      "stage": "initial_exterior",
+      "configuration": "D0063.conf",
+      "vertices": 155,
+      "degree_range": [
+        4,
+        7
+      ],
+      "hidden_triangle": [
+        27,
+        88,
+        129
+      ],
+      "hidden_degrees": [
+        5,
+        5,
+        7
+      ],
+      "facial_triangle": true,
+      "retained_vertices": 152,
+      "same_retained_colouring": true,
+      "proper_endpoints": true,
+      "allowed_hidden_colours": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "all_hidden_assignments": [
+        [
+          0,
+          3,
+          1
+        ],
+        [
+          1,
+          0,
+          3
+        ]
+      ],
+      "observer_images": [
+        27,
+        129,
+        88,
+        141,
+        60,
+        89,
+        91,
+        9,
+        9
+      ],
+      "observer_distinct_vertices": 8,
+      "observer_degrees": [
+        5,
+        7,
+        5,
+        5,
+        6,
+        7,
+        5,
+        7,
+        7
+      ],
+      "protected_frozen_observer_verified": true,
+      "distinct_physical_classes_by_observer": true,
+      "concrete_instance_kernel_certified": false
+    },
+    {
+      "stage": "final_sphere",
+      "configuration": "D0063.conf",
+      "vertices": 162,
+      "degree_range": [
+        5,
+        7
+      ],
+      "hidden_triangle": [
+        33,
+        75,
+        76
+      ],
+      "hidden_degrees": [
+        5,
+        5,
+        7
+      ],
+      "facial_triangle": true,
+      "retained_vertices": 159,
+      "same_retained_colouring": true,
+      "proper_endpoints": true,
+      "allowed_hidden_colours": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "all_hidden_assignments": [
+        [
+          0,
+          2,
+          1
+        ],
+        [
+          2,
+          1,
+          0
+        ]
+      ],
+      "observer_images": [
+        33,
+        76,
+        75,
+        70,
+        72,
+        139,
+        124,
+        6,
+        6
+      ],
+      "observer_distinct_vertices": 8,
+      "observer_degrees": [
+        5,
+        7,
+        5,
+        7,
+        5,
+        7,
+        7,
+        5,
+        5
+      ],
+      "protected_frozen_observer_verified": true,
+      "distinct_physical_classes_by_observer": true,
+      "concrete_instance_kernel_certified": false
+    }
+  ],
+  "kernel_theorems": [
+    "Mettapedia.GraphTheory.FourColor.FrozenFibreObserver.not_fibres",
+    "Mettapedia.GraphTheory.FourColor.FrozenFibreObserver.not_fibration"
+  ],
+  "scope": "Refutes exact history lifting between arbitrary specified extensions after forgetting the hidden physical class. Does not refute existence of a successful colouring, class-aware interfaces, a larger moving context or a different decomposition. Minimal-counterexample hypotheses and geometric coverage are not asserted.",
+  "fixture_sha256": "a5927a8bac0e32733d467a8bdf1a790a395577706d553097c8e4005c270dd6d9",
+  "verifier_sha256": "9be87391c4602d8a3f72c4bcd7605a4f80dfc97ca305403fe0985f8059499fcc",
+  "credited_compression": false
+}

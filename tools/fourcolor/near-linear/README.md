@@ -538,6 +538,48 @@ Replay `lake build Mettapedia.GraphTheory.FourColor.PairBlocksAudit` and
 audit and separate consumer checks. No coverage entry or configuration
 certificate is removed.
 
+## A facial triangle with two hidden classes in a complete sphere
+
+The [direct witness replay](hidden-triangle-audit.json) places the state-loss
+obstruction in the actual D0063 spherical fixture. In its complete proper
+162-vertex colouring, hide facial triangle `33,75,76` and keep the other 159
+vertices fixed. The allowed hidden colours are respectively `{0,2}`, `{1,2}`
+and `{0,1}`. Exactly two proper assignments remain:
+
+```text
+(2,1,0)       (0,2,1)
+    \         /
+     same exterior colouring
+     different physical classes with that exterior fixed
+```
+
+The sphere has degrees five through seven; the hidden vertices have degrees
+`5,5,7`. A homomorphism from the frozen nine-vertex observer verifies the
+obstruction without exploring recolouring histories. All observer images
+have degree at least five. A second witness occurs at facial triangle
+`27,88,129` in the initial punctured exterior.
+
+[FrozenFibreObserver](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/FrozenFibreObserver.lean)
+proves the universal consequences of these premises. The retained-colouring
+projection has disconnected fibres, and no abstract step relation on that
+state space makes it a fibration for the specified physical histories. The
+two concrete instances, including the sphere geometry and proper endpoints,
+are independently program checked; they are not kernel-certified graph
+instances.
+
+This failure concerns lifting between arbitrary specified extensions while
+the exterior stays fixed. Both complete-sphere endpoints are already valid
+colourings. It does not refute existence of successful compatible choices,
+interfaces that retain the hidden class, exterior recolouring, or an
+alternative decomposition. Minimal-counterexample hypotheses and global
+coverage remain separate obligations.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.FrozenFibreObserverAudit`
+and `python3 tools/fourcolor/near-linear/audit_hidden_triangle.py`. The
+[fixture](hidden-triangle-example.json) pins the source reconstruction and
+small observer maps. The [receipt](hidden-triangle-measurements.json) records
+the two-root audit and the exact scope.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

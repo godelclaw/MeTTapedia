@@ -1,0 +1,43 @@
+{
+  "evidence": "Kernel-proved frozen-fibre obstruction with direct program verification in a complete bounded-degree spherical triangulation.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FrozenFibreObserver",
+      "source_sha256": "8ca343f28b56a9a6e7ce0edec7a06bc24bc2e0ddc1021accabc5a25abe42a9c8",
+      "source_bytes": 2215,
+      "lake_build_seconds": 2.6,
+      "olean_bytes": 33528,
+      "olean_sha256": "f4810719bddc3cac0a805126433cc4e8d7270f109ab43e6014356bb60ec5f8e6"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.FrozenFibreObserverAudit",
+      "source_sha256": "e7e6ffbb896dbcc12b6e02982f6c6757d87cd36c4c2d9eb22629ab44caa1be53",
+      "source_bytes": 1529,
+      "lake_build_seconds": 2.7,
+      "olean_bytes": 2800,
+      "olean_sha256": "0f58ed1db3d25f3acb8e00a4598b61fd3b3429ca59eede8efcd619264dbca42b"
+    }
+  ],
+  "audit": {
+    "roots": 2,
+    "dependency_declarations": 3615,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "proved": [
+    "A mapped frozen observer distinguishes physical classes of two proper extensions of the same retained colouring.",
+    "No choice of abstract step relation on the retained-colouring state space alone can make the projection a fibration for the stated fixed-context physical histories."
+  ],
+  "program_applications": "hidden-triangle-audit.json",
+  "program_scope": "The complete 162-vertex sphere has degrees 5..7. A facial triangle of degrees 5,5,7 has exactly two proper assignments for the same 159-vertex exterior; a protected frozen observer obstructs a physical path between them. A second witness occurs in the initial 155-vertex punctured exterior. All observer images in both witnesses have degree at least five.",
+  "scope": "An obstruction to a specific exact history abstraction. Both complete-sphere endpoints are already successful colourings. This does not refute successful choice, class-aware interfaces, a larger moving context, alternative decompositions or compact compositional proofs. Concrete geometry is program evidence; no minimal-counterexample or coverage theorem is claimed.",
+  "checks": [
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_hidden_triangle.py"
+  ],
+  "credited_compression": false
+}

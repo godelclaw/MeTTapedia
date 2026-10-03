@@ -1,0 +1,69 @@
+{
+  "evidence": "Explicit frozen observers distinguishing hidden triangle classes; discovery enumeration is not needed for replay.",
+  "source": "independent-repair-example.json",
+  "source_sha256": "74db89ac8fd3f55b3a52c6d0fec2b19b428585d704a5275e191990ff571e546e",
+  "cases": [
+    {
+      "source_case": 1,
+      "stage": "initial_exterior",
+      "hidden": [
+        27,
+        88,
+        129
+      ],
+      "target_hidden": [
+        1,
+        0,
+        3
+      ],
+      "observer_images": [
+        27,
+        129,
+        88,
+        141,
+        60,
+        89,
+        91,
+        9,
+        9
+      ],
+      "palette": [
+        0,
+        3,
+        1,
+        2
+      ]
+    },
+    {
+      "source_case": 1,
+      "stage": "final_sphere",
+      "hidden": [
+        33,
+        75,
+        76
+      ],
+      "target_hidden": [
+        0,
+        2,
+        1
+      ],
+      "observer_images": [
+        33,
+        76,
+        75,
+        70,
+        72,
+        139,
+        124,
+        6,
+        6
+      ],
+      "palette": [
+        2,
+        1,
+        0,
+        3
+      ]
+    }
+  ]
+}
