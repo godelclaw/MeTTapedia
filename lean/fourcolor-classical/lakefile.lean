@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay uniform exterior repair and its consumer at a previously trapped seam. -/
+target kernelFiveTrianglePuncturedRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/five-triangle-punctured-repair",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "FiveTrianglePuncturedRepair", "FiveTrianglePuncturedAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay an invariant excluding every Kempe history through a fixed seam. -/
 target kernelFiveTriangleKempeTrap pkg : Unit := do
   let env ← getAugmentedEnv

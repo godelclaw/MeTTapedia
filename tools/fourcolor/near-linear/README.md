@@ -140,6 +140,46 @@ or original certificate dependency is removed. Replay
 The [fixture](five-triangle-kempe-trap-example.json) contains six short walks
 and explicit colourings, rather than a table of search histories.
 
+## Removing the old interior permits a uniform fan repair
+
+The whole-source obstruction above does not obstruct the exterior repair
+contract used by the reduction machinery. That contract permits the old
+interior to be removed before recolouring. Retaining its colouring throughout
+would impose an additional restriction.
+
+The [ordered-fan theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/OrderedFanKempe.lean)
+proves that any two proper colourings of a fan of any finite length are joined
+by genuine Kempe switches. It works for any palette admitting those two
+colourings. Align the hub colour, then align successive path vertices by
+swapping two colours on a suffix. The hub and the already aligned predecessor
+use neither swapped colour. The existing partial-transposition theorem
+decomposes each suffix operation into switches of whole connected components.
+The resulting witness is a GSLT history; no table of colouring states is used.
+
+The [concrete consumer](../../../lean/fourcolor-classical/MettapediaFourColor/FiveTrianglePuncturedRepair.lean)
+identifies the ten retained vertices of the trapped example with the exact
+induced fan, including every edge between them. Every proper exterior state
+can reach one explicit boundary colouring which reconstructs both the original
+source and the target patch. In particular, the previously trapped state can
+be repaired on this exterior. Lean also proves that no history keeping the
+whole old source can reach that same boundary endpoint. The source has a
+degree-three vertex, so it does not satisfy minimum-degree-five hypotheses.
+
+This proves one law for all fan lengths and supplies an actual patch consumer.
+It does not extend the law to arbitrary planar exteriors, prove that the
+coverage argument supplies fan exteriors, or remove a catalogue dependency.
+The concrete reduction retains ten of eighteen vertices; the all-length
+theorem concerns recolouring, not an all-length family of patch reductions.
+No bound on extracted execution time is claimed.
+
+The [eight-root audit and replay measurements](five-triangle-punctured-measurements.json)
+use only standard axioms, with no classical Four Colour theorem or configuration
+repair table. The generic proof built in 2.7 seconds; the concrete consumer
+replayed in 4.049 seconds and its audit in 3.461 seconds. These are module
+measurements, not savings in the complete classical proof. Replay
+`lake build Mettapedia.GraphTheory.FourColor.OrderedFanKempe` in the main package
+and `lake build kernelFiveTrianglePuncturedRepair` in the classical package.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

@@ -1,0 +1,67 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FiveTrianglePuncturedRepair",
+      "source_sha256": "95c907f3e3cc71e3c68668f05a90a9ac518c3875b3ca8de3c19fa8eef93145db",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.049,
+      "olean_bytes": 66792,
+      "olean_sha256": "40b50139194327a179fc0cfebd943a1b6f323c18ce4653a4b5b901d9d7d890e8"
+    },
+    {
+      "module": "MettapediaFourColor.FiveTrianglePuncturedAudit",
+      "source_sha256": "4daf1497bd2d14168603526c9ce92cf79e03bfd7000aa3480ba369b0203ebded",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.461,
+      "olean_bytes": 2608,
+      "olean_sha256": "2fec57f30a28f9e11d8d429849bf0fc2db92b346187aa12781ec1b51a1120a7a"
+    }
+  ],
+  "evidence": "Kernel-certified uniform fan Kempe connectivity and reconstruction after removing the old interior.",
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 4223,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "generic_lemma": {
+    "module": "Mettapedia.GraphTheory.FourColor.OrderedFanKempe",
+    "source_sha256": "8299492f3fe3125adf066bb6176219f55e91177c66d084c5a3ec1c27f9197f51",
+    "lake_build_seconds": 2.7,
+    "domain": "Every finite fan, arbitrary palette with decidable equality, and every pair of proper colourings."
+  },
+  "scope": {
+    "proved": "Every proper colouring of the exact ten-vertex exterior reaches a common source/target reconstruction boundary. The trapped whole-source state repairs after puncturing. No whole-source history has this same endpoint.",
+    "retained_vertices": 10,
+    "source_vertices": 18,
+    "source_vertex_6_degree": 3,
+    "not_claimed": [
+      "Repair for arbitrary planar exteriors",
+      "Geometric supply of fan exteriors",
+      "An all-length family of patch reductions",
+      "An extracted execution-time bound",
+      "A catalogue or certificate dependency removed"
+    ]
+  },
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.OrderedFanKempe",
+    "lake build kernelFiveTrianglePuncturedRepair",
+    "lake build kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "credited_compression": false
+}
