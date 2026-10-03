@@ -531,6 +531,35 @@ theorem interactionRow_regroup_le (support : P → Finset Y) (F : P → C(Y → 
       ∑ p ∈ univ.filter (fun p ↦ i ∈ support p), Real.exp (a * (support p).card) * ‖F p‖ :=
   weightedInteractionRow_regroup_le support F _ _ i
 
+omit [Group E] [IsTopologicalGroup E] [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E] in
+/-- Cardinality, tree length and incidence control the spatial norm of a
+regrouped interaction. The marks may already contain several Haar charts. -/
+theorem spatialInteractionNorm_regroup_le [PseudoMetricSpace Y]
+    (support : P → Finset Y) (F : P → C(Y → E, ℝ)) {a η B t : ℝ} {s D : ℕ}
+    (ha : 0 ≤ a) (hη : 0 ≤ η) (hB : 0 ≤ B)
+    (hcard : ∀ p, (support p).card ≤ s)
+    (htree : ∀ p, Mettapedia.Combinatorics.PolymerGas.treeLength (support p) ≤ t)
+    (hD : ∀ i, (univ.filter (fun p => i ∈ support p)).card ≤ D)
+    (hF : ∀ p, ‖F p‖ ≤ B) :
+    spatialInteractionNorm a η (regroupInteraction support F) ≤ D*B*Real.exp (a*s+η*t) := by
+  apply spatialInteractionNorm_le _ _ _ (by positivity)
+  intro i
+  refine (weightedInteractionRow_regroup_le support F
+    (fun S => Real.exp (a*S.card+η*Mettapedia.Combinatorics.PolymerGas.treeLength S))
+    (fun _ => (Real.exp_pos _).le) i).trans ?_
+  calc
+    _ ≤ ∑ p ∈ univ.filter (fun p => i ∈ support p), Real.exp (a*s+η*t)*B := by
+      apply sum_le_sum
+      intro p hp
+      apply mul_le_mul _ (hF p) (norm_nonneg _) (Real.exp_pos _).le
+      apply Real.exp_le_exp.mpr
+      have hc : ((support p).card : ℝ) ≤ s := by exact_mod_cast hcard p
+      exact add_le_add (mul_le_mul_of_nonneg_left hc ha) (mul_le_mul_of_nonneg_left (htree p) hη)
+    _ ≤ _ := by
+      simp only [sum_const, nsmul_eq_mul]
+      have hc : ((univ.filter (fun p => i ∈ support p)).card : ℝ) ≤ D := by exact_mod_cast hD i
+      nlinarith [mul_le_mul_of_nonneg_right hc (show 0 ≤ Real.exp (a*s+η*t)*B by positivity)]
+
 end Regroup
 
 def blockedInteraction (ν : Measure E) [IsProbabilityMeasure ν]

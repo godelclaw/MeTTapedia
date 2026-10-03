@@ -754,6 +754,9 @@ coordinates. Both halves of a coarse link share one such coordinate. -/
 
 abbrev FluctuationLink (n : ℕ) := Link 4 n ⊕ UnusedLink 4 n
 
+instance fluctuationFintype (n : ℕ) : Fintype (FluctuationLink n) :=
+  inferInstanceAs (Fintype (Link 4 n ⊕ UnusedLink 4 n))
+
 instance fluctuationPseudoMetricSpace (n : ℕ) : PseudoMetricSpace (FluctuationLink n) :=
   PseudoMetricSpace.induced (fluctuationRepresentative (blockIndexEquiv 4 n)) inferInstance
 
@@ -809,6 +812,94 @@ theorem card_incident_fluctuationPlaquetteSupport_le (n : ℕ) (y : FluctuationL
   congr 1
   unfold fluctuationPlaquetteSupport
   congr 1
+
+/-! A pair of scale changes has independent coordinates from both fibers.
+The representatives live on the original lattice, so separation is measured
+before either elimination. -/
+
+abbrev TwoFluctuationLink (n : ℕ) := FluctuationLink (doubleIndex n) ⊕ FluctuationLink n
+
+instance twoFluctuationPseudoMetricSpace (n : ℕ) : PseudoMetricSpace (TwoFluctuationLink n) :=
+  PseudoMetricSpace.induced
+    (twoFluctuationRepresentative (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n)) inferInstance
+
+theorem dist_second_outerRepresentative_le {n : ℕ} (i : Link 4 (doubleIndex n)) :
+    dist ((blockIndexEquiv 4 (doubleIndex n)) (.inl (.inr i)))
+      ((blockIndexEquiv 4 (doubleIndex n)) (.inl (.inl
+        (fluctuationRepresentative (blockIndexEquiv 4 n) (fluctuationIndex (blockIndexEquiv 4 n) i))))) ≤ 3 := by
+  simp only [blockIndexEquiv_first, blockIndexEquiv_second]
+  let v := fluctuationRepresentative (blockIndexEquiv 4 n) (fluctuationIndex (blockIndexEquiv 4 n) i)
+  change dist (blockEdge i 1) (blockEdge v 0) ≤ 3
+  have ht := dist_triangle (blockEdge i 1) (blockEdge i 0) (blockEdge v 0)
+  rw [dist_blockEdge_zero, dist_comm (blockEdge i 1) (blockEdge i 0)] at ht
+  have hs : dist i v ≤ 1 := dist_fluctuationRepresentative_le i
+  linarith [dist_blockEdge_halves_le i]
+
+def twoFluctuationPlaquetteSupport {n : ℕ} (p : Plaquette 4 (doubleIndex (doubleIndex n))) :
+    Finset (TwoFluctuationLink n) :=
+  twoFluctuationSupport (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) (support p)
+
+theorem twoFluctuationPlaquetteSupport_nonempty {n : ℕ}
+    (p : Plaquette 4 (doubleIndex (doubleIndex n))) : (twoFluctuationPlaquetteSupport p).Nonempty :=
+  twoFluctuationSupport_nonempty _ _ (support_nonempty p)
+
+theorem card_twoFluctuationPlaquetteSupport_le {n : ℕ}
+    (p : Plaquette 4 (doubleIndex (doubleIndex n))) : (twoFluctuationPlaquetteSupport p).card ≤ 8 := by
+  have h := card_twoFluctuationSupport_le (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) (support p)
+  have hc := card_support_le p
+  change (twoFluctuationSupport _ _ _).card ≤ 8
+  omega
+
+theorem diam_twoFluctuationPlaquetteSupport_le {n : ℕ}
+    (p : Plaquette 4 (doubleIndex (doubleIndex n))) : polymerDiam (twoFluctuationPlaquetteSupport p) ≤ 7 := by
+  have h := diam_twoFluctuationSupport_le (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n)
+    (by norm_num : (0 : ℝ) ≤ 3)
+    (fun x => (dist_fluctuationRepresentative_le x).trans (by norm_num : (1 : ℝ) ≤ 3))
+    dist_second_outerRepresentative_le (support p)
+  exact h.trans (by linarith [diam_support_le p])
+
+theorem dist_twoFluctuationSupport_ge_six {n : ℕ}
+    (S T : Finset (Link 4 (doubleIndex (doubleIndex n)))) (hS : S.Nonempty) (hT : T.Nonempty) :
+    polymerDist S T - 6 ≤ polymerDist
+      (twoFluctuationSupport (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) S)
+      (twoFluctuationSupport (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) T) := by
+  simpa only [show (2 : ℝ)*3 = 6 by norm_num] using
+    dist_twoFluctuationSupport_ge (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n)
+      (fun x => (dist_fluctuationRepresentative_le x).trans (by norm_num : (1 : ℝ) ≤ 3))
+      dist_second_outerRepresentative_le S T hS hT
+
+set_option maxHeartbeats 400000 in
+theorem card_incident_twoFluctuationPlaquetteSupport_le (n : ℕ) (y : TwoFluctuationLink n) :
+    ((univ : Finset (Plaquette 4 (doubleIndex (doubleIndex n)))).filter
+      (fun p => y ∈ twoFluctuationPlaquetteSupport p)).card ≤ 128 := by
+  cases y with
+  | inl y =>
+    simp only [twoFluctuationPlaquetteSupport, mem_twoFluctuationSupport_inl]
+    exact card_incident_fluctuationPlaquetteSupport_le (doubleIndex n) y
+  | inr y =>
+    simp only [twoFluctuationPlaquetteSupport, mem_twoFluctuationSupport_inr]
+    cases y with
+    | inl i =>
+      let u := (blockIndexEquiv 4 (doubleIndex n)) (.inl (.inr ((blockIndexEquiv 4 n) (.inl (.inl i)))))
+      let v := (blockIndexEquiv 4 (doubleIndex n)) (.inl (.inr ((blockIndexEquiv 4 n) (.inl (.inr i)))))
+      have he : (univ.filter (fun p : Plaquette 4 (doubleIndex (doubleIndex n)) =>
+          Sum.inl i ∈ fluctuationSupport (blockIndexEquiv 4 n)
+            (coarseDependencySupport (blockIndexEquiv 4 (doubleIndex n)) (support p)))) =
+          (univ.filter (fun p => u ∈ support p)) ∪ (univ.filter (fun p => v ∈ support p)) := by
+        ext p
+        simp [u, v]
+      rw [he]
+      have hu := card_incident_le 4 (doubleIndex (doubleIndex n)) u
+      have hv := card_incident_le 4 (doubleIndex (doubleIndex n)) v
+      have hh := card_union_le
+        (univ.filter (fun p : Plaquette 4 (doubleIndex (doubleIndex n)) => u ∈ support p))
+        (univ.filter (fun p : Plaquette 4 (doubleIndex (doubleIndex n)) => v ∈ support p))
+      norm_num only at hu hv
+      omega
+    | inr j =>
+      simp only [mem_fluctuationSupport_inr, mem_coarseDependencySupport]
+      exact (card_incident_le 4 (doubleIndex (doubleIndex n))
+        ((blockIndexEquiv 4 (doubleIndex n)) (.inl (.inr ((blockIndexEquiv 4 n) (.inr j)))))).trans (by norm_num)
 
 set_option maxHeartbeats 400000 in
 theorem degree_fluctuationPlaquetteGraph_le (n : ℕ) (p : Plaquette 4 (doubleIndex n)) :

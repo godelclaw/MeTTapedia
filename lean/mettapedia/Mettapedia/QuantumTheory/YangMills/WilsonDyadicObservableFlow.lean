@@ -477,6 +477,8 @@ end Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
 namespace Mettapedia.QuantumTheory.YangMills.SU2WilsonAssembly.ScaleTwo
 open StrongCouplingCrossing WilsonBlockElimination WilsonDyadicGeometry SU2WilsonBlockPilot
 open WilsonEliminationRoutes
+open WilsonConditionalProjection.PairedHaar
+open Mettapedia.Combinatorics.PolymerGas (polymerDist polymerDist_nonneg)
 
 def scaleAssembleMap (n j : ℕ) : C((Link 4 n → SU2) × ScaleFiber n j, Link 4 (scaleIndex n j) → SU2) :=
   ⟨fun p ↦ scaleAssemble n j p.1 p.2, continuous_scaleAssemble n j⟩
@@ -585,6 +587,148 @@ theorem directProject_zero (n : ℕ) (W : C(Link 4 (scaleIndex n 0) → SU2, ℝ
   rw [directProject_apply, directDensity_zero, directDensity_zero]
   exact mul_div_cancel_left₀ _ (hW U).ne'
 
+set_option backward.isDefEq.respectTransparency false in
+/-- One direct step is the normalized paired Haar projection. -/
+theorem directProject_one (n : ℕ) (W : C(FineConfig n, ℝ)) (hW : ∀ U, 0 < W U)
+    (F : C(FineConfig n, ℝ)) :
+    directProject n 1 W hW F = PairedLinks.blockedProject volume (blockIndexEquiv 4 n) W hW F := by
+  rw [directProject_succ, directProject_zero]
+  rfl
+
+set_option maxHeartbeats 800000 in
+/-- The first generated logarithm contains every extracted interaction and
+the exact vacuum contribution. It is not replaced by a single Wilson coupling. -/
+theorem log_coarseDensity_eq_generated (n : ℕ) (β : ℝ) (hβ : |β| ≤ iterationBeta)
+    (c : CoarseConfig n) :
+    Real.log (coarseDensity n β c) =
+      -β * Fintype.card (Plaquette 4 (doubleIndex n)) +
+        effectiveVacuum volume (blockIndexEquiv 4 n) (wilsonState (doubleIndex n) β hβ).terms
+          (wilsonState (doubleIndex n) β hβ).small +
+        ∑ S, effectiveInteraction volume (blockIndexEquiv 4 n) (wilsonState (doubleIndex n) β hβ).terms
+          (wilsonState (doubleIndex n) β hβ).small S c := by
+  have he := InteractionState.density_block (wilsonState (doubleIndex n) β hβ)
+  rw [wilsonState_density] at he
+  change (wilsonState (doubleIndex n) β hβ).block.density = coarseDensity n β at he
+  rw [← he, InteractionState.density_apply, Real.log_exp]
+  rfl
+
+/-- The transported original mark is a ratio of Haar integrals against the
+full fine Wilson weight, with the same denominator as the generated density. -/
+theorem projected_integral (n : ℕ) (β : ℝ) (F : C(FineConfig n, ℝ)) (c : CoarseConfig n) :
+    projected n β F c =
+      (∫ f : Fluctuation n, fineDensity n β (chart n (c,f)) * F (chart n (c,f))) /
+        (∫ f : Fluctuation n, fineDensity n β (chart n (c,f))) := rfl
+
+/-- The covariance removed at the next step, evaluated on the actually
+transported original marks and under the full first generated law. -/
+def secondGeneratedCovariance (n : ℕ) (β : ℝ) (F G : C(FineConfig (doubleIndex n), ℝ)) :
+    C(CoarseConfig n, ℝ) :=
+  let P := projected (doubleIndex n) β
+  let Q := PairedLinks.blockedProject volume (blockIndexEquiv 4 n)
+    (coarseDensity (doubleIndex n) β) (coarseDensity_pos (doubleIndex n) β)
+  Q (P F * P G) - Q (P F) * Q (P G)
+
+set_option backward.isDefEq.respectTransparency false in
+/-- Signed total covariance on the two fibers. The first discarded covariance
+is transported, not omitted or replaced by an absolute envelope. -/
+theorem secondGeneratedCovariance_identity (n : ℕ) (β : ℝ)
+    (F G : C(FineConfig (doubleIndex n), ℝ)) :
+    secondGeneratedCovariance n β F G +
+      PairedLinks.blockedProject volume (blockIndexEquiv 4 n)
+        (coarseDensity (doubleIndex n) β) (coarseDensity_pos (doubleIndex n) β)
+        (conditionalCovariance (doubleIndex n) β F G) =
+      directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β) (F*G) -
+        directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β) F *
+          directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β) G := by
+  simp only [directProject_succ, directProject_zero]
+  let P := projected (doubleIndex n) β
+  let Q := PairedLinks.blockedProjectLinear volume (blockIndexEquiv 4 n)
+    (coarseDensity (doubleIndex n) β) (coarseDensity_pos (doubleIndex n) β)
+  change (Q (P F * P G) - Q (P F) * Q (P G)) + Q (P (F*G) - P F * P G) =
+    Q (P (F*G)) - Q (P F) * Q (P G)
+  rw [map_sub]
+  ring
+
+set_option backward.isDefEq.respectTransparency false in
+theorem covariance_twoFluctuationMark_eq_direct (n : ℕ) (β : ℝ)
+    (F G : C(FineConfig (doubleIndex n), ℝ)) (c : CoarseConfig n) :
+    covariance volume
+      (PairedLinks.twoFluctuationMark (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) c
+        (fineDensity (doubleIndex n) β))
+      (PairedLinks.twoFluctuationMark (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) c F)
+      (PairedLinks.twoFluctuationMark (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) c G) =
+      directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β) (F*G) c -
+        directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β) F c *
+          directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β) G c := by
+  let M := PairedLinks.twoFluctuationMark (blockIndexEquiv 4 (doubleIndex n)) (blockIndexEquiv 4 n) c
+  have hmul : M F * M G = M (F*G) := rfl
+  change expectation volume (M (fineDensity (doubleIndex n) β)) (M F * M G) -
+    expectation volume (M (fineDensity (doubleIndex n) β)) (M F) *
+      expectation volume (M (fineDensity (doubleIndex n) β)) (M G) = _
+  rw [hmul]
+  simp only [M, show (volume : Measure (TwoFluctuationLink n → SU2)) = Measure.pi (fun _ => volume) from rfl,
+    PairedLinks.expectation_twoFluctuationMark, directProject_apply, directDensity_succ, directDensity_zero]
+  rfl
+
+/-- Strong-coupling spatial control of the second discarded covariance.
+The rate and threshold are fixed before volume and every retained field. -/
+theorem secondGeneratedCovariance_spatial_le {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ twoConditionalCovarianceBeta η) (n : ℕ)
+    (S T : Finset (Link 4 (doubleIndex (doubleIndex n)))) (hS : S.Nonempty) (hT : T.Nonempty)
+    (F G : C(FineConfig (doubleIndex n), ℝ))
+    (hF : WilsonLocalResponse.DependsOn S F) (hG : WilsonLocalResponse.DependsOn T G)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
+    (hFB : ∀ U, |F U| ≤ B) (hGC : ∀ U, |G U| ≤ C) (c : CoarseConfig n) :
+    |secondGeneratedCovariance n β F G c| ≤
+      6*B*C*Real.exp (6*S.card+6*T.card) * Real.exp (-η*(polymerDist S T-6)) := by
+  let A := 3*B*C*Real.exp (6*S.card+6*T.card) * Real.exp (-η*(polymerDist S T-6))
+  let P := directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β)
+  let Q := PairedLinks.blockedProject volume (blockIndexEquiv 4 n)
+    (coarseDensity (doubleIndex n) β) (coarseDensity_pos (doubleIndex n) β)
+  have htotal : |P (F*G) c - P F c * P G c| ≤ A := by
+    rw [← covariance_twoFluctuationMark_eq_direct]
+    exact covariance_twoFluctuationMark_spatial_le hη hβ n S T hS hT F G hF hG hB hC hFB hGC c
+  have hfirst : ∀ u, |conditionalCovariance (doubleIndex n) β F G u| ≤ A := by
+    intro u
+    apply (conditionalCovariance_spatial_le hη (hβ.trans (twoConditionalCovarianceBeta_le hη))
+      (doubleIndex n) S T hS hT F G hF hG hB hC hFB hGC u).trans
+    apply mul_le_mul
+    · apply mul_le_mul_of_nonneg_left _ (by positivity)
+      apply Real.exp_le_exp.mpr
+      have hs : (0 : ℝ) ≤ S.card := by positivity
+      have ht : (0 : ℝ) ≤ T.card := by positivity
+      linarith
+    · apply Real.exp_le_exp.mpr
+      nlinarith
+    · positivity
+    · positivity
+  have hQ : |Q (conditionalCovariance (doubleIndex n) β F G) c| ≤ A :=
+    PairedLinks.abs_blockedProject_le volume (blockIndexEquiv 4 n) _
+      (coarseDensity_pos (doubleIndex n) β) _ hfirst c
+  have he := congrArg (fun H : C(CoarseConfig n, ℝ) => H c) (secondGeneratedCovariance_identity n β F G)
+  change secondGeneratedCovariance n β F G c + Q (conditionalCovariance (doubleIndex n) β F G) c =
+    P (F*G) c - P F c * P G c at he
+  calc
+    _ = |(P (F*G) c - P F c * P G c) - Q (conditionalCovariance (doubleIndex n) β F G) c| := by rw [← he]; ring_nf
+    _ ≤ |P (F*G) c - P F c * P G c| + |Q (conditionalCovariance (doubleIndex n) β F G) c| := abs_sub _ _
+    _ ≤ A+A := add_le_add htotal hQ
+    _ = _ := by dsimp [A]; ring
+
+/-- Averaging is against the second exact marginal of the original Wilson
+weight. No fitted action or assumption on projected support is used. -/
+theorem expectation_secondGeneratedCovariance_spatial_le {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ twoConditionalCovarianceBeta η) (n : ℕ)
+    (S T : Finset (Link 4 (doubleIndex (doubleIndex n)))) (hS : S.Nonempty) (hT : T.Nonempty)
+    (F G : C(FineConfig (doubleIndex n), ℝ))
+    (hF : WilsonLocalResponse.DependsOn S F) (hG : WilsonLocalResponse.DependsOn T G)
+    {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
+    (hFB : ∀ U, |F U| ≤ B) (hGC : ∀ U, |G U| ≤ C) :
+    |expectation volume (directDensity n 2 (fineDensity (doubleIndex n) β))
+      (secondGeneratedCovariance n β F G)| ≤
+      6*B*C*Real.exp (6*S.card+6*T.card) * Real.exp (-η*(polymerDist S T-6)) :=
+  abs_expectation_le volume _ _ (directDensity_pos n 2 _ (fineDensity_pos (doubleIndex n) β))
+    (secondGeneratedCovariance_spatial_le hη hβ n S T hS hT F G hF hG hB hC hFB hGC)
+
 /-- Contributions are ordered from the finest eliminated scale to the
 coarsest. Each entry is averaged under the density generated at that step;
 subsequent entries use the actually transported marks. This construction
@@ -629,6 +773,44 @@ theorem covariance_eq_direct_add_scaleContributions (n : ℕ) : ∀ j
     rw [directDensity_succ, directProject_succ, directProject_succ]
     simp only [scaleCovarianceContribution, Fin.sum_univ_succ, Fin.cases_zero, Fin.cases_succ]
     ring
+
+/-- Absolute discarded covariances have a depth-independent variance budget
+under any strictly positive continuous density. This is a summability result;
+it supplies no decay with spatial separation. -/
+theorem sum_abs_scaleCovarianceContribution_le (n : ℕ) : ∀ j
+    (W : C(Link 4 (scaleIndex n j) → SU2, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(Link 4 (scaleIndex n j) → SU2, ℝ)),
+    ∑ i, |scaleCovarianceContribution n j W hW F G i| ≤
+      (covariance volume W F F + covariance volume W G G)/2 := by
+  intro j
+  induction j with
+  | zero =>
+    intro W hW F G
+    simp only [Finset.univ_eq_empty, Finset.sum_empty]
+    exact div_nonneg (add_nonneg (covariance_self_nonneg volume W F hW)
+      (covariance_self_nonneg volume W G hW)) (by norm_num)
+  | succ j ih =>
+    intro W hW F G
+    let e := blockIndexEquiv 4 (scaleIndex n j)
+    let V := PairedLinks.blockedDensity volume e W
+    let hV := PairedLinks.blockedDensity_pos volume e W hW
+    let P := PairedLinks.blockedProject volume e W hW
+    have hi := ih V hV (P F) (P G)
+    have hs := PairedLinks.averaged_fluctuationCovariance_le_variances volume e W hW F G
+    have hf := covariance_action (.cons
+      (WilsonProjectionComposition.blockedStep volume e W hW) (.refl _)) F F
+    have hg := covariance_action (.cons
+      (WilsonProjectionComposition.blockedStep volume e W hW) (.refl _)) G G
+    change covariance volume W F F = covariance volume V (P F) (P F) +
+      expectation volume V (P (F*F) - P F * P F) at hf
+    change covariance volume W G G = covariance volume V (P G) (P G) +
+      expectation volume V (P (G*G) - P G * P G) at hg
+    change |expectation volume V (P (F*G) - P F * P G)| ≤
+      (expectation volume V (P (F*F) - P F * P F) + expectation volume V (P (G*G) - P G * P G))/2 at hs
+    simp only [scaleCovarianceContribution, Fin.sum_univ_succ, Fin.cases_zero, Fin.cases_succ]
+    change |expectation volume V (P (F*G) - P F * P G)| +
+      ∑ i, |scaleCovarianceContribution n j V hV (P F) (P G) i| ≤ _
+    linarith
 
 /-- Scalar spatial budgets compose by summing the scale contributions.
 A uniform depth bound requires controlling this sum, not only its entries. -/
@@ -723,6 +905,39 @@ theorem wilsonPlaquette_covariance_scales (n j : ℕ) (β z w : ℝ)
         ∑ i, scaleCovarianceContribution n j W hW F G i :=
   covariance_eq_direct_add_scaleContributions n j _ _ _ _
 
+/-- Centering does not enlarge the variance of the original trace. The
+cutoff normalization remains the explicit scalar z. -/
+theorem covariance_wilsonPlaquetteMark_self_le (n : ℕ) (β z : ℝ) (p : Plaquette 4 n) :
+    covariance volume
+      (WilsonLocalResponse.realDensity (SU2BoundaryResponse.model n univ)
+        (SU2BoundaryResponse.model_continuous n univ) β)
+      (wilsonPlaquetteMark n β z p) (wilsonPlaquetteMark n β z p) ≤ z^2 := by
+  let W := WilsonLocalResponse.realDensity (SU2BoundaryResponse.model n univ)
+    (SU2BoundaryResponse.model_continuous n univ) β
+  have hW : ∀ U, 0 < W U := WilsonLocalResponse.realDensity_pos _ _ _
+  change covariance volume W (z • centered volume W (SU2BoundaryResponse.plaquetteTrace p))
+    (z • centered volume W (SU2BoundaryResponse.plaquetteTrace p)) ≤ z^2
+  rw [covariance_smul, covariance_centered volume W _ _ hW]
+  have hv := covariance_self_le_sq volume W (SU2BoundaryResponse.plaquetteTrace p) hW
+    (by norm_num : (0 : ℝ) ≤ 1) (SU2BoundaryResponse.abs_plaquetteTrace_le p)
+  nlinarith [mul_le_mul_of_nonneg_left hv (mul_self_nonneg z)]
+
+/-- At every real coupling and every finite blocking depth the entire
+absolute discarded covariance budget is finite, uniformly in volume. This
+does not assert spatial decay, nor uniformity in an unbounded field normalization. -/
+theorem sum_abs_wilsonPlaquette_scales_le (n j : ℕ) (β z w : ℝ)
+    (p q : Plaquette 4 (scaleIndex n j)) :
+    let W := WilsonLocalResponse.realDensity (SU2BoundaryResponse.model (scaleIndex n j) univ)
+      (SU2BoundaryResponse.model_continuous (scaleIndex n j) univ) β
+    let hW := WilsonLocalResponse.realDensity_pos (SU2BoundaryResponse.model (scaleIndex n j) univ)
+      (SU2BoundaryResponse.model_continuous (scaleIndex n j) univ) β
+    ∑ i, |scaleCovarianceContribution n j W hW (wilsonPlaquetteMark (scaleIndex n j) β z p)
+      (wilsonPlaquetteMark (scaleIndex n j) β w q) i| ≤ (z^2+w^2)/2 := by
+  apply (sum_abs_scaleCovarianceContribution_le n j _ _ _ _).trans
+  have hf := covariance_wilsonPlaquetteMark_self_le (scaleIndex n j) β z p
+  have hg := covariance_wilsonPlaquetteMark_self_le (scaleIndex n j) β w q
+  linarith
+
 /-- A uniform spatial bound for the actual discarded plaquette covariance.
 The normalization factors are visible in the prefactor, including at
 coincident plaquettes and at separations smaller than two. -/
@@ -759,6 +974,41 @@ theorem expectation_conditionalCovariance_wilsonPlaquette_le {η β : ℝ} (hη 
       12 * |z| * |w| * Real.exp 24 * Real.exp (-η*(polymerDist (support p) (support q)-2)) :=
   abs_expectation_le volume _ _ (coarseDensity_pos n β)
     (conditionalCovariance_wilsonPlaquette_le hη hβ n z w p q)
+
+/-- Actual transported original plaquettes at the second elimination. -/
+theorem secondGeneratedCovariance_wilsonPlaquette_le {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ twoConditionalCovarianceBeta η) (n : ℕ) (z w : ℝ)
+    (p q : Plaquette 4 (doubleIndex (doubleIndex n))) (c : CoarseConfig n) :
+    |secondGeneratedCovariance n β (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p)
+      (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q) c| ≤
+      24 * |z| * |w| * Real.exp 48 * Real.exp (-η*(polymerDist (support p) (support q)-6)) := by
+  have h := secondGeneratedCovariance_spatial_le hη hβ n (support p) (support q)
+    (support_nonempty p) (support_nonempty q)
+    (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p) (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q)
+    (wilsonPlaquetteMark_local _ β z p) (wilsonPlaquetteMark_local _ β w q)
+    (by positivity : 0 ≤ 2*|z|) (by positivity : 0 ≤ 2*|w|)
+    (abs_wilsonPlaquetteMark_le _ β z p) (abs_wilsonPlaquetteMark_le _ β w q) c
+  have hp : ((support p).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le p
+  have hq : ((support q).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le q
+  have he : Real.exp (6*(support p).card+6*(support q).card) ≤ Real.exp 48 :=
+    Real.exp_le_exp.mpr (by linarith)
+  apply h.trans
+  calc
+    _ ≤ 6*(2*|z|)*(2*|w|)*Real.exp 48 *
+        Real.exp (-η*(polymerDist (support p) (support q)-6)) := by
+      apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+      exact mul_le_mul_of_nonneg_left he (by positivity)
+    _ = _ := by ring
+
+theorem expectation_secondGeneratedCovariance_wilsonPlaquette_le {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ twoConditionalCovarianceBeta η) (n : ℕ) (z w : ℝ)
+    (p q : Plaquette 4 (doubleIndex (doubleIndex n))) :
+    |expectation volume (directDensity n 2 (fineDensity (doubleIndex n) β))
+      (secondGeneratedCovariance n β (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p)
+        (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q))| ≤
+      24 * |z| * |w| * Real.exp 48 * Real.exp (-η*(polymerDist (support p) (support q)-6)) :=
+  abs_expectation_le volume _ _ (directDensity_pos n 2 _ (fineDensity_pos (doubleIndex n) β))
+    (secondGeneratedCovariance_wilsonPlaquette_le hη hβ n z w p q)
 
 namespace InteractionState
 

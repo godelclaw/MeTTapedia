@@ -317,6 +317,71 @@ theorem covariance_centered (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
     one_mul, mul_one, map_sub, map_smul, hP, smul_eq_mul]
   ring
 
+/-- Positivity is retained by normalization with the actual density. -/
+theorem expectation_nonneg (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    (hF : ∀ x, 0 ≤ F x) : 0 ≤ expectation μ W F := by
+  apply div_nonneg
+  · exact integral_nonneg (fun x => mul_nonneg (hW x).le (hF x))
+  · exact (partition_pos μ W hW).le
+
+theorem expectation_mono (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    (hFG : ∀ x, F x ≤ G x) : expectation μ W F ≤ expectation μ W G := by
+  have h := expectation_nonneg μ W (G-F) hW (fun x => sub_nonneg.mpr (hFG x))
+  rw [expectation_sub] at h
+  linarith
+
+theorem abs_expectation_le_of_pointwise (W F H : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    (hFH : ∀ x, |F x| ≤ H x) : |expectation μ W F| ≤ expectation μ W H := by
+  have hp := expectation_mono μ W F H hW (fun x => (le_abs_self _).trans (hFH x))
+  have hn := expectation_mono μ W (-F) H hW (fun x => (neg_le_abs _).trans (hFH x))
+  have he : expectation μ W (-F) = -expectation μ W F := map_neg (expectationLinear μ W) F
+  rw [he] at hn
+  exact abs_le.mpr ⟨by linarith, hp⟩
+
+theorem covariance_self_nonneg (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
+    0 ≤ covariance μ W F F := by
+  rw [← covariance_centered μ W F F hW, covariance, expectation_centered μ W F hW]
+  simp only [zero_mul, sub_zero]
+  exact expectation_nonneg μ W _ hW (fun x => mul_self_nonneg _)
+
+theorem covariance_add_self (W F G : C(X, ℝ)) :
+    covariance μ W (F+G) (F+G) = covariance μ W F F + 2*covariance μ W F G + covariance μ W G G := by
+  simp only [covariance, add_mul, mul_add, expectation_add, mul_comm G F]
+  ring
+
+theorem covariance_sub_self (W F G : C(X, ℝ)) :
+    covariance μ W (F-G) (F-G) = covariance μ W F F - 2*covariance μ W F G + covariance μ W G G := by
+  simp only [covariance, sub_mul, mul_sub, expectation_sub, mul_comm G F]
+  ring
+
+/-- The arithmetic-mean variance bound is convenient for telescoping exact
+covariance ledgers. It needs no coupling or spatial hypothesis. -/
+theorem abs_covariance_le_variances (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x) :
+    |covariance μ W F G| ≤ (covariance μ W F F + covariance μ W G G)/2 := by
+  have hp := covariance_self_nonneg μ W (F+G) hW
+  have hn := covariance_self_nonneg μ W (F-G) hW
+  rw [covariance_add_self] at hp
+  rw [covariance_sub_self] at hn
+  exact abs_le.mpr ⟨by linarith, by linarith⟩
+
+theorem covariance_smul (W F G : C(X, ℝ)) (a b : ℝ) :
+    covariance μ W (a • F) (b • G) = a*b*covariance μ W F G := by
+  have hm : (a • F) * (b • G) = (a*b) • (F*G) := by ext x; simp; ring
+  let P := expectationLinear μ W
+  change P ((a • F) * (b • G)) - P (a • F)*P (b • G) = a*b*(P (F*G)-P F*P G)
+  rw [hm, map_smul, map_smul, map_smul]
+  simp only [smul_eq_mul]
+  ring
+
+theorem covariance_self_le_sq (W F : C(X, ℝ)) (hW : ∀ x, 0 < W x)
+    {B : ℝ} (hB : 0 ≤ B) (hF : ∀ x, |F x| ≤ B) : covariance μ W F F ≤ B^2 := by
+  have h := abs_expectation_le μ W (F*F) hW (C := B^2) (fun x => by
+    simp only [ContinuousMap.mul_apply, abs_mul, pow_two]
+    exact mul_le_mul (hF x) (hF x) (abs_nonneg _) hB)
+  unfold covariance
+  have he := le_abs_self (expectation μ W (F*F))
+  nlinarith [sq_nonneg (expectation μ W F)]
+
 theorem fourthCumulant_eq_centeredProducts (W F G H K : C(X, ℝ))
     (hW : ∀ x, 0 < W x) :
     fourthCumulant μ W F G H K =
@@ -1255,6 +1320,34 @@ theorem covariance_fluctuationMark (ν : Measure E) [IsProbabilityMeasure ν]
   rw [covariance, hmul, expectation_fluctuationMark, expectation_fluctuationMark,
     expectation_fluctuationMark]
 
+/-- Each averaged discarded covariance is bounded by the variances discarded
+at that same step, under that step's generated density. -/
+theorem averaged_fluctuationCovariance_le_variances (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (W : C(X → E, ℝ)) (hW : ∀ U, 0 < W U)
+    (F G : C(X → E, ℝ)) :
+    let P := blockedProject ν e W hW
+    let V := blockedDensity ν e W
+    |expectation (Measure.pi fun _ : I => ν) V (P (F*G) - P F * P G)| ≤
+      (expectation (Measure.pi fun _ : I => ν) V (P (F*F) - P F * P F) +
+        expectation (Measure.pi fun _ : I => ν) V (P (G*G) - P G * P G))/2 := by
+  let P := blockedProject ν e W hW
+  let V := blockedDensity ν e W
+  let H : C(I → E, ℝ) := (1/2 : ℝ) • ((P (F*F) - P F * P F) + (P (G*G) - P G * P G))
+  have hp (c : I → E) : |(P (F*G) - P F * P G) c| ≤ H c := by
+    have h := abs_covariance_le_variances (Measure.pi fun _ : I ⊕ J => ν)
+      (fluctuationMark e c W) (fluctuationMark e c F) (fluctuationMark e c G) (fun f => hW _)
+    rw [covariance_fluctuationMark ν e W hW, covariance_fluctuationMark ν e W hW,
+      covariance_fluctuationMark ν e W hW] at h
+    dsimp only [H, P, ContinuousMap.smul_apply, ContinuousMap.add_apply,
+      ContinuousMap.sub_apply, ContinuousMap.mul_apply, smul_eq_mul]
+    convert h using 1 <;> ring
+  have h := abs_expectation_le_of_pointwise (Measure.pi fun _ : I => ν) V
+    (P (F*G) - P F * P G) H (blockedDensity_pos ν e W hW) hp
+  change |expectation _ V _| ≤ (expectationLinear _ V) ((1/2 : ℝ) • (_+_)) at h
+  rw [map_smul, map_add] at h
+  change |expectation _ V _| ≤ (1/2 : ℝ) * (expectation _ V _ + expectation _ V _) at h
+  convert h using 1 <;> dsimp only [P, V] <;> ring
+
 end PairedLinks
 
 namespace PairedLinks
@@ -1272,6 +1365,232 @@ theorem blockedDensity_mul_project (ν : Measure E) [IsProbabilityMeasure ν]
   have hZ : Z ≠ 0 := (blockedDensity_pos ν e W hW c).ne'
   change N = Z * (N / Z)
   exact ((div_mul_cancel₀ N hZ).symm).trans (mul_comm _ _)
+
+end PairedLinks
+
+/-! ## Two successive paired-link fibers
+
+The second fiber is taken under the complete first marginal.  Describing both
+sets of independent coordinates together keeps the original marks local; no
+locality of their normalized projections is assumed.
+-/
+
+namespace PairedLinks
+open Finset
+open scoped Classical
+open Mettapedia.Combinatorics.PolymerGas
+variable {X I J K L E : Type*} [Fintype I]
+
+/-- Only the closing half of a pair depends on its retained product. -/
+def coarseDependencySupport (e : ((I ⊕ I) ⊕ J) ≃ X) (S : Finset X) : Finset I :=
+  univ.filter (fun i => e (.inl (.inr i)) ∈ S)
+
+@[simp] theorem mem_coarseDependencySupport (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (S : Finset X) (i : I) : i ∈ coarseDependencySupport e S ↔ e (.inl (.inr i)) ∈ S := by
+  simp [coarseDependencySupport]
+
+theorem card_coarseDependencySupport_le (e : ((I ⊕ I) ⊕ J) ≃ X) (S : Finset X) :
+    (coarseDependencySupport e S).card ≤ S.card := by
+  apply card_le_card_of_injOn (fun i => e (.inl (.inr i)))
+  · intro i hi
+    exact (mem_coarseDependencySupport e S i).mp hi
+  · intro i hi k hk he
+    exact Sum.inr.inj (Sum.inl.inj (e.injective he))
+
+def twoFluctuationSupport (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I)
+    (S : Finset X) : Finset ((I ⊕ J) ⊕ (K ⊕ L)) :=
+  (fluctuationSupport e S).disjSum (fluctuationSupport e' (coarseDependencySupport e S))
+
+@[simp] theorem mem_twoFluctuationSupport_inl (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) (S : Finset X) (y : I ⊕ J) :
+    Sum.inl y ∈ twoFluctuationSupport e e' S ↔ y ∈ fluctuationSupport e S := by
+  simp [twoFluctuationSupport]
+
+@[simp] theorem mem_twoFluctuationSupport_inr (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) (S : Finset X) (y : K ⊕ L) :
+    Sum.inr y ∈ twoFluctuationSupport e e' S ↔
+      y ∈ fluctuationSupport e' (coarseDependencySupport e S) := by
+  simp [twoFluctuationSupport]
+
+theorem twoFluctuationSupport_nonempty (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) {S : Finset X} (hS : S.Nonempty) :
+    (twoFluctuationSupport e e' S).Nonempty := by
+  obtain ⟨y, hy⟩ := fluctuationSupport_nonempty e hS
+  exact ⟨.inl y, (mem_twoFluctuationSupport_inl e e' S y).mpr hy⟩
+
+theorem card_twoFluctuationSupport_le (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) (S : Finset X) :
+    (twoFluctuationSupport e e' S).card ≤ 2*S.card := by
+  rw [twoFluctuationSupport, card_disjSum]
+  have h₁ := card_fluctuationSupport_le e S
+  have h₂ := card_fluctuationSupport_le e' (coarseDependencySupport e S)
+  have h₃ := card_coarseDependencySupport_le e S
+  omega
+
+theorem card_incident_twoFluctuationSupport_le {Pl : Type*} [Fintype Pl]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I)
+    (supp : Pl → Finset X) {D : ℕ}
+    (hD : ∀ x, (univ.filter (fun p => x ∈ supp p)).card ≤ D)
+    (y : (I ⊕ J) ⊕ (K ⊕ L)) :
+    (univ.filter (fun p => y ∈ twoFluctuationSupport e e' (supp p))).card ≤ 2*D := by
+  cases y with
+  | inl y =>
+    simp only [mem_twoFluctuationSupport_inl]
+    exact card_incident_fluctuationSupport_le e supp hD y
+  | inr y =>
+    simp only [mem_twoFluctuationSupport_inr]
+    apply card_incident_fluctuationSupport_le e' (fun p => coarseDependencySupport e (supp p))
+    intro i
+    simpa only [mem_coarseDependencySupport] using hD (e (.inl (.inr i)))
+
+def twoFluctuationRepresentative (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) : (I ⊕ J) ⊕ (K ⊕ L) → X
+  | .inl y => fluctuationRepresentative e y
+  | .inr y => e (.inl (.inl (fluctuationRepresentative e' y)))
+
+theorem twoFluctuationSupport_near [PseudoMetricSpace X]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I) {r : ℝ}
+    (h₁ : ∀ x, dist x (fluctuationRepresentative e (fluctuationIndex e x)) ≤ r)
+    (h₂ : ∀ i, dist (e (.inl (.inr i)))
+      (e (.inl (.inl (fluctuationRepresentative e' (fluctuationIndex e' i))))) ≤ r)
+    (S : Finset X) {y : (I ⊕ J) ⊕ (K ⊕ L)} (hy : y ∈ twoFluctuationSupport e e' S) :
+    ∃ x ∈ S, dist x (twoFluctuationRepresentative e e' y) ≤ r := by
+  cases y with
+  | inl y =>
+    obtain ⟨x, hx, rfl⟩ := mem_image.mp ((mem_twoFluctuationSupport_inl e e' S y).mp hy)
+    exact ⟨x, hx, h₁ x⟩
+  | inr y =>
+    obtain ⟨i, hi, rfl⟩ := mem_image.mp ((mem_twoFluctuationSupport_inr e e' S y).mp hy)
+    exact ⟨e (.inl (.inr i)), (mem_coarseDependencySupport e S i).mp hi, h₂ i⟩
+
+theorem diam_twoFluctuationSupport_le [PseudoMetricSpace X]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I) {r : ℝ} (hr : 0 ≤ r)
+    (h₁ : ∀ x, dist x (fluctuationRepresentative e (fluctuationIndex e x)) ≤ r)
+    (h₂ : ∀ i, dist (e (.inl (.inr i)))
+      (e (.inl (.inl (fluctuationRepresentative e' (fluctuationIndex e' i))))) ≤ r)
+    (S : Finset X) :
+    letI := PseudoMetricSpace.induced (twoFluctuationRepresentative e e') inferInstance
+    polymerDiam (twoFluctuationSupport e e' S) ≤ polymerDiam S + 2*r := by
+  letI := PseudoMetricSpace.induced (twoFluctuationRepresentative e e') inferInstance
+  apply Metric.diam_le_of_forall_dist_le (by unfold polymerDiam; positivity)
+  intro y hy z hz
+  obtain ⟨u, hu, huy⟩ := twoFluctuationSupport_near e e' h₁ h₂ S hy
+  obtain ⟨v, hv, hvz⟩ := twoFluctuationSupport_near e e' h₁ h₂ S hz
+  change dist (twoFluctuationRepresentative e e' y) (twoFluctuationRepresentative e e' z) ≤ _
+  have ht := dist_triangle4 (twoFluctuationRepresentative e e' y) u v (twoFluctuationRepresentative e e' z)
+  rw [dist_comm (twoFluctuationRepresentative e e' y) u] at ht
+  linarith [dist_le_polymerDiam hu hv]
+
+theorem dist_twoFluctuationSupport_ge [PseudoMetricSpace X]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I) {r : ℝ}
+    (h₁ : ∀ x, dist x (fluctuationRepresentative e (fluctuationIndex e x)) ≤ r)
+    (h₂ : ∀ i, dist (e (.inl (.inr i)))
+      (e (.inl (.inl (fluctuationRepresentative e' (fluctuationIndex e' i))))) ≤ r)
+    (S T : Finset X) (hS : S.Nonempty) (hT : T.Nonempty) :
+    letI := PseudoMetricSpace.induced (twoFluctuationRepresentative e e') inferInstance
+    polymerDist S T - 2*r ≤ polymerDist (twoFluctuationSupport e e' S) (twoFluctuationSupport e e' T) := by
+  letI := PseudoMetricSpace.induced (twoFluctuationRepresentative e e') inferInstance
+  have hSn := twoFluctuationSupport_nonempty e e' hS
+  have hTn := twoFluctuationSupport_nonempty e e' hT
+  conv_rhs => rw [polymerDist, dif_pos hTn]
+  apply Finset.le_inf'
+  intro z hz
+  rw [Metric.le_infDist (show ((twoFluctuationSupport e e' S : Finset ((I ⊕ J) ⊕ (K ⊕ L))) :
+    Set ((I ⊕ J) ⊕ (K ⊕ L))).Nonempty from hSn)]
+  intro y hy
+  obtain ⟨u, hu, huy⟩ := twoFluctuationSupport_near e e' h₁ h₂ S hy
+  obtain ⟨v, hv, hvz⟩ := twoFluctuationSupport_near e e' h₁ h₂ T hz
+  change polymerDist S T - 2*r ≤ dist (twoFluctuationRepresentative e e' z) (twoFluctuationRepresentative e e' y)
+  have hd : polymerDist S T ≤ dist v u :=
+    (polymerDist_le_infDist hv).trans (Metric.infDist_le_dist_of_mem hu)
+  have ht := dist_triangle4 v (twoFluctuationRepresentative e e' z) (twoFluctuationRepresentative e e' y) u
+  rw [dist_comm (twoFluctuationRepresentative e e' y) u] at ht
+  linarith
+
+variable [Group E] [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]
+
+def twoFluctuationChart (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I)
+    (c : K → E) (f : (I ⊕ J) ⊕ (K ⊕ L) → E) : X → E :=
+  fluctuationChart e (fluctuationChart e' c (fun y => f (.inr y))) (fun y => f (.inl y))
+
+theorem twoFluctuationChart_agree (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) (c : K → E) {S : Finset X}
+    {f g : (I ⊕ J) ⊕ (K ⊕ L) → E}
+    (h : ∀ y ∈ twoFluctuationSupport e e' S, f y = g y) :
+    ∀ x ∈ S, twoFluctuationChart e e' c f x = twoFluctuationChart e e' c g x := by
+  have hin : ∀ y ∈ fluctuationSupport e S, f (.inl y) = g (.inl y) := fun y hy => h _ (by simpa using hy)
+  have hout : ∀ i ∈ coarseDependencySupport e S,
+      fluctuationChart e' c (fun y => f (.inr y)) i = fluctuationChart e' c (fun y => g (.inr y)) i :=
+    fluctuationChart_agree e' c (fun y hy => h _ (by simpa using hy))
+  intro x hx
+  obtain ⟨s, rfl⟩ := e.surjective x
+  rcases s with (i | i) | j
+  · simpa only [twoFluctuationChart, fluctuationChart_first] using
+      hin (.inl i) ((mem_fluctuationSupport_inl e S i).mpr (.inl hx))
+  · simp only [twoFluctuationChart, fluctuationChart_second]
+    rw [hin (.inl i) ((mem_fluctuationSupport_inl e S i).mpr (.inr hx)),
+      hout i ((mem_coarseDependencySupport e S i).mpr hx)]
+  · simpa only [twoFluctuationChart, fluctuationChart_unused] using
+      hin (.inr j) ((mem_fluctuationSupport_inr e S j).mpr hx)
+
+variable [TopologicalSpace E] [IsTopologicalGroup E]
+
+@[fun_prop] theorem continuous_twoFluctuationChart (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) (c : K → E) : Continuous (twoFluctuationChart e e' c) := by
+  unfold twoFluctuationChart fluctuationChart
+  apply (continuous_chart e).comp
+  fun_prop
+
+variable [CompactSpace E] [BorelSpace E] [SecondCountableTopology E]
+  [Fintype X] [Fintype J] [Fintype K] [Fintype L]
+
+def twoFluctuationMark (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I)
+    (c : K → E) (F : C(X → E, ℝ)) : C((I ⊕ J) ⊕ (K ⊕ L) → E, ℝ) :=
+  F.comp ⟨twoFluctuationChart e e' c, continuous_twoFluctuationChart e e' c⟩
+
+theorem twoFluctuationMark_local (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I)
+    (c : K → E) (S : Finset X) (F : C(X → E, ℝ))
+    (hF : ∀ U V, (∀ x ∈ S, U x = V x) → F U = F V) :
+    ∀ f g, (∀ y ∈ twoFluctuationSupport e e' S, f y = g y) →
+      twoFluctuationMark e e' c F f = twoFluctuationMark e e' c F g := by
+  intro f g h
+  exact hF _ _ (twoFluctuationChart_agree e e' c h)
+
+theorem norm_twoFluctuationMark_le (e : ((I ⊕ I) ⊕ J) ≃ X)
+    (e' : ((K ⊕ K) ⊕ L) ≃ I) (c : K → E) (F : C(X → E, ℝ)) :
+    ‖twoFluctuationMark e e' c F‖ ≤ ‖F‖ := by
+  apply (ContinuousMap.norm_le _ (norm_nonneg F)).mpr
+  intro f
+  exact F.norm_coe_le_norm _
+
+theorem integral_twoFluctuationChart (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I) (c : K → E) (F : C(X → E, ℝ)) :
+    (∫ f, F (twoFluctuationChart e e' c f) ∂Measure.pi (fun _ => ν)) =
+      blockedDensity ν e' (blockedDensity ν e F) c := by
+  let H : C(((I ⊕ J) → E) × ((K ⊕ L) → E), ℝ) :=
+    ⟨fun f => F (fluctuationChart e (fluctuationChart e' c f.2) f.1), by
+      unfold fluctuationChart
+      fun_prop⟩
+  have hm := measurePreserving_sumPiEquivProdPi (fun _ : (I ⊕ J) ⊕ (K ⊕ L) => ν)
+  have hi := integral_map_of_stronglyMeasurable (μ := Measure.pi (fun _ : (I ⊕ J) ⊕ (K ⊕ L) => ν))
+    hm.measurable H.continuous.stronglyMeasurable
+  rw [hm.map_eq] at hi
+  change (∫ p, H p ∂(Measure.pi (fun _ : I ⊕ J => ν)).prod (Measure.pi (fun _ : K ⊕ L => ν))) =
+    (∫ f, F (twoFluctuationChart e e' c f) ∂Measure.pi (fun _ => ν)) at hi
+  rw [← hi, integral_prod_symm _ (CompactTransferGap.IntegralKernel.integrable_continuous_fun _ H.continuous)]
+  change (∫ g, ∫ f, F (fluctuationChart e (fluctuationChart e' c g) f)
+    ∂Measure.pi (fun _ => ν) ∂Measure.pi (fun _ => ν)) = _
+  simp_rw [integral_fluctuationChart]
+
+theorem expectation_twoFluctuationMark (ν : Measure E) [IsProbabilityMeasure ν]
+    (e : ((I ⊕ I) ⊕ J) ≃ X) (e' : ((K ⊕ K) ⊕ L) ≃ I)
+    (c : K → E) (W F : C(X → E, ℝ)) :
+    expectation (Measure.pi fun _ => ν) (twoFluctuationMark e e' c W) (twoFluctuationMark e e' c F) =
+      blockedDensity ν e' (blockedDensity ν e (W*F)) c / blockedDensity ν e' (blockedDensity ν e W) c := by
+  unfold expectation
+  change (∫ f, (W*F) (twoFluctuationChart e e' c f) ∂Measure.pi (fun _ => ν)) /
+    (∫ f, W (twoFluctuationChart e e' c f) ∂Measure.pi (fun _ => ν)) = _
+  rw [integral_twoFluctuationChart, integral_twoFluctuationChart]
 
 end PairedLinks
 

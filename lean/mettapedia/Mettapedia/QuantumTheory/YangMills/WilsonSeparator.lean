@@ -33,13 +33,7 @@ theorem expectation_const (W : C(X, ℝ)) (hW : ∀ x, 0 < W x) (c : ℝ) :
   rw [integral_mul_const]
   exact mul_div_cancel_left₀ c (partition_pos μ W hW).ne'
 
-theorem expectation_mono (W F G : C(X, ℝ)) (hW : ∀ x, 0 < W x)
-    (hFG : ∀ x, F x ≤ G x) : expectation μ W F ≤ expectation μ W G := by
-  apply div_le_div_of_nonneg_right _ (partition_pos μ W hW).le
-  exact integral_mono
-    (IntegralKernel.integrable_continuous_fun μ (by fun_prop))
-    (IntegralKernel.integrable_continuous_fun μ (by fun_prop))
-    (fun x => mul_le_mul_of_nonneg_left (hFG x) (hW x).le)
+export WilsonBlockElimination (expectation_mono)
 
 theorem expectation_reweight (W R F : C(X, ℝ)) (hW : ∀ x, 0 < W x)
     (hR : ∀ x, 0 < R x) :
