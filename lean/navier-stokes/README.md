@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [unequal-scale pressure return](labs/README.md#a-complete-pressure-return-depletes-across-unequal-scales)
+proves a favorable initial comparison for an unbounded cyclic family,
+with arbitrary independent parent strengths and positive viscosity.
+The complete pressure-impulse correction has an explicit negative sign
+even at the scale ratios where the earlier pressure-parent energy reserve
+increases. Equal strengths admit a uniform signed margin for this return.
+The actual local interval is analytic; later returns and arbitrary-horizon
+payment remain open.
+
 The [complete pressure-history comparison](labs/README.md#enclosed-pressure-controls-with-inherited-history)
 now combines complete residuals, field majorants and outward scalar controls
 for one shared reference. Two consecutive reciprocal-flow intervals pass
