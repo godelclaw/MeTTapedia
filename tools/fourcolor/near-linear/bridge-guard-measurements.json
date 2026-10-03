@@ -1,0 +1,51 @@
+{
+  "evidence": "Kernel-proved exact single-edge constraint composition and construction of physical colouring repairs.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.BridgeGuard",
+      "source_bytes": 5252,
+      "source_sha256": "bc1995f3bde0828f8ab175f3397099e7399b32d6c604b854a3a1bc94a649d82b",
+      "lake_build_seconds": 1.9,
+      "olean_bytes": 176584,
+      "olean_sha256": "568deba5650057466331cba77d34c51a63944fe552aca2ecf43452dcb4410f2c"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BridgeGuardAudit",
+      "source_bytes": 1784,
+      "source_sha256": "f60a6cb6d15b6c523bacd3fa6d7bf1c699229388cb8618e0b9121af9e2177c60",
+      "lake_build_seconds": 2.0,
+      "olean_bytes": 2784,
+      "olean_sha256": "fd35d31d44752b17b468ff9246f749a3d7f72e78f81d6d99e66f4f11aade9ba3"
+    }
+  ],
+  "audit": {
+    "roots": 3,
+    "dependency_declarations": 6187,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false,
+    "required_load_bearing_dependencies": [
+      "joint port reconstruction",
+      "exact colour/switch-bit guard",
+      "forest fibre connectivity",
+      "full-colouring gluing",
+      "actual component switches"
+    ]
+  },
+  "proved": [
+    "For arbitrary internal graphs and ordered constraints, two pieces joined by one edge have a global witness exactly when supported port labels satisfy both joining relations.",
+    "For four-colour Kempe guards each port uses at most eight old-colour/switch-bit labels, regardless of piece size.",
+    "With an induced hidden forest, compatible messages construct a full target colouring and an actual Kempe history fixing the specified retained exterior. No full target extension is assumed."
+  ],
+  "program_applications": "bridge-guard-audit.json",
+  "program_scope": "Two complete 162-vertex spherical sources, each containing two induced neighbour cycles joined by one edge. Independently valid witnesses conflict; compatible port choices reconstruct the commands in one and two switches. All local port labels cross-checked; no joint-colouring table. Concrete geometry and executions remain program evidence.",
+  "scope": "Single-edge composition only. Computing messages has its own cost; forest messages use existing exact leaf elimination. No claim of a new reduction, universal geometric supply, catalogue replacement, whole-proof saving or impossibility of compositional mathematics.",
+  "checks": [
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_bridge_guard.py"
+  ],
+  "credited_compression": false
+}

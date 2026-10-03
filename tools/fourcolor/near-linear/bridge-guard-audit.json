@@ -1,0 +1,180 @@
+{
+  "evidence": "Independent program replay; generic bridge and physical lifting are Lean proved.",
+  "fixture_sha256": "9f7b18cf7c8143643153dc2454bdf3a13a2cf081b4d1e351603d0b89d576bf75",
+  "cases": [
+    {
+      "source_case": 0,
+      "vertices": 162,
+      "faces": 320,
+      "degree_range": [
+        5,
+        7
+      ],
+      "cycle_lengths": [
+        5,
+        6
+      ],
+      "hidden_vertices": 9,
+      "bridge": [
+        46,
+        16
+      ],
+      "pair": [
+        0,
+        3
+      ],
+      "changed_anchors": [
+        100
+      ],
+      "independent_port_colours": [
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "independent_conflict_phases": [
+        0,
+        1
+      ],
+      "messages": [
+        {
+          "leaf_messages": 3,
+          "forward_edge_comparisons": 16,
+          "possible_port_labels": 4
+        },
+        {
+          "leaf_messages": 4,
+          "forward_edge_comparisons": 13,
+          "possible_port_labels": 2
+        }
+      ],
+      "port_label_pairs_tested": 8,
+      "compatible_port_label_pairs": 4,
+      "selected_port_labels": [
+        [
+          1,
+          false
+        ],
+        [
+          2,
+          false
+        ]
+      ],
+      "composed_port_colours": [
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "whole_forest_crosscheck": {
+        "forward_edge_comparisons": 30,
+        "max_local_labels": 8,
+        "leaf_messages": 8
+      },
+      "execution": {
+        "switches_by_phase": {
+          "prepare": 0,
+          "joint": 1,
+          "finish": 0
+        },
+        "largest_component": 1
+      },
+      "whole_joint_colourings_enumerated": false
+    },
+    {
+      "source_case": 1,
+      "vertices": 162,
+      "faces": 320,
+      "degree_range": [
+        5,
+        7
+      ],
+      "cycle_lengths": [
+        7,
+        6
+      ],
+      "hidden_vertices": 11,
+      "bridge": [
+        66,
+        150
+      ],
+      "pair": [
+        0,
+        1
+      ],
+      "changed_anchors": [
+        31
+      ],
+      "independent_port_colours": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "independent_conflict_phases": [
+        1
+      ],
+      "messages": [
+        {
+          "leaf_messages": 5,
+          "forward_edge_comparisons": 13,
+          "possible_port_labels": 3
+        },
+        {
+          "leaf_messages": 4,
+          "forward_edge_comparisons": 19,
+          "possible_port_labels": 1
+        }
+      ],
+      "port_label_pairs_tested": 3,
+      "compatible_port_label_pairs": 2,
+      "selected_port_labels": [
+        [
+          3,
+          false
+        ],
+        [
+          1,
+          true
+        ]
+      ],
+      "composed_port_colours": [
+        [
+          3,
+          3
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "whole_forest_crosscheck": {
+        "forward_edge_comparisons": 36,
+        "max_local_labels": 8,
+        "leaf_messages": 10
+      },
+      "execution": {
+        "switches_by_phase": {
+          "prepare": 1,
+          "joint": 1,
+          "finish": 0
+        },
+        "largest_component": 5
+      },
+      "whole_joint_colourings_enumerated": false
+    }
+  ],
+  "scope": "Two concrete repairs; no universal coverage, strict map reduction or catalogue saving."
+}

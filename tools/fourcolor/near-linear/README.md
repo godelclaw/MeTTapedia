@@ -734,6 +734,61 @@ Replay `lake build Mettapedia.GraphTheory.FourColor.CycleBlocksAudit` and
 [fixture](cycle-blocks-example.json) pins the sources and gluing faces; the
 [receipt](cycle-blocks-measurements.json) records the six-root audit.
 
+## Interacting pieces: keep the joining port choices
+
+[BridgeGuard](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/BridgeGuard.lean)
+proves exact composition for two pieces joined by one edge. Each piece
+retains the labels at its port that have genuine interior witnesses.
+The whole constraint problem is solvable exactly when two supported labels
+satisfy the joining relation in both orientations. Internal pieces may be
+arbitrarily large; neither independent satisfiability nor arbitrary selected
+witnesses replace that relation.
+
+For colouring transitions a label consists of the old colour and a Boolean
+choice to perform the common transposition. Four colours give at most eight
+labels at each port and 64 candidate label pairs across the edge. This
+bound concerns the joining check, not all work required to compute messages.
+For forest pieces, existing leaf elimination computes the messages and
+reconstructs witnesses without enumerating all interior assignments.
+
+The physical consumer constructs a full target colouring from compatible
+messages and a proper retained target, and reaches it by actual Kempe
+switches fixing the specified exterior. Its hidden-forest hypothesis
+supplies the preparatory recolourings; target extension and reachability
+are conclusions. It does not assume the independently selected witnesses
+already agree across the joining edge.
+
+Two [program consumers](bridge-guard-audit.json) use the existing complete
+162-vertex spherical triangulations. Each hides two induced neighbour
+cycles, retaining one anchor in each. The remaining paths have exactly one
+joining edge. Both examples supply locally valid witnesses that conflict
+at that edge and compatible replacements computed through port messages.
+
+| Cycles | Hidden vertices | Independent port colours, before → after | Compatible port colours | Port label pairs checked | Physical switches |
+| --- | ---: | --- | --- | ---: | ---: |
+| 5 and 6 | 9 | `(2,2) → (2,2)` | `(1,2) → (1,2)` | 8 | 1 |
+| 7 and 6 | 11 | `(0,1) → (0,0)` | `(3,1) → (3,0)` | 3 | 2 |
+
+The second repair first prepares the hidden colouring, then changes the
+selected anchor through a five-vertex component. The entire exterior of
+the two cycles stays fixed. The replay checks every local port label
+against the existing leaf evaluator, all reconstructed edges and the
+complete physical component supports. It builds no joint colouring table.
+Geometry and these executions remain program evidence; the general
+composition and physical reconstruction theorems are kernel checked.
+
+This resolves a single-edge interaction, not arbitrary multi-port or cyclic
+interaction. It supplies no ordinary smaller-map reduction, geometric
+coverage, catalogue replacement or whole-proof cost saving. In particular,
+the examples refute combining arbitrary local witnesses; they do not show
+that every locally feasible command fails or that compositional repair is
+impossible.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.BridgeGuardAudit` and
+`python3 tools/fourcolor/near-linear/audit_bridge_guard.py`. The
+[fixture](bridge-guard-example.json) pins both examples and their sources;
+the [receipt](bridge-guard-measurements.json) records the three-root audit.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)
