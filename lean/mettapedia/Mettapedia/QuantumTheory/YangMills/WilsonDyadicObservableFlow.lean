@@ -1010,6 +1010,123 @@ theorem expectation_secondGeneratedCovariance_wilsonPlaquette_le {η β : ℝ} (
   abs_expectation_le volume _ _ (directDensity_pos n 2 _ (fineDensity_pos (doubleIndex n) β))
     (secondGeneratedCovariance_wilsonPlaquette_le hη hβ n z w p q)
 
+set_option backward.isDefEq.respectTransparency false in
+/-- The first entry of the two-step ledger uses the first exact Wilson marginal. -/
+theorem scaleCovarianceContribution_two_zero (n : ℕ) (β : ℝ)
+    (F G : C(FineConfig (doubleIndex n), ℝ)) :
+    scaleCovarianceContribution n 2 (fineDensity (doubleIndex n) β)
+      (fineDensity_pos (doubleIndex n) β) F G 0 =
+      expectation volume (coarseDensity (doubleIndex n) β)
+        (conditionalCovariance (doubleIndex n) β F G) := rfl
+
+set_option backward.isDefEq.respectTransparency false in
+/-- The next entry uses the full first generated law and its transported marks. -/
+theorem scaleCovarianceContribution_two_one (n : ℕ) (β : ℝ)
+    (F G : C(FineConfig (doubleIndex n), ℝ)) :
+    scaleCovarianceContribution n 2 (fineDensity (doubleIndex n) β)
+      (fineDensity_pos (doubleIndex n) β) F G 1 =
+      expectation volume (directDensity n 2 (fineDensity (doubleIndex n) β))
+        (secondGeneratedCovariance n β F G) := by
+  simp only [directDensity_succ, directDensity_zero]
+  rfl
+
+/-- The joint conditional estimate preserves cancellation between the two
+discarded scales; its constant is smaller than the sum of separate bounds. -/
+theorem twoStepRemainder_wilsonPlaquette_le {η β : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ twoConditionalCovarianceBeta η) (n : ℕ) (z w : ℝ)
+    (p q : Plaquette 4 (doubleIndex (doubleIndex n))) (c : CoarseConfig n) :
+    let P := directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β)
+    let F := wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p
+    let G := wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q
+    |P (F*G) c - P F c * P G c| ≤
+      12 * |z| * |w| * Real.exp 48 * Real.exp (-η*(polymerDist (support p) (support q)-6)) := by
+  dsimp only
+  rw [← covariance_twoFluctuationMark_eq_direct]
+  have h := covariance_twoFluctuationMark_spatial_le hη hβ n (support p) (support q)
+    (support_nonempty p) (support_nonempty q)
+    (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p)
+    (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q)
+    (wilsonPlaquetteMark_local _ β z p) (wilsonPlaquetteMark_local _ β w q)
+    (by positivity : 0 ≤ 2*|z|) (by positivity : 0 ≤ 2*|w|)
+    (abs_wilsonPlaquetteMark_le _ β z p) (abs_wilsonPlaquetteMark_le _ β w q) c
+  have hp : ((support p).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le p
+  have hq : ((support q).card : ℝ) ≤ 4 := by exact_mod_cast card_support_le q
+  have he : Real.exp (6*(support p).card+6*(support q).card) ≤ Real.exp 48 :=
+    Real.exp_le_exp.mpr (by linarith)
+  apply h.trans
+  calc
+    _ ≤ 3*(2*|z|)*(2*|w|)*Real.exp 48 *
+        Real.exp (-η*(polymerDist (support p) (support q)-6)) := by
+      apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+      exact mul_le_mul_of_nonneg_left he (by positivity)
+    _ = _ := by ring
+
+set_option maxHeartbeats 800000 in
+set_option backward.isDefEq.respectTransparency false in
+/-- Both actual scale contributions satisfy the physical per-scale hypothesis
+with the same amplitude. This theorem certifies two steps, not arbitrary depth. -/
+theorem twoScaleCovariance_wilsonPlaquette_physical_le {η β a : ℝ} (hη : 0 ≤ η)
+    (hβ : |β| ≤ twoConditionalCovarianceBeta η) (ha : 0 < a) (n : ℕ) (z w : ℝ)
+    (p q : Plaquette 4 (doubleIndex (doubleIndex n))) (i : Fin 2) :
+    |scaleCovarianceContribution n 2 (fineDensity (doubleIndex n) β)
+      (fineDensity_pos (doubleIndex n) β)
+      (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p)
+      (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q) i| ≤
+      (24*|z| *|w| *Real.exp (48+6*η)) *
+        Real.exp (-(η / coarseSpacing a i.val)*(a*polymerDist (support p) (support q))) := by
+  let D := polymerDist (support p) (support q)
+  have hD : 0 ≤ D := polymerDist_nonneg _ _
+  fin_cases i
+  · erw [scaleCovarianceContribution_two_zero n β
+      (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p)
+      (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q)]
+    apply (expectation_conditionalCovariance_wilsonPlaquette_le hη
+      (hβ.trans (twoConditionalCovarianceBeta_le hη)) (doubleIndex n) z w p q).trans
+    have hx : -(η / coarseSpacing a 0)*(a*D) = -η*D := by
+      dsimp [coarseSpacing]
+      field_simp [ha.ne']
+    change 12*|z| *|w| *Real.exp 24*Real.exp (-η*(D-2)) ≤
+      24*|z| *|w| *Real.exp (48+6*η)*Real.exp (-(η / coarseSpacing a 0)*(a*D))
+    rw [hx]
+    rw [mul_assoc (12*|z| *|w|), ← Real.exp_add, mul_assoc (24*|z| *|w|), ← Real.exp_add]
+    apply mul_le_mul
+    · nlinarith [mul_nonneg (abs_nonneg z) (abs_nonneg w)]
+    · exact Real.exp_le_exp.mpr (by linarith)
+    · positivity
+    · positivity
+  · erw [scaleCovarianceContribution_two_one n β
+      (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p)
+      (wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q)]
+    apply (expectation_secondGeneratedCovariance_wilsonPlaquette_le hη hβ n z w p q).trans
+    have hx : -(η / coarseSpacing a 1)*(a*D) = -(η/2)*D := by
+      dsimp [coarseSpacing]
+      field_simp [ha.ne']
+      <;> ring
+    change 24*|z| *|w| *Real.exp 48*Real.exp (-η*(D-6)) ≤
+      24*|z| *|w| *Real.exp (48+6*η)*Real.exp (-(η / coarseSpacing a 1)*(a*D))
+    rw [hx]
+    rw [mul_assoc (24*|z| *|w|), ← Real.exp_add, mul_assoc (24*|z| *|w|), ← Real.exp_add]
+    apply mul_le_mul_of_nonneg_left _ (by positivity)
+    exact Real.exp_le_exp.mpr (by nlinarith)
+
+/-- The established physical depth-sum theorem, now instantiated with proved
+estimates for two actual Wilson eliminations and the original plaquette marks. -/
+theorem twoStepRemainder_wilsonPlaquette_physical_le {η β a rMax D₀ : ℝ}
+    (hη : 0 < η) (hβ : |β| ≤ twoConditionalCovarianceBeta η) (ha : 0 < a)
+    (hr : coarseSpacing a 2 ≤ rMax) (hD₀ : 0 < D₀) (n : ℕ) (z w : ℝ)
+    (p q : Plaquette 4 (doubleIndex (doubleIndex n)))
+    (hD : D₀ ≤ a*polymerDist (support p) (support q)) :
+    let P := directProject n 2 (fineDensity (doubleIndex n) β) (fineDensity_pos (doubleIndex n) β)
+    let F := wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β z p
+    let G := wilsonPlaquetteMark (doubleIndex (doubleIndex n)) β w q
+    |expectation volume (directDensity n 2 (fineDensity (doubleIndex n) β))
+      (P (F*G) - P F * P G)| ≤
+      (24*|z| *|w| *Real.exp (48+6*η) * Real.exp (-(η/rMax)*D₀) /
+        (1-Real.exp (-(η/rMax)*D₀))) *
+          Real.exp (-(η/rMax)*(a*polymerDist (support p) (support q))) := by
+  apply directRemainder_le_of_physicalScaleBounds n 2 _ _ _ _ (by positivity) hη ha hr hD₀ hD
+  exact twoScaleCovariance_wilsonPlaquette_physical_le hη.le hβ ha n z w p q
+
 namespace InteractionState
 
 theorem density_iterate_direct (n : ℕ) : ∀ j (A : InteractionState (scaleIndex n j)),

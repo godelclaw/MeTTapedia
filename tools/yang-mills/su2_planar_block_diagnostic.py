@@ -170,6 +170,35 @@ def pair_conditional_moments(t, beta):
     return mean, second, cross
 
 
+def character_tail_diagnostic(beta, area, modes=64, cutoff=384):
+    """Numerical finite tail and an analytic envelope for the remaining tail.
+
+    |U_n(t)| <= n+1. From the Bessel series,
+    I_(n+1)(beta)/I_1(beta) <= exp(beta)*(beta/2)^n/(n+1)!.
+    After cutoff the resulting weighted terms have a decreasing ratio <=rho.
+    The logarithmic infinite-tail envelope avoids underflow. Its floating-point
+    evaluation and the finite coefficient sum are not certified arithmetic.
+    """
+    if beta < 0 or area < 1 or not 0 < modes < cutoff:
+        raise ValueError("Require beta >= 0, area >= 1, and 0 < modes < cutoff")
+    if beta == 0:
+        return {"modes": modes, "infinite_tail_start_degree": cutoff,
+                "finite_tail_before_cutoff": 0.,
+                "log_infinite_tail_envelope": None,
+                "zero_coupling_tail_exactly_zero": True}
+    n = np.arange(modes, cutoff)
+    finite = float(np.sum((n+1)**2 * ratios(beta, cutoff)[modes:]**area))
+    rho = ((cutoff+2)/(cutoff+1))**2 * (beta/(2*(cutoff+2)))**area
+    if rho >= 1:
+        raise ValueError("Increase the character tail cutoff for this coupling")
+    log_bound = (2*math.log(cutoff+1) + area*(beta+cutoff*math.log(beta/2)
+                 - math.lgamma(cutoff+2)) - math.log1p(-rho))
+    return {"modes": modes, "infinite_tail_start_degree": cutoff,
+            "finite_tail_before_cutoff": finite,
+            "log_infinite_tail_envelope": log_bound,
+            "remaining_envelope_geometric_ratio": rho}
+
+
 def covariance_diagnostic(beta, nodes):
     """Covariance and variance ledgers for 2 and 4 independent plaquettes.
 
@@ -234,6 +263,10 @@ def covariance_diagnostic(beta, nodes):
             "second_scale_contribution": second_same,
             "covariance_ledger_error": retained4+remainder2+second_same,
             "direct_vs_staged_remainder_error": e4(direct_same4-m4*m4)-remainder2-second_same,
+            "signed_discarded_sum": remainder2+second_same,
+            "absolute_discarded_sum": abs(remainder2)+abs(second_same),
+            "absolute_sum_over_fine_variance": (abs(remainder2)+abs(second_same))/fine_var,
+            "beta_squared_absolute_sum": beta*beta*(abs(remainder2)+abs(second_same)),
         },
         "four_plaquettes_different_first_pairs": {
             "retained_covariance": retained4,
@@ -246,7 +279,108 @@ def covariance_diagnostic(beta, nodes):
         "normalization_error_two": abs(e2(np.ones_like(t))-1),
         "normalization_error_four": abs(e4(np.ones_like(t))-1),
         "four_density_vs_character_max_error": float(np.max(abs(density4-density(t, beta, 4)))),
+        "four_density_modes_64_to_128_max_change": float(np.max(abs(
+            density(t, beta, 4, modes=128)-density(t, beta, 4, modes=64)))),
+        "four_density_modes_128_to_192_max_change": float(np.max(abs(
+            density(t, beta, 4, modes=192)-density(t, beta, 4, modes=128)))),
+        "four_density_character_tail": character_tail_diagnostic(beta, 4),
     }
+
+
+def wilson_samples(beta, count, rng):
+    """Independent samples of exp(beta*t) times S^3 Haar, beta >= 1.
+
+    Set y=beta*(1-t).  Its density is proportional to
+    exp(-y)*sqrt(y)*sqrt(1-y/(2*beta)) on [0,2*beta].  Thus a Gamma(3/2,1)
+    proposal with the displayed square-root acceptance factor is exact in
+    real arithmetic.  There is no Markov chain or quadrature in the sampler.
+    """
+    if beta < 1:
+        raise ValueError("The weak-coupling sampler requires beta >= 1")
+    accepted, trials, remaining = [], 0, count
+    while remaining:
+        batch = max(256, int(1.5*remaining))
+        y = rng.gamma(1.5, 1., batch)
+        keep = ((y <= 2*beta)
+                & (rng.random(batch) <= np.sqrt(np.maximum(0., 1-y/(2*beta)))))
+        values = y[keep][:remaining]
+        accepted.append(values)
+        remaining -= len(values)
+        trials += batch
+    t = 1 - np.concatenate(accepted)/beta
+    direction = rng.normal(size=(count, 3))
+    direction /= np.linalg.norm(direction, axis=1)[:, None]
+    return np.column_stack([t, np.sqrt(np.maximum(0., 1-t*t))[:, None]*direction]), trials
+
+
+def planar_projected_mean(t, beta, area, modes=128):
+    """Original plaquette trace conditioned on an ordered area-fold product.
+
+    Differentiate the complete character expansion: m_A = m_1 +
+    (1/A) d_beta log(k_A).  No fitted Wilson coupling is used.  Positivity is
+    checked at every sampled product; tails with catastrophic cancellation
+    are rejected rather than silently clipped.
+    """
+    n = np.arange(1, modes+1)
+    r = ratios(beta, modes)
+    dr = (ive(n-1, beta)+ive(n+1, beta))/(2*ive(1, beta))
+    dr -= r*(ive(0, beta)+ive(2, beta))/(2*ive(1, beta))
+    dr[0] = 0.
+    chars = characters(t, modes)
+    k = np.tensordot(n*r**area, chars, axes=(0, 0))
+    if np.any(k <= 1.e-10):
+        raise ArithmeticError("Insufficient character precision at a sampled product")
+    numerator = np.tensordot(n*r**(area-1)*dr, chars, axes=(0, 0))
+    return ive(2, beta)/ive(1, beta)+numerator/k
+
+
+def covariance_wilson_sampling(beta, power, replicates, reference):
+    """Check the signed ledger by sampling the actual planar Wilson law.
+
+    Center using the exact one-plaquette mean.  The two successive conditional
+    means keep all character modes up to the reported truncation.  The signed
+    increments are martingale differences; their products estimate the
+    averaged conditional covariances directly, under the generated laws.
+    """
+    count = 2**power
+    fine_mean = float(ive(2, beta)/ive(1, beta))
+    estimates, sampler_checks = [], []
+    truncation_error = 0.
+    for seed in range(replicates):
+        qs, trials = wilson_samples(beta, 4*count, np.random.default_rng(4200+seed))
+        qs = qs.reshape(count, 4, 4)
+        a, b = qmul(qs[:, 0], qs[:, 1]), qmul(qs[:, 2], qs[:, 3])
+        c = qmul(a, b)
+        m2a = pair_conditional_moments(a[:, 0], beta)[0]
+        m2b = pair_conditional_moments(b[:, 0], beta)[0]
+        m4 = planar_projected_mean(c[:, 0], beta, 4, 128)
+        m4_more = planar_projected_mean(c[:, 0], beta, 4, 192)
+        truncation_error = max(truncation_error, float(np.max(abs(m4-m4_more))))
+        f, g = qs[:, 0, 0], qs[:, 1, 0]
+        first = (f-m2a)*(g-m2a)
+        second_same = (m2a-m4)**2
+        second_cross = (m2a-m4)*(m2b-m4)
+        retained = (m4-fine_mean)**2
+        original_cov = (f-fine_mean)*(g-fine_mean)
+        estimates.append([first.mean(), second_same.mean(), second_cross.mean(),
+                          retained.mean(), original_cov.mean(), (first+second_same).mean()])
+        sampler_checks.append({"proposals": trials, "returned_samples": 4*count,
+            "trace_mean_error": float(qs[:, :, 0].mean()-fine_mean),
+            "unit_quaternion_max_error": float(np.max(abs(np.sum(qs*qs, axis=2)-1)))})
+    arr = np.asarray(estimates)
+    same = reference["four_plaquettes_same_first_pair"]
+    cross = reference["four_plaquettes_different_first_pairs"]
+    expected = np.array([same["first_scale_contribution"], same["second_scale_contribution"],
+        cross["second_scale_contribution"], same["retained_covariance"], 0., same["signed_discarded_sum"]])
+    return {"beta": beta, "points_per_replicate": count, "replicates": replicates,
+        "seed_base": 4200, "sampling_method": "independent Gamma rejection, no Markov chain",
+        "quantities": ["first_same_pair", "second_same_pair", "second_different_pairs",
+                       "retained_covariance", "original_covariance", "signed_discarded_sum"],
+        "means": arr.mean(axis=0).tolist(), "quadrature_reference": expected.tolist(),
+        "absolute_errors": abs(arr.mean(axis=0)-expected).tolist(),
+        "replicate_standard_errors": (arr.std(axis=0, ddof=1)/np.sqrt(replicates)).tolist(),
+        "projected_mean_modes_128_to_192_max_change": truncation_error,
+        "sampler_checks": sampler_checks, "replicate_estimates": estimates}
 
 
 def covariance_integration_check(beta, t, power, replicates):
@@ -293,7 +427,30 @@ def main():
     parser.add_argument("--replicates", type=int, default=4)
     parser.add_argument("--covariance", action="store_true",
                         help="Include exact conditional covariance and variance ledgers")
+    parser.add_argument("--weak-coupling", action="store_true",
+                        help="Probe increasing beta with signed ledgers and direct Wilson sampling")
+    parser.add_argument("--betas", nargs="+", type=float, default=[1., 2., 4., 8., 16., 32., 64., 128.])
+    parser.add_argument("--nodes", nargs="+", type=int, default=[128, 256])
     args = parser.parse_args()
+    if args.replicates < 2:
+        parser.error("At least two independent replicates are needed to estimate sampling errors")
+    if args.weak_coupling:
+        if min(args.betas) < 1:
+            parser.error("Weak-coupling sampling requires all beta values >= 1")
+        ledgers = [covariance_diagnostic(b, n) for b in args.betas for n in args.nodes]
+        references = {b: max((r for r in ledgers if r["beta"] == b),
+                              key=lambda r: r["quadrature_nodes"]) for b in args.betas}
+        result = {
+            "model": "two-dimensional open planar SU(2) Wilson patch, independent axial-gauge plaquettes",
+            "scope": "Numerical evidence only; four original plaquettes and two integration steps, not a four-dimensional spatial estimate",
+            "normalization": "t=Re(tr(U))/2; raw covariance, covariance divided by Var(t), and beta^2 times covariance are distinct diagnostics",
+            "gauge_and_order_checks": gauge_check(),
+            "covariance_ledgers": ledgers,
+            "direct_wilson_sampling": [covariance_wilson_sampling(b, p, args.replicates, references[b])
+                for b in args.betas for p in args.powers],
+        }
+        print(json.dumps(result, indent=2, allow_nan=False))
+        return
     betas = [0., 0.01, 0.1, 0.5, 1., 2., 4., 8., 16.]
     result = {
         "model": "two-dimensional open planar SU(2) Wilson patch, normalized Haar measure",

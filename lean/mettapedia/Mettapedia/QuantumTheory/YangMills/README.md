@@ -483,6 +483,46 @@ actual generated density and the transported original marks at that scale.
 `wilsonPlaquette_covariance_scales` specializes this identity to centered,
 gauge-invariant plaquettes at arbitrary positions and any real coupling.
 
+The complete first generated logarithm is identified by
+`log_coarseDensity_eq_generated`: its vacuum is
+`-beta #plaquettes + effectiveVacuum`, and every extracted interaction
+`effectiveInteraction S` remains in the sum. The normalized original mark is
+the ratio of the marked and unmarked Haar integrals (`projected_integral`).
+Neither the generated action nor its projected marks are replaced by a Wilson
+ansatz. This reconstruction identifies the full interaction; it does not by
+itself prove that a specified non-Wilson coefficient is nonzero.
+
+The second conditional law is now controlled as well. Fix `eta >= 0` and
+
+`beta2(eta) = 1/(256 exp(64+56 eta)) > 0`.
+
+At `|beta| <= beta2(eta)`, the two independent Haar fibers have plaquette
+supports of size at most eight, diameter at most seven, incidence at most 128,
+and separation at least the original separation minus six. Their complete
+conditional interaction satisfies
+`spatialInteractionNorm a eta <= 128 |beta| exp(8a+56 eta)`.
+The signed identity is `R_direct2 = Q(R_first) + R_second(PF,PG)`, where `Q`
+uses the full first generated density. For centered original plaquettes with
+normalizations `z,w`, `secondGeneratedCovariance_wilsonPlaquette_le` proves
+
+`|R_second(PF,PG;c)| <= 24 |z| |w| exp(48) exp(-eta (dist-6))`.
+
+The same bound holds after averaging against the second exact marginal.
+It is uniform over volume, positions and retained fields, including contacts.
+The joint two-step remainder has the sharper prefactor `12 |z| |w| exp(48)`;
+bounding it directly preserves cancellation between the two contributions.
+These are fixed two-step spatial theorems. The threshold does not assert
+arbitrary-depth spatial control of transported original marks.
+
+There is also an unconditional depth-independent budget. For every positive
+continuous density and every finite depth,
+`sum_i |c_i(F,G)| <= (Var(F)+Var(G))/2`.
+`sum_abs_wilsonPlaquette_scales_le` makes this at most `(z^2+w^2)/2` for
+the original centered Wilson plaquettes, at every real beta and every volume.
+This rules out unbounded absolute accumulation for uniformly bounded marks.
+It supplies no decay with separation and no uniform bound for growing
+cutoff normalizations.
+
 The remainder can be bounded independently of depth if its per-scale spatial
 estimate is uniform. Write `r_i = 2^i a`, `m = eta/rMax`, and `c_i` for the
 contribution at scale `i`, ordered from fine to coarse. Fix `A >= 0` and
@@ -498,6 +538,13 @@ without a depth factor: away from the diagonal its prefactor is
 near and coincident points as well, with
 
 `epsilon = 2 B0 C0 exp(m D0) + A exp(-m D0)/(1-exp(-m D0))`.
+
+For the two proved Wilson steps, the common amplitude is explicitly
+`A = 24 |z| |w| exp(48+6 eta)` and `D = a dist(supp p,supp q)`.
+`twoScaleCovariance_wilsonPlaquette_physical_le` discharges both per-scale
+inequalities, and `twoStepRemainder_wilsonPlaquette_physical_le` applies the
+depth-sum theorem at `j=2`, `4a <= rMax`, and `D >= D0 > 0`.
+The general depth-sum theorem remains conditional beyond those two steps.
 
 This supplies the remainder field of `TransportControl` once the per-scale
 inequality is proved. The hypothesis is on the averaged covariance, so a
@@ -558,3 +605,14 @@ Ising model at zero field and coupling greater than
 `arcosh(1+sqrt(2))/2`. Its image has no quasilocal specification. These hypotheses
 do not establish a corresponding pathology for compact SU(2); they distinguish
 existence of an exact marginal from the uniform locality needed for iteration.
+
+The `--weak-coupling` diagnostic tests beta from 1 to 128 with two discarded
+scales, 128/256-node quadrature, character-tail envelopes and independent exact-law
+rejection sampling in real arithmetic. It records floating-point and sampling
+diagnostics separately; these are not certified error bounds. The raw absolute
+discarded sum peaks near beta 2 and falls on the later tested couplings, whereas
+its ratio to the original variance rises to about 0.437 at beta 128. Rescaling
+the two marks by beta gives a budget about 0.653 at that coupling. Thus small
+unrescaled covariance alone does not establish control of renormalized marks.
+This two-dimensional, two-step experiment tests neither long-distance decay
+nor uniformity over arbitrary blocking depths in four dimensions.
