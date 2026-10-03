@@ -1,5 +1,23 @@
 # Classical Four Colour and compositional reconstruction
 
+The [shared seven-pair sector](MettapediaFourColor/SevenPairSector.lean)
+now gives a geometric continuation from a specified facial degree profile.
+Fifteen fixed degrees and the same signed high-edge transfer imply that a
+flat second centre has a degree-at-least-seven vertex at one of three
+specified outer positions. In the actual minimal map that vertex differs
+from both selected centres and lies within radius two of the second.
+The original radius-five degree bound makes it exactly seven. Six further
+chart degrees remain unrestricted, and distant vertex labels may coincide.
+
+The argument forces eleven incoming net units against an initial deficit
+of ten when all three outer positions are low. It uses checked source-rule
+paths, rather than a colouring catalogue certificate. Classification into
+this profile, the remaining pair/path/triangle branches and universal
+coverage remain open. No catalogue entry or classical certificate is
+removed. Replay `lake build kernelSevenPairSectorData`, then
+`lake build kernelSevenPairSector`; see the
+[receipt](../../tools/fourcolor/near-linear/seven-pair-sector-measurements.json).
+
 The [complete wheel repair](MettapediaFourColor/WheelFamilyChecked.lean)
 now supplies the previously open D3009 contract. All 66,430 repair states
 and all 531,441 input indices have passed kernel checks. One shared

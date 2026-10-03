@@ -1,0 +1,240 @@
+{
+  "status": "Kernel-certified continuation from a specified shared seven-pair sector.",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.SevenPairSectorData",
+      "source_sha256": "5c82247c3389e9017cf52f3b07e55947318fc6d9b0e949393bc31816e23914eb",
+      "exit_code": 0,
+      "frontend_wall_seconds": 848.586,
+      "olean_bytes": 2246728,
+      "olean_sha256": "08a7d2aed16eb7f0bb0959f9ab0a55454e2071b87d665ca398678d1298c57bcd"
+    },
+    {
+      "module": "MettapediaFourColor.SevenPairSector",
+      "source_sha256": "63278a6e296c9045f66a5300b7eae05e225519e4b5d1bd4cd5b2c255878471ae",
+      "exit_code": 0,
+      "frontend_wall_seconds": 248.455,
+      "olean_bytes": 2401632,
+      "olean_sha256": "aae1ba6c4dfe2afa5bee823c8d621709071bb4acae424571e5a5273ba3fb8c55"
+    },
+    {
+      "module": "MettapediaFourColor.SevenPairSectorAudit",
+      "source_sha256": "2ce15256674eb1642a93e8650daeefde310790c71997f80bc0c8acba0554acc9",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.488,
+      "olean_bytes": 2592,
+      "olean_sha256": "b24e6a0a724c44f779d76fc88a162cede72fa941ccb2d14727eb447bd8775977"
+    }
+  ],
+  "native_code_generation": false,
+  "general_theorem": {
+    "root": "SevenPairSector.positive",
+    "domain": "Finite simple graph with triangular, vertexwise cyclic dart rotation.",
+    "observations": "One shared chart of 24 labels and 31 facial triangles; 15 fixed degrees. No global chart injectivity assumption.",
+    "fixed_degrees": {
+      "0": 7,
+      "1": 7,
+      "2": 5,
+      "3": 6,
+      "4": 6,
+      "5": 5,
+      "6": 6,
+      "7": 6,
+      "8": 6,
+      "9": 6,
+      "13": 5,
+      "14": 6,
+      "15": 6,
+      "16": 5,
+      "20": 6
+    },
+    "unrestricted_chart_degrees": [
+      10,
+      11,
+      12,
+      17,
+      18,
+      19
+    ],
+    "low_guards": "Each of the three marked outer vertices 21, 22, 23 has degree five or six.",
+    "signed_bound": "Incoming from the first centre is at least three; outgoing to it is at most one. Net contributions around the second centre are bounded below by [2,0,2,1,2,2,2].",
+    "conclusion": "Final charge at the second degree-seven centre is at least one.",
+    "flat_corollary": "If the second centre is flat and the three marked degrees are at least five, at least one is at least seven."
+  },
+  "actual_map_consumer": {
+    "root": "ActualSevenPairSector.pair_continuation",
+    "domain": "The actual minimal facial dual of a graph-backed vertex-minimal spherical cubic Tait counterexample.",
+    "conclusion": "A further degree-seven vertex differs from both selected centres, lies within radius two of the second and radius five of the original receiver, under its retained radius-five degree bound.",
+    "geometric_reason": "The cyclic six-neighbour order separates it from the second centre. The facial-triangle law excludes adjacency from the intermediate six to the first centre.",
+    "not_claimed": [
+      "Distinctness from every previously retained vertex",
+      "Flatness of the further vertex",
+      "An indefinitely repeatable continuation",
+      "Classification of every admissible flat pair",
+      "A strict reduction or universal coverage"
+    ]
+  },
+  "retained_finite_inputs": {
+    "facial_lookup_entries": 576,
+    "excluded_outflow_paths": 83,
+    "incoming_rule_maps": 11,
+    "low_boundary_cases": 8
+  },
+  "program_evidence": {
+    "evidence": "Independent finite checks; geometric coverage is not claimed.",
+    "rule_revision": "d85bfe09e9584d675fdf33a1da61067575ec4883",
+    "source_sha256": "5c82247c3389e9017cf52f3b07e55947318fc6d9b0e949393bc31816e23914eb",
+    "chart_vertices": 24,
+    "facial_triangles": 31,
+    "fixed_degrees": {
+      "0": 7,
+      "1": 7,
+      "2": 5,
+      "3": 6,
+      "4": 6,
+      "5": 5,
+      "6": 6,
+      "7": 6,
+      "8": 6,
+      "9": 6,
+      "13": 5,
+      "14": 6,
+      "15": 6,
+      "16": 5,
+      "20": 6
+    },
+    "unrestricted_chart_degrees": [
+      10,
+      11,
+      12,
+      17,
+      18,
+      19
+    ],
+    "centres": [
+      0,
+      1
+    ],
+    "outflow_rules_excluded": 83,
+    "source_rule_maps": 11,
+    "low_boundary_cases": [
+      {
+        "outer_degrees": [
+          5,
+          5,
+          5
+        ],
+        "charge_lower": 1,
+        "additional_rule": 3
+      },
+      {
+        "outer_degrees": [
+          5,
+          5,
+          6
+        ],
+        "charge_lower": 1,
+        "additional_rule": 3
+      },
+      {
+        "outer_degrees": [
+          5,
+          6,
+          5
+        ],
+        "charge_lower": 1,
+        "additional_rule": 11
+      },
+      {
+        "outer_degrees": [
+          5,
+          6,
+          6
+        ],
+        "charge_lower": 1,
+        "additional_rule": 11
+      },
+      {
+        "outer_degrees": [
+          6,
+          5,
+          5
+        ],
+        "charge_lower": 1,
+        "additional_rule": 3
+      },
+      {
+        "outer_degrees": [
+          6,
+          5,
+          6
+        ],
+        "charge_lower": 1,
+        "additional_rule": 3
+      },
+      {
+        "outer_degrees": [
+          6,
+          6,
+          5
+        ],
+        "charge_lower": 1,
+        "additional_rule": 11
+      },
+      {
+        "outer_degrees": [
+          6,
+          6,
+          6
+        ],
+        "charge_lower": 1,
+        "additional_rule": 11
+      }
+    ],
+    "further_high_candidates": [
+      21,
+      22,
+      23
+    ],
+    "spherical_example": {
+      "fixture_sha256": "f5af783776fad6ead7b83820a0f7e84bc3588fed9dd8c962a259fdb7c2960eca",
+      "vertices": 32,
+      "faces": 60,
+      "outer_degrees": [
+        5,
+        6,
+        5
+      ],
+      "second_centre_charge": 14,
+      "evidence": "Independent program check of an actual profile realization; not Lean certified."
+    },
+    "claimed_scope": "A specified shared facial degree profile forces a further high vertex if its second centre is flat. No patch injectivity is assumed. Actual minimal-map geometry separates this vertex from both centres."
+  },
+  "audit": {
+    "roots": 11,
+    "dependency_declarations": 25932,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_rank_certificates_used": false,
+    "complete_four_colour_theorem_used": false
+  },
+  "checks": [
+    "kernelSevenPairSectorData",
+    "kernelSevenPairSector",
+    "kernelComplete",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_seven_pair_sector.py"
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0,
+  "remaining": [
+    "Construct the retained chart from the relevant actual shared-fan branches, or supply a certified alternative reduction.",
+    "Close residual degree profiles and the pair/path/triangle classification while preserving shared geometry.",
+    "Integrate a proved supply branch into complete coverage. Universal structural supply remains open."
+  ]
+}

@@ -16,6 +16,33 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay the finite facial paths and source maps of the shared seven-pair sector. -/
+target kernelSevenPairSectorData pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/seven-pair-sector",
+        "--library-output", ".lake/build/lib/lean", "--modules", "SevenPairSectorData"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay the signed closing constraint and actual flat-pair continuation. -/
+target kernelSevenPairSector pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/seven-pair-sector-proof",
+        "--library-output", ".lake/build/lib/lean", "--modules", "SevenPairSector",
+        "SevenPairSectorAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay exact charge with high-neighbour boundary transfers retained. -/
 target kernelPuncturedCharge pkg : Unit := do
   let env ← getAugmentedEnv

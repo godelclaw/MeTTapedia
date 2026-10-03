@@ -59,6 +59,24 @@ proved constraint while retaining its genuine shared boundary. The
 [receipt](../../../tools/fourcolor/near-linear/punctured-charge-measurements.json)
 separates these Lean laws from finite tests and unchanged coverage counts.
 
+A [shared seven-pair sector](../../../lean/fourcolor-classical/MettapediaFourColor/SevenPairSector.lean)
+now supplies one geometric continuation. Its chart retains fifteen degree
+observations and the same directed transfers across the common high edge.
+If three marked outer vertices all have degree five or six, the second
+seven receives at least eleven net units against its initial deficit of ten.
+Thus flatness forces a degree-at-least-seven vertex at one of those positions.
+In the actual minimal map, cyclic order and facial triangles separate that
+vertex from both selected centres. It lies within two edges of the second
+centre; the retained radius-five degree bound makes it exactly seven.
+Six further chart degrees remain unrestricted. The new vertex can still
+coincide with another previously observed vertex, and its flatness is not
+asserted. The next task is to construct this chart from the relevant
+shared-fan branches or supply a certified alternative reduction.
+The [receipt](../../../tools/fourcolor/near-linear/seven-pair-sector-measurements.json)
+records the exact profile, retained finite checks and unchanged coverage
+counts. A separate program check realizes the profile and its low guards
+in a 32-vertex triangulated sphere; that example is not Lean-certified.
+
 The next joint-neighbourhood test has identified two concrete four-triangle
 cores, the D0051 fan and D0052 tripod. One
 [Lean geometry proof](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCore.lean)

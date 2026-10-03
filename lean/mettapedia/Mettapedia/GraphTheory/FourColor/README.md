@@ -1,5 +1,15 @@
 # FourColor
 
+The classical package's
+[shared seven-pair sector](../../../../fourcolor-classical/MettapediaFourColor/SevenPairSector.lean)
+now derives a further high vertex from a specified joint facial profile and
+flatness. It retains the signed transfer between the two centres: three low
+outer degrees would force eleven net units into a centre with deficit ten.
+The actual-map consumer locates the forced vertex within radius two of the
+second centre and proves it differs from both selected centres. This is a
+continuation for a geometric subclass, not universal pair coverage; no
+classical catalogue or certificate dependency is removed.
+
 [Two-diamond boundary elimination](TwoDiamondBoundaryElimination.lean)
 composes two existing diamond summaries by retaining one shared tip colour.
 It reconstructs complete witnesses for arbitrary exterior graphs, attachments

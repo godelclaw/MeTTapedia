@@ -1,5 +1,24 @@
 # Near-linear Four Colour catalogue bridges
 
+The [seven-pair sector receipt](seven-pair-sector-measurements.json) records
+an actual geometric continuation. A shared facial chart with fifteen fixed
+degrees forces positive charge if its three marked outer vertices are low.
+Consequently, flatness forces a high vertex at one of those same positions.
+The minimal-map consumer distinguishes it from both selected centres and
+retains its radius-two support, or radius five from the original fan receiver.
+Six other chart degrees are unrestricted. The theorem does not assume
+that distant chart labels are distinct, and does not assert that the new
+vertex differs from every other retained high vertex.
+
+The proof checks 83 outgoing-rule exclusions and eleven incoming-rule maps;
+these finite geometric checks remain in its dependency graph. The final
+extra unit follows by a shared five/six boundary-degree argument. No
+configuration certificate or complete Four Colour theorem is used. The
+classification that supplies this profile remains open, and the classical
+coverage count is unchanged. Replay `lake build kernelSevenPairSectorData`,
+then `lake build kernelSevenPairSector`. The independent input audit is
+`python3 tools/fourcolor/near-linear/audit_seven_pair_sector.py`.
+
 The [complete wheel-family receipt](wheel-family-measurements.json) records
 kernel certification of every D3009 repair state and input trace. A shared
 action checker validates each recolouring once while retaining each
