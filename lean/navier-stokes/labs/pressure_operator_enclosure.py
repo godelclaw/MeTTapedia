@@ -3,8 +3,8 @@
 
 The exact target is one shared reconstructed Bernstein reference. Explicit
 radix-two Fourier transforms retain every quadratic and cubic output.
-This supplies physical residual balls, not yet the other majorants and
-scalar propagation required to certify a complete pressure-history prefix.
+Optional field majorants use this same reference and canonical pressure.
+The scalar history consumer is in pressure_history_certificate.
 Arithmetic assumptions are those of pressure_prefix_certificate.
 """
 
@@ -20,10 +20,19 @@ from cellular_parent_history import PAIRS
 from pressure_polynomial_enclosure import (centered_weights, rational_upper, residual_bounds,
     shared_reference, signed_inner, sqrt_upper)
 from pressure_prefix_certificate import (EnclosedFFT, U, add, arithmetic_check,
-    bernstein, combine, down, frequency_grid, mul, norm, require, sum_upper,
-    up, vector_sizes)
+    bernstein, combine, down, frequency_grid, grid_eigenvalue_upper, mul, norm,
+    require, sum_upper, total_upper, up, vector_sizes, weighted_norm)
 
 BLOCKS = {'u': slice(0, 3), 'I': slice(3, 6), 'Q': slice(6, 12), 'T': slice(12, 15)}
+
+
+def support_squares(band):
+    """Exact sums of 1, |k|^2 and |k|^4 on the complete support cube."""
+    require(isinstance(band, int) and band >= 0, 'Nonnegative integer bandwidth')
+    width = 2*band+1
+    second = band*(band+1)*width//3
+    fourth = band*(band+1)*width*(3*band*band+3*band-1)//15
+    return width**3, 3*second*width**2, 3*fourth*width**2+6*second**2*width
 
 
 def resize(a, m):
@@ -163,7 +172,44 @@ class OperatorEnclosure:
         radius = rational_upper(max(Q(center)-lo, hi-Q(center))+Q(a.radius))
         return center, radius
 
-    def residual(self, raw, h, nu):
+    def sizes(self, a, band):
+        """Wiener and H1 bounds for the exact supported Fourier field."""
+        K = self.K if a.center.shape[0] == self.n else self.Kout
+        k2 = np.sum(K*K, axis=-1)
+        require(not a.physical and np.all(a.center[np.any(abs(K) > band, axis=-1)] == 0),
+                'Midpoint and target have the stated Fourier support')
+        point = vector_sizes(a.center)
+        norms = [total_upper(point), total_upper(up(up(np.sqrt(k2))*point)),
+                 total_upper(up(k2*point))]
+        bounds = [add(value, mul(sqrt_upper(Q(square)), a.radius))
+                  for value, square in zip(norms, support_squares(band))]
+        return dict(W0=bounds[0], W1=bounds[1], W2=bounds[2],
+                    H1=add(weighted_norm(a.center, k2, 1), mul(sqrt_upper(Q(3*band**2)), a.radius)),
+                    L2=add(a.size, a.radius))
+
+    def reference_bounds(self, velocity, pressure, gradient0, endpoints, raw):
+        v = [self.sizes(a, self.band) for a in velocity]
+        g = [self.sizes(a, 2*self.band) for a in pressure]
+        V = [sum_upper([a['W'+str(j)] for a in v]) for j in range(3)]
+        matrix = np.stack([a.center for a in gradient0], axis=-1)
+        strain = (matrix+matrix.swapaxes(-1, -2))/2
+        error = add(mul(self.fft.sqrt_volume, sum_upper([a.radius for a in gradient0])),
+                    add(mul(8*U, norm(matrix)), 1.e-290))
+        margin = rational_upper(Q(11)*Q(v[0]['W2'])/(4*self.fft.n)
+                                +sum(Q(a['W1']) for a in v[1:])/2)
+        common = add(error, margin)
+        simple = rational_upper(Q(V[1])/2)
+        Sminus = max(0., min(simple, add(grid_eigenvalue_upper(-strain), common)))
+        Splus = max(0., min(simple, add(grid_eigenvalue_upper(strain), common)))
+        endpoint = endpoints['u'][-1]
+        final = self.sizes(Ball(endpoint['center'], endpoint['radius']), self.band)
+        return dict(S=Sminus, Splus=Splus, V0=V[0], V1=V[1], V2=V[2], D=V[2],
+                    G0=sum_upper([a['W0'] for a in g]), G1=sum_upper([a['W1'] for a in g]),
+                    G2=sum_upper([a['L2'] for a in g]),
+                    reference_H1=sum_upper([a['H1'] for a in v]), final_H1=final['H1'],
+                    reference_phi_upper=max(float(a[0, 0, 0, 15].real) for a in raw))
+
+    def residual(self, raw, h, nu, with_majorants=False):
         require(h > 0 and nu > 0 and np.isfinite(h+nu), 'Positive finite physical parameters')
         c, radii, endpoints = shared_reference(raw)
         fields = {key: [Ball(a[..., block], r) for a, r in zip(c, radii[key])]
@@ -188,6 +234,10 @@ class OperatorEnclosure:
                 value = linear(terms, [Q(1)]*len(terms))
                 advection[key].append(self.spectral(value, quadratic=True))
             pressure.append(self.pressure(advection['u'][-1]))
+        metadata = dict(fft_grid=self.fft.n, output_grid=self.m, input_band=self.band)
+        if with_majorants:
+            metadata['majorants'] = self.reference_bounds(fields['u'], pressure,
+                                                          gradients['u'][0], endpoints, raw)
         del gradients
         gp = [self.physical(a) for a in pressure]
         output, errors = [], {key: [] for key in ('epsilon0', 'epsilon1', 'rI', 'rQ', 'rT', 'rPhi')}
@@ -239,8 +289,42 @@ class OperatorEnclosure:
             row[0, 0, 0, 15] = scalar.center[0, 0, 0, 0]
             errors['rPhi'].append(scalar.radius)
             output.append(row)
-        return output, errors, dict(fft_grid=self.fft.n, output_grid=self.m,
-                                   input_band=self.band), endpoints
+        return output, errors, metadata, endpoints
+
+
+def majorant_checks():
+    from itertools import product as cartesian
+    for band in range(6):
+        squares = [sum(q*q for q in k)
+                   for k in cartesian(range(-band, band+1), repeat=3)]
+        require(support_squares(band) == tuple(sum(q**j for q in squares) for j in range(3)),
+                'Closed support sums match independent exact enumeration')
+    # v=(a(s) sin y,0,0), a(s)=(13+5s)/16: pressure is exactly zero,
+    # sup |sym grad v|=9/16; Wiener orders 0,1,2 all have bound 9/8.
+    n = 4
+    raw = []
+    for j in range(6):
+        a = np.zeros((n, n, n, 16), complex)
+        # Dyadic control points give an exactly affine profile.
+        amplitude = Q(4+j, 8)
+        a[0, 1, 0, 0], a[0, -1, 0, 0] = -complex(0, float(amplitude/2)), complex(0, float(amplitude/2))
+        raw.append(a)
+    op = OperatorEnclosure(n)
+    _, _, metadata, _ = op.residual(raw, .5, .25, with_majorants=True)
+    row = metadata['majorants']
+    amplitude = Q(9, 8)
+    for key in ('V0', 'V1', 'V2'):
+        require(amplitude <= Q(row[key]) < amplitude+Q(1, 10**7),
+                'Exact affine shear Wiener bound is enclosed tightly')
+    for key in ('S', 'Splus'):
+        require(amplitude/2 <= Q(row[key]) < amplitude/2+Q(1, 10**7),
+                'Both signs of the exact shear strain are enclosed')
+    for key in ('reference_H1', 'final_H1'):
+        require(Q(row[key])**2 >= amplitude**2/2 and row[key] < .796,
+                'Normalized exact shear H1 bound')
+    require(max(row[k] for k in ('G0', 'G1', 'G2')) < 1e-7,
+            'Canonical shear pressure is zero inside the numerical enclosure')
+    return dict(status='Exact support and physical shear majorants passed', majorants=row)
 
 
 def probe(n, h, dt, nu):
@@ -399,5 +483,6 @@ if __name__ == '__main__':
     parser.add_argument('--nu', type=float, default=.25)
     args = parser.parse_args()
     arithmetic_check()
-    result = probe(args.n, args.h, args.dt, args.nu) if args.probe else exact_checks()
+    result = probe(args.n, args.h, args.dt, args.nu) if args.probe else dict(
+        operator=exact_checks(), fields=majorant_checks())
     print(json.dumps(result, indent=2), flush=True)

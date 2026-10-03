@@ -38532,3 +38532,159 @@ stated arithmetic model; it is not inferred from residual samples.
 This does not extrapolate the measured inflation to later intervals.
 The stronger finite-prefix pressure payment still needs the other field
 majorants and its controls enclosed over the complete original history.
+
+## Enclosed pressure controls with inherited history
+
+`pressure_history_certificate.py` connects the complete residual balls to
+the physical comparison (785)--(794). The exact target remains the one
+shared reconstructed Bernstein reference. Every accepted interval now
+includes its field bounds and the scalar arithmetic, retaining the
+original moments, path displacement and accumulated error dissipation.
+The result is an analytic/computational certificate under the explicit
+arithmetic assumptions above; it is not a new Lean theorem.
+
+### Field bounds for that same reference
+
+For a Fourier coefficient ball with error radius r and support
+|k_j|<=b, Cauchy--Schwarz gives, for derivative orders j=0,1,2,
+
+```text
+W_j(target) <= W_j(midpoint)
+               + sqrt(sum_(|k_i|<=b) |k|^(2j)) r.     (808)
+```
+
+The three support sums are exact integers. Writing m=2b+1,
+a=sum_(-b)^b k^2 and c=sum_(-b)^b k^4, they are
+m^3, 3am^2 and 3cm^2+6a^2m. The implementation checks these formulas
+against independent integer enumeration. H1 error is at most sqrt(3)b r.
+Velocity uses bandwidth b; its canonical pressure gradient uses bandwidth
+2b. Summing the six velocity or eleven pressure time-coefficient bounds
+covers the complete centered time interval |s|<=1.
+
+Both signs of strain matter. Let S0 be the symmetric velocity gradient
+of centered time coefficient zero. At each physical grid point an
+outward Sylvester test bounds its largest eigenvalue. To cover the
+continuum and other time coefficients, add
+
+```text
+grid reconstruction error
+ + 11 W_2(v_0)/(4N)
+ + (1/2) sum_(j=1)^5 W_1(v_j).                       (809)
+```
+
+The spatial margin uses the gradient Lipschitz bound, nearest-grid-point
+distance and sqrt(3)pi<11/2. Exact solenoidality of the reconstructed
+velocity gives ||sym(ik tensor vhat)||op<=|k||vhat|/2.
+The same argument with -S0 bounds compression. Each result can also be
+replaced by the smaller valid bound W_1(v)/2. Rounded Fourier midpoints
+are not presumed exactly solenoidal; their reconstruction errors are
+included before using these target-field facts.
+
+The code also returns G0>=||grad p_v||infinity,
+G1>=||D grad p_v||infinity and G2>=||grad p_v||2.
+The scalar reference fourth moment is bounded by the maximum of its
+stored real Bernstein control points. The final H1 estimate comes from
+the shared endpoint ball, not an independently rounded polynomial value.
+
+An exact affine shear checks normalization and signs: for
+v=((13+5s)sin(y)/16,0,0), |s|<=1, pressure is zero,
+W0=W1=W2=9/8 as interval bounds, maximum strain in either sign is 9/16,
+and final H1 is 9/(8sqrt(2)). The returned intervals enclose all of these.
+This shear is a prescribed reference used to test the field estimates;
+its affine amplitude is not asserted to solve unforced NS.
+
+### Scalar arithmetic pays both changed pressure and changed paths
+
+The existing outward bootstrap supplies interval velocity-error bounds
+x,y. For interval length h, define
+
+```text
+R = 2h(2 Sminus y^2+V2 xy+kappa y^6+epsilon1 y),
+D_local = (old_y^2+R)/nu,
+D_total = (old_energy_rhs+R)/nu.                      (810)
+```
+
+Here old_y is the previously carried error bound. The cumulative account
+starts from zero only at the original datum. Subsequent intervals retain
+that account, together with the integrals A0,A1,A2 in (789). The local
+pressure estimate uses D_local; the cumulative estimate uses D_total.
+The smaller of these two valid bounds is added to the accumulated
+trajectory term. A cheaper local estimate never resets the global history.
+
+All additions, products and quotients for these controls are performed
+as exact rational operations on the supplied binary64 upper bounds.
+Square-root proposals are verified by exact squaring; applying that
+operation twice gives a fourth-root bound. The path exponential is
+bounded by the existing Taylor series with its explicit remainder.
+Its step-domain condition is checked. Unsupported large scalar steps
+are rejected, not accepted on the basis of ordinary floating exponentials.
+
+The triangular moment bounds use the updated interval upper e1 when
+bounding e2, then the updated e2 for e3 and e3 for e4. Consequently,
+
+```text
+Phi_u(t) <= (max(0, Phi_reference_upper+e4)^(1/4)
+              +pressure_error+trajectory_error)^4    (811)
+```
+
+holds throughout each accepted interval. The program records the maximum
+over the entire prefix. Exact stored endpoints are compared for all
+sixteen fields at every seam; matching hashes are additional diagnostics.
+The exact original analytic velocity is checked before the first interval,
+and all original conditional moments are zero. Later moments and their
+means are carried forward.
+
+Independent 100-digit calculations check all fourteen new propagated
+scalar quantities and the fourth-moment output. A two-step fixture begins
+with nonzero inherited costs and verifies that replacing them by zero
+would discard a nonzero history. These tests supplement the analytic
+inequalities and exact outward implementation; high precision alone is
+not the justification for the error bounds.
+
+### First complete physical intervals and the remaining decision
+
+For the actual unforced normalized-period-2pi datum
+
+```text
+u0=(sin(y)+sin(z), sin(x), sin(x)), nu=1/4,
+```
+
+the retained-grid-12 run accepts two complete intervals of length 1/16,
+using reference integration step 1/128. The resulting upper bounds are:
+
+| time | actual pressure fourth moment | actual final H1 |
+|---|---|---|
+| 1/16 | 2.510376e-5 | 1.392943 |
+| 1/8 | 3.466982e-4 | 1.373186 |
+
+The displayed decimals are rounded upward. The bounds retain all spatial
+outputs, the complete time polynomials and their arithmetic errors. The
+shared endpoint comparison passes, and the second interval inherits both
+nonzero path error and moment error. These are short physical prefixes;
+they do not establish the all-time pressure allowance.
+
+Run the checks and two-interval example from this package with:
+
+```text
+python3 -O labs/pressure_operator_enclosure.py
+python3 -O labs/pressure_history_certificate.py
+python3 -O labs/pressure_history_certificate.py --prefix --n 12 --final .125
+```
+
+The stronger grid-40 run is testing the complete prefix to time 18.
+At viscosity 1/4 the fixed tail consumer requires actual H1<=1/64 and
+an inherited pressure fourth-moment bound at most 4. If accepted, its
+remaining fourth-root cost is at most 75/448, including mixed costs with
+the past. Formula (796) then gives a full bound below 63/10<757/120,
+the original heat stock for this particular datum. Until every required
+interval and that seam pass, this stronger payment is unproved.
+
+The universal obligation is different: establish a finite initial-data
+reserve for arbitrary concentration and mutually renewing parents.
+Finding an approximation that passes this comparison for a particular
+initial field does not prove that such a search terminates for every
+initial field. A rejected scalar bootstrap would refute the proposed
+certificate, not establish singularity of the actual flow. The general
+heat forecast is already known to miss pressure generated by cyclic
+parents with zero initial pressure; this example tests a specific
+nonzero-pressure class, not a universal replacement for the history bound.
