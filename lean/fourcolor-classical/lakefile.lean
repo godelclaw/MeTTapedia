@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay an invariant excluding every Kempe history through a fixed seam. -/
+target kernelFiveTriangleKempeTrap pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/five-triangle-kempe-trap",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "FiveTriangleKempeTrap", "FiveTriangleKempeTrapAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay a short explicit obstruction to fixed boundary-collapse transport. -/
 target kernelFiveTriangleCollapse pkg : Unit := do
   let env ← getAugmentedEnv

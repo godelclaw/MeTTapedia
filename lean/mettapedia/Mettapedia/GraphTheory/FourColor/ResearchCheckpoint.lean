@@ -55,6 +55,7 @@ import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
 import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
+import Mettapedia.GraphTheory.FourColor.KempePaletteRigidity
 import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
 import Mettapedia.GraphTheory.FourColor.FacialRollbackLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth

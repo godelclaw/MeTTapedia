@@ -1,0 +1,70 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "completed": true,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.FiveTriangleKempeTrap",
+      "source_sha256": "dd170fe086f22917a105cd917d8837e77d137c943370736d40ab57320a528610",
+      "exit_code": 0,
+      "frontend_wall_seconds": 18.641,
+      "olean_bytes": 520216,
+      "olean_sha256": "cf8d24985162b0fd67ea2de59a4a2949b16afea012e8954f0fdd92917f0e3511"
+    },
+    {
+      "module": "MettapediaFourColor.FiveTriangleKempeTrapAudit",
+      "source_sha256": "46336e31088224e35457b8daaf5b75e1f5cd41e876c31574654ab5de2b033e1a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.235,
+      "olean_bytes": 2600,
+      "olean_sha256": "75a3b78cdf75b27865762d89f9d632b79132d7b29f4ddc2b48deb6ee1f2d0010"
+    }
+  ],
+  "evidence": "Kernel-certified invariant and obstruction for all finite physical Kempe histories, with a compatible alternative starting choice.",
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 3533,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "generic_lemma": {
+    "module": "Mettapedia.GraphTheory.FourColor.KempePaletteRigidity",
+    "source_sha256": "fe02a0a033952a7954cfffc4a01e19d27b36b2f2a57c65c51f273503b1e9f5de",
+    "lake_build_seconds": 2.9
+  },
+  "scope": {
+    "proved": "Every whole-component Kempe history from the explicit source colouring only renames colours and cannot reconstruct at either orientation of the retained seam. Another source colouring has a compatible target.",
+    "program_only": "Exact spherical rotation of the graph; the Lean obstruction itself is stated on the actual finite graph.",
+    "not_refuted": [
+      "Alternative seams or graph operations",
+      "Revising earlier colouring choices",
+      "Contracts using stronger minimal-counterexample hypotheses",
+      "Compositional Four Colour proofs in general"
+    ]
+  },
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.KempePaletteRigidity",
+    "lake build kernelFiveTriangleKempeTrap kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_five_triangle_kempe_trap.py"
+  ],
+  "negative_controls": [
+    "Improper source rejected",
+    "Incomplete pair support rejected",
+    "Incorrect shared port rejected",
+    "Nonspherical rotation rejected",
+    "Improper alternative target rejected"
+  ],
+  "credited_compression": false
+}

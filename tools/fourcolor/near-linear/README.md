@@ -106,6 +106,40 @@ and from the repository root run
 The [fixture](five-triangle-collapse-example.json) stores explicit colouring
 witnesses and the one-step repair; its repair search is not replayed.
 
+## A fixed seam can remain blocked through every Kempe history
+
+The next context test rules out a stronger unconditional contract. Attach a
+decagon fan to D0092, retaining ten ordered ports and bypassing source boundary
+vertex 6. In the displayed colouring every pair of distinct colours has one
+connected support. Every whole-component Kempe switch therefore only renames
+colours globally. This remains true after any finite number of adaptive switches.
+
+Both orientations of this seam leave target vertices 11, 12 and 14 of D0063
+with only two available colours, although they form a triangle. The
+[Lean theorem](../../../lean/fourcolor-classical/MettapediaFourColor/FiveTriangleKempeTrap.lean)
+proves failure for the existing physical Kempe closure and proof-relevant GSLT
+histories. The general
+[palette invariant](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/KempePaletteRigidity.lean)
+uses six connected pair supports; it does not enumerate recolouring histories.
+A different source colouring reconstructs in the very same fan exterior, also
+checked in Lean. The obstruction is thus to repair of a prescribed choice while
+retaining this seam, not to the existence of compatible colourings.
+
+The [exact program audit](five-triangle-kempe-trap-audit.json) independently
+checks a spherical rotation with 18 vertices, 48 edges and 32 triangular faces,
+preserving the source core's cyclic stars. The embedding check is not a Lean
+planarity theorem. The sphere has a degree-three vertex: this example does not
+refute a contract with stronger minimal-counterexample hypotheses. Alternative
+seams, rollback and different reductions remain available mechanisms to test.
+
+The [eight-root dependency audit](five-triangle-kempe-trap-measurements.json)
+uses only standard axioms and no configuration repair table. No coverage entry
+or original certificate dependency is removed. Replay
+`lake build kernelFiveTriangleKempeTrap` and
+`python3 tools/fourcolor/near-linear/audit_five_triangle_kempe_trap.py`.
+The [fixture](five-triangle-kempe-trap-example.json) contains six short walks
+and explicit colourings, rather than a table of search histories.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

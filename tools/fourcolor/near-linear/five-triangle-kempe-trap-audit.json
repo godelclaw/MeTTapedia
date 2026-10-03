@@ -1,0 +1,28 @@
+{
+  "evidence": "Exact program checks; Kempe invariant and reconstruction obstruction separately certified in Lean.",
+  "vertices": 18,
+  "edges": 48,
+  "triangular_faces": 32,
+  "spherical_rotation_checked": true,
+  "core_rotation_preserved": true,
+  "embedding_kernel_certified": false,
+  "minimum_degree": 3,
+  "pair_supports_connected": 6,
+  "palette_orbit_size": 24,
+  "both_seam_orientations_excluded": true,
+  "target_triangle": [
+    11,
+    12,
+    14
+  ],
+  "target_allowed_colours": [
+    0,
+    2
+  ],
+  "alternative_compatible_colourings_checked": true,
+  "scope": "A prescribed source colouring cannot reach a compatible target at the fixed seam by any finite whole-component Kempe history. Another starting colouring works. Alternative seams, other operations and stronger minimal-counterexample hypotheses remain open.",
+  "credited_compression": false,
+  "fixture_sha256": "9557b67233111569ef628fb7b3ff60ff56c410bd10eb825378b92bd96e4a7b96",
+  "lean_source_sha256": "dd170fe086f22917a105cd917d8837e77d137c943370736d40ab57320a528610",
+  "verifier_sha256": "db21ccdffc86138f7b6896e937578c03df6a650c1a27eaa81147cdaec6c87483"
+}
