@@ -1302,8 +1302,9 @@ joining ports 1 and 6 separates C from A and B in a disk. The
 pairs of noncrossing partitions of these six boundary runs: every partition
 with that complementary connection permits the required phase. It also
 extracts an actual 1,3 path through pivot 43 in the retained sphere. The
-connection is absent before the pivot. A general Lean bridge from planar
-embedding to this complementary path separation remains open.
+connection is absent before the pivot. The geometric bridge is now proved
+under explicit cellular-sphere and source-reading hypotheses, as described
+below. Supply of the complementary path remains open.
 
 Merely joining boundary components is insufficient. Another boundary-silent
 preparation frees the degree-six pivot 87. Recolouring it merges two 1,2
@@ -1331,6 +1332,67 @@ and supply census. The next obligation is to derive the useful complementary
 connection from a justified source class, or provide an alternative reduction.
 No coverage entry, original configuration certificate or existing member
 check is removed; counts remain 633 / 629 / 336.
+
+## Complementary paths now yield whole-map reconstruction
+
+[ThreeBlockGeometry](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockGeometry.lean)
+proves the previously missing geometric implication. Close an exterior path
+from port 1 to port 6 through the fixed source route `1,15,12,13,6`. The
+sphere's Euler equation gives a binary face potential for that closed walk.
+Seven actual source facial triangles put ports 2 and 5 on the opposite side
+from port 7. A vertex-disjoint exterior path preserves that potential, so
+neither crossing connection exists. The exterior path may visit additional
+boundary vertices, and no vertex-degree or exterior-size bound is assumed.
+
+The hypotheses retain an injective reading of the decoded D0092 source,
+source edges, the seven literal facial rotations, cyclic vertex rotations,
+connected primal and dual graphs, and Euler's equation. The theorem does not
+assume a no-crossing conclusion or an extending colouring.
+
+[ThreeBlockPathRepair](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockPathRepair.lean)
+consumes the separator. For the boundary word above, an actual exterior 1,3
+path from port 1 to port 6 excludes ports 2 and 5 from the 0,2 component
+containing port 7. Switching that physical component changes precisely
+ports 7–10. The symbolic core law then reconstructs a compatible source
+colouring.
+
+[ThreeBlockReconstruction](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockReconstruction.lean)
+glues those witnesses into a colouring of the entire ambient graph when
+the exterior covers the complement of the core and the recorded core stars
+contain every ambient neighbour. It retains the repaired exterior colouring
+literally. The vertex accounting is exact: `|G| = |exterior| + 7`; no
+auxiliary vertices are introduced. This is a conditional repair for the
+specified boundary class, not an unconditional D0092 reduction or a supply
+theorem.
+
+```sh
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.ThreeBlockGeometryAudit
+```
+
+The audit checks the geometry, physical switch, symbolic core and whole-map
+consumer together, excluding complete Four Colour endpoints and bulk
+colouring certificates. The [measurement receipt](three-block-geometry-measurements.json)
+records sizes, checks and retained dependencies.
+
+From the repository root:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_three_block_geometry.py
+```
+
+The independent [program replay](three-block-geometry-audit.json) checks the
+geometric hypotheses on the existing 162-vertex sphere, with a 155-vertex
+exterior. Its 26-edge complementary path closes through four core edges;
+the resulting 53-vertex switch changes exactly the required four ports and
+reconstructs the whole colouring. This concrete rotation-system
+instantiation is program evidence; the parameterized geometric and
+reconstruction laws are kernel-checked. No new graph fixture is added.
+
+The next research obligation is useful-path supply: derive that connection,
+a preparation creating it, or an alternative reduction in a justified
+geometric class. The exact boundary class and retained joint choices cannot
+be discarded. Coverage and certificate counts remain 633 / 629 / 336.
 
 ## Existing certified components
 

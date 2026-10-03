@@ -1,0 +1,96 @@
+{
+  "evidence": "Parameterized cellular-sphere separation, physical component repair, and whole-map reconstruction checked in Lean. The retained sphere geometry is independently instantiated by a program.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.PrimalPathSeparation",
+      "source_bytes": 4373,
+      "source_sha256": "9e4b714fe51150a9c0919f6564657d0dc7a189d1247fb3c2309d32c57b4140ef",
+      "build_frontend_seconds": 2.6,
+      "olean_bytes": 118840,
+      "olean_sha256": "1fda70b840fb63f500bd1de5bd2513e5e0124064a4a8570efee7797135488625"
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockGeometry",
+      "source_bytes": 10248,
+      "source_sha256": "aa2d647bf999d98c99325e3537c2b96b8310caab6dda2b829b8e9cc6ec447bc9",
+      "build_frontend_seconds": 28.0,
+      "olean_bytes": 652840,
+      "olean_sha256": "fceec6cf9e59665eed264ede6d06e9956a70a83fa2bc4b469b6bb68ff153a57a"
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockPathRepair",
+      "source_bytes": 7921,
+      "source_sha256": "2025ab2b565c642d04b25af2e799b64d6788b7c38e1dc71bca7be4db9d33ccfe",
+      "build_frontend_seconds": 3.0,
+      "olean_bytes": 558200,
+      "olean_sha256": "04fdbe6eff88f33b542fe790b4426315a2c9d8f2415017611a18205dc5c9a540"
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockReconstruction",
+      "source_bytes": 6462,
+      "source_sha256": "f925b4b08662159699b4d65b9145d5064e023ce4cbfe67c9df8771a0a70a6ccd",
+      "build_frontend_seconds": 2.6,
+      "olean_bytes": 240344,
+      "olean_sha256": "b84704c0d1c81f2f6a7a72fa7933694cf640dad8921e4f1545db1d51f3e8562c"
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockGeometryAudit",
+      "source_bytes": 2991,
+      "source_sha256": "a0d58a0d1a0593563b50423602fea70cf433628c5175faa86f29a2c27092c522",
+      "build_frontend_seconds": 5.9,
+      "olean_bytes": 3600,
+      "olean_sha256": "d0e1c100c08c925ec711ad9de882ee3fab95a28ee09fc069589dca25516794cc"
+    }
+  ],
+  "new_lean_source_bytes": 31995,
+  "audit": {
+    "roots": 12,
+    "dependency_declarations": 18435,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "whole_consumer_requires": [
+      "spherical closed-walk face potential",
+      "geometric exclusion of crossing paths",
+      "physical Kempe component switch",
+      "symbolic D0092 source assignment",
+      "complete core-star gluing"
+    ],
+    "bulk_repair_certificates_used": false
+  },
+  "program": {
+    "seconds": 0.462,
+    "script_sha256": "f9be57f2906776d1644e66571b39b39b6dd6f9b072c04ea443df861547245b84",
+    "receipt_sha256": "6d3c98fcba78273adafe7e2938c086f894047fdfe4d1e41c0e0a99412e65574b",
+    "new_graph_fixture_bytes": 0,
+    "ambient_vertices": 162,
+    "exterior_vertices": 155,
+    "source_faces_used": 7
+  },
+  "gates": {
+    "new_theorems": "lake build MettapediaFourColor.ThreeBlockGeometryAudit",
+    "new_gate_passed": true,
+    "classical_regression": "lake build kernelComplete",
+    "classical_gate_passed": true,
+    "main_regression": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_gate_passed": true,
+    "main_gate_jobs": 11246
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "scope": "D0092 source and the displayed eleven-port boundary word. Arbitrary exterior size and degrees. Requires an actual complementary path in colours 1 and 3 from port 1 to port 6, a cellular sphere, seven facial source triangles, exact exterior coverage and complete core stars. Removes exactly seven vertices, introduces none, switches one actual exterior component in colours 0 and 2 and reconstructs the whole colouring. The theorem neither asserts path supply nor covers other boundary words.",
+  "open": [
+    "Geometric supply of a useful complementary path or boundary preparation.",
+    "Alternative reconstruction when the current boundary word must change.",
+    "Recognition, coverage and termination for the intended universal graph class.",
+    "A separate kernel instantiation of this rotation-system reading on the retained 162-vertex sphere."
+  ]
+}

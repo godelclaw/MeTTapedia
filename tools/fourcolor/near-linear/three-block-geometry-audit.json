@@ -1,0 +1,71 @@
+{
+  "evidence": "Program instantiation of the separate parameterized Lean path-separation and whole-reconstruction laws.",
+  "fixture_sha256": "9b1018e7956ff232af4a2bfa959e5edc2cddbd831127a894bffaaa8b18e375ad",
+  "source_sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+  "ambient_vertices": 162,
+  "exterior_vertices": 155,
+  "edges": 480,
+  "faces": 320,
+  "source_core_vertices": 7,
+  "source_triangles_used": [
+    [
+      2,
+      3,
+      15
+    ],
+    [
+      3,
+      12,
+      15
+    ],
+    [
+      11,
+      15,
+      12
+    ],
+    [
+      11,
+      12,
+      14
+    ],
+    [
+      12,
+      13,
+      14
+    ],
+    [
+      7,
+      14,
+      13
+    ],
+    [
+      5,
+      13,
+      12
+    ]
+  ],
+  "source_return_path": [
+    1,
+    15,
+    12,
+    13,
+    6
+  ],
+  "exterior_complementary_path_edges": 26,
+  "closed_walk_edges": 30,
+  "face_labels_at_ports_2_5_7": [
+    0,
+    0,
+    1
+  ],
+  "switched_component_vertices": 53,
+  "changed_ports": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "whole_colouring_checked": true,
+  "new_graph_fixture_bytes": 0,
+  "scope": "One geometric input replay. The Lean theorem allows arbitrary exterior size, subject to its sphere, source, boundary-word and complementary-path hypotheses. Useful-path supply is open."
+}
