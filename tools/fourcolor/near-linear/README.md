@@ -351,6 +351,50 @@ Replay `lake build Mettapedia.GraphTheory.FourColor.AdjacentHiddenObstructionAud
 The [measurement receipt](adjacent-hidden-measurements.json) records eleven
 audited roots and costs. No external configuration certificate is used.
 
+## Unbounded cooperation with one uniform repair proof
+
+The [boundary-cooperation family](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/BoundaryCooperation.lean)
+replaces each of the preceding six leaves by `r` copies, keeping the same
+triangle. It has `3 + 6r` vertices. The reduced command still hides only two
+adjacent corners and changes the third by one component switch. Both full
+endpoint colourings exist and agree on every boundary leaf.
+
+Lean proves an exact cost for the surrounding cooperation:
+
+```text
+fewer than r boundary vertices may change  →  the core cannot move
+all r copies of the first leaf may change  →  a physical repair exists
+                                             and restores every boundary colour
+```
+
+The lower bound uses one untouched representative from each leaf group.
+They recover the frozen nine-vertex obstruction. The new general
+[history projection theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/HomProjection.lean)
+shows that a physical history pulls back along any graph homomorphism from a
+finite observing graph, with the protected context pulled back as well.
+A full component may split, so one full step becomes a sequence of smaller
+component switches. This proves the lower bound for arbitrary histories,
+including temporary changes to unprotected leaves.
+
+The matching repair has three uniform partial-transposition phases: switch
+the first colour pair through the core and first leaf group, recolour that
+leaf group, then switch the second core pair. The middle phase decomposes
+into separate physical components. No colouring-state or history table is
+used, and all widths produce actual GSLT histories. This disproves a constant
+bound on the number of cooperating boundary vertices for this contract while
+providing a short proof for the entire family. It is not a lower bound on
+proof length, interface description size, or the number of structural laws.
+
+The leaves have degree one and core degrees grow with `r`. These examples do
+not establish an obstruction under the stronger geometric hypotheses of the
+coverage argument. Nor do these repair histories establish a strict graph
+reduction or geometric supply theorem. The surrounding graph must permit
+any temporary boundary changes. Coverage and certificate counts are unchanged.
+
+Replay `lake build Mettapedia.GraphTheory.FourColor.BoundaryCooperationAudit`.
+The [measurement receipt](boundary-cooperation-measurements.json) records the
+uniform statements, dependency audit, and verification costs.
+
 ## Existing certified components
 
 The [constructive recognition receipt](seven-pair-recognition-measurements.json)

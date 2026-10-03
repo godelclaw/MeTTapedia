@@ -1,0 +1,54 @@
+{
+  "evidence": "Kernel-checked exact unbounded cooperation budget with a uniform physical repair for every width.",
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.HomProjection",
+      "source_sha256": "b9b1d42e04761b95e630232c0f9d6db5dfc414ebd2dc2f573093335e75bed7b1",
+      "source_bytes": 1720,
+      "lake_build_seconds": 1.5,
+      "olean_bytes": 63320,
+      "olean_sha256": "412b23112e63f2e5f8a56d09f86886cf156acdd248bb0e1ce36446e57bde17f3"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryCooperation",
+      "source_sha256": "63d301d4f0db42c5c76965f1dd2a7e1e2e05462446caeb8ecf08797ebe7acd5d",
+      "source_bytes": 10025,
+      "lake_build_seconds": 2.0,
+      "olean_bytes": 459296,
+      "olean_sha256": "06e658f113767165609dfb6b19b86565be8c7b738b7b6c719c9ce69a512d58af"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.BoundaryCooperationAudit",
+      "source_sha256": "d47a1353a3bfcd1158841a3bfdbcf3ec6bb4fb40e86483b91c866dce56223ab7",
+      "source_bytes": 2415,
+      "lake_build_seconds": 3.7,
+      "olean_bytes": 2800,
+      "olean_sha256": "0c8859b205274cf163156e94d69bee2f1ccfb37f0c3ebe3e0d855cd25ecfb9c7"
+    }
+  ],
+  "audit": {
+    "roots": 12,
+    "dependency_declarations": 5795,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "configuration_certificates_used": false
+  },
+  "family": {
+    "parameter": "r : Nat",
+    "vertices": "3 + 6*r",
+    "construction": "Triangle with r copies of each of six original boundary leaves. The same two adjacent core vertices are hidden at every width.",
+    "lower_bound": "Any history moving the retained core vertex while avoiding all boundary vertices outside an allowed set requires allowed.card >= r.",
+    "upper_bound": "Allow the r copies of the first leaf to change. Three uniform partial-transposition phases give actual Kempe histories and restore every boundary leaf at the endpoint.",
+    "abstract_command": "A single actual component switch in the retained graph. Both endpoint colourings have full extensions."
+  },
+  "generic_theorem": "Physical Kempe histories pull back along any graph homomorphism from a finite observing graph. The protected context pulls back too; each original switch may decompose into several observing components.",
+  "scope": "No constant number of cooperating boundary vertices suffices for this contract over this family. The same family has one uniform repair proof. No lower bound on proof size or interface-description size follows. Degree-one leaves and unbounded core degrees do not meet the geometric hypotheses of a minimal Four Colour counterexample; no Lean planarity or embedding theorem is asserted. No strict graph reduction or coverage result is claimed.",
+  "checks": [
+    "lake build Mettapedia.GraphTheory.FourColor.BoundaryCooperationAudit",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "credited_compression": false
+}
