@@ -30,6 +30,18 @@ six or coincide with that very neighbour. This is precisely the joint
 information the next overlapping view must retain. It neither settles
 those remaining possibilities nor removes a classical coverage entry.
 
+A [joint charge law](../../../lean/fourcolor-classical/MettapediaFourColor/JointTripodRuleSupply.lean)
+now makes another piece of that information usable. Three incoming rule
+matches around two adjacent six-to-seven edges force the same tripod.
+The intermediate six is shared by the readings, rather than chosen afresh
+for each rule. Thus the three unit contributions have sum at most two
+in a minimal counterexample: if all three apply, the completed tripod
+reconstructs a colouring after strict reduction. This connects charge
+bookkeeping to the compositional geometric repair. The surrounding
+flat-neighbourhood classification still has to show that its residual
+cases violate this or another proved constraint. The classical coverage
+count is unchanged.
+
 The next joint-neighbourhood test has identified two concrete four-triangle
 cores, the D0051 fan and D0052 tripod. One
 [Lean geometry proof](../../../lean/fourcolor-classical/MettapediaFourColor/FourTriangleCore.lean)

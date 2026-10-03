@@ -88,6 +88,25 @@ records the ten-root audit and retained classical repair dependencies.
 An independent [spherical replay](../../tools/fourcolor/near-linear/rule-fan-tripod-audit.json)
 exhibits both degree placements, without claiming flatness of their neighbourhoods.
 
+The [joint charge-rule law](MettapediaFourColor/JointTripodRuleSupply.lean)
+now recognizes the tripod from three actual rule readings. Rules `002_1`
+and `003_1` share a six-to-seven dart; rule `002_2` uses the adjacent dart
+selected by the same rotation. When its sender also has degree six,
+their combined observations supply all four faces and all six core degrees.
+Complete boundary construction and strict colouring reconstruction follow.
+Consequently their three unit transfers contribute at most two in an actual
+minimal counterexample. This bound retains the common intermediate vertex;
+independent maxima would permit all three.
+Replay `lake build kernelJointTripodRules`; see the
+[receipt](../../tools/fourcolor/near-linear/joint-tripod-rules-measurements.json).
+The geometric example constructs a full ten-port occurrence from these
+same readings. A separate [finite replay](../../tools/fourcolor/near-linear/joint-tripod-rules-audit.json)
+finds the three matches in a spherical example where the shared fan sender
+and both retained seven-centres are flat. Its original receiver has charge
+`+3`, so it does not satisfy the full flat-neighbourhood hypothesis.
+The new joint constraint is available to the remaining classification;
+universal supply and catalogue compression remain open.
+
 The [second side of the shared fan](MettapediaFourColor/SecondFanResidual.lean)
 now has an exact geometric classification. At a flat degree-seven second
 free centre, either a new high neighbour occurs within radius three, or

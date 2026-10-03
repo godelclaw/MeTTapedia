@@ -16,6 +16,20 @@ require FourColor from "../externals/fourcolor"
 
 lean_lib MettapediaFourColor
 
+/-- Replay a tripod reduction supplied by joint source-rule matches. -/
+target kernelJointTripodRules pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/joint-tripod-rules",
+        "--library-output", ".lake/build/lib/lean", "--modules", "JointTripodRuleSupply",
+        "JointTripodRuleExample", "JointTripodRuleAudit"]
+      cwd := pkg.dir
+      env := env }
+
 /-- Replay the joint tripod closing law on both free sides of the charge fan. -/
 target kernelRuleFanTripod pkg : Unit := do
   let env ← getAugmentedEnv

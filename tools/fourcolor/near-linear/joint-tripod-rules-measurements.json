@@ -1,0 +1,159 @@
+{
+  "status": "Kernel-certified joint source-rule recognition and weighted contribution bound through actual tripod reconstruction.",
+  "source_manifests": [
+    "discharging-sources.json",
+    "four-triangle-sources.json"
+  ],
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.JointTripodRuleSupply",
+      "source_sha256": "a79dbc41dc188087c3e3704d641ae5eb128fa0b1bc653bd19a89189e3353e5ab",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.938,
+      "olean_bytes": 496208,
+      "olean_sha256": "d2a527532cd09b1e684f0c1927a2ac41cc172c728e18b5ed08e0225260fbc285"
+    },
+    {
+      "module": "MettapediaFourColor.JointTripodRuleExample",
+      "source_sha256": "9eb81d5aca8c7437c9558df9aa6c43dd186cff8675a0f6a4de2811b4bba52747",
+      "exit_code": 0,
+      "frontend_wall_seconds": 12.304,
+      "olean_bytes": 222616,
+      "olean_sha256": "2e3d8fa4255a00ab437cdd937041680ab4973c4a23a064fc24def86021ed0cf1"
+    },
+    {
+      "module": "MettapediaFourColor.JointTripodRuleAudit",
+      "source_sha256": "ed5e61bd3e5d4cff2e5e601c2956db51b535172df61580c32a456fccbe48377f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 11.43,
+      "olean_bytes": 2600,
+      "olean_sha256": "2c7f4a1ff8acdd59339c5ae1c9a5b5610a8a2c9ba78daddf353be9cccd533073"
+    }
+  ],
+  "native_code_generation": false,
+  "audit": {
+    "roots": 12,
+    "declarations": 31734,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "geometric_roots_use_rank_certificates": false,
+    "repair_dispatcher_retains": [
+      "FourColor.Bulk.Cfg032",
+      "FourColor.Bulk.Cfg036"
+    ],
+    "recorded_contract_checks_used": false,
+    "complete_four_colour_theorem_used": false
+  },
+  "joint_geometry": {
+    "source_rule_indices_zero_based": [
+      1,
+      3,
+      2
+    ],
+    "source_rule_names": [
+      "rule002_1.rule",
+      "rule003_1.rule",
+      "rule002_2.rule"
+    ],
+    "root": "A dart from a degree-six sender to a degree-seven receiver.",
+    "adjacent_root": "Reverse of the vertex-rotation successor of the reversed root.",
+    "adjacent_sender_degree": 6,
+    "shared_information": "The third rule uses precisely the intermediate sender retained by the second rule; all three share one receiver.",
+    "output": "All four oriented faces and six prescribed degrees of D0052.",
+    "caller_supplied_complete_occurrence": false,
+    "actual_reconstruction": "Complete boundary, strict two-vertex descent and compatible ambient colouring reconstruction follow from the existing tripod consumer."
+  },
+  "joint_bound": {
+    "theorem": "ActualJointTripodRuleSupply.joint_transfer_le_two",
+    "domain": "The actual minimal facial dual of a graph-backed vertex-minimal spherical cubic Tait counterexample, with the stated 6-7-6 degree guard.",
+    "conclusion": "The three selected rule contributions sum to at most two.",
+    "pinned_amounts": [
+      1,
+      1,
+      1
+    ],
+    "reason": "All three executable checks together would construct the reducible tripod.",
+    "scope": "A bound on these three joint transfers, not a bound on the entire final charge or a universal coverage theorem."
+  },
+  "kernel_example": {
+    "theorem": "JointTripodRuleExample.occurrence",
+    "geometry": "Existing ChainBoundaryExample triangular rotation on 162 vertices.",
+    "root": [
+      20,
+      47
+    ],
+    "adjacent_root": [
+      105,
+      47
+    ],
+    "core_images": [
+      113,
+      105,
+      20,
+      47,
+      51,
+      12
+    ],
+    "source_matches": true,
+    "full_ten_port_occurrence": true,
+    "minimality_or_flatness_asserted": false
+  },
+  "independent_flat_example": {
+    "receipt": "joint-tripod-rules-audit.json",
+    "geometry": "Existing seven-pair spherical fixture; distinct from the kernel example above.",
+    "flat_vertices": [
+      85,
+      39,
+      90
+    ],
+    "retained_fan": [
+      8,
+      111,
+      35,
+      154,
+      39,
+      86
+    ],
+    "free_degrees": [
+      6,
+      7
+    ],
+    "seam_tip_equals_retained_second_centre": 90,
+    "joint_root": [
+      52,
+      39
+    ],
+    "adjacent_root": [
+      125,
+      39
+    ],
+    "core_images": [
+      17,
+      125,
+      52,
+      39,
+      134,
+      86
+    ],
+    "core_radius_from_pair": 2,
+    "original_receiver_final_charge": 3,
+    "additional_independent_rule_tests": 4541,
+    "scope": "Three selected flat vertices coexist with the tripod. The original receiver is not flat, so this does not satisfy or refute the full flat-radius-three hypothesis."
+  },
+  "checks": [
+    "kernelJointTripodRules kernelComplete",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_joint_tripod_rules.py"
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "remaining": [
+    "Use this joint constraint in the residual flat-pair classification with the full shared-fan hypotheses.",
+    "Close the surviving degree-six or retained-second-centre seam branches; handle other free-degree profiles, induced paths and seven-triangles.",
+    "Integrate a proved supply branch into complete coverage; universal structural supply remains open."
+  ]
+}

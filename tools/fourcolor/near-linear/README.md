@@ -52,6 +52,22 @@ it checks all source core edges, corners and ambient degrees. It does
 not assert the full flat-neighbourhood hypothesis. Replay with
 `python3 tools/fourcolor/near-linear/audit_rule_fan_tripod.py`.
 
+The [joint-rule receipt](joint-tripod-rules-measurements.json) records a
+second recognition law: `002_1` and `003_1` on one six-to-seven dart,
+together with `002_2` on its rotation-determined adjacent dart, force the
+tripod when the adjacent sender has degree six. Their joint contribution
+is therefore at most two in a minimal map. The proof constructs the core
+from the shared source readings and consumes the complete boundary and
+strict reconstruction theorem. Replay `lake build kernelJointTripodRules`.
+The [independent replay](joint-tripod-rules-audit.json) exhibits these
+matches in the existing sphere. It checks that the shared-fan sender and
+both retained seven-centres are flat, while the original receiver has
+charge `+3`. Three flat observations do not establish a flat radius-three
+ball. Replay `python3 tools/fourcolor/near-linear/audit_joint_tripod_rules.py`.
+No new repair table, removed certificate dependency or coverage saving
+is claimed. The next classification must retain the forbidden triple
+as a joint constraint on actual adjacent readings.
+
 The [seven-pair example](seven-pair-four-triangle-example.json) explains the
 choice of these cores. It is a 162-vertex sphere obtained by 1,625 legal
 edge flips. Independent matchers agree on all 4,704 rooted rule tests for
