@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [adaptive pressure-subtraction test](labs/README.md#bounded-adaptive-pressure-subtraction-cannot-pay-the-oblique-return)
+tests an evolving signed correction whose spatial integral remains
+coercive. Actual unforced flows starting with zero pressure defeat every
+weight in the proposed range on a positive-viscosity interval, even if
+the weight has access to the future. Exact generated-pressure coefficients
+and a uniform local Taylor argument retain the initial viscous loss.
+The failure concerns this bounded correction and its original allowance;
+a larger full-datum reserve remains open. The physical interval argument
+is analytic, not a new Lean certificate or a numerical PDE enclosure.
+
 The [quadratic pressure-storage test](labs/README.md#pressure-and-speed-grow-in-every-positive-quadratic-observation)
 gives an explicit family of actual unforced NS initial states for which
 every fixed positive quadratic form in squared speed and canonical

@@ -41355,3 +41355,286 @@ search only selected the explicit witness; the reported coefficients
 and signs are exact and independent of numerical quadrature. Continuous
 NS intervals and the planar all-time reserve are analytic, not
 Lean-certified. No new declarations or axioms are introduced.
+
+
+## Bounded adaptive pressure subtraction cannot pay the oblique return
+
+`pressure_adaptive_storage.py` tests a repair outside the preceding
+positive-matrix class. For e=|u|^2/2 and canonical mean-zero pressure p,
+write
+
+```text
+E(t)=integral e(t)^2, P(t)=integral p(t)^2,
+J_a(t)=[E(t)-a(t)P(t)]/nu, 0<=a(t)<=a_star.
+```
+
+The canonical Fourier pressure map is a contraction from the tensor L2
+norm: `P<=||u tensor u||2^2=4E`. Thus a_star<1/4 gives
+`J_a>=(1-4a_star)E/nu`. In particular, the proposed range a_star=1/5
+retains at least E/(5nu), despite the negative pressure term. This
+correction is globally coercive, unlike an arbitrary pressure subtraction.
+The scalar a is an observer weight, not a force applied to the fluid.
+
+The candidate asks whether some evolving a can pay a nonnegative
+accumulated pressure cost C, with C(0)=0, from the original J_a(0).
+Its full derivative, when a is differentiable, is
+
+```text
+J_a'=[E'-aP'-a'P]/nu.
+```
+
+A decrease of a raises the stored quantity and must be paid. The result
+below rules out this candidate on actual unforced histories even without
+charging C, and even allowing a to depend on the unknown future.
+It does not rule out an additional finite initial allowance or a reserve
+with more physical information.
+
+### What an adaptive weight can actually accomplish
+
+A necessary condition for payment from the original allowance is
+
+```text
+E(t)-a_star P(t)+nu C(t) <= E(0).
+```
+
+For the stronger requirement that J_a+C never increase across any seam,
+there is an exact scalar criterion. Set W=E+nu C and
+`m(t)=min_(0<=s<=t) W(s)`. Such a choice exists at the level of stored
+values if and only if
+
+```text
+W(t)-a_star P(t) <= m(t), all t.
+```
+
+Necessity follows because a nonincreasing value at t cannot exceed any
+earlier upper endpoint W(s). Conversely choose
+
+```text
+a(t)=[W(t)-m(t)]/P(t) when P(t)>0,
+a(t)=0 when P(t)=0.
+```
+
+The criterion puts this a in the allowed range. At a zero of P it forces
+W=m, so the same storage identity holds there. Then
+`nu[J_a(t)+C(t)]=m(t)` is nonincreasing. On a smooth prefix W and its
+running minimum are locally Lipschitz, so aP=W-m retains the complete
+cost even if a itself is not differentiable at a zero of P. No independent
+regularity theorem for the fluid is implicit in this scalar selection.
+In particular, resetting m or a at each return would change the budget.
+
+The physical example below violates even the weaker original-allowance
+condition with C=0. Hence no admissible adaptive policy can repair it.
+
+### Pressure-free parents with an exact adverse second return
+
+For any nonnegative integer m, let theta=x+m y and
+
+```text
+U_m=(sin y-m sin z, sin z, sin theta).
+```
+
+These are smooth mean-zero divergence-free data on the normalized
+period-2pi torus. The three parent wavevectors are independent. Their
+canonical initial pressure is zero, including after arbitrary separate
+heat attenuation of the three parents. The complete NS tangent generates
+
+```text
+p_1=partial_t p at0
+   =-3cos z [cos(theta+y)/d_plus+cos(theta-y)/d_minus],
+d_plus=m^2+2m+3, d_minus=m^2-2m+3.
+```
+
+There is no viscous term in this initial pressure derivative. This is
+verified from both canonical pressure and the full NS recurrence; no
+nonlinear output is discarded.
+
+Let v_mu(tau) be the actual NS solution from U_m with viscosity mu.
+Its exact initial coefficients are
+
+```text
+E_mu(tau)=E0-mu d tau+(r+mu^2 h)tau^2+O(tau^3),
+P_mu(tau)=q tau^2+O(tau^3),
+
+E0=(3m^4+22m^2+21)/32,
+d=(5m^4+29m^2+21)/8,
+h=(m^6+12m^4+36m^2+21)/4,
+r=3m^2/(2 d_plus d_minus),
+q=(9/4)[1/d_plus^2+1/d_minus^2].
+```
+
+Here r is independently given by `integral p_1 U_m.grad e0`.
+In the independent angles (theta,y,z), the only part of U_m.grad e0
+that pairs with p_1 is `-m sin y sin theta cos z`. Orthogonality gives
+`r=(3m/8)(1/d_minus-1/d_plus)`. The formula for q is the squared norm
+of the two displayed pressure modes.
+
+The remaining coefficients follow from the exact heat forecast
+
+```text
+E_heat(tau)
+ =[(3m^4+18m^2+10)/32] exp(-4mu tau)
+  +[(m^2+2)/8] exp(-(2m^2+4)mu tau)
+  +(3/32) exp(-4(m^2+1)mu tau).
+```
+
+The mixed coefficient linear in mu at order tau^2 vanishes. Indeed the
+translation `pi(1-m,1,1)` reverses all three initial parents. The fourth
+speed observation is translation invariant; that mixed coefficient is
+homogeneous of odd degree five in the datum, so it changes sign under
+the same translation and must be zero. The exact NS recurrence checks
+this cancellation as a viscosity-polynomial identity.
+
+The geometric ratio is
+
+```text
+r/q=m^2(m^4+2m^2+9)/[3(m^4+10m^2+9)],
+r/q-m^2/6=m^2(m^2-3)^2/[6(m^4+10m^2+9)]>=0.
+```
+
+Thus no fixed finite bound a_star works uniformly across these oblique
+geometries in the inviscid second coefficient. More concretely, m=2
+already defeats the entire range through a_star=1/4:
+
+```text
+E0=157/32, d=217/8, h=421/4,
+r=2/11, q=65/242, r/q=44/65,
+k=r-q/4=111/968>0.
+```
+
+The coefficient k is not yet an actual positive-viscosity interval.
+The following argument supplies that missing step.
+
+### Actual positive-viscosity histories, including the remainder
+
+Fix m and a_star with k=r-a_star q>0. The smooth local theory provides
+T0>0 and a common H10 bound for v_mu on [0,T0], uniformly for
+0<=mu<=1. Such viscosity-independent local intervals are classical;
+see the constant-density periodic case of
+[Danchin, The inviscid limit for density-dependent incompressible fluids](https://afst.centre-mersenne.org/articles/10.5802/afst.1133/).
+Only the elementary smooth estimate is needed here: the H10 energy
+inequality drops the nonnegative viscous dissipation and gives
+
+```text
+d/dtau ||v_mu||H10 <= C ||v_mu||H10^2.
+```
+
+Starting from this fixed trigonometric U_m gives a uniform T0 and bound
+from its original H10 norm. On that interval the projected NS equation
+bounds the first three time derivatives in H8,H6,H4, respectively,
+uniformly in mu<=1. Sobolev product bounds and the zero-order canonical
+pressure map then bound the third time derivative of
+`F_mu=E_mu-a_star P_mu`. Consequently there is B>=1, depending only on
+m, a_star and fixed torus constants, such that
+
+```text
+F_mu(tau)-E0=-mu d tau+(k+mu^2 h)tau^2+R_mu(tau),
+|R_mu(tau)|<=B tau^3, 0<=tau<=T0, 0<=mu<=1.
+```
+
+These are analytic estimates from the original datum, not bounds read
+from an unknown future solution. Their numerical constants are not
+evaluated by the checker.
+
+Set c=2d/k and choose
+
+```text
+0<mu<=mu_star=min(1,T0/c,k/(4Bc)), tau=c mu.
+```
+
+Since h>=0, the full viscous expansion gives
+
+```text
+F_mu(c mu)-E0
+ >=[-dc+kc^2]mu^2-Bc^3mu^3
+ >=(kc^2/4)mu^2>0.
+```
+
+This retains the negative first viscous term and bounds the complete
+higher-order remainder. It does not replace NS by Euler.
+
+For any prescribed viscosity nu>0, take lambda>=nu/mu_star and use
+amplitude/time scaling
+
+```text
+u(t)=lambda v_mu(lambda t), mu=nu/lambda,
+t_star=c nu/lambda^2.
+```
+
+This is an actual smooth unforced NS solution with viscosity nu and
+initial datum lambda U_m. Pressure scales by lambda^2, so
+
+```text
+E_u(t_star)-a_star P_u(t_star)-E_u(0)
+ >=(kc^2/4)nu^2 lambda^2>0.
+```
+
+Because P_u(0)=0, every possible a(0) gives the same original storage
+`J_a(0)=E_u(0)/nu`. At t_star, EVERY choice in [0,a_star] satisfies
+
+```text
+J_a(t_star)>= [E_u(t_star)-a_star P_u(t_star)]/nu
+             >J_a(0).
+```
+
+This defeats even an original-allowance bound, and hence any added
+nonnegative accumulated cost. No smoothness or causality assumption on
+the chosen weight is needed for this obstruction. A weight with future
+information cannot escape the same endpoint inequality.
+
+For m=2,a_star=1/4, c=52514/111. The sufficient amplitude threshold
+also involves T0 and B; no numerical threshold for lambda is claimed.
+Total kinetic energy decreases throughout the smooth history, with
+initial derivative `-nu lambda^2(2m^2+3)`. No forcing is present.
+
+### An initial resource that pays the first coefficient uniformly
+
+The same family identifies a physical resource absent from the attempted
+pressure subtraction. Its initial pressure-production gradient satisfies
+
+```text
+Q_source=||grad p_1||2^2=(9/4)[1/d_plus+1/d_minus],
+r/Q_source=m^2/[3(m^2+3)]<1/3.
+```
+
+Thus the original datum supplies a uniform upper bound on the first
+inviscid growth coefficient, even while r/q grows without bound as
+obliquity increases. Both p_1 and its gradient are computed from the
+full original velocity, not supplied by an external force. At m=2,
+Q_source=21/22 and r/Q_source=4/21.
+
+This is a coefficient payment, not an arbitrary-time reserve. At later
+times the parents and pressure production have changed. Iterating this
+initial bound with a freshly supplied Q_source would restore an unpaid
+allowance. A history estimate must instead control how the same source
+resource evolves and replenishes its parents. The full NS pressure
+production equation remains necessary.
+
+### What failed, and what remains possible
+
+The proposed range a_star=1/5 is included in the failure above. The
+result permits data-dependent and evolving weights within that range;
+it goes beyond the preceding fixed positive-matrix obstruction. It also
+shows that any single finite coefficient cap fails across sufficiently
+oblique parents. It does not exclude a datum-dependent unbounded cap
+accompanied by a separate proof of coercivity on the evolving geometry.
+
+The counterexample is a finite local burst. It does not exclude an
+additional allowance depending on the full initial datum, and it does
+not establish singularity. The initially pressure-free parents already
+contain a resource for generating pressure and redistributing speed.
+That resource is missing from this particular storage correction.
+A stronger correction must pay for those parents and for changes in its
+own coefficients while preserving the continuation observation.
+
+Run `python3 -O labs/pressure_adaptive_storage.py`. The exact archive
+`pressure_adaptive_storage_results.json` includes full NS jets at
+m=0,1,2,4,8, the independent pressure pairing, heat coefficients,
+translation parity, energy loss, and the rational m=2 margin. The
+pressure-production gradient and its uniform first-return bound are
+also checked exactly. The
+formulas for general m follow from the displayed angle identities;
+they are not inferred from finite interpolation alone. The common
+existence interval, Taylor remainder and physical adaptive-policy
+obstruction remain analytic. No numerical PDE enclosure or Lean
+certificate for that interval is asserted; no Lean declarations or
+axioms change.
