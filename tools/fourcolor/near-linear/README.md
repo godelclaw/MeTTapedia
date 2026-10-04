@@ -1,5 +1,44 @@
 # Near-linear Four Colour catalogue bridges
 
+## Neighbour conditions repair a failed two-switch continuation
+
+[`NeighborRelease`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/NeighborRelease.lean)
+proves a rule for arbitrary graphs and palettes. A vertex of colour c lies
+outside an a/b component. If that component contains every a-coloured
+neighbour and no b-coloured neighbour, switching it leaves the vertex as a
+singleton a/c component. Its second switch follows from these old-state
+conditions, without checking a supplied second component or final colouring.
+
+[`StripSixRelease`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixRelease.lean)
+applies the rule to the second boundary form of the port-six branch. The
+first zero/one component contains ports one and six and avoids port eight.
+Under the two neighbour conditions at port three, its switch releases that
+port. A zero/three switch there and a common eight-vertex core formula
+reconstruct an actual source colouring. Exterior and component sizes are
+unrestricted; the neighbour conditions remain explicit hypotheses.
+
+`StripSixReleaseExample` gives an actual 32-vertex spherical triangulation
+with the exact D0099 core stars. The zero/two component at port seven also
+contains ports two and four, placing this example in the earlier joint
+branch. Lean proves that switching zero/one at port one and then zero/three
+at port six yields a boundary with no source extension. The alternative
+at port three consumes the general neighbour law and glues the source
+witness to the actual exterior, producing a whole colouring.
+
+The [independent verifier](audit_strip_six_release.py) additionally rejects
+all 15 single-component switches from this initial colouring and checks
+its short-cycle census. These two exhaustive observations are program
+evidence, not Lean theorems. The failed fixed recipe is not an obstruction
+to compositional repair in general: the same example has the derived repair.
+
+Build `Mettapedia.GraphTheory.Kempe.NeighborRelease` in the main package,
+then replay `lake build kernelStripSixRelease` in the classical package.
+The [receipt](strip-six-release-measurements.json) records source and fixture
+sizes, replay cost and the twelve-root dependency audit. No new table of
+boundary repairs is used. Supply of the neighbour conditions, other boundary
+forms, occurrence supply, strict reduction, compact coverage and termination
+remain open. No catalogue entry or original certificate is removed.
+
 ## A port-six failure gives a direct repair or joint connections
 
 [`StripSixConnection`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixConnection.lean)

@@ -1428,3 +1428,17 @@ target kernelStripSixConnection pkg : Unit := do
         "StripSixRim", "StripSixConnectionAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay neighbour-controlled continuation of the port-six branch. -/
+target kernelStripSixRelease pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-release",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripSixRelease",
+        "StripSixReleaseExample", "StripSixReleaseAudit"]
+      cwd := pkg.dir
+      env := env }

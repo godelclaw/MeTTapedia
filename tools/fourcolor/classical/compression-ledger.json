@@ -6152,5 +6152,36 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_release_experiment": {
+    "classification": "CHECKED_FAILED_CONTINUATION_AND_NEIGHBOUR_RELEASE",
+    "report": "../near-linear/strip-six-release-measurements.json",
+    "generic_law": "Old-neighbour conditions determine a second singleton component after a first switch, for arbitrary graphs and palettes.",
+    "source_domain": "The second D0099 port-six boundary form; first zero/one component contains one and six and avoids eight; explicit neighbour conditions at three.",
+    "actual_consumer": "32-vertex spherical triangulation with the earlier joint-connection branch. The fixed second root at six fails; the derived second root at three reconstructs.",
+    "new_boundary_repair_table_bytes": 0,
+    "new_lean_source_bytes": 26314,
+    "spherical_fixture_json_bytes": 8868,
+    "audit": {
+      "roots": 12,
+      "transitive_dependency_declarations": 11703,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "program_only": [
+      "All 15 single-component switches from the example initial colouring fail to extend.",
+      "The independent short-cycle census has no obstruction of the tested kind."
+    ],
+    "remaining": [
+      "Supply of the old-neighbour conditions or a justified alternative component choice.",
+      "Other port-six boundary forms, the port-five branch and missing-colour failure.",
+      "Occurrence supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

@@ -1,0 +1,79 @@
+{
+  "classification": "CHECKED_FAILED_CONTINUATION_AND_NEIGHBOUR_RELEASE",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSixRelease",
+      "source_sha256": "a6ce77096a2d54da407af549cf827a0c326e3a175426a1823dfdce089bff997a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.492,
+      "olean_bytes": 170864,
+      "olean_sha256": "e9ff6d6adf4b16072995b8bee82f64f530f7961971be318081b0e08682d8805e"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixReleaseExample",
+      "source_sha256": "cfa5d2c3b4c74d4cceebfa9c41e3db37a7490b969692a525d908ec8095bacd25",
+      "exit_code": 0,
+      "frontend_wall_seconds": 10.737,
+      "olean_bytes": 1170128,
+      "olean_sha256": "fc29eef92d7a1e0590928b181da0118656709b23d298dc0e203a7cc50c7af8bd"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixReleaseAudit",
+      "source_sha256": "8bf22a6478d1a708809973e12ade78f1507de8431dca1b3e736ba433e065abbc",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.222,
+      "olean_bytes": 2600,
+      "olean_sha256": "ab0d6bfc1dfb5632819d2f76df85b0d8e31051a37d2da1ac0296e0d1970bbb2e"
+    }
+  ],
+  "generic_module": {
+    "module": "Mettapedia.GraphTheory.Kempe.NeighborRelease",
+    "source_bytes": 3479,
+    "source_sha256": "67d54ba0f99de172e76f1d61d58bbd6bed9c8ddc64399a777fc4a0d6382d5268",
+    "build_passed": true
+  },
+  "frontend_wall_seconds_total": 19.451,
+  "timing_scope": "Three classical modules replayed with existing dependencies built. The generic module was built separately. No whole-proof speedup claimed.",
+  "new_lean_source_bytes": 26314,
+  "new_boundary_repair_table_bytes": 0,
+  "spherical_fixture_json_bytes": 8868,
+  "audit": {
+    "roots": 12,
+    "transitive_dependency_declarations": 11703,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "For arbitrary graphs and palettes, two old-neighbour conditions derive a singleton second component after a first switch.",
+    "The second D0099 port-six boundary form admits an actual two-switch repair and common core formula under those conditions.",
+    "An actual 32-vertex spherical example has the earlier joint-connection branch.",
+    "The fixed continuation at port six yields a boundary with no source extension.",
+    "Changing the second root to the released port three consumes the general law and reconstructs a whole colouring."
+  ],
+  "program_only": [
+    "All 15 single-component switches from the example initial colouring fail to extend.",
+    "The independent short-cycle census has no obstruction of the tested kind."
+  ],
+  "residual_obligations": [
+    "Supply of the old-neighbour conditions or a justified alternative component choice.",
+    "Other port-six boundary forms, the port-five branch and missing-colour failure.",
+    "Occurrence supply, strict reduction, compact coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build Mettapedia.GraphTheory.Kempe.NeighborRelease",
+    "lake build kernelStripSixRelease kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_six_release.py"
+  ],
+  "evidence_record": "strip-six-release-audit.json"
+}

@@ -1,0 +1,120 @@
+{
+  "classification": "FAILED_FIXED_CONTINUATION_AND_NEIGHBOUR_RELEASE",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; classical semantics from Gonthier/Emery.",
+  "geometry": {
+    "vertices": 32,
+    "edges": 90,
+    "faces": 60,
+    "degree_range": [
+      5,
+      7
+    ]
+  },
+  "initial_boundary": [
+    0,
+    1,
+    0,
+    3,
+    2,
+    3,
+    1,
+    2,
+    1,
+    3,
+    1
+  ],
+  "failed_boundary": [
+    1,
+    0,
+    1,
+    3,
+    2,
+    0,
+    3,
+    2,
+    1,
+    0,
+    3
+  ],
+  "repaired_boundary": [
+    1,
+    0,
+    1,
+    0,
+    2,
+    3,
+    0,
+    2,
+    1,
+    3,
+    0
+  ],
+  "single_switches_rejected_program_only": 15,
+  "short_cycle_census_program_only": {
+    "vertices": 32,
+    "faces": 60,
+    "minimum_degree": 5,
+    "cycles_by_length": {
+      "3": 60,
+      "4": 90,
+      "5": 196
+    },
+    "shore_counts": [
+      {
+        "length": 3,
+        "side_vertices": [
+          0,
+          29
+        ],
+        "cycles": 60
+      },
+      {
+        "length": 4,
+        "side_vertices": [
+          0,
+          28
+        ],
+        "cycles": 90
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          0,
+          27
+        ],
+        "cycles": 180
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          1,
+          26
+        ],
+        "cycles": 16
+      }
+    ],
+    "obstructing_cycles": 0,
+    "first_obstruction": null
+  },
+  "kernel_claims": [
+    "Spherical geometry, degree bounds and actual D0099 core stars.",
+    "The initial component hits six but not eight; the joint component hits seven, two and four.",
+    "The prescribed two physical switches yield a boundary with no source extension.",
+    "Old-neighbour conditions derive a different second switch through a generic law.",
+    "The common core formula and boundary gluing reconstruct the whole sphere."
+  ],
+  "limits": [
+    "The general repair needs the explicit old-neighbour conditions.",
+    "No universal continuation, occurrence supply or strict reduction is claimed.",
+    "This refutes the fixed recipe, not compositional repair in general."
+  ],
+  "fixture_sha256": "bae58f577436317bde662915b63d634d70b99b475eca03fa72eeb2b322ed54ab",
+  "lean_sources": {
+    "StripSixRelease.lean": "a6ce77096a2d54da407af549cf827a0c326e3a175426a1823dfdce089bff997a",
+    "StripSixReleaseExample.lean": "cfa5d2c3b4c74d4cceebfa9c41e3db37a7490b969692a525d908ec8095bacd25",
+    "StripSixReleaseAudit.lean": "8bf22a6478d1a708809973e12ade78f1507de8431dca1b3e736ba433e065abbc"
+  },
+  "verifier_sha256": "e21d0920beac13fdf1efe6d08115df1c4ad26287d8ef88c06d238b15b34ab99f"
+}
