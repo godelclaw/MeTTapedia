@@ -1,0 +1,174 @@
+{
+  "history": {
+    "initial": {
+      "energy": "19353/12800",
+      "enstrophy": "4973609/800",
+      "dissipation": "1278188827/50",
+      "stretching": "0",
+      "normal_vorticity_squared": "801/50",
+      "input_modes": 6,
+      "full_source_modes": 12,
+      "newly_generated_modes": [
+        [
+          -5,
+          -1,
+          -128
+        ],
+        [
+          -4,
+          -4,
+          -128
+        ],
+        [
+          -4,
+          4,
+          0
+        ],
+        [
+          -3,
+          1,
+          0
+        ],
+        [
+          -1,
+          -5,
+          -128
+        ],
+        [
+          -1,
+          3,
+          0
+        ],
+        [
+          1,
+          -3,
+          0
+        ],
+        [
+          1,
+          5,
+          128
+        ],
+        [
+          3,
+          -1,
+          0
+        ],
+        [
+          4,
+          -4,
+          0
+        ],
+        [
+          4,
+          4,
+          128
+        ],
+        [
+          5,
+          1,
+          128
+        ]
+      ]
+    },
+    "pressure_squared": "1346441/336610125",
+    "mean_source_squared": "10369/2560",
+    "mean_return": "-528846959/32000",
+    "oscillatory_return": "2629880556769/52512000",
+    "complete_return": "35240853941/1050240",
+    "mean_to_fluctuation_work": "-10369/2560",
+    "jets": [
+      {
+        "normalized_viscosity": "0",
+        "second_tangent_modes": 34,
+        "full_stretching_derivative": "35240853941/1050240"
+      },
+      {
+        "normalized_viscosity": "1/7",
+        "second_tangent_modes": 46,
+        "full_stretching_derivative": "35240853941/1050240"
+      },
+      {
+        "normalized_viscosity": "1",
+        "second_tangent_modes": 46,
+        "full_stretching_derivative": "35240853941/1050240"
+      }
+    ]
+  },
+  "large_mean": [
+    {
+      "frequency": 1,
+      "phase": -1,
+      "full_energy": "20859753/12800",
+      "mean_stretching": "73/2",
+      "mixed_stretching": "528846959/1600",
+      "kinetic_work_into_mean": "-10369/128",
+      "full_source_modes": 122
+    },
+    {
+      "frequency": 1,
+      "phase": 1,
+      "full_energy": "20859753/12800",
+      "mean_stretching": "-81/2",
+      "mixed_stretching": "-528846959/1600",
+      "kinetic_work_into_mean": "10369/128",
+      "full_source_modes": 122
+    },
+    {
+      "frequency": 3,
+      "phase": -1,
+      "full_energy": "20859753/12800",
+      "mean_stretching": "-31/2",
+      "mixed_stretching": "528846959/1600",
+      "kinetic_work_into_mean": "-10369/128",
+      "full_source_modes": 124
+    },
+    {
+      "frequency": 3,
+      "phase": 1,
+      "full_energy": "20859753/12800",
+      "mean_stretching": "-185/2",
+      "mixed_stretching": "-528846959/1600",
+      "kinetic_work_into_mean": "10369/128",
+      "full_source_modes": 124
+    }
+  ],
+  "axis_and_clock": {
+    "input_frequency": [
+      4,
+      0,
+      64
+    ],
+    "mean_frequency": [
+      4,
+      -4,
+      0
+    ],
+    "cross_product_squared": 131328,
+    "no_common_axis": true,
+    "physical_time": "A^(-5/3)",
+    "generated_mean_lower": "c A^(1/3)",
+    "oscillatory_exterior_upper": "C A^(-1/3)",
+    "scope": "Fixed B=R=1 and gamma=1/2; changing these datum-dependent parameters is not excluded. Uniform local remainders are analytic."
+  },
+  "reserve": {
+    "weight": "phi=exp(2 L (H-t)+C^2 E(t)/(4 nu^2))",
+    "reserve": "R=(2 phi-1) Z+2 (H-t)|g(0)|",
+    "paid_cost": "2(g(t)-g(0))-nu D(t)",
+    "initial_allowance": "(2 exp(2 L H+C^2 E0/(4 nu^2))-1) Z0+2H|g(0)|",
+    "forced_defect": "(4 phi-2)<omega,curl f>+4 Gamma phi Z<u,f>",
+    "hypothesis": "The actual oscillatory remainder satisfies the fixed geometric and critical-exterior conditions at every time. Its propagation remains open."
+  },
+  "source_sha256": {
+    "cellular_parent_refeeding.py": "ab1b19dc3b90e05e764fae5121c1f503d49bba2735bd6b6e25ca3eef921d6b04",
+    "cellular_transfer_reversal.py": "db6c2598353192a1d4c7df6a6baca3b4adac178e731f0bfcb5b408f6cad35144",
+    "generated_mean_enstrophy.py": "fe28dbcbc37cdea01fef4caa7976415033d85c0bd5f643524970bbbf962c8955",
+    "pancake_concentration_threshold.py": "980e1c687eb64366c0a29e7bce112e53d53b6582c104fc9ebedad4cdd74d940b",
+    "pancake_mean_parent.py": "e90e501f46ca5b9370459bed445bb4ca3b36fdf4227b318c5046ce487dc0321a",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "reciprocal_pattern_cycles.py": "cf3e44749952fbd3542436424e63e4c0f2efbce2a36cfa514798e41f33a5f97b",
+    "refeeding_stretching.py": "e52761a0283d0c50064bb450ffbfd039a2883aba2d0a574f53d7a41b4d4dfa57",
+    "reference_stretching_control.py": "00c6c2d1312b27d22bc07f698fe60c85a2361a198cf356c2e421bef19d400906"
+  },
+  "scope": "Complete exact source and reserve checks. The physical mean estimate, spectral estimate, local solution and uniform remainders are analytic. No arbitrary-history propagation or new Lean theorem is claimed."
+}

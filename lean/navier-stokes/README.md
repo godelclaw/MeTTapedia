@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pancake estimate with an evolving mean](labs/README.md#large-generated-means-fit-a-geometric-history-payment)
+removes the small-exterior requirement from the actual vertical average of
+a periodic flow. Its complete internal forcing and reciprocal interactions
+have an original-energy payment already established in the library. Applying
+the spectral condition only to the oscillatory remainder gives an explicit
+nonnegative reserve for signed stretching and a Bellman supersolution.
+A genuinely three-dimensional local history generates a large mean while
+its oscillatory exterior remains small. Propagating the latter condition
+through arbitrary histories remains open. These results are analytic with
+exact source checks; the periodic average is not transferred to whole space.
+
 The [quantitative pancake estimate](labs/README.md#spectral-pancake-width-and-a-critical-leakage-payment)
 pays stretching on every smooth unforced prefix if the transverse spectral
 width grows slower than the three-quarter power of frequency and the complete

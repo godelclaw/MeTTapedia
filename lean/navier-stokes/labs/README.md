@@ -46688,3 +46688,296 @@ It hashes every transitive local Python source. The convolution bounds,
 whole-space localization and PDE persistence are analytic arguments,
 not certified by these finite computations. No Lean declarations or axioms
 change; the arbitrary-data history estimate remains open.
+
+## Large generated means fit a geometric history payment
+
+`pancake_mean_parent.py` combines two existing physical estimates instead
+of requiring all generated motion to stay small. The mean-containing
+payment (166)--(170) handles the ACTUAL evolving vertical average, even
+when it receives internal forcing and is large. The spectral estimate
+(PC4)--(PC8) is applied only to the remaining oscillations. This yields
+an explicit reserve for the signed stretching budget, conditional on a
+geometric history hypothesis on the oscillatory remainder.
+
+The mean estimate uses two-dimensional interpolation and full kinetic
+dissipation; the related symmetric-flow stability literature includes
+[Bardos, Lopes Filho, Nussenzveig Lopes, Niu and Titi](https://arxiv.org/abs/1201.2742).
+Its hypotheses are not substituted for the evolving-mean equations here.
+The already-derived estimates, rather than a new claim of stability of
+arbitrary large data, provide the ingredients below.
+
+### Keep the actual parent and its complete internal forcing
+
+Work on normalized period-2pi T3 with nu>0. Let u be an available smooth
+unforced prefix and define
+
+```text
+M=average_z u,     w=u-M,     B(a,b)=-P[(a.grad)b],
+M_t=nu Delta M+B(M,M)+F,     F=average_z B(w,w),
+w_t=nu Delta w+B(M,w)+B(w,M)+(I-average_z)B(w,w).        (PM1)
+```
+
+This is the fixed vertical average, not an average in a moving direction.
+Neither component is asserted to be an independently unforced flow.
+Write E,Z,D,g as in (PC1), and Z_M,Z_w,D_M,D_w for the component energies.
+Orthogonality gives Z=Z_M+Z_w and D=D_M+D_w. Reuse (169) with its fixed
+domain constant C=12 C_L+24 and beta=C^2/(2nu):
+
+```text
+2|g(u)-g(w)| <= (nu/2)D+beta Z_M Z,
+integral_0^t beta Z_M <= C^2 E0/(4nu^2).                (PM2)
+```
+
+The first inequality includes g(M), every mixed stretching term, and
+both receiving sides of the transfer. In particular
+
+```text
+<M,F>+<w,B(M,w)+B(w,M)>=0,
+g(u)-g(M)-g(w)
+ =<-Delta M,F>+<-Delta w,B(M,w)+B(w,M)>.
+```
+
+The second inequality follows from the FULL kinetic law E'=-2nu Z.
+It remains valid when the mean's own energy grows. Its constant does
+not count mean Fourier modes or require a small mean, a favorable
+transfer sign, or closeness to a separately known solution.
+
+### The geometric condition now concerns only the oscillatory remainder
+
+Fix H>0 and B>0,R>=1,0<=gamma<3/4 from the original datum,nu,H.
+At each available time suppose some unit n(t) gives
+
+```text
+Omega_n={k: |k|<=R or |k-(k.n)n|<=B|k|^gamma},
+a_hat=1_(Omega_n) w_hat,      b=w-a,
+||b||3<=nu/(32sqrt(3) C_S).                             (PM3)
+```
+
+The spectral axis may vary; the averaging axis in (PM1) stays fixed.
+Since ||w||2<=sqrt(E0), the INSTANTANEOUS proof of
+(PC4)--(PC8) applies to w without giving w an autonomous energy equation:
+
+```text
+g(w)<=nu D_w/2+L Z_w,
+sigma=3/2-2gamma,
+A_geom=24 B(B+1)sqrt(E0),
+K=max(R,(4A_geom/nu)^(1/sigma)),
+L=3sqrt(27E0) R^(5/2)+A_geom K^(2-sigma).                (PM4)
+```
+
+Combining (PM2), (PM4) and the exact full enstrophy equation leaves
+
+    Z'+(nu/2)D<=(2L+beta Z_M)Z.                         (PM5)
+
+For comparison, the full-field exterior and the oscillatory exterior
+need not have the same L3 norm. Their projections commute, and
+`||(I-average_z)b_full||3<=2||b_full||3`. Thus the old full-field
+condition with half its stated threshold implies (PM3). No implication
+with identical thresholds is claimed.
+
+No dissipation is charged twice: the fluctuation estimate uses at most
+nu D_w in the equation for Z', and the mean comparison uses nu D/2,
+leaving at least nu D/2 of the original 2nu D.
+
+Define, from this same history and prescribed horizon,
+
+```text
+Gamma=C^2/(4nu^2),
+phi(t)=exp(2L(H-t)+Gamma E(t)),
+S(t)=phi(t) Z(t).
+
+S'+(nu/2)phi D <=-beta phi (Z-Z_M)Z<=0,
+Z(t)<=S(t)<=S(0)=exp(2LH+Gamma E0)Z0.                  (PM6)
+```
+
+Thus the generated parent may be large; its amplification is paid by
+one decreasing full kinetic stock. Establishing (PM3) on every same-data
+prefix for every prescribed horizon would provide periodic continuation.
+The exact `FourierTameContinuation.exists_tameSolutionOn_of_orderOne`
+consumer uses the period-one rescaling in (PC3); its order-one bound here
+is `2(E0+S(0))/(2pi)^2`. Its initial smoothness, realness, solenoidality
+and mean-zero requirements remain. A constant mean can be removed by a
+Galilean change. The vertical-average estimate is periodic: no nonzero
+finite-energy, z-independent R3 parent is introduced.
+
+### An explicit reserve and its control interpretation
+
+Keep g0=g(u0) fixed at its ORIGINAL value and put
+
+```text
+R(t)=(2phi(t)-1)Z(t)+2(H-t)|g0|>=0,
+q(t)=2(g(u(t))-g0)-nu D(t).
+
+R'+q
+ <=-nu(phi-1)D-2beta phi(Z-Z_M)Z-2(|g0|+g0)<=0.        (PM7)
+```
+
+Indeed q=Z'+nu D-2g0 and R'=2S'-Z'-2|g0|, so (PM6) gives the inequality.
+The resulting original-data allowance is explicit:
+
+```text
+R(t)+2 integral_0^t [g(u(s))-g0] ds
+                  <=nu integral_0^t D(s) ds+K_initial,
+K_initial=(2exp(2LH+Gamma E0)-1)Z0+2H|g0|.              (PM8)
+```
+
+This is the periodic signed-renewal payment UNDER (PM3), not a proof of
+that geometric hypothesis. R and S stay nonnegative on 0<=t<=H. At a
+composition seam they retain E,Z,H,g0 and the original constants; a new
+allowance is not assigned to the current parent.
+
+For a concrete Bellman formulation let h be the remaining horizon and
+allow scalar histories satisfying
+
+```text
+E'=-2nu Z,
+Z'=(2L+beta m)Z-(nu/2)d-ell,
+0<=m<=Z, d>=0, ell>=0, E>=0, Z>=0,
+running cost c=Z'+nu d-2g0.
+```
+
+The nonnegative function
+`V(h,E,Z)=(2exp(2Lh+Gamma E)-1)Z+2h|g0|` obeys
+
+    -V_h-2nu Z V_E+Z' V_Z+c<=0.                         (PM9)
+
+The exact defect is the right side of (PM7) with an additional
+`-2phi ell`. Actual NS histories satisfying (PM3) supply m=Z_M,d=D
+and a nonnegative ell through (PM5). This is a Bellman supersolution
+dominating their signed cost, not an assertion of an optimal value or
+that every relaxed history reconstructs a fluid. Full endpoint velocities
+remain necessary for physical composition.
+
+For a forced flow, provided the energy envelope and geometric hypotheses
+used above still hold, put W_E=<u,f>, W_omega=<omega,curl f>.
+The reserve defect additionally retains
+
+    (4phi-2)W_omega+4Gamma phi Z W_E.                    (PM10)
+
+This follows from E' gaining 2W_E and Z' gaining 2W_omega. Zero kinetic
+work does not erase the vorticity work. The formula does not transplant
+the imported whole-space forced construction onto this periodic domain.
+
+### A genuine three-dimensional history with large generated mean
+
+The following fixed real trigonometric datum w0 has three independent
+spatial wavevectors, zero vertical mean, and nonzero canonical pressure:
+
+```text
+k=(4,0,64), polarization (0,1,0), coefficient cosine;
+p=(0,4,64), polarization (1,1,-1/16), coefficient cosine;
+j=(1,1,64), polarization (1,-1,0), coefficient cosine/10.
+```
+
+Their determinant is 512. All input modes satisfy (PM3)'s spectral
+condition with n=e3, B=R=1, gamma=1/2. Let N=-P[(w0.grad)w0],
+F=average_z N, G=N-F. Every non-mean output G has vertical frequency
+plus or minus 128 and also lies in the same spectral region. Every
+generated mode remains. In particular
+
+```text
+F_hat(4,-4,0)=i(1,1,-1/16),    ||F||2^2=10369/2560,
+||p0||2^2=1346441/336610125>0,
+<w0,B(F,w0)+B(w0,F)>=-10369/2560.                       (PM11)
+```
+
+Thus the generated parent feeds back into the same fluid. This is not
+a prescribed passive receiver with its parent held fixed. The complete
+first stretching derivatives are
+
+```text
+g(w0)=0,
+Dg(w0)[F]=-528846959/32000<0,
+Dg(w0)[G]=2629880556769/52512000>0,
+c=Dg(w0)[N]=35240853941/1050240>0,
+D0=||Delta w0||2^2=1278188827/50.                       (PM12)
+```
+
+Viscosity contributes zero to this first cubic derivative: the initial
+field and its Laplacian have only vertical frequencies +/-64, and three
+such frequencies cannot sum to zero. The exact checker retains the full
+second NS tangent and its kinetic identity as well.
+
+Fix any physical nu>0. For amplitude A large, take the ACTUAL smooth
+unforced solution from A w0 in the form
+
+    u_A(t)=A U_(nu/A)(A t),                             (PM13)
+
+where U_mu starts from w0 and solves NS with viscosity mu. Classical
+smooth local estimates give a common interval and, for a sufficiently
+large fixed Sobolev index s, a common Taylor bound for 0<=mu<=1:
+
+    ||U_mu(tau)-w0-tau[N+mu Delta w0]||H^s<=C tau^2.    (PM14)
+
+One obtains this by taking higher smooth norms of the fixed datum,
+using the nonnegative viscous term in the local Euler/NS estimates,
+and bounding the first two time derivatives on a shorter common interval.
+It is a local uniform remainder, not a global inviscid-limit claim.
+Since the entire linear fluctuation tangent lies in the fixed core,
+sharp Fourier projection contracts H^s and Sobolev embedding bounds L3.
+For tau_A=A^(-2/3), T_A=tau_A/A=A^(-5/3), (PM14) gives
+
+```text
+sup_(0<=t<=T_A) ||(I-P_Omega)(u_A-average_z u_A)||3
+                                            <=C A^(-1/3),
+||average_z u_A(T_A)||3 >=c1 A^(1/3).                   (PM15)
+```
+
+Constants C,c1>0 depend on the fixed seed and domain. For every fixed nu,
+sufficiently large A makes the first quantity smaller than the threshold
+in (PM3), despite an arbitrarily large generated mean. Pressure, the
+mean return (PM11), all subsequent source outputs and their errors remain
+in (PM14). Initial energy grows like A^2; no energy-uniform integrated
+allowance is inferred.
+
+The old condition (PC2) on the ENTIRE field fails at T_A for these fixed
+B,R,gamma, even if its single axis is rotated. Indeed k=(4,0,64) and
+q=(4,-4,0) cannot both satisfy |a_perp|<=|a|^(1/2) about any unit n.
+If they did, decomposing each along n would give
+
+```text
+|k cross q|<=|k|sqrt(|q|)+|q|sqrt(|k|)
+           <65*(5/2)+6*9<360<|k cross q|,
+```
+
+a contradiction. Both frequencies exceed R. At T_A their actual Fourier
+coefficients have norms at least c2 A and c3 A^(1/3), respectively, by
+(PM14). At least one therefore remains outside every such core, and
+normalized L3 dominates its Fourier coefficient. This does not rule out
+choosing larger original-data B or R. The improvement in (PM3) is that
+the whole evolving mean, at every frequency, has its own uniform energy
+payment and need not be included in the small exterior.
+
+Finite amplification is also retained. Uniform smooth local estimates
+and (PM12) imply, at this same physical time,
+
+```text
+2 integral_0^T_A g(u_A) dt-nu integral_0^T_A D(u_A) dt
+ =c A^(2/3)-nu D0 A^(1/3)+O_nu(1)>0                    (PM16)
+```
+
+for A large. The positive burst is compatible with (PM8), whose finite
+initial reserve depends on the complete datum. The proof of (PM15)
+covers only the stated short interval, not arbitrary later histories.
+
+### What remains to be paid
+
+The mean has been removed from the critical-smallness obligation by
+reusing its full physical history estimate. The remaining non-mean
+source in (PM1), including its feedback with M, can still broaden the
+oscillatory spectrum and regenerate its critical exterior. Establishing
+or paying violations of (PM3) on arbitrary prefixes remains open.
+Multiple spatially varying normals also remain outside this estimate.
+No new autonomous reduced system or unconditional NS regularity result
+is asserted.
+
+Run `python3 -O labs/pancake_mean_parent.py`. The archive
+`pancake_mean_parent_results.json` verifies the complete pressure/source
+split, four large-mean fixtures with opposite internal transfers, both
+mean and non-mean first returns, three complete viscous second tangents,
+the axis obstruction, physical clock, signed reserve, direct Bellman
+derivatives and forcing defect. It hashes every transitive local Python
+source. The existing `MettapediaNS.GeneratedMeanEnstrophy` certifies its
+stated scalar compensation layer; (PM1)--(PM16)'s physical estimates,
+local solution, uniform remainder and continuation connection remain
+analytic. No Lean declarations or axioms change.
