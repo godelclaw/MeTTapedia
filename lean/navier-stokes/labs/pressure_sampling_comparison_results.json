@@ -1,0 +1,732 @@
+{
+  "scope": "Exact jets with analytic local comparison; numerical finite-amplitude histories without continuum enclosures",
+  "datum": "epsilon*((sin y)/8-4 sin z, sin z, (sin(x+4y))/8)",
+  "viscosity": 1,
+  "original_histories": "One unforced NS velocity, same canonical pressure, physical drift u and auxiliary drift zero, all moments initially zero",
+  "operator_checks": {
+    "status": "Generator and same-fluid observer checks passed",
+    "pressure_relative_error": 3.956073048205129e-16,
+    "equal_drift_relative_error": 0.0,
+    "physical_step_relative_error": 0.0,
+    "scope": "Exact polynomial identities and rational pressure fixture; numerical operator comparisons"
+  },
+  "exact_jets": {
+    "status": "Both signs verified for the same-pressure sampling comparison",
+    "cases": [
+      {
+        "weights": [
+          "1/8",
+          "1",
+          "1/8"
+        ],
+        "physical_t8_t9_t10": [
+          "(708361715/825145689523617792 + 0*I)",
+          "(-116688716081/2320722251785175040 + 0*I)*nu",
+          "(212832523606753/139243335107110502400 + 0*I)*nu**2 + (-6921546437384769330614044633/69016713826540973339777425818727219200 + 0*I)"
+        ],
+        "brownian_t8_t9_t10": [
+          "(708361715/825145689523617792 + 0*I)",
+          "(-116688716081/2320722251785175040 + 0*I)*nu",
+          "(212832523606753/139243335107110502400 + 0*I)*nu**2 + (-14783230369884197575909240271/138033427653081946679554851637454438400 + 0*I)"
+        ],
+        "difference_t10": "833091743463037/122316692502153978351452160",
+        "sign": 1,
+        "mixing_form": "263285597/100017659336196096",
+        "source_correlation": "-767275320597223/212355368927350656860160",
+        "minus_correlation_over_mixing": "3069101282388892/2236009538925855"
+      },
+      {
+        "weights": [
+          "1",
+          "1",
+          "1"
+        ],
+        "physical_t8_t9_t10": [
+          "(708361715/49182515712 + 0*I)",
+          "(-116688716081/138325825440 + 0*I)*nu",
+          "(212832523606753/8299549526400 + 0*I)*nu**2 + (388474522689518625902918581/128553647224867666773083481600 + 0*I)"
+        ],
+        "brownian_t8_t9_t10": [
+          "(708361715/49182515712 + 0*I)",
+          "(-116688716081/138325825440 + 0*I)*nu",
+          "(212832523606753/8299549526400 + 0*I)*nu**2 + (1143529732808208978320117747/257107294449735333546166963200 + 0*I)"
+        ],
+        "difference_t10": "-324841148871529/227832593959111680",
+        "sign": -1,
+        "mixing_form": "551841725/2049271488",
+        "source_correlation": "-2300375739559/35958427076880",
+        "minus_correlation_over_mixing": "101216532540596/426057681412125"
+      }
+    ],
+    "viscosity": "Polynomial identity for every viscosity; no fitted coefficients",
+    "scope": "Exact NS and moment jets; actual positive-time comparison uses smooth local PDE evolution"
+  },
+  "original_heat_profile": {
+    "alpha": "286662963478641031715316500074864459911482198808067888826733584543504645354907013/62250594947644040165703644484760700514092008070712907242986612954178468372574157819328000000",
+    "rows": [
+      {
+        "time": "1/8",
+        "heat_forecast_over_stock": "0.326765007482663017123377166672299843509060552842390782260562334267048"
+      },
+      {
+        "time": "1/4",
+        "heat_forecast_over_stock": "0.9002495176464279514375991445546739623335822879425566344228983322429692"
+      },
+      {
+        "time": "3/8",
+        "heat_forecast_over_stock": "0.9914893105875036910293670044071671260337615001190063162106377268666553"
+      },
+      {
+        "time": "1/2",
+        "heat_forecast_over_stock": "0.9993594434956829121908040847408511100327079399188852932675053259531307"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "amplitude": 8,
+      "grid": 32,
+      "time_step": 0.0009765625,
+      "final_time": 0.5,
+      "stock": "286662963478641031715316500074864459911482198808067888826733584543504645354907013/15197899157139658243579991329287280398948244157888893369869778553266227630022987748859375",
+      "reports": [
+        {
+          "time": 0.125,
+          "physical": {
+            "time": 0.125,
+            "phi": 5.65863539531959e-09,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.30000167814317585,
+            "energy_balance": 7.734684004390147e-10,
+            "velocity_wiener": 31.31849858977346,
+            "high_velocity_fraction": 4.809210265340142e-11,
+            "high_moment_fraction": 1.0365020066718784e-07,
+            "minimum_covariance": 2.8770101314212834e-09,
+            "fourth_second_jensen_gap": 2.4814334398891646e-09
+          },
+          "brownian": {
+            "time": 0.125,
+            "phi": 5.637101560577013e-09,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.29886002717817917,
+            "energy_balance": 7.734684004390147e-10,
+            "velocity_wiener": 31.31849858977346,
+            "high_velocity_fraction": 4.809210265340142e-11,
+            "high_moment_fraction": 2.8091555224714663e-08,
+            "minimum_covariance": 2.9778613884227635e-09,
+            "fourth_second_jensen_gap": 2.437185623009625e-09
+          },
+          "physical_over_brownian": 1.0038200189425668,
+          "integrated_pressure_gradient_l4": 0.010820660533737352,
+          "absolute_source_cost_over_stock": 0.7268203231929267
+        },
+        {
+          "time": 0.25,
+          "physical": {
+            "time": 0.25,
+            "phi": 1.393776927602663e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7389333081680606,
+            "energy_balance": 7.731273399258498e-10,
+            "velocity_wiener": 27.35363212909579,
+            "high_velocity_fraction": 5.831277581125133e-14,
+            "high_moment_fraction": 5.598046593174507e-10,
+            "minimum_covariance": 2.4691237097305188e-08,
+            "fourth_second_jensen_gap": 7.935439925792849e-09
+          },
+          "brownian": {
+            "time": 0.25,
+            "phi": 1.382620545802771e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7330185724974394,
+            "energy_balance": 7.731273399258498e-10,
+            "velocity_wiener": 27.35363212909579,
+            "high_velocity_fraction": 5.831277581125133e-14,
+            "high_moment_fraction": 2.044643716777416e-10,
+            "minimum_covariance": 2.2673171312652387e-08,
+            "fourth_second_jensen_gap": 7.678605130937889e-09
+          },
+          "physical_over_brownian": 1.0080690120176208,
+          "integrated_pressure_gradient_l4": 0.015202586775621514,
+          "absolute_source_cost_over_stock": 2.8319262320616883
+        },
+        {
+          "time": 0.375,
+          "physical": {
+            "time": 0.375,
+            "phi": 1.4787155377691826e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7839648816993425,
+            "energy_balance": 7.739799912087619e-10,
+            "velocity_wiener": 23.785871533096394,
+            "high_velocity_fraction": 1.9886268249467356e-16,
+            "high_moment_fraction": 1.0581465886795739e-10,
+            "minimum_covariance": 5.684103199996881e-08,
+            "fourth_second_jensen_gap": 9.06489162357178e-09
+          },
+          "brownian": {
+            "time": 0.375,
+            "phi": 1.4608418386648304e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7744888519654477,
+            "energy_balance": 7.739799912087619e-10,
+            "velocity_wiener": 23.785871533096394,
+            "high_velocity_fraction": 1.9886268249467356e-16,
+            "high_moment_fraction": 7.044251207246447e-13,
+            "minimum_covariance": 4.896396295296814e-08,
+            "fourth_second_jensen_gap": 8.788085077872333e-09
+          },
+          "physical_over_brownian": 1.0122352048190846,
+          "integrated_pressure_gradient_l4": 0.01597576561286965,
+          "absolute_source_cost_over_stock": 3.4534938985007813
+        },
+        {
+          "time": 0.5,
+          "physical": {
+            "time": 0.5,
+            "phi": 1.4826743484823192e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7860637090215172,
+            "energy_balance": 7.7454842539737e-10,
+            "velocity_wiener": 20.86827275549055,
+            "high_velocity_fraction": 2.4933631043970453e-17,
+            "high_moment_fraction": 9.302697575285113e-11,
+            "minimum_covariance": 8.398724993268674e-08,
+            "fourth_second_jensen_gap": 9.291071212573286e-09
+          },
+          "brownian": {
+            "time": 0.5,
+            "phi": 1.4626940070354618e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7754708088871689,
+            "energy_balance": 7.7454842539737e-10,
+            "velocity_wiener": 20.86827275549055,
+            "high_velocity_fraction": 2.4933631043970453e-17,
+            "high_moment_fraction": 5.700650780955802e-14,
+            "minimum_covariance": 7.248958455240002e-08,
+            "fourth_second_jensen_gap": 9.050050415605938e-09
+          },
+          "physical_over_brownian": 1.013659959875923,
+          "integrated_pressure_gradient_l4": 0.016117145620680905,
+          "absolute_source_cost_over_stock": 3.577375197561981
+        }
+      ]
+    },
+    {
+      "amplitude": 8,
+      "grid": 48,
+      "time_step": 0.0009765625,
+      "final_time": 0.5,
+      "stock": "286662963478641031715316500074864459911482198808067888826733584543504645354907013/15197899157139658243579991329287280398948244157888893369869778553266227630022987748859375",
+      "reports": [
+        {
+          "time": 0.125,
+          "physical": {
+            "time": 0.125,
+            "phi": 5.6586316738272035e-09,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.3000014808422573,
+            "energy_balance": 7.736389306955971e-10,
+            "velocity_wiener": 31.3184990876621,
+            "high_velocity_fraction": 5.580564263685213e-17,
+            "high_moment_fraction": 2.427956067455641e-13,
+            "minimum_covariance": 2.8695405525790596e-09,
+            "fourth_second_jensen_gap": 2.4814297808492742e-09
+          },
+          "brownian": {
+            "time": 0.125,
+            "phi": 5.637107720724895e-09,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.2988603537683503,
+            "energy_balance": 7.736389306955971e-10,
+            "velocity_wiener": 31.3184990876621,
+            "high_velocity_fraction": 5.580564263685213e-17,
+            "high_moment_fraction": 1.9445396528121334e-13,
+            "minimum_covariance": 2.9037142771036644e-09,
+            "fourth_second_jensen_gap": 2.4371917766021406e-09
+          },
+          "physical_over_brownian": 1.0038182618052827,
+          "integrated_pressure_gradient_l4": 0.010820655979080501,
+          "absolute_source_cost_over_stock": 0.7268190994542966
+        },
+        {
+          "time": 0.25,
+          "physical": {
+            "time": 0.25,
+            "phi": 1.3937761765395398e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7389329099798374,
+            "energy_balance": 7.732978701824322e-10,
+            "velocity_wiener": 27.353632133124954,
+            "high_velocity_fraction": 7.853473969433809e-22,
+            "high_moment_fraction": 1.0469951536926114e-16,
+            "minimum_covariance": 2.4391709865831316e-08,
+            "fourth_second_jensen_gap": 7.935432413318604e-09
+          },
+          "brownian": {
+            "time": 0.25,
+            "phi": 1.382621361740079e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7330190050797575,
+            "energy_balance": 7.732978701824322e-10,
+            "velocity_wiener": 27.353632133124954,
+            "high_velocity_fraction": 7.853473969433809e-22,
+            "high_moment_fraction": 1.1423818800874085e-16,
+            "minimum_covariance": 2.236585491741723e-08,
+            "fourth_second_jensen_gap": 7.678613290069584e-09
+          },
+          "physical_over_brownian": 1.0080678739010818,
+          "integrated_pressure_gradient_l4": 0.015202581850479761,
+          "absolute_source_cost_over_stock": 2.831922562256923
+        },
+        {
+          "time": 0.375,
+          "physical": {
+            "time": 0.375,
+            "phi": 1.478714764050266e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7839644714997852,
+            "energy_balance": 7.743210517219268e-10,
+            "velocity_wiener": 23.785871534145773,
+            "high_velocity_fraction": 7.600378999737013e-24,
+            "high_moment_fraction": 2.4870704554513435e-18,
+            "minimum_covariance": 5.668677410360162e-08,
+            "fourth_second_jensen_gap": 9.064883884186523e-09
+          },
+          "brownian": {
+            "time": 0.375,
+            "phi": 1.460842652594109e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7744892834831766,
+            "energy_balance": 7.743210517219268e-10,
+            "velocity_wiener": 23.785871534145773,
+            "high_velocity_fraction": 7.600378999737013e-24,
+            "high_moment_fraction": 9.528587730944636e-21,
+            "minimum_covariance": 4.8925466838794446e-08,
+            "fourth_second_jensen_gap": 8.788093216207938e-09
+          },
+          "physical_over_brownian": 1.0122341111990538,
+          "integrated_pressure_gradient_l4": 0.015975760685077552,
+          "absolute_source_cost_over_stock": 3.4534896375238784
+        },
+        {
+          "time": 0.5,
+          "physical": {
+            "time": 0.5,
+            "phi": 1.4826735741217169e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7860632984817599,
+            "energy_balance": 7.748894859105349e-10,
+            "velocity_wiener": 20.86827275577895,
+            "high_velocity_fraction": 7.920723087215256e-25,
+            "high_moment_fraction": 1.6430022787805523e-18,
+            "minimum_covariance": 8.398726639465312e-08,
+            "fourth_second_jensen_gap": 9.291063466955695e-09
+          },
+          "brownian": {
+            "time": 0.5,
+            "phi": 1.4626948210995346e-08,
+            "forecast": 1.8862012473873583e-08,
+            "ratio": 0.7754712404763612,
+            "energy_balance": 7.748894859105349e-10,
+            "velocity_wiener": 20.86827275577895,
+            "high_velocity_fraction": 7.920723087215256e-25,
+            "high_moment_fraction": 1.127575027432391e-22,
+            "minimum_covariance": 7.267204086218003e-08,
+            "fourth_second_jensen_gap": 9.050058555229902e-09
+          },
+          "physical_over_brownian": 1.01365886631578,
+          "integrated_pressure_gradient_l4": 0.016117140692894372,
+          "absolute_source_cost_over_stock": 3.5773708224614134
+        }
+      ]
+    },
+    {
+      "amplitude": 32,
+      "grid": 32,
+      "time_step": 0.0009765625,
+      "final_time": 0.5,
+      "stock": "4809406457481271975550715430120017214658277729557897513510095922340638832122671617015808/15197899157139658243579991329287280398948244157888893369869778553266227630022987748859375",
+      "reports": [
+        {
+          "time": 0.125,
+          "physical": {
+            "time": 0.125,
+            "phi": 0.02632463068375071,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.08318678947549644,
+            "energy_balance": 1.6427839000243694e-07,
+            "velocity_wiener": 134.67192558121357,
+            "high_velocity_fraction": 1.8694389745751937e-07,
+            "high_moment_fraction": 9.310600833357665e-05,
+            "minimum_covariance": 1.5804967899591147e-05,
+            "fourth_second_jensen_gap": 0.012916684270711881
+          },
+          "brownian": {
+            "time": 0.125,
+            "phi": 0.022689216841854726,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07169874964104667,
+            "energy_balance": 1.6427839000243694e-07,
+            "velocity_wiener": 134.67192558121357,
+            "high_velocity_fraction": 1.8694389745751937e-07,
+            "high_moment_fraction": 1.621013316528198e-05,
+            "minimum_covariance": 1.7231317951656873e-05,
+            "fourth_second_jensen_gap": 0.009980635281022767
+          },
+          "physical_over_brownian": 1.1602265017446414,
+          "integrated_pressure_gradient_l4": 0.5215291745259957,
+          "absolute_source_cost_over_stock": 0.23377954468361234
+        },
+        {
+          "time": 0.25,
+          "physical": {
+            "time": 0.25,
+            "phi": 0.032241297517046255,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10188367165290985,
+            "energy_balance": 1.608595994184725e-07,
+            "velocity_wiener": 108.26084802709339,
+            "high_velocity_fraction": 4.663579599413532e-09,
+            "high_moment_fraction": 9.198708527724203e-07,
+            "minimum_covariance": 0.00011816255205862425,
+            "fourth_second_jensen_gap": 0.01783512927308821
+          },
+          "brownian": {
+            "time": 0.25,
+            "phi": 0.02353716772277706,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07437830523535892,
+            "energy_balance": 1.608595994184725e-07,
+            "velocity_wiener": 108.26084802709339,
+            "high_velocity_fraction": 4.663579599413532e-09,
+            "high_moment_fraction": 7.0630216027416e-09,
+            "minimum_covariance": 9.835099299876746e-05,
+            "fourth_second_jensen_gap": 0.012572281862042609
+          },
+          "physical_over_brownian": 1.3698036185486393,
+          "integrated_pressure_gradient_l4": 0.6183680123020682,
+          "absolute_source_cost_over_stock": 0.462040600301979
+        },
+        {
+          "time": 0.375,
+          "physical": {
+            "time": 0.375,
+            "phi": 0.03250785659721867,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10272600803177392,
+            "energy_balance": 1.598418748471886e-07,
+            "velocity_wiener": 92.82903154136258,
+            "high_velocity_fraction": 3.0920825753282855e-11,
+            "high_moment_fraction": 5.344120715290195e-08,
+            "minimum_covariance": 0.00021284859344434086,
+            "fourth_second_jensen_gap": 0.018474584349688534
+          },
+          "brownian": {
+            "time": 0.375,
+            "phi": 0.023370324176159793,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07385107356572858,
+            "energy_balance": 1.598418748471886e-07,
+            "velocity_wiener": 92.82903154136258,
+            "high_velocity_fraction": 3.0920825753282855e-11,
+            "high_moment_fraction": 9.210268722855109e-11,
+            "minimum_covariance": 0.00015474852642024996,
+            "fourth_second_jensen_gap": 0.013183203307362912
+          },
+          "physical_over_brownian": 1.3909886894243482,
+          "integrated_pressure_gradient_l4": 0.6392834837006082,
+          "absolute_source_cost_over_stock": 0.5277959015983782
+        },
+        {
+          "time": 0.5,
+          "physical": {
+            "time": 0.5,
+            "phi": 0.03254801522921354,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10285291076805592,
+            "energy_balance": 1.59619958139956e-07,
+            "velocity_wiener": 80.92561661036399,
+            "high_velocity_fraction": 1.807313614633624e-11,
+            "high_moment_fraction": 6.466961686965732e-09,
+            "minimum_covariance": 0.0002788700496430134,
+            "fourth_second_jensen_gap": 0.0186672519694976
+          },
+          "brownian": {
+            "time": 0.5,
+            "phi": 0.02326647105132486,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07352289391770986,
+            "energy_balance": 1.59619958139956e-07,
+            "velocity_wiener": 80.92561661036399,
+            "high_velocity_fraction": 1.807313614633624e-11,
+            "high_moment_fraction": 2.560017535199719e-12,
+            "minimum_covariance": 0.00018694881223081428,
+            "fourth_second_jensen_gap": 0.013382820355788827
+          },
+          "physical_over_brownian": 1.3989235908365294,
+          "integrated_pressure_gradient_l4": 0.6469798813141197,
+          "absolute_source_cost_over_stock": 0.5536753387468454
+        }
+      ]
+    },
+    {
+      "amplitude": 32,
+      "grid": 48,
+      "time_step": 0.0009765625,
+      "final_time": 0.5,
+      "stock": "4809406457481271975550715430120017214658277729557897513510095922340638832122671617015808/15197899157139658243579991329287280398948244157888893369869778553266227630022987748859375",
+      "reports": [
+        {
+          "time": 0.125,
+          "physical": {
+            "time": 0.125,
+            "phi": 0.026321752313122636,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.0831776937197251,
+            "energy_balance": 1.6429476090706885e-07,
+            "velocity_wiener": 134.67319342112688,
+            "high_velocity_fraction": 1.3368297125379957e-11,
+            "high_moment_fraction": 1.2809832965048982e-07,
+            "minimum_covariance": 1.5629455352721514e-05,
+            "fourth_second_jensen_gap": 0.012913810948559595
+          },
+          "brownian": {
+            "time": 0.125,
+            "phi": 0.02268964191869413,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.0717000928993045,
+            "energy_balance": 1.6429476090706885e-07,
+            "velocity_wiener": 134.67319342112688,
+            "high_velocity_fraction": 1.3368297125379957e-11,
+            "high_moment_fraction": 8.374783231802349e-08,
+            "minimum_covariance": 1.7184662672029003e-05,
+            "fourth_second_jensen_gap": 0.009981075747751304
+          },
+          "physical_over_brownian": 1.160077907242599,
+          "integrated_pressure_gradient_l4": 0.521527505450831,
+          "absolute_source_cost_over_stock": 0.23377655199382272
+        },
+        {
+          "time": 0.25,
+          "physical": {
+            "time": 0.25,
+            "phi": 0.03223828402924087,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10187414892194868,
+            "energy_balance": 1.608759703231044e-07,
+            "velocity_wiener": 108.26104301860794,
+            "high_velocity_fraction": 1.290851986555128e-12,
+            "high_moment_fraction": 1.2131849994120836e-10,
+            "minimum_covariance": 0.00011815985706380821,
+            "fourth_second_jensen_gap": 0.01783212226473555
+          },
+          "brownian": {
+            "time": 0.25,
+            "phi": 0.023537819330862093,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07438036434058402,
+            "energy_balance": 1.608759703231044e-07,
+            "velocity_wiener": 108.26104301860794,
+            "high_velocity_fraction": 1.290851986555128e-12,
+            "high_moment_fraction": 5.209108208721226e-13,
+            "minimum_covariance": 9.838068731743253e-05,
+            "fourth_second_jensen_gap": 0.012572949781871992
+          },
+          "physical_over_brownian": 1.3696376701715518,
+          "integrated_pressure_gradient_l4": 0.6183745284160054,
+          "absolute_source_cost_over_stock": 0.4620600758034544
+        },
+        {
+          "time": 0.375,
+          "physical": {
+            "time": 0.375,
+            "phi": 0.032504787589984846,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10271630985740156,
+            "energy_balance": 1.5986461221473292e-07,
+            "velocity_wiener": 92.82898769315008,
+            "high_velocity_fraction": 6.232494122887334e-15,
+            "high_moment_fraction": 1.9891677850199534e-12,
+            "minimum_covariance": 0.00021286392808691985,
+            "fourth_second_jensen_gap": 0.018471554985499943
+          },
+          "brownian": {
+            "time": 0.375,
+            "phi": 0.023371033329818956,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07385331451705889,
+            "energy_balance": 1.5986461221473292e-07,
+            "velocity_wiener": 92.82898769315008,
+            "high_velocity_fraction": 6.232494122887334e-15,
+            "high_moment_fraction": 1.0964554373946955e-15,
+            "minimum_covariance": 0.0001545048209809232,
+            "fourth_second_jensen_gap": 0.013184125040784594
+          },
+          "physical_over_brownian": 1.3908151655627563,
+          "integrated_pressure_gradient_l4": 0.639265560066852,
+          "absolute_source_cost_over_stock": 0.5277367126917972
+        },
+        {
+          "time": 0.5,
+          "physical": {
+            "time": 0.5,
+            "phi": 0.03254494607167721,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10284321211872219,
+            "energy_balance": 1.5964815247571096e-07,
+            "velocity_wiener": 80.9254693550785,
+            "high_velocity_fraction": 2.7893398828913794e-16,
+            "high_moment_fraction": 8.564110579122838e-14,
+            "minimum_covariance": 0.00027892244595794166,
+            "fourth_second_jensen_gap": 0.01866423428878007
+          },
+          "brownian": {
+            "time": 0.5,
+            "phi": 0.023266767819774253,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07352383171679312,
+            "energy_balance": 1.5964815247571096e-07,
+            "velocity_wiener": 80.9254693550785,
+            "high_velocity_fraction": 2.7893398828913794e-16,
+            "high_moment_fraction": 4.2501649847959466e-17,
+            "minimum_covariance": 0.00018619682168494504,
+            "fourth_second_jensen_gap": 0.013383633402709646
+          },
+          "physical_over_brownian": 1.3987738358749384,
+          "integrated_pressure_gradient_l4": 0.646936664954293,
+          "absolute_source_cost_over_stock": 0.5535274180092734
+        }
+      ]
+    },
+    {
+      "amplitude": 32,
+      "grid": 32,
+      "time_step": 0.00048828125,
+      "final_time": 0.5,
+      "stock": "4809406457481271975550715430120017214658277729557897513510095922340638832122671617015808/15197899157139658243579991329287280398948244157888893369869778553266227630022987748859375",
+      "reports": [
+        {
+          "time": 0.125,
+          "physical": {
+            "time": 0.125,
+            "phi": 0.02632463040489624,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.08318678859430619,
+            "energy_balance": 1.0379153536632657e-08,
+            "velocity_wiener": 134.671925637498,
+            "high_velocity_fraction": 1.8694389032545407e-07,
+            "high_moment_fraction": 9.310601858041387e-05,
+            "minimum_covariance": 1.580497047742255e-05,
+            "fourth_second_jensen_gap": 0.012916683680050361
+          },
+          "brownian": {
+            "time": 0.125,
+            "phi": 0.022689217147436613,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07169875060669653,
+            "energy_balance": 1.0379153536632657e-08,
+            "velocity_wiener": 134.671925637498,
+            "high_velocity_fraction": 1.8694389032545407e-07,
+            "high_moment_fraction": 1.621013304252875e-05,
+            "minimum_covariance": 1.723131957740331e-05,
+            "fourth_second_jensen_gap": 0.009980635485382628
+          },
+          "physical_over_brownian": 1.1602264738283554,
+          "integrated_pressure_gradient_l4": 0.5215291747506902,
+          "absolute_source_cost_over_stock": 0.23377954508649657
+        },
+        {
+          "time": 0.25,
+          "physical": {
+            "time": 0.25,
+            "phi": 0.03224129747404008,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10188367151700876,
+            "energy_balance": 1.0226358426734805e-08,
+            "velocity_wiener": 108.26084803091864,
+            "high_velocity_fraction": 4.663579988340166e-09,
+            "high_moment_fraction": 9.198716018208924e-07,
+            "minimum_covariance": 0.00011816254690561406,
+            "fourth_second_jensen_gap": 0.01783512889363771
+          },
+          "brownian": {
+            "time": 0.25,
+            "phi": 0.02353716801339969,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07437830615373697,
+            "energy_balance": 1.0226358426734805e-08,
+            "velocity_wiener": 108.26084803091864,
+            "high_velocity_fraction": 4.663579988340166e-09,
+            "high_moment_fraction": 7.063021293851833e-09,
+            "minimum_covariance": 9.835099512637912e-05,
+            "fourth_second_jensen_gap": 0.012572282072874127
+          },
+          "physical_over_brownian": 1.3698035998079776,
+          "integrated_pressure_gradient_l4": 0.6183680157806648,
+          "absolute_source_cost_over_stock": 0.4620406106987191
+        },
+        {
+          "time": 0.375,
+          "physical": {
+            "time": 0.375,
+            "phi": 0.032507856593284194,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10272600801934083,
+            "energy_balance": 1.0204530553892255e-08,
+            "velocity_wiener": 92.8290315639009,
+            "high_velocity_fraction": 3.092087617173036e-11,
+            "high_moment_fraction": 5.344135036021075e-08,
+            "minimum_covariance": 0.0002128485920704841,
+            "fourth_second_jensen_gap": 0.018474584013092123
+          },
+          "brownian": {
+            "time": 0.375,
+            "phi": 0.023370324464440904,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07385107447670736,
+            "energy_balance": 1.0204530553892255e-08,
+            "velocity_wiener": 92.8290315639009,
+            "high_velocity_fraction": 3.092087617173036e-11,
+            "high_moment_fraction": 9.210269798614058e-11,
+            "minimum_covariance": 0.00015474853064491225,
+            "fourth_second_jensen_gap": 0.013183203518923756
+          },
+          "physical_over_brownian": 1.3909886720976636,
+          "integrated_pressure_gradient_l4": 0.6392834894240956,
+          "absolute_source_cost_over_stock": 0.5277959204997472
+        },
+        {
+          "time": 0.5,
+          "physical": {
+            "time": 0.5,
+            "phi": 0.03254801523033385,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.10285291077159614,
+            "energy_balance": 1.0228177416138351e-08,
+            "velocity_wiener": 80.92561660491506,
+            "high_velocity_fraction": 1.8073140242521858e-11,
+            "high_moment_fraction": 6.466969141003738e-09,
+            "minimum_covariance": 0.00027887005269350295,
+            "fourth_second_jensen_gap": 0.01866725164160858
+          },
+          "brownian": {
+            "time": 0.5,
+            "phi": 0.0232664713378801,
+            "forecast": 0.31645205746887145,
+            "ratio": 0.07352289482323483,
+            "energy_balance": 1.0228177416138351e-08,
+            "velocity_wiener": 80.92561660491506,
+            "high_velocity_fraction": 1.8073140242521858e-11,
+            "high_moment_fraction": 2.560019053849625e-12,
+            "minimum_covariance": 0.0001869488167054635,
+            "fourth_second_jensen_gap": 0.013382820566936699
+          },
+          "physical_over_brownian": 1.3989235736552146,
+          "integrated_pressure_gradient_l4": 0.646979887696359,
+          "absolute_source_cost_over_stock": 0.5536753605941309
+        }
+      ]
+    }
+  ]
+}

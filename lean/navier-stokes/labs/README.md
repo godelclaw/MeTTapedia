@@ -40497,3 +40497,190 @@ and temporal refinement. The options `--weights A B C` and `--final T`
 retain their specified original datum and moments throughout each run.
 Input Fourier coefficients must pass the exact-representability checks;
 the subsequent floating evolution is not a rounding enclosure.
+
+## Pressure production and stochastic sampling have distinct signs
+
+`pressure_sampling_comparison.py` observes ONE smooth unforced periodic NS
+solution in two ways. Write g=grad p for its canonical pressure gradient.
+For b=u and b=0 separately, start Y_b uniformly on the normalized torus and
+set
+
+```text
+dY_b = b(t,Y_b)dt + sqrt(2nu)dW,
+P_b(t) = integral_0^t g(s,Y_b(s))ds,       Phi_b(t)=E|P_b(t)|^4.
+```
+
+Changing b here changes the observation, not the pressure or the fluid
+equation. Both drifts are divergence free, so both spatial marginals stay
+uniform. Every impulse starts at zero once. The actual continuation
+criterion (636) uses Phi_u. It does not automatically apply to Phi_0.
+
+### Literal conditional moments
+
+Let m_b, Q_b and T_b be the endpoint-conditional expectations of P_b,
+P_b tensor P_b and |P_b|^2 P_b. The joint generator in (x,P) gives
+
+```text
+D_b = partial_t + b.grad - nu Delta,
+D_b m_b = g,
+D_b Q_b = m_b tensor g + g tensor m_b,
+D_b T_b = 2 Q_b g + trace(Q_b)g,
+Phi_b' = 4 integral g.T_b.
+```
+
+These follow by testing the joint law against polynomials in P and smooth
+spatial test functions. Incompressibility and the uniform marginal turn
+the moment densities into conditional moments. Periodic integration
+removes transport and diffusion only in the final spatial mean; both
+remain in the lower moment equations. The contracted third moment is
+enough for this fourth-moment recurrence.
+
+In particular, for delta m=m_u-m_0 and similarly delta Q, delta T,
+
+```text
+D_u delta m = -u.grad m_0,
+D_u delta Q = delta m tensor g + g tensor delta m - u.grad Q_0,
+D_u delta T = 2 delta Q g + trace(delta Q)g - u.grad T_0,
+(Phi_u-Phi_0)' = 4 integral g.delta T.
+```
+
+All differences start at zero. These are causal identities retaining the
+same pressure and existing moments. The right sides have no general sign.
+
+### An actual short-time counterexample to either universal ordering
+
+Use the original zero-mean, divergence-free data
+
+```text
+U_(a,b,c) = (a sin y-4b sin z, b sin z, c sin(x+4y)).
+```
+
+For every fixed nu>0, the smooth local NS solution generates a canonical
+pressure with p(0)=0. Complete NS jets and the two moment recurrences give
+
+```text
+Phi_u(t)-Phi_0(t) = c_(a,b,c) t^10 + O(t^11),
+c_(1/8,1,1/8) = 833091743463037 / 122316692502153978351452160 > 0,
+c_(1,1,1) = -324841148871529 / 227832593959111680 < 0.
+```
+
+The coefficients through t^7 vanish because g(0)=0; the t^8 and t^9
+coefficients agree between observers. The t^10 difference is a constant
+polynomial in nu, checked with exact rational Fourier algebra rather
+than viscosity interpolation. Independent material-path expansions check
+both zero-viscosity limits. No Fourier output in these finite derivatives
+is dropped.
+
+Smooth local PDE evolution and the triangular moment equations justify
+the Taylor remainder for each fixed datum and viscosity. Consequently
+each strict sign holds on an actual positive interval. This interval
+argument is analytic, not Lean-certified. It refutes the universal
+domination Phi_u<=Phi_0, and the other datum refutes its reverse. These
+examples have zero mean, so the effect is not a constant-frame drift.
+
+The sign persists for data epsilon U with any fixed epsilon>0: NS scaling
+in amplitude and time, with viscosity nu/epsilon in the reference flow,
+multiplies c by epsilon^14. The remainder interval can depend on epsilon
+and nu. Taking epsilon sufficiently small places these comparison
+failures among globally regular small-data flows. They do not construct
+a singularity or refute a larger full-datum allowance.
+
+### What changes the sign
+
+There is a compact geometric form of the coefficient. Set
+A=grad p_t(0), let B be the zero-viscosity part of grad p_tt(0),
+and put L=U.grad. Define the nonnegative matrix W_A=|A|^2 I+2 A tensor A.
+For the preceding data, the complete viscosity-polynomial calculation is
+equivalently
+
+```text
+M = integral (LA)^T W_A (LA) > 0,
+C = integral (LA)^T W_A B,
+c = -(M+C)/144.
+```
+
+To derive the form, first work at zero viscosity, where the material
+impulse has coefficients
+
+```text
+P_u(t) = (t^2/2)A + (t^3/6)(B+2LA)
+          + (t^4/24)(C3+3LB+3L1 A+3L^2 A) + O(t^5),
+P_0(t) = (t^2/2)A + (t^3/6)B + (t^4/24)C3 + O(t^5).
+```
+
+Here C3=grad p_ttt(0) and L1=u_t(0).grad. Expanding the fourth powers and
+integrating by parts cancels C3 and the solenoidal L1 term, leaving the
+displayed formula. The exact viscosity-polynomial checks show that the
+additional viscous terms cancel in the sampling difference for these
+data. The pressure source itself is still the full NS source.
+
+For (1/8,1,1/8), -C/M is about 1.37258, so the changing-source correlation
+outweighs the mixing form. For (1,1,1), it is about 0.237565, so mixing
+wins. The positive mixing term alone therefore cannot justify a favorable
+sampling sign. A history payment must retain how the pressure changes
+with the same advecting parents.
+
+### Numerical comparison beyond the initial interval
+
+The numerical experiment evolves 29 fields: one velocity and two sets
+of first, symmetric second, contracted third and mean fourth moments.
+It reuses the established sixteen-field solver as the physical subsystem.
+Checks with nonzero pressure and nonzero retained moments verify that
+the second observer does not alter that subsystem. An independent
+rational Fourier pressure fixture checks its common source, and exact
+polynomial generator identities check the moment contractions.
+
+For the fixed shape (1/8,1,1/8), the same viscosity and initial stock K as
+in the preceding section, the calculations at t=1/2 give:
+
+| Amplitude | Grid | Phi_u/K | Phi_0/K | Phi_u/Phi_0 |
+| --- | --- | --- | --- | --- |
+| 8 | 32^3 | 0.7860637090 | 0.7754708089 | 1.013659960 |
+| 8 | 48^3 | 0.7860632985 | 0.7754712405 | 1.013658866 |
+| 32 | 32^3 | 0.1028529108 | 0.07352289392 | 1.398923591 |
+| 32 | 48^3 | 0.1028432121 | 0.07352383172 | 1.398773836 |
+
+The common time step is 1/1024. The fluid drift increases the observation
+at each of the four reported times in these runs, while both observations
+remain below the original stock. This attributes the large relative
+saving to the evolving pressure source as sampled diffusively, not to an
+assumed beneficial sign of fluid drift.
+
+At amplitude32, halving the grid32 time step to 1/2048 changes Phi_u/K
+by about 3.6e-12 and Phi_0/K by about 9.1e-10. Spatial refinement changes
+those two ratios by about 9.7e-6 and 9.4e-7. These are convergence
+diagnostics, not error enclosures. The retained physical reports agree
+exactly with the preceding single-observer runs at identical settings.
+The original heat forecast, evaluated from its exact exponential
+polynomial, has spent about 0.99935944 K by this time. The large saving
+therefore does not come from an undeveloped reference forecast.
+
+Uniform marginals and Minkowski also give the exact sufficient estimate
+
+```text
+Phi_b(T)^(1/4) <= integral_0^T ||grad p(s)||_4 ds
+```
+
+for either observer. The computed fourth power of this integral divided
+by K is about 3.57737 at amplitude8, and 0.553527 at amplitude32 on the
+refined grid, through time1/2. Thus at the larger amplitude even the
+stronger absolute-source estimate is numerically below K; at amplitude8 it loses the payment that
+the signed stochastic histories retain. K itself grows as epsilon^12;
+these comparisons do not assert that absolute pressure decreases as
+amplitude grows. Neither the integrated source norm nor Phi_0 is an
+initial-data bound for arbitrary flows.
+
+The numerical prefixes do not enclose continuum or roundoff error and do
+not establish between-sample maxima, future tails or a universal reserve.
+The exact counterexample above instead uses the independent full-PDE
+jets and analytic local remainder. No new Lean declarations are involved.
+The five completed numerical cases, exact signed coefficients, independent
+operator checks and reference-profile values are retained in
+`pressure_sampling_comparison_results.json`.
+
+Run `python3 -O labs/pressure_sampling_comparison.py` for the generator
+and numerical operator checks, and add `--jets` for the exact signed
+physical comparison. `--prefix --amplitude 8` runs the default pair of
+numerical observers. All histories begin from the prescribed original
+datum with zero moments; the auxiliary observer is not an externally
+forced fluid.

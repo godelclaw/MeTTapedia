@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [same-pressure sampling comparison](labs/README.md#pressure-production-and-stochastic-sampling-have-distinct-signs)
+separates evolving pressure production from the paths that sample it.
+On actual smooth, zero-mean unforced flows, fluid drift can either increase
+or decrease the fourth pressure-impulse moment relative to drift-free
+Brownian sampling of that identical pressure. Exact viscosity-polynomial
+jets identify the competing terms: a positive mixing form and a signed
+correlation with the changing pressure source. Thus Brownian-only
+domination cannot replace the actual history target. The local physical
+comparison is analytic, supported by exact checks, not Lean-certified.
+
 The [finite-amplitude pressure test](labs/README.md#finite-amplitude-tests-of-the-original-oblique-pressure-stock)
 keeps one original parent geometry and increases its strength. Numerical
 histories through time one half remain below the original leading stock;
