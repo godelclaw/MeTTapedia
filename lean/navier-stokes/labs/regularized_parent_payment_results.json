@@ -1,0 +1,48 @@
+{
+  "identity": {
+    "weight": "H_e=r^2 h+e, e<=H_e<=G+e; h_e=H_e/r^2 for r>0",
+    "source": "S=f^2-v.grad f+nu L5 f",
+    "local_law": "(D_t-nu L5)Q=2fQ+2n(P_res+S)/h_e-(2nu/h_e) relative_squares",
+    "warning": "h_e is not a finite-mass R5 probability density; all axis limits use the regular physical weight H_e."
+  },
+  "observer": {
+    "stock": "R=int [(u_r+r f)^2+u_theta^2]^(3/2)/H_e^(3/2)",
+    "pressure_work": "W_p=-3 int abs(w) w_r partial_r(p_res)/H_e^(3/2), w=(u_r+r f,u_theta)",
+    "coercivity": "u_theta^2 <= (G+e) Q",
+    "pressure_estimate": "W_p<=D/2+(3/nu)V_p, V_p=int abs(w)*p_res^2/H_e^(3/2)<=e^(-3/2)||w||_3||p_res||_3^2",
+    "axis": "Q^(3/2)=O(r^3); physical axis loss is zero, with all volume diffusion retained",
+    "initial": "R(0)<=e^(-3/2)||u0||_3^3 since A(0)=0"
+  },
+  "profile": {
+    "q0": "(-ell**2 - r**2 + 2*z**2)/(4*pi*(ell**2 + r**2 + z**2)**(5/2))",
+    "F0": "-3*(-ell**2 - r**2 + 4*z**2)/(4*pi*(ell**2 + r**2 + z**2)**(7/2))",
+    "L5F0": "105*ell**2*(-ell**2 - r**2 + 8*z**2)/(4*pi*(ell**2 + r**2 + z**2)**(11/2))",
+    "M_bound": "3/(pi*ell**5)",
+    "radial_gradient_bound": "45/(2*pi*ell**5)",
+    "C0_bound": "729/(2912*pi**4*ell**24)",
+    "C1_bound": "105840/(23*pi*ell**15)",
+    "scope": "This is an observer subtraction; its smoothed potential is not asserted to be a standalone incompressible NS solution."
+  },
+  "payment": {
+    "source_allowance": "9*(C0*E**6*H**7/7 + C1*E**3*H**4*nu**3/4 + 2**(1/4)*CS**(3/4)*E**(9/2)*H**(13/4)*M1**3/(2*nu**(3/4)))/(e**(3/2)*k**2)",
+    "source_bound": "int_0^T k^(-2)e^(-3/2) int |rS|^3 <= K_source for every actual prefix T<=H",
+    "clock": "exp(-3*E*M*t**2/2 - 2*k*t)",
+    "remaining": "int_0^T clock*(W_p-D/2) <= K_pressure(original datum,nu,H,e,ell,k)",
+    "consumer": "B=(R(0)+K_source+K_pressure)/clock(H); int |u_theta|^5 <= (3CS/(2nu))*(G+e)^(5/2)*B^(5/3)",
+    "limitation": "All subtraction-induced source costs are paid. The complete residual pressure history and arbitrary-data regularity remain open."
+  },
+  "residual_test": {
+    "datum": "reverse the full chi=z exp(-rho^2), b=sqrt(5)z exp(-rho^2) datum",
+    "initial_tensor": "Exx=Eyy=Ezz=pi^(3/2)*sqrt(2)/8; delta(0)=A(0)=0",
+    "axis_pressure": "P(0)=-10/7, m(0)=-1, mP=10/7",
+    "scope": "Actual local unforced solutions realize positive residual pressure work on a nearby off-axis region. This is not a sign claim for the whole stock derivative or an integrated-budget refutation."
+  },
+  "source_sha256": {
+    "regularized_parent_payment.py": "9f72998888b5835fc9afb84ee135e83bd1128b97164ff05f0f9ad1b7cd960400",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37",
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1",
+    "axis_deformation_pressure.py": "8cc03e720cbefe3650fd99359a7bd5cc31bb75b9d44a5c67da82ec155a3da264",
+    "circulation_source_reserve.py": "12366fd5dc83962c0f7deb40ebc42939bfcfb4d4d01249b61aca79537a96d926"
+  }
+}

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [paid smooth parent subtraction](labs/README.md#a-positive-circulation-weight-pays-the-complete-parent-subtraction)
+adds a fixed positive floor to the observer's circulation weight while
+retaining the original stochastic density. The resulting physical stock
+is regular at the axis and at infinity. Every transport, viscous and
+reaction term introduced by subtracting the known generated parent has
+an explicit original-energy payment, without a smallness assumption.
+The residual pressure has a finite, exact signed pairing and remains the
+open history estimate. An isotropic initial energy tensor can conceal
+positive local residual pressure work. The bounds and actual-flow tests
+are analytic with exact symbolic checks, not new Lean certificates.
+
 The [pressure-tail history](labs/README.md#the-generated-pressure-tail-has-a-finite-history-payment)
 uses the established whole-space asymptotic profile to identify a generated
 pressure component from the actual energy tensor. An explicit nonnegative

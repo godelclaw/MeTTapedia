@@ -49024,3 +49024,256 @@ cubic integral, density diffusion order, radial exponents and nonnegative
 Bellman correction. The imported asymptotic theorem, local comparison,
 actual diagnostic divergence and continuation use remain analytic, not
 new Lean certificates. No Lean declarations or axioms change.
+
+## A positive circulation weight pays the complete parent subtraction
+
+`regularized_parent_payment.py` derives every term created by smoothly
+subtracting the known parent in (PT3). A positive floor in the physical
+weight makes all those additional source terms payable from original
+energy and viscosity. The complete residual pressure remains open.
+
+Work along an actual smooth, finite-energy axisymmetric unforced NS
+prefix, retaining the finite Sobolev norms required for integration.
+All constants in the source payment below depend on original data, the
+prescribed horizon and fixed observer parameters. No smallness or proximity
+to a known regular flow is used in that payment. Local observer construction
+and spatial integration are analytic; the checker verifies the exact
+identities and constants.
+
+### Keep the stochastic density and regularize the observation
+
+Keep h from (JP2) and its circulation g=r^2h, with 0<=g<=G. Fix e>0 once
+from the original datum. Define
+
+```text
+H_e=e+g, e<=H_e<=e+G,
+D_t H_e=nu (partial_rr-r^-1 partial_r+partial_zz)H_e,
+H_e|axis=e.
+h_e=H_e/r^2=h+e/r^2, for r>0.                        (RP1)
+```
+
+Only H_e is used to define the physical measurement. The quotient h_e
+is not a finite-mass density on R5: r^-2 has a distributional axis defect
+there. We do not replace the original stochastic law h/M by h_e.
+Off the axis, L5(r^-2)=0 and D_t(e/r^2)=2m e/r^2, so h_e obeys the
+same local quotient equation as h. All integrations below use physical
+volume and the regular axis limit, not a fictitious mass identity for h_e.
+No force is introduced into the fluid.
+
+### A smooth subtraction with every defect retained
+
+Let A(t)=int_0^t delta from (PT1), so |A(t)|<=E0 t. Fix ell>0 and put
+
+```text
+U=ell^2+r^2+z^2, N_ell=1/(4pi sqrt(U)),
+q0=partial_zz N_ell=(-ell^2-r^2+2z^2)/(4pi U^(5/2)),
+F0=(partial_r q0)/r=3(ell^2+r^2-4z^2)/(4pi U^(7/2)),
+f=A(t)F0, n=m-f,
+p_res=p-delta(t)q0, P_res=(partial_r p_res)/r,
+S=f^2-v.grad f+nu L5 f.                              (RP2)
+```
+
+The smooth potential has the correct leading exterior profile, but its
+Laplacian is not zero everywhere. It is an observer subtraction, not a
+standalone incompressible solution. The actual drift v and pressure p
+remain those of the complete fluid. In particular,
+`-Delta3 p_res=tr[(grad u)^2]+delta Delta3 q0`; recomputing pressure from
+the observed remainder alone would lose physical interactions.
+The time derivative f_t=delta F0 cancels exactly the subtracted pressure
+component. Direct substitution gives
+
+```text
+D_t n=nu L5n+n^2-b^2+2fn+P_res+S,
+D_t b=nu L5b+2(n+f)b,
+D_t h_e=nu L5h_e+2(n+f)h_e, for r>0.
+Q=(n^2+b^2)/h_e,
+T=|grad n-n grad log h_e|^2+|grad b-b grad log h_e|^2,
+(D_t-nu L5)Q=2fQ+2n(P_res+S)/h_e-(2nu/h_e)T.          (RP3)
+```
+
+In particular the actual axial motion in v.grad f has not been dropped.
+The source uses f^2 and the complete viscous defect; delta is the actual
+energy-tensor anisotropy, not a free pressure control.
+
+The physical form makes the axis and coercivity transparent. With
+`w=(u_r+r f,u_theta)`,
+
+```text
+Q=|w|^2/H_e,
+u_theta^2<=(G+e)Q,
+R=int_R3 Q^(3/2), R(0)<=e^(-3/2)||u0||_3^3,
+D=3nu int_R3 sqrt(Q) T/h_e
+    +(4nu/3)int_R3 |grad Q^(3/4)|^2,
+W_p=3int_R3 sqrt(Q)n P_res/h_e
+   =-3int_R3 |w|w_r partial_r(p_res)/H_e^(3/2),
+R'+D=3int_R3 f Q^(3/2)+W_p+3int_R3 sqrt(Q)nS/h_e.     (RP4)
+```
+
+Here `w_r` means the first component of w. Smooth axisymmetry gives
+w=O(r), hence Q^(3/2)=O(r^3). Both inner radial boundary limits vanish,
+so the physical axis loss is zero. The nonnegative volume diffusion is
+fully retained. More explicitly,
+
+```text
+T/h_e=H_e^-1 sum_(j=r,theta)
+  |grad w_j-w_j grad log H_e+(w_j/r)e_r|^2.            (RP5)
+```
+
+Thus the apparent singular denominator has disappeared from the physical
+measurement. On a compact smooth prefix, H_e has bounded logarithmic
+derivatives. The components w_j/r are square integrable: for the actual
+velocity this follows from the angular terms of its Cartesian gradient,
+and the fixed profile has the required decay. Standard Sobolev bounds
+then make R,D and the signed pressure work finite. In particular,
+`|W_p|<=3e^(-3/2)||w||_4^2||grad p_res||_2`.
+Spatial cutoffs justify the identity without a prescribed algebraic
+far-tail bound on the actual velocity. The original h still carries its
+own inherited history.
+
+### Explicit original-energy payment of every added source
+
+Define fixed profile bounds
+
+```text
+M=3/(pi ell^5) >= ||F0||_infinity,
+M1=45/(2pi ell^5) >= ||r grad F0||_infinity,
+C0=729/(2912pi^4 ell^24) >= int_R3 r^3|F0|^6,
+C1=105840/(23pi ell^15) >= int_R3 r^3|L5F0|^3,
+L5F0=105ell^2(-ell^2-r^2+8z^2)/(4pi U^(11/2)).        (RP6)
+```
+
+For these bounds use |F0|<=3U^(-5/2)/pi and
+|L5F0|<=210ell^2 U^(-9/2)/pi. The radial and axial derivative numerators
+are bounded by 6U and 4U, respectively, yielding the stated M1.
+The physical angular integral of r^3 is 3pi^2/4 times rho^3;
+the remaining beta integrals give C0,C1. These are upper bounds, not
+claims of optimal profile norms.
+
+Choose any fixed k>0, for example k=nu/ell^2. Since H_e>=e,
+
+```text
+|3sqrt(Q)nS/h_e| <=3Q |rS|/sqrt(e)
+                 <=2k Q^(3/2)+k^-2 e^(-3/2)|rS|^3.
+|rS|^3 <=9[|A|^6 r^3|F0|^6
+          +nu^3|A|^3 r^3|L5F0|^3
+          +|A|^3 M1^3 |u|^3].                       (RP7)
+```
+
+The first inequality is certified by the nonnegative cubic remainder
+`(kx-y)^2(2kx+y)/k^2`, with x=sqrt(Q), y=|rS|/sqrt(e).
+The second pays the three source channels together. No inverse lower
+bound for h itself is needed.
+
+Write Z(t)=||grad u(t)||_2^2 and fix the Sobolev constant by
+`||v||_6^2<=C_S||grad v||_2^2`. The full unforced energy identity and
+interpolation give
+
+```text
+E(t)+2nu int_0^t Z<=E0,
+int_0^T ||u||_3^3
+ <=C_S^(3/4) E0^(3/2) H^(1/4)/(2nu)^(3/4), T<=H.     (RP8)
+```
+
+Consequently every available prefix satisfies
+
+```text
+int_0^T k^-2 e^(-3/2) int_R3 |rS|^3 <= K_source,
+K_source=9/(k^2 e^(3/2)) * [
+    C0 E0^6 H^7/7 + nu^3 C1 E0^3 H^4/4
+    +M1^3 C_S^(3/4) E0^(9/2) H^(13/4)/(2nu)^(3/4)].   (RP9)
+```
+
+This includes transport by every part of the actual fluid. The amplitude
+bound is |A(t)|<=E0 t; no control of the unknown future solution enters
+K_source. The zero-energy datum gives zero fluid and zero source cost.
+The parameter e stays strictly positive; no uniform e->0 assertion is made.
+
+The linear reaction in (RP4) is bounded by 3M E0 t R. One fixed clock is
+
+```text
+Omega(t)=exp[-(3/2)M E0 t^2-2kt],
+(Omega R)'+Omega D
+ <=Omega W_p+Omega k^-2 e^(-3/2)int_R3 |rS|^3.         (RP10)
+```
+
+All source payments and the clock are tied to the original horizon.
+A, h, e and the remaining allowance are inherited at every temporal seam.
+A segment cannot restart A at zero or issue K_source a second time.
+
+### The exact pressure obligation and continuation consumer
+
+The sufficient remaining estimate is
+
+```text
+int_0^T Omega(t)[W_p-D/2] dt <= K_pressure
+for every available smooth prefix from the same original datum, T<=H,
+with finite original-data K_pressure.                (RP11)
+```
+
+This is OPEN. If it is proved, let
+`B=(R(0)+K_source+K_pressure)/Omega(H)`. Then sup R<=B and
+`int |grad Q^(3/4)|^2<=3B/(2nu)`. The unchanged physical interpolation gives
+
+```text
+int_0^T int_R3 |u_theta|^5
+ <=[3C_S/(2nu)](G+e)^(5/2)B^(5/3).                    (RP12)
+```
+
+This invokes [Chen--Fang--Zhang, Theorem 1.1](https://arxiv.org/html/1505.00905v1)
+at d=0,p=q=5 for axisymmetric divergence-free H2 initial data, with the
+usual viscosity rescaling. It is an analytic conditional consumer, not a
+new Lean theorem or a result for general non-axisymmetric or periodic data.
+
+The pressure diagnostic is now finite on smooth prefixes as well. Its
+test weight vanishes at the axis, so no axis-pressure subtraction is needed.
+The completed squares in (IP8) yield
+
+```text
+W_p<=D/2+(3/nu)V_p,
+V_p=int_R3 |w| p_res^2/H_e^(3/2)
+   <=e^(-3/2)||w||_3||p_res||_3^2 < infinity.          (RP13)
+```
+
+This removes the artificial infinity in (PT6). It does not pay the pressure
+history. Even before the smooth subtraction, a coarse bound using the
+pressure Riesz transforms gives a multiple of E(t)^(1/4)Z(t)^(9/4), whereas
+energy pays only int Z. Retaining the signed history in (RP11) can be
+strictly more useful than imposing a bound on this positive relaxation.
+
+### An isotropic energy tensor does not eliminate the residual
+
+Take the reverse of the entire smooth Gaussian datum
+
+```text
+chi=z exp(-rho^2), u_r=-r chi_z, u_z=2chi+r chi_r,
+b=sqrt(5)z exp(-rho^2), u_theta=r b.
+```
+
+Its initial energy tensor is exactly isotropic:
+`E_xx=E_yy=E_zz=pi^(3/2)sqrt(2)/8`. Hence A(0)=delta(0)=0, so both the
+subtracted parent and subtracted pressure vanish initially. Nevertheless,
+its actual canonical pressure has
+
+```text
+P(0,0)=-10/7, m(0,0)=-1, mP=10/7>0.                 (RP14)
+```
+
+The original family with b=Bz exp(-rho^2) has
+`P(0,0)=2(B^2-30)/35`, computed from the complete Poisson source. Reversing
+the velocity preserves pressure and its energy tensor, while changing m.
+By continuity, the residual pressure work is positive on a nearby open
+region off the axis, where Q>0 and H_e>0. Actual local unforced solutions
+at every positive viscosity realize this example. This refutes a favorable
+pointwise sign inferred from a vanishing leading tensor coefficient.
+It does not assert that total reserve growth beats diffusion or refute
+(RP11). The interacting residual cannot be reconstructed from the energy
+tensor alone.
+
+Run `python3 -O labs/regularized_parent_payment.py`. The exact checks retain
+both physical velocity channels, the circulation floor, axis limits,
+complete subtraction identity, smooth profile derivatives and constants,
+source-payment exponents, pressure squares and the actual isotropic-tensor
+counterexample. PDE comparison, integration, Sobolev estimates and the
+conditional continuation remain analytic. No Lean declarations or axioms
+change. The next task is the same-datum signed residual pressure estimate
+(RP11), with all known subtraction costs now accounted for.
