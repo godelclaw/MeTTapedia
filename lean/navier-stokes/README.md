@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [finite heat-window renewal payment](labs/README.md#resolved-nonlinear-renewal-has-an-original-energy-payment)
+pays the absolute self-renewal at all auxiliary diffusion ages beyond any
+fixed positive cutoff, on every available unforced history. It also pays
+the pressure work entering a truncated reserve through that cutoff.
+A backward-moving heat window cancels the crossing term exactly. The
+remaining short-age nonlinear budget has a continuation consumer and is
+still open; shortening the window alone does not prove its payment.
+The physical estimates are analytic with exact Fourier and clock checks.
+
 The [evolving filtered-parent payment](labs/README.md#evolving-filtered-parents-have-one-full-energy-payment)
 extracts the current coarse parent from the actual full fluid. At any
 fixed positive scale, its complete source and mixed interactions have a

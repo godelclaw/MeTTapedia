@@ -44477,3 +44477,244 @@ selector, and the exact energy-reserve algebra. Results and source hashes
 are archived in `evolving_filter_parent_payment_results.json`. General
 kernel estimates, all-prefix payment and continuation are analytic,
 not newly Lean-certified. No Lean declarations or axioms change.
+
+## Resolved nonlinear renewal has an original-energy payment
+
+`renewal_heat_window.py` checks the full Fourier and clock identities for
+this next part of (EP15). The self-renewal observable itself, at every
+auxiliary heat age beyond a fixed positive cutoff, has an original-energy
+payment on every available smooth unforced history. The estimate needs
+neither smallness nor a favorable sign. The remaining short-age budget
+stays open.
+
+This reuses (HP4), the smoothed Leray kernels of (EP6), and the Bellman
+square completion already present in `FullEnergyParentReserve.lean`.
+The new physical observer and its powered-energy clocks are analytic;
+no new Lean certificate is asserted. The heat age below belongs to the
+reserve's auxiliary free-diffusion forecast. It is not elapsed physical
+time, a new fluid force, or the spatial filter scale a.
+
+### Pay the nonlinear tail along the actual history
+
+Use the same smooth whole-space or normalized mean-zero periodic setting
+and the same actual fields as (EP1): v=H_a u, w=(I-H_a)u, at fixed a>0.
+Write E=||u||2^2, Z=||grad u||2^2. Then
+
+    E'=-2nu Z, ||w||2<=sqrt(E), ||grad w||2<=sqrt(Z).
+
+Let z_s=H_s w, b_s=H_s N(w), F_s=P4(z_s), and
+G_s=DP4(z_s)[b_s], with the COMPLETE pressure variation (HP3).
+For every s>0, heat bounds and the order-zero smoothed Leray kernel give
+
+    ||z_s||infinity <= C s^-3/4 sqrt(E),
+    ||z_s||4        <= C s^-3/8 sqrt(E),
+    ||grad z_s||4   <= C s^-7/8 sqrt(E),
+    ||b_s||4        <= C s^-9/8 sqrt(E Z).            (RW1)
+
+For the last estimate use ||(w.grad)w||1<=sqrt(E Z), followed by the
+L4 kernel bound for H_s P. No L-infinity contraction of P is used.
+On the torus all these fields and sources have zero mean. The same
+powers hold for all s>0 using exponential decay at large s, with fixed
+domain constants. On R3 the usual kernel scaling gives them directly.
+Applying (HP4) gives
+
+    |G_s|<=C s^-7/2 E^(5/2) sqrt(Z).
+    J_delta(w):=nu^-1 integral_delta^infinity |G_s| ds
+       <= C nu^-1 delta^-5/2 E^(5/2) sqrt(Z), delta>0. (RW2)
+
+This is the SELF direction N(w), not the already paid parent source.
+It retains all nonlinear outputs and the pressure cotangent. For the
+one-sided selector sigma from (HP2), define
+
+    Gamma_<delta=nu^-1 integral_0^delta sigma_(F_s)(G_s) ds,
+    Gamma_>=delta=nu^-1 integral_delta^infinity sigma_(F_s)(G_s) ds.
+
+Exactly Gamma_nu=Gamma_<delta+Gamma_>=delta and
+|Gamma_>=delta|<=J_delta. At F_s=0 use max(G_s,0), not G_s. In particular,
+an identically zero pressure-work profile does not remove its renewal.
+
+For m=5 or 6 introduce the actual powered energy and its clock
+
+    D_m(t)=E(t)^m/(2m nu),
+    B_m(t)=sqrt((H-t)D_m(t)),
+    D_m'=-E^(m-1) Z.                                 (RW3)
+
+The existing Bellman square completion implies, wherever the derivative
+is nonsingular,
+
+    -B_m' >= E^((m-1)/2) sqrt(Z).                     (RW4)
+
+There is also an endpoint-safe proof for every 0<=t0<=t1<=H. Cauchy--Schwarz
+first bounds the integral of the right side by
+sqrt((t1-t0)(D_m(t0)-D_m(t1))). A second two-dimensional Cauchy inequality
+bounds this by B_m(t0)-B_m(t1). Explicitly,
+
+    sqrt((H-t1)D_m(t1))
+      +sqrt((t1-t0)(D_m(t0)-D_m(t1)))
+        <=sqrt((H-t0)D_m(t0)).                       (RW5)
+
+This includes zero energy and the endpoint t1=H without dividing by a
+vanishing square root. Combining (RW2) and (RW5) yields
+
+    integral_t0^t1 |Gamma_>=delta(w(t))| dt
+      <= C nu^-1 delta^-5/2 [B_6(t0)-B_6(t1)],
+    integral_0^T |Gamma_>=delta| dt
+      <= C delta^-5/2 E0^3 sqrt(H)/(sqrt(12) nu^(3/2)),
+    T<=H.                                            (RW6)
+
+All constants and the initial clock are fixed from the original data,
+nu, H and delta. The SAME clock is spent on successive compatible
+intervals; it is not restarted. The full original energy, including
+hidden parents and their signed exchanges, is used. This is an analytic
+actual-history bound, not a claim that an arbitrary scalar ledger is
+physically realizable.
+
+### A truncated reserve must retain its boundary work
+
+Put
+
+    R_nu,delta(w)=nu^-1 integral_0^delta [P4(H_s w)]_+ ds.
+
+The semigroup shift gives the exact heat-direction derivative
+
+    D R_nu,delta(w)[nu Delta w]
+       =-[P4(w)]_+ + [P4(H_delta w)]_+.              (RW7)
+
+The second term enters through the cutoff. Dropping it would give the
+wrong evolution even for the auxiliary heat direction. It has its own
+original-energy payment: since grad p_z=-Q[(z.grad)z], boundedness of Q
+on L4 and heat smoothing imply
+
+    |P4(H_delta w)|
+      <=C ||H_delta w||4^3 ||H_delta w||infinity
+                            ||grad H_delta w||4
+      <=C delta^-9/4 E^2 sqrt(Z).                    (RW8)
+
+Here the gradient bound is C delta^-3/8 sqrt(Z), rather than its
+energy-only version. Thus the nonnegative clock
+
+    C_delta(t)=C delta^-9/4 B_5(t)                    (RW9)
+
+pays the positive cutoff work over every compatible interval by (RW5).
+This handles its physical-time accumulation without requiring a future
+norm bound. Under whole-space NS dilation u_lambda(t,x)=lambda u(lambda^2
+t,lambda x), with H and delta both divided by lambda^2, each clock in
+(RW6) and (RW9) scales by lambda, as does the fourth-moment reserve.
+This scaling check is not a claim that the parent estimate is sharp.
+
+The parent/source bounds (EP7)--(EP10) remain valid after restricting
+auxiliary heat integrals to [0,delta]: their proofs bound integrals of
+absolute variations. Let Q_a and L_a be exactly (EP11)--(EP13) and set
+
+    V_delta=||w||4^4/4+R_nu,delta(w)+Q_a(E)+C_delta.
+
+The complete physical equation, (RW7) and the boundary payment give
+
+    (V_delta)'_right <= -3nu D4/4-[P4(w)]_-
+                          +Gamma_<delta(w)+4L_a V_delta. (RW10)
+
+For the heat direction, the shift identity is used directly. For other
+directions, the selector's Lipschitz estimate is used; no additivity at
+zero profiles is assumed. Isolated heat-profile zeros have measure zero;
+an identically zero profile also has zero heat-direction variation.
+
+Consequently a finite original-data allowance K_delta for
+
+    integral_0^T exp(-4L_a t)
+       [Gamma_<delta(w(t))-nu D4(w(t))/2] dt <= K_delta,
+    EVERY same-data prefix T<=H,                     (RW11)
+
+gives exp(-4L_a T)V_delta(T)+(nu/4)integral exp(-4L_a t)D4
+<=V_delta(0)+K_delta. The L4 and order-one continuation estimates of
+(EP16) apply with V_delta(0)+K_delta in place of A(0)+K. This retains
+both whole-space and periodic all-prefix consumers and their hypotheses.
+The physical implication is analytic, not newly Lean-certified.
+
+For any FIXED delta>0, finiteness of the budget (RW11) is equivalent to
+finiteness of (EP15). Their signed integrals differ by at most the
+original allowance in (RW6), since the exponential weight lies in [0,1].
+The implication does not use cancellation with an uncontrolled tail.
+This equivalence is a reduction of the open target, not its proof.
+
+### A backward heat window cancels the flux exactly
+
+If delta=delta(t)>0, the complete cutoff contribution in (RW7) becomes
+
+    (1+delta'(t)/nu)[P4(H_delta(t) w)]_+.             (RW12)
+
+Thus delta'(t)=-nu cancels it. For a prescribed look-ahead endpoint L,
+
+    R^(L)(t,w)=integral_0^(L-t)
+                         [P4(H_(nu s) w)]_+ ds,
+    (partial_t+nu D_[Delta w])R^(L)=-[P4(w)]_+.       (RW13)
+
+Only the current field's FREE heat evolution is sampled. This is an
+explicit function of t and w, not a supremum or forecast along the
+unknown future nonlinear solution. It has terminal value zero at t=L.
+The nonlinear term Gamma_<nu(L-t) still remains in its physical derivative.
+
+For the continuation problem on [0,H], choose L=2H. Then
+nu H<=delta(t)<=2nu H on every prefix. The reserve
+
+    V^(2H)(t)=||w||4^4/4+R^(2H)(t,w)+Q_a(E)
+
+obeys (RW10) with Gamma_<nu(2H-t), WITHOUT the extra clock C_delta.
+It therefore has the same sufficient weighted budget and continuation
+consumer. Its signed budget differs from (EP15) by a uniformly payable
+tail, using (RW6) with lower cutoff nu H. This also proves equivalence
+of finiteness for this specific moving window.
+
+Choosing L=H also gives the exact identity (RW13), but the tail cutoff
+then vanishes at the endpoint; the fixed positive-cutoff tail estimate
+does not establish that same equivalence there. The uniform small-age
+limit must not be inferred from a bound for each positive delta.
+
+A short backward window lasts only delta(0)/nu. Restarting it increases
+the reserve by the newly included positive heat work. Holding it fixed
+requires (RW9). Refining a fixed-window payment adds
+-(9/4)(delta'/delta)C_delta to its derivative, positive when delta'<0.
+These are auxiliary-window costs; changing the SPATIAL filter a(t) still
+has the distinct physical and reserve costs stated after (EP16).
+
+### Exact tests and what remains open
+
+The filtered oblique fixture uses the original U from (HW7) and
+w=(I-H_a)U with exp(-a)=1/2. It has F_s identically zero and
+
+    G_s=(961/16384) q^10(11+16q^4-3q^8)/66 >0,
+    q=exp(-s),
+    integral_delta^infinity G_s ds
+      =(961/16384)(r^5/60+4r^7/231-r^9/396),
+    r=exp(-2delta).                                  (RW14)
+
+The complete original-fluid tangent at positive viscosity is checked
+separately, retaining source and mixed parents BEFORE applying the
+selector. For every delta>0 the self integral on [0,delta] is positive.
+Amplitude scaling makes Gamma_<delta grow as amplitude^6/nu while D4
+grows as amplitude^4. Thus merely choosing a positive short window does
+not prove universal pointwise viscous domination. This does not refute
+an integrated full-datum allowance or the paid complete physical reserve.
+
+A second exact fixture reverses the earlier target field and has
+
+    F_s=q^6(224-275q^2)/320.
+
+Present work is negative, while later heat work is positive. At
+exp(-2delta)=1/2 the truncated reserve's heat-direction derivative is
+173/5120>0; the complementary tail derivative is -173/5120. The backward
+window cancels this boundary flux exactly. This tests the heat direction
+inside the reserve, not an assertion that the field is a heat-only NS
+solution. Both signs of the cyclic zero-profile family are also checked;
+a negative direction there gives zero selected renewal in both windows.
+
+The remaining task is now precisely the all-prefix SHORT-AGE nonlinear
+budget (RW11), or its backward-window version. All renewal beyond a
+prescribed positive age is paid by original energy. No uniform payment
+as delta tends to zero, no prohibition on repeated fine-scale renewal,
+and no arbitrary-data global regularity theorem has been established.
+
+Run `python3 -O labs/renewal_heat_window.py`. The archive
+`renewal_heat_window_results.json` retains exact Fourier profiles, window
+integrals, selector branches, Bellman identities and source hashes.
+General kernel bounds, interval payment and continuation are analytic;
+no Lean declarations or axioms change.

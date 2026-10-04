@@ -1,0 +1,80 @@
+{
+  "filtered_oblique": {
+    "heat_work": "0",
+    "self_profile": "-961*q**10*(3*q**8 - 16*q**4 - 11)/1081344",
+    "split": [
+      {
+        "cutoff_square": "1/2",
+        "short": "210085171/116266106880",
+        "tail": "4440781/116266106880"
+      },
+      {
+        "cutoff_square": "1/4",
+        "short": "1108856577/601295421440",
+        "tail": "60486301/59528246722560"
+      }
+    ],
+    "actual_viscosity": "2/7",
+    "full_physical_profile": "-31*q**10*(1023*q**8 - 6656*q**4 - 2816)/5767168",
+    "scope": "Window signs concern the self direction; the complete physical derivative retains all parents before applying the selector."
+  },
+  "moving_boundary": {
+    "heat_work": "-q**6*(275*q**2 - 224)/320",
+    "positive_region": "0<q^2<224/275",
+    "cutoff_square": "1/2",
+    "short_capacity": "20171517491/2555520000000",
+    "tail_capacity": "967/122880",
+    "short_heat_rate": "173/5120",
+    "tail_heat_rate": "-173/5120",
+    "backward_window_rate": "0",
+    "scope": "This tests the actual heat direction within the reserve derivative, not a claim that this field follows an unforced heat-only NS solution."
+  },
+  "cyclic": [
+    {
+      "strengths": [
+        1,
+        1,
+        1
+      ],
+      "coefficient": "7/192",
+      "short": "127/49152",
+      "tail": "1/49152"
+    },
+    {
+      "strengths": [
+        8,
+        1,
+        1
+      ],
+      "coefficient": "-2198/3",
+      "short": "0",
+      "tail": "0"
+    }
+  ],
+  "payment": [
+    {
+      "power": 5,
+      "stock": "E**5/(10*nu)",
+      "observation": "E**2*sqrt(Z)",
+      "clock": "sqrt(10)*E**(5/2)*sqrt(remaining)/(10*sqrt(nu))"
+    },
+    {
+      "power": 6,
+      "stock": "E**6/(12*nu)",
+      "observation": "E**(5/2)*sqrt(Z)",
+      "clock": "sqrt(3)*E**3*sqrt(remaining)/(6*sqrt(nu))"
+    }
+  ],
+  "scope": "Exact full Fourier, selector and clock identities. General kernel estimates, physical interval payment and continuation are analytic, not Lean-certified.",
+  "source_sha256": {
+    "renewal_heat_window.py": "a7bfddcd5af909129db4a2a84483186e560aeccd7d921509beddecd3f0fc91a1",
+    "heat_work_reserve.py": "61c8ce228687243d32cc8f26b69607110d34465e8cef2b37638063c1331c8ba2",
+    "heat_work_parent_payment.py": "2b9d6c0ff934f0e8c1a6527e2ca24402bac3b662a25dd7be38815c09669c8cff",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "pressure_quadratic_storage.py": "cb78e2a84c4ee19091dc1ec8e687abec7e2c85d1a41dac007ee3c6eb5f1ea0dc"
+  }
+}
