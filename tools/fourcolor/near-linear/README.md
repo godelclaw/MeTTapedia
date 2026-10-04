@@ -1,5 +1,49 @@
 # Near-linear Four Colour catalogue bridges
 
+## Coordinated repair of both critical-chain boundaries
+
+[`StripChainRepair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripChainRepair.lean)
+completes the two fixed-boundary obstructions described below. Both inputs
+reach genuine complete source colourings, compatible at all eleven ordered
+ports with a colouring of the same exterior. The theorem assumes that
+exterior's trace predicate is Kempe closed and contains the initial trace.
+It also proves that the repaired boundary trace differs from the initial
+one, since the initial trace admits no full source extension.
+
+Eleven finite stages share the arbitrary-width retained-anchor selection
+law. A stage either reconstructs directly through the exact triangle joins
+or invokes an earlier stage. When two components are needed, both belong
+to the same matching. Three retained anchors suffice; ten stages use only
+two distinct anchors. The finite obligations are explicit: forty single
+component contracts and fourteen paired component contracts. No interior
+colouring table or all-boundaries closure table is stored.
+
+```
+fixed-boundary forced-chain obstruction
+                 |
+      retain partners in one matching
+                 |
+    one or two compatible component switches
+                 |
+        earlier stage OR full reconstruction
+                 |
+    source and same exterior agree at every port
+```
+
+Replay with `lake build kernelStripChainRepair`. The
+[kernel receipt](strip-chain-repair-measurements.json) records source size,
+checking cost and the nine-root dependency audit. The
+[independent verifier](audit_strip_chain_repair.py) reads the Lean stage
+data and checks all 201 noncrossing matching layouts and the terminal
+source reconstructions; its [receipt](strip-chain-repair-audit.json)
+retains the source pin and hashes.
+
+This closes the two specified input repairs. It is not a uniform theorem
+for every forced chain, nor a physical recolouring-history bound. Geometric
+occurrence supply, strict ambient reduction and universal coverage remain
+separate obligations. No catalogue entry or complete-assembly certificate
+is removed by this result.
+
 ## A shared forced chain in two minimal boundary obstructions
 
 [`StripCriticalChain`](../../../lean/fourcolor-classical/MettapediaFourColor/StripCriticalChain.lean)

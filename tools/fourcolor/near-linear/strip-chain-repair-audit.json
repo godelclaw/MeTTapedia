@@ -1,0 +1,192 @@
+{
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
+  "lean_source_sha256": "e76884e644bd965133a7cc281349f00bdcbaa545227f0e21c6352f84e2591ae3",
+  "stages": [
+    {
+      "index": 0,
+      "word": "11111112232",
+      "fixed_colour": 3,
+      "anchors": [
+        0,
+        1,
+        0
+      ],
+      "single_contracts": 5,
+      "paired_contracts": 0,
+      "matchings_checked": 42,
+      "earlier_stages_used": []
+    },
+    {
+      "index": 1,
+      "word": "11121231121",
+      "fixed_colour": 2,
+      "anchors": [
+        0,
+        8,
+        0
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "earlier_stages_used": []
+    },
+    {
+      "index": 2,
+      "word": "11122231212",
+      "fixed_colour": 1,
+      "anchors": [
+        3,
+        4,
+        3
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 0,
+      "matchings_checked": 5,
+      "earlier_stages_used": []
+    },
+    {
+      "index": 3,
+      "word": "12211231313",
+      "fixed_colour": 3,
+      "anchors": [
+        0,
+        2,
+        0
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "earlier_stages_used": []
+    },
+    {
+      "index": 4,
+      "word": "12322312132",
+      "fixed_colour": 1,
+      "anchors": [
+        1,
+        5,
+        1
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "earlier_stages_used": []
+    },
+    {
+      "index": 5,
+      "word": "12211213313",
+      "fixed_colour": 2,
+      "anchors": [
+        0,
+        3,
+        0
+      ],
+      "single_contracts": 4,
+      "paired_contracts": 0,
+      "matchings_checked": 14,
+      "earlier_stages_used": [
+        3
+      ]
+    },
+    {
+      "index": 6,
+      "word": "11211231121",
+      "fixed_colour": 3,
+      "anchors": [
+        0,
+        2,
+        5
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 8,
+      "matchings_checked": 42,
+      "earlier_stages_used": [
+        1,
+        2
+      ]
+    },
+    {
+      "index": 7,
+      "word": "12211123313",
+      "fixed_colour": 3,
+      "anchors": [
+        1,
+        6,
+        1
+      ],
+      "single_contracts": 4,
+      "paired_contracts": 2,
+      "matchings_checked": 14,
+      "earlier_stages_used": [
+        0,
+        5
+      ]
+    },
+    {
+      "index": 8,
+      "word": "12211121113",
+      "fixed_colour": 2,
+      "anchors": [
+        0,
+        3,
+        0
+      ],
+      "single_contracts": 4,
+      "paired_contracts": 0,
+      "matchings_checked": 14,
+      "earlier_stages_used": [
+        7
+      ]
+    },
+    {
+      "index": 9,
+      "word": "12322312231",
+      "fixed_colour": 3,
+      "anchors": [
+        0,
+        1,
+        0
+      ],
+      "single_contracts": 4,
+      "paired_contracts": 0,
+      "matchings_checked": 14,
+      "earlier_stages_used": [
+        4,
+        6
+      ]
+    },
+    {
+      "index": 10,
+      "word": "12333313331",
+      "fixed_colour": 1,
+      "anchors": [
+        1,
+        5,
+        1
+      ],
+      "single_contracts": 4,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "earlier_stages_used": [
+        9
+      ]
+    }
+  ],
+  "totals": {
+    "stages": 11,
+    "single_contracts": 40,
+    "paired_contracts": 14,
+    "noncrossing_matchings_checked": 201,
+    "terminal_reconstructions_checked": 45,
+    "stored_interior_colourings": 0
+  },
+  "limits": [
+    "Two specified initial boundaries; no uniform repair for all forced chains.",
+    "Same-exterior reconstruction assumes the exterior trace predicate is Kempe closed.",
+    "No physical recolouring-history or runtime bound is claimed.",
+    "No geometric supply, strict graph reduction or catalogue removal is added."
+  ],
+  "verifier_sha256": "631077d1e771d30a294340fdc0ca978b6d0e9f3472752a5daa5d42d394626a74"
+}
