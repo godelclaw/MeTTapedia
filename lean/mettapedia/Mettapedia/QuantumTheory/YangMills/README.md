@@ -634,3 +634,71 @@ the two marks by beta gives a budget about 0.653 at that coupling. Thus small
 unrescaled covariance alone does not establish control of renormalized marks.
 This two-dimensional, two-step experiment tests neither long-distance decay
 nor uniformity over arbitrary blocking depths in four dimensions.
+
+`WilsonMaxwellBlock` tests a necessary weak-coupling property of this same
+ordered-product map. At the trivial SU(2) connection its derivative is
+`Q A(x,mu)=A(2x,mu)+A(2x+e_mu,mu)`. The eliminated fields satisfy `QA=0`;
+the gauge directions removed are exactly `grad(phi)` with `Q grad(phi)=0`.
+For every four-dimensional torus of fine side `2(n+3)`,
+`uniform_fluctuation_gap` proves
+
+```
+sum_p curl(A,p)^2 >= (1/4096) dist_L2(A, fiber-preserving gradients)^2.
+```
+
+The constant precedes volume. The norm is the unnormalized sum over fine
+links, and each positively oriented plaquette is counted once. An explicit
+coordinate-path gauge and a finite Stokes identity on the existing `3^4`
+cell prove the estimate; finite Fourier sampling is not used in its proof.
+The same constant works for every finite color sum.
+`transverseField_not_gauge` exhibits an eliminated field with nonzero
+curvature; `physicalSubspace_nontrivial` proves the orthogonal physical
+sector is nonzero at every volume. The exact Haar chart's `identityFiberCurve` realizes kernel
+variations supplied by differentiable SU(2) paths without changing the coarse
+field. This is a gap for fluctuations inside one integration fiber; the
+retained Maxwell field is not asserted to have a mass gap.
+
+The normalization is explicit. `potential_eq_matrixSquare` proves
+`1-Re tr(U)/2 = (1/4) sum_ij |(U-I)_ij|^2`. For a differentiable link path
+with tangent `i a.sigma`, `tendsto_wilsonPlaquette_quadratic` gives the
+leading potential `(1/2) sum_color curl(a)_color^2`.
+`ScaleTwo.tendsto_identityFiberDensity_quadratic` proves that the full
+negative log Wilson density along the exact identity fiber, divided by
+the squared path parameter, tends to
+`(beta/2) sum_(p,color) curl(a_color,p)^2`.
+`tendsto_conditionalAction_quadratic` gives the same limit for the centered
+negative log of the normalized conditional density, relative to Haar measure.
+`Gaussian.law` is a normalized centered Gaussian for one color on the
+gauge-orthogonal eliminated sector. For `beta>0`, its covariance is the
+inverse of `beta * curl-adjoint * curl`,
+and `Gaussian.variance_le` proves `Var(<u,A>) <=4096 ||u||^2/beta` for
+every `beta>0`, uniformly in volume. `curvature_covariance_eq` identifies
+local field-strength tests through their exact spectral covariance.
+
+The remaining discarded-covariance estimate concerns the actual normalized
+conditional density
+`fineDensity n beta (chart n (c,f)) / coarseDensity n beta c`
+against fluctuation Haar measure, averaged under the generated coarse law.
+The quadratic gap alone does not discharge this estimate. Spatial decay
+of the quadratic inverse still needs a local-gauge argument. The nonlinear
+step additionally needs uniform Wilson and Haar-Jacobian remainder bounds
+on admissible coarse backgrounds, and a bound for the complementary
+large-field region under that same generated law. Wilson-energy marks are
+quadratic at leading order; their covariance requires fourth moments,
+and multiplying each mark by beta multiplies its covariance by beta squared.
+At later scales the full generated interaction and transported marks must
+be controlled again. None of these estimates, weak-to-strong entrance,
+or continuum construction is inferred from the fluctuation gap.
+
+The [Maxwell block diagnostic](../../../../../tools/yang-mills/maxwell_block_gap_diagnostic.py)
+removes precisely the fiber-preserving gauge modes in a 16-site Bloch cell.
+Refining the coarse momentum grid from side 4 to 6, with additional low
+momenta down to `2*pi/10^8` and seeded samples, gives a minimum sampled
+eigenvalue about `0.7084974` and eigenpair residuals below `4e-14`.
+It also checks ordered quaternion products and the Wilson quadratic
+normalization. These are floating-point diagnostics, separate from the
+proved conservative constant. [Dimock's axial-gauge analysis](https://arxiv.org/html/1410.2798v3),
+Proposition 6, provides a related local-coercivity strategy for real Abelian
+fields with an averaged block map, principally in dimension three and with
+odd block side. Those hypotheses differ from the anchored scale-two map
+proved here; its constants have not been imported.

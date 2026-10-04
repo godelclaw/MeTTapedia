@@ -56,3 +56,4 @@ import Mettapedia.QuantumTheory.YangMills.WilsonReflectionPositivity
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingTransferGap
 import Mettapedia.QuantumTheory.YangMills.CalibrationSeparation
 import Mettapedia.QuantumTheory.YangMills.FreeFieldNoCrossing
+import Mettapedia.QuantumTheory.YangMills.WilsonMaxwellBlock

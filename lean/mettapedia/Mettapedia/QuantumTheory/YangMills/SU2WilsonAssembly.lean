@@ -1,6 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.WilsonConditionalProjection
 import Mettapedia.QuantumTheory.YangMills.SU2BoundaryResponse
 import Mettapedia.QuantumTheory.YangMills.WilsonDyadicGeometry
+import Mettapedia.QuantumTheory.YangMills.WilsonMaxwellBlock
 import Mettapedia.QuantumTheory.YangMills.WilsonEliminationRoutes
 import Mettapedia.QuantumTheory.YangMills.WilsonProjectionComposition
 
@@ -386,6 +387,7 @@ theorem realDensity_eq_wilsonInteraction (n : ℕ) (β : ℝ) (U : Link 4 n → 
   ring
 
 namespace ScaleTwo
+open WilsonMaxwellBlock
 open PairedLinks Mettapedia.Combinatorics.PolymerGas
 
 /-- These are different lattices, with periods `2(n+3)` and `n+3`. -/
@@ -427,6 +429,47 @@ theorem paired_block_eq (n : ℕ) (U : FineConfig n) :
   rw [← paired_block_eq]
   exact PairedLinks.block_chart (E := SU2) (blockIndexEquiv 4 n) p
 
+
+/-- Correct a fine curve to the identity coarse fiber using the existing Haar chart. -/
+def identityFiberCurve (n : ℕ) (U : ℝ → FineConfig n) (t : ℝ) : FineConfig n :=
+  chart n (1, (fun l => U t (blockEdge l 0), fun l => U t l.val))
+
+@[simp] theorem block_identityFiberCurve (n : ℕ) (U : ℝ → FineConfig n) (t : ℝ) :
+    blockField (identityFiberCurve n U t) = 1 := by
+  exact block_chart n _
+
+theorem identityFiberCurve_zero {n : ℕ} (U : ℝ → FineConfig n) (hzero : ∀ l, U 0 l = 1) :
+    identityFiberCurve n U 0 = 1 := by
+  funext l
+  obtain ⟨r, rfl⟩ := (blockIndexEquiv 4 n).surjective l
+  rcases r with (r | r) | r <;>
+    simp only [blockIndexEquiv_first, blockIndexEquiv_second, blockIndexEquiv_unused,
+      identityFiberCurve, chart_first, chart_second, chart_unused, hzero, Pi.one_apply, inv_one, mul_one]
+
+open scoped Matrix.Norms.Elementwise in
+/-- The kernel of Q is exactly the derivative constraint of the true Haar fiber,
+for tangent data realized by differentiable SU(2) paths. -/
+theorem hasDerivAt_identityFiberCurve {n : ℕ} (U : ℝ → FineConfig n)
+    (A : Link 4 (doubleIndex n) → Matrix (Fin 2) (Fin 2) ℂ)
+    (hzero : ∀ l, U 0 l = 1)
+    (hderiv : ∀ l, HasDerivAt (fun t => (U t l).val) (A l) 0)
+    (hQ : linearBlock A = 0) (l : Link 4 (doubleIndex n)) :
+    HasDerivAt (fun t => (identityFiberCurve n U t l).val) (A l) 0 := by
+  obtain ⟨r, rfl⟩ := (blockIndexEquiv 4 n).surjective l
+  rcases r with (r | r) | r
+  · simpa only [identityFiberCurve, blockIndexEquiv_first, chart_first] using hderiv (blockEdge r 0)
+  · have h := (hderiv (blockEdge r 0)).star
+    have hpair : A (blockEdge r 0) + A (blockEdge r 1) = 0 := congrFun hQ r
+    have he : star (A (blockEdge r 0)) = A (blockEdge r 1) := by
+      rw [tangent_star_eq_neg (hzero _) (hderiv _)]
+      exact (eq_neg_of_add_eq_zero_right hpair).symm
+    rw [he] at h
+    simp only [identityFiberCurve, blockIndexEquiv_second, chart_second, Pi.one_apply, mul_one,
+      ← Matrix.star_eq_inv, Matrix.specialUnitaryGroup.coe_star]
+    convert h using 1 <;> rfl
+  · simpa only [identityFiberCurve, blockIndexEquiv_unused, chart_unused] using hderiv r.val
+
+
 theorem measurePreserving_chart (n : ℕ) :
     MeasurePreserving (chart n)
       ((volume : Measure (CoarseConfig n)).prod (volume : Measure (Fluctuation n)))
@@ -452,6 +495,55 @@ theorem fineDensity_pos (n : ℕ) (β : ℝ) : ∀ U, 0 < fineDensity n β U :=
   WilsonLocalResponse.realDensity_pos (SU2BoundaryResponse.model (doubleIndex n) univ)
     (SU2BoundaryResponse.model_continuous (doubleIndex n) univ) β
 
+section QuadraticDensity
+open Filter
+open scoped Matrix.Norms.Elementwise
+variable {n : ℕ}
+
+theorem neg_log_fineDensity (n : ℕ) (β : ℝ) (U : FineConfig n) :
+    -Real.log (fineDensity n β U) = β * ∑ p : Plaquette 4 (doubleIndex n),
+      SU2WilsonBlockIntegration.potential (holonomy (fun i => U (linkAt p i))) := by
+  simp only [fineDensity, WilsonLocalResponse.realDensity, model,
+    InhomogeneousWilsonCrossing.Model.masked, potential, plaquetteEnergy,
+    ContinuousMap.coe_mk, Finset.mem_univ, ↓reduceIte]
+  rw [← Real.exp_sum, Real.log_exp]
+  simp only [← Finset.mul_sum]
+  ring
+
+theorem tendsto_fineDensity_quadratic (β : ℝ) (U : ℝ → FineConfig n)
+    (A : Link 4 (doubleIndex n) → Fin 3 → ℝ) (hzero : ∀ l, U 0 l = 1)
+    (hderiv : ∀ l, HasDerivAt (fun t => (U t l).val) (pauliTangent (A l)) 0) :
+    Tendsto (fun t => -Real.log (fineDensity n β (U t)) / t^2) (𝓝[≠] 0)
+      (𝓝 (β/2 * ∑ i : Fin 3, curlEnergy (fun l => A l i))) := by
+  have hs := tendsto_finsetSum (Finset.univ : Finset (Plaquette 4 (doubleIndex n)))
+    (fun p _ => tendsto_wilsonPlaquette_quadratic U A hzero hderiv p)
+  have hm := (tendsto_const_nhds (x := β)).mul hs
+  have he : (∑ p : Plaquette 4 (doubleIndex n), (1/2:ℝ) * ∑ i : Fin 3,
+      (curl (fun l => A l i) p)^2) = (1/2:ℝ) * ∑ i : Fin 3, curlEnergy (fun l => A l i) := by
+    rw [← Finset.mul_sum, Finset.sum_comm]
+    rfl
+  rw [he] at hm
+  convert hm using 1
+  · funext t
+    rw [neg_log_fineDensity, ← Finset.sum_div]
+    ring
+  · congr 1
+    ring
+
+/-- The actual fine Wilson density has the Maxwell leading term along the
+nonlinear Haar chart at fixed identity coarse field. -/
+theorem tendsto_identityFiberDensity_quadratic (β : ℝ) (U : ℝ → FineConfig n)
+    (A : Link 4 (doubleIndex n) → Fin 3 → ℝ) (hzero : ∀ l, U 0 l = 1)
+    (hderiv : ∀ l, HasDerivAt (fun t => (U t l).val) (pauliTangent (A l)) 0)
+    (hQ : linearBlock (fun l => pauliTangent (A l)) = 0) :
+    Tendsto (fun t => -Real.log (fineDensity n β (identityFiberCurve n U t)) / t^2) (𝓝[≠] 0)
+      (𝓝 (β/2 * ∑ i : Fin 3, curlEnergy (fun l => A l i))) := by
+  exact tendsto_fineDensity_quadratic β (identityFiberCurve n U) A
+    (fun l => congrFun (identityFiberCurve_zero U hzero) l)
+    (hasDerivAt_identityFiberCurve U (fun l => pauliTangent (A l)) hzero hderiv hQ)
+
+end QuadraticDensity
+
 /-- The full scale-two effective Wilson weight, without action extraction. -/
 def coarseDensity (n : ℕ) (β : ℝ) : C(CoarseConfig n, ℝ) :=
   PairedLinks.blockedDensity (volume : Measure SU2) (blockIndexEquiv 4 n) (fineDensity n β)
@@ -459,6 +551,41 @@ def coarseDensity (n : ℕ) (β : ℝ) : C(CoarseConfig n, ℝ) :=
 theorem coarseDensity_pos (n : ℕ) (β : ℝ) : ∀ c, 0 < coarseDensity n β c :=
   PairedLinks.blockedDensity_pos (volume : Measure SU2) (blockIndexEquiv 4 n)
     (fineDensity n β) (fineDensity_pos n β)
+
+section ConditionalQuadraticDensity
+open Filter
+open scoped Matrix.Norms.Elementwise
+variable {n : ℕ}
+
+theorem fineDensity_one (n : ℕ) (β : ℝ) : fineDensity n β 1 = 1 := by
+  simp [fineDensity, WilsonLocalResponse.realDensity, model,
+    InhomogeneousWilsonCrossing.Model.masked, potential, plaquetteEnergy,
+    holonomy, SU2WilsonBlockIntegration.potential, specialUnitaryWilsonPotential,
+    Matrix.trace, Fin.sum_univ_two]
+
+/-- Subtracting the reference action removes the exact coarse normalizer.
+The density here is relative to the fluctuation Haar measure. -/
+theorem conditionalAction_sub_identity (n : ℕ) (β : ℝ) (U : FineConfig n) :
+    -Real.log (fineDensity n β U / coarseDensity n β 1) +
+      Real.log (fineDensity n β 1 / coarseDensity n β 1) =
+      -Real.log (fineDensity n β U) := by
+  rw [fineDensity_one, Real.log_div (fineDensity_pos n β U).ne' (coarseDensity_pos n β 1).ne',
+    Real.log_div one_ne_zero (coarseDensity_pos n β 1).ne', Real.log_one]
+  ring
+
+/-- The centered action of the normalized conditional Haar law has the same
+quadratic coefficient. No coordinate Jacobian or nonlinear error estimate is asserted. -/
+theorem tendsto_conditionalAction_quadratic (β : ℝ) (U : ℝ → FineConfig n)
+    (A : Link 4 (doubleIndex n) → Fin 3 → ℝ) (hzero : ∀ l, U 0 l = 1)
+    (hderiv : ∀ l, HasDerivAt (fun t => (U t l).val) (pauliTangent (A l)) 0)
+    (hQ : linearBlock (fun l => pauliTangent (A l)) = 0) :
+    Tendsto (fun t => (-Real.log (fineDensity n β (identityFiberCurve n U t) /
+      coarseDensity n β 1) + Real.log (fineDensity n β 1 / coarseDensity n β 1)) / t^2)
+      (𝓝[≠] 0) (𝓝 (β/2 * ∑ i : Fin 3, curlEnergy (fun l => A l i))) := by
+  simp_rw [conditionalAction_sub_identity]
+  exact tendsto_identityFiberDensity_quadratic β U A hzero hderiv hQ
+
+end ConditionalQuadraticDensity
 
 def projected (n : ℕ) (β : ℝ) (F : C(FineConfig n, ℝ)) : C(CoarseConfig n, ℝ) :=
   PairedLinks.blockedProject (volume : Measure SU2) (blockIndexEquiv 4 n)

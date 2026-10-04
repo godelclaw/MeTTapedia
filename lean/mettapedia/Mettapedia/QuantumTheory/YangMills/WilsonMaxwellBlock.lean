@@ -4,6 +4,9 @@ import Mathlib.Algebra.Order.Chebyshev
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 import Mathlib.Topology.MetricSpace.HausdorffDistance
+import Mathlib.Analysis.InnerProductSpace.Spectrum
+import Mathlib.Probability.Distributions.Gaussian.Multivariate
+import Mathlib.Analysis.Calculus.Deriv.Slope
 
 /-!
 # Maxwell fluctuations inside the scale-two Wilson integration fiber
@@ -18,7 +21,7 @@ not assert nonlinear weak-coupling entrance or a continuum mass gap.
 -/
 set_option autoImplicit false
 noncomputable section
-open Finset
+open Finset Filter
 open scoped Classical BigOperators Topology Matrix.Norms.Elementwise
 
 namespace Mettapedia.QuantumTheory.YangMills.WilsonMaxwellBlock
@@ -70,6 +73,22 @@ theorem hasDerivAt_blockField (U : ℝ → Link d (doubleIndex n) → SU2)
   simpa only [blockField, linearBlock, Submonoid.coe_mul, hzero, Submonoid.coe_one,
     mul_one, one_mul] using
     hasDerivAt_matrix_mul (hderiv (blockEdge l 0)) (hderiv (blockEdge l 1))
+
+/-- A path in the exact identity block fiber necessarily has derivative in ker Q. -/
+theorem linearBlock_eq_zero_of_constant_block (U : ℝ → Link d (doubleIndex n) → SU2)
+    (A : Link d (doubleIndex n) → Matrix (Fin 2) (Fin 2) ℂ)
+    (hzero : ∀ l, U 0 l = 1)
+    (hderiv : ∀ l, HasDerivAt (fun t => (U t l).val) (A l) 0)
+    (hblock : ∀ t, blockField (U t) = 1) : linearBlock A = 0 := by
+  funext l
+  have h := hasDerivAt_blockField U A hzero hderiv l
+  have hf : (fun t => (blockField (U t) l).val) =
+      (fun _ : ℝ => (1 : Matrix (Fin 2) (Fin 2) ℂ)) := by
+    funext t
+    rw [hblock]
+    rfl
+  rw [hf] at h
+  exact h.unique (hasDerivAt_const_matrix 1 0)
 
 /-- Infinitesimal gauge motions which leave the retained links fixed. -/
 def FiberGauge (n : ℕ) (φ : Site 4 (doubleIndex n) → ℝ) : Prop :=
@@ -138,9 +157,6 @@ theorem path_identity (F : Field) (b : Corner) (μ : Fin 4) :
       Fin.val_zero, Fin.val_one, ite_true, ite_false, Matrix.vecCons, Matrix.vecHead,
       Matrix.vecTail] <;> norm_num <;> ring!
 
-end Cell
-
-namespace Cell
 @[simp] theorem corner_apply (b : Corner) (i : Fin 4) :
     (corner b i).val = (b i).val := by fin_cases i <;> rfl
 @[simp] theorem next_apply (v : BlockVertex) (μ i : Fin 4) :
@@ -460,7 +476,7 @@ theorem norm_curl_sq (A : LinkSpace n) : ‖curlLinearMap n A‖^2 = curlEnergy 
   rw [EuclideanSpace.real_norm_sq_eq]
   rfl
 
-/-- The requested gauge-quotient gap; its positive constant is chosen before n. -/
+/-- The gauge-quotient gap; its positive constant is chosen before n. -/
 theorem uniform_fluctuation_gap (A : Link 4 (doubleIndex n) → ℝ) (hQ : linearBlock A = 0) :
     (1 / 4096 : ℝ) * (Metric.infDist (WithLp.toLp 2 A) (gaugeSubspace n : Set (LinkSpace n)))^2 ≤
       curlEnergy A := by
@@ -498,5 +514,366 @@ theorem physical_energy_bound (A : physicalSubspace n) :
   have hg0 := sq_nonneg ‖g‖
   change ‖(A : LinkSpace n)‖^2 ≤ _
   nlinarith
+
+/-! ## Actual SU(2) quadratic response -/
+
+/-- The ordinary, unnormalized Hilbert--Schmidt square. -/
+def matrixSquare (M : Matrix (Fin 2) (Fin 2) ℂ) : ℝ :=
+  ∑ i, ∑ j, ‖M i j‖^2
+
+theorem potential_eq_matrixSquare (U : SU2) :
+    SU2WilsonBlockIntegration.potential U = (1/4:ℝ) * matrixSquare (U.val - 1) := by
+  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup U.property)
+  have h0 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => (M 0 0).re) hu
+  have h1 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => (M 1 1).re) hu
+  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_eq_conjTranspose,
+    Matrix.conjTranspose_apply, Complex.star_def, Complex.add_re, Complex.mul_re, Complex.conj_re,
+    Complex.conj_im, Matrix.one_apply, ite_true, Complex.one_re] at h0 h1
+  simp [SU2WilsonBlockIntegration.potential, specialUnitaryWilsonPotential, matrixSquare,
+    Matrix.trace, Fin.sum_univ_two, Complex.sq_norm, Complex.normSq_apply, Matrix.sub_apply,
+    Matrix.one_apply, Complex.sub_re, Complex.sub_im]
+  nlinarith
+
+/-- Unitarity forces every derivative at the identity to be anti-Hermitian. -/
+theorem tangent_star_eq_neg {U : ℝ → SU2} {A : Matrix (Fin 2) (Fin 2) ℂ}
+    (hzero : U 0 = 1) (h : HasDerivAt (fun t => (U t).val) A 0) : star A = -A := by
+  have hp := hasDerivAt_matrix_mul h h.star
+  have hc : (fun t => (U t).val * star (U t).val) = (fun _ : ℝ => (1 : Matrix (Fin 2) (Fin 2) ℂ)) := by
+    funext t
+    exact Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup (U t).property)
+  rw [hc] at hp
+  have he := hp.unique (hasDerivAt_const_matrix 1 0)
+  simp only [hzero, Submonoid.coe_one, star_one, mul_one, one_mul] at he
+  exact eq_neg_of_add_eq_zero_right he
+
+theorem hasDerivAt_holonomy_identity (U : ℝ → Link d n → SU2)
+    (A : Link d n → Matrix (Fin 2) (Fin 2) ℂ)
+    (hzero : ∀ l, U 0 l = 1)
+    (hderiv : ∀ l, HasDerivAt (fun t => (U t l).val) (A l) 0) (p : Plaquette d n) :
+    HasDerivAt (fun t => (holonomy (fun i => U t (linkAt p i))).val) (curl A p) 0 := by
+  have h01 := hasDerivAt_matrix_mul (hderiv (linkAt p 0)) (hderiv (linkAt p 1))
+  have h012 := hasDerivAt_matrix_mul h01 (hderiv (linkAt p 2)).star
+  have h0123 := hasDerivAt_matrix_mul h012 (hderiv (linkAt p 3)).star
+  simpa [holonomy, Submonoid.coe_mul, ← Matrix.star_eq_inv, Matrix.specialUnitaryGroup.coe_star, hzero,
+    Submonoid.coe_one, star_one, mul_one, one_mul,
+    tangent_star_eq_neg (hzero _) (hderiv _), curl, curlAt, linkAt, sub_eq_add_neg] using h0123
+
+/-- The genuine Wilson leading term, with its normalization and no linear term. -/
+theorem tendsto_potential_quadratic {U : ℝ → SU2} {A : Matrix (Fin 2) (Fin 2) ℂ}
+    (hzero : U 0 = 1) (h : HasDerivAt (fun t => (U t).val) A 0) :
+    Tendsto (fun t => SU2WilsonBlockIntegration.potential (U t) / t^2) (𝓝[≠] 0)
+      (𝓝 ((1/4:ℝ) * matrixSquare A)) := by
+  have hs := h.tendsto_slope_zero
+  simp only [zero_add, hzero, Submonoid.coe_one] at hs
+  have hc : Continuous matrixSquare := by unfold matrixSquare; fun_prop
+  have hl := (hc.tendsto A).comp hs
+  have he (t : ℝ) : matrixSquare (t⁻¹ • ((U t).val - 1)) = matrixSquare ((U t).val - 1) / t^2 := by
+    simp only [matrixSquare, Matrix.smul_apply, norm_smul, Real.norm_eq_abs, mul_pow,
+      sq_abs, inv_pow]
+    norm_num only [Fin.sum_univ_two, div_eq_mul_inv]
+    ring!
+  have hm := (tendsto_const_nhds (x := (1/4:ℝ))).mul hl
+  convert hm using 1
+  funext t
+  change SU2WilsonBlockIntegration.potential (U t) / t^2 =
+    (1/4:ℝ) * matrixSquare (t⁻¹ • ((U t).val - 1))
+  rw [he t, potential_eq_matrixSquare]
+  ring
+
+/-- The Pauli normalization A=i(a_1 sigma_1+a_2 sigma_2+a_3 sigma_3). -/
+def pauliTangent (a : Fin 3 → ℝ) : Matrix (Fin 2) (Fin 2) ℂ :=
+  !![Complex.I * a 2, a 1 + Complex.I * a 0;
+    -a 1 + Complex.I * a 0, -Complex.I * a 2]
+
+theorem matrixSquare_pauliTangent (a : Fin 3 → ℝ) :
+    matrixSquare (pauliTangent a) = 2 * ∑ i : Fin 3, (a i)^2 := by
+  simp [matrixSquare, pauliTangent, Fin.sum_univ_two, Fin.sum_univ_three,
+    Complex.sq_norm, Complex.normSq_apply, Complex.mul_re, Complex.mul_im]
+  ring
+
+
+/-- Gauge motion of the actual group-valued links has the expected linearization. -/
+theorem hasDerivAt_gaugeAct_identity (U : ℝ → Link d n → SU2)
+    (g : ℝ → Site d n → SU2)
+    (A : Link d n → Matrix (Fin 2) (Fin 2) ℂ)
+    (B : Site d n → Matrix (Fin 2) (Fin 2) ℂ)
+    (hU : ∀ l, U 0 l = 1) (hg : ∀ x, g 0 x = 1)
+    (hdU : ∀ l, HasDerivAt (fun t => (U t l).val) (A l) 0)
+    (hdg : ∀ x, HasDerivAt (fun t => (g t x).val) (B x) 0) (l : Link d n) :
+    HasDerivAt (fun t => (WilsonDyadicGeometry.gaugeAct (g t) (U t) l).val)
+      (A l - gradient B l) 0 := by
+  have h := hasDerivAt_matrix_mul (hasDerivAt_matrix_mul (hdg l.1) (hdU l))
+    (hdg (l.1 + step l.2)).star
+  have hd : HasDerivAt (fun t => (WilsonDyadicGeometry.gaugeAct (g t) (U t) l).val)
+      (B l.1 + A l - B (l.1 + step l.2)) 0 := by
+    simpa [WilsonDyadicGeometry.gaugeAct, ← Matrix.star_eq_inv, Submonoid.coe_mul,
+      Matrix.specialUnitaryGroup.coe_star, hU, hg,
+      tangent_star_eq_neg (hg _) (hdg _), sub_eq_add_neg] using h
+  convert hd using 1
+  unfold gradient
+  abel
+
+theorem curl_pauliTangent (A : Link d n → Fin 3 → ℝ) (p : Plaquette d n) :
+    curl (fun l => pauliTangent (A l)) p = pauliTangent (fun i => curl (fun l => A l i) p) := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [curl, curlAt, pauliTangent] <;> ring
+
+/-- Three-color Maxwell action is exactly the leading Wilson plaquette term. -/
+theorem tendsto_wilsonPlaquette_quadratic (U : ℝ → Link d n → SU2)
+    (A : Link d n → Fin 3 → ℝ) (hzero : ∀ l, U 0 l = 1)
+    (hderiv : ∀ l, HasDerivAt (fun t => (U t l).val) (pauliTangent (A l)) 0)
+    (p : Plaquette d n) :
+    Tendsto (fun t => SU2WilsonBlockIntegration.potential
+      (holonomy (fun i => U t (linkAt p i))) / t^2) (𝓝[≠] 0)
+      (𝓝 ((1/2:ℝ) * ∑ i : Fin 3, (curl (fun l => A l i) p)^2)) := by
+  have h := tendsto_potential_quadratic
+    (show holonomy (fun i => U 0 (linkAt p i)) = 1 by simp [holonomy, hzero])
+    (hasDerivAt_holonomy_identity U (fun l => pauliTangent (A l)) hzero hderiv p)
+  rw [curl_pauliTangent, matrixSquare_pauliTangent] at h
+  convert h using 1 <;> ring
+
+/-- The same coercivity constant applies to every finite number of colors. -/
+theorem color_gaugeResidual_energy_le {ι : Type*} [Fintype ι]
+    (A : ι → Link 4 (doubleIndex n) → ℝ) (hQ : ∀ i, linearBlock (A i) = 0) :
+    (∑ i : ι, ∑ l : Link 4 (doubleIndex n),
+      (A i l - gradient (gaugePotential (A i)) l)^2) ≤ 4096 * ∑ i : ι, curlEnergy (A i) := by
+  rw [Finset.mul_sum]
+  exact Finset.sum_le_sum fun i _ => gaugeResidual_energy_le (A i) (hQ i)
+
+/-- A concrete eliminated fluctuation with nonzero curvature. -/
+def transverseField (n : ℕ) : Link 4 (doubleIndex n) → ℝ :=
+  fun l => if l.2 = 0 then (parity l.1 1).val else 0
+
+theorem transverseField_eliminated (n : ℕ) : linearBlock (transverseField n) = 0 := by
+  funext l
+  by_cases h : l.2 = 0
+  · simp [linearBlock, transverseField, h, parity, doubleSite, step, val_doubleCoordinate,
+      Nat.mul_mod]
+  · simp [linearBlock, transverseField, h]
+
+theorem transverseField_curl (n : ℕ) : curlAt (transverseField n) 0 0 1 = -1 := by
+  have hL : 1 < doubleIndex n + 3 := by dsimp [doubleIndex]; omega
+  simp [curlAt, transverseField, parity, step, ZMod.val_one_eq_one_mod, Nat.mod_eq_of_lt hL]
+
+theorem transverseField_not_gauge (n : ℕ) :
+    WithLp.toLp 2 (transverseField n) ∉ gaugeSubspace n := by
+  intro h
+  obtain ⟨φ, _, hφ⟩ := (mem_gaugeSubspace_iff _).1 h
+  have he : transverseField n = gradient φ := congrArg WithLp.ofLp hφ
+  have hc := transverseField_curl n
+  rw [he, curlAt_gradient] at hc
+  norm_num at hc
+
+
+/-- The orthogonal physical fiber itself contains a nonzero vector at every volume. -/
+theorem physicalSubspace_nontrivial (n : ℕ) : Nontrivial (physicalSubspace n) := by
+  let a : LinkSpace n := WithLp.toLp 2 (transverseField n)
+  let g := (gaugeSubspace n).starProjection a
+  have hg : g ∈ gaugeSubspace n := (gaugeSubspace n).starProjection_apply_mem a
+  have ha : a ∈ (blockLinearMap n).ker := by
+    change WithLp.toLp 2 (linearBlock (transverseField n)) = 0
+    rw [transverseField_eliminated]
+    rfl
+  have hv : a - g ∈ physicalSubspace n :=
+    ⟨(blockLinearMap n).ker.sub_mem ha hg.2,
+      Submodule.sub_starProjection_mem_orthogonal a⟩
+  have hn : (⟨a-g, hv⟩ : physicalSubspace n) ≠ 0 := by
+    intro h
+    have he : a - g = 0 := congrArg Subtype.val h
+    have hag : a = g := sub_eq_zero.mp he
+    apply transverseField_not_gauge n
+    change a ∈ gaugeSubspace n
+    rw [hag]
+    exact hg
+  exact ⟨⟨⟨a-g,hv⟩, 0, hn⟩⟩
+
+/-! ## Normalized quadratic fluctuation covariance -/
+
+namespace Gaussian
+open MeasureTheory ProbabilityTheory
+
+/-- Curl restricted to the physical integration fiber. -/
+def physicalCurl (n : ℕ) : physicalSubspace n →L[ℝ] CurlSpace n :=
+  (curlLinearMap n).toContinuousLinearMap.comp (physicalSubspace n).subtypeL
+
+/-- The Maxwell precision before multiplication by beta. -/
+def precision (n : ℕ) : physicalSubspace n →L[ℝ] physicalSubspace n :=
+  (physicalCurl n).adjoint.comp (physicalCurl n)
+
+theorem precision_symmetric (n : ℕ) : (precision n).toLinearMap.IsSymmetric := by
+  intro A B
+  change inner ℝ ((physicalCurl n).adjoint (physicalCurl n A)) B =
+    inner ℝ A ((physicalCurl n).adjoint (physicalCurl n B))
+  rw [ContinuousLinearMap.adjoint_inner_left, ContinuousLinearMap.adjoint_inner_right]
+
+theorem inner_precision (A : physicalSubspace n) :
+    inner ℝ A (precision n A) = curlEnergy (A : LinkSpace n) := by
+  change inner ℝ A ((physicalCurl n).adjoint (physicalCurl n A)) = _
+  rw [ContinuousLinearMap.adjoint_inner_right, real_inner_self_eq_norm_sq]
+  exact norm_curl_sq (A : LinkSpace n)
+
+abbrev Mode (n : ℕ) := Fin (Module.finrank ℝ (physicalSubspace n))
+
+def eigenvalue (n : ℕ) : Mode n → ℝ := (precision_symmetric n).eigenvalues rfl
+
+def eigenbasis (n : ℕ) : OrthonormalBasis (Mode n) ℝ (physicalSubspace n) :=
+  (precision_symmetric n).eigenvectorBasis rfl
+
+theorem eigenvalue_lower (n : ℕ) (i : Mode n) : (1/4096:ℝ) ≤ eigenvalue n i := by
+  have he := physical_energy_bound (eigenbasis n i)
+  rw [← inner_precision, show precision n (eigenbasis n i) =
+      eigenvalue n i • eigenbasis n i from
+      (precision_symmetric n).apply_eigenvectorBasis rfl i,
+    real_inner_smul_right (eigenbasis n i) (eigenbasis n i) (eigenvalue n i),
+    real_inner_self_eq_norm_sq, (eigenbasis n).norm_eq_one] at he
+  norm_num at he
+  linarith
+
+theorem eigenvalue_pos (n : ℕ) (i : Mode n) : 0 < eigenvalue n i :=
+  lt_of_lt_of_le (by norm_num) (eigenvalue_lower n i)
+
+/-- Inverse precision in the actual physical eigenbasis. -/
+def covarianceMatrix (n : ℕ) (β : ℝ) : Matrix (Mode n) (Mode n) ℝ :=
+  Matrix.diagonal (fun i => (β * eigenvalue n i)⁻¹)
+
+theorem covarianceMatrix_posSemidef {β : ℝ} (hβ : 0 < β) :
+    (covarianceMatrix n β).PosSemidef := by
+  apply Matrix.PosSemidef.diagonal
+  intro i
+  exact inv_nonneg.mpr (mul_pos hβ (eigenvalue_pos n i)).le
+
+/-- Normalized centered quadratic fluctuation law on the block fiber modulo gauge.
+For beta > 0 it has precision beta times curl-adjoint-curl. This definition does not
+condition an unnormalized massless measure on an event of probability zero. -/
+def law (n : ℕ) (β : ℝ) : Measure (physicalSubspace n) :=
+  (multivariateGaussian 0 (covarianceMatrix n β)).map (eigenbasis n).repr.symm
+
+instance (n : ℕ) (β : ℝ) : IsProbabilityMeasure (law n β) := by
+  unfold law
+  exact Measure.isProbabilityMeasure_map (by fun_prop)
+
+instance (n : ℕ) (β : ℝ) : IsGaussian (law n β) := by
+  change IsGaussian ((multivariateGaussian 0 (covarianceMatrix n β)).map
+    ((eigenbasis n).repr.symm : EuclideanSpace ℝ (Mode n) →L[ℝ] physicalSubspace n))
+  infer_instance
+
+theorem covariance_eq {β : ℝ} (hβ : 0 < β) (u v : physicalSubspace n) :
+    ProbabilityTheory.covariance (fun A => inner ℝ u A) (fun A => inner ℝ v A) (law n β) =
+      ∑ i : Mode n, (eigenbasis n).repr u i * (eigenbasis n).repr v i / (β * eigenvalue n i) := by
+  rw [← covarianceBilin_apply_eq_cov IsGaussian.memLp_two_id]
+  change covarianceBilin ((multivariateGaussian 0 (covarianceMatrix n β)).map
+    ((eigenbasis n).repr.symm : EuclideanSpace ℝ (Mode n) →L[ℝ] physicalSubspace n)) u v = _
+  rw [covarianceBilin_map IsGaussian.memLp_two_id, LinearIsometryEquiv.adjoint_eq_symm,
+    LinearIsometryEquiv.symm_symm, covarianceBilin_multivariateGaussian (covarianceMatrix_posSemidef hβ)]
+  simp only [covarianceMatrix, Matrix.mulVec_diagonal, dotProduct]
+  apply Finset.sum_congr rfl
+  intro i _
+  simp only [div_eq_mul_inv]
+  ring!
+
+/-- Uniform covariance-operator bound in fine-link L2 normalization. -/
+theorem variance_le {β : ℝ} (hβ : 0 < β) (u : physicalSubspace n) :
+    ProbabilityTheory.variance (fun A => inner ℝ u A) (law n β) ≤ (4096 / β) * ‖u‖^2 := by
+  rw [← covariance_self (by fun_prop), covariance_eq hβ]
+  have hinv (i : Mode n) : (β * eigenvalue n i)⁻¹ ≤ 4096 / β := by
+    rw [inv_eq_one_div]
+    apply (div_le_div_iff₀ (mul_pos hβ (eigenvalue_pos n i)) hβ).2
+    have hi := eigenvalue_lower n i
+    have hm := mul_le_mul_of_nonneg_left (show (1:ℝ) ≤ 4096 * eigenvalue n i by linarith) hβ.le
+    nlinarith
+  calc
+    _ ≤ ∑ i : Mode n, (4096 / β) * ((eigenbasis n).repr u i)^2 := by
+      apply Finset.sum_le_sum
+      intro i _
+      simpa only [div_eq_mul_inv, pow_two, mul_comm] using
+        mul_le_mul_of_nonneg_left (hinv i) (sq_nonneg ((eigenbasis n).repr u i))
+    _ = (4096 / β) * ‖u‖^2 := by
+      rw [← Finset.mul_sum, ← EuclideanSpace.real_norm_sq_eq, (eigenbasis n).repr.norm_map]
+
+/-- Every nonzero physical test has positive quadratic variance. -/
+theorem variance_pos {β : ℝ} (hβ : 0 < β) {u : physicalSubspace n} (hu : u ≠ 0) :
+    0 < ProbabilityTheory.variance (fun A => inner ℝ u A) (law n β) := by
+  rw [← covariance_self (by fun_prop), covariance_eq hβ]
+  have hx : ∃ i : Mode n, (eigenbasis n).repr u i ≠ 0 := by
+    by_contra h
+    push Not at h
+    apply hu
+    apply (eigenbasis n).repr.injective
+    ext i
+    simpa using h i
+  obtain ⟨i, hi⟩ := hx
+  apply Finset.sum_pos'
+  · intro j _
+    exact div_nonneg (mul_self_nonneg _) (mul_pos hβ (eigenvalue_pos n j)).le
+  · exact ⟨i, Finset.mem_univ _, div_pos (mul_self_pos.mpr hi) (mul_pos hβ (eigenvalue_pos n i))⟩
+
+/-- The covariance is the inverse of beta times the physical Maxwell precision. -/
+theorem covariance_precision {β : ℝ} (hβ : 0 < β) (u v : physicalSubspace n) :
+    ProbabilityTheory.covariance (fun A => inner ℝ (β • precision n u) A)
+      (fun A => inner ℝ v A) (law n β) = inner ℝ u v := by
+  rw [covariance_eq hβ, ← (eigenbasis n).repr.inner_map_map u v]
+  simp only [PiLp.inner_apply, RCLike.inner_apply, conj_trivial, map_smul, PiLp.smul_apply, smul_eq_mul]
+  apply Finset.sum_congr rfl
+  intro i _
+  have hi : (eigenbasis n).repr (precision n u) i =
+      eigenvalue n i * (eigenbasis n).repr u i :=
+    (precision_symmetric n).eigenvectorBasis_apply_self_apply rfl u i
+  rw [hi]
+  field_simp [ne_of_gt hβ, ne_of_gt (eigenvalue_pos n i)]
+
+
+/-- Test vector for one actual lattice curvature component. -/
+def curvatureVector (n : ℕ) (p : Plaquette 4 (doubleIndex n)) : physicalSubspace n :=
+  (physicalCurl n).adjoint (EuclideanSpace.basisFun _ ℝ p)
+
+theorem curvatureVector_inner (p : Plaquette 4 (doubleIndex n)) (A : physicalSubspace n) :
+    inner ℝ (curvatureVector n p) A = curl (A : LinkSpace n) p := by
+  rw [curvatureVector, ContinuousLinearMap.adjoint_inner_left, EuclideanSpace.basisFun_inner]
+  rfl
+
+theorem abs_curvature_le (p : Plaquette 4 (doubleIndex n)) (A : physicalSubspace n) :
+    |curl (A : LinkSpace n) p| ≤ 4 * ‖A‖ := by
+  have h (l : Link 4 (doubleIndex n)) : |(A : LinkSpace n) l| ≤ ‖A‖ := by
+    exact_mod_cast PiLp.norm_apply_le (A : LinkSpace n) l
+  unfold curl curlAt
+  have h1 := abs_add_le ((A : LinkSpace n) (p.1, p.2.1.1))
+    ((A : LinkSpace n) (p.1 + step p.2.1.1, p.2.1.2))
+  have h2 := norm_sub_le ((A : LinkSpace n) (p.1, p.2.1.1) +
+    (A : LinkSpace n) (p.1 + step p.2.1.1, p.2.1.2))
+    ((A : LinkSpace n) (p.1 + step p.2.1.2, p.2.1.1))
+  have h3 := norm_sub_le ((A : LinkSpace n) (p.1, p.2.1.1) +
+    (A : LinkSpace n) (p.1 + step p.2.1.1, p.2.1.2) -
+    (A : LinkSpace n) (p.1 + step p.2.1.2, p.2.1.1)) ((A : LinkSpace n) (p.1, p.2.1.2))
+  simp only [Real.norm_eq_abs] at h2 h3
+  linarith [h (p.1, p.2.1.1), h (p.1 + step p.2.1.1, p.2.1.2),
+    h (p.1 + step p.2.1.2, p.2.1.1), h (p.1, p.2.1.2)]
+
+theorem norm_curvatureVector_le (p : Plaquette 4 (doubleIndex n)) : ‖curvatureVector n p‖ ≤ 4 := by
+  have h := abs_curvature_le p (curvatureVector n p)
+  rw [← curvatureVector_inner, real_inner_self_eq_norm_sq, abs_of_nonneg (sq_nonneg _)] at h
+  nlinarith [norm_nonneg (curvatureVector n p)]
+
+theorem curvature_covariance_eq {β : ℝ} (hβ : 0 < β) (p q : Plaquette 4 (doubleIndex n)) :
+    ProbabilityTheory.covariance (fun A : physicalSubspace n => curl (A : LinkSpace n) p)
+      (fun A : physicalSubspace n => curl (A : LinkSpace n) q) (law n β) =
+      ∑ i : Mode n, (eigenbasis n).repr (curvatureVector n p) i *
+        (eigenbasis n).repr (curvatureVector n q) i / (β * eigenvalue n i) := by
+  simpa only [curvatureVector_inner] using covariance_eq hβ (curvatureVector n p) (curvatureVector n q)
+
+/-- A conservative volume-independent bound for a local field-strength mark. -/
+theorem curvature_variance_le {β : ℝ} (hβ : 0 < β) (p : Plaquette 4 (doubleIndex n)) :
+    ProbabilityTheory.variance (fun A : physicalSubspace n => curl (A : LinkSpace n) p) (law n β) ≤
+      65536 / β := by
+  have h := variance_le hβ (curvatureVector n p)
+  simp only [curvatureVector_inner] at h
+  have hn := norm_curvatureVector_le p
+  have hs : ‖curvatureVector n p‖^2 ≤ 16 := by nlinarith [norm_nonneg (curvatureVector n p)]
+  calc
+    _ ≤ (4096 / β) * ‖curvatureVector n p‖^2 := h
+    _ ≤ (4096 / β) * 16 := mul_le_mul_of_nonneg_left hs (by positivity)
+    _ = 65536 / β := by ring
+
+end Gaussian
+
 
 end Mettapedia.QuantumTheory.YangMills.WilsonMaxwellBlock

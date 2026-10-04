@@ -343,6 +343,11 @@ theorem current_constructive_gate_all_obstructions_regression :
     currentYangMillsConstructiveGateAllObstructionPacket := by
   exact currentYangMillsConstructiveGate_allObstructions
 
+theorem maxwell_fiber_node_checked_regression :
+    yangMillsWilsonMaxwellFiberNode.status = .checked := rfl
+
+#check currentYangMillsMaxwellFiber_packet
+
 end ProofStateRegression
 end YangMills
 end QuantumTheory

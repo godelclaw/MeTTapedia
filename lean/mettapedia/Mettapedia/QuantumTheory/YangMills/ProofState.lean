@@ -26,6 +26,7 @@ import Mettapedia.QuantumTheory.YangMills.StrongCouplingTwist
 import Mettapedia.QuantumTheory.YangMills.WilsonReflectionPositivity
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingTransferGap
 import Mettapedia.QuantumTheory.YangMills.WilsonDyadicObservableFlow
+import Mettapedia.QuantumTheory.YangMills.WilsonMaxwellBlock
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -996,6 +997,15 @@ def yangMillsWilsonSpatialIterationNode : YangMillsProofNode where
   evidence := "WilsonConditionalProjection.PairedHaar.effectiveInteraction_spatial_norm_le proves contraction by q = 4 exp(-2) < 1 of the full interaction norm sup_l sum_(S containing l) exp(8|S| + eta treeLength(S)) norm(Phi_S), at radius at most 1/2. The compact-group chart must admit a nonexpanding projection identifying each paired link; WilsonDyadicGeometry.halfLink proves this for the actual scale-two tori. SU2WilsonAssembly.ScaleTwo.InteractionState carries the exact positive density, its vacuum term, locality, Haar centering and gauge invariance. WilsonDyadicObservableFlow proves q^j contraction for every finite scale chain and Wilson entry at |beta| <= 1/(128 exp(32+4 eta)), with eta >= 0 fixed before volume and depth. At eta > 0, the same radius gives an exact polymer representation and CrossingInput for all generated volumes and depths, with rate eta and smallness exp(-3). Normalized expectations and fine pullbacks are identified exactly. The native OSLF forward predicate has an actual paired-Haar successor with the proved spatial gain. The original-plaquette decomposition also retains source location: plaquetteLogFamily_marked_spatial_budget bounds the sum of exp(8|T_A| + eta treeLength(T_A union halfLink(supp p))) times the exact logarithmic coefficient norm over families containing p by 2 |beta| exp(24+4 eta), on the same Wilson entry interval. The full first logarithm including its vacuum is identified by log_coarseDensity_eq_plaquetteLogFamily. This is a one-step coefficient estimate; source differentiation and arbitrary-depth transported-observable budgets remain separate. These bounds concern complete continuous interaction functions, not all-order boundary derivatives."
   nextObligation := "The spatial strong-coupling iteration is proved. Establish weak-coupling entrance and uniform observable transport at a controlled physical stopping scale; higher derivative control and continuum construction remain separate."
 
+/-- The eliminated Maxwell sector of the actual ordered scale-two map has a
+uniform gap modulo the gauge motions preserving the coarse field. -/
+def yangMillsWilsonMaxwellFiberNode : YangMillsProofNode where
+  id := "yang-mills.rg.wilson-maxwell-fiber"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  evidence := "WilsonMaxwellBlock.hasDerivAt_blockField differentiates the actual ordered two-link SU(2) product at the trivial connection: Q A(x,mu)=A(2x,mu)+A(2x+e_mu,mu). linearBlock_gradient identifies the fiber-preserving gauge directions. A finite Stokes identity and an explicit coordinate-path gauge prove uniform_fluctuation_gap with gamma=1/4096, before all torus indices n and real fine-link fields A with QA=0, in the unnormalized fine-link L2 norm on side 2(n+3), dimension four. The same constant controls every finite color sum. transverseField_eliminated and transverseField_not_gauge exhibit a nonzero physical eliminated fluctuation. The actual Haar chart realizes every such derivative already supplied by differentiable SU(2) paths while holding the coarse field exactly at the identity. tendsto_wilsonPlaquette_quadratic proves the leading potential is one half the sum of the three squared curvature colors in Pauli normalization; it is not a linear field-strength observable. Gaussian.law is an explicit normalized centered law on the gauge-orthogonal fiber. For every beta>0, its covariance is inverse to beta times curl-adjoint-curl and Gaussian.variance_le gives Var(<u,A>) <=4096||u||^2/beta uniformly in volume. Gaussian.curvature_covariance_eq identifies the actual plaquette-curvature tests. These are trivial-background quadratic statements, with no spatial covariance decay or nonlinear weak-coupling estimate inferred."
+  nextObligation := "Establish spatial decay for the quadratic fluctuation covariance in local gauge coordinates. Control the nonlinear Wilson and Haar-Jacobian remainders on admissible coarse backgrounds, uniformly in volume, and bound the complement under the actual generated coarse law. The discarded Wilson-energy marks are quadratic at leading order and retain their beta-dependent normalization. Repeated generated interactions, transported marks, weak-to-strong entrance and continuum reconstruction remain separate."
+
 /-- A conditional physical clustering bridge with the entrance and discarded
 covariance obligations stated on the actual generated measures. -/
 def yangMillsStoppingScaleBridgeNode : YangMillsProofNode where
@@ -1110,6 +1120,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsCrossingInputNode
   , yangMillsCrossingInputStrongCouplingNode
   , yangMillsWilsonSpatialIterationNode
+  , yangMillsWilsonMaxwellFiberNode
   , yangMillsStoppingScaleBridgeNode
   , yangMillsWilsonReflectionPositivityNode
   , yangMillsStrongCouplingTransferGapNode
@@ -1989,6 +2000,26 @@ theorem currentYangMillsGeneratedCovariance_packet {η : ℝ} (hη : 0 < η) :
 #print axioms currentYangMillsPhysicalStoppingScale_packet
 #print axioms currentYangMillsGeneratedCovariance_packet
 end SpatialStoppingScale
+
+section MaxwellFiber
+open WilsonMaxwellBlock StrongCouplingCrossing WilsonDyadicGeometry
+
+/-- Numerical constants precede volume, coupling and test vectors. -/
+theorem currentYangMillsMaxwellFiber_packet :
+    (∀ (n : ℕ) (A : Link 4 (doubleIndex n) → ℝ), linearBlock A = 0 →
+      (1/4096:ℝ) * (Metric.infDist (WithLp.toLp 2 A)
+        (gaugeSubspace n : Set (LinkSpace n)))^2 ≤ curlEnergy A) ∧
+    (∀ (n : ℕ) (β : ℝ), 0 < β → ∀ u : physicalSubspace n,
+      ProbabilityTheory.variance (fun A => inner ℝ u A) (Gaussian.law n β) ≤
+        (4096/β) * ‖u‖^2) ∧
+    (∀ n : ℕ, ∃ A : Link 4 (doubleIndex n) → ℝ, linearBlock A = 0 ∧
+      WithLp.toLp 2 A ∉ gaugeSubspace n) :=
+  ⟨fun _ A hQ => uniform_fluctuation_gap A hQ,
+    fun _ _ hβ u => Gaussian.variance_le hβ u,
+    fun n => ⟨transverseField n, transverseField_eliminated n, transverseField_not_gauge n⟩⟩
+
+#print axioms currentYangMillsMaxwellFiber_packet
+end MaxwellFiber
 
 end YangMills
 end QuantumTheory
