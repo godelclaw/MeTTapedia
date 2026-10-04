@@ -45536,3 +45536,340 @@ Run `python3 -O labs/adaptive_heat_reserve.py`. The archive
 independent moment checks, exact root isolation and Bernstein signs,
 two positive-viscosity tangents, and the rebound arithmetic. No Lean
 declarations or axioms change.
+
+## Two scalar observations admit a forced concentration history
+
+`two_observer_bellman.py` tests a state reduction for a Bellman payment:
+retain only total kinetic energy E and the velocity fourth moment Y.
+Every instantaneous rate used below is attained by a smooth unforced
+Navier--Stokes initial field. Nevertheless, composing those rates while
+discarding the remaining field admits a finite-time concentrating curve.
+Its full velocity lift needs a nonzero force, even though that force
+does zero integrated work in BOTH observed moment equations. A specific
+generated frequency packet identifies the missing compatibility.
+
+The consequence is an analytic obstruction for all continuously
+differentiable, coercive supersolutions B(t,E,Y) of the stated state-only
+relaxation. It is not an unforced singularity or an obstruction to a
+reserve retaining the full field or compatible history. The localization,
+characteristic and forcing arguments below are analytic, supported by
+exact algebra; they are not newly Lean-certified.
+
+Nonquadratic Lyapunov methods for fluid stability already have a substantial
+literature; see Goulart and Chernyshenko,
+[Global stability analysis of fluid flows using sum-of-squares](https://arxiv.org/abs/1101.1043).
+The present restriction to two scalar observations is much narrower than
+a functional retaining resolved velocity modes. No impossibility of
+general Lyapunov or Bellman methods is asserted.
+
+### The exact candidate class and its physical observation
+
+Fix viscosity nu>0 and horizon H>0. Use normalized Lebesgue measure
+`dmu=(2pi)^(-3) dx` on R3, and write
+
+    E(u)=integral |u|^2,       Y(u)=integral |u|^4,
+    Z(u)=integral |grad u|^2,
+    D4(u)=integral |u|^2|grad u|^2+(1/2)integral|grad |u|^2|^2,
+    P4(u)=-integral |u|^2 u.grad p_u,
+    N(u)=-P[(u.grad)u].
+
+Canonical pressure and the complete Leray projection are retained. For
+an actual smooth unforced solution the exact balances are
+
+    E'=-2nu Z,             Y'=4P4-4nu D4.               (TB1)
+
+A proposed finite C1 function B(t,E,Y), allowed to depend on the fixed
+nu,H, is required to satisfy
+
+    B_t-2nu Z(u) B_E+4[P4(u)-nu D4(u)]B_Y<=0            (TB2)
+
+at EVERY smooth rapidly decaying divergence-free state u and every
+0<t<H, with its actual values E(u),Y(u). Assume also that B is uniformly
+coercive in Y on each compact positive-energy and interior-time rectangle:
+
+    inf_{(t,E) in I x J} B(t,E,Y) -> +infinity
+                       as Y->infinity,                (TB3)
+
+where I is a compact subinterval of (0,H) and J of (0,infinity).
+The usual requirement B>=Y implies (TB3). No sign of B_E or B_Y,
+polynomial form, homogeneity or time independence is assumed.
+
+Such a function would be an especially simple continuation reserve.
+A uniform finite Y bound gives
+`Z(t)<=Z(0)exp(C nu^(-7) H sup Y^2)` by the same interpolation and
+enstrophy argument as (682). The existing whole-space Lean theorem
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` requires a
+bound uniform over all smooth prefixes from the SAME original datum.
+No theorem supplying that bound is asserted here.
+
+The all-state quantifier in (TB2) is essential. A history-specific
+function whose inequality holds only on a proved reachable subset is
+a different candidate. Fixing a label for the original datum while
+still requiring (TB2) at every state does not change this obstruction;
+using that datum to restrict compatible states may change it.
+
+### A whole-space seed with a missing generated packet
+
+Reuse the exact periodic `target_field` from the signed fourth-moment
+calculation. On the normalized period-2pi torus it has eight input modes
+and the values
+
+    E=579/128,       Y=924955/32768,       Z=387/64,
+    D4=627867/16384, P4=51/320>0.                       (TB4)
+
+Its full source has 24 modes. At k_*=(-1,-2,0), absent from the input,
+
+    N(V)_hat(k_*)=(1/80,-1/160,0).                     (TB5)
+
+This vector is perpendicular to k_* and nonzero. It is genuine generated
+motion, not a pressure gradient. The exact checker independently verifies
+both balances (TB1) at viscosities 1 and 2/7, with all source outputs.
+
+To obtain a rapidly decaying whole-space field, let
+`A_per=curl(-Delta)^(-1)V`. Choose a nonzero real Schwartz function psi
+with real even smooth compactly supported Fourier transform, and put
+phi=psi^2>=0. For large L define
+
+    U_L=curl[phi(x/L) A_per(x)].
+
+The curl correction is retained, so U_L is exactly solenoidal. Its Fourier
+support is contained in small disjoint neighborhoods of the original
+nonzero input modes. It is Schwartz. Expanding the quintic pressure-work
+integral in these packets and rescaling their offsets gives
+
+    L^(-3) P4(U_L) -> P4(V) integral phi^5 dmu>0.       (TB6)
+
+Here the pressure-gradient multiplier has degree one: its tensor form
+is a constant multiple of `i xi_a xi_i xi_j/|xi|^2`. It is bounded by
+|xi| and extends continuously as zero at xi=0. Thus zero intermediate
+outputs give a vanishing limit, not a discarded pressure contribution.
+Other multipliers converge at their nonzero centers. Nonresonant packet
+integrals vanish for large L, the curl correction is O(1/L) in the
+rescaled integrands, and compact Fourier support supplies domination.
+The surviving resonances give exactly the factor integral phi^5 in
+(TB6). This is the same packet-localization mechanism used in (235)--(237),
+now applied to the order-one pressure-work multiplier.
+
+At the separate packet around k_*, the complete source has leading
+profile `phi(x/L)^2 N(V)_hat(k_*) exp(i k_*.x)`. Its rescaled L2 norm
+is positive by (TB5). Fix one sufficiently large L. We obtain ONE
+Schwartz solenoidal U with
+
+    e=E(U)>0, y=Y(U)>0, z=Z(U)>0, d=D4(U)>0, p=P4(U)>0,
+    c_*=||Q N(U)||_2>0,               Q U=0,            (TB7)
+
+where Q is the orthogonal Fourier projection onto small neighborhoods
+of k_* and -k_*, separated from the support of U. It also annihilates
+Delta U and x.grad U, whose Fourier supports remain in that of U.
+The constants in (TB7) are those of the localized field, NOT the
+periodic numbers in (TB4). No numerical localization threshold is claimed.
+
+### Realizable instantaneous rates and their incompatible composition
+
+For positive amplitude a and spatial scale ell, put `u=a U(ell x)`.
+Including the whole-space volume factor gives
+
+    E=e a^2 ell^(-3),      Y=y a^4 ell^(-3),
+    Z=z a^2 ell^(-1),      D4=d a^4 ell^(-1),
+    P4=p a^5 ell^(-2).                                  (TB8)
+
+Every E,Y>0 is realized by this family, with
+
+    a=sqrt(eY/(yE)),       ell=(e^2Y/(yE^2))^(1/3).
+
+Substitute (TB8) into the actual initial rates (TB1). Set
+
+    q=Y^(-1/6), c_z=z e^(1/3)/y^(2/3),
+    alpha=p e^(5/6)/(3z y^(7/6))>0,
+    beta=d e/(3zy)>0,       kappa=alpha/(beta+1/6).
+
+The resulting two-observer characteristic obeys
+
+    dE/dt=-2nu c_z Y^(2/3)E^(-1/3),
+    dq/dE=alpha E^(-5/6)/nu-beta q/E.                   (TB9)
+
+These are attainable instantaneous projected rates, not a claim that
+the dilation family is invariant under NS. For any E_*>0 the explicit
+positive branch on E>E_* is
+
+    q(E)=(kappa/nu) E^(1/6)
+                    [1-(E_*/E)^(beta+1/6)].            (TB10)
+
+As E decreases to E_*, q tends to zero and Y tends to infinity.
+Choose E0=2E_*. Starting at t0, its clock is
+
+    t(E)-t0=integral_E^E0 s^(1/3) q(s)^4/(2nu c_z) ds,
+    0<T_*-t0<=kappa^4 E0^2/(4nu^5 c_z)<infinity.        (TB11)
+
+Choose t0=H/4 and E0>0 sufficiently small that the last upper bound
+is at most H/4. Then T_* lies inside (0,H), and throughout this curve
+E remains in the compact positive interval [E_*,E0]. Each point and
+its two rates is realized by a smooth unforced initial field. Those
+fields are different initial states; their full tangents have not
+been shown to compose.
+
+Nevertheless, (TB2) would apply pointwise to this curve. The chain rule
+would give
+
+    B(t(E),E,q(E)^(-6))<=B(t0,E0,q(E0)^(-6)).           (TB12)
+
+The right side is finite, while (TB3) makes the left side tend to infinity.
+This contradiction proves that no B with (TB2)--(TB3) exists. In particular,
+arbitrary nonlinear or time-dependent choices of a two-scalar storage
+function cannot repair this globally quantified relaxation.
+
+### The full velocity lift exposes the force hidden by both budgets
+
+There is an actual smooth FORCED lift on [t0,T_*): use (TB10)--(TB11)
+to define a(t),ell(t) by (TB8), and set
+
+    u(t,x)=a(t) U(ell(t)x),
+    f=u_t-nu Delta u-N(u).                              (TB13)
+
+The inverse clock is smooth before T_*, and the full field is divergence
+free. Thus f is also divergence free, with canonical pressure p_u.
+The amplitude and scale rates are explicitly
+
+    a'/a=2a ell p/y+nu ell^2(z/e-2d/y),
+    ell'/ell=(4/3)[a ell p/y+nu ell^2(z/e-d/y)].          (TB14)
+
+Equations (TB8), (TB14) give exactly
+
+    integral u.f=0,       integral |u|^2 u.f=0.          (TB15)
+
+For example, use `integral U.(x.grad U)=-3e/2` and
+`integral |U|^2 U.(x.grad U)=-3y/4`, with the pressure and diffusion
+terms retained. Both unforced-looking budgets (TB1) therefore hold
+along the entire FORCED lift. Total energy decreases to E_*>0, and
+`integral_t0^T_* Z dt=(E0-E_*)/(2nu)<infinity`.
+
+But f is not zero. Let Q_ell select the dilated missing packet from
+(TB7). The amplitude and dilation tangents, and the viscous term,
+have no support there. Hence
+
+    Q_ell f=-Q_ell N(u),
+    ||f||_2>=c_* a^2 ell^(-1/2)
+       =c_* e^(2/3)/(y^(5/6) E^(2/3) q^5).             (TB16)
+
+The force continually removes motion that the full unforced equation
+would generate. It is invisible to the two integrated work measurements,
+not absent from the equation. In particular pressure cannot remove it:
+the packet in (TB5) is already solenoidal.
+
+The zero in (TB10) is simple:
+`q'(E_*)=alpha E_*^(-5/6)/nu>0`. Consequently q is comparable to
+E-E_* near the endpoint, and (TB11) makes T_*-t comparable to q^5.
+Equation (TB16) gives a constant c>0 with
+
+    ||f(t)||_2>=c/(T_*-t) near T_*,
+    integral_t0^T_* ||f(t)||_2 dt=infinity.              (TB17)
+
+Thus this concentrating lift requires a quantitatively large force even
+though both force-work integrals in (TB15) are exactly zero. Its forcing
+does not meet an assumption of finite time-integrated L2 norm. No claim
+is made that it satisfies the hypotheses of another forced-blowup theorem.
+
+### Actual unforced histories must leave this normalized shape
+
+The missing packet also gives a positive statement about actual unforced
+trajectories. Let u(t) be any available nonzero smooth unforced history
+in the whole-space class. Define a(t),ell(t) from its actual E(t),Y(t)
+using (TB8), and normalize by
+
+    v(theta,x)=a(t)^(-1)u(t,x/ell(t)),
+    dtheta/dt=a ell,             epsilon=nu ell/a.
+
+Then E(v)=e and Y(v)=y exactly. This normalization does not assume that
+v stays equal or close to U. Differentiating the full field and both
+moment balances gives
+
+    partial_theta v=N(v)+epsilon Delta v-A v-L x.grad v,
+    A=2P4(v)/y+epsilon[Z(v)/e-2D4(v)/y],
+    L=(4/3){P4(v)/y+epsilon[Z(v)/e-D4(v)/y]}.            (TB18)
+
+Every changing mode and its pressure remain in (TB18). The amplitude
+and dilation drifts enforce the two normalizations; they are coordinate
+terms, not external forces. The checker verifies that the full right
+side has zero E and Y rates for general values of all four observations.
+
+Choose a real Schwartz test field chi with unit L2 norm and Fourier
+support strictly inside the missing packet pair in (TB7), with
+
+    <chi,N(U)>=b>0,
+    <chi,U>=<chi,Delta U>=<chi,x.grad U>=0.              (TB19)
+
+Such a field is obtained by multiplying the Fourier transform of N(U)
+by a nonzero even nonnegative smooth cutoff supported in those packets,
+then normalizing. The pressure multiplier is smooth there. Define
+`ell_chi(v)=<chi,v>`. Pairing (TB18) with chi gives the exact derivative
+
+    Phi(v,epsilon)=<chi,N(v)>+epsilon<Delta chi,v>
+             -A<chi,v>+L<3chi+x.grad chi,v>.            (TB20)
+
+In particular Phi(U,epsilon)=b for every epsilon. The pairings in
+(TB20), together with P4,Z,D4, are continuous in H3 near U. The dilation
+term was integrated against a Schwartz test, so no uncontrolled norm of
+x.grad v is needed. Uniform continuity for 0<=epsilon<=1 gives a
+delta>0, fixed from U and chi, such that
+
+    ||v-U||_(H3)<=delta,  0<=epsilon<=1
+                implies Phi(v,epsilon)>=b/2.           (TB21)
+
+For any actual unforced segment remaining in that neighborhood with
+epsilon<=1, `|ell_chi(v)|<=delta` and hence
+
+    theta_1-theta_0<=4delta/b.                         (TB22)
+
+Indeed its signed increase is at least `(b/2)(theta_1-theta_0)` and
+at most 2delta. This is a uniform residence-time bound along the full
+equation, not an initial-derivative assertion. The H3 radius is a shape
+condition; no small physical amplitude is assumed. The constants b and
+delta are not numerically evaluated, and this PDE argument is analytic.
+
+The artificial concentrating history keeps v=U forever. Its nonlinear
+turnover clock is infinite: (TB8), (TB11) give
+
+    |dtheta/dE|=e^(7/6)/[2nu c_z y^(5/6) E^(5/6) q],
+
+which diverges logarithmically as E decreases to E_*. Also epsilon
+tends to zero there. Thus (TB22) supplies a dynamical reason why an
+unforced flow cannot keep following even a small neighborhood of this
+one normalized shape through the concentrating history.
+
+The bound permits the actual field to leave the neighborhood and later
+return. Between visits the generated packet may change sign or exchange
+work with other modes. Paying those return histories, or covering all
+possible normalized shapes, is a separate open problem. The missing
+packet has not been declared harmless or discarded after departure.
+
+### Consequence for the physical history target
+
+This example pinpoints a failure of compatibility under composition.
+Matching E,Y and their genuine instantaneous NS rates permits repeated
+replacement of the hidden velocity profile. The full equation requires
+the generated packet to remain and evolve; maintaining the rescaled
+profile instead cancels it through (TB13). An exact boundary/history
+summary must distinguish those operations.
+
+The result does NOT show that an actual unforced solution can follow
+the concentrating curve, or that every other concentrating profile needs
+such forcing. Nor does it rule out a bound depending on the full original
+datum, a history-dependent reserve, additional spatial or phase information,
+or a Bellman inequality on a proved reachable set. Extending the same
+obstruction to a fixed periodic domain would require a separate argument.
+
+The next physical obligation is quantitative: retain the produced packet
+and its changing parents, then control their signed contribution over
+the same compatible history. Identifying one missing packet does not
+yet supply the arbitrary-history payment (RW11)/(EP15). The full goal
+remains open, with the existing continuation consumers unchanged.
+
+Run `python3 -O labs/two_observer_bellman.py`. Its archive
+`two_observer_bellman_results.json` records the complete periodic source,
+two actual viscous tangent checks, independent amplitude/scale identities,
+the exact characteristic and clock, both zero force-work identities and
+the forcing lower-bound scaling. The normalized equation checks retain
+both coordinate drifts and the infinite turnover clock. The actual
+residence-time bound additionally uses the analytic continuity argument.
+The archive hashes all transitive local Python imports. No Lean
+declarations, axioms or numerical PDE enclosures change.

@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [two-observer Bellman obstruction](labs/README.md#two-scalar-observations-admit-a-forced-concentration-history)
+shows why matching kinetic energy, the velocity fourth moment and their
+genuine instantaneous unforced rates is insufficient for composing fluid
+histories. This relaxation admits finite-time concentration and has no
+smooth coercive reserve satisfying the stated all-state inequality.
+The full velocity lift requires a nonzero force which cancels generated
+modes while doing zero net work in both observed budgets. Its integrated
+L2 force norm diverges. Retaining a generated packet also bounds how long
+an actual unforced history can remain near that normalized shape, in
+nonlinear turnover time. Later returns remain open. These whole-space
+arguments are analytic with exact Fourier and scaling checks; they are
+not an unforced singularity and do not exclude full-state or
+compatible-history reserves.
+
 The [adaptive heat-reserve obstruction](labs/README.md#a-later-return-defeats-both-heat-window-and-weight-controls)
 allows the initial window to be selected from the complete datum and both
 window and weight to change throughout the history. One smooth periodic

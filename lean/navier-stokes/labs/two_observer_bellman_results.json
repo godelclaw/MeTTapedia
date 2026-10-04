@@ -1,0 +1,135 @@
+{
+  "fourier": {
+    "energy": "579/128",
+    "fourth_moment": "924955/32768",
+    "gradient_energy": "387/64",
+    "quartic_diffusion": "627867/16384",
+    "pressure_work": "51/320",
+    "input_modes": 8,
+    "full_source_modes": 24,
+    "missing_mode": [
+      -1,
+      -2,
+      0
+    ],
+    "missing_coefficient": [
+      "1/80",
+      "-1/160",
+      "0"
+    ],
+    "physical_tangents": [
+      {
+        "viscosity": "1",
+        "energy_rate": "-387/32",
+        "quartic_rate": "-3126279/20480"
+      },
+      {
+        "viscosity": "2/7",
+        "energy_rate": "-387/112",
+        "quartic_rate": "-3093639/71680"
+      }
+    ],
+    "scope": "Periodic algebraic seed; its numbers are not the constants of the localized whole-space field."
+  },
+  "whole_space": {
+    "scale": {
+      "energy": "a**2*e/ell**3",
+      "fourth_moment": "a**4*y/ell**3",
+      "gradient_energy": "a**2*z/ell",
+      "quartic_diffusion": "a**4*d/ell",
+      "pressure_work": "a**5*p/ell**2"
+    },
+    "parameter_rates": {
+      "amplitude": "a*(2*a*ell*p/y + ell**2*nu*(-2*d/y + z/e))",
+      "spatial_scale": "4*ell*(a*ell*p/y + ell**2*nu*(-d/y + z/e))/3"
+    },
+    "observer_rates": {
+      "energy": "-2*Y**(2/3)*e**(1/3)*nu*z/(E**(1/3)*y**(2/3))",
+      "fourth_moment": "-4*Y**(5/3)*d*e**(4/3)*nu/(E**(4/3)*y**(5/3)) + 4*Y**(11/6)*e**(7/6)*p/(E**(7/6)*y**(11/6))"
+    },
+    "constants": {
+      "c_z": "e**(1/3)*z/y**(2/3)",
+      "alpha": "e**(5/6)*p/(3*y**(7/6)*z)",
+      "beta": "d*e/(3*y*z)"
+    },
+    "characteristic": "alpha*(E**(1/6) - E_star**(beta + 1/6)/E**beta)/(nu*(beta + 1/6))",
+    "clock_density": "E**(1/3)*q**4*y**(2/3)/(2*e**(1/3)*nu*z)",
+    "clock_upper": "324*E0**2*alpha**4*y**(2/3)/(1296*beta**4*e**(1/3)*nu**5*z + 864*beta**3*e**(1/3)*nu**5*z + 216*beta**2*e**(1/3)*nu**5*z + 24*beta*e**(1/3)*nu**5*z + e**(1/3)*nu**5*z)",
+    "force_L2_scale": "e**(2/3)/(E**(2/3)*q**5*y**(5/6))",
+    "force_clock_density": "e**(1/3)/(2*E**(1/3)*nu*q*y**(1/6)*z)",
+    "normalized_equation": {
+      "amplitude_drift": "epsilon*(-2*d/y + z/e) + 2*p/y",
+      "dilation_drift": "4*epsilon*(-d/y + z/e)/3 + 4*p/(3*y)",
+      "turnover_clock_density": "e**(5/6)/(2*E**(5/6)*nu*q*y**(1/6)*z)"
+    },
+    "near_endpoint_powers": {
+      "time_in_q": 5,
+      "amplitude_in_q": -3,
+      "frequency_in_q": -2,
+      "fourth_moment_in_q": -6,
+      "gradient_energy_in_q": -4,
+      "force_L2_lower_in_q": -5
+    },
+    "scope": "Positive constants are those of one fixed localized whole-space field. The concentrating curve solves the two-observer relaxation, not unforced NS."
+  },
+  "source_sha256": {
+    "bernoulli_pressure_return.py": "a1c70d17e180d30576934b26d1dafb51bcb6f7a08e39696cd0fbc193c4b94395",
+    "cellular_parent_history.py": "1cc74179f49e59a8d8227ecb503078f40d46a70c05e5b65b6fdc3f40483e6165",
+    "cellular_parent_refeeding.py": "ab1b19dc3b90e05e764fae5121c1f503d49bba2735bd6b6e25ca3eef921d6b04",
+    "cellular_transfer_reversal.py": "db6c2598353192a1d4c7df6a6baca3b4adac178e731f0bfcb5b408f6cad35144",
+    "coarse_receiver_history.py": "970c063716a3f66b88eb983df0c100cd4e16860497be5059fada4438a9cb2f93",
+    "covariance_poisson_corrector.py": "1a74c1325855c84149270ba30ed918f915e406cb4282b622e343c0c061d91178",
+    "covariance_velocity_defect.py": "c1ae0469b69f0e2ff795c2b9a2ceabbdb354b65c27e1c99de8e393e4023b1788",
+    "covector_fluid_bridge.py": "30b34cdbb4db250404b48b19fd7a6e43da316c841302300b72df74d6d8f08db9",
+    "covector_receiver_geometry.py": "53d833bebebbd61ff7575f16be0826a9f52dcd9aa27c63425040d167c9c77751",
+    "cyclic_entropy_depletion.py": "8edf1748e17c45a340449e2e08c0c5681d3d982c4b993cc445b0c9ccdec917bf",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "finite_band_renewal.py": "971ef0b98d97e2f91d1d974983ab802b14b38304f4430c6240a94b35d303c583",
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35",
+    "generated_mean_enstrophy.py": "fe28dbcbc37cdea01fef4caa7976415033d85c0bd5f643524970bbbf962c8955",
+    "heat_remainder_payment.py": "9538de4a33b98772a08a3d2187f1d7de2ef2e21016b9475c5065bd8687b3c15a",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "joint_coframe_pressure.py": "2efb3d20e2ccf24fb7ba0a51c670ceb600837fb1a95c5ae8d901a69e54127bd6",
+    "joint_parent_boundary.py": "0d1494e1d469eb0456e7ba272bec36f2f07be034cb36085178368ba9a5729fd5",
+    "joint_receiver_quadrature.py": "1186a6566073d32cd8c7979efcf6366f5da6d510fb9f40d04685a26f89f329e2",
+    "joint_receiver_tensor.py": "6590b2ff39b832073998bc065a04486b4c9320e4616e3039ea51871dee4baa75",
+    "joint_source_history.py": "90735dd208f42914367f623acbc3dd27271a4e6298051b331b65b1edb4cabdbd",
+    "kinetic_pressure_entropy.py": "f3225d854ff6ca63b322c655111d1fce5230dec717023596acf6e930d8f6876e",
+    "metric_loss_bellman.py": "1fb8cfff7cdf00f059a009c95d30ce70a8bc74ab4f741df08ebc80193965e5ec",
+    "normalized_receiver.py": "17fb47e486b6b5dbc304f2a08a69587dfa9f38f9c62f3be806dca220cb76e604",
+    "oscillatory_parent_release.py": "058a06209d48401fcca67ecac4fdd1ecbf2d00a7a00b66812c5bda9e4baf959d",
+    "paired_stretching_history.py": "5c4375eda70db811d404a6a710445d2334117f9e8f24d1159dc774340fd4f8c0",
+    "parent_return_history.py": "e8b87d021f288f8c35a8afe4174c5629efd833592a5325195aa7f47a389d51cb",
+    "passive_parent_bellman.py": "98d2add62e6e2ac9e870874ff41621c97eadb4f2ad476f3f05749fbd637c1ed3",
+    "pressure_adaptive_storage.py": "14ce251375dad3a5f2924d3dcb0942f911b3b71ee1f6e73aab24a18f0e2badd9",
+    "pressure_core_envelope.py": "b7e0335d286d1b648326d9a794b37f3efe8a1fd7e0a786d978ea097000645a34",
+    "pressure_diffusion_completion.py": "678c65a5fcfad3bc49bf4e6b97735c44ff4778b54510c43133066b322862abbb",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "pressure_impulse_history.py": "b1c2762553a0ca74c818728a5e2989fa7f575a30f27667b984bb8200e610690a",
+    "pressure_impulse_payment.py": "17f4407905329aa29d93edb485ed93d01c7935e3ab6704a29a86ecd6432f939f",
+    "pressure_impulse_return.py": "48f7e008ee23cf7570e04259ee50f59ad8952cde65e09bc21793237a4cc0af7b",
+    "pressure_memory_diffusion.py": "f6c58d3e677b1c4c00a5b83c0706d2a473027aea1cfada5e73e0299965696a80",
+    "pressure_oblique_return.py": "e96b250cd78d8f2de1c77e8e086dba019d0415e8cfc957849315d1efd25415ef",
+    "pressure_parent_bellman.py": "f68d59c970608515f1d015f2aa39186fd34fe47753884c3a4d0aad5504d3e13f",
+    "pressure_quadratic_storage.py": "cb78e2a84c4ee19091dc1ec8e687abec7e2c85d1a41dac007ee3c6eb5f1ea0dc",
+    "receiver_concentration.py": "90d638178f06b1b4be3fa1703556ef43d1181d0d95e0b6e929450afc544393ac",
+    "receiver_heat_corrector.py": "22c3f341b8ca5de75bfecb7ec98af117f905a023474ba3e26f45a779faddc959",
+    "receiver_source_square.py": "1ecf56e9d6b3e19aec34d243a2733f5c4cf77255df44e0096bdc983bc9ad3e6b",
+    "receiver_transport_covariance.py": "2b3c758d5a35f3fd26de8d51fe6604a030e0abdcefb3fe3a61947ce6d7eafdb5",
+    "reciprocal_parent_history.py": "48add13ba5c6244a2c79a4f7070d1027480068088bddccf79d198578ef7cb913",
+    "reciprocal_pattern_cycles.py": "cf3e44749952fbd3542436424e63e4c0f2efbce2a36cfa514798e41f33a5f97b",
+    "refeeding_stretching.py": "e52761a0283d0c50064bb450ffbfd039a2883aba2d0a574f53d7a41b4d4dfa57",
+    "reference_stretching_control.py": "00c6c2d1312b27d22bc07f698fe60c85a2361a198cf356c2e421bef19d400906",
+    "signed_impulse_geometry.py": "2b7b9cd828dbd1cb811cbbd090affdf84916faae719a5859cf5bc94ba73d5ac7",
+    "signed_reaction_renewal.py": "1789fdb962f7906eb248b31e527e1465353dc5bd59b7d56b41a1bf216f116a19",
+    "signed_viscous_pressure.py": "8c7d821934e3f616ef0fe7d9a49fb7ac3a13b1310fad01ba3d9cd589f4e3e6ca",
+    "signed_viscous_pressure_quadrature.py": "cf467420f689486dd46b849f0e51a3c3823c2e13dad52b48cdb938115af65b84",
+    "solenoidal_geometric_cost.py": "eca9f035f8747369046afdeac7d320690d399032b1bff15f3be424fe2a5d0757",
+    "strain_cycle_diffusion.py": "071d4e3d28af82511f9380db77a44de71d23ecafde2f6d43d13b636d5aec4326",
+    "strain_cycle_reserve.py": "ffda40024936e64f1c3120fcc24c0a511cf2e0b14e4738f4bf829ebabcdb56a8",
+    "transverse_strain_history.py": "aba06b0298a9d18bccc8f0b0e9c38213ee72a44a456fd239b96e597a37249c97",
+    "two_observer_bellman.py": "2015122745358756b9c5f03c0d64adc7ba695ecc9a37677564d5afa7cb2ef89f"
+  },
+  "certification": "Exact algebra only. Localization, the forced lift, coercivity obstruction and divergence conclusions are analytic; no Lean certification or unforced singularity is claimed."
+}
