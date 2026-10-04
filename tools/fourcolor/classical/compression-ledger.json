@@ -6126,5 +6126,31 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_connection_experiment": {
+    "classification": "CHECKED_DIRECT_REPAIR_OR_JOINT_CONNECTION",
+    "report": "../near-linear/strip-six-connection-measurements.json",
+    "generic_law": "Actual port-six component failure derives two boundary forms; one switch reconstructs unless two marked ports belong to the same complementary component.",
+    "joint_information": "Both residual walks start at port seven in the same actual component.",
+    "consumers": "Two boundary forms on the actual source rim; arbitrary exteriors retain the conditional repair or joint alternative.",
+    "new_boundary_repair_table_bytes": 0,
+    "new_lean_source_bytes": 16855,
+    "audit": {
+      "roots": 7,
+      "transitive_dependency_declarations": 3830,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "remaining": [
+      "Geometric continuation of the joint-connection branch.",
+      "The port-five branch and other boundary domains.",
+      "Occurrence supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

@@ -1,5 +1,33 @@
 # Near-linear Four Colour catalogue bridges
 
+## A port-six failure gives a direct repair or joint connections
+
+[`StripSixConnection`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixConnection.lean)
+handles a precise residual case of the singleton repair: its zero/one
+component reaches port six but misses port eight. Proper rim edges force
+one of two boundary forms. For both, the zero/two component at port seven
+has a footprint described by three Boolean membership observations.
+
+If that component misses either marked port, one switch and a common
+eight-vertex core formula reconstruct an actual source colouring. Otherwise
+both marked ports remain in the same actual component, and the theorem
+retains two walks from port seven. The pair is zero/five in the first form
+and two/four in the second. Exterior size and component size are unrestricted.
+The result does not yet provide a continuation for the joint-connection case.
+
+`StripSixRim` applies the same repair to both forms on the actual source rim,
+where its neighbours isolate port seven's zero/two component. These are
+one-switch applications; they do not establish isolation in arbitrary
+exteriors. The [independent verifier](audit_strip_six_connection.py) checks
+the two forms and twelve permitted Boolean cases against the pinned D0099
+source, without a table of boundary colourings or repair histories.
+
+Replay `lake build kernelStripSixConnection`; the
+[measurement receipt](strip-six-connection-measurements.json) records the
+cost and dependency audit. Geometric continuation, the port-five branch,
+broader boundary domains, occurrence supply, strict reduction, coverage
+and termination remain open. No catalogue removal is credited.
+
 ## A failed component guard supplies a geometric alternative
 
 [`StripConnectionGeometry`](../../../lean/fourcolor-classical/MettapediaFourColor/StripConnectionGeometry.lean)

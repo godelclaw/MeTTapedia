@@ -1414,3 +1414,17 @@ target kernelStripConnectionRepair pkg : Unit := do
         "StripConnectionExample", "StripConnectionAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the joint-connection alternative for the port-six branch. -/
+target kernelStripSixConnection pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-connection",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripSixConnection",
+        "StripSixRim", "StripSixConnectionAudit"]
+      cwd := pkg.dir
+      env := env }

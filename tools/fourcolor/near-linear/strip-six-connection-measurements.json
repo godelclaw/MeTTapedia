@@ -1,0 +1,67 @@
+{
+  "classification": "CHECKED_DIRECT_REPAIR_OR_JOINT_CONNECTION",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSixConnection",
+      "source_sha256": "4c337b7b1c44cadec61ba377f758ff2d44fbee5d0ccfa5758da6ddde88ac2955",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.05,
+      "olean_bytes": 721168,
+      "olean_sha256": "c8614d6b9232c389902c15bfb439359215d3886ab8bbd02bd85b041831345a20"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixRim",
+      "source_sha256": "4e92008f8f56bccebd6ca53bbb771c8ab298386fb753e7413571234fab46b586",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.143,
+      "olean_bytes": 52560,
+      "olean_sha256": "56b0a012961f60f7a5e8f8706576b306c8333c3f704a2dd89d32916e3f580462"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixConnectionAudit",
+      "source_sha256": "95cce2ef7e82938b37dd1402baaeb65e786b595a07ef176abb0c0f47e31b143b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.573,
+      "olean_bytes": 2592,
+      "olean_sha256": "100db192d3cdd212ef6fe9e5f655f810d88e19bc50a137550c438b3845066335"
+    }
+  ],
+  "frontend_wall_seconds_total": 11.766,
+  "timing_scope": "Three modules replayed with existing dependencies built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 16855,
+  "new_boundary_repair_table_bytes": 0,
+  "audit": {
+    "roots": 7,
+    "transitive_dependency_declarations": 3830,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "A zero/one component hitting port six but missing port eight forces two exact boundary forms in the stated D0099 list domain.",
+    "A single zero/two component has a three-bit boundary footprint.",
+    "Missing either marked port supplies one actual component switch and a compatible source colouring by a shared formula.",
+    "Otherwise the same component retains two actual walks from port seven.",
+    "Both boundary forms on the actual source rim consume the same one-switch theorem."
+  ],
+  "residual_obligations": [
+    "Geometric continuation of the joint-connection branch.",
+    "The port-five branch and other boundary domains.",
+    "Occurrence supply, strict reduction, compact coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripSixConnection kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_six_connection.py"
+  ],
+  "evidence_record": "strip-six-connection-audit.json"
+}
