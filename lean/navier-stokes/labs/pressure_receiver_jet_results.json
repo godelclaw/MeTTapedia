@@ -1,0 +1,511 @@
+{
+  "scope": "Numerical initial NS tangents on Gaussian data in increasing periodic boxes. No certified continuum sign, physical time interval, unforced singularity or arbitrary-history bound.",
+  "density": "h0=10^(-4) exp(-rho^2), H_e=1+r^2h0; L=1, ell=100, A(0)=0",
+  "cases": [
+    {
+      "n": 128,
+      "box": 16.0,
+      "B": 2.23606797749979,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 2.9530518648229567,
+      "delta": -1.730056671049723e-16,
+      "R": 0.5988402367932444,
+      "C": 0.013784658287967454,
+      "pressure_stock": 0.0002001378145072274,
+      "D": 15.711120136303308,
+      "D_beta": 0.002217303055636026,
+      "W_high": -0.06689053649157628,
+      "coefficients": {
+        "R_Euler": -0.06209067012544435,
+        "C_Euler": -0.0002711526113428579,
+        "B_Euler": -5.890018780509574e-07,
+        "R_viscous": -15.711120136303308,
+        "C_viscous": -0.505469932281176,
+        "B_viscous": -0.011195496814848114
+      },
+      "errors": {
+        "divergence": 2.275957200481571e-15,
+        "poisson_mean": 4.3115095145257597e-16,
+        "Euler_pressure_derivative": 1.4146269589254995e-15,
+        "viscous_pressure_derivative": 7.716938668725181e-14,
+        "base_transport_balance": 2.438674772439753e-06
+      },
+      "diagnostic_checks": {
+        "energy_error": 2.6645352591003757e-15,
+        "anisotropy_error": 6.372079466368234e-17,
+        "inferred_viscous_polynomial_max": -15.384299533169292,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    },
+    {
+      "n": 192,
+      "box": 16.0,
+      "B": 2.23606797749979,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 2.953051864822949,
+      "delta": -2.893556948596859e-16,
+      "R": 0.5988384455442408,
+      "C": 0.01378471072968701,
+      "pressure_stock": 0.00020013777377299804,
+      "D": 15.71105502202091,
+      "D_beta": 0.002217421932902091,
+      "W_high": -0.06688830856366687,
+      "coefficients": {
+        "R_Euler": -0.06209057506536782,
+        "C_Euler": -0.00027122597244862693,
+        "B_Euler": -5.887004612660033e-07,
+        "R_viscous": -15.71105502202091,
+        "C_viscous": -0.5054726981151016,
+        "B_viscous": -0.01119549310205575
+      },
+      "errors": {
+        "divergence": 4.6629367034256575e-15,
+        "poisson_mean": 7.110774234493472e-16,
+        "Euler_pressure_derivative": 3.127561259306726e-15,
+        "viscous_pressure_derivative": 1.8055802939086055e-13,
+        "base_transport_balance": 3.123725256654053e-07
+      },
+      "diagnostic_checks": {
+        "energy_error": 4.884981308350689e-15,
+        "anisotropy_error": 1.8007082241839597e-16,
+        "inferred_viscous_polynomial_max": -15.384231682241666,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    },
+    {
+      "n": 192,
+      "box": 24.0,
+      "B": 2.23606797749979,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 2.9530518648229545,
+      "delta": -6.115297022343881e-17,
+      "R": 0.5988402367932447,
+      "C": 0.013784654922010751,
+      "pressure_stock": 0.00020013818420878477,
+      "D": 15.711120136303302,
+      "D_beta": 0.0022173047407633532,
+      "W_high": -0.06689053649157622,
+      "coefficients": {
+        "R_Euler": -0.062090673491400926,
+        "C_Euler": -0.00027087581389171055,
+        "B_Euler": -5.693031902288655e-07,
+        "R_viscous": -15.711120136303302,
+        "C_viscous": -0.5054741509511004,
+        "B_viscous": -0.011195816787912998
+      },
+      "errors": {
+        "divergence": 2.3175905639050143e-15,
+        "poisson_mean": 1.2559714680923035e-16,
+        "Euler_pressure_derivative": 1.2920106023449247e-15,
+        "viscous_pressure_derivative": 5.815780940747065e-14,
+        "base_transport_balance": 2.438674772439753e-06
+      },
+      "diagnostic_checks": {
+        "energy_error": 4.440892098500626e-16,
+        "anisotropy_error": 4.813190221785115e-17,
+        "inferred_viscous_polynomial_max": -15.384300111985226,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    },
+    {
+      "n": 256,
+      "box": 32.0,
+      "B": 2.23606797749979,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 2.953051864822955,
+      "delta": -1.148480689980753e-16,
+      "R": 0.5988402367932443,
+      "C": 0.013784654990262647,
+      "pressure_stock": 0.0002001382036215989,
+      "D": 15.71112013630331,
+      "D_beta": 0.002217304825051076,
+      "W_high": -0.06689053649157627,
+      "coefficients": {
+        "R_Euler": -0.06209067342314918,
+        "C_Euler": -0.0002708430864000926,
+        "B_Euler": -5.670459639925429e-07,
+        "R_viscous": -15.71112013630331,
+        "C_viscous": -0.5054746593227514,
+        "B_viscous": -0.01119585257929072
+      },
+      "errors": {
+        "divergence": 1.7763568394002505e-15,
+        "poisson_mean": 4.603644918066116e-16,
+        "Euler_pressure_derivative": 9.396937129132915e-16,
+        "viscous_pressure_derivative": 4.5052780648341e-14,
+        "base_transport_balance": 2.438674772377303e-06
+      },
+      "diagnostic_checks": {
+        "energy_error": 8.881784197001252e-16,
+        "anisotropy_error": 5.563196556785333e-18,
+        "inferred_viscous_polynomial_max": -15.384300141342237,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    },
+    {
+      "n": 128,
+      "box": 16.0,
+      "B": 2.8284271247461903,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 3.6913148310286914,
+      "delta": -0.3691314831028693,
+      "R": 0.9747514786482955,
+      "C": 0.02366634811181032,
+      "pressure_stock": 0.0005332527607221608,
+      "D": 24.856020461641805,
+      "D_beta": 0.005749910876705946,
+      "W_high": -0.03470649301081452,
+      "coefficients": {
+        "R_Euler": -0.028347781026175634,
+        "C_Euler": -0.0007972972891048857,
+        "B_Euler": 3.083239984803341e-05,
+        "R_viscous": -24.856020461641805,
+        "C_viscous": -0.865353770017671,
+        "B_viscous": -0.02878000824724864
+      },
+      "errors": {
+        "divergence": 2.6645352591003757e-15,
+        "poisson_mean": 4.0173562829402025e-16,
+        "Euler_pressure_derivative": 1.3544651096895755e-15,
+        "viscous_pressure_derivative": 7.372274675043914e-14,
+        "base_transport_balance": 2.593589980642852e-06
+      },
+      "diagnostic_checks": {
+        "energy_error": 1.3322676295501878e-15,
+        "anisotropy_error": 1.6653345369377348e-16,
+        "inferred_viscous_polynomial_max": -24.399423307468837,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    },
+    {
+      "n": 192,
+      "box": 16.0,
+      "B": 2.8284271247461903,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 3.6913148310286887,
+      "delta": -0.36913148310286964,
+      "R": 0.9747485629792029,
+      "C": 0.02366637648942561,
+      "pressure_stock": 0.0005332525418451679,
+      "D": 24.855916619334753,
+      "D_beta": 0.005750703003896375,
+      "W_high": -0.03470431388694638,
+      "coefficients": {
+        "R_Euler": -0.02834787207667437,
+        "C_Euler": -0.0007973470198536355,
+        "B_Euler": 3.083242097621227e-05,
+        "R_viscous": -24.855916619334753,
+        "C_viscous": -0.8653554257990654,
+        "B_viscous": -0.02877999651296875
+      },
+      "errors": {
+        "divergence": 5.0411064211886014e-15,
+        "poisson_mean": 1.426689779959661e-16,
+        "Euler_pressure_derivative": 3.2345949036125146e-15,
+        "viscous_pressure_derivative": 2.0669816888512056e-13,
+        "base_transport_balance": 3.322157220222999e-07
+      },
+      "diagnostic_checks": {
+        "energy_error": 3.9968028886505635e-15,
+        "anisotropy_error": 1.6653345369377348e-16,
+        "inferred_viscous_polynomial_max": -24.399318061588044,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    },
+    {
+      "n": 192,
+      "box": 24.0,
+      "B": 2.8284271247461903,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 3.6913148310286927,
+      "delta": -0.3691314831028693,
+      "R": 0.9747514786482958,
+      "C": 0.02366574025810099,
+      "pressure_stock": 0.0005331724822631997,
+      "D": 24.85602046164177,
+      "D_beta": 0.00574958831042275,
+      "W_high": -0.034706493010814535,
+      "coefficients": {
+        "R_Euler": -0.028348388879884886,
+        "C_Euler": -0.0007976212582512594,
+        "B_Euler": 3.085450987211923e-05,
+        "R_viscous": -24.85602046164177,
+        "C_viscous": -0.8653391174289107,
+        "B_viscous": -0.028776709514910147
+      },
+      "errors": {
+        "divergence": 2.4424906541753444e-15,
+        "poisson_mean": 2.496351133389298e-16,
+        "Euler_pressure_derivative": 1.4761611969371873e-15,
+        "viscous_pressure_derivative": 4.439430826118588e-14,
+        "base_transport_balance": 2.5935899806393825e-06
+      },
+      "diagnostic_checks": {
+        "energy_error": 0.0,
+        "anisotropy_error": 1.6653345369377348e-16,
+        "inferred_viscous_polynomial_max": -24.399408735493218,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    },
+    {
+      "n": 256,
+      "box": 32.0,
+      "B": 2.8284271247461903,
+      "L": 1.0,
+      "nu": 0.01,
+      "amplitude": 1.0,
+      "kappa": 0.0001,
+      "ell": 100.0,
+      "E": 3.6913148310286914,
+      "delta": -0.36913148310286936,
+      "R": 0.9747514786482956,
+      "C": 0.023665668669175046,
+      "pressure_stock": 0.0005331631995829449,
+      "D": 24.85602046164181,
+      "D_beta": 0.005749551021772537,
+      "W_high": -0.03470649301081454,
+      "coefficients": {
+        "R_Euler": -0.028348460468810923,
+        "C_Euler": -0.0007976580621939202,
+        "B_Euler": 3.085703912392681e-05,
+        "R_viscous": -24.85602046164181,
+        "C_viscous": -0.8653374045971338,
+        "B_viscous": -0.02877632743073758
+      },
+      "errors": {
+        "divergence": 1.7763568394002505e-15,
+        "poisson_mean": 1.3761672441033483e-16,
+        "Euler_pressure_derivative": 9.728305950676223e-16,
+        "viscous_pressure_derivative": 4.1599242002398886e-14,
+        "base_transport_balance": 2.593589980587341e-06
+      },
+      "diagnostic_checks": {
+        "energy_error": 1.3322676295501878e-15,
+        "anisotropy_error": 1.1102230246251565e-16,
+        "inferred_viscous_polynomial_max": -24.399407059838772,
+        "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "swirl_squared": 5,
+      "comparison": "grid",
+      "from_n": 128,
+      "from_box": 16.0,
+      "to_n": 192,
+      "to_box": 16.0,
+      "B_Euler_before": -5.890018780509574e-07,
+      "B_Euler_after": -5.887004612660033e-07,
+      "relative_change": 0.0005120036500496143
+    },
+    {
+      "swirl_squared": 5,
+      "comparison": "box16_to24",
+      "from_n": 128,
+      "from_box": 16.0,
+      "to_n": 192,
+      "to_box": 24.0,
+      "B_Euler_before": -5.890018780509574e-07,
+      "B_Euler_after": -5.693031902288655e-07,
+      "relative_change": 0.034601400730202986
+    },
+    {
+      "swirl_squared": 5,
+      "comparison": "box24_to32",
+      "from_n": 192,
+      "from_box": 24.0,
+      "to_n": 256,
+      "to_box": 32.0,
+      "B_Euler_before": -5.693031902288655e-07,
+      "B_Euler_after": -5.670459639925429e-07,
+      "relative_change": 0.003980675958663928
+    },
+    {
+      "swirl_squared": 8,
+      "comparison": "grid",
+      "from_n": 128,
+      "from_box": 16.0,
+      "to_n": 192,
+      "to_box": 16.0,
+      "B_Euler_before": 3.083239984803341e-05,
+      "B_Euler_after": 3.083242097621227e-05,
+      "relative_change": 6.852585099835498e-07
+    },
+    {
+      "swirl_squared": 8,
+      "comparison": "box16_to24",
+      "from_n": 128,
+      "from_box": 16.0,
+      "to_n": 192,
+      "to_box": 24.0,
+      "B_Euler_before": 3.083239984803341e-05,
+      "B_Euler_after": 3.085450987211923e-05,
+      "relative_change": 0.0007165897036593776
+    },
+    {
+      "swirl_squared": 8,
+      "comparison": "box24_to32",
+      "from_n": 192,
+      "from_box": 24.0,
+      "to_n": 256,
+      "to_box": 32.0,
+      "B_Euler_before": 3.085450987211923e-05,
+      "B_Euler_after": 3.085703912392681e-05,
+      "relative_change": 8.19667693138349e-05
+    }
+  ],
+  "growth_diagnostics": [
+    {
+      "swirl_squared": 5,
+      "n": 256,
+      "box": 32.0,
+      "amplitude": 512,
+      "nu": 0.01,
+      "rows": [
+        {
+          "sign": 1,
+          "J": 7.210738761466754e+18,
+          "J_prime": -1.4493883274263554e+19,
+          "D_star": 7.988682547304333e+17,
+          "F_star": -1.3695015019862964e+19,
+          "gap": -1.409444914722818e+19,
+          "viscous_J_prime": -4.0337310177241595e+18
+        },
+        {
+          "sign": -1,
+          "J": 7.210738666739326e+18,
+          "J_prime": 6.426420320606796e+18,
+          "D_star": 7.988682547304333e+17,
+          "F_star": 7.225288575667075e+18,
+          "gap": 6.825854448301859e+18,
+          "viscous_J_prime": -4.0337309829882056e+18
+        }
+      ]
+    },
+    {
+      "swirl_squared": 8,
+      "n": 256,
+      "box": 32.0,
+      "amplitude": 16,
+      "nu": 0.01,
+      "rows": [
+        {
+          "sign": 1,
+          "J": 17890069865.5535,
+          "J_prime": 6910440464.65969,
+          "D_star": 1929230206.0085692,
+          "F_star": 8839670253.988237,
+          "gap": 7875055150.9839525,
+          "viscous_J_prime": -9655762593.322859
+        },
+        {
+          "sign": -1,
+          "J": 17889914770.22731,
+          "J_prime": -26221992581.06328,
+          "D_star": 1929230206.0085692,
+          "F_star": -24292761958.37469,
+          "gap": -25257377061.378975,
+          "viscous_J_prime": -9655705882.570711
+        }
+      ]
+    }
+  ],
+  "independent_public_amplitude_rerun": {
+    "n": 128,
+    "box": 16.0,
+    "B": 2.8284271247461903,
+    "L": 1.0,
+    "nu": 0.01,
+    "amplitude": 16.0,
+    "kappa": 0.0001,
+    "ell": 100.0,
+    "E": 3.6913148310286914,
+    "delta": -0.3691314831028693,
+    "R": 0.9747514786482955,
+    "C": 0.02366634811181032,
+    "pressure_stock": 0.0005332527607221608,
+    "D": 24.856020461641805,
+    "D_beta": 0.005749910876705946,
+    "W_high": -0.03470649301081452,
+    "coefficients": {
+      "R_Euler": -0.028347781026175634,
+      "C_Euler": -0.0007972972891048857,
+      "B_Euler": 3.083239984803341e-05,
+      "R_viscous": -24.856020461641805,
+      "C_viscous": -0.865353770017671,
+      "B_viscous": -0.02878000824724864
+    },
+    "rows": [
+      {
+        "sign": 1,
+        "J": 17893075040.935562,
+        "J_prime": 6895977295.489699,
+        "D_star": 1929350953.2874987,
+        "F_star": 8825327832.052649,
+        "gap": 7860652355.408899,
+        "viscous_J_prime": -9656997670.932371
+      },
+      {
+        "sign": -1,
+        "J": 17892919941.156574,
+        "J_prime": -26209999528.209984,
+        "D_star": 1929350953.2874987,
+        "F_star": -24280648158.197937,
+        "gap": -25245323634.841686,
+        "viscous_J_prime": -9656940959.107698
+      }
+    ],
+    "errors": {
+      "divergence": 2.6645352591003757e-15,
+      "poisson_mean": 4.0173562829402025e-16,
+      "Euler_pressure_derivative": 1.3544651096895755e-15,
+      "viscous_pressure_derivative": 7.372274675043914e-14,
+      "base_transport_balance": 2.593589980642852e-06
+    },
+    "diagnostic_checks": {
+      "energy_error": 1.3322676295501878e-15,
+      "anisotropy_error": 1.6653345369377348e-16,
+      "inferred_viscous_polynomial_max": -24.399423307468837,
+      "scope": "Floating-point identity and resolution checks; no certified continuum sign or time interval."
+    },
+    "source_sha256": "b7308ff88c8c3dd7437d193b667b85d9bcd8769717cd7cc207ee09a02ed1ede7"
+  },
+  "numerical_kernel_ast_sha256": {
+    "Grid": "e2194365a82b79e01bff3bb579fac9607876e45943ec4e6f20d6c1144003b696",
+    "jet": "8753811ba310262c1383fa58ebdd15a4beb39ce428646dc8b178ee5bb0b035c2"
+  },
+  "source_sha256": {
+    "pressure_receiver_jet.py": "b7308ff88c8c3dd7437d193b667b85d9bcd8769717cd7cc207ee09a02ed1ede7",
+    "pressure_receiver_corrector.py": "6afba3d34f456a975ab03c761b4fc77115df3d8043bf96a26bbc7543c916af8a",
+    "pressure_tensor_turnover.py": "bdeddcbf953dc2af648d63f7381d848a763a4d8734f7369426a655dff8cd7882"
+  }
+}

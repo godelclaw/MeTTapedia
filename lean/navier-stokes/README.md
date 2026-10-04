@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [full-tangent diagnostic](labs/README.md#full-initial-tangents-test-pressure-stock-regeneration)
+tests the completed pressure/receiver stock using pressure variation from
+the full NS velocity tangent. In two Gaussian families, diffusion reduces
+the computed stock while nonlinear pressure production has opposite signs.
+A large-amplitude case shows growth despite positive viscosity. Grid and
+box refinements preserve the signs; a rigorous continuum sign bound is
+still missing. This is numerical evidence about differential payment,
+not a proved failure of a full-datum history allowance.
+
 The [joint pressure/receiver correction](labs/README.md#a-joint-pressure-correction-needs-a-positive-completion)
 identifies a pressure cancellation from diffusion of both interacting
 factors. The signed correction alone can overwhelm the stock on actual

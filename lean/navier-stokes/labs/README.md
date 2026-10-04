@@ -49888,3 +49888,148 @@ parameters, concentration exponents, the two-factor evolution identity,
 coercivity, weighted diffusion flux and actual Taylor--Green calibration.
 The integral identities, local PDE realization and conditional consumer
 remain analytic. No Lean declarations or axioms change.
+
+## Full initial tangents test pressure-stock regeneration
+
+`pressure_receiver_jet.py` evaluates the completed stock in (EC7) using
+the full initial NS tangent and its induced pressure variation. The
+numerical signs are stable under grid refinement and box enlargement.
+They suggest that nonlinear regeneration defeats instantaneous payment
+for this candidate at large amplitude. A rigorous continuum enclosure
+is still required: these results are not analytic counterexample theorems,
+time-evolved histories or Lean certificates.
+
+### Pressure variation comes from the same fluid
+
+Use the Gaussian V_b of (TR2), with b^2=5 or 8, and the fixed parameters
+
+```text
+e=1, h0=10^(-4)exp(-rho^2), H_e=1+r^2h0,
+L=1, ell=100, A(0)=0, nu=0.01.
+N(V)=-(V.grad)V-grad p,
+u_t=N(V)+nu Delta V,
+-Delta p_t=partial_i partial_j(u_t,i V_j+V_i u_t,j)
+          =2trace(grad V grad u_t).                    (JT1)
+```
+
+The code checks both pressure-variation formulas independently. It
+retains w_t=u_t,h+delta grad_h q0 and the actual circulation derivative
+H_e,t=nu(partial_rr-r^-1 partial_r+partial_zz)H_e-V.grad H_e.
+The density differs from the rational-density test in (EC5); it is
+another smooth positive finite-mass choice. All parameters are fixed
+before the initial tangent is evaluated. No independent pressure or
+body force is supplied.
+
+The Gaussian is sampled in increasing periodic boxes to approximate the
+whole-space calculation. The full tangent formula is evaluated on each
+grid; spectral truncation, spatial quadrature and periodic images remain
+numerical errors. An initial tangent in a box is not a whole-space
+interval proof or an axisymmetric periodic continuation theorem.
+
+### Exact homogeneity isolates the proposed failure
+
+Write R_E,C_E,B_E for unit-datum directional derivatives from the
+complete nonlinear tangent, including observer transport and A'=delta.
+Write R_D,C_D,B_D for the unit viscous direction, including the induced
+pressure and density changes. For actual data u0=sigma c V_b,
+sigma in {-1,1}, c>0, homogeneity gives
+
+```text
+R'=sigma c^4 R_E+nu c^3 R_D,
+C'=c^5 C_E+sigma nu c^4 C_D,
+B'=sigma c^7 B_E+nu c^6 B_D,
+J_star'=R'+C'/(2nu)+2B'/nu^3.                         (JT2)
+```
+
+The canonical initial pressure is unchanged by sigma; its nonlinear
+time derivative reverses. In particular, treating p_t as nu Delta p
+would discard the physical pressure production that (JT1) retains.
+The complete Gaussian energy calculation from the earlier fixtures gives
+
+```text
+E(0)=c^2 sqrt(2)pi^(3/2)(b^2+7)/32,
+E'(0)=-7nu c^2 sqrt(2)pi^(3/2)(b^2+9)/16<0.           (JT3)
+```
+
+For any fixed finite observation parameters, a proved B_E>0 would make
+the positive-sign seventh-degree term dominate the sixth-degree viscous
+term for sufficiently large c. A proved B_E<0 would do the same with
+sigma=-1. This implication is algebraic; the signs reported below are
+numerical estimates of those continuum coefficients.
+
+### Refinement distinguishes resolution from box error
+
+The archive contains both families at (n,box)=(128,16),(192,16),
+(192,24),(256,32). The first pair refines the grid in the same box.
+The side 16, 24 and 32 runs at n=128, 192 and 256 have spacing 1/8.
+On the largest box:
+
+| Gaussian parameter | B_E | B_D | C_D | R_D |
+| --- | ---: | ---: | ---: | ---: |
+| b^2=5, isotropic energy tensor | -5.67045964e-7 | -0.01119585258 | -0.5054746593 | -15.71112014 |
+| b^2=8 | 3.08570391e-5 | -0.02877632743 | -0.8653374046 | -24.85602046 |
+
+For b^2=8, the B_E change from 128^3 to 192^3 in the side 16 box is
+0.0000685%; enlarging side 24 to 32 at fixed spacing changes it by 0.00820%.
+For b^2=5 the corresponding changes are 0.0512% and 0.398%. The latter
+coefficient is substantially smaller and more sensitive to the boundary.
+Agreement between refinements is evidence, not a certified error bound.
+
+In these eight runs the independent pressure-variation discrepancies are
+below 2.1e-13. The observable transport-balance discrepancy is below 2.6e-6
+on the spacing 1/8 grids, decreasing below 3.4e-7 on the finer side 16 grid.
+The nonpolynomial observation therefore has a larger quadrature error
+than the pressure identities. Neither discrepancy bounds all continuum
+errors. The code rejects unresolved identities and reports these errors
+separately rather than labelling the calculation exact.
+
+### The complete reserve grows in the adverse numerical case
+
+For b^2=8,c=16,nu=0.01, the side 32 calculation and (JT2) give
+
+| Initial velocity | J_star | J_star' | Viscous contribution to J_star' | F_star-D_star/2 |
+| --- | ---: | ---: | ---: | ---: |
+| +16 V_b | 1.78900699e10 | 6.91044046e9 | -9.65576259e9 | 7.87505515e9 |
+| -16 V_b | 1.78899148e10 | -2.62219926e10 | -9.65570588e9 | -2.52573771e10 |
+
+F_star and D_star are the full quantities of (EC9), including the
+pressure-stock diffusion and all mixed terms. A separate public-tool
+run at 128^3 and amplitude 16 agrees with the homogeneity evaluation of
+the unit coefficients. The large stock values include the nu^-3 factor;
+the original reserve is not normalized to one.
+
+The computed viscous part is favorable throughout the amplitude range,
+not only at this displayed amplitude. For the estimated B_D<0, its
+normalized polynomial is
+
+```text
+P_sigma(a)=R_D+sigma a C_D/2+2a^3 B_D, a=c/nu>0,
+sup_(a>=0,sigma)P_sigma(a)
+ =R_D+(|C_D|/3)sqrt(|C_D|/(12|B_D|)).                 (JT4)
+```
+
+Using the largest-box coefficients gives approximately -15.3843 for
+b^2=5 and -24.3994 for b^2=8. These are deductions from numerical
+coefficients, not certified all-amplitude continuum inequalities.
+They show why the algebraic nonconvexity in (EC9) does not alone settle
+the physically constrained viscous test. Here the unresolved adverse
+contribution is nonlinear regeneration of the pressure observation.
+
+### What this test can decide
+
+The current evidence targets F_star<=D_star/2 and monotone payment from
+the completed stock. It does not refute (EC10)'s finite full-datum
+integrated allowance, a separately chosen cutoff, or global regularity.
+The examples have large finite initial resources and only their initial
+tangents are evaluated. No repeated renewal, time interval or blowup is
+established. The next mathematical obligation is to enclose the actual
+whole-space sign and then test its payment over a retained history.
+
+Reproduce the amplitude test with
+`python3 -O labs/pressure_receiver_jet.py --n 128 --box 16 --swirl-squared 8 --amp 16`.
+For the archived unit coefficients use `--amp 1`, the four grid/box
+pairs above and `--swirl-squared 5` or `8`. The archive records all
+coefficients, identity errors, box comparisons and source hashes.
+Its numerical kernel was checked identical across the exploratory and
+published runs. Python compilation and the diagnostic checks pass.
+No Lean declarations or axioms change.
