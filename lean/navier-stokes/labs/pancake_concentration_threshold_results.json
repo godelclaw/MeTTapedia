@@ -1,0 +1,497 @@
+{
+  "family": [
+    {
+      "mu": 1,
+      "normal": 1,
+      "phase": -1,
+      "energy": "5/2",
+      "enstrophy": "11",
+      "dissipation": "58",
+      "stretching": "2",
+      "normal_vorticity_squared": "1",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -2,
+          -1,
+          -3
+        ],
+        [
+          -1,
+          -2,
+          -3
+        ],
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          1,
+          3
+        ]
+      ]
+    },
+    {
+      "mu": 1,
+      "normal": 1,
+      "phase": 1,
+      "energy": "5/2",
+      "enstrophy": "11",
+      "dissipation": "58",
+      "stretching": "-2",
+      "normal_vorticity_squared": "1",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -2,
+          -1,
+          -3
+        ],
+        [
+          -1,
+          -2,
+          -3
+        ],
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          1,
+          3
+        ]
+      ]
+    },
+    {
+      "mu": 1,
+      "normal": 2,
+      "phase": -1,
+      "energy": "17/8",
+      "enstrophy": "101/4",
+      "dissipation": "779/2",
+      "stretching": "13/2",
+      "normal_vorticity_squared": "1",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -2,
+          -1,
+          -6
+        ],
+        [
+          -1,
+          -2,
+          -6
+        ],
+        [
+          1,
+          2,
+          6
+        ],
+        [
+          2,
+          1,
+          6
+        ]
+      ]
+    },
+    {
+      "mu": 1,
+      "normal": 2,
+      "phase": 1,
+      "energy": "17/8",
+      "enstrophy": "101/4",
+      "dissipation": "779/2",
+      "stretching": "-13/2",
+      "normal_vorticity_squared": "1",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -2,
+          -1,
+          -6
+        ],
+        [
+          -1,
+          -2,
+          -6
+        ],
+        [
+          1,
+          2,
+          6
+        ],
+        [
+          2,
+          1,
+          6
+        ]
+      ]
+    },
+    {
+      "mu": 1,
+      "normal": 3,
+      "phase": -1,
+      "energy": "37/18",
+      "enstrophy": "451/9",
+      "dissipation": "14618/9",
+      "stretching": "14",
+      "normal_vorticity_squared": "1",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -2,
+          -1,
+          -9
+        ],
+        [
+          -1,
+          -2,
+          -9
+        ],
+        [
+          1,
+          2,
+          9
+        ],
+        [
+          2,
+          1,
+          9
+        ]
+      ]
+    },
+    {
+      "mu": 1,
+      "normal": 3,
+      "phase": 1,
+      "energy": "37/18",
+      "enstrophy": "451/9",
+      "dissipation": "14618/9",
+      "stretching": "-14",
+      "normal_vorticity_squared": "1",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -2,
+          -1,
+          -9
+        ],
+        [
+          -1,
+          -2,
+          -9
+        ],
+        [
+          1,
+          2,
+          9
+        ],
+        [
+          2,
+          1,
+          9
+        ]
+      ]
+    },
+    {
+      "mu": 2,
+      "normal": 5,
+      "phase": -1,
+      "energy": "52/25",
+      "enstrophy": "3641/25",
+      "dissipation": "335953/25",
+      "stretching": "79",
+      "normal_vorticity_squared": "4",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -4,
+          -2,
+          -15
+        ],
+        [
+          -2,
+          -4,
+          -15
+        ],
+        [
+          2,
+          4,
+          15
+        ],
+        [
+          4,
+          2,
+          15
+        ]
+      ]
+    },
+    {
+      "mu": 2,
+      "normal": 5,
+      "phase": 1,
+      "energy": "52/25",
+      "enstrophy": "3641/25",
+      "dissipation": "335953/25",
+      "stretching": "-79",
+      "normal_vorticity_squared": "4",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -4,
+          -2,
+          -15
+        ],
+        [
+          -2,
+          -4,
+          -15
+        ],
+        [
+          2,
+          4,
+          15
+        ],
+        [
+          4,
+          2,
+          15
+        ]
+      ]
+    },
+    {
+      "mu": 3,
+      "normal": 8,
+      "phase": -1,
+      "energy": "265/128",
+      "enstrophy": "23441/64",
+      "dissipation": "2741881/32",
+      "stretching": "603/2",
+      "normal_vorticity_squared": "9",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -6,
+          -3,
+          -24
+        ],
+        [
+          -3,
+          -6,
+          -24
+        ],
+        [
+          3,
+          6,
+          24
+        ],
+        [
+          6,
+          3,
+          24
+        ]
+      ]
+    },
+    {
+      "mu": 3,
+      "normal": 8,
+      "phase": 1,
+      "energy": "265/128",
+      "enstrophy": "23441/64",
+      "dissipation": "2741881/32",
+      "stretching": "-603/2",
+      "normal_vorticity_squared": "9",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -6,
+          -3,
+          -24
+        ],
+        [
+          -3,
+          -6,
+          -24
+        ],
+        [
+          3,
+          6,
+          24
+        ],
+        [
+          6,
+          3,
+          24
+        ]
+      ]
+    },
+    {
+      "mu": 4,
+      "normal": 16,
+      "phase": -1,
+      "energy": "65/32",
+      "enstrophy": "1361",
+      "dissipation": "1223968",
+      "stretching": "1568",
+      "normal_vorticity_squared": "16",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -8,
+          -4,
+          -48
+        ],
+        [
+          -4,
+          -8,
+          -48
+        ],
+        [
+          4,
+          8,
+          48
+        ],
+        [
+          8,
+          4,
+          48
+        ]
+      ]
+    },
+    {
+      "mu": 4,
+      "normal": 16,
+      "phase": 1,
+      "energy": "65/32",
+      "enstrophy": "1361",
+      "dissipation": "1223968",
+      "stretching": "-1568",
+      "normal_vorticity_squared": "16",
+      "input_modes": 6,
+      "full_source_modes": 10,
+      "newly_generated_modes": [
+        [
+          -8,
+          -4,
+          -48
+        ],
+        [
+          -4,
+          -8,
+          -48
+        ],
+        [
+          4,
+          8,
+          48
+        ],
+        [
+          8,
+          4,
+          48
+        ]
+      ]
+    }
+  ],
+  "symbolic": {
+    "parameter": "r>0",
+    "stretching": "r*(r**2 + 3)/2",
+    "scope": "Orthogonality calculates the whole polynomial, independently of the rational family fixtures."
+  },
+  "angular": {
+    "ordered_triads": 12,
+    "gamma": 0,
+    "width": "3"
+  },
+  "mixed": {
+    "full_stretching": "582/7",
+    "core_stretching": "79",
+    "mixed_strain_cube": "-87/28",
+    "exterior_terms": 7
+  },
+  "generated_leakage": {
+    "energy": "49/32",
+    "enstrophy": "833/2",
+    "dissipation": "113288",
+    "stretching": "0",
+    "normal_vorticity_squared": "16",
+    "input_modes": 4,
+    "full_source_modes": 4,
+    "newly_generated_modes": [
+      [
+        -4,
+        -4,
+        -32
+      ],
+      [
+        -4,
+        4,
+        0
+      ],
+      [
+        4,
+        -4,
+        0
+      ],
+      [
+        4,
+        4,
+        32
+      ]
+    ],
+    "exterior_frequency": [
+      4,
+      -4,
+      0
+    ],
+    "exterior_source": [
+      "I",
+      "I",
+      "-I/4"
+    ],
+    "scope": "Instantaneous generation outside the fixed initial cone; small L3 leakage is a separate allowed condition."
+  },
+  "scaling": {
+    "periodic_polynomials": {
+      "E": "r**2/2 + 2",
+      "Z": "r**4 + 5*r**2 + 5",
+      "D": "2*r**6 + 13*r**4 + 26*r**2 + 17",
+      "G": "r**3/2 + 3*r/2"
+    },
+    "physical_energy": "a^2 E(r)/(mu^2 lambda)",
+    "physical_ratio": "mu G(r)/(nu sqrt(lambda) D(r) sqrt(E(r)))",
+    "asymptotic_ratio": "c/nu * lambda^(2 gamma - 3/2)",
+    "scope": "The displayed numerical coefficients are periodic. A fixed Schwartz localization has different positive leading coefficients, established analytically."
+  },
+  "threshold": {
+    "sigma": "3/2 - 2*gamma",
+    "core_exponent": "5/2+2 gamma",
+    "whole_space_constant": "3 B^2 sqrt(E0)/pi",
+    "torus_constant": "24 B(B+1) sqrt(E0)",
+    "leakage_constant": "8 sqrt(3) C_S",
+    "unit_torus_consumer_bound": "2(E0+Z0 exp(2 L H))/(2 pi)^2",
+    "hypotheses": "0<=gamma<3/4; B>0; R>=1; complete exterior L3<=nu/(32 sqrt(3) C_S) at each time."
+  },
+  "source_sha256": {
+    "pancake_concentration_threshold.py": "980e1c687eb64366c0a29e7bce112e53d53b6582c104fc9ebedad4cdd74d940b",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "reciprocal_pattern_cycles.py": "cf3e44749952fbd3542436424e63e4c0f2efbce2a36cfa514798e41f33a5f97b"
+  },
+  "scope": "Exact algebraic fixtures. General convolution bounds, Schwartz localization and actual local evolution are analytic, not Lean-certified. Arbitrary-history propagation remains open."
+}

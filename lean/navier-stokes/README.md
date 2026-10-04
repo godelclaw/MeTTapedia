@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [quantitative pancake estimate](labs/README.md#spectral-pancake-width-and-a-critical-leakage-payment)
+pays stretching on every smooth unforced prefix if the transverse spectral
+width grows slower than the three-quarter power of frequency and the complete
+exterior stays small in L3. The common spectral axis may change with time.
+The bound retains all mixed interactions and gives an explicit gradient-energy
+continuation bound. Increasingly thin, energy-normalized whole-space data
+show why unrestricted sideways concentration defeats the corresponding
+pointwise absorption estimate. Another exact source immediately creates
+motion outside its initial spectral region. Propagating the width and leakage
+conditions from arbitrary data remains open. The physical estimates and
+localization are analytic with exact Fourier checks, not new Lean certificates.
+
 The [actual-return energy test](labs/README.md#actual-pattern-returns-have-no-uniform-fractional-energy-toll)
 shows that genuine three-dimensional unforced pattern cycles can lose an
 arbitrarily small fraction of their initial kinetic energy while accumulating

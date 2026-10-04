@@ -46380,3 +46380,311 @@ fixture amplitudes meet the small perturbation threshold. The analytic
 argument supplies existence, phase coordinates, comparison and the actual
 integrated bounds. The archive hashes every transitive local Python source.
 No Lean declarations, axioms or numerical PDE enclosures change.
+
+## Spectral pancake width and a critical leakage payment
+
+`pancake_concentration_threshold.py` checks the algebra behind a quantitative
+geometric payment. It distinguishes thinning from sideways concentration:
+a common spectral axis can suppress stretching, but allowing the transverse
+frequencies to grow too quickly defeats energy-based viscous absorption.
+The sufficient condition below tolerates a small complete exterior and
+applies along actual unforced histories. Its propagation from arbitrary
+initial data is not established.
+
+This uses the same full-triad summation as (281)--(282), with an additional
+angular gain and a smaller occupied frequency volume. High-frequency
+absorption builds on the established dissipation-range approach of
+[Cheskidov and Shvydkoy](https://arxiv.org/abs/1102.1944).
+Their intermittency and dissipation-wavenumber criteria are not identified
+with the spectral condition below. The exterior estimate uses Betchov's
+identity, already available in `MettapediaNS.WholeSpaceBetchov`.
+No priority claim or arbitrary-data regularity theorem is made.
+
+### An all-prefix bound with a moving common spectral axis
+
+Use normalized period-2pi T3 or R3 with unitary Fourier transform. Write
+
+```text
+E=||u||2^2, Z=||grad u||2^2=||curl u||2^2,
+D=||Delta u||2^2=||grad curl u||2^2,
+g=integral (curl u)^T grad u (curl u).
+
+E'=-2nu Z,              Z'/2+nu D=g.                     (PC1)
+```
+
+Fix nu>0, H>0 and an admissible original datum, with E0=E(0)>0.
+Let B>0, R>=1 and 0<=gamma<3/4 be fixed from this datum, viscosity
+and horizon. At every available time suppose there is a unit n, possibly
+different at each time, and decompose the COMPLETE current field by
+
+```text
+Omega_n={k: |k|<=R or |k-(k.n)n|<=B |k|^gamma},
+w_hat=1_(Omega_n) u_hat,       v=u-w,
+||v||3 <= nu/(32 sqrt(3) C_S).                           (PC2)
+```
+
+Here C_S is a fixed domain Sobolev constant for matrix fields:
+`||A||6<=C_S||grad A||2`, with zero mean on T3. The low ball retains
+the constant mode. The multiplier is even and scalar, so w,v are real,
+solenoidal and preserve Sobolev regularity. Its L2 and derivative L2
+operator norms are at most one. No L3 boundedness of this sharp multiplier
+is assumed; the actual L3 norm of v is the explicit hypothesis.
+
+Define the following constants, independent of the future solution:
+
+```text
+c_domain=sqrt(27) on T3,  1/(sqrt(10)pi) on R3,
+A_geom=24 B(B+1)sqrt(E0) on T3,  3 B^2 sqrt(E0)/pi on R3,
+sigma=3/2-2gamma>0,
+K=max(R,(4 A_geom/nu)^(1/sigma)),
+L=3 c_domain sqrt(E0) R^(5/2)+A_geom K^(2-sigma).
+
+g(u)<=nu D/2+L Z,
+Z(t)<=Z(0) exp(2 L H)       for every available t<=H.     (PC3)
+```
+
+Thus the geometric hypothesis yields an explicit all-prefix gradient-energy
+bound. If (PC2) is established on every same-data smooth prefix for every
+prescribed H, it supplies the physical estimate required by the existing
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound`.
+The periodic consumer is `FourierTameContinuation.exists_tameSolutionOn_of_orderOne`;
+its exact weight is `(1+|k|)^2`, at most `2(1+|k|^2)`, and its physical
+torus has period one. From the present period-2pi flow take
+`U(t,x)=u(t,2pi x)/(2pi)` and viscosity `nu/(2pi)^2`.
+Its finite-sum order-one energies are bounded by
+`2[E0+Z(0)exp(2LH)]/(2pi)^2`. The consumer's stated realness,
+solenoidality, mean-zero and initial regularity hypotheses remain.
+A nonzero periodic mean can first be removed by the usual Galilean
+change of coordinates. The estimate is analytic;
+no new Lean connection theorem is claimed. E0=0 gives the zero solution
+directly from (PC1) and is handled separately.
+
+### Angular gain and complete triad summation
+
+First estimate g(w) instantaneously. On the high-frequency part of its
+support, write k_perp=k-(k.n)n. For omega_hat(b)=i b cross w_hat(b),
+
+```text
+|n.omega_hat(b)| <= |b_perp| |w_hat(b)|,
+|a.omega_hat(b)|
+ <= B (|a|^gamma |b|+|a| |b|^gamma) |w_hat(b)|.            (PC4)
+```
+
+For a triad a+b+c=0 with all magnitudes above R, let ell be the smallest
+magnitude and P,Q the other two. Each monomial in the resulting stretching
+bound is at most `ell^gamma P Q`: putting the smaller exponent on the
+smallest magnitude only increases the product when gamma<=1. Consequently
+each ordered summand is bounded by
+
+    2 B ell^gamma P Q |w_hat(a)||w_hat(b)||w_hat(c)|.
+
+Partition according to which of the three frequencies is smallest, using
+a symmetric overcount for ties. In each part, apply the arithmetic-geometric
+mean bound to the higher pair and interchange that pair. This gives
+
+```text
+|g_high(w)| <= 6 B sum_p |p|^2 |w_hat(p)|^2
+                         sum_(k in Omega_high, |k|<=|p|)
+                                      |k|^gamma |w_hat(k)|,
+```
+
+with the unitary convolution factor on R3. The frequency set in the inner
+sum lies in a cylinder of length 2|p| and radius B|p|^gamma. In R3 its
+volume is at most `2pi B^2 |p|^(1+2gamma)`, so Cauchy--Schwarz gives
+`B sqrt(E0)/(2pi) |p|^(1/2+2gamma)` after Fourier normalization.
+
+For arbitrary n on T3, put disjoint unit cubes around the selected lattice
+points. For M>=1 they fit in a cylinder of length at most 4M and radius
+at most `(B+1)M^gamma`. The count is therefore at most
+`4pi(B+1)^2 M^(1+2gamma)<=16(B+1)^2 M^(1+2gamma)`.
+This bound does not rotate the torus lattice or assume n is rational.
+It yields the torus constant in (PC3). Thus
+
+```text
+|g_high(w)| <= A_geom sum_p |p|^(5/2+2gamma)|w_hat(p)|^2
+             = A_geom sum_p |p|^(4-sigma)|w_hat(p)|^2
+             <= nu D/4+A_geom K^(2-sigma) Z.             (PC5)
+```
+
+The last step splits at K and uses the L2 contraction of the projection.
+Triads with any frequency at most R are bounded by the generic cubic
+coefficient `|a||b||c|`, the same smallest-frequency partition, and the
+ball bound from (282):
+
+    |g_low(w)|<=3 c_domain sqrt(E0) R^(5/2) Z.             (PC6)
+
+All receiving roles, phases and low/high interactions remain. Pressure
+was removed by the actual curl identity in (PC1), not omitted from the
+equation. These are estimates on the current full field; w is never
+asserted to satisfy an autonomous unforced equation. No derivative of n,
+moving projection or reset of initial energy occurs. Only the uniform
+existence of a suitable n and the bounds in (PC2) are used at each time.
+
+### Paying the complete exterior without dropping mixed interactions
+
+For a solenoidal field a, let S(a) be its symmetric velocity gradient.
+Betchov gives `g(a)=-(4/3) integral tr(S(a)^3)`. Put A=S(u), W=S(w),
+V=S(v)=A-W. The exact noncommutative telescoping identity is
+
+```text
+tr(A^3)-tr(W^3)=tr(V A A)+tr(W V A)+tr(W W V).             (PC7)
+```
+
+Equivalently it retains all seven cubic terms with at least one exterior
+factor. In each term cyclically move V to the front and integrate its
+single derivative by parts. For a,b in {u,w}, Frobenius norm bounds,
+Holder's inequality and the fixed Sobolev constant give
+
+```text
+|integral tr(S(v)S(a)S(b))|
+ <= sqrt(3)||v||3 (||grad S(a)||2||S(b)||6
+                                +||S(a)||6||grad S(b)||2)
+ <= 2sqrt(3) C_S ||v||3 ||Delta a||2 ||Delta b||2.
+
+|g(u)-g(w)|<=8sqrt(3) C_S ||v||3 D<=nu D/4.               (PC8)
+```
+
+The factor sqrt(3) safely bounds divergence by the full derivative of a
+matrix. Symmetrization has norm at most one. Periodic integration, or
+Sobolev approximation on R3, justifies the integrations by parts.
+Combining (PC5), (PC6), (PC8) and the actual equation (PC1) yields
+`Z'+nu D<=2LZ`, hence (PC3). This critical exterior payment is independent
+of the sign of internal energy transfer.
+
+### Thinning alone permits excessive initial stretching
+
+The sufficient transverse exponent has a matching scaling obstruction
+for this pointwise energy-and-width estimate. For positive integers
+mu,lambda consider the real periodic three-wave field with carriers
+
+```text
+k=(mu,0,lambda),       polarization (0,1,0),
+p=(0,mu,lambda),       polarization (1,0,0),
+q=(-mu,-mu,-2lambda),  polarization (1,1,-mu/lambda),
+```
+
+where the k,p waves are cosines and the q wave is minus sine.
+Write r=mu/lambda. All modes
+are divergence-free and have zero mean. The exact normalized torus values are
+
+```text
+E=2+r^2/2,
+Z=lambda^2 (5+5r^2+r^4),
+D=lambda^4 (17+26r^2+13r^4+2r^6),
+g=lambda^3 (3r+r^3)/2,
+||omega_3||2^2=mu^2.                                    (PC9)
+```
+
+Changing the q sine's sign reverses g while preserving all these quadratic
+values. Canonical pressure and the complete nonlinear source, including
+new outputs, are retained by the checker. This seed is not treated as a
+closed three-mode evolution. Its frequencies span a plane; no claim of
+three independent periodic frequency directions is needed.
+
+To obtain finite-energy whole-space data, use the base field V at mu=lambda=1.
+Choose a periodic vector potential A with curl A=V and a nonnegative,
+nonzero Schwartz envelope phi with compact Fourier support near zero.
+Such an envelope is obtained by squaring a real band-limited Schwartz
+function. For a sufficiently large but fixed ell put
+
+    W=curl(phi(x/ell) A(x)).                              (PC10)
+
+This is a real solenoidal Schwartz field. Its Fourier support consists
+of small neighborhoods of the base carriers, so |xi_3| is bounded away
+from zero and |xi_perp| is bounded above. Define
+
+```text
+S_r=diag(1,1,r),      grad_r=(r partial_1,r partial_2,partial_3),
+E_W(r)=||W_h||2^2+r^2||W_3||2^2,
+G_W(r)=integral curl_r(S_r W)^T grad_r(S_r W) curl_r(S_r W),
+D_W(r)=||Delta_r(S_r W)||2^2.
+```
+
+These are finite polynomials: E_W has degree two, D_W has even powers
+through degree six, and G_W has odd powers through degree five.
+Let `e0=E_W(0)>0`, `d0=D_W(0)>0`, `g0=lim_(r->0)G_W(r)/r`.
+Localization and averaging the explicit periodic coefficients in (PC9) give
+
+```text
+ell^(-3)e0 -> 2 integral phi^2,
+ell^(-3)d0 ->17 integral phi^2,
+ell^(-3)g0 ->(3/2) integral phi^3>0.                     (PC11)
+```
+
+Indeed W=phi(x/ell)V plus terms with an envelope derivative; differentiated
+terms have the same leading part and lower-order errors. Every coefficient
+here is a local quadratic or cubic derivative integral. Nonzero periodic
+frequencies average to zero after rescaling, and Schwartz decay controls
+the errors. Choose ell once so g0>0. The numerical periodic coefficients
+are not asserted to be the exact localized coefficients.
+
+For any fixed 3/4<gamma<1 let mu=lambda^gamma, r=mu/lambda and set
+
+```text
+u_lambda(x)=a_lambda S_r W(mu x1,mu x2,lambda x3),
+a_lambda=mu sqrt(lambda)/sqrt(E_W(r)).
+
+||u_lambda||2^2=1,      div u_lambda=0,
+g(u_lambda)/(nu D(u_lambda))
+ = mu G_W(r)/(nu sqrt(lambda) D_W(r) sqrt(E_W(r)))
+ ~ g0/(nu d0 sqrt(e0)) lambda^(2gamma-3/2) ->infinity.    (PC12)
+```
+
+All constants describing the spectral width can remain fixed across this
+family: the support has transverse size O(mu), normal size comparable to
+lambda, and hence satisfies `|k_perp|<=B|k|^gamma` for one fixed B and R=1
+once lambda is large. Its angular aperture tends to zero. Moreover
+`||omega_3||2^2/||omega||2^2=O(r^2)->0`. This is planar polarization of
+vorticity, not coherence along a single common vorticity direction.
+
+Thus arbitrarily thin, unit-energy data can have g>nu D. Smooth local
+unforced NS existence and continuity preserve the strict inequality on
+a nonzero interval, with its duration allowed to shrink across the family.
+Since D/Z is comparable to lambda^2, (PC12) also rules out a finite
+coefficient L depending only on E0,nu,B,R,gamma in the corresponding
+pointwise inequality `g<=nu D/2+LZ` for all such data when gamma>3/4.
+It does not refute an allowance depending on the full datum, the signed
+time-integrated renewal budget, or global regularity. The endpoint
+gamma=3/4 has no strict high-frequency gain in this argument; small
+coefficients can still permit absorption there.
+
+### The history obligation is visible in the generated source
+
+Exact confinement is not preserved merely because it holds initially.
+With mu=4, lambda=16 take only the two cosine inputs
+
+```text
+k=(mu,0,lambda), polarization (0,1,0),
+p=(0,mu,lambda), polarization (1,1,-mu/lambda).
+```
+
+Both lie in the gamma=1/2, B=R=1 region about e3. The COMPLETE unforced
+nonlinearity has a nonzero coefficient at q=k-p=(mu,-mu,0):
+
+    N_hat(q)=i (mu/4,mu/4,-mu^2/(4lambda)).               (PC13)
+
+This mode is above R and outside that initial region. Diffusion has zero
+coefficient there initially, so an actual smooth solution generates it
+to first order in time. The small-exterior condition in (PC2) allows such
+generation, but its persistence must be proved. The finite fixture does
+not rule out a different moving axis, a larger datum-fixed region, or a
+finite payment for intervals where leakage exceeds the displayed threshold.
+
+The next physical task is therefore quantitative: control the full
+generated exterior and transverse concentration over compatible histories,
+including their feedback into the core. Several patches with unrelated
+normals require additional estimates. Merely observing that pancakes
+become thin, or resetting the spectral region after each burst, does not
+supply (PC2). This step provides a sufficient physical bound and a tested
+failure boundary, not its arbitrary-data propagation.
+
+Run `python3 -O labs/pancake_concentration_threshold.py`. The archive
+`pancake_concentration_threshold_results.json` checks twelve rational
+family fixtures, canonical pressure, the actual energy and enstrophy
+identities, the universal anisotropic polynomials, all twelve ordered
+triads of a cylinder fixture, Betchov, a nonzero complete mixed-cubic split, exterior
+generation, the anisotropic change of variables and both scaling exponents.
+It hashes every transitive local Python source. The convolution bounds,
+whole-space localization and PDE persistence are analytic arguments,
+not certified by these finite computations. No Lean declarations or axioms
+change; the arbitrary-data history estimate remains open.
