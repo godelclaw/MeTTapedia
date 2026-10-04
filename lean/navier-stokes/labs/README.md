@@ -49895,9 +49895,11 @@ remain analytic. No Lean declarations or axioms change.
 the full initial NS tangent and its induced pressure variation. The
 numerical signs are stable under grid refinement and box enlargement.
 They suggest that nonlinear regeneration defeats instantaneous payment
-for this candidate at large amplitude. A rigorous continuum enclosure
-is still required: these results are not analytic counterexample theorems,
-time-evolved histories or Lean certificates.
+for this candidate at large amplitude. These grid calculations do not
+supply their own continuum enclosure.
+The subsequent [validated whole-space sign](#a-validated-whole-space-sign-rejects-instantaneous-pressure-stock-monotonicity)
+certifies the b^2=8 nonlinear coefficient separately. The remaining table
+entries are numerical; no time-evolved history or Lean certificate is claimed.
 
 ### Pressure variation comes from the same fluid
 
@@ -50022,8 +50024,8 @@ the completed stock. It does not refute (EC10)'s finite full-datum
 integrated allowance, a separately chosen cutoff, or global regularity.
 The examples have large finite initial resources and only their initial
 tangents are evaluated. No repeated renewal, time interval or blowup is
-established. The next mathematical obligation is to enclose the actual
-whole-space sign and then test its payment over a retained history.
+established. The subsequent certificate encloses the b^2=8 whole-space sign. Its
+payment over a retained history remains open.
 
 Reproduce the amplitude test with
 `python3 -O labs/pressure_receiver_jet.py --n 128 --box 16 --swirl-squared 8 --amp 16`.
@@ -50040,8 +50042,10 @@ No Lean declarations or axioms change.
 calculation of B_E in (JT2). The complete canonical pressure and its
 nonlinear time derivative have finite Gaussian-mixture representations.
 A separate analytic estimate bounds the entire exterior contribution.
-The remaining compact-region integral is still evaluated numerically;
-its error is not enclosed, so a positive continuum sign is not yet proved.
+This section supplies the representation and exterior error. Its
+compact-region quadrature below is numerical; the subsequent
+[validated core calculation](#a-validated-whole-space-sign-rejects-instantaneous-pressure-stock-monotonicity)
+adds the missing error enclosure and proves the positive sign.
 
 ### The same physical pressure has a compact mixture representation
 
@@ -50187,7 +50191,7 @@ This is an analytic tail estimate with exact algebraic checks. It is not
 a numerical assertion inferred from a small last shell, and it is not
 yet Lean-certified.
 
-### The remaining compact-core obligation
+### The compact-core obligation passed to the validated calculation
 
 The two public whole-space quadratures on |x|<=64 give:
 
@@ -50200,11 +50204,11 @@ The finer pressure-stock estimate is B=0.0005331600600274718. These
 agree with the previous increasing-box calculation, whose largest-box
 B_E was 3.085703912392681e-5. The small difference between quadrature
 orders does not certify a quadrature error. Only the exterior error in
-(WG8) is bounded analytically here.
+(WG8) is bounded analytically in this section.
 
 A certified lower bound greater than 1e-5 for the compact-core integral
-would suffice, with (WG8), to prove B_E>0. That is the next precise
-obligation. Together with (JT2), such a sign would disprove universal
+suffices, with (WG8), to prove B_E>0. The validated calculation below
+discharges this obligation. Together with (JT2), that sign disproves universal
 instantaneous monotonicity of the completed stock at large amplitude.
 It would not refute a finite full-datum allowance over a complete history,
 a separately chosen cutoff, or global regularity. No physical time interval
@@ -50213,5 +50217,176 @@ or repeated renewal follows from this initial-derivative calculation.
 Run `python3 -O labs/pressure_wholespace_regeneration.py --check-only` for
 the exact identities and constants. The archive also records the two
 quadrature runs, their parameters and source hashes. Python compilation
-and the exact checks pass. The compact-core sign enclosure remains open;
-no Lean declarations or axioms change.
+and the exact checks pass. The separate core certificate below completes
+the sign argument; no Lean declarations or axioms change.
+
+## A validated whole-space sign rejects instantaneous pressure-stock monotonicity
+
+`pressure_core_enclosure.py` closes the compact-core sign obligation in
+(WG8) for the fixed b^2=8 Gaussian, L=1, e=1 and kappa=1/10000. It encloses
+all quadrature, Taylor, density-weight and rounding errors. Together with
+the analytic spatial-tail estimate, the result is
+
+```text
+0.0000213 < B_E < 0.0000404.                            (VC1)
+```
+
+This is a validated numerical certificate and an analytic consequence of
+the physical formulas (WG1)--(WG8). It is not a Lean certificate. In
+particular, it does not assert that the displayed amplitude c=16 from
+the numerical table preceding (JT4) has a certified positive full derivative.
+
+### Preserve the radial correlations before taking intervals
+
+Write rho=|x| and mu=z/rho. Reflection symmetry reduces mu to [0,1]. The
+signed radial components of the complete horizontal responses have the form
+
+```text
+beta=rho sqrt(1-mu^2) P(rho,mu^2),
+beta_E=rho sqrt(1-mu^2) Q(rho,mu^2),                   (VC2)
+```
+
+where P has degree two and Q degree three in mu^2. Their radial
+coefficients are the finite sums of heat moments (WG5). No angular
+component is discarded. Direct interval substitution in those sums loses
+the cancellations between repeated radii, so the tool first constructs
+radial Taylor series. If S=rho^2, then
+
+```text
+partial_S^j J_k(alpha,S)=(-alpha)^j J_(k+j)(alpha,S).    (VC3)
+```
+
+Each underlying moment is evaluated with the entire hypergeometric formula
+
+```text
+I_k(v)=int_0^v t^(2k)exp(-alpha S t^2)dt
+      =v^(2k+1) 1F1(k+1/2;k+3/2;-alpha S v^2)/(2k+1).
+```
+
+An integration-by-parts recurrence is used where division by alpha S is
+bounded away from zero. Both representations are evaluated in Arb/Acb
+balls. The complex extension is used only to bound analytic radial and
+mixture coefficients, never to differentiate the absolute value in (VC2).
+
+For completeness, the moment majorants used on those complex domains are
+explicit. Put b=Re(alpha S v^2). Parametrizing the straight segment to v
+bounds |I_k(v)| by
+
+```text
+|v|^(2k+1) exp(max(0,-b))/(2k+1),
+```
+
+and, if b>0, also by
+
+```text
+|v|^(2k+1) Gamma(k+1/2)/(2 b^(k+1/2)).
+```
+
+For v=(1+4alpha)^(-1/2), correlation in the exponent is retained using,
+for a=Re(alpha)>0,
+
+```text
+a/(1+4a) <= Re(alpha/(1+4alpha)) <= 1/4,
+|Im(alpha/(1+4alpha))| <= |Im(alpha)|/(1+4a)^2.
+```
+
+These bounds, the triangle inequality in (WG5), and the exact rational
+coefficient factors give all complex majorants below.
+
+### Every mixture rule and radial truncation has a remainder
+
+The mixture interval has eight panels of width h=1/8, with a 16-point
+Gauss rule on each. For each real point in a panel the Cauchy disk has
+radius eta=2h. The bounding rectangle consequently has real half-width
+h/2+eta and imaginary half-width eta. Throughout it,
+Re(1+2tau^2)>=7/8; no coefficient pole or square-root branch cut is crossed.
+
+If |f|<=M on that domain, the Gauss error is at most
+
+```text
+h (h/eta)^(2n) M / [(2n+1) binom(2n,n)^2], n=16.      (VC4)
+```
+
+This is the usual Gauss derivative remainder combined with Cauchy's
+bound on the derivative of order 2n. To integrate a radial Taylor
+coefficient of order j, apply the same estimate with M/delta^j, where
+delta=1/4 is its radial Cauchy radius. Thus the Taylor coefficients include
+the error of their own mixture integration, not just node rounding.
+
+Radial slabs have width delta=1/4. On a disk of radius R=4delta around
+each slab center, separate majorants bound every radial coefficient of
+P and Q. After degree N=24, the remainder at distance d<R is bounded by
+
+```text
+M (d/R)^(N+1)/(1-d/R).                                 (VC5)
+```
+
+The implementation uses d=5delta/8, slightly larger than the real slab
+half-width to cover outward rounding. A domain check rejects any cell
+outside this bound. Real mixture panels suffice for the truncation
+majorant; their integrals are bounded by panel width times an interval
+majorant.
+
+### Real interval integration handles sign-changing cells
+
+Each radial slab has sixteen subintervals. There are 256 angular
+subintervals and 1,048,576 real cells in total. On each cell, interval
+arithmetic bounds |P|P Q, P^2|Q| and |P|^3 directly. This is valid even
+when P changes sign. The positive integration measure is
+
+```text
+dm=4pi rho^5 (1-mu^2)^(3/2) d rho d mu.               (VC6)
+```
+
+Its radial factor integrates exactly. The angular factor has primitive
+[3asin(mu)+mu sqrt(1-mu^2)(5-2mu^2)]/8, evaluated with directed ball
+rounding. There is therefore no omitted outer quadrature remainder.
+
+Let I0=int 3|P|P Q dm, A0=int 3P^2|Q| dm, B0=int |P|^3 dm on the core.
+The original density is retained through an explicit two-sided error.
+Its Euler-direction time derivative is
+
+```text
+H_E=2kappa r^2(1-r^2)exp(-2rho^2),
+0<=H-1<=kappa, |H_E|<=2kappa.
+```
+
+The last inequalities follow from the positive exponential series.
+Consequently, using the derivative bound for H^(-3/2) on H>=1,
+
+```text
+|B_E,core-I0| <= (3kappa/2) A0 +3kappa B0.              (VC7)
+```
+
+The complete density error is below 1.80e-7. The certified core interval
+has endpoints approximately 2.13768815e-5 and 4.03504387e-5. Adding (WG8)
+with both signs gives (VC1); the exact outward rational endpoints in
+(VC1) are also checked by the program.
+
+### What the sign decides about the physical reserve
+
+For u0=cV_8 and fixed positive viscosity, (JT2) gives
+
+```text
+J_star'(0)=(2/nu^3)c^7 B_E + lower-degree terms in c.    (VC8)
+```
+
+All other initial coefficients are finite for this Gaussian. Thus J_star
+has positive initial derivative at sufficiently large amplitude, although
+the actual unforced kinetic-energy derivative in (JT3) is negative. This
+rejects universal instantaneous monotonicity of this particular completed
+stock. Pressure regeneration comes from the same initial fluid, with no
+independent force or pressure input.
+
+The result leaves (EC10)'s finite full-datum integrated allowance open.
+A stock may rise temporarily while a different reserve pays for its
+history. No bound for repeated renewal, a datum-chosen observation cutoff,
+or arbitrary-data continuation follows from this initial sign calculation.
+
+Run `python3 -O labs/pressure_core_enclosure.py` with `python-flint==0.9.0`
+and the existing lab dependencies. The archive records the 256-bit
+precision, all mathematical partitions, both interval endpoints and source
+hashes. The program also reruns the exact whole-space identities and
+analytic tail constants. Its trust boundary includes those analytic
+arguments, the Python implementation and Arb/Acb arithmetic. No Lean
+declarations or axioms are changed.

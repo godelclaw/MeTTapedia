@@ -36,22 +36,31 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [validated pressure-regeneration sign](labs/README.md#a-validated-whole-space-sign-rejects-instantaneous-pressure-stock-monotonicity)
+now encloses the whole-space initial coefficient between 0.0000213 and
+0.0000404 for the fixed Gaussian observation. Every mixture, spatial,
+density and rounding error is included, with an analytic bound at infinity.
+Combined with exact amplitude homogeneity, this rejects universal
+instantaneous monotonicity of the completed pressure/receiver stock on
+unforced data. The finite full-datum history allowance remains open.
+The result uses validated ball arithmetic and analytic arguments; it is
+not a new Lean theorem.
+
 The [whole-space regeneration calculation](labs/README.md#whole-space-pressure-regeneration-has-a-controlled-spatial-tail)
-expresses the Gaussian pressure and its complete nonlinear variation as
-finite Gaussian mixtures. An analytic bound controls the entire omitted
-spatial tail of the pressure-stock derivative. The remaining finite-region
-quadrature agrees with the earlier box diagnostic, but its numerical error
-is not yet enclosed. The sign and the full-history payment remain open;
-exact symbolic checks verify the algebra, with no new Lean theorem.
+provides the exact Gaussian-mixture representation of pressure and its
+complete nonlinear variation, together with the analytic tail estimate
+used by that certificate.
 
 The [full-tangent diagnostic](labs/README.md#full-initial-tangents-test-pressure-stock-regeneration)
 tests the completed pressure/receiver stock using pressure variation from
 the full NS velocity tangent. In two Gaussian families, diffusion reduces
 the computed stock while nonlinear pressure production has opposite signs.
 A large-amplitude case shows growth despite positive viscosity. Grid and
-box refinements preserve the signs; a rigorous continuum sign bound is
-still missing. This is numerical evidence about differential payment,
-not a proved failure of a full-datum history allowance.
+box refinements preserve the signs. The b^2=8 nonlinear coefficient now
+has the separate whole-space certificate above; the other reported
+coefficients and fixed-amplitude derivative remain numerical. These
+results concern differential payment; the full-datum history allowance
+remains open.
 
 The [joint pressure/receiver correction](labs/README.md#a-joint-pressure-correction-needs-a-positive-completion)
 identifies a pressure cancellation from diffusion of both interacting
