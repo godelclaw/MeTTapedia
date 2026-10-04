@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint pressure-gradient stock](labs/README.md#whole-history-pressure-payment-depends-on-the-joint-parent-strengths)
+integrates through the entire viscous decay, including source creation and
+the return into the original parents. An initially favorable example later
+exceeds its cubic forecast's total allowance. A different joint balance of
+the same three parents gives an all-time original-stock payment, with a
+uniform analytic remainder in a small-data neighborhood. This pressure clock
+feeds the existing stochastic continuation consumer. The result tests actual
+complete histories, but does not leave the small-data regime or provide a
+new Lean certificate.
+
 The [pressure-source return test](labs/README.md#pressure-producing-capacity-can-renew-before-its-original-modes-recover)
 follows the resource suggested by the preceding pressure-storage obstruction.
 Generated source modes can outweigh a depleting return into the original

@@ -41891,3 +41891,323 @@ The Fourier recurrence retains every generated output and is independently
 checked at rational viscosity. The physical intervals, uniform remainder
 and source-to-clock consumer are analytic, not newly Lean-certified.
 No Lean declarations or axioms change.
+
+## Whole-history pressure payment depends on the joint parent strengths
+
+A favorable initial pressure return need not pay the complete history.
+For the m=2 oblique datum, the pressure-gradient cost initially falls below
+its original cubic forecast, but eventually exceeds that forecast's total
+allowance. A second result identifies a joint-parent balance for which the
+original pressure-gradient stock pays every prefix of the actual evolution.
+Both conclusions retain all generated parents and the complete viscous tail.
+The actual-flow transfer remains in a small-data neighborhood.
+
+### A cumulative cost with a direct continuation consumer
+
+On the normalized period-2pi torus, define
+
+```text
+C(T)=integral_0^T ||grad p(t)||2^2 dt.
+```
+
+This observation is invariant under Galilean translation. Unlike the
+Eulerian source Xi, it does not change merely because the observation frame
+moves. The fixed torus Sobolev constant from (PS7) gives
+
+```text
+L(T)=integral_0^T ||Hess(-Delta)^(-1)p||4^2 <= C_T^2 C(T),
+Phi_u(T)<=36 C_T^4 C(T)^2/nu^2.                    (PG1)
+```
+
+The second line is the same-history forward/backward estimate (TR), not
+an independence assumption. A finite original-data allowance for C on
+every available prefix would therefore feed periodic continuation (636).
+C is still stronger than L; estimating C is a sufficient choice, not a
+necessary characterization of regularity. Its advantage in this test is
+that it is a nonnegative accumulated cost with an exact full-time expansion.
+
+### Complete viscous pressure histories
+
+For viscosity one and initial datum epsilon U_m, write the actual pressure
+amplitude expansion as
+
+```text
+p_epsilon=epsilon^3 p3+epsilon^4 p4+epsilon^5 p5+...,
+C_epsilon(T)=epsilon^6 A(T)+epsilon^8 B(T)+O(epsilon^10),
+A'=||grad p3||2^2,
+B'=||grad p4||2^2+2 integral grad p3 dot grad p5.     (PG2)
+```
+
+The entire quadratic heat pressure vanishes. All generated velocity and
+canonical-pressure modes through degree five are computed by the complete
+NS amplitude recurrence, retaining the Leray projection and viscosity.
+The functions are exact finite sums of `t^j exp(-r t)`, not time samples or
+a finite-mode approximation of the nonlinear flow. Translation symmetry
+removes the odd amplitude coefficient on the entire time interval.
+Higher orders remain in the analytic remainder of every physical claim.
+
+The two terms in B' distinguish new source creation from its joint return
+into the original pressure. For unit parents at m=4, the complete B' is
+strictly positive for every t>0. A finite differential cascade certifies
+that sign. At m=0 and m=1 it is strictly negative instead.
+
+At m=2, the same complete correction has
+
+```text
+A(infinity)=1901/1960200,
+B(T)=-(1843/1524600)T^5+O(T^6),
+B(infinity)=17557198287809721676707083
+            /177077463696816376920145920000 >0,
+lim_(T->infinity) exp(4T) B'(T)=1/1152>0.           (PG3)
+```
+
+Thus early depletion is followed by a positive net correction. A slowly
+decaying generated contribution is retained; the original source is not
+reinitialized when it appears. The checker independently verifies the
+early coefficient against the full viscosity-polynomial NS time jets:
+the coefficient of t^4 in the pressure-gradient rate difference is
+`-1843/304920`, at every positive viscosity.
+
+For sufficiently small nonzero epsilon, the analytic remainder below
+transfers (PG3) to one actual smooth unforced history: its cost is initially
+below epsilon^6 A(T), but its total cost exceeds epsilon^6 A(infinity).
+Since C_epsilon is continuous and increasing, it crosses that fixed
+original allowance at a finite time. The solution remains globally regular
+in this regime. Failure of this particular allowance is not blowup.
+
+### Joint parent strengths give a complete quadratic balance
+
+Now fix m=4 and retain the original strengths
+
+```text
+U_(a,b,c)=(a sin y-4b sin z, b sin z, c sin(x+4y)).
+```
+
+Every missing-parent plane has an actual pressure-free triangular solution:
+one decaying shear transports a passive component. The preceding joint-parent
+derivation established these solutions without discarding viscosity.
+Consequently the analytic pressure contains the factor abc. Independent
+half-period translations reverse a, b or c without changing the integrated
+observation. Homogeneity and these symmetries therefore give
+
+```text
+C_(epsilon a,epsilon b,epsilon c)(T)/(abc)^2
+ =epsilon^6 A(T)
+  +epsilon^8[a^2 B_a(T)+b^2 B_b(T)+c^2 B_c(T)]
+  +higher orders.                                  (PG4)
+```
+
+There are no mixed ab, ac or bc terms at this degree. This determines the
+polynomial basis analytically; the calculation is not extrapolation from
+a few numerical samples. Unused parent triples `(1,1,2)`, `(2,3,1)` and
+`(1/4,1,1)` check every coefficient of the entire reconstructed time profile.
+
+The leading stock is
+
+```text
+alpha=A(infinity)=116161/9332512200.
+```
+
+An independent integration uses the eight original cubic-pressure modes,
+with rates r=11 or r=27 and coefficients
+
+```text
+p3_hat(q,t)=-[2t exp(-19t)
+             +(exp(-rt)-exp(-19t))/(19-r)]/(4r).
+```
+
+Integrating their squared gradients gives the same alpha. The exact
+parent contributions beta_i=B_i(infinity) have the following signs and
+readable approximations; full rationals are in the result archive.
+
+| Parent | beta_i | Sign of B_i'(t), every t>0 |
+|---|---:|---:|
+| a | approximately 2.421558157e-7 | positive |
+| b | approximately -1.635864853e-8 | negative |
+| c | approximately -4.505585170e-9 | negative |
+
+Each whole-time rate sign has an exact differential-cascade certificate.
+In particular, the birth term alone does not determine the integrated
+correction. The joint pressure correlation is essential.
+
+For b=c=1, the cancellation boundary is
+
+```text
+R=-(beta_b+beta_c)/beta_a,
+0.08616<R<0.08617.
+```
+
+At a=1/4 the complete integrated correction is strictly negative,
+`beta_a/16+beta_b+beta_c` approximately `-5.729495220e-9`.
+No extra parent is introduced and none is switched off. These are
+parameters of the original datum, not controls applied to the evolving fluid.
+
+### A uniform actual-flow remainder and an all-prefix payment
+
+Here is the analytic step from complete coefficients to physical histories.
+For a fixed integer s>=6, use the complex periodic mild equation in
+`X={u: sup_(t>=0) exp(t/4)||u(t)||Hs<infinity}`. The mean-zero heat
+semigroup and one-derivative smoothing give a finite bilinear bound for
+the Leray-projected Duhamel operator on X. Indeed its weighted kernel is
+bounded by a fixed constant times `tau^(-1/2) exp(-tau/4)`, which is
+integrable. The Sobolev product bound is valid since s>3/2.
+For an original datum in a sufficiently small ball, Picard iteration is
+a contraction and depends holomorphically on its three coefficients.
+This proves global decay here; it does not assume arbitrary-data regularity.
+
+The canonical pressure then has a uniform decaying H^(s-1) bound on a
+small complex polydisc in (a,b,c). Its vanishing on each coordinate plane
+gives a holomorphic factorization `p=abc R(a,b,c;t)`, with a uniform
+decaying bound for R on a smaller polydisc. This follows, for example,
+by the Cauchy integral formula successively in the three parameters.
+
+Extend the cost holomorphically using the bilinear product
+`integral grad p dot grad p`, rather than a complex modulus. Exponential
+decay makes the integral over the entire half-line uniformly bounded.
+For real parameters this extension is the physical nonnegative cost.
+Cauchy bounds and the three even symmetries give fixed r0,M>0 such that
+
+```text
+r^2=a^2+b^2+c^2<=r0^2,
+C_(a,b,c)(infinity)
+ =(abc)^2[alpha+beta_a a^2+beta_b b^2+beta_c c^2+R4],
+|R4|<=M r^4.                                      (PG5)
+```
+
+The constants depend only on the fixed basis fields, torus and chosen
+Sobolev estimates. They are not read off an unknown future solution.
+Their numerical values are not evaluated. The factorization makes the
+remainder uniform even as one of the parents tends to zero.
+
+Because C is an accumulated nonnegative cost, bounding its total immediately
+bounds every prefix. In particular, if the original parameters satisfy
+
+```text
+beta_a a^2+beta_b b^2+beta_c c^2+M r^4<=0,
+```
+
+then the original cubic stock pays the actual complete history:
+
+```text
+C_(a,b,c)(T)<=(abc)^2 alpha,      every T>=0.        (PG6)
+```
+
+This includes a nonempty family with three nonzero parents. For the
+fixed ratio (1/4,1,1), put `delta=-(beta_a/16+beta_b+beta_c)>0` and
+`r_w^2=33/16`. Initial data epsilon U_(1/4,1,1) satisfy (PG6) whenever
+
+```text
+epsilon r_w<=r0,  M epsilon^2 r_w^4<=delta.
+```
+
+More generally any cone with
+`beta_a a^2+beta_b b^2+beta_c c^2<=-eta r^2`, eta>0,
+has a uniform paid neighborhood `r^2<=min(r0^2,eta/M)`.
+On the coordinate planes the pressure and the cost are identically zero.
+The cancellation boundary with zero quadratic margin requires the next
+complete order; no leading-stock claim is made there.
+
+For the other small original triples, (PG5) still provides a finite joint
+allowance by retaining the signed correction and its positive M r^4 margin.
+It is installed once. Subtracting the cost actually spent gives a
+nonnegative remaining reserve on every compatible prefix; concatenation
+does not supply a fresh allowance at each return.
+
+Restoring nu>0 and initial datum lambda U_(a,b,c) uses
+`u(t)=nu v_(lambda/nu)(nu t)`, and hence
+
+```text
+C_(lambda,nu)(T)=nu^3 C_(lambda/nu,1)(nu T).
+```
+
+For each fixed strictly favorable shape and sufficiently small lambda/nu,
+the original stock is therefore `(abc)^2 lambda^6 alpha/nu^3`.
+This is a payment theorem inside the known small-data regime, not a new
+arbitrary-amplitude regularity class.
+
+### Different observations require different allowances
+
+The previous stochastic impulse calculation has an integrated cancellation
+boundary `0.03919<R_impulse<0.03920` for a^2 with b=c=1. Since
+`R_impulse<1/16<R`, the shape (1/4,1,1) has a positive first correction
+to that sharper cubic impulse stock, but a negative correction to the
+pressure-gradient stock above. The earlier uniform moment remainder implies
+failure of the uncorrected impulse stock for sufficiently small nonzero
+amplitude, while (PG6) pays the gradient stock on the same actual flow.
+
+There is no conflict: (PG1) converts the paid gradient stock into a more
+generous impulse allowance. It does not restore the sharper failed
+forecast. This comparison tests a change of payment mechanism while
+retaining the same physical history and original parents.
+
+### A finite-prefix test can retain a quantitative future allowance
+
+For later tests outside the analytic amplitude ball, a smooth prefix can
+be followed by an independently paid small-enstrophy tail. Here is a
+concrete analytic version with constants for this normalized torus.
+Put h1=||grad u||2 and h2=||Delta u||2. Mean-zero Fourier coefficients
+and Cauchy--Schwarz give, for each integer N>=1,
+
+```text
+||u||infty<=sqrt(26N) h1+sqrt(26/N) h2.
+```
+
+Indeed the cube shell |k|infty=n contains 24n^2+2<=26n^2 lattice points.
+The low-frequency reciprocal-square sum is at most26N; the complementary
+reciprocal-fourth-power sum is at most26 sum_(n>N)n^(-2)<=26/N.
+If h1>0, h2>=h1 and N=ceil(h2/h1) give
+
+```text
+||u||infty<=sqrt(26)(sqrt(2)+1)sqrt(h1 h2)
+           <=13sqrt(h1 h2).                         (PG7)
+```
+
+The zero h1 case is the zero mean-zero velocity. Since the canonical
+pressure gradient is the gradient projection of minus u.grad u, its L2
+norm is no larger than ||u.grad u||2. Thus
+
+```text
+||grad p||2^2<=169 h1^3 h2.
+```
+
+The exact NS enstrophy identity and (PG7) give
+
+```text
+(1/2)(h1^2)'+nu h2^2<=13 h1^(3/2) h2^(3/2)
+                         <=13 h1 h2^2.
+```
+
+If an actual prefix reaches h1(T)<=nu/26, this region is invariant by
+the first-exit argument, and `Y=h1^2`, `D=h2^2` satisfy
+`Y'+nu D<=0`, `D>=Y`. The existing periodic enstrophy continuation
+criterion extends the solution, and
+
+```text
+Y(T+s)<=Y(T)exp(-nu s),
+integral_T^infinity D<=Y(T)/nu,
+integral_T^infinity ||grad p||2^2
+ <=169 sqrt[(Y(T)^3/(3nu)) (Y(T)/nu)]
+ <=169 Y(T)^2/nu.                                  (PG8)
+```
+
+Consequently a validated finite prefix satisfying
+
+```text
+||grad u(T)||2<=nu/26,
+C(T)+169||grad u(T)||2^4/nu<=K_original
+```
+
+would prove all-time payment by that SAME original allowance. The pressure
+cost already spent is retained; the tail is not a reset. This is a
+conditional consumer, not a proof that every arbitrary flow enters the
+small region. A numerical approximation alone does not certify either
+entry or the prefix cost. The shell arithmetic is checked exactly; the
+Fourier estimate, physical bootstrap and tail integral remain analytic.
+
+Run `python3 -O labs/pressure_gradient_stock.py`. Exact full-time recurrences,
+independent physical jets, independent leading-stock integration, parent
+symmetries, unused full-profile checks and sign certificates pass. The
+archive `pressure_gradient_stock_results.json` records the rational stocks
+and profile digests. The actual-flow remainder and payment (PG5)--(PG6)
+are analytic, not Lean-certified. No arbitrary-data bound or singularity
+is established, and no Lean declarations or axioms change.

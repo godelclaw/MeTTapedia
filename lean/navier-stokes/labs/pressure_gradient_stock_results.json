@@ -1,0 +1,133 @@
+{
+  "status": "All exact checks passed",
+  "fixtures": [
+    {
+      "m": 0,
+      "original_stock": "1/72",
+      "complete_correction": "-38219/24576000",
+      "source_birth": "3257/24576000",
+      "original_return": "-10369/6144000",
+      "first_rate_coefficient": "-23/24",
+      "sign_certificate": {
+        "levels": 12,
+        "first_nonzero": {
+          "order": 4,
+          "derivative": "-23"
+        },
+        "strict_data": 8,
+        "maximum_rate": 12,
+        "orientation": -1
+      },
+      "correction_profile_sha256": "69f99aab2fba4a4fb35b5c3485385ca75d17bb81cc05c2a41ef8f30478465720"
+    },
+    {
+      "m": 1,
+      "original_stock": "3/400",
+      "complete_correction": "-175983211031/619636469760000",
+      "source_birth": "24302978223847/92945470464000000",
+      "original_return": "-4609132716227/8449588224000000",
+      "first_rate_coefficient": "-9721/12096",
+      "sign_certificate": {
+        "levels": 28,
+        "first_nonzero": {
+          "order": 4,
+          "derivative": "-9721/504"
+        },
+        "strict_data": 24,
+        "maximum_rate": 22,
+        "orientation": -1
+      },
+      "correction_profile_sha256": "f21da6d67469ad7fa49b50e52ecf9c67e94c58875da567929ae8688baf6e5a4d"
+    },
+    {
+      "m": 2,
+      "original_stock": "1901/1960200",
+      "complete_correction": "17557198287809721676707083/177077463696816376920145920000",
+      "source_birth": "2610482565266662889087/23073986495697742725120000",
+      "original_return": "-464346577294075916583047/33202024443153070672527360000",
+      "first_rate_coefficient": "-1843/304920",
+      "sign_certificate": null,
+      "correction_profile_sha256": "d0ca60938a422cd57079ebd7e5b7f0c0a8859e04022de0f0a46f4725bcf532bd"
+    },
+    {
+      "m": 4,
+      "original_stock": "116161/9332512200",
+      "complete_correction": "357921113113644286739772839106768698810618863/1617418565719323850646018594609421413095833600000000",
+      "source_birth": "70082290047943999086434757397433/303769262106603036911955118915584000000",
+      "original_return": "-951989965319002110975265264114721601838357/101088660357457740665376162163088838318489600000000",
+      "first_rate_coefficient": "601331231/12107214504",
+      "sign_certificate": {
+        "levels": 73,
+        "first_nonzero": {
+          "order": 4,
+          "derivative": "601331231/504467271"
+        },
+        "strict_data": 69,
+        "maximum_rate": 140,
+        "orientation": 1
+      },
+      "correction_profile_sha256": "42dc40cd244d46dd669ccc4554fb1b6720eaf9ec11aa6606bc408d412427684f"
+    }
+  ],
+  "full_viscosity_early_comparison": [
+    "0",
+    "0",
+    "-1843/304920"
+  ],
+  "family": {
+    "original_stock": "116161/9332512200",
+    "parent_corrections": [
+      "28426655128067680334297/117389933624816711578976256000",
+      "-13992207144974639538397757/855340043523941927721369600000000",
+      "-3452725131195484088356482677/766321132837863898506134808428544000"
+    ],
+    "profile_certificates": [
+      {
+        "levels": 36,
+        "first_nonzero": {
+          "order": 4,
+          "derivative": "5386385/1675971"
+        },
+        "strict_data": 32,
+        "maximum_rate": 76,
+        "orientation": 1
+      },
+      {
+        "levels": 38,
+        "first_nonzero": {
+          "order": 4,
+          "derivative": "-140297/205821"
+        },
+        "strict_data": 34,
+        "maximum_rate": 58,
+        "orientation": -1
+      },
+      {
+        "levels": 37,
+        "first_nonzero": {
+          "order": 4,
+          "derivative": "-62759/46827"
+        },
+        "strict_data": 33,
+        "maximum_rate": 140,
+        "orientation": -1
+      }
+    ],
+    "profile_sha256": [
+      "dfa1de5f13e21f77a1a5f6efb8aff327b9d03a3392f918a70c1d23b37403794d",
+      "f8f6cc1318c16cb21d3f03b112d88b3a6293ed6224a258a73764a53deca707ed",
+      "07067a4227c138fa0bf86064a9fc2b29e0778c9f712e40ec80cff68cbc9254ad"
+    ],
+    "cancellation_a_squared": "33746198943828374260541589443660586352581137/391667312057472661000314428550429285163200000",
+    "quarter_parent_correction": "-9266991940236332948021937659258756029881137/1617418565719323850646018594609421413095833600000000",
+    "uniform_payment": "C(T)<=(abc)^2[A+beta_a*a^2+beta_b*b^2+beta_c*c^2+M*(a^2+b^2+c^2)^2]",
+    "limitation": "A common small-data radius and remainder M are analytic, not numerically evaluated"
+  },
+  "tail": {
+    "entry": "||grad u(T)||2<=nu/26",
+    "tail": "integral_T^infinity ||grad p||2^2<=169*||grad u(T)||2^4/nu",
+    "scope": "Fourier shell algebra checked; analytic Agmon, NS and continuation arguments in README.md"
+  },
+  "scope": "Complete amplitude histories; actual all-time payment uses a separate uniform analytic remainder",
+  "limitation": "Small-data regime; no arbitrary-data payment, singularity construction or new Lean certificate"
+}
