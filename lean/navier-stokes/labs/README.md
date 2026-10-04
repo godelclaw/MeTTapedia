@@ -44718,3 +44718,204 @@ Run `python3 -O labs/renewal_heat_window.py`. The archive
 integrals, selector branches, Bellman identities and source hashes.
 General kernel bounds, interval payment and continuation are analytic;
 no Lean declarations or axioms change.
+
+## Oblique cyclic geometry renews both intrinsic and covariance work
+
+The short-age target (RW11) must retain the pressure response within the
+heated field as well as its heat covariance. The family below separates
+these two effects exactly. It has no initial pressure at any heat age,
+yet both contributions to its nonlinear heat-work renewal are positive.
+The result covers every nonzero integer obliqueness and arbitrary nonzero
+parent strengths. It extends the single-shape tests (HW7) and (HC5).
+
+This tests a particular proposed repair: paying all short-age renewal by
+a bounded multiple of its covariance term. It does not test every possible
+geometric correction or an integrated allowance from the full datum.
+The general pressure source law used here is the earlier actual-pressure
+source identity; the determinant identity is standard matrix
+algebra. No novelty claim for those underlying identities is made.
+
+### A complete three-component pressure source
+
+On the normalized period-2pi torus, take
+
+    U_m=(a sin y-m b sin z, b sin z, c sin(x+m y)),
+    m an integer, a,b,c real.                         (OC1)
+
+The phase coordinates (y,z,x+m y) preserve volume for integer m, but
+are not a symmetry of the Euclidean fluid equation. All derivatives,
+heat multipliers and inverse Laplacians below use the physical Euclidean
+metric. Write B=m^2+3 and D_-=B-2m, D_+=B+2m. Both D signs are strictly
+positive, since D_+=(m+1)^2+2 and D_-=(m-1)^2+2.
+
+Let f=a sin y, g=b sin z, h=c sin(x+m y), with primes denoting their
+one-variable derivatives. The physical gradient is
+
+    grad U_m = [ 0   f'  -m g' ]
+               [ 0    0     g' ]
+               [ h'  m h'     0 ].
+
+Its trace and the trace of its square vanish pointwise. Hence U_m is
+solenoidal and its canonical pressure is zero. Heating only changes its
+three strengths, so p_(H_s U_m)=0 for EVERY s>=0. On the other hand,
+
+    det(grad U_m)=f'g'h',
+    tr((grad U_m)^3)=3 f'g'h'.                       (OC2)
+
+At this state N(U_m)=-(U_m.grad)U_m. Differentiating the canonical
+pressure in the full NS tangent, the heat contribution vanishes while
+
+    -Delta p_t(0)=-2tr((grad U_m)^3)=-6 f'g'h'.
+
+Thus for every positive viscosity the actual initial pressure derivative is
+
+    p_t(0)=-3abc cos z [cos(x+(m+1)y)/D_+
+                           +cos(x+(m-1)y)/D_-].     (OC3)
+
+No output is discarded. This is a pressure source created by all three
+parents together. Removing any parent makes it zero. Incompressibility
+and the initial absence of pressure do not suppress this cubic cycle.
+
+### The full and intrinsic heat-history responses
+
+Put q=exp(-s), T=a^2 b^2 c^2 and retain the complete cotangent from (HW5).
+For z_s=H_s U_m define
+
+    G_s=DP4(z_s)[H_s N(U_m)],
+    I_s=DP4(z_s)[N(z_s)], C_s=G_s-I_s.
+
+The exact family laws are
+
+    I_s = [3m^2 T/(D_- D_+)] exp(-2B s),
+    G_s = (mT/4)exp(-2B s)
+             [2(1/D_--1/D_+)+exp(2ms)/D_--exp(-2ms)/D_+],
+    C_s = (mT/4)exp(-2B s)
+             [(exp(2ms)-1)/D_-+(1-exp(-2ms))/D_+].    (OC4)
+
+For m>0 and T>0, I_s>0 and C_s>0 at every s>0. For m<0, both factors
+in the last product change sign and the same conclusion holds; equivalently
+reflect the shear and interchange D_-,D_+. Consequently G_s>0 as well.
+Because the heat-work profile F_s is identically zero, the right derivative
+uses max(G_s,0); here that equals G_s. The intrinsic selector similarly
+uses max(I_s,0). Therefore C_s is the ACTUAL difference of selected
+responses on this family. This reasoning would fail for a negative
+zero-profile direction, as the cyclic checks in (RW14) illustrate.
+
+One way to verify (OC4) is to retain the phase coordinates explicitly.
+Transport in them is f partial_hphase+g partial_fphase+h partial_gphase.
+The only part of div(|z_s|^2 z_s) pairing with the three-phase pressure is
+
+    -mabc exp(-B s) cos z
+        [cos(x+(m-1)y)-cos(x+(m+1)y)].
+
+The full pressure variation has the corresponding two coefficients
+
+    -abc [2exp(-B s)+exp(-(B+2m)s)]/D_+,
+    -abc [2exp(-B s)+exp(-(B-2m)s)]/D_-.
+
+Pairing matching modes gives (OC4). Independent full tensor-pressure and
+gradient-pressure calculations in the checker retain the other modes
+and verify their cancellations. Replacing the physical inverse Laplacian
+by an orthogonal-coordinate one would lose this law.
+
+For m=0, I_s=G_s=C_s=0 even if abc is nonzero and (OC3) creates pressure.
+Pressure creation alone therefore does not decide its work on the observed
+fourth moment. The relative geometry of source and receiver matters.
+
+### Exact whole-age and short-age consequences
+
+Integrating (OC4) over all heat ages gives, without the factor 1/nu,
+
+    i_m=3m^2 T/[2B D_- D_+],
+    gamma_m=m^2 T(7m^4+38m^2+63)
+               /[4B D_- D_+(B-m)(B+m)],
+    kappa_m=m^2 T(m^4+8m^2+9)
+               /[4B D_- D_+(B-m)(B+m)].              (OC5)
+
+Exactly gamma_m=i_m+kappa_m. All denominators are positive. For m nonzero
+and T>0, the fraction supplied by covariance obeys
+
+    1/7 < kappa_m/gamma_m <= 7/40.                   (OC6)
+
+Indeed, with x=m^2 and Q=7x^2+38x+63, the differences from the two bounds
+are 18x/(7Q) and 9(x-3)^2/(40Q). The remaining fraction is intrinsic
+pressure response. These fractions belong to this family and observable;
+they are not asserted to be universal turbulent energy-flux fractions.
+
+The distinction is stronger at very short heat ages. Let
+k=3m^2 T/(D_- D_+)>0. Smooth expansion of (OC4) gives
+
+    I_<delta = (k/nu)delta+O(delta^2),
+    Kappa_<delta = (kB/(6nu))delta^2+O(delta^3),
+    Gamma_<delta/Kappa_<delta ~ 6/(B delta).         (OC7)
+
+Here the first two symbols are the selected integrals, not their pointwise
+profiles. For each fixed nonzero family member and viscosity, no finite
+multiplier independent of delta can bound Gamma_<delta by that multiple
+of Kappa_<delta at all sufficiently short ages. Subtracting a bounded
+multiple of the covariance response leaves the leading intrinsic term.
+A multiplier diverging as delta shrinks is not excluded, but its state
+and cutoff derivatives must enter any proposed physical reserve.
+
+This does NOT show that viscosity loses at a fixed state for arbitrarily
+small delta: for that state Gamma_<delta tends to zero whereas D4 stays
+fixed. What remains unproved is a cutoff and allowance chosen from the
+original datum that work through every later concentration and renewal.
+Likewise, a correction's VALUE and its PHYSICAL DERIVATIVE are different
+objects; (OC7) does not refute all covariance-dependent state functionals.
+
+### Actual positive-viscosity intervals, with no truncated dynamics
+
+For a=b=c=1 the complete initial quantities are
+
+    ||U_m||2^2=(m^2+3)/2,
+    ||grad U_m||2^2=(2m^2+3)/2,
+    ||U_m||4^4=(3m^4+22m^2+21)/8,
+    D4(U_m)=(5m^4+29m^2+21)/8.                       (OC8)
+
+Start the actual unforced solution from lambda U_m at any prescribed
+nu>0. For the WHOLE-field reserve V_nu of (HW1), whose initial heat-work
+part is zero, the exact initial right derivative is
+
+    V_nu'(0)=-nu lambda^4 D4(U_m)
+                         +(lambda^6/nu)gamma_m,
+    d_t||u||2^2 at 0=-nu lambda^2(2m^2+3)<0.         (OC9)
+
+For every nonzero integer m the explicit choice
+
+    lambda=4nu(1+m^2)^2
+
+makes the first derivative strictly positive. With x=m^2>=1, the numerator
+of 16(1+x)^4 gamma_m-D4(U_m), after multiplication by the positive
+8(x+3)(x^2+2x+9)(x^2+5x+9), is
+
+    32x(1+x)^4(7x^2+38x+63)
+      -(5x^2+29x+21)(x+3)(x^2+2x+9)(x^2+5x+9).
+
+Its polynomial in r=x-1 has coefficients, highest degree first,
+
+    219, 3566, 24465, 90390, 191107, 223888, 122852, 15696.
+
+They are all positive. Local smooth NS existence and dominated first-order
+variation of the heat reserve then give an original-data interval with
+V_nu(u(t))>V_nu(u(0)). This is an ANALYTIC actual-flow conclusion at positive
+viscosity, supported by the exact initial calculation. It is not a closed
+finite-mode evolution, an indefinitely repeated cycle, or a singularity.
+The larger parent-payment reserve Q_a and arbitrary full-datum integrated
+allowances are not refuted by (OC9).
+
+The family also supplies actual filtered states for the current target.
+For any spatial a0>0, (I-H_a0)U_m again has the form (OC1), with strengths
+multiplied respectively by 1-exp(-a0), 1-exp(-a0) and
+1-exp(-(m^2+1)a0). Its SELF response obeys the same law. Its full physical
+tangent still comes from the original fluid, including the parent/source
+terms in (EP1); it must not be replaced by an independent NS equation for
+that filtered field. The separate positive-viscosity filtered fixture in
+(RW14) retains precisely this distinction.
+
+Run `python3 -O labs/oblique_cycle_renewal.py`. The exact checker uses
+rational functions in the shear, strengths and heat weights, and independently
+checks ordinary physical Fourier specializations, including negative shear,
+the orthogonal case and a missing parent. General local-solution arguments
+and the short-age limit remain analytic, not Lean-certified. No Lean
+declarations or axioms change. The arbitrary-history budget (RW11) is OPEN.

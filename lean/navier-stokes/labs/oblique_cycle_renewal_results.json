@@ -1,0 +1,103 @@
+{
+  "symbolic": {
+    "full": "-a**2*b**2*c**2*m*x**4*y**2*z*(m**2*z**2 - m**2 - 2*m*z**2 - 8*m*z - 2*m + 3*z**2 - 3)/(4*(m**2 - 2*m + 3)*(m**2 + 2*m + 3))",
+    "intrinsic": "3*a**2*b**2*c**2*m**2*x**4*y**2*z**2/((m**2 - 2*m + 3)*(m**2 + 2*m + 3))",
+    "covariance": "-a**2*b**2*c**2*m*x**4*y**2*z*(z - 1)*(m**2*z + m**2 - 2*m*z + 2*m + 3*z + 3)/(4*(m**2 - 2*m + 3)*(m**2 + 2*m + 3))",
+    "positive_covariance": "a**2*b**2*c**2*m*x**4*y**2*z*(1 - z)*(z/(m**2 + 2*m + 3) + 1/(m**2 - 2*m + 3))/4",
+    "full_integral": "a**2*b**2*c**2*m**2*(7*m**4 + 38*m**2 + 63)/(4*(m**2 + 3)*(m**2 - 2*m + 3)*(m**2 - m + 3)*(m**2 + m + 3)*(m**2 + 2*m + 3))",
+    "intrinsic_integral": "3*a**2*b**2*c**2*m**2/(2*(m**2 + 3)*(m**2 - 2*m + 3)*(m**2 + 2*m + 3))",
+    "covariance_integral": "a**2*b**2*c**2*m**2*(m**4 + 8*m**2 + 9)/(4*(m**2 + 3)*(m**2 - 2*m + 3)*(m**2 - m + 3)*(m**2 + m + 3)*(m**2 + 2*m + 3))",
+    "covariance_fraction": "(m**4 + 8*m**2 + 9)/(7*m**4 + 38*m**2 + 63)",
+    "covariance_initial_slope": "a**2*b**2*c**2*m**2*(m**2 + 3)/((m**2 - 2*m + 3)*(m**2 + 2*m + 3))",
+    "diffusion": "(5*m**4 + 29*m**2 + 21)/8",
+    "threshold_shift_coefficients": [
+      "219",
+      "3566",
+      "24465",
+      "90390",
+      "191107",
+      "223888",
+      "122852",
+      "15696"
+    ]
+  },
+  "physical": [
+    {
+      "shear": 0,
+      "strengths": [
+        1,
+        1,
+        1
+      ],
+      "viscosity": "2/7",
+      "full_integral": "0",
+      "diffusion": "21/8"
+    },
+    {
+      "shear": 1,
+      "strengths": [
+        1,
+        1,
+        1
+      ],
+      "viscosity": "2/7",
+      "full_integral": "3/80",
+      "diffusion": "55/8"
+    },
+    {
+      "shear": 2,
+      "strengths": [
+        1,
+        1,
+        1
+      ],
+      "viscosity": "2/7",
+      "full_integral": "109/3465",
+      "diffusion": "217/8"
+    },
+    {
+      "shear": 4,
+      "strengths": [
+        1,
+        1,
+        1
+      ],
+      "viscosity": "2/7",
+      "full_integral": "3284/648945",
+      "diffusion": "1765/8"
+    },
+    {
+      "shear": -2,
+      "strengths": [
+        2,
+        -1,
+        3
+      ],
+      "viscosity": "2/7",
+      "full_integral": "436/385",
+      "diffusion": "1259/4"
+    },
+    {
+      "shear": 2,
+      "strengths": [
+        1,
+        0,
+        1
+      ],
+      "viscosity": "2/7",
+      "full_integral": "0",
+      "diffusion": "15/4"
+    }
+  ],
+  "scope": "Exact complete family identities and positive-viscosity initial tangents. Actual local intervals and short-age asymptotics are analytic, not Lean-certified.",
+  "source_sha256": {
+    "oblique_cycle_renewal.py": "768fa70a0cd3d7774883503cb38573f12d37d9072b8b7a6c57aecafc6a0db20d",
+    "heat_work_reserve.py": "61c8ce228687243d32cc8f26b69607110d34465e8cef2b37638063c1331c8ba2",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "pressure_quadratic_storage.py": "cb78e2a84c4ee19091dc1ec8e687abec7e2c85d1a41dac007ee3c6eb5f1ea0dc"
+  }
+}

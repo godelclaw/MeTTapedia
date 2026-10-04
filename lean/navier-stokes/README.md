@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [oblique cyclic renewal law](labs/README.md#oblique-cyclic-geometry-renews-both-intrinsic-and-covariance-work)
+separates two parts of the remaining short-age problem. An unbounded
+family starts with zero pressure at every heat age, but its complete
+three-parent cycle immediately creates pressure. Both intrinsic and
+covariance contributions renew the heat-work reserve; the intrinsic
+term has the leading short-age order. Thus a bounded covariance-only
+payment misses that term. Exact family formulas retain the physical
+metric, all generated modes and positive viscosity. The actual local
+interval argument remains analytic; no arbitrary-history bound follows.
+
 The [finite heat-window renewal payment](labs/README.md#resolved-nonlinear-renewal-has-an-original-energy-payment)
 pays the absolute self-renewal at all auxiliary diffusion ages beyond any
 fixed positive cutoff, on every available unforced history. It also pays
