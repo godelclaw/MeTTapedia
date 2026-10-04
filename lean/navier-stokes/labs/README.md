@@ -44214,3 +44214,266 @@ identities, cotangent contraction, selector branches, shape interval
 and cyclic family are checked exactly. Gaussian positivity, the
 separated-frequency transfer and actual-solution intervals are analytic,
 not newly Lean-certified. No Lean declarations or axioms change.
+
+## Evolving filtered parents have one full-energy payment
+
+`evolving_filter_parent_payment.py` extends the heat-work payment from
+original heat parents to parents extracted from the CURRENT full fluid.
+At any fixed positive smoothing scale, their complete source and mixed
+couplings have an original-resource payment on every available smooth
+unforced prefix. The parents may receive energy, lose it, and change
+geometry. No smallness or favorable transfer sign is assumed.
+
+This reuses the smoothed-kernel and full-energy method of (222)--(230)
+and the pressure-work variation and commutator estimates (HP2)--(HP13).
+The new consumer is the heat-work reserve R_nu, not the older squared-source
+reserve. The remaining generated self-renewal is still unpaid. A fixed
+scale is essential; the payment below is not uniform as that scale tends
+to zero.
+
+### Actual filtered equations and a shared energy account
+
+Work on R3 with smooth Sobolev data, or on the normalized mean-zero
+periodic torus. Let nu>0 and fix H>0 and 0<a<=1 before inspecting the
+future solution. Here a is a SPATIAL heat parameter, independent of
+physical time and of the auxiliary heat age inside R_nu. Put
+
+    v(t)=H_a u(t), w(t)=(I-H_a)u(t),
+    f=H_a N(u), g=N(v)-f,
+    B_v(w)=-P[(v.grad)w+(w.grad)v].
+
+Commutation with the Laplacian and the full quadratic expansion give
+
+    v_t=nu Delta v+f,
+    w_t=nu Delta w+N(w)+B_v(w)+g.                    (EP1)
+
+These are actual fields extracted from the same unforced solution.
+In particular v is not H_(nu t)u0, and g is not N(v) alone. Omitting
+-H_a N(u) would change the physical equation. In terms of (HC1),
+
+    g=P div tau_a(u),
+    tau_a(u)=H_a(u tensor u)-v tensor v.             (EP2)
+
+Thus the source retains the complete joint covariance. The pressure is
+canonical throughout; its full decomposition is p_u=p_v+p_w+p(v,w).
+The feedback f is not an independently prescribed external force.
+
+Let E=||u||2^2, Z=||grad u||2^2, E_v=||v||2^2, Z_v=||grad v||2^2 and
+T=<v,f>. The exact energy equations are
+
+    E'=-2nu Z,
+    E_v'=-2nu Z_v+2T,
+    (E-E_v)'=-2nu(Z-Z_v)-2T.                        (EP3)
+
+The same transfer appears with opposite signs. Moreover,
+
+    0<=||w||2^2<=E-E_v=integral tr tau_a<=E,
+    E=||v||2^2+||w||2^2+2<v,w>, <v,w>>=0,
+    0<=Z_v<=Z.                                      (EP4)
+
+These follow from the multipliers h=exp(-a|xi|^2):
+(1-h)^2<=1-h^2 and h(1-h)>=0. Heat filtering is not an orthogonal
+energy split. The covariance energy, including the cross term, is the
+appropriate complementary account. The checker has nonzero cross energy
+and either sign of T on equal-energy data; it does not impose a one-way
+cascade.
+
+### Original-resource estimates for the moving source
+
+All constants below depend only on the fixed domain, Fourier normalization
+and the stated Lp projection/Sobolev estimates. They do not depend on the
+solution, a, nu or H. The restriction a<=1 absorbs the inhomogeneous
+periodic constants. Write W(v) for the Fourier first absolute moment from
+(HP7). Heat smoothing and Fourier Cauchy--Schwarz give TWO bounds:
+
+    W(v)<=C a^(-5/4) sqrt(E),
+    W(v)<=C a^(-3/4) sqrt(Z).                         (EP5)
+
+The second writes |xi| u_hat as a gradient before Cauchy--Schwarz.
+Consequently ||grad v||infinity<=W(v). Also
+||w||2<=sqrt(E) and E(t)<=E0=||u0||2^2 on every available prefix.
+
+The complete source g satisfies
+
+    ||g||infinity<=C a^(-2)E,
+    ||grad g||infinity<=C a^(-5/2)E,
+    ||g||2<=C a^(-5/4)E,
+    ||g||4<=C a^(-13/8)E,
+    ||g||4<=C a^(-9/8)sqrt(E Z).                     (EP6)
+
+Here is a proof that avoids using P as an L-infinity contraction.
+For H_a N(u)=-H_a P div(u tensor u), the tensor has L1 norm at most E.
+The multiplier of the kernel has size at most C|xi|exp(-a|xi|^2).
+Fourier inversion and Plancherel bound its L-infinity norm by C a^-2,
+its gradient L-infinity norm by C a^-5/2, and its L2 norm by C a^-5/4.
+Interpolating kernel L2 and L-infinity gives L4 at most C a^-13/8.
+Young's convolution inequality proves the first four source estimates
+for this term, on both domains.
+
+For the other representation H_a N(u)=-H_a P[(u.grad)u], the input L1
+norm is at most sqrt(E Z). The order-zero smoothed Leray kernel has
+L2 and L-infinity bounds C a^-3/4 and C a^-3/2; its L4 bound is therefore
+C a^-9/8. This proves the final estimate. These are bounds on the
+SMOOTHED kernels, not on the unsmoothed projection at the endpoint.
+
+For N(v), its first two bounds follow directly from full Fourier
+convolution: with A_j=sum/integral |xi|^j |v_hat(xi)|,
+A_j<=C a^(-j/2-3/4)sqrt(E),
+W_0(N(v))<=C A_0 A_1 and
+W_1(N(v))<=C(A_0 A_2+A_1^2).
+Its L2 bound follows from ||v||infinity||grad v||2. Its L4 bounds follow
+from the L4 boundedness of P, ||v||infinity<=C a^-3/4 sqrt(E), and either
+||grad v||4<=C a^-7/8 sqrt(E) or
+||grad v||4<=C a^-3/8 sqrt(Z). Thus both parts of g obey (EP6).
+
+### Pay the complete reserve losses from decreasing energy
+
+Retain Y=||w||4^4, D4, P4 and R_nu exactly as in (HP1), but now with
+the dynamically filtered w. The one-sided selector estimate (HP2),
+the whole-heat source estimate (HP5) and (EP6) give, for any direction b,
+
+    |D R_nu(w)[b+g]-D R_nu(w)[b]|
+       <=C nu^-1 a^(-5/2) E Y.                       (EP7)
+
+No derivative of the observed v or g with respect to physical time is
+missing: the state functional depends on w, and its complete derivative
+uses (EP1). The source/mixed bounds are applied at its current fields.
+
+Take eta=1/4 in the pointwise mixed payment (HP13), replacing its bound
+on ||w||2 by sqrt(E) and retaining the ACTUAL W(v). The two bounds (EP5)
+show
+
+    W(v)^4 ||w||2^8<=C a^-4 E^5 Z.                  (EP8)
+
+The fifth-power remainder in (HP12) is absent on R3. On the mean-zero
+torus, the extra W(v)||w||2^5 is at most C a^-5/4 E^3 and hence at
+most C a^-5/4 E^2 Z by Poincare. Therefore the full mixed variation costs
+
+    |D R_nu(w)[b+B_v(w)]-D R_nu(w)[b]|
+      <=(nu/4)D4+C nu^-1 a^(-5/4) E Y
+           +c_m nu^-7 a^-4 E^5 Z
+           +c_t nu^-1 a^(-5/4) E^2 Z,               (EP9)
+
+where c_t=0 on R3. Fixed nonnegative constants c_m,c_t contain the
+norm and Young constants, not an unknown future field norm.
+
+In the fourth-moment equation, source work is at most ||g||4 Y^(3/4).
+Young's inequality with the prescribed H gives
+
+    ||g||4 Y^(3/4)<=3Y/(4H)+H^3||g||4^4/4,
+    ||g||4^4<=C a^(-11/2) E^3 Z.                    (EP10)
+
+The second inequality multiplies the SQUARES of the two L4 estimates
+in (EP6). This retains one power of Z, which the actual energy decrease
+can pay. Using only the first estimate would lose this structure.
+
+Define the nonnegative reserve
+
+    Q_a(E)=c_s H^3 a^(-11/2) E^4/(8nu)
+               +c_m a^-4 E^6/(12nu^8)
+               +c_t a^(-5/4) E^3/(6nu^2).           (EP11)
+
+Choose c_s to cover the last term of (EP10), and c_m,c_t as in (EP9).
+The EXACT full-energy equation (EP3) gives
+
+    Q_a'(E(t))=-c_s H^3 a^(-11/2) E^3 Z
+                   -c_m nu^-7 a^-4 E^5 Z
+                   -c_t nu^-1 a^(-5/4) E^2 Z.       (EP12)
+
+In (EP12) the prime denotes the full time derivative of Q_a(E(t)).
+There is one reserve, paid from the original full fluid. Internal
+energy exchange cannot replenish it. At a compatible seam, the same
+full field, scale a, horizon H and reserve are retained.
+Summing over successive compatible intervals telescopes to
+Q_a(E(0))-Q_a(E(T)); the allowance is not restarted at a seam. Equal
+energy or equal coarse fields alone do not certify compatibility or
+reconstruct the hidden fluid. The segments must belong to a genuinely
+compatible full history.
+
+### Remaining nonlinear payment and continuation
+
+Put
+
+    A(t)=Y(t)/4+R_nu(w(t))+Q_a(E(t))>=Y(t)/4,
+    L_a=C a^(-5/4)sqrt(E0)+3/(4H)+C nu^-1 a^(-5/2)E0.
+
+The usual transport cancellation and canonical mixed-pressure estimate,
+(EP7)--(EP12), and the exact heat shift (HW3) imply on every available
+smooth prefix
+
+    A'_right<=-(3nu/4)D4-[P4(w)]_-
+                      +Gamma_nu(w)+4L_a A.          (EP13)
+
+This is an analytic estimate without smallness or a favorable geometric
+sign. The initial allowance is
+
+    A(0)=||(I-H_a)u0||4^4/4
+                +R_nu((I-H_a)u0)+Q_a(E0)<infinity.  (EP14)
+
+Unlike the original heat remainder, w(0) need not vanish. Its entire
+initial reserve must be included; replacing A(0) by Q_a(E0) alone would
+be incorrect. The first two terms depend on the full initial datum,
+not just its kinetic energy.
+
+Let sigma_a(t)=exp(-4L_a t). It remains sufficient, for each original
+datum, nu>0 and H>0, to choose ONE a in (0,1] and a finite K>=0 from
+those quantities such that EVERY available same-data prefix satisfies
+
+    integral_0^T sigma_a(t)
+             [Gamma_nu(w(t))-(nu/2)D4(w(t))] dt<=K,
+    T<=H, w(t)=(I-H_a)u(t).                          (EP15)
+
+The scale is chosen before the unknown future is observed. This gives
+
+    sigma_a(T)A(T)+(nu/4)integral_0^T sigma_a D4<=A(0)+K,
+    ||w(T)||4^4<=4 exp(4L_a H)(A(0)+K),
+    ||u(T)||4<=[4 exp(4L_a H)(A(0)+K)]^(1/4)
+                         +C a^(-3/8)sqrt(E0).        (EP16)
+
+The last term bounds the ACTUAL current parent v. Thus (EP15) has the
+same L4-to-gradient-energy continuation consumer as (FM6), including
+`WholeSpaceEnstrophyContinuation.hasNSEvolution_of_orderOne_bound` and
+its all-prefix quantifiers. The physical estimates and new implication
+remain analytic. The corresponding periodic continuation path is the
+one already stated there, with
+`FourierTameContinuation.exists_tameSolutionOn_of_orderOne` requiring
+the uniform order-one bound for every tame prefix. Explicitly, if B_H
+is the right side of the L4 estimate in (EP16), the estimate used in
+(FM6) gives E1(t)<=E1(0)exp(C nu^-7 H B_H^8). Every constant is then
+fixed from the original datum, nu, H, a and the proposed K. No new Lean
+certificate is claimed.
+
+The target (EP15) is OPEN. It uses a different remainder from the
+original-heat target (HP15); their budgets are not asserted equivalent.
+The covariance Kappa_nu within Gamma_nu still integrates every auxiliary
+heat age of this unresolved field. Paying the SINGLE fixed-scale full-fluid
+covariance source in (EP2) does not pay that entire remaining renewal.
+
+### Refining the interface has a cost
+
+As a decreases, v retains finer structures, but the original reserve
+(EP11) grows with inverse powers of a. Even though (I-H_a)u0 tends to
+zero in smooth norms, that fact alone does not make (EP15) true. The
+fixed-scale certificate has no uniform a-to-zero limit.
+
+If a=a(t), (EP1) instead has the additional terms
++a'(t)Delta v in v_t and -a'(t)Delta v in w_t. The reserve also gains
+partial_a Q_a(E) a'(t). Each nonzero term of Q_a increases under
+refinement a'<0. An adaptive sequence cannot restart the coarse payment
+or omit these derivative costs. The fixed-scale theorem makes no claim
+that such refinement is affordable on a potentially singular history.
+
+This identifies a precise physical division of labor. All couplings to
+the actually evolving parent at a chosen positive scale can be paid from
+original resources, without knowing its future shape or transfer sign.
+The unresolved self-renewal, or the price of resolving progressively
+finer interacting parents, still needs a geometric history estimate.
+
+Run `python3 -O labs/evolving_filter_parent_payment.py`. It checks six
+complete positive-viscosity fixtures, both transfer signs at equal energy,
+nonzero cross energy, the covariance source, full pressure reconstruction,
+the fourth-moment equation, the complete heat-work variation before the
+selector, and the exact energy-reserve algebra. Results and source hashes
+are archived in `evolving_filter_parent_payment_results.json`. General
+kernel estimates, all-prefix payment and continuation are analytic,
+not newly Lean-certified. No Lean declarations or axioms change.

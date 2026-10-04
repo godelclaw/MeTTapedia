@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [evolving filtered-parent payment](labs/README.md#evolving-filtered-parents-have-one-full-energy-payment)
+extracts the current coarse parent from the actual full fluid. At any
+fixed positive scale, its complete source and mixed interactions have a
+payment from one decreasing full-energy reserve and a datum-controlled
+Gronwall factor, without smallness or a favorable transfer sign. The
+nonorthogonal cross energy and covariance feedback are retained. The
+remaining self-renewal of the unresolved fluid has an explicit
+continuation consumer, but its all-prefix bound is open. Refining the
+scale has an additional cost. The physical estimates are analytic with
+exact Fourier checks, not new Lean certificates.
+
 The [Gaussian covariance renewal test](labs/README.md#gaussian-covariance-can-add-to-nonlinear-heat-history-renewal)
 retains the exact difference between heating a nonlinear source and
 interacting heated fields. On a complete shape interval, this covariance

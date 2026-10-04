@@ -1,0 +1,152 @@
+{
+  "physical_cases": {
+    "oblique": [
+      {
+        "heat_parameter": "1/2",
+        "viscosity": "2/7",
+        "full_energy": "231/64",
+        "resolved_energy": "100928001/134217728",
+        "remainder_energy": "176620033/134217728",
+        "cross_energy": "103447039/134217728",
+        "resolved_exchange": "-2948607/33554432",
+        "variance_energy": "383514111/134217728",
+        "full_energy_rate": "-195/56",
+        "resolved_energy_rate": "-35670015/58720256",
+        "variance_energy_rate": "-24114615/8388608",
+        "pressure_work": "9572696224679911/990791918021509120",
+        "mixed_fourth_work": "1190512549182430739/3467771713075281920",
+        "source_fourth_work": "322058473904241672149/2029141848108050677760",
+        "fourth_diffusion": "114628174729883663/18014398509481984",
+        "input_modes": 18,
+        "full_source_modes": 58,
+        "heat_variation": {
+          "full_variation": "q**6*(164721643908108756242659814511349767*q**60 - 1815031376154112775394681054828246528*q**52 - 16834430123286799960852415477057912832*q**50 - 3616215565107334940922251652680908800*q**46 + 1566329484896371184409457673666494464*q**44 + 6562889206030828335389977965144047616*q**42 + 12802456640634269401182870164251607040*q**38 + 63465535309638351699606739387070545920*q**36 + 3867983521602415713603690004809252864*q**34 + 301425738688937189632655206182121635840*q**32 - 34015168149254364977329003895917117440*q**30 - 306795897053213387253029370011949465600*q**28 + 594578744795461118501507132315349811200*q**26 - 222030382861709187383076869195526307840*q**24 - 2088758741161029765227642739347203031040*q**22 - 424314274671988713299318694375147438080*q**20 - 1272203040298808328808903228462181908480*q**18 + 189400152771443483898192943749865144320*q**16 + 1687873119561643301055608672039521484800*q**14 + 2061257489346871843327858052081815388160*q**12 - 2101161006381489895912941825790606049280*q**10 - 1775769076523648242847113590658889154560*q**8 + 3815409199253903857102796599606430924800*q**6 + 1152242447541785957764031378191338700800*q**4 - 236536718980454747123873498263034265600*q**2 + 91546945366048412698573215385622937600)/374976288219334298413355890219511552409600",
+          "scope": "Pointwise linearity of the smooth pressure-work variation; no additivity of the positive-part reserve derivative is assumed"
+        }
+      },
+      {
+        "heat_parameter": "3/4",
+        "viscosity": "2/7",
+        "full_energy": "231/64",
+        "resolved_energy": "242852671921041/140737488355328",
+        "remainder_energy": "76362205240209/140737488355328",
+        "cross_energy": "94379747435631/140737488355328",
+        "resolved_exchange": "-6150089204847/35184372088832",
+        "variance_energy": "265121700111471/140737488355328",
+        "full_energy_rate": "-195/56",
+        "resolved_energy_rate": "-86905312502895/61572651155456",
+        "variance_energy_rate": "-18214207844775/8796093022208",
+        "pressure_work": "43163508548485251797822147/74276402357122816493947453440",
+        "mixed_fourth_work": "1520658065436744295336693263/12379400392853802748991242240",
+        "source_fourth_work": "35175100150483215154866460093888299/830767497365572420564879412675215360",
+        "fourth_diffusion": "30123816369794974469425371631/19807040628566084398385987584",
+        "input_modes": 18,
+        "full_source_modes": 58,
+        "heat_variation": null
+      }
+    ],
+    "reversed_oblique": [
+      {
+        "heat_parameter": "1/2",
+        "viscosity": "2/7",
+        "full_energy": "231/64",
+        "resolved_energy": "100928001/134217728",
+        "remainder_energy": "176620033/134217728",
+        "cross_energy": "103447039/134217728",
+        "resolved_exchange": "2948607/33554432",
+        "variance_energy": "383514111/134217728",
+        "full_energy_rate": "-195/56",
+        "resolved_energy_rate": "-7514883/29360128",
+        "variance_energy_rate": "-13531611/4194304",
+        "pressure_work": "-9572696224679911/990791918021509120",
+        "mixed_fourth_work": "-1190512549182430739/3467771713075281920",
+        "source_fourth_work": "-322058473904241672149/2029141848108050677760",
+        "fourth_diffusion": "114628174729883663/18014398509481984",
+        "input_modes": 18,
+        "full_source_modes": 58,
+        "heat_variation": null
+      },
+      {
+        "heat_parameter": "3/4",
+        "viscosity": "2/7",
+        "full_energy": "231/64",
+        "resolved_energy": "242852671921041/140737488355328",
+        "remainder_energy": "76362205240209/140737488355328",
+        "cross_energy": "94379747435631/140737488355328",
+        "resolved_exchange": "6150089204847/35184372088832",
+        "variance_energy": "265121700111471/140737488355328",
+        "full_energy_rate": "-195/56",
+        "resolved_energy_rate": "-21927344034483/30786325577728",
+        "variance_energy_rate": "-12182148524811/4398046511104",
+        "pressure_work": "-43163508548485251797822147/74276402357122816493947453440",
+        "mixed_fourth_work": "-1520658065436744295336693263/12379400392853802748991242240",
+        "source_fourth_work": "-35175100150483215154866460093888299/830767497365572420564879412675215360",
+        "fourth_diffusion": "30123816369794974469425371631/19807040628566084398385987584",
+        "input_modes": 18,
+        "full_source_modes": 58,
+        "heat_variation": null
+      }
+    ],
+    "cyclic_source": [
+      {
+        "heat_parameter": "1/2",
+        "viscosity": "2/7",
+        "full_energy": "3/4",
+        "resolved_energy": "3/64",
+        "remainder_energy": "27/64",
+        "cross_energy": "9/64",
+        "resolved_exchange": "0",
+        "variance_energy": "45/64",
+        "full_energy_rate": "-6/7",
+        "resolved_energy_rate": "-3/56",
+        "variance_energy_rate": "-45/56",
+        "pressure_work": "0",
+        "mixed_fourth_work": "0",
+        "source_fourth_work": "0",
+        "fourth_diffusion": "3159/8192",
+        "input_modes": 12,
+        "full_source_modes": 24,
+        "heat_variation": null
+      },
+      {
+        "heat_parameter": "3/4",
+        "viscosity": "2/7",
+        "full_energy": "3/4",
+        "resolved_energy": "243/1024",
+        "remainder_energy": "147/1024",
+        "cross_energy": "189/1024",
+        "resolved_exchange": "0",
+        "variance_energy": "525/1024",
+        "full_energy_rate": "-6/7",
+        "resolved_energy_rate": "-243/896",
+        "variance_energy_rate": "-75/128",
+        "pressure_work": "0",
+        "mixed_fourth_work": "0",
+        "source_fourth_work": "0",
+        "fourth_diffusion": "93639/2097152",
+        "input_modes": 12,
+        "full_source_modes": 24,
+        "heat_variation": null
+      }
+    ]
+  },
+  "reserve_algebra": {
+    "energy_reserve": "E**6*c_m/(12*a**4*nu**8) + E**4*H**3*c_s/(8*a**(11/2)*nu) + E**3*c_t/(6*a**(5/4)*nu**2)",
+    "paid_cost": "E**5*Z*c_m/(a**4*nu**7) + E**3*H**3*Z*c_s/a**(11/2) + E**2*Z*c_t/(a**(5/4)*nu)",
+    "fixed_scale_derivative": "-E**3*(16*E**3*a**(35/4)*c_m + 33*E*H**3*a**(29/4)*c_s*nu**7 + 10*a**(23/2)*c_t*nu**6)/(48*a**(55/4)*nu**8)",
+    "scope": "c_s and c_m are fixed positive analytic estimate constants; c_t may be zero on R3. These identities do not assert unit constants in the PDE inequalities."
+  },
+  "scope": "Exact complete Fourier and reserve identities; the arbitrary-data evolving-parent estimates and continuation consequence are analytic in README.md, not Lean-certified",
+  "source_sha256": {
+    "evolving_filter_parent_payment.py": "763d9e59f55563cb2624ed7820c057a7ee1f10909cabb644665d42a75cc0c9fc",
+    "heat_work_parent_payment.py": "2b9d6c0ff934f0e8c1a6527e2ca24402bac3b662a25dd7be38815c09669c8cff",
+    "heat_covariance_renewal.py": "c0ddca28d4b2c9079d7cc8399eeaf44cf93d10dd001eff7c20079877f0515393",
+    "heat_work_reserve.py": "61c8ce228687243d32cc8f26b69607110d34465e8cef2b37638063c1331c8ba2",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "pressure_quadratic_storage.py": "cb78e2a84c4ee19091dc1ec8e687abec7e2c85d1a41dac007ee3c6eb5f1ea0dc"
+  }
+}
