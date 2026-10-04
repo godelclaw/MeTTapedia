@@ -1,0 +1,61 @@
+{
+  "datum": "(a sin y,b sin z,c sin x), real a,b,c with abc nonzero",
+  "coefficients": {
+    "5": "0",
+    "6": "0",
+    "7": "-a**2*b**2*c**2*q**8*(3156*a**4*b**2*q**8 + 2200*a**4*b**2*q**6 - 6657*a**4*b**2*q**4 + 6930*a**4*b**2 + 1980*a**4*c**2*q**10 - 4095*a**4*c**2*q**8 + 5500*a**4*c**2*q**6 - 4620*a**4*c**2*q**4 + 6930*a**4*c**2 + 1980*a**2*b**4*q**10 - 4095*a**2*b**4*q**8 + 5500*a**2*b**4*q**6 - 4620*a**2*b**4*q**4 + 6930*a**2*b**4 - 103950*a**2*b**2*c**2*q**6 + 54054*a**2*b**2*c**2*q**4 + 41580*a**2*b**2*c**2 + 3156*a**2*c**4*q**8 + 2200*a**2*c**4*q**6 - 6657*a**2*c**4*q**4 + 6930*a**2*c**4 + 3156*b**4*c**2*q**8 + 2200*b**4*c**2*q**6 - 6657*b**4*c**2*q**4 + 6930*b**4*c**2 + 1980*b**2*c**4*q**10 - 4095*b**2*c**4*q**8 + 5500*b**2*c**4*q**6 - 4620*b**2*c**4*q**4 + 6930*b**2*c**4)/5322240"
+  },
+  "self_coefficient7": "-a**2*b**2*c**2*q**14*(a**4*b**2 + a**4*c**2 + a**2*b**4 - 27*a**2*b**2*c**2 + a**2*c**4 + b**4*c**2 + b**2*c**4)/1728",
+  "parent_coefficient7": "-a**2*b**2*c**2*q**8*(3156*a**4*b**2*q**8 - 880*a**4*b**2*q**6 - 6657*a**4*b**2*q**4 + 6930*a**4*b**2 + 1980*a**4*c**2*q**10 - 4095*a**4*c**2*q**8 + 2420*a**4*c**2*q**6 - 4620*a**4*c**2*q**4 + 6930*a**4*c**2 + 1980*a**2*b**4*q**10 - 4095*a**2*b**4*q**8 + 2420*a**2*b**4*q**6 - 4620*a**2*b**4*q**4 + 6930*a**2*b**4 - 20790*a**2*b**2*c**2*q**6 + 54054*a**2*b**2*c**2*q**4 + 41580*a**2*b**2*c**2 + 3156*a**2*c**4*q**8 - 880*a**2*c**4*q**6 - 6657*a**2*c**4*q**4 + 6930*a**2*c**4 + 3156*b**4*c**2*q**8 - 880*b**4*c**2*q**6 - 6657*b**4*c**2*q**4 + 6930*b**4*c**2 + 1980*b**2*c**4*q**10 - 4095*b**2*c**4*q**8 + 2420*b**2*c**4*q**6 - 4620*b**2*c**4*q**4 + 6930*b**2*c**4)/5322240",
+  "sign_certificate": {
+    "p1_lower": 273,
+    "p2_lower": 2310,
+    "P_lower": 6572,
+    "negative_margin": "1643*a**4*b**4*c**4/443520"
+  },
+  "rational_specializations": [
+    {
+      "weights": [
+        "1",
+        "1",
+        "1"
+      ],
+      "viscosity": "1",
+      "coefficient7_at_heat_zero": "-1069/221760"
+    },
+    {
+      "weights": [
+        "2",
+        "3",
+        "1"
+      ],
+      "viscosity": "2/7",
+      "coefficient7_at_heat_zero": "-148861/7392"
+    },
+    {
+      "weights": [
+        "-1/4",
+        "1",
+        "1"
+      ],
+      "viscosity": "5/3",
+      "coefficient7_at_heat_zero": "-35219/259522560"
+    }
+  ],
+  "velocity_jet_mode_counts": [
+    6,
+    18,
+    30,
+    66
+  ],
+  "positive_envelope_integral": "3*C8**(8/3)*t**(29/3)/(40*rho**(5/3))",
+  "scope": "Exact full Fourier identities and polynomial sign certificates; actual local interval and whole-tail remainder analytic in README.md, not Lean-certified",
+  "source_sha256": {
+    "joint_heat_cancellation.py": "ed6fb161f371f0150fe546f21f44c8d738ac4c98f1ccc68140b679b6fde88fd3",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35"
+  }
+}

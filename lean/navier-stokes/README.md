@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint cyclic cancellation](labs/README.md#complete-cyclic-parents-deplete-the-first-generated-heat-work)
+retains the full evolving parents in an arbitrary-strength three-shear
+family. Their complete first pressure-work response is strictly depleting,
+even where the isolated generated motion has positive self-renewal.
+A datum-controlled local remainder covers every auxiliary heat age and
+bounds the generated heat-work capacity by a constant times t^(29/3).
+This is an analytic local result with exact polynomial certificates;
+later renewal and arbitrary-horizon payment remain open. No new Lean
+certificate or amplitude-smallness assumption is used.
+
 The [heat-work reserve](labs/README.md#a-heat-work-reserve-can-be-rebuilt-by-unforced-motion)
 stores all positive fourth-moment pressure work along a field's complete
 free-diffusion history. Diffusion spends it exactly, but unforced motion

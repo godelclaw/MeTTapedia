@@ -43487,3 +43487,213 @@ initial tangents, decreasing kinetic energy, both geometric signs, the
 entire parameter interval and the complete generated-source reconstruction.
 The heat-history limit and actual-solution interval arguments are analytic,
 not Lean-certified. No Lean declarations or axioms change.
+
+## Complete cyclic parents deplete the first generated heat-work
+
+`joint_heat_cancellation.py` retains the COMPLETE physical NS history in
+an arbitrary-strength cyclic family. The preceding heat-work reserve can
+be rebuilt by isolated nonlinear motion. For this family, its original
+parents supply an opposing contribution which dominates that first
+self-renewal. The result includes a local actual-solution bound on the
+entire auxiliary heat tail, not only a time-jet sign.
+
+### The physical history and exact family coefficient
+
+Work on the normalized torus of period 2pi. Let nu>0 and
+
+    U=(a sin y,b sin z,c sin x), a,b,c real, abc != 0,
+    u_t=nu Delta u+N(u), N(u)=-P[(u.grad)u], u(0)=U,
+    v(t)=exp(nu t Delta)U=exp(-nu t)U, w=u-v.           (JC1)
+
+Here P is the Leray projection. The original heat reference v is never
+reset. In particular w_t=nu Delta w+N(v+w); w does NOT evolve by an
+independent unforced NS equation. There is no amplitude-smallness
+assumption. Smooth local existence applies to every finite a,b,c.
+
+Use the same canonical pressure, fourth-moment work and reserve as (HW1):
+
+    P4(z)=-integral |z|^2 z.grad p_z,
+    H_s=exp(s Delta), q=exp(-s),
+    R_nu(z)=nu^(-1) integral_0^infinity [P4(H_s z)]_+ ds. (JC2)
+
+Pressure work P4 is not the cubic vorticity-stretching integral. Its
+consumer is the signed fourth-moment criterion (FM5). Write the ACTUAL
+initial derivatives A=w'(0), B=w''(0), C=w'''(0). Differentiating the
+full NS equation, including its canonical pressure, gives
+
+    P4(H_s w(t))=t^7 F7(q)+O(t^8),
+    F5(q)=F6(q)=0,                                    (JC3)
+
+where the uniform meaning of the remainder is proved below. All
+viscosity terms cancel from F7. Define the nonnegative amplitude quantities
+
+    T=a^2 b^2 c^2,
+    S1=a^4 b^2+b^4 c^2+c^4 a^2,
+    S2=a^4 c^2+a^2 b^4+b^2 c^4,
+
+    p1=3156q^8+2200q^6-6657q^4+6930,
+    p2=1980q^10-4095q^8+5500q^6-4620q^4+6930,
+    p0=-103950q^6+54054q^4+41580.
+
+Then the complete coefficient is
+
+    F7(q)=-T q^8 (p1 S1+p2 S2+p0 T)/5322240.           (JC4)
+
+The checker computes it in two ways: derivatives of the quintic
+functional P4, and all ordered five-linear terms of degrees five through
+seven. Every generated Fourier output is retained. Differentiated tensor
+and gradient Poisson sources also agree. Specialization of every velocity
+and pressure coefficient agrees with the independent rational-viscosity
+NS jet routine at three choices of strengths and viscosity.
+
+### A uniform geometric sign, with arbitrary parent strengths
+
+For 0<=q<=1 the following are exact positive decompositions:
+
+    p1=273+3156q^8+2200q^6+6657(1-q^4) >=273,
+    p2=2310+1980q^10+1405q^6+4095q^6(1-q^2)
+              +4620(1-q^4) >=2310.
+
+Set
+
+    P(q)=1980q^10-939q^8-26950q^6+6741q^4+27720
+        =6572+1980q^10+939q^6(1-q^2)
+              +27889q^4(1-q^2)+21148(1-q^4) >=6572.
+
+The identity 3p1+3p2+p0=3P and AM-GM give
+
+    S1>=3T, S2>=3T,
+    p1 S1+p2 S2+p0 T
+       =p1(S1-3T)+p2(S2-3T)+3PT >=19716T.
+
+In each AM-GM inequality the three nonnegative summands have product T^3.
+Consequently, for arbitrary real nonzero a,b,c,
+
+    F7(q)<=-rho q^8,
+    rho=(1643/443520)(abc)^4>0.                        (JC5)
+
+This is a family sign law, not a sweep of selected amplitudes or heat
+ages. It neither requires equal parents nor loses its sign at large
+amplitude. The strict estimate excludes abc=0; no division by a vanishing
+margin is made.
+
+The self-interaction 2N(A) is one contribution to C. Its contribution
+to F7 is
+
+    F7_self=-T q^14 (S1+S2-27T)/1728.                  (JC6)
+
+For a=b=c=1 this is +7q^14/576, whereas the total is
+-q^8 P(q)/1774080. Thus retaining the full parent response reverses the
+sign of this isolated self contribution. For unequal parents the self
+term need not remain positive; the complete sign (JC5) still holds.
+N(A) is not the complete second derivative of the original evolution.
+
+### Datum-controlled remainder for the actual viscous solution
+
+Here is a quantitative analytic justification of the remainder, uniform
+on the WHOLE half-line of auxiliary heat ages. All norms below are
+inhomogeneous Sobolev norms on the fixed torus. Put M=||U||H12>0. The
+standard H12 commutator energy estimate, with nonpositive viscosity term,
+gives
+
+    d||u||H12/dt <= C_E ||u||H12^2.
+
+Local existence and continuation therefore supply a fixed interval
+[0,Tloc], with Tloc=(2 C_E M)^(-1) after increasing the fixed torus
+constant if necessary, on which ||u||H12<=2M. This is a local a priori
+bound from the ORIGINAL datum, not a bound assumed on the unknown future
+solution. Smooth trigonometric initial data justify the differentiations.
+
+For j=0,...,4 bound the j-th time derivative in H^(12-2j). One possible
+finite recursion, enlarging a fixed product constant C_* uniformly for
+the four estimates, is
+
+    M0=2M,
+    M_(j+1)=nu M_j+C_* sum_(r=0)^j binom(j,r) M_r M_(j-r),
+    j=0,1,2,3.                                      (JC7)
+
+It follows by differentiating the projected NS equation: the Laplacian
+uses two derivatives, while each advection product uses only one. The
+Leray projection is bounded in these Sobolev norms. The heat-reference
+fourth time derivative in H4 is bounded by nu^4 M. Taylor's theorem gives
+
+    w(t)=t A+t^2 B/2+t^3 C/6+E_t,
+    ||E_t||H4 <= E t^4, E=(M4+nu^4 M)/24.              (JC8)
+
+The pressure-work functional is the diagonal of the continuous
+five-linear form
+
+    L(z1,z2,z3,z4,z5)
+       =-integral (z1.z2) z3.grad p(z4,z5),
+    p(z4,z5)=(-Delta)^(-1) partial_i partial_j(z4_i z5_j),
+    |L|<=C_L product_i ||zi||H4.
+
+All inputs are solenoidal. The pressure-gradient bound follows from the
+L2 Helmholtz projection of (z4.grad)z5 and Sobolev embedding; the remaining
+three factors are bounded in L-infinity/L2. Every velocity coefficient
+and E_t has zero spatial mean, so heat contracts its H4 norm by exp(-s).
+
+Put S=||A||H4+||B/2||H4+||C/6||H4 and choose
+
+    C8=max(1,C_L (S^5+5E(S+E)^4)).
+
+For 0<=t<=min(Tloc,1), the ordered polynomial expansion and the
+five-linear difference estimate now yield
+
+    |P4(H_s w(t))-t^7 F7(exp(-s))|
+        <=C8 t^8 exp(-5s), for EVERY s>=0.             (JC9)
+
+For completeness, terms of degree at least eight in the truncated
+polynomial are bounded by C_L S^5 t^8 exp(-5s). Replacing one of the
+five arguments by the remainder costs at most
+5 C_L E(S+E)^4 t^8 exp(-5s). These bounds justify (JC9) without requiring
+eight time derivatives of the flow. All constants are finite functions
+of the original a,b,c and nu. They can also be chosen uniformly for nu
+in a fixed bounded nonnegative interval in the local energy argument.
+
+### The complete tail and its continuation meaning
+
+Combining (JC5) and (JC9),
+
+    P4(H_s w(t))<=-rho t^7 exp(-8s)+C8 t^8 exp(-5s).   (JC10)
+
+The adverse remainder decays more slowly. It would be incorrect to
+claim a negative sign for every s at a fixed positive t just from the
+leading coefficient. Instead integrate the positive envelope exactly.
+For delta=C8 t/rho<=1 its positive region is
+s>(1/3)log(1/delta). Therefore
+
+    R_nu(w(t))
+       <=(3/(40nu)) C8^(8/3) rho^(-5/3) t^(29/3).     (JC11)
+
+Indeed, with z=delta^(1/3) and q=exp(-s), the complete positive integral
+is C8 t^8 z^5/5-rho t^7 z^8/8=3 C8 t^8 z^5/40. No heat-time cutoff,
+finite heat grid or discarded late modes enter this bound. It allows
+positive capacity at higher orders; it does not assert R_nu(w(t))=0.
+
+On the original-data interval
+
+    0<t<=T*=min(Tloc,1,rho/(2C8)),
+
+(JC10) at s=0 also gives P4(w(t))<=-rho t^7/2<0. Since D4>=0, this pays
+the signed integrand P4(w)-nu D4(w)/2 in (FM5) with zero allowance on
+this initial interval, including its prescribed nonnegative weight.
+A short viscous payment alone is not exceptional: diffusion often
+wins initially for generated motion. The additional information here
+is the negative pressure work itself, its viscosity-independent leading
+coefficient for arbitrary parent strengths, and the uniform suppression
+of the full heat-work capacity in (JC11).
+
+This supplies a physical local test of a joint history mechanism. It
+is not an arbitrary-horizon estimate: new modes appear immediately,
+and the evolved flow no longer has the initial three-shear form. One
+cannot iterate (JC5) by resetting the parents or their reserve. Paying
+the later joint replenishment from the original datum remains open,
+as do arbitrary-data regularity and a whole-space version of this
+particular periodic construction.
+
+Run `python3 -O labs/joint_heat_cancellation.py`. The exact Fourier and
+polynomial checks are archived in `joint_heat_cancellation_results.json`.
+The local existence, Sobolev remainder and actual heat-tail bound above
+are analytic, not newly Lean-certified. No Lean declarations or axioms
+change.
