@@ -1,0 +1,73 @@
+{
+  "classification": "CHECKED_EXACT_PHASE_CRITERION_WITH_POSITIVE_AND_NEGATIVE_CONSUMERS",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSixPhaseChoice",
+      "source_sha256": "f4213b9d78f1f64801b8e3d77e17bc3aca8e3c6ad4569f5f8b752255919e05f7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 17.492,
+      "olean_bytes": 679976,
+      "olean_sha256": "8ff6deb0d9cb9b724f67e52277a139836242573dfb3bbaed0b6c75fd046a228e"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixPhaseExample",
+      "source_sha256": "65ad025f7b840cb51d9cd7fb295d0a2ce4442deda6ee78aa6ac23a7e399fa2be",
+      "exit_code": 0,
+      "frontend_wall_seconds": 19.006,
+      "olean_bytes": 1691672,
+      "olean_sha256": "9b1d8256d9d900cdfd7ea522e8f578c32f9959c6e4258bb9c2723109156e720f"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixPhaseAudit",
+      "source_sha256": "1daaa7cf8a577d81729673fb4cb8486ed67d673daa851641e2f36e153fee24c4",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.826,
+      "olean_bytes": 3816,
+      "olean_sha256": "d670ef6f7bcedfb65562a030d401c71d1327b2c329ec902c0e179a70363d07ce"
+    }
+  ],
+  "frontend_wall_seconds_total": 41.324,
+  "timing_scope": "Three new modules with existing dependencies built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 37498,
+  "new_boundary_repair_table_bytes": 0,
+  "spherical_fixture_json_bytes": 11472,
+  "finite_boundary_normal_forms": 16,
+  "audit": {
+    "roots": 15,
+    "transitive_dependency_declarations": 11765,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "On the stated middle boundary, a one/three phase permits source extension exactly when a central component avoids all outer ports.",
+    "Every successful finite one/three phase can be replaced by one physical component switch with a reconstructed source colouring.",
+    "The exterior and component sizes and original phase length are unrestricted.",
+    "A 39-vertex spherical map with exact source stars and facial readings retains the original joint branch but has neither protective path after the first switch.",
+    "The prescribed switch at three does not extend; switching the component at six uses the common core formula and reconstructs the whole colouring.",
+    "An additional boundary-silent zero/one switch leads to a reachable preparation from which no finite one/three phase can extend the source."
+  ],
+  "program_only": [
+    "The 39-vertex sphere has no obstructing simple cycles of length three through five under the recorded shore-size test.",
+    "Bounded samples and fixed-colouring surgery locate the counterexample; they are not exhaustive coverage proofs."
+  ],
+  "residual_obligations": [
+    "Prove a justified preparation supplies a free central component, or establish an alternative using another colour pair.",
+    "Other boundary forms, occurrence supply, strict reduction, compact coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripSixPhaseChoice kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_six_phase.py"
+  ],
+  "evidence_record": "strip-six-phase-audit.json"
+}

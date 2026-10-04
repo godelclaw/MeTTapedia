@@ -1,0 +1,102 @@
+{
+  "classification": "EXACT_PHASE_CRITERION_AND_ALTERNATIVE_SPHERICAL_REPAIR",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; classical semantics from Gonthier/Emery.",
+  "geometry": {
+    "vertices": 39,
+    "edges": 111,
+    "faces": 74,
+    "minimum_degree": 5
+  },
+  "exact_boundary_cases": 16,
+  "extendible_cases": 6,
+  "short_cycle_census_program_only": {
+    "vertices": 39,
+    "faces": 74,
+    "minimum_degree": 5,
+    "cycles_by_length": {
+      "3": 74,
+      "4": 111,
+      "5": 241
+    },
+    "shore_counts": [
+      {
+        "length": 3,
+        "side_vertices": [
+          0,
+          36
+        ],
+        "cycles": 74
+      },
+      {
+        "length": 4,
+        "side_vertices": [
+          0,
+          35
+        ],
+        "cycles": 111
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          0,
+          34
+        ],
+        "cycles": 222
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          1,
+          33
+        ],
+        "cycles": 19
+      }
+    ],
+    "obstructing_cycles": 0,
+    "first_obstruction": null
+  },
+  "no_protective_path": true,
+  "prescribed_swap_fails": true,
+  "locked_phase_boundary_components": [
+    [
+      1,
+      3,
+      5,
+      6,
+      9,
+      10
+    ]
+  ],
+  "boundary_silent_preparation_blocks_phase": true,
+  "paired_component": [
+    5,
+    6
+  ],
+  "repaired_boundary": [
+    0,
+    1,
+    0,
+    3,
+    2,
+    1,
+    3,
+    2,
+    0,
+    3,
+    1
+  ],
+  "limits": [
+    "The Lean theorem normalizes one fixed-pair phase on the specified boundary domain.",
+    "It does not establish the preceding phase can always supply a free central component.",
+    "No new coverage entry, strict reduction or whole-proof kernel saving is claimed."
+  ],
+  "fixture_sha256": "ac17f3f0f7c1c35828032ee139ef9b2f33b87f68b88f6770f0fa6fce4f1226b1",
+  "lean_sources": {
+    "StripSixPhaseChoice.lean": "f4213b9d78f1f64801b8e3d77e17bc3aca8e3c6ad4569f5f8b752255919e05f7",
+    "StripSixPhaseExample.lean": "65ad025f7b840cb51d9cd7fb295d0a2ce4442deda6ee78aa6ac23a7e399fa2be",
+    "StripSixPhaseAudit.lean": "1daaa7cf8a577d81729673fb4cb8486ed67d673daa851641e2f36e153fee24c4"
+  },
+  "verifier_sha256": "25b3ff2bc32dc05dfc1822f31b94c4521f860f6969ab0b7ae74205fe6e15994b"
+}

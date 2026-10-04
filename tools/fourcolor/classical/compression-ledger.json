@@ -6210,5 +6210,32 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_phase_choice_experiment": {
+    "classification": "CHECKED_EXACT_PHASE_CRITERION_WITH_POSITIVE_AND_NEGATIVE_CONSUMERS",
+    "report": "../near-linear/strip-six-phase-measurements.json",
+    "exact_law": "Every successful fixed one/three phase on the stated boundary can be replaced by one central component switch.",
+    "positive_consumer": "Actual 39-vertex sphere reconstructs through the paired-port component despite failure of both protective paths and the prescribed port-three switch.",
+    "negative_consumer": "A reachable preparation with unchanged boundary colours admits no source-extending finite phase of the same colour pair.",
+    "new_boundary_repair_table_bytes": 0,
+    "finite_boundary_normal_forms": 16,
+    "spherical_fixture_json_bytes": 11472,
+    "new_lean_source_bytes": 37498,
+    "audit": {
+      "roots": 15,
+      "transitive_dependency_declarations": 11765,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "remaining": [
+      "Prove a justified preparation supplies a free central component, or establish an alternative using another colour pair.",
+      "Other boundary forms, occurrence supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

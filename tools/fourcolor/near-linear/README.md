@@ -1,5 +1,45 @@
 # Near-linear Four Colour catalogue bridges
 
+## One component replaces an entire fixed-pair repair phase
+
+[`StripSixPhaseChoice`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixPhaseChoice.lean)
+characterizes all one/three phases on the middle boundary of the D0099
+port-six branch. The rim couples ports five and six, and ports nine and
+ten. Four Boolean choices describe every phase endpoint, at groups
+{1}, {3}, {5,6}, {9,10}. A source colouring exists exactly when
+`a = d` and either `b ≠ a` or `c ≠ a`.
+
+A physical component shares its choice throughout. Consequently a phase
+can repair exactly when the component through port three or port six
+avoids all three outer ports {1,9,10}. One switch of such a component
+suffices. The theorem covers arbitrarily long finite phases and arbitrary
+exterior and component sizes; it does not preserve a previously chosen
+final colouring. Reconstruction uses a shared core formula. Sixteen small
+boundary normal forms are checked, with no table of repair histories.
+
+[`StripSixPhaseExample`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixPhaseExample.lean)
+consumes this criterion on an actual 39-vertex spherical map. The first
+switch blocks both previously proposed protective paths. Switching at
+port three fails, but the component through ports five and six gives a
+whole colouring through the common reconstruction theorem.
+
+The same sphere also realizes a bad preparation: an extra zero/one switch
+changes no boundary colour but joins both central components to the outer
+ports. The criterion proves that **no finite one/three phase** can repair
+that state. This obstruction concerns the specified continuation; changing
+the preparation or using another pair remains possible.
+
+Replay `lake build kernelStripSixPhaseChoice`. The [independent verifier](audit_strip_six_phase.py)
+checks exact source stars, geometry, physical components, both preparations,
+the sixteen boundary cases and whole reconstruction. Its short-cycle census
+is program evidence; no Lean short-cycle exclusion theorem is claimed.
+The [receipt](strip-six-phase-measurements.json) records replay cost and the
+fifteen-root dependency audit.
+
+The remaining supply task is to obtain a free central component from a
+justified preparation, or prove another repair applies. This result adds
+no catalogue removal, strict reduction or universal coverage claim.
+
 ## A preserved exterior path protects a subsequent repair
 
 [`StripSixBarrierGeometry`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixBarrierGeometry.lean)

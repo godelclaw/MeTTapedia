@@ -1455,3 +1455,16 @@ target kernelStripSixBarrier pkg : Unit := do
         "--library-output", ".lake/build/lib/lean", "--modules", "StripSixBarrierGeometry", "StripSixBarrierRepair", "StripSixBarrierExample", "StripSixBarrierAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the exact fixed-pair phase repair criterion. -/
+target kernelStripSixPhaseChoice pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-phase-choice",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripSixPhaseChoice", "StripSixPhaseExample", "StripSixPhaseAudit"]
+      cwd := pkg.dir
+      env := env }
