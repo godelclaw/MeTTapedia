@@ -1,0 +1,728 @@
+{
+  "evidence": "Kernel-certified symbolic reconstruction and same-exterior repair; independent source replay.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "guard_forms": [
+    {
+      "segment": [
+        0,
+        3,
+        0
+      ],
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        3,
+        0,
+        3,
+        0,
+        1,
+        0,
+        1
+      ],
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "segment": [
+        2,
+        0,
+        3
+      ],
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        3,
+        2,
+        0,
+        3,
+        1,
+        0,
+        1
+      ],
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "segment": [
+        2,
+        3,
+        0
+      ],
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        3,
+        2,
+        3,
+        0,
+        1,
+        0,
+        1
+      ],
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "majority_consumers": [
+    {
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        2,
+        2,
+        1
+      ],
+      "block": [
+        7,
+        8,
+        9,
+        3
+      ],
+      "successful_pairs": [
+        [
+          3,
+          9
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "matching_layouts": 5,
+      "direct_answers": [
+        [
+          1,
+          1,
+          1,
+          3,
+          1,
+          2,
+          3,
+          2,
+          2,
+          3,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          3,
+          3,
+          3,
+          2,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          3,
+          2,
+          3,
+          3,
+          1
+        ]
+      ]
+    },
+    {
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        3,
+        3,
+        1,
+        2,
+        2,
+        1
+      ],
+      "block": [
+        6,
+        8,
+        9,
+        3
+      ],
+      "successful_pairs": [
+        [
+          3,
+          9
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "matching_layouts": 5,
+      "direct_answers": [
+        [
+          1,
+          1,
+          1,
+          3,
+          3,
+          3,
+          3,
+          1,
+          2,
+          3,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          2,
+          3,
+          3,
+          2,
+          1,
+          3,
+          2,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          2,
+          3,
+          3,
+          3,
+          1,
+          3,
+          3,
+          1
+        ]
+      ]
+    }
+  ],
+  "anchor_consumers": [
+    {
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        1,
+        1,
+        1
+      ],
+      "fixed": 3,
+      "anchor": 9,
+      "replies": [
+        {
+          "partner": 1,
+          "word": [
+            1,
+            2,
+            1,
+            2,
+            1,
+            2,
+            3,
+            2,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 3,
+          "word": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            2,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 5,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            3,
+            2,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 8,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            2,
+            3,
+            2,
+            2,
+            2,
+            1
+          ],
+          "direct": false
+        },
+        {
+          "partner": 10,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            2,
+            3,
+            2,
+            1,
+            2,
+            2
+          ],
+          "direct": true
+        }
+      ]
+    },
+    {
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "fixed": 3,
+      "anchor": 9,
+      "replies": [
+        {
+          "partner": 1,
+          "word": [
+            1,
+            2,
+            1,
+            2,
+            3,
+            3,
+            3,
+            1,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 3,
+          "word": [
+            1,
+            1,
+            1,
+            1,
+            3,
+            3,
+            3,
+            1,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 8,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            3,
+            3,
+            3,
+            1,
+            2,
+            2,
+            1
+          ],
+          "direct": false
+        },
+        {
+          "partner": 10,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            3,
+            3,
+            3,
+            1,
+            1,
+            2,
+            2
+          ],
+          "direct": true
+        }
+      ]
+    },
+    {
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        1,
+        2,
+        2,
+        1
+      ],
+      "fixed": 1,
+      "anchor": 3,
+      "replies": [
+        {
+          "partner": 6,
+          "word": [
+            1,
+            1,
+            1,
+            3,
+            1,
+            1,
+            2,
+            1,
+            2,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 9,
+          "word": [
+            1,
+            1,
+            1,
+            3,
+            1,
+            1,
+            3,
+            1,
+            2,
+            3,
+            1
+          ],
+          "direct": true
+        }
+      ]
+    },
+    {
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        1,
+        1,
+        2,
+        1
+      ],
+      "fixed": 3,
+      "anchor": 7,
+      "replies": [
+        {
+          "partner": 1,
+          "word": [
+            1,
+            2,
+            1,
+            2,
+            1,
+            2,
+            3,
+            2,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 3,
+          "word": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            2,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 5,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            3,
+            2,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 8,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            2,
+            3,
+            2,
+            2,
+            2,
+            1
+          ],
+          "direct": false
+        },
+        {
+          "partner": 10,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            2,
+            3,
+            2,
+            1,
+            2,
+            2
+          ],
+          "direct": true
+        }
+      ]
+    },
+    {
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "fixed": 3,
+      "anchor": 9,
+      "replies": [
+        {
+          "partner": 1,
+          "word": [
+            1,
+            2,
+            1,
+            2,
+            1,
+            1,
+            3,
+            1,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 3,
+          "word": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            3,
+            1,
+            1,
+            2,
+            1
+          ],
+          "direct": true
+        },
+        {
+          "partner": 5,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            2,
+            3,
+            1,
+            1,
+            2,
+            1
+          ],
+          "direct": false
+        },
+        {
+          "partner": 8,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            3,
+            1,
+            2,
+            2,
+            1
+          ],
+          "direct": false
+        },
+        {
+          "partner": 10,
+          "word": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            3,
+            1,
+            1,
+            2,
+            2
+          ],
+          "direct": true
+        }
+      ]
+    }
+  ],
+  "max_chord_moves_in_displayed_strategy": 3,
+  "distinct_policy_nodes": 7,
+  "structural_selection_laws": 2,
+  "source_traces_checked": 25,
+  "direct_traces_reconstructed": 18,
+  "new_stored_colour_witness_bytes": 0,
+  "limits": [
+    "The guard has three normalized boundary forms of one decoded source.",
+    "Finite source-domain, terminal-relation and five-layout inverse checks remain.",
+    "This does not establish full-source repair, a strict ambient reduction or geometric supply.",
+    "No catalogue deletion, original-certificate replacement or net whole-proof saving is claimed."
+  ],
+  "verifier_sha256": "e8dcd2a9ac3269be8e5a5ddd9f2c712e469375622a31dbadaa549495dfd3306d"
+}

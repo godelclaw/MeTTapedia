@@ -1,0 +1,117 @@
+{
+  "classification": "KERNEL_CHECKED_GUARDED_SYMBOLIC_SOURCE_REPAIR",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeChordComposition",
+        "source_sha256": "6eb45a21a1e554abde102459b21e0018287b63f5a6cb171fceee0e92a6ef7abd",
+        "exit_code": 0,
+        "frontend_wall_seconds": 1.732,
+        "olean_bytes": 22768,
+        "olean_sha256": "21dd8110252edc9e9bce2b190cdacac1ce097c6dfe658a4a09223ec9fed29a0f"
+      },
+      {
+        "module": "MettapediaFourColor.StripSourceExtension",
+        "source_sha256": "fbe4b16d1e38ddcfbf87562c816c647b01df9396b78b05ea3c91f0fbed61f21b",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.008,
+        "olean_bytes": 76016,
+        "olean_sha256": "41b82677c8d3c141563c5f795a70faaac81e90bac044471f253efe6f49e07482"
+      },
+      {
+        "module": "MettapediaFourColor.StripSymbolicRepair",
+        "source_sha256": "e1a04c103f4520a7c329b4b81fb6f0b5dc0ac2e9d6155dc9eef1b754705d23cd",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.914,
+        "olean_bytes": 492048,
+        "olean_sha256": "d89ec5ae447114c013eb63769fa214c319ab0cbe843c76591f2a8697ab61a816"
+      },
+      {
+        "module": "MettapediaFourColor.SymbolicStripAudit",
+        "source_sha256": "c275faecc3d736bafca6db3cf01ec3b6a9dcc2335e4bea12ed6f389dd83b2d6b",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.553,
+        "olean_bytes": 2600,
+        "olean_sha256": "87282c9ccf21d013691e45672f0542ee1c41071a6a63190abee053ed10757cd9"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeChordComposition.lean",
+      "bytes": 970,
+      "sha256": "6eb45a21a1e554abde102459b21e0018287b63f5a6cb171fceee0e92a6ef7abd"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripSourceExtension.lean",
+      "bytes": 3988,
+      "sha256": "fbe4b16d1e38ddcfbf87562c816c647b01df9396b78b05ea3c91f0fbed61f21b"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripSymbolicRepair.lean",
+      "bytes": 10486,
+      "sha256": "e1a04c103f4520a7c329b4b81fb6f0b5dc0ac2e9d6155dc9eef1b754705d23cd"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/SymbolicStripAudit.lean",
+      "bytes": 3284,
+      "sha256": "c275faecc3d736bafca6db3cf01ec3b6a9dcc2335e4bea12ed6f389dd83b2d6b"
+    }
+  ],
+  "frontend_seconds_including_imports": 16.207,
+  "audit": {
+    "roots": 18,
+    "dependency_declarations": 6330,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "previous_stored_source_colourings_used": false,
+    "previous_source_repair_proofs_used": false,
+    "coversRec_used": false,
+    "interval_search_used": false
+  },
+  "proved": {
+    "arbitrary_boundary_source_reconstruction": true,
+    "arbitrary_width_anchor_continuation_composition": true,
+    "normalized_guard_forms": 3,
+    "shared_majority_consumers": 2,
+    "same_exterior_retained": true,
+    "actual_terminal_colourings": true,
+    "new_stored_colour_witness_bytes": 0,
+    "finite_inverse_layouts_per_input": 5,
+    "finite_inverse_inputs": 2
+  },
+  "construction": {
+    "max_chord_moves_in_displayed_strategy": 3,
+    "policy_nodes": 7,
+    "selection_laws": [
+      "anchor chord",
+      "majority block"
+    ],
+    "minimality_claimed": false
+  },
+  "independent_program": "symbolic-strip-audit.json",
+  "limits": [
+    "The guard is a three-form boundary family of D0099, not an unbounded graph family.",
+    "Finite guard classification, source-coordinate, terminal-relation and five-layout inverse checks remain.",
+    "No full D0099 repair, geometric supply or strict ambient reduction is established.",
+    "The earlier proof declarations remain; the new guarded theorem does not consume their stored colouring witnesses.",
+    "No net whole-proof size, runtime or catalogue saving is claimed."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0
+}

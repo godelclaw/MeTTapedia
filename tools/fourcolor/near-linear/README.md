@@ -1,5 +1,50 @@
 # Near-linear Four Colour catalogue bridges
 
+## A boundary-dependent repair with three segment forms
+
+[`StripSymbolicRepair.guarded_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSymbolicRepair.lean)
+repairs every D0099 boundary of the form
+
+```
+(0, 1, 0, 1, 3, x, y, z, 1, 0, 1)
+x in {0,2};  (y,z) in {(0,3),(3,0)};  x != y
+```
+
+There are three normalized forms. The guard forces the first interior ear
+to colour 2 and leaves colour 1 available at its adjacent interior vertex.
+It retains boundary vertex 2, whose loss caused the response obstruction
+below. Two forms use an anchor exchange followed, when needed, by the same
+majority-block law. The third can require one extra anchor exchange before
+joining that majority repair. Directly extending answers stop earlier.
+
+```
+two forms    -> anchor ----------------> majority -> source colouring
+third form   -> anchor -> extra anchor -> majority -> source colouring
+```
+
+The [source reconstruction theorem](../../../lean/fourcolor-classical/MettapediaFourColor/StripSourceExtension.lean)
+works for arbitrary boundary colours: a proper boundary and an inhabited
+terminal relation reconstruct a colouring of the complete decoded graph.
+The repair re-evaluates those symbolic relations after each update. Its
+dependency audit excludes the earlier stored colouring witnesses and both
+earlier source-repair proofs. No new colouring-witness table is added.
+
+[`KempeChordExchange.coclosure_of_answers`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeChordComposition.lean)
+composes proved continuations at any boundary length. It follows the
+structural chord-cover theorem and retains the same arbitrary Kempe-closed
+exterior. Both majority consumers reuse the convex-block theorem. A finite
+inverse check covers five matching layouts for each of their two inputs;
+source-domain and terminal-relation checks also remain explicit.
+
+Replay with `lake build kernelSymbolicStrip`. The
+[kernel receipt](symbolic-strip-measurements.json) records eighteen audited
+roots and standard axioms only; replay times include imports.
+The [independent replay](audit_symbolic_strip.py) checks all three guard
+forms, the possible anchor replies, both majority blocks and reconstructed
+source colourings. These are three boundary forms of one configuration,
+not a complete repair of that configuration or a geometric supply theorem.
+No catalogue dependency or net whole-proof saving is credited.
+
 ## Exact current relations can forget the response to a repair
 
 [`StripResponseSummary.terminal_iff`](../../../lean/fourcolor-classical/MettapediaFourColor/StripResponseSummary.lean)

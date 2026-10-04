@@ -1124,3 +1124,18 @@ target kernelStripResponse pkg : Unit := do
         "StripResponseSummary", "StripResponseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay source reconstruction from symbolic boundary relations. -/
+target kernelSymbolicStrip pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/symbolic-strip",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeChordComposition", "StripSourceExtension",
+        "StripSymbolicRepair", "SymbolicStripAudit"]
+      cwd := pkg.dir
+      env := env }
