@@ -47851,3 +47851,256 @@ and charge constants. The actual intervals, global no-swirl solution,
 finite-profile stability and Kato nodal loss are analytic arguments using
 the stated background, not newly Lean-certified. No Lean declarations or
 axioms change; the arbitrary-data signed-history estimate remains open.
+
+## Coupled circulation and swirl stocks can grow while energy falls
+
+`critical_swirl_stock.py` tests the direct extension of the preceding
+no-swirl geometric stock to coupled axisymmetric flow. Both proposed
+stocks can increase together in one actual unforced solution, despite
+decreasing kinetic energy. Thus no nonnegative constant weighting of
+these two stocks gives unconditional monotonicity. The calculation also
+provides an original-data payment for compression outside a cylinder,
+allowing its radius to decrease under an explicit energy-dependent rule.
+The remaining signed defect is compression inside that core.
+
+The cylindrical equations and circulation maximum principle are classical;
+see [Wei, equations (1.1)--(1.5)](https://arxiv.org/html/1508.03318v1).
+The meridional L1 norm and its no-swirl diffusion loss are established
+ingredients of [Gallay--Sverak](https://www.numdam.org/article/CML_2015__7_2_67_0.pdf).
+This is a test and combination of those ingredients, not a claim of a new
+general regularity criterion. All PDE and interval arguments below remain
+analytic; the checker certifies the displayed finite algebraic calculations.
+
+### The complete coupled balances
+
+Work on R3 with a smooth axisymmetric unforced solution, nu>0, regularity
+at the axis, and sufficient decay for the following integrals. Smooth
+Schwartz data supply the local example below. Put
+
+```text
+v=(u_r,u_z), s=u_theta, q=omega_theta=partial_z u_r-partial_r u_z,
+C=integral |q| dr dz, Y=integral s^2 dr dz,
+A_r=integral s_r^2 dr dz, A_z=integral s_z^2 dr dz,
+W=integral s^2/r^2 dr dz, P=integral (-u_r/r)s^2 dr dz,
+R_alpha=C+alpha Y/nu.                                  (CS1)
+```
+
+All meridional integrals use r>0, z in R, with NO radial volume factor.
+In particular Y is not the physical swirl kinetic energy. Both C and Y
+are invariant under NS spatial scaling at fixed viscosity. The actual
+coupled equations, with div_2 v=-u_r/r, are
+
+```text
+q_t+div_2(v q)=nu[Delta_2 q+partial_r(q/r)]+partial_z(s^2)/r,
+s_t+v.grad s+(u_r/r)s
+             =nu[s_rr+s_r/r+s_zz-s/r^2].               (CS2)
+```
+
+Pressure is removed by curl in the first equation and has zero azimuthal
+derivative in the second. The meridional velocity still evolves with the
+full pressure of the actual solution. It is not prescribed externally.
+Kato's identity and integration of the second equation give
+
+```text
+C'+D_C <= integral sign(q) partial_z(s^2)/r dr dz,
+Y'=3P-2nu(A_r+A_z)-nu W,                              (CS3)
+```
+
+where D_C is the nonnegative meridional circulation diffusion loss,
+including the axis and interior vorticity nodes. Interpret its inequality
+in integrated form if nodal sets are singular. On a regular interior
+nodal curve its contribution is 2nu integral |grad q| dlength, as in
+(ST15)--(ST17). The factor THREE in the compression term of Y' includes
+the divergence of the meridional drift in the measure dr dz. Replacing
+that measure by physical volume would change both this factor and the stock.
+
+### One actual datum increases both critical stocks
+
+Let a,b,k>0, r^2=x^2+y^2, and prescribe the Cartesian initial velocity
+
+```text
+u0=a exp(-|x|^2)*(x(2z^2-1),y(2z^2-1),2z(1-r^2))
+                  +b exp(-k|x|^2)*(-y,x,0).
+q0=-2a r z(2r^2+2z^2-7)exp(-r^2-z^2),
+s0=b r exp(-k(r^2+z^2)).                              (CS4)
+```
+
+This is a literal smooth divergence-free finite-energy field, with
+axisymmetric meridional inflow and swirl. The checker verifies (CS2)
+against the Cartesian curl of its COMPLETE nonlinear acceleration and
+the full vector Laplacian. No projected mode truncation or external force
+enters. Gaussian integration gives
+
+```text
+C0=a[3+22exp(-7/2)], Y0=pi b^2/(16k^2),
+A_r=3pi b^2/(16k), A_z=pi b^2/(16k), W=pi b^2/(4k),
+P0=pi a b^2 k/[2(1+2k)^3],
+Y'(0)=3pi a b^2 k/[2(1+2k)^3]-3pi nu b^2/(4k),
+C'(0)=-10nu a[3+22exp(-7/2)]
+       +b^2[2(1+7k)exp(-7k)-1]/(2k).                 (CS5)
+```
+
+The last source is SIGNED. It is computed both by integration over the
+two vorticity-sign regions and independently from their interfaces:
+the plane z=0 contributes b^2[2exp(-7k)-1]/(2k), and the circular node
+r^2+z^2=7/2 contributes 7b^2 exp(-7k). The full axis and nodal diffusion
+loss is 10nu C0. Thus neither an absolute source estimate nor omitted
+diffusion supplies the counterexample.
+
+Choose k=1/7, a=81nu and b=144nu. Then
+
+```text
+C'(0)=nu^2[-75006-17820exp(-7/2)+290304exp(-1)]
+                                              >3942nu^2>0,
+Y'(0)=60480pi nu^3>0.                                (CS6)
+```
+
+The strict rational lower bound uses exp(1)<3 and exp(-7/2)<1; it is not
+a floating-point sign test. The latter exponential bound also gives
+C0<25a. In particular, the source coefficient is greater than 7b^2/6,
+while the entire circulation diffusion loss is less than 250nu a.
+
+Classical local smooth NS existence gives an actual unforced solution
+from (CS4). Uniqueness preserves its axisymmetry. Smooth weighted
+vorticity and angular-velocity estimates justify differentiation of the
+integrals at time zero. For C, q0 has a zero set of meridional measure
+zero; its L1 time expansion gives the signed derivative in (CS5) by
+dominated convergence. The pressure need not have Schwartz decay for
+this argument: vorticity and swirl use their own transport-diffusion
+equations with bounded smooth drift on a common local interval.
+
+Consequently there is one h>0 such that for every 0<t<h,
+
+    C(t)>C0, Y(t)>Y0, R_alpha(t)>R_alpha(0) for EVERY alpha>=0. (CS7)
+
+This includes a constant alpha chosen from the complete original datum.
+Both increases occur on the SAME solution and common interval. The
+standard kinetic identity still reads E'=-2nu Z<0, where
+E=||u||2^2 and Z=||grad u||2^2. Explicitly,
+
+```text
+E0=7sqrt(2)pi^(3/2)a^2/32 + pi^(3/2)b^2/(2k)^(5/2),
+T0=integral_R3 (u_r/r)s^2 dx
+           =-2k a b^2 pi^(3/2)/(1+2k)^(7/2)<0.         (CS8)
+```
+
+The meridional kinetic channel receives 2T0, while the swirl channel
+receives -2T0, in addition to their respective negative viscous losses.
+Their work cancels in the total energy balance. Increasing critical
+stocks therefore does not require increasing total energy. If desired,
+full NS similarity with factor E0 makes the initial energy exactly one,
+retains viscosity and both critical stocks, and multiplies their initial
+derivatives by E0^2. This yields the same obstruction at unit initial energy.
+
+The result refutes unconditional monotonicity of (CS1). It proves neither
+unbounded renewal nor failure of a finite allowance depending on the full
+initial datum. A changing weight would introduce its own derivative term.
+
+### Diffusion pays the swirl source; compression is the remaining defect
+
+For alpha>=1, bound the absolute source by 2 integral |s s_z|/r.
+Completing a square and retaining the one-dimensional Hardy remainder gives
+
+```text
+H_r=A_r-W/4=integral (s_r-s/(2r))^2 dr dz>=0,
+Q_alpha=integral (sqrt(2alpha)|s_z|-|s|/(sqrt(2alpha)r))^2 dr dz,
+c_alpha=(3alpha^2-1)/(2alpha),
+R_alpha'+D_C+2alpha H_r+Q_alpha+c_alpha W
+                                    <=(3alpha/nu)P.  (CS9)
+```
+
+The Hardy boundary term s^2/(2r) vanishes at r=0 and infinity under the
+stated hypotheses. Thus even the absolute circulation source is fully
+absorbed by swirl diffusion with explicit nonnegative remainders. The
+remaining term is actual meridional compression, not an unknown sign
+in the source calculation.
+
+### An original-data payment for the entire exterior history
+
+Let G0=||r s0||infinity. The classical circulation maximum principle
+gives |r s(t)|<=G0, and the full kinetic identity gives E'=-2nu Z.
+For any radius rho>0 at a given time,
+
+```text
+P_out=integral_(r>=rho) (-u_r/r)s^2 dr dz
+ <=G0/(2pi rho^2) integral_R3 |u_r| |s|/r dx
+ <=G0/(2pi rho^2) sqrt(E Z).                          (CS10)
+```
+
+The last step uses ||s/r||2^2<=Z in the actual cylindrical gradient
+energy. It permits arbitrary interacting exterior parents. No decay
+model for those parents or bound on a future velocity supremum is used.
+
+Fix H,rho0>0, 0<=p<1/2 and alpha>=1 from the original datum and viscosity.
+For E0>0 allow a measurable core radius satisfying
+
+```text
+rho(t)>=rho0 [E(t)/E0]^p,
+gamma=1-2p>0, L_alpha=3alpha G0/(2pi nu rho0^2),
+B(t)=L_alpha E0^(2p) E(t)^gamma sqrt((H-t)/(4nu gamma)). (CS11)
+```
+
+For t<H and E(t)>0, direct differentiation gives
+
+```text
+-B' >= L_alpha E0^(2p) E^(1/2-2p) sqrt(Z)
+     >= (3alpha/nu)P_out,
+B(0)=3alpha G0 E0/(4pi nu rho0^2)
+                           *sqrt(H/[nu(1-2p)]).      (CS12)
+```
+
+The first difference is exactly
+
+```text
+[L_alpha E0^(2p) E^gamma/sqrt(nu gamma(H-t))]
+   *[sqrt(nu gamma(H-t)Z/E)-1/2]^2>=0.
+```
+
+Both B and its initial allowance are nonnegative and finite. The zero
+energy case is trivial; a limit handles an endpoint at E=0 or t=H.
+The radius is only used to split an integral, not to differentiate a
+localized stock, so no moving-cutoff derivative has been suppressed.
+The exponent restriction p<1/2 is a sufficient range for THIS payment,
+not a necessary condition for regularity or an obstruction at its endpoint.
+
+Define the remaining signed core defect and the total reserve by
+
+```text
+Xi_core=(3alpha/nu) integral_(r<rho(t)) (-u_r/r)s^2 dr dz
+                      -c_alpha integral_(r<rho(t)) s^2/r^2 dr dz,
+R_total=R_alpha+B,
+R_total'+D_C+2alpha H_r+Q_alpha
+          +c_alpha integral_(r>=rho(t))s^2/r^2 dr dz <=Xi_core. (CS13)
+```
+
+This identity of costs retains one original reserve across every compatible
+prefix; it neither resets the parents nor replaces them by external forcing.
+A sufficient core condition for Xi_core<=0 is
+
+    r(-u_r)<=nu[1/2-1/(6alpha^2)] for r<rho(t).        (CS14)
+
+Under (CS14), R_total and the integral of every displayed nonnegative
+loss are bounded by C(0)+alpha Y(0)/nu+B(0). In particular this pays
+retained nodal-event charges such as (ST16), now allowing swirl. The
+coefficient is specific to (CS9); it is not the sharper inflow threshold
+in `SwirlInflowBarrier.lean`, and no equivalence is asserted.
+
+More generally a fixed original-data upper bound K_core>=0 for
+integral_0^t Xi_core on EVERY available same-datum prefix supplies the
+additional nonnegative reserve K_core-integral_0^t Xi_core. Proving that
+bound is a remaining physical obligation, not a consequence of defining
+the ledger. Choosing rho0 after inspecting the unknown future would not
+satisfy it. A smooth solution's initially mild behavior at the axis does
+not establish propagation of (CS14) at the paid radii (CS11).
+
+This step pays the complete exterior-compression history and isolates
+the near-axis defect in a scale-invariant joint stock. The arbitrary-core
+history bound, its connection to a sufficient continuation cost such as
+(BE9)--(BE11), and the additional tilting in general 3D remain open.
+
+Run `python3 -O labs/critical_swirl_stock.py`. The archive checks the literal
+Cartesian equations, Gaussian integrals, two signed-source calculations,
+all axis and nodal diffusion losses, kinetic transfer, simultaneous
+positive derivatives, Hardy remainder and the exact exterior-reserve
+square. The interval, maximum-principle and integrated-history arguments
+remain analytic. No Lean declarations or axioms change.

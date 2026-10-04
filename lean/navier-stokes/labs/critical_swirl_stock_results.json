@@ -1,0 +1,41 @@
+{
+  "equations": {
+    "q": "-2*a*r*z*(2*r**2 + 2*z**2 - 7)*exp(-r**2 - z**2)",
+    "swirl": "b*r*exp(-k*(r**2 + z**2))",
+    "equation": "q_t+div_2(v q)=nu[Delta_2 q+partial_r(q/r)]+partial_z(s^2)/r"
+  },
+  "integrals": {
+    "Y": "pi*b**2/(16*k**2)",
+    "radial_diffusion": "3*pi*b**2/(16*k)",
+    "vertical_diffusion": "pi*b**2/(16*k)",
+    "inverse_radius_diffusion": "pi*b**2/(4*k)",
+    "compression": "pi*a*b**2*k/(2*(2*k + 1)**3)",
+    "source": "b**2*(14*k - exp(7*k) + 2)*exp(-7*k)/(2*k)",
+    "Cprime": "-30*a*nu - 220*a*nu*exp(-7/2) + 7*b**2*exp(-7*k) - b**2/(2*k) + b**2*exp(-7*k)/k",
+    "Yprime": "3*pi*b**2*(2*a*k**2 - 8*k**3*nu - 12*k**2*nu - 6*k*nu - nu)/(4*k*(2*k + 1)**3)",
+    "kinetic_transfer": "-2*pi**(3/2)*a*b**2*k/(2*k + 1)**(7/2)",
+    "kinetic_energy": "7*sqrt(2)*pi**(3/2)*a**2/32 + sqrt(2)*pi**(3/2)*b**2/(8*k**(5/2))",
+    "selected": {
+      "k": "1/7",
+      "a": "81 nu",
+      "b": "144 nu",
+      "Cprime_over_nu_squared": "-75006 - 17820*exp(-7/2) + 290304*exp(-1)",
+      "Cprime_strict_lower": "3942 nu^2",
+      "Yprime": "60480 pi nu^3",
+      "all_constant_weights": "Every alpha>=0 has R_alpha(t)>R_alpha(0) on one common short interval."
+    }
+  },
+  "payment": {
+    "c_alpha": "(3*alpha**2 - 1)/(2*alpha)",
+    "theta_alpha": "1/2 - 1/(6*alpha**2)",
+    "outside_rate": "3*E0*G*alpha/(4*pi*nu*rho**3)",
+    "adaptive_core": "rho(t)>=rho0*(E(t)/E0)^p, 0<=p<1/2, gamma=1-2p",
+    "exterior_reserve": "[3 alpha G0/(2 pi nu rho0^2)] E0^(2p) E(t)^(1-2p) sqrt((H-t)/(4 nu (1-2p)))",
+    "defect": "(3 alpha/nu) integral_(r<rho) (-u_r/r) s^2 - c_alpha integral_(r<rho) s^2/r^2",
+    "scope": "The radius policy and its constants are fixed from the original datum. Propagation of the core condition on every same-datum prefix and full continuation payment remain open."
+  },
+  "source_sha256": {
+    "critical_swirl_stock.py": "ac312d03df5e81bc190ce1449a4567bad481d0e7a8df6bec7165db55f353e848"
+  },
+  "limitation": "Exact algebra and initial derivatives; actual local interval, Kato identity, Hardy and history estimates remain analytic, not Lean-certified."
+}

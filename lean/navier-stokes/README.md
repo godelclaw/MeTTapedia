@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [critical circulation/swirl test](labs/README.md#coupled-circulation-and-swirl-stocks-can-grow-while-energy-falls)
+shows both scale-invariant stocks increasing together on an actual unforced
+axisymmetric history. No nonnegative constant weighting makes their sum
+monotone on all such flows. A complementary estimate pays all meridional
+compression outside a cylinder from the original circulation maximum and
+kinetic energy. The cylinder may shrink with energy under an explicit rule;
+one nonnegative reserve pays the complete exterior history. Compression
+inside the core remains as a signed defect. These analytic results retain
+the full coupled equations and have exact checks; neither propagation of
+the core condition nor arbitrary-data continuation is established.
+
 The [multiscale renewal test](labs/README.md#actual-multiscale-bursts-have-a-geometric-charge-that-energy-misses)
 constructs any prescribed finite number of stretching episodes in one
 globally regular unforced whole-space flow, with uniformly bounded initial
