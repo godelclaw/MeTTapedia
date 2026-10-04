@@ -1,5 +1,65 @@
 # Near-linear Four Colour catalogue bridges
 
+## A choice-count obstruction and a composed escape
+
+[`StripChoiceBarrier`](../../../lean/fourcolor-classical/MettapediaFourColor/StripChoiceBarrier.lean)
+isolates a failed progress measure. The D0099 input `11212321221` admits
+seven possible positions for one omitted core vertex, but no complete
+source colouring. For each colour query there is a noncrossing matching
+such that every subset of its component switches either decreases that
+number or returns to the same boundary up to palette permutation.
+Consequently, arbitrary-length histories that never decrease the number
+of available hole positions cannot escape these responses.
+
+The available positions mean actual proper induced-source colourings,
+with all eleven boundary colours fixed. The negative result is an
+**abstract matching-game obstruction**: the three adverse responses have
+not been realized together by one exterior graph. It does not establish
+an obstruction to every physical recolouring policy.
+
+[`StripChoiceEscape`](../../../lean/fourcolor-classical/MettapediaFourColor/StripChoiceEscape.lean)
+repairs the same input while allowing choices to decrease:
+
+```
+11212321221  -------> full source colouring
+     |
+11212331321  -------> full source colouring
+     |
+     +---- 11212113121 ----> full source colouring
+     |
+     +---- 12323111231 ----> full source colouring
+```
+
+Every continuation retains the same Kempe-closed exterior predicate.
+The graph consumer reconstructs all eight core vertices and an exterior
+colouring agreeing at every ordered port. Its exterior-closure hypothesis
+is explicit. These are existence and compatibility results; the diagram
+does not count physical recolouring steps or prescribe a history of one
+chosen interior witness.
+
+The four local laws reuse
+[`KempeAnchorSelection`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeAnchorSelection.lean),
+which supports any boundary width and any number of retained anchors.
+The partners all belong to one matching. When no successful single
+component exists, the theorem selects two components jointly and composes
+their continuation. Here four anchors suffice, with ten single-component
+and fourteen paired-component contracts. Full source witnesses come from
+the existing symbolic triangle joins; no interior-colouring table is stored.
+
+Replay with `lake build kernelStripChoiceBarrier`. The
+[kernel receipt](strip-choice-measurements.json) separates the finite
+contracts, dependency audit and checking cost. The
+[independent verifier](audit_strip_choice.py) checks all 48 distinct
+subsets of the adverse responses and all 75 noncrossing matching layouts
+across the four repair stages against the decoded source graph; its
+[receipt](strip-choice-audit.json) records the source and proof hashes.
+
+This rules out a greedy measure and supplies its input with a successful
+alternative. It does not complete the last-hole continuation for the
+earlier difficult inputs, a general D0099 repair, a strict ambient
+reduction or geometric supply. Catalogue and complete-assembly dependency
+counts are unchanged.
+
 ## Two-stage progress for the four difficult partial-colouring inputs
 
 [`StripTwoPhaseProgress`](../../../lean/fourcolor-classical/MettapediaFourColor/StripTwoPhaseProgress.lean)

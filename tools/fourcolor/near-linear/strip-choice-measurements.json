@@ -1,0 +1,138 @@
+{
+  "classification": "CHECKED_CHOICE_COUNT_GAME_OBSTRUCTION_AND_COMPATIBLE_COMPLETE_INPUT_REPAIR",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue catalogue, MIT; Gonthier/Emery chromogram semantics.",
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeAnchorSelection",
+        "source_sha256": "f1a56b0787a334ebf1b3b8b168cfee7dabc8f96fc1eb6d58ae0fd6b70f1534da",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.582,
+        "olean_bytes": 268056,
+        "olean_sha256": "4a085ec3743dc697ac2aa3aa47aa90990e600abea0a9d69d4bacd2a9121072a4"
+      },
+      {
+        "module": "MettapediaFourColor.StripChoiceBarrier",
+        "source_sha256": "de7f555fd3705c004a871933bec3418e8bb6e5782d554c776787e5609c78d001",
+        "exit_code": 0,
+        "frontend_wall_seconds": 23.727,
+        "olean_bytes": 376920,
+        "olean_sha256": "b4bbe4a0e49049aca874f986068c374cbd10502ce9822c10cef108ecfb1de972"
+      },
+      {
+        "module": "MettapediaFourColor.StripChoiceEscape",
+        "source_sha256": "9b9e127acf9126c8418538fa3de81fc2f28016c7f8d8fa2c8db89c1a2bc16b35",
+        "exit_code": 0,
+        "frontend_wall_seconds": 43.183,
+        "olean_bytes": 714176,
+        "olean_sha256": "19bec6d63db1a5d49ec3c65d1bfd5979d218af384fe9918a7ca1a9f268e3321e"
+      },
+      {
+        "module": "MettapediaFourColor.StripChoiceAudit",
+        "source_sha256": "835ed7bc10ad8fa2e01053a7ba39f039879a05ee399fe91fd222e62ef4997cf0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.069,
+        "olean_bytes": 3808,
+        "olean_sha256": "1cff989f98ae755a1e947a7a29b59b6664e61d829ce2f98bf36bee5313c7ffc3"
+      }
+    ]
+  },
+  "proof_sources": [
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/KempeAnchorSelection.lean",
+      "bytes": 5652,
+      "sha256": "f1a56b0787a334ebf1b3b8b168cfee7dabc8f96fc1eb6d58ae0fd6b70f1534da"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripChoiceBarrier.lean",
+      "bytes": 7737,
+      "sha256": "de7f555fd3705c004a871933bec3418e8bb6e5782d554c776787e5609c78d001"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripChoiceEscape.lean",
+      "bytes": 7458,
+      "sha256": "9b9e127acf9126c8418538fa3de81fc2f28016c7f8d8fa2c8db89c1a2bc16b35"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripChoiceAudit.lean",
+      "bytes": 3120,
+      "sha256": "835ed7bc10ad8fa2e01053a7ba39f039879a05ee399fe91fd222e62ef4997cf0"
+    }
+  ],
+  "total_new_proof_source_bytes": 23967,
+  "frontend_wall_seconds_including_imports": 74.561,
+  "audit": {
+    "roots": 17,
+    "dependency_declarations": 4991,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false
+  },
+  "formal_results": [
+    "Available hole positions count genuine induced-source colourings with the entire ordered boundary fixed.",
+    "The initial source boundary has seven available hole positions and no complete source colouring.",
+    "Three specified noncrossing matching responses have no nondecreasing-choice answer outside the initial palette orbit. Every subset of each response is available.",
+    "Every finite history in that choice-preserving response relation remains nonextending, without a bound on its length.",
+    "For arbitrary boundary width and anchor count, one matching supplies a successful single component or jointly selected pair. Feasibility of every retained prefix follows from that same matching.",
+    "Four finite stage laws compose to a full repair for the adverse input within the same arbitrary Kempe-closed exterior predicate.",
+    "The graph consumer reconstructs all eight core vertices and a colouring of the same exterior, agreeing at all eleven ordered ports."
+  ],
+  "finite_obligations_retained": {
+    "adverse_queries": 3,
+    "adverse_distinct_subsets": 48,
+    "repair_stages": 4,
+    "retained_anchors_per_stage": 4,
+    "single_contracts": 10,
+    "paired_contracts": 14,
+    "stored_complete_matching_layouts_for_repair": 0,
+    "stored_interior_colourings": 0
+  },
+  "program_receipt": "strip-choice-audit.json",
+  "program_only": [
+    "All 75 matching layouts across the four stages independently checked.",
+    "Direct terminal contracts reconstruct full colourings by independent search on the decoded source graph."
+  ],
+  "local_encoding_cost_probe": {
+    "unpruned_prefix_frontend_seconds": 96.841,
+    "unpruned_prefix_source_sha256": "a03d61254b97ec424bf48c4bd11c48cdd7b28cab06fe9de4aa477a19bebb8c2b",
+    "prefix_pruned_frontend_seconds": [
+      33.853,
+      43.183
+    ],
+    "scope": "Individual observed module checks including imports, not a whole-proof speedup or an averaged benchmark."
+  },
+  "limits": [
+    "The barrier is an adversary in the abstract matching game, not one certified exterior graph.",
+    "The repair retains finite contracts for four source inputs, not a complete D0099 repair.",
+    "No physical history-length bound, new strict reduction, geometric supply or catalogue deletion.",
+    "The four stage laws do not finish the earlier difficult terminal-input domain.",
+    "Successive compatible witnesses are not a certified physical recolouring history for a chosen interior witness.",
+    "The universal termination and geometric coverage needed for a compact compositional Four Colour explanation remain open."
+  ],
+  "regression": {
+    "classical": "lake build kernelStripChoiceBarrier kernelComplete",
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "passed": true
+  },
+  "new_catalogue_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0,
+  "whole_proof_kernel_savings_claimed": false
+}

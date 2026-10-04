@@ -1,0 +1,184 @@
+{
+  "classification": "CHOICE_COUNT_GAME_BARRIER_AND_COMPLETE_INPUT_REPAIR",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue catalogue, MIT; Gonthier/Emery chromogram semantics.",
+  "barrier_word": "11212321221",
+  "available_holes": [
+    0,
+    1,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "barrier_matchings": [
+    {
+      "palette": "123",
+      "pairs": [
+        [
+          2,
+          4
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          8
+        ]
+      ],
+      "subsets_checked": 8,
+      "orbit_answers": 2,
+      "available_hole_counts": {
+        "4": 4,
+        "6": 2,
+        "7": 2
+      }
+    },
+    {
+      "palette": "213",
+      "pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          7,
+          10
+        ]
+      ],
+      "subsets_checked": 8,
+      "orbit_answers": 2,
+      "available_hole_counts": {
+        "0": 2,
+        "1": 2,
+        "5": 2,
+        "7": 2
+      }
+    },
+    {
+      "palette": "321",
+      "pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          9,
+          10
+        ]
+      ],
+      "subsets_checked": 32,
+      "orbit_answers": 2,
+      "available_hole_counts": {
+        "0": 18,
+        "1": 4,
+        "2": 4,
+        "3": 2,
+        "5": 2,
+        "7": 2
+      }
+    }
+  ],
+  "repair_stages": [
+    {
+      "word": "11212113121",
+      "anchors": [
+        0,
+        2,
+        6,
+        9
+      ],
+      "single_contracts": 2,
+      "paired_contracts": 9,
+      "direct_contracts": 11,
+      "continuations": [],
+      "matchings_checked": 42,
+      "matchings_requiring_pair": 23
+    },
+    {
+      "word": "12323111231",
+      "anchors": [
+        0,
+        2,
+        4,
+        6
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 1,
+      "direct_contracts": 4,
+      "continuations": [],
+      "matchings_checked": 14,
+      "matchings_requiring_pair": 1
+    },
+    {
+      "word": "11212331321",
+      "anchors": [
+        0,
+        1,
+        6,
+        7
+      ],
+      "single_contracts": 2,
+      "paired_contracts": 4,
+      "direct_contracts": 4,
+      "continuations": [
+        0,
+        1
+      ],
+      "matchings_checked": 14,
+      "matchings_requiring_pair": 6
+    },
+    {
+      "word": "11212321221",
+      "anchors": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 0,
+      "direct_contracts": 2,
+      "continuations": [
+        2
+      ],
+      "matchings_checked": 5,
+      "matchings_requiring_pair": 0
+    }
+  ],
+  "barrier_subsets_checked": 48,
+  "repair_matchings_checked": 75,
+  "stored_interior_colourings": 0,
+  "lean_sources_sha256": {
+    "KempeAnchorSelection.lean": "f1a56b0787a334ebf1b3b8b168cfee7dabc8f96fc1eb6d58ae0fd6b70f1534da",
+    "StripChoiceBarrier.lean": "de7f555fd3705c004a871933bec3418e8bb6e5782d554c776787e5609c78d001",
+    "StripChoiceEscape.lean": "9b9e127acf9126c8418538fa3de81fc2f28016c7f8d8fa2c8db89c1a2bc16b35"
+  },
+  "verifier_sha256": "c618fdcd1dc97802037aeefe64298c2a37f591983c72f043630df296825839b7",
+  "limits": [
+    "The barrier is an adversary in the abstract matching game, not one certified exterior graph.",
+    "The repair retains finite contracts for four source inputs, not a complete D0099 repair.",
+    "No physical history-length bound, new strict reduction, geometric supply or catalogue deletion."
+  ]
+}

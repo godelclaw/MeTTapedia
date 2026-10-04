@@ -1226,3 +1226,17 @@ target kernelStripTwoPhase pkg : Unit := do
         "StripTwoPhaseReconstruction", "StripTwoPhaseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the hole-choice obstruction and a compatible complete source repair. -/
+target kernelStripChoiceBarrier pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-choice-barrier",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeAnchorSelection", "StripChoiceBarrier", "StripChoiceEscape", "StripChoiceAudit"]
+      cwd := pkg.dir
+      env := env }
