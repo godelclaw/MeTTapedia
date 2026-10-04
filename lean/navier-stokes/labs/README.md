@@ -39090,3 +39090,195 @@ datum and pressure, independent matched-forecast jets, full viscous moment
 cancellation, signed decomposition, nearby exact geometries, initial
 resources and rational global-payment constants. PDE continuation and
 stochastic identification remain analytic; no Lean declarations change.
+
+## An adverse return consumes additional original pressure stock
+
+`pressure_oblique_stock.py` follows the oblique datum (820) through the
+whole viscous clock. The complete first nonlinear pressure correction is
+positive and increasing for every time. Thus the initial excess in (825)
+does not disappear after later heat decay. For actual sufficiently small
+flows, it eventually exhausts the exact cubic forecast's total stock.
+An additional, original-data stock pays the full history in that regime.
+
+This statement concerns the exact forecast stock computed below. It does
+not assert failure of the larger Wiener majorant (823), and it does not
+construct an unforced singularity. The small-data hypothesis will remain
+explicit in the physical transfer.
+
+### Complete coefficients on one original clock
+
+Set viscosity to one for the calculation and initial velocity to epsilon U,
+where U is (820). Define Phi from the actual pressure and actual advecting
+paths, and retain all its conditional moments from time zero. The complete
+amplitude expansion has the form
+
+```text
+Phi_epsilon(t)=epsilon^12 A(t)+epsilon^14 B(t)
+                         +epsilon^16 W_epsilon(t).    (829)
+```
+
+Here epsilon^12 A is exactly the matched cubic-pressure Brownian forecast
+(822). B includes the velocity and pressure through amplitude degree five,
+the first conditional moment through degree five, the second through degree
+eight, and the third through degree eleven. Every convolution output is
+retained. B is not obtained by independently repeating the initial return
+or multiplying uncorrelated parent expectations.
+
+The implementation reuses `pressure_impulse_payment.history_from_fields`.
+Its supplied physical fields solve the complete projected heat-source
+recurrence; independent Gaussian-rational NS time jets check their
+velocity and canonical pressure. The same moment routine still produces
+the previous orthogonal-family certificates.
+
+Both A and B are finite exact sums of `c t^j exp(-r t)`. Their coefficients
+are rational and their rates are nonnegative integers. The checker proves
+
+```text
+A(0)=B(0)=0,     A'(t)>0, B'(t)>0,      every t>0,
+alpha=lim A(t)>0,       beta=lim B(t)>0,
+4.604e-12<alpha<4.606e-12,
+6.608e-13<beta<6.610e-13.                            (830)
+```
+
+The displayed brackets are exact terminating rationals, not numerical
+quadrature tolerances. Full rational alpha and beta and all exponential
+polynomials are emitted by the checker. A has 96 terms and its derivative
+sign certificate has 95 levels; B has 450 terms and 449 derivative levels.
+The largest rates are respectively 162 and 334. The first strict cascade
+data occur at derivative orders seven and nine, agreeing with
+
+```text
+A(t)=(708361715/49182515712)t^8+O(t^9),
+B(t)=delta t^10+O(t^11),                             (831)
+```
+
+where delta is the positive rational in (824). Each sign certificate
+applies a finite chain of operators `(d/dt+r)` with nonnegative initial
+data, ending at zero. Solving that triangular chain proves the sign for
+every time, without a time grid. Keeping its first strict datum gives
+
+```text
+B(t)>=b min(t^10,1),       b=delta/3^334>0.            (832)
+```
+
+For t<=1 this follows from the sharp leading term times exp(-334t),
+using e<3; for t>=1 use monotonicity and the value at one. The small
+constant in (832) is a conservative analytic margin.
+
+### Independent Brownian verification of the forecast stock
+
+The eight cubic-pressure modes are `(+-1,+-3,+-1)` and
+`(+-1,+-5,+-1)`, with the x and y signs matched. Their squared lengths
+are r=11 or r=27. Each Fourier pressure coefficient is
+
+```text
+p3_hat(q,t)=-[2t exp(-19t)+K_r(t)]/(4r),
+K_r(t)=[exp(-rt)-exp(-19t)]/(19-r)>0,     t>0.         (833)
+```
+
+These are checked against the full heat-Duhamel recurrence, not assumed
+from the wave labels. For four modes a,b,c,d with zero sum, set
+
+```text
+S=(a.b)(c.d)+(a.c)(b.d)+(a.d)(b.c).
+```
+
+There are exactly 216 ordered zero-sum quartets in this support. Every S
+is positive, and the minimum is 283. Writing `h_q=-p3_hat(q)>0`, the
+Brownian characteristic function expresses A as a sum of positive ordered
+time integrals with factor 8S. The three nontrivial Brownian gap rates are
+`|a|^2`, `|a+b|^2`, `|d|^2`. In particular A is strictly increasing.
+
+The checker independently evaluates the entire half-line integral by
+three exact heat convolutions at those gap rates, followed by a scalar
+exponential-polynomial integral against h_d. Summing all quartets gives
+the same rational alpha as the conditional-moment PDE calculation.
+This verification uses none of the first, second or third moment fields.
+Thus epsilon^12 alpha is a certified total stock for the matched FORECAST.
+
+### Actual histories fit a larger stock and exceed the old one
+
+The standard complex small-data fixed-point estimate supplies a radius
+r0>0, chosen from the fixed shape U and viscosity one, with uniform
+decaying H40 bounds on the solution for complex |epsilon|<r0. The pressure
+and triangular conditional-moment equations then have uniform analytic
+bounds on the whole half-line. These bounds come from the fixed-point
+and equation majorants, not a presumed bound on an arbitrary future flow.
+On this complex disc the moment is extended by its polynomial conditional
+moment equations; it is not defined using a nonholomorphic complex modulus.
+
+Translation by `(pi,pi,pi)` reverses U, so the integrated observation is
+even in epsilon. Its first amplitude degrees are twelve and fourteen.
+Cauchy bounds on a smaller disc give (829) with a uniformly bounded W.
+The same differentiated equations give twelve time derivatives on [0,1].
+A velocity coefficient of degree n starts at time order n-1; a pressure
+coefficient of degree n starts at order n-2; a fourth impulse coefficient
+of degree n starts at order n-4. Consequently the degree-sixteen remainder
+has zero time jets through order eleven. One finite majorant C gives
+
+```text
+|W_epsilon(t)|<=C min(t^12,1),       every t>=0.        (834)
+```
+
+This is the same analytic mechanism used in (670), applied to the complete
+oblique fields. The radius and C are determined before the future solution
+is known. They are not evaluated numerically here.
+
+Choose epsilon0>0 inside that disc, with `C epsilon0^2<=b/2` and within
+the global small-gradient range of (828). Equations (829)--(834) imply
+the ACTUAL all-time comparison
+
+```text
+epsilon^12 A(t)+(1/2)epsilon^14 B(t)
+ <=Phi_epsilon(t)
+ <=epsilon^12 A(t)+(3/2)epsilon^14 B(t)
+ <=K_epsilon=epsilon^12 alpha+2epsilon^14 beta,
+                  0<|epsilon|<=epsilon0, t>=0.        (835)
+```
+
+The original nonnegative stock K_epsilon is finite and explicit once the
+datum is specified; it covers both the complete first correction and its
+uniform remainder margin. The small-amplitude threshold may be extremely
+small. This argument does not extend that threshold to arbitrary data.
+
+Conversely, the exact uncorrected forecast stock is genuinely insufficient.
+Choose an integer N from the explicit A,B functions such that
+
+```text
+alpha-A(N)<=epsilon^2 beta/8,       B(N)>=beta/2.
+```
+
+Such a finite N exists by their proved limits; it depends on the original
+datum and computable coefficient functions, not on the unknown actual
+history. The lower bound in (835) yields
+
+```text
+Phi_epsilon(N)>=epsilon^12 alpha+(1/8)epsilon^14 beta
+               >epsilon^12 alpha.                   (836)
+```
+
+This strengthens the initial comparison failure to failure of the exact
+whole-time cubic forecast stock, on globally regular unforced flows.
+It does not refute K_epsilon or the coarser stock in (823).
+
+For arbitrary viscosity nu>0 and original datum lambda U, use
+epsilon=lambda/nu and the clock nu t. The full fourth moment is nu^4
+times the viscosity-one moment, so (835) supplies
+
+```text
+K_(lambda,nu)=lambda^12 alpha/nu^8
+                       +2lambda^14 beta/nu^10,
+                  0<|lambda|<=epsilon0 nu.            (837)
+```
+
+The lesson for the arbitrary-data reserve is specific: positive returns
+need additional resources even after complete viscous history is included.
+For this small-data class the higher returns are absorbed by (834).
+Removing that smallness requirement, while retaining all accumulated
+moments and generated parents, remains the open physical estimate.
+
+Run `python3 -O labs/pressure_oblique_stock.py`; the existing
+`python3 -O labs/pressure_impulse_payment.py` checks the shared recurrence
+against its earlier orthogonal consumers. Coefficients, sign certificates
+and Brownian integrals are exact. The uniform remainder, actual-solution
+identification and all-time comparisons are analytic, not Lean-certified.

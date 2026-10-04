@@ -94,6 +94,18 @@ def history(k, amplitudes=(1, 1, 1), degree=14):
     u, _, pressure = e.amplitude_fields(amplitudes, order=degree-9, radii=(1, k, 1))
     require(not pressure[2], 'The cyclic pressure starts at amplitude degree three')
     check_time_jets(u, pressure, amplitudes, k)
+    return history_from_fields(u, pressure, degree)
+
+
+def history_from_fields(u, pressure, degree=14):
+    """Complete moments for supplied odd fields with zero quadratic pressure.
+
+    The caller identifies these fields with its physical amplitude recurrence.
+    This shared calculation preserves every generated mode and moment level.
+    """
+    require(degree >= 14 and len(u) >= degree-8 and len(pressure) >= degree-8,
+            'All velocity and pressure amplitude levels are available')
+    require(not pressure[1] and not pressure[2], 'Pressure starts at cubic amplitude degree')
     g = {n: [{q: e.scale(q[i], v) for q, v in pressure[n].items() if q[i]}
              for i in range(3)] for n in range(3, degree-8)}
     first = {}

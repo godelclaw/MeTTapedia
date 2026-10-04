@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete oblique stock calculation](labs/README.md#an-adverse-return-consumes-additional-original-pressure-stock)
+shows that the adverse correction persists over the whole viscous clock.
+For actual sufficiently small flows, the exact cubic forecast's total
+stock is eventually exceeded. A larger stock, containing the full first
+nonlinear correction and a controlled remainder margin, pays all times.
+Exact differential certificates and independent Brownian integration
+support the analytic result. The small-amplitude restriction remains;
+the coarser Wiener allowance and arbitrary-data payment are not refuted.
+
 The [oblique-parent test](labs/README.md#oblique-parents-reverse-the-pressure-history-correction)
 shows where the orthogonal return law stops applying. An explicit sheared
 cyclic datum has a favorable signed contribution, but its two positive
