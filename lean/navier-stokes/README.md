@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-channel payment](labs/README.md#coarse-pressure-is-paid-while-both-source-channels-can-increase-the-stock)
+bounds the complete pressure smoothed at any fixed spatial scale from the
+original kinetic energy. One remaining allowance pays both coarse source
+contributions and the known smooth subtraction throughout the domain and
+every available prefix. Exact spatial integrals show that swirl-generated and meridional
+pressure have opposite signs on a coupled datum; either can increase the
+regular stock. The short-scale remainder can exceed all diffusion while
+kinetic energy decreases. Its full-datum history payment remains open.
+These are analytic results with exact symbolic checks, not new Lean proofs.
+
 The [paid smooth parent subtraction](labs/README.md#a-positive-circulation-weight-pays-the-complete-parent-subtraction)
 adds a fixed positive floor to the observer's circulation weight while
 retaining the original stochastic density. The resulting physical stock

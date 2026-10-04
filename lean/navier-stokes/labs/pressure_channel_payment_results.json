@@ -1,0 +1,58 @@
+{
+  "channels": {
+    "meridional": "Derivative(ur(r, z), r)**2 + 2*Derivative(ur(r, z), z)*Derivative(uz(r, z), r) + Derivative(uz(r, z), z)**2 + ur(r, z)**2/r**2",
+    "swirl": "-r^(-1) partial_r(r^2 b^2)",
+    "scope": "Poisson sources split exactly; the two pressure works still use the same complete evolving velocity and observer."
+  },
+  "coarse": {
+    "kernel_constant": "1/(8*pi**(3/2))",
+    "gradient": "||grad exp(L^2 Delta)p||_infinity <= C*E(t)/L^4",
+    "channel_sum": "sum_j ||grad exp(L^2 Delta)p_j||_infinity <= C*(E_mer+E_sw)/L^4",
+    "parent_profile_energy_bound": "9/(32*ell**5)",
+    "reserve": "6*(3/(pi*ell**4) + 1/(8*pi**(3/2)*L**4))*(E**3*J*(H**3 - t**3)/3 + E**2*(H - t))/e**(3/2)",
+    "open": "int_0^T Omega*(W_high-D/2) <= K_high(original datum,nu,H)",
+    "limitation": "The payment uses only a kinetic-energy bound. It also bounds the velocity-generated pressure of a forced flow with that bound; an additional pressure from the force is not included."
+  },
+  "gaussian": {
+    "meridional": {
+      "source": "16*r**4*z**2 + 8*r**4 + 16*r**2*z**4 - 48*r**2*z**2 - 12*r**2 + 24*z**4 - 24*z**2 + 6",
+      "signed_work": "3*pi**2*(10336 - 6285*pi)/2097152",
+      "signed_primitive": "(-6285*y**14 - 41900*y**12 - 130865*y**10 - 282624*y**8 + 80689*y**6 + 68524*y**4 + 6285*y**2 - 24576)/(131072*y**15 + 917504*y**13 + 2752512*y**11 + 4587520*y**9 + 4587520*y**7 + 2752512*y**5 + 917504*y**3 + 131072*y) - 6285*atan(y)/131072",
+      "absolute_bound": "3*pi**2*(-160 + 527943*pi)/2097152",
+      "absolute_primitive": "(527943*y**14 + 1897604*y**12 + 3113651*y**10 + 1437696*y**8 - 1816243*y**6 - 3103876*y**4 - 1707591*y**2 - 344064)/(131072*y**15 + 917504*y**13 + 2752512*y**11 + 4587520*y**9 + 4587520*y**7 + 2752512*y**5 + 917504*y**3 + 131072*y) + 527943*atan(y)/131072"
+    },
+    "swirl": {
+      "source": "32*r**2*z**2 - 16*z**2",
+      "signed_work": "3*pi**2*(256 + 213*pi)/262144",
+      "signed_primitive": "(213*y**11 + 1207*y**9 + 354*y**7 - 12642*y**5 + 6985*y**3 - 213*y)/(16384*y**12 + 98304*y**10 + 245760*y**8 + 327680*y**6 + 245760*y**4 + 98304*y**2 + 16384) + 213*atan(y)/16384",
+      "absolute_bound": "3*pi**2*(-109568 + 48933*pi)/262144",
+      "absolute_primitive": "(48933*y**11 + 232231*y**9 + 508290*y**7 + 560766*y**5 + 328921*y**3 + 73947*y)/(16384*y**12 + 98304*y**10 + 245760*y**8 + 327680*y**6 + 245760*y**4 + 98304*y**2 + 16384) + 48933*atan(y)/16384"
+    },
+    "flat_stock": "8*pi**2/81",
+    "flat_diffusion_over_nu": "68*pi**2/27",
+    "kinetic_energy": "15*sqrt(2)*pi**(3/2)/32",
+    "kinetic_gradient_squared": "119*sqrt(2)*pi**(3/2)/32",
+    "isotropic_fixture": {
+      "meridional_P": "-12/7",
+      "swirl_P": "2/7",
+      "total_P": "-10/7",
+      "scope": "B=sqrt(5) fixture from RP14; an axis-curvature test, not a whole-domain sign claim"
+    }
+  },
+  "finite_test": {
+    "parameters": "e=1, kappa=1/10000, h0=kappa*(1+rho^2)^(-3), L=10, ell=100",
+    "signs": "V: W_sw>9/100 and W_mer<-1/10; reversing meridional velocity reverses both works",
+    "reversed": "-a V: W_res(0)>a^4/64, W_high(0)>a^4/64, D(0)<51*nu*a^3",
+    "actual_growth": "a>=4096nu implies R_prime(0)>a^4/512; continuity gives a nonzero actual smooth interval",
+    "concentration": "Energy one: W_high~c*lambda^4/E_V^2, D~nu*(68pi^2/27)*lambda^(7/2)/E_V^(3/2), c=27pi^2*(509pi-1376)/2097152>0",
+    "limitation": "No common lower bound on the short interval is asserted. These tests refute channel sign and instantaneous absorption, not an original-full-datum history allowance."
+  },
+  "source_sha256": {
+    "pressure_channel_payment.py": "b992f4a2f42a6bc1929a989c15094732b81701a174d9bfae9ef3aa0a8db01474",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b",
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1",
+    "circulation_source_reserve.py": "12366fd5dc83962c0f7deb40ebc42939bfcfb4d4d01249b61aca79537a96d926",
+    "axis_deformation_pressure.py": "8cc03e720cbefe3650fd99359a7bd5cc31bb75b9d44a5c67da82ec155a3da264"
+  }
+}
