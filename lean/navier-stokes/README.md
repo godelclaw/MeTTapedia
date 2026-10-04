@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [band-enclosure escape test](labs/README.md#a-paid-band-can-lose-its-geometric-enclosure-while-the-reserve-still-pays)
+refutes automatic propagation from initial confinement under the specified
+energy-priced widening rule. An actual smooth unforced history generates
+two daughter directions which no affordable coordinate band and prescribed
+single-axis core can jointly enclose. The daughters' first self-stretching
+coefficient is positive; most comes from the pre-existing parents. Their
+integrated work can exceed the full viscous cost, while the datum-dependent
+linear allowance still pays it. The next target is the signed residual
+(BE9)--(BE11), which allows temporary geometric failures. The interval
+arguments are analytic with exact source checks, not new Lean certificates.
+
 The [spectral-band geometric payment](labs/README.md#spectral-bands-pay-non-mean-daughters-before-the-geometric-remainder)
 allows the entire low-vertical-frequency band, or the union of three coordinate
 bands, to exchange energy at arbitrary amplitude. A cubic comparison pays

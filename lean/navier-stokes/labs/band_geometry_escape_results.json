@@ -1,0 +1,190 @@
+{
+  "history": {
+    "initial": {
+      "energy": "3/2",
+      "enstrophy": "771/2",
+      "dissipation": "198147/2",
+      "stretching": "0",
+      "normal_vorticity_squared": "384",
+      "input_modes": 6,
+      "full_source_modes": 4,
+      "newly_generated_modes": [
+        [
+          -16,
+          -16,
+          -2
+        ],
+        [
+          -16,
+          16,
+          2
+        ],
+        [
+          16,
+          -16,
+          -2
+        ],
+        [
+          16,
+          16,
+          2
+        ]
+      ]
+    },
+    "first_source_squared": "128/129",
+    "samples": [
+      {
+        "viscosity": "0",
+        "time_jet_modes": [
+          6,
+          4,
+          20,
+          46
+        ],
+        "coefficients": {
+          "3": "0",
+          "4": "0",
+          "5": "1098907648/49923"
+        },
+        "pressure_jet_modes": [
+          8,
+          4,
+          24
+        ]
+      },
+      {
+        "viscosity": "1/7",
+        "time_jet_modes": [
+          6,
+          10,
+          24,
+          66
+        ],
+        "coefficients": {
+          "3": "0",
+          "4": "0",
+          "5": "1098907648/49923"
+        },
+        "pressure_jet_modes": [
+          8,
+          12,
+          28
+        ]
+      },
+      {
+        "viscosity": "1",
+        "time_jet_modes": [
+          6,
+          10,
+          24,
+          66
+        ],
+        "coefficients": {
+          "3": "0",
+          "4": "0",
+          "5": "1098907648/49923"
+        },
+        "pressure_jet_modes": [
+          8,
+          12,
+          28
+        ]
+      },
+      {
+        "viscosity": "2",
+        "time_jet_modes": [
+          6,
+          10,
+          24,
+          66
+        ],
+        "coefficients": {
+          "3": "0",
+          "4": "0",
+          "5": "1098907648/49923"
+        },
+        "pressure_jet_modes": [
+          8,
+          12,
+          28
+        ]
+      },
+      {
+        "viscosity": "3",
+        "time_jet_modes": [
+          6,
+          10,
+          24,
+          66
+        ],
+        "coefficients": {
+          "3": "0",
+          "4": "0",
+          "5": "1098907648/49923"
+        },
+        "pressure_jet_modes": [
+          8,
+          12,
+          28
+        ]
+      },
+      {
+        "viscosity": "4",
+        "time_jet_modes": [
+          6,
+          10,
+          24,
+          66
+        ],
+        "coefficients": {
+          "3": "0",
+          "4": "0",
+          "5": "1098907648/49923"
+        },
+        "pressure_jet_modes": [
+          8,
+          12,
+          28
+        ]
+      }
+    ],
+    "degree_five": "1098907648/49923",
+    "daughter_self_share": "1/65",
+    "existing_parent_share": "64/65",
+    "polynomial_argument": "The nth full time derivative has viscosity degree at most n; a cubic coefficient of time degree five has degree at most five. Six distinct rational samples determine it."
+  },
+  "geometry": {
+    "core": "B=R=1, gamma=1/2, arbitrary single unit axis",
+    "price": "beta0=3c; if E/E0>3/5 and 0<=p<1, beta0(E0/E)^p<5c",
+    "available": "single coordinate bands J<=1, or three-coordinate union J=0",
+    "scope": "Larger original-data prices or different geometric constants remain possible."
+  },
+  "reserve": {
+    "linear_allowance_lower": "764411904*A**4/nu**3",
+    "actual_scope": "Uniform smooth local NS control gives ||grad w||infinity<=C_seed A for every spectral band complement. For A sufficiently large, L(A)>=C_seed A and the signed residual is nonpositive on the common local interval.",
+    "limitation": "No iteration beyond that local interval or arbitrary-history estimate is asserted."
+  },
+  "source_sha256": {
+    "band_geometry_escape.py": "c6312fa1733d0087266eb4c79e36a59640841556f058a2388dc61a91abd30ee0",
+    "cellular_parent_history.py": "1cc74179f49e59a8d8227ecb503078f40d46a70c05e5b65b6fdc3f40483e6165",
+    "cellular_parent_refeeding.py": "ab1b19dc3b90e05e764fae5121c1f503d49bba2735bd6b6e25ca3eef921d6b04",
+    "cellular_transfer_reversal.py": "db6c2598353192a1d4c7df6a6baca3b4adac178e731f0bfcb5b408f6cad35144",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "generated_mean_enstrophy.py": "fe28dbcbc37cdea01fef4caa7976415033d85c0bd5f643524970bbbf962c8955",
+    "pancake_band_parent.py": "3c8bd376be9a080c56b840181d34b904020a270a372af79619f8f292ef515467",
+    "pancake_concentration_threshold.py": "980e1c687eb64366c0a29e7bce112e53d53b6582c104fc9ebedad4cdd74d940b",
+    "pancake_mean_parent.py": "e90e501f46ca5b9370459bed445bb4ca3b36fdf4227b318c5046ce487dc0321a",
+    "pressure_core_envelope.py": "b7e0335d286d1b648326d9a794b37f3efe8a1fd7e0a786d978ea097000645a34",
+    "pressure_diffusion_completion.py": "678c65a5fcfad3bc49bf4e6b97735c44ff4778b54510c43133066b322862abbb",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "pressure_memory_diffusion.py": "f6c58d3e677b1c4c00a5b83c0706d2a473027aea1cfada5e73e0299965696a80",
+    "reciprocal_parent_history.py": "48add13ba5c6244a2c79a4f7070d1027480068088bddccf79d198578ef7cb913",
+    "reciprocal_pattern_cycles.py": "cf3e44749952fbd3542436424e63e4c0f2efbce2a36cfa514798e41f33a5f97b",
+    "refeeding_stretching.py": "e52761a0283d0c50064bb450ffbfd039a2883aba2d0a574f53d7a41b4d4dfa57",
+    "reference_stretching_control.py": "00c6c2d1312b27d22bc07f698fe60c85a2361a198cf356c2e421bef19d400906",
+    "strain_cycle_diffusion.py": "071d4e3d28af82511f9380db77a44de71d23ecafde2f6d43d13b636d5aec4326",
+    "strain_cycle_reserve.py": "ffda40024936e64f1c3120fcc24c0a511cf2e0b14e4738f4bf829ebabcdb56a8",
+    "transverse_strain_history.py": "aba06b0298a9d18bccc8f0b0e9c38213ee72a44a456fd239b96e597a37249c97"
+  },
+  "scope": "Exact complete source and time coefficients. Local PDE persistence, uniform remainders and inequalities are analytic, not Lean-certified."
+}

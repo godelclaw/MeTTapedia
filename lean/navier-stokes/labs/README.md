@@ -47261,3 +47261,230 @@ Every transitive local Python source is hashed. The anisotropic inequalities,
 whole-space estimate, local PDE remainder and continuation implications
 are analytic, not consequences of the finite checks. No Lean declarations
 or axioms change; arbitrary-data geometric propagation remains open.
+
+## A paid band can lose its geometric enclosure while the reserve still pays
+
+`band_geometry_escape.py` separates automatic geometry propagation from
+payment of the actual signed work. Three initially confined waves generate
+two incompatible daughter directions before enough kinetic energy is lost
+to afford the next band width under (PB7a). Their self-stretching becomes
+positive, with most of its first coefficient supplied by the pre-existing
+parents. Nevertheless the same original-data reserve pays this short
+history. The failed enclosure is therefore not a counterexample to the
+signed budget or to unforced regularity.
+
+### The precise propagation claim that fails
+
+Use the normalized period-2pi torus, nu>0, integer band widths J>=0, and
+the geometric constants B=R=1,gamma=1/2. Let `c_band=144 C_L^2/nu`.
+The price beta in (PB4) is
+
+```text
+single coordinate band: beta(J)=c_band(2J+1),
+union of three bands:   beta(J)=3c_band(2J+1).
+```
+
+Prepare beta0=3c_band, which pays a single width-one band or the union
+of the three coordinate planes. Fix any 0<=p<1 and require
+`beta(J(t))<=beta0(E0/E(t))^p` as in (PB7a). While E/E0>3/5, the
+available price is strictly less than5c_band. Consequently a single
+coordinate band must have J<=1; the three-band union must have J=0.
+The axis of a single coordinate band may be reselected at each time.
+The spectral pancake axis may be ANY unit vector.
+
+The assertion tested is that initial confinement automatically propagates
+the small critical exterior under these prepared prices and geometric
+constants. The following actual history refutes that assertion, for every
+p in the stated range. A larger initial price, or different B,R,gamma
+chosen from the full datum, is not excluded.
+
+### Complete generation from a three-dimensional datum
+
+Take
+
+```text
+v0=(cos(16y+z), cos(16x+z)+cos(-16x+z), 0).
+```
+
+Its three independent wavevectors have determinant512. It is real,
+solenoidal and mean zero, and lies entirely in |k_z|<=1. Thus its initial
+band complement is zero. All waves have squared frequency257, but the
+full pressure-projected nonlinearity N=B(v0,v0) is nonzero:
+
+```text
+E_seed=3/2, Z_seed=771/2, D_seed=198147/2,
+g(v0)=0, Dg(v0)[N]=33152/129,
+q_plus=(16,16,2), q_minus=(-16,16,2),
+N_hat(q_plus)=i(-4,-4,64)/129,
+N_hat(q_minus)=i(-4,4,-64)/129,
+||N||2^2=128/129.                                     (BE1)
+```
+
+The complete source contains precisely these two modes and their complex
+conjugates. Pressure creates vertical motion immediately; this is not a
+passively transported scalar with fixed parents. Subsequent full time
+jets generate additional modes, all retained by the checker.
+
+Neither daughter belongs to a coordinate band of width at most1. Nor
+can both belong to one core `|k_perp(n)|<=sqrt(|k|)` for any unit n:
+
+```text
+|q_plus|^2=|q_minus|^2=516,
+|q_plus cross q_minus|^2=266240,
+|q_plus cross q_minus|
+ <=|q_plus|sqrt(|q_minus|)+|q_minus|sqrt(|q_plus|)
+ <2*23*5<500<sqrt(266240),                             (BE2)
+```
+
+where the inequality would follow from simultaneous core membership.
+Both modes lie above R=1. This excludes every permitted core orientation,
+not just the initial vertical one.
+
+### The actual interval, including positive viscosity
+
+Fix the physical viscosity nu and start from u0=A v0. Write
+`u_A(t)=A U_mu(A t)` with mu=nu/A. The same smooth local Euler/NS
+estimates used in (PM14) give a common interval for 0<=mu<=1 and uniform
+Sobolev bounds for this fixed trigonometric seed. At a sufficiently large
+fixed Sobolev order, time derivatives through order4 are uniformly bounded
+by taking higher initial spatial norms. There is therefore a fixed small
+tau_star>0, independent of A and mu in this range, such that
+
+```text
+|U_mu_hat(tau_star,q_plus)_3|>=32 tau_star/129,
+|U_mu_hat(tau_star,q_minus)_3|>=32 tau_star/129,
+E(U_mu(tau))/E_seed=1-O(mu) uniformly on [0,tau_star].  (BE3)
+```
+
+The first two inequalities follow from the nonzero first coefficient
+in (BE1) and the controlled quadratic remainder. The last follows from
+the EXACT kinetic identity and the common bound on Z(U_mu); its constants
+are fixed by the seed and tau_star.
+
+For A sufficiently large, E(u_A(t))/E(u_A(0))>3/5 throughout the physical
+interval [0,tau_star/A]. At its endpoint every affordable band leaves
+both daughters outside. By (BE2), any chosen pancake core leaves at least
+one daughter in the exterior, whose normalized L3 norm is at least
+`32 A tau_star/129`. This exceeds `nu/(32sqrt(3) C_S)` for large A.
+The initial exterior was zero. The enclosure thus fails on an ACTUAL
+unforced smooth prefix, even allowing all the band and core choices
+specified above. Relative energy loss is O(nu/A); absolute loss may grow
+like A and is not claimed to vanish.
+
+### The first self-stretching remembers the original parents
+
+Let `w_mu=(I-P_1)U_mu` for the vertical width-one band. Its expansion
+starts at time order1. Write `w_mu=tau w1+tau^2 w2+tau^3 w3+O(tau^4)`.
+The full cubic calculation gives, uniformly for 0<=mu<=1,
+
+```text
+g(w_mu(tau))=c5 tau^5+O(tau^6),
+c5=1098907648/49923>0.                                (BE4)
+```
+
+The third- and fourth-order coefficients vanish. This is the complete
+coefficient, not the cubic of an isolated generated mode. For its
+viscosity-independent part, put `u2=U_0''(0)` and note that w1=N. Then
+
+```text
+w3=(I-P_1)[B(N,N)/3+(B(u2,v0)+B(v0,u2))/6],
+Dg(N)[(I-P_1)B(N,N)/3]=1098907648/3244995,
+Dg(N)[(I-P_1)(B(u2,v0)+B(v0,u2))/6]
+                       =64*1098907648/3244995.         (BE5)
+```
+
+The remaining cubic contributions at time order5 sum to zero. Thus the
+pre-existing parents supply64/65 of this first coefficient, and the
+daughters' isolated self-interaction supplies1/65. These are shares of
+this particular time coefficient, not universal energy fractions.
+
+The exact coefficient is independent of mu. The nth full NS time
+jet is polynomial in mu of degree at most n. Hence a cubic coefficient
+of time degree5 has viscosity degree at most5. Six distinct exact
+rational evaluations determine the polynomial in (BE4). They include
+complete canonical pressure, rather than a truncated interaction system.
+The analytic O(tau^4) velocity remainder yields the O(tau^6) cubic
+remainder because w_mu(0)=0.
+
+Choose tau_star smaller if needed so that
+`g(w_mu(tau))>=c5 tau^5/2` for 0<=tau<=tau_star. Let D_max be the common
+local bound for the FULL D(U_mu). At physical time tau_star/A,
+
+```text
+2 integral g((I-P_1)u_A)-nu integral D(u_A)
+ >=(c5/6)A^2 tau_star^6-nu A D_max tau_star>0           (BE6)
+```
+
+for large A. Thus even the full viscous bill cannot pay this positive
+self-stretching without an allowance. It is a finite burst from an
+initial datum whose resources grow with A, not a counterexample to a
+finite full-datum allowance or a constructed singularity.
+
+### Why the signed reserve survives this enclosure failure
+
+The geometric condition was sufficient for a spatial estimate; its
+failure does not imply failure of that estimate. Let L(A) be the actual
+original-data constant (PC3) with the prescribed B=R=1,gamma=1/2 and
+E0=3A^2/2. Its high-frequency term gives the explicit lower bound
+
+    L(A)>=764411904 A^4/nu^3.                          (BE7)
+
+On the common local interval, uniform smooth control and the Sobolev
+contraction of every sharp Fourier projection give
+`||grad w||infinity<=C_seed A` for ANY band complement, with C_seed
+fixed by the initial seed's higher Sobolev norms. Therefore
+
+```text
+g(w)<=C_seed A Z_w,
+d=2g(w)-nu D_w-2L(A)Z_w<=-nu D_w                       (BE8)
+```
+
+once A is sufficiently large. This holds throughout the same interval
+where the daughters escape the enclosure and (BE6) is positive. The
+linear allowance already built into the reserve pays the burst. This
+local argument is a consequence of smooth local theory, not a new
+arbitrary-horizon estimate; it cannot be restarted with fresh resources.
+
+The useful next consumer keeps the favorable parent terms as well.
+For any fixed or energy-priced band, define the SIGNED physical residual
+
+    rho=2g(w)-nu D(u)-2L Z(u).                         (BE9)
+
+No spectral-core hypothesis is needed to derive, directly from (PB4),
+
+```text
+Z'+nu D/2 <= (alpha+beta Z_V)Z+rho,
+alpha=2L+delta nu/2.
+```
+
+Use phi from (PB5) for a fixed price, or from (PB7a) for its paid ceiling.
+For the same nonnegative R, retaining all coefficient slack gives
+
+    R'+2(g-g0)-nu D <= 2phi rho.                       (BE10)
+
+Here rho equals d minus the favorable `nu D_V+2LZ_V`. Thus an
+original-data K_rho>=0 satisfying
+
+    integral_0^t phi rho <= K_rho                     (BE11)
+
+on EVERY available same-datum prefix would supply the nonnegative extra
+reserve `2(K_rho-integral_0^t phi rho)` and close the signed budget with
+allowance `R(0)+2K_rho`. This permits temporary geometric failure and
+signed compensation across the same history. Finiteness of such K_rho
+for arbitrary data is OPEN, not supplied by a future supremum.
+
+For the constructed local history, (BE8) makes rho nonpositive, so
+K_rho=0 suffices on that interval. This precisely distinguishes the
+refuted automatic enclosure from the still-valid local payment.
+What remains is repeated high-band renewal beyond the interval controlled
+by the original local estimate. Larger prepared bands and additional
+geometric hypotheses do not by themselves settle that history question.
+
+Run `python3 -O labs/band_geometry_escape.py`. The archive
+`band_geometry_escape_results.json` retains six complete third-order
+NS jet calculations, energy identities, the universal fifth-order
+coefficient, both parent returns, every allowed coordinate-band exclusion,
+the arbitrary-axis separation, and the signed-residual comparison.
+The common local interval, uniform Taylor remainder, Sobolev bounds and
+PDE integration are analytic, not newly Lean-certified. No Lean declarations
+or axioms change; arbitrary-data global regularity remains open.
