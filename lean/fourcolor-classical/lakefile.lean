@@ -1211,3 +1211,18 @@ target kernelStripSphere pkg : Unit := do
         "StripSpherePhase", "StripSphereGeometry", "StripSphereAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay adaptive partial-source progress through retained matchings. -/
+target kernelStripTwoPhase pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-two-phase",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripPuncturedExtension", "StripTwoPhaseProgress",
+        "StripTwoPhaseReconstruction", "StripTwoPhaseAudit"]
+      cwd := pkg.dir
+      env := env }

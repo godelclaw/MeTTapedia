@@ -1,5 +1,66 @@
 # Near-linear Four Colour catalogue bridges
 
+## Two-stage progress for the four difficult partial-colouring inputs
+
+[`StripTwoPhaseProgress`](../../../lean/fourcolor-classical/MettapediaFourColor/StripTwoPhaseProgress.lean)
+proves that each of `12311221133`, `12311331133`, `12312332133` and
+`12313223133` lies in the Kempe co-closure of source colourings with at most
+one omitted core vertex. The result holds for **every Kempe-closed exterior
+predicate containing the input**. It does not assume a successful
+continuation or choose an independently favourable exterior.
+
+```
+four difficult boundary inputs
+              |
+       first matching query
+              |
+       +------+----------------+
+       |                       |
+  one-hole witness     five intermediate forms
+                               |
+                     fresh matching query
+                     in the SAME exterior
+                               |
+                        one-hole witness
+```
+
+Both stages reuse the general retained-matching anchor theorem. Single
+chords are selected by interval exclusion; when necessary, two anchor
+components are switched using their shared matching. The proof retains
+41 single-chord contracts and five paired-anchor contracts across nine
+stages. Two initial inputs share the same intermediate continuation.
+These finite contracts remain proof obligations; this is not a case-free
+source-repair theorem.
+
+[`StripPuncturedExtension`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPuncturedExtension.lean)
+extends the six triangle-elimination joins to arbitrary boundary colours
+and arbitrary omitted core vertices. Its equivalence theorem reconstructs
+all retained source colours from common witnesses on the shared edges.
+No table of interior colourings is stored.
+
+[`StripTwoPhaseReconstruction`](../../../lean/fourcolor-classical/MettapediaFourColor/StripTwoPhaseReconstruction.lean)
+returns an actual exterior colouring and a colouring of the induced source
+minus one vertex, agreeing at all eleven ports after trace alignment. The
+previous planar disk supplies a concrete consumer whose closure premise
+is discharged by its checked rotation. The general consumer leaves exterior
+closure explicit, so it can also consume other proved disk occurrences.
+
+Replay with `lake build kernelStripTwoPhase`. The
+[kernel receipt](strip-two-phase-measurements.json) records thirteen audit
+roots, standard axioms only, and approximately 28 seconds for four modules
+including imports. The [independent verifier](audit_strip_two_phase.py)
+checks all 201 matching layouts across the nine stages and reconstructs a
+partial source witness for every terminal contract. Its
+[receipt](strip-two-phase-audit.json) also confirms that all four initial
+words require exactly two holes.
+
+This gives partial progress beyond the fixed-pair obstruction: a plateau
+can be followed by a different matching query that removes a hole.
+**One hole remains to be restored.** The two stages count abstract matching
+queries, not physical component switches; the theorem does not give a
+physical recolouring-history length bound. No strict ambient reduction,
+geometric supply, universal coverage or catalogue deletion is established.
+
 ## Fixed-pair obstruction in the spherical coverage example
 
 [`StripSpherePhase`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSpherePhase.lean)

@@ -1,0 +1,735 @@
+{
+  "classification": "TWO_STAGE_PROGRESS_TO_ONE_OMITTED_CORE_VERTEX",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue catalogue, MIT; Gonthier/Emery Kempe closure and trace alignment.",
+  "initial_inputs": [
+    {
+      "word": "12311221133",
+      "minimum_holes": 2
+    },
+    {
+      "word": "12311331133",
+      "minimum_holes": 2
+    },
+    {
+      "word": "12312332133",
+      "minimum_holes": 2
+    },
+    {
+      "word": "12313223133",
+      "minimum_holes": 2
+    }
+  ],
+  "intermediate_forms": 5,
+  "single_contracts": 41,
+  "paired_contracts": 5,
+  "matching_layouts_independently_checked": 201,
+  "stages": [
+    {
+      "word": "12312121133",
+      "palette": "213",
+      "anchors": [
+        3,
+        9
+      ],
+      "single_contracts": 5,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "matchings_requiring_paired_branch": 2,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            8,
+            9
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            5,
+            7
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            5,
+            9
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            2,
+            3
+          ],
+          "middle": null,
+          "allowed_holes": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            0,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "kind": "double",
+          "partners": [
+            5,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "word": "12133113111",
+      "palette": "213",
+      "anchors": [
+        0,
+        2
+      ],
+      "single_contracts": 5,
+      "paired_contracts": 0,
+      "matchings_checked": 42,
+      "matchings_requiring_paired_branch": 0,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            7,
+            8
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            6,
+            7
+          ],
+          "middle": null,
+          "allowed_holes": [
+            2
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            5,
+            6
+          ],
+          "middle": null,
+          "allowed_holes": [
+            2,
+            4,
+            5
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            4,
+            5
+          ],
+          "middle": null,
+          "allowed_holes": [
+            2,
+            5
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            7,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "word": "12311331313",
+      "palette": "123",
+      "anchors": [
+        1,
+        2
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 0,
+      "matchings_checked": 5,
+      "matchings_requiring_paired_branch": 0,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            8,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            3
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            1,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            3
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            5,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "word": "12331313333",
+      "palette": "123",
+      "anchors": [
+        1,
+        5
+      ],
+      "single_contracts": 5,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "matchings_requiring_paired_branch": 2,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            9,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            2
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            7,
+            8
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            7,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            1,
+            2,
+            3,
+            5
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            3,
+            10
+          ],
+          "middle": null,
+          "allowed_holes": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            3,
+            5
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "double",
+          "partners": [
+            10,
+            7
+          ],
+          "middle": null,
+          "allowed_holes": [
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "word": "12212222123",
+      "palette": "321",
+      "anchors": [
+        0,
+        1
+      ],
+      "single_contracts": 8,
+      "paired_contracts": 0,
+      "matchings_checked": 42,
+      "matchings_requiring_paired_branch": 0,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            8,
+            9
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            6,
+            7
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            6
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            4,
+            5
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            2,
+            3
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            1,
+            2
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            0,
+            1
+          ],
+          "middle": null,
+          "allowed_holes": [
+            2,
+            4
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            2,
+            7
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            6
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            2,
+            5
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "word": "12311221133",
+      "palette": "321",
+      "anchors": [
+        0,
+        1
+      ],
+      "single_contracts": 4,
+      "paired_contracts": 0,
+      "matchings_checked": 14,
+      "matchings_requiring_paired_branch": 0,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            5,
+            6
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            4,
+            5
+          ],
+          "middle": 0,
+          "allowed_holes": []
+        },
+        {
+          "kind": "single",
+          "partners": [
+            3,
+            4
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            0,
+            4
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "word": "12311331133",
+      "palette": "213",
+      "anchors": [
+        3,
+        6
+      ],
+      "single_contracts": 5,
+      "paired_contracts": 1,
+      "matchings_checked": 42,
+      "matchings_requiring_paired_branch": 2,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            7,
+            8
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            8,
+            9
+          ],
+          "middle": 2,
+          "allowed_holes": []
+        },
+        {
+          "kind": "single",
+          "partners": [
+            5,
+            8
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            5,
+            6
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            0,
+            8
+          ],
+          "middle": 1,
+          "allowed_holes": []
+        },
+        {
+          "kind": "double",
+          "partners": [
+            8,
+            7
+          ],
+          "middle": 3,
+          "allowed_holes": []
+        }
+      ]
+    },
+    {
+      "word": "12312332133",
+      "palette": "123",
+      "anchors": [
+        1,
+        4
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "matchings_requiring_paired_branch": 1,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            4,
+            5
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            2,
+            4
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            1,
+            2
+          ],
+          "middle": null,
+          "allowed_holes": [
+            3
+          ]
+        },
+        {
+          "kind": "double",
+          "partners": [
+            10,
+            7
+          ],
+          "middle": 4,
+          "allowed_holes": []
+        }
+      ]
+    },
+    {
+      "word": "12313223133",
+      "palette": "123",
+      "anchors": [
+        1,
+        5
+      ],
+      "single_contracts": 3,
+      "paired_contracts": 1,
+      "matchings_checked": 14,
+      "matchings_requiring_paired_branch": 1,
+      "contracts": [
+        {
+          "kind": "single",
+          "partners": [
+            4,
+            5
+          ],
+          "middle": null,
+          "allowed_holes": [
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            2,
+            4
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "kind": "single",
+          "partners": [
+            1,
+            2
+          ],
+          "middle": null,
+          "allowed_holes": [
+            0,
+            3
+          ]
+        },
+        {
+          "kind": "double",
+          "partners": [
+            10,
+            6
+          ],
+          "middle": 4,
+          "allowed_holes": []
+        }
+      ]
+    }
+  ],
+  "stored_interior_colourings": 0,
+  "lean_strategy_sha256": "cba4399831bbb52dcafedd45e035215bdd3b1bba2bcc005c55a490fa1e2593e4",
+  "verifier_sha256": "b1918c4801e3169c6da4a14300e51b7288512de578b30c2f15057df9e79e0aa7",
+  "limits": [
+    "One core vertex can remain uncoloured; this is not a full repair or strict ambient reduction.",
+    "Two stages count refreshed matching queries, not physical component switches.",
+    "The actual-graph theorem uses Kempe closure of that same exterior; no arbitrary physical history-length bound is proved.",
+    "Initial minimum-hole counts and matching census are independent program checks.",
+    "No geometric supply, universal coverage or catalogue deletion is established."
+  ]
+}

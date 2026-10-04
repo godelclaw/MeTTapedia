@@ -1,0 +1,134 @@
+{
+  "classification": "CHECKED_TWO_STAGE_PROGRESS_TO_ONE_OMITTED_CORE_VERTEX",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": [
+    "Yuta Inoue D0099, MIT catalogue",
+    "Gonthier/Emery Kempe closure and trace alignment"
+  ],
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripPuncturedExtension",
+        "source_sha256": "c0fa4836fb15206d269fcdd4e11b18835a3327c4a69b16dd94bedabb442ff1a5",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.472,
+        "olean_bytes": 346952,
+        "olean_sha256": "135d5cc653ddd0ceef420d962299cf114d28a8dba0488bce19e420087cf8788d"
+      },
+      {
+        "module": "MettapediaFourColor.StripTwoPhaseProgress",
+        "source_sha256": "cba4399831bbb52dcafedd45e035215bdd3b1bba2bcc005c55a490fa1e2593e4",
+        "exit_code": 0,
+        "frontend_wall_seconds": 16.911,
+        "olean_bytes": 573488,
+        "olean_sha256": "1ee2faf7c16dbe60b8a7aeb637a30b6d3f4256835dcf587feb2862776ecd340e"
+      },
+      {
+        "module": "MettapediaFourColor.StripTwoPhaseReconstruction",
+        "source_sha256": "2b5b4c077766b019cca91f7e18397fdde4b866a1c0bf9fe8274ceadbe71f7268",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.353,
+        "olean_bytes": 125208,
+        "olean_sha256": "97715563ddb207ddaebf049e8c106e35356db8bcb46e077f2fa3ec889a4588db"
+      },
+      {
+        "module": "MettapediaFourColor.StripTwoPhaseAudit",
+        "source_sha256": "e4ba4e808f2ef54cd8237ff956a36abf454f34dbfeef7686337278c81bc4adea",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.326,
+        "olean_bytes": 2608,
+        "olean_sha256": "9d076e046ecfc24a69c1250d21248ca38a5e49de553ac843f0cead65dba0bb09"
+      }
+    ]
+  },
+  "proof_sources": [
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripPuncturedExtension.lean",
+      "bytes": 6079,
+      "sha256": "c0fa4836fb15206d269fcdd4e11b18835a3327c4a69b16dd94bedabb442ff1a5"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripTwoPhaseProgress.lean",
+      "bytes": 5145,
+      "sha256": "cba4399831bbb52dcafedd45e035215bdd3b1bba2bcc005c55a490fa1e2593e4"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripTwoPhaseReconstruction.lean",
+      "bytes": 2665,
+      "sha256": "2b5b4c077766b019cca91f7e18397fdde4b866a1c0bf9fe8274ceadbe71f7268"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripTwoPhaseAudit.lean",
+      "bytes": 2882,
+      "sha256": "e4ba4e808f2ef54cd8237ff956a36abf454f34dbfeef7686337278c81bc4adea"
+    }
+  ],
+  "total_new_proof_source_bytes": 16771,
+  "frontend_wall_seconds_including_imports": 28.062,
+  "audit": {
+    "roots": 13,
+    "dependency_declarations": 12784,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false
+  },
+  "formal_results": [
+    "Six common-witness triangle joins are equivalent to proper partial source colourings for arbitrary boundary assignments and arbitrary omitted core vertices.",
+    "Each of four specified input traces lies in the Kempe co-closure of partial source colourings with at most one omitted core vertex.",
+    "The first matching is retained for paired choices. Any required second stage queries the same Kempe-closed exterior at its changed boundary.",
+    "Five intermediate forms share the same anchor-selection and punctured-elimination rules; two initial inputs share one intermediate continuation.",
+    "The graph consumer returns a proper exterior colouring and a proper induced-source colouring agreeing at every ordered port. Exterior closure is an explicit hypothesis.",
+    "A concrete planar-disk consumer discharges that closure hypothesis from its checked rotation."
+  ],
+  "finite_obligations_retained": {
+    "initial_words": [
+      "12311221133",
+      "12311331133",
+      "12312332133",
+      "12313223133"
+    ],
+    "intermediate_forms": 5,
+    "single_chord_contracts": 41,
+    "paired_anchor_contracts": 5,
+    "stage_partner_assignments": 1089,
+    "stored_full_matching_layouts": 0,
+    "stored_interior_colourings": 0
+  },
+  "program_receipt": "strip-two-phase-audit.json",
+  "program_only": [
+    "All 201 noncrossing matching layouts independently checked against the selected anchor contracts.",
+    "Each initial word has minimum two holes; every accepted terminal contract has a proper one-hole source witness."
+  ],
+  "limits": [
+    "A hole can remain. This is partial progress, not a complete source repair or strict ambient reduction.",
+    "Two stages count matching queries with retained component choices; no physical recolouring-history length bound is proved.",
+    "No uniform bound on the number of stages for arbitrary inputs, geometric supply or universal compact coverage is established.",
+    "The four-word domain and five intermediate forms remain finite source-specific classifications.",
+    "No complete-assembly obligation is replaced by this result."
+  ],
+  "regression": {
+    "classical": "lake build kernelStripTwoPhase kernelComplete",
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "passed": true
+  },
+  "new_catalogue_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0,
+  "whole_proof_kernel_savings_claimed": false
+}
