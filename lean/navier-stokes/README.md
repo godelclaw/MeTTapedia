@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint pressure/receiver correction](labs/README.md#a-joint-pressure-correction-needs-a-positive-completion)
+identifies a pressure cancellation from diffusion of both interacting
+factors. The signed correction alone can overwhelm the stock on actual
+unforced Gaussian data. A positive cubic completion restores control of
+the stock. Its added pressure component has nonnegative weighted diffusion;
+the mixed viscous terms remain in the coupled source with pressure,
+transport and receiver deformation. Its history payment is open. Exact
+symbolic checks support the analytic argument; no new Lean certificate is claimed.
+
 The [pressure-turnover test](labs/README.md#isotropic-energy-does-not-prevent-rapid-pressure-turnover)
 constructs actual unforced data with the same initial pressure and isotropic
 energy tensor but opposite directional pressure-transfer rates. At fixed

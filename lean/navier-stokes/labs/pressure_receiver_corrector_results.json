@@ -1,0 +1,51 @@
+{
+  "gaussian": {
+    "C_infinity": "3*pi**2*(-7696 + 3753*pi)/4194304",
+    "absolute_bound": "9*pi**2*(248464 + 130393*pi)/4194304",
+    "primitive": "(3753*y**14 + 11708*y**12 - 22531*y**10 + 153600*y**8 + 81923*y**6 + 9284*y**4 + 2391*y**2 + 6144)/(262144*y**15 + 1835008*y**13 + 5505024*y**11 + 9175040*y**9 + 9175040*y**7 + 5505024*y**5 + 1835008*y**3 + 262144*y) + 3753*atan(y)/262144",
+    "absolute_primitive": "(-825333*y**14 - 3624204*y**12 - 7264953*y**10 - 7633920*y**8 - 4129095*y**6 - 696564*y**4 + 235509*y**2 + 86016)/(262144*y**15 + 1835008*y**13 + 5505024*y**11 + 9175040*y**9 + 9175040*y**7 + 5505024*y**5 + 1835008*y**3 + 262144*y) + 391179*atan(y)/262144",
+    "energy": {
+      "E0_over_pi_three_halves": "15*sqrt(2)/32",
+      "gradient_energy_over_pi_three_halves": "119*sqrt(2)/32",
+      "physical_energy_rate": "E_prime(0)=-(119 sqrt(2)/16) nu A^2 pi^(3/2)<0"
+    },
+    "finite_parameters": "e=1, h0=10^(-4)(1+rho^2)^(-3), L=100; C_L(V)>1/64 and R(V)<1",
+    "failure": "J(-a V)=R+C_L/(2nu)<-a^3 when a>=256nu; actual kinetic energy decreases",
+    "concentration": "At energy one and fixed positive L: C_L(-u_lambda)~-C_infinity*lambda^2/E_V^2, R~R_V*lambda^(3/2)/E_V^(3/2)",
+    "limitation": "This rejects the uncompleted reserve and an energy-only lower allowance. It does not reject a full-datum allowance or a cutoff chosen separately for each datum."
+  },
+  "diffusion": {
+    "pressure_primitive": "q=int_0^(L^2) exp(s Delta)p ds; -Delta q=p_high",
+    "complete_source": "S_q=Q_L[-u tensor grad p-grad p tensor u-2nu G]+[u.grad,Q_L]T",
+    "pairing": "C_prime=-2nu W_high+E_corr",
+    "defect": "E_corr=int [(D_t-nu Delta)a].grad q+a.grad S_q-a_i partial_i u_j partial_j q",
+    "factor": "Both diffusing factors contribute; C/(2nu), not C/nu, cancels W_high."
+  },
+  "completion": {
+    "reserve": "J_star=R+C/(2nu)+2 B/nu^3, B=int |grad_h q|^3/H^(3/2)",
+    "coercivity": "R/2<=J_star<=3R/2+4B/nu^3",
+    "pressure_stock_drift": "B_prime+D_beta=W_beta, D_beta>=0, W_beta=3 int abs(beta) beta.S_beta/H^(3/2)",
+    "physical_sources": "S_beta=L beta=grad_h S_q-(partial_i u_j partial_j q)_(i=1,2); L H=-2nu H_r/r",
+    "diffusion": "D_beta is the RP physical sum of squares with w replaced by beta; its axis boundary is zero.",
+    "mixed_diffusion": "Mixed viscous terms remain in F_star. The full completed density has second x derivative -3y at x=y/2 for aligned fields; this alone is not an actual-flow counterexample.",
+    "continuation": "(Omega^2 J_star)_prime+Omega^2 D_star<=Omega^2*(k_known+k_source+F_star), D_star=D+2D_beta/nu^3, F_star=E_corr/(2nu)+2W_beta/nu^3",
+    "open": "Bound int_0^T Omega^2*(F_star-D_star/2) by one finite original-data allowance for every available same-datum prefix.",
+    "scope": "Coercivity and the exact drift are established analytically. The correction source still contains pressure and its history; no payment or regularity claim follows from cancellation alone."
+  },
+  "calibration": {
+    "flow": "u=exp(-2nu t)*(sin x cos y,-cos x sin y,0) on the period-2pi torus",
+    "observer": "H=1, A=0; this calibrates the correction, not the axisymmetric consumer",
+    "pairing": "C=0 by translation symmetry; canonical pressure is nonzero",
+    "reserve": "J_star=exp(-6nu t)R0+2exp(-12nu t)B0/nu^3",
+    "drift": "J_star_prime=-6nu R-24B/nu^2<0"
+  },
+  "source_sha256": {
+    "pressure_receiver_corrector.py": "6afba3d34f456a975ab03c761b4fc77115df3d8043bf96a26bbc7543c916af8a",
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b",
+    "circulation_source_reserve.py": "12366fd5dc83962c0f7deb40ebc42939bfcfb4d4d01249b61aca79537a96d926",
+    "pressure_channel_payment.py": "b992f4a2f42a6bc1929a989c15094732b81701a174d9bfae9ef3aa0a8db01474",
+    "regularized_parent_payment.py": "9f72998888b5835fc9afb84ee135e83bd1128b97164ff05f0f9ad1b7cd960400"
+  }
+}

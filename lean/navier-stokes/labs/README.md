@@ -49666,3 +49666,225 @@ moment, viscous tensor rates, finite-amplitude signs, concentration powers,
 coarse-kernel response and the retained Bellman payment. Local PDE history,
 kernel Taylor estimates and the inherited spatial asymptotics remain
 analytic. No Lean declarations or axioms change.
+
+## A joint pressure correction needs a positive completion
+
+`pressure_receiver_corrector.py` tests a correction for the unpaid work
+in (PC5). It pairs the complete pressure with its evolving receiver. The
+first signed correction cancels that work but fails to control the stock.
+A positive completion repairs the lower bound, and its added pressure
+component has favorable diffusion. Its coupled source still requires an
+original-data history estimate. These are analytic identities and counterexamples with exact
+symbolic checks, not a regularity theorem or new Lean certificates.
+
+### Retain both diffusing factors
+
+Use the same actual axisymmetric whole-space history, pressure, inherited
+h and A, and fixed positive parameters as in (RP1)--(PC5). In Cartesian
+horizontal coordinates write
+
+```text
+H_e=e+r^2h, w=u_h+A grad_h q0,
+R=int |w|^3/H_e^(3/2), a=-3|w|w/H_e^(3/2),
+q=(-Delta)^(-1)p_high=int_0^(L^2) exp(s Delta)p ds,
+C=int a.grad q, W_high=int a.grad p_high.
+J=R+C/(2nu).                                         (EC1)
+```
+
+The horizontal vector a is embedded in R3 with zero axial component.
+Axisymmetry makes its tangential pressure pairing zero, recovering the
+radial work in (RP4). The primitive q is formed from the actual pressure;
+it is not an independently selected control. The finite heat integral
+gives -Delta q=p_high exactly.
+
+Let scriptL=D_t-nu Delta, T=u tensor u, G_ij=partial_k u_i partial_k u_j,
+and Q_L=(-Delta)^(-1)(I-exp(L^2 Delta))partial_i partial_j(-Delta)^(-1),
+with tensor indices contracted. The existing stress law gives
+
+```text
+scriptL q=S_q,
+S_q=Q_L[-u tensor grad p-grad p tensor u-2nu G]
+           +[u.grad,Q_L]T,
+C'=-2nu W_high+E_corr,
+E_corr=int (scriptL a).grad q+a.grad S_q
+                       -a_i partial_i u_j partial_j q. (EC2)
+```
+
+Both factors in C diffuse. Moving the receiver Laplacian onto grad q
+produces one copy of -nu W_high; the pressure primitive produces the
+other. The checker verifies the full local identity including the spatial
+divergence discarded only after integration. The last contraction in
+(EC2) uses all three components of grad q and u, including axial motion.
+Neither the pressure commutator nor viscous stress production is dropped.
+
+The evolving receiver is also explicit. With a=a(w,H_e),
+
+```text
+scriptL w=-grad_h p_res
+       +A[(u.grad)grad_h q0-nu Delta grad_h q0],
+scriptL H_e=-2nu (partial_r H_e)/r,
+scriptL a=Da(w,H_e)[scriptL w,scriptL H_e]
+       -nu sum_j D2a(w,H_e)[partial_j(w,H_e)]^2.       (EC3)
+```
+
+Here p_res=p-delta q0 and A'=delta are the original retained quantities.
+All derivatives in (EC3) are Cartesian; cylindrical basis derivatives
+are therefore retained. At zeros of w the identity is understood almost
+everywhere, or by regularization and passage to the weak chain rule.
+The map |w|w is continuously differentiable with locally bounded weak
+second derivatives. No singular axis measure is introduced.
+
+### The uncompleted correction fails on actual data
+
+Use the complete Gaussian V from (PC6):
+chi=z exp(-rho^2), V_r=-r chi_z, V_z=2chi+r chi_r,
+V_theta=2sqrt(2)rz exp(-rho^2). Initially A=0. For the flat weight H_e=1,
+let C_infinity use q_infinity=(-Delta)^(-1)p. Exact integration gives
+
+```text
+C_infinity(V)=3pi^2(3753pi-7696)/4194304 >1/50,
+R(V)=8pi^2/81<1,
+absolute majorant for C_infinity
+ =9pi^2(248464+130393pi)/4194304 <16.                 (EC4)
+```
+
+The calculation integrates the entire canonical source, using
+q_infinity=int_0^infinity tau exp(tau Delta)(-Delta p) d tau.
+The receiver integration by parts is checked independently at every heat
+time. The absolute majorant keeps both the polynomial and exponential
+derivatives before integration.
+
+This is a finite-parameter counterexample, not only a flat-weight limit.
+Choose e=1, h0=10^(-4)(1+rho^2)^(-3), L=100. The weight error is at most
+(2/90000) times the absolute majorant. The previously proved coarse
+gradient estimate gives
+
+```text
+||grad(q_infinity-q)||infinity <= C_* E0/L^2,
+|int a.grad(q_infinity-q)| <=3 C_* E0^2/L^2 <1/L^2
+for this datum, with H_e>=1.
+Consequently C_L(V)>1/64 and R(V)<1.
+For u0=-c V, c>=256nu:
+J(0)<c^3-c^4/(128nu)<=-c^3.                          (EC5)
+```
+
+In (EC5), the weight error and the heat-tail error are applied separately.
+The original stochastic density is finite and positive. Velocity reversal
+preserves canonical pressure and reverses the receiver. Both histories
+have strictly decreasing total kinetic energy. Local existence and
+continuity realize the negative corrected stock on a nonzero smooth
+interval; no common interval length is asserted.
+
+Concentration strengthens the lower-bound obstruction. For
+u0,lambda=-lambda^(3/2)V(lambda x)/sqrt(E_V), total energy is one, while
+at any common fixed L>0 and the preceding fixed weight,
+
+```text
+R(0) ~ R(V)lambda^(3/2)/E_V^(3/2),
+C_L(0) ~ -C_infinity(V)lambda^2/E_V^2.                (EC6)
+```
+
+Thus no energy-only additive constant makes this J uniformly bounded
+below or controlling R. The limit follows from the complete Gaussian
+majorant and the rescaled heat cutoff lambda L. It does not rule out a
+full-datum allowance or a different L chosen for each original datum.
+Such a choice would require a separate propagation argument.
+
+### A positive completion with complete diffusion
+
+Put beta=grad_h q and B=int |beta|^3/H_e^(3/2). The repaired functional is
+
+```text
+J_star=R+C/(2nu)+2B/nu^3,
+R/2<=J_star<=3R/2+4B/nu^3.                            (EC7)
+```
+
+Pointwise Cauchy--Schwarz and
+x^3/2-3x^2y+16y^3=(x-4y)^2(x+2y)/2>=0 prove both bounds, with
+x=|w|/sqrt(H_e) and y=|beta|/(2nu sqrt(H_e)). The functional is finite
+from smooth initial data: the finite heat multiplier for grad q is
+bounded by L, and the usual Sobolev product estimates give beta in L3.
+Its value is inherited at seams together with w,H_e,A and the actual
+pressure; no new allowance is issued. Its positive pressure component
+is not controlled by kinetic energy alone.
+
+The extra positive term does not introduce an unsigned diffusion cost.
+Define the complete physical source
+
+```text
+S_beta=scriptL beta
+      =grad_h S_q-(partial_i u_j partial_j q)_(i=1,2),
+W_beta=3int |beta| beta.S_beta/H_e^(3/2),
+B'+D_beta=W_beta,
+D_beta=3nu int |beta|/H_e^(3/2) sum_(j=r,theta)
+  |grad beta_j-beta_j grad log H_e+(beta_j/r)e_r|^2
+  +(4nu/3)int |grad (|beta|^2/H_e)^(3/4)|^2 >=0.       (EC8)
+```
+
+For this pressure primitive beta_theta=0. Smooth axisymmetry gives
+beta_r=O(r), so the radial flux has zero axis boundary. The checker
+retains the angular Cartesian derivative as well as both derivatives
+of H_e. More explicitly, for Psi(beta,H_e)=|beta|^3/H_e^(3/2), the
+square density in (EC8), divided by nu, differs from
+sum_j D2Psi[partial_j(beta,H_e)]^2
+-3|beta|^3(partial_r H_e)/(r H_e^(5/2))
+by exactly (2/r)partial_r Psi. Its physical-volume integral vanishes.
+Spatial cutoffs and Sobolev bounds justify the outer limit on smooth
+prefixes. This reuses and verifies the weighted diffusion mechanism of
+(RP4)--(RP5) for the new pressure observation.
+
+### The new source still needs payment
+
+Let k_known be the paid pressure cost from (PC3), and k_source the paid
+subtraction cost from (RP7)--(RP9). Retain alpha=3M E0 t+2k and Omega
+from (RP10). Equations (EC2), (EC7) and (EC8) give
+
+```text
+D_star=D+2D_beta/nu^3,
+F_star=E_corr/(2nu)+2W_beta/nu^3,
+J_star'+D_star<=2alpha J_star+k_known+k_source+F_star,
+(Omega^2 J_star)'+Omega^2 D_star
+       <=Omega^2(k_known+k_source+F_star).            (EC9)
+```
+
+Everything in F_star is specified by the actual coupled evolution.
+There is no unknown derivative of a stored functional left in its
+definition. Pressure remains inside S_q, S_beta and scriptL a; cancelling
+W_high has not bounded or removed those interactions.
+
+In particular, mixed viscous terms from C remain in F_star. The positive
+D_star terms are not the entire diffusive derivative of J_star. Coercivity
+does not imply joint convexity: for aligned w and beta and H_e=1, set
+x=|w| and y=|beta|/(2nu). The completed density is x^3-3x^2y+16y^3,
+whose second x derivative at x=y/2 is -3y<0 for y>0. Increasing only the
+coefficient of y^3 cannot change this curvature. This algebraic test
+does not assert that independently chosen w,beta occur on an NS history;
+their actual pressure relation is essential to the remaining estimate.
+
+A sufficient next estimate is one finite original-data K_star such that
+
+```text
+int_0^T Omega^2(F_star-D_star/2)<=K_star
+for EVERY available same-datum smooth prefix, T<=H.   (EC10)
+```
+
+This is OPEN. If established, (EC7)--(EC9) bound R and int D from
+J_star(0), B_known(0), K_source and K_star, with the fixed factor
+Omega(H)^(-2). The unchanged (RP12) consumer then controls the swirl L5
+integral. This is an axisymmetric laboratory; the original arbitrary-data
+R3/T3 goal and its general-3D signed-renewal obligation remain open.
+
+As a physical calibration, the existing periodic Taylor--Green flow
+u=exp(-2nu t)(sin x cos y,-cos x sin y,0), with H_e=1 and A=0, has
+C=0 by translation symmetry and nonzero canonical pressure. Direct
+substitution into all three unforced equations verifies
+J_star=exp(-6nu t)R0+2exp(-12nu t)B0/nu^3, which decreases strictly.
+This calibrates the correction; it is not a new regularity result or an
+axisymmetric continuation argument.
+
+Run `python3 -O labs/pressure_receiver_corrector.py`. The archive includes
+the full Gaussian source, signed and absolute heat primitives, finite
+parameters, concentration exponents, the two-factor evolution identity,
+coercivity, weighted diffusion flux and actual Taylor--Green calibration.
+The integral identities, local PDE realization and conditional consumer
+remain analytic. No Lean declarations or axioms change.
