@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [quadratic pressure-storage test](labs/README.md#pressure-and-speed-grow-in-every-positive-quadratic-observation)
+gives an explicit family of actual unforced NS initial states for which
+every fixed positive quadratic form in squared speed and canonical
+pressure increases, including coefficients selected from that datum.
+The complete derivative retains viscosity and all generated pressure.
+Opposite velocities have the same initial pressure and speed but reverse
+the nonlinear feedback. The planar member has an independent all-time
+vorticity reserve for the pressure-amplitude clock; the corresponding
+arbitrary 3D payment remains open. These are analytic conclusions with
+exact polynomial checks, not new Lean certificates.
+
 The [time-reversal pressure estimate](labs/README.md#time-reversal-removes-a-derivative-from-the-pressure-history-bill)
 reuses the classical forward/backward martingale argument on the same
 incompressible stochastic history. It replaces a pressure-gradient cost

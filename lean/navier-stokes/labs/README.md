@@ -41123,3 +41123,235 @@ declarations or axioms. Time reversal, continuous stochastic estimates
 and the physical comparison remain analytic. The whole-space version
 requires a separate measure and integrability argument: there is no
 uniform probability measure on R3 to insert into this proof.
+
+
+## Pressure and speed grow in every positive quadratic observation
+
+`pressure_quadratic_storage.py` tests a concrete reserve for the preceding
+pressure-amplitude clock. Write `e=|u|^2/2`, take canonical mean-zero p,
+and consider a constant positive semidefinite two-by-two matrix M:
+
+```text
+G(u)=integral (e,p) tensor (e,p),
+R_M(u)=trace(M G(u))/nu.
+```
+
+Positive definite M give nonnegative reserves controlling the velocity
+fourth moment. M may be chosen from the full original datum, viscosity
+and horizon, but is then held fixed along the history. The proposed
+monotone payment would require, for some eta>0,
+
+```text
+R_M' + eta ||Hess(-Delta)^(-1)p||4^2 <=0.
+```
+
+One explicit family refutes this claim for EVERY nonzero positive
+semidefinite M simultaneously. The example includes full 3D coupling,
+positive viscosity and strictly decreasing total kinetic energy. It does
+not refute a finite integrated allowance, a reserve with additional
+observations or history, or global regularity.
+
+### A complete unforced initial derivative
+
+On the normalized period-2pi torus put c=cos(y-z), d=cos(x+y), and
+
+```text
+U_eps=(-c-sin y+eps d, -c-2cos z-eps d, -c+sin y-eps d),
+u(0)=lambda U_eps,     nu>0, lambda>=256nu, |eps|<=1/8.
+```
+
+This datum is smooth, mean zero and divergence free. For eps nonzero,
+its nonzero wavevectors span all three spatial coordinates; there is no
+translation direction along which the field is constant. At eps=0 it
+is a planar flow in (y,z), with a passive x component. The construction
+uses the complete NS initial tangent, not a closed finite-mode evolution:
+
+```text
+u_t=nu Delta u-(u.grad)u-grad p,
+-Delta p=partial_i partial_j(u_i u_j),
+-Delta p_t=partial_i partial_j(u_t,i u_j+u_i u_t,j).
+```
+
+The checker also obtains p_t independently by differentiating
+`-Delta p=trace((grad u)^2)`. All generated modes remain. Let D_E denote
+the derivative of G at U_eps from the Euler part of this tangent and
+D_L its derivative from the unit heat part. Exact integration gives
+
+```text
+G(U_eps) = [ (27eps^4+180eps^2+223)/32,  -2(eps^2+2)/5 ]
+           [       -2(eps^2+2)/5,       (217eps^2+810)/225 ],
+
+D_E = [ (1-13eps^2)/5,       11eps^2/18          ]
+      [    11eps^2/18,       27/20-592eps^2/225  ],
+
+D_L = [ -(27eps^4+146eps^2+151)/4,  12(eps^2+2)/5       ]
+      [       12(eps^2+2)/5,       -14(31eps^2+105)/75  ],
+
+G'(0)=lambda^4 [lambda D_E+nu D_L].
+```
+
+The pressure time derivative in D_L has its full viscous production;
+it is not replaced by Delta p. Useful independent checks of the integrated
+identities are
+
+```text
+(D_E)11=-2 integral e u.grad p,
+(D_E)12=integral e (p_t,E+u.grad p),
+(D_L)11=-2 integral [e |grad u|^2+|grad e|^2].
+```
+
+These retain the transport cancellations and actual pressure work.
+
+### A uniform matrix certificate, including viscosity
+
+For |eps|<=1/8, the exact entries imply
+
+```text
+(D_E)11>=3/20, (D_E)22>=13/10, |(D_E)12|<=1/100.
+```
+
+Thus D_E is positive definite. Set B=256D_E+D_L. Throughout the same
+interval,
+
+```text
+B11>=2, B22>=315, |B12|<=8,
+(B11-1)(B22-1)-B12^2 >=314-64>0.
+```
+
+Consequently B-I is positive definite. At the explicit fully coupled
+endpoint eps=1/8,
+
+```text
+B = [ 203001/81920, 5243/720     ]
+    [ 5243/720,    2270773/7200 ],
+det B=3867234846197/5308416000>0.
+```
+
+For every lambda>=256nu, write the physical derivative as
+
+```text
+G'(0)=nu lambda^4 [B+(lambda/nu-256)D_E] > nu lambda^4 I.
+```
+
+Hence every nonzero positive semidefinite M, including any such M
+selected after inspecting this datum, satisfies
+
+```text
+R_M'(0)>lambda^4 trace(M)>0.
+```
+
+Adding a nonnegative pressure-clock cost cannot make that derivative
+nonpositive. By classical local smooth existence and continuity of the
+full matrix derivative, there is an actual positive time interval on
+which `G'(t)>(nu lambda^4/2)I`. This one interval works for all constant
+positive semidefinite choices of M. Thus the obstruction concerns actual
+unforced histories, although only a short interval is asserted.
+
+Total kinetic energy is simultaneously decreasing:
+
+```text
+||u(0)||2^2=lambda^2(9/2+3eps^2/2),
+(d/dt)||u(t)||2^2 at0=-2nu lambda^2(6+3eps^2)<0.
+```
+
+Increasing pressure/speed storage is redistribution within a dissipating
+fluid. It does not require outside energy or establish singular growth.
+
+### Equal visible pressure and speed, opposite feedback
+
+Replace the original velocity by -lambda U_eps. Squared speed and the
+canonical pressure are identical at every initial spatial point. Their
+matrix G, kinetic energy and gradient-energy norms are also identical.
+The nonlinear tangent of u is unchanged, but its contribution to the
+derivative of G reverses:
+
+```text
+G_minus'(0)=lambda^4[-lambda D_E+nu D_L].
+```
+
+D_L is negative definite on the stated interval: its negative diagonal
+entries have magnitudes at least37 and19, and its off-diagonal magnitude
+is at most5. Therefore G_minus'(0) is negative definite. The two actual
+unforced histories initially move every fixed positive quadratic
+observation in opposite directions. Their initial pressure and speed
+alone cannot determine which direction occurs; velocity orientation
+and the resulting pressure production must be retained.
+
+### The planar member has a different, complete payment
+
+Failure of this reserve class occurs even at eps=0, where global
+regularity is already known. The horizontal field in (y,z) is an actual
+2D unforced NS solution, and the x component is passively transported
+and diffused. It does not enter the pressure equation.
+
+Let v denote those two active components, omega their scalar vorticity,
+and A(t)=||omega(t)||2^2. Their mean-zero periodic evolution obeys
+
+```text
+A'=-2nu||grad omega||2^2 <=-2nu A.
+```
+
+There is a fixed finite torus constant C_T, independent of the datum,
+amplitude and viscosity, such that
+
+```text
+||Hess(-Delta)^(-1)p||4
+ <= C ||p||4 <= C ||v||8^2 <= C_T ||omega||2^2.
+```
+
+This uses the periodic pressure and Hessian Green operator bounds and
+the 2D embedding of mean-zero H1 into L8. No numerical value of C_T is
+asserted. The nonnegative reserve
+
+```text
+R_omega(t)=C_T^2 A(t)^2/(4nu)
+```
+
+therefore pays the complete pressure-amplitude clock:
+
+```text
+R_omega' + ||Hess(-Delta)^(-1)p||4^2 <=0,
+integral_s^t ||Hess(-Delta)^(-1)p||4^2
+ <=R_omega(s)-R_omega(t),  all 0<=s<=t.
+```
+
+Combined with the preceding time-reversal estimate, for the actual fluid
+observer or any smooth solenoidal observer starting uniformly,
+
+```text
+(E|integral_0^T grad p(s,X_s)ds|^4)^(1/2)
+ <= (6/nu)R_omega(0), all T>=0.
+```
+
+For the displayed planar member A(0)=9lambda^2/2, so
+`R_omega(0)=81 C_T^2 lambda^4/(16nu)`. This is one original allowance
+for the entire history, with no smallness or reset at intermediate times.
+It applies even though every R_M above increases initially. The pressure
+clock is funded by vorticity decay, rather than monotonicity of pressure
+and speed alone. This reuses classical planar estimates; it is not a new
+regularity theorem.
+
+In general 3D, vorticity has a stretching source, and H1 does not give
+this L8 bound. Those two missing estimates prevent importing this
+planar reserve unchanged. Their physical payment remains the research
+obligation, together with the already retained hidden-parent work.
+
+### Scope and reproduction
+
+The failed claim is monotone payment by a fixed, pointwise positive
+quadratic form in e and p. It includes all positive sums of squares
+`(a e+b p)^2`. It does not cover quadratic forms that are indefinite
+pointwise but nonnegative only after special spatial estimates. It also
+does not cover additional derivative observations or a genuinely evolving
+history correction. A time-dependent M has the extra term
+`trace(M'G)/nu`; discarding it would lose precisely the proposed payment.
+A datum-dependent finite integrated allowance is still possible.
+
+Run `python3 -O labs/pressure_quadratic_storage.py`. The archive
+`pressure_quadratic_storage_results.json` records exact polynomial
+matrices, rational interval certificates, independent pressure/source
+identities, energy balance and velocity-sign reversal. The initial
+search only selected the explicit witness; the reported coefficients
+and signs are exact and independent of numerical quadrature. Continuous
+NS intervals and the planar all-time reserve are analytic, not
+Lean-certified. No new declarations or axioms are introduced.

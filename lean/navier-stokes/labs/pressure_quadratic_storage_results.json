@@ -1,0 +1,65 @@
+{
+  "status": "All exact checks passed",
+  "parameter_range": "|eps|<=1/8; lambda>=256nu>0",
+  "gram": [
+    [
+      "(27*eps**4 + 180*eps**2 + 223)/32",
+      "-2*(eps**2 + 2)/5"
+    ],
+    [
+      "-2*(eps**2 + 2)/5",
+      "(217*eps**2 + 810)/225"
+    ]
+  ],
+  "euler_rate": [
+    [
+      "-(13*eps**2 - 1)/5",
+      "11*eps**2/18"
+    ],
+    [
+      "11*eps**2/18",
+      "-(2368*eps**2 - 1215)/900"
+    ]
+  ],
+  "heat_rate": [
+    [
+      "-(27*eps**4 + 146*eps**2 + 151)/4",
+      "12*(eps**2 + 2)/5"
+    ],
+    [
+      "12*(eps**2 + 2)/5",
+      "-14*(31*eps**2 + 105)/75"
+    ]
+  ],
+  "physical_rate": "G_prime=lambda^4*(lambda*DE+nu*DL) > nu*lambda^4*Id",
+  "full_rate_at_eps_one_eighth": [
+    [
+      "203001/81920",
+      "5243/720"
+    ],
+    [
+      "5243/720",
+      "2270773/7200"
+    ]
+  ],
+  "full_rate_enclosures": [
+    [
+      "203001/81920",
+      "269/20"
+    ],
+    [
+      "2270773/7200",
+      "326"
+    ],
+    [
+      "24/5",
+      "5243/720"
+    ]
+  ],
+  "full_rate_determinant_at_eps_one_eighth": "3867234846197/5308416000",
+  "kinetic_energy": "3*eps**2/2 + 9/2",
+  "gradient_squared": "3*eps**2 + 6",
+  "opposite_velocity": "Identical e,p,G; negative-definite initial rate lambda^4*(-lambda*DE+nu*DL)",
+  "planar_payment": "If ||HessG p||4<=C_T*||omega||2^2, R=C_T^2*||omega||2^4/(4nu) pays its squared clock",
+  "scope": "Exact full NS initial algebra; short actual intervals and planar all-time payment analytic, not Lean-certified"
+}
