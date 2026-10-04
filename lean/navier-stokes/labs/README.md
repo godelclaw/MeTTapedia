@@ -41638,3 +41638,256 @@ existence interval, Taylor remainder and physical adaptive-policy
 obstruction remain analytic. No numerical PDE enclosure or Lean
 certificate for that interval is asserted; no Lean declarations or
 axioms change.
+
+## Pressure-producing capacity can renew before its original modes recover
+
+The preceding first-coefficient payment uses the original parents' ability
+to produce pressure. That ability need not decrease after use. Complete
+NS time derivatives identify a favorable return into the original source
+and a larger positive contribution from newly generated source modes.
+Material transport changes this comparison, including its sign for some
+geometries. An explicit adverse example survives the material correction.
+These are local analytic consequences for actual unforced viscous flows,
+not a claim of indefinite renewal or singularity.
+
+### The actual source and its full evolution
+
+Work on the period-2pi torus with normalized volume, in the fixed zero-mean
+velocity frame. Pressure is the canonical mean-zero pressure. Define
+
+```text
+T(F)=(-Delta)^(-1) partial_i partial_j F_ij,
+N=u dot grad u+grad p,
+Xi=(partial_t-nu Delta)p,
+Q=integral |grad Xi|^2.
+```
+
+The Eulerian source Xi differs from the material parabolic source
+`Y=Xi+u dot grad p`. In particular, Xi is frame dependent; a Galilean
+translation of velocity changes this observation. No claim below silently
+identifies it with a material quantity.
+
+Commuting the fixed pressure operator with time and the Laplacian gives
+the complete physical source identity
+
+```text
+Xi=T[-N tensor u-u tensor N
+     -2nu sum_k partial_k u tensor partial_k u].       (PS1)
+```
+
+This includes the convection, pressure feedback and diffusion cross term.
+With `W=(partial_t-nu Delta)Xi`, periodic integration by parts gives
+
+```text
+Q'+2nu ||Delta Xi||2^2=2 integral grad Xi dot grad W.   (PS2)
+```
+
+Here `||Hess Xi||2=||Delta Xi||2` by Fourier orthogonality. Equation (PS2)
+is an exact balance, not a sign or payment for its right side.
+`pressure_source_return.py` checks (PS1) and its first two time derivatives
+against the independent full NS recurrence. It also checks (PS2) and its
+first derivative, keeping the complete viscosity polynomial.
+
+### Compare with the entire original cubic forecast
+
+Use the same original datum as above,
+
+```text
+U_m=(sin y-m sin z, sin z, sin(x+m y)),
+u(0)=U_m, nu>0.
+```
+
+Let h be its complete heat evolution and let w be the zero-initial-data
+quadratic heat-Duhamel field. For this family the heat pressure vanishes,
+and `w_t-nu Delta w=-h dot grad h` is already solenoidal. Fix
+
+```text
+p_c=T(h tensor w+w tensor h),
+Xi_c=(partial_t-nu Delta)p_c, Q_c=||grad Xi_c||2^2.
+```
+
+The subscript c denotes the cubic amplitude degree. This is the complete
+forecast from those original parents; it is not a scalar heat attenuation
+of p_t(0). Every output of the quadratic generation is retained. Its time
+derivatives are independently constructed by `cubic_forecast_jets`.
+
+Write z_j=partial_t^j Xi(0), b_j=partial_t^j Xi_c(0), a=z_1-b_1.
+The exact comparison has equal constant and linear coefficients. Its
+quadratic coefficient is
+
+```text
+Q-Q_c=delta_E t^2+O(t^3),
+delta_E=||grad a||2^2
+        +integral grad z_0 dot grad(z_2-b_2)
+        +2 integral grad b_1 dot grad a.              (PS3)
+```
+
+At m=2, z_0 has eight nonzero Fourier modes. The new source a has 28,
+all outside that original support, including both signs of each mode.
+Consequently the last, thermal cross term is zero. The other terms are
+
+```text
+new source square       =  33821/12705,
+original-source return  = -204769/101640,
+delta_E                 =  21933/33880 >0.
+```
+
+Thus depletion in the original source coexists with net growth in the
+complete observation. Canonical pressure has not been omitted from the
+new modes. Splitting a=C+P into differentiated convection and pressure
+feedback gives
+
+```text
+||grad C||2^2          =  283/35,
+||grad P||2^2          =  34184/12705,
+2 integral grad C.grad P = -284/35.
+```
+
+The joint correlation greatly reduces the generated norm. The remaining
+norm still exceeds the favorable original-source pairing in (PS3).
+
+### Following the fluid changes some signs, but does not ensure depletion
+
+To test the advective contribution, apply the SAME actual material operator
+to both pressures:
+
+```text
+Y=(partial_t+u dot grad-nu Delta)p,
+Y_c=(partial_t+u dot grad-nu Delta)p_c,
+Q_M=||grad Y||2^2, Q_Mc=||grad Y_c||2^2.
+```
+
+The actual u occurs in both expressions. Y_c is therefore a diagnostic
+reference, not a separately paid reference solution or an unforced flow
+with pressure p_c. Matching labels does not reconstruct such a flow.
+Since p(0)=p_c(0)=0 and their first pressure derivatives agree,
+
+```text
+Q_M-Q_Mc=delta_M t^2+O(t^3),
+delta_M=delta_E
+ +2 integral grad(u_0 dot grad p_1) dot grad a
+ +integral grad p_1 dot grad(u_0 dot grad a).          (PS4)
+```
+
+The complete exact coefficients, independent of viscosity, are:
+
+| m | Eulerian delta_E | Material delta_M |
+|---|---:|---:|
+| 0 | -21/8 | -39/8 |
+| 1 | -4793/2310 | -14899/3696 |
+| 2 | 21933/33880 | -829/6776 |
+| 4 | 309716579/747358920 | 96960167/448415352 |
+| 8 | 26424288654209/659937034454040 | -3371825506417/131987406890808 |
+
+At m=2 and m=8, retaining transport reverses the Eulerian comparison.
+At m=4 both comparisons are adverse. No universal assertion about all m
+is inferred from these five fixtures. Nor is a finite return to a generated
+source an exact recurrence of the full velocity field.
+
+For every fixed viscosity nu>0, smooth local NS theory and the explicit
+smooth forecast give bounded third derivatives of these observations on
+some initial interval. Taylor's theorem therefore transfers each strict
+coefficient sign to an actual interval 0<t<delta(nu,m). The preceding
+coefficients agree exactly, including viscosity. The comparison is not
+obtained by treating an Euler solution as a viscous solution. The interval
+argument is analytic, not a numerical PDE enclosure or a Lean certificate.
+
+### The source can exceed its own original size despite viscosity
+
+The full m=2 expansion at normalized viscosity mu is
+
+```text
+Q_mu(tau)=21/22-(179/11)mu tau
+          +[(4655/33)mu^2+21933/33880]tau^2+O(tau^3).
+```
+
+The first derivative is negative. A later rebound still exceeds Q_mu(0)
+if convection is sufficiently strong relative to viscosity. This requires
+controlling the remainder, not discarding the initial viscous loss.
+
+For 0<=mu<=1, classical smooth local theory gives a common H14 bound and
+time T0 from this fixed smooth datum. The elementary Sobolev energy estimate
+is uniform after dropping nonnegative viscous dissipation. Differentiating
+the projected equation bounds the first four velocity derivatives in
+H12,H10,H8,H6, respectively. The pressure product operator and its spatial
+derivatives then give a constant B>=1 with absolute Taylor remainder
+at most B tau^3 for Q_mu. This is the usual viscosity-uniform local
+mechanism; see also the constant-density periodic case of
+[Danchin's inviscid-limit theorem](https://afst.centre-mersenne.org/articles/10.5802/afst.1133/).
+Neither B nor T0 is taken from an unknown large-data future solution.
+
+Set
+
+```text
+d=179/11, k=21933/33880, c=2d/k=1102640/21933,
+mu_star=min(1,T0/c,k/(4Bc)).
+```
+
+For 0<mu<=mu_star, at tau=c mu the positive quadratic term dominates
+both the negative linear term and the cubic remainder:
+
+```text
+Q_mu(c mu)-Q_mu(0)>=(kc^2/4)mu^2>0.
+```
+
+For any prescribed nu>0 choose lambda>=nu/mu_star and use the exact
+amplitude/time scaling `u(t)=lambda v_(nu/lambda)(lambda t)`. Canonical
+pressure scales by lambda^2 and Xi by lambda^3. Consequently
+
+```text
+t_star=c nu/lambda^2,
+Q_u(t_star)-Q_u(0)>=(kc^2/4)nu^2 lambda^4>0.          (PS5)
+```
+
+This is an actual unforced positive-viscosity rebound. The sufficient
+amplitude threshold is finite but not numerically evaluated. It refutes
+monotonicity of Q and the bound Q(t)<=Q(0) for arbitrary data. It does not
+refute a larger original-data allowance for Q or its time integral.
+The flow remains smooth on the interval used, and its total kinetic energy
+decreases. No singularity or indefinitely repeated renewal is constructed.
+
+### The source has a precise continuation consumer
+
+There is a simple analytic connection from an accumulated source allowance
+to the already established pressure-amplitude clock. Put
+`E_p=||grad p||2^2`. Since `p_t-nu Delta p=Xi`,
+
+```text
+E_p'+2nu ||Delta p||2^2=2 integral grad p dot grad Xi,
+E_p'+nu E_p<=Q/nu,
+integral_0^T E_p <=E_p(0)/nu+(1/nu^2)integral_0^T Q.  (PS6)
+```
+
+The second line uses Young's inequality and the mean-zero torus spectral
+gap. For a fixed torus constant C_T, Sobolev embedding and the Fourier
+identity for `A=Hess(-Delta)^(-1)p` give
+`||A||4<=C_T||grad p||2`. Thus the full pressure clock satisfies
+
+```text
+L(T)=integral_0^T ||Hess(-Delta)^(-1)p||4^2
+ <=C_T^2 [E_p(0)/nu+(1/nu^2)integral_0^T Q].          (PS7)
+```
+
+The earlier forward/backward martingale estimate (TR), retaining the same
+full stochastic history, then gives `Phi_u(T)<=36 L(T)^2/nu^2`.
+Together with the analytic continuation bridge (636), a bound
+
+```text
+integral_0^T Q <= B(u_0,nu,H),
+every available smooth prefix from u_0, 0<=T<=H,
+```
+
+with finite B controlled from the original datum would suffice for periodic
+continuation. This uses a stronger source norm than the original pressure
+clock. It is not a claim that this stronger estimate is necessary or easier.
+The source allowance is OPEN; (PS6)--(PS7) do not supply it. The spectral
+gap and uniform spatial sampling used here are periodic. A whole-space
+transfer is a separate obligation.
+
+Run `python3 -O labs/pressure_source_return.py`. The exact archive
+`pressure_source_return_results.json` retains the full coefficients,
+convection-pressure correlation, transport corrections and rebound algebra.
+The Fourier recurrence retains every generated output and is independently
+checked at rational viscosity. The physical intervals, uniform remainder
+and source-to-clock consumer are analytic, not newly Lean-certified.
+No Lean declarations or axioms change.

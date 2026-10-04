@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-source return test](labs/README.md#pressure-producing-capacity-can-renew-before-its-original-modes-recover)
+follows the resource suggested by the preceding pressure-storage obstruction.
+Generated source modes can outweigh a depleting return into the original
+source. Including material transport reverses some comparisons, but an
+explicit oblique example remains adverse at every positive viscosity.
+A separate analytic estimate connects an accumulated source bound to the
+existing pressure-clock continuation criterion. That original-data payment
+remains open. Exact NS coefficients support the short physical comparisons;
+these are not new Lean certificates or singularity constructions.
+
 The [adaptive pressure-subtraction test](labs/README.md#bounded-adaptive-pressure-subtraction-cannot-pay-the-oblique-return)
 tests an evolving signed correction whose spatial integral remains
 coercive. Actual unforced flows starting with zero pressure defeat every

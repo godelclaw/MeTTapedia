@@ -1,0 +1,256 @@
+{
+  "status": "All exact checks passed",
+  "fixtures": [
+    {
+      "m": 0,
+      "eulerian_actual": [
+        "3/2",
+        "-9*nu",
+        "27*nu**2 - 21/8"
+      ],
+      "eulerian_forecast": [
+        "3/2",
+        "-9*nu",
+        "27*nu**2"
+      ],
+      "eulerian_difference": [
+        "0",
+        "0",
+        "-21/8"
+      ],
+      "original_source_modes": 8,
+      "new_source_modes": 24,
+      "source_supports_disjoint": true,
+      "new_source_square": "1",
+      "old_source_return": "-29/8",
+      "thermal_cross": "0",
+      "convection_pressure_parts": [
+        "9",
+        "4",
+        "-12"
+      ],
+      "material_actual": [
+        "3/2",
+        "-9*nu",
+        "27*nu**2 - 21/8"
+      ],
+      "material_reference": [
+        "3/2",
+        "-9*nu",
+        "27*nu**2 + 9/4"
+      ],
+      "material_difference": [
+        "0",
+        "0",
+        "-39/8"
+      ],
+      "transport_corrections": [
+        "-3",
+        "3/4"
+      ]
+    },
+    {
+      "m": 1,
+      "eulerian_actual": [
+        "3/2",
+        "-14*nu",
+        "200*nu**2/3 - 4793/2310"
+      ],
+      "eulerian_forecast": [
+        "3/2",
+        "-14*nu",
+        "200*nu**2/3"
+      ],
+      "eulerian_difference": [
+        "0",
+        "0",
+        "-4793/2310"
+      ],
+      "original_source_modes": 8,
+      "new_source_modes": 28,
+      "source_supports_disjoint": true,
+      "new_source_square": "74527/55440",
+      "old_source_return": "-189559/55440",
+      "thermal_cross": "0",
+      "convection_pressure_parts": [
+        "3373/385",
+        "208183/55440",
+        "-25807/2310"
+      ],
+      "material_actual": [
+        "3/2",
+        "-14*nu",
+        "200*nu**2/3 - 563/462"
+      ],
+      "material_reference": [
+        "3/2",
+        "-14*nu",
+        "200*nu**2/3 + 45/16"
+      ],
+      "material_difference": [
+        "0",
+        "0",
+        "-14899/3696"
+      ],
+      "transport_corrections": [
+        "-11/4",
+        "14669/18480"
+      ]
+    },
+    {
+      "m": 2,
+      "eulerian_actual": [
+        "21/22",
+        "-179*nu/11",
+        "4655*nu**2/33 + 21933/33880"
+      ],
+      "eulerian_forecast": [
+        "21/22",
+        "-179*nu/11",
+        "4655*nu**2/33"
+      ],
+      "eulerian_difference": [
+        "0",
+        "0",
+        "21933/33880"
+      ],
+      "original_source_modes": 8,
+      "new_source_modes": 28,
+      "source_supports_disjoint": true,
+      "new_source_square": "33821/12705",
+      "old_source_return": "-204769/101640",
+      "thermal_cross": "0",
+      "convection_pressure_parts": [
+        "283/35",
+        "34184/12705",
+        "-284/35"
+      ],
+      "material_actual": [
+        "21/22",
+        "-179*nu/11",
+        "4655*nu**2/33 + 12233/6776"
+      ],
+      "material_reference": [
+        "21/22",
+        "-179*nu/11",
+        "4655*nu**2/33 + 933/484"
+      ],
+      "material_difference": [
+        "0",
+        "0",
+        "-829/6776"
+      ],
+      "transport_corrections": [
+        "-215/121",
+        "141/140"
+      ]
+    },
+    {
+      "m": 4,
+      "eulerian_actual": [
+        "19/66",
+        "-1211*nu/99",
+        "78755*nu**2/297 + 309716579/747358920"
+      ],
+      "eulerian_forecast": [
+        "19/66",
+        "-1211*nu/99",
+        "78755*nu**2/297"
+      ],
+      "eulerian_difference": [
+        "0",
+        "0",
+        "309716579/747358920"
+      ],
+      "original_source_modes": 8,
+      "new_source_modes": 32,
+      "source_supports_disjoint": true,
+      "new_source_square": "2677845739/2522336355",
+      "old_source_return": "-13060418279/20178690840",
+      "thermal_cross": "0",
+      "convection_pressure_parts": [
+        "253153/85785",
+        "2634175156/2522336355",
+        "-8305036/2830905"
+      ],
+      "material_actual": [
+        "19/66",
+        "-1211*nu/99",
+        "78755*nu**2/297 + 319143317/448415352"
+      ],
+      "material_reference": [
+        "19/66",
+        "-1211*nu/99",
+        "78755*nu**2/297 + 6475/13068"
+      ],
+      "material_difference": [
+        "0",
+        "0",
+        "96960167/448415352"
+      ],
+      "transport_corrections": [
+        "-5579/9801",
+        "4201531/11323620"
+      ]
+    },
+    {
+      "m": 8,
+      "eulerian_actual": [
+        "201/2822",
+        "-13979*nu/1411",
+        "2946995*nu**2/4233 + 26424288654209/659937034454040"
+      ],
+      "eulerian_forecast": [
+        "201/2822",
+        "-13979*nu/1411",
+        "2946995*nu**2/4233"
+      ],
+      "eulerian_difference": [
+        "0",
+        "0",
+        "26424288654209/659937034454040"
+      ],
+      "original_source_modes": 8,
+      "new_source_modes": 32,
+      "source_supports_disjoint": true,
+      "new_source_square": "614673609166723/2722240267122915",
+      "old_source_return": "-4045387347744887/21777922136983320",
+      "thermal_cross": "0",
+      "convection_pressure_parts": [
+        "156404881/234793545",
+        "756901983974572/2722240267122915",
+        "-41999351692/58463592705"
+      ],
+      "material_actual": [
+        "201/2822",
+        "-13979*nu/1411",
+        "2946995*nu**2/4233 + 11302378812749/131987406890808"
+      ],
+      "material_reference": [
+        "201/2822",
+        "-13979*nu/1411",
+        "2946995*nu**2/4233 + 885393/7963684"
+      ],
+      "material_difference": [
+        "0",
+        "0",
+        "-3371825506417/131987406890808"
+      ],
+      "transport_corrections": [
+        "-283355/1990921",
+        "17945139523/233854370820"
+      ]
+    }
+  ],
+  "rebound": {
+    "d": "179/11",
+    "k": "21933/33880",
+    "c": "1102640/21933",
+    "normalized_time": "tau=c*mu, mu<=min(1,T0/c,k/(4*B*c))",
+    "physical_time": "t=c*nu/lambda^2, lambda>=nu/mu_star",
+    "physical_gain": "Q(t)-Q(0)>=(k*c^2/4)*nu^2*lambda^4",
+    "limitation": "T0 and B come from uniform local H14 theory; not numerically evaluated"
+  },
+  "scope": "Complete NS jets and algebra; short physical intervals and continuation consumer analytic",
+  "limitation": "No arbitrary-data payment, singularity construction, numerical PDE enclosure or new Lean certificate"
+}
