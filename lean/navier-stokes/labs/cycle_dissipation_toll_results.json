@@ -1,0 +1,218 @@
+{
+  "rigid": {
+    "horizontal_stabilizers": [
+      {
+        "rotation": [
+          [
+            -1,
+            0
+          ],
+          [
+            0,
+            -1
+          ]
+        ],
+        "determinant": 1,
+        "horizontal_shift_pi": [
+          0,
+          0
+        ],
+        "stream_sign": 1
+      },
+      {
+        "rotation": [
+          [
+            -1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "determinant": -1,
+        "horizontal_shift_pi": [
+          1,
+          1
+        ],
+        "stream_sign": -1
+      },
+      {
+        "rotation": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            -1
+          ]
+        ],
+        "determinant": -1,
+        "horizontal_shift_pi": [
+          1,
+          1
+        ],
+        "stream_sign": -1
+      },
+      {
+        "rotation": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "determinant": 1,
+        "horizontal_shift_pi": [
+          0,
+          0
+        ],
+        "stream_sign": 1
+      },
+      {
+        "rotation": [
+          [
+            0,
+            -1
+          ],
+          [
+            -1,
+            0
+          ]
+        ],
+        "determinant": -1,
+        "horizontal_shift_pi": [
+          1,
+          1
+        ],
+        "stream_sign": -1
+      },
+      {
+        "rotation": [
+          [
+            0,
+            -1
+          ],
+          [
+            1,
+            0
+          ]
+        ],
+        "determinant": 1,
+        "horizontal_shift_pi": [
+          0,
+          0
+        ],
+        "stream_sign": 1
+      },
+      {
+        "rotation": [
+          [
+            0,
+            1
+          ],
+          [
+            -1,
+            0
+          ]
+        ],
+        "determinant": 1,
+        "horizontal_shift_pi": [
+          0,
+          0
+        ],
+        "stream_sign": 1
+      },
+      {
+        "rotation": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ],
+        "determinant": -1,
+        "horizontal_shift_pi": [
+          1,
+          1
+        ],
+        "stream_sign": -1
+      }
+    ],
+    "vertical_signs": [
+      -1,
+      1
+    ],
+    "phase_gaps": [
+      {
+        "first": 0,
+        "second": 1,
+        "phase_gap_pi": "1/6"
+      },
+      {
+        "first": 0,
+        "second": 2,
+        "phase_gap_pi": "1/6"
+      },
+      {
+        "first": 1,
+        "second": 2,
+        "phase_gap_pi": "1/6"
+      }
+    ],
+    "scope": "Continuous translation separation and annular phase regularity are proved analytically."
+  },
+  "physical": {
+    "parent_norm_squared": 1,
+    "curl_test_norm_squared": 1,
+    "physical_cost": "integral ||curl u||infinity dt >= integral alpha dt >= S/2",
+    "retained_equation": "Full NS; the annular passive receiver and 3D perturbation are not Fourier truncations."
+  },
+  "costs": {
+    "horizon_upper": "2 S/A",
+    "reference_gradient_constant": "C_S=1+||grad w0||infinity^2 exp(2S)",
+    "fractional_loss_upper": "8 nu S (C_S+1)/A",
+    "physical_vorticity_lower": "S/2",
+    "logarithmic_energy_coefficient_lower": "A/[32 nu (C_S+1)]",
+    "hypotheses": "A>=2nu S; sqrt(Y0)exp(M/2)<=A/4; fractional upper<=1/2 for the logarithmic comparison."
+  },
+  "full_source_fixtures": [
+    {
+      "A": "7",
+      "epsilon": "1/100",
+      "phase": -1,
+      "nu": "2/7",
+      "full_energy": "12012449/245000",
+      "initial_H3_error_squared": "3/1000",
+      "parent_force": "-1/40000",
+      "parent_nonlinear_energy_rate": "-7/20000",
+      "remainder_nonlinear_energy_rate": "7/20000",
+      "generated_modes": 26
+    },
+    {
+      "A": "7",
+      "epsilon": "1/100",
+      "phase": 1,
+      "nu": "2/7",
+      "full_energy": "12012449/245000",
+      "initial_H3_error_squared": "3/1000",
+      "parent_force": "1/40000",
+      "parent_nonlinear_energy_rate": "7/20000",
+      "remainder_nonlinear_energy_rate": "-7/20000",
+      "generated_modes": 26
+    }
+  ],
+  "scope": "Analytic actual periodic NS cycles, not a return to the separate whole-space rigid-frame seed. The explicit Fourier fixtures test identities, not the small perturbation threshold. No full-datum allowance or signed-renewal budget is refuted.",
+  "source_sha256": {
+    "cycle_dissipation_toll.py": "e550274ba492029421b87fb200bf65cce672dc28312b75c88badbd426fa17144",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "reciprocal_pattern_cycles.py": "cf3e44749952fbd3542436424e63e4c0f2efbce2a36cfa514798e41f33a5f97b"
+  }
+}

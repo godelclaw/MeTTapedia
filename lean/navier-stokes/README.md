@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [actual-return energy test](labs/README.md#actual-pattern-returns-have-no-uniform-fractional-energy-toll)
+shows that genuine three-dimensional unforced pattern cycles can lose an
+arbitrarily small fraction of their initial kinetic energy while accumulating
+a fixed positive maximum-vorticity cost. The three patterns remain separated
+modulo every rigid motion of the fixed torus. Initial amplitude grows across
+this family; absolute energy loss need not vanish. A uniform fractional-energy
+charge per return therefore fails, while the existing parent-history reserve
+still pays these regular cycles. The analytic result retains the complete
+nonlinear perturbation and does not refute a full-datum allowance or the
+signed-renewal target.
+
 The [moving-frame escape bound](labs/README.md#generated-motion-forces-shape-change-even-in-a-moving-rigid-frame)
 extends the generated-packet test to a neighborhood of an entire translated
 and rotated whole-space shape family. The frame follows the actual fluid;

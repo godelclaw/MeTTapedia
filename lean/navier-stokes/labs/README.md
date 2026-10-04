@@ -46145,3 +46145,238 @@ fourth-moment rigid work and Laplacian commutation. That fixture is not
 a finite-energy fluid solution. The analytic arguments above supply the
 whole-space interpretation. The archive hashes all transitive local
 Python sources. No Lean declarations, axioms or numerical enclosures change.
+
+## Actual pattern returns have no uniform fractional-energy toll
+
+`cycle_dissipation_toll.py` tests a proposed way to pay repeated geometric
+returns: charge each complete loop a fixed positive fraction of kinetic
+energy, uniformly over amplitude for a fixed normalized pattern family.
+That rule fails on the actual globally regular, genuinely three-dimensional
+unforced periodic solutions of (121)--(131). For fixed positive viscosity,
+any prescribed finite number of their approximate whole-pattern cycles
+can occur while losing an arbitrarily small fraction of initial energy.
+Their accumulated maximum-vorticity integral nevertheless stays positive.
+
+These returns survive quotienting by all rigid motions of the fixed torus;
+they cannot be removed by merely changing the observing frame. The initial
+amplitude and energy grow in this construction, and its absolute energy
+loss need not become small. This is not an energy-normalized counterexample,
+an infinite cascade, or a failure of a full-datum continuation allowance.
+The argument uses the existing analytic full-PDE construction, with new
+symmetry and cost checks. It is not a new Lean certificate.
+
+### Quantifiers and the actual compatible history
+
+For every nu>0, H>0, integer N>=1 and loss tolerance 0<rho<1, there is
+a smooth mean-zero datum on the normalized period-2pi torus whose actual
+unforced NS solution is global and has genuine dependence on all three
+spatial coordinates. In a time T<=H it makes N distinguishable approximate
+A--B--C--A whole-pattern cycles modulo torus rigid motions, with
+
+    0 < [E(0)-E(T)]/E(0) <= rho,
+    integral_0^T ||curl u(t)||infinity dt >= N P0/2.    (CT1)
+
+Here E=||u||2^2, twice the physical kinetic energy, and P0 is the fixed
+cellular orbit period from (111). Each prescribed finite N has its own
+annular seed and accuracy. Once those are chosen, the normalized seed is
+fixed as the amplitude tends to infinity and the loss fraction tends to
+zero. No single datum is asserted to perform infinitely many cycles.
+
+Retain the actual reference U and original clock from (110)--(124):
+
+    v=(sin y,-sin x,0), psi=cos x+cos y,
+    U=(a sin y,-a sin x,A w), a=A exp(-nu t),
+    sigma=A(1-exp(-nu t))/nu, S=N P0,
+    T=t(S)=-log(1-nu S/A)/nu,
+    u=U+d,       D=sqrt(Y0)exp(M/2).                  (CT2)
+
+The perturbation d follows the complete nonlinear equation (122), not
+a prescribed force. Its initial field is (125), with nonzero epsilon
+and either sign s. The global stability theorem gives
+`||d(t)||H3<=D exp(-nu t/2)<=D`. Impose the additional bound D<=A/4,
+as well as the already required stability and tracking bounds (123)--(125).
+All are compatible by taking a sufficiently small NONZERO epsilon after
+choosing A. Its size may be extremely small; no amplitude-independent
+lower bound on this three-dimensional perturbation is claimed.
+
+The full source, including all newly generated modes, remains in d.
+In particular `F(0)=s epsilon^2/4` is a nonzero internal parent transfer.
+The original reference, amplitude and clock persist through all cycles.
+
+### The three states differ even after changing the rigid frame
+
+The comparison movie is (112), written with phase alpha:
+
+    W_alpha=(sin y,-sin x,
+             chi((psi-1)/delta) cos(theta-alpha)).
+
+Choose 0<delta<1/4 and the circle-valued phase theta by normalized flow
+time from the positive x-axis on the regular annulus `1/2<=psi<=3/2`.
+Let B be a finite bound for its gradient there. Quarter-turn rotations
+commute with the cellular flow and advance its phase by a quarter of
+the orbit period, with orientation determined by the flow. Thus they
+change theta by an integer multiple of pi/2 on the whole annulus.
+The bound B is independent of the narrower width delta.
+
+For a torus rigid motion define `g W(x)=R W(R^T(x-h))`, where
+`R in O(3,Z)` and h is a torus translation. If R maps the vertical
+axis to a horizontal one, gW is independent of x or y. The corresponding
+horizontal component of any W_alpha varies from -1 to 1 in that coordinate,
+so their supremum distance is at least one. Such a frame cannot identify
+nearby comparison states.
+
+Otherwise `R=diag(Q,zeta)` with `Q in O(2,Z)`, `zeta=+1 or -1`.
+Put d=det Q. The transformed horizontal field is
+
+    Q v(Q^T((x,y)-h_h))=d v((x,y)-h_h).               (CT3)
+
+There are eight planar signed permutation matrices Q. Horizontal equality
+requires h_h=(0,0) modulo periods if d=1, and h_h=(pi,pi) if d=-1.
+The latter branch sends psi to -psi. It moves the receiver from the
+positive cell to the negative one, so cannot preserve the full pattern.
+For d=1, the remaining exact horizontal stabilizers are the four quarter
+rotations and arbitrary vertical translation, with either vertical sign.
+Vertical translation has no effect on W_alpha. A negative vertical sign
+adds pi to the receiver phase, already a multiple of a quarter turn.
+
+This separation is quantitative and uniform in delta. Set
+
+    kappa=min(1/32, pi/[48(1+B)],
+                        [1-cos(pi/12)]/2)>0.          (CT4)
+
+Suppose two templates have supremum distance less than kappa after g.
+By the preceding argument R preserves the vertical axis. The horizontal
+sine differences then imply that h_h is within 4kappa of the corresponding
+exact horizontal stabilizer translation: each coordinate obeys
+`2|sin(h_j/2)|<kappa` after that translation has been removed.
+
+If d=-1, a point on the positive central orbit is mapped into the negative
+cell, even with this error. Its transformed receiver is zero. At a point
+where the original receiver equals one the error is therefore one,
+a contradiction. If d=1, evaluate at a central-orbit point with theta=alpha.
+Along the displacement the point stays in the larger regular annulus,
+and its phase error is at most `4B kappa<=pi/12`.
+
+Take the three phases `alpha=0,2pi/3,4pi/3`. Every distinct pair has
+angular separation at least pi/6 modulo all quarter rotations. The
+perturbed separation is consequently at least pi/12, after absorbing any
+vertical sign into the phase. Since `0<=chi<=1`,
+the transformed receiver at the chosen point is at most cos(pi/12),
+or zero if it has left the supported strip. Its error is at least
+`1-cos(pi/12)>=2kappa`, again a contradiction. Hence
+
+    inf_g ||W_alpha-g W_beta||infinity >= kappa
+       for distinct alpha,beta in {0,2pi/3,4pi/3}.    (CT5)
+
+Choose tracking accuracy eta<kappa/4 in (124), and first choose delta
+with `L_omega delta S<=eta/6`. The bounds on A from (114)--(115) then
+make the reference error at most eta/2, and (124) supplies the remaining
+eta/2. Sampling the actual u/A at `sigma=j P0/3` gives distinct successive
+states at orbit distance at least `kappa-2eta>kappa/2`; each full-period
+return is within 2eta of its earlier corresponding state. This proves
+actual approximate pattern loops, not exact recurrence of a dissipating
+velocity. The group is that of the fixed torus, not arbitrary SO(3)
+rotations or a spatial dilation.
+
+### The full energy loss during these returns
+
+Write `G0=||grad w0||infinity`. The actual parabolic estimate (116)
+holds with the finite parent-clock horizon S, without using the much
+larger all-time estimate exp(A/nu):
+
+    ||grad w(t)||infinity<=G0 exp(S),
+    Z(U(t))<=A^2 C_S,     C_S=1+G0^2 exp(2S),
+    Z(u(t))<=2A^2 C_S+2D^2,           0<=t<=T.        (CT6)
+
+The horizontal gradient has squared normalized L2 norm a^2. The full
+perturbation gradient is bounded by D; it has not been deleted from
+the loss. The initial perturbation has vertical frequencies +/-1 and
+is orthogonal to the z-independent U(0), so `E(0)>=A^2`.
+
+When A>=2nu S, the original clock gives `T<=2S/A`. Integrating the actual
+unforced energy equality `E'=-2nu Z` now yields
+
+    [E(0)-E(T)]/E(0)
+       <=(8nu S/A)(C_S+D^2/A^2)
+       <=8nu S(C_S+1)/A.                              (CT7)
+
+All of C_S, S and the comparison movie are fixed before raising A.
+Besides the existing tracking thresholds, choose
+
+    A>=max(2nu S, 2S/H, 8nu S(C_S+1)/rho).
+
+Then T<=H and the loss bound in (CT1) follows. The loss is strictly
+positive because the actual parent projection below is nonzero.
+No vanishing-viscosity limit is required: nu stays fixed and positive.
+The original energy grows with A, and (CT7) is only a fractional bound.
+
+### A nonvanishing physical continuation cost
+
+The actual parent coefficient is `alpha(t)=<u(t),v>`. Since ||v||2=1,
+`alpha>=a-D`. On this interval a>=A/2 and D<=A/4, so alpha>=a/2.
+The test curl v satisfies `||curl v||2=1` and `curl curl v=v`. Periodic
+integration by parts and normalized volume therefore give
+
+    alpha=<curl u,curl v>
+             <=||curl u||infinity ||curl v||1
+             <=||curl u||infinity.
+
+The SAME actual clock has d sigma/dt=a. Consequently
+
+    integral_0^T ||curl u||infinity dt
+       >=integral_0^T alpha dt>=S/2=N P0/2.            (CT8)
+
+The argument applies on each complete cycle as well. This quantity is
+the maximum-vorticity continuation cost, not a lower bound on positive
+signed stretching or its excess over viscous dissipation. Regular cyclic
+flows can accumulate this cost without approaching a singularity.
+
+For example, a proposed payment using only logarithmic energy decrease,
+`integral ||curl u||infinity<=C log(E(0)/E(T))`, cannot have a coefficient
+C independent of A for this fixed template and fixed viscosity. If the
+right side of (CT7) is at most 1/2, the elementary inequality
+`-log(1-r)<=2r` gives the necessary lower bound
+
+    C>=A/[32nu(C_S+1)].                               (CT9)
+
+A coefficient depending on the full initial datum remains possible.
+There is no assertion that every energy-dependent reserve is excluded.
+
+### What resource does pay this family?
+
+The reference parent stock is a/nu. Along its original clock it spends
+exactly S over the entire segment: `(A-a(T))/nu=S`, even though the
+fractional kinetic-energy loss tends to zero. Its initial size A/nu
+records the large original deformation capacity.
+
+The complete three-dimensional solution already has the corrected stock
+(129), including the perturbation energy B from (128):
+
+    R_parent=a/nu+|alpha-a|/nu+B/nu,
+    R_parent'+|alpha|<=0.
+
+That additional B pays reciprocal parent feedback from the same evolving
+fluid. No new clock or stock is assigned at a seam. Thus these loops
+have an established finite original-data payment. Equations (CT7)--(CT9)
+explain why a uniform fractional-energy rule misses that payment's size;
+they do not show that the loops are unpayable.
+
+This periodic family does not establish a return to the separate
+whole-space seed (RF1). Its purpose is to test a general proposed rule
+for charging geometric returns. A rule restricted to dangerous signed
+renewal may treat these regular loops differently. The unresolved tasks
+remain a bound on the full compatible return history and its connection
+to the arbitrary-data budgets (EP15)/(RW11), including concentration and
+parents outside a controlled reference neighborhood.
+
+Run `python3 -O labs/cycle_dissipation_toll.py`. The archive
+`cycle_dissipation_toll_results.json` checks all eight horizontal rigid
+stabilizers and their cell signs, three phase gaps, the full reference
+equation and pressure, the vorticity test, clock and loss algebra, and two
+complete genuinely three-dimensional Fourier source fixtures with opposite
+internal transfers at equal energy. Those explicit Fourier receivers test
+identities; they are not the annular data or assertions that the displayed
+fixture amplitudes meet the small perturbation threshold. The analytic
+argument supplies existence, phase coordinates, comparison and the actual
+integrated bounds. The archive hashes every transitive local Python source.
+No Lean declarations, axioms or numerical PDE enclosures change.
