@@ -1,0 +1,117 @@
+{
+  "classification": "CHECKED_SHARED_FORCED_CHAIN_AND_FAILURE_OF_INDEPENDENT_LOCAL_EXTENSION",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripCriticalChain",
+        "source_sha256": "475d03672a6fc7b3d52869d48177a3c0f1e4fcd7bf333410e297ed0d10587872",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.419,
+        "olean_bytes": 202936,
+        "olean_sha256": "13abb7b5e403027d8981aff1893eb62eb3eb27848a6107121c58ceadbf6588f9"
+      },
+      {
+        "module": "MettapediaFourColor.StripCriticalChainAudit",
+        "source_sha256": "034c034672a5561efc38c2da6da8e5ae9af67f3509039959a6476d47b2a98f64",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.268,
+        "olean_bytes": 2600,
+        "olean_sha256": "9fb466b606a5aeb9c98156728bfee7cb32d93e27512680305caf8b7b0553e7de"
+      }
+    ]
+  },
+  "proof_sources": [
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripCriticalChain.lean",
+      "bytes": 6027,
+      "sha256": "475d03672a6fc7b3d52869d48177a3c0f1e4fcd7bf333410e297ed0d10587872"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripCriticalChainAudit.lean",
+      "bytes": 2059,
+      "sha256": "034c034672a5561efc38c2da6da8e5ae9af67f3509039959a6476d47b2a98f64"
+    }
+  ],
+  "total_new_proof_source_bytes": 8086,
+  "frontend_wall_seconds_including_imports": 6.687,
+  "audit": {
+    "roots": 7,
+    "dependency_declarations": 3468,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false
+  },
+  "formal_results": [
+    "A pinned colour propagates through pair-valued proper-path constraints at arbitrary path length and for arbitrary colour type.",
+    "One chain argument rules out complete source extension for two proper eleven-port boundaries.",
+    "All sixteen single-core-deletion cases reconstruct from symbolic triangle joins.",
+    "Every nonempty core deletion has a genuine induced-source colouring fixing the full boundary.",
+    "Checking independent extension of all eight maximal proper core views does not imply complete extension."
+  ],
+  "finite_obligations_retained": {
+    "source_boundaries": 2,
+    "single_deletion_checks": 16,
+    "stored_interior_colourings": 0
+  },
+  "program_receipt": "strip-critical-chain-audit.json",
+  "program_only": {
+    "canonical_inputs": 7381,
+    "one_hole_or_complete": 5876,
+    "no_adjacent_singleton_conflict": 4912,
+    "forced_pair_5_7": 502,
+    "forced_pair_5_7_release": 502,
+    "all_forced_conflict_inputs": 964,
+    "one_query_release": 962,
+    "one_query_release_failures": [
+      "12322332332",
+      "12333223232"
+    ],
+    "conflict_preserving_closure_layers": [
+      1587,
+      2348,
+      3002,
+      3644,
+      4260,
+      4716,
+      4877,
+      4911,
+      4912
+    ],
+    "model": "A fresh adversarial noncrossing matching per query; choose at most two of its chords. Every single-switch prefix admits a source colouring with at most one hole. After release, every prefix also has no adjacent equal-singleton lists."
+  },
+  "limits": [
+    "The critical-boundary theorem concerns fixed boundary colours, not failure of Kempe repair.",
+    "Compatible witnesses remain sufficient for gluing; independent local existence is what fails.",
+    "Repair closure and its finite round bound are program evidence, not Lean theorems.",
+    "Successive partial witnesses need not be recolourings of one chosen interior witness.",
+    "The abstract game is not a prescribed physical exterior or a physical history bound.",
+    "No geometric supply, strict reduction, catalogue deletion or full-source repair certification is added."
+  ],
+  "regression": {
+    "classical": "lake build kernelStripCriticalChain kernelComplete",
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "passed": true
+  },
+  "new_catalogue_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0,
+  "whole_proof_kernel_savings_claimed": false
+}

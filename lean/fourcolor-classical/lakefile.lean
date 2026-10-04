@@ -1240,3 +1240,17 @@ target kernelStripChoiceBarrier pkg : Unit := do
         "KempeAnchorSelection", "StripChoiceBarrier", "StripChoiceEscape", "StripChoiceAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the shared forced-chain obstruction and exact proper restrictions. -/
+target kernelStripCriticalChain pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-critical-chain",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripCriticalChain", "StripCriticalChainAudit"]
+      cwd := pkg.dir
+      env := env }

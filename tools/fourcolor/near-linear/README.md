@@ -1,5 +1,52 @@
 # Near-linear Four Colour catalogue bridges
 
+## A shared forced chain in two minimal boundary obstructions
+
+[`StripCriticalChain`](../../../lean/fourcolor-classical/MettapediaFourColor/StripCriticalChain.lean)
+proves that each of the D0099 boundaries `12211121113` and `12333313331`
+extends after **any nonempty set of core vertices is deleted**, but neither
+extends to the complete source while its eleven boundary colours stay fixed.
+In particular, all eight seven-vertex views have actual colourings. Their
+independently chosen witnesses cannot be glued into a complete colouring.
+
+One shared argument explains the failure. A pinned colour propagates
+through a path to vertex 4. Together with the colour forced at vertex 0,
+it forces vertex 1, which then forces adjacent vertices 2 and 3 to agree.
+The path propagation lemma works for arbitrary length and colour type.
+The two source consumers use their decoded adjacency and boundary lists;
+the sixteen single-deletion cases reuse the symbolic triangle joins.
+No table of interior colouring witnesses is stored.
+
+This rules out local existence as a sufficient gluing criterion, even
+when every proper core restriction is checked. Composition with witnesses
+that agree on overlaps remains valid. The fixed-boundary obstruction does
+not prevent a repair that changes the boundary through the exterior.
+
+Replay with `lake build kernelStripCriticalChain`. The
+[kernel receipt](strip-critical-chain-measurements.json) records the
+seven-root dependency audit and checking cost. The
+[independent verifier](audit_strip_critical_chain.py) checks the two
+boundaries directly against the source graph and records a separate
+[program experiment](strip-critical-chain-audit.json):
+
+- All 502 one-hole inputs forcing core vertices 5 and 7 to the same colour
+  can remove every adjacent equal-singleton conflict using at most two
+  components of one retained matching. Every individual switch leaves
+  some source colouring with at most one hole.
+- Of all 964 one-hole inputs with such an adjacent conflict anywhere in
+  the core, 962 admit this one-query release. The other two remain explicit
+  exceptions to that assertion.
+- All 4,912 one-hole-or-complete inputs without such a conflict reach a
+  complete source colouring in the finite matching game without recreating
+  one. The successive closure layers finish after eight queries.
+
+These repair experiments are not Lean theorems. They allow a fresh
+adversarial noncrossing matching at each query and retain a common
+matching for the selected pair of components. Successive partial
+colourings need not form a physical history of one chosen interior
+witness. No full-source repair certificate, strict ambient reduction,
+geometric supply or catalogue deletion is added by this milestone.
+
 ## A choice-count obstruction and a composed escape
 
 [`StripChoiceBarrier`](../../../lean/fourcolor-classical/MettapediaFourColor/StripChoiceBarrier.lean)

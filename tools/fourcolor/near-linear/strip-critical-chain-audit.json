@@ -1,0 +1,52 @@
+{
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
+  "kernel_consumers": [
+    {
+      "word": "12211121113",
+      "single_deletions_extend": 8,
+      "full_extension": false
+    },
+    {
+      "word": "12333313331",
+      "single_deletions_extend": 8,
+      "full_extension": false
+    }
+  ],
+  "new_stored_colour_witness_bytes": 0,
+  "program_only_repair_test": {
+    "canonical_inputs": 7381,
+    "one_hole_or_complete": 5876,
+    "no_adjacent_singleton_conflict": 4912,
+    "forced_pair_5_7": 502,
+    "forced_pair_5_7_release": 502,
+    "all_forced_conflict_inputs": 964,
+    "one_query_release": 962,
+    "one_query_release_failures": [
+      "12322332332",
+      "12333223232"
+    ],
+    "conflict_preserving_closure_layers": [
+      1587,
+      2348,
+      3002,
+      3644,
+      4260,
+      4716,
+      4877,
+      4911,
+      4912
+    ],
+    "model": "A fresh adversarial noncrossing matching per query; choose at most two of its chords. Every single-switch prefix admits a source colouring with at most one hole. After release, every prefix also has no adjacent equal-singleton lists."
+  },
+  "limits": [
+    "The critical-boundary theorem concerns fixed boundary colours, not failure of Kempe repair.",
+    "Compatible witnesses remain sufficient for gluing; independent local existence is what fails.",
+    "Repair closure and its finite round bound are program evidence, not Lean theorems.",
+    "Successive partial witnesses need not be recolourings of one chosen interior witness.",
+    "The abstract game is not a prescribed physical exterior or a physical history bound.",
+    "No geometric supply, strict reduction, catalogue deletion or full-source repair certification is added."
+  ],
+  "verifier_sha256": "d1ab73bf979e26b60b620fef819851ed955f63527021c9c4ae7404f2102c4959"
+}
