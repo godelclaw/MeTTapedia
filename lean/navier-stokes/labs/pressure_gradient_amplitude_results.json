@@ -1,0 +1,681 @@
+{
+  "status": "All nine numerical prefixes completed; checks passed",
+  "checks": {
+    "status": "Physical operator and pressure checks passed",
+    "initial_operator_error": 3.688004131578608e-15,
+    "pressure_coefficient_error": 4.491585343689507e-17,
+    "pressure_cost_error": 2.6020852139652106e-17,
+    "exact_probe_cost": "9882799117/761264325360",
+    "exact_cost_outside_velocity_band": "1/206486",
+    "heat_error": 3.289549702593056e-16,
+    "heat_cost": 0.0,
+    "exact_pressure_difference_cost": "9882799117/761264325360",
+    "scope": "Exact Fourier reference with floating comparisons; no PDE enclosure"
+  },
+  "source_sha256": {
+    "pressure_gradient_amplitude.py": "54619f7475bb3bb81256be9c29b07e8421e177d13661174587cab188f08b6c9c",
+    "reciprocal_parent_history.py": "48add13ba5c6244a2c79a4f7070d1027480068088bddccf79d198578ef7cb913"
+  },
+  "runs": [
+    {
+      "label": "a2-n24",
+      "parameters": {
+        "n": 24,
+        "pressure_grid": 36,
+        "nu": 1.0,
+        "amplitude": 2.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.001953125,
+        "final": 8.0,
+        "stock": "116161/2333128050",
+        "stock_approx": 4.978766596201182e-05,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 8.0,
+        "cost": 4.9681024637355863e-05,
+        "cost_over_original_stock": 0.9978580774455802,
+        "pressure_gradient_rate": 1.9358891474672228e-24,
+        "energy": 3.817528391614915e-06,
+        "H1": 0.001953849653231518,
+        "numerical_tail_entry": true,
+        "numerical_tail_allowance": 2.46292548834267e-09,
+        "cost_plus_tail_over_stock": 0.997907546032644,
+        "energy_balance_error": 1.8835926596239005e-08,
+        "nonlinear_energy_work": 1.825526419297598e-27,
+        "divergence_L2sq": 2.8095818070870346e-57,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 3.481653917771518e-20,
+        "high_enstrophy_fraction": 5.707523257394004e-45
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 4.914671851335291e-05,
+          "cost_over_original_stock": 0.9871263808761802,
+          "H1": 4.543977486494615,
+          "high_enstrophy_fraction": 2.96551165058642e-11
+        },
+        {
+          "time": 0.5,
+          "cost": 4.967858692639809e-05,
+          "cost_over_original_stock": 0.9978091152998223,
+          "H1": 3.537632773921313,
+          "high_enstrophy_fraction": 2.409165322835596e-16
+        },
+        {
+          "time": 1.0,
+          "cost": 4.9681020597541014e-05,
+          "cost_over_original_stock": 0.9978579963047038,
+          "H1": 2.1450274405760563,
+          "high_enstrophy_fraction": 1.7391492695583113e-21
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.8836054493931442e-08,
+        "nonlinear_energy_work": 2.2204782719619253e-17,
+        "divergence_L2sq": 2.462139413222292e-35,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 3.5172563840034976e-20,
+        "high_enstrophy_fraction": 2.96551165058642e-11
+      },
+      "first_reported_numerical_tail_check": 7.25
+    },
+    {
+      "label": "a4-n24",
+      "parameters": {
+        "n": 24,
+        "pressure_grid": 36,
+        "nu": 1.0,
+        "amplitude": 4.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.001953125,
+        "final": 8.0,
+        "stock": "3717152/1166564025",
+        "stock_approx": 0.0031864106215687563,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 8.0,
+        "cost": 0.003149411097867966,
+        "cost_over_original_stock": 0.9883883378211391,
+        "pressure_gradient_rate": 4.344707056135454e-21,
+        "energy": 1.5094384498331459e-05,
+        "H1": 0.0038851492249645627,
+        "numerical_tail_entry": true,
+        "numerical_tail_allowance": 3.850503494155744e-08,
+        "cost_plus_tail_over_stock": 0.9884004219620471,
+        "energy_balance_error": 1.384980237162381e-07,
+        "nonlinear_energy_work": 1.614353439046003e-27,
+        "divergence_L2sq": 1.4197543490696559e-50,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 1.08449841964205e-19,
+        "high_enstrophy_fraction": 1.435604310597389e-45
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 0.0031160451043561665,
+          "cost_over_original_stock": 0.9779169964045792,
+          "H1": 9.050264753337009,
+          "high_enstrophy_fraction": 1.8158481266967097e-09
+        },
+        {
+          "time": 0.5,
+          "cost": 0.0031492601943392306,
+          "cost_over_original_stock": 0.9883409793521101,
+          "H1": 7.040594717252016,
+          "high_enstrophy_fraction": 1.876247103959754e-14
+        },
+        {
+          "time": 1.0,
+          "cost": 0.0031494068225110575,
+          "cost_over_original_stock": 0.988386996074134,
+          "H1": 4.265229425185129,
+          "high_enstrophy_fraction": 1.7247650747857072e-17
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.384983931984607e-07,
+        "nonlinear_energy_work": 4.4348003397921207e-16,
+        "divergence_L2sq": 4.300640895916593e-33,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 1.6659689229627364e-19,
+        "high_enstrophy_fraction": 1.8158481266967097e-09
+      },
+      "first_reported_numerical_tail_check": 6.5
+    },
+    {
+      "label": "a8-n24",
+      "parameters": {
+        "n": 24,
+        "pressure_grid": 36,
+        "nu": 1.0,
+        "amplitude": 8.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.001953125,
+        "final": 8.0,
+        "stock": "237897728/1166564025",
+        "stock_approx": 0.2039302797804004,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 8.0,
+        "cost": 0.1912054740927963,
+        "cost_over_original_stock": 0.937602176090247,
+        "pressure_gradient_rate": 2.2772426281176275e-21,
+        "energy": 5.788069473489001e-05,
+        "H1": 0.00760793630022261,
+        "numerical_tail_entry": true,
+        "numerical_tail_allowance": 5.661795453471762e-07,
+        "cost_plus_tail_over_stock": 0.9376049524290329,
+        "energy_balance_error": 1.5174327927525155e-06,
+        "nonlinear_energy_work": -3.0806733591929984e-27,
+        "divergence_L2sq": 6.759029101099412e-50,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 1.792003424334431e-18,
+        "high_enstrophy_fraction": 9.275540003637393e-47
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 0.18966424480847366,
+          "cost_over_original_stock": 0.9300445476400614,
+          "H1": 17.795905218161284,
+          "high_enstrophy_fraction": 9.514685457982804e-08
+        },
+        {
+          "time": 0.5,
+          "cost": 0.1911212789005076,
+          "cost_over_original_stock": 0.9371893134570991,
+          "H1": 13.781496004279264,
+          "high_enstrophy_fraction": 6.728244944623837e-11
+        },
+        {
+          "time": 1.0,
+          "cost": 0.19120228405674278,
+          "cost_over_original_stock": 0.9375865333124458,
+          "H1": 8.346225196435215,
+          "high_enstrophy_fraction": 1.697398403763976e-14
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.517433815934055e-06,
+        "nonlinear_energy_work": 1.4211060940556322e-15,
+        "divergence_L2sq": 5.914309819899036e-32,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 2.152456692032914e-18,
+        "high_enstrophy_fraction": 9.514685457982804e-08
+      },
+      "first_reported_numerical_tail_check": 6.5
+    },
+    {
+      "label": "a16-n24",
+      "parameters": {
+        "n": 24,
+        "pressure_grid": 36,
+        "nu": 1.0,
+        "amplitude": 16.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.001953125,
+        "final": 8.0,
+        "stock": "15225454592/1166564025",
+        "stock_approx": 13.051537905945626,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 8.0,
+        "cost": 10.449543603841182,
+        "cost_over_original_stock": 0.8006369578163577,
+        "pressure_gradient_rate": 2.088364797612718e-19,
+        "energy": 0.00019422620603153358,
+        "H1": 0.013936506269483041,
+        "numerical_tail_entry": true,
+        "numerical_tail_allowance": 6.375325493024238e-06,
+        "cost_plus_tail_over_stock": 0.8006374462894816,
+        "energy_balance_error": 1.8714313227974344e-05,
+        "nonlinear_energy_work": -2.743710678115019e-26,
+        "divergence_L2sq": 3.595987393630988e-51,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 2.64313658538735e-17,
+        "high_enstrophy_fraction": 2.7419169363733943e-45
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 10.16272278959378,
+          "cost_over_original_stock": 0.7786609411726225,
+          "H1": 33.03612945657458,
+          "high_enstrophy_fraction": 3.8065248835601235e-06
+        },
+        {
+          "time": 0.5,
+          "cost": 10.41109251362541,
+          "cost_over_original_stock": 0.7976908613108835,
+          "H1": 25.26376772360809,
+          "high_enstrophy_fraction": 1.9705114384008342e-08
+        },
+        {
+          "time": 1.0,
+          "cost": 10.449082708426165,
+          "cost_over_original_stock": 0.8006016443216311,
+          "H1": 15.28693616971633,
+          "high_enstrophy_fraction": 3.423744218435149e-11
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.871432186817401e-05,
+        "nonlinear_energy_work": 2.3080455394786246e-14,
+        "divergence_L2sq": 9.939787743471232e-31,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 2.810292600015454e-17,
+        "high_enstrophy_fraction": 3.8065248835601235e-06
+      },
+      "first_reported_numerical_tail_check": 7.0
+    },
+    {
+      "label": "a2-n24-half",
+      "parameters": {
+        "n": 24,
+        "pressure_grid": 36,
+        "nu": 1.0,
+        "amplitude": 2.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.0009765625,
+        "final": 1.0,
+        "stock": "116161/2333128050",
+        "stock_approx": 4.978766596201182e-05,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 1.0,
+        "cost": 4.9681019350701476e-05,
+        "cost_over_original_stock": 0.9978579712615628,
+        "pressure_gradient_rate": 3.301351179224222e-11,
+        "energy": 4.5977214651308005,
+        "H1": 2.1450274405065057,
+        "numerical_tail_entry": false,
+        "numerical_tail_allowance": 3577.81692255558,
+        "cost_plus_tail_over_stock": 71861512.34658173,
+        "energy_balance_error": 1.1776073449709656e-09,
+        "nonlinear_energy_work": -9.210190584890833e-19,
+        "divergence_L2sq": 6.114870439550375e-40,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 4.3462250467470756e-20,
+        "high_enstrophy_fraction": 1.739149274095625e-21
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 4.914671726740395e-05,
+          "cost_over_original_stock": 0.9871263558509268,
+          "H1": 4.543977486347292,
+          "high_enstrophy_fraction": 2.965511626902139e-11
+        },
+        {
+          "time": 0.5,
+          "cost": 4.9678585679560535e-05,
+          "cost_over_original_stock": 0.9978090902567212,
+          "H1": 3.5376327738066218,
+          "high_enstrophy_fraction": 2.4091653096505246e-16
+        },
+        {
+          "time": 1.0,
+          "cost": 4.9681019350701476e-05,
+          "cost_over_original_stock": 0.9978579712615628,
+          "H1": 2.1450274405065057,
+          "high_enstrophy_fraction": 1.739149274095625e-21
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.1776073449709656e-09,
+        "nonlinear_energy_work": 3.320008496135585e-17,
+        "divergence_L2sq": 1.8677207153452934e-34,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 4.3462250467470756e-20,
+        "high_enstrophy_fraction": 2.965511626902139e-11
+      },
+      "first_reported_numerical_tail_check": null
+    },
+    {
+      "label": "a2-n32",
+      "parameters": {
+        "n": 32,
+        "pressure_grid": 48,
+        "nu": 1.0,
+        "amplitude": 2.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.0009765625,
+        "final": 1.0,
+        "stock": "116161/2333128050",
+        "stock_approx": 4.978766596201182e-05,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 1.0,
+        "cost": 4.967938676432668e-05,
+        "cost_over_original_stock": 0.9978251802812416,
+        "pressure_gradient_rate": 3.3013142881103103e-11,
+        "energy": 4.597722609127795,
+        "H1": 2.145027707329698,
+        "numerical_tail_entry": false,
+        "numerical_tail_allowance": 3577.818702756042,
+        "cost_plus_tail_over_stock": 71861548.10240188,
+        "energy_balance_error": 1.1797247623235307e-09,
+        "nonlinear_energy_work": -1.5393396542049343e-18,
+        "divergence_L2sq": 4.769116081451156e-40,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 2.0361906170102838e-20,
+        "high_enstrophy_fraction": 6.791159056279672e-29
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 4.91450934371211e-05,
+          "cost_over_original_stock": 0.9870937407393028,
+          "H1": 4.543977945606115,
+          "high_enstrophy_fraction": 2.7779165193950116e-13
+        },
+        {
+          "time": 0.5,
+          "cost": 4.9676953108383555e-05,
+          "cost_over_original_stock": 0.9977762995816527,
+          "H1": 3.5376332138815667,
+          "high_enstrophy_fraction": 3.37193861641073e-20
+        },
+        {
+          "time": 1.0,
+          "cost": 4.967938676432668e-05,
+          "cost_over_original_stock": 0.9978251802812416,
+          "H1": 2.145027707329698,
+          "high_enstrophy_fraction": 6.791159056279672e-29
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.1797247623235307e-09,
+        "nonlinear_energy_work": 3.122502256758253e-17,
+        "divergence_L2sq": 3.8059032489537608e-34,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 3.863550463470861e-20,
+        "high_enstrophy_fraction": 2.7779165193950116e-13
+      },
+      "first_reported_numerical_tail_check": null
+    },
+    {
+      "label": "a16-n24-half",
+      "parameters": {
+        "n": 24,
+        "pressure_grid": 36,
+        "nu": 1.0,
+        "amplitude": 16.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.0009765625,
+        "final": 1.0,
+        "stock": "15225454592/1166564025",
+        "stock_approx": 13.051537905945626,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 1.0,
+        "cost": 10.449082408470296,
+        "cost_over_original_stock": 0.8006016213392154,
+        "pressure_gradient_rate": 0.003773585501818373,
+        "energy": 233.61614457933936,
+        "H1": 15.28693615485016,
+        "numerical_tail_entry": false,
+        "numerical_tail_allowance": 9229294.658794831,
+        "cost_plus_tail_over_stock": 707143.1102133053,
+        "energy_balance_error": 1.1711613296938594e-06,
+        "nonlinear_energy_work": 1.3677901975191615e-17,
+        "divergence_L2sq": 1.9595354979527254e-35,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 1.1595724915371379e-17,
+        "high_enstrophy_fraction": 3.423744500660846e-11
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 10.162722474391678,
+          "cost_over_original_stock": 0.7786609170220509,
+          "H1": 33.036129420945,
+          "high_enstrophy_fraction": 3.8065247676505315e-06
+        },
+        {
+          "time": 0.5,
+          "cost": 10.411092212200478,
+          "cost_over_original_stock": 0.7976908382159091,
+          "H1": 25.263767700626165,
+          "high_enstrophy_fraction": 1.970512085475634e-08
+        },
+        {
+          "time": 1.0,
+          "cost": 10.449082408470296,
+          "cost_over_original_stock": 0.8006016213392154,
+          "H1": 15.28693615485016,
+          "high_enstrophy_fraction": 3.423744500660846e-11
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.1711613296938594e-06,
+        "nonlinear_energy_work": 1.1368848752445057e-14,
+        "divergence_L2sq": 2.9286165845805955e-30,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 1.2672783942329787e-17,
+        "high_enstrophy_fraction": 3.8065247676505315e-06
+      },
+      "first_reported_numerical_tail_check": null
+    },
+    {
+      "label": "a16-n32",
+      "parameters": {
+        "n": 32,
+        "pressure_grid": 48,
+        "nu": 1.0,
+        "amplitude": 16.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.0009765625,
+        "final": 1.0,
+        "stock": "15225454592/1166564025",
+        "stock_approx": 13.051537905945626,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 1.0,
+        "cost": 10.425966950154434,
+        "cost_over_original_stock": 0.798830530569496,
+        "pressure_gradient_rate": 0.0037312715536012226,
+        "energy": 233.87137643460045,
+        "H1": 15.295256353737628,
+        "numerical_tail_entry": false,
+        "numerical_tail_allowance": 9249403.92865662,
+        "cost_plus_tail_over_stock": 708683.8670874182,
+        "energy_balance_error": 1.6714602679712698e-06,
+        "nonlinear_energy_work": -1.016464947693578e-16,
+        "divergence_L2sq": 3.7253201057080945e-35,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 9.39654175325463e-19,
+        "high_enstrophy_fraction": 1.2071707435992626e-14
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 10.141676594824025,
+          "cost_over_original_stock": 0.7770483959751583,
+          "H1": 33.050451510790616,
+          "high_enstrophy_fraction": 2.7148543900736468e-08
+        },
+        {
+          "time": 0.5,
+          "cost": 10.38832963630221,
+          "cost_over_original_stock": 0.7959467850581661,
+          "H1": 25.277195246897882,
+          "high_enstrophy_fraction": 5.23850705815781e-11
+        },
+        {
+          "time": 1.0,
+          "cost": 10.425966950154434,
+          "cost_over_original_stock": 0.798830530569496,
+          "H1": 15.295256353737628,
+          "high_enstrophy_fraction": 1.2071707435992626e-14
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.6714602679712698e-06,
+        "nonlinear_energy_work": 4.440892098500626e-15,
+        "divergence_L2sq": 8.934779608499123e-31,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 9.39654175325463e-19,
+        "high_enstrophy_fraction": 2.7148543900736468e-08
+      },
+      "first_reported_numerical_tail_check": null
+    },
+    {
+      "label": "a16-n40",
+      "parameters": {
+        "n": 40,
+        "pressure_grid": 60,
+        "nu": 1.0,
+        "amplitude": 16.0,
+        "weights": [
+          "1/4",
+          "1",
+          "1"
+        ],
+        "dt": 0.0009765625,
+        "final": 1.0,
+        "stock": "15225454592/1166564025",
+        "stock_approx": 13.051537905945626,
+        "scope": "Numerical Galerkin discovery only; no continuum or rounding enclosure"
+      },
+      "final": {
+        "time": 1.0,
+        "cost": 10.425956754079568,
+        "cost_over_original_stock": 0.7988297493531413,
+        "pressure_gradient_rate": 0.0037314228299190483,
+        "energy": 233.87109116943674,
+        "H1": 15.295247127757989,
+        "numerical_tail_entry": false,
+        "numerical_tail_allowance": 9249381.612002848,
+        "cost_plus_tail_over_stock": 708682.1571997306,
+        "energy_balance_error": 1.685686584096402e-06,
+        "nonlinear_energy_work": -6.486988723963805e-17,
+        "divergence_L2sq": 4.2842819281069684e-35,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 7.266473896137213e-17,
+        "high_enstrophy_fraction": 1.099795887321509e-17
+      },
+      "comparison_points": [
+        {
+          "time": 0.25,
+          "cost": 10.141653802449742,
+          "cost_over_original_stock": 0.7770466496388685,
+          "H1": 33.050436521877806,
+          "high_enstrophy_fraction": 3.588941061227272e-11
+        },
+        {
+          "time": 0.5,
+          "cost": 10.388317836072579,
+          "cost_over_original_stock": 0.7959458809325591,
+          "H1": 25.277181659174783,
+          "high_enstrophy_fraction": 3.412615133241998e-14
+        },
+        {
+          "time": 1.0,
+          "cost": 10.425956754079568,
+          "cost_over_original_stock": 0.7988297493531413,
+          "H1": 15.295247127757989,
+          "high_enstrophy_fraction": 1.099795887321509e-17
+        }
+      ],
+      "maxima_over_reported_samples": {
+        "energy_balance_error": 1.685686584096402e-06,
+        "nonlinear_energy_work": 4.325604033761987e-14,
+        "divergence_L2sq": 1.8246593387529042e-30,
+        "conjugacy_error": 0.0,
+        "mean_maximum": 7.322107728182771e-17,
+        "high_enstrophy_fraction": 3.588941061227272e-11
+      },
+      "first_reported_numerical_tail_check": null
+    }
+  ],
+  "refinements": [
+    {
+      "left": "a2-n24",
+      "right": "a2-n24-half",
+      "time": 1.0,
+      "left_ratio": 0.9978579963047038,
+      "right_ratio": 0.9978579712615628,
+      "absolute_ratio_change": 2.5043141005376413e-08,
+      "scope": "Difference of numerical approximations, not a continuum error bound"
+    },
+    {
+      "left": "a2-n24-half",
+      "right": "a2-n32",
+      "time": 1.0,
+      "left_ratio": 0.9978579712615628,
+      "right_ratio": 0.9978251802812416,
+      "absolute_ratio_change": 3.2790980321273366e-05,
+      "scope": "Difference of numerical approximations, not a continuum error bound"
+    },
+    {
+      "left": "a16-n24",
+      "right": "a16-n24-half",
+      "time": 1.0,
+      "left_ratio": 0.8006016443216311,
+      "right_ratio": 0.8006016213392154,
+      "absolute_ratio_change": 2.2982415637251563e-08,
+      "scope": "Difference of numerical approximations, not a continuum error bound"
+    },
+    {
+      "left": "a16-n24-half",
+      "right": "a16-n32",
+      "time": 1.0,
+      "left_ratio": 0.8006016213392154,
+      "right_ratio": 0.798830530569496,
+      "absolute_ratio_change": 0.0017710907697193745,
+      "scope": "Difference of numerical approximations, not a continuum error bound"
+    },
+    {
+      "left": "a16-n32",
+      "right": "a16-n40",
+      "time": 1.0,
+      "left_ratio": 0.798830530569496,
+      "right_ratio": 0.7988297493531413,
+      "absolute_ratio_change": 7.812163547171735e-07,
+      "scope": "Difference of numerical approximations, not a continuum error bound"
+    }
+  ],
+  "limitation": "Numerical discovery, not a validated PDE prefix or all-time certificate. GA2--GA4 and PG8 are analytic consumers requiring valid error bounds."
+}

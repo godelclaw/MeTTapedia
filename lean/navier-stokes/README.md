@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [finite-amplitude pressure-gradient test](labs/README.md#finite-amplitude-histories-of-the-joint-pressure-gradient-stock)
+retains the same original allowance while increasing the strength of the
+three interacting parents. A bounded numerical sweep preserves the observed
+saving through a computed tail-entry point, with separate grid/time checks
+of the early pressure-producing interval.
+An analytic comparison connects the pressure-cost error to the existing
+velocity-error and viscous-dissipation controls. The numerical prefixes are
+not yet continuum enclosures; arbitrary-data payment remains open.
+
 The [joint pressure-gradient stock](labs/README.md#whole-history-pressure-payment-depends-on-the-joint-parent-strengths)
 integrates through the entire viscous decay, including source creation and
 the return into the original parents. An initially favorable example later

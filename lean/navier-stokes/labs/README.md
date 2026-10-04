@@ -42211,3 +42211,155 @@ archive `pressure_gradient_stock_results.json` records the rational stocks
 and profile digests. The actual-flow remainder and payment (PG5)--(PG6)
 are analytic, not Lean-certified. No arbitrary-data bound or singularity
 is established, and no Lean declarations or axioms change.
+
+## Finite-amplitude histories of the joint pressure-gradient stock
+
+The preceding small-data theorem pays every prefix for the original shape
+`U=(sin(y)/4-4sin(z),sin(z),sin(x+4y))`. Its proposed extension is the same
+inequality at finite amplitude, with no reinitialization of the parents:
+
+```text
+u(0)=lambda U, nu=1,
+C_lambda(T)=integral_0^T ||grad p||2^2
+  <=K_lambda=lambda^6 alpha/16,
+alpha=116161/9332512200.                            (GA1)
+```
+
+Only sufficiently small lambda is covered by (PG6). Finite-amplitude
+calculations test this extension; they do not extend that analytic theorem
+by themselves. Even a counterexample to (GA1) would leave a larger joint
+allowance possible and would not constitute an NS singularity.
+
+### A complete pressure observation for the resolved velocity
+
+`pressure_gradient_amplitude.py` reuses the existing integrating-factor
+RK4 solver for all three velocity components. The velocity cutoff is
+`|k_j|<n/3`. Products use a grid of side `3n/2`, large enough to retain
+every quadratic output before projection or cropping. At each RK stage,
+the gradient part of minus the complete advection is the canonical
+pressure gradient. Its entire squared L2 norm contributes to the same
+accumulated cost, including pressure modes outside the velocity band.
+Only the projected velocity derivative is cropped back to that band.
+
+Independent exact Fourier calculations check the original NS derivative
+and a nonzero-pressure probe, including every pressure-gradient coefficient.
+The probe has a strictly positive cost `1/206486` outside the retained
+velocity band. A decaying shear has identically zero measured pressure
+cost and agrees with its exact heat evolution. Thus measuring only the
+retained pressure modes would omit a tested positive contribution.
+
+These are dealiased floating-point Galerkin evolutions. They retain all
+resolved nonlinear interactions, but not infinitely many velocity modes.
+Small energy-balance errors, spectral tails and grid agreement are useful
+diagnostics, not enclosures of continuum error.
+
+### A physical comparison for certifying this accumulated cost
+
+The existing actual-flow comparison can supply the missing error control
+without evolving the sixteen stochastic moment fields. Let v be a prescribed
+smooth mean-zero solenoidal reference and u the actual solution with the
+same original datum. Retain `w=u-v`, `X=||w||2`, `Y=||grad w||2`,
+`Z=||Delta w||2`, and bounds `V0>=||v||infinity`,
+`V1>=||grad v||infinity`. Both pressures are canonical pressures of their
+respective velocities. With Q the orthogonal gradient projection,
+
+```text
+grad(p_u-p_v)=-Q[v.grad w+w.grad v+w.grad w],
+||grad(p_u-p_v)||2
+ <=V0 Y+V1 X+13 Y^(3/2) Z^(1/2).                   (GA2)
+```
+
+The first identity retains both cross interactions and self interaction.
+The second uses the L2 contraction of Q and the normalized-torus Agmon
+bound (PG7). No future Lipschitz norm of the unknown actual flow appears.
+An independent finite Fourier fixture checks the full pressure identity
+and its nonzero orthogonal projection, using pressures calculated directly
+from the two velocities.
+
+Suppose a validated relative-vorticity comparison on an interval I of
+length h provides `X<=x`, `Y<=y`, and `integral_I Z^2<=D_I`, with the
+inherited endpoint errors included. Let V0,V1 now be interval bounds.
+Minkowski in space-time followed by Cauchy--Schwarz gives
+
+```text
+R_I=sqrt(h)(V0 y+V1 x)+13 y^(3/2) h^(1/4) D_I^(1/4),
+||grad(p_u-p_v)||_(L2(I;L2))<=R_I.                 (GA3)
+```
+
+In particular, the existing complete relative-enstrophy inequality gives
+`D_I<=[Y(t0)^2+2h F]/nu` whenever its full source is bounded by F on I.
+The inherited Y(t0) is not set to zero at composition seams. If the
+reference pressure cost on that interval is enclosed by `[q_I^-,q_I^+]`,
+the triangle and reverse triangle inequalities yield
+
+```text
+(max(0,sqrt(max(0,q_I^-))-R_I))^2
+ <=integral_I ||grad p_u||2^2
+ <=(sqrt(q_I^+)+R_I)^2.                           (GA4)
+```
+
+Summing the interval bounds retains all previously spent cost. An upper
+bound plus the actual endpoint estimate `||grad u(T)||2<=||grad v(T)||2+Y(T)`
+can feed (PG8), provided its entry and original-stock conditions are met.
+A lower bound exceeding K_lambda would instead certify failure of (GA1)
+on a finite actual prefix. All these inputs must come from validated
+reference/residual bounds; samples alone do not supply them.
+
+This is an analytic consumer of the existing velocity comparison, not a
+claim that a new finite-amplitude prefix has been certified. It connects
+the numerical pressure observation to a definite physical acceptance test.
+
+### Bounded amplitude sweep and refinement
+
+The following discovery runs use n=24, pressure grid36, timestep1/512,
+and final time8. The last column substitutes the numerical endpoint into
+the analytic tail expression (PG8); it is not a rigorous upper bound for
+the unknown actual solution.
+
+| lambda | C(8)/K_lambda | numerical H1(8) | [C(8)+169 H1(8)^4]/K_lambda |
+|---:|---:|---:|---:|
+| 2 | 0.9978580774 | 0.00195385 | 0.9979075460 |
+| 4 | 0.9883883378 | 0.00388515 | 0.9884004220 |
+| 8 | 0.9376021761 | 0.00760794 | 0.9376049524 |
+| 16 | 0.8006369578 | 0.01393651 | 0.8006374463 |
+
+Every computed endpoint lies below1/26, and each displayed total lies
+below its original stock. These tests therefore survive through a point
+where the separate analytic tail consumer could close an independently
+validated prefix. No new allowance is installed at that point.
+
+Spatial refinement matters more than timestep halving in the tested range.
+Here the observation is C(1)/K_lambda, at timestep1/1024 in every row:
+
+| lambda | n=24 | n=32 | n=40 |
+|---:|---:|---:|---:|
+| 2 | 0.9978579713 | 0.9978251803 | not run |
+| 16 | 0.8006016213 | 0.7988305306 | 0.7988297494 |
+
+At lambda16, the n=32 to n=40 change in this ratio is less than8e-7,
+while the remaining original allowance is approximately0.20117 of the
+stock. The finer grid retains more of the saving. Halving the timestep
+at n=24 changes the lambda16 ratio by less than1e-7. The lambda2 margin
+also survives its separate timestep and spatial refinements. These are
+agreement tests, not certified error estimates. Refinement stops at time1;
+the longer table above uses n=24. The archive explicitly distinguishes them.
+
+Reproduce the physical checks and a full discovery run with
+
+```sh
+python3 -O labs/pressure_gradient_amplitude.py
+python3 -O labs/pressure_gradient_amplitude.py --prefix --amplitude 16 --n 24 --dt .001953125 --final 8
+```
+
+For the two finer lambda16 prefixes use `--n 32` or `--n 40`,
+`--dt .0009765625 --final 1`. The archive
+`pressure_gradient_amplitude_results.json` records all nine parameter sets,
+endpoint observations, comparison times, diagnostics and refinement changes.
+Diagnostic maxima are maxima over reported samples, not continuous-time
+bounds. Exact operator fixtures and Python compilation pass.
+
+The sweep supplies finite-amplitude evidence for (GA1), not a proof of its
+extension. The next physical obligation is to enclose the reference cost,
+residual and inherited velocity errors so that (GA4) and (PG8) apply to an
+actual flow. Arbitrary geometries and arbitrary-data R3/T3 continuation
+remain open. No Lean declarations or axioms change.
