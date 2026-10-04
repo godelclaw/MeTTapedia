@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-turnover test](labs/README.md#isotropic-energy-does-not-prevent-rapid-pressure-turnover)
+constructs actual unforced data with the same initial pressure and isotropic
+energy tensor but opposite directional pressure-transfer rates. At fixed
+energy, concentration makes even a fixed-scale smoothed pressure change
+arbitrarily fast compared with kinetic dissipation. The leading distant
+parent is generated at second order in time. Its existing signed memory
+allowance still pays it; a bound on instantaneous turnover does not follow.
+The joint short-scale history remains open. These are analytic actual-flow
+arguments with exact symbolic checks, not new Lean certificates.
+
 The [pressure-channel payment](labs/README.md#coarse-pressure-is-paid-while-both-source-channels-can-increase-the-stock)
 bounds the complete pressure smoothed at any fixed spatial scale from the
 original kinetic energy. One remaining allowance pays both coarse source

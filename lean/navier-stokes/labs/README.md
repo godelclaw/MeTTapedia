@@ -49486,3 +49486,183 @@ source split, contracted kernel, reserve derivative, entire Gaussian work,
 absolute majorants, complete diffusion and finite-parameter margins.
 Kernel inequalities, spatial integration, actual local histories and
 concentration limits remain analytic. No Lean declarations or axioms change.
+
+## Isotropic energy does not prevent rapid pressure turnover
+
+`pressure_tensor_turnover.py` tests a possible history-control shortcut:
+that a bounded coarse pressure, or a vanishing initial energy anisotropy,
+has a rate controlled by energy and viscosity. Actual unforced flows refute
+this shortcut. Their known accumulated-parent allowance still works.
+The result concerns temporal regeneration, not merely a sign assigned to
+an independently specified pressure.
+
+### Reuse the actual stress and pressure evolution
+
+The [stress-transport calculation](#signed-pressure-redistribution-and-the-cost-of-following-a-region)
+already retains the pressure flux, trace-free redistribution, transport
+commutator and viscosity. With T_ij=u_i u_j and
+G_ij=sum_k partial_k u_i partial_k u_j, it gives
+
+```text
+(D_t-nu Delta)T_ij
+ =-u_i partial_j p-u_j partial_i p-2nu G_ij.
+P_L=(I-exp(L^2 Delta))partial_i partial_j(-Delta)^-1,
+(D_t-nu Delta)p_high
+ =P_L[-u tensor grad p-grad p tensor u-2nu G]
+     +[u.grad,P_L]T.                                 (TR1)
+```
+
+The repeated tensor indices in P_L are summed. Filtering commutes with
+the fixed linear derivatives, not with actual fluid transport. Equation
+(TR1) is a direct specialization of the existing identity, not a closed
+scalar equation for p_high. None of its terms is a freely chosen force.
+
+### Exact regeneration from isotropic initial energy
+
+Take the smooth whole-space axisymmetric datum
+
+```text
+chi=z exp(-rho^2), u_r=-r partial_z chi,
+u_z=2chi+r partial_r chi, u_theta=B r z exp(-rho^2).
+E_xx=E_yy=sqrt(2)pi^(3/2)(B^2+3)/64,
+E_zz=sqrt(2)pi^(3/2)/8.                              (TR2)
+```
+
+For B=sqrt(5), write this field as V. Its energy tensor is isotropic.
+Set delta=E_zz-(E_xx+E_yy)/2. Integrating the complete stress law yields
+
+```text
+delta'=3 int_R3 p partial_z u_z-2nu Z_delta,
+Z_delta=int |grad u_z|^2
+           -(int |grad u_x|^2+int |grad u_y|^2)/2.
+int p partial_z u_z=4sqrt(3)pi^(3/2)(12-B^2)/5103,
+Z_delta=sqrt(2)pi^(3/2)(45-7B^2)/64.                 (TR3)
+```
+
+The advective energy flux integrates to zero, and the checker verifies
+this directly on the Gaussian. It independently checks viscous integration
+by parts and pressure-force integration by parts. The pressure moment
+uses the entire canonical Poisson source, its three-dimensional heat
+evolution and an exact rational primitive after y=sqrt(3+8tau).
+
+Define the positive constants
+
+```text
+E_V=3sqrt(2)pi^(3/2)/8, Z_V=49sqrt(2)pi^(3/2)/16,
+C=4sqrt(3)pi^(3/2)/243, V_nu=5sqrt(2)pi^(3/2)/16.
+For u0=+a V: delta'(0)= C a^3-nu V_nu a^2.
+For u0=-a V: delta'(0)=-C a^3-nu V_nu a^2.
+a>=32nu ==> delta'_plus>=C a^3/2>0,
+             delta'_minus<-C a^3<0.
+E'_plus=E'_minus=-2nu a^2 Z_V<0.                     (TR4)
+```
+
+The two data have identical pressure everywhere, identical energy tensors,
+identical kinetic dissipation and delta(0)=0. Their full velocities differ.
+The pressure redistributes energy in opposite directions while viscosity
+reduces total energy in both cases. Classical local smooth existence and
+continuity turn these derivatives into actual nonzero intervals with
+opposite signs of delta. No common lower bound on those intervals is used.
+
+### Fixed energy does not pay an instantaneous turnover clock
+
+Keep nu>0 fixed and concentrate the data as
+`u0,lambda^+/-=+/-lambda^(3/2)V(lambda x)/sqrt(E_V)`. Both have energy one
+and an exactly isotropic energy tensor. Their complete initial rates are
+
+```text
+delta'_lambda^+/-
+ =+/-C lambda^(5/2)/E_V^(3/2)-nu V_nu lambda^2/E_V,
+Z_lambda=lambda^2 Z_V/E_V,
+delta'_lambda^+/(1+nu Z_lambda)
+ ~ [C/(nu Z_V sqrt(E_V))]sqrt(lambda) -> infinity.     (TR5)
+```
+
+Thus no finite constant depending only on energy and viscosity can bound
+this initial rate by 1+nu Z. The same conclusion permits a fixed horizon
+or fixed observer scales in that constant. It does not prohibit dependence
+on the full initial datum, whose higher norms grow under concentration.
+
+This fast turnover is visible even after smoothing at one fixed length
+L>0. Let K^L_ij=partial_i partial_j exp(L^2 Delta)N and observe at
+x_R=(0,0,R), R>0 fixed. The anisotropic response is
+
+```text
+kappa_L(R)=K^L_zz(x_R)-Delta(exp(L^2 Delta)N)(x_R)/3
+ =R^2/6 int_(L^2)^infinity tau^-2 G_tau(x_R) d tau >0,
+D_t p_low,lambda^+/- (0,x_R)
+ =+/-kappa_L(R) C lambda^(5/2)/E_V^(3/2)
+      +O(nu lambda^2+lambda^(3/2)).                  (TR6)
+```
+
+Here p_low is exactly the canonical pressure smoothed as in (PC2).
+To justify (TR6), use the complete initial tensor tangent:
+its nonlinear part is a^3 lambda times a fixed tensor in y=lambda x,
+and its viscous part is nu a^2 lambda^2 times another fixed tensor.
+Both have integrable first moments. The pressure gradient in the first
+tensor has algebraic decay, multiplied by the Gaussian initial velocity;
+it has not been dropped. Taylor expansion of the smooth kernel around
+x_R has errors O(lambda^(3/2)) and O(nu lambda), respectively. The
+integrated nonlinear tensor is trace free, with entries proportional to
+diag(-1,-1,2)/3 and coefficient C lambda^(5/2)/E_V^(3/2).
+The remaining integrated viscous tensor is O(nu lambda^2).
+Finally, u0,lambda(x_R) is exponentially small, while grad p_low is
+bounded by (PC2), so the actual material and Eulerian rates have the same
+leading term. This retains the receiver transport rather than assuming
+that smoothing commutes with it.
+
+The initial smoothed pressures of the two signs agree exactly; they are
+not asserted to vanish. A bounded coarse spatial observation can change
+very quickly in time. These are rates across distinct smooth data, not a
+proof of unbounded time-integrated absolute variation along one solution.
+
+### The generated parent remains covered by its signed allowance
+
+For either datum in (TR4), the retained memory has
+
+```text
+delta(t)=delta'(0)t+o(t),
+A(t)=int_0^t delta(s) ds=delta'(0)t^2/2+o(t^2).
+p_lead(t,x)=delta(t) partial_zz N(x),
+u_lead(t,x)=-A(t) grad(partial_zz N)(x).               (TR7)
+```
+
+The distant profile is identified by the previously used
+[Brandolese--Vigneron theorem](https://arxiv.org/html/0706.1489v1).
+The spatial asymptotic is taken at each fixed positive time; the displayed
+coefficient expansions then describe small time. No uniform interchange
+of a space-infinity limit and a time-zero limit is claimed. The initially
+absent leading anisotropic profile is generated internally, and its
+velocity coefficient begins at second order. The initial pressure itself
+is nonzero. No external forcing or prescribed tensor history is involved.
+
+This does not break the earlier parent payment. With c_tail>=0 denoting
+the fixed profile coefficient in (PT8), its reserve is
+
+```text
+B_tail=c_tail[(|A|+E0(H-t))^3-|A|^3],
+B_tail'+3c_tail |A| A delta
+ =3c_tail(|A|+E0(H-t))^2[sign(A)delta-E0] <=0          (TR8)
+```
+
+almost everywhere, using |delta|<=E0. No bound on delta' is needed.
+Likewise the existing fixed-direction signed-transfer allowance remains
+valid: `WholeSpaceCubicHistory.fixed_direction_signed_abs` certifies its
+endpoint implication, with the physical stress identification analytic.
+It bounds a signed time integral, not an instantaneous rate or total
+absolute variation. These distinctions matter when constructing a
+pressure-based correction: an absolute derivative clock can introduce an
+unpaid cost that the original signed memory avoids.
+
+The remaining arbitrary-history target is still the joint short-scale
+work (PC5). This test neither refutes its full-datum allowance nor proves
+that surrounding unforced fluid can sustain a forced singular construction.
+The next correction must retain the actual pressure together with its
+evolving receiver weight and be checked for coercivity and its full drift.
+
+Run `python3 -O labs/pressure_tensor_turnover.py`. Exact checks include the
+complete Gaussian sources, two independent integrations by parts, pressure
+moment, viscous tensor rates, finite-amplitude signs, concentration powers,
+coarse-kernel response and the retained Bellman payment. Local PDE history,
+kernel Taylor estimates and the inherited spatial asymptotics remain
+analytic. No Lean declarations or axioms change.

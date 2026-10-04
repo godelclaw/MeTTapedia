@@ -1,0 +1,37 @@
+{
+  "tensor": {
+    "pressure_strain": "4*sqrt(3)*pi**(3/2)*(12 - B**2)/5103",
+    "primitive": "-(y**4*(-48*B**2 - 432) + y**2*(112*B**2 + 2016) - 1008)/(21*y**11)",
+    "E_base": "3*sqrt(2)*pi**(3/2)/8",
+    "Z_base": "49*sqrt(2)*pi**(3/2)/16",
+    "C": "4*sqrt(3)*pi**(3/2)/243",
+    "V": "5*sqrt(2)*pi**(3/2)/16",
+    "rates": "delta_plus_prime=C*a^3-nu*V*a^2; delta_minus_prime=-C*a^3-nu*V*a^2",
+    "signs": "a>=32nu implies delta_plus_prime>=C*a^3/2>0 and delta_minus_prime<-C*a^3",
+    "kinetic": "E_plus_prime=E_minus_prime=-2nu*a^2*Z_base<0",
+    "scope": "Actual canonical pressure and full integrated unforced tangent; same initial energy tensor and pressure do not identify the signed rate."
+  },
+  "receiver": {
+    "fixed_receiver": "x_R=(0,0,R), R>0; L>0 fixed",
+    "response": "kappa_L(R)=R^2/6 * int_(L^2)^infinity tau^(-2)G_tau(x_R) d tau >0",
+    "material_rate": "D_t p_low,plus/minus(0,x_R)=+/-kappa_L(R)*C*lambda^(5/2)/E_base^(3/2)+O(nu*lambda^2+lambda^(3/2))",
+    "initial_equal": "The two initial pressures agree everywhere, including after smoothing; their material rates have opposite signs for sufficiently large lambda.",
+    "limitation": "The large rates occur across distinct smooth initial data. They do not establish large time-integrated absolute variation, infinite renewals or blowup."
+  },
+  "retained": {
+    "memory": "delta(t)=delta_prime(0)t+o(t); A(t)=delta_prime(0)t^2/2+o(t^2)",
+    "far_pressure": "p_lead=delta(t)*partial_zz N",
+    "far_velocity": "u_lead=-A(t)*grad(partial_zz N)",
+    "payment": "The PT8 reserve still pays this generated parent using |delta|<=E0. No derivative clock or new allowance is required.",
+    "open": "The joint short-scale pressure work in PC5 remains unpaid."
+  },
+  "source_sha256": {
+    "pressure_tensor_turnover.py": "bdeddcbf953dc2af648d63f7381d848a763a4d8734f7369426a655dff8cd7882",
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b",
+    "circulation_source_reserve.py": "12366fd5dc83962c0f7deb40ebc42939bfcfb4d4d01249b61aca79537a96d926",
+    "pressure_stress_transport.py": "6b648a756d6db3ed4a9cd17e5ed2cb607ceb98de6c3d0aaadb6fa5616d23328b",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42"
+  }
+}
