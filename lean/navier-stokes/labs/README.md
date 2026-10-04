@@ -40904,3 +40904,222 @@ splits and the scalar reserve derivative identity. No modes are discarded.
 These checks do not certify the analytic operator bounds, stochastic
 representation or global PDE argument in Lean. No new Lean declarations
 or axioms are used. The arbitrary-data 3D payment remains open.
+
+## Time reversal removes a derivative from the pressure-history bill
+
+`pressure_time_reversal.py` specializes the classical forward/backward
+martingale argument to the actual pressure impulse. The stochastic tool
+is reused from [Gräfner and Perkowski, Lemma 11 and its proof](https://arxiv.org/html/2407.09046v1#S2.SS1):
+under uniform spatial marginals, the two generators cancel their transport
+parts. We use smooth periodic drifts, give an explicit fourth-moment
+constant, and connect the estimate to the retained NS pressure history
+and its existing velocity-error comparison. This is an analytic
+specialization, not a new time-reversal theorem or a Lean certificate.
+
+### The same physical path, viewed in both directions
+
+Fix an available smooth periodic NS prefix [0,T], nu>0, and a smooth
+deterministic divergence-free sampling drift b. It may be the actual
+velocity u, or the zero drift used for comparison. Start X uniformly,
+`dX=b(t,X)dt+sqrt(2nu)dW`. Its spatial marginals remain uniform.
+For any smooth zero-mean scalar r(t,x), set
+
+```text
+chi=(-Delta)^(-1)grad r,     A=grad chi=Hess(-Delta)^(-1)r,
+P_r(T)=integral_0^T grad r(s,X_s)ds.
+```
+
+Reverse this SAME path: `Xhat_s=X_(T-s)`. Its reversed drift is
+`-b(T-s)`, in its reversed filtration. The two Ito drift terms are
+
+```text
+(partial_t+b.grad+nu Delta)chi,
+(-partial_t-b.grad+nu Delta)chi.
+```
+
+Their sum is `2nu Delta chi=-2nu grad r`; the endpoint increments also
+cancel. Consequently, with normalized martingales,
+
+```text
+M_+(T)=integral_0^T A(s,X_s)dW_s,
+M_-(T)=integral_0^T A(T-s,Xhat_s)dWhat_s,
+P_r(T)=[M_+(T)+M_-(T)]/sqrt(2nu).
+```
+
+Both time dependence and advection of r have been retained and canceled.
+The martingales are correlated, not independent. Reversal is a change of
+observation of the same forward solution; it is not an NS evolution with
+negative viscosity. This identity uses no assumed equation or favorable
+sign for r, so it applies to a changing internally generated pressure.
+
+### An explicit fourth-moment payment
+
+For any vector martingale `M=int sigma dW` starting at zero, Ito's formula
+gives
+
+```text
+(E|M|^4)' = E[2|M|^2||sigma||_F^2+4|sigma^T M|^2]
+          <=6(E|M|^4)^(1/2)(E||sigma||_F^4)^(1/2).
+```
+
+The difference in the integrands is exactly
+`4 sum_(k,i<j)(M_i sigma_jk-M_j sigma_ik)^2`. Integrate the scalar
+inequality for `sqrt(E|M|^4+epsilon)` and let epsilon decrease to zero:
+
+```text
+||M(T)||_4^2 <=3 integral_0^T ||sigma(s)||_(L4 probability)^2 ds.
+```
+
+Uniform marginals give the same deterministic spatial integral for each
+of M_+ and M_-. Minkowski, with no independence assumption, proves
+
+```text
+||P_r(T)||_(L4 probability)^2
+ <= (6/nu) integral_0^T ||Hess(-Delta)^(-1)r(s)||_(L4 space)^2 ds.  (TR)
+```
+
+This controls each endpoint moment, uniformly in T when the right side
+is bounded. It does not assert this particular constant for the expected
+pathwise supremum. Periodic Calderon-Zygmund bounds also give a fixed
+constant C_4 with `||Hess(-Delta)^(-1)r||_4<=C_4||r||_4`.
+Thus viscosity removes the spatial derivative from the former sufficient
+cost `integral||grad r||_4`. The time norm changes from L1 to L2, so
+neither estimate dominates the other in every regime.
+
+For r=p and b=u, (TR) feeds the actual continuation criterion (636):
+an original-data bound for its pressure-amplitude integral would bound
+Phi_u and hence velocity in L4. That amplitude integral remains an
+unknown-future quantity for arbitrary data. The identity alone does not
+pay it or exclude singularity. In particular, the sampling identity also
+holds for a forced velocity; only the subsequent unforced NS resource
+estimate could distinguish the two physical problems.
+
+### Retain one clock across every composition seam
+
+The source clock in (TR) is a single integral starting at the original
+time. For a fixed terminal T, all intermediate segments can use the same
+forward path and the same T-reversed path. Their stochastic integrals
+add to M_+ and M_- above. Bound the complete martingales once, instead
+of summing a fresh square-root allowance on every segment. This preserves
+the original impulse and does not presume independence across seams.
+
+In the preceding mean/fluctuation split, keep
+`r=p-p_v=p_R+p_perp` JOINTLY, including any cancellation between those
+two pressures. The parent reserve and (TR) then give
+
+```text
+||P_p(T)||_4+R_parent(T)
+ <=R_parent(0)+integral_0^T D_parent
+   +sqrt(6/nu) [integral_0^T ||Hess(-Delta)^(-1)(p-p_v)||_4^2]^(1/2).
+```
+
+This replaces the two separate gradient bills by one pressure-amplitude
+clock. Parent vorticity replenishment and the new joint clock remain
+unpaid. A finite original-data bound for those terms would be sufficient;
+the display is not such a bound.
+
+### A consumer for the existing full 3D velocity-error dissipation
+
+Return to (785): actual mean-zero u, prescribed smooth mean-zero solenoidal
+reference v, w=u-v, X=||w||2, Y=||grad w||2, Z=||Delta w||2,
+with `V0>=||v||infty` and `V1>=||grad v||infty`. Both canonical pressures
+are determined by their velocities. No NS equation for v is needed for
+the following spatial inequality. Define
+
+```text
+r=p_u-p_v,
+S=v tensor w+w tensor v+w tensor w,
+A_r=Hess(-Delta)^(-1)r.
+```
+
+The canonical pressure map from S to r and the Hessian Green map from r
+to A_r are homogeneous-H1 contractions, with Frobenius norms. This follows
+at each Fourier frequency from the unit Frobenius norm of
+`k tensor k/|k|^2`. A_r has zero mean. The existing Sobolev and Agmon
+bounds (786) therefore give
+
+```text
+||A_r||4 <=3||grad S||2
+         <=6[V0 Y+V1 X+C_A Y^(3/2) Z^(1/2)],   C_A=sqrt(26pi)<10.
+```
+
+Suppose the existing comparison has provided X<=x, Y<=y and
+`integral_0^T Z^2<=E(T)` for the SAME original error. Minkowski in time
+and Cauchy-Schwarz imply the new pressure-source error bound
+
+```text
+B_reverse(T)=6 sqrt(6/nu) [
+    (integral_0^T (V0 y+V1 x)^2)^(1/2)
+    +10 (integral_0^T y^6)^(1/4) E(T)^(1/4)],
+||integral_0^T grad(p_u-p_v)(s,X_u(s))ds||4 <= B_reverse(T).
+```
+
+The old bound (789) involves V2 and a Z^(3/2) spatial term; this one needs
+V0,V1 and Z^(1/2), at the price of the different time norm and viscosity
+factor. It leaves the trajectory comparison with the reference unchanged.
+Thus (794) improves to the valid selectable estimate
+
+```text
+Phi_u(T)^(1/4)
+ <=max(0,Phibar(T)+e4(T))^(1/4)
+   +min(B_old(T),B_reverse(T))+integral_0^T G1 dbar.
+```
+
+Finite validated velocity controls are still necessary. No finiteness is
+deduced from a comparison ODE whose solution ceases to be bounded.
+The checker can replay the new scalar bound against accepted interval
+records, accumulating the SAME original source integrals. It does not
+change a running solver or replace its original spatial enclosures.
+On the recorded reciprocal n=40, nu=1/4 history, none of the first 28
+accepted intervals prefers the new bound. At T=7/4 the old spatial
+pressure-error bound is 0.0002246547858 and the new one is
+0.0002584651607. The minimum therefore preserves the old result. These
+are outward scalar evaluations conditional on the original interval
+enclosures, not a new independent continuum validation. Removing a
+derivative does not guarantee smaller constants on a smooth finite prefix.
+
+### Checks that retain the correlation and changing source
+
+The exact Fourier checks include both signs of the planar and oblique
+sampling comparisons, coupled hidden parents, and initially hidden-only
+data. They retain the generated pressure-time derivative, every nonlinear
+output, and a symbolic viscosity. Both generator signs, the Poisson
+corrector and the pressure-error multiplier contraction are checked.
+
+A separate all-time benchmark uses the actual cellular NS solution
+
+```text
+u=e^(-nu t)(sin y,sin x,0),   p=e^(-2nu t)cos x cos y.
+```
+
+For its Brownian-only observer, exact heat covariance gives
+
+```text
+E|P_0(T)|^2=[1-(1+4nu T)e^(-4nu T)]/(16nu^2),
+E|M_+|^2=E|M_-|^2=[1-e^(-4nu T)]/(16nu),
+E[M_+.M_-]=-T e^(-4nu T)/4.
+```
+
+The last term is nonzero at every finite positive T. Replacing the two
+martingales by independent ones would give the wrong second moment.
+The exact spatial fourth norm is
+`integral|Hess(-Delta)^(-1)p(0)|_F^4=5/64`; (TR) consequently gives,
+for EITHER observer,
+
+```text
+E|P_b(T)|^4 <=45[1-e^(-4nu T)]^2/(256nu^4).
+```
+
+This benchmark checks normalization and correlation; its regularity is
+already known. Frequency dilation leaves the corrector norm unchanged
+while multiplying the gradient fourth norm by k^4. The checker verifies
+this at k=1,4,16. No new arbitrary-flow pressure payment is inferred.
+
+Run `python3 -O labs/pressure_time_reversal.py` for the exact checks,
+or `--replay accepted-history.jsonl` to evaluate the outward scalar bound
+on existing comparison records. The source archive is
+`pressure_time_reversal_results.json`. This development changes no Lean
+declarations or axioms. Time reversal, continuous stochastic estimates
+and the physical comparison remain analytic. The whole-space version
+requires a separate measure and integrability argument: there is no
+uniform probability measure on R3 to insert into this proof.

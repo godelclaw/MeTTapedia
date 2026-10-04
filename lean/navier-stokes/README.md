@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [time-reversal pressure estimate](labs/README.md#time-reversal-removes-a-derivative-from-the-pressure-history-bill)
+reuses the classical forward/backward martingale argument on the same
+incompressible stochastic history. It replaces a pressure-gradient cost
+by a pressure-amplitude clock, retaining the correlation of the two
+martingales and the full evolving source. Its full 3D comparison consumer
+needs fewer spatial derivatives of the velocity error. The clock's
+original-data payment remains open; the stochastic theorem and consumer
+are analytic, with exact algebraic checks, not new Lean certificates.
+
 The [interacting planar pressure reserve](labs/README.md#an-interacting-planar-reserve-pays-adverse-pressure-sampling)
 pays the entire stochastic pressure history of arbitrary smooth planar
 parents and passive vertical receivers, with no smallness assumption.

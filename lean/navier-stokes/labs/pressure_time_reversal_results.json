@@ -1,0 +1,287 @@
+{
+  "status": "All exact checks passed",
+  "generators": [
+    {
+      "fixture": "adverse planar",
+      "original_pressure_modes": 4,
+      "generated_pressure_modes": 16,
+      "residual_corrector_H1_squared": "0",
+      "stress_H1_squared": "0"
+    },
+    {
+      "fixture": "favorable planar",
+      "original_pressure_modes": 4,
+      "generated_pressure_modes": 16,
+      "residual_corrector_H1_squared": "0",
+      "stress_H1_squared": "0"
+    },
+    {
+      "fixture": "adverse oblique",
+      "original_pressure_modes": 0,
+      "generated_pressure_modes": 8,
+      "residual_corrector_H1_squared": "0",
+      "stress_H1_squared": "4717/32"
+    },
+    {
+      "fixture": "opposite oblique",
+      "original_pressure_modes": 0,
+      "generated_pressure_modes": 8,
+      "residual_corrector_H1_squared": "0",
+      "stress_H1_squared": "661/2"
+    },
+    {
+      "fixture": "coupled hidden parents",
+      "original_pressure_modes": 20,
+      "generated_pressure_modes": 72,
+      "residual_corrector_H1_squared": "26302/5775",
+      "stress_H1_squared": "1882/25"
+    },
+    {
+      "fixture": "initially hidden only",
+      "original_pressure_modes": 4,
+      "generated_pressure_modes": 12,
+      "residual_corrector_H1_squared": "9/5",
+      "stress_H1_squared": "30"
+    }
+  ],
+  "martingale": {
+    "ito_drift": "2|m|^2||sigma||_F^2+4|sigma^T m|^2 <=6|m|^2||sigma||_F^2",
+    "martingale_bound": "||M_T||_4^2 <= 3 integral ||sigma_t||_(L4 probability)^2 dt",
+    "pressure_bound": "||P_r(T)||_4^2 <= (6/nu) integral ||Hess(-Delta)^(-1)r||_4^2 dt",
+    "independence": "not assumed; the two martingales are on the same reversed path"
+  },
+  "cellular": {
+    "physical_flow": "u=e^(-nu t)(sin y,sin x,0), p=e^(-2nu t)cos x cos y",
+    "brownian_observer_second_moment": "(-(4*T*nu + 1)*exp(-4*T*nu) + 1)/(16*nu**2)",
+    "each_normalized_martingale_variance": "(1 - exp(-4*T*nu))/(16*nu)",
+    "martingale_cross_correlation": "-T*exp(-4*T*nu)/4",
+    "fourth_moment_bound_for_either_observer": "45*(1 - exp(4*T*nu))**2*exp(-8*T*nu)/(256*nu**4)",
+    "frequency": [
+      {
+        "k": 1,
+        "corrector_L4_fourth": "5/64",
+        "gradient_L4_fourth": "5/16"
+      },
+      {
+        "k": 4,
+        "corrector_L4_fourth": "5/64",
+        "gradient_L4_fourth": "80"
+      },
+      {
+        "k": 16,
+        "corrector_L4_fourth": "5/64",
+        "gradient_L4_fourth": "20480"
+      }
+    ]
+  },
+  "scope": "Exact algebra and Fourier checks; stochastic theorem and PDE consumer analytic",
+  "reciprocal_prefix_replay": {
+    "scope": "Outward scalar replay, conditional on the original spatial/velocity enclosures",
+    "config": {
+      "n": 40,
+      "nu": 0.25,
+      "dt": 0.0078125,
+      "h": 0.0625
+    },
+    "intervals": 28,
+    "improved_intervals": 0,
+    "reports": [
+      {
+        "time": 0.0625,
+        "new_spatial_upper": 1.258243226038662e-07,
+        "old_spatial_upper": 3.5337340971923664e-08,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 3.5337340971923664e-08
+      },
+      {
+        "time": 0.125,
+        "new_spatial_upper": 2.9102034304901806e-07,
+        "old_spatial_upper": 9.467703602553195e-08,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 9.467703602553195e-08
+      },
+      {
+        "time": 0.1875,
+        "new_spatial_upper": 5.113698643032426e-07,
+        "old_spatial_upper": 1.8214707236864461e-07,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 1.8214707236864461e-07
+      },
+      {
+        "time": 0.25,
+        "new_spatial_upper": 7.97072278082644e-07,
+        "old_spatial_upper": 3.058450772429598e-07,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 3.058450772429598e-07
+      },
+      {
+        "time": 0.3125,
+        "new_spatial_upper": 1.1640149456347702e-06,
+        "old_spatial_upper": 4.775037105185349e-07,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 4.775037105185349e-07
+      },
+      {
+        "time": 0.375,
+        "new_spatial_upper": 1.6340703497319733e-06,
+        "old_spatial_upper": 7.130655910558548e-07,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 7.130655910558548e-07
+      },
+      {
+        "time": 0.4375,
+        "new_spatial_upper": 2.235987320670449e-06,
+        "old_spatial_upper": 1.0336638226997924e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 1.0336638226997924e-06
+      },
+      {
+        "time": 0.5,
+        "new_spatial_upper": 3.0067071509919483e-06,
+        "old_spatial_upper": 1.4669260360651956e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 1.4669260360651956e-06
+      },
+      {
+        "time": 0.5625,
+        "new_spatial_upper": 3.992882393514169e-06,
+        "old_spatial_upper": 2.048513500255799e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 2.048513500255799e-06
+      },
+      {
+        "time": 0.625,
+        "new_spatial_upper": 5.252629101635342e-06,
+        "old_spatial_upper": 2.8239301988927908e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 2.8239301988927908e-06
+      },
+      {
+        "time": 0.6875,
+        "new_spatial_upper": 6.857553962588276e-06,
+        "old_spatial_upper": 3.850651023232941e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 3.850651023232941e-06
+      },
+      {
+        "time": 0.75,
+        "new_spatial_upper": 8.894778074686222e-06,
+        "old_spatial_upper": 5.200402927655272e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 5.200402927655272e-06
+      },
+      {
+        "time": 0.8125,
+        "new_spatial_upper": 1.1469110205285535e-05,
+        "old_spatial_upper": 6.961713497581575e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 6.961713497581575e-06
+      },
+      {
+        "time": 0.875,
+        "new_spatial_upper": 1.4705109204701995e-05,
+        "old_spatial_upper": 9.242578658825798e-06,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 9.242578658825798e-06
+      },
+      {
+        "time": 0.9375,
+        "new_spatial_upper": 1.8749279137002225e-05,
+        "old_spatial_upper": 1.2173401812340635e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 1.2173401812340635e-05
+      },
+      {
+        "time": 1.0,
+        "new_spatial_upper": 2.3772478989889553e-05,
+        "old_spatial_upper": 1.5910479799115794e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 1.5910479799115794e-05
+      },
+      {
+        "time": 1.0625,
+        "new_spatial_upper": 2.9970496621208566e-05,
+        "old_spatial_upper": 2.0637275251909772e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 2.0637275251909772e-05
+      },
+      {
+        "time": 1.125,
+        "new_spatial_upper": 3.756505998588355e-05,
+        "old_spatial_upper": 2.6567199427016894e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 2.6567199427016894e-05
+      },
+      {
+        "time": 1.1875,
+        "new_spatial_upper": 4.6804705854725e-05,
+        "old_spatial_upper": 3.3946045016447116e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 3.3946045016447116e-05
+      },
+      {
+        "time": 1.25,
+        "new_spatial_upper": 5.796555385017723e-05,
+        "old_spatial_upper": 4.3054459645393536e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 4.3054459645393536e-05
+      },
+      {
+        "time": 1.3125,
+        "new_spatial_upper": 7.135284197690087e-05,
+        "old_spatial_upper": 5.421126306807955e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 5.421126306807955e-05
+      },
+      {
+        "time": 1.375,
+        "new_spatial_upper": 8.730149028814829e-05,
+        "old_spatial_upper": 6.777544214709644e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 6.777544214709644e-05
+      },
+      {
+        "time": 1.4375,
+        "new_spatial_upper": 0.00010617473408927543,
+        "old_spatial_upper": 8.41468239448127e-05,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 8.41468239448127e-05
+      },
+      {
+        "time": 1.5,
+        "new_spatial_upper": 0.00012835795121510202,
+        "old_spatial_upper": 0.00010376271865966056,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 0.00010376271865966056
+      },
+      {
+        "time": 1.5625,
+        "new_spatial_upper": 0.00015425569597601505,
+        "old_spatial_upper": 0.00012709800499719582,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 0.00012709800499719582
+      },
+      {
+        "time": 1.625,
+        "new_spatial_upper": 0.00018428812264062176,
+        "old_spatial_upper": 0.00015466218409824212,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 0.00015466218409824212
+      },
+      {
+        "time": 1.6875,
+        "new_spatial_upper": 0.0002188815664645008,
+        "old_spatial_upper": 0.0001869927564415188,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 0.0001869927564415188
+      },
+      {
+        "time": 1.75,
+        "new_spatial_upper": 0.00025846516069815556,
+        "old_spatial_upper": 0.0002246547857728235,
+        "new_is_smaller": false,
+        "chosen_spatial_upper": 0.0002246547857728235
+      }
+    ]
+  }
+}
