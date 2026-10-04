@@ -6292,5 +6292,31 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_same_pair_experiment": {
+    "classification": "CHECKED_SINGLE_PAIR_TWO_SWITCH_REPAIR",
+    "report": "../near-linear/strip-six-same-pair-measurements.json",
+    "uniform_law": "On the stated port-six boundary form with colour two absent around port one, avoidance of ports four and ten by the one/two component through port six gives a two-switch reconstruction of the complete decoded D0099 source.",
+    "actual_consumer": "The law reconstructs a whole colouring of the existing 41-vertex spherical fixed-order obstruction.",
+    "new_boundary_repair_table_bytes": 0,
+    "new_spherical_fixture_bytes": 0,
+    "new_lean_source_bytes": 9630,
+    "audit": {
+      "roots": 6,
+      "transitive_dependency_declarations": 4221,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "remaining": [
+      "Geometric supply of the component-separation guard or a certified alternative.",
+      "The other port-six boundary form and other boundary domains.",
+      "Occurrence supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

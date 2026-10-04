@@ -1495,3 +1495,17 @@ target kernelStripSixDual pkg : Unit := do
         "DualDegreePattern", "StripSixDualExample", "StripSixDualAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the two-switch repair using a single colour pair. -/
+target kernelStripSixSamePair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-same-pair",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripSixSamePair", "StripSixSamePairExample", "StripSixSamePairAudit"]
+      cwd := pkg.dir
+      env := env }

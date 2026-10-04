@@ -1,5 +1,30 @@
 # Near-linear Four Colour catalogue bridges
 
+## Two switches of one pair repair the fixed-order obstruction
+
+[`StripSixSamePair.repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixSamePair.lean)
+handles the true port-six boundary form in any exterior. Colour two is absent
+around port one. The actual one/two component through port six must avoid
+ports four and ten. The theorem switches the singleton at port one, transports
+the retained component through that switch, and switches it. One fixed
+core colouring then reconstructs the complete decoded D0099 source. There
+is no bound on exterior or component size.
+
+[`StripSixSamePairExample.reconstructed`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixSamePairExample.lean)
+uses this law on the existing 41-vertex sphere. Its selected component is
+the chain through ports six, seven and eight. The source witness and the
+changed exterior glue to a whole colouring. This is the same example on
+which every zero/one phase followed by a one/three phase fails. The new
+consumer depends on neither the silent-detachment repair nor a complete
+Four Colour theorem.
+
+Replay `lake build kernelStripSixSamePair`. The
+[receipt](strip-six-same-pair-measurements.json) records the six-root audit,
+replay cost and remaining hypotheses. No new graph fixture or repair table
+is introduced. This establishes another uniform conditional repair, not
+geometric supply of its guard, strict reduction or universal coverage.
+Catalogue and original-certificate counts remain 633 and 629.
+
 ## An alternative piece in the fixed-order obstruction
 
 [`DualDegreePattern`](../../../lean/fourcolor-classical/MettapediaFourColor/DualDegreePattern.lean)

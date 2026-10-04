@@ -1,0 +1,66 @@
+{
+  "classification": "CHECKED_SINGLE_PAIR_TWO_SWITCH_REPAIR",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSixSamePair",
+      "source_sha256": "5a4976f9d1913416a191946b7dea8d81e5cb29552ca371f4df1ce66b8e48aa8f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.356,
+      "olean_bytes": 484728,
+      "olean_sha256": "a24cb1089712ccf4434e053d6069ea3b21153539b541b7243499125ef653dcc4"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixSamePairExample",
+      "source_sha256": "6e3f8c7cb9422e1bff1c30762f4201ba730bb4204e66b9d096d9aae156697f1c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.279,
+      "olean_bytes": 68176,
+      "olean_sha256": "dc7d04f74663afa60971cfc7a6ddc1da12f7e1372df85654693c057b9fd54e2b"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixSamePairAudit",
+      "source_sha256": "d1b191ba0c24ac65815df3d73570d59a296d252dae475a16d255316f71f48f88",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.737,
+      "olean_bytes": 2600,
+      "olean_sha256": "1c0f9264922e4896775b38bd258fcbdfa5960c296891651ccf5820642bd17c14"
+    }
+  ],
+  "frontend_wall_seconds_total": 11.372,
+  "timing_scope": "Three new modules with dependencies already built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 9630,
+  "new_boundary_repair_table_bytes": 0,
+  "new_spherical_fixture_bytes": 0,
+  "audit": {
+    "roots": 6,
+    "transitive_dependency_declarations": 4221,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "On the true port-six boundary form, missing colour two at port one makes it a one/two singleton component.",
+    "On the stated port-six boundary form with colour two absent around port one, avoidance of ports four and ten by the one/two component through port six gives a two-switch reconstruction of the complete decoded D0099 source.",
+    "The retained component is transported through the singleton switch by preservation of the bicoloured vertex set.",
+    "The exterior and component sizes are unrestricted.",
+    "The law reconstructs a whole colouring of the existing 41-vertex spherical fixed-order obstruction."
+  ],
+  "remaining": [
+    "Geometric supply of the component-separation guard or a certified alternative.",
+    "The other port-six boundary form and other boundary domains.",
+    "Occurrence supply, strict reduction, compact coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripSixSamePair kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ]
+}
