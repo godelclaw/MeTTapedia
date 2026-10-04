@@ -1523,3 +1523,18 @@ target kernelStripSixMixed pkg : Unit := do
         "StripSixMixedExample", "StripSixMixedAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay a geometric choice between complementary repair pairs. -/
+target kernelStripComplementary pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-complementary",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripComplementaryGeometry", "StripComplementaryRepair",
+        "StripComplementaryExample", "StripComplementaryAudit"]
+      cwd := pkg.dir
+      env := env }

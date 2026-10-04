@@ -6347,5 +6347,38 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_complementary_geometric_supply": {
+    "status": "checked_geometric_supply_for_one_boundary_pattern",
+    "theorem": "FourColor.StripComplementaryGeometry.repair",
+    "boundary": [
+      0,
+      1,
+      3,
+      0,
+      2,
+      3,
+      1,
+      2,
+      1,
+      3,
+      1
+    ],
+    "contribution": "Actual planar geometry supplies one of two complementary Kempe repair choices, without assuming the selected component avoids the protected ports. Two consumers reconstruct whole colourings.",
+    "generality": "Arbitrary exterior and component sizes under the stated source, rotation, connectedness, Euler and boundary hypotheses.",
+    "core_formula_checks": {
+      "zero_one_boolean_cases": 4,
+      "two_three_boolean_cases": 4
+    },
+    "new_graph_fixture_bytes": 0,
+    "new_boundary_repair_table_bytes": 0,
+    "counts_changed": false,
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "remaining": [
+      "Supply of the boundary pattern in the original difficult branch.",
+      "Strict reduction, recognition, compact coverage and termination."
+    ],
+    "measurements": "../near-linear/strip-complementary-measurements.json"
   }
 }

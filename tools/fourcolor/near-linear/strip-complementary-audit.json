@@ -1,0 +1,35 @@
+{
+  "classification": "GEOMETRIC_COMPLEMENTARY_REPAIR_CONSUMERS",
+  "reused_fixture_sha256": "c44112475ac910c88455d54f51d273679ed84d8a0443e0c99e96750d3b182e1c",
+  "lean_source_sha256": "a667458918801f6c40629d72f0b911e3d670ceffaf8a68d1a2a0b29b46f08675",
+  "verifier_sha256": "6793dd054b8de07285740b0cd134d612f7be1a5f9b65007c1b1ddae5f2b95475",
+  "whole_vertices": 41,
+  "new_graph_fixture_bytes": 0,
+  "cases": [
+    {
+      "joined": false,
+      "pair": [
+        0,
+        1
+      ],
+      "component_size": 5,
+      "boundary_support": [
+        6
+      ],
+      "whole_colouring_reconstructed": true
+    },
+    {
+      "joined": true,
+      "pair": [
+        2,
+        3
+      ],
+      "component_size": 7,
+      "boundary_support": [
+        7
+      ],
+      "whole_colouring_reconstructed": true
+    }
+  ],
+  "scope": "Two consumers independently checked. The universal theorem for this boundary pattern is established separately in Lean; global coverage is open."
+}

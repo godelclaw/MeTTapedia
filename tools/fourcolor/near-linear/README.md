@@ -1,5 +1,36 @@
 # Near-linear Four Colour catalogue bridges
 
+## Geometry supplies a complementary repair choice
+
+[`StripComplementaryGeometry.repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripComplementaryRepair.lean)
+proves that the D0099 boundary word `0,1,3,0,2,3,1,2,1,3,1` can be repaired
+by one physical Kempe switch in every exterior satisfying the stated
+spherical embedding hypotheses. No component-separation condition is
+assumed. Exterior and component sizes are unrestricted.
+
+The argument compares the zero/one components at ports six and eight.
+If they differ, one avoids port one and its switch permits extension.
+If they agree, their path closes through the three-port ear. Two actual
+facial sides and the sphere's face-potential theorem then separate ports
+seven and nine for the complementary two/three pair. That component switch
+permits extension. The core formulas retain the shared choices of any
+other boundary ports in the switched component.
+
+[`StripComplementaryExample`](../../../lean/fourcolor-classical/MettapediaFourColor/StripComplementaryExample.lean)
+uses two proper colourings of the existing 41-vertex sphere to exercise
+both cases and reconstruct whole colourings. The proof reuses the graph
+fixture; it adds no repair-history table. The
+[receipt](strip-complementary-measurements.json) records the eleven-root
+audit and replay cost.
+
+This is geometric supply of a repair for a specified boundary pattern.
+Supply of that pattern from the original difficult joint branch remains
+open. No new strict reduction or catalogue removal is claimed; counts
+remain 633 coverage entries and 629 original certificates.
+
+Replay `lake build kernelStripComplementary` and, from the repository root,
+`python3 tools/fourcolor/near-linear/audit_strip_complementary.py`.
+
 ## A sphere requiring a change of colour pair
 
 [`StripSixMixedExample`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixMixedExample.lean)

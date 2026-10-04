@@ -1,0 +1,89 @@
+{
+  "classification": "GEOMETRIC_REPAIR_SUPPLY_FOR_ONE_BOUNDARY_PATTERN",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripComplementaryGeometry",
+      "source_sha256": "660ce5f58675383106c8c61995b9f9f05f2681135fd6e8c1ab328e885815573d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 13.467,
+      "olean_bytes": 340568,
+      "olean_sha256": "a253a698d48787135091d2c5c7309a62210c5a690c170074d0344fc72046b1f5"
+    },
+    {
+      "module": "MettapediaFourColor.StripComplementaryRepair",
+      "source_sha256": "112795b94ca959a1e5186ef8f6b86ef623bbe61a16e2ab3e3e6295fe13b3559f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.693,
+      "olean_bytes": 654760,
+      "olean_sha256": "4cc8d6265aa3bfa837d7c3311591773fb5fb84ee901a55f87b32dd95076a22f4"
+    },
+    {
+      "module": "MettapediaFourColor.StripComplementaryExample",
+      "source_sha256": "a667458918801f6c40629d72f0b911e3d670ceffaf8a68d1a2a0b29b46f08675",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.266,
+      "olean_bytes": 308880,
+      "olean_sha256": "44cd77f46ba9d630bacdbe9088894c6a16fb97a383dd53cd45853d4ea24c8b2f"
+    },
+    {
+      "module": "MettapediaFourColor.StripComplementaryAudit",
+      "source_sha256": "5e62dbf566632a5f5c3dc2859f5541e7c9ac076cf6cb15683815b5a40ea311f8",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.132,
+      "olean_bytes": 2608,
+      "olean_sha256": "203bc57257f1ad43164efd7955af300f67d9b764e765ec83ce2a1e081869bbee"
+    }
+  ],
+  "frontend_wall_seconds_total": 32.558,
+  "timing_scope": "Four new modules, with dependencies already built. No whole-proof speedup claimed.",
+  "new_lean_source_bytes": 24754,
+  "new_graph_fixture_bytes": 0,
+  "new_boundary_repair_table_bytes": 0,
+  "audit": {
+    "roots": 11,
+    "transitive_dependency_declarations": 20578,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "boundary": [
+    0,
+    1,
+    3,
+    0,
+    2,
+    3,
+    1,
+    2,
+    1,
+    3,
+    1
+  ],
+  "proved": [
+    "For the stated D0099 boundary and actual embedded patch in a connected cellular sphere, some single physical Kempe switch permits complete source reconstruction.",
+    "If the zero/one components at ports six and eight differ, one avoids port one and repairs using either of two core formulas.",
+    "If those components agree, an actual exterior path and two checked facial sides force separation of ports seven and nine for the complementary two/three pair.",
+    "The geometric consumer assumes no Kempe-component separation; component and exterior sizes are unrestricted.",
+    "Two proper colourings of an existing 41-vertex sphere inhabit both branches and reconstruct whole colourings through the shared theorem."
+  ],
+  "scope_limits": [
+    "The exact boundary word and source embedding are hypotheses. Geometric supply of this word from the original difficult joint branch has not been proved.",
+    "No strict graph reduction, universal catalogue coverage, or termination theorem is added.",
+    "The source core formulas retain four Boolean cases for each pair, verified in Lean; no repair-history table is generated."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripComplementary kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_complementary.py"
+  ],
+  "program_receipt": "strip-complementary-audit.json"
+}
