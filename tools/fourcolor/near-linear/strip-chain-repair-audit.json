@@ -2,7 +2,7 @@
   "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
   "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
   "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
-  "lean_source_sha256": "e76884e644bd965133a7cc281349f00bdcbaa545227f0e21c6352f84e2591ae3",
+  "lean_source_sha256": "2d99fba1a6fa59c8f9070fceb2c82b82fb3ead23a8c0d5a75cb8d9ffa825e876",
   "stages": [
     {
       "index": 0,
@@ -174,6 +174,66 @@
       ]
     }
   ],
+  "balanced_selection": {
+    "consumers": [
+      {
+        "stage": 0,
+        "active_ports": 10,
+        "block_ports": 5,
+        "ear_contracts": 4,
+        "nested_batch_size": 1
+      },
+      {
+        "stage": 1,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 2
+      },
+      {
+        "stage": 2,
+        "active_ports": 6,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "nested_batch_size": 1
+      },
+      {
+        "stage": 3,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 2
+      },
+      {
+        "stage": 4,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 2
+      },
+      {
+        "stage": 8,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 1
+      },
+      {
+        "stage": 9,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 1
+      }
+    ],
+    "residual_stages": [
+      5,
+      6,
+      7,
+      10
+    ],
+    "abstract_matchings_tested_through_16_ports": 2055
+  },
   "totals": {
     "stages": 11,
     "single_contracts": 40,
@@ -188,5 +248,5 @@
     "No physical recolouring-history or runtime bound is claimed.",
     "No geometric supply, strict graph reduction or catalogue removal is added."
   ],
-  "verifier_sha256": "631077d1e771d30a294340fdc0ca978b6d0e9f3472752a5daa5d42d394626a74"
+  "verifier_sha256": "14681d44e3f05581f8e4146b68ca230c527c0897b82bb7ebd397f6d674c236ad"
 }

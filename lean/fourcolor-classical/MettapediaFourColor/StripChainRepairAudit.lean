@@ -6,6 +6,11 @@ open Lean Elab Command FourColor
 run_cmd do
   let env ← getEnv
   let contracts : List (Name × List Name) := [
+    (``KempeBalancedBlock.ear_or_nested, [``StrictMono.eq_id,
+      ``Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching.exists_adjacent_within]),
+    (``KempeBalancedBlock.noncross_of_cyclic, [``KempeBalancedBlock.crossing_iff_cyclic]),
+    (``KempeBalancedBlock.coclosure, [``KempeBalancedBlock.ear_or_nested,
+      ``KempeChromogramMatching.recover_stable]),
     (``KempeAnchorSelection.coclosure, [``KempeChromogramMatching.recover_stable,
       ``KempeRetainedMatching.possible_of_mate, ``KempeAnchorSelection.feasible_mate]),
     (``StripChainRepair.checked, [``KempeIntervalMatching.possible]),
@@ -13,7 +18,11 @@ run_cmd do
       ``StripChainRepair.selected_sound]),
     (``StripChainRepair.one_ready, [``StripSymbolicRepair.Direct]),
     (``StripChainRepair.two_ready, [``StripSymbolicRepair.Direct]),
-    (``StripChainRepair.stages, [``KempeAnchorSelection.coclosure,
+    (``StripChainRepair.coordinates, [``StripChainRepair.positions]),
+    (``StripChainRepair.coordinate_order, [``KempeBalancedBlock.noncross_of_cyclic]),
+    (``StripChainRepair.ear_contracts, [``StripChainRepair.single]),
+    (``StripChainRepair.nested_ready, [``StripChainRepair.one_ready, ``StripChainRepair.two_ready]),
+    (``StripChainRepair.stages, [``KempeBalancedBlock.coclosure, ``KempeAnchorSelection.coclosure,
       ``StripSymbolicRepair.direct_coclosure]),
     (``StripChainRepair.repair, [``StripChainRepair.stages, ``StripChainRepair.source_trace]),
     (``StripChainRepair.nonextension, [``StripCriticalChain.no_core,

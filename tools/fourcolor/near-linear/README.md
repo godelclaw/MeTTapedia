@@ -10,13 +10,24 @@ exterior's trace predicate is Kempe closed and contains the initial trace.
 It also proves that the repaired boundary trace differs from the initial
 one, since the initial trace admits no full source extension.
 
-Eleven finite stages share the arbitrary-width retained-anchor selection
-law. A stage either reconstructs directly through the exact triangle joins
-or invokes an earlier stage. When two components are needed, both belong
-to the same matching. Three retained anchors suffice; ten stages use only
-two distinct anchors. The finite obligations are explicit: forty single
-component contracts and fourteen paired component contracts. No interior
-colouring table or all-boundaries closure table is stored.
+Eleven finite stages retain forty single-component and fourteen paired-component
+source contracts. Seven stages now use the arbitrary-width
+[`KempeBalancedBlock`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeBalancedBlock.lean)
+law. Only stages 5, 6, 7 and 10 retain the joint partner-exclusion computation.
+No interior-colouring table or all-boundaries closure table is stored.
+
+For a noncrossing perfect matching on `2k` active ports, consider a consecutive
+block of `k` ports. Either it contains a matched adjacent pair, or every port
+is paired with its reverse coordinate. In the second case the entire matching
+is fixed. The repair consumer can therefore switch any specified finite batch
+of those components while retaining the original exterior. Ear and batch
+continuations can themselves invoke previously proved repairs.
+
+The seven consumers have six, eight or ten active ports. Their cyclic
+coordinates, ear contracts and rigid-case continuations are checked separately.
+Cyclic order on triples transports noncrossing by a general lemma. The finite
+source-extension contracts remain; this replaces matching-selection searches,
+not complete source-reducibility certificates.
 
 ```
 fixed-boundary forced-chain obstruction
@@ -32,10 +43,11 @@ fixed-boundary forced-chain obstruction
 
 Replay with `lake build kernelStripChainRepair`. The
 [kernel receipt](strip-chain-repair-measurements.json) records source size,
-checking cost and the nine-root dependency audit. The
+checking cost and the dependency audit, including the general selection law. The
 [independent verifier](audit_strip_chain_repair.py) reads the Lean stage
-data and checks all 201 noncrossing matching layouts and the terminal
-source reconstructions; its [receipt](strip-chain-repair-audit.json)
+data and checks all 201 stage matching layouts and the terminal source
+reconstructions. It also tests the general dichotomy on all 2,055 noncrossing
+matchings through sixteen ports; its [receipt](strip-chain-repair-audit.json)
 retains the source pin and hashes.
 
 This closes the two specified input repairs. It is not a uniform theorem

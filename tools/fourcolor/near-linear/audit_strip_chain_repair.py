@@ -10,6 +10,7 @@ import argparse
 import ast
 from hashlib import sha256
 import json
+from itertools import product
 from pathlib import Path
 import re
 
@@ -94,6 +95,46 @@ def verify(here):
                        'paired_contracts': len(doubles[s]), 'matchings_checked': matching_count,
                        'earlier_stages_used': sorted(successors)})
 
+    stage_map = ast.literal_eval(re.search(r'def balancedStage[^!]+!(\[[^\]]+\])', text)[1])
+    half = ast.literal_eval(re.search(r'def half[^!]+!(\[[^\]]+\])', text)[1])
+    pos_text = text.split('def positions', 1)[1].split('def embed', 1)[0].split(':=', 1)[1].strip()
+    positions = ast.literal_eval(pos_text[1:])
+    moves_text = text.split('def moves', 1)[1].split('theorem coordinates', 1)[0]
+    moves = [ast.literal_eval(x) for _,x in re.findall(r'\| (\d+) => (\[[^\]]+\])', moves_text)]
+    require(stage_map == [0,1,2,3,4,8,9], 'Balanced-stage domain differs')
+    require(len(half) == len(positions) == len(moves) == len(stage_map), 'Balanced data dimensions differ')
+    require('decide (∃ t, balancedStage t = s) ||' in text, 'Residual checker does not skip balanced stages')
+    structural = []
+
+    def crosses(a,b,c,d):
+        a,b = sorted((a,b)); c,d = sorted((c,d))
+        return a < c < b < d or c < a < d < b
+
+    for t,s in enumerate(stage_map):
+        pos = positions[t]; n = len(pos); k = half[t]
+        require(n == 2*k and len(set(pos)) == n, 'Balanced coordinates are not injective')
+        require(set(pos) == {i for i,c in enumerate(words[s]) if c != fixed[s]}, 'Active ports differ')
+        for a,b,x,y in product(range(n), repeat=4):
+            require(not crosses(a,x,b,y) or crosses(pos[a],pos[x],pos[b],pos[y]),
+                    'Cyclic order not preserved')
+        for i in range(k-1):
+            require((pos[i],pos[i+1]) in singles[s] or (pos[i+1],pos[i]) in singles[s],
+                    'An ear lacks a repair contract')
+        chords = [(pos[i],pos[n-1-i]) for i in moves[t]]
+        out = canonical(flip(words[s],fixed[s],chords))
+        require(out in words[:s] or partial(g,ring,boundary(out),[]) is not None,
+                'Nested continuation is not ready')
+        structural.append({'stage':s,'active_ports':n,'block_ports':k,
+                           'ear_contracts':k-1,'nested_batch_size':len(chords)})
+
+    abstract_checked = 0
+    for k in range(1,9):
+        for matching in pairings(2*k):
+            abstract_checked += 1
+            ear = any(b == a+1 and b < k for a,b in matching)
+            nested = all(a+b == 2*k-1 for a,b in matching)
+            require(ear or nested, 'Balanced-block dichotomy failed')
+
     require(words[8] == tuple(map(int,'12211121113')) and
             words[10] == tuple(map(int,'12333313331')), 'Consumers differ')
     for s in (8,10):
@@ -105,6 +146,8 @@ def verify(here):
         'attribution': 'Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.',
         'lean_source_sha256': sha256(source.read_bytes()).hexdigest(),
         'stages': stages,
+        'balanced_selection': {'consumers': structural, 'residual_stages': [5,6,7,10],
+                               'abstract_matchings_tested_through_16_ports': abstract_checked},
         'totals': {'stages': len(stages), 'single_contracts': sum(map(len,singles)),
                    'paired_contracts': sum(map(len,doubles)),
                    'noncrossing_matchings_checked': sum(s['matchings_checked'] for s in stages),

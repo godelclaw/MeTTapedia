@@ -1,12 +1,14 @@
 import MettapediaFourColor.KempeAnchorSelection
+import MettapediaFourColor.KempeBalancedBlock
 import MettapediaFourColor.StripCriticalChain
 import MettapediaFourColor.GraphTraceAlignment
 
 /-!
 # Repairing the two critical-chain boundaries
 
-Eleven local stages use one retained-matching selection theorem and exact
-symbolic source reconstruction. A stage either extends directly or enters
+Eleven local stages use exact symbolic source reconstruction. Seven select
+components by the arbitrary-width balanced-block law; the remaining four
+use the retained-anchor interval criterion. A stage either extends directly or enters
 an earlier stage. Two components chosen together belong to the same matching.
 
 Both initial boundaries obstruct every complete extension while their colours
@@ -46,7 +48,8 @@ def anchors : Fin 11 → Fin 3 → Fin 11
   | 9 => ![0,1,0]
   | 10 => ![1,5,1]
 
-def palette : Fin 11 → EdgePerm := ![.e321,.e213,.e123,.e321,.e123,.e213,.e321,.e321,.e213,.e321,.e123]
+def palette : Fin 11 → EdgePerm :=
+  ![.e321,.e213,.e123,.e321,.e123,.e213,.e321,.e321,.e213,.e321,.e123]
 def colour (s : Fin 11) (i : Fin 11) : Color := palette s (word s i)
 
 def singles : Fin 11 → List (Fin 11 × Fin 11)
@@ -96,8 +99,12 @@ theorem selected_sound (s p) (h : selected s p = true) : successful (double s) p
   simp only [KempeAnchorSelection.successful, decide_eq_true_eq]
   exact ⟨r,t,by simpa only [double, he.1, he.2, decide_eq_true_eq] using hm⟩
 
-/-- Compact Boolean replay checks partners jointly, without enumerating functions. -/
+/-- Stages whose selection is supplied by the uniform half-block dichotomy. -/
+def balancedStage : Fin 7 → Fin 11 := ![0,1,2,3,4,8,9]
+
+/-- Only four residual stages replay the joint partner exclusion check. -/
 theorem checked : (List.finRange 11).all (fun s =>
+    decide (∃ t, balancedStage t = s) ||
     (List.finRange 11).all fun p0 =>
       !feasible (colour s) ((anchors s) ∘ ![0]) ![p0] ||
     (List.finRange 11).all fun p1 =>
@@ -108,7 +115,7 @@ theorem checked : (List.finRange 11).all (fun s =>
           (allowed (single s) (anchors s) ![p0,p1,p2]) 0 11) = true := by decide +kernel
 
 /-- Three anchor partners remain jointly constrained by one noncrossing matching. -/
-theorem select (s) (p : Fin 3 → Fin 11)
+theorem select (s) (residual : ¬ ∃ t, balancedStage t = s) (p : Fin 3 → Fin 11)
     (hf : feasible (colour s) (anchors s) p = true) (h : successful (double s) p = false) :
     KempeIntervalMatching.possible (active (colour s))
       (allowed (single s) (anchors s) p) 0 11 = false := by
@@ -120,6 +127,7 @@ theorem select (s) (p : Fin 3 → Fin 11)
   rw [hp1] at hf1
   rw [hp2] at hf2
   have hc := List.all_eq_true.mp checked s (List.mem_finRange s)
+  simp only [decide_eq_false residual, Bool.false_or] at hc
   have hc := List.all_eq_true.mp hc (p 0) (List.mem_finRange (p 0))
   simp only [hf1, Bool.not_true, Bool.false_or] at hc
   have hc := List.all_eq_true.mp hc (p 1) (List.mem_finRange (p 1))
@@ -139,6 +147,60 @@ theorem two_ready : ∀ s r t p q, double s r t p q = true →
     Ready s (List.ofFn (switch (switch (colour s) (anchors s r) p) (anchors s t) q)) := by
   decide +kernel
 
+def half : Fin 7 → ℕ := ![5,4,3,4,4,4,4]
+
+def positions : Fin 7 → List (Fin 11) :=
+  ![[4,5,6,7,8,10,0,1,2,3], [4,6,7,8,10,0,1,2],
+    [8,10,3,4,5,6], [3,4,5,7,9,0,1,2], [3,4,5,7,9,10,1,2],
+    [7,8,9,10,0,3,4,5], [7,8,10,0,1,3,4,6]]
+
+def embed (t : Fin 7) (i : Fin (2 * half t)) : Fin 11 :=
+  (positions t)[i.val]?.getD 0
+
+def rank (t : Fin 7) (i : Fin 11) : Fin (2 * half t) :=
+  ⟨(positions t).idxOf i % (2 * half t),
+    Nat.mod_lt _ (by fin_cases t <;> decide)⟩
+
+instance (t : Fin 7) : NeZero (2 * half t) := ⟨by fin_cases t <;> decide⟩
+
+def moves : (t : Fin 7) → List (Fin (2 * half t))
+  | 0 => [6] | 1 => [5,3] | 2 => [4] | 3 => [5,7]
+  | 4 => [6,2] | 5 => [5] | 6 => [6]
+
+theorem coordinates : ∀ t,
+    (∀ i, rank t (embed t i) = i) ∧
+    (∀ i, colour (balancedStage t) i ≠ c1 → embed t (rank t i) = i) ∧
+    (∀ i, colour (balancedStage t) (embed t i) ≠ c1) := by decide +kernel
+
+open Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching
+
+theorem coordinate_cycles : ∀ t a b c,
+    KempeBalancedBlock.cyclic a b c →
+      KempeBalancedBlock.cyclic (embed t a) (embed t b) (embed t c) := by decide +kernel
+
+theorem coordinate_order (t a b x y)
+    (h : ¬ ChordsCross (embed t a) (embed t x) (embed t b) (embed t y)) :
+    ¬ ChordsCross a x b y :=
+  KempeBalancedBlock.noncross_of_cyclic (embed t) (coordinate_cycles t) a b x y h
+
+theorem ear_contracts : ∀ t (i j : Fin (2 * half t)),
+    i.val < half t → j.val < half t → j.val = i.val + 1 →
+      single (balancedStage t) (embed t i) (embed t j) = true := by decide +kernel
+
+/-- The rigid alternative consumes existing component contracts, including
+three paired repairs. It does not repeat the source-extension computation. -/
+theorem nested_ready : ∀ t, Ready (balancedStage t)
+    (List.ofFn (KempeBalancedBlock.batch (embed t) (moves t) (colour (balancedStage t)))) := by
+  intro t
+  fin_cases t
+  · exact one_ready 0 0 7 (by decide)
+  · exact two_ready 1 0 1 7 10 (by decide)
+  · exact one_ready 2 5 10 (by decide)
+  · exact two_ready 3 0 1 5 3 (by decide)
+  · exact two_ready 4 0 1 4 10 (by decide)
+  · exact one_ready 8 3 9 (by decide)
+  · exact one_ready 9 4 8 (by decide)
+
 /-- The stage index orders the eleven local laws; it does not store a rank
 for every possible boundary trace. -/
 theorem stages (n : ℕ) : ∀ s : Fin 11, s.val < n →
@@ -153,13 +215,22 @@ theorem stages (n : ℕ) : ∀ s : Fin 11, s.val < n →
         rw [hg]
         exact ih t (by omega)
       · exact direct_coclosure h
-    apply kempeCoclosure_of_map (palette s)
-    change KempeCoclosure Terminal (List.ofFn (colour s))
-    apply KempeAnchorSelection.coclosure _ (active_anchors s).1 (anchors s)
-      (active_anchors s).2 (single s) (double s)
-    · exact fun i j h => finish (one_ready s i j h)
-    · exact fun r t p q h => finish (two_ready s r t p q h)
-    · exact select s
+    by_cases hb : ∃ t, balancedStage t = s
+    · obtain ⟨t,rfl⟩ := hb
+      apply kempeCoclosure_of_map (palette (balancedStage t))
+      change KempeCoclosure Terminal (List.ofFn (colour (balancedStage t)))
+      apply KempeBalancedBlock.coclosure _ (embed t) (rank t)
+        (coordinates t).1 (coordinates t).2.1 (coordinates t).2.2 (coordinate_order t)
+      · intro i j hi hj hij
+        exact finish (one_ready _ _ _ (ear_contracts t i j hi hj hij))
+      · exact finish (nested_ready t)
+    · apply kempeCoclosure_of_map (palette s)
+      change KempeCoclosure Terminal (List.ofFn (colour s))
+      apply KempeAnchorSelection.coclosure _ (active_anchors s).1 (anchors s)
+        (active_anchors s).2 (single s) (double s)
+      · exact fun i j h => finish (one_ready s i j h)
+      · exact fun r t p q h => finish (two_ready s r t p q h)
+      · exact select s hb
 
 def input : Bool → Fin 11 := fun s => if s then 10 else 8
 

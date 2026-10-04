@@ -1,5 +1,5 @@
 {
-  "classification": "CHECKED_TWO_INPUT_REPAIR_BY_RETAINED_MATCHING_COMPOSITION",
+  "classification": "CHECKED_ARBITRARY_WIDTH_BALANCED_SELECTION_AND_TWO_INPUT_RECONSTRUCTION",
   "source": "D0099.conf",
   "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
   "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
@@ -17,41 +17,54 @@
     "completed": true,
     "modules": [
       {
-        "module": "MettapediaFourColor.StripChainRepair",
-        "source_sha256": "e76884e644bd965133a7cc281349f00bdcbaa545227f0e21c6352f84e2591ae3",
+        "module": "MettapediaFourColor.KempeBalancedBlock",
+        "source_sha256": "cac5edb58c4b1acd00baec0805df8a47e02a1c33e79a7ee43326600c04797486",
         "exit_code": 0,
-        "frontend_wall_seconds": 39.532,
-        "olean_bytes": 1001136,
-        "olean_sha256": "741396cc97f200750cd86556d393569da6947b8d75eab04532cd911fcc185288"
+        "frontend_wall_seconds": 8.051,
+        "olean_bytes": 2364800,
+        "olean_sha256": "f89f8ddc603ba40db30855bb35dc9b070e01334e9221b99e082e077e5218961d"
+      },
+      {
+        "module": "MettapediaFourColor.StripChainRepair",
+        "source_sha256": "2d99fba1a6fa59c8f9070fceb2c82b82fb3ead23a8c0d5a75cb8d9ffa825e876",
+        "exit_code": 0,
+        "frontend_wall_seconds": 23.958,
+        "olean_bytes": 1403400,
+        "olean_sha256": "de3ea429c592eb7e8d9e9705940c933b03ec3a13d7c7b8aff0bffdccb981d6c0"
       },
       {
         "module": "MettapediaFourColor.StripChainRepairAudit",
-        "source_sha256": "4ddaab0cbc816d687d3d990d25b2031c629f6e4b49b5b9247adb99acdb77fa09",
+        "source_sha256": "8bc97218e8f4a3788501b1d1aa7d60252302da5110e807fa884acf988c19655f",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.807,
-        "olean_bytes": 2600,
-        "olean_sha256": "5c18a21bdd00cfeeccd7ea363e79c778a04f6d9e0be85eda2562b8d7c1601eeb"
+        "frontend_wall_seconds": 4.359,
+        "olean_bytes": 3600,
+        "olean_sha256": "d644ae3d625f6a320eeed3e2e4cbc333864e735f05604ca99ce8977ba713eb14"
       }
     ]
   },
   "proof_sources": [
     {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/KempeBalancedBlock.lean",
+      "bytes": 7222,
+      "sha256": "cac5edb58c4b1acd00baec0805df8a47e02a1c33e79a7ee43326600c04797486"
+    },
+    {
       "path": "lean/fourcolor-classical/MettapediaFourColor/StripChainRepair.lean",
-      "bytes": 8760,
-      "sha256": "e76884e644bd965133a7cc281349f00bdcbaa545227f0e21c6352f84e2591ae3"
+      "bytes": 11902,
+      "sha256": "2d99fba1a6fa59c8f9070fceb2c82b82fb3ead23a8c0d5a75cb8d9ffa825e876"
     },
     {
       "path": "lean/fourcolor-classical/MettapediaFourColor/StripChainRepairAudit.lean",
-      "bytes": 2491,
-      "sha256": "4ddaab0cbc816d687d3d990d25b2031c629f6e4b49b5b9247adb99acdb77fa09"
+      "bytes": 3230,
+      "sha256": "8bc97218e8f4a3788501b1d1aa7d60252302da5110e807fa884acf988c19655f"
     }
   ],
-  "total_new_proof_source_bytes": 11251,
-  "frontend_wall_seconds_including_imports": 43.339,
+  "total_new_proof_source_bytes": 22354,
+  "frontend_wall_seconds_including_imports": 36.368,
   "initial_proof_only_frontend_seconds": 33.463,
   "audit": {
-    "roots": 9,
-    "dependency_declarations": 4784,
+    "roots": 16,
+    "dependency_declarations": 6337,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -61,6 +74,10 @@
     "large_repair_tables_used": false
   },
   "formal_results": [
+    "At arbitrary width, a noncrossing perfect matching either contains an adjacent pair in the first half-block or equals the reverse-coordinate matching.",
+    "The rigid case admits any finite batch of its components, retaining the same exterior before invoking a continuation.",
+    "Cyclic order on triples transports the noncrossing condition.",
+    "Seven strip stage selections use the uniform balanced-block law; four retain finite partner exclusion.",
     "Both critical-chain boundaries lie in the Kempe co-closure of genuine complete source colourings.",
     "Eleven finite stage laws compose through earlier stages and exact symbolic triangle reconstruction.",
     "Paired component choices retain the same exterior matching.",
@@ -77,10 +94,12 @@
   },
   "program_receipt": "strip-chain-repair-audit.json",
   "limits": [
-    "Two specified initial boundaries; no uniform repair for all forced chains.",
-    "Same-exterior reconstruction assumes the exterior trace predicate is Kempe closed.",
+    "The arbitrary-width result selects components; the source repair consumers still concern two specified boundaries.",
+    "Seven concrete coordinate instances and all 54 source contracts remain.",
+    "Same-exterior reconstruction assumes that the exterior trace predicate is Kempe closed.",
     "No physical recolouring-history or runtime bound is claimed.",
-    "No geometric supply, strict graph reduction or catalogue removal is added."
+    "No geometric supply, strict graph reduction or catalogue removal is added.",
+    "No net source-byte or artifact-size reduction is claimed."
   ],
   "regression": {
     "classical": "lake build kernelStripChainRepair kernelComplete",
@@ -90,5 +109,91 @@
   "new_catalogue_entries_removed": 0,
   "new_original_certificate_dependencies_removed": 0,
   "new_member_checks_removed": 0,
-  "whole_proof_kernel_savings_claimed": false
+  "whole_proof_kernel_savings_claimed": false,
+  "selection_comparison": {
+    "before_finite_stage_exclusions": 11,
+    "after_finite_stage_exclusions": 4,
+    "stages_supplied_by_uniform_law": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      8,
+      9
+    ],
+    "cyclic_coordinate_instances_retained": 7,
+    "cyclic_triple_positions_checked": 3776,
+    "ear_source_contracts_reused": 21,
+    "rigid_case_contracts_reused": 7,
+    "source_contracts_before_and_after": {
+      "single": 40,
+      "paired": 14
+    },
+    "old_proof_and_audit_bytes": 11251,
+    "old_replay_frontend_seconds": 43.339,
+    "old_olean_bytes": 1003736,
+    "current_olean_bytes": 3771800,
+    "interpretation": "Seven finite selection subproblems are discharged by an arbitrary-width theorem. New general proofs and coordinate obligations increase source and artifact size. Single replay timings do not establish a whole-proof speedup."
+  },
+  "program_balanced_test": {
+    "consumers": [
+      {
+        "stage": 0,
+        "active_ports": 10,
+        "block_ports": 5,
+        "ear_contracts": 4,
+        "nested_batch_size": 1
+      },
+      {
+        "stage": 1,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 2
+      },
+      {
+        "stage": 2,
+        "active_ports": 6,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "nested_batch_size": 1
+      },
+      {
+        "stage": 3,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 2
+      },
+      {
+        "stage": 4,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 2
+      },
+      {
+        "stage": 8,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 1
+      },
+      {
+        "stage": 9,
+        "active_ports": 8,
+        "block_ports": 4,
+        "ear_contracts": 3,
+        "nested_batch_size": 1
+      }
+    ],
+    "residual_stages": [
+      5,
+      6,
+      7,
+      10
+    ],
+    "abstract_matchings_tested_through_16_ports": 2055
+  }
 }
