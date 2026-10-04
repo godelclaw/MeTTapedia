@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [moving-frame escape bound](labs/README.md#generated-motion-forces-shape-change-even-in-a-moving-rigid-frame)
+extends the generated-packet test to a neighborhood of an entire translated
+and rotated whole-space shape family. The frame follows the actual fluid;
+all coordinate terms are retained and bounded through its matching equations.
+A nonnegative local reserve pays the accumulated maximum vorticity during
+each continuous visit, uniformly over physical amplitude and scale when
+the normalized viscosity is at most one. Later returns can restore the
+reserve and still need a payment from the original datum. The slice and
+physical bound are analytic, supported by exact symmetry checks; no new
+Lean certificate or arbitrary-history bound is claimed.
+
 The [two-observer Bellman obstruction](labs/README.md#two-scalar-observations-admit-a-forced-concentration-history)
 shows why matching kinetic energy, the velocity fourth moment and their
 genuine instantaneous unforced rates is insufficient for composing fluid

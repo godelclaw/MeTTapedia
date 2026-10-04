@@ -45873,3 +45873,275 @@ both coordinate drifts and the infinite turnover clock. The actual
 residence-time bound additionally uses the analytic continuity argument.
 The archive hashes all transitive local Python imports. No Lean
 declarations, axioms or numerical PDE enclosures change.
+
+## Generated motion forces shape change even in a moving rigid frame
+
+`rigid_frame_escape.py` checks the rigid-motion extension of (TB22).
+A fixed spatial observation may change merely because the fluid translates
+or rotates. The result below removes that ambiguity: an actual unforced
+history can remain in a sufficiently small neighborhood of the entire rigid
+orbit of the normalized seed for only a uniformly bounded nonlinear turnover
+time, provided its normalized viscosity stays at most one.
+A nonnegative local reserve also pays the physical maximum-vorticity
+integral during that visit. No small physical amplitude is assumed.
+
+This is a local transversality argument for one shape family. It does not
+say that departure reduces stretching, bound the number of returns, or
+cover arbitrary shapes. The localization, slice construction and physical
+history estimate are analytic, not Lean-certified. Their finite Fourier
+and differential identities are checked exactly.
+
+The symmetry-reduction method is established: see Fröhlich and Cvitanović,
+[Reduction of continuous symmetries of chaotic flows by the method of slices](https://arxiv.org/abs/1101.3037).
+We use a local nearest-orbit slice and prove its nonsingularity for this
+seed. A single template is not asserted to define a regular frame on the
+whole state space. The group here is the whole-space rigid-motion group;
+arbitrary rotations do not preserve a fixed periodic lattice.
+
+### A localized seed with a unique rigid frame
+
+In (TB6), choose the real radial smooth function `psi_hat` positive on
+the interior of a ball and zero outside it. Its inverse transform psi is
+real Schwartz, and `phi=psi^2>=0` has a radial Fourier transform positive
+throughout the interior of the doubled ball. For sufficiently large fixed
+L, the Fourier support of `U=U_L` is exactly the disjoint union of balls
+of equal radius centered at the eight carriers
+
+    K={(-1,-1,0),(0,-1,0),(0,-1,1),(0,0,-1),
+       (0,0,1),(0,1,-1),(0,1,0),(1,1,0)}.             (RF1)
+
+Indeed, on the packet centered at k the transform is
+`i xi cross A_per_hat(k) L^3 phi_hat(L(xi-k))`. Its vector factor cannot
+vanish on an open subset, so its support is the full closed ball.
+Increase L once if necessary to retain all of (TB7), including positive
+P4 and the nonzero generated packet. No numerical threshold for L is used.
+
+Only the identity proper rotation preserves K. The exact enumeration
+fixes the images of `k1=(-1,-1,0)` and `k2=(0,-1,0)`. Their two squared
+lengths and scalar product are `(2,1,1)`. There are six ordered image
+pairs in K with this Gram data. Each determines one proper rotation
+by also mapping `k1 cross k2` to the corresponding cross product. Five
+fail to preserve another explicitly recorded carrier; the sixth is the
+identity. This exhausts SO(3), not just a selected rotation subgroup.
+
+Write the unitary rigid action as
+
+    (g_(y,R) w)(x)=R w(R^T(x-y)),   R in SO(3).         (RF2)
+
+If gU=U, its Fourier support implies RK=K and hence R=I. Translation
+then multiplies the transform by `exp(-i xi.y)`. Equality on an open
+nonzero packet forces y=0. Thus U has trivial rigid stabilizer.
+
+Define the six infinitesimal generators, with e_j the coordinate vectors,
+
+    T_j w=partial_j w,
+    T_(3+j) w=e_j cross w-(e_j cross x).grad w,
+                 j=1,2,3.                            (RF3)
+
+They are skew-adjoint in L2 on decaying fields. The six fields T_j U are
+linearly independent: a vanishing linear combination would make U fixed
+by the associated complete one-parameter rigid group, contradicting its
+trivial stabilizer. Consequently the Gram matrix
+
+    G_ij=<T_j U,T_i U>,        lambda_min(G)=gamma>0   (RF4)
+
+is positive definite. All these fixed test fields are Schwartz.
+
+Let O={gU}. On a sufficiently small H3 neighborhood of O, select g(v)U
+to be the L2-nearest orbit point and set `w(v)=g(v)^(-1)v`. This nearest
+point exists and is unique locally uniformly along the entire orbit.
+Here and below H3 uses an isotropic, rigid-invariant Sobolev norm.
+The needed facts are as follows.
+
+- The map g to gU is smooth into L2 with injective differential by (RF4).
+  At U, the Hessian of the squared distance in group coordinates is the
+  positive Gram form, with the harmless factor two.
+- The correlation `<U,g_(y,R)U>` tends to zero as |y| tends to infinity,
+  uniformly in R, by Schwartz decay and compactness of SO(3). For v near
+  U, a minimizing sequence therefore cannot escape to spatial infinity.
+  On bounded translations, compactness gives a minimizer.
+- Outside any sufficiently small identity neighborhood, `||gU-U||2`
+  has a positive lower bound: use that decay for large translations and
+  compactness and the trivial stabilizer on the remaining closed set.
+  The implicit function theorem and the positive Hessian therefore give
+  a unique minimizing group element for v near U. Isometry transports
+  the same neighborhood and estimates to every orbit point.
+
+The matching conditions are exactly
+
+    <w-U,T_i U>=0,                    i=1,...,6.       (RF5)
+
+Moreover there is a fixed C_match such that
+`dist_H3(v,O)<eta` implies `||w(v)-U||H3<=C_match eta`
+for small eta. To see this, first align v with any H3-nearby orbit point.
+The additional minimizing group parameters are O of its L2 error by
+the implicit function theorem. Their action on the fixed Schwartz U is
+locally H3-Lipschitz, and their action on the residual is H3-isometric.
+Thus an H3-nearby alignment cannot be replaced by an uncontrolled one.
+Uniqueness makes the chosen frame equivariant and consistent where two
+such local descriptions overlap, including along loops within this tube.
+
+### The frame follows the actual equation
+
+Normalize any nonzero available smooth unforced whole-space history by
+its actual E,Y, as in (TB18):
+
+    a=sqrt(eY/(yE)),        ell=(e^2Y/(yE^2))^(1/3),
+    v(theta,x)=a^(-1)u(t,x/ell),
+    theta'=a ell,          epsilon=nu ell/a.
+
+Thus E(v)=e,Y(v)=y. Retain the full normalized vector field
+
+    F_epsilon(w)=N(w)+epsilon Delta w-Aw-L x.grad w,
+    A=2P4(w)/y+epsilon[Z(w)/e-2D4(w)/y],
+    L=(4/3){P4(w)/y+epsilon[Z(w)/e-D4(w)/y]}.          (RF6)
+
+The scalar L in (RF6) is the changing-scale coefficient, not the fixed
+localization parameter used to construct U. For the matched frame put
+`w(theta,x)=R(theta)^T v(theta,R(theta)x+y(theta))` and write
+`Omega=R^T R_theta`, `Omega x=omega cross x`. The exact chain rule gives
+
+    w_theta=F_epsilon(w)+sum_j c_j T_j w,
+    (c_1,c_2,c_3)=R^T(y_theta-Ly),
+    (c_4,c_5,c_6)=-omega.                             (RF7)
+
+In particular the translation term contains `-Ly`, and the angular
+term rotates the vector components as well as their spatial arguments.
+Dropping either term changes the physical equation. These are observer
+coordinate terms. We have not subtracted a rigid-body velocity from u
+or declared time-dependent rotations to be symmetries of NS solutions.
+
+The six coefficients in (RF7) are determined, not chosen controls.
+Differentiating (RF5) gives
+
+    M(w)c=-h(w,epsilon),
+    M_ij(w)=<T_j w,T_i U>=-<w,T_j T_i U>,
+    h_i(w,epsilon)=<F_epsilon(w),T_i U>.               (RF8)
+
+At U, M=G. Continuity gives `||M-G||op<=gamma/2` on a sufficiently
+small H3 neighborhood, and hence `||M^(-1)||op<=2/gamma` there.
+The vector h is bounded uniformly for `0<=epsilon<=1`: N maps H3
+continuously into H2, P4,Z,D4 are H3-continuous, and the diffusion and
+dilation derivatives can be put on the fixed Schwartz test fields.
+Consequently
+
+    |c|<=C_U                                           (RF9)
+
+throughout that neighborhood. This derives a bound on the effective
+frame terms from the matching equations. It imposes no a priori bound
+on the physical center velocity or angular speed.
+
+There is also no assumption that `x.grad w` has an L2 norm. Differentiate
+the finite matching equations against their transported Schwartz tests.
+An actual smooth solution is differentiable into L2, and its positive
+normalization parameters are differentiable; changes of scale and group
+parameters differentiate the tests. The resulting weak pairings justify
+(RF7)--(RF8) without a weighted derivative norm of the unknown field.
+
+### A local reserve pays the actual continuation cost
+
+Choose the real unit-L2 Schwartz missing-packet field chi from (TB19),
+and set `b=<chi,N(U)> > 0`. Besides U, Delta U and x.grad U, chi is
+orthogonal to every T_j U. Fourier differentiation and multiplication
+leave all six tangent supports in the input packets, disjoint from chi.
+The scalar observation
+
+    m(v)=<chi,w(v)>                                    (RF10)
+
+is invariant under the whole rigid group, because the nearest frame is
+unique and equivariant. Along the actual solution its derivative is
+
+    m_theta=<chi,F_epsilon(w)>
+                 +sum_j c_j <chi,T_j w>.              (RF11)
+
+At w=U the first term is b independently of epsilon and every rigid
+term vanishes. Near U, (RF9) and
+`<chi,T_j w>=-<T_j chi,w-U>` bound the latter terms by a fixed constant
+times `||w-U||H3`. The first term is H3-continuous uniformly over
+`0<=epsilon<=1`, by the same Schwartz pairings as in (TB20).
+
+Choose delta>0 small enough that all the preceding slice and continuity
+bounds hold and (RF11) is at least b/2 whenever
+`||w-U||H3<=delta`, `0<=epsilon<=1`. Choose eta>0 so that the matching
+estimate following (RF5) implies this bound throughout the eta orbit
+tube. These choices depend only on U,chi, not on physical amplitude,
+spatial scale, translation, rotation or the history entering the tube.
+
+The resulting nonnegative reserve is
+
+    R_U(v)=delta-m(v),         0<=R_U<=2delta.
+
+For EVERY connected actual smooth unforced segment remaining in that
+orbit tube with epsilon<=1, integration of (RF11) gives
+
+    R_U(v_1)+(b/2)(theta_1-theta_0)<=R_U(v_0),
+    theta_1-theta_0<=4delta/b.                         (RF12)
+
+This proves a bound for the whole segment, retaining evolving geometry
+and generated motion. It rules out persistent proximity modulo rigid
+motion, not just equality to U or favorable behavior at the initial time.
+
+There is an immediate physical continuation cost. Sobolev embedding gives
+`||curl w||infinity<=K_U=||curl U||infinity+C_emb delta` in this tube.
+Rigid motion preserves that norm, and the actual scaling gives
+`||curl u||infinity=a ell ||curl w||infinity`. Therefore
+
+    integral_t0^t1 ||curl u(t)||infinity dt
+       <=(2K_U/b)[R_U(v_0)-R_U(v_1)]
+       <=4K_U delta/b.                               (RF13)
+
+This is a local Bellman payment for the actual maximum-vorticity integral.
+The existing Lean consumer
+`WholeSpaceViscousFlow.hasNSEvolution_of_vorticityIntegral_bound`
+requires a bound on that integral for EVERY prefix of a prescribed
+horizon from the same initial datum. Equation (RF13) covers one continuous
+visit only, so it does not discharge that theorem's hypothesis. The
+physical estimate and its identification with the formal integral have
+not been newly formalized. The constants gamma,eta,delta,b,K_U are not
+numerically evaluated.
+
+### Spinning or translating does not remove the hidden force
+
+The same packet obstruction applies to the concentrating forced lift
+(TB13) with any continuously differentiable rigid motion:
+
+    u(t,x)=a(t) R(t) U(ell(t) R(t)^T(x-c(t))).         (RF14)
+
+All extra time derivatives are transported rigid tangents from (RF3).
+They have no support in the transported missing packet. Neither do the
+amplitude, dilation or viscous terms. Projecting the force onto that
+packet therefore retains the exact lower bound
+
+    ||f(t)||2>=c_* a(t)^2 ell(t)^(-1/2).               (RF15)
+
+Rigid tangents have zero integrated work in both the E and Y equations.
+Thus both zero force-work identities (TB15) still hold, while (TB17)
+still implies `integral_t0^T_* ||f(t)||2 dt=infinity`. No bound on the
+frame speeds is needed for this assertion. Moving the same concentrating
+shape around cannot supply the generated motion its equation is missing.
+This says nothing comparable about an unrestricted sequence of genuinely
+different shapes or its realization inside a larger unforced fluid.
+
+### Remaining compatible-history obligation and verification
+
+The positive reserve (RF12) is local. An actual trajectory can leave this
+shape family and later return with a smaller m and hence a larger R_U.
+The intervening history must pay that restoration; assigning a fresh
+2delta allowance at every entrance would discard exactly the hidden
+history at issue. A change of coordinates within the tube cannot reset
+the reserve because (RF10) has a unique invariant value. Outside the
+tube, no global frame, controlled return cost or shape coverage has been
+proved. An arbitrary-data proof still needs those physical estimates.
+
+Run `python3 -O labs/rigid_frame_escape.py`. The archive
+`rigid_frame_escape_results.json` records the exhaustive carrier test,
+three exact combined rotations and translations, complete nonlinear and
+positive-viscosity tangents, a noncommuting rotation composition, the
+missing coefficient norm 1/5120, and all rigid-coordinate signs. Rational
+rotated wavevectors check Fourier algebra; they do not assert that these
+rotations preserve the original torus. The independent polynomial
+differential fixture checks incompressibility, skew-adjointness, zero
+fourth-moment rigid work and Laplacian commutation. That fixture is not
+a finite-energy fluid solution. The analytic arguments above supply the
+whole-space interpretation. The archive hashes all transitive local
+Python sources. No Lean declarations, axioms or numerical enclosures change.
