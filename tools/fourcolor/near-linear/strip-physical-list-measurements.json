@@ -1,0 +1,167 @@
+{
+  "classification": "CHECKED_PHYSICAL_LIST_OBSTRUCTION_AND_COMPACT_ENDPOINT_TRANSPORT",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Pinned Yuta Inoue catalogue (MIT); source decoding and planar Kempe closure inherit the Gonthier/Emery bridge. The endpoint transport and physical examples are proved locally.",
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripEndpointTransport",
+        "source_sha256": "6cc2d7102b951414642ed8a69905fa767b2a77e31519cdae514038046f5e468a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.758,
+        "olean_bytes": 410728,
+        "olean_sha256": "b6a2d2e56fbaca0ef44887de27e72a37ef9375f86920adbd379dccd7dfe6724a"
+      },
+      {
+        "module": "MettapediaFourColor.StripPhysicalListTransport",
+        "source_sha256": "c1f3cf87856fb6a30c51079a60897a9188605c916ef46c800df170b5fb6cc8f1",
+        "exit_code": 0,
+        "frontend_wall_seconds": 7.357,
+        "olean_bytes": 708104,
+        "olean_sha256": "352f63e70b8eddc7a301fe0226766c787c3be6591ed2c7728aa17d8d55056ef0"
+      },
+      {
+        "module": "MettapediaFourColor.StripPhysicalListTransportAudit",
+        "source_sha256": "d30df213a2549255bb995484a44c395efe49b3970a2c797e2c8b898e51168c13",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.516,
+        "olean_bytes": 2608,
+        "olean_sha256": "d1965cc8f2e8d9949758b6a74bca5d044c387a92114bec6c0d9175f3908fe150"
+      }
+    ]
+  },
+  "main_library": {
+    "module": "Mettapedia.GraphTheory.Kempe.BoundaryEndpointTransport",
+    "build_passed": true,
+    "frontend_seconds": 1.8
+  },
+  "proof_sources": [
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/Kempe/BoundaryEndpointTransport.lean",
+      "bytes": 1330,
+      "sha256": "dbffeb338005c57260bc3c0bea2ce6831197e623361df80595052ef23bf28bc8"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripEndpointTransport.lean",
+      "bytes": 5476,
+      "sha256": "6cc2d7102b951414642ed8a69905fa767b2a77e31519cdae514038046f5e468a"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripPhysicalListTransport.lean",
+      "bytes": 12247,
+      "sha256": "c1f3cf87856fb6a30c51079a60897a9188605c916ef46c800df170b5fb6cc8f1"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripPhysicalListTransportAudit.lean",
+      "bytes": 3459,
+      "sha256": "d30df213a2549255bb995484a44c395efe49b3970a2c797e2c8b898e51168c13"
+    }
+  ],
+  "total_proof_and_audit_source_bytes": 22512,
+  "source_and_audit_frontend_seconds": 16.631,
+  "audit": {
+    "roots": 16,
+    "dependency_declarations": 13354,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false
+  },
+  "scope": {
+    "generic": "For arbitrary palettes, a proper two- or three-vertex arc is updated exactly from its forbidden-colour set and old endpoint colour.",
+    "source_consumers": [
+      "D0063",
+      "D0099"
+    ],
+    "quantifiers": "Arbitrary proper source boundaries and arbitrary replacement colours. Source reconstruction additionally requires a proper updated boundary and the joint forest guard.",
+    "physical": "Two fixed planar disk exteriors, with 11 and 13 vertices. Each has two proper colourings. The commanded switch is an actual singleton Kempe-component switch, preserving every other exterior vertex.",
+    "obstruction": "Equal complete initial source lists give different full-source extension outcomes after the command: swap the port-six colour with its xor-one mate.",
+    "reconstruction": "Both positive physical examples consume the common endpoint update and joint-anchor forest theorem to reconstruct genuine complete source colourings with exact ordered boundaries.",
+    "finite_checks": {
+      "physical_exteriors": 2,
+      "physical_initial_colourings": 4,
+      "positive_joint_forest_guards": 2,
+      "whole_boundary_assignment_table": false
+    },
+    "limits": [
+      "The colour pair depends on the current root colour; it is not one fixed pair across the two inputs.",
+      "The exteriors have low-degree vertices; no minimal-counterexample geometry is claimed.",
+      "Compact endpoint transport does not establish an improving operation, geometric supply or termination."
+    ]
+  },
+  "program": {
+    "classification": "CHECKED_PHYSICAL_OBSTRUCTION_AND_COMPACT_ENDPOINT_TRANSPORT",
+    "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "fixture_sha256": "a239168b1eeff60378e4c4982527425e0e663f3ca530c2b081a32eba4756add1",
+    "sources": [
+      {
+        "source": "D0063",
+        "source_sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d",
+        "exterior_vertices": 11,
+        "triangular_faces": 10,
+        "ring": 10,
+        "physical_component_size": 1,
+        "extension_after": [
+          false,
+          true
+        ],
+        "canonical_boundaries": 2461,
+        "endpoint_updates_checked": 9844,
+        "additional_observation": "old port-six colour"
+      },
+      {
+        "source": "D0099",
+        "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+        "exterior_vertices": 13,
+        "triangular_faces": 13,
+        "ring": 11,
+        "physical_component_size": 1,
+        "extension_after": [
+          false,
+          true
+        ],
+        "canonical_boundaries": 7381,
+        "endpoint_updates_checked": 29524,
+        "additional_observation": "old port-six colour"
+      }
+    ],
+    "command": "At port six, swap its current colour with its xor-one mate.",
+    "limits": [
+      "The colour pair depends on the current root colour; it is not one fixed pair across the two inputs.",
+      "The exteriors have low-degree vertices; no minimal-counterexample geometry is claimed.",
+      "Compact endpoint transport does not establish an improving operation, geometric supply or termination."
+    ],
+    "catalogue_entries_removed": 0,
+    "original_certificates_removed": 0
+  },
+  "compression": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_replaced": 336,
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "net_artifact_size_saving_claimed": false,
+    "whole_proof_kernel_saving_claimed": false
+  },
+  "validation": {
+    "generic_library": "lake build Mettapedia.GraphTheory.Kempe.BoundaryEndpointTransport",
+    "source_and_audit": "lake build kernelStripPhysicalListTransport",
+    "classical_regression": "lake build kernelComplete",
+    "main_lane": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "program": "python3 tools/fourcolor/near-linear/audit_strip_physical_list_transport.py",
+    "all_passed": true
+  }
+}

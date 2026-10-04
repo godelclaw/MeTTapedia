@@ -1325,3 +1325,18 @@ target kernelStripListTransport pkg : Unit := do
         "StripListTransport", "StripListTransportAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay planar physical realizations of the evaluated-list obstruction. -/
+target kernelStripPhysicalListTransport pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-physical-list-transport",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripEndpointTransport", "StripPhysicalListTransport",
+        "StripPhysicalListTransportAudit"]
+      cwd := pkg.dir
+      env := env }

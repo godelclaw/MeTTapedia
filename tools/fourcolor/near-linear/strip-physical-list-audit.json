@@ -1,0 +1,45 @@
+{
+  "classification": "CHECKED_PHYSICAL_OBSTRUCTION_AND_COMPACT_ENDPOINT_TRANSPORT",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "fixture_sha256": "a239168b1eeff60378e4c4982527425e0e663f3ca530c2b081a32eba4756add1",
+  "sources": [
+    {
+      "source": "D0063",
+      "source_sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d",
+      "exterior_vertices": 11,
+      "triangular_faces": 10,
+      "ring": 10,
+      "physical_component_size": 1,
+      "extension_after": [
+        false,
+        true
+      ],
+      "canonical_boundaries": 2461,
+      "endpoint_updates_checked": 9844,
+      "additional_observation": "old port-six colour"
+    },
+    {
+      "source": "D0099",
+      "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+      "exterior_vertices": 13,
+      "triangular_faces": 13,
+      "ring": 11,
+      "physical_component_size": 1,
+      "extension_after": [
+        false,
+        true
+      ],
+      "canonical_boundaries": 7381,
+      "endpoint_updates_checked": 29524,
+      "additional_observation": "old port-six colour"
+    }
+  ],
+  "command": "At port six, swap its current colour with its xor-one mate.",
+  "limits": [
+    "The colour pair depends on the current root colour; it is not one fixed pair across the two inputs.",
+    "The exteriors have low-degree vertices; no minimal-counterexample geometry is claimed.",
+    "Compact endpoint transport does not establish an improving operation, geometric supply or termination."
+  ],
+  "catalogue_entries_removed": 0,
+  "original_certificates_removed": 0
+}

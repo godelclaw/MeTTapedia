@@ -1,5 +1,52 @@
 # Near-linear Four Colour catalogue bridges
 
+## Physical list obstruction and a compact endpoint rule
+
+[`StripPhysicalListTransport`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPhysicalListTransport.lean)
+realizes the list-summary obstruction below in two actual planar disk
+exteriors, with 11 vertices for D0063 and 13 for D0099. Each exterior has
+two proper colourings inducing identical complete lists at the source's
+core vertices. At port six, swapping its current colour with its xor-one
+mate is an actual singleton Kempe-component switch in both colourings.
+Only one resulting boundary extends to a full source colouring. The
+colour pair depends on the initial port colour; these are not switches of
+one fixed pair across both inputs.
+
+The information loss has a compact repair for these operations.
+[`BoundaryEndpointTransport`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/BoundaryEndpointTransport.lean)
+proves an arbitrary-palette rule for a proper boundary arc of two or three
+vertices. Its forbidden-colour set and the old endpoint colour determine
+the set after replacing that endpoint. For a three-vertex arc, a set of
+size two identifies the repeated endpoint colour, which must remain after
+the change. Otherwise the old colour is removed; the new colour is then
+inserted.
+
+[`StripEndpointTransport`](../../../lean/fourcolor-classical/MettapediaFourColor/StripEndpointTransport.lean)
+applies this rule to arbitrary proper boundary colourings of both decoded
+sources. It computes the updated lists from the old lists and one old
+port colour, without consulting the rest of the boundary colouring. Both
+positive physical examples consume this law and the shared joint-anchor
+forest theorem to reconstruct all source vertices with the exact updated
+boundary. Complete cyclic rows and a symbolic disk Euler argument supply
+the exterior planarity and Kempe closure.
+
+The [independent check](audit_strip_physical_list_transport.py) reconstructs
+the two disks and checks 39,368 endpoint updates over all canonical proper
+boundaries of the two sources. These finite checks corroborate the Lean
+law; its proof does not enumerate boundary assignments.
+
+Build `Mettapedia.GraphTheory.Kempe.BoundaryEndpointTransport` in the main
+Lean package, then replay `lake build kernelStripPhysicalListTransport`
+in the classical package and
+`python3 tools/fourcolor/near-linear/audit_strip_physical_list_transport.py`.
+The [audit receipt](strip-physical-list-audit.json) and
+[measurement receipt](strip-physical-list-measurements.json) retain costs
+and exact scope. The exteriors have low-degree vertices, so they are not
+claimed to satisfy minimal-counterexample restrictions. No uniform
+improving-move theorem, geometric supply, strict ambient reduction,
+catalogue deletion or whole-proof resource saving follows from this result.
+
+
 ## Retaining the boundary cut repairs list transport
 
 [`BoundaryListTransport`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/BoundaryListTransport.lean)
