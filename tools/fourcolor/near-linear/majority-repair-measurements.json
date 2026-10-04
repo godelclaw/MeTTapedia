@@ -1,0 +1,131 @@
+{
+  "classification": "KERNEL_CHECKED_MAJORITY_BLOCK_REPAIR_WITH_TWO_SOURCE_CONSUMERS",
+  "statement": "A convex block containing more than half the active ports of a noncrossing perfect matching contains an adjacent matched pair. Successful adjacent choices on that block reconstruct a genuine terminal witness while retaining the original chromogram.",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeMajorityRepair",
+        "source_sha256": "e9f18f60762b95a918d8f365b54b092f8c280d444d5cd106dabd163d4a952537",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.052,
+        "olean_bytes": 56880,
+        "olean_sha256": "d358e17335a4bbcd504851048c067992b8734e99fe6cf47e4c0fc61cf11e275a"
+      },
+      {
+        "module": "MettapediaFourColor.StripMajorityRepair",
+        "source_sha256": "f9a95e2f5b4a93743933b87e94ed8d9a74757fe411c2bf7998ec9c5febf63a4c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.82,
+        "olean_bytes": 216552,
+        "olean_sha256": "e621d6f66891ae3c600f5f997130f6e6c05bad20f1930711d8ae1d7210db6955"
+      },
+      {
+        "module": "MettapediaFourColor.MajorityRepairAudit",
+        "source_sha256": "d8f5d9fb53ecc8971d6cfd657094ae6bc9ca7e9af48999445965e418a512a2b6",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.728,
+        "olean_bytes": 2600,
+        "olean_sha256": "9e1f8834ffd33d57fde10a3b5d875173c4f23f5b8fd07c583083c814c192dd0a"
+      }
+    ]
+  },
+  "structural_core": {
+    "module": "Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingMatchingEar",
+    "lake_build_passed": true,
+    "reported_build_seconds": 3.0,
+    "existing_adjacent_theorem_refactored_through_general_block_lemma": true
+  },
+  "source_files": [
+    {
+      "file": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/NoncrossingMatchingEar.lean",
+      "bytes": 5299,
+      "sha256": "78c7e79d94a4e23220af468602e30065468e9bd2e55c085ec48a34a8ccbb2136"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeMajorityRepair.lean",
+      "bytes": 3371,
+      "sha256": "e9f18f60762b95a918d8f365b54b092f8c280d444d5cd106dabd163d4a952537"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripMajorityRepair.lean",
+      "bytes": 3355,
+      "sha256": "f9a95e2f5b4a93743933b87e94ed8d9a74757fe411c2bf7998ec9c5febf63a4c"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/MajorityRepairAudit.lean",
+      "bytes": 2521,
+      "sha256": "d8f5d9fb53ecc8971d6cfd657094ae6bc9ca7e9af48999445965e418a512a2b6"
+    }
+  ],
+  "audit": {
+    "roots": 10,
+    "dependency_declarations": 5721,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "interval_recursion_used": false,
+    "old_interval_rejection_used": false,
+    "bulk_repair_tables_used": false,
+    "matching_signature_tables_used": false,
+    "required_dependencies": [
+      "Pigeonhole cardinality bound and shortest chord",
+      "Exact active-port compression and cyclic order",
+      "Original chromogram and component retained",
+      "Existing actual D0099 colouring witnesses"
+    ]
+  },
+  "bridge_and_audit_frontend_seconds_including_imports": 10.6,
+  "source_consumers": {
+    "specified_inputs": 2,
+    "source": "D0099",
+    "active_ports": 6,
+    "block_ports": 4,
+    "successful_adjacent_pairs_per_input": 3,
+    "new_colour_witness_bytes": 0,
+    "reused_colour_witness_bytes": 152,
+    "old_interval_obligations_no_longer_consumed": 2,
+    "retained_finite_checks": [
+      "Exact active-port maps",
+      "Cyclic-order preservation",
+      "Block membership and successful adjacent pairs",
+      "Existing source colourings and boundary traces"
+    ]
+  },
+  "independent_program": "majority-repair-audit.json",
+  "program_only_results": {
+    "anchor_closure": 1993,
+    "majority_closure": 2251,
+    "combined_closure": 7381,
+    "combined_rounds": 14,
+    "majority_then_anchor_closes": true,
+    "one_majority_round_then_anchor_closes": true,
+    "first_majority_inputs_added": 349,
+    "subsequent_anchor_rounds": 17,
+    "sufficient_irredundant_seed_count": 5,
+    "five_seed_anchor_rounds": 53,
+    "candidate_anchor_implications_before_deduplication": 162382,
+    "five_seed_repairs_lean_certified": false
+  },
+  "scope_limits": [
+    "The full source closure remains program evidence, not a Lean repair theorem.",
+    "The general converse to majority sufficiency is not proved; bounded tests cover up to fourteen active ports.",
+    "Actual matching and active-order hypotheses must be supplied.",
+    "No geometric supply or strict ambient reduction is added.",
+    "No net certificate size or whole-proof runtime saving is claimed."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0
+}

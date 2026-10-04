@@ -1,5 +1,66 @@
 # Near-linear Four Colour catalogue bridges
 
+## Majority blocks give a structural adaptive repair law
+
+[`exists_adjacent_majority`](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/NoncrossingMatchingEar.lean)
+proves a sufficient condition at arbitrary boundary length: a convex block
+containing more than half the active ports contains a matched adjacent pair
+in every noncrossing perfect matching. The proof has two parts. Injectivity
+prevents every block port from pairing outside the block; a shortest chord
+inside the block then has adjacent endpoints. The existing adjacent-pair
+theorem now reuses the same localized argument.
+
+[`KempeMajorityRepair.answer`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeMajorityRepair.lean)
+removes the inactive ports, retains the actual component matching and chooses
+one of the successful adjacent pairs in that block. Its terminal witness
+matches the original chromogram. The active ordering and its noncrossing
+property are explicit hypotheses.
+
+[`StripMajorityRepair.source_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripMajorityRepair.lean)
+applies this one law to both earlier D0099 inputs. Each uses four consecutive
+ports among six active ports, with successful repairs on the three intervening
+pairs. The existing colouring witnesses are reused. The new proof depends on
+neither interval recursion nor the two previous interval rejection checks.
+It retains finite source, coordinate and witness checks; no net check-count
+or runtime saving is claimed. Replay with `lake build kernelMajorityRepair`;
+the [receipt](majority-repair-measurements.json) records ten audited roots.
+
+The [independent program](audit_majority_repair.py) replaces every adjacent-chord
+interval query by a run of successful pairs of length at least half the active
+boundary. On D0099 the resulting closure is unchanged:
+
+| Rules available | Canonical source inputs repaired |
+| --- | ---: |
+| Anchor rule | 1,993 / 7,381 |
+| Majority-block rule | 2,251 / 7,381 |
+| Both rules | 7,381 / 7,381 |
+
+Both rules together close in fourteen rounds. A two-phase strategy also
+closes: just one majority round adds 349 inputs to the 1,587 directly
+extending inputs; seventeen anchor rounds then reach all 7,381. This
+establishes the sufficiency of that order in the finite program, not a bound
+for the complete colouring algorithm. Each input's initial extension is
+independently checked by search and exact ear elimination.
+
+A replayable seed test reduces the 349 new inputs to five sufficient inputs,
+each requiring one majority step. Removing any one of those five prevents
+full anchor closure for that particular set; no globally minimal seed count
+is claimed. Using five seeds takes fifty-three anchor rounds, and the anchor
+mechanism still has 162,382 candidate implications before deduplication.
+Neither those five source repairs nor the full closure is Lean-certified
+here, so this finding does not establish a compact proof.
+
+The [program receipt](majority-repair-audit.json) additionally checks the
+equivalence of the successful-run test and hitting every noncrossing matching
+for every subset of cyclic adjacent pairs through fourteen active ports.
+The unbounded Lean theorem proves sufficiency only; it does not use this
+enumeration or assert the general converse.
+
+The unresolved task is a structural progress argument explaining the source
+closure and its extension to families. The complete 7,381-input result remains
+program evidence. No new occurrence supply, strict reduction, catalogue entry
+removal or original certificate replacement is established.
+
 ## Adaptive chord choice uses noncrossing geometry
 
 [`KempeIntervalMatching`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeIntervalMatching.lean)
