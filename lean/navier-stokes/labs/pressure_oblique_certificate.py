@@ -21,16 +21,18 @@ def exact_float(value):
     return result
 
 
-def original_datum(n, amplitude, normalization=1):
-    """Exact Fourier data for A*(sin y-4sin z,sin z,sin(x+4y))."""
+def original_datum(n, amplitude, normalization=1, weights=(1, 1, 1)):
+    """Exact Fourier data for A*(a sin y-4b sin z,b sin z,c sin(x+4y))."""
     require(isinstance(n, int) and n % 2 == 0 and n > 12,
             'An even grid retaining the original oblique mode without aliasing')
     require(np.isfinite(amplitude) and amplitude > 0,
             'Positive finite original amplitude')
     require(normalization in (1, n**3), 'Normalized or FFT initial coefficients')
+    require(len(weights) == 3, 'Three original parent strengths')
+    a, b, c = map(Q, weights)
     result = np.zeros((n, n, n, 16), dtype=complex)
-    for mode, component, multiplier in [((0, 1, 0), 0, 1), ((0, 0, 1), 0, -4),
-                                         ((0, 0, 1), 1, 1), ((1, 4, 0), 2, 1)]:
+    for mode, component, multiplier in [((0, 1, 0), 0, a), ((0, 0, 1), 0, -4*b),
+                                         ((0, 0, 1), 1, b), ((1, 4, 0), 2, c)]:
         for sign in (-1, 1):
             index = tuple(sign*k % n for k in mode)+(component,)
             value = -Q(amplitude)*multiplier*sign*normalization/2
@@ -38,17 +40,18 @@ def original_datum(n, amplitude, normalization=1):
     return result
 
 
-def initial_identity(raw, amplitude):
-    require(np.array_equal(raw, original_datum(raw.shape[0], amplitude)),
+def initial_identity(raw, amplitude, weights=(1, 1, 1)):
+    require(np.array_equal(raw, original_datum(raw.shape[0], amplitude, weights=weights)),
             'Exact original oblique velocity and zero original pressure moments')
 
 
-def make_flow(n, nu, amplitude):
+def make_flow(n, nu, amplitude, weights=(1, 1, 1)):
     from reciprocal_pressure_payment import make_flow as reciprocal_flow
     flow = reciprocal_flow(n, nu)
-    flow.initial = original_datum(n, amplitude, n**3)
-    initial_identity(flow.initial/n**3, amplitude)
-    flow.energy0 = exact_float(19*Q(amplitude)**2/4)
+    flow.initial = original_datum(n, amplitude, n**3, weights=weights)
+    initial_identity(flow.initial/n**3, amplitude, weights=weights)
+    a, b, c = map(Q, weights)
+    flow.energy0 = exact_float((a*a+17*b*b+c*c)*Q(amplitude)**2/4)
     return flow
 
 

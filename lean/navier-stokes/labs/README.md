@@ -40372,3 +40372,126 @@ triples `(4,1,1), (1,1,3)`, then pass those eight filenames to `--assemble`.
 Assembly checks the saved coefficients, not their provenance. The
 independent full-recurrence fixtures remain available through
 `pressure_oblique_next_return.py --fixtures`.
+
+## Finite-amplitude tests of the original oblique pressure stock
+
+`pressure_oblique_amplitude.py` tests the amplitude restriction in the
+preceding theorem. It fixes the dyadic original shape
+
+```text
+U = ((1/8)sin y-4sin z, sin z, (1/8)sin(x+4y)),
+u0 = epsilon U,                 nu=1,
+K(epsilon) = epsilon^12 alpha/64^4.
+```
+
+The first integrated correction for this shape is exactly negative,
+approximately -1.1168458766495466e-14. Thus the existing analytic argument
+pays K for sufficiently small epsilon. It supplies no numerical threshold
+covering the finite amplitudes tested here. This experiment asks whether
+stronger actual nonlinear feedback would invalidate that same allowance.
+
+### What the computation retains
+
+The existing projected Fourier NS solver evolves the velocity and all
+conditional pressure-moment fields through order three, together with the
+mean fourth moment: sixteen fields in total. The canonical pressure is
+recomputed from the evolving velocity. All moments start at zero once,
+and the same accumulated history is retained at every reported time.
+This is an unforced numerical system. No auxiliary sampling control is
+applied as a force to the velocity equation.
+
+The original Fourier coefficients and kinetic energy are checked against
+an independent rational construction. Full rational NS/moment jets check
+both initial time derivatives of the numerical vector field. Ordered-time
+Brownian integration independently supplies the exact leading stock.
+For epsilon=8, that stock is approximately 1.8862012473873583e-8 and the
+initial kinetic energy is exactly 545/2.
+
+The evolution is still a finite Fourier approximation. Its omitted
+physical outputs and roundoff have NOT been paid by a continuum residual
+bound. The tests below are numerical evidence, not a new analytic or Lean
+payment theorem, and not evidence of a singular solution.
+
+### Results on the original history
+
+At time t=1/2, viscosity one, the ratio of the computed fourth pressure
+moment to the original stock is:
+
+| Amplitude epsilon | Grid | Time step | Phi/K at t=1/2 |
+| --- | --- | --- | --- |
+| 1 | 32^3 | 1/512 | 0.9967795467 |
+| 2 | 32^3 | 1/512 | 0.9884122712 |
+| 4 | 32^3 | 1/512 | 0.9491977698 |
+| 8 | 32^3 | 1/512 | 0.7860637057 |
+| 8 | 48^3 | 1/1024 | 0.7860632985 |
+| 32 | 32^3 | 1/1024 | 0.1028529108 |
+| 32 | 48^3 | 1/1024 | 0.1028432121 |
+
+Every reported value at t=1/8,1/4,3/8,1/2 is below the stock. These
+sampled values do not bound the whole intervening interval. For amplitude
+eight, simultaneous spatial/time refinement changes the final ratio by
+about 4.1e-7. At amplitude thirty-two, spatial refinement changes it by
+about 9.7e-6. Comparing time steps 1/512 and 1/1024 at grid32 changes
+that amplitude's ratio at t=1/2 by about 6.1e-10. These differences support
+the observed large saving but are not numerical error certificates.
+
+A longer amplitude-thirty-two run, starting once at the original datum,
+retains all moments through time two at grid32 and time step 1/512. Its
+final ratio is 0.1028561063; the largest of its sixteen reported ratios
+is 0.1028565518. This includes the slower generated parents after the
+initial burst, but neither certifies the intervening intervals nor pays
+the infinite future. The complete reported values and diagnostics are
+retained in `pressure_oblique_amplitude_results.json`.
+
+This bounded attempt has not found a failure: increasing amplitude in
+this shape increased the observed saving over the original forecast.
+That behavior does not establish monotonicity in amplitude, generalize to
+other parent geometries, or settle the future tail. In particular, the
+previous slow-parent calculation shows why the delayed history cannot
+simply be replaced by the original heat decay.
+
+### The pressure observation already has a continuation consumer
+
+The direct analytic bridge is (636), rather than an identification of
+Phi with cubic stretching. For the actual unforced spatial diffusion X,
+uniform original label a and original pressure impulse P, it gives
+
+```text
+Z_t = u0(a)-P_t,           E[Z_t | X_t=x] = u(t,x),
+||u(t)||_4 <= ||u0||_4 + Phi(t)^(1/4).
+```
+
+The proof uses the literal conditional-moment equation, incompressibility,
+conditional Jensen and Minkowski. The stochastic state is not assumed
+Gaussian. The second pressure moment is already paid by initial energy;
+that does not supply this fourth moment.
+
+To see the continuation implication directly, write
+E1=||grad u||_2^2 and D=||Delta u||_2^2. The ordinary three-dimensional
+Sobolev interpolation and Young inequality give
+
+```text
+E1' + nu D <= C nu^(-7) ||u||_4^8 E1.
+```
+
+Hence a finite B_P(u0,nu,H) paying Phi(t) for EVERY available smooth
+same-datum prefix and every t<=H gives
+
+```text
+E1(t) <= E1(0) exp(C nu^(-7) H [||u0||_4+B_P^(1/4)]^8).
+```
+
+This is the previously established analytic sufficient estimate, not a
+new Lean consumer. There is no additional unidentified stretching term
+to pay if this alternative uniform pressure bound is proved. Its full
+arbitrary-data payment, stochastic identification in Lean, and the stated
+whole-space counterpart remain distinct obligations. A numerical history
+or a known small-data construction cannot discharge their quantifiers.
+
+Run `python3 -O labs/pressure_oblique_amplitude.py` for the independent
+datum, jet and stock checks. Add `--prefix --amplitude 8` for the default
+numerical history. `--n 48 --dt 0.0009765625` selects the displayed spatial
+and temporal refinement. The options `--weights A B C` and `--final T`
+retain their specified original datum and moments throughout each run.
+Input Fourier coefficients must pass the exact-representability checks;
+the subsequent floating evolution is not a rounding enclosure.

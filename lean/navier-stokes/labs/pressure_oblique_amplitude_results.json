@@ -1,0 +1,563 @@
+{
+  "scope": "Numerical Fourier histories, not continuum enclosures or Lean certificates",
+  "datum": "epsilon*((sin y)/8-4sin z,sin z,sin(x+4y)/8)",
+  "viscosity": 1,
+  "weights": [
+    "1/8",
+    "1",
+    "1/8"
+  ],
+  "stock": "epsilon^12*alpha/64^4",
+  "alpha": "286662963478641031715316500074864459911482198808067888826733584543504645354907013/62250594947644040165703644484760700514092008070712907242986612954178468372574157819328000000",
+  "method": "Projected numerical NS and complete conditional moments through the mean fourth moment; all moments initialized once at zero",
+  "cases": [
+    {
+      "amplitude": 1,
+      "grid": 32,
+      "time_step": 0.001953125,
+      "final_time": 0.5,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 8.957751769336786e-20,
+          "forecast": 2.744784065562065e-19,
+          "ratio": 0.32635542743514345,
+          "energy_balance": 2.872280191468235e-11,
+          "high_velocity_fraction": 1.896337129199871e-16,
+          "high_moment_fraction": 1.0242095222169525e-09,
+          "minimum_covariance": 1.3133966471153243e-14,
+          "fourth_second_jensen_gap": 3.8642209033030555e-20
+        },
+        {
+          "time": 0.25,
+          "phi": 2.4647951324384e-19,
+          "forecast": 2.744784065562065e-19,
+          "ratio": 0.8979923642677041,
+          "energy_balance": 2.916511476769301e-11,
+          "high_velocity_fraction": 2.710406914444962e-19,
+          "high_moment_fraction": 3.334087374529923e-12,
+          "minimum_covariance": 1.0511971731862301e-13,
+          "fourth_second_jensen_gap": 1.3697213419896225e-19
+        },
+        {
+          "time": 0.375,
+          "phi": 2.714162084889351e-19,
+          "forecast": 2.744784065562065e-19,
+          "ratio": 0.9888435738691002,
+          "energy_balance": 2.923172814917052e-11,
+          "high_velocity_fraction": 1.2068115232338218e-22,
+          "high_moment_fraction": 8.500903621169054e-15,
+          "minimum_covariance": 2.218164892863296e-13,
+          "fourth_second_jensen_gap": 1.6410875015744046e-19
+        },
+        {
+          "time": 0.5,
+          "phi": 2.7359446165347166e-19,
+          "forecast": 2.744784065562065e-19,
+          "ratio": 0.9967795466542326,
+          "energy_balance": 2.927968978383433e-11,
+          "high_velocity_fraction": 3.629303785316567e-26,
+          "high_moment_fraction": 1.94159477769494e-17,
+          "minimum_covariance": 3.1549839044224604e-13,
+          "fourth_second_jensen_gap": 1.7035256620408511e-19
+        }
+      ]
+    },
+    {
+      "amplitude": 2,
+      "grid": 32,
+      "time_step": 0.001953125,
+      "final_time": 0.5,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 3.655247348440084e-16,
+          "forecast": 1.1242635532542218e-15,
+          "ratio": 0.32512370768044885,
+          "energy_balance": 1.4628298572461063e-10,
+          "high_velocity_fraction": 1.2117578280857372e-14,
+          "high_moment_fraction": 4.180771919991397e-09,
+          "minimum_covariance": 7.673371427713756e-13,
+          "fourth_second_jensen_gap": 1.5780527517200072e-16
+        },
+        {
+          "time": 0.25,
+          "phi": 1.0018061731537173e-15,
+          "forecast": 1.1242635532542218e-15,
+          "ratio": 0.8910776928185147,
+          "energy_balance": 1.4794920843996806e-10,
+          "high_velocity_fraction": 1.7179867410339618e-17,
+          "high_moment_fraction": 1.4224280348777027e-11,
+          "minimum_covariance": 6.522069423969583e-12,
+          "fourth_second_jensen_gap": 5.575624651984298e-16
+        },
+        {
+          "time": 0.375,
+          "phi": 1.1023126023191707e-15,
+          "forecast": 1.1242635532542218e-15,
+          "ratio": 0.9804752623426124,
+          "energy_balance": 1.482334255342721e-10,
+          "high_velocity_fraction": 7.511753280945755e-21,
+          "high_moment_fraction": 3.7255578003963015e-14,
+          "minimum_covariance": 1.3721263774365484e-11,
+          "fourth_second_jensen_gap": 6.675037045397579e-16
+        },
+        {
+          "time": 0.5,
+          "phi": 1.1112358920579295e-15,
+          "forecast": 1.1242635532542218e-15,
+          "ratio": 0.9884122711631242,
+          "energy_balance": 1.4842527207292733e-10,
+          "high_velocity_fraction": 2.1909942725755887e-24,
+          "high_moment_fraction": 8.199127053032188e-17,
+          "minimum_covariance": 1.9775876011407582e-11,
+          "fourth_second_jensen_gap": 6.927675485201234e-16
+        }
+      ]
+    },
+    {
+      "amplitude": 4,
+      "grid": 32,
+      "time_step": 0.001953125,
+      "final_time": 0.5,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 1.4743197267668184e-12,
+          "forecast": 4.604983514129293e-12,
+          "ratio": 0.3201574386191004,
+          "energy_balance": 1.0875709222091245e-09,
+          "high_velocity_fraction": 7.706744666263682e-13,
+          "high_moment_fraction": 1.81927546475627e-08,
+          "minimum_covariance": 4.713066905920658e-11,
+          "fourth_second_jensen_gap": 6.385024466641783e-13
+        },
+        {
+          "time": 0.25,
+          "phi": 3.9685185893621396e-12,
+          "forecast": 4.604983514129293e-12,
+          "ratio": 0.8617877951540299,
+          "energy_balance": 1.0923599802481476e-09,
+          "high_velocity_fraction": 1.058006908335085e-15,
+          "high_moment_fraction": 7.168459975581722e-11,
+          "minimum_covariance": 3.8928562287530254e-10,
+          "fourth_second_jensen_gap": 2.2211316621798908e-12
+        },
+        {
+          "time": 0.375,
+          "phi": 4.340930952717969e-12,
+          "forecast": 4.604983514129293e-12,
+          "ratio": 0.9426593905057117,
+          "energy_balance": 1.0936958005913766e-09,
+          "high_velocity_fraction": 4.3119090053956083e-19,
+          "high_moment_fraction": 2.0287900896605327e-13,
+          "minimum_covariance": 8.511040909382539e-10,
+          "fourth_second_jensen_gap": 2.6408199453478995e-12
+        },
+        {
+          "time": 0.5,
+          "phi": 4.371040081514064e-12,
+          "forecast": 4.604983514129293e-12,
+          "ratio": 0.9491977697862698,
+          "energy_balance": 1.0945484518742887e-09,
+          "high_velocity_fraction": 1.93945357276026e-22,
+          "high_moment_fraction": 3.755993384435807e-15,
+          "minimum_covariance": 1.2500417438957755e-09,
+          "fourth_second_jensen_gap": 2.733392474835526e-12
+        }
+      ]
+    },
+    {
+      "amplitude": 8,
+      "grid": 32,
+      "time_step": 0.001953125,
+      "final_time": 0.5,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 5.658635215570556e-09,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.300001668613491,
+          "energy_balance": 1.2372481705824612e-08,
+          "high_velocity_fraction": 4.809210563912005e-11,
+          "high_moment_fraction": 1.0365021757629393e-07,
+          "minimum_covariance": 2.8770103289780587e-09,
+          "fourth_second_jensen_gap": 2.481433305955926e-09
+        },
+        {
+          "time": 0.25,
+          "phi": 1.393776921080684e-08,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.7389333047103283,
+          "energy_balance": 1.236247726410511e-08,
+          "high_velocity_fraction": 5.831277821422563e-14,
+          "high_moment_fraction": 5.59804721756917e-10,
+          "minimum_covariance": 2.4691237606561728e-08,
+          "fourth_second_jensen_gap": 7.935439915496654e-09
+        },
+        {
+          "time": 0.375,
+          "phi": 1.4787155315722889e-08,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.7839648784139595,
+          "energy_balance": 1.2372879609756637e-08,
+          "high_velocity_fraction": 1.9886269759146852e-16,
+          "high_moment_fraction": 1.0581467171700032e-10,
+          "minimum_covariance": 5.6841032671424954e-08,
+          "fourth_second_jensen_gap": 9.064891609998493e-09
+        },
+        {
+          "time": 0.5,
+          "phi": 1.4826743422822884e-08,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.7860637057344709,
+          "energy_balance": 1.237867763848044e-08,
+          "high_velocity_fraction": 2.4933632294988457e-17,
+          "high_moment_fraction": 9.302699313106726e-11,
+          "minimum_covariance": 8.398725070358668e-08,
+          "fourth_second_jensen_gap": 9.291071197071013e-09
+        }
+      ]
+    },
+    {
+      "amplitude": 8,
+      "grid": 48,
+      "time_step": 0.0009765625,
+      "final_time": 0.5,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 5.6586316738272035e-09,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.3000014808422573,
+          "energy_balance": 7.736389306955971e-10,
+          "high_velocity_fraction": 5.580564263685213e-17,
+          "high_moment_fraction": 2.427956067455641e-13,
+          "minimum_covariance": 2.8695405525790596e-09,
+          "fourth_second_jensen_gap": 2.4814297808492742e-09
+        },
+        {
+          "time": 0.25,
+          "phi": 1.3937761765395398e-08,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.7389329099798374,
+          "energy_balance": 7.732978701824322e-10,
+          "high_velocity_fraction": 7.853473969433809e-22,
+          "high_moment_fraction": 1.0469951536926114e-16,
+          "minimum_covariance": 2.4391709865831316e-08,
+          "fourth_second_jensen_gap": 7.935432413318604e-09
+        },
+        {
+          "time": 0.375,
+          "phi": 1.478714764050266e-08,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.7839644714997852,
+          "energy_balance": 7.743210517219268e-10,
+          "high_velocity_fraction": 7.600378999737013e-24,
+          "high_moment_fraction": 2.4870704554513435e-18,
+          "minimum_covariance": 5.668677410360162e-08,
+          "fourth_second_jensen_gap": 9.064883884186523e-09
+        },
+        {
+          "time": 0.5,
+          "phi": 1.4826735741217169e-08,
+          "forecast": 1.8862012473873583e-08,
+          "ratio": 0.7860632984817599,
+          "energy_balance": 7.748894859105349e-10,
+          "high_velocity_fraction": 7.920723087215256e-25,
+          "high_moment_fraction": 1.6430022787805523e-18,
+          "minimum_covariance": 8.398726639465312e-08,
+          "fourth_second_jensen_gap": 9.291063466955695e-09
+        }
+      ]
+    },
+    {
+      "amplitude": 32,
+      "grid": 32,
+      "time_step": 0.0009765625,
+      "final_time": 0.5,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 0.02632463068375071,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.08318678947549644,
+          "energy_balance": 1.6427839000243694e-07,
+          "high_velocity_fraction": 1.8694389745751937e-07,
+          "high_moment_fraction": 9.310600833357665e-05,
+          "minimum_covariance": 1.5804967899591147e-05,
+          "fourth_second_jensen_gap": 0.012916684270711881
+        },
+        {
+          "time": 0.25,
+          "phi": 0.032241297517046255,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10188367165290985,
+          "energy_balance": 1.608595994184725e-07,
+          "high_velocity_fraction": 4.663579599413532e-09,
+          "high_moment_fraction": 9.198708527724203e-07,
+          "minimum_covariance": 0.00011816255205862425,
+          "fourth_second_jensen_gap": 0.01783512927308821
+        },
+        {
+          "time": 0.375,
+          "phi": 0.03250785659721867,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10272600803177392,
+          "energy_balance": 1.598418748471886e-07,
+          "high_velocity_fraction": 3.0920825753282855e-11,
+          "high_moment_fraction": 5.344120715290195e-08,
+          "minimum_covariance": 0.00021284859344434086,
+          "fourth_second_jensen_gap": 0.018474584349688534
+        },
+        {
+          "time": 0.5,
+          "phi": 0.03254801522921354,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285291076805592,
+          "energy_balance": 1.59619958139956e-07,
+          "high_velocity_fraction": 1.807313614633624e-11,
+          "high_moment_fraction": 6.466961686965732e-09,
+          "minimum_covariance": 0.0002788700496430134,
+          "fourth_second_jensen_gap": 0.0186672519694976
+        }
+      ]
+    },
+    {
+      "amplitude": 32,
+      "grid": 48,
+      "time_step": 0.0009765625,
+      "final_time": 0.5,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 0.026321752313122636,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.0831776937197251,
+          "energy_balance": 1.6429476090706885e-07,
+          "high_velocity_fraction": 1.3368297125379957e-11,
+          "high_moment_fraction": 1.2809832965048982e-07,
+          "minimum_covariance": 1.5629455352721514e-05,
+          "fourth_second_jensen_gap": 0.012913810948559595
+        },
+        {
+          "time": 0.25,
+          "phi": 0.03223828402924087,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10187414892194868,
+          "energy_balance": 1.608759703231044e-07,
+          "high_velocity_fraction": 1.290851986555128e-12,
+          "high_moment_fraction": 1.2131849994120836e-10,
+          "minimum_covariance": 0.00011815985706380821,
+          "fourth_second_jensen_gap": 0.01783212226473555
+        },
+        {
+          "time": 0.375,
+          "phi": 0.032504787589984846,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10271630985740156,
+          "energy_balance": 1.5986461221473292e-07,
+          "high_velocity_fraction": 6.232494122887334e-15,
+          "high_moment_fraction": 1.9891677850199534e-12,
+          "minimum_covariance": 0.00021286392808691985,
+          "fourth_second_jensen_gap": 0.018471554985499943
+        },
+        {
+          "time": 0.5,
+          "phi": 0.03254494607167721,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10284321211872219,
+          "energy_balance": 1.5964815247571096e-07,
+          "high_velocity_fraction": 2.7893398828913794e-16,
+          "high_moment_fraction": 8.564110579122838e-14,
+          "minimum_covariance": 0.00027892244595794166,
+          "fourth_second_jensen_gap": 0.01866423428878007
+        }
+      ]
+    },
+    {
+      "amplitude": 32,
+      "grid": 32,
+      "time_step": 0.001953125,
+      "final_time": 2.0,
+      "reports": [
+        {
+          "time": 0.125,
+          "phi": 0.026324635327355714,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.08318680414945698,
+          "energy_balance": 2.608095201139804e-06,
+          "high_velocity_fraction": 1.8694401242519447e-07,
+          "high_moment_fraction": 9.310588087155748e-05,
+          "minimum_covariance": 1.5804920736852263e-05,
+          "fourth_second_jensen_gap": 0.012916693793497937
+        },
+        {
+          "time": 0.25,
+          "phi": 0.03224129842763145,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10188367453039215,
+          "energy_balance": 2.550678800616879e-06,
+          "high_velocity_fraction": 4.663573575199736e-09,
+          "high_moment_fraction": 9.198589117633746e-07,
+          "minimum_covariance": 0.00011816262608302407,
+          "fourth_second_jensen_gap": 0.01783513545542719
+        },
+        {
+          "time": 0.375,
+          "phi": 0.03250785687383885,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10272600890590373,
+          "energy_balance": 2.5339304556837305e-06,
+          "high_velocity_fraction": 3.092005810278252e-11,
+          "high_moment_fraction": 5.343898297206111e-08,
+          "minimum_covariance": 0.00021284861174657814,
+          "fourth_second_jensen_gap": 0.018474589828412644
+        },
+        {
+          "time": 0.5,
+          "phi": 0.032548015421437544,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285291137549075,
+          "energy_balance": 2.53024700214155e-06,
+          "high_velocity_fraction": 1.807307058820145e-11,
+          "high_moment_fraction": 6.466845390850254e-09,
+          "minimum_covariance": 0.00027886999791610506,
+          "fourth_second_jensen_gap": 0.01866725730353846
+        },
+        {
+          "time": 0.625,
+          "phi": 0.032549167436049437,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.1028565517835232,
+          "energy_balance": 2.529373887227848e-06,
+          "high_velocity_fraction": 3.1922275851419814e-12,
+          "high_moment_fraction": 1.1471252011699428e-09,
+          "minimum_covariance": 0.0003145136846360762,
+          "fourth_second_jensen_gap": 0.018730507905118675
+        },
+        {
+          "time": 0.75,
+          "phi": 0.032548977949677926,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285595299970418,
+          "energy_balance": 2.529171069909353e-06,
+          "high_velocity_fraction": 1.655566404090416e-13,
+          "high_moment_fraction": 2.5753764383452695e-10,
+          "minimum_covariance": 0.00033253044226808423,
+          "fourth_second_jensen_gap": 0.018754267272014388
+        },
+        {
+          "time": 0.875,
+          "phi": 0.032548945671783985,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.1028558510003865,
+          "energy_balance": 2.5291365091106854e-06,
+          "high_velocity_fraction": 1.963089072602043e-14,
+          "high_moment_fraction": 8.267120804081293e-11,
+          "minimum_covariance": 0.0003451372559729102,
+          "fourth_second_jensen_gap": 0.018763555730678436
+        },
+        {
+          "time": 1.0,
+          "phi": 0.03254900182710025,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285602845322632,
+          "energy_balance": 2.5291365091106854e-06,
+          "high_velocity_fraction": 8.09733256394409e-15,
+          "high_moment_fraction": 2.4702027727752798e-11,
+          "minimum_covariance": 0.0003549523129653365,
+          "fourth_second_jensen_gap": 0.018767280138687906
+        },
+        {
+          "time": 1.125,
+          "phi": 0.03254901965739508,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285608479760584,
+          "energy_balance": 2.529145604057703e-06,
+          "high_velocity_fraction": 9.493908397723735e-16,
+          "high_moment_fraction": 6.953715296469476e-12,
+          "minimum_covariance": 0.0003621703042882508,
+          "fourth_second_jensen_gap": 0.018768780857228565
+        },
+        {
+          "time": 1.25,
+          "phi": 0.03254902265631289,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.1028560942742951,
+          "energy_balance": 2.529153789510019e-06,
+          "high_velocity_fraction": 1.9469117727123815e-16,
+          "high_moment_fraction": 1.8814774900175443e-12,
+          "minimum_covariance": 0.0003701706560889145,
+          "fourth_second_jensen_gap": 0.018769448793203844
+        },
+        {
+          "time": 1.375,
+          "phi": 0.032549023858300365,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285609807261918,
+          "energy_balance": 2.529162884457037e-06,
+          "high_velocity_fraction": 7.568060545883905e-17,
+          "high_moment_fraction": 4.757349328941601e-13,
+          "minimum_covariance": 0.00037417572824994345,
+          "fourth_second_jensen_gap": 0.018769705534534848
+        },
+        {
+          "time": 1.5,
+          "phi": 0.03254902460824821,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285610044248163,
+          "energy_balance": 2.5291674319305457e-06,
+          "high_velocity_fraction": 1.3040154176082977e-17,
+          "high_moment_fraction": 1.1364709315109083e-13,
+          "minimum_covariance": 0.00037808518454548817,
+          "fourth_second_jensen_gap": 0.01876983329188481
+        },
+        {
+          "time": 1.625,
+          "phi": 0.032549025424957724,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285610302331337,
+          "energy_balance": 2.5291719794040546e-06,
+          "high_velocity_fraction": 3.651473480950172e-18,
+          "high_moment_fraction": 2.561230603572734e-14,
+          "minimum_covariance": 0.0003817464569649986,
+          "fourth_second_jensen_gap": 0.018769904830264982
+        },
+        {
+          "time": 1.75,
+          "phi": 0.03254902586464913,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.1028561044127542,
+          "energy_balance": 2.5291765268775634e-06,
+          "high_velocity_fraction": 1.0618698984989877e-18,
+          "high_moment_fraction": 5.4644319524381466e-15,
+          "minimum_covariance": 0.000384691400599122,
+          "fourth_second_jensen_gap": 0.018769936337746564
+        },
+        {
+          "time": 1.875,
+          "phi": 0.03254902621435839,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285610551784814,
+          "energy_balance": 2.5291774363722652e-06,
+          "high_velocity_fraction": 2.618221712748731e-19,
+          "high_moment_fraction": 1.1059980022047822e-15,
+          "minimum_covariance": 0.0003863470732122759,
+          "fourth_second_jensen_gap": 0.01876994935536886
+        },
+        {
+          "time": 2.0,
+          "phi": 0.03254902645333226,
+          "forecast": 0.31645205746887145,
+          "ratio": 0.10285610627301428,
+          "energy_balance": 2.529181983845774e-06,
+          "high_velocity_fraction": 6.171435952368134e-20,
+          "high_moment_fraction": 2.1286634471980941e-16,
+          "minimum_covariance": 0.0003877956758955325,
+          "fourth_second_jensen_gap": 0.01876995690715412
+        }
+      ]
+    }
+  ]
+}

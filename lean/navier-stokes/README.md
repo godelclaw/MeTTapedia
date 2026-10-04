@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [finite-amplitude pressure test](labs/README.md#finite-amplitude-tests-of-the-original-oblique-pressure-stock)
+keeps one original parent geometry and increases its strength. Numerical
+histories through time one half remain below the original leading stock;
+the strongest tested amplitude has a substantially larger relative saving.
+Grid refinement supports this observation but does not give a continuum
+enclosure. The existing analytic pressure-impulse criterion makes this a
+direct continuation target: an original-data fourth-moment bound uniform
+over all available prefixes would control velocity in L4 and hence
+enstrophy. Arbitrary-data payment and formalization of that stochastic
+bridge remain open.
+
 The [complete cancellation boundary](labs/README.md#the-complete-cancellation-boundary-retains-the-original-payment)
 now has a strictly negative next pressure correction for every ratio of
 the remaining two parents. The preceding correction also has a negative
