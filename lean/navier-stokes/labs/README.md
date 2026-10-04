@@ -39769,9 +39769,11 @@ These are complete-time-polynomial feasibility bounds on floating
 coefficients, not continuum certificates. They improve on a screen using
 five sampled residuals per interval, which reaches 1/8 with conditional
 receiver interval [0.00492177,0.00507273] but does not cover the time between
-samples. The complete-polynomial extension to 1/8 and the arithmetic
-operator enclosure remain separate unfinished tests. Neither table
-establishes the later sign returns or all-time payment.
+samples. The complete-polynomial extension subsequently passed through 1/8
+with conditional pressure bound 0.728180 and receiver interval
+[0.00490803,0.00508647]. Its input rounding remains unenclosed. The separate
+arithmetic calculation below now covers the first two intervals; neither
+result establishes the later sign returns or all-time payment.
 
 To retain the complete correlations without unnecessary stored arrays,
 `pressure_history_slabs.py` now owns the real transform outputs, releases
@@ -39871,6 +39873,52 @@ A complete small oblique interval also gives identical coefficient centers,
 radii, field majorants, reconstructed endpoint balls and final norm
 enclosures. This storage change does not alter the arithmetic model or
 certify the stronger amplitude-eight history by itself.
+
+## Arithmetic enclosure of the stronger oblique prefix
+
+For the ORIGINAL datum `u0=8*(sin y-4sin z,sin z,sin(x+4y))`, viscosity
+one and zero initial pressure moments, the complete arithmetic consumer
+accepts two consecutive intervals of length 1/128. It uses retained grid
+64, integrator step 1/2048 and full operator verification grid 128. All
+sixteen residual time coefficients, generated spatial outputs and
+previous comparison accounts are retained.
+
+The resulting bounds are displayed conservatively rounded outward:
+
+| time | pressure-history upper bound on the prefix | receiver interval |
+| ---: | ---: | :--- |
+| 1/128 | 1.46033e-8 | [-1.07148e-6,1.66642e-6] |
+| 1/64 | 1.57644e-6 | [2.00751e-6,6.96357e-6] |
+
+The receiver `2 mean(u_3 sin x)` starts at zero and is strictly positive
+at the second endpoint. The canonical pressure, reconstructed velocity
+and retained conditional moments belong to the same history. The first
+endpoint hash equals the second initial hash exactly; no velocity error,
+moment, path error or pressure allowance is reset at the seam.
+
+The proposed corrected stock from (837) is approximately
+6.129654718562507 at this datum and viscosity. Its exact rational value
+exceeds six, whereas the whole accepted prefix has pressure cost below
+1.57644e-6. Thus this stronger finite prefix exhibits a generated receiver
+while fitting that stock. The small-amplitude all-time theorem (835)
+does not apply at amplitude eight. The finite certificate does not extend
+it to all time, establish the later receiver reversals or give an
+arbitrary-data signed-renewal allowance.
+
+The record `pressure_oblique_prefix_result.json` retains both complete
+interval outputs, their shared hashes and the exact candidate stock. It
+is an output record, not an independent proof. Recompute the reference,
+operator balls and comparison using:
+
+```sh
+python3 -O labs/pressure_history_certificate.py --prefix --n 64 --nu 1 \
+  --dt .00048828125 --h .0078125 --final .015625 --oblique-amplitude 8
+```
+
+The enclosure uses the analytic comparison and the explicit IEEE binary64
+arithmetic model of `pressure_prefix_certificate.py`. It is not a Lean
+kernel certificate. The earlier floating extension through 1/8 remains
+a separate feasibility result with unenclosed input rounding.
 
 ## Unequal oblique parents and cancellation of the integrated return
 

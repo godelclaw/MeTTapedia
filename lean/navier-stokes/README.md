@@ -36,14 +36,22 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [stronger oblique prefix](labs/README.md#arithmetic-enclosure-of-the-stronger-oblique-prefix)
+now has a positive generated velocity receiver and paid pressure history
+through time 1/64 at amplitude eight and viscosity one. Two consecutive
+intervals retain all sixteen fields, exact shared endpoints and accumulated
+errors. This is an analytic/computational enclosure under the stated
+arithmetic model, not a Lean certificate. Later returns, the global tail
+and arbitrary-data payment remain open.
+
 The [relative-vorticity comparison](labs/README.md#relative-vorticity-controls-a-retained-pressure-history)
 retains an exact curl/transport cancellation and lowers the growth loss
 available to the existing physical error bound. Its full curvature work
 and dissipation feed the same inherited pressure history. Exact algebra
 and outward scalar checks support the analytic estimate. Replaying the
-stronger oblique history improves the comparison substantially, but does
-not yet certify its payment; spatial residuals from generated modes are
-an identified obstruction to that verification. This is not a fluid
+stronger oblique history improves the comparison substantially. The earlier
+coarse spatial residual obstruction led to the refined finite prefix above;
+the later sign-return history remains unenclosed. This is not a fluid
 counterexample or an arbitrary-data reserve.
 
 The [slow-parent calculation](labs/README.md#a-fast-receiver-leaves-a-slower-pressure-parent)

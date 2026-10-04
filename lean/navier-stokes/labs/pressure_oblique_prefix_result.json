@@ -1,0 +1,209 @@
+{
+  "status": "accepted finite oblique pressure-history prefix with positive generated receiver",
+  "scope": "Analytic/computational enclosure under the stated IEEE binary64 model; not Lean-certified. No global tail or arbitrary-data payment.",
+  "norm_convention": "Normalized period-2pi torus; H1 denotes the homogeneous gradient L2 norm.",
+  "parameters": {
+    "n": 64,
+    "nu": 1.0,
+    "dt": 0.00048828125,
+    "h": 0.0078125,
+    "final": 0.015625,
+    "datum": "8.0*(sin y-4sin z,sin z,sin(x+4y))"
+  },
+  "command": "python3 -O labs/pressure_history_certificate.py --prefix --n 64 --nu 1 --dt .00048828125 --h .0078125 --final .015625 --oblique-amplitude 8",
+  "original_corrected_stock": "72226526653333523000031217277904163914952065013051699691150421213365506524547048306208850978468984071999915943764639747810797418423671666772628212132453626875331797387188220997769677006573807349700433283979446468706708572127673406842142144966/11783131345817744869086883450616430019089842221764222368976239496494571812139268741660105789449121632312723943575611481332793317594144543220774274354099198901237833938030009063331466932901899053392791663765782944774952005842061370208740234375",
+  "stock_lower_bound": "6",
+  "intervals": [
+    {
+      "time": 0.0078125,
+      "status": "interval accepted",
+      "grids": {
+        "fft_grid": 128,
+        "output_grid": 128,
+        "input_band": 21
+      },
+      "row": {
+        "S": 33.778936594854045,
+        "Splus": 31.699150836203142,
+        "V0": 52.04995653106599,
+        "V1": 85.52839296904693,
+        "V2": 225.1187407958194,
+        "D": 225.1187407958194,
+        "G0": 6.0544316607257915,
+        "G1": 24.16781285040922,
+        "G2": 2.0045064088341196,
+        "reference_H1": 35.039238952865546,
+        "final_H1": 31.588067782808018,
+        "reference_phi_upper": 8.737613827595335e-09,
+        "epsilon0": 0.00010204180331456993,
+        "epsilon1": 0.0009536075900964411,
+        "rI": 5.700513478263805e-06,
+        "rQ": 2.5126754156987415e-05,
+        "rT": 2.522880850164998e-06,
+        "rPhi": 3.3106234061785423e-07
+      },
+      "control": {
+        "path": 2.2361371049078493e-07,
+        "impulse": 0.00022800216271265188,
+        "e1": 4.4535261548935976e-08,
+        "e2": 1.994625601820179e-07,
+        "e3": 4.796407227388551e-08,
+        "e4": 4.6912779251013835e-09,
+        "energy_rhs": 1.929734544745755e-10,
+        "V0_squared": 21.165609178795773,
+        "linear_pressure": 1.2080492857634002e-05,
+        "Y_squared": 5.918160200811479e-13,
+        "local_pressure_sum": 0.0002308798383670185,
+        "cumulative_pressure": 0.00022797487712285155,
+        "trajectory_sum": 2.7285589800350422e-08,
+        "dissipation": 1.6815681446194038e-10,
+        "X": 9.679879426671062e-07,
+        "Y": 1.1165891742924825e-05,
+        "Xmax": 9.679879426671062e-07,
+        "Ymax": 1.1277550660354075e-05
+      },
+      "residual_bounds": {
+        "epsilon0": {
+          "bound": 0.00010204180331456993,
+          "stored_center_bound": 0.00010202984536195959,
+          "coefficient_radius_sum": 1.1957952610336793e-08
+        },
+        "epsilon1": {
+          "bound": 0.0009536075900964411,
+          "stored_center_bound": 0.0009527376952744657,
+          "coefficient_radius_sum": 8.698948219753768e-07
+        },
+        "rI": {
+          "bound": 5.700513478263805e-06,
+          "stored_center_bound": 5.696926487175053e-06,
+          "coefficient_radius_sum": 3.5869910887512794e-09
+        },
+        "rQ": {
+          "bound": 2.5126754156987415e-05,
+          "stored_center_bound": 2.512654688761788e-05,
+          "coefficient_radius_sum": 2.0726936953129414e-10
+        },
+        "rT": {
+          "bound": 2.522880850164998e-06,
+          "stored_center_bound": 2.522874002537424e-06,
+          "coefficient_radius_sum": 6.8476275736120125e-12
+        },
+        "rPhi": {
+          "bound": 3.3106234061785423e-07,
+          "stored_center_bound": 3.31062213870131e-07,
+          "coefficient_radius_sum": 1.2674772321539154e-13
+        }
+      },
+      "initial_endpoint_sha256": "9892db1c5b74ee25cbdf4bec19748d86bcb3ef5fd87e0aebda7f3673dd969aeb",
+      "final_endpoint_sha256": "9f7b7337ea03c3175db4375240f8e3339e1243209d43f3b1654fa84452bbb8e5",
+      "actual_phi_upper": 1.4603253396904511e-08,
+      "maximum_actual_phi_upper": 1.4603253396904511e-08,
+      "actual_final_H1_upper": 31.588078948699764,
+      "receiver": {
+        "reference_sine_exact": "1404767100050259/4722366482869645213696",
+        "radius_upper": 1.3689416767334517e-06,
+        "actual_sine_interval": [
+          -1.0714706724930898e-06,
+          1.6664126809738135e-06
+        ]
+      },
+      "scalar_substeps": 2
+    },
+    {
+      "time": 0.015625,
+      "status": "interval accepted",
+      "grids": {
+        "fft_grid": 128,
+        "output_grid": 128,
+        "input_band": 21
+      },
+      "row": {
+        "S": 34.296216758824336,
+        "Splus": 28.829319589163756,
+        "V0": 53.16351483412554,
+        "V1": 90.22251537404772,
+        "V2": 246.58900894504268,
+        "D": 246.58900894504268,
+        "G0": 11.0899233156964,
+        "G1": 43.57642253223172,
+        "G2": 3.3476594332883356,
+        "reference_H1": 32.97129574673014,
+        "final_H1": 30.313881149343718,
+        "reference_phi_upper": 1.4401852442258504e-06,
+        "epsilon0": 5.2193848661404626e-05,
+        "epsilon1": 0.0004412468730193951,
+        "rI": 2.8821817067962254e-06,
+        "rQ": 1.117253533049219e-05,
+        "rT": 3.8368083256865175e-06,
+        "rPhi": 5.053988744921761e-07
+      },
+      "control": {
+        "path": 8.33375884341758e-07,
+        "impulse": 0.0006531068012818461,
+        "e1": 6.70523061332815e-08,
+        "e2": 2.973913808690595e-07,
+        "e3": 1.7243405749455868e-07,
+        "e4": 2.3199335980688416e-08,
+        "energy_rhs": 7.01915525206631e-10,
+        "V0_squared": 43.24654128440739,
+        "linear_pressure": 4.338354585991532e-05,
+        "Y_squared": 3.836015920516884e-12,
+        "local_pressure_sum": 0.000743977898285137,
+        "cumulative_pressure": 0.000652857735042503,
+        "trajectory_sum": 2.4906623934316593e-07,
+        "dissipation": 5.978570838415214e-10,
+        "X": 1.7522278077457027e-06,
+        "Y": 2.324194439103757e-05,
+        "Xmax": 1.7522278077457027e-06,
+        "Ymax": 2.347436383494795e-05
+      },
+      "residual_bounds": {
+        "epsilon0": {
+          "bound": 5.2193848661404626e-05,
+          "stored_center_bound": 5.218226929175269e-05,
+          "coefficient_radius_sum": 1.1579369651928408e-08
+        },
+        "epsilon1": {
+          "bound": 0.0004412468730193951,
+          "stored_center_bound": 0.00044040451864401113,
+          "coefficient_radius_sum": 8.423543753839684e-07
+        },
+        "rI": {
+          "bound": 2.8821817067962254e-06,
+          "stored_center_bound": 2.878749410629985e-06,
+          "coefficient_radius_sum": 3.4322961662400674e-09
+        },
+        "rQ": {
+          "bound": 1.117253533049219e-05,
+          "stored_center_bound": 1.1171849190760652e-05,
+          "coefficient_radius_sum": 6.86139731538714e-10
+        },
+        "rT": {
+          "bound": 3.8368083256865175e-06,
+          "stored_center_bound": 3.836726244548805e-06,
+          "coefficient_radius_sum": 8.208113771180146e-11
+        },
+        "rPhi": {
+          "bound": 5.053988744921761e-07,
+          "stored_center_bound": 5.053928081160094e-07,
+          "coefficient_radius_sum": 6.066376166631633e-12
+        }
+      },
+      "initial_endpoint_sha256": "9f7b7337ea03c3175db4375240f8e3339e1243209d43f3b1654fa84452bbb8e5",
+      "final_endpoint_sha256": "72d3ed832f29b2a9d6978c332a03dadea96995eacac1f7a9e098e27423a1d043",
+      "actual_phi_upper": 1.576436045878138e-06,
+      "maximum_actual_phi_upper": 1.576436045878138e-06,
+      "actual_final_H1_upper": 30.313904391288112,
+      "receiver": {
+        "reference_sine_exact": "2647795924597983/590295810358705651712",
+        "radius_upper": 2.4780243300812493e-06,
+        "actual_sine_interval": [
+          2.00751644139906e-06,
+          6.963565101561559e-06
+        ]
+      },
+      "scalar_substeps": 2
+    }
+  ],
+  "note": "Stored output of the complete calculation. Recompute the command to regenerate the reconstructed reference and operator bounds; this record alone is not an independent proof."
+}
