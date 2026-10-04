@@ -1197,3 +1197,17 @@ target kernelStripPhase pkg : Unit := do
         "StripPhaseObstruction", "StripPhaseDisk", "StripPhaseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the phase obstruction and repair on the spherical coverage example. -/
+target kernelStripSphere pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-sphere",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripSpherePhase", "StripSphereGeometry", "StripSphereAudit"]
+      cwd := pkg.dir
+      env := env }

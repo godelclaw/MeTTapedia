@@ -1,0 +1,135 @@
+{
+  "classification": "SPHERICAL_SHARED_PHASE_OBSTRUCTION_AND_TWO_SWITCH_REPAIR",
+  "fixture_sha256": "b25c7da85cf85e4623851f7ff46295a4525eb6bb65dd05ea83c08a065c59ead3",
+  "geometric_source_sha256": "2a67b573b1cf656f9a43ddc3b9f618f532ceeb3c67fa71a7aeae28180bcedbd0",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue catalogue, MIT; Gonthier/Emery semantics and cubic Euler theorem.",
+  "ambient_vertices": 162,
+  "exterior_vertices": 154,
+  "degree_range": [
+    5,
+    7
+  ],
+  "geometric_replay": {
+    "evidence": "Independent program checks; no Lean coverage or reducibility claim.",
+    "vertices": 162,
+    "edges": 480,
+    "faces": 320,
+    "centres": [
+      108,
+      99,
+      115
+    ],
+    "charges": [
+      0,
+      0,
+      0
+    ],
+    "joint_radius_two_vertices": 33,
+    "nonobstructing_short_cycles_checked": 1817,
+    "independent_rule_comparisons": 3528,
+    "absent_configurations": [
+      "D0025.conf",
+      "D0058.conf",
+      "D0063.conf",
+      "D0066.conf",
+      "D0068.conf",
+      "D0069.conf",
+      "D0090.conf",
+      "D0092.conf",
+      "D0277.conf",
+      "D0000.conf",
+      "D0001.conf",
+      "D0004.conf",
+      "D0006.conf",
+      "D0051.conf",
+      "D0052.conf",
+      "D3009.conf"
+    ],
+    "independent_configuration_comparisons": 30720,
+    "positive_configuration": "D0099.conf",
+    "positive_core_vertices": 8,
+    "positive_boundary_ports": 11,
+    "triangle_attachment_sequence": [
+      [
+        12,
+        13,
+        15
+      ],
+      [
+        13,
+        14,
+        15
+      ],
+      [
+        13,
+        14,
+        16
+      ],
+      [
+        14,
+        16,
+        18
+      ],
+      [
+        14,
+        17,
+        18
+      ],
+      [
+        17,
+        18,
+        19
+      ]
+    ],
+    "core_map_preserves": "Unlabelled internal adjacency only; no boundary or repair transfer.",
+    "whole_flat_ball_claimed": false,
+    "all_planar_maps_covered": false,
+    "catalogue_entries_removed": 0,
+    "certificate_dependencies_removed": 0
+  },
+  "same_initial_boundary_partitions_as_smaller_example": true,
+  "fixed_pair_boundary_endpoints": [
+    4,
+    4,
+    8,
+    4,
+    8,
+    4
+  ],
+  "minimum_holes": [
+    2,
+    2,
+    0
+  ],
+  "physical_component_sizes": [
+    47,
+    69
+  ],
+  "commands": [
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "root": 4
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "root": 0
+    }
+  ],
+  "whole_colouring_reconstructed": true,
+  "formal_scope": "Planar triangular ambient rotation, degree bounds, complete source stars, exact induced exterior, arbitrary-length fixed-pair obstruction, physical mixed-pair reconstruction.",
+  "program_only_geometry": "Three flat degree-seven centres and absence of obstructing cycles of length three through five; no whole flat ball is claimed.",
+  "limits": [
+    "No general obstruction to mixed-pair repair.",
+    "One supplied occurrence, no geometric supply or catalogue reduction.",
+    "This is a colourable test map satisfying the checked local hypotheses, not a minimal counterexample to Four Colour."
+  ],
+  "verifier_sha256": "e3b1a37de7e5d351de34a9181c5e6a76c0704bd7bfff240c02e9b28498c9d0ed"
+}

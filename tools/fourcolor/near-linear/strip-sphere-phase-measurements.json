@@ -1,0 +1,120 @@
+{
+  "classification": "CHECKED_FIXED_PAIR_OBSTRUCTION_AND_OPTIMAL_TWO_SWITCH_REPAIR_ON_SPHERICAL_COVERAGE_EXAMPLE",
+  "source": "D0099.conf",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "attribution": [
+    "Yuta Inoue D0099, MIT catalogue",
+    "Gonthier/Emery graph semantics and cubic Euler theorem"
+  ],
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripSpherePhase",
+        "source_sha256": "96ca5b8d3b72853f0fa56d2887715457a133f341bb3c9679f116789d576ad595",
+        "exit_code": 0,
+        "frontend_wall_seconds": 36.115,
+        "olean_bytes": 5377344,
+        "olean_sha256": "4413611b1131e9ad8609c7ddb5efcb7471d2e7164382dc05f04fe37504f15d0a"
+      },
+      {
+        "module": "MettapediaFourColor.StripSphereGeometry",
+        "source_sha256": "acf6ff3618fc3bdd63e67f47170c835e0a254a7b20c087fac6d226a259c59a9e",
+        "exit_code": 0,
+        "frontend_wall_seconds": 38.477,
+        "olean_bytes": 1453912,
+        "olean_sha256": "e18230063d7eb4a5d896849a62598880ef6908e38dc827c3c3a19acfb16ca102"
+      },
+      {
+        "module": "MettapediaFourColor.StripSphereAudit",
+        "source_sha256": "360025e481d7df90ec275a7b225b1602134773af0012411539d679ad5ff4275f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.664,
+        "olean_bytes": 2600,
+        "olean_sha256": "6b0e932359de1e788d867b88f92dd4a938710dd31faccd878dd474edbf7cbdec"
+      }
+    ]
+  },
+  "new_proof_sources": [
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripSpherePhase.lean",
+      "bytes": 20660,
+      "sha256": "96ca5b8d3b72853f0fa56d2887715457a133f341bb3c9679f116789d576ad595"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripSphereGeometry.lean",
+      "bytes": 8176,
+      "sha256": "acf6ff3618fc3bdd63e67f47170c835e0a254a7b20c087fac6d226a259c59a9e"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripSphereAudit.lean",
+      "bytes": 2783,
+      "sha256": "360025e481d7df90ec275a7b225b1602134773af0012411539d679ad5ff4275f"
+    }
+  ],
+  "total_new_proof_source_bytes": 31619,
+  "frontend_wall_seconds_including_imports": 79.256,
+  "audit": {
+    "roots": 15,
+    "dependency_declarations": 11655,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false
+  },
+  "formal_results": [
+    "Connected planar triangular ambient rotation on 162 vertices, with every degree between five and seven.",
+    "Exact induced exterior on the 154 vertices outside the eight-vertex source core; injective source reading, all source edges and complete core stars.",
+    "One proper exterior colouring simultaneously realizes the six adverse initial boundary route profiles.",
+    "Every arbitrary-length fixed-pair history leaves at least two necessary source omissions, allowing arbitrary source recolouring and choice of holes; reversed and equal pairs are included.",
+    "Two actual connected saturated component switches give a proof-relevant GSLT history and reconstruct a proper colouring on all 162 vertices.",
+    "Every physical component-switch history reconstructing this ambient graph from the given exterior colouring has length at least two."
+  ],
+  "reused_structural_theorem": "FourColor.StripPhaseObstruction.routed_requires_two",
+  "finite_witnesses": {
+    "ambient_vertices": 162,
+    "exterior_vertices": 154,
+    "stored_component_switches": 2,
+    "component_sizes": [
+      47,
+      69
+    ],
+    "reused_conflict_shapes": 5,
+    "new_boundary_conflict_classification": false,
+    "stored_source_colouring_table": false
+  },
+  "program_receipt": "strip-sphere-phase-audit.json",
+  "program_only": [
+    "Zero final charges at the three specified degree-seven centres and all 1817 short-cycle checks.",
+    "Exact minimum-hole profile 2,2,0; Lean proves the lower bounds at the first two states and final full reconstruction.",
+    "Correspondence to the pinned sphere construction and its cyclic source reading."
+  ],
+  "limits": [
+    "This is a colourable test map, not a minimal counterexample to Four Colour. No whole flat ball is claimed.",
+    "Mixed-pair repair succeeds. No impossibility of unrestricted repair or compact compositional proof is established.",
+    "A uniform rule choosing mixed-pair continuations, strict ambient reduction, geometric supply and universal coverage remain open.",
+    "This target adds a second concrete geometric consumer of the phase law; it does not replace an obligation in the complete assembly."
+  ],
+  "regression": {
+    "classical": "lake build kernelStripSphere; lake build kernelComplete",
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "passed": true
+  },
+  "new_catalogue_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0,
+  "whole_proof_kernel_savings_claimed": false
+}

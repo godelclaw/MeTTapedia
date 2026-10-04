@@ -1,5 +1,64 @@
 # Near-linear Four Colour catalogue bridges
 
+## Fixed-pair obstruction in the spherical coverage example
+
+[`StripSpherePhase`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSpherePhase.lean)
+and [`StripSphereGeometry`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSphereGeometry.lean)
+transfer the phase obstruction below to the existing 162-vertex
+closing-triangle sphere. Lean proves that the ambient rotation is planar
+and triangular, every degree lies between five and seven, and deleting the
+eight D0099 core vertices leaves exactly the stated 154-vertex induced
+exterior. The source reading is injective and preserves every source edge
+and every complete core star.
+
+One proper exterior colouring realizes the same six initial boundary
+route profiles as the smaller disk. The existing general phase theorem
+therefore proves, without a new endpoint classification, that **every
+fixed-pair history leaves at least two necessary core omissions**. This
+allows arbitrary phase length, interior recolouring and choices of omitted
+vertices. Equal and reversed colour pairs are included.
+
+Two actual component switches nevertheless reconstruct a proper colouring
+of all 162 vertices:
+
+```
+initial exterior      switch (0,2)      switch (1,2)
+       2 holes  ---------------->  2  ---------------->  0
+                   47 vertices          69 vertices     |
+                                               full reconstruction
+```
+
+Both switches are connected, saturated bichromatic components in the
+same exterior, composed as a proof-relevant GSLT history. Lean also proves
+that no history of length less than two reconstructs the ambient graph,
+so the exhibited two-step history is shortest. The exact minimum-hole
+counts before and after the first switch additionally have independent
+program checks; Lean supplies their lower bounds and the final colouring.
+
+The [independent replay](audit_strip_sphere_phase.py) checks the pinned
+sphere construction, all Lean graph and colouring literals, the three
+degree-seven centres' zero final charges and all 1,817 nonobstructing short
+cycles of lengths three through five. Those charge and short-cycle checks
+remain **program evidence**, separate from the Lean results. No whole flat
+ball or minimal-counterexample claim is made. This is a colourable test
+map satisfying the tested local coverage hypotheses.
+
+Replay with `lake build kernelStripSphere`, and independently with
+`python3 tools/fourcolor/near-linear/audit_strip_sphere_phase.py --catalogue CATALOGUE/D`.
+The [kernel receipt](strip-sphere-phase-measurements.json),
+[program receipt](strip-sphere-phase-audit.json) and
+[fixture](strip-sphere-phase-example.json) retain the exact evidence and
+costs. The proof reuses the previous five small conflict shapes and stores
+two explicit component witnesses; it imports neither a complete Four
+Colour theorem nor a large repair table.
+
+The earlier degree-three caveat has thus been removed for these explicit
+geometric conditions. Strict decrease of the minimum hole count in a
+single fixed-pair phase still fails. A general law for selecting successful
+mixed-pair continuations remains open, together with geometric supply,
+strict ambient reduction and universal coverage. The result removes no
+catalogue entry or original certificate dependency.
+
 ## A physical limit of fixed-pair progress, with a successful mixed-pair repair
 
 [`StripPhaseObstruction`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPhaseObstruction.lean)
