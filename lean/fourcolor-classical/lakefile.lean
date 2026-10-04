@@ -1355,3 +1355,17 @@ target kernelStripAnchorTrap pkg : Unit := do
         "StripAnchorTrapAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay obstruction transport and a minimum-degree-five spherical consumer. -/
+target kernelStripAnchorPadding pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-anchor-padding",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripAnchorTrapTransport", "StripAnchorPadding", "StripAnchorPaddingAudit"]
+      cwd := pkg.dir
+      env := env }

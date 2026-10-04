@@ -1,5 +1,36 @@
 # Near-linear Four Colour catalogue bridges
 
+## Minimum degree five does not rescue the guarded anchor policy
+
+[`StripAnchorTrapTransport`](../../../lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrapTransport.lean)
+proves a uniform obstruction transfer along any graph homomorphism from
+the twelve-vertex trap exterior. Restricting a proper colouring preserves
+the pointwise effect of every fixed-pair phase. If each phase satisfies
+the original joint-choice guard at the retained ports, every finite history
+remains blocked. The target graph may have arbitrarily many extra vertices;
+no additional enumeration of its colourings or histories is needed.
+
+[`StripAnchorPadding`](../../../lean/fourcolor-classical/MettapediaFourColor/StripAnchorPadding.lean)
+consumes this law after filling four triangular exterior faces with
+icosahedral patches. Its 56-vertex sphere has minimum degree five. Lean
+checks the cyclic rotations and spherical Euler balance, exact source core
+stars, and the induced 48-vertex exterior. No guarded history can reconstruct
+a full colouring fixing that exterior. Two actual component switches,
+temporarily reducing the joint choices from four to one, do reconstruct all
+56 vertices.
+
+The first attachment triangle is also certified to separate its nine new
+vertices from the rest. Thus minimum degree alone does not suffice; this
+example does not refute a policy restricted to maps without short separating
+cycles. It refutes the specified monotone score, not compositional repair.
+
+Replay `lake build kernelStripAnchorPadding` in the classical package and
+`python3 tools/fourcolor/near-linear/audit_strip_anchor_padding.py`.
+The [independent audit](strip-anchor-padding-audit.json) and
+[measurement receipt](strip-anchor-padding-measurements.json) retain the
+source pin, evidence and costs. Coverage remains 633 entries, with 629
+original certificates retained; no global compression is credited.
+
 ## A physical trap for preserving joint anchor choices
 
 [`StripAnchorTrap`](../../../lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrap.lean)

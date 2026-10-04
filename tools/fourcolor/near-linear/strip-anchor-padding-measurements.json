@@ -1,0 +1,103 @@
+{
+  "classification": "CHECKED_MINIMUM_DEGREE_FIVE_ANCHOR_OBSTRUCTION",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Pinned Yuta Inoue D0099 (MIT); source semantics inherit Gonthier/Emery. Obstruction transport, padding geometry and physical history proved locally.",
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripAnchorTrapTransport",
+        "source_sha256": "14a18bbef6c57db05f8e96c9d42c0c3763a47d5dc2ed586a4d0086f667ebc91f",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.166,
+        "olean_bytes": 53496,
+        "olean_sha256": "a0db8c3759298c2ccacda1e1dc011b221beb1eb14257f1f242fadd79ce57f6c1"
+      },
+      {
+        "module": "MettapediaFourColor.StripAnchorPadding",
+        "source_sha256": "5d1357d40a7361f1ba6861b745ba3c3082de84e10d48129829fed8a87161c084",
+        "exit_code": 0,
+        "frontend_wall_seconds": 19.071,
+        "olean_bytes": 1688080,
+        "olean_sha256": "089e9cedbc5f57a086a47382593c0b8e1bc401772388d7f56ec728437f492fd8"
+      },
+      {
+        "module": "MettapediaFourColor.StripAnchorPaddingAudit",
+        "source_sha256": "944207f5637059f4d696b51e4398153d220416593b70770fd6ef91c23c404d2c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.248,
+        "olean_bytes": 2600,
+        "olean_sha256": "31b1a12da972accd54b68d3801ac38e98d17b7cd927ef4bf83eee64157be30d0"
+      }
+    ]
+  },
+  "proof_sources": [
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrapTransport.lean",
+      "bytes": 2711,
+      "sha256": "14a18bbef6c57db05f8e96c9d42c0c3763a47d5dc2ed586a4d0086f667ebc91f"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripAnchorPadding.lean",
+      "bytes": 12452,
+      "sha256": "5d1357d40a7361f1ba6861b745ba3c3082de84e10d48129829fed8a87161c084"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripAnchorPaddingAudit.lean",
+      "bytes": 3039,
+      "sha256": "944207f5637059f4d696b51e4398153d220416593b70770fd6ef91c23c404d2c"
+    }
+  ],
+  "proof_and_audit_bytes": 18202,
+  "frontend_seconds": 26.485,
+  "audit": {
+    "roots": 15,
+    "dependency_declarations": 11735,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "bulk_repair_tables": false,
+    "complete_four_colour_theorem": false
+  },
+  "gates": {
+    "kernelStripAnchorPadding": true,
+    "kernelComplete": true,
+    "FourColorLane_and_ResearchCheckpoint": true
+  },
+  "claims": {
+    "transport": "Lean checked for any graph homomorphism and arbitrarily long guarded histories",
+    "sphere": "Lean checked cyclic rotations and Euler balance on 56 vertices",
+    "minimum_degree": "Lean checked: at least five at every vertex",
+    "source": "Lean checked injectivity, all edges, complete core stars and ordered boundary",
+    "obstruction": "Lean checked: no guarded history reconstructs a full ambient colouring",
+    "escape": "Lean checked: two physical switches reconstruct all 56 vertices",
+    "separator": "Lean checked: first attachment triangle separates its nine interior vertices"
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_replaced": 336,
+    "additional_coverage_entries_removed": 0,
+    "additional_original_certificates_removed": 0,
+    "whole_proof_kernel_seconds_saved": 0
+  },
+  "scope": [
+    "Only minimum degree five is added to the earlier trap; short separating cycles remain.",
+    "No absence of separating triangles/quadrilaterals, flatness, or uniform upper degree bound is claimed.",
+    "No counterexample to the complete geometric domain used in coverage is established.",
+    "Each guarded phase uses one pair for an arbitrary finite number of switches; pairs may change between phases.",
+    "This refutes the specified monotone policy, not unrestricted Kempe repair or compositional proofs.",
+    "No uniform progress, geometric supply, strict reduction or global compression is claimed."
+  ]
+}
