@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [multiscale renewal test](labs/README.md#actual-multiscale-bursts-have-a-geometric-charge-that-energy-misses)
+constructs any prescribed finite number of stretching episodes in one
+globally regular unforced whole-space flow, with uniformly bounded initial
+kinetic energy, which can be normalized to exactly one. The packets are
+prepared in the initial datum, and finer packets act earlier; this is not
+a dynamically generated infinite cascade.
+An existing critical no-swirl circulation norm records their total initial
+resource. Viscous loss across retained vorticity nodes charges every episode
+by an amount independent of scale. This supplies an actual geometric
+payment in that class and tests the weaker kinetic-energy toll. The argument
+uses established no-swirl theory and finite-profile stability; its PDE
+steps remain analytic, supported by exact Gaussian and scaling checks.
+
 The [band-enclosure escape test](labs/README.md#a-paid-band-can-lose-its-geometric-enclosure-while-the-reserve-still-pays)
 refutes automatic propagation from initial confinement under the specified
 energy-priced widening rule. An actual smooth unforced history generates

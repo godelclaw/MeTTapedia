@@ -1,0 +1,40 @@
+{
+  "seed": {
+    "E": "7*sqrt(2)*pi**(3/2)/32",
+    "Z": "63*sqrt(2)*pi**(3/2)/32",
+    "D": "693*sqrt(2)*pi**(3/2)/32",
+    "g": "32*sqrt(3)*pi**(3/2)/243",
+    "critical_H_half_squared": "8*pi/5",
+    "circulation_L1_dr_dz": "22*exp(-7/2) + 3",
+    "amplitude": "56133*sqrt(6)*nu/512",
+    "initial_circulation_derivative": "-10*nu*C(A U)",
+    "Cartesian_polynomial": [
+      "x*(1 - 2*z**2)",
+      "y*(1 - 2*z**2)",
+      "2*z*(x**2 + y**2 - 1)"
+    ],
+    "azimuthal_vorticity": "2*r*z*(2*r**2 + 2*z**2 - 7)*exp(-r**2 - z**2)"
+  },
+  "history": {
+    "kappa": "27*C**4/128",
+    "energy_toll": "256*nu**4*(ratio - 1)/(27*C**4*a*ratio)",
+    "duration_toll": "64*nu**3*(ratio - 1)*(ratio + 1)/(27*C**4*a**2*ratio**2)",
+    "similarity_weights": {
+      "E": -1,
+      "Z": 1,
+      "D": 3,
+      "g": 3,
+      "time": -2,
+      "omega_infinity": 2,
+      "circulation_L1_dr_dz": 0,
+      "critical_H_half_squared": 0
+    },
+    "nodal_charge": "nu*A*b/8 per tracked interval",
+    "general_defect": "Fixed positive axis and norm regularizers retain strain, transport and the complete nonnegative vorticity-gradient defect.",
+    "scope": "The inequalities, actual solution intervals, finite-profile approximation and Kato nodal loss remain analytic."
+  },
+  "source_sha256": {
+    "renewal_scale_toll.py": "7579e083ae9dfd305788e4d30fb7efac0f09b947f165db386ddccf2af6a67072"
+  },
+  "limitation": "Finite preloaded bursts in global no-swirl flows; no single infinite cascade, no arbitrary-data regularity theorem."
+}

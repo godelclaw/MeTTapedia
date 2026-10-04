@@ -47488,3 +47488,366 @@ the arbitrary-axis separation, and the signed-residual comparison.
 The common local interval, uniform Taylor remainder, Sobolev bounds and
 PDE integration are analytic, not newly Lean-certified. No Lean declarations
 or axioms change; arbitrary-data global regularity remains open.
+
+## Actual multiscale bursts have a geometric charge that energy misses
+
+`renewal_scale_toll.py` tests whether ordinary kinetic dissipation forces a
+nonsummable charge for progressively stronger stretching episodes. The
+classical enstrophy inequality gives a positive charge at every fixed
+strength, but that charge decreases at the precise rate of NS scaling.
+Actual globally regular no-swirl flows exhibit this scaling. Moreover,
+any finite number of separated scaled episodes can occur in ONE actual
+unforced flow with initial kinetic energy normalized to exactly one.
+
+There is also a positive geometric payment. The no-swirl circulation norm
+is scale invariant and nonincreasing. Vorticity nodes in the construction
+consume a fixed positive amount of this norm in each tracked episode.
+The original norm grows with the number of prepared packets, although
+the original kinetic energy stays bounded. This is a physical example of
+a geometric resource recording information that energy misses.
+
+The result concerns finite, initially prepared packets, not their repeated
+creation by a single parent. It neither constructs an infinite cascade
+nor controls the arbitrary-history residual (BE9). The standard cubic
+bound is background; see the enstrophy-growth investigations of
+[Lu and Doering](https://iumj.org/article/4718/) and
+[Kang, Yun and Protas](https://arxiv.org/abs/1909.00041).
+The global no-swirl input is
+[Gallay--Sverak, Theorem 1.1](https://www.numdam.org/article/CML_2015__7_2_67_0.pdf).
+The separated-profile argument uses the established approximation and
+stability method of
+[Gallagher](https://www.numdam.org/item/BSMF_2001__129_2_285_0/).
+No novelty priority is asserted for these methods.
+
+### The exact energy charge on an arbitrary smooth history
+
+Use E=||u||2^2, Z=||grad u||2^2, D=||Delta u||2^2 and
+`g=integral omega^T grad(u) omega`. On R3, or a fixed torus, interpolation
+and Sobolev give `|g|<=C_g Z^(3/4)D^(3/4)` with a fixed domain constant.
+For derivative fields on the torus, the zero mean supplies Poincare.
+The COMPLETE unforced balances imply
+
+```text
+E'=-2nu Z,        Z'=2g-2nu D <= kappa nu^(-3)Z^3,
+kappa=27 C_g^4/128.                                   (ST1)
+```
+
+Indeed the maximization over D reduces to
+`2s^3-2s^4<=27/128`, whose difference factors as
+`(4s-3)^2(16s^2+8s+3)/128`. No parent or pressure interaction is omitted.
+Where Z>0, the nonnegative reserve `kappa E/(2nu^4)` therefore pays
+
+```text
+integral_a^b (Z')_+/Z^2 <= kappa [E(a)-E(b)]/(2nu^4).
+                                                            (ST2)
+```
+
+Here the observed cost is upward enstrophy variation weighted by 1/Z^2,
+not the sufficient signed-stretching cost (BE10). If Z increases from
+zeta to r*zeta, r>1, on any such interval, then
+
+```text
+E(a)-E(b) >= (2nu^4/kappa)(1-1/r)/zeta,
+b-a >= (nu^3/(2kappa))(1-1/r^2)/zeta^2.                 (ST3)
+```
+
+Monotone growth between the endpoints is unnecessary. Integrating
+`Z'/Z^2` and `Z'/Z^3` proves the claims, and positive variation can only
+increase the first cost. Disjoint repeated upcrossings from the SAME
+zeta consequently have a finite count bounded by the original energy.
+For geometrically increasing zeta, both displayed tolls are summable.
+This is a restriction on actual NS histories; it does not establish that
+an infinite sequence of such histories composes.
+
+### A smooth whole-space seed with genuine positive stretching
+
+Use ordinary Lebesgue volume on R3. With r^2=x^2+y^2, define the Schwartz
+velocity U by the streamfunction `psi=-r^2 z exp(-r^2-z^2)`:
+
+```text
+U=exp(-|x|^2)*(x(1-2z^2), y(1-2z^2), 2z(r^2-1)),
+U_r=r(1-2z^2)exp(-r^2-z^2),
+U_z=2z(r^2-1)exp(-r^2-z^2), U_theta=0,
+omega_theta=2rz(2r^2+2z^2-7)exp(-r^2-z^2).             (ST4)
+```
+
+The Cartesian formula is smooth at the axis and exactly divergence free.
+It is the curl of `exp(-|x|^2)*(yz,-xz,0)`. Exact Gaussian integrals give
+
+```text
+e=E(U)=7sqrt(2) pi^(3/2)/32,
+z=Z(U)=63sqrt(2) pi^(3/2)/32,
+d=D(U)=693sqrt(2) pi^(3/2)/32,
+h=g(U)=32sqrt(3) pi^(3/2)/243>0.                        (ST5)
+```
+
+Fix nu>0 and A=2nu*d/h. The actual NS solution v starting from A U is
+globally smooth by the established no-swirl theorem: its azimuthal
+vorticity is in L1(dr dz), and its smooth finite-energy datum satisfies
+the classical hypotheses. Rescaling the viscosity-one theorem handles
+any positive nu. At time zero,
+
+    g(v)-nu D(v)=nu A^2 d>0.                           (ST6)
+
+Smooth local persistence supplies b>0 such that this strict inequality
+continues on [0,b]. Thus Z genuinely increases, despite the known global
+regularity. Retain I=[b/2,b]. Its enstrophy ratio r_*>1 and energy loss
+DeltaE>0 are fixed properties of this ONE known reference solution.
+
+The same reflection symmetry preserves `omega_theta(t,r,0)=0`. Initially,
+
+```text
+partial_z omega_theta(0,r,0)
+  =2A r(2r^2-7)exp(-r^2),
+omega_theta(0,1/2,1/2)=-3A exp(-1/2).                  (ST7)
+```
+
+For 1/4<=r<=1/2 the first quantity is less than -2A. By taking b and a
+fixed strip width h0>0 smaller, it is at most -A on
+`[0,b] x [1/4,1/2] x [-h0,h0]`. The signs at the two strip edges are
+opposite. Also `|omega_theta(t,1/2,1/2)|>=A` on [0,b]. These constants
+are chosen from the reference, independently of subsequent scaling and
+of the number of copies.
+
+### Scaling the actual solution, with unchanged viscosity
+
+For lambda>0 and an axial center c set
+
+    v_lambda,c(t,x)=lambda v(lambda^2 t,lambda(x-c e_z)).
+
+This is an ACTUAL global unforced solution at the SAME nu, with pressure
+`lambda^2 p(lambda^2t,lambda(x-c e_z))`. In particular,
+
+```text
+E_lambda=lambda^(-1) E, Z_lambda=lambda Z,
+D_lambda=lambda^3 D, g_lambda=lambda^3 g,
+I_lambda=lambda^(-2) I,
+energy lost over I_lambda=DeltaE/lambda,
+integral_I_lambda ||omega_lambda||infinity
+                     =integral_I ||omega||infinity>0. (ST8)
+```
+
+Its fixed-factor enstrophy increase has the same ratio r_*. Consequently
+the powers 1/zeta and 1/zeta^2 in (ST3) cannot be replaced by scale
+independent positive energy and time tolls on all actual episodes.
+This is sharpness of the SCALE dependence, not of the Sobolev constant.
+
+### Finite composition into one actual flow
+
+For every integer N>=1, nu>0 and horizon H>0, choose
+`lambda_j=lambda0*2^j`, j=0,...,N-1. Choose lambda0 large enough that
+`b/lambda0^2<=H` and `2A^2 e/lambda0<1/2`. The windows
+
+    I_j=[b/(2lambda_j^2), b/lambda_j^2]                 (ST9)
+
+are disjoint. Translate each copy along the SAME axis to c_j=j L, and
+let `V_L=sum_j v_lambda_j,c_j`. Its initial datum is smooth, Schwartz,
+axisymmetric and has zero swirl. Let u_L be the globally regular actual
+unforced solution from this sum. V_L itself is only an approximate solution.
+Its complete projected defect is
+
+    F_L=P div sum_(i!=j) (v_i tensor v_j).             (ST10)
+
+No cross pressure is discarded: the Leray projection includes it, and
+u_L evolves with its own full canonical pressure.
+
+For fixed finite N, each reference is smooth on [0,H] in every required
+H^m. As L tends to infinity, translated products in (ST10) tend to zero
+in `L2(0,H;H^(m-1))`. To see uniformity in time, the reference trajectories
+form compact subsets of H^(m+1); approximate these by finitely many smooth
+compactly supported fields and separate their supports. Product estimates
+control the approximation errors. This also proves local C^k separation
+of the other profiles near each tracked copy.
+
+The difference e_L=u_L-V_L has zero initial data and satisfies the full
+perturbation equation with source -F_L. For m>=5, differentiated energy
+estimates and viscous absorption give, while ||e_L||Hm<=1,
+
+```text
+d/dt ||e_L||Hm^2
+ <=C_(N,nu,H)||e_L||Hm^2+C_nu||F_L||H^(m-1)^2.        (ST11)
+```
+
+The finite constant uses norms of the KNOWN global references; it is
+independent of L and of the unknown target solution. Gronwall and a
+bootstrap give `sup_[0,H]||u_L-V_L||Hm ->0`. Thus C^2 observations of
+velocity, including first derivatives of vorticity, converge uniformly.
+Separation may need to be very large; no uniform separation bound in N
+is claimed. No global regularity assertion outside the no-swirl class is
+used to justify this construction.
+
+The initial L2 cross products tend to zero. Since
+`sum_j E(v_j(0))<2A^2 e/lambda0`, sufficiently large L gives E(u_L(0))<=1.
+On I_j, at the translated and scaled point of (ST7), choose L still
+larger so that the COMPLETE target satisfies
+
+    |omega(u_L)|>=A lambda_j^2/2.
+
+Therefore one actual flow has
+
+    integral_0^H ||omega(u_L(t))||infinity dt
+                         >=N A b/4.                  (ST12)
+
+The same C^2 convergence retains strictly positive LOCAL stretching
+minus viscous vorticity diffusion near each packet. More precisely, first
+choose a smooth compact cutoff chi for the base flow such that
+`integral chi[omega^T grad(v) omega-nu|grad omega|^2]>0` uniformly on I;
+this follows from (ST6), uniform integrable tails and compactness in time.
+Rescale and translate this cutoff for each j. The corresponding complete
+u_L integral stays positive for large L. This is a local observation of
+work and dissipation; a localized enstrophy equation ALSO has flux through
+the cutoff, and no autonomous local energy balance is asserted.
+
+The kinetic energy can be normalized EXACTLY without changing viscosity
+or the BKM cost. Before fixing b, shrink it further so that
+`4b/(A^4 e^2)<=H`. Choose the initial L2 cross error below
+`A^2 e/(2lambda0)`, so that the actual initial energy E_N satisfies
+`E_N>=A^2 e/(2lambda0)>0`. Apply the full NS scaling (ST8) to u_L with
+factor E_N. The resulting actual flow has initial energy exactly one,
+and its last tracked event ends by
+
+    b/(lambda0^2 E_N^2)<=4b/(A^4 e^2)<=H.
+
+This scaling retains both the lower BKM cost (ST12) and the circulation
+charges below. Thus, for fixed nu,H, no allowance depending ONLY on
+E0=1,nu,H can bound the full BKM integral uniformly over these data as
+N increases. No bound depending on the full original datum is refuted.
+The locally observed stretching is also preserved. For fixed N every
+scaled episode and all cross interactions belong to one actual flow;
+none is introduced as a fresh initial condition during its evolution.
+
+### The geometric stock and an actual charge for every tracked episode
+
+For an axisymmetric no-swirl velocity define
+
+    C(u)=integral_(r>0,z in R) |omega_theta(r,z)| dr dz.
+
+This is the critical circulation norm used in the no-swirl theory. It is
+nonincreasing along actual unforced solutions. The seed has the exact values
+
+```text
+C(A U)=A[3+22exp(-7/2)],
+||A U||dotH^(1/2)^2=A^2*8pi/5.                        (ST13)
+```
+
+At the ORIGINAL initial state the exact physical derivative is
+`C'(v(0))=-10nu C(A U)<0`, even while (ST6) makes enstrophy increase.
+Conservative advection contributes zero to this L1 derivative. In units
+of nu*A, diffusion at the axis contributes `20+16exp(-7/2)`, the interior
+plane z=0 contributes `10+8exp(-7/2)`, and the semicircle r^2+z^2=7/2
+contributes `196exp(-7/2)`. The checker verifies their sum. Independently,
+the Gaussian heat evolution of U is
+`(1+4nu t)^(-3)U(x/sqrt(1+4nu t))`; its circulation derivative gives the
+same value. The actual nonlinear solution is NOT identified with that
+heat evolution beyond this initial norm derivative.
+
+Both quantities are invariant under (ST8). For the separated initial sum,
+
+```text
+C(u_L(0)) ->N A[3+22exp(-7/2)],
+||u_L(0)||dotH^(1/2)^2 ->N A^2*8pi/5                  (ST14)
+```
+
+as L tends to infinity for each fixed N. The first limit follows from
+L1 separation of finitely many translated azimuthal profiles. The second
+uses vanishing homogeneous H^(1/2) cross inner products. The exact Fourier
+transform of U has squared modulus
+`exp(-|k|^2/2) k_z^2(k_x^2+k_y^2)|k|^2/128`, with the unitary convention;
+radial integration supplies the second number in (ST13).
+
+There is a physical charge, not just an initial count. Writing
+q=omega_theta, the exact no-swirl equation is in conservative form
+
+    q_t+div_(r,z)(u q)=nu[Delta_(r,z)q+partial_r(q/r)]. (ST15)
+
+Kato's identity shows that any regular interior nodal curve Sigma_t
+contributes at least `2nu integral_Sigma_t |grad_(r,z)q| dlength` to -C'.
+The axis contributes a further nonnegative loss
+`2nu integral |partial_r q(0,z)| dz`; other nodal losses are nonnegative.
+The statement follows by smoothing |q|, integrating (ST15) and passing to
+the limit. It is also valid as an integrated inequality when the global
+zero set is not regular; only the selected simple nodal patch is used.
+
+For each copy, (ST7) supplies a simple zero throughout the radial interval
+`[1/(4lambda_j),1/(2lambda_j)]`. C^2 closeness and the opposite strip-edge
+signs retain a nearby zero for the ACTUAL u_L. The implicit-function theorem
+gives its nodal graph, with
+
+    |partial_z q|>=A lambda_j^3/2.
+
+Its length is at least 1/(4lambda_j). Thus on the entire I_j,
+
+```text
+-C'(u_L)>=nu A lambda_j^2/4,
+C(u_L(a_j))-C(u_L(b_j))>=nu A b/8.                    (ST16)
+```
+
+The windows are disjoint and C is nonincreasing in the gaps. One original
+nonnegative reserve therefore pays all tracked events:
+
+    N nu A b/8 <= C(u_L(0))-C(u_L(H)) <= C(u_L(0)).     (ST17)
+
+Kinetic energy sees a scale-dependent cost; this geometric norm sees a
+fixed charge. Its initial size grows with N as (ST14) already records.
+No reserve is reset at a seam and no external force supplies the charge.
+The estimate counts these tracked nodal events; it is not an upper bound
+on the COMPLETE BKM integral or the signed residual (BE9) for arbitrary flows.
+
+### What this says about internally renewed stretching
+
+The finite construction has a crucial direction: finer packets act EARLIER.
+All packets are already encoded in the original datum. As N grows, the
+critical initial norms grow, and the earliest activity approaches time zero.
+There is no single admissible smooth initial datum performing infinitely
+many of these stages, and no later parent-to-daughter cascade is constructed.
+A finite sum of profiles is not an exact solution; (ST10)--(ST11) are essential.
+
+Thus this result supports a specific mechanism: an evolving geometric
+quantity can pay actual stretching events that ordinary energy prices
+more and more cheaply. What remains is to find and control an appropriate
+resource when vorticity can tilt, acquire swirl and regenerate its parents.
+The no-swirl norm cannot simply be declared monotone in general 3D, nor
+can its event count be substituted for the continuation target.
+
+The complete defect in general 3D can be retained without a singular-axis
+calculation. Fix epsilon,eta>0 and put
+
+```text
+W=(r^2+epsilon^2)^(-1/2), Q=sqrt(|omega|^2+eta^2),
+C_epsilon,eta=(1/(2pi)) integral W(Q-eta),
+B=grad omega, S=(grad u+grad u^T)/2.
+```
+
+For the actual smooth unforced solution, curl removes pressure from the
+vorticity equation but S still comes from the COMPLETE velocity. Direct
+differentiation and integration by parts give
+
+```text
+2pi C_epsilon,eta'
+ = integral W (omega^T S omega)/Q
+   +integral (Q-eta)[u.grad W+nu Delta W]
+   -nu integral W[|B|^2/Q-|B^T omega|^2/Q^3],
+
+Delta W=(r^2-2epsilon^2)/(r^2+epsilon^2)^(5/2),
+u.grad W=-r u_r/(r^2+epsilon^2)^(3/2),
+Q^2|B|^2-|B^T omega|^2
+ =eta^2|B|^2+sum_j |omega cross partial_j omega|^2>=0. (ST18)
+```
+
+Positive regularizers make every term finite on smooth finite-Sobolev
+prefixes; in particular `Q-eta<=|omega|^2/(2eta)`. They are held fixed.
+Changing the axis or either regularizer would add terms. This is an exact
+physical identity, not a monotonicity assertion. It displays the strain,
+transport and directional-diffusion terms that a generalization must
+control. Even a bound on this regularized observation would still need a
+proved connection to the signed residual (BE9) or another continuation
+criterion. That connection and the arbitrary-history payment remain open.
+
+Run `python3 -O labs/renewal_scale_toll.py`. Its archive checks the literal
+Cartesian datum, vector potential, Gaussian energy/stretching integrals,
+independent Fourier values, critical norms, nondegenerate vorticity node,
+positive-viscosity initial growth, complete Young remainder and all scaling
+and charge constants. The actual intervals, global no-swirl solution,
+finite-profile stability and Kato nodal loss are analytic arguments using
+the stated background, not newly Lean-certified. No Lean declarations or
+axioms change; the arbitrary-data signed-history estimate remains open.
