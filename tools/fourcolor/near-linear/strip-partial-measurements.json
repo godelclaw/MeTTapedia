@@ -1,0 +1,151 @@
+{
+  "classification": "KERNEL_CHECKED_SHARP_PARTIAL_BOUND_AND_FIXED_BOUNDARY_CONNECTIVITY",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripPartialColouring",
+        "source_sha256": "63985746d8e1907d3326cca269b1315922b6ed9731b7a0b6839a116e3546fd68",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.729,
+        "olean_bytes": 946992,
+        "olean_sha256": "f93b2d2ab75e112365b4bd8eca19fce7896557ba679895ff4d2e1e2ce7788f56"
+      },
+      {
+        "module": "MettapediaFourColor.StripSpineFibre",
+        "source_sha256": "b3fff5279c555039647741305a28f9ab990595a7cc25ebd4e347ff3ea5b51de6",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.742,
+        "olean_bytes": 89264,
+        "olean_sha256": "fa4cbd6d4ef0d2caf7375d59421b0e3038ea5452647cb784cece228ef7dfbd4a"
+      },
+      {
+        "module": "MettapediaFourColor.StripPartialAudit",
+        "source_sha256": "8c26ebe00ed59bfad4118b2f0d04566e83d1f168c091a4b94fdf3e5cd6699515",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.484,
+        "olean_bytes": 2592,
+        "olean_sha256": "462099ee84292086ec7f36f0b174b2424a36e6e02baee85d44e42c8c919eedb5"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripPartialColouring.lean",
+      "bytes": 11954,
+      "sha256": "63985746d8e1907d3326cca269b1315922b6ed9731b7a0b6839a116e3546fd68"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripSpineFibre.lean",
+      "bytes": 3185,
+      "sha256": "b3fff5279c555039647741305a28f9ab990595a7cc25ebd4e347ff3ea5b51de6"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripPartialAudit.lean",
+      "bytes": 3650,
+      "sha256": "8c26ebe00ed59bfad4118b2f0d04566e83d1f168c091a4b94fdf3e5cd6699515"
+    }
+  ],
+  "frontend_seconds_including_imports": 14.955,
+  "attribution": {
+    "source": "Yuta Inoue D0099, MIT",
+    "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "classical_representation": "Gonthier/Emery",
+    "reused_theory": [
+      "SimpleGraph.KempeForestFibre.fibre_path",
+      "SimpleGraph.KempeTriangleAnchors.acyclic_of_unique_later"
+    ]
+  },
+  "proved": {
+    "source_vertices": 19,
+    "boundary_vertices": 11,
+    "core_vertices": 8,
+    "fixed_omitted_vertices": [
+      0,
+      2,
+      5
+    ],
+    "retained_core_path": [
+      3,
+      1,
+      4,
+      6,
+      7
+    ],
+    "arbitrary_boundary_greedy_partial_colouring": true,
+    "proper_boundary_gives_actual_source_partial_colouring": true,
+    "proper_boundary_requiring_at_least_three_holes": "11211231112",
+    "lower_bound_all_hole_placements_and_all_interior_recolourings": true,
+    "coupled_restoration_exact_iff": true,
+    "restoration_constructs_full_decoded_source_colouring": true,
+    "same_boundary_partial_colourings_connected_by_actual_Kempe_moves": true,
+    "new_stored_colour_witness_bytes": 0
+  },
+  "audit": {
+    "roots": 17,
+    "dependency_declarations": 7372,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "stored_source_colouring_tables_used": false,
+    "required_dependencies": [
+      "StripResponseSummary.attachments_complete",
+      "StripResponseSummary.edges_complete",
+      "TriangleStripAnchors.input0099",
+      "StripPartialColouring.validExcept_of_source",
+      "StripPartialColouring.three_obstructions",
+      "StripPartialColouring.fill_iff",
+      "StripSourceExtension.complete_valid",
+      "StripResponseSummary.terminal_iff",
+      "SimpleGraph.KempeForestFibre.fibre_path",
+      "SimpleGraph.KempeForestFibre.list_connected",
+      "SimpleGraph.KempeTriangleAnchors.acyclic_of_unique_later",
+      "StripPartialColouring.sourceSpine"
+    ]
+  },
+  "independent_program": "strip-partial-audit.json",
+  "program_only": {
+    "canonical_source_inputs": 7381,
+    "minimum_hole_census": {
+      "0": 1587,
+      "1": 4289,
+      "2": 1441,
+      "3": 64
+    },
+    "one_adaptive_exchange_strictly_improves": {
+      "1": 525,
+      "2": 1251,
+      "3": 64
+    },
+    "at_most_two_adaptive_exchanges_strictly_improve": {
+      "1": 917,
+      "2": 1437,
+      "3": 64
+    },
+    "scope": "The specified abstract noncrossing matching game. A single physical exterior realizing all adverse responses is not constructed."
+  },
+  "limits": [
+    "One fixed source with arbitrary boundary colours; not an unbounded family of graph reductions.",
+    "Small finite checks of source adjacency, lists and coordinates remain. The universal upper bound and lower-bound argument do not enumerate boundary colourings.",
+    "The connected fibres concern colourings of the source with three core vertices removed, not histories of colourings of the complete source or an arbitrary ambient graph.",
+    "The exact restoration condition can be empty. Compatible exterior repair and complete D0099 reducibility remain open in this structural route.",
+    "Geometric supply and strict ambient reduction are not established by this step.",
+    "No net whole-proof size, runtime or catalogue saving is claimed."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0
+}

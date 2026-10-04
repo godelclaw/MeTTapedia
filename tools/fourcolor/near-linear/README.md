@@ -1,5 +1,64 @@
 # Near-linear Four Colour catalogue bridges
 
+## Three holes suffice, can be necessary, and leave connected Kempe fibres
+
+[`StripPartialColouring.sharp_three_holes`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPartialColouring.lean)
+proves a sharp bound for D0099. For every boundary assignment, omitting
+core vertices 0, 2 and 5 leaves a constructively colourable path. Five
+choices, each avoiding at most three colours, colour the retained core;
+a proper boundary gives a colouring of the actual induced source graph.
+
+One explicit proper boundary forces an omission in each of three disjoint
+pieces: two monochromatic forced edges and a triangle with only two
+available colours. The lower bound applies to every choice of omitted
+vertices and every interior recolouring while that boundary stays fixed.
+Thus a universal one-hole or two-hole partial-colouring contract is false
+for this source.
+
+```
+arbitrary proper boundary
+          |
+omit core vertices 0, 2, 5
+          |
+colour retained path 3--1--4--6--7
+          |
+change path choices by Kempe moves, boundary fixed
+          |
+restore 0, 2, 5 with their joint constraints      [CONDITIONAL]
+          |
+colour the complete decoded source
+```
+
+[`StripSpineFibre.fibres_connected`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSpineFibre.lean)
+reuses the general forest fibre theorem: any two proper colourings of
+this partial source with the same boundary are connected by actual Kempe
+moves avoiding that boundary. The first greedy choices need not be frozen.
+`fill_iff` gives the exact restoration condition, including the shared
+inequality between missing vertices 2 and 5. `reconstruct` consumes that
+condition and builds a genuine full-source colouring. Its satisfiability,
+possibly after compatible exterior repair, is still the main obligation.
+
+Replay with `lake build kernelStripPartial`. The
+[kernel receipt](strip-partial-measurements.json) records seventeen audit
+roots, standard axioms only, and about 15 seconds for three modules,
+including imports. No stored source-colouring table is used. Source
+adjacency, list and coordinate checks remain small finite obligations.
+This is a result about one source and all its boundary assignments, not
+an unbounded family of graph reductions.
+
+The [independent program](audit_strip_partial.py) checks all 7,381 canonical
+inputs. Their minimum numbers of holes are 0, 1, 2 and 3 on respectively
+1,587, 4,289, 1,441 and 64 inputs. It also tests the proposed progress
+measure: every three-hole input admits a guaranteed decrease in one
+adaptive chord exchange in the abstract matching game. But even two such
+exchanges do not guarantee a strict decrease for every one-hole or
+two-hole input. These counts are **program evidence**, not Lean theorems;
+the adverse responses have not been realized together in one physical
+exterior. The failed short-horizon rule does not rule out longer repairs.
+
+No catalogue entry or original certificate is removed. Complete source
+repair, strict ambient reduction and geometric supply remain open.
+
 ## One exterior-matching theorem supports seven majority consumers
 
 [`KempeChromogramMatching.recover`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean)

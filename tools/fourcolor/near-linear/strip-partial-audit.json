@@ -1,0 +1,119 @@
+{
+  "evidence": "Sharp bound, reconstruction and fixed-boundary fibre theorem are Lean proved; census and progress tests are program evidence.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
+  "canonical_inputs": 7381,
+  "fixed_omitted_core_vertices": [
+    0,
+    2,
+    5
+  ],
+  "retained_core_path": [
+    3,
+    1,
+    4,
+    6,
+    7
+  ],
+  "minimum_hole_census": {
+    "0": 1587,
+    "1": 4289,
+    "2": 1441,
+    "3": 64
+  },
+  "sharpness": {
+    "input": "11211231112",
+    "boundary": [
+      0,
+      1,
+      0,
+      2,
+      3,
+      2,
+      0,
+      3,
+      2,
+      3,
+      2
+    ],
+    "core_lists": [
+      [
+        1
+      ],
+      [
+        0,
+        1,
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        3
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        3
+      ]
+    ],
+    "disjoint_uncolourable_pieces": [
+      [
+        0,
+        3
+      ],
+      [
+        2,
+        4,
+        6
+      ],
+      [
+        5,
+        7
+      ]
+    ],
+    "all_omission_sets_of_size_at_most_two_rejected": true
+  },
+  "strict_defect_descent": [
+    {
+      "holes": 1,
+      "inputs": 4289,
+      "one_adaptive_step_improves": 525,
+      "two_adaptive_steps_improve": 917,
+      "first_two_step_failure": "11111112223"
+    },
+    {
+      "holes": 2,
+      "inputs": 1441,
+      "one_adaptive_step_improves": 1251,
+      "two_adaptive_steps_improve": 1437,
+      "first_two_step_failure": "12311221133"
+    },
+    {
+      "holes": 3,
+      "inputs": 64,
+      "one_adaptive_step_improves": 64,
+      "two_adaptive_steps_improve": 64,
+      "first_two_step_failure": null
+    }
+  ],
+  "new_stored_colour_witness_bytes": 0,
+  "limits": [
+    "Minimum-hole counts and failed progress tests concern the specified fixed source.",
+    "The abstract adverse matchings need not be simultaneously realized by one physical exterior.",
+    "Three-hole restoration and external repair remain open; fixed-boundary fibre connectivity does not imply completion.",
+    "No geometric supply, strict ambient reduction or catalogue deletion is established."
+  ],
+  "verifier_sha256": "bcb3ff88a2caa0e629166496320610118d5be07511d38b108606f2923852425f"
+}

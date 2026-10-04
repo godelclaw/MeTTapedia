@@ -1154,3 +1154,17 @@ target kernelChromogramMatching pkg : Unit := do
         "StripCriticalRepair", "ChromogramMatchingAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the fixed-boundary partial-colouring bound and reconstruction. -/
+target kernelStripPartial pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-partial",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripPartialColouring", "StripSpineFibre", "StripPartialAudit"]
+      cwd := pkg.dir
+      env := env }
