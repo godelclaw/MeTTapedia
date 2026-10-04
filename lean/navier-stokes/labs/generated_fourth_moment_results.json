@@ -1,0 +1,126 @@
+{
+  "earlier_geometries": [
+    {
+      "m": 2,
+      "weights": [
+        "1",
+        "1",
+        "1"
+      ],
+      "cases": [
+        {
+          "viscosity": "1",
+          "self_pressure_work_coefficient": "-53/2520",
+          "diffusion_coefficient": "883/32",
+          "fourth_moment_coefficient": "319/64",
+          "next_velocity_pairing": "-883/16",
+          "parent_work_coefficient": "0",
+          "mixed_work_coefficient": "0",
+          "heat_work_coefficient": "-883/32"
+        },
+        {
+          "viscosity": "2/7",
+          "self_pressure_work_coefficient": "-53/2520",
+          "diffusion_coefficient": "883/32",
+          "fourth_moment_coefficient": "319/64",
+          "next_velocity_pairing": "-883/56",
+          "parent_work_coefficient": "0",
+          "mixed_work_coefficient": "0",
+          "heat_work_coefficient": "-883/112"
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "weights": [
+        "1",
+        "1",
+        "1"
+      ],
+      "cases": [
+        {
+          "viscosity": "1",
+          "self_pressure_work_coefficient": "-20842/772065",
+          "diffusion_coefficient": "25111/32",
+          "fourth_moment_coefficient": "2887/64",
+          "next_velocity_pairing": "-25111/16",
+          "parent_work_coefficient": "0",
+          "mixed_work_coefficient": "0",
+          "heat_work_coefficient": "-25111/32"
+        },
+        {
+          "viscosity": "2/7",
+          "self_pressure_work_coefficient": "-20842/772065",
+          "diffusion_coefficient": "25111/32",
+          "fourth_moment_coefficient": "2887/64",
+          "next_velocity_pairing": "-25111/56",
+          "parent_work_coefficient": "0",
+          "mixed_work_coefficient": "0",
+          "heat_work_coefficient": "-25111/112"
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "weights": [
+        "1/4",
+        "1",
+        "1"
+      ],
+      "cases": [
+        {
+          "viscosity": "1",
+          "self_pressure_work_coefficient": "-1963091/1581189120",
+          "diffusion_coefficient": "3009143/4096",
+          "fourth_moment_coefficient": "335051/8192",
+          "next_velocity_pairing": "-3009143/2048",
+          "parent_work_coefficient": "0",
+          "mixed_work_coefficient": "0",
+          "heat_work_coefficient": "-3009143/4096"
+        },
+        {
+          "viscosity": "2/7",
+          "self_pressure_work_coefficient": "-1963091/1581189120",
+          "diffusion_coefficient": "3009143/4096",
+          "fourth_moment_coefficient": "335051/8192",
+          "next_velocity_pairing": "-3009143/7168",
+          "parent_work_coefficient": "0",
+          "mixed_work_coefficient": "0",
+          "heat_work_coefficient": "-3009143/14336"
+        }
+      ]
+    }
+  ],
+  "nonsymmetric_balance": {
+    "viscosity": "2/7",
+    "self_pressure_work_coefficient": "-76925639267803537109273768/6740823354173203729809375",
+    "diffusion_coefficient": "2624623664061202207/2563724462520375",
+    "fourth_moment_coefficient": "488118613724047373/3076469355024450",
+    "next_velocity_pairing": "-213060270824029374968578/392642092608382992375",
+    "parent_work_coefficient": "89761726801528/73249270357725",
+    "mixed_work_coefficient": "-1488006680951448496/8013103930783326375",
+    "heat_work_coefficient": "-4507529179841028952/17946071237642625"
+  },
+  "adverse_generated_geometry": {
+    "scale": 32,
+    "input_modes": 12,
+    "generated_modes": 56,
+    "target_work": "51/320",
+    "modulation_fifth_moment": "25/8",
+    "asymptotic_work_per_scale": "255/512",
+    "generated_work": "1266811836822735913993970938299408331703649149196103459815846179449178740757174431884905058658759086359787560163340589999604842712465131913241654003878984238439139217019937781881369576788816908518680779397522200594951154910688612895374894302827762943822648896174399385513914361824983702515146306807654091841875036528852192269060462714521/99665607660575624760313076445359995226466924402855877567789474748859560636449128544641311047668438988036313722323292029556133741604962741379294351765479122884867371015300382839594536949558198757455186764119065291290344584493277971656259042486053682990098902256411532832090647657959297363633548069436868807663782772524003434168320000000",
+    "generated_work_approximate": 12.710621713530617,
+    "generated_diffusion": "93293840117550276574887961659776147311469618884889368877687201523591300132910007/1043929716847745464758758385172444625449158269331678386408381629052485632000",
+    "generated_diffusion_approximate": 89367.93216238804,
+    "generated_fourth_moment": "15049061033184198858045989766079312067615895093895463025411457751136759484225246424181696241/237898291590804562509273660445864303477442710654490146036779164762959807501891597762560000"
+  },
+  "scope": "Exact complete NS jets and generated work; all-prefix reduction and positive-viscosity interval arguments are analytic",
+  "source_sha256": {
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "pressure_quadratic_storage.py": "cb78e2a84c4ee19091dc1ec8e687abec7e2c85d1a41dac007ee3c6eb5f1ea0dc"
+  }
+}

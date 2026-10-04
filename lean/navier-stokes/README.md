@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [signed generated-velocity fourth moment](labs/README.md#signed-fourth-moment-work-retains-a-weaker-physical-payment-target)
+pays all original heat couplings at arbitrary amplitude and leaves a
+signed self-pressure budget with a direct continuation consumer. Earlier
+pressure-gradient examples initially deplete this signed work. A separate
+mean-zero shear and fast receiver generate the opposite sign; a viscous
+interval argument refutes zero payment for the specified weight. The
+full-datum allowance remains open. These are analytic results supported
+by exact complete Fourier calculations, not new Lean certificates.
+
 The [complete scalar-control envelope](labs/README.md#an-exact-control-envelope-rules-out-every-scalar-schedule-in-the-unit-interval)
 rules out the tested leading pressure allowance for every measurable
 weight in[0,1], including feedback with access to the future. Exact

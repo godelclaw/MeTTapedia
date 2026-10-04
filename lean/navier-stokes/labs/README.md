@@ -43070,3 +43070,203 @@ control identity and exact margins. The existing joint-pressure checker
 still produces the same results after extracting its shared profile
 function. Both actual-flow and Bellman interpretations above are analytic;
 no Lean declarations or axioms change.
+
+## Signed fourth-moment work retains a weaker physical payment target
+
+A pressure gradient can be large without increasing a velocity moment.
+The preceding nonnegative pressure costs discard cancellations that a
+signed history budget can retain. This reduction pays all original heat
+couplings at arbitrary amplitude and isolates the signed self-pressure
+work of the actual generated motion. The isolated budget remains open;
+an explicit example refutes its zero-allowance version.
+
+### The complete generated-velocity equation
+
+On R3 with the stated smooth decay, or on the fixed normalized torus,
+retain v=exp(nu t Delta)u0 and w=u-v from the ORIGINAL initial time.
+Let P be the Leray projection, Q=I-P, and let p_w,p_v,p_mix be the
+canonical self, heat and polarized pressures. Put F_v=-P[(v.grad)v].
+The actual unforced equation gives
+
+    (partial_t+u.grad-nu Delta)w
+      =-(w.grad)v-grad p_mix-grad p_w+F_v, w(0)=0.     (FM1)
+
+Transport uses the full u. The heat source F_v is determined by the
+original datum, and is not an external control. Define
+
+    Y(w)=integral |w|^4,
+    D4(w)=integral |w|^2|grad w|^2+2sum_j(w.partial_j w)^2,
+    P4(w)=-integral |w|^2 w.grad p_w
+         =integral p_w w.grad(|w|^2).
+
+The complete fourth-moment identity is
+
+    Y'/4+nu D4
+      =P4(w)-integral |w|^2 w.[(w.grad)v+grad p_mix]
+            +integral |w|^2 w.F_v.                   (FM2)
+
+Actual transport cancels by incompressibility. Pressure integration by
+parts uses div w=0. No pressure or diffusion product is omitted. An
+external body force would add its full pairing with |w|^2 w.
+
+### Original-data payment for every heat coupling
+
+Use the standard L4 Helmholtz bounds on the stated domain, with finite
+operator constants C_P,C_Q. They are not asserted to be one: orthogonal
+L2 contraction does not supply L4 contraction. The existing solenoidal
+Lie-bracket identity gives
+
+    grad p_mix=-2Q[(w.grad)v],
+    ||grad p_mix||4<=2 C_Q ||grad v||infinity ||w||4.
+
+Set A0=||grad u0||infinity, B0=||u0||infinity, G0=||grad u0||4,
+and F0=C_P B0 G0. Heat contraction and Holder give
+
+    Y'/4+nu D4<=P4(w)+(1+2C_Q)A0 Y+F0 Y^(3/4).        (FM3)
+
+For a prescribed H>0 define once from the original datum
+
+    kappa=4(1+2C_Q)A0+3/H, a(t)=exp(-kappa t), f0=H^3 F0^4.
+
+Young's inequality 4F0 Y^(3/4)<=3Y/H+H^3 F0^4 yields
+
+    (aY)'+4nu aD4<=4aP4+a f0.                        (FM4)
+
+The known source is paid on every compatible subinterval by the
+nonnegative remaining reserve f0*integral_t^H a(s)ds. It is installed
+once; no segment receives a fresh allowance.
+
+The remaining sufficient estimate is: for every original smooth datum,
+nu>0 and H>0, find a finite K>=0 from those quantities, uniform over
+EVERY available smooth prefix from that datum, such that
+
+    integral_0^T a(t)[P4(w(t))-(nu/2)D4(w(t))]dt<=K,
+    0<=T<=H.                                        (FM5)
+
+It would imply
+
+    a(T)Y(T)+2nu integral_0^T aD4<=H^4 F0^4+4K,
+    sup_(T<=H)Y(T)<=exp(kappa H)[H^4 F0^4+4K].        (FM6)
+
+Thus ||u||4<=||u0||4+sup Y^(1/4). The classical estimate already used in
+(636), E1'+nu E2<=C nu^(-7)||u||4^8 E1, supplies an original-data
+finite-horizon gradient-energy bound. Its quantifiers match the existing
+Lean theorem `WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` in
+`MettapediaNS.WholeSpaceEnstrophyContinuation`. The periodic enstrophy
+consumer applies likewise. This reduction is analytic, not a new Lean
+certificate, and does not establish (FM5).
+
+### Earlier generated geometries initially deplete this work
+
+Put A(U)=-P[(U.grad)U]. At every positive viscosity, the actual generated
+motion from lambda U has the local smooth-flow expansions
+
+    w(t)=lambda^2 t A(U)+O(t^2),
+    P4(w(t))=lambda^10 t^5 P4(A(U))+O(t^6),
+    D4(w(t))=lambda^8 t^4 D4(A(U))+O(t^5).            (FM7)
+
+Complete exact coefficients on the preceding shapes are:
+
+| U=(a sin y-m b sin z,b sin z,c sin(x+m y)) | P4(A(U)) | D4(A(U)) |
+|---|---:|---:|
+| m2, a=b=c=1 | -53/2520 | 883/32 |
+| m4, a=b=c=1 | -20842/772065 | 25111/32 |
+| m4, (a,b,c)=(1/4,1,1) | -1963091/1581189120 | 3009143/4096 |
+
+These initial generated motions deplete signed fourth-moment work even
+though their nonnegative pressure-gradient forecasts can fail. This
+initial sign does not prove payment through subsequent geometry changes.
+
+### A zero-mean shear generates the opposite geometry
+
+On the normalized torus, use the target field from the earlier
+pressure/speed calculation:
+
+    W=(-cos(y-z)-sin y+(1/8)cos(x+y),
+       -cos(y-z)-2cos z-(1/8)cos(x+y),
+       -cos(y-z)+sin y-(1/8)cos(x+y)).
+
+It is smooth, mean zero and solenoidal, with P4(W)=51/320>0. Take
+d=(1,2,3), k0=(2,-1,0), h=cos(k0.x)+cos(2k0.x). Since d.k0=0,
+d h is a shear with no self-advection. Every mode k of W has d.k nonzero.
+Define a small rapidly varying receiver by
+
+    (R_N)_hat(Nk)=i W_hat(k)/(N d.k),
+    U_N=d h+R_N, (d.grad)R_N=-W(Nx).                 (FM8)
+
+Both terms are mean zero and solenoidal; there is no constant sweeping
+velocity. The receiver has size O(1/N), while its directional derivative
+has the prescribed geometry. The complete first generated source is
+
+    A(U_N)=P[h W(Nx)-(R_N.grad)(d h)-(R_N.grad)R_N].
+
+Every output of all three terms is retained. At N=32 exact rational
+arithmetic gives
+
+    P4(A(U_32)) approximately 12.710621713530617 >0,
+    D4(A(U_32)) approximately 89367.93216238804 >0.
+
+The datum has 12 Fourier modes and its full generated source has 56. The
+archive stores the full rationals; decimals do not determine the signs.
+Pressure is independently reconstructed from tensor and gradient sources.
+
+The construction also has a direct analytic explanation. For fixed W
+and large integer N, the Leray correction to h W(Nx) and the other two
+terms are O(1/N) in amplitude, with O(1) first derivatives. Finite Fourier
+expansion of the canonical pressure gives
+
+    P4(A(U_N))/N -> mean(h^5) P4(W)=255/512>0.        (FM9)
+
+High pressure outputs supply the leading term. Low outputs from opposite
+fast modes have bounded pressure gradients and contribute O(1) to the
+work. Spatial averaging separates slow and fast factors for sufficiently
+large N because both have finite Fourier support. The limit explains the
+geometry; the finite N=32 sign is checked directly.
+
+### A genuine positive-viscosity prefix failure of zero payment
+
+A positive coefficient in (FM7) alone does not refute (FM5) with K=0:
+diffusion has an earlier power of time. Fix U=U_32, nu>0 and H>0, and
+increase lambda. With tau=lambda t and mu=nu/lambda, the actual flow is
+u(t)=lambda z_mu(tau), where z_mu starts from U with viscosity mu. Its
+generated part is w(t)=lambda r_mu(tau),
+r_mu=z_mu-exp(mu tau Delta)U.
+
+The usual local Sobolev energy estimate, discarding favorable viscosity,
+gives a common smooth interval for 0<=mu<=1. On a shorter such interval,
+z_mu converges to the smooth Euler flow z_0 as mu tends to zero: the
+difference equation has source mu Delta z_0, and a Gronwall estimate gives
+an O(mu) bound in a lower Sobolev norm. Taking the initial datum two
+derivatives smoother provides all pressure and moment continuity used
+here. No infinite-time Euler or arbitrary-data NS existence is assumed.
+
+Now r_0(tau)=tau A(U)+O(tau^2), so P4(r_0(tau))>0 for sufficiently small
+tau>0. Fix tau_* in that interval. Under the SAME weight (FM4), the left
+side of (FM5) at T=tau_*/lambda equals
+
+    lambda^4 integral_0^tau_* exp(-[kappa/lambda]s)
+      [P4(r_mu(s))-(mu/2)D4(r_mu(s))]ds.             (FM10)
+
+Here kappa/lambda tends to 4(1+2C_Q)||grad U||infinity. The integral
+therefore tends to a strictly positive value. For sufficiently large
+finite lambda it is positive, with T<H and nu still positive. Thus the
+zero-allowance version of (FM5), with this specified weight, fails on an
+actual unforced smooth prefix starting at the original initial time.
+A different datum-dependent weight or a positive full-datum allowance
+is not refuted.
+
+The known heat-source allowance in (FM6) is not asserted to be sharp.
+Failure of (FM5) with K=0 therefore does not by itself refute (FM6) with
+K=0; it refutes this particular proposed payment of the remaining work.
+
+This is an internally generated adverse pressure-work pattern. It is
+not indefinite renewal or a singularity. The lower-frequency parent and
+receiver both belong to the original fluid; their resources must remain
+in a proposed history reserve.
+
+Run `python3 -O labs/generated_fourth_moment.py`. It checks full physical
+jets, (FM2) through degree four in time, both pressure representations,
+nonzero heat couplings on a nonsymmetric fixture, the inverse directional
+derivative and exact work of the full 56-mode source. The reduction,
+oscillatory limit and viscous interval argument are analytic, not
+Lean-certified. No Lean declarations or axioms change.
