@@ -1096,3 +1096,17 @@ target kernelMajorityRepair pkg : Unit := do
         "KempeMajorityRepair", "StripMajorityRepair", "MajorityRepairAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the bounded inverse bridge and composed source repair. -/
+target kernelTwoRoundRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/two-round-repair",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeFiniteDecoder", "StripTwoRoundRepair", "TwoRoundRepairAudit"]
+      cwd := pkg.dir
+      env := env }

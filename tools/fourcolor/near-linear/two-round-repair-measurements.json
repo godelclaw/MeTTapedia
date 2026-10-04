@@ -1,0 +1,118 @@
+{
+  "classification": "KERNEL_CHECKED_COMPOSED_SOURCE_REPAIR_WITH_BOUNDED_INVERSE",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeFiniteDecoder",
+        "source_sha256": "3d39b99fb67912b0b579c7a50f284dd855459b54d58b158cce0b5714f55ef618",
+        "exit_code": 0,
+        "frontend_wall_seconds": 1.53,
+        "olean_bytes": 179936,
+        "olean_sha256": "cf5155744017f591f373fd524b3deeba779133f74d90d7fffece709500d520f9"
+      },
+      {
+        "module": "MettapediaFourColor.StripTwoRoundRepair",
+        "source_sha256": "998cf3cf4156d20e9640825d90864038dc8dcabd1ae1c0f13111dec6983ce2c0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.428,
+        "olean_bytes": 244792,
+        "olean_sha256": "ec3c81aa82b95c613e40e6a99db2c54104b21624145a63c6fe6c5744ef77a066"
+      },
+      {
+        "module": "MettapediaFourColor.TwoRoundRepairAudit",
+        "source_sha256": "b61aaf89a15c0ef353fa22367f1304f5f47e2014f297a73005679c99d788a887",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.379,
+        "olean_bytes": 2600,
+        "olean_sha256": "a929561a6c5a44ca1bd8aba5e643f373ab419ebeb6a0a4fd753aa8bf4565b0d9"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeFiniteDecoder.lean",
+      "bytes": 1993,
+      "sha256": "3d39b99fb67912b0b579c7a50f284dd855459b54d58b158cce0b5714f55ef618"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripTwoRoundRepair.lean",
+      "bytes": 4166,
+      "sha256": "998cf3cf4156d20e9640825d90864038dc8dcabd1ae1c0f13111dec6983ce2c0"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/TwoRoundRepairAudit.lean",
+      "bytes": 2608,
+      "sha256": "b61aaf89a15c0ef353fa22367f1304f5f47e2014f297a73005679c99d788a887"
+    }
+  ],
+  "frontend_seconds_including_imports": 10.337,
+  "audit": {
+    "roots": 9,
+    "dependency_declarations": 5974,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "coversRec_used": false,
+    "interval_search_used": false
+  },
+  "proved": {
+    "arbitrary_width_accepted_parser_specification": true,
+    "bounded_inverse_inputs": 2,
+    "matching_layouts": 5,
+    "chromograms_per_input": 5,
+    "majority_coclosure_inputs": 2,
+    "additional_composed_inputs": 1,
+    "same_exterior_retained": true,
+    "actual_terminal_colourings": true,
+    "new_flat_colour_bytes": 76,
+    "reused_flat_colour_bytes": 152
+  },
+  "independent_program": "two-round-repair-audit.json",
+  "program_evidence": {
+    "profile_before": [
+      2,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+    ],
+    "profile_intermediate": [
+      2,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    "adversarial_response_chords": 11,
+    "separate_non_crossing_responses": 3,
+    "candidate_measures_tested": 8,
+    "candidate_measures_failed": 8
+  },
+  "limits": [
+    "The accepted parser is uniform; the inverse matching cover is finite and source-specific.",
+    "The negative profile and census results are program evidence, not Lean theorems.",
+    "No common physical exterior realizing all three adversarial matchings is asserted.",
+    "No universal progress measure, full D0099 repair, geometric supply or strict reduction is supplied.",
+    "No net whole-proof size or runtime saving is claimed."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0
+}

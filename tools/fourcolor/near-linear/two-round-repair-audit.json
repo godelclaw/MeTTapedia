@@ -1,0 +1,195 @@
+{
+  "evidence": "Source repair and inverse bridge: Lean; profiles and census: independent program.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "example": {
+    "input": [
+      1,
+      1,
+      1,
+      2,
+      1,
+      2,
+      3,
+      2,
+      1,
+      1,
+      1
+    ],
+    "profile": [
+      2,
+      3,
+      2,
+      1,
+      1,
+      0,
+      0
+    ],
+    "nonimproving_chord_responses": 11,
+    "independent_adversarial_matchings": 3,
+    "direct_first_stage_answers": 4,
+    "indirect_first_stage_answers": 1,
+    "intermediate_profile": [
+      2,
+      3,
+      2,
+      0,
+      0,
+      0,
+      0
+    ],
+    "new_lean_colour_witness_bytes": 76,
+    "fixture_sha256": "20f29d57186ebcb4bea3501338d24348311cdd587a01a60a63ac968c5e9907d5"
+  },
+  "census": {
+    "canonical_inputs": 7381,
+    "direct_inputs": 1587,
+    "one_majority_round_inputs": 1936,
+    "unresolved_inputs_tested": 5445,
+    "measures": [
+      {
+        "measure": "first_empty",
+        "failures": 1694,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          3
+        ]
+      },
+      {
+        "measure": "nonempty_count",
+        "failures": 1694,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          2,
+          2,
+          3
+        ]
+      },
+      {
+        "measure": "sum_relations",
+        "failures": 1419,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1,
+          1
+        ]
+      },
+      {
+        "measure": "lex_relations",
+        "failures": 1368,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1,
+          1
+        ]
+      },
+      {
+        "measure": "reverse_lex_relations",
+        "failures": 1200,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          3,
+          3
+        ]
+      },
+      {
+        "measure": "lex_unary_then_relations",
+        "failures": 897,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          1,
+          3,
+          1,
+          1
+        ]
+      },
+      {
+        "measure": "lex_relations_then_unary",
+        "failures": 1070,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1,
+          1
+        ]
+      },
+      {
+        "measure": "sum_unary_then_relations",
+        "failures": 902,
+        "first_failure": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2,
+          3,
+          1,
+          1
+        ]
+      }
+    ],
+    "criterion": "Choose a fixed colour; every noncrossing matching must contain a single chord whose answer is in the initial set or strictly increases the stated measure."
+  },
+  "limits": [
+    "The adversarial matchings are separate abstract responses; one physical exterior realizing them together is not constructed.",
+    "No impossibility of general history-dependent or multi-component repair is proved.",
+    "The finite inverse covers two inputs, not arbitrary boundary widths.",
+    "No full-source reducibility, geometric supply, strict reduction or catalogue compression is established."
+  ],
+  "verifier_sha256": "38f1c98943c7e1c7dcbbc9ecf9415157f2fa3c55dd66206edcb813a50846bb13"
+}

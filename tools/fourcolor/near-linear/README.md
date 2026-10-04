@@ -1,5 +1,65 @@
 # Near-linear Four Colour catalogue bridges
 
+## Two repair stages compose through the same exterior
+
+[`StripTwoRoundRepair.source_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripTwoRoundRepair.lean)
+proves `KempeCoclosure` for the D0099 input `11121232111`. A first anchor
+exchange has five possible partners: four answers have direct source
+colourings, and the fifth is exactly the second input already handled by
+the majority-block theorem. That theorem supplies the second repair.
+The same arbitrary Kempe-closed exterior predicate is retained throughout;
+terminal witnesses are colourings of the complete decoded source graph.
+Four additional witnesses use 76 flat colour bytes.
+
+The missing inverse bridge is supplied for both earlier majority inputs.
+[`KempeFiniteDecoder.mem_parses`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeFiniteDecoder.lean)
+proves the accepted-parser specification by induction at arbitrary width.
+A finite check then shows that each selected input has five accepted
+chromograms, all represented by five checked noncrossing matching layouts.
+Consequently `majority_coclosure` consumes the existing structural majority
+law for whichever chromogram the exterior supplies. The inverse cover is
+source-specific; no general decoder or compact scaling of enumeration is
+asserted. Neither `coversRec`, interval search nor a bulk repair table occurs
+in the new proof dependencies.
+
+The [independent program](audit_two_round_repair.py) also tests a potential
+progress measure: the cardinalities of the exact relations retained during
+core elimination. For this input they are
+
+```
+initial:       2 3 2 1 1 0 0
+intermediate:  2 3 2 0 0 0 0
+                         |
+               existing majority repair
+                         |
+                 genuine colouring
+```
+
+For each of the three choices of fixed colour, one explicit noncrossing
+matching makes every single-chord answer nonextending and componentwise
+no larger than the initial profile. These eleven answers rule out a
+strictly improving potential that is monotone in those cardinalities, for
+this abstract one-chord response game. The three matchings are independent
+responses; no one physical exterior realizing all three is constructed.
+The result does not obstruct history-dependent or multi-component repair.
+In fact the Lean composition repairs this very input despite the temporary
+loss of choices.
+
+The full 7,381-input census grants all 1,587 direct extensions and all 349
+first-round majority repairs as terminal seeds. Even then, each of eight
+simple progress measures fails on some remaining inputs, allowing adaptive
+choice of any single chord. The [receipt](two-round-repair-audit.json)
+records the measures and exact counts. These profile results are program
+evidence, independently cross-checked by source colouring search and exact
+ear elimination; they are not Lean theorems.
+
+Replay the source proofs with `lake build kernelTwoRoundRepair`. The
+[kernel receipt](two-round-repair-measurements.json) records nine audited
+roots and about 10.3 seconds of frontend time including imports. The
+complete D0099 closure, a uniform continuation argument, geometric supply
+and strict ambient reduction remain open. No catalogue entry, original
+certificate dependency or whole-proof runtime saving is credited.
+
 ## Majority blocks give a structural adaptive repair law
 
 [`exists_adjacent_majority`](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/Compositional/NoncrossingMatchingEar.lean)
