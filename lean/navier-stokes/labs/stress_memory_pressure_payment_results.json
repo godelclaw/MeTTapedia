@@ -1,0 +1,139 @@
+{
+  "smoothing": {
+    "Nash": "||f||2^(10/3)<=C_S ||f||1^(4/3)||grad f||2^2",
+    "packet": "||K_L P_(s,t)T||2<=k [nu(t-s)]^(-1/4) integral tr T, T>=0",
+    "k_R3": "sqrt(C_S)(3C_S/4)^(1/4)",
+    "k_T3": "2 sqrt(C_S)(3C_S/4)^(1/4)",
+    "torus": "Subtract the conserved tensor mean; its L1 deviation is at most twice the trace mass. K_L kills that mean.",
+    "physical_hypothesis": "P is the actual smooth divergence-free advection-diffusion propagator, acting entrywise. No future drift bound enters the norm estimate.",
+    "reuse": "The drift-independent Nash argument is already used by memory_age_pressure; the pressure multiplier is JP5."
+  },
+  "age_reserve": {
+    "actual_source": "a(t)=2nu Z(t), E_prime=-a, integral_0^t a=E0-E(t)",
+    "gamma": "k^2 nu^(-1/2) E0",
+    "observation": "||beta_C(t)||2^2<=gamma integral_0^t a(s)/sqrt(t-s) ds",
+    "reserve": "R_C(t)=2gamma [integral_0^t (sqrt(H-s)-sqrt(t-s))a(s) ds+sqrt(H-t)E(t)]",
+    "rate": "R_C_prime=-gamma [integral_0^t a(s)/sqrt(t-s) ds+E(t)/sqrt(H-t)]",
+    "payment": "integral_0^T ||beta_C||2^2+R_C(T)<=R_C(0)=2k^2 E0^2 sqrt(H/nu)",
+    "quantifiers": "Every available actual unforced prefix T<=H from the same initial datum; H and E0 are fixed at the original start.",
+    "seams": "Inherit C, E and the full age distribution a(s)ds. Do not restart C or its reserve.",
+    "fixture": "a=1, E=1-t, H=E0=1: cost majorant integrates to 4gamma/3; slack integrates to 2gamma/3."
+  },
+  "equations": {
+    "memory": "scriptL C=2nu G, C(0)=0; M=u tensor u+C",
+    "q_hat_source": "S_hat_q=Q_L[-u tensor grad p-grad p tensor u]+[u.grad,Q_L]M",
+    "beta_hat_source": "S_hat_beta=grad S_hat_q-(grad u)^T beta_hat",
+    "velocity": "scriptL u=Delta beta_hat-Delta beta_C-grad p_low",
+    "observer": "beta_C=K_L C; beta_hat=beta+beta_C; y_hat=sqrt(2) beta_hat/nu; r_hat=|(u,y_hat)|; J_hat=integral r_hat^3",
+    "balance": "J_hat_prime+D_hat=W_low_hat+W_mem+F_hat",
+    "W_low_hat": "-3 integral r_hat u.grad p_low",
+    "W_mem": "-3 integral r_hat u.Delta beta_C",
+    "F_hat": "(3sqrt(2)/nu) integral r_hat y_hat.S_hat_beta",
+    "diffusion": "The full JP3 block applies: D_hat>=(4nu/3)integral |grad r_hat^(3/2)|^2",
+    "retained": "p is the actual canonical fluid pressure. All pressure work, transport commutators, receiver deformation and memory forces remain."
+  },
+  "coarse_payment": {
+    "cost": "|W_low_hat|<=a0+b0 sqrt(Z)+d0 ||beta_C||2^2",
+    "a0": "9*E0**2*ML/2",
+    "b0": "6*CS**(3/2)*E0**(5/2)*ML/nu**2",
+    "d0": "6*E0*ML/nu**2",
+    "reserve": "B_hat_low=a0(H-t)+b0 sqrt((H-t)E(t)/(2nu))+d0 R_C(t)",
+    "payment": "integral_0^T |W_low_hat|+B_hat_low(T)<=B_hat_low(0)",
+    "OPEN": "integral_0^T [W_mem+F_hat-D_hat/2]<=K_hat(u0,nu,H,L) on EVERY same-datum prefix",
+    "conditional_consumer": "This OPEN bound gives the JP10 L3_t L9_x estimate and JP11 order-one continuation, with J,D,B replaced by their augmented versions.",
+    "limitation": "The beta_C L2 history bound does not bound Delta beta_C or its weighted pairing W_mem."
+  },
+  "adverse_repair": {
+    "fixtures": [
+      {
+        "n": 1,
+        "nu": "1",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 12,
+        "memory_trace_production": "61/2"
+      },
+      {
+        "n": 1,
+        "nu": "2/7",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 12,
+        "memory_trace_production": "61/7"
+      },
+      {
+        "n": 2,
+        "nu": "1",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "257/4"
+      },
+      {
+        "n": 2,
+        "nu": "2/7",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "257/14"
+      },
+      {
+        "n": 7,
+        "nu": "1",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "61309/98"
+      },
+      {
+        "n": 7,
+        "nu": "2/7",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "61309/343"
+      },
+      {
+        "n": 16,
+        "nu": "1",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "822533/256"
+      },
+      {
+        "n": 16,
+        "nu": "2/7",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "822533/896"
+      },
+      {
+        "n": 32,
+        "nu": "1",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "13120517/1024"
+      },
+      {
+        "n": 32,
+        "nu": "2/7",
+        "pressure_modes": 14,
+        "memory_pressure_tangent_modes": 14,
+        "memory_trace_production": "13120517/3584"
+      }
+    ],
+    "original_gap": {
+      "n": 16,
+      "c": 1000,
+      "nu": 1,
+      "L": 1,
+      "normalization": "nu (sqrt(2)/nu)^3 c^6",
+      "F_vis_lower": "341374575297/4194304000",
+      "D_upper": "3065314896368781/131072000000000",
+      "F_vis_minus_3D_lower": "1472010788924907/131072000000000",
+      "bounds": "F_vis>81 times normalization, D<24 times normalization, F_vis-3D>11 times normalization",
+      "physical_consequence": "At t=0 the Euler entropy derivative and cross diffusion vanish by the exact y-shift symmetry. Thus the complete NS entropy derivative is positive although kinetic energy decreases.",
+      "history_consequence": "Continuity on the actual smooth NS prefix preserves F_vis>3D and positive entropy growth for some positive interval; no interval length or indefinite renewal is claimed."
+    },
+    "initial_identity": "J_hat_NS_prime(0)=J_NS_prime(0)-F_vis(0)=-D(0)<0",
+    "actual_interval": "On the same smooth unforced solution the original J increases and augmented J_hat decreases for some positive interval, by continuity of the complete equations.",
+    "perturbations": "Sufficiently small genuinely 3D smooth solenoidal perturbations retain both strict initial signs and corresponding short intervals.",
+    "limits": "No uniform interval length, persistent parity, later monotonicity or arbitrary-history source payment is asserted."
+  },
+  "status": "Exact checks passed; propagator estimates, actual intervals and continuation remain analytic, not Lean-certified.",
+  "source_sha256": "da0e1b36f671d37ab0e0e1d029695287ca4fe9cbb5b411c54fcffa8aa09a6f5c"
+}
