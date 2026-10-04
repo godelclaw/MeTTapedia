@@ -1,0 +1,94 @@
+{
+  "classification": "GEOMETRIC_CONNECTION_REPAIR",
+  "source": "D0099",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; classical semantics from Gonthier/Emery.",
+  "local_palette_checks": 54,
+  "proper_boundary_assignments": 7,
+  "sphere": {
+    "vertices": 24,
+    "edges": 66,
+    "faces": 44,
+    "minimum_degree": 5
+  },
+  "consumers": [
+    {
+      "initial_boundary": [
+        0,
+        1,
+        0,
+        2,
+        3,
+        1,
+        2,
+        0,
+        1,
+        3,
+        1
+      ],
+      "first_component": [
+        0,
+        1,
+        2,
+        5,
+        7,
+        8,
+        10,
+        12,
+        14
+      ],
+      "complementary_component": [
+        9
+      ],
+      "switches": 1
+    },
+    {
+      "initial_boundary": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        1,
+        2,
+        0,
+        1,
+        3,
+        1
+      ],
+      "first_component": [
+        0,
+        1,
+        2,
+        5,
+        7,
+        8,
+        10,
+        12,
+        14
+      ],
+      "complementary_component": [
+        9
+      ],
+      "switches": 1
+    }
+  ],
+  "evidence": {
+    "program": "Independent source parsing, core formula, facial turns, components and final colourings.",
+    "lean": "Geometric separation for arbitrary exterior path length, one-switch source repair and actual spherical gluing."
+  },
+  "limits": [
+    "The connection must join ports eight and ten in the stated boundary-list domain.",
+    "Connections reaching only ports five or six remain separate obligations.",
+    "No universal supply, strict reduction, coverage deletion or runtime saving is claimed."
+  ],
+  "fixture_sha256": "33c5db263e4741decba5f4cefcf678351de244c094bf0787595b50f55aaa0d07",
+  "lean_sources": {
+    "StripConnectionGeometry.lean": "3845c91502ffb58ef3704dd5c2df13e7de04c867b5f6d144c629c81b9282760c",
+    "StripConnectionRepair.lean": "15b7c4176ed5469f3ac59aeb2cfaae3f11fa8a23dc252b65f667b56f10bc34b7",
+    "GraphSphericalEuler.lean": "55d5737d6e1bbcdd15210ef22cbf6ae85f07b5db035f46bc50bdd06b981e13b0",
+    "StripConnectionExample.lean": "db71a54d01e8ecb8aa5c1536903cb52efc76e151f5efa2ed6d7000f75a9a2f15",
+    "StripConnectionAudit.lean": "711c73bd34f017abbec798a3dd6e7cbabc50c49fbe8bab9f4e22d585d381832c"
+  },
+  "verifier_sha256": "2de0a5948a76f3bdcb42065cf0a1ee9115b3b33f112edaa27134ba8dd221d6da"
+}

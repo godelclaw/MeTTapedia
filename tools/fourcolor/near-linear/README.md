@@ -1,5 +1,43 @@
 # Near-linear Four Colour catalogue bridges
 
+## A failed component guard supplies a geometric alternative
+
+[`StripConnectionGeometry`](../../../lean/fourcolor-classical/MettapediaFourColor/StripConnectionGeometry.lean)
+closes an exterior zero/one path between ports eight and ten through the
+D0099 core. Two actual facial triangles put port nine on the opposite
+face-potential side from ports three through seven. A complementary
+two/three path cannot cross that closed walk. Neither exterior size nor
+path length is bounded.
+
+[`StripConnectionRepair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripConnectionRepair.lean)
+uses the resulting separation: the two/three component containing port
+nine meets no other boundary port. One physical switch changes that port
+from three to two. A core-colouring formula, with one choice determined
+by port three, then reconstructs the entire source for the same boundary
+list domain as the singleton repair. The component may contain arbitrarily
+many exterior vertices; singleton size is not a premise.
+
+`GraphSphericalEuler` derives the face-potential Euler hypothesis from a
+connected planar graph rotation. `StripConnectionExample` applies the law
+to two initial colourings of a 24-vertex sphere with degrees five through
+seven. Both use the path eight--seven--ten. The proof derives the
+complementary component's isolation, then glues actual source and exterior
+colourings. It does not check a preselected final colouring.
+
+The [independent program audit](strip-connection-repair-audit.json) checks
+source decoding, the formula, the complete spherical fixture and both
+initial colourings. It also records that their first zero/one component
+reaches port eight, so the earlier singleton separation guard fails.
+These last component inventories are program evidence; the Lean consumer
+uses the actual short connection directly.
+
+Replay `lake build kernelStripConnectionRepair`. The
+[measurement receipt](strip-connection-repair-measurements.json) records
+source sizes, replay costs and the semantic dependency audit. Connections
+reaching only ports five or six remain open, as do general occurrence
+supply, strict reduction, compact coverage and termination. This local
+alternative removes no catalogue entry or original certificate.
+
 ## A uniform two-stage repair with two physical consumers
 
 [`SingletonRelease`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/SingletonRelease.lean)
@@ -28,9 +66,10 @@ Two consumers establish that these hypotheses have actual applications:
   completed-colouring certificates.
 
 If the separation condition fails, the theorem retains an actual
-bicoloured walk from port one to a retained port. A general alternative
-repair for that branch remains open, as do geometric supply, strict
-reduction and universal coverage. The rim consumer does not establish
+bicoloured walk from port one to a retained port. The connection law above
+handles the port-eight branch when its embedding hypotheses hold. The
+remaining connections, geometric supply, strict reduction and universal
+coverage stay open. The rim consumer does not establish
 separation in arbitrary planar exteriors. No catalogue removal is credited.
 
 Replay `lake build kernelStripSingletonRepair` in the classical package,

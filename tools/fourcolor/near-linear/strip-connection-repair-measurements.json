@@ -1,0 +1,95 @@
+{
+  "classification": "CHECKED_GEOMETRIC_ALTERNATIVE_WITH_ACTUAL_RECONSTRUCTION",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripConnectionGeometry",
+      "source_sha256": "3845c91502ffb58ef3704dd5c2df13e7de04c867b5f6d144c629c81b9282760c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 25.538,
+      "olean_bytes": 527408,
+      "olean_sha256": "3655fd242de864f13193ec16c1d107ca8a8dbd7f07fe1f79bffef00b2b82e563"
+    },
+    {
+      "module": "MettapediaFourColor.StripConnectionRepair",
+      "source_sha256": "15b7c4176ed5469f3ac59aeb2cfaae3f11fa8a23dc252b65f667b56f10bc34b7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.832,
+      "olean_bytes": 592400,
+      "olean_sha256": "b22c27c1268e44165a8512cfdb168140e53a6093768e8b1ab635b50832810451"
+    },
+    {
+      "module": "MettapediaFourColor.GraphSphericalEuler",
+      "source_sha256": "55d5737d6e1bbcdd15210ef22cbf6ae85f07b5db035f46bc50bdd06b981e13b0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.268,
+      "olean_bytes": 105040,
+      "olean_sha256": "9062d862353c8844cac29aaddfb5cbb5fd052468a92870af0376557cd2668453"
+    },
+    {
+      "module": "MettapediaFourColor.StripConnectionExample",
+      "source_sha256": "db71a54d01e8ecb8aa5c1536903cb52efc76e151f5efa2ed6d7000f75a9a2f15",
+      "exit_code": 0,
+      "frontend_wall_seconds": 10.426,
+      "olean_bytes": 850832,
+      "olean_sha256": "43f0fb0ac22d6b4591d32fe85461e946db0fa766f60248a0c9da3fca0246706e"
+    },
+    {
+      "module": "MettapediaFourColor.StripConnectionAudit",
+      "source_sha256": "711c73bd34f017abbec798a3dd6e7cbabc50c49fbe8bab9f4e22d585d381832c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.695,
+      "olean_bytes": 2600,
+      "olean_sha256": "bbc0a902d301936630d4d419182e35d255ff94bd8d5302188efdbb783c6d7c9d"
+    }
+  ],
+  "frontend_wall_seconds_total": 51.759,
+  "timing_scope": "Five modules replayed with existing dependencies built; not a clean build or whole-proof speedup.",
+  "new_lean_source_bytes": 36288,
+  "example_fixture_bytes": 5239,
+  "new_boundary_repair_table_bytes": 0,
+  "audit": {
+    "roots": 12,
+    "transitive_dependency_declarations": 20540,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "For arbitrary-length exterior zero/one paths from ports eight to ten, two source facial triangles derive separation from complementary paths to ports three through seven.",
+    "For the explicit D0099 boundary-list domain, one actual complementary component switch and a uniform core formula reconstruct a complete source colouring.",
+    "The first component reaching both ports supplies the required actual path.",
+    "Connected planar graph rotations supply the Euler hypothesis used by face potentials.",
+    "Two initial colourings on a 24-vertex sphere consume the generic law and reconstruct genuine whole colourings."
+  ],
+  "consumer_geometry": {
+    "vertices": 24,
+    "edges": 66,
+    "faces": 44,
+    "minimum_degree": 5,
+    "maximum_degree": 7
+  },
+  "program_only": [
+    "The two initial colourings do not extend while fixed.",
+    "Their first zero/one component reaches port eight and fails the earlier singleton guard."
+  ],
+  "residual_obligations": [
+    "Connections reaching only ports five or six.",
+    "Other boundary-list domains and missing-colour failure.",
+    "Geometric occurrence supply, strict reduction, compact coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripConnectionRepair kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_connection_repair.py"
+  ],
+  "evidence_record": "strip-connection-repair-audit.json"
+}

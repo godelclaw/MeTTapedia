@@ -1399,3 +1399,18 @@ target kernelStripSingletonRepair pkg : Unit := do
         "StripSingletonRepairAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay geometric alternatives for the D0099 connection branch. -/
+target kernelStripConnectionRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-connection-repair",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripConnectionGeometry", "StripConnectionRepair", "GraphSphericalEuler",
+        "StripConnectionExample", "StripConnectionAudit"]
+      cwd := pkg.dir
+      env := env }

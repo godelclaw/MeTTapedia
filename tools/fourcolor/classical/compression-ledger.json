@@ -6099,5 +6099,32 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_connection_repair_experiment": {
+    "classification": "CHECKED_GEOMETRIC_ALTERNATIVE_WITH_ACTUAL_RECONSTRUCTION",
+    "report": "../near-linear/strip-connection-repair-measurements.json",
+    "generic_law": "An exterior connection and two actual source facial triangles isolate a complementary boundary component; one switch and a common core formula reconstruct.",
+    "domain": "D0099 boundary lists with an exterior zero/one connection between ports eight and ten in the stated spherical embedding.",
+    "actual_consumers": 2,
+    "consumer_scope": "Two initial colourings on one 24-vertex sphere.",
+    "new_boundary_repair_table_bytes": 0,
+    "new_lean_source_bytes": 36288,
+    "audit": {
+      "roots": 12,
+      "transitive_dependency_declarations": 20540,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "remaining": [
+      "Connections reaching only ports five or six.",
+      "Other boundary-list domains and missing-colour failure.",
+      "Geometric occurrence supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }
