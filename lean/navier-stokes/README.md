@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [Gaussian covariance renewal test](labs/README.md#gaussian-covariance-can-add-to-nonlinear-heat-history-renewal)
+retains the exact difference between heating a nonlinear source and
+interacting heated fields. On a complete shape interval, this covariance
+adds a strictly positive amount to the reserve's renewal; an analytic
+transfer realizes it in actual generated unforced motion. A cyclic family
+instead loses exactly one seventh of its positive intrinsic comparison.
+The work depends on the alignment of anisotropic covariance with the full
+pressure response. Its physical evolution retains diffusion and nonlinear
+regeneration; arbitrary-history payment remains open. These are analytic
+results with exact Fourier checks, not new Lean certificates.
+
 The [heat-work parent payment](labs/README.md#original-heat-parents-have-a-payment-in-the-heat-work-reserve)
 controls the original source and every mixed parent contribution to the
 new reserve, on both whole space and the mean-zero torus. It retains the

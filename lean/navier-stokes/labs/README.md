@@ -43961,3 +43961,256 @@ Young/heat integral algebra. Results and source hashes are in
 `heat_work_parent_payment_results.json`. The general estimates and
 actual-flow interval arguments are analytic; no Lean declarations or
 axioms change.
+
+## Gaussian covariance can add to nonlinear heat-history renewal
+
+`heat_covariance_renewal.py` tests the stochastic information lost by
+replacing the complete heated nonlinear source with an interaction of
+heated fields. On an entire interval of smooth three-dimensional shapes,
+that replacement underestimates renewal by a strictly positive amount.
+The positive covariance contribution also occurs in motion GENERATED
+by actual unforced flow. A cyclic family has the opposite behavior:
+covariance removes exactly one seventh of its positive intrinsic return.
+These statements concern the heat-work reserve, not a singular solution.
+
+The filtered-stress method is established mathematics. See
+[Constantin, E and Titi's commutator argument](https://web.math.princeton.edu/~weinan/papers/misc1.pdf)
+and [Eyink and Aluie's smooth coarse-graining](https://arxiv.org/abs/0909.2386).
+The former proves an Euler energy-conservation result under its stated
+regularity hypothesis; the latter gives energy-transfer locality bounds
+under scaling hypotheses. Neither supplies the arbitrary-data NS
+heat-work payment used here. The calculation below applies the retained
+stress to the specific pressure-work cotangent in (HW5).
+
+### The exact joint stochastic information
+
+On the normalized mean-zero torus, let H_s=exp(s Delta), z_s=H_s w and
+N(w)=-P div(w tensor w). The Gaussian covariance tensor is
+
+    tau_s=H_s(w tensor w)-z_s tensor z_s >=0,
+    C_s=H_s N(w)-N(z_s)=-P div tau_s.                 (HC1)
+
+The inequality is pointwise positive semidefiniteness. Both velocity
+factors use the SAME Gaussian displacement of covariance 2s I. Their
+joint expectation is not the product of their expectations. This is the
+free heat kernel in the reserve, not an identification of an arbitrary
+stochastic control with a fluid force or of free Brownian motion with
+the full advected stochastic NS flow.
+
+The product rule gives the exact heat-age equation and its solution:
+
+    (partial_s-Delta)tau_s=2 sum_j partial_j z_s tensor partial_j z_s,
+    tau_0=0,
+    tau_s=2 integral_0^s H_(s-r)
+                 [sum_j partial_j z_r tensor partial_j z_r] dr. (HC2)
+
+These identities also hold on R3 for smooth decaying fields. Heat
+positivity proves tau_s>=0. It does NOT determine the sign of its work.
+With the COMPLETE cotangent Z from (HW5), set
+
+    M_s=sym grad(P Z(z_s)),
+    tr M_s=0,
+    DP4(z_s)[C_s]=integral M_s:tau_s
+                =integral M_s:dev(tau_s).             (HC3)
+
+Here dev(tau)=tau-(tr tau)I/3. The Leray projection, both pressure
+variation terms in Z, and integration by parts are essential. The
+isotropic covariance contributes zero. The anisotropic part can align
+with either sign of the trace-free response M_s. Positive covariance
+alone therefore cannot imply depletion of this observation.
+A condition M_s<=0 against every positive semidefinite tensor would,
+because tr M_s=0, force M_s=0. Nontrivial depletion must use the actual
+relationship between the two tensors, rather than covariance positivity
+alone.
+
+### The positive-part selector is retained
+
+Write F_s=P4(z_s), G_s=DP4(z_s)[H_s N(w)] and
+E_s=DP4(z_s)[N(z_s)]. Then G_s=E_s+DP4(z_s)[C_s]. Define
+
+    sigma_F(g)=g if F>0, 0 if F<0, max(g,0) if F=0,
+    I_nu(w)=nu^(-1) integral sigma_(F_s)(E_s) ds,
+    Kappa_nu(w)=nu^(-1) integral
+                    [sigma_(F_s)(G_s)-sigma_(F_s)(E_s)] ds.
+    Gamma_nu(w)=I_nu(w)+Kappa_nu(w).                   (HC4)
+
+I_nu is an auxiliary comparison, not a separate physical fluid or
+force. Kappa_nu measures the error of that comparison in the ACTUAL
+reserve derivative. This definition keeps the zero-profile boundary:
+positive-part directional derivatives are not generally additive.
+If the heat-work profile is not identically zero, analyticity makes
+its zero set negligible, and
+
+    Kappa_nu(w)=nu^(-1) integral_(F_s>0) integral M_s:tau_s ds. (HC5)
+
+The periodic heat decay justifies the integrals for smooth fields.
+The pressure-work observation remains quintic, not cubic vorticity
+stretching. Its continuation consumer remains the fourth-moment route.
+
+### A uniform positive contribution on a shape interval
+
+Retain the previous oblique field and its COMPLETE nonlinear source:
+
+    U=(sin y-2sin z, sin z, sin(x+2y)),
+    W_eps=U+eps N(U), 0<eps<=1/4, q=exp(-s).
+
+The checker reconstructs all pressure and nonlinear outputs. It
+rechecks (HW9): F_s>=(7561789/56770560)eps q^10>0 at every finite heat
+age. Thus the selector in (HC5) includes the entire half-line, and exact
+integration gives
+
+    Kappa_1(W_eps)=19/3465+alpha eps^2-beta eps^4-gamma eps^6,
+    alpha>0, 0<beta<1/100, 0<gamma<1/1000,
+    Kappa_1(W_eps)
+      >=19/3465-1/25600-1/4096000 >1/200.             (HC6)
+
+The exact rational coefficients, profiles and stronger margin are
+archived. These are whole-heat-history polynomial bounds, not a finite
+heat grid. In particular Kappa_1(W_(1/4)) is approximately
+0.00597690467751. The sign of the integrand at every heat age is not
+needed or asserted throughout the shape interval.
+
+At eps=0 the heat-work profile vanishes identically. The separate exact
+profiles are
+
+    G_s=q^10(11+16q^4-3q^8)/66,
+    E_s=4q^14/11,
+    G_s-E_s=q^10(1-q^4)(3q^4+11)/66.                 (HC7)
+
+Both G_s and E_s are positive, so (HC4) still gives Kappa_1(U)=19/3465.
+This conclusion uses their signs; it does not assume derivative
+additivity at a zero profile.
+
+### A cyclic family with a favorable covariance law
+
+For arbitrary real a,b,c, put
+
+    U_c=(a sin y,b sin z,c sin x), A=N(U_c),
+    T=a^2 b^2 c^2,
+    S1=a^4 b^2+b^4 c^2+c^4 a^2,
+    S2=a^4 c^2+a^2 b^4+b^2 c^4,
+    k=-T(S1+S2-27T)/576.
+
+Every mode of A has squared frequency two. The exact full profiles are
+
+    P4(H_s A)=0,
+    G_s=k q^14, E_s=k q^12,
+    Gamma_nu(A)=[k]_+/(14nu),
+    I_nu(A)=[k]_+/(12nu),
+    Kappa_nu(A)=-[k]_+/(84nu)<=0.                     (HC8)
+
+For equal unit parents these are 1/(384nu), 7/(2304nu) and
+-1/(2304nu), respectively. Covariance removes one seventh of the
+positive intrinsic comparison. For k<0 the signed covariance profile
+is positive, but both complete positive-part comparisons are zero.
+It would be incorrect to call that positive signed profile a positive
+reserve contribution.
+
+A is the exact FIRST source of a cyclic flow. The actual generated
+component at later times has additional parents and modes. In
+particular the zero-profile selector at A need not persist. The
+complete physical-history conclusion for those original cyclic flows
+is (JC11), not an iteration of (HC8).
+
+### The adverse covariance can arise in actual generated motion
+
+Use the SAME shear and receiver construction (HW10), with W=W_(1/4),
+not a new prescribed forcing. Its exact original source A_N=N(U_N)
+has only fast bands Nk+jk0, with bounded j, and leading form h W(Nx).
+The complete next source has both fast and slow outputs, all retained.
+In addition to the full-source limit (HW11), finite Fourier expansion
+gives the intrinsic comparison limit
+
+    DP4(H_(s/N^2)A_N)[N(H_(s/N^2)A_N)]/N^2
+       -> mean(h^6) DP4(H_s W)[N(H_s W)].             (HC9)
+
+Indeed H_(s/N^2)A_N=h H_s W(Nx)+O(1/N) in amplitude,
+with first-derivative error O(1). The fast nonlinear outputs divided
+by N tend to h^2 N(H_s W)(Nx). Slow outputs have amplitude O(1):
+in divergence form the derivative acts at their slow OUTPUT frequency.
+Low pressure gradients likewise lose one power of N. They cannot be
+discarded from the finite source, but vanish after the N^2 normalization
+of the work. Fast pressure multipliers converge to their fast symbols.
+
+All leading factors retain their shared h and their phases. Finite
+slow/fast averaging gives mean(h^6)=215/32. The errors have an
+integrable C(1+s)^m exp(-c s)/N bound, as in (HW11). The four heated
+receiver factors also control the terms with slow nonlinear output.
+The heat-work selector converges to one because F_W(s)>0 for every
+finite s. Dominated convergence, applied to both complete profiles,
+therefore yields
+
+    Kappa_1(A_N) -> (215/32)Kappa_1(W)>43/1280>0.      (HC10)
+
+This is an eventual analytic statement. No numerical threshold N is
+claimed. The prior exact N=32 source fixture does not establish that
+threshold.
+
+Fix a sufficiently large FINITE N. Then P4(A_N)>0 as well. In an H5
+neighborhood of A_N the heat-work profile is not identically zero;
+analyticity in heat age and dominated convergence make Kappa_1
+continuous there. For the actual original datum lambda U_N, use the
+same variables as (HW12): tau=lambda t, mu=nu/lambda and
+
+    w(t)=u(t)-H_(nu t)(lambda U_N)=lambda r_mu(tau).
+
+Uniform local Sobolev estimates give r_mu->r_0 as mu->0 on a common
+smooth Euler interval, and r_0(tau)=tau A_N+O(tau^2) in H5. First fix
+small positive tau, so Kappa_1(r_0(tau))>0, and then take sufficiently
+large finite lambda. Positive homogeneity gives
+
+    Kappa_nu(w(t))=(lambda^6/nu)Kappa_1(r_mu(tau)),
+    nu D4(w(t))=nu lambda^4 D4(r_mu(tau)).
+
+Thus Kappa_nu(w)>nu D4(w) can hold on a short actual positive-viscosity
+unforced interval. The heat reference and original datum are never
+reset. This refutes a favorable covariance sign and automatic viscous
+payment of that contribution, including for generated motion. It does
+not assert growth of the FULL coupled reserve: intrinsic work and the
+original-parent terms can oppose it. It supplies no infinite renewal
+sequence, singularity, or failure of a full-datum integrated allowance.
+
+### What must be controlled along physical time
+
+There is an exact physical evolution equation for the same tensor.
+For w_t=nu Delta w+F and a fixed auxiliary heat age s, define
+Cov_s(a,b)=H_s(a tensor b)-H_s a tensor H_s b. Then
+
+    (partial_t-nu Delta)tau_s
+      =-2nu sum_j Cov_s(partial_j w,partial_j w)
+          +Cov_s(w,F)+Cov_s(F,w).                    (HC11)
+
+For the actual generated motion F=N(v+w), with the ORIGINAL v=H_(nu t)u0.
+It includes N(w), B_v(w), and N(v). The covariance diffusion term is
+negative semidefinite. Its contraction with the trace-free M_s need
+not be nonpositive, and M_s itself rotates and changes under the
+complete pressure evolution. Positivity of covariance or decay of its
+trace cannot alone control its signed work.
+
+For example, at fixed s integration by parts gives
+
+    d/dt integral M_s:tau_s
+      =integral (partial_t M_s+nu Delta M_s):tau_s
+         -2nu integral M_s:sum_j Cov_s(partial_j w,partial_j w)
+         +integral M_s:[Cov_s(w,F)+Cov_s(F,w)].        (HC12)
+
+This is a fixed-age identity. Differentiating a selected heat integral
+requires additional treatment of the moving positive-work region;
+(HC12) does not dispose of that issue. The checker compares (HC11)
+against the complete positive-viscosity NS initial tangent at two
+rational heat parameters, retaining all generated modes and pressure.
+
+The remaining sufficient target is still (HP15): bound the physical-time
+integral of Gamma_nu(w)-nu D4(w)/2 with its fixed original-data weight,
+uniformly over all available same-data prefixes. Formula (HC4) makes
+both its intrinsic and covariance contributions explicit without
+claiming that either is separately payable. The alternative joint
+parent cancellation remains available. Controlling the coupled
+orientation, nonlinear regeneration and diffusion through that whole
+history is OPEN.
+
+Run `python3 -O labs/heat_covariance_renewal.py`. The complete source
+identities, cotangent contraction, selector branches, shape interval
+and cyclic family are checked exactly. Gaussian positivity, the
+separated-frequency transfer and actual-solution intervals are analytic,
+not newly Lean-certified. No Lean declarations or axioms change.
