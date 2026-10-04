@@ -44919,3 +44919,240 @@ checks ordinary physical Fourier specializations, including negative shear,
 the orthogonal case and a missing parent. General local-solution arguments
 and the short-age limit remain analytic, not Lean-certified. No Lean
 declarations or axioms change. The arbitrary-history budget (RW11) is OPEN.
+
+## A reserve for the next pressure interaction repairs the first return but rebounds
+
+The intrinsic term exposed by (OC7) can be stored explicitly. Its heat
+payment repairs the full oblique family's initial growth at every
+amplitude. The next complete nonlinear return, however, replenishes the
+new reserve. An analytic comparison below follows the SAME original
+unforced solution: the corrected reserve first decreases and then exceeds
+its initial value. No parent, geometry, heat window or allowance is reset.
+
+### The nonnegative correction and its complete physical derivative
+
+Retain the normalized period-2pi torus, canonical pressure, and
+N(w)=-P[(w.grad)w]. Define the actual intrinsic pressure-work response
+
+    S(w)=DP4(w)[N(w)],
+    R_delta(w)=nu^-1 integral_0^delta [P4(H_s w)]_+ ds,
+    J_delta(w)=nu^-2 integral_0^delta s [S(H_s w)]_+ ds,
+    W_alpha(t,w)=||w||4^4/4+R_delta(t)(w)
+                              +alpha J_delta(t)(w).       (IC1)
+
+Here alpha>=0 is constant, delta(t)=nu(L-t)>0, and L is prescribed
+before evolving the flow. These are finite functionals of the current
+smooth field's free-heat curve. They contain no unknown future nonlinear
+solution. The added reserve is nonnegative, even though S itself need
+not have a fixed sign. On a finite heat window the same definitions make
+sense for smooth whole-space L2 fields; the examples below are periodic.
+
+The weighted heat shift gives exactly
+
+    (partial_t+nu D_[Delta w])J_delta(w)
+       =-I_delta^+(w),
+    I_delta^+(w)=nu^-1 integral_0^delta [S(H_s w)]_+ ds.    (IC2)
+
+Indeed, along heat evolution the defining integral becomes
+nu^-2 integral_(nu t)^delta(0) (r-nu t)[S(H_r w)]_+ dr.
+Differentiating proves (IC2), including at zero profiles. With a fixed
+cutoff there would instead be an extra delta[ S(H_delta w)]_+/nu.
+The prescribed backward motion cancels exactly that incoming work.
+
+Use sigma_F(G)=G for F>0, zero for F<0, and max(G,0) for F=0. The new
+complete nonlinear return is
+
+    Xi_delta(w)=nu^-2 integral_0^delta s
+            sigma_(S(H_s w))(DS(H_s w)[H_s N(w)]) ds.
+
+The derivative DS retains two distinct terms:
+
+    DS(w)[b]=D^2P4(w)[b,N(w)]+DP4(w)[DN(w)[b]],
+    DN(w)[b]=-P[(w.grad)b+(b.grad)w].                     (IC3)
+
+The first term includes the pressure Hessian with respect to the field
+AND the changing receiver |w|^2 w. The second retains the evolution of
+the source that creates pressure. Dropping it freezes the parents.
+For an actual whole unforced NS solution, the full balance is
+
+    d_right W_alpha(t,u(t))/dt
+      =-nu D4(u)-[P4(u)]_-+Gamma_delta(u)
+                             -alpha I_delta^+(u)+alpha Xi_delta(u).
+                                                               (IC4)
+
+Heat analyticity and dominated first variation on the compact window
+justify the selectors. Identically zero profiles retain their one-sided
+derivatives. For a filtered remainder, its mixed and source directions
+would also occur in (IC3); the older payments do not automatically pay
+the new J derivatives. Equation (IC4) here is for the whole solution.
+
+### A genuine initial repair for the unbounded oblique family
+
+Take U_m from (OC1), m nonzero and abc nonzero. A translation by
+((1-m)pi,pi,pi) sends U_m to -U_m and leaves N(U_m) unchanged. Since
+S is translation invariant and even in its field, this gives
+
+    DS(H_s U_m)[H_s N(U_m)]=0 for every s>=0.
+
+Thus Xi_delta(U_m)=0, rather than merely a small unobserved error.
+The OC profiles also imply, for EVERY delta>0,
+
+    Gamma_delta(U_m)/I_delta^+(U_m)<=40/33.             (IC5)
+
+To see the prefix comparison, write G_s=I_s+C_s as in (OC4).
+C_s/I_s increases with s: its derivative is
+(D_+exp(2ms)+D_-exp(-2ms))/6>0. Its weighted average over a prefix
+cannot exceed the whole-age average. The exact whole-age gap is
+
+    40/33-gamma_m/i_m
+      =(m^2-3)^2/[22(m^2-m+3)(m^2+m+3)]>=0.
+
+Consequently alpha=5/4 repairs the entire family's initial obstruction:
+
+    d_right W_(5/4)(t,u(t))/dt at u(0)=lambda U_m
+      <=-nu D4(lambda U_m)-(5/132)I_delta^+(lambda U_m)<0.  (IC6)
+
+This holds for every positive amplitude and viscosity, and every positive
+initial window. It uses the real viscous tangent. Smooth local evolution
+gives an interval on which W lies below its initial value. The issue is
+whether that payment persists after the geometry changes.
+
+### The next return along the same original solution
+
+Fix U=U_2 with unit strengths and delta_0=log(2). For this paragraph omit
+the viscosity prefactors and write
+
+    R_1,delta(w)=integral_0^delta [P4(H_s w)]_+ ds,
+    J_1,delta(w)=integral_0^delta s [S(H_s w)]_+ ds,
+    X_delta(w)=integral_0^delta s DS(H_s w)[H_s N(w)] ds
+
+where S is positive throughout the window. It is strictly positive for U
+and therefore in a sufficiently small smooth neighborhood. The complete
+second Euler derivative of J at U is
+
+    K=DX_delta0(U)[N(U)]
+      =4932628376767351521482323/1495818281370987131830272000
+       -[37336469241033349/725186626391881285632]log(2)
+      >1/400.                                             (IC7)
+
+This retains the change in N(U), not just a straight-line approximation
+to the future velocity. It is obtained by differentiating the complete
+function X_delta at U in direction N(U). The symbolic check uses
+U+epsilon N(U) only to calculate that derivative; it does not identify
+this affine family with a solution trajectory.
+
+The exact original prefix integrals are
+
+    gamma=1153857/36700160, i=16383/630784,
+    d=i-(4/5)gamma=59139/72089600>0,
+    K/2-d>1/1500.                                         (IC8)
+
+All inequalities use rational bounds 2/3<log(2)<25/36. These follow
+by keeping the first term of the positive series
+log(2)=2 sum_(j>=0)(1/3)^(2j+1)/(2j+1) and bounding later denominators
+below by three. Decimal evaluation is not needed for the signs.
+
+For an arbitrary prescribed viscosity nu>0, let u start from lambda U.
+Set mu=nu/lambda, tau=lambda t, u(t)=lambda v_mu(tau), where v_mu is
+the ACTUAL solution of viscosity mu from U. Keep
+
+    delta(t)=delta_0-nu t=delta_0-mu tau,
+    Vhat_mu(tau)=J_1,delta(v_mu(tau))
+              +(4mu/5)R_1,delta(v_mu(tau))
+              +(mu^2/5)||v_mu(tau)||4^4.
+
+This is exactly nu^2 W_(5/4)(t,u(t))/((5/4)lambda^6).
+At zero its right derivative is -d mu-(4/5)D4(U)mu^3. At mu=0 its
+second derivative is K. For 0<=mu<=1, local Sobolev estimates from the
+fixed smooth datum supply a common existence interval and sufficiently
+many bounded derivatives, without using a future large-data bound.
+
+Here are the selector and remainder obligations explicitly. The initial
+S(H_s U)=4exp(-14s)/11 has a strictly positive minimum on [0,delta_0].
+The first actual time derivative of P4(H_s v_mu) is the positive G_s
+from (OC4), independently of mu. Uniform local derivative bounds therefore
+preserve S>0 and P4(H_s v_mu)>0 for all sufficiently small positive tau,
+uniformly over that compact heat window and 0<=mu<=1. The positive-part
+integrals then equal smooth signed integrals on the right of zero.
+
+For example a common sufficiently high Sobolev bound, such as H16,
+controls three time derivatives of these polynomial pressure functionals.
+The finite initial time jets depend polynomially on mu. Taylor's theorem
+therefore gives constants C>=1,T0>0, determined by this fixed datum and
+window, with
+
+    |Vhat_mu(tau)-Vhat_mu(0)+d mu tau-(K/2)tau^2|
+       <=C(mu^3 tau+mu tau^2+tau^3), 0<=tau<=T0.
+
+Absorb the three terms at tau=mu into a constant C0. Choose
+mu_star=min(T0,1/2,1/(3000 C0)). By (IC8), whenever
+0<mu<=mu_star,
+
+    Vhat_mu(mu)-Vhat_mu(0)>=mu^2/3000.
+
+Returning to the ORIGINAL positive-viscosity unforced solution gives
+
+    t_star=nu/lambda^2,
+    W_(5/4)(t_star,u(t_star))-W_(5/4)(0,lambda U)
+       >=lambda^4/2400>0,  lambda>=nu/mu_star.            (IC9)
+
+The cutoff remains positive. One may prescribe the horizon
+H=log(2)/(2nu), so delta(t)=nu(2H-t) and t_star<=H after the same
+restriction on mu. Total kinetic energy decreases on this interval.
+Thus the initially repaired reserve actually rebounds, without external
+forcing or a restart. The finite sufficient amplitude threshold is not
+numerically evaluated. The uniform local estimate and interval transfer
+are analytic, not Lean-certified or a numerical PDE enclosure.
+
+### Constant weights cannot fix this particular correction
+
+There is also a completely explicit nearby initial state
+W=U+(1/16)N(U). Exact Bernstein coefficients certify P4(H_s W)>0 and
+S(H_s W)>0 on 0<=s<=log(2), and rational integration gives
+
+    X_delta0(W)>1/6000.
+
+Independent full Fourier pressure differentiation checks the second
+variation; an actual tangent at viscosity 2/7 checks its diffusion term.
+For alpha=5/4, amplitude lambda=128nu makes the FULL right side of (IC4)
+strictly positive. This is a smooth unforced initial datum, separate from
+the same-history rebound in (IC9).
+
+More strongly, write gamma_W for the integral of the full renewal profile,
+i_W for the intrinsic profile integral, and x_W=X_delta0(W), all without
+viscosity prefactors. At lambda=256nu the exact certificates give
+
+    -D4(W)+256^2 gamma_W>0,
+    256^3 x_W-256^2 i_W>0.
+
+After division by nu lambda^4, these are the constant and alpha
+coefficients of (IC4). This ONE smooth initial state therefore has
+positive full derivative for EVERY alpha>=0, even if the constant alpha
+is selected from the full datum, viscosity and horizon. No constant
+nonnegative weight in this correction family is universally monotone.
+An evolving coefficient is a different proposal: its additional term
+alpha'(t)J_delta must be retained and its history controlled.
+
+At fixed delta the terms in (IC4) scale as lambda^4 nu, lambda^5,
+lambda^6/nu and alpha lambda^7/nu^2. This accounts for the failure:
+the new nonlinear capacity return eventually outruns its heat payment.
+
+This also explains a useful design constraint. If the highest homogeneous
+piece of a candidate reserve is even and its nonlinear derivative is
+not zero, reversing the field reverses that derivative. Its degree is
+one higher than its viscous derivative. With fixed coefficients and a
+fixed observation scale, universal large-amplitude monotonicity would
+therefore require that highest piece to be an Euler invariant. This
+necessary condition does not exclude nonhomogeneous reserves, geometric
+signed cancellations, or an integrated allowance from the full datum.
+
+The remaining physical task is still the arbitrary-history budget, not
+the construction of another exact ledger. The repair (IC6) and failure
+(IC9) show why an initial favorable response cannot be iterated after
+the interacting parents have changed. They do not establish indefinite
+renewal, a singularity, or failure of arbitrary-data global regularity.
+
+Run `python3 -O labs/intrinsic_renewal_capacity.py`. The exact archive
+`intrinsic_renewal_capacity_results.json` retains polynomial profiles,
+whole-window sign certificates, weighted heat integrals and source hashes.
+No Lean declarations or axioms change.

@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [intrinsic pressure-work capacity](labs/README.md#a-reserve-for-the-next-pressure-interaction-repairs-the-first-return-but-rebounds)
+stores the next nonlinear interaction and repairs the entire oblique
+family's initial reserve growth, at arbitrary amplitude. The complete
+next return nevertheless makes this corrected reserve rebound along the
+same unforced viscous history. The moving heat window and the initial
+viscous loss are retained. One explicit state rules out every constant
+nonnegative weight, including a datum-selected weight; a full-datum integrated
+allowance remains open. Exact arithmetic supports the local analytic
+argument; no new Lean certificate is claimed.
+
 The [oblique cyclic renewal law](labs/README.md#oblique-cyclic-geometry-renews-both-intrinsic-and-covariance-work)
 separates two parts of the remaining short-age problem. An unbounded
 family starts with zero pressure at every heat age, but its complete
