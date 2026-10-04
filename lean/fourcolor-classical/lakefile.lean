@@ -1509,3 +1509,17 @@ target kernelStripSixSamePair pkg : Unit := do
         "StripSixSamePair", "StripSixSamePairExample", "StripSixSamePairAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the single-pair obstruction and neighbouring release. -/
+target kernelStripSixMixed pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-mixed",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripSixMixedExample", "StripSixMixedAudit"]
+      cwd := pkg.dir
+      env := env }

@@ -1,0 +1,69 @@
+{
+  "classification": "SINGLE_PAIR_AND_FIXED_ORDER_OBSTRUCTION_WITH_NEIGHBOUR_RELEASE",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "fixture_sha256": "c44112475ac910c88455d54f51d273679ed84d8a0443e0c99e96750d3b182e1c",
+  "lean_source_sha256": "2471117969ffd067cce0b7f092e3ab05b96ae34787f59dedb36ba767b028b1cc",
+  "verifier_sha256": "901c5bbbaaa8903c44a5405d7ee0427c35c7d87661e0abece97cb43a5553364d",
+  "whole_vertices": 41,
+  "exterior_vertices": 33,
+  "distinct_fixed_order_boundary_words": 24,
+  "distinct_single_pair_boundary_words": 27,
+  "no_degree_five_run": true,
+  "release_supports": [
+    [
+      1
+    ],
+    [
+      2
+    ]
+  ],
+  "whole_reconstruction": true,
+  "cycle_census": {
+    "vertices": 41,
+    "faces": 78,
+    "minimum_degree": 5,
+    "cycles_by_length": {
+      "3": 78,
+      "4": 117,
+      "5": 255
+    },
+    "shore_counts": [
+      {
+        "length": 3,
+        "side_vertices": [
+          0,
+          38
+        ],
+        "cycles": 78
+      },
+      {
+        "length": 4,
+        "side_vertices": [
+          0,
+          37
+        ],
+        "cycles": 117
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          0,
+          36
+        ],
+        "cycles": 234
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          1,
+          35
+        ],
+        "cycles": 21
+      }
+    ],
+    "obstructing_cycles": 0,
+    "first_obstruction": null
+  },
+  "short_cycle_evidence": "Independent program check; not a Lean short-cycle classification.",
+  "scope": "One spherical D0099 occurrence. No universal repair supply, strict reduction or coverage claim."
+}

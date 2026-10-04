@@ -6318,5 +6318,34 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_mixed_pair_experiment": {
+    "classification": "CHECKED_SINGLE_PAIR_OBSTRUCTION_AND_NEIGHBOUR_RELEASE",
+    "report": "../near-linear/strip-six-mixed-measurements.json",
+    "refuted_assertions": [
+      "Failure of the stated pair order forces a degree-five centre with three consecutive degree-five neighbours.",
+      "In the stated spherical joint branch, absence of that degree pattern forces the one/two separation guard.",
+      "One fixed colour pair suffices to repair every exterior in the stated domain."
+    ],
+    "successful_reuse": "The existing neighbour-release law supplies two mixed-pair switches, and source gluing reconstructs the whole colouring.",
+    "audit": {
+      "roots": 11,
+      "transitive_dependency_declarations": 11880,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "new_boundary_repair_table_bytes": 0,
+    "new_lean_source_bytes": 32453,
+    "remaining": [
+      "A geometric supply theorem guaranteeing a bounded collection of compatible repairs or alternative reductions.",
+      "Strict reduction and compact coverage for the intended graph class.",
+      "The short-cycle census is not kernel-certified."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

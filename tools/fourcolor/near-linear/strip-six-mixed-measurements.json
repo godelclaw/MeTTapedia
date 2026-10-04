@@ -1,0 +1,64 @@
+{
+  "classification": "CHECKED_SINGLE_PAIR_OBSTRUCTION_AND_NEIGHBOUR_RELEASE",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSixMixedExample",
+      "source_sha256": "2471117969ffd067cce0b7f092e3ab05b96ae34787f59dedb36ba767b028b1cc",
+      "exit_code": 0,
+      "frontend_wall_seconds": 24.685,
+      "olean_bytes": 3261136,
+      "olean_sha256": "34a58d1dcd2f201e86db40e66ca197e9cb204bef8a76299ee99f54931a3a6a4a"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixMixedAudit",
+      "source_sha256": "a26b5b1c3071b4f86c2d108d28c21d5d5680e58e2c2946dcf6e0864fdc3330b6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.211,
+      "olean_bytes": 2600,
+      "olean_sha256": "e20d04dcb23f1b56ef2fcaf8cbaecb49cdcab338c7be0dd69336edefdb8c947a"
+    }
+  ],
+  "frontend_wall_seconds_total": 28.896,
+  "timing_scope": "Two new modules with dependencies already built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 32453,
+  "spherical_fixture_bytes": 19881,
+  "new_boundary_repair_table_bytes": 0,
+  "audit": {
+    "roots": 11,
+    "transitive_dependency_declarations": 11880,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "A 41-vertex triangulated sphere with minimum degree five retains the exact D0099 source core adjacency, stated boundary and original joint component branch.",
+    "No degree-five vertex has three cyclically consecutive degree-five neighbours.",
+    "The original one/two component through port six contains port ten, so the previously proved same-pair repair guard fails.",
+    "No finite phase of any one colour pair extends the original exterior colouring to the source.",
+    "No zero/one phase followed by a one/three phase extends the original exterior colouring, regardless of lengths and component choices.",
+    "The existing neighbour-release law supplies two mixed-pair switches, and source gluing reconstructs the whole colouring."
+  ],
+  "program_evidence": [
+    "Full prescribed core degrees and cyclic order; independent direct source solver; no obstructing short cycle of lengths three through five."
+  ],
+  "remaining": [
+    "A geometric supply theorem guaranteeing a bounded collection of compatible repairs or alternative reductions.",
+    "Strict reduction and compact coverage for the intended graph class.",
+    "The short-cycle census is not kernel-certified."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripSixMixed kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_six_mixed.py"
+  ],
+  "program_receipt": "strip-six-mixed-audit.json"
+}

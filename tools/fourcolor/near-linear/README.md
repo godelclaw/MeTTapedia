@@ -1,5 +1,36 @@
 # Near-linear Four Colour catalogue bridges
 
+## A sphere requiring a change of colour pair
+
+[`StripSixMixedExample`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixMixedExample.lean)
+certifies a 41-vertex triangulated sphere with minimum degree five, the
+D0099 core adjacency and the original joint port-six branch. Its exact
+rotation has no degree-five centre with three consecutive degree-five
+neighbours. The one/two component through port six contains port ten,
+blocking the separation hypothesis of `StripSixSamePair.repair`.
+
+No finite phase using any one colour pair extends the original exterior
+colouring. The zero/one then one/three order also fails, regardless of the
+phase lengths or chosen components. Active exterior routes constrain the
+boundary updates, and symbolic source elimination excludes every such
+update. These statements refute the specified repair and alternative-piece
+supply implications on this domain; they do not rule out mixed-pair repairs.
+
+The existing `KempeNeighborRelease` theorem supplies a successful repair:
+switch the one/two singleton at port one, then the released zero/one
+singleton at port two. The source colouring glues to the changed exterior
+to colour the entire sphere. No new generic repair law or repair-history
+table is introduced. The generic release mechanism already has the
+separate port-three consumer `StripSixRelease.repair`.
+
+Replay `lake build kernelStripSixMixed` and, from the repository root,
+`python3 tools/fourcolor/near-linear/audit_strip_six_mixed.py`.
+The [receipt](strip-six-mixed-measurements.json) separates the eleven-root
+kernel audit from the independent source-order and short-cycle checks.
+Geometric supply of a sufficient collection of repair laws, strict reduction
+and compact coverage remain open. Catalogue and original-certificate counts
+remain 633 and 629.
+
 ## Two switches of one pair repair the fixed-order obstruction
 
 [`StripSixSamePair.repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixSamePair.lean)
