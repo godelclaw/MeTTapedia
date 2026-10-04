@@ -39744,3 +39744,51 @@ strong-prefix and pressure-history consumer. It supplies no universal
 initial reserve for interacting parents. The arbitrary-data signed-renewal
 hypothesis remains open, and the stronger oblique sign-return history
 remains numerical until a complete physical enclosure succeeds.
+
+### Refined complete-polynomial feasibility prefix
+
+The same oblique datum at amplitude eight and viscosity one has now been
+tested with grid 64, integrator step 1/2048 and quintic interval 1/128.
+The complete sixteen-field calculation retains all spatial outputs,
+all time coefficients and the original conditional pressure moments.
+The relative-vorticity comparison gives:
+
+| time | velocity L2 error bound | velocity H1 error bound | pressure-history upper bound | conditional receiver interval |
+| ---: | ---: | ---: | ---: | :--- |
+| 1/128 | 9.67622e-7 | 1.11542e-5 | 1.46020e-8 | [-1.07096e-6, 1.66590e-6] |
+| 1/64 | 1.75101e-6 | 2.32081e-5 | 1.57627e-6 | [2.00924e-6, 6.96184e-6] |
+
+The receiver is the real sine coefficient of the vertical velocity at
+mode (1,0,0). Its error is bounded by sqrt(2)X because the corresponding
+normalized L2 test function is 2sin(x), whose norm is sqrt(2).
+The second interval inherits the first interval's velocity errors,
+conditional moments and trajectory error. Both displayed pressure bounds
+are below the original corrected stock 6.129654718562507.
+
+These are complete-time-polynomial feasibility bounds on floating
+coefficients, not continuum certificates. They improve on a screen using
+five sampled residuals per interval, which reaches 1/8 with conditional
+receiver interval [0.00492177,0.00507273] but does not cover the time between
+samples. The complete-polynomial extension to 1/8 and the arithmetic
+operator enclosure remain separate unfinished tests. Neither table
+establishes the later sign returns or all-time payment.
+
+To retain the complete correlations without unnecessary stored arrays,
+`pressure_history_slabs.py` now owns the real transform outputs, releases
+quadratic coefficients after use, and accumulates the time Gram matrix
+one spatial plane at a time. In exact arithmetic this is just the finite
+sum identity
+
+```text
+G_ij = sum_planes Re <r_i, W r_j>_plane / m^6,
+||sum_j s^j r_j||_W^2 = sum_(i,j) s^(i+j) G_ij.
+```
+
+No cross term or generated mode is removed. The floating reduction order
+changes, so this remains a feasibility calculation. Independent complete
+operator fixtures are unchanged, and a direct comparison with the former
+Gram calculation differs by at most 1.4e-17 relative to max(1,coefficient
+magnitude) in the tested fixture. Running
+`python3 -O labs/pressure_history_slabs.py` checks the full polynomial
+against an independently evaluated operator, including all pressure-moment
+slots and off-node residual values.

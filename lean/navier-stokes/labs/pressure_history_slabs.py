@@ -50,8 +50,10 @@ def full_polynomial(coefficients, h, nu):
     k2 = np.sum(K*K, axis=-1)
     inv = np.divide(1., k2, out=np.zeros_like(k2), where=k2 > 0)
     padded = [enlarge(a) for a in coefficients]
-    physical = [ifft(a) for a in padded]
-    gradients = [[ifft(1j*K[..., j, None]*a) for j in range(3)] for a in padded]
+    # The real view returned by ifft otherwise retains its complex backing
+    # array for the lifetime of every coefficient and derivative.
+    physical = [ifft(a).copy() for a in padded]
+    gradients = [[ifft(1j*K[..., j, None]*a).copy() for j in range(3)] for a in padded]
     advection, pressure = [], []
     for k in range(11):
         adv = np.zeros_like(physical[0])
@@ -64,7 +66,7 @@ def full_polynomial(coefficients, h, nu):
         pressure.append(gh)
         advection.append(ah)
     del gradients
-    gp = [ifft(a) for a in pressure]
+    gp = [ifft(a).copy() for a in pressure]
     residual = []
     for k in range(16):
         # Residual = time derivative + diffusion - complete nonlinear RHS.
@@ -75,6 +77,9 @@ def full_polynomial(coefficients, h, nu):
             value += nu*k2[..., None]*padded[k]
         if k < 11:
             value += advection[k]
+            # This coefficient has no later consumer. Keep the complete
+            # output, but release its quadratic temporary before proceeding.
+            advection[k] = None
             value[..., :3] += pressure[k]
             value[..., 3:6] -= pressure[k]
         source = np.zeros_like(physical[0])
@@ -117,7 +122,11 @@ def residual_norms(residual):
 
 
 def squared_norm_polynomials(residual):
-    """Retain time-coefficient correlations before bounding their norms."""
+    """Retain every signed time correlation, accumulating by spatial plane.
+
+    This changes the floating summation order, not the mathematical Gram
+    matrix. As elsewhere in this module, rounding is not enclosed here.
+    """
     m = residual[0].shape[0]
     k2 = np.sum(frequencies(m)**2, axis=-1)
     weights = np.array([1 if i == j else 2 for i, j in PAIRS])
@@ -126,9 +135,13 @@ def squared_norm_polynomials(residual):
               ('rT', slice(12, 15), 1)]
     result = {}
     for key, block, weight in groups:
-        matrix = np.stack([a[..., block].reshape(-1) for a in residual])
-        weighted = np.stack([(a[..., block]*weight).reshape(-1) for a in residual])
-        gram = (matrix.conj() @ weighted.T).real/m**6
+        gram = np.zeros((len(residual), len(residual)))
+        for plane in range(m):
+            local_weight = weight[plane] if np.ndim(weight) >= 3 else weight
+            matrix = np.stack([a[plane, ..., block].reshape(-1) for a in residual])
+            weighted = np.stack([(a[plane, ..., block]*local_weight).reshape(-1) for a in residual])
+            gram += (matrix.conj() @ weighted.T).real
+        gram /= m**6
         result[key] = [sum(gram[i, k-i] for i in range(len(residual)) if 0 <= k-i < len(residual))
                        for k in range(2*len(residual)-1)]
     phi = [a[0, 0, 0, 15]/m**3 for a in residual]
@@ -303,9 +316,11 @@ def probes(n, nu, dt, h, times, controlled=False):
         residual, pressure = full_polynomial(c, h, nu)
         bounds, coefficient_norms = residual_norms(residual)
         squared = squared_norm_polynomials(residual)
+        del residual
         interval = interval_norm_bounds(squared)
         best = {k: min(bounds[k], interval[k]) for k in bounds}
         row = dict(**best, **reference_bounds(c, pressure))
+        del pressure
         sampled = [sample(flow, *evaluate(coeff, t, h)) for t in [0., .5, 1.]] if not controlled else []
         samples = {k: max(v[k] for v in sampled) for k in sampled[0]} if sampled else {}
         off_grid = {key: float(np.sqrt(max(0., max(sum(a*z**i for i, a in enumerate(values))
