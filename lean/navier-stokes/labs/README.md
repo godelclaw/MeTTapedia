@@ -45156,3 +45156,193 @@ Run `python3 -O labs/intrinsic_renewal_capacity.py`. The exact archive
 `intrinsic_renewal_capacity_results.json` retains polynomial profiles,
 whole-window sign certificates, weighted heat integrals and source hashes.
 No Lean declarations or axioms change.
+
+## A zero intrinsic capacity cannot be repaired by changing its weight
+
+The constant-weight obstruction above leaves a possible repair: choose
+alpha(t) from the evolving fluid and account for alpha'(t)J_delta. The
+following example rules out that entire scalar-policy class on a prescribed
+heat window. The multiplier's capacity remains identically zero on an
+actual unforced solution interval, while the original reserve increases.
+The obstruction concerns (IC1), not arbitrary-data regularity or all
+reserves that use geometric history.
+
+### Equal input wavelengths and unequal generated wavelengths
+
+Use the normalized period-2pi torus and the complete smooth datum
+
+    U=(1,1,-1)cos(y+z)-(1,1,1)cos(y-z)
+                                  -(1,1,2)cos(x-y).       (ZC1)
+
+It is real, mean zero and divergence free, and -Delta U=2U. Its three
+wave vectors span three-dimensional space. Although U_1=U_2 initially,
+N(U)_1 differs from N(U)_2: the full nonlinear evolution does not preserve
+that velocity-polarization plane. No reduced or closed-shell evolution is
+assumed. Every source and pressure output is retained.
+
+Let q=exp(-s). For P4 and S=DP4[N] from (IC1), exact convolution gives
+
+    P4(H_s U)=0,
+    I_s=S(H_s U)=-q^12/3,
+    G_s=DP4(H_s U)[H_s N(U)]
+       =(11q^10-13q^14)/6.                              (ZC2)
+
+The first equality is a statement about integrated pressure WORK, not
+vanishing pressure. It also follows from spatial parity. The difference
+between I_s and G_s is essential: evolving the actual fluid and then
+observing its heat curve differentiates in direction H_s N(U), rather
+than N(H_s U).
+
+The complete source N(U) has squared frequencies 2, 4 and 6. Their
+contributions to the pressure-work variation are respectively
+
+    (11/6)q^10,  0,  -(13/6)q^14.                     (ZC3)
+
+The frequency-4 source is retained even though this particular scalar
+pairing vanishes. At s=0 the sum is -1/3. The negative frequency-6
+contribution decays faster, so G_s becomes positive when
+s>log(13/11)/4. In contrast, recomputing the source from the uniformly
+heated input multiplies both contributions by the same q^12. It remains
+negative at every heat age. Equivalently, the complete covariance work is
+
+    G_s-I_s=q^10(1-q^2)(11+13q^2)/6>0, s>0.          (ZC4)
+
+This is the heat-nonlinearity commutator from (HC3), including its full
+pressure response. The example isolates information lost by storing
+only the positive intrinsic term: the signs and decay rates of the
+generated source channels.
+
+### The capacity vanishes while an actual viscous solution raises the reserve
+
+Fix any nu>0, set lambda=72nu, and start the ACTUAL unforced NS solution
+from lambda U. Prescribe
+
+    delta_0=log(2), delta(t)=delta_0-nu t,
+    H=log(2)/(2nu),
+    B(t)=||u(t)||4^4/4+R_delta(t)(u(t)),
+    W_alpha(t)=B(t)+alpha(t)J_delta(t)(u(t)).            (ZC5)
+
+Local smooth existence provides a positive solution interval from this
+trigonometric datum. Its complete tangent is
+u_t(0)=-2nu lambda U+lambda^2 N(U). Since P4(H_s U)=0,
+the viscous part contributes zero to the first variation of this profile:
+
+    partial_t P4(H_s u(t)) at t=0 =lambda^6 G_s.
+
+The positive-part derivative must be retained. Define
+
+    gamma_+=integral_0^log(2) [G_s]_+ ds.
+
+We use a rational lower bound rather than replacing the selected integral
+by the signed one:
+
+    gamma_+ >= integral_0^log(2) G_s ds
+             =65147/2293760 >1/36.                     (ZC6)
+
+Both signs occur inside this heat window. Also
+
+    ||U||2^2=6, ||U||4^4=239/4, D4(U)=239/2.
+
+At the initial state the backward-window boundary term is zero, since
+its pressure-work integrand is zero. The full right derivative therefore
+satisfies
+
+    B'_+(0)=-nu lambda^4(239/2)+(lambda^6/nu)gamma_+
+            >(49/2)nu lambda^4>0.                     (ZC7)
+
+Kinetic energy simultaneously decreases:
+partial_t ||u(t)||2^2 at zero =-24nu lambda^2<0.
+Thus this gain in the proposed reserve is supplied by actual unforced
+motion, with all viscous dissipation included.
+
+The vanishing correction holds on an interval, not just at its initial
+endpoint. Equation (ZC2) gives the uniform initial margin
+
+    S(H_s lambda U)<=-lambda^6/12288,
+                                  0<=s<=log(2).       (ZC8)
+
+Smooth local dependence and continuity of this polynomial pressure
+functional preserve strict negativity on the compact heat window for
+sufficiently small actual t. In particular,
+
+    J_delta(t)(u(t))=0 throughout that interval.
+
+Here is the local estimate needed to make the transfer explicit. Local
+Sobolev bounds from the fixed initial datum, for example in H12, control
+the first derivative of S(H_s u(t)) uniformly on the window and two time
+derivatives of P4(H_s u(t)) and ||u(t)||4^4. They supply finite C1,C2 and
+T0>0 from the datum and viscosity such that
+
+    |S(H_s u(t))-S(H_s lambda U)|<=C1 t,
+    B(t)-B(0)=B'_+(0)t+error, |error|<=C2 t^2.
+
+The latter estimate follows by taking the uniform second-order expansion
+inside the positive-part integral. Its positive-part map is Lipschitz;
+shrinking the endpoint contributes only O(t^2) because the entire initial
+integrand is zero. Choose a positive T no larger than T0,H and
+
+    lambda^6/[24576 max(1,C1)],
+    49nu lambda^4/[4 max(1,C2)].
+
+For every 0<t<=T this gives
+
+    J_delta(t)(u(t))=0,
+    B(t)-B(0)>=(49/4)nu lambda^4 t>0.                 (ZC9)
+
+The local constants and duration have not been numerically evaluated.
+Their existence uses smooth local NS estimates, not an assumed bound on
+an unknown global continuation. This interval argument is analytic,
+not Lean-certified or a numerical PDE enclosure.
+
+### What scalar control can and cannot repair
+
+For EVERY finite-valued policy alpha(t), including every nonnegative
+feedback policy chosen from the full datum or history, (ZC9) implies
+
+    W_alpha(t)-W_alpha(0)=B(t)-B(0)>0, 0<t<=T.        (ZC10)
+
+No differentiability or causality of the policy is needed. Even allowing
+negative finite weights does not help, because the multiplier remains
+zero throughout the interval. Undefined expressions such as infinity
+times zero are not alternative finite reserves.
+
+Thus changing the weight of this intrinsic capacity cannot make (IC1)
+universally nonincreasing. This statement fixes the prescribed heat
+window (ZC5). The same obstruction can occur at arbitrarily small
+prescribed windows. For an integer n>=1 set U_n(x)=n U(nx). Normalized
+periodic integration gives
+
+    ||U_n||4^4=n^4||U||4^4, D4(U_n)=n^6 D4(U),
+    S(H_s U_n)=n^8 I_(n^2 s),
+    DP4(H_s U_n)[H_s N(U_n)]=n^8 G_(n^2 s).
+
+Given ANY prescribed delta_0>0, choose n with n^2 delta_0>=log(2)
+and start from 72nu U_n. The positive-part heat integral is at least
+its value through scaled age log(2), so (ZC7) gains a factor n^6
+and remains positive. Intrinsic negativity again has a strict margin
+on the compact prescribed window. The local zero-capacity and growth
+argument therefore applies, with delta(t)=delta_0-nu t.
+
+The quantifiers are: for each prescribed window there is a smooth datum
+that defeats every scalar policy. This does not exclude selecting a
+different initial cutoff AFTER fixing each datum, retaining source
+covariance in a different functional, or paying finite growth with a
+larger original-data allowance. No indefinite renewal or singularity
+has been constructed.
+
+For the continuation problem the surviving obligation remains (RW11):
+an original-data bound on the signed net renewal over ALL actual
+prefixes. The present calculation concerns the whole-fluid correction
+(IC1); it does not identify that equation with the filtered-remainder
+equation in (RW11). It shows why a payment based on intrinsic work alone
+can miss a positive full-source response even when every intrinsic
+heat-age response is favorable. A prospective replacement must retain
+the joint source-frequency response and control its actual evolution;
+the intrinsic sign alone cannot supply that information.
+
+Run `python3 -O labs/zero_intrinsic_capacity.py`. The checker retains
+every generated mode, verifies the source channels, differentiates the
+original pressure functional independently, and checks actual tangents
+at two positive viscosities. Its archive is
+`zero_intrinsic_capacity_results.json`. These are exact symbolic and
+rational calculations; no Lean declarations or axioms change.

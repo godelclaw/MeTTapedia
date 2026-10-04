@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [zero intrinsic-capacity test](labs/README.md#a-zero-intrinsic-capacity-cannot-be-repaired-by-changing-its-weight)
+rules out adaptive scalar weights for the latest correction on a prescribed
+heat window. Three equal-wavelength input waves have negative intrinsic
+work at every heat age, yet their complete generated source renews the
+pressure-work reserve. An actual positive-viscosity solution keeps the
+added capacity zero while the original reserve increases. No finite scalar
+weight can change this. The source's competing decay rates must be retained;
+other reserves, datum-selected windows and integrated allowances remain open.
+The local PDE argument is analytic with exact Fourier checks, not a new
+Lean certificate.
+
 The [intrinsic pressure-work capacity](labs/README.md#a-reserve-for-the-next-pressure-interaction-repairs-the-first-return-but-rebounds)
 stores the next nonlinear interaction and repairs the entire oblique
 family's initial reserve growth, at arbitrary amplitude. The complete

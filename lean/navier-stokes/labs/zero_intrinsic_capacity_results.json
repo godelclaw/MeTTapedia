@@ -1,0 +1,108 @@
+{
+  "waves": [
+    {
+      "frequency": [
+        0,
+        1,
+        1
+      ],
+      "polarization": [
+        1,
+        1,
+        -1
+      ],
+      "amplitude": "cosine"
+    },
+    {
+      "frequency": [
+        0,
+        1,
+        -1
+      ],
+      "polarization": [
+        -1,
+        -1,
+        -1
+      ],
+      "amplitude": "cosine"
+    },
+    {
+      "frequency": [
+        1,
+        -1,
+        0
+      ],
+      "polarization": [
+        -1,
+        -1,
+        -2
+      ],
+      "amplitude": "cosine"
+    }
+  ],
+  "input_modes": 6,
+  "complete_source_modes": 10,
+  "heat_work": "0",
+  "intrinsic_work": "-q**12/3",
+  "complete_renewal": "-q**10*(13*q**4 - 11)/6",
+  "covariance_work": "-q**10*(q - 1)*(q + 1)*(13*q**2 + 11)/6",
+  "source_channels": [
+    {
+      "squared_frequency": 2,
+      "coefficient": "11/6",
+      "source_modes": 4,
+      "profile": "11*q**10/6"
+    },
+    {
+      "squared_frequency": 4,
+      "coefficient": "0",
+      "source_modes": 2,
+      "profile": "0"
+    },
+    {
+      "squared_frequency": 6,
+      "coefficient": "-13/6",
+      "source_modes": 4,
+      "profile": "-13*q**14/6"
+    }
+  ],
+  "window": "0 <= s <= log(2)",
+  "intrinsic_negative_margin": "1/12288",
+  "selected_renewal_lower": "65147/2293760",
+  "fourth_moment": "239/4",
+  "quartic_diffusion": "239/2",
+  "amplitude_over_viscosity": 72,
+  "normalized_reserve_rate_lower": "994027/35840",
+  "actual_tangents": [
+    {
+      "viscosity": "1",
+      "amplitude": "72",
+      "normalized_reserve_rate_lower": "994027/35840",
+      "squared_L2_rate": "-124416"
+    },
+    {
+      "viscosity": "2/7",
+      "amplitude": "144/7",
+      "normalized_reserve_rate_lower": "994027/35840",
+      "squared_L2_rate": "-995328/343"
+    }
+  ],
+  "dilation_check": {
+    "integer": 2,
+    "moment_degree": 4,
+    "diffusion_degree": 6,
+    "renewal_degree": 8,
+    "heat_age_degree": 2
+  },
+  "scope": "Exact complete Fourier identities and positive-viscosity initial tangents. Vanishing capacity and growth on an actual local NS interval, and the resulting obstruction for arbitrary scalar weight policies, are analytic, not Lean-certified. The heat window is prescribed; other reserves and original-data integrated allowances are not refuted.",
+  "source_sha256": {
+    "zero_intrinsic_capacity.py": "121e0c9643adde394d64cc605bbdbd95105f2657e739e43407549cfcd52677bd",
+    "heat_work_reserve.py": "61c8ce228687243d32cc8f26b69607110d34465e8cef2b37638063c1331c8ba2",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "pressure_quadratic_storage.py": "cb78e2a84c4ee19091dc1ec8e687abec7e2c85d1a41dac007ee3c6eb5f1ea0dc",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883"
+  }
+}
