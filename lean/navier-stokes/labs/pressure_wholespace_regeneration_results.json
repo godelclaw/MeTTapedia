@@ -1,0 +1,79 @@
+{
+  "scope": "Exact symbolic identities and analytic whole-space tail bound; compact-core quadrature remains numerical. No certified continuum sign, physical time interval or arbitrary-history estimate.",
+  "exact_checks": {
+    "E": "15*sqrt(2)*pi**(3/2)/32",
+    "Z": "119*sqrt(2)*pi**(3/2)/32",
+    "convection_L2_squared": "1385*pi**(3/2)/8192",
+    "heat_monomials": 15,
+    "pressure_degrees": [
+      0,
+      2,
+      4
+    ],
+    "pressure_time_degrees": [
+      0,
+      2,
+      4,
+      6
+    ],
+    "tail_bound": "33534875/31525197391593472",
+    "tail_bound_float": 1.0637482957979012e-09,
+    "scope": "Exact symbolic identities and rational inequalities; their whole-space PDE and integral interpretation is analytic, not Lean-certified. Compact-core quadrature remains numerical."
+  },
+  "quadratures": [
+    {
+      "b2": 8,
+      "L": 1,
+      "kappa": 0.0001,
+      "nrad": 48,
+      "nang": 120,
+      "nmix": 48,
+      "Rmax": 64.0,
+      "B": 0.0005331600600053744,
+      "B_E": 3.085784687132717e-05,
+      "pressure_part": 3.085768935628431e-05,
+      "density_part": 1.5751504286074958e-10,
+      "last_shell": -4.330376468781511e-12,
+      "max_beta": 0.03660104419464001,
+      "expression_terms": [
+        33,
+        64,
+        69
+      ],
+      "scope": "Floating-point compact-core quadrature. The analytic tail bound is checked separately for b2=8, L=1, kappa=1e-4 and Rmax>=64; core quadrature is not enclosed."
+    },
+    {
+      "b2": 8,
+      "L": 1,
+      "kappa": 0.0001,
+      "nrad": 64,
+      "nang": 160,
+      "nmix": 64,
+      "Rmax": 64.0,
+      "B": 0.0005331600600274718,
+      "B_E": 3.085784686350076e-05,
+      "pressure_part": 3.08576893484579e-05,
+      "density_part": 1.5751504286088932e-10,
+      "last_shell": -4.330377228124005e-12,
+      "max_beta": 0.036603223973955955,
+      "expression_terms": [
+        33,
+        64,
+        69
+      ],
+      "scope": "Floating-point compact-core quadrature. The analytic tail bound is checked separately for b2=8, L=1, kappa=1e-4 and Rmax>=64; core quadrature is not enclosed."
+    }
+  ],
+  "comparison": {
+    "previous_fft_n": 256,
+    "previous_fft_box": 32.0,
+    "previous_fft_B_E": 3.085703912392681e-05,
+    "core_order_difference": 7.826408249776706e-15,
+    "missing": "Enclose the compact-core quadrature; refinement differences are not error bounds."
+  },
+  "source_sha256": {
+    "pressure_wholespace_regeneration.py": "2347f90c2c7df6595cd6a29b5f2ff37510b72858d1a6e7743127215377634b43",
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37"
+  }
+}

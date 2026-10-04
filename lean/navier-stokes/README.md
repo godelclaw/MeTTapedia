@@ -36,6 +36,14 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [whole-space regeneration calculation](labs/README.md#whole-space-pressure-regeneration-has-a-controlled-spatial-tail)
+expresses the Gaussian pressure and its complete nonlinear variation as
+finite Gaussian mixtures. An analytic bound controls the entire omitted
+spatial tail of the pressure-stock derivative. The remaining finite-region
+quadrature agrees with the earlier box diagnostic, but its numerical error
+is not yet enclosed. The sign and the full-history payment remain open;
+exact symbolic checks verify the algebra, with no new Lean theorem.
+
 The [full-tangent diagnostic](labs/README.md#full-initial-tangents-test-pressure-stock-regeneration)
 tests the completed pressure/receiver stock using pressure variation from
 the full NS velocity tangent. In two Gaussian families, diffusion reduces

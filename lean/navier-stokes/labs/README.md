@@ -50033,3 +50033,185 @@ coefficients, identity errors, box comparisons and source hashes.
 Its numerical kernel was checked identical across the exploratory and
 published runs. Python compilation and the diagnostic checks pass.
 No Lean declarations or axioms change.
+
+## Whole-space pressure regeneration has a controlled spatial tail
+
+`pressure_wholespace_regeneration.py` removes the periodic box from the
+calculation of B_E in (JT2). The complete canonical pressure and its
+nonlinear time derivative have finite Gaussian-mixture representations.
+A separate analytic estimate bounds the entire exterior contribution.
+The remaining compact-region integral is still evaluated numerically;
+its error is not enclosed, so a positive continuum sign is not yet proved.
+
+### The same physical pressure has a compact mixture representation
+
+Use the b^2=8 datum and observation of (JT1). Write s=r^2+z^2 and
+
+```text
+H2=(3z^2-s)/2, H4=(35z^4-30sz^2+3s^2)/8,
+P=-(8s^2+48s-6)/60-(4s+27)H2/42+8H4/35,
+p=P exp(-2s)
+  +(1/4) int_0^1 [-2tau^4 H2+(32/35)tau^8 H4]
+                      exp(-2tau^2 s) d tau.             (WG1)
+```
+
+H2 and H4 are solid spherical harmonics. For degree l,
+
+```text
+-Delta[(1/4)H_l tau^(2l) exp(-2tau^2 s)]
+ =H_l partial_tau[tau^(2l+3)exp(-2tau^2 s)].              (WG2)
+```
+
+Thus the integral supplies exactly H_l exp(-2s). Substitution of P in
+the Poisson equation verifies -Delta p=trace((grad V)^2). The displayed
+p is smooth, vanishes at infinity and is the canonical whole-space
+pressure. Its only angular degrees are 0,2,4; nothing is truncated.
+
+Let G=grad V, A=(V.grad)V, and N=-A-grad p. The complete Euler-direction
+pressure source is
+
+```text
+S_E=-2trace(G grad A)-2trace(G Hess p),
+-Delta p_E=S_E.                                         (WG3)
+```
+
+The first term and the Gaussian part of (WG1) give a polynomial times
+exp(-3s). The rest is an integral of polynomial Gaussian sources with
+rates 1+2tau^2, tau in [0,1]. Every term of the induced pressure response
+is retained. The angular degrees of S_E are at most 0,2,4,6. This is the
+nonlinear part of the actual NS initial derivative; the viscous part
+remains separate as in (JT2).
+
+### The finite heat cutoff stays fixed
+
+For any of these sources S, define
+
+```text
+q_L[S]=int_0^infinity min(a,L^2) exp(a Delta) S da.
+```
+
+This equals the original integral of the pressure over heat times from
+0 to L^2. In particular beta=grad_h q_L[-Delta p] and
+beta_E=grad_h q_L[S_E]. The following elementary heat formula evaluates
+both without a periodic approximation. For a source monomial
+r^(2i)z^(2j)exp(-alpha s), put v=(1+4alpha a)^(-1/2). Its heat evolution is
+v^3 exp(-alpha v^2 s) times
+
+```text
+sum_(k=0..i,m=0..j)
+  binom(i,k)^2 k! binom(2j,2m)(2m-1)!!
+  * (1-v^2)^(k+m) / (2^m alpha^(k+m))
+  * r^(2i-2k) z^(2j-2m) v^(4(i+j-k-m)).                 (WG4)
+```
+
+The script checks the full heat equation, initial value, radial derivative
+and change of integration variable for all fifteen monomials used. The
+radial gradient divided by r is a finite sum of even powers of v. Its
+remaining moments use v_L=(1+4alpha L^2)^(-1/2):
+
+```text
+J_k=L^2 int_0^v_L v^(2k)exp(-alpha s v^2)dv
+ +(1/(4alpha)) int_v_L^1 [v^(2k-2)-v^(2k)]exp(-alpha s v^2)dv,
+k>=1.                                                   (WG5)
+```
+
+They can be evaluated with incomplete gamma functions. The gradient
+ensures k>=1, so every displayed integral is finite. The finite cutoff
+is still L=1. The density is still h0=10^(-4)exp(-s), with
+H=1+r^2h0 and H_E=-V.grad H. No observer is reset or independently varied.
+
+### An analytic bound for the entire spatial tail
+
+A tensor form of the same operator is useful for controlling infinity:
+
+```text
+K_L=int_0^infinity min(a,L^2) grad partial_i partial_j G_a da,
+beta=projection_h(K_L*(V tensor V)),
+beta_E=projection_h(K_L*(V tensor N+N tensor V)).        (WG6)
+```
+
+Here G_a is the three-dimensional heat kernel, and the norm below is
+from symmetric tensors with Frobenius norm to vectors. Differentiating
+G_a and using 2+sqrt(3)<4 gives, for rho=|x|>0,
+
+```text
+|K_L(x)| <= min(7/(8pi rho^2), 27L^2/(4pi rho^4)),
+||K_L||_1 <= sqrt(378)L <20L.                            (WG7)
+```
+
+These follow by integrating the two Gaussian derivative majorants; the
+script checks the constants exactly. They apply to the complete tensor
+response, including the pressure part of N.
+
+For this datum, direct Gaussian integration gives
+
+```text
+||V||_2^2=15sqrt(2)pi^(3/2)/32<4,
+||grad V||_2^2=119sqrt(2)pi^(3/2)/32<30,
+||A||_2^2=1385pi^(3/2)/8192<1.
+```
+
+The whole-space Leray projection gives ||N||_2<=||A||_2. Consequently
+both ||V tensor V||_1 and ||V tensor N+N tensor V||_1 are below 4.
+Polynomial Gaussian majorants also give
+
+```text
+|V(x)|<=12exp(-rho^2/2),
+||grad V||_infinity<17,
+||trace((grad V)^2)||_infinity<=80.
+```
+
+Splitting the Newtonian pressure-gradient integral at radius one gives
+||grad p||_infinity<80+30/(4pi)<83. Hence ||N||_infinity<300 and
+|V tensor N+N tensor V|<=7200exp(-rho^2/2). The same polynomial majorant
+bounds |grad H| by 12*10^(-4)exp(-rho^2/2), so |H_E|<1 and H>=1.
+
+Split each convolution in (WG6) at |y|=rho/2. For rho>=64, (WG7) yields
+
+```text
+|beta(x)|<=144/rho^4+2880exp(-rho^2/4)<=145/rho^4,
+|beta_E(x)|<=144/rho^4+144000exp(-rho^2/8)<=145/rho^4.
+```
+
+The final exponential inequalities follow from positive terms of the
+exponential series; their rational constants are checked. Therefore
+
+```text
+|int_(|x|>64) [3|beta| beta.beta_E/H^(3/2)
+              -(3/2)|beta|^3 H_E/H^(5/2)] dx|
+ <=2pi*145^3/64^9
+ <33534875/31525197391593472 <1.1e-9.                   (WG8)
+```
+
+This is an analytic tail estimate with exact algebraic checks. It is not
+a numerical assertion inferred from a small last shell, and it is not
+yet Lean-certified.
+
+### The remaining compact-core obligation
+
+The two public whole-space quadratures on |x|<=64 give:
+
+| Radial order per subinterval | Angular order | Mixture order | B_E core estimate |
+| ---: | ---: | ---: | ---: |
+| 48 | 120 | 48 | 3.085784687132717e-5 |
+| 64 | 160 | 64 | 3.085784686350076e-5 |
+
+The finer pressure-stock estimate is B=0.0005331600600274718. These
+agree with the previous increasing-box calculation, whose largest-box
+B_E was 3.085703912392681e-5. The small difference between quadrature
+orders does not certify a quadrature error. Only the exterior error in
+(WG8) is bounded analytically here.
+
+A certified lower bound greater than 1e-5 for the compact-core integral
+would suffice, with (WG8), to prove B_E>0. That is the next precise
+obligation. Together with (JT2), such a sign would disprove universal
+instantaneous monotonicity of the completed stock at large amplitude.
+It would not refute a finite full-datum allowance over a complete history,
+a separately chosen cutoff, or global regularity. No physical time interval
+or repeated renewal follows from this initial-derivative calculation.
+
+Run `python3 -O labs/pressure_wholespace_regeneration.py --check-only` for
+the exact identities and constants. The archive also records the two
+quadrature runs, their parameters and source hashes. Python compilation
+and the exact checks pass. The compact-core sign enclosure remains open;
+no Lean declarations or axioms change.
