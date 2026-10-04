@@ -1,5 +1,31 @@
 # Near-linear Four Colour catalogue bridges
 
+## A forced exterior fan blocks a proposed preparation
+
+[`StripExteriorFan.neighbour_path`](../../../lean/fourcolor-classical/MettapediaFourColor/StripExteriorFan.lean)
+derives the outside neighbour arc from port zero to port two from the
+actual cyclic star at port one. Two consecutive core turns and the absence
+of other core neighbours keep the arc outside. Triangular faces supply
+its edges; completeness of the exterior representation is needed only for
+outside neighbours of this vertex.
+
+If port one has colour one and its exterior neighbours omit colour two,
+the derived walk uses only zero and three. Every proper partial
+transposition of that pair changes the two endpoints together. Consequently,
+**no zero/three phase of any length** transforms the original difficult
+boundary into the boundary handled by the complementary repair theorem.
+
+The [existing sphere consumer](../../../lean/fourcolor-classical/MettapediaFourColor/StripExteriorFanExample.lean)
+checks the geometric hypotheses and applies the general theorem, without
+using its previously recorded bichromatic routes. Its mixed-pair repair
+remains valid. This is an obstruction to one proposed preparation, not to
+mixed-pair repair or a compact compositional proof. The
+[measurement receipt](strip-exterior-fan-measurements.json) records the
+eight-root audit and replay cost. Coverage and certificate counts are
+unchanged.
+
+Replay `lake build kernelStripExteriorFan`.
+
 ## Geometry supplies a complementary repair choice
 
 [`StripComplementaryGeometry.repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripComplementaryRepair.lean)

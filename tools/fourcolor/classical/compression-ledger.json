@@ -6380,5 +6380,22 @@
       "Strict reduction, recognition, compact coverage and termination."
     ],
     "measurements": "../near-linear/strip-complementary-measurements.json"
+  },
+  "strip_exterior_fan_obstruction": {
+    "status": "checked_geometric_obstruction_to_fixed_pair_preparation",
+    "theorem": "FourColor.StripExteriorFan.no_preparation",
+    "contribution": "Actual local rotation and triangular faces force an exterior bichromatic walk. No zero/three phase can independently change ports zero and two, blocking the proposed preparation into the complementary boundary class.",
+    "generality": "Unrestricted finite ambient size, port-one degree, exterior component size and fixed-pair phase length, under explicit local embedding and exterior-completeness hypotheses.",
+    "existing_sphere_consumer": true,
+    "new_graph_fixture_bytes": 0,
+    "new_boundary_repair_table_bytes": 0,
+    "counts_changed": false,
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "remaining": [
+      "Geometric supply of mixed-pair repairs or alternative reductions.",
+      "Strict reduction, compact coverage and termination."
+    ],
+    "measurements": "../near-linear/strip-exterior-fan-measurements.json"
   }
 }

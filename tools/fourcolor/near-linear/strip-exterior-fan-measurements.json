@@ -1,0 +1,64 @@
+{
+  "classification": "GEOMETRIC_OBSTRUCTION_TO_FIXED_PAIR_PREPARATION",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripExteriorFan",
+      "source_sha256": "2404ce0d4b1fe66d75ecbc8946841dc91fcd41f0eb624aa592efa33f037696f5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.789,
+      "olean_bytes": 262976,
+      "olean_sha256": "743513fbc017b67d2ada052b4e4d50eae87cbb0942acfb00d34e9324a1252a0e"
+    },
+    {
+      "module": "MettapediaFourColor.StripExteriorFanExample",
+      "source_sha256": "ee06e50b03d0d96eac12ea76c855cee210644074b3bdce733f2ac2ec5813049f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.37,
+      "olean_bytes": 38512,
+      "olean_sha256": "ed5f86db2cfb393ab1b92c26e7a5eb7407a1f02a6744cb9ab1adceb1dbc10bdc"
+    },
+    {
+      "module": "MettapediaFourColor.StripExteriorFanAudit",
+      "source_sha256": "d72a083643a95f9b3f9090d52cc2e074bcd451f85c56d6ce93f3d1397eaefbe7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.352,
+      "olean_bytes": 3600,
+      "olean_sha256": "d1eff06c43a355ae2b3e9a83dd6ed4300991a4e3ed59be7a973dac02e7afb939"
+    }
+  ],
+  "frontend_wall_seconds_total": 16.511,
+  "timing_scope": "Three new modules, with dependencies already built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 12275,
+  "new_graph_fixture_bytes": 0,
+  "new_boundary_repair_table_bytes": 0,
+  "audit": {
+    "roots": 8,
+    "transitive_dependency_declarations": 7541,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "The actual cyclic star, triangular faces, two consecutive core turns and absence of other core neighbours derive an exterior neighbour walk from port zero to port two. Exterior completeness is required only at neighbours of port one.",
+    "If port one has colour one and colour two is absent from its exterior neighbours, that walk uses only colours zero and three.",
+    "Any proper partial zero/three transposition fixing port zero also fixes port two. Therefore no phase of that pair, of any length, reaches the complementary-repair boundary from the original specified boundary.",
+    "The existing 41-vertex spherical occurrence supplies the geometric hypotheses and consumes the general theorem; no precomputed route certificate is used."
+  ],
+  "scope_limits": [
+    "This refutes the fixed-pair preparation mechanism, not mixed-pair repair or compositional Four Colour proofs.",
+    "The theorem requires the actual interior block and completeness of the exterior neighbour representation. These conditions were not present in the older bare exterior-reading interface.",
+    "No new strict reduction, geometric catalogue coverage or termination theorem is claimed."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "replay_commands": [
+    "lake build kernelStripExteriorFan kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ]
+}

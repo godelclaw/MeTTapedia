@@ -1538,3 +1538,17 @@ target kernelStripComplementary pkg : Unit := do
         "StripComplementaryExample", "StripComplementaryAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the exterior fan forced by a missing colour. -/
+target kernelStripExteriorFan pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-exterior-fan",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripExteriorFan", "StripExteriorFanExample", "StripExteriorFanAudit"]
+      cwd := pkg.dir
+      env := env }
