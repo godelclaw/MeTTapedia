@@ -1,5 +1,52 @@
 # Near-linear Four Colour catalogue bridges
 
+## A fixed boundary replacement can fail before coverage is considered
+
+[`BoundaryReplacementObstruction.obstruction`](../../../lean/fourcolor-classical/MettapediaFourColor/BoundaryReplacementObstruction.lean)
+proves a limitation for the exact six-port D0000 graph. Take any feasible
+conjunction of equalities and inequalities on noncrossing boundary diagonals.
+There is a proper boundary colouring satisfying that conjunction which does
+not extend into D0000. Consequently, these constraints cannot by themselves
+guarantee reconstruction for every colouring of a fixed replacement.
+
+The proof covers every noncrossing diagonal set with one of fourteen
+triangulations. Palette symmetry fixes the first two colours. Fifteen
+nonextension witnesses, stored in ninety bytes, cover all feasible diagonal
+signatures. The graph edges are checked against the decoded catalogue source;
+nonextension concerns actual graph colourings. Replay with
+`lake build kernelBoundaryReplacement`. The eight-root audit admits only
+standard axioms and excludes the complete Four Colour theorem and bulk repair
+tables. The module replay takes 17.345 seconds in the recorded run; its audit
+takes 2.390 seconds. See the [kernel receipt](boundary-replacements-measurements.json).
+
+The independent [program replay](audit_boundary_replacements.py) tests larger
+patches against the same universal fixed-boundary contract. It enumerates
+proper boundary words up to palette permutation and compares DFS extension
+with exact two-port ear elimination on every word. Two replacement classes
+are tested: feasible mixed equality/inequality constraints on noncrossing
+diagonals, and simple triangulated disks with exactly one interior vertex.
+
+| Source | Proper word orbits | Nonextending orbits | Boundary triangulations | One-interior-vertex disks |
+| --- | ---: | ---: | ---: | ---: |
+| D0000 | 31 | 15 | 14 | 84 |
+| D0092 | 7,381 | 6,078 | 4,862 | 75,582 |
+| D0063 | 2,461 | 1,839 | 1,430 | 19,448 |
+| D0099 | 7,381 | 5,794 | 4,862 | 75,582 |
+
+No candidate in either class satisfies the contract for these four sources.
+A positive control finds the expected eight-to-seven-vertex reduction of a
+wheel with an extra vertex in one triangular face. The
+[program receipt](boundary-replacements-audit.json) records exact counts and
+source hashes. Only the six-port noncrossing-constraint result is Lean proved;
+the larger searches and the one-interior-vertex class are program evidence.
+
+This rejects the stated fixed-boundary mechanisms, not compositional proofs.
+It does not exclude a compatible choice of exterior colouring, coordinated
+exterior Kempe recolouring, larger replacement gadgets, or a theorem using
+stronger ambient hypotheses. The next repair obligation must account for such
+choices. Coverage remains a separate open obligation, and no catalogue entry
+or original certificate is removed here.
+
 ## Structural anchors preserve repairs, but their number can grow
 
 The general Lean law

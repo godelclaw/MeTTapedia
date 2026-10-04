@@ -1038,3 +1038,17 @@ target kernelTriangleStripAnchors pkg : Unit := do
         "TriangleStripAnchors", "TriangleStripAnchorsAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the obstruction to noncrossing boundary-only replacement. -/
+target kernelBoundaryReplacement pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/boundary-replacement",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "BoundaryReplacementObstruction", "BoundaryReplacementObstructionAudit"]
+      cwd := pkg.dir
+      env := env }

@@ -1,0 +1,131 @@
+{
+  "evidence": "Independent exhaustive program checks; separate Lean theorem only for D0000 noncrossing constraints.",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "catalogue_attribution": "Yuta Inoue, 2026, MIT licence; vendored source pins retained.",
+  "contract": "Every proper colouring of one fixed replacement reconstructs the source while fixing its whole boundary.",
+  "extension_crosscheck": "DFS agrees with exact two-port ear elimination on every canonical proper boundary word.",
+  "cases": [
+    {
+      "source": "D0000",
+      "source_sha256": "d849e1d37b84fe8f37def9fbf292ead6de3a11c1d34c08b07d576d5dfaa022be",
+      "ring": 6,
+      "core_vertices": 4,
+      "boundary_words": 31,
+      "nonextending_words": 15,
+      "mixed_noncrossing_constraints": {
+        "triangulations": 14,
+        "recursion_nodes": 192,
+        "feasible_complete_patterns": 70,
+        "successful_patterns": 0,
+        "first_success": []
+      },
+      "one_interior_vertex": {
+        "candidates": 84,
+        "successful_candidates": 0,
+        "first_success": []
+      }
+    },
+    {
+      "source": "D0092",
+      "source_sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+      "ring": 11,
+      "core_vertices": 7,
+      "boundary_words": 7381,
+      "nonextending_words": 6078,
+      "mixed_noncrossing_constraints": {
+        "triangulations": 4862,
+        "recursion_nodes": 1010764,
+        "feasible_complete_patterns": 267410,
+        "successful_patterns": 0,
+        "first_success": []
+      },
+      "one_interior_vertex": {
+        "candidates": 75582,
+        "successful_candidates": 0,
+        "first_success": []
+      }
+    },
+    {
+      "source": "D0063",
+      "source_sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d",
+      "ring": 10,
+      "core_vertices": 7,
+      "boundary_words": 2461,
+      "nonextending_words": 1839,
+      "mixed_noncrossing_constraints": {
+        "triangulations": 1430,
+        "recursion_nodes": 179134,
+        "feasible_complete_patterns": 48620,
+        "successful_patterns": 0,
+        "first_success": []
+      },
+      "one_interior_vertex": {
+        "candidates": 19448,
+        "successful_candidates": 0,
+        "first_success": []
+      }
+    },
+    {
+      "source": "D0099",
+      "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+      "ring": 11,
+      "core_vertices": 8,
+      "boundary_words": 7381,
+      "nonextending_words": 5794,
+      "mixed_noncrossing_constraints": {
+        "triangulations": 4862,
+        "recursion_nodes": 1010764,
+        "feasible_complete_patterns": 267410,
+        "successful_patterns": 0,
+        "first_success": []
+      },
+      "one_interior_vertex": {
+        "candidates": 75582,
+        "successful_candidates": 0,
+        "first_success": []
+      }
+    }
+  ],
+  "lean_witness_crosscheck": {
+    "witnesses": 15,
+    "flat_witness_bytes": 90,
+    "module_sha256": "e844871e97ce8ddc475a60bb0b3fbf6b9c7dc9b3574dc821f8bfc114dcbd4863"
+  },
+  "positive_control": {
+    "source_vertices": 8,
+    "replacement_vertices": 7,
+    "fixed_boundary_reconstruction": true,
+    "search": {
+      "candidates": 84,
+      "successful_candidates": 1,
+      "first_success": [
+        {
+          "neighbours": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "diagonals": [],
+          "feasible_boundary": [
+            0,
+            1,
+            0,
+            1,
+            0,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  "excluded_conclusions": [
+    "No obstruction to exterior recolouring is proved.",
+    "No assertion of impossibility of compositional proofs.",
+    "No claim about all smaller gadgets or stronger ambient hypotheses."
+  ],
+  "catalogue_entries_removed": 0,
+  "verifier_sha256": "d99729be707a0dbb03934d598946f21c47f559666e9defd28044b7b9753d4123"
+}

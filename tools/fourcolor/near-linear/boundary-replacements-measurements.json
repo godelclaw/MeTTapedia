@@ -1,0 +1,73 @@
+{
+  "classification": "KERNEL_CHECKED_SCOPED_FIXED_BOUNDARY_OBSTRUCTION",
+  "statement": "Every feasible conjunction of noncrossing diagonal equalities and inequalities on the exact D0000 boundary admits a proper word that does not extend into D0000.",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.BoundaryReplacementObstruction",
+        "source_sha256": "e844871e97ce8ddc475a60bb0b3fbf6b9c7dc9b3574dc821f8bfc114dcbd4863",
+        "exit_code": 0,
+        "frontend_wall_seconds": 17.345,
+        "olean_bytes": 831648,
+        "olean_sha256": "423d343ff6a670f50c7188cf462ba3afb707e71579ec6f4f3845c90ca4739ff6"
+      },
+      {
+        "module": "MettapediaFourColor.BoundaryReplacementObstructionAudit",
+        "source_sha256": "854374a31467f033793d55093a9ef97463e2bb3f9ed86f4c18f8356335363420",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.39,
+        "olean_bytes": 2608,
+        "olean_sha256": "aaeaa9ece20c01ed30fec9f7bed4ae68a330a53f707bf5adc887c839b19c1ebc"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/BoundaryReplacementObstruction.lean",
+      "bytes": 7697,
+      "sha256": "e844871e97ce8ddc475a60bb0b3fbf6b9c7dc9b3574dc821f8bfc114dcbd4863"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/BoundaryReplacementObstructionAudit.lean",
+      "bytes": 2276,
+      "sha256": "854374a31467f033793d55093a9ef97463e2bb3f9ed86f4c18f8356335363420"
+    }
+  ],
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 3884,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false
+  },
+  "finite_obligations": {
+    "possible_diagonals": 9,
+    "covering_triangulations": 14,
+    "nonextension_witnesses": 15,
+    "flat_word_bytes": 90,
+    "palette_normalization": "The first two adjacent colours are normalized to 0 and 1 by a proved permutation."
+  },
+  "independent_program": "boundary-replacements-audit.json",
+  "scope_limits": [
+    "No obstruction to exterior recolouring or compatible exterior choice.",
+    "No lower bound on all smaller gadgets, proof size, or compositional methods.",
+    "One-interior-vertex and larger-source results are program checks, not Lean theorems."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "whole_proof_runtime_savings_claimed": false
+}
