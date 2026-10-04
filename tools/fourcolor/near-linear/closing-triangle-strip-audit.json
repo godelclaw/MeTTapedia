@@ -1,0 +1,95 @@
+{
+  "evidence": "Independent program checks; no Lean coverage or reducibility claim.",
+  "vertices": 162,
+  "edges": 480,
+  "faces": 320,
+  "centres": [
+    108,
+    99,
+    115
+  ],
+  "charges": [
+    0,
+    0,
+    0
+  ],
+  "joint_radius_two_vertices": 33,
+  "nonobstructing_short_cycles_checked": 1817,
+  "independent_rule_comparisons": 3528,
+  "absent_configurations": [
+    "D0025.conf",
+    "D0058.conf",
+    "D0063.conf",
+    "D0066.conf",
+    "D0068.conf",
+    "D0069.conf",
+    "D0090.conf",
+    "D0092.conf",
+    "D0277.conf",
+    "D0000.conf",
+    "D0001.conf",
+    "D0004.conf",
+    "D0006.conf",
+    "D0051.conf",
+    "D0052.conf",
+    "D3009.conf"
+  ],
+  "independent_configuration_comparisons": 30720,
+  "positive_configuration": "D0099.conf",
+  "positive_core_vertices": 8,
+  "positive_boundary_ports": 11,
+  "triangle_attachment_sequence": [
+    [
+      12,
+      13,
+      15
+    ],
+    [
+      13,
+      14,
+      15
+    ],
+    [
+      13,
+      14,
+      16
+    ],
+    [
+      14,
+      16,
+      18
+    ],
+    [
+      14,
+      17,
+      18
+    ],
+    [
+      17,
+      18,
+      19
+    ]
+  ],
+  "core_map_preserves": "Unlabelled internal adjacency only; no boundary or repair transfer.",
+  "whole_flat_ball_claimed": false,
+  "all_planar_maps_covered": false,
+  "catalogue_entries_removed": 0,
+  "certificate_dependencies_removed": 0,
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "catalogue_files_checked": 8200,
+  "catalogue_strip_count": 666,
+  "strip_core_size_histogram": {
+    "4": 2,
+    "5": 4,
+    "6": 10,
+    "7": 26,
+    "8": 81,
+    "9": 189,
+    "10": 219,
+    "11": 118,
+    "12": 16,
+    "13": 1
+  },
+  "fixture_sha256": "2a67b573b1cf656f9a43ddc3b9f618f532ceeb3c67fa71a7aeae28180bcedbd0",
+  "verifier_sha256": "d008a27de1cb2c64b81a5a56a3cfbe5da5bbe7f56b126ca061c97660be3f896b"
+}

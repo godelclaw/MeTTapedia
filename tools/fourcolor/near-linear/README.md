@@ -1,5 +1,58 @@
 # Near-linear Four Colour catalogue bridges
 
+## A closing triangle needs more than the five-triangle family
+
+The [replay](audit_closing_triangle_strips.py) checks a 162-vertex spherical
+triangulation with a facial triangle of three flat degree-seven centres.
+Every vertex has degree 5–7. All 1,817 cycles of length three through five
+satisfy the checked nonobstruction conditions. The joint radius-two ball
+has 33 vertices.
+
+None of the nine catalogue configurations with the unlabelled D0092 core
+and prescribed degrees at most seven occurs in that ball. The seven earlier
+named configurations and the tested wheel, diamond and chain recognizers
+also fail there. The absence check compares two independent matchers at
+every oriented edge in both orientations, excluding even noninjective core
+readings. This is a program-checked counterexample to that **specified
+inventory's** coverage claim, not to general compositional coverage or to
+a statement requiring a whole ball to be flat.
+
+The same ball contains an exact [D0099 occurrence](D0099.conf): eight core
+vertices, eleven ordered boundary ports, and six facial triangles attached
+in a strip. Complete core stars, degrees, cyclic order and injectivity are
+checked. Removing one end ear leaves the unlabelled D0092 core graph, but
+that adjacency map does not preserve its prescribed degrees or boundary
+semantics. No colouring repair transfers from this fact alone.
+
+The [catalogue audit](closing-triangle-strip-audit.json) pins all 8,200
+input files and recognizes 666 configurations of degree at most seven
+whose cores are triangle strips. Recognition checks that each triangle
+introduces one new vertex along the preceding edge and that the resulting
+construction has exactly the source core's edges. The available core sizes
+range from four to thirteen vertices. These are source constructions;
+their common reducibility theorem is not established here.
+
+A separate [bounded discovery run](closing-triangle-strip-discovery.json)
+samples 1,791 related spherical maps across thirty seeded flip sequences.
+It finds 33 flat closing triangles: the simple recognizers cover 23 and
+exact source occurrences cover the other ten. This census has no claim of
+exhaustiveness or independent random sampling. It supports investigating
+variable-length strips while the fixed five-triangle candidate has a
+checked failure. No Lean theorem, coverage entry or complete-proof
+dependency is removed by these experiments.
+
+The D0099 source is from Yuta Inoue's MIT-licensed
+[catalogue revision](https://github.com/near-linear-4ct/reducible-configurations/tree/c2ce7a96e35256201526e2abb51a39d04a588b53),
+with the licence retained in [LICENSE](LICENSE). The
+[fixture](closing-triangle-strip-example.json) records the complete input
+content digest and legal flip history. Replays take a checkout of that
+revision's `D` directory:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_closing_triangle_strips.py --catalogue CATALOGUE_D
+python3 tools/fourcolor/near-linear/probe_closing_triangle_strips.py --catalogue CATALOGUE_D
+```
+
 ## A repair must reach outside radius two
 
 [LocalRepairRadius](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/LocalRepairRadius.lean)

@@ -1,0 +1,29 @@
+{
+  "counts": {
+    "spheres": 1791,
+    "flat_triangles": 33,
+    "simple_covered": 23,
+    "source_tests": 40897,
+    "source_covered": 10
+  },
+  "hits": {
+    "D0099.conf": 1,
+    "D0044.conf": 3,
+    "D0093.conf": 1,
+    "D0374.conf": 1,
+    "D0003.conf": 1,
+    "D0033.conf": 1,
+    "D0051.conf": 1,
+    "D0115.conf": 1
+  },
+  "unclassified": null,
+  "evidence": "Bounded discovery only; no exhaustive coverage claim.",
+  "seed_base": 902170,
+  "maximum_seeds": 30,
+  "flips_per_seed": 600,
+  "sample_every": 10,
+  "requested_samples": 1791,
+  "catalogue_strips": 666,
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "program_sha256": "21693e8646383966d75b587b69416a5edd2f785877981751a6fc793cb3855c22"
+}
