@@ -40392,9 +40392,11 @@ stronger actual nonlinear feedback would invalidate that same allowance.
 
 ### What the computation retains
 
-The existing projected Fourier NS solver evolves the velocity and all
-conditional pressure-moment fields through order three, together with the
-mean fourth moment: sixteen fields in total. The canonical pressure is
+The existing projected Fourier NS solver evolves the velocity, first
+pressure moment, symmetric second moment, contracted third moment
+`E[|P|^2 P | X_t=x]`, and mean fourth moment: sixteen fields in total.
+These are the complete moments required by this observation; the full
+third-order tensor is not needed for its recurrence. The canonical pressure is
 recomputed from the evolving velocity. All moments start at zero once,
 and the same accumulated history is retained at every reported time.
 This is an unforced numerical system. No auxiliary sampling control is

@@ -9,7 +9,7 @@
   ],
   "stock": "epsilon^12*alpha/64^4",
   "alpha": "286662963478641031715316500074864459911482198808067888826733584543504645354907013/62250594947644040165703644484760700514092008070712907242986612954178468372574157819328000000",
-  "method": "Projected numerical NS and complete conditional moments through the mean fourth moment; all moments initialized once at zero",
+  "method": "Projected numerical NS velocity, first and symmetric second pressure moments, contracted third moment and mean fourth moment; all moments initialized once at zero",
   "cases": [
     {
       "amplitude": 1,
