@@ -50624,3 +50624,269 @@ source identities, full cubic Hessian, sharp diffusion fixture, actual
 Taylor--Green calibration, energy clock and continuation exponents.
 Operator bounds, integrations by parts and continuation remain analytic.
 No Lean declarations or axioms change.
+
+## Unequal parent decay can overwhelm joint-pressure diffusion
+
+`viscous_pressure_regeneration.py` tests the remaining viscous source of
+(JP2) against the COMPLETE diffusion in (JP3). For each fixed nu,L>0,
+there is no finite universal constant C such that F_vis<=C D on all
+smooth periodic solenoidal data. A fully explicit datum with nu=L=1
+has F_vis>3D and positive complete NS entropy derivative, although its
+kinetic energy strictly decreases. The strict inequalities persist for a
+positive interval of the actual unforced evolution.
+
+This refutes absorption by diffusion alone, including its integrated
+version without a datum-dependent allowance. It does not refute the
+finite full-datum allowance (JP9), and supplies no indefinitely renewed
+cascade or singularity. The proof below is analytic, with exact symbolic,
+Fourier and rational checks. It is not a new Lean certificate.
+
+### A complete pressure formula for two interacting parent families
+
+Use normalized volume on the period-2pi torus. Let n be a positive integer,
+X=nx, and set
+
+```text
+psi=(A/n)sin(X)sin(y)+(B/(2n))sin(2X)cos(y),
+u_n=(psi_y,-psi_x,0)
+   =((A/n)sin(X)cos(y)-(B/(2n))sin(2X)sin(y),
+     -A cos(X)sin(y)-B cos(2X)cos(y),0).             (VD1)
+```
+
+This is a real, mean-zero, divergence-free smooth datum. Its full canonical
+pressure is
+
+```text
+p_n=A^2 cos(2X)/(4n^2)+B^2 cos(4X)/(16n^2)
+       +(A^2-B^2)cos(2y)/4
+       +(AB/4)sin(2y)[-9cos(X)/(n^2+4)
+                         +cos(3X)/(9n^2+4)].       (VD2)
+```
+
+Direct substitution proves -Delta p_n=tr((grad u_n)^2). The checker also
+reconstructs every Fourier convolution output independently at six n's,
+including the explicit witness below. All fourteen pressure modes remain;
+the mixed modes in (VD2) cannot be deleted from the finite calculation.
+
+The viscous velocity tangent is exactly described by
+
+```text
+A'_vis=-nu(n^2+1)A, B'_vis=-nu(4n^2+1)B.
+```
+
+This describes a component of the actual initial NS tangent. It is NOT
+an assertion that the nonlinear solution follows these two amplitude ODEs.
+For A=3,B=2 the slow pressure mode and its viscous derivative are
+
+```text
+p_slow=(5/4)cos(2y),
+(p_slow)'_vis=nu(7n^2-5)cos(2y)/2.                 (VD3)
+```
+
+The opposing negative contribution decays faster. Their pressure difference
+therefore increases even though both parent amplitudes decay. The actual
+initial kinetic quantities are
+
+```text
+E_n=13/4+5/(2n^2),
+Z_n=25n^2/4+13/2+5/(2n^2), E_n'=-2nu Z_n<0.        (VD4)
+```
+
+For the datum c u_n these energies and the last rate multiply by c^2.
+There is no external body force or replenished energy.
+
+### Retain the actual source and its nonlinear symmetry
+
+Keep exactly the pressure observation, scaling and entropy of (JP1),
+including every component of beta=grad q. Write K_L=grad Q_L. The viscous
+pressure tangent and retained source satisfy
+
+```text
+p_vis=nu Delta p_n-2nu (-Delta)^(-1)div div G,
+beta_vis=nu Delta beta+S_vis,
+S_vis=-2nu K_L G,
+Y_p=sqrt(2)beta/nu,
+F_vis=(3sqrt(2)/nu)int |z| Y_p.S_vis.               (VD5)
+```
+
+Here Y_p is the three-component pressure state called y in (JP1);
+the y in (VD1)--(VD3) is the spatial coordinate. The exact Fourier check
+verifies (VD5) using the complete derivative-parent tensor G.
+
+The shift of the spatial coordinate by pi sends u_n to -u_n and leaves
+p_n, beta and |z| unchanged. The Euler velocity tangent is even under this
+shift, while the Euler pressure tangent is odd. Consequently the integrated
+Euler derivative of J vanishes at this datum. The coarse work W_low and
+the cross part of D also integrate to zero by the same parity. Therefore
+
+```text
+J'_NS(0;c u_n)=F_vis(c u_n)-D(c u_n).               (VD6)
+```
+
+No nonlinear term has been omitted. This is an exact initial symmetry,
+not a persistent symmetry of the time-evolved state. The initial Euler
+pressure tangent has forty-four retained modes in the checked fixtures.
+
+### Uniform bounds on every fast pressure mode
+
+Set kappa=1-exp(-4L^2), b=5kappa/8 and
+beta_bar=(0,-b sin(2y),0). The primitive multiplier for a mode with squared
+frequency d is h_L(d)=(1-exp(-L^2 d))/d. Apart from the slow mode, the
+absolute coefficients of q are bounded by
+
+| Spatial harmonic | Absolute coefficient bound |
+| --- | --- |
+| cos(2X) | 9/(16n^4) |
+| cos(4X) | 1/(64n^4) |
+| cos(X)sin(2y) | 27/(2n^4) |
+| cos(3X)sin(2y) | 1/(54n^4) |
+
+These follow directly from (VD2) and 0<h_L(d)<=1/d. Differentiate using
+partial_x=n partial_X. Summing the component bounds, with the Frobenius
+norm for the gradient, gives
+
+```text
+||beta-beta_bar||infinity <=43/n^3,
+||grad(beta-beta_bar)||infinity <=125/n^2,
+||Delta(beta-beta_bar)||infinity <=47/n.            (VD7)
+```
+
+For the last bound use d h_L(d)=1-exp(-L^2d) before estimating. The
+component sums for beta are 2123/144 and 730/27; those for its xx, xy,
+yy derivatives are 97/6,244/9,1460/27; those for its Laplacian are
+39/2 and 82/3. The mixed xy entry is counted twice. These exact rational
+sums certify the safe constants in (VD7).
+
+All fast coefficients have viscous decay rates at most 10nu n^2:
+the two square terms have rates 2nu(n^2+1),2nu(4n^2+1), and the mixed
+term has rate nu(5n^2+2). Combining this with (VD5) gives
+
+```text
+s_bar=(0,-7kappa sin(2y)/4,0),
+||S_vis/(nu n^2)-s_bar||infinity
+                         <=5/(4n^2)+500/n^3.       (VD8)
+```
+
+The slow source before taking the limit is
+(0,-nu kappa(7n^2+5)sin(2y)/4,0). Thus the estimate retains the
+pressure source's own diffusion contribution as well as its regeneration.
+
+### An explicit strict gap, without numerical quadrature
+
+Take n=16,c=1000,nu=L=1 and alpha=sqrt(2). Normalize both F_vis and D by
+alpha^3 c^6. Use the following rational upper bounds:
+
+```text
+b0=5/8, epsilon=43/n^3, g=125/n^2,
+s=5/(4n^2)+500/n^3, eta=6/c, M=b0+epsilon.
+```
+
+The datum satisfies ||u_n||infinity<=6 and ||grad u_n||infinity<=8n.
+After amplitude normalization, its six-component norm is
+r_c=sqrt(|beta|^2+|u_n|^2/(alpha^2 c^2)), so
+|r_c-|beta||<=eta and r_c<=M+eta.
+
+The map v to |v|v is 2M-Lipschitz on the ball of radius M. The exact
+limiting source integral is
+
+```text
+3int |beta_bar| beta_bar.s_bar=175kappa^3/(64pi).
+```
+
+Since exp(4)>16 and pi<4, it exceeds
+B0=(175/256)(15/16)^3. Equations (VD7)--(VD8) give the explicit lower bound
+
+```text
+F_vis/(alpha^3 c^6)
+ > n^2{B0-3[2M epsilon(7/4)+M^2 s]
+             -3eta M(7/4+s)}
+ =341374575297/4194304000 >81.                      (VD9)
+```
+
+This controls both the pressure remainder and the finite velocity
+component of the joint observation. It is not an amplitude-limit claim.
+For the full diffusion, ||H_z||<=6|z| and
+||I+N/sqrt(2)||<2 give
+
+```text
+D/(alpha^3 c^6)
+ <=12(M+eta)[(8n/c)^2+(2b0+g)^2]
+ =3065314896368781/131072000000000 <24.
+(F_vis-3D)/(alpha^3 c^6)
+ >1472010788924907/131072000000000 >11.              (VD10)
+```
+
+All arithmetic in (VD9)--(VD10) is rational and checked exactly. The
+Fourier/operator inequalities providing its inputs are analytic. This
+proves the advertised explicit gap independently of the optional grids.
+By (VD6), the complete entropy increases initially while kinetic energy
+strictly decreases.
+
+### No universal absorption constant, and actual positive intervals
+
+The same family gives an unbounded ratio, not merely failure of the
+half-diffusion coefficient. For each fixed n, first let c tend to infinity.
+The C2 continuity and degree-one homogeneity of the cubic Hessian give
+
+```text
+D(c u_n)/(nu alpha^3 c^6)
+ ->d_n=int[3|beta||grad beta|^2
+             +3sum_j(beta.partial_j beta)^2/|beta|],
+F_vis(c u_n)/(nu alpha^3 c^6)
+ ->f_n=3int |beta| beta.(S_vis/nu), alpha=sqrt(2)/nu.
+```
+
+The zero-denominator expression extends by zero at beta=0. For integer
+n, normalized spatial integration can use X on one full period.
+The uniform estimates (VD7)--(VD8) justify the second limit:
+
+```text
+d_n ->125kappa^3/(32pi)>0,
+f_n/n^2 ->175kappa^3/(64pi),
+lim_(n->infinity) n^(-2) lim_(c->infinity)
+                       F_vis(c u_n)/D(c u_n)=7/10. (VD11)
+```
+
+Thus for every prescribed finite C>0 and fixed nu,L>0 there are n,c
+with F_vis>C D. Local smooth unforced NS existence supplies an actual
+solution from each such datum. The pressure observation and both
+functionals are continuous along its smooth prefix. Every strict initial
+gap consequently persists on some positive interval, and integration gives
+
+```text
+int_0^T F_vis > C int_0^T D
+```
+
+there. For the explicit witness the positive complete J derivative also
+persists on a sufficiently short interval. No uniform interval length is
+claimed, and the evolving pressure is always reconstructed from the full
+NS solution. In particular the two heat-amplitude ODEs are not iterated
+in place of that solution.
+
+The witness is planar but is a datum for the three-dimensional equation.
+The strict source gap and positive full entropy derivative also persist
+under sufficiently small genuinely three-dimensional smooth solenoidal
+perturbations, for example adding delta(sin z,sin x,sin y). This follows
+by continuity of the canonical-pressure map and the displayed functionals;
+it does not require the initial parity to persist after perturbation.
+
+### What a repaired history bound must retain
+
+The source is the same derivative-parent pressure already identified in
+`SignedViscousPressure`; that earlier estimate uses a different receiver
+and a higher-order resource. Its payment does not transfer to (JP3)
+without a bound relating those resources.
+
+Here a fixed slow pressure mode receives contributions from parents with
+increasingly different viscous rates. The pressure difference alone does
+not supply a dissipative sign. A repair can retain those joint parent
+stresses or their actual covariance history, but must derive and pay their
+complete subsequent evolution. The original-data reserve is allowed to
+pay this finite burst. The arbitrary-history estimate (JP9) remains open.
+
+Run `python3 -O labs/viscous_pressure_regeneration.py` for exact checks;
+add `--quadrature --grid 512` for a diagnostic. At nu=L=1,c=1000, the
+computed ratios for n=4,8,16,32 are close to 9.67,44.63,179.4,715.1.
+Those values are ordinary numerical evidence; the explicit bound and
+unbounded-ratio proof above do not rely on them. No Lean declarations,
+axioms or formal continuation hypotheses are changed.

@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [unequal-decay pressure test](labs/README.md#unequal-parent-decay-can-overwhelm-joint-pressure-diffusion)
+shows that the retained viscous pressure source cannot be absorbed by any
+universal multiple of the joint diffusion. An explicit periodic datum
+has source greater than three times that diffusion while kinetic energy
+decreases. Opposing parent pressures lose their cancellation as their
+viscous decay rates differ. The strict gap persists on an actual short
+unforced NS interval; the full-datum history allowance remains open.
+The proof is analytic with exact Fourier and rational checks, not Lean-certified.
+
 The [convex joint pressure observation](labs/README.md#a-convex-pressure-observation-pays-diffusion-transfer-and-coarse-histories)
 controls the explicit velocity/pressure diffusion transfer and pays all
 coarse-pressure work from one original-energy reserve on R3 and the

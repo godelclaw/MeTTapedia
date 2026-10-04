@@ -1,0 +1,194 @@
+{
+  "formulas": {
+    "pressure": "A**2*cos(2*X)/(4*n**2) + A*B*(cos(3*X)/(9*n**2 + 4) - 9*cos(X)/(n**2 + 4))*sin(2*y)/4 + B**2*cos(4*X)/(16*n**2) + (A**2 - B**2)*cos(2*y)/4",
+    "low_pressure_rate": "nu*(7*n**2 - 5)/2",
+    "energy": "(13*n**2 + 10)/(4*n**2)",
+    "enstrophy": "(25*n**4 + 26*n**2 + 10)/(4*n**2)"
+  },
+  "exact_tangents": [
+    {
+      "n": 1,
+      "nu": "1",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 1,
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 2,
+      "nu": "1",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 2,
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 3,
+      "nu": "1",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 3,
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 7,
+      "nu": "1",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 7,
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 16,
+      "nu": "1",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 16,
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 32,
+      "nu": "1",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    },
+    {
+      "n": 32,
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "viscous_pressure_modes": 14,
+      "Euler_pressure_modes": 44
+    }
+  ],
+  "limits": {
+    "kappa": "1-exp(-4L^2)",
+    "limiting_beta": "(0,-5kappa sin(2y)/8,0)",
+    "limiting_Svis_over_nu_n2": "(0,-7kappa sin(2y)/4,0)",
+    "pressure_cubic_stock": "125*kappa**3/(384*pi)",
+    "pressure_cubic_diffusion_over_nu": "125*kappa**3/(32*pi)",
+    "source_over_nu_n2": "175*kappa**3/(64*pi)",
+    "ratio": "lim_(n->infinity) n^(-2) lim_(c->infinity) F_vis(c u_n)/D(c u_n)=7/10",
+    "remainders": "||beta-beta_bar||inf<=43/n^3; ||grad(beta-beta_bar)||inf<=125/n^2; ||Delta(beta-beta_bar)||inf<=47/n",
+    "source_remainder": "||S_vis/(nu n^2)-s_bar||inf<=5/(4n^2)+500/n^3",
+    "interpretation": "No finite universal multiple of D absorbs this viscous source on all actual data. The smooth actual evolution preserves each strict initial gap for a positive interval.",
+    "OPEN": "A finite allowance depending on the full original datum for complete generated-pressure histories remains open."
+  },
+  "explicit_gap": {
+    "n": 16,
+    "c": 1000,
+    "nu": 1,
+    "L": 1,
+    "normalization": "nu (sqrt(2)/nu)^3 c^6",
+    "F_vis_lower": "341374575297/4194304000",
+    "D_upper": "3065314896368781/131072000000000",
+    "F_vis_minus_3D_lower": "1472010788924907/131072000000000",
+    "bounds": "F_vis>81 times normalization, D<24 times normalization, F_vis-3D>11 times normalization",
+    "physical_consequence": "At t=0 the Euler entropy derivative and cross diffusion vanish by the exact y-shift symmetry. Thus the complete NS entropy derivative is positive although kinetic energy decreases.",
+    "history_consequence": "Continuity on the actual smooth NS prefix preserves F_vis>3D and positive entropy growth for some positive interval; no interval length or indefinite renewal is claimed."
+  },
+  "certification": "Exact symbolic/Fourier checks; asymptotics and actual NS interval transfer are analytic, not Lean-certified.",
+  "source_sha256": "146ce0bfcdbd3f62e7620df1c9233c20c5766db114c1801ece9bf75bdc4609cd",
+  "quadrature": [
+    {
+      "n": 2,
+      "c": 1000,
+      "grid": 512,
+      "nu": 1,
+      "L": 1,
+      "F_vis": 7.17278429729224e+18,
+      "D": 8.650761473190778e+18,
+      "ratio": 0.8291506267420646,
+      "ratio_over_n2": 0.20728765668551616,
+      "J_prime": -1.4779701984237414e+18,
+      "balance_relative_error": 8.065734812094413e-07,
+      "status": "numerical diagnostic, not an enclosure"
+    },
+    {
+      "n": 4,
+      "c": 1000,
+      "grid": 512,
+      "nu": 1,
+      "L": 1,
+      "F_vis": 3.795421526589788e+19,
+      "D": 3.924379790109506e+18,
+      "ratio": 9.67139198951965,
+      "ratio_over_n2": 0.6044619993449781,
+      "J_prime": 3.402985387533001e+19,
+      "balance_relative_error": 4.847825599401106e-07,
+      "status": "numerical diagnostic, not an enclosure"
+    },
+    {
+      "n": 8,
+      "c": 1000,
+      "grid": 512,
+      "nu": 1,
+      "L": 1,
+      "F_vis": 1.50616849097278e+20,
+      "D": 3.374769163388304e+18,
+      "ratio": 44.630267080565915,
+      "ratio_over_n2": 0.6973479231338424,
+      "J_prime": 1.4724207998488525e+20,
+      "balance_relative_error": 3.3857805918555505e-10,
+      "status": "numerical diagnostic, not an enclosure"
+    },
+    {
+      "n": 16,
+      "c": 1000,
+      "grid": 512,
+      "nu": 1,
+      "L": 1,
+      "F_vis": 5.978811044252626e+20,
+      "D": 3.33255557119765e+18,
+      "ratio": 179.40619193047598,
+      "ratio_over_n2": 0.7008054372284218,
+      "J_prime": 5.945481618993685e+20,
+      "balance_relative_error": 6.47210111833549e-07,
+      "status": "numerical diagnostic, not an enclosure"
+    },
+    {
+      "n": 32,
+      "c": 1000,
+      "grid": 512,
+      "nu": 1,
+      "L": 1,
+      "F_vis": 2.3865631150061005e+21,
+      "D": 3.3375649215483945e+18,
+      "ratio": 715.0611811616548,
+      "ratio_over_n2": 0.6983019347281785,
+      "J_prime": 2.383225150862421e+21,
+      "balance_relative_error": 1.6727910048561507e-07,
+      "status": "numerical diagnostic, not an enclosure"
+    }
+  ]
+}
