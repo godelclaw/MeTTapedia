@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [spectral-band geometric payment](labs/README.md#spectral-bands-pay-non-mean-daughters-before-the-geometric-remainder)
+allows the entire low-vertical-frequency band, or the union of three coordinate
+bands, to exchange energy at arbitrary amplitude. A cubic comparison pays
+its contribution from full kinetic dissipation on both R3 and T3. The spectral
+geometry condition is imposed only on the remaining field. An actual local
+history produces a large non-mean daughter while this new remainder stays
+controlled. Band width may also grow under an explicit energy-dependent
+ceiling whose cost has a finite original-data payment. Proving the remaining
+geometry under this paid rule remains open. These are analytic arguments
+with exact source checks, not new Lean certificates.
+
 The [pancake estimate with an evolving mean](labs/README.md#large-generated-means-fit-a-geometric-history-payment)
 removes the small-exterior requirement from the actual vertical average of
 a periodic flow. Its complete internal forcing and reciprocal interactions

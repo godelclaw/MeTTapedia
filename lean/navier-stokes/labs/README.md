@@ -46981,3 +46981,283 @@ source. The existing `MettapediaNS.GeneratedMeanEnstrophy` certifies its
 stated scalar compensation layer; (PM1)--(PM16)'s physical estimates,
 local solution, uniform remainder and continuation connection remain
 analytic. No Lean declarations or axioms change.
+
+## Spectral bands pay non-mean daughters before the geometric remainder
+
+`pancake_band_parent.py` addresses a limitation of the exact-mean split:
+nearly opposite parent frequencies generate daughters with small NONZERO
+vertical frequency. They survive removal of the mean. A fixed band can
+absorb this part of the geometry obligation, with a finite amplification
+price from the original fluid. Its self-interactions can still generate
+motion outside the band and must remain in the equation.
+
+Periodic spectral reduction has substantial precedent. In particular,
+[Kim, Kwak and Yoo](https://arxiv.org/abs/1405.6838) decompose off the union
+of three coordinate slabs and prove Serrin criteria on the remaining
+spectral part. Their Section 2 gives the associated two-dimensional
+embedding mechanism. The existing estimate (484)--(486) also pays a
+periodic band, for a different full-vorticity observation. Below we derive
+a cubic comparison to compose directly with (PC4)--(PC8), including the
+whole-space case and an explicit original-data reserve. No novelty priority
+is asserted for paying low bands.
+
+### The complete band equations and a physical cubic comparison
+
+Use normalized period-2pi T3 or R3 with the unitary Fourier transform,
+and the notation E,Z,D,g of (PC1). Fix J>=0 integral on T3, or J>0 on R3,
+from the original datum,nu,H. Let P_J retain |k_z|<=J and set
+
+```text
+V=P_J u, w=u-V, B(a,b)=-P[(a.grad)b],
+N=B(V,V)+B(V,w)+B(w,V)+B(w,w),
+V_t=nu Delta V+P_J N,     w_t=nu Delta w+(I-P_J)N.      (PB1)
+```
+
+No frequency output is dropped. Generally `(I-P_J)B(V,V)` and
+`P_J[B(V,w)+B(w,V)]` are NONZERO. The mean-only cancellation of terms
+with two parents and one remainder cannot be reused. Nevertheless
+
+```text
+<V,P_J N>+<w,(I-P_J)N>=0,
+<-Delta V,P_J N>+<-Delta w,(I-P_J)N>=g(u),
+Z=Z_V+Z_w, D=D_V+D_w, E'=-2nu Z.                       (PB2)
+```
+
+Choose a fixed horizontal Ladyzhenskaya constant C_L for matrix fields:
+
+```text
+||A||L4(horizontal)^2
+ <=C_L ||A||2 (||grad_h A||2+delta ||A||2),
+delta=1 on T3, delta=0 on R3.
+```
+
+On R3 the inequality is on R2 at each z; on T3 it is the inhomogeneous
+T2 inequality, so horizontally constant fields are retained. Applying it
+to the norm of the matrix and using its weak derivative bound suffices.
+Vertical Fourier Cauchy--Schwarz and horizontal interpolation yield
+
+```text
+a_J=sqrt(2J+1) on T3, sqrt(J/pi) on R3,
+||grad V||L_infinity(z;L2(horizontal))<=a_J sqrt(Z_V),
+integral_z ||grad v||L4(horizontal)^2
+ <=C_L [sqrt(Z_v D_v)+delta Z_v].                       (PB3)
+```
+
+The continuous vertical Bernstein factor is
+`sqrt(2J)/sqrt(2pi)`. These bounds retain arbitrarily high horizontal
+frequencies; V is not a finite-dimensional approximation and need not
+have small amplitude. On R3 it is a genuine L2 band-limited field,
+not a nonzero constant extension along an infinite axis.
+
+For `T(a,b,c)=integral curl(a)^T grad(b) curl(c)`, telescope exactly:
+
+```text
+g(u)-g(w)=T(V,u,u)+T(w,V,u)+T(w,w,V).
+```
+
+Since `|curl v|<=sqrt(2)|grad v|`, the absolute integrand is at most
+`3|grad V|(|grad u|^2+|grad w|^2)`; this uses
+`2(x^2+xy+y^2)<=3(x^2+y^2)`. Apply (PB3), then orthogonality, to obtain
+
+```text
+C_J=12 C_L a_J,
+2|g(u)-g(w)|<=C_J sqrt(Z_V)[sqrt(ZD)+delta Z]
+             <=nu D/2+[beta Z_V+delta nu/2]Z,
+beta=(1+delta)C_J^2/(2nu).                              (PB4)
+```
+
+The first Young square absorbs the sqrt(D) term. On the torus the
+remaining factor obeys
+`C_J sqrt(Z_V)<=C_J^2 Z_V/(2nu)+nu/2`.
+Only the original full dissipation pays these charges; no independent
+energy inequality for the internally forced V is assumed.
+
+The same result holds for the UNION of the three coordinate slabs
+`min(|k_1|,|k_2|,|k_3|)<=J`, replacing C_J by `sqrt(3) C_J`.
+Partition the union into three disjoint pieces, assigning a frequency
+to its first eligible axis. Each piece satisfies (PB3) in its own
+coordinate direction, and their gradient energies sum to Z_V.
+Cauchy--Schwarz bounds the sum of their square roots by sqrt(3 Z_V).
+This retains all interactions between differently oriented pieces;
+it does not treat them as three independently evolving fluids.
+
+### Combine the paid band with the spectral geometry
+
+For w=u-V suppose the exterior condition (PM3) holds on every available
+prefix, with original-data B,R,gamma and a possibly changing core axis.
+Use the appropriate domain constants A_geom,L in (PC3). Since ||w||2
+is at most sqrt(E0), its spatial proof gives `g(w)<=nu D_w/2+LZ_w`.
+With beta from (PB4), define
+
+```text
+alpha=2L+delta nu/2,       Gamma=beta/(2nu),
+Z'+nu D/2 <= (alpha+beta Z_V)Z,
+phi=exp[alpha(H-t)+Gamma E(t)], S=phi Z,
+S'+nu phi D/2 <= -beta phi(Z-Z_V)Z <= 0.                (PB5)
+```
+
+For the union of slabs, use its enlarged C_J in beta and Gamma. This
+is an actual-fluid bound on both R3 and T3, CONDITIONAL on the stated
+geometric history of w. It tolerates unrestricted growth and energy
+exchange of V. The reserve and allowance are
+
+```text
+R=(2phi-1)Z+2(H-t)|g0|,       g0=g(u0) fixed,
+R'+2(g-g0)-nu D<=0,
+K=(2exp[alpha H+Gamma E0]-1)Z0+2H|g0|.                  (PB6)
+```
+
+The exact remaining derivative is
+`-nu(phi-1)D-2beta phi(Z-Z_V)Z-2(|g0|+g0)`, apart from a further
+nonpositive gap in (PB5). Thus R is nonnegative and the same initial
+allowance passes through every compatible seam. The Bellman
+supersolution (PM9) applies with 2L replaced by alpha and m=Z_V.
+Full fluid endpoints still determine physical compatibility.
+
+The gradient-energy bound is `Z(t)<=exp[alpha H+Gamma E0]Z0`.
+It has the exact all-prefix quantifier required by
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` if the geometry
+is established for every same-datum prefix at each prescribed horizon.
+For the periodic `FourierTameContinuation` consumer, retain the period-one
+rescaling and finite-sum bound `2(E0+exp[alpha H+Gamma E0]Z0)/(2pi)^2`
+from (PC3), together with its mean-zero and initial-regularity conditions.
+Zero initial energy gives the zero solution separately. These physical
+connections remain analytic, not newly certified Lean adapters.
+
+A fixed-width R3 slab can also change direction at each time: rotate
+(PB3) instantaneously, without changing its constants. The proof uses
+only E',Z' and a spatial comparison, so it does not differentiate that
+projection. A projected evolution in a moving frame would need its
+extra terms. On T3, selection among the three coordinate axes is allowed
+with the same one-band constants; no arbitrary lattice rotation is used.
+
+Increasing J has a different consequence. The price Gamma grows with J.
+Even when B,R,gamma stay fixed, a differentiable price change adds
+
+    2phi E Z Gamma'                                    (PB7)
+
+to R'. An upward discrete change on T3 adds
+`2Z exp[alpha(H-t)](exp[Gamma_new E]-exp[Gamma_old E])` to R.
+This increase cannot simply be omitted. Sending J to infinity, or
+selecting an unbounded width from the unknown future, does not close
+the estimate. Changing B,R or gamma also changes L and requires its own
+accounting. A particular energy-dependent growth rule can, however, be paid.
+
+Fix beta0>0 and 0<=p<1 from the original resources, and allow the selected
+width, hence beta(t), to change subject to
+
+```text
+beta(t)<=beta_bar(E(t))=beta0 (E0/E(t))^p,
+Psi(E)=beta0 E0^p E^(1-p)/(2nu(1-p)),
+phi=exp[alpha(H-t)+Psi(E(t))],
+Psi_t=-beta_bar(E) Z.                                  (PB7a)
+```
+
+All other geometric constants stay fixed. For the same R in (PB6),
+its derivative plus the signed cost is now at most
+
+```text
+-nu(phi-1)D
+-2phi [beta_bar(E)(Z-Z_V)+(beta_bar(E)-beta(t))Z_V]Z
+-2(|g0|+g0) <= 0.                                      (PB7b)
+```
+
+Thus the initial allowance is
+`(2exp[alpha H+beta0 E0/(2nu(1-p))]-1)Z0+2H|g0|`.
+This pays widening of the selected band along ACTUAL histories, provided
+the complementary field satisfies the stated geometric condition and
+the width stays under (PB7a). On R3 beta is proportional to J; on T3 it
+is proportional to 2J+1. The full kinetic energy may therefore release
+more allowable width as it decreases. These calculations hold where E>0;
+Psi has continuous limit0 as E tends to0. If a smooth unforced history
+reaches E=0, it stays zero by the full kinetic identity. No division by
+zero or future lower bound for E is used.
+
+At p>=1 the price integral from0 to E0 diverges. More precisely, there is
+no nonnegative differentiable Psi on (0,E0] with finite Psi(E0) and
+`2nu Psi'(E)>=beta0(E0/E)^p` everywhere. Integrating this inequality
+from epsilon to E0 contradicts Psi(epsilon)>=0 as epsilon tends to0.
+At p=1 the divergence is logarithmic. This limits that energy-only
+compensator; it is not an NS counterexample and does not exclude other
+reserves. Proving the complementary geometry under either a fixed width
+or the paid rule (PB7a) remains the physical crux.
+
+### An actual non-mean escape and why the band helps
+
+Change the second wave of (PM11)'s seed to vertical frequency63. Explicitly,
+
+```text
+k=(4,0,64), polarization (0,1,0), cosine;
+p=(0,4,63), polarization (1,1,-4/63), cosine;
+j=(1,1,64), polarization (1,-1,0), cosine/10.
+```
+
+All input waves lie in the same n=e3, B=R=1,gamma=1/2 core. Their
+three-dimensional determinant is516. The complete source N has
+
+```text
+q=k-p=(4,-4,1),
+N_hat(q)=i(2111,2080,-124)/2079,
+g(w0)=0,
+Dg(w0)[N]=676557198722378987557/20783325925489050>0,
+Dg(w0)[Delta w0]=0.                                   (PB8)
+```
+
+The daughter q is neither in the core nor in the exact mean. All
+source outputs with |k_z|>1 DO remain in the same core; the other outputs
+have vertical frequency0 or+/-1. No source truncation is made.
+
+Fix nu>0 and initial amplitude A. Reuse the uniform local smooth Taylor
+argument (PM13)--(PM14) for this fixed seed and viscosities0<=nu/A<=1.
+At T_A=A^(-5/3) it gives the actual interval estimates
+
+```text
+sup_(0<=t<=T_A)||(I-P_Omega)(I-P_1)u_A(t)||3<=C A^(-1/3),
+|u_A_hat(T_A,q)|>=c A^(1/3).                            (PB9)
+```
+
+Hence the band-complement geometric condition holds throughout this
+prefix for sufficiently large A, while the mean-complement condition
+fails at its endpoint, even allowing a different single core axis.
+Indeed both k,q exceed R, and their simultaneous membership would force
+
+```text
+|k cross q|<=|k|sqrt(|q|)+|q|sqrt(|k|)
+           <65*(5/2)+6*9<350<|k cross q|,
+|k cross q|^2=129296,
+```
+
+a contradiction. The original coefficient at k stays of size c'A.
+At least one of these two NON-MEAN coefficients is therefore outside
+any core with the stated B,R,gamma. Normalized L3 dominates its size.
+The criterion failure concerns those prescribed constants; different
+constants selected from the full datum are not ruled out.
+
+The complete first cubic return is positive, so the same scaling as
+(PM16) retains a positive integrated excess for large A. Initial energy
+grows like A^2; the original-data reserve pays the burst under (PB9).
+The favorable short-time condition is not asserted to persist later.
+
+A separate exact fixture tests the band-specific obstruction. Put
+`V=(cos(y+z),cos(x+z),0)` and `w=(I-P_1)B(V,V)`. Then
+
+```text
+||w||2^2=1/6,
+Dg(V)[w]=2/3,
+<V,P_1 B(V+w,V+w)>=-1/6.                               (PB10)
+```
+
+Thus two low-band parents generate a high-band daughter, their
+one-daughter cubic work is nonzero, and its kinetic transfer is retained.
+Treating the band as an autonomous mean would erase real terms.
+
+Run `python3 -O labs/pancake_band_parent.py`. Its archived results retain
+complete pressure, all outputs, four projected-field fixtures including
+the union of slabs, both enstrophy receivers, the cubic telescope, three
+full viscous second tangents, the non-mean axis obstruction, both domain
+prices, direct Bellman derivatives, the adaptive-price defect and its
+energy-dependent repair (PB7a)--(PB7b).
+Every transitive local Python source is hashed. The anisotropic inequalities,
+whole-space estimate, local PDE remainder and continuation implications
+are analytic, not consequences of the finite checks. No Lean declarations
+or axioms change; arbitrary-data geometric propagation remains open.

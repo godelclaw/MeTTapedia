@@ -1,0 +1,181 @@
+{
+  "physical": {
+    "initial": {
+      "energy": "600119/396900",
+      "enstrophy": "1208562931/198450",
+      "dissipation": "2434429963394/99225",
+      "stretching": "0",
+      "normal_vorticity_squared": "801/50",
+      "input_modes": 6,
+      "full_source_modes": 12,
+      "newly_generated_modes": [
+        [
+          -5,
+          -1,
+          -128
+        ],
+        [
+          -4,
+          -4,
+          -127
+        ],
+        [
+          -4,
+          4,
+          -1
+        ],
+        [
+          -3,
+          1,
+          0
+        ],
+        [
+          -1,
+          -5,
+          -127
+        ],
+        [
+          -1,
+          3,
+          -1
+        ],
+        [
+          1,
+          -3,
+          1
+        ],
+        [
+          1,
+          5,
+          127
+        ],
+        [
+          3,
+          -1,
+          0
+        ],
+        [
+          4,
+          -4,
+          1
+        ],
+        [
+          4,
+          4,
+          127
+        ],
+        [
+          5,
+          1,
+          128
+        ]
+      ]
+    },
+    "daughter_coefficient": [
+      "2111*I/2079",
+      "2080*I/2079",
+      "-124*I/2079"
+    ],
+    "first_stretching_derivative": "676557198722378987557/20783325925489050",
+    "jets": [
+      {
+        "viscosity": "0",
+        "second_tangent_modes": 38
+      },
+      {
+        "viscosity": "1/7",
+        "second_tangent_modes": 50
+      },
+      {
+        "viscosity": "1",
+        "second_tangent_modes": 50
+      }
+    ],
+    "band_fixtures": [
+      {
+        "width": 1,
+        "axes": [
+          2
+        ],
+        "full_energy": "7/6",
+        "two_parent_one_tail_stretching": "2/3",
+        "band_to_tail_source_squared": "1/6",
+        "kinetic_work_into_band": "-1/6",
+        "full_source_modes": 10
+      },
+      {
+        "width": 1,
+        "axes": [
+          2
+        ],
+        "full_energy": "1474108193/261954000",
+        "two_parent_one_tail_stretching": "0",
+        "band_to_tail_source_squared": "2288356158131/66904400663100",
+        "kinetic_work_into_band": "1078029653/261954000",
+        "full_source_modes": 42
+      },
+      {
+        "width": 1,
+        "axes": [
+          2
+        ],
+        "full_energy": "4005207591530569619/415666518509781000",
+        "two_parent_one_tail_stretching": "0",
+        "band_to_tail_source_squared": "2288356158131/66904400663100",
+        "kinetic_work_into_band": "129415476703486829/33253321480782480",
+        "full_source_modes": 80
+      },
+      {
+        "width": 1,
+        "axes": [
+          0,
+          1,
+          2
+        ],
+        "full_energy": "4005207591530569619/415666518509781000",
+        "two_parent_one_tail_stretching": "5345743874640095556457/103916629627445250",
+        "band_to_tail_source_squared": "6830626991490452696946554174572150774687377946883581170269545686952737809717/221897061251091991524052008693945431195003160099273357124744491228902250000",
+        "kinetic_work_into_band": "-812366842228343293/155874944441167875",
+        "full_source_modes": 80
+      }
+    ],
+    "actual_scope": "Uniform smooth local Taylor control at physical time A^(-5/3) gives a non-mean exterior of size at least c A^(1/3), while the exterior after removing |kz|<=1 is at most C A^(-1/3). This interval statement is analytic."
+  },
+  "estimates": {
+    "constants": [
+      {
+        "domain": "R3",
+        "beta": "C**2/(2*nu)",
+        "horizon_coefficient": "2*L",
+        "energy_coefficient": "C**2/(4*nu**2)"
+      },
+      {
+        "domain": "T3",
+        "beta": "C**2/nu",
+        "horizon_coefficient": "2*L + nu/2",
+        "energy_coefficient": "C**2/(2*nu**2)"
+      }
+    ],
+    "physical_time": "A^(-5/3)",
+    "limitation": "Fixed finite band widths; no passage to infinite width or free adaptive cutoff."
+  },
+  "adaptive": {
+    "allowed_price": "beta(J(t)) <= beta0 (E0/E(t))^p, 0<=p<1",
+    "energy_potential": "E**(1 - p)*E0**p*beta0/(2*nu*(1 - p))",
+    "initial_potential": "beta0 E0/(2nu(1-p))",
+    "scope": "The energy-dependent width can grow; actual geometric control of its complement remains a hypothesis. At p>=1 only this everywhere nonnegative energy-only primitive is excluded."
+  },
+  "source_sha256": {
+    "cellular_parent_refeeding.py": "ab1b19dc3b90e05e764fae5121c1f503d49bba2735bd6b6e25ca3eef921d6b04",
+    "cellular_transfer_reversal.py": "db6c2598353192a1d4c7df6a6baca3b4adac178e731f0bfcb5b408f6cad35144",
+    "generated_mean_enstrophy.py": "fe28dbcbc37cdea01fef4caa7976415033d85c0bd5f643524970bbbf962c8955",
+    "pancake_band_parent.py": "3c8bd376be9a080c56b840181d34b904020a270a372af79619f8f292ef515467",
+    "pancake_concentration_threshold.py": "980e1c687eb64366c0a29e7bce112e53d53b6582c104fc9ebedad4cdd74d940b",
+    "pancake_mean_parent.py": "e90e501f46ca5b9370459bed445bb4ca3b36fdf4227b318c5046ce487dc0321a",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "reciprocal_pattern_cycles.py": "cf3e44749952fbd3542436424e63e4c0f2efbce2a36cfa514798e41f33a5f97b",
+    "refeeding_stretching.py": "e52761a0283d0c50064bb450ffbfd039a2883aba2d0a574f53d7a41b4d4dfa57",
+    "reference_stretching_control.py": "00c6c2d1312b27d22bc07f698fe60c85a2361a198cf356c2e421bef19d400906"
+  },
+  "scope": "Exact finite algebra, not certification of the analytic anisotropic estimates or arbitrary-data regularity."
+}
