@@ -1,0 +1,88 @@
+{
+  "classification": "CHECKED_PRESERVED_PATH_SUPPLIES_TWO_STAGE_RECONSTRUCTION",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSixBarrierGeometry",
+      "source_sha256": "45288f1dc3672ff9289ca3eee0b06238b4ce09c4f57a454b2dbbbd3845065ab6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 22.053,
+      "olean_bytes": 525320,
+      "olean_sha256": "1afb5c9e8b836d720ac39011efa8d9af6e7c4eb606a8fe59a7ab16c96b830a0e"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixBarrierRepair",
+      "source_sha256": "0ac622f9e50c82ec5aa5b7743f2a63029e6491ef3c3b6c8d01dd2361e3a053d6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.324,
+      "olean_bytes": 807968,
+      "olean_sha256": "16b581496473c78c8bfe7047b3a87bf8366bce76bc2a5658ceb07e5a4f72aa5e"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixBarrierExample",
+      "source_sha256": "3d5a523dc2577bcbf66f4b58c61aedfe394b989384e8397026c3d4df99362ad9",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.552,
+      "olean_bytes": 172928,
+      "olean_sha256": "f8e8c13687b5e5610e0ddf9b74c04c72c260ee4f313f8e96a61fec51fcb565a5"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixBarrierAudit",
+      "source_sha256": "e813d337a7d1a5dbd2bc04f2b7e82a0ff2a58c580f38bbe3a0fbdb2d4739b304",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.469,
+      "olean_bytes": 2600,
+      "olean_sha256": "6e4d3db79df7a782e48a9b4169560180aff4ddd5160f7ceca3b893bf36124cde"
+    }
+  ],
+  "frontend_wall_seconds_total": 39.398,
+  "timing_scope": "Four new modules replayed with existing dependencies built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 29683,
+  "new_boundary_repair_table_bytes": 0,
+  "new_spherical_fixture_bytes": 0,
+  "shared_spherical_fixture": "strip-six-release-example.json",
+  "audit": {
+    "roots": 10,
+    "transitive_dependency_declarations": 20635,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "An exterior path from port two to four or seven, with actual source facial triangles and spherical geometry, separates port three from one, nine and ten.",
+    "The original component through one and six, missing eight, forces the first switch at eight to affect only that boundary port.",
+    "An old zero/two path disjoint from this first component survives the switch.",
+    "The second one/three component at three is then geometrically excluded from the protected ports; ports five and six move together.",
+    "One core formula for either shared pair choice reconstructs a source colouring through two actual switches.",
+    "The existing 32-vertex sphere consumes the path-to-four case and reconstructs a whole colouring."
+  ],
+  "scope": {
+    "geometric_path_endpoints": [
+      4,
+      7
+    ],
+    "actual_consumer_endpoint": 4,
+    "second_component_size_bound": null,
+    "exterior_size_bound": null,
+    "path_length_bound": null
+  },
+  "residual_obligations": [
+    "Supply of an old path avoiding the first component, or a valid repair when both path alternatives are blocked.",
+    "Other port-six boundary forms, port five and missing-colour failure.",
+    "Occurrence supply, strict reduction, compact coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripSixBarrier kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_six_barrier.py"
+  ],
+  "evidence_record": "strip-six-barrier-audit.json"
+}

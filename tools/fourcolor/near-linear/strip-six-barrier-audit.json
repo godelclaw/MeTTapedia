@@ -1,0 +1,95 @@
+{
+  "classification": "PRESERVED_PATH_SUPPLIES_TWO_STAGE_RECONSTRUCTION",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; classical semantics from Gonthier/Emery.",
+  "geometry_vertices": 32,
+  "first_component": [
+    8,
+    16,
+    20
+  ],
+  "preserved_path": [
+    2,
+    15,
+    22,
+    4
+  ],
+  "second_component": [
+    3
+  ],
+  "core_formula_cases": [
+    {
+      "pair_moves": false,
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        2,
+        3,
+        1,
+        2,
+        0,
+        3,
+        1
+      ],
+      "core": [
+        3,
+        1,
+        3,
+        0,
+        2,
+        2,
+        0,
+        3
+      ]
+    },
+    {
+      "pair_moves": true,
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        2,
+        1,
+        3,
+        2,
+        0,
+        3,
+        1
+      ],
+      "core": [
+        1,
+        2,
+        3,
+        0,
+        1,
+        2,
+        0,
+        3
+      ]
+    }
+  ],
+  "scope": [
+    "The Lean separation theorem handles paths ending at port four or seven.",
+    "The actual spherical consumer uses the path to port four.",
+    "Path and component sizes are unrestricted in the general theorems.",
+    "Both shared core choices are independently checked; the sphere consumes the first."
+  ],
+  "limits": [
+    "The old path must avoid the first switching component.",
+    "No universal path supply, strict reduction or compact coverage is claimed.",
+    "No new catalogue entry or original configuration certificate is removed."
+  ],
+  "shared_fixture": "strip-six-release-example.json",
+  "shared_fixture_sha256": "bae58f577436317bde662915b63d634d70b99b475eca03fa72eeb2b322ed54ab",
+  "lean_sources": {
+    "StripSixBarrierGeometry.lean": "45288f1dc3672ff9289ca3eee0b06238b4ce09c4f57a454b2dbbbd3845065ab6",
+    "StripSixBarrierRepair.lean": "0ac622f9e50c82ec5aa5b7743f2a63029e6491ef3c3b6c8d01dd2361e3a053d6",
+    "StripSixBarrierExample.lean": "3d5a523dc2577bcbf66f4b58c61aedfe394b989384e8397026c3d4df99362ad9",
+    "StripSixBarrierAudit.lean": "e813d337a7d1a5dbd2bc04f2b7e82a0ff2a58c580f38bbe3a0fbdb2d4739b304"
+  },
+  "verifier_sha256": "0c3db382bf15ede6c8571317230397d0d3ffb94360fcce00663ea912ede69418"
+}

@@ -6183,5 +6183,32 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_barrier_experiment": {
+    "classification": "CHECKED_PRESERVED_PATH_SUPPLIES_TWO_STAGE_RECONSTRUCTION",
+    "report": "../near-linear/strip-six-barrier-measurements.json",
+    "geometric_law": "Either of two actual exterior paths, closed through the source core, protects the same three boundary ports.",
+    "repair_law": "Preserving an old path through the first switch derives the second component footprint; a shared core formula retains the joint choice at five and six.",
+    "actual_consumer": "The existing 32-vertex sphere and initial colouring use the path to port four; whole reconstruction follows without a prechecked second component.",
+    "new_boundary_repair_table_bytes": 0,
+    "new_spherical_fixture_bytes": 0,
+    "new_lean_source_bytes": 29683,
+    "audit": {
+      "roots": 10,
+      "transitive_dependency_declarations": 20635,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "remaining": [
+      "Supply of an old path avoiding the first component, or a valid repair when both path alternatives are blocked.",
+      "Other port-six boundary forms, port five and missing-colour failure.",
+      "Occurrence supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

@@ -1442,3 +1442,16 @@ target kernelStripSixRelease pkg : Unit := do
         "StripSixReleaseExample", "StripSixReleaseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the preserved-path repair of the port-six branch. -/
+target kernelStripSixBarrier pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-barrier",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripSixBarrierGeometry", "StripSixBarrierRepair", "StripSixBarrierExample", "StripSixBarrierAudit"]
+      cwd := pkg.dir
+      env := env }

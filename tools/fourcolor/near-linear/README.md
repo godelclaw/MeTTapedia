@@ -1,5 +1,44 @@
 # Near-linear Four Colour catalogue bridges
 
+## A preserved exterior path protects a subsequent repair
+
+[`StripSixBarrierGeometry`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixBarrierGeometry.lean)
+proves two separation laws on an actual spherical embedding of D0099. An
+exterior path from port two to port four or seven closes through the core.
+Two facial triangles along core edge 16--13 put port three on the opposite
+face-potential side from ports one, nine and ten. The exterior path can be
+arbitrarily long and need not be simple.
+
+[`StripSixBarrierRepair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixBarrierRepair.lean)
+uses an old zero/two path that avoids the zero/one component at port eight.
+Switching that component preserves the path. Geometry then protects the
+three outer ports from the one/three component at port three. Ports five
+and six belong to that second component together or neither does; a shared
+core formula handles both choices. The original component containing ports
+one and six, but excluding eight, supplies the first switch's exact boundary
+footprint. Neither switching component has a size bound.
+
+`StripSixBarrierExample` reuses the existing 32-vertex sphere and initial
+colouring. Its old path is 2--15--22--4, and its first component is
+{8,16,20}. The proof derives the second component's protected ports and
+reconstructs a whole colouring. It does not use the earlier singleton
+neighbour conditions, second-component certificate or completed colouring.
+The two starting-state components and old path are finite inputs to the
+general theorem.
+
+Replay `lake build kernelStripSixBarrier`. The [independent verifier](audit_strip_six_barrier.py)
+checks source incidences, facial orientation, path preservation, both core
+formula choices and the actual reconstruction. The
+[receipt](strip-six-barrier-measurements.json) records the dependency audit
+and replay cost. The actual consumer uses the path to port four; the
+general theorem also permits the path to port seven.
+
+The unresolved supply question is whether the required path can be found,
+or a first component blocking both path alternatives supplies another
+valid repair. Occurrence supply, strict reduction, compact coverage and
+termination remain open. No new repair table, catalogue removal or original
+certificate removal is credited.
+
 ## Neighbour conditions repair a failed two-switch continuation
 
 [`NeighborRelease`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/NeighborRelease.lean)
