@@ -1,0 +1,140 @@
+{
+  "classification": "KERNEL_CHECKED_UNIFORM_FAN_TRANSPORT_WITH_TWO_SOURCE_REPAIRS",
+  "statement": "A two-triangle boundary fan preserves the complete joint graph-trace relation and transports successful Kempe repairs against the same closed exterior predicate.",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeBoundaryFan",
+        "source_sha256": "8ce81c84e3674ec37af10760142c92ae452d9d2f6e20ac5ca7045fdf46561cac",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.13,
+        "olean_bytes": 346048,
+        "olean_sha256": "27f2ff1ea6cffec297f71e00dc3376e55f523fd733bfaaf78da251a90c5dcecb"
+      },
+      {
+        "module": "MettapediaFourColor.BoundaryFanRepair",
+        "source_sha256": "402795726e3aede076a42a4083cc4652c26e395a520842ba60b080d5c482e1dc",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.252,
+        "olean_bytes": 243928,
+        "olean_sha256": "1235c00baa6961ca8bff85c35848cad814a5ad8b8a973cfb816aad3bddb4748a"
+      },
+      {
+        "module": "MettapediaFourColor.StripParentFan",
+        "source_sha256": "e01690fa4d5a587a984ff1985493d92ec68e8385e51b1293ba897d045d9c361a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.556,
+        "olean_bytes": 262760,
+        "olean_sha256": "e8d5adab725c455fb8d0175bc01baf58863ee8af6b0137f0427118be2c979978"
+      },
+      {
+        "module": "MettapediaFourColor.StripParentFanExample",
+        "source_sha256": "a89785b198fc7342be387c52ac48d0a718ce449304f5da0e209f38c289443acd",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.083,
+        "olean_bytes": 143808,
+        "olean_sha256": "08c99b94f6f8e32165da5ae64e5944ab43aa9c5fa33a00406c8d39561e8d2ba7"
+      },
+      {
+        "module": "MettapediaFourColor.BoundaryFanAudit",
+        "source_sha256": "1cfcfb623201e7665cae3e00232df4f0dc91fe374ca57200e314b066c82cbef6",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.036,
+        "olean_bytes": 2600,
+        "olean_sha256": "2e25c44eeb629b1f528f02c4c5222d133bc98003145733acc7b30ace6764781c"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeBoundaryFan.lean",
+      "bytes": 6473,
+      "sha256": "8ce81c84e3674ec37af10760142c92ae452d9d2f6e20ac5ca7045fdf46561cac"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/BoundaryFanRepair.lean",
+      "bytes": 4556,
+      "sha256": "402795726e3aede076a42a4083cc4652c26e395a520842ba60b080d5c482e1dc"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripParentFan.lean",
+      "bytes": 4046,
+      "sha256": "e01690fa4d5a587a984ff1985493d92ec68e8385e51b1293ba897d045d9c361a"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripParentFanExample.lean",
+      "bytes": 3038,
+      "sha256": "a89785b198fc7342be387c52ac48d0a718ce449304f5da0e209f38c289443acd"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/BoundaryFanAudit.lean",
+      "bytes": 2622,
+      "sha256": "1cfcfb623201e7665cae3e00232df4f0dc91fe374ca57200e314b066c82cbef6"
+    }
+  ],
+  "audit": {
+    "roots": 17,
+    "dependency_declarations": 4191,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "coversRec_used": false,
+    "required_dependencies": [
+      "Boundary split and merge closure",
+      "Exact graph-trace reconstruction",
+      "Whole D0099 graph and ordered boundary",
+      "Uniform chord exchange",
+      "Actual parent colouring witnesses"
+    ]
+  },
+  "replay_frontend_seconds_including_imports": 17.057,
+  "source_consumers": {
+    "source": "D0099",
+    "parent_graphs": 2,
+    "parent_vertices_each": 18,
+    "source_vertices": 19,
+    "specified_successful_inputs": 2,
+    "full_parent_colour_witnesses": 4,
+    "flat_colour_bytes": 72,
+    "new_matching_table_entries": 0,
+    "parent_universal_repair_assumed": false,
+    "scope": "Each specified source input repairs against every Kempe-closed exterior. The generic transfer accepts a supplied successful parent repair."
+  },
+  "independent_program": "strip-parent-fan-audit.json",
+  "program_only_results": {
+    "parent_abstract_survivors": [
+      1053,
+      3824
+    ],
+    "direct_plus_parent_transport": 6777,
+    "combined_closure_stages": [
+      6777,
+      7305,
+      7381
+    ],
+    "initial_example_nonextension_checked": true
+  },
+  "scope_limits": [
+    "No complete Lean repair for either parent or D0099.",
+    "No ambient embedding, occurrence-supply or strict-reduction theorem for this source consumer.",
+    "Abstract survivors are not counterexamples from actual planar exteriors.",
+    "No certificate or whole-proof runtime savings established by the closure census."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "whole_proof_runtime_savings_claimed": false
+}

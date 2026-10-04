@@ -1,0 +1,143 @@
+{
+  "evidence": "Lean fan law and two small repair consumers; full closure census is independent program evidence.",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue, 2026, MIT licence; Gonthier/Emery chromogram semantics.",
+  "parents": [
+    {
+      "source_labels_in_parent_order": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        12,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "core_degrees": [
+        5,
+        7,
+        6,
+        5,
+        6,
+        6,
+        5
+      ],
+      "stages": [
+        1299,
+        2132,
+        2649,
+        3151,
+        3698,
+        4295,
+        4837,
+        5417,
+        5862,
+        6220,
+        6320,
+        6328
+      ],
+      "abstract_survivors": 1053
+    },
+    {
+      "source_labels_in_parent_order": [
+        19,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "core_degrees": [
+        5,
+        5,
+        7,
+        6,
+        5,
+        6,
+        6
+      ],
+      "stages": [
+        1302,
+        2095,
+        2654,
+        2981,
+        3147,
+        3316,
+        3439,
+        3528,
+        3553,
+        3557
+      ],
+      "abstract_survivors": 3824
+    }
+  ],
+  "canonical_traces": 7381,
+  "direct_source_traces": 1587,
+  "transported_parent_traces": [
+    6571,
+    4074
+  ],
+  "combined_stages": [
+    6777,
+    7305,
+    7381
+  ],
+  "checked_examples": [
+    {
+      "side": "false",
+      "parent_word": "12312111121",
+      "source_word": "21312111121",
+      "active_ports": 4,
+      "parent_colour_witnesses": 2,
+      "flat_colour_bytes": 36,
+      "parent_input_nonextending": true,
+      "source_input_nonextending": true,
+      "all_chord_answers_reconstruct": true
+    },
+    {
+      "side": "true",
+      "parent_word": "31112112112",
+      "source_word": "13112112112",
+      "active_ports": 4,
+      "parent_colour_witnesses": 2,
+      "flat_colour_bytes": 36,
+      "parent_input_nonextending": true,
+      "source_input_nonextending": true,
+      "all_chord_answers_reconstruct": true
+    }
+  ],
+  "limits": [
+    "Abstract parent survivors do not exhibit unrepairable physical exteriors.",
+    "Complete parent closures and the 7381-trace source cover are not Lean certified.",
+    "No net certificate or runtime compression follows from the census.",
+    "No new occurrence supply, strict ambient reduction, or coverage theorem."
+  ],
+  "catalogue_entries_removed": 0,
+  "certificate_dependencies_removed": 0,
+  "verifier_sha256": "f817569a6ef9a7b383e98836ba82285df329b78db78bb3deb98451635ecc846a"
+}

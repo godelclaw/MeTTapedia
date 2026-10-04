@@ -1,5 +1,47 @@
 # Near-linear Four Colour catalogue bridges
 
+## A uniform fan law transfers repairs through two exact parents
+
+[`KempeBoundaryFan`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeBoundaryFan.lean)
+proves a repair transport law for a two-triangle boundary fan. Replace the
+middle vertex of a boundary path by a new vertex adjacent to all three old
+path vertices; the old middle vertex becomes internal. The two old edge
+colours and the two new ones have the same sum, and corresponding edges
+have different colours. This complete joint relation is exactly the
+composition of the existing split, rotation and merge relations.
+
+The transport preserves arbitrary Kempe-closed exterior predicates.
+[`BoundaryFanRepair.trace_exact`](../../../lean/fourcolor-classical/MettapediaFourColor/BoundaryFanRepair.lean)
+proves both directions on actual graph colourings. A successful parent
+repair therefore reconstructs the grown graph against the same exterior.
+The law has no boundary-length bound and adds no matching table.
+
+[`StripParentFan`](../../../lean/fourcolor-classical/MettapediaFourColor/StripParentFan.lean)
+checks the complete graph and ordered boundary of D0099 at both ends.
+Each gives a different eighteen-vertex parent. Neither parent is identified
+with D0092 merely because their internal graph shapes agree.
+[`StripParentFanExample.source_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripParentFanExample.lean)
+supplies one successful input through each parent. Each uses the uniform
+chord-exchange theorem and two full parent colourings; the four witnesses
+occupy 72 flat bytes. Replay with `lake build kernelBoundaryFan`.
+The [kernel receipt](strip-parent-fan-measurements.json) records the audit
+and module costs.
+
+The independent [program replay](audit_strip_parent_fan.py) compares DFS
+extension with exact ear elimination for every canonical boundary word.
+Its [receipt](strip-parent-fan-audit.json) reports 1,053 and 3,824 surviving
+abstract inputs in the two parent repair games. Direct source extension
+and transport from both winning parent sets cover 6,777 of 7,381 source
+classes; two further repair rounds give 7,305 and then 7,381. These closure
+counts are program evidence, not a Lean proof of full source reducibility
+or a demonstration of certificate compression. Abstract survivors do not
+exhibit unrepairable physical exteriors.
+
+The kernel results certify the general transport and two concrete repairs.
+A compact strategy covering every source input remains open, as do ambient
+embedding, occurrence supply and strict reduction for this new consumer.
+No catalogue entry or original configuration certificate is removed.
+
 ## A fixed boundary replacement can fail before coverage is considered
 
 [`BoundaryReplacementObstruction.obstruction`](../../../lean/fourcolor-classical/MettapediaFourColor/BoundaryReplacementObstruction.lean)

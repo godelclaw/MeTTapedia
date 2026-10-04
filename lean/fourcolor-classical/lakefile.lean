@@ -1052,3 +1052,18 @@ target kernelBoundaryReplacement pkg : Unit := do
         "BoundaryReplacementObstruction", "BoundaryReplacementObstructionAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the composed two-triangle fan repair law. -/
+target kernelBoundaryFan pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/boundary-fan",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeBoundaryFan", "BoundaryFanRepair", "StripParentFan", "StripParentFanExample",
+        "BoundaryFanAudit"]
+      cwd := pkg.dir
+      env := env }
