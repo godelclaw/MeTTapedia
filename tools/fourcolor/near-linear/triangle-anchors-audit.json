@@ -1,0 +1,107 @@
+{
+  "evidence": "Lean general forest/history theorems and three decoded consumers; independent program certificates for the remaining inventory.",
+  "catalogue": {
+    "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "license": "MIT; see LICENSE",
+    "files": 8200,
+    "content_sha256": "8f2eaced288c31500b866a664469469e467072647c4a857fa5ea3806fecca22c"
+  },
+  "constructions_checked": 666,
+  "selected_colour_class_sizes": {
+    "1": 16,
+    "2": 318,
+    "3": 324,
+    "4": 8
+  },
+  "source_consumers": {
+    "D0092.conf": {
+      "rank": [
+        6,
+        2,
+        0,
+        1,
+        3,
+        5,
+        4
+      ],
+      "colour": [
+        0,
+        2,
+        0,
+        1,
+        1,
+        1,
+        2
+      ],
+      "anchor_colour": 0,
+      "anchors": [
+        12,
+        14
+      ],
+      "core_vertices": 7
+    },
+    "D0063.conf": {
+      "rank": [
+        6,
+        1,
+        0,
+        5,
+        3,
+        2,
+        4
+      ],
+      "colour": [
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        2
+      ],
+      "anchor_colour": 1,
+      "anchors": [
+        12,
+        14
+      ],
+      "core_vertices": 7
+    },
+    "D0099.conf": {
+      "rank": [
+        7,
+        6,
+        4,
+        5,
+        3,
+        1,
+        2,
+        0
+      ],
+      "colour": [
+        0,
+        1,
+        0,
+        2,
+        2,
+        2,
+        1,
+        0
+      ],
+      "anchor_colour": 1,
+      "anchors": [
+        13,
+        18
+      ],
+      "core_vertices": 8
+    }
+  },
+  "negative_control": "Deleting any single core vertex leaves a cycle in each source.",
+  "unbounded_result": "For the consecutive-triangle graph on 3*k vertices, every cycle-breaking set has at least k vertices (Lean).",
+  "new_reducibility_claimed": false,
+  "universal_coverage_claimed": false,
+  "constant_anchor_bound_claimed": false,
+  "catalogue_entries_removed": 0,
+  "certificate_dependencies_removed": 0,
+  "verifier_sha256": "7cc370b2b01336325f05d81d0bb744bc55a1460bb6fcb66acf4369158e642526"
+}

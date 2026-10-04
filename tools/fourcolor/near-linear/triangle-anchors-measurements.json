@@ -1,0 +1,105 @@
+{
+  "classification": "KERNEL_CHECKED_REPAIR_CONTRACT_AND_SCOPED_ANCHOR_LOWER_BOUND",
+  "positive": {
+    "structural_hypotheses": "An injective rank with clique later neighbours and a proper structural three-colouring.",
+    "conclusion": "Removing a structural colour class leaves a forest. Retaining its physical colours makes the joint guarded interface exact for fixed-exterior physical Kempe histories.",
+    "exact_decoded_sources": [
+      "D0092",
+      "D0063",
+      "D0099"
+    ],
+    "source_anchors_each": 2,
+    "ambient_scope": "Every finite ambient graph with the specified exact induced core occurrence, arbitrary physical palette and supplied full-colouring endpoints.",
+    "no_boundary_enumeration_in_contract": true,
+    "successful_guarded_moves_supplied": false
+  },
+  "obstruction": {
+    "theorem": "SimpleGraph.KempeTriangleStripWidth.anchors_required",
+    "statement": "For every k and every K in the consecutive-triangle graph on 3*k vertices, if deletion of K leaves a forest then k <= Nat.card K.",
+    "excluded": "A constant number of cycle-breaking anchors for all lengths of this family.",
+    "not_excluded": [
+      "Symbolic factored boundary relations",
+      "Other compositional repair mechanisms",
+      "Short proofs",
+      "The full compositional programme"
+    ]
+  },
+  "source_kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.TriangleStripAnchors",
+        "source_sha256": "11ca574bec11cebc9a6e1054f903f3d4f76aa2976727130b33ed08f17f681f69",
+        "exit_code": 0,
+        "frontend_wall_seconds": 12.482,
+        "olean_bytes": 336616,
+        "olean_sha256": "130a90168e3fcd111461d00546f412540f11ce2421a0673e4ec96fd5fba6727d"
+      },
+      {
+        "module": "MettapediaFourColor.TriangleStripAnchorsAudit",
+        "source_sha256": "e8ee10e31ce1c124890f6c5b68dd2fde22b6fc1f0a1041aac1edfb99c3c4f308",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.832,
+        "olean_bytes": 2600,
+        "olean_sha256": "79f97252b835856cba85af7d6945ad6ee3dc62f1e1e366e9b8e0d37d60eda769"
+      }
+    ]
+  },
+  "generic_modules": [
+    {
+      "file": "lean/mettapedia/Mettapedia/GraphTheory/Kempe/TriangleAnchors.lean",
+      "source_bytes": 7194,
+      "source_sha256": "660749faef31bac6164b3ff9f69e500983c9de5fff8d3385c794bd2c3c6f7b9a"
+    },
+    {
+      "file": "lean/mettapedia/Mettapedia/GraphTheory/Kempe/TriangleStripWidth.lean",
+      "source_bytes": 4322,
+      "source_sha256": "f711a3b5c9bd725aaba28e16172cdf4f8523d5d3d17e2bf0dfea6ad7801ce004"
+    },
+    {
+      "file": "lean/mettapedia/Mettapedia/GraphTheory/FourColor/TriangleAnchorsAudit.lean",
+      "source_bytes": 1809,
+      "source_sha256": "f35a4c2ced3057142c4a0a420f22de4b2d3645fa0516e86c2505ebe0344b9625"
+    }
+  ],
+  "audit": {
+    "generic_roots": 8,
+    "generic_dependency_declarations": 8375,
+    "source_roots": 8,
+    "source_dependency_declarations": 6774,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false
+  },
+  "independent_inventory": "triangle-anchors-audit.json",
+  "gates": [
+    "kernelTriangleStripAnchors",
+    "kernelComplete",
+    "FourColorLane",
+    "Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "new_repair_table_bytes": 0,
+  "new_configuration_certificates_removed": 0,
+  "new_coverage_entries_removed": 0,
+  "new_member_checks_removed": 0,
+  "whole_proof_runtime_savings_claimed": false,
+  "remaining": [
+    "Successful compatible guarded changes",
+    "Colouring extension for reduction inputs",
+    "Strict reduction",
+    "Geometric occurrence supply and complete coverage"
+  ]
+}

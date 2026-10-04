@@ -1024,3 +1024,17 @@ target kernelComplete pkg : Unit := do
         "--library-output", ".lake/build/lib/lean"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the structural anchor contract for three exact source strips. -/
+target kernelTriangleStripAnchors pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/triangle-strip-anchors",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "TriangleStripAnchors", "TriangleStripAnchorsAudit"]
+      cwd := pkg.dir
+      env := env }

@@ -1,5 +1,50 @@
 # Near-linear Four Colour catalogue bridges
 
+## Structural anchors preserve repairs, but their number can grow
+
+The general Lean law
+[`TriangleAnchors`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/TriangleAnchors.lean)
+uses an injective elimination rank whose later neighbours form a clique
+and a proper structural three-colouring. Deleting one structural colour
+class leaves a forest. The structural colours are separate from the
+physical colours being repaired. Retaining the physical colours on that
+class makes the existing joint forest guard exact for complete Kempe
+histories, with the whole exterior fixed.
+
+[`TriangleStripAnchors`](../../../lean/fourcolor-classical/MettapediaFourColor/TriangleStripAnchors.lean)
+checks this contract on the complete decoded internal graphs of D0092,
+D0063 and D0099. Each uses two anchors: source labels 12 and 14 for D0092
+and D0063, and 13 and 18 for D0099. One theorem applies to every exact
+induced occurrence in an arbitrary finite ambient graph. Extra core edges
+cannot be discarded by the occurrence hypothesis. The theorem preserves
+and reconstructs physical histories; it does not assert that a useful
+guarded move or a smaller-map reduction exists.
+
+The same method has a precise limitation.
+[`TriangleStripWidth.anchors_required`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/TriangleStripWidth.lean)
+proves that for the graph on indices `0..3*k-1` joining indices at distance
+one or two, every cycle-breaking set has at least `k` vertices. Each of
+the disjoint triples `(3*i, 3*i+1, 3*i+2)` is a triangle and must meet the
+set. A reverse-index elimination rank and colouring modulo three also
+certify the positive forest construction at every length. Thus there is
+no constant anchor bound for this method on all triangle strips. This
+does not bound the size of symbolic relation expressions or proofs and
+does not refute other compositional repair methods.
+
+The independent [inventory replay](audit_triangle_anchors.py) checks the
+rank, colouring and acyclicity certificates for all 666 previously
+recognized source constructions. Their smallest structural colour-class
+sizes are 1 (16 sources), 2 (318), 3 (324) and 4 (8). These counts concern
+this construction, not minimum feedback sets or certified reducibility.
+Deleting any one vertex still leaves a cycle in each of the three Lean
+consumers, providing a negative control for the two-anchor claim.
+See the [program receipt](triangle-anchors-audit.json) and
+[kernel measurements](triangle-anchors-measurements.json).
+
+No coverage entry or original reducibility certificate is removed.
+Remaining obligations are successful guarded repair choices, strict
+reduction, and geometric supply for the closing-flat-triangle branch.
+
 ## A closing triangle needs more than the five-triangle family
 
 The [replay](audit_closing_triangle_strips.py) checks a 162-vertex spherical
