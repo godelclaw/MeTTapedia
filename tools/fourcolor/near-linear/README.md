@@ -1,5 +1,68 @@
 # Near-linear Four Colour catalogue bridges
 
+## Coordinated repairs retain one exterior matching
+
+[`recover_stable`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean)
+now retains the decoded matching after accepted colour changes. Its chords
+can be switched again while preserving the original chromogram. This
+reuses the classical freedom to switch unions of components, using
+Gonthier/Emery's general chord and flip theorems.
+
+[`two_anchor_coclosure`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeRetainedMatching.lean)
+works at arbitrary boundary width. It either chooses a successful single
+chord or switches the components through two specified anchors. Interval
+exclusion proves that the remaining partner choices admit a continuation.
+Both switches keep the original matching; continuations retain the same
+Kempe-closed exterior predicate and may themselves be composed repairs.
+
+[`StripCoupledRepair.source_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripCoupledRepair.lean)
+uses this law for the nonextending D0099 inputs `11111112223` and
+`11111112322`. Their respective anchors are (0,1) and (0,2), after fixing
+edge colour 3. If no single chord extends, only three partner pairs in the
+first input and one in the second need a joint repair. Symbolic terminal
+relations supply common colours for the three holes from the theorem
+below; the exact restoration contract reconstructs the complete source.
+
+```
+one original exterior matching
+              |
+     +--------+---------+
+     |                  |
+single chord       two anchor components
+     |             using that SAME matching
+     +--------+---------+
+              |
+       joint restoration
+              |
+     complete source colouring
+```
+
+Replay with `lake build kernelRetainedMatching`. The
+[kernel receipt](retained-matching-measurements.json) records fourteen audit
+roots, standard axioms only, and about 18 seconds for four modules including
+imports. The source retains twelve single-pair contracts, four double-partner
+contracts and finite interval checks over partner choices. No full matching
+layout or source-colouring table is stored in the Lean proof.
+
+The [independent program](audit_retained_matching.py) checks all 42 matching
+layouts for each input. Single chords suffice on 35 and 41 layouts;
+the remaining 7 and 1 require the paired branch. On those layouts every
+single chord fails, while the two selected components succeed together.
+This explains why discarding the first matching between moves can lose a
+successful repair.
+
+The same program tests a limitation: input `12311221133` has two holes,
+and each colour pair admits an adverse matching for which **every subset**
+of component switches still requires at least two holes. All 40 subsets
+are checked against the full source. This refutes universal strict decrease
+by a single retained-matching batch in that abstract model; it does not
+construct one physical exterior realizing all three adverse responses.
+
+Full source repair, cross-colour continuation, geometric supply and strict
+ambient reduction remain open. The endpoint preserves an exterior
+predicate; no explicit ambient recolouring history or runtime bound is
+extracted. No catalogue entry or original certificate is removed.
+
 ## Three holes suffice, can be necessary, and leave connected Kempe fibres
 
 [`StripPartialColouring.sharp_three_holes`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPartialColouring.lean)
@@ -96,7 +159,7 @@ colourings, interval search and the complete Four Colour theorem.
 
 Replay with `lake build kernelChromogramMatching`. The
 [kernel receipt](chromogram-matching-measurements.json) records twelve
-audit roots, standard axioms only, and about 31 seconds for five modules
+audit roots, standard axioms only, and about 30 seconds for five modules
 including imports. The [independent program](audit_critical_majority.py)
 checks the five repairs and finds that, together with the 1,587 direct
 inputs, their anchor closure reaches all 7,381 canonical inputs in 53

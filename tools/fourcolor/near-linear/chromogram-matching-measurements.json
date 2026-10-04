@@ -14,25 +14,25 @@
     "modules": [
       {
         "module": "MettapediaFourColor.KempeChromogramMatching",
-        "source_sha256": "adb881e696bd21c215cb902fded60de5ea4fffaa50e276fb708481dc0dd0d07d",
+        "source_sha256": "c3a0dd9a993ba82c25c512cea91bbe6ef5dd66eced368e0a504a973874c0f642",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.559,
-        "olean_bytes": 556048,
-        "olean_sha256": "18d1fe16f8fca035b5b9c2443eb1a10120c1bf7eb74ac84b98df7d4a9be28519"
+        "frontend_wall_seconds": 3.253,
+        "olean_bytes": 571528,
+        "olean_sha256": "f70c45025d972b0189416409d3243b022a5d01f858e25c8dfd980c580d2ab9de"
       },
       {
         "module": "MettapediaFourColor.StripSymbolicRepair",
         "source_sha256": "f47292293a753b97257c26647244ff57df60b4fa0bd853dd48e5711e581a6853",
         "exit_code": 0,
-        "frontend_wall_seconds": 6.168,
-        "olean_bytes": 433632,
-        "olean_sha256": "2764ef0fccd1a4082e5e8f279f7416ecc3d5087c1f85ed8939f812f9e66b68c3"
+        "frontend_wall_seconds": 6.385,
+        "olean_bytes": 433616,
+        "olean_sha256": "63d8f9541578c07c83db95b06e3d56b8797f065c053540ee341a504f03febfd7"
       },
       {
         "module": "MettapediaFourColor.SymbolicStripAudit",
         "source_sha256": "0a158f4798543e5ff3130b2c24d18d9f848bf212298beb318310aadaef3d0d6c",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.728,
+        "frontend_wall_seconds": 5.067,
         "olean_bytes": 2600,
         "olean_sha256": "87282c9ccf21d013691e45672f0542ee1c41071a6a63190abee053ed10757cd9"
       },
@@ -40,7 +40,7 @@
         "module": "MettapediaFourColor.StripCriticalRepair",
         "source_sha256": "e918d79f3c9ea711b52fd2785ec768e10d16e192f4b322e28f0911b6b2e932de",
         "exit_code": 0,
-        "frontend_wall_seconds": 12.181,
+        "frontend_wall_seconds": 11.766,
         "olean_bytes": 356824,
         "olean_sha256": "57fcb9af0a0b96ad029e5ecd0883b1ae13fbf5d71a15be6c2eb29de0cbb9a609"
       },
@@ -48,7 +48,7 @@
         "module": "MettapediaFourColor.ChromogramMatchingAudit",
         "source_sha256": "d5317dd41ca77034a95df32b22fc06821d3a208c1ef24397aceca62845629597",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.345,
+        "frontend_wall_seconds": 4.018,
         "olean_bytes": 2600,
         "olean_sha256": "f1baf20b16530608b8ad405ad2ec0a92ff3d9c5c9ca541fdb5e62165f4034445"
       }
@@ -57,8 +57,8 @@
   "source_files": [
     {
       "file": "lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean",
-      "bytes": 8582,
-      "sha256": "adb881e696bd21c215cb902fded60de5ea4fffaa50e276fb708481dc0dd0d07d"
+      "bytes": 9206,
+      "sha256": "c3a0dd9a993ba82c25c512cea91bbe6ef5dd66eced368e0a504a973874c0f642"
     },
     {
       "file": "lean/fourcolor-classical/MettapediaFourColor/StripSymbolicRepair.lean",
@@ -81,7 +81,7 @@
       "sha256": "d5317dd41ca77034a95df32b22fc06821d3a208c1ef24397aceca62845629597"
     }
   ],
-  "frontend_seconds_including_imports": 30.981,
+  "frontend_seconds_including_imports": 30.489,
   "attribution": {
     "general_chord_scan": "Gonthier/Emery, FourColor.Bulk.Chords; general scan and flip theorems, no bulk reducibility data",
     "source": "Yuta Inoue D0099, MIT",
@@ -89,7 +89,7 @@
   },
   "audit": {
     "roots": 12,
-    "dependency_declarations": 6327,
+    "dependency_declarations": 6328,
     "allowed_axioms": [
       "propext",
       "Classical.choice",

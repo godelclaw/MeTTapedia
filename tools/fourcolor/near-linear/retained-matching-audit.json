@@ -1,0 +1,242 @@
+{
+  "evidence": "Stable exterior recovery, general two-anchor law and both consumers are Lean proved; explicit matching census is an independent program check.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue D0099, MIT; Gonthier/Emery chord scan and chromogram semantics.",
+  "consumers": [
+    {
+      "input": "11111112223",
+      "anchors": [
+        0,
+        1
+      ],
+      "active_ports": 10,
+      "matchings_program_checked": 42,
+      "single_branch_matchings": 35,
+      "double_branch_matchings": 7,
+      "single_pairs": [
+        [
+          0,
+          7
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          9
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "double_partner_pairs": [
+        [
+          3,
+          2
+        ],
+        [
+          9,
+          2
+        ],
+        [
+          9,
+          8
+        ]
+      ],
+      "genuine_joint_example": {
+        "matching": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            5,
+            8
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "selected_chords": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "each_single_chord_fails": true,
+        "joint_result_extends": true
+      }
+    },
+    {
+      "input": "11111112322",
+      "anchors": [
+        0,
+        2
+      ],
+      "active_ports": 10,
+      "matchings_program_checked": 42,
+      "single_branch_matchings": 41,
+      "double_branch_matchings": 1,
+      "single_pairs": [
+        [
+          0,
+          3
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "double_partner_pairs": [
+        [
+          7,
+          5
+        ]
+      ],
+      "genuine_joint_example": {
+        "matching": [
+          [
+            0,
+            7
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            9,
+            10
+          ]
+        ],
+        "selected_chords": [
+          [
+            0,
+            7
+          ],
+          [
+            2,
+            5
+          ]
+        ],
+        "each_single_chord_fails": true,
+        "joint_result_extends": true
+      }
+    }
+  ],
+  "failed_strict_batch_descent": {
+    "input": "12311221133",
+    "initial_minimum_holes": 2,
+    "adverse_matchings_by_fixed_colour": [
+      [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          9
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      [
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          10
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      [
+        [
+          0,
+          1
+        ],
+        [
+          3,
+          8
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          6,
+          7
+        ]
+      ]
+    ],
+    "all_component_subsets_checked": 40,
+    "each_result_requires_at_least_two_holes": true,
+    "scope": "Program evidence in the abstract matching game. No common physical exterior realizing the three adverse matchings is supplied."
+  },
+  "kernel_matching_layout_checks": 0,
+  "new_stored_source_colouring_bytes": 0,
+  "limits": [
+    "Two source inputs, not full D0099 reducibility.",
+    "Matching retention uses one colour pair; it does not establish compatibility between arbitrary different colour-pair matchings.",
+    "The Lean endpoint supplies a source colouring and the same Kempe-closed exterior predicate. No explicit ambient recolouring history or runtime bound is extracted.",
+    "No geometric supply, strict ambient reduction or catalogue deletion is established."
+  ],
+  "verifier_sha256": "dd7f4959bd315dd791b8c0e6249388a39bfad3272861ed50b7558e683172bb49"
+}

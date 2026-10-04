@@ -151,13 +151,14 @@ theorem pair_switch {c : Fin n → Color} {w : Chromogram}
   have flipped := matchg_flip mask w (List.ofFn c) 0 [] [] hm (hf mask bits)
   simpa only [List.zipWith_nil_left, mask, flip_two_eq_switch] using flipped
 
-/-- Recover a single matching for the supplied exterior, at every boundary
-width. Every selected chord retains that very same exterior description. -/
-theorem recover (c : Fin n → Color) (w : Chromogram)
+/-- The same decoded matching can be reused after any accepted change of
+colours. Every further selected chord preserves the original chromogram. -/
+theorem recover_stable (c : Fin n → Color) (w : Chromogram)
     (hm : matchg [] (List.ofFn c) w) :
     ∃ m : Fin n → Fin n, Function.Involutive m ∧ Noncrossing m ∧
       (∀ i, m i = i ↔ c i = c1) ∧
-      ∀ i, c i ≠ c1 → matchg [] (List.ofFn (KempeIntervalRepair.switch c i (m i))) w := by
+      ∀ d : Fin n → Color, matchg [] (List.ofFn d) w →
+        ∀ i, c i ≠ c1 → matchg [] (List.ofFn (KempeIntervalRepair.switch d i (m i))) w := by
   classical
   obtain ⟨cs, hc⟩ := chords_isSome_of_matchg hm
   have hlen : w.length = n := by simpa using matchg_length (List.ofFn c) [] w hm
@@ -170,8 +171,18 @@ theorem recover (c : Fin n → Color) (w : Chromogram)
     mate_noncrossing (chords_nonCrossing hc), ?_, ?_⟩
   · intro i
     rw [mate_fixed (fun ab hab => (hb ab hab).1), exists_iff, not_not]
-  · intro i hi
-    exact pair_switch hm hc (mate_pair ((exists_iff i).mpr hi))
+  · intro d hd i hi
+    exact pair_switch hd hc (mate_pair ((exists_iff i).mpr hi))
+
+/-- Recover a single matching for the supplied exterior, at every boundary
+width. Every selected chord retains that very same exterior description. -/
+theorem recover (c : Fin n → Color) (w : Chromogram)
+    (hm : matchg [] (List.ofFn c) w) :
+    ∃ m : Fin n → Fin n, Function.Involutive m ∧ Noncrossing m ∧
+      (∀ i, m i = i ↔ c i = c1) ∧
+      ∀ i, c i ≠ c1 → matchg [] (List.ofFn (KempeIntervalRepair.switch c i (m i))) w := by
+  obtain ⟨m, hi, hn, hf, hs⟩ := recover_stable c w hm
+  exact ⟨m, hi, hn, hf, hs c hm⟩
 
 open Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching
 

@@ -1,0 +1,150 @@
+{
+  "classification": "KERNEL_CHECKED_RETAINED_MATCHING_COMPOSITION_AND_TWO_SOURCE_REPAIRS",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeChromogramMatching",
+        "source_sha256": "c3a0dd9a993ba82c25c512cea91bbe6ef5dd66eced368e0a504a973874c0f642",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.625,
+        "olean_bytes": 571528,
+        "olean_sha256": "f70c45025d972b0189416409d3243b022a5d01f858e25c8dfd980c580d2ab9de"
+      },
+      {
+        "module": "MettapediaFourColor.KempeRetainedMatching",
+        "source_sha256": "07a07757e5897b302d2620746f76c7f661a1c1d98d188d937b8e25dd8414c1e6",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.299,
+        "olean_bytes": 146016,
+        "olean_sha256": "151812086cfc02a1ca351abdd4f09af93417dc8661f2f8d36b909df57504efa5"
+      },
+      {
+        "module": "MettapediaFourColor.StripCoupledRepair",
+        "source_sha256": "e3e464edcb9522f25734e4cc70d38ac7275793f74083b19437cccd21736c117a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.054,
+        "olean_bytes": 293024,
+        "olean_sha256": "76779af4b48f985a06b5676cab19e4f6d7bc78b0023864620b7f6da685068646"
+      },
+      {
+        "module": "MettapediaFourColor.RetainedMatchingAudit",
+        "source_sha256": "7d2c3dae1e674c484c6c1ce12052134bc5800e83dfda69296e0b036279c4fbf0",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.961,
+        "olean_bytes": 2600,
+        "olean_sha256": "30b875d6213e3d7442d4b2e0d0ae6a5fdd7434ae8645b7483d7f9afa978b718f"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean",
+      "bytes": 9206,
+      "sha256": "c3a0dd9a993ba82c25c512cea91bbe6ef5dd66eced368e0a504a973874c0f642"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeRetainedMatching.lean",
+      "bytes": 4224,
+      "sha256": "07a07757e5897b302d2620746f76c7f661a1c1d98d188d937b8e25dd8414c1e6"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripCoupledRepair.lean",
+      "bytes": 4097,
+      "sha256": "e3e464edcb9522f25734e4cc70d38ac7275793f74083b19437cccd21736c117a"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/RetainedMatchingAudit.lean",
+      "bytes": 3361,
+      "sha256": "7d2c3dae1e674c484c6c1ce12052134bc5800e83dfda69296e0b036279c4fbf0"
+    }
+  ],
+  "frontend_seconds_including_imports": 17.939,
+  "attribution": {
+    "source": "Yuta Inoue D0099, MIT",
+    "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "classical_theory": "Gonthier/Emery chord scan, chromogram semantics and component-union flips"
+  },
+  "proved": {
+    "arbitrary_width_stable_matching_recovery": true,
+    "arbitrary_width_two_anchor_composition": true,
+    "same_original_chromogram_through_both_switches": true,
+    "continuations_may_be_composed_repairs": true,
+    "source_inputs": [
+      "11111112223",
+      "11111112322"
+    ],
+    "source_vertices": 19,
+    "source_boundary_vertices": 11,
+    "single_pair_contracts": 12,
+    "double_partner_contracts": 4,
+    "partner_pairs_checked_per_input": 121,
+    "both_inputs_have_no_fixed_boundary_source_extension": true,
+    "terminal_reconstruction_uses_joint_three_hole_contract": true,
+    "kernel_matching_layout_checks": 0,
+    "new_stored_source_colouring_bytes": 0
+  },
+  "audit": {
+    "roots": 14,
+    "dependency_declarations": 5087,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "earlier_source_repair_proofs_used": false,
+    "stored_source_colouring_tables_used": false,
+    "required_dependencies": [
+      "KempeChromogramMatching.recover_stable",
+      "KempeChromogramMatching.pair_switch",
+      "chordsAux",
+      "matchg_flip",
+      "KempeRetainedMatching.two_anchor_coclosure",
+      "KempeIntervalMatching.possible_of_matching",
+      "StripPartialColouring.fill_iff",
+      "StripPartialColouring.reconstruct",
+      "StripSourceExtension.complete_valid",
+      "StripResponseSummary.terminal_iff",
+      "TriangleStripAnchors.input0099",
+      "KempeCoclosure"
+    ]
+  },
+  "independent_program": "retained-matching-audit.json",
+  "program_only": {
+    "matchings_per_consumer": 42,
+    "single_and_double_branch_counts": [
+      [
+        35,
+        7
+      ],
+      [
+        41,
+        1
+      ]
+    ],
+    "strict_batch_descent_obstruction": "12311221133",
+    "obstruction_component_subsets_checked": 40,
+    "joint_physical_adverse_exterior_supplied": false
+  },
+  "limits": [
+    "Finite source-specific single-pair, double-partner and interval-selection checks remain. No claim of a case-free source proof.",
+    "Two source inputs, not full D0099 reducibility or an unbounded family of graph reductions.",
+    "The original matching is retained for one colour pair. Compatibility between different colour-pair matchings is not established.",
+    "The two chord switches are in the boundary semantics. The endpoint supplies a source colouring and the same Kempe-closed exterior predicate; no explicit ambient recolouring history or runtime bound is extracted.",
+    "No geometric supply, strict ambient reduction, catalogue deletion or whole-proof cost saving is claimed."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0
+}
