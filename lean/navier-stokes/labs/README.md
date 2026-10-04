@@ -40684,3 +40684,223 @@ physical comparison. `--prefix --amplitude 8` runs the default pair of
 numerical observers. All histories begin from the prescribed original
 datum with zero moments; the auxiliary observer is not an externally
 forced fluid.
+
+## An interacting planar reserve pays adverse pressure sampling
+
+The [exact checker](planar_pressure_history.py) connects the preceding
+sampling obstruction to an all-time payment for arbitrary interacting
+planar parents. It reuses the actual planar and mean/fluctuation equations
+from the [strain reserve](#a-strain-paying-reserve-for-interacting-planar-parents).
+There is no smallness assumption on either the horizontal parent or its
+passive vertical receiver. This supplies a direct pressure-history
+consumer of classical two-dimensional estimates, not a new proof of
+arbitrary three-dimensional regularity.
+
+### Original vorticity pays the entire pressure source
+
+Work with normalized volume on the fixed `2*pi` torus. Let v be a smooth
+mean-zero two-dimensional NS solution, omega=curl v its scalar vorticity,
+and theta any smooth solution of
+`theta_t+v.grad theta=nu Delta theta`. Then
+`u=(v1,v2,theta)`, independent of z, is an actual unforced 3D NS solution.
+Its canonical pressure depends only on v. No reference heat solution is
+substituted for the interacting parent.
+
+Put `Omega=||omega(0)||_infty` and `a(t)=||omega(t)||_2`. The scalar
+vorticity maximum principle and enstrophy identity give, on every smooth
+prefix,
+
+```text
+||omega(t)||_infty <= Omega,
+(a^2)' = -2nu ||grad omega||_2^2,
+a' <= -nu a,                     a(t) <= a(0) exp(-nu t).
+```
+
+The last inequality uses zero-mean vorticity and the unit first eigenvalue.
+It extends across a=0 by continuity (then the unforced parent stays zero).
+These are classical planar facts; see
+[Ryzhik's fluid equations notes, section 2.1](https://virtualmath1.stanford.edu/~ryzhik/notes-256B-24.pdf)
+for the vorticity equation, maximum principle and Biot-Savart relation.
+
+Fix constants for the following operators on this torus, with Euclidean
+vector and Frobenius matrix norms:
+
+```text
+||v||_infty <= C_B ||omega||_4,
+||grad v||_4 <= C_D ||omega||_4,
+||Q_h f||_4 <= C_Q ||f||_4,       Q_h=grad_h Delta_h^(-1) div_h,
+C_* = C_B C_D C_Q.
+```
+
+All three constants are finite and independent of the datum, viscosity
+and time. The first bound is Young's inequality for the periodic
+Biot-Savart kernel, whose 1/r singularity belongs to L^(4/3) in two
+dimensions. The other two are periodic Calderon-Zygmund multiplier bounds
+at exponent four. C_* denotes this fixed product; no numerical value or
+sharp operator constant is asserted.
+
+The exact pressure projection and interpolation now yield
+
+```text
+g=grad p = -Q_h(v.grad v),
+||g(t)||_4 <= C_* ||omega(t)||_4^2 <= C_* Omega a(t).
+R(t) = (C_*/nu) Omega a(t) >= 0,
+R'(t) + ||g(t)||_4 <= 0,
+integral_s^t ||g||_4 <= R(s)-R(t),
+integral_0^infty ||g||_4 <= (C_*/nu) ||omega(0)||_infty ||omega(0)||_2.
+```
+
+The global interval follows from the already established planar-parent
+continuation and the passive scalar equation. Alternatively, the prefix
+bound below directly supplies the pressure continuation criterion (636).
+Neither use assumes a bound on an unknown future solution. Although the
+parent can generate new modes and its vorticity gradient can grow, its
+scalar vorticity cannot replenish the two resources used here.
+
+### A common reserve for either observer, with inherited memory
+
+Let b be any smooth deterministic solenoidal observer drift, including
+b=u or b=0, with the same viscosity and a uniform initial spatial label.
+Use the SAME actual pressure g and its original impulse
+`P_b(t)=integral_0^t g(s,Y_b(s))ds`. The spatial marginal remains uniform.
+Minkowski's inequality on this single probability space gives, for s<=t,
+
+```text
+||P_b(t)||_(L4 of paths) <= ||P_b(s)||_(L4 of paths)
+                          + integral_s^t ||g(r)||_(L4 of space) dr,
+||P_b(t)||_4 + R(t) <= ||P_b(s)||_4 + R(s),
+Phi_b(t)=E|P_b(t)|^4 <= R(0)^4.
+```
+
+Thus `B_b(t)=(||P_b(t)||_4+R(t))^4` is a nonnegative decreasing
+history reserve which dominates Phi_b. Composition retains the SAME
+impulse and the parent's remaining R. No independence of successive
+segments, sign of a covariance, or pointwise upper bound on P is required.
+In particular the actual observer has
+
+```text
+||u(t)||_4 <= ||u_0||_4 + (C_*/nu) Omega a(0),
+```
+
+by (636). This is a finite datum-controlled continuation bound for this
+class, including an arbitrarily large passive third component. It does
+not assert that the third component feeds back into the horizontal parent.
+The PDE, operator and stochastic arguments here remain analytic; the
+earlier `PlanarParentReserve.lean` certifies its own scalar strain reserve,
+not this new pressure theorem.
+
+### An adverse sampling sign inside this fully paid class
+
+Take the stream function and velocity
+
+```text
+psi_n = cos y + (1/n) cos(n x+y),
+v_n = (sin y+(1/n)sin(n x+y), -sin(n x+y)),     n=2 or 4.
+```
+
+These are smooth, zero-mean, divergence-free initial data with nonzero
+vorticity transport. Their two different parent frequencies interact
+through the actual NS nonlinearity. Complete NS jets and conditional
+moment equations give, for every fixed nu>0,
+
+```text
+Phi_u(t)-Phi_0(t) = c_n t^6 + O(t^7),
+c_2 = -150421/707200 < 0,
+c_4 = 103721143/1613300000 > 0.
+```
+
+The pressure is nonzero initially, unlike the preceding t^10 examples.
+The t^4 and t^5 coefficients agree between observers. The t^6 difference
+is constant in the polynomial viscosity variable; all generated pressure,
+advection and diffusion terms were retained. An independent Euler
+material-trajectory expansion checks both inviscid limits. Smooth local
+PDE evolution and the moment equations give the displayed analytic
+remainder and a genuine interval with each strict sign.
+
+For n=4, `Omega=21/4` and `a(0)^2=305/32`. The finite all-time allowance
+therefore applies even though Phi_u>Phi_0 initially. Multiplying the datum
+by any fixed epsilon>0 multiplies c_n by epsilon^10; every such planar
+parent is still in the paid class. Adding any passive theta leaves its
+horizontal pressure and horizontal sampling laws unchanged. The checker
+independently verifies this for `theta_0=sin x+cos(2y)`.
+
+The leading sign again records changing pressure. Write A=grad p(0),
+B=the Euler part of grad p_t(0), L=v_n.grad and
+`W_A=|A|^2 I+2 A tensor A`. Then
+
+```text
+M = integral (LA)^T W_A (LA) > 0,
+C = integral (LA)^T W_A B,
+c_n = -(M+2C)/6.
+```
+
+At zero viscosity the material impulse is
+`tA+t^2(B+LA)/2+t^3(C3+2LB+L1 A+L^2 A)/6+O(t^4)`, where
+`C3=grad p_tt(0)` and `L1=v_t(0).grad`. Expanding its fourth power and
+integrating by parts cancels C3 and the divergence-free L1 contribution.
+The remainder is the formula above. The all-viscosity polynomial check
+verifies the additional cancellations for these data. For n=4 the
+correlation wins over mixing; the original vorticity reserve still pays
+the whole history. A favorable sampling sign is not necessary for payment.
+
+### The full three-dimensional bill
+
+For an arbitrary smooth mean-zero 3D NS prefix, retain the existing split
+`bar u=average_z u=(v1,v2,theta)`, `w=u-bar u`,
+`R_ij=average_z(w_i w_j)`. Here R_ij is the Reynolds tensor, distinct from
+the scalar reserve R(t). Set
+
+```text
+F_h = -div_h R_hh,              F=curl_h F_h,
+omega_t+v.grad omega = nu Delta omega+F,
+a=||omega||_2,   f2=||F||_2,   finf=||F||_infty,
+M(t)=||omega(0)||_infty+integral_0^t finf,
+R_parent(t)=(C_*/nu) M(t) a(t).
+```
+
+The forced maximum principle bounds `||omega(t)||_infty` by M(t), and
+`a'<=-nu a+f2`. These hold on each smooth prefix, also across zeros in
+the almost-everywhere sense. The complete mean pressure is
+
+```text
+bar p = p_v+p_R,
+Delta_h p_v = -div_h div_h(v tensor v),
+Delta_h p_R = -div_h div_h R_hh,
+p_perp = p-bar p.
+```
+
+Consequently the actual full pressure obeys the sufficient ledger
+
+```text
+R_parent' + ||grad p||_4 <= D_parent + D_stress + D_hidden,
+D_parent = (C_*/nu)(a finf+M f2),
+D_stress = ||grad_h p_R||_4,
+D_hidden = ||grad p_perp||_4.
+```
+
+This follows by the product rule and triangle inequality, retaining both
+pressure contributions. In particular,
+`||P_u(t)||_4+R_parent(t) <= R_parent(0)+integral_0^t D_total`.
+The right side is NOT a closed initial-data bound: M and all three bills
+can depend on the unknown evolving hidden fluid. Bounding their integral
+from the full original datum is a concrete sufficient next task, stronger
+than necessary for the signed stochastic criterion.
+
+The checker reuses the two actual signed Reynolds fixtures of the strain
+reserve. Their parent enstrophy work is respectively -2 and +2; in both,
+`||grad p_R||_2^2=9/10` and
+`||grad p_perp||_2^2=42209/11550`. Removing their initial mean leaves
+zero initial parent vorticity but retains nonzero canonical pressure,
+`||grad p_R||_2^2=||grad p_perp||_2^2=9/10`, and
+`||F||_2^2=8`. Thus even the zero parent reserve can coexist with an
+immediately positive full pressure-impulse fourth moment. These are
+internal interactions in unforced NS, not independently applied controls.
+Dropping the hidden bills fails; a full-datum correction remains possible.
+
+Run `python3 -O labs/planar_pressure_history.py`. The archive
+`planar_pressure_history_results.json` records exact viscosity-polynomial
+sampling coefficients, independent material checks, canonical pressure
+splits and the scalar reserve derivative identity. No modes are discarded.
+These checks do not certify the analytic operator bounds, stochastic
+representation or global PDE argument in Lean. No new Lean declarations
+or axioms are used. The arbitrary-data 3D payment remains open.

@@ -1,0 +1,98 @@
+{
+  "status": "All exact checks passed",
+  "sampling": [
+    {
+      "n": 2,
+      "passive_vertical": false,
+      "initial_vorticity_linf": "7/2",
+      "initial_vorticity_l2_squared": "29/8",
+      "actual_t4_t5_t6": [
+        "(31/32 + 0*I)",
+        "(-121/8 + 0*I)*nu",
+        "(18401/144 + 0*I)*nu**2 + (732466073/11721840000 + 0*I)"
+      ],
+      "brownian_t4_t5_t6": [
+        "(31/32 + 0*I)",
+        "(-121/8 + 0*I)*nu",
+        "(18401/144 + 0*I)*nu**2 + (806423537/2930460000 + 0*I)"
+      ],
+      "sampling_t6": "-150421/707200",
+      "mixing": "101/64",
+      "source_correlation": "-53381/353600"
+    },
+    {
+      "n": 4,
+      "passive_vertical": false,
+      "initial_vorticity_linf": "21/4",
+      "initial_vorticity_l2_squared": "305/32",
+      "actual_t4_t5_t6": [
+        "(331/200 + 0*I)",
+        "(-3963/50 + 0*I)*nu",
+        "(9261841/4500 + 0*I)*nu**2 + (-37784749260119/44164087500000 + 0*I)"
+      ],
+      "brownian_t4_t5_t6": [
+        "(331/200 + 0*I)",
+        "(-3963/50 + 0*I)*nu",
+        "(9261841/4500 + 0*I)*nu**2 + (-2539007221859/2760255468750 + 0*I)"
+      ],
+      "sampling_t6": "103721143/1613300000",
+      "mixing": "2387/400",
+      "source_correlation": "-640605913/201662500"
+    },
+    {
+      "n": 4,
+      "passive_vertical": true,
+      "initial_vorticity_linf": "21/4",
+      "initial_vorticity_l2_squared": "305/32",
+      "actual_t4_t5_t6": [
+        "(331/200 + 0*I)",
+        "(-3963/50 + 0*I)*nu",
+        "(9261841/4500 + 0*I)*nu**2 + (-37784749260119/44164087500000 + 0*I)"
+      ],
+      "brownian_t4_t5_t6": [
+        "(331/200 + 0*I)",
+        "(-3963/50 + 0*I)*nu",
+        "(9261841/4500 + 0*I)*nu**2 + (-2539007221859/2760255468750 + 0*I)"
+      ],
+      "sampling_t6": "103721143/1613300000",
+      "mixing": "2387/400",
+      "source_correlation": "-640605913/201662500"
+    }
+  ],
+  "physical_splits": [
+    {
+      "fixture": "feedback phase -1",
+      "parent_gradient_l2_squared": "0",
+      "reynolds_gradient_l2_squared": "9/10",
+      "fluctuating_gradient_l2_squared": "42209/11550",
+      "actual_impulse_t4": "19240811437/533610000",
+      "vorticity_source_l2_squared": "8",
+      "signed_parent_enstrophy_work": "-2"
+    },
+    {
+      "fixture": "feedback phase 1",
+      "parent_gradient_l2_squared": "0",
+      "reynolds_gradient_l2_squared": "9/10",
+      "fluctuating_gradient_l2_squared": "42209/11550",
+      "actual_impulse_t4": "19240811437/533610000",
+      "vorticity_source_l2_squared": "8",
+      "signed_parent_enstrophy_work": "2"
+    },
+    {
+      "fixture": "initially hidden only",
+      "parent_gradient_l2_squared": "0",
+      "reynolds_gradient_l2_squared": "9/10",
+      "fluctuating_gradient_l2_squared": "9/10",
+      "actual_impulse_t4": "10449/2500",
+      "vorticity_source_l2_squared": "8",
+      "signed_parent_enstrophy_work": "0"
+    }
+  ],
+  "algebra": {
+    "reserve": "C*M*a/nu",
+    "source_bill": "C*(M*f2 + a*finf)/nu",
+    "negative_remainder": "-C*M*slack/nu",
+    "scope": "Scalar identity; operator bounds, stochastic payment and PDE passage are analytic"
+  },
+  "scope": "Exact full Fourier and polynomial identities; no new Lean certificate"
+}

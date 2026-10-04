@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [interacting planar pressure reserve](labs/README.md#an-interacting-planar-reserve-pays-adverse-pressure-sampling)
+pays the entire stochastic pressure history of arbitrary smooth planar
+parents and passive vertical receivers, with no smallness assumption.
+Its original allowance is a fixed torus constant times the initial
+vorticity L-infinity norm times its L2 norm, divided by viscosity.
+An exact example has adverse fluid-versus-Brownian sampling while still
+satisfying that all-time payment. The full 3D extension retains three
+unpaid contributions: parent replenishment, Reynolds pressure and
+fluctuating pressure. This is an analytic consumer of classical planar
+estimates with exact algebraic checks, not a new Lean regularity theorem.
+
 The [same-pressure sampling comparison](labs/README.md#pressure-production-and-stochastic-sampling-have-distinct-signs)
 separates evolving pressure production from the paths that sample it.
 On actual smooth, zero-mean unforced flows, fluid drift can either increase
