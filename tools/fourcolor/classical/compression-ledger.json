@@ -6069,5 +6069,35 @@
     "new_original_certificate_dependencies_removed": 0,
     "new_member_checks_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_singleton_repair_experiment": {
+    "classification": "CHECKED_PARAMETRIC_REPAIR_WITH_EXPLICIT_CONNECTION_BRANCH",
+    "report": "../near-linear/strip-singleton-repair-measurements.json",
+    "generic_rule": "Old-state component conditions derive a singleton second switch on arbitrary graphs and palettes.",
+    "source_domain": "D0099 local boundary colour lists; first component avoids ports five, six and eight; colour two absent around port one.",
+    "consumers": [
+      "Source rim: colour barriers supply separation for the whole list domain.",
+      "24-vertex sphere: first-component check plus uniform repair and boundary gluing."
+    ],
+    "local_dependencies_replaced": [
+      "Old second-component closure check",
+      "Old post-switch source and whole-colouring checks"
+    ],
+    "audit": {
+      "roots": 14,
+      "transitive_declarations": 4102,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "open": [
+      "Alternative repair when the first component reaches a retained port.",
+      "Geometric supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

@@ -1,5 +1,44 @@
 # Near-linear Four Colour catalogue bridges
 
+## A uniform two-stage repair with two physical consumers
+
+[`SingletonRelease`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/SingletonRelease.lean)
+proves a rule for any graph and palette: if a vertex has colour b and no
+neighbour of colour c, switching its a/b component makes it a singleton
+a/c component. The second switch and a two-step physical history follow
+from the old colouring; the new component is not checked separately.
+
+[`StripSingletonRepair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSingletonRepair.lean)
+uses this rule for an explicit domain of D0099 boundary colour lists.
+The first component must avoid ports five, six and eight, and colour two
+must be absent around port one. One common interior witness reconstructs
+for every colouring in that domain, on arbitrary exteriors satisfying
+these conditions. The proof uses pointwise palette checks and fixed core
+incidences, without a table of complete boundary colourings or histories.
+
+Two consumers establish that these hypotheses have actual applications:
+
+- On the source rim, two colour barriers derive component confinement for
+  every proper colouring in the list domain. The independent program audit
+  counts seven such words, five of which initially do not extend.
+- On the earlier 24-vertex sphere, only the initial colouring and first
+  component are checked. The uniform law derives the second component and
+  source witness; boundary gluing reconstructs an actual ambient colouring.
+  Its transitive dependency audit excludes the old second-switch and
+  completed-colouring certificates.
+
+If the separation condition fails, the theorem retains an actual
+bicoloured walk from port one to a retained port. A general alternative
+repair for that branch remains open, as do geometric supply, strict
+reduction and universal coverage. The rim consumer does not establish
+separation in arbitrary planar exteriors. No catalogue removal is credited.
+
+Replay `lake build kernelStripSingletonRepair` in the classical package,
+after building `Mettapedia.GraphTheory.Kempe.SingletonRelease` in the main
+package. The [independent audit](strip-singleton-repair-audit.json) and
+[receipt](strip-singleton-repair-measurements.json) distinguish finite
+program evidence, generic proofs and actual-map reconstruction.
+
 ## A guarded-choice trap on a small spherical triangulation
 
 [`StripStrongAnchorTrap`](../../../lean/fourcolor-classical/MettapediaFourColor/StripStrongAnchorTrap.lean)

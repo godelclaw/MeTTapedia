@@ -1384,3 +1384,18 @@ target kernelStripStrongAnchorTrap pkg : Unit := do
         "StripStrongAnchorTrap", "StripStrongAnchorTrapAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay a two-stage source repair from old-state component conditions. -/
+target kernelStripSingletonRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-singleton-repair",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripSingletonRepair", "StripSingletonRim", "StripSingletonExample",
+        "StripSingletonRepairAudit"]
+      cwd := pkg.dir
+      env := env }

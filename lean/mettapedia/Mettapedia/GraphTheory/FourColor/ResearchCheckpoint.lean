@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.Kempe.SingletonRelease
 import Mettapedia.GraphTheory.FourColor.OpenTangleVertexOccurrence
 import Mettapedia.GraphTheory.FourColor.TwoDiamondBoundaryElimination
 import Mettapedia.GraphTheory.FourColor.RotationConservedFacePotential

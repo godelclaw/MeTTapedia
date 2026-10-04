@@ -1,0 +1,95 @@
+{
+  "classification": "CHECKED_PARAMETRIC_TWO_STAGE_SOURCE_REPAIR",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSingletonRepair",
+      "source_sha256": "735e7ffa075abb240f5b7d0729ac0044043f3d2f2df185f64a65a8faec3002ff",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.715,
+      "olean_bytes": 273424,
+      "olean_sha256": "ee765f1fc1434625be1dda60d9d7e3a0fb46900ee03e667617f5f3fda568ddfc"
+    },
+    {
+      "module": "MettapediaFourColor.StripSingletonRim",
+      "source_sha256": "107ac394b4d4dd98f7050998b62cb96af2c43dd6999a7dc7fa8865f05c0a4d5a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.126,
+      "olean_bytes": 80576,
+      "olean_sha256": "cb14f391a1c0020711339703fee20f83287d16d85fe3ac66870cb47d92748a9f"
+    },
+    {
+      "module": "MettapediaFourColor.StripSingletonExample",
+      "source_sha256": "d3951eff3bf8563a135b5ca54c4cb2ee1db4e8defb9c36791386eefc757e7d2a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.687,
+      "olean_bytes": 187784,
+      "olean_sha256": "616eeea601d785a546d88c6cb50f6d0907f1260aad0d10606a2148f3b35dfa00"
+    },
+    {
+      "module": "MettapediaFourColor.StripSingletonRepairAudit",
+      "source_sha256": "1329779c31c172a288dee992128de3164f49814880f4e2fae9f9a7f88ba737a2",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.173,
+      "olean_bytes": 2720,
+      "olean_sha256": "a39e8943066ed997c13dcb24bc46b24258b307e68b6122678897e89e17e11c05"
+    }
+  ],
+  "classical_frontend_wall_seconds_total": 14.701,
+  "timing_scope": "Four classical modules replayed with existing imports already built; not a full clean build or a before/after speedup.",
+  "generic_module": {
+    "name": "SimpleGraph.KempeSingletonRelease",
+    "source_sha256": "615a7f8f58a3301b07fcc2cd894cf61ff25d37da906f502c2bdbae64080fc2ab",
+    "source_bytes": 3624
+  },
+  "new_lean_source_bytes": 24251,
+  "new_repair_fixture_bytes": 0,
+  "audit_roots": 14,
+  "transitive_dependency_declarations": 4102,
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "excluded_old_repair_dependencies": [
+    "FourColor.StripStrongAnchorTrap.repair_checked",
+    "FourColor.StripStrongAnchorTrap.repairCertificate",
+    "FourColor.StripStrongAnchorTrap.repair_eq",
+    "FourColor.StripStrongAnchorTrap.repairStep",
+    "FourColor.StripStrongAnchorTrap.repairHistory",
+    "FourColor.StripStrongAnchorTrap.whole_valid",
+    "FourColor.StripStrongAnchorTrap.final_valid",
+    "FourColor.StripStrongAnchorTrap.finalColouring",
+    "FourColor.StripStrongAnchorTrap.reconstructed"
+  ],
+  "kernel_proved": [
+    "On arbitrary graphs and palettes, old-state conditions release a singleton second component and construct an actual two-step history.",
+    "A common core witness repairs the explicit D0099 boundary-list domain over arbitrary exteriors satisfying the component-separation and missing-colour guards.",
+    "Colour barriers on the actual source rim derive those guards for the entire proper boundary-list domain.",
+    "On the actual 24-vertex sphere, the first-component certificate plus this common law reconstructs a genuine whole colouring through boundary gluing.",
+    "Failure of the component-separation guard retains an actual walk in the bicoloured exterior."
+  ],
+  "program_evidence": {
+    "local_palette_checks": 25,
+    "proper_boundary_assignments": 7,
+    "initially_nonextending_assignments": 5
+  },
+  "open": [
+    "Alternative repair for the retained connection branch.",
+    "Geometric supply, strict reduction, compact coverage and termination.",
+    "The previous complete short-cycle census remains program evidence."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build Mettapedia.GraphTheory.Kempe.SingletonRelease",
+    "lake build kernelStripSingletonRepair kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_singleton_repair.py"
+  ],
+  "evidence_record": "strip-singleton-repair-audit.json"
+}

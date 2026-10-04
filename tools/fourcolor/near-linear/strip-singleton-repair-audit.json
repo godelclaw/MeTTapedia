@@ -1,0 +1,243 @@
+{
+  "classification": "PARAMETRIC_TWO_STAGE_SOURCE_REPAIR",
+  "source": "D0099",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
+  "local_list_checks": 25,
+  "proper_boundary_assignments": 7,
+  "initially_nonextending_assignments": 5,
+  "boundary_domain": [
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        2,
+        3,
+        1,
+        2,
+        0,
+        1,
+        3,
+        1
+      ],
+      "scores": [
+        [
+          1,
+          -4
+        ],
+        [
+          1,
+          -2
+        ],
+        [
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        2,
+        3,
+        2,
+        1,
+        0,
+        1,
+        3,
+        1
+      ],
+      "scores": [
+        [
+          0,
+          -1
+        ],
+        [
+          1,
+          -4
+        ],
+        [
+          0,
+          -2
+        ]
+      ]
+    },
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        2,
+        3,
+        2,
+        1,
+        2,
+        1,
+        3,
+        1
+      ],
+      "scores": [
+        [
+          1,
+          -4
+        ],
+        [
+          1,
+          -3
+        ],
+        [
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        1,
+        2,
+        0,
+        1,
+        3,
+        1
+      ],
+      "scores": [
+        [
+          1,
+          -4
+        ],
+        [
+          1,
+          -2
+        ],
+        [
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        3,
+        1,
+        0,
+        1,
+        3,
+        1
+      ],
+      "scores": [
+        [
+          0,
+          -1
+        ],
+        [
+          1,
+          -4
+        ],
+        [
+          0,
+          -2
+        ]
+      ]
+    },
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        3,
+        1,
+        2,
+        1,
+        3,
+        1
+      ],
+      "scores": [
+        [
+          1,
+          -4
+        ],
+        [
+          1,
+          -3
+        ],
+        [
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        3,
+        2,
+        3,
+        2,
+        0,
+        1,
+        3,
+        1
+      ],
+      "scores": [
+        [
+          1,
+          -4
+        ],
+        [
+          1,
+          -4
+        ],
+        [
+          0,
+          -1
+        ]
+      ]
+    }
+  ],
+  "physical_consumer": {
+    "ambient_vertices": 24,
+    "exterior_vertices": 16,
+    "first_component": [
+      0,
+      1,
+      2,
+      10,
+      12,
+      14
+    ],
+    "second_component": [
+      1
+    ]
+  },
+  "evidence": {
+    "lean": "Arbitrary-graph singleton release; uniform list-domain source repair; rim guard supply; actual spherical reconstruction from the same law.",
+    "program": "Independent source parsing, all seven proper domain words, direct partial-colouring profiles, physical components and whole colouring."
+  },
+  "limits": [
+    "The arbitrary-exterior theorem requires the first component to avoid three ports.",
+    "Failure retains an actual two-colour connection; its alternative repair is open.",
+    "No general geometric supply, strict reduction or catalogue deletion is claimed.",
+    "The earlier short-cycle Lean certificate experiment remains incomplete."
+  ],
+  "fixture_sha256": "9267a00f9af83d9b5099c0f39b187911d5ad20e2bf20cce1cd0c85dcc6ede889",
+  "lean_sha256": "735e7ffa075abb240f5b7d0729ac0044043f3d2f2df185f64a65a8faec3002ff",
+  "example_sha256": "d3951eff3bf8563a135b5ca54c4cb2ee1db4e8defb9c36791386eefc757e7d2a",
+  "verifier_sha256": "2ae87bf8c5c8c0e9fc3bf194b8ec7defaa9755e9b16d81673f628c4e1f36fd52"
+}
