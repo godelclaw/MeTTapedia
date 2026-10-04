@@ -1481,3 +1481,17 @@ target kernelStripSixOrder pkg : Unit := do
         "--library-output", ".lake/build/lib/lean", "--modules", "StripSixDetachment", "StripSixOrderExample", "StripSixOrderAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay exact degree-to-face transport and its alternative-piece consumer. -/
+target kernelStripSixDual pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-dual",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "DualDegreePattern", "StripSixDualExample", "StripSixDualAudit"]
+      cwd := pkg.dir
+      env := env }

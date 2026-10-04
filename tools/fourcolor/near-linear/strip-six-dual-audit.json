@@ -1,0 +1,24 @@
+{
+  "classification": "EXACT_DUAL_PROGRAM_REPLAY",
+  "fixture_sha256": "cbfb2ad0d1402f3da4fb8a6588f96f93fd6d08fb5824d27ea6bfde96dd6d208d",
+  "lean_source_sha256": "f55b014ee10bed6c83d8dcd6dd8d4fe7e655e374ab65e2f26b800c3148efa4f3",
+  "primal_vertices": 41,
+  "dual_vertices": 78,
+  "directed_edges": 234,
+  "root": [
+    22,
+    0
+  ],
+  "consecutive_degree_five_neighbours": [
+    17,
+    25,
+    13
+  ],
+  "checked": [
+    "all directed edges in both directions",
+    "edge reversal",
+    "vertex and face permutations",
+    "complete ordered degree pattern"
+  ],
+  "limit": "The Lean consumer excludes dual vertex minimality. Universal alternative-piece supply and unconditional strict reduction of this fixture are not claimed."
+}

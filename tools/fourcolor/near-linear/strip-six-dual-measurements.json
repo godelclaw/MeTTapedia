@@ -1,0 +1,74 @@
+{
+  "classification": "CHECKED_EXACT_DUAL_ALTERNATIVE_TO_FIXED_PAIR_REPAIR",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.DualDegreePattern",
+      "source_sha256": "b7f98d9f207214e8aa68d66bfdc55f7860c99592f9e01e7980373e2bc79f30fe",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.143,
+      "olean_bytes": 164544,
+      "olean_sha256": "0088218aa831787297c7daca242619e1f1a069841bae4a00c6fafdbfa8a9e2eb"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixDualExample",
+      "source_sha256": "f55b014ee10bed6c83d8dcd6dd8d4fe7e655e374ab65e2f26b800c3148efa4f3",
+      "exit_code": 0,
+      "frontend_wall_seconds": 11.032,
+      "olean_bytes": 1493528,
+      "olean_sha256": "cb9240e62f1b46931b2c30981d21c230e51a1f15d20226132fa7ce32b5f50362"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixDualAudit",
+      "source_sha256": "d36a93c70ac39bf6d0622582c0fc6dc8248bd6d0a19738d10f0ee96aca6b84d0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.82,
+      "olean_bytes": 2600,
+      "olean_sha256": "c6f5df1aed48a7851b9871ea61f74e68a1a0cbb2c23875e4024a6eca7e682c1c"
+    }
+  ],
+  "frontend_wall_seconds_total": 21.995,
+  "timing_scope": "Three new modules with dependencies already built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 18211,
+  "new_boundary_repair_table_bytes": 0,
+  "new_spherical_fixture_bytes": 0,
+  "primal_vertices": 41,
+  "dual_vertices": 78,
+  "directed_edges": 234,
+  "audit": {
+    "roots": 11,
+    "transitive_dependency_declarations": 27799,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "A uniform exact dart bridge carries complete degrees and cyclic neighbour positions to dual face lengths.",
+    "All three hypermap permutations agree under dual relabelling; planarity is preserved.",
+    "The existing 41-vertex obstruction has the exact stated 78-vertex cubic dual.",
+    "The degree-five centre with three consecutive degree-five neighbours supplies a pentagonal diamond in that dual.",
+    "The existing diamond theorem excludes vertex minimality of that dual through reconstruction and strict decrease."
+  ],
+  "retained_dependencies": [
+    "Shared finite diamond profile; no new repair table."
+  ],
+  "remaining": [
+    "Universal supply of an alternative reducible piece when a selected repair fails.",
+    "Unconditional strict reduction of this fixture would additionally require its ambient normal-form hypotheses; these are currently derived only under hypothetical minimality.",
+    "Compact geometric coverage and termination for the intended graph class."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripSixDual kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_six_dual.py"
+  ],
+  "evidence_record": "strip-six-dual-audit.json"
+}

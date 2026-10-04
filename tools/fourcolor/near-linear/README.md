@@ -1,5 +1,35 @@
 # Near-linear Four Colour catalogue bridges
 
+## An alternative piece in the fixed-order obstruction
+
+[`DualDegreePattern`](../../../lean/fourcolor-classical/MettapediaFourColor/DualDegreePattern.lean)
+transports complete vertex degrees and cyclic neighbour order through an
+exact dual dart equivalence. Dual face lengths equal primal degrees, and
+all three hypermap permutations agree. Planarity is preserved. A degree-five
+vertex with three consecutive degree-five neighbours therefore supplies the
+existing pentagonal-diamond face pattern, with no size bound on the maps.
+
+[`StripSixDualExample`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixDualExample.lean)
+constructs the actual 78-vertex cubic dual of the 41-vertex sphere below.
+All 234 directed edges correspond in both directions. Vertex 22 and its
+consecutive neighbours 17, 25 and 13 supply the four pentagons. The existing
+diamond reconstruction and strict-descent argument excludes vertex minimality
+of this dual. Its shared finite diamond profile remains a dependency.
+The exclusion uses neither the example's reconstructed colouring nor the
+complete Four Colour theorem.
+
+This is a certified alternative-piece consumer, not a proof that every
+failed repair supplies that piece. It also does not assert an unconditional
+strict reduction of this fixture: the required normal-form hypotheses are
+derived inside the minimal-counterexample exclusion. No additional catalogue
+entry or original certificate dependency is removed.
+
+Replay `lake build kernelStripSixDual` and, from the repository root,
+`python3 tools/fourcolor/near-linear/audit_strip_six_dual.py`.
+The [receipt](strip-six-dual-measurements.json) records the dependency audit,
+kernel cost and retained obligations. The existing spherical fixture is reused;
+no new boundary-repair table is introduced.
+
 ## A failed pair order and a silent detachment
 
 [`StripSixOrderExample`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixOrderExample.lean)

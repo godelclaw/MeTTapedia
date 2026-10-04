@@ -6263,5 +6263,34 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_dual_alternative_experiment": {
+    "classification": "CHECKED_EXACT_DUAL_ALTERNATIVE_TO_FIXED_PAIR_REPAIR",
+    "report": "../near-linear/strip-six-dual-measurements.json",
+    "uniform_law": "A uniform exact dart bridge carries complete degrees and cyclic neighbour positions to dual face lengths.",
+    "actual_consumer": "The fixed-order obstruction has an exact cubic dual containing a pentagonal diamond; the existing reconstruction and descent theorem excludes dual vertex minimality.",
+    "retained_dependencies": [
+      "Shared finite diamond profile; no new repair table."
+    ],
+    "new_boundary_repair_table_bytes": 0,
+    "new_spherical_fixture_bytes": 0,
+    "new_lean_source_bytes": 18211,
+    "audit": {
+      "roots": 11,
+      "transitive_dependency_declarations": 27799,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "remaining": [
+      "Universal supply of an alternative reducible piece when a selected repair fails.",
+      "Unconditional strict reduction of this fixture would additionally require its ambient normal-form hypotheses; these are currently derived only under hypothetical minimality.",
+      "Compact geometric coverage and termination for the intended graph class."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }
