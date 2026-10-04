@@ -1,5 +1,51 @@
 # Near-linear Four Colour catalogue bridges
 
+## Retaining the boundary cut repairs list transport
+
+[`BoundaryListTransport`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/BoundaryListTransport.lean)
+proves an exact operation law for arbitrary finite neighbourhoods and
+palettes. For each core vertex, retain the forbidden colours contributed
+by moving ports separately from those contributed by fixed ports. A palette
+map on the moving ports acts by image on that set; combining the two sets
+then recovers precisely the updated allowed list. Successive maps on the
+same cut compose without further boundary observations.
+
+Two actual decoded sources consume the law in
+[`StripListTransport`](../../../lean/fourcolor-classical/MettapediaFourColor/StripListTransport.lean).
+In each of D0063 and D0099, two proper boundaries induce identical allowed
+lists at every core vertex. The same recolouring of port six makes exactly
+one boundary extendible. The positive case reconstructs a full source
+colouring through the joint two-anchor forest theorem; the negative case
+uses one or two propagation edges. The exact source/core equivalence checks
+all boundary attachments and internal edges. The updates are whole-component
+switches in supplied abstract chromograms; no particular physical exterior
+is asserted to realize or permit them.
+
+Consequently no function of the evaluated lists alone determines extension
+after this operation, even for proper input and output boundaries. The
+refined moving/fixed summary distinguishes the examples and its transport
+law supplies both successful forest guards. This strengthens the earlier
+evaluated-relation obstruction by identifying equal complete input lists and
+providing a common exact repair to the observation interface.
+
+The [independent program check](audit_strip_list_transport.py) also tests
+joint-anchor progress measures on 2,461 D0063 and 7,381 D0099 canonical inputs.
+Minimizing omitted vertices and then maximizing optimal joint anchor choices
+does not guarantee improvement within two rounds. Allowing an arbitrary
+ordering of the complete sixteen-entry joint-cost profiles settles the finite
+D0063 model in two-round phases, but leaves 155 profile classes containing
+5,242 D0099 inputs unresolved. These are program results for an abstract
+matching game, not kernel-certified physical obstructions or impossibility
+of a compositional proof. No ranking or colouring table is exported.
+
+Replay `lake build kernelStripListTransport` and
+`python3 tools/fourcolor/near-linear/audit_strip_list_transport.py`.
+The [audit receipt](strip-list-transport-audit.json) and
+[measurement receipt](strip-list-transport-measurements.json) record the
+separate claims. A new cut may require new observations. There is still no
+uniform improving-move theorem, geometric supply or strict ambient reduction,
+and no catalogue entry or original certificate dependency is removed.
+
 ## Both conditional-choice loops have composed repairs
 
 [`StripLoopContinuation`](../../../lean/fourcolor-classical/MettapediaFourColor/StripLoopContinuation.lean)

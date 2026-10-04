@@ -1311,3 +1311,17 @@ target kernelStripLoopContinuation pkg : Unit := do
         "StripLoopContinuationAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay exact cut transport and two actual-source list-summary obstructions. -/
+target kernelStripListTransport pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-list-transport",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripListTransport", "StripListTransportAudit"]
+      cwd := pkg.dir
+      env := env }
