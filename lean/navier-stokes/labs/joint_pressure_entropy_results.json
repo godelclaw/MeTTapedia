@@ -1,0 +1,50 @@
+{
+  "sources": {
+    "q": "int_0^(L^2) exp(s Delta)p ds",
+    "beta": "grad q, all three components",
+    "S_q": "Q_L[-u tensor grad p-grad p tensor u-2nu G]+[u.grad,Q_L](u tensor u)",
+    "S_beta": "grad S_q-(grad u)^T grad q",
+    "G_ij": "sum_k (partial_k u_i)(partial_k u_j)",
+    "Q_L": "(-Delta)^(-1)(I-exp(L^2 Delta)) partial_i partial_j(-Delta)^(-1)",
+    "retained": "Viscous stress production -2nu G remains in the source; positivity of the explicit diffusion block does not pay it."
+  },
+  "diffusion": {
+    "variables": "y=sqrt(2) beta/nu; z=(u,y); J=int |z|^3",
+    "diffusion": "D=nu sum_j int (partial_j z)^T H_z (I+N/sqrt(2)) partial_j z",
+    "bound": "D >= (nu/2) sum_j int (partial_j z)^T H_z partial_j z >= (4nu/3) int |grad |z|^(3/2)|^2",
+    "matrix_argument": "For B^2=0, split a vector orthogonally over ker B and its complement: |<v,Bv>| <= ||B|| |v|^2/2. Apply to H_z^(1/2) N H_z^(-1/2), whose norm is at most sqrt(2).",
+    "source_pairing": "F_gen=(3sqrt(2)/nu) int |z| y.S_beta",
+    "balance": "J_prime+D=W_low+F_gen; W_low=-3 int |z| u.grad p_low",
+    "scope": "Actual pressure observations satisfy the block system. The source is not independently prescribed; the remaining payment is open."
+  },
+  "calibration": {
+    "flow": "exp(-2nu t)(sin x cos y,-cos x sin y,0)",
+    "pressure": "exp(-4nu t)(cos(2x)+cos(2y))/4",
+    "all_time_entropy": "integrand_prime=-6nu sqrt(X+Y)(X+2Y)<=0, X=|u|^2,Y=2|beta|^2/nu^2",
+    "scope": "Exact actual-flow calibration; not a bound on arbitrary generated-pressure histories."
+  },
+  "payment": {
+    "beta_norm": "||beta||2^2 <= C_S^(3/2) E(t)^(3/2) Z(t)^(1/2), uniform in fixed L",
+    "proof": "Dual Sobolev and the exact tensor-to-vector pressure multiplier, then interpolation. All current velocity components and stress cross terms remain.",
+    "coarse_cost": "|W_low|<=a+b sqrt(Z), a=(9/2) M_L E0^2, b=3 M_L C_S^(3/2) E0^(5/2)/nu^2",
+    "reserve": "B_low(t)=a(H-t)+b sqrt((H-t)E(t)/(2nu)) >=0",
+    "payment": "B_low_prime+|W_low|<=0 almost everywhere; extend endpoints by continuity",
+    "allowance": "3*E**2*ML*(sqrt(2)*CS**(3/2)*E*sqrt(H) + 3*H*nu**(5/2))/(2*nu**(5/2))",
+    "whole_space_kernel": "M_L=(4pi)^(-3/2)L^(-4)",
+    "periodic_kernel": "M_L=sum_(k !=0) |k| exp(-L^2 |k|^2), for normalized period-2pi volume",
+    "zero_energy": "u=0 and every cost/reserve is zero",
+    "seams": "The same E(t), pressure state and remaining original horizon are inherited; no new allowance is issued."
+  },
+  "consumer": {
+    "OPEN": "int_0^T [F_gen-D/2] <= K_gen(u0,nu,H,L) for EVERY available same-datum prefix T<=H",
+    "consequence": "J(T)+(1/2)int_0^T D <= A0=J(0)+B_low(0)+K_gen",
+    "whole_space": "int_0^T ||u||9^3 <= (3 C_S/(2nu)) A0",
+    "periodic": "int_0^T ||u||9^3 <= C_I [3/(2nu)+H] A0; C_I is the inhomogeneous Sobolev constant",
+    "enstrophy": "Z_prime+nu||Delta u||2^2 <= [32 sqrt(C_S)/(27nu^2)] ||u||9^3 Z",
+    "continuation": "Gronwall gives one datum-only order-one bound if the OPEN source allowance is proved; the existing continuation consumer then applies.",
+    "adverse_horizontal_variant": "For z=(u_h,sqrt(2) grad_h q/nu), the existing Gaussian certificate gives positive initial nonlinear pressure production at large amplitude. It refutes automatic monotonicity of that projected variant.",
+    "distinction": "The full three-component pressure norm has a different coefficient; the horizontal sign is not asserted for it. No integrated source payment or regularity theorem is proved."
+  },
+  "status": "All exact checks passed; operator estimates and PDE consequences remain analytic.",
+  "source_sha256": "4b562cba25a0e48c4104e85093713664aeef08261b05d34ab1c3bb3d574bd159"
+}

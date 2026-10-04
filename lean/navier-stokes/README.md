@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [convex joint pressure observation](labs/README.md#a-convex-pressure-observation-pays-diffusion-transfer-and-coarse-histories)
+controls the explicit velocity/pressure diffusion transfer and pays all
+coarse-pressure work from one original-energy reserve on R3 and the
+zero-mean periodic domain. Its complete generated source still contains
+pressure, transport and viscous stress production. A stated bound on that
+signed history would give a general three-dimensional continuation
+criterion. The bound remains open; the derivation is analytic with exact
+symbolic checks, not a new Lean theorem.
+
 The [validated pressure-regeneration sign](labs/README.md#a-validated-whole-space-sign-rejects-instantaneous-pressure-stock-monotonicity)
 now encloses the whole-space initial coefficient between 0.0000213 and
 0.0000404 for the fixed Gaussian observation. Every mixture, spatial,

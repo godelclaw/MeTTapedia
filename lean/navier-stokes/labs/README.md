@@ -50390,3 +50390,237 @@ hashes. The program also reruns the exact whole-space identities and
 analytic tail constants. Its trust boundary includes those analytic
 arguments, the Python implementation and Arb/Acb arithmetic. No Lean
 declarations or axioms are changed.
+
+## A convex pressure observation pays diffusion transfer and coarse histories
+
+`joint_pressure_entropy.py` replaces the nonconvex pressure correction in
+(EC7) by a convex joint observation. For arbitrary smooth unforced flows,
+the explicit velocity/pressure diffusion block is coercive. Its complete
+coarse-pressure work has a nonnegative reserve funded by the original
+kinetic energy. The remaining generated-pressure source is explicit and
+unpaid. These operator estimates and PDE statements are analytic, with
+exact symbolic checks; they are not new Lean certificates.
+
+This is an alternative observation, not a change to the fluid equations.
+It uses all three velocity and pressure-gradient components and has a
+general three-dimensional continuation consumer. The earlier weighted
+axisymmetric observation retains its separate equations and scope.
+
+### The actual fluid supplies both components
+
+On R3 use the decaying canonical pressure. On the normalized period-2pi
+torus use mean-zero pressure and work in the zero-mean velocity frame.
+A nonzero conserved mean m is removed by the explicit Galilean change
+v(t,x)=u(t,x+mt)-m; m is part of the original datum.
+Fix L>0 from the original data and keep it throughout every prefix. Put
+
+```text
+p_low=exp(L^2 Delta)p, q=int_0^(L^2) exp(s Delta)p ds,
+beta=grad q, y=sqrt(2) beta/nu, z=(u,y), r=|z|,
+J=int r^3, scriptL=partial_t+u.grad-nu Delta.          (JP1)
+```
+
+Here r denotes the six-component norm, not a cylindrical radius.
+For smooth L2 initial data with the stated Sobolev regularity, J(0) is
+finite and computed entirely from that datum: (JP5) gives beta in L2,
+while the stress multiplier gives ||grad beta||2<=||u||4^2. Thus beta
+is in H1 and hence L3. The same argument applies in the periodic frame.
+Since -Delta q=p-p_low, the actual unforced equations give
+
+```text
+scriptL u=(nu/sqrt(2)) Delta y-grad p_low,
+scriptL y=(sqrt(2)/nu) S_beta,
+S_beta=grad S_q-(grad u)^T grad q,
+S_q=Q_L[-u tensor grad p-grad p tensor u-2nu G]
+                       +[u.grad,Q_L](u tensor u),
+G_ij=sum_k (partial_k u_i)(partial_k u_j),
+Q_L=(-Delta)^(-1)(I-exp(L^2 Delta))
+                         partial_i partial_j(-Delta)^(-1).      (JP2)
+```
+
+The tensor indices in Q_L are contracted. On the torus its zero Fourier
+mode is zero. The stress product law and material-gradient commutator are
+checked for unrestricted three-dimensional fields. All pressure, phase,
+transport and viscous stress terms remain. In particular -2nu G remains
+inside S_beta; the estimate below does not declare it dissipative.
+
+### A sharp positive bound for the coupled diffusion
+
+Let N(v,w)=(w,0), so N^2=0 and ||N||=1. The diffusion matrix of (JP2) is
+nu(I+N/sqrt(2)). For Phi(z)=|z|^3 and z nonzero,
+
+```text
+H_z=D2Phi(z)=3r I+3zz^T/r,
+D=nu sum_j int (partial_j z)^T H_z
+                            (I+N/sqrt(2)) partial_j z,
+D >= (nu/2) sum_j int (partial_j z)^T H_z partial_j z
+  >= (4nu/3) int |grad r^(3/2)|^2.                    (JP3)
+```
+
+Here is a dimension-independent proof of the first inequality. If B^2=0,
+its image is contained in its kernel. Split any vector v orthogonally
+as v=k+h with k in ker B. Then
+
+```text
+|<v,Bv>|=|<k,Bh>| <= ||B|| |k||h| <= ||B|| |v|^2/2.
+```
+
+Apply this to B=H_z^(1/2) N H_z^(-1/2). The eigenvalues of H_z lie between
+3r and 6r, so ||B||<=sqrt(2). This absorbs at most half the diagonal
+entropy diffusion. The constant is sharp: in a two-scalar block, z=(1,0)
+and its derivative d=(1,-sqrt(2)) give equality. The checker also verifies
+the two-scalar positive-semidefinite remainder by its principal minors.
+
+The second inequality follows from
+|grad r^(3/2)|^2=(9/4)r^(-1)sum_j(z.partial_j z)^2 and
+(z.d)^2<=r^2|d|^2. At z=0 the cubic Hessian extends continuously by zero.
+Integration by parts, with spatial cutoffs on R3, gives the exact balance
+
+```text
+J'+D=W_low+F_gen,
+W_low=-3int r u.grad p_low,
+F_gen=(3sqrt(2)/nu)int r y.S_beta.                    (JP4)
+```
+
+The mixed Laplacian transfer from pressure has been included in D, not
+estimated as an independent force. The entire generated source in (JP2)
+still contributes to F_gen, including its viscous stress production.
+
+### The extra coarse work has an original-energy payment
+
+Write E(t)=||u(t)||2^2, Z(t)=||grad u(t)||2^2 and E0=E(0). Choose C_S
+so that ||v||6^2<=C_S||grad v||2^2, for the appropriate scalar, vector and
+tensor fields, with zero mean where required on the torus. The complete
+stress multiplier for beta, denoted K_L, satisfies
+
+```text
+||grad K_L^* f||2 <= ||f||2,
+||beta||2 <= sqrt(C_S)||u tensor u||_(6/5)
+           =sqrt(C_S)||u||_(12/5)^2,
+||beta||2^2 <= C_S^(3/2) E(t)^(3/2) Z(t)^(1/2).      (JP5)
+```
+
+Indeed, apart from its sign and the imaginary unit, its Fourier symbol is
+xi_j xi_a xi_b (1-exp(-L^2|xi|^2))/|xi|^4. The first bound follows by
+Plancherel and the tensor Frobenius norm. Dual Sobolev gives the second;
+interpolation between L2 and L6 gives the third. Thus no independent
+Lp pressure bound or uncontrolled future norm enters (JP5). The constant
+is uniform in L; it does not imply such uniformity for the coarse kernel.
+
+Use ||grad p_low||infinity<=M_L E(t), with
+
+```text
+M_L=(4pi)^(-3/2)L^(-4)                         on R3,
+M_L=sum_(k in Z3, k!=0) |k|exp(-L^2|k|^2)       on normalized T3.
+```
+
+The first is the stress-kernel estimate (PC2); the second is the absolute
+Fourier sum of the same complete stress multiplier. Both are finite for
+fixed L>0. Since r|u|<=3|u|^2/2+|y|^2/2 and E(t)<=E0,
+
+```text
+|W_low(t)|<=a+b sqrt(Z(t)),
+a=(9/2)M_L E0^2, b=3M_L C_S^(3/2)E0^(5/2)/nu^2.      (JP6)
+```
+
+For the prescribed horizon H define
+
+```text
+B_low(t)=a(H-t)+b sqrt((H-t)E(t)/(2nu)) >=0.
+B_low'+|W_low|<=0.                                    (JP7)
+```
+
+This is the existing full-energy Bellman clock applied to the new joint
+observer. To verify its derivative, set s=H-t, R=sqrt(sE/(2nu)), and use
+E'=-2nu Z. Wherever R>0,
+
+```text
+-R'-sqrt(Z)=[sqrt(E/(2nu))-sqrt(sZ)]^2/(2R) >=0.
+```
+
+Continuity gives the integrated inequality at the endpoints; the
+zero-energy solution has zero costs. In particular, one finite original
+allowance pays the complete coarse work on every available prefix:
+
+```text
+int_0^T |W_low| +B_low(T) <= B_low(0)
+ =3M_L E0[(3/2)E0 H
+       +(C_S^(3/2)E0^2/nu^2)sqrt(H/(2nu))], T<=H.    (JP8)
+```
+
+The original horizon, E(t), pressure observation and remaining reserve
+are inherited at every seam. Composition cannot issue the allowance again.
+
+### The remaining source has a direct general-3D consumer
+
+The missing theorem is precisely one finite original-data K_gen with
+
+```text
+int_0^T [F_gen-D/2] <=K_gen(u0,nu,H,L)
+for every available smooth prefix from the same datum, T<=H.    (JP9)
+```
+
+This estimate is OPEN. If it holds, (JP4)--(JP8) imply, with
+A0=J(0)+B_low(0)+K_gen,
+
+```text
+J(T)+(1/2)int_0^T D <=A0,
+int_0^T ||u||9^3 <=(3C_S/(2nu))A0                    on R3,
+int_0^T ||u||9^3 <=C_I[3/(2nu)+H]A0                  on T3.     (JP10)
+```
+
+C_I is the periodic inhomogeneous Sobolev constant: r^(3/2) need not
+have zero mean, so its L2 term must be kept. In either case the standard
+order-one estimate can be derived directly, without assuming an endpoint
+L-infinity-in-time L3 theorem. With D2=||Delta u||2^2, interpolation gives
+
+```text
+Z'/2+nu D2 <= C_S^(1/6)||u||9 Z^(1/3) D2^(2/3),
+Z'+nu D2 <=[32sqrt(C_S)/(27nu^2)]||u||9^3 Z.          (JP11)
+```
+
+The Young constant is checked exactly. Gronwall then gives a bound
+controlled by the original data and (JP9), sufficient for the established
+order-one continuation criterion. The receiving declarations are
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` in
+`WholeSpaceEnstrophyContinuation.lean` and
+`FourierTameContinuation.exists_tameSolutionOn_of_orderOne` in
+`StochasticLagrangian/FourierTameContinuation.lean`. Each requires one
+bound for every solution prefix from the same datum on the prescribed
+horizon. The new estimates and their norm identifications remain an
+analytic conditional bridge, not a new Lean theorem or a proof of (JP9).
+
+### Convexity still does not prove the generated-source payment
+
+As an exact all-time calibration, use the actual Taylor--Green solution
+u=exp(-2nu t)(sin x cos y,-cos x sin y,0). Its canonical pressure is
+exp(-4nu t)(cos(2x)+cos(2y))/4 and q=(1-exp(-4L^2))p/4. Substitution
+checks every unforced equation and both observation equations in (JP2).
+Writing X=|u|^2 and Y=2|beta|^2/nu^2 gives the pointwise entropy derivative
+-6nu sqrt(X+Y)(X+2Y)<=0. This verifies a complete physical calibration;
+it does not establish the arbitrary-source estimate.
+
+For the horizontal projection variant z=(u_h,sqrt(2)grad_h q/nu), the
+unweighted core enclosure archived with (VC1) gives positive nonlinear
+pressure-stock production on the same Gaussian. Its unweighted coefficient
+is above 2.15e-5 after the spatial tail is included. Consequently its
+initial joint-entropy derivative has the large-amplitude limit
+
+```text
+lim_(c->infinity) c^(-7) J_h'(0;cV_8,nu)
+ =(sqrt(2)/nu)^3 int 3|beta_h| beta_h.beta_h,E >0.     (JP12)
+```
+
+The velocity terms are O(c^5) and the viscous terms are O(c^6). Dominated
+convergence applies to the complete Gaussian pressure tails. This refutes
+automatic monotonicity even for that convex projected observation with
+coercive explicit diffusion.
+The three-component pressure norm in (JP1) has a different coefficient;
+(JP12)'s sign is not asserted for it. Neither result settles a finite
+full-datum allowance for the integrated source.
+
+Run `python3 -O labs/joint_pressure_entropy.py`. Exact checks cover the
+source identities, full cubic Hessian, sharp diffusion fixture, actual
+Taylor--Green calibration, energy clock and continuation exponents.
+Operator bounds, integrations by parts and continuation remain analytic.
+No Lean declarations or axioms change.
