@@ -1,0 +1,300 @@
+{
+  "evidence": "Five source repairs and uniform exterior recovery are Lean certified; full continuation closure is program evidence.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue catalogue, MIT; Gonthier/Emery chord scan and flip semantics.",
+  "source_repairs": [
+    {
+      "input": "12322212313",
+      "fixed_colour": 2,
+      "active_order": [
+        9,
+        10,
+        0,
+        2,
+        6,
+        8
+      ],
+      "majority_block": [
+        9,
+        10,
+        0,
+        2
+      ],
+      "successful_pairs": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          9,
+          10
+        ]
+      ],
+      "direct_answers": [
+        "32122212313",
+        "32322212311",
+        "12322212331"
+      ],
+      "program_matching_crosscheck_count": 5
+    },
+    {
+      "input": "12322223131",
+      "fixed_colour": 1,
+      "active_order": [
+        4,
+        5,
+        6,
+        7,
+        9,
+        1,
+        2,
+        3
+      ],
+      "majority_block": [
+        4,
+        5,
+        6,
+        7,
+        9
+      ],
+      "successful_pairs": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "direct_answers": [
+        "12323323131",
+        "12322333131",
+        "12322232131",
+        "12322222121"
+      ],
+      "program_matching_crosscheck_count": 14
+    },
+    {
+      "input": "12323211232",
+      "fixed_colour": 3,
+      "active_order": [
+        5,
+        6,
+        7,
+        8,
+        10,
+        0,
+        1,
+        3
+      ],
+      "majority_block": [
+        5,
+        6,
+        7,
+        8,
+        10
+      ],
+      "successful_pairs": [
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          10
+        ]
+      ],
+      "direct_answers": [
+        "12323121232",
+        "12323222232",
+        "12323212132",
+        "12323211131"
+      ],
+      "program_matching_crosscheck_count": 14
+    },
+    {
+      "input": "12323321221",
+      "fixed_colour": 1,
+      "active_order": [
+        4,
+        5,
+        6,
+        8,
+        9,
+        1,
+        2,
+        3
+      ],
+      "majority_block": [
+        4,
+        5,
+        6,
+        8,
+        9
+      ],
+      "successful_pairs": [
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "direct_answers": [
+        "12322221221",
+        "12323231221",
+        "12323331321",
+        "12323321331"
+      ],
+      "program_matching_crosscheck_count": 14
+    },
+    {
+      "input": "12332132221",
+      "fixed_colour": 1,
+      "active_order": [
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        1,
+        2
+      ],
+      "majority_block": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "successful_pairs": [
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ]
+      ],
+      "direct_answers": [
+        "12323132221",
+        "12333122221",
+        "12332123221",
+        "12332133321"
+      ],
+      "program_matching_crosscheck_count": 14
+    }
+  ],
+  "new_stored_source_colouring_bytes": 0,
+  "kernel_matching_layout_checks": 0,
+  "program_anchor_continuation": {
+    "canonical_inputs": 7381,
+    "direct_inputs": 1587,
+    "new_seed_inputs": 5,
+    "stages": [
+      1592,
+      1776,
+      1870,
+      1941,
+      1975,
+      2002,
+      2020,
+      2035,
+      2056,
+      2085,
+      2106,
+      2121,
+      2131,
+      2146,
+      2156,
+      2163,
+      2176,
+      2194,
+      2210,
+      2225,
+      2235,
+      2255,
+      2272,
+      2286,
+      2303,
+      2323,
+      2343,
+      2362,
+      2379,
+      2395,
+      2418,
+      2442,
+      2473,
+      2509,
+      2541,
+      2591,
+      2650,
+      2726,
+      2818,
+      2929,
+      3058,
+      3190,
+      3363,
+      3570,
+      3823,
+      4133,
+      4556,
+      5043,
+      5582,
+      6182,
+      6805,
+      7199,
+      7372,
+      7381
+    ],
+    "full_source_lean_proof": false
+  },
+  "limits": [
+    "Source-coordinate and terminal-relation checks remain finite.",
+    "No structural rank proving the complete anchor continuation is supplied.",
+    "No strict ambient reduction, geometric supply or catalogue deletion follows."
+  ],
+  "verifier_sha256": "dff14dc2da8d969ed9a742106dcf6f98d758e31a8dddf9386a550070f1f4356b"
+}

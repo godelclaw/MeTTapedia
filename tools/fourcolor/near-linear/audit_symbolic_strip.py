@@ -114,7 +114,7 @@ def verify(here):
             'source_traces_checked': len(checked), 'direct_traces_reconstructed': sum(checked.values()),
             'new_stored_colour_witness_bytes': 0,
             'limits': ['The guard has three normalized boundary forms of one decoded source.',
-                       'Finite source-domain, terminal-relation and five-layout inverse checks remain.',
+                       'Finite source-domain and terminal-relation checks remain; the program independently cross-checks five matching layouts.',
                        'This does not establish full-source repair, a strict ambient reduction or geometric supply.',
                        'No catalogue deletion, original-certificate replacement or net whole-proof saving is claimed.'],
             'verifier_sha256': sha256(Path(__file__).read_bytes()).hexdigest()}

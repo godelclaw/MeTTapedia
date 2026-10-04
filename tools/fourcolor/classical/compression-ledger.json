@@ -3409,8 +3409,16 @@
       "name": "boundary-dependent symbolic repair for three segment forms",
       "record": "../near-linear/symbolic-strip-measurements.json",
       "status": "general source reconstruction and a three-form guard kernel checked",
-      "evidence": "Eighteen audit roots. Two anchor/majority consumers and one extra-anchor continuation retain the same arbitrary exterior. Symbolic ear joins reconstruct actual full source colourings without consuming earlier stored colouring witnesses.",
-      "scope": "Three normalized boundary forms of one source, with finite source, terminal-relation and inverse-layout checks retained. No full-source repair, geometric supply, strict reduction or net whole-proof saving is credited.",
+      "evidence": "Sixteen current audit roots. Two anchor/majority consumers and one extra-anchor continuation retain the same arbitrary exterior. Symbolic ear joins reconstruct actual full source colourings without consuming earlier stored colouring witnesses.",
+      "scope": "Three normalized boundary forms of one source, with finite source and terminal-relation checks retained. The inverse-layout checks have now been replaced by the general chromogram bridge. No full-source repair, geometric supply, strict reduction or net whole-proof saving is credited.",
+      "credited_compression": false
+    },
+    {
+      "name": "uniform exterior matching recovery and five critical source repairs",
+      "record": "../near-linear/chromogram-matching-measurements.json",
+      "status": "arbitrary-width bridge and five exact majority consumers kernel checked",
+      "evidence": "Twelve audit roots. The general Gonthier/Emery chord scan recovers the matching of the supplied exterior. One majority law repairs five D0099 inputs with six or eight active ports; it also replaces finite inverse-layout checks in the earlier three-form guard. Terminal source colourings reconstruct from joint symbolic relations.",
+      "scope": "No matching-layout enumeration or stored source-colouring table is consumed by these repairs. Finite source-coordinate and terminal-relation checks remain. Full 7381-input anchor closure is program evidence only; structural continuation, strict ambient reduction and geometric supply remain open.",
       "credited_compression": false
     }
   ],

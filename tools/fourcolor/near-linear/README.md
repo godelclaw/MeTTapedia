@@ -1,5 +1,51 @@
 # Near-linear Four Colour catalogue bridges
 
+## One exterior-matching theorem supports seven majority consumers
+
+[`KempeChromogramMatching.recover`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean)
+recovers a noncrossing matching from any accepted chromogram, at arbitrary
+boundary width. Switching one of its active chords retains that same
+chromogram. The proof reuses the general chord scan, disjointness and
+flip theorems from Gonthier/Emery's `FourColor.Bulk.Chords`; it consumes no
+bulk reducibility data. The resulting `majority_coclosure` theorem permits
+already composed repairs as continuations and retains the same arbitrary
+Kempe-closed exterior throughout.
+
+[`StripCriticalRepair.source_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripCriticalRepair.lean)
+applies this theorem to five nonextending D0099 inputs:
+
+| Input edge trace | Active ports | Consecutive majority block size |
+| --- | ---: | ---: |
+| `12322212313` | 6 | 4 |
+| `12322223131` | 8 | 5 |
+| `12323211232` | 8 | 5 |
+| `12323321221` | 8 | 5 |
+| `12332132221` | 8 | 5 |
+
+More than half the active ports lie in the chosen block, so some chord
+lies inside it; a shortest such chord is adjacent. Every adjacent pair
+in the block has a checked symbolic source extension. The proof therefore
+reconstructs a colouring of the complete decoded source graph for the
+chord provided by the actual exterior. No exterior matching layouts or
+full source colourings are tabulated in the Lean proof. Source-coordinate,
+cyclic-order and terminal-relation checks remain finite.
+
+The two majority inputs in the three-form guard below now use this same
+bridge. Their previous finite inverse-layout definitions and checks have
+been removed. The dependency audit excludes those checks, earlier stored
+colourings, interval search and the complete Four Colour theorem.
+
+Replay with `lake build kernelChromogramMatching`. The
+[kernel receipt](chromogram-matching-measurements.json) records twelve
+audit roots, standard axioms only, and about 31 seconds for five modules
+including imports. The [independent program](audit_critical_majority.py)
+checks the five repairs and finds that, together with the 1,587 direct
+inputs, their anchor closure reaches all 7,381 canonical inputs in 53
+rounds. **That full continuation is program evidence only.** A structural
+progress argument and its Lean proof remain open. This step establishes
+neither full source reducibility nor geometric supply or strict ambient
+reduction, and removes no catalogue entry.
+
 ## A boundary-dependent repair with three segment forms
 
 [`StripSymbolicRepair.guarded_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSymbolicRepair.lean)
@@ -32,12 +78,13 @@ earlier source-repair proofs. No new colouring-witness table is added.
 [`KempeChordExchange.coclosure_of_answers`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeChordComposition.lean)
 composes proved continuations at any boundary length. It follows the
 structural chord-cover theorem and retains the same arbitrary Kempe-closed
-exterior. Both majority consumers reuse the convex-block theorem. A finite
-inverse check covers five matching layouts for each of their two inputs;
-source-domain and terminal-relation checks also remain explicit.
+exterior. Both majority consumers reuse the convex-block theorem and the
+arbitrary-width matching recovery above. Source-domain and terminal-relation
+checks remain explicit; the independent program additionally cross-checks
+the five possible matching layouts for each of their two inputs.
 
 Replay with `lake build kernelSymbolicStrip`. The
-[kernel receipt](symbolic-strip-measurements.json) records eighteen audited
+[kernel receipt](symbolic-strip-measurements.json) records sixteen audited
 roots and standard axioms only; replay times include imports.
 The [independent replay](audit_symbolic_strip.py) checks all three guard
 forms, the possible anchor replies, both majority blocks and reconstructed

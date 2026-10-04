@@ -13,10 +13,18 @@
     "completed": true,
     "modules": [
       {
+        "module": "MettapediaFourColor.KempeChromogramMatching",
+        "source_sha256": "adb881e696bd21c215cb902fded60de5ea4fffaa50e276fb708481dc0dd0d07d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.347,
+        "olean_bytes": 556048,
+        "olean_sha256": "18d1fe16f8fca035b5b9c2443eb1a10120c1bf7eb74ac84b98df7d4a9be28519"
+      },
+      {
         "module": "MettapediaFourColor.KempeChordComposition",
         "source_sha256": "6eb45a21a1e554abde102459b21e0018287b63f5a6cb171fceee0e92a6ef7abd",
         "exit_code": 0,
-        "frontend_wall_seconds": 1.732,
+        "frontend_wall_seconds": 1.719,
         "olean_bytes": 22768,
         "olean_sha256": "21dd8110252edc9e9bce2b190cdacac1ce097c6dfe658a4a09223ec9fed29a0f"
       },
@@ -24,29 +32,34 @@
         "module": "MettapediaFourColor.StripSourceExtension",
         "source_sha256": "fbe4b16d1e38ddcfbf87562c816c647b01df9396b78b05ea3c91f0fbed61f21b",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.008,
+        "frontend_wall_seconds": 3.094,
         "olean_bytes": 76016,
         "olean_sha256": "41b82677c8d3c141563c5f795a70faaac81e90bac044471f253efe6f49e07482"
       },
       {
         "module": "MettapediaFourColor.StripSymbolicRepair",
-        "source_sha256": "e1a04c103f4520a7c329b4b81fb6f0b5dc0ac2e9d6155dc9eef1b754705d23cd",
+        "source_sha256": "f47292293a753b97257c26647244ff57df60b4fa0bd853dd48e5711e581a6853",
         "exit_code": 0,
-        "frontend_wall_seconds": 6.914,
-        "olean_bytes": 492048,
-        "olean_sha256": "d89ec5ae447114c013eb63769fa214c319ab0cbe843c76591f2a8697ab61a816"
+        "frontend_wall_seconds": 6.045,
+        "olean_bytes": 433632,
+        "olean_sha256": "2764ef0fccd1a4082e5e8f279f7416ecc3d5087c1f85ed8939f812f9e66b68c3"
       },
       {
         "module": "MettapediaFourColor.SymbolicStripAudit",
-        "source_sha256": "c275faecc3d736bafca6db3cf01ec3b6a9dcc2335e4bea12ed6f389dd83b2d6b",
+        "source_sha256": "0a158f4798543e5ff3130b2c24d18d9f848bf212298beb318310aadaef3d0d6c",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.553,
+        "frontend_wall_seconds": 4.679,
         "olean_bytes": 2600,
         "olean_sha256": "87282c9ccf21d013691e45672f0542ee1c41071a6a63190abee053ed10757cd9"
       }
     ]
   },
   "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean",
+      "bytes": 8582,
+      "sha256": "adb881e696bd21c215cb902fded60de5ea4fffaa50e276fb708481dc0dd0d07d"
+    },
     {
       "file": "lean/fourcolor-classical/MettapediaFourColor/KempeChordComposition.lean",
       "bytes": 970,
@@ -59,19 +72,19 @@
     },
     {
       "file": "lean/fourcolor-classical/MettapediaFourColor/StripSymbolicRepair.lean",
-      "bytes": 10486,
-      "sha256": "e1a04c103f4520a7c329b4b81fb6f0b5dc0ac2e9d6155dc9eef1b754705d23cd"
+      "bytes": 9750,
+      "sha256": "f47292293a753b97257c26647244ff57df60b4fa0bd853dd48e5711e581a6853"
     },
     {
       "file": "lean/fourcolor-classical/MettapediaFourColor/SymbolicStripAudit.lean",
-      "bytes": 3284,
-      "sha256": "c275faecc3d736bafca6db3cf01ec3b6a9dcc2335e4bea12ed6f389dd83b2d6b"
+      "bytes": 3531,
+      "sha256": "0a158f4798543e5ff3130b2c24d18d9f848bf212298beb318310aadaef3d0d6c"
     }
   ],
-  "frontend_seconds_including_imports": 16.207,
+  "frontend_seconds_including_imports": 18.884,
   "audit": {
-    "roots": 18,
-    "dependency_declarations": 6330,
+    "roots": 16,
+    "dependency_declarations": 6646,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -82,7 +95,8 @@
     "previous_stored_source_colourings_used": false,
     "previous_source_repair_proofs_used": false,
     "coversRec_used": false,
-    "interval_search_used": false
+    "interval_search_used": false,
+    "finite_inverse_decoder_used": false
   },
   "proved": {
     "arbitrary_boundary_source_reconstruction": true,
@@ -92,8 +106,9 @@
     "same_exterior_retained": true,
     "actual_terminal_colourings": true,
     "new_stored_colour_witness_bytes": 0,
-    "finite_inverse_layouts_per_input": 5,
-    "finite_inverse_inputs": 2
+    "finite_inverse_layouts_per_input": 0,
+    "finite_inverse_inputs": 0,
+    "arbitrary_width_matching_recovery": true
   },
   "construction": {
     "max_chord_moves_in_displayed_strategy": 3,
@@ -107,7 +122,7 @@
   "independent_program": "symbolic-strip-audit.json",
   "limits": [
     "The guard is a three-form boundary family of D0099, not an unbounded graph family.",
-    "Finite guard classification, source-coordinate, terminal-relation and five-layout inverse checks remain.",
+    "Finite guard classification, source-coordinate and terminal-relation checks remain. The inverse-layout checks have been replaced by the general chord-scan theorem.",
     "No full D0099 repair, geometric supply or strict ambient reduction is established.",
     "The earlier proof declarations remain; the new guarded theorem does not consume their stored colouring witnesses.",
     "No net whole-proof size, runtime or catalogue saving is claimed."

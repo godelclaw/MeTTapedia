@@ -1,0 +1,150 @@
+{
+  "classification": "KERNEL_CHECKED_UNIFORM_EXTERIOR_RECOVERY_AND_FIVE_SOURCE_REPAIRS",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeChromogramMatching",
+        "source_sha256": "adb881e696bd21c215cb902fded60de5ea4fffaa50e276fb708481dc0dd0d07d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.559,
+        "olean_bytes": 556048,
+        "olean_sha256": "18d1fe16f8fca035b5b9c2443eb1a10120c1bf7eb74ac84b98df7d4a9be28519"
+      },
+      {
+        "module": "MettapediaFourColor.StripSymbolicRepair",
+        "source_sha256": "f47292293a753b97257c26647244ff57df60b4fa0bd853dd48e5711e581a6853",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.168,
+        "olean_bytes": 433632,
+        "olean_sha256": "2764ef0fccd1a4082e5e8f279f7416ecc3d5087c1f85ed8939f812f9e66b68c3"
+      },
+      {
+        "module": "MettapediaFourColor.SymbolicStripAudit",
+        "source_sha256": "0a158f4798543e5ff3130b2c24d18d9f848bf212298beb318310aadaef3d0d6c",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.728,
+        "olean_bytes": 2600,
+        "olean_sha256": "87282c9ccf21d013691e45672f0542ee1c41071a6a63190abee053ed10757cd9"
+      },
+      {
+        "module": "MettapediaFourColor.StripCriticalRepair",
+        "source_sha256": "e918d79f3c9ea711b52fd2785ec768e10d16e192f4b322e28f0911b6b2e932de",
+        "exit_code": 0,
+        "frontend_wall_seconds": 12.181,
+        "olean_bytes": 356824,
+        "olean_sha256": "57fcb9af0a0b96ad029e5ecd0883b1ae13fbf5d71a15be6c2eb29de0cbb9a609"
+      },
+      {
+        "module": "MettapediaFourColor.ChromogramMatchingAudit",
+        "source_sha256": "d5317dd41ca77034a95df32b22fc06821d3a208c1ef24397aceca62845629597",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.345,
+        "olean_bytes": 2600,
+        "olean_sha256": "f1baf20b16530608b8ad405ad2ec0a92ff3d9c5c9ca541fdb5e62165f4034445"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean",
+      "bytes": 8582,
+      "sha256": "adb881e696bd21c215cb902fded60de5ea4fffaa50e276fb708481dc0dd0d07d"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripSymbolicRepair.lean",
+      "bytes": 9750,
+      "sha256": "f47292293a753b97257c26647244ff57df60b4fa0bd853dd48e5711e581a6853"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/SymbolicStripAudit.lean",
+      "bytes": 3531,
+      "sha256": "0a158f4798543e5ff3130b2c24d18d9f848bf212298beb318310aadaef3d0d6c"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripCriticalRepair.lean",
+      "bytes": 3241,
+      "sha256": "e918d79f3c9ea711b52fd2785ec768e10d16e192f4b322e28f0911b6b2e932de"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/ChromogramMatchingAudit.lean",
+      "bytes": 3055,
+      "sha256": "d5317dd41ca77034a95df32b22fc06821d3a208c1ef24397aceca62845629597"
+    }
+  ],
+  "frontend_seconds_including_imports": 30.981,
+  "attribution": {
+    "general_chord_scan": "Gonthier/Emery, FourColor.Bulk.Chords; general scan and flip theorems, no bulk reducibility data",
+    "source": "Yuta Inoue D0099, MIT",
+    "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53"
+  },
+  "audit": {
+    "roots": 12,
+    "dependency_declarations": 6327,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "finite_inverse_layouts_used": false,
+    "stored_source_colourings_used": false,
+    "coversRec_used": false,
+    "interval_search_used": false,
+    "required_dependencies": [
+      "chordsAux",
+      "chords_disjoint",
+      "chords_nonCrossing",
+      "matchg_flip",
+      "KempeChromogramMatching.recover",
+      "KempeChromogramMatching.majority_coclosure",
+      "exists_adjacent_majority",
+      "StripSourceExtension.complete_valid",
+      "StripResponseSummary.terminal_iff",
+      "TriangleStripAnchors.input0099",
+      "KempeCoclosure"
+    ]
+  },
+  "proved": {
+    "arbitrary_boundary_width_matching_recovery": true,
+    "original_accepted_chromogram_retained": true,
+    "arbitrary_continuation_predicate": true,
+    "new_source_repair_inputs": 5,
+    "active_port_counts": [
+      6,
+      8
+    ],
+    "earlier_three_form_guard_integrated": true,
+    "shared_majority_consumers": 7,
+    "actual_terminal_colourings": true,
+    "new_stored_source_colouring_bytes": 0,
+    "kernel_matching_layout_checks": 0
+  },
+  "independent_program": "critical-majority-audit.json",
+  "program_only": {
+    "canonical_source_inputs": 7381,
+    "direct_inputs": 1587,
+    "additional_seeds": 5,
+    "anchor_rounds": 53,
+    "full_closure": true
+  },
+  "limits": [
+    "Source coordinates, cyclic order and terminal-relation checks for the seven majority consumers remain finite.",
+    "Full D0099 anchor continuation is program evidence, not a Lean full-source repair or a structural progress theorem.",
+    "The arbitrary-width bridge does not establish an unbounded family of source graph reductions.",
+    "No strict ambient reduction or geometric supply theorem is established by this step.",
+    "No net whole-proof size, runtime or catalogue saving is claimed."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0
+}

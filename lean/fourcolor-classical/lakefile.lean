@@ -1135,7 +1135,22 @@ target kernelSymbolicStrip pkg : Unit := do
         "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
         "--package", ".", "--output", ".lake/symbolic-strip",
         "--library-output", ".lake/build/lib/lean", "--modules",
-        "KempeChordComposition", "StripSourceExtension",
+        "KempeChromogramMatching", "KempeChordComposition", "StripSourceExtension",
         "StripSymbolicRepair", "SymbolicStripAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay the uniform chromogram-to-matching bridge. -/
+target kernelChromogramMatching pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/chromogram-matching",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeChromogramMatching", "StripSymbolicRepair", "SymbolicStripAudit",
+        "StripCriticalRepair", "ChromogramMatchingAudit"]
       cwd := pkg.dir
       env := env }

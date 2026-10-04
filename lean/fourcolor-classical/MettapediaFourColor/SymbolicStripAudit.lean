@@ -11,7 +11,6 @@ run_cmd do
     ``StripSourceExtension.terminal_iff_graphTrace, ``StripSymbolicRepair.guard_ear,
     ``StripSymbolicRepair.classify, ``StripSymbolicRepair.coordinates,
     ``StripSymbolicRepair.order, ``StripSymbolicRepair.direct_pairs,
-    ``StripSymbolicRepair.mates_valid, ``StripSymbolicRepair.decode_check,
     ``StripSymbolicRepair.majority_answer, ``StripSymbolicRepair.majority_coclosure,
     ``StripSymbolicRepair.source_repair, ``StripSymbolicRepair.residual_continuation,
     ``StripSymbolicRepair.residual_repair, ``StripSymbolicRepair.guarded_repair,
@@ -42,11 +41,16 @@ run_cmd do
         if let some info := env.find? name then
           todo := info.getUsedConstantsAsSet.toList ++ todo
     if root == ``StripSymbolicRepair.guarded_repair then
+      for legacy in [`FourColor.KempeFiniteDecoder.parses,
+          `FourColor.StripSymbolicRepair.decode_check,
+          `FourColor.StripSymbolicRepair.mate, `FourColor.StripSymbolicRepair.mates_valid] do
+        if seen.contains legacy then
+          throwError m!"Legacy inverse-layout dependency in {root}: {legacy}"
       for needed in [``exists_adjacent_majority,
           ``KempeChordExchange.coclosure_of_answers, ``KempeChordExchange.answer_exists,
           ``StripSourceExtension.colouring, ``StripSourceExtension.complete_valid,
           ``StripResponseSummary.terminal_iff, ``TriangleStripAnchors.input0099,
-          ``StripSymbolicRepair.direct_pairs, ``StripSymbolicRepair.decode_check,
+          ``StripSymbolicRepair.direct_pairs, ``KempeChromogramMatching.recover,
           ``StripSymbolicRepair.initial_answers, ``StripSymbolicRepair.residual_answers,
           ``StripSymbolicRepair.residual_first, ``StripSymbolicRepair.classify,
           ``KempeCoclosure] do

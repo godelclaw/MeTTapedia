@@ -1,7 +1,7 @@
 import MettapediaFourColor.StripSourceExtension
-import MettapediaFourColor.KempeFiniteDecoder
 import MettapediaFourColor.KempeMajorityRepair
 import MettapediaFourColor.KempeChordComposition
+import MettapediaFourColor.KempeChromogramMatching
 
 /-!
 # A variable boundary segment with one composed repair strategy
@@ -10,8 +10,8 @@ The boundary segment has three forms, changing the exterior's possible
 component choices. Two use one anchor exchange followed by the majority
 law; the third may use a further anchor exchange before that same law.
 Successful answers are reconstructed from symbolic ear relations; no
-stored list of full colouring witnesses is consumed. The inverse matching
-cover remains a finite five-layout check.
+stored list of full colouring witnesses is consumed. The exterior matching
+is recovered by a uniform chord scan at arbitrary width.
 -/
 
 namespace FourColor.StripSymbolicRepair
@@ -103,24 +103,6 @@ theorem successful : ∀ s, ∀ a ∈ block, ∀ b ∈ block, b.val = a.val + 1 
 theorem direct_pairs : ∀ s a b, good s a b = true →
     Direct (List.ofFn (KempeIntervalRepair.switch (word s true) a b)) := by decide +kernel
 
-def relabel (s : Bool) : Fin 11 → Fin 11 :=
-  if s then ![0,1,2,3,7,4,5,6,8,9,10] else id
-
-def unlabel (s : Bool) : Fin 11 → Fin 11 :=
-  if s then ![0,1,2,3,5,6,7,4,8,9,10] else id
-
-/-- Move one inactive port past the three changed active positions. -/
-def mate (s : Bool) (j : Fin 5) (i : Fin 11) : Fin 11 :=
-  relabel s (StripTwoRoundRepair.mate j (unlabel s i))
-
-theorem mates_valid : ∀ s j, Function.Involutive (mate s j) ∧ Noncrossing (mate s j) ∧
-    ∀ i, mate s j i = i ↔ word s true i = c1 := by
-  unfold Function.Involutive
-  decide +kernel
-
-theorem decode_check : ∀ s, ∀ w ∈ KempeFiniteDecoder.parses [] (List.ofFn (word s true)),
-    ∃ j : Fin 5, gram (mate s j) (word s true) = w := by decide +kernel
-
 theorem initial_answers : ∀ s, ∀ t ∈ KempeChordExchange.answers
     ((List.ofFn (word s false)).map EdgePerm.e321) 9,
     Direct (t.map EdgePerm.e321) ∨ t.map EdgePerm.e321 = List.ofFn (word s true) := by
@@ -165,12 +147,11 @@ theorem majority_answer (s : Bool) (m : Fin 11 → Fin 11)
   exact ⟨_, ht, hm⟩
 
 theorem majority_coclosure (s : Bool) : KempeCoclosure Terminal (List.ofFn (word s true)) := by
-  intro outside hout hold
-  obtain ⟨_, w, hw, hall⟩ := hout _ hold
-  obtain ⟨j, rfl⟩ := decode_check s w ((KempeFiniteDecoder.mem_parses _ _ _).mpr hw)
-  obtain ⟨hi, hn, hf⟩ := mates_valid s j
-  obtain ⟨et, ht, hm⟩ := majority_answer s (mate s j) hi hn hf
-  exact ⟨et, ht, hall _ hm⟩
+  apply KempeChromogramMatching.majority_coclosure (word s true) (embed s) (rank s)
+    (coordinates s).1 (coordinates s).2.1 (coordinates s).2.2.1
+    (order s) block convex majority
+  intro a ha b hb hadj
+  exact direct_coclosure (direct_pairs s _ _ (successful s a ha b hb hadj))
 
 /-- Both initial boundaries follow the same two-stage argument. All colour
 witnesses come from source reconstruction after symbolic elimination. -/
