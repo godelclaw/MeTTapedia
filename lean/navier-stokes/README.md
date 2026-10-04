@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [integrated pressure test](labs/README.md#whole-space-pressure-can-increase-the-joint-stock)
+shows that the joint strain/swirl stock can increase on an actual unforced
+history even after all viscous and axis losses, while kinetic energy falls.
+The full canonical pressure integral is checked exactly. A complementary
+estimate absorbs the derivatives of its observer into diffusion, retaining
+a localized pressure-increment cost and the signed cost of the axis
+subtraction. Paying that history from the original datum remains open.
+The local PDE and limiting arguments are analytic, with exact symbolic
+checks and no new Lean declarations.
+
 The [joint strain/swirl perspective](labs/README.md#a-joint-strain-and-swirl-perspective-cancels-direct-amplification)
 cancels direct quadratic amplification using a positive density transported
 by the same actual axisymmetric fluid. Its physical-volume diffusion is

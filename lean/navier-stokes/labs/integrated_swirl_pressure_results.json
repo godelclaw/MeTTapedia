@@ -1,0 +1,47 @@
+{
+  "source_polynomial": "16*r**4*z**2 + 8*r**4 + 16*r**2*z**4 - 16*r**2*z**2 - 12*r**2 + 24*z**4 - 40*z**2 + 6",
+  "kinetic": {
+    "E0_over_pi_three_halves": "15*sqrt(2)/32",
+    "gradient_energy_over_pi_three_halves": "119*sqrt(2)/32",
+    "physical_energy_rate": "E_prime(0)=-(119 sqrt(2)/16) nu A^2 pi^(3/2)<0"
+  },
+  "exact_weight": {
+    "weight_power": 5,
+    "heat_pair": "-sqrt(2)*sqrt(pi)*(30868786*d**11 - 48291699*d**10 + 372883484*d**9 + 151571208*d**8 - 252623912*d**7 - 236010272*d**6 - 69728256*d**5 + 1386464*d**4 + 8300288*d**3 + 3493888*d**2 + 765952*d + 73728)/(16384*d**3*(d + 1)**(23/2))",
+    "transformed_integrand": "-(30868786*x**22 - 387848345*x**20 + 2553583704*x**18 - 10470856293*x**16 + 27940315108*x**14 - 49948497642*x**12 + 60967449840*x**10 - 51049580010*x**8 + 28906418970*x**6 - 10601578845*x**4 + 2278041480*x**2 - 218243025)/(8192*x**22*(x - 1)**3*(x + 1)**3)",
+    "primitive": "15*log(x - 1)/16 - 15*log(x + 1)/16 - (-1612800*x**24 + 2688000*x**22 - 649104666*x**20 + 5724995937*x**18 - 27883477901*x**16 + 87274774660*x**14 - 178677666440*x**12 + 242432883630*x**10 - 219695324310*x**8 + 131798246580*x**6 - 50390490150*x**4 + 11153367225*x**2 - 1091215125)/(860160*x**25 - 1720320*x**23 + 860160*x**21)",
+    "W": "pi**(3/2)*(-20189482811/1174405120 + 45*sqrt(2)*log(1 + sqrt(2))/32)"
+  },
+  "flat_limit": {
+    "weight_power": 0,
+    "heat_pair": "sqrt(2)*sqrt(pi)*(26*d**6 + 251*d**5 - 416*d**4 - 652*d**3 - 312*d**2 - 168*d - 32)/(16*d**3*(d + 1)**(13/2))",
+    "transformed_integrand": "(26*x**12 + 95*x**10 - 1281*x**8 + 3002*x**6 - 2972*x**4 + 1263*x**2 - 165)/(8*x**12*(x - 1)**3*(x + 1)**3)",
+    "primitive": "(-546*x**10 - 1503*x**8 + 14444*x**6 - 22090*x**4 + 12110*x**2 - 1575)/(840*x**15 - 1680*x**13 + 840*x**11)",
+    "W": "-8317*pi**(3/2)/35840"
+  },
+  "diffusion": {
+    "R0_over_pi_three_halves": "189619*sqrt(3)/5832",
+    "relative_diffusion_over_nu_pi_three_halves": "242249*sqrt(3)/729",
+    "gradient_diffusion_over_nu_pi_three_halves": "205049*sqrt(3)/1458",
+    "axis_diffusion_over_nu_pi_three_halves": "28153*sqrt(3)/162",
+    "D_over_nu_pi_three_halves": "157154*sqrt(3)/243",
+    "reversed_pressure_lower": "W0 > 15 pi^(3/2)",
+    "physical_family": "u0=-A V, h0=(1+|x|^2)^(-10/3), A>=100 nu",
+    "actual_rate": "R_prime(0)=W(0)-D(0)>3 pi^(3/2) A^4"
+  },
+  "absorption": {
+    "subtraction": "p_tilde=p-exp(-r^2/ell^2)*p_axis(z)",
+    "exact_identity": "W=-6pi integral p_tilde partial_r(sqrt(Q)m/h) drdz + J",
+    "seam": "J=6pi integral sqrt(Q)m/h * cutoff_prime * p_axis drdz",
+    "pressure_square": "V=integral_R3 sqrt(Q)/h * (p_tilde/r)^2 dx",
+    "estimate": "W <= D/2 + (3/nu)V + J",
+    "scope": "Finite for the original exponent-three density under the stated prefix-local decay; no original-datum bound on the new pressure history is supplied."
+  },
+  "limitation": "Exact Gaussian initial rates and square certificates; actual local evolution and large-envelope limits are analytic. No full-datum arbitrary-horizon pressure budget or blowup is established.",
+  "source_sha256": {
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b",
+    "circulation_source_reserve.py": "12366fd5dc83962c0f7deb40ebc42939bfcfb4d4d01249b61aca79537a96d926",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37"
+  }
+}

@@ -48626,3 +48626,207 @@ spatial integration, continuation and local persistence remain analytic.
 No Lean declarations or axioms change. The next estimate is (JP8) with
 the same evolving h and the complete signed pressure, without resetting
 the parent state.
+
+## Whole-space pressure can increase the joint stock
+
+`integrated_swirl_pressure.py` tests the spatial pressure work left by
+(JP6). The complete integral can be positive and can exceed the complete
+viscous loss on an actual unforced flow. This refutes automatic monotonicity
+of that stock, including after spatial integration. A complementary square
+completion absorbs the derivatives of its pressure-test weight and leaves
+a precise pressure-increment cost. Neither result pays (JP8) over arbitrary
+histories.
+
+### An exact smooth coupled datum
+
+Put `R_s^2=r^2+z^2` and define the whole-space axisymmetric datum V by
+
+```text
+chi=z exp(-R_s^2),
+V_r=-r chi_z, V_z=2chi+r chi_r,
+V_theta=2sqrt(2) r z exp(-R_s^2),
+m_V=(1-2z^2)exp(-R_s^2), b_V=2sqrt(2)z exp(-R_s^2),
+m_V^2+b_V^2=(1+2z^2)^2 exp(-2R_s^2).                  (IP1)
+```
+
+Its Cartesian components are polynomials times a Gaussian. It is smooth,
+divergence free and finite energy. The positive square in (IP1) makes
+the critical perspective integrals exactly computable without replacing
+the pressure by a model.
+
+The density law in (JP2) also permits initial profiles
+`h0=(1+R_s^2)^(-s)`. For the exact calculation choose s=10/3.
+Its lifted mass is finite and its circulation maximum is
+`G=(s-1)^(s-1)/s^s`. Thus the cancellation and conditional consumer
+(JP5)--(JP9) apply with this G. The original exponent s=3 is tested below
+as well.
+
+Let R,W,D denote exactly the physical-volume stock, signed pressure work
+and full diffusion from (JP6). For V, with the new h0,
+
+```text
+R(0)=pi^(3/2) * 189619sqrt(3)/5832,
+W_V(0)=-pi^(3/2) c,
+c=20189482811/1174405120
+    -(45sqrt(2)/32)log(1+sqrt(2)) >15,
+D(0)=nu pi^(3/2) * 157154sqrt(3)/243
+    <1200nu pi^(3/2).                                (IP2)
+```
+
+The three diffusion contributions, divided by `nu pi^(3/2)`, are
+`242249sqrt(3)/729`, `205049sqrt(3)/1458` and `28153sqrt(3)/162`.
+The last is the physical axis loss. The bounds in (IP2) use
+`log(1+sqrt(2))=asinh(1)<1`, `sqrt(2)<3/2` and `sqrt(3)<7/4`;
+no floating-point sign decision is used.
+
+To compute W, the checker evolves the complete source
+`tr[(grad V)^2]` by three-dimensional heat flow and integrates its radial
+derivative against the exact test weight. The heat equation and initial
+source are checked before integration. With `d=1+8t` and then
+`x=sqrt(d+1)`, the final integral has a rational/logarithmic primitive;
+its derivative and both endpoints are checked exactly. An independent
+radial integration by parts gives the same answer only when its axis
+pressure term is retained. No Fourier modes, source terms or spatial
+regions have been removed.
+
+### A whole reserve grows while kinetic energy falls
+
+Take the actual initial datum `u0=-A V`, with fixed nu>0 and A>=100nu,
+and keep the same h0. Canonical pressure scales by A^2. The orientation
+of m reverses, so
+
+```text
+R_A(0)=A^3 R_V(0),
+W_A(0)=A^4 pi^(3/2)c,
+D_A(0)=nu A^3 pi^(3/2) * 157154sqrt(3)/243,
+R_A'(0)=W_A(0)-D_A(0)>3pi^(3/2)A^4>0.                (IP3)
+```
+
+In contrast, the complete physical energy obeys
+
+```text
+E_A(0)=A^2 pi^(3/2) * 15sqrt(2)/32,
+E_A'(0)=-nu A^2 pi^(3/2) * 119sqrt(2)/16<0.            (IP4)
+```
+
+All energy exchange is internal. Pressure redistributes the fluid in a
+way that increases this more sensitive stock while viscosity removes
+kinetic energy. The density still follows the same full fluid.
+
+These initial rates belong to actual local unforced solutions. Spatial
+integration can be justified on a sufficiently short smooth interval,
+rather than treating a formal jet as the flow. One may use weighted local
+construction: the velocity and its required spatial derivatives have
+`O(<x>^-4)` bounds; the time derivative satisfies the linearized NS
+equation with its actual initial value. The latter is also smooth with
+this decay. The same weighted contraction argument controls it locally.
+The velocity localization and differentiated fixed-point method are given
+in [Brandolese and Vigneron, Theorem 1.1 and Proposition 2.7](https://arxiv.org/html/0706.1489v1).
+
+For a smooth axisymmetric field vanishing transversely on the axis,
+these bounds imply that m,b and their required derivatives are bounded
+by `C <x>^-4/(1+r)`: use a radial derivative when r<=1 and divide the
+velocity by r when r>=1. Scalar comparison in the actual density equation
+keeps h comparable to `<x>^(-20/3)`, with bounded logarithmic derivatives,
+on this compact prefix. The differentiated stock densities are then
+dominated by `C <x>^-2/(1+r)^3`, which is integrable with physical volume
+`2pi r dr dz`. This justifies the actual stock derivative and its continuity.
+Consequently R_A increases on some nonzero interval. No uniform lower
+bound for that interval over unbounded A is claimed.
+
+This disproves `W<=D/2`, `W<=D` and monotonicity of R as universal
+instantaneous assertions for this class. It does not refute a positive
+allowance depending on the full original datum in (JP8). No repeated
+concentration or singular solution has been constructed.
+
+### The original density exponent has the same obstruction
+
+Return to the original family
+`h0,ell=ell^-2(1+R_s^2/ell^2)^-3`, keeping kappa=1 and ell>=1.
+For the same fixed V, dominated convergence gives
+
+```text
+lim_(ell->infinity) ell^-3 W_V,ell(0)
+ =3 int_R3 sqrt(m_V^2+b_V^2) m_V P_V dx
+ =-8317pi^(3/2)/35840 <0.                             (IP5)
+```
+
+The flat weight here is a limit of admissible finite-mass densities,
+not the density used by an actual solution. The checker evaluates the
+limit pressure integral independently. For domination, the test weight
+is a Gaussian times `(1-4z^4)(1+R_s^2/ell^2)^(9/2)`, bounded uniformly
+by a Gaussian times a fixed polynomial; the canonical pressure derivative
+is smooth and decays. Therefore W is negative for all sufficiently
+large finite ell. Reverse V and choose A large enough to beat its finite
+initial diffusion. This gives the same failure for the density family
+in (JP2). It does not rule out a better datum-selected density or a
+non-monotone signed history allowance.
+
+### Pressure subtraction must respect both the axis and infinity
+
+For the actual evolving fields, write
+`a=sqrt(Q)m/h`, so `W=6pi int a p_r dr dz`. Direct radial integration
+by parts gives
+
+```text
+W=-6pi int p a_r dr dz-6pi int_axis p a dz.            (IP6)
+```
+
+The axis term is essential. Constant pressure shifts cancel between
+the terms at finite cutoffs when all boundaries are retained. Use the
+decaying canonical normalization for the global estimates.
+
+Subtracting `p_axis(z)` at every r removes the inner boundary but can
+destroy decay at radial infinity. Instead fix ell>0 once and put
+
+```text
+chi(r)=exp(-r^2/ell^2),
+p_tilde=p-chi p_axis,
+J=6pi int a chi'(r) p_axis(z) dr dz,
+W=-6pi int p_tilde a_r dr dz+J.                       (IP7)
+```
+
+The localized pressure difference vanishes quadratically at the axis
+and retains the full pressure at large radial distance. J is the signed
+cost of the subtraction; it is not discarded or absorbed into a free
+choice of pressure.
+
+The derivative of the weight splits exactly as
+
+```text
+a_r=(sqrt(Q)/h)(m_r-m h_r/h)+(m/(2h sqrt(Q)))Q_r.
+V_p=int_R3 (sqrt(Q)/h)(p_tilde/r)^2 dx.
+W <= D/2+(3/nu)V_p+J.                                (IP8)
+```
+
+Two completed squares prove the estimate. The first uses half of
+`3nu int sqrt(Q)|m_r-m h_r/h|^2/h`; the second uses half of
+`(3nu/4)int Q_r^2/sqrt(Q)`. The remaining pressure-square coefficient
+is bounded using `m^2<=hQ`. All axial derivatives, the other relative
+gradient and the axis loss stay available on the favorable side.
+Thus differentiating the observer does not require a separate unpaid
+bound on grad h.
+
+For the original exponent-three h, (IP8) is finite under the decay
+hypotheses of (JP6), together with `p=O(<x>^-3)` and the corresponding
+axis Taylor bound. Near the axis `p_tilde=O(r^2)`. At infinity the
+canonical pressure and localized subtraction give integrable terms.
+The exponent matters: with h comparable to `<x>^(-2s)` and an
+`O(<x>^-5)` meridional quotient, the conical radial bound for V_p is
+`O(R_s^(3s-11)) dR_s`. Its integrability requires s<10/3. Hence the
+exact s=10/3 calibration for (IP2) is not asserted to give a finite
+pressure-square bound along every later history; the original s=3
+choice has room in this estimate.
+
+A sufficient remaining task is an original-datum upper bound on
+`int_0^T [(3/nu)V_p+J]` for every compatible prefix, or a sharper signed
+estimate that retains cancellation in (IP7). The stochastic action
+payment (JP4) does not supply this bound. Both the orientation and the
+same inherited density must remain in any proposed composition rule.
+
+Run `python3 -O labs/integrated_swirl_pressure.py`. Exact checks cover
+the canonical heat-source evolution, whole-space integrals and their
+axis terms, all three diffusion contributions, kinetic energy, amplitude
+scaling, the flat-envelope limit and both absorption squares. Actual
+local existence, weighted integration, comparison and limiting arguments
+remain analytic. No Lean declarations or axioms change.
