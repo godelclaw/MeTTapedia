@@ -1,5 +1,49 @@
 # Near-linear Four Colour catalogue bridges
 
+## One boundary requires a change of colour pair
+
+[CorePairChangeObstruction](../../../lean/fourcolor-classical/MettapediaFourColor/CorePairChangeObstruction.lean)
+proves that the D0092 boundary word `01021312321` cannot extend after any
+pointwise selection of swaps in a single colour pair. Six short arguments
+use source triangles and adjacency; the 45 required source incidences are
+decoded and checked once. There is no table of possible endpoints.
+
+[CorePairHistoryObstruction](../../../lean/fourcolor-classical/MettapediaFourColor/CorePairHistoryObstruction.lean)
+combines this with the generic fixed-pair history theorem. On any exterior
+carrying this word, every finite history using one fixed pair fails to
+reach an extendible boundary. There is no bound on exterior size, and the
+negative result requires no planarity hypothesis. Pullback along a source
+graph homomorphism gives the same lower bound for ambient reconstruction.
+
+The earlier actual spherical example supplies the positive counterpart:
+its two physical switches, first using colours 1/3 and then 0/3, reach a
+full colouring. `optimal_reconstruction` proves that this history is
+shortest on that example. The seven-root audit excludes repair tables and
+the complete Four Colour theorem; it also checks that the universal
+obstruction has no dependency on the example's exterior geometry.
+
+The [exterior probe](pair-preparation-probe.json) separately enumerates all
+4,862 triangulations of the eleven-port polygon. The two fixed initial
+words give 399 proper colouring/exterior pairs. Actual component search
+finds repairs of length at most three in each, with 14 requiring three.
+The fixed two-switch recipe above succeeds on only 12 of the 199 exteriors
+compatible with its input. These are bounded program results; exteriors
+with additional vertices are outside this test.
+
+This rules out fixed-pair repair for this word and motivates adaptive pair
+selection. It does not rule out mixed-pair compositional repair, establish
+a general three-switch bound, or supply occurrences. Counts remain 633
+coverage entries, 629 original certificates and 336 replaced member checks.
+The [measurement receipt](core-pair-history-measurements.json) records
+scope, dependencies and costs. The source obstruction checks in about four
+seconds; reuse applies its theorem without repeating discovery.
+
+```sh
+python3 tools/fourcolor/near-linear/probe_pair_preparation.py
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.CorePairHistoryAudit
+```
+
 ## Core lists preserve extension but lose a physical repair choice
 
 [The core-profile counterexample](../../../lean/fourcolor-classical/MettapediaFourColor/CoreProfileSwitchObstruction.lean)

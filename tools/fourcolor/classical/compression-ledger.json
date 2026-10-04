@@ -3175,6 +3175,75 @@
       "new_catalogue_entries_removed": 0,
       "new_original_certificate_dependencies_removed": 0,
       "new_member_checks_removed": 0
+    },
+    {
+      "name": "A source boundary requires changing the Kempe colour pair",
+      "status": "Lean checked fixed-pair phase obstruction and optimal two-step example",
+      "measurements": "../near-linear/core-pair-history-measurements.json",
+      "scope": {
+        "source_word": [
+          0,
+          1,
+          0,
+          2,
+          1,
+          3,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "negative": "No pointwise choice of swaps in any one colour pair yields the boundary of a proper D0092 source colouring.",
+        "proof": "Six triangle arguments, one for each unordered distinct colour pair; equality and symmetry handle the other cases. Forty-five source incidences are checked once.",
+        "history": "For an arbitrary exterior graph and ports carrying the source word, every finite Kempe history in a single fixed pair fails to reach a source extension. No size, planarity or connectivity restriction is needed for this obstruction.",
+        "ambient": "Pullback along a source graph homomorphism transfers the lower bound to any full ambient colouring agreeing with the final exterior. Hence every successful physical history has at least two steps.",
+        "positive": "The previously checked spherical example has an explicit two-step physical history using different pairs and an actual ambient colouring at its endpoint; this history is shortest.",
+        "proof_search_on_reuse": false,
+        "limitations": [
+          "The initial boundary word is specified; this is not a claim about every boundary colouring.",
+          "No universal bound on mixed-pair repair length or arbitrary-exterior success is proved.",
+          "No geometric occurrence supply or coverage branch is discharged.",
+          "This is an obstruction to a restricted repair mechanism, not to compositional Four Colour proofs."
+        ]
+      },
+      "audit": {
+        "roots": 7,
+        "dependency_declarations": 3494,
+        "allowed_axioms": [
+          "propext",
+          "Classical.choice",
+          "Quot.sound"
+        ],
+        "complete_four_colour_theorem_used": false,
+        "repair_certificates_used": false,
+        "universal_roots_use_concrete_exterior": false,
+        "required_dependencies": [
+          "KempePairHistory.pointwise",
+          "Six source triangle contradictions",
+          "Actual physical preparation and full colouring for the optimality example"
+        ]
+      },
+      "program_evidence": {
+        "replay": "probe_pair_preparation.py",
+        "results": "pair-preparation-probe.json",
+        "polygon_triangulations": 4862,
+        "colouring_exterior_pairs": 399,
+        "minimum_depth_counts": {
+          "1": 27,
+          "2": 358,
+          "3": 14
+        },
+        "fixed_two_step_recipe_second_word": {
+          "success": 12,
+          "tested": 199
+        },
+        "kernel_checked": false,
+        "scope": "All triangulated exteriors with no vertices beyond the eleven ports and each fixed word. These counts and the alternate failure fixtures are program evidence, not a universal preparation or coverage theorem. Shortest-depth counts use palette-permutation canonicalization; paths retain concrete commands."
+      },
+      "new_catalogue_entries_removed": 0,
+      "new_original_certificate_dependencies_removed": 0,
+      "new_member_checks_removed": 0
     }
   ],
   "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. The arity-nine through eleven sharing saves 231 member checks (87 plus 82 plus 62). The integrated degree-seven region replaces 112 original member checks with seven, saving a further 105, for 336 fewer independent member-check obligations in the complete proof. Local and whole-assembly savings overlap and must not be added. The earlier conditional Orbit9 assembly still has only the 231 savings. Sixteen degree-seven fits become one; fit and member counts are separate metrics. There are 218 separate input-identity or classification checks. All 633 catalogue entries remain. The complete endpoints use 629 original reference configuration certificates, a finite joint-profile certificate for the diamond cores, and the general boundary-split transfer from configuration 2 to 1 and configuration 6 to 3. The profile certificate supplies configuration 2 and configuration 4; it also checks configuration 1 directly. The uniform-lemma counter counts the transferred target only. The common rank retains boundary length and finite partner targets. The structural chord law replaces 71 local original cover obligations; the coupled six-active-port rule replaces 24 more, and joint anchor projection handles the final five. The local profile proof no longer depends on coversRec or coversRec_sound. It retains 216 ear-pair classifications, one shared finite planar fact, and 44 joint-anchor classifications; this does not remove any further whole configuration certificate. The finite joint-profile core proof is not credited as a case-free theorem. The separate general split-transfer law now replaces two target certificates, retaining the respective finite base proofs. Historical diamond experiment counts overlap and must not be added. Shared reference modules still load superseded declarations, but the endpoint audit excludes their proof dependencies. Runtime and artifact-size savings are unclaimed. Joint signatures are computed by enumerating balanced unsigned skeletons and identifying equal projections. No net reduction in total primitive finite checks is claimed. Shared-tip double-diamond elimination preserves complete colouring witnesses and arbitrary exterior predicates. Configuration 6 retains its original rank certificate; an additional 6561-code check confirms its coverage of all proper nine-port inputs. The newly removed configuration 3 certificate does not remove its coverage entry. Earlier experiment and receipt counts retain their historical checkpoint values.",

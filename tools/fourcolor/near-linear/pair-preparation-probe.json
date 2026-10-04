@@ -1,0 +1,394 @@
+{
+  "classification": "BOUNDED_PROGRAM_TEST",
+  "polygon_triangulations": 4862,
+  "results": [
+    {
+      "word_index": 0,
+      "counts": {
+        "proper_exteriors": 200,
+        "fixed_switch_succeeds": 21,
+        "fixed_preparation_then_switch_succeeds": 0,
+        "preparation_equals_first_word": 0,
+        "some_single_switch_succeeds": 27
+      },
+      "failure_of_fixed_preparation": {
+        "faces": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            3
+          ],
+          [
+            5,
+            6,
+            7
+          ],
+          [
+            4,
+            5,
+            7
+          ],
+          [
+            8,
+            9,
+            10
+          ],
+          [
+            7,
+            8,
+            10
+          ],
+          [
+            4,
+            7,
+            10
+          ],
+          [
+            3,
+            4,
+            10
+          ],
+          [
+            0,
+            3,
+            10
+          ]
+        ],
+        "initial": [
+          0,
+          1,
+          0,
+          2,
+          3,
+          1,
+          3,
+          2,
+          3,
+          2,
+          1
+        ],
+        "prepared": [
+          0,
+          1,
+          0,
+          2,
+          1,
+          3,
+          1,
+          2,
+          1,
+          2,
+          3
+        ],
+        "preparation_component": [
+          4,
+          5,
+          6,
+          8,
+          10
+        ],
+        "after": [
+          0,
+          1,
+          3,
+          2,
+          1,
+          3,
+          1,
+          2,
+          1,
+          2,
+          3
+        ],
+        "final_component": [
+          2
+        ]
+      },
+      "minimum_physical_steps_up_to_three": {
+        "2": 171,
+        "1": 27,
+        "3": 2
+      },
+      "maximum_visited_palette_classes": 63,
+      "largest_repair_example": {
+        "depth": 3,
+        "faces": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            3
+          ],
+          [
+            0,
+            3,
+            4
+          ],
+          [
+            5,
+            6,
+            7
+          ],
+          [
+            4,
+            5,
+            7
+          ],
+          [
+            0,
+            4,
+            7
+          ],
+          [
+            8,
+            9,
+            10
+          ],
+          [
+            7,
+            8,
+            10
+          ],
+          [
+            0,
+            7,
+            10
+          ]
+        ],
+        "history": [
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            2,
+            1
+          ],
+          [
+            1,
+            3,
+            2
+          ]
+        ],
+        "initial": [
+          0,
+          1,
+          0,
+          2,
+          3,
+          1,
+          3,
+          2,
+          3,
+          2,
+          1
+        ]
+      }
+    },
+    {
+      "word_index": 1,
+      "counts": {
+        "proper_exteriors": 199,
+        "fixed_switch_succeeds": 0,
+        "fixed_preparation_then_switch_succeeds": 12,
+        "preparation_equals_first_word": 78,
+        "some_single_switch_succeeds": 0
+      },
+      "failure_of_fixed_preparation": {
+        "faces": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            3
+          ],
+          [
+            3,
+            4,
+            5
+          ],
+          [
+            5,
+            6,
+            7
+          ],
+          [
+            8,
+            9,
+            10
+          ],
+          [
+            7,
+            8,
+            10
+          ],
+          [
+            5,
+            7,
+            10
+          ],
+          [
+            3,
+            5,
+            10
+          ],
+          [
+            0,
+            3,
+            10
+          ]
+        ],
+        "initial": [
+          0,
+          1,
+          0,
+          2,
+          1,
+          3,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "prepared": [
+          0,
+          1,
+          0,
+          2,
+          3,
+          1,
+          3,
+          2,
+          1,
+          2,
+          3
+        ],
+        "preparation_component": [
+          4,
+          5,
+          6,
+          8,
+          10
+        ],
+        "after": [
+          0,
+          1,
+          3,
+          2,
+          3,
+          1,
+          3,
+          2,
+          1,
+          2,
+          3
+        ],
+        "final_component": [
+          2
+        ]
+      },
+      "minimum_physical_steps_up_to_three": {
+        "2": 187,
+        "3": 12
+      },
+      "maximum_visited_palette_classes": 72,
+      "largest_repair_example": {
+        "depth": 3,
+        "faces": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            0,
+            1,
+            3
+          ],
+          [
+            3,
+            4,
+            5
+          ],
+          [
+            3,
+            5,
+            6
+          ],
+          [
+            6,
+            7,
+            8
+          ],
+          [
+            3,
+            6,
+            8
+          ],
+          [
+            8,
+            9,
+            10
+          ],
+          [
+            3,
+            8,
+            10
+          ],
+          [
+            0,
+            3,
+            10
+          ]
+        ],
+        "history": [
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            2,
+            1
+          ],
+          [
+            1,
+            3,
+            2
+          ]
+        ],
+        "initial": [
+          0,
+          1,
+          0,
+          2,
+          1,
+          3,
+          1,
+          2,
+          3,
+          2,
+          1
+        ]
+      }
+    }
+  ],
+  "scope": "All triangulated exteriors with no vertices beyond the eleven ports and each fixed word. These counts and the alternate failure fixtures are program evidence, not a universal preparation or coverage theorem. Shortest-depth counts use palette-permutation canonicalization; paths retain concrete commands."
+}
