@@ -36,6 +36,14 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [heat-work reserve](labs/README.md#a-heat-work-reserve-can-be-rebuilt-by-unforced-motion)
+stores all positive fourth-moment pressure work along a field's complete
+free-diffusion history. Diffusion spends it exactly, but unforced motion
+can rebuild it while losing kinetic energy. An exact family and an analytic
+transfer to actually generated motion refute automatic viscous payment of
+that replenishment. Joint parent contributions remain essential. These
+are analytic results with exact Fourier checks, not new Lean certificates.
+
 The [signed generated-velocity fourth moment](labs/README.md#signed-fourth-moment-work-retains-a-weaker-physical-payment-target)
 pays all original heat couplings at arbitrary amplitude and leaves a
 signed self-pressure budget with a direct continuation consumer. Earlier
