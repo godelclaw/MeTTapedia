@@ -1,0 +1,104 @@
+{
+  "histories": [
+    {
+      "m": 2,
+      "leading_stock": "1901/1960200",
+      "certificates": [
+        {
+          "levels": 23,
+          "positive_mass": "119177783/21849440256000",
+          "negative_mass": "0",
+          "negative_stages": [],
+          "cascade_sha256": "54145bb421094c633ec0e31f645a6fd9dbff121c1af6ba5db324c3ec9612b953"
+        },
+        {
+          "levels": 46,
+          "positive_mass": "107076171389412000037/3332909160489673949184000",
+          "negative_mass": "211/30847998720",
+          "negative_stages": [
+            {
+              "order": 4,
+              "coefficient": "-422/1155",
+              "rates": [
+                38,
+                38,
+                34,
+                34,
+                32
+              ],
+              "mass": "211/30847998720"
+            }
+          ],
+          "cascade_sha256": "711e2c5e8bce895bb387624a5aba43c6b768667ffa5554d8d15e03b8d168b7f4"
+        },
+        {
+          "levels": 48,
+          "positive_mass": "2726263684980197384830397/44269365924204094230036480000",
+          "negative_mass": "5729/689489006976",
+          "negative_stages": [
+            {
+              "order": 4,
+              "coefficient": "-5729/5082",
+              "rates": [
+                46,
+                44,
+                42,
+                42,
+                38
+              ],
+              "mass": "5729/689489006976"
+            }
+          ],
+          "cascade_sha256": "f11e69236672a38a073828520b997db7017c0e3e0010013acf8ecdca962ec877"
+        }
+      ],
+      "self_pressure_cost": "119177783/21849440256000",
+      "uniform_excess_lower_bound": "379575675594414491/69783259618809741312000",
+      "approximate_lower_bound": 5.439351467212084e-06,
+      "lower_profile_sha256": "1a2e2108744c9d99e5632e7d75a7514c43fed0c742f6f0cb824efa547059c0eb",
+      "value_profile_sha256": "fe169a25f8bdaa7922689ab0d9bcd31640196c5c660b9576bcbced98a5b2a4dc",
+      "weight_class": "every measurable theta:[0,infinity)->[0,1]"
+    },
+    {
+      "m": 4,
+      "leading_stock": "116161/9332512200",
+      "certificates": [
+        {
+          "levels": 29,
+          "positive_mass": "2425387668477001/199951519253004288000000",
+          "negative_mass": "0",
+          "negative_stages": [],
+          "cascade_sha256": "fa4a6af832e48033ce213180d2e468d6829ce455f61b77b8d2fdb0b1104c68d9"
+        },
+        {
+          "levels": 62,
+          "positive_mass": "328562719094494501318255853128148801/4711903408310479380258151295720462745600000",
+          "negative_mass": "0",
+          "negative_stages": [],
+          "cascade_sha256": "e918b3331bf66597f7564db4fc8eea16ec89e580801a79c29ec1328519ce5b4d"
+        },
+        {
+          "levels": 69,
+          "positive_mass": "56379710982479306297299369727029229897053447/404354641429830962661504648652355353273958400000000",
+          "negative_mass": "0",
+          "negative_stages": [],
+          "cascade_sha256": "baaa7b62e0915e1df9cf49803d4d10c0e47d58c0545ee120120237c5219bc052"
+        }
+      ],
+      "self_pressure_cost": "2425387668477001/199951519253004288000000",
+      "uniform_excess_lower_bound": "2425387668477001/199951519253004288000000",
+      "approximate_lower_bound": 1.2129878670279518e-08,
+      "lower_profile_sha256": "590494753d1ef97cdb7f87d6dbf20253c7e67aeceb8f6242707ce5e2e88ae641",
+      "value_profile_sha256": "2caff093c716016d43ae17480405de475d458779f66ecc4299af65212891bdb3",
+      "weight_class": "every measurable theta:[0,infinity)->[0,1]"
+    }
+  ],
+  "scope": "Exact complete coefficients and convolution certificates; uniform actual NS and finite-time conclusions are analytic",
+  "source_sha256": {
+    "pressure_control_envelope.py": "a5a01da9b10a22bb537c19930852be55adfbbe8e540e82c2d1f2628c1f7dd772",
+    "joint_generated_pressure.py": "3c3b3ab93c2879894d9c2681d53fb0ceff7271bcb291e8daa4bcdc3aa9e1e304",
+    "joint_generated_pressure_results.json": "ccd011fffb6db2d6113c15be8720ceeb07ce069b8468bb632132bb7df8fe6eba",
+    "paired_stretching_history.py": "5c4375eda70db811d404a6a710445d2334117f9e8f24d1159dc774340fd4f8c0",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883"
+  }
+}

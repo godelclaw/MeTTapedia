@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete scalar-control envelope](labs/README.md#an-exact-control-envelope-rules-out-every-scalar-schedule-in-the-unit-interval)
+rules out the tested leading pressure allowance for every measurable
+weight in[0,1], including feedback with access to the future. Exact
+positive convolution kernels bound all possible benefit from early
+negative work. A uniform analytic remainder gives one finite violating
+time for all those choices on an actual regular flow. This closes a
+control loophole in that allowance; the nonlinear source-work payment
+for a larger reserve remains open. No new Lean certificate is claimed.
+
 The [joint generated-pressure test](labs/README.md#retaining-mixed-pressure-does-not-universally-repair-the-original-stock)
 retains a controllable fraction of the mixed pressure in the generated
 pressure observation. It repairs one shape's leading allowance on a whole

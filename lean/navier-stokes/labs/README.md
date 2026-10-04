@@ -42917,3 +42917,156 @@ schedule integrals and full evolution fixtures. No Lean declarations or
 axioms change. The next physical obligation is a datum-controlled payment
 for the complete signed source work in (JG7), with generation and geometry
 retained; adjusting a scalar leading forecast has not supplied it.
+
+## An exact control envelope rules out every scalar schedule in the unit interval
+
+The previous constant-weight obstruction leaves a genuine question: could
+careful timing of the observation pay the same leading allowance? This
+section resolves that question for every measurable scalar weight in[0,1],
+on both equal-parent examples. It retains the complete nonlinear histories;
+there is no search over a finite list of controllers.
+
+At viscosity one, use the actual small-data solution from
+`u0=lambda U_m`, with
+`U_m=(sin y-m sin z,sin z,sin(x+m y))`, m=2 or4.
+Keep v=heat(u0), w=u-v and q_theta=p_w+theta(t)mixed_pressure(v,w).
+For any measurable theta:[0,infinity)->[0,1], compare its actual cost to
+its OWN complete leading forecast:
+
+```text
+C_theta(T)=integral_0^T ||grad q_theta||2^2,
+K_theta=lambda^6 integral_0^infinity theta(t)^2 ||grad M3(t)||2^2.
+```
+
+This comparison even allows theta to depend on the full future solution.
+It therefore contains all causal scalar feedback rules with this range.
+The weight is spatially constant; a spatial operator or a separate weight
+on each stochastic path is outside the assertion. Giving the comparison
+access to the future is a stronger adversarial test, not a proposed way
+to construct an admissible original-data reserve.
+
+### A lower bound valid for all controls
+
+Let c(t),b(t),a(t) be the constant, linear and quadratic profiles in
+(JG2), before integrating in time. The complete next cost is
+
+```text
+F(t,theta)=c(t)+b(t)theta+a(t)theta^2.
+```
+
+For m4, all three profiles have positive convolution representations.
+Consequently F(t,theta)>=c(t) for every theta in[0,1], at every t>=0.
+The minimum is attained by theta=0. No choice of timing removes this
+strictly positive integrated self-pressure contribution.
+
+For m2, early negative work must be retained. Here is an exact bound on
+all the benefit it can supply. For an exponential polynomial f, choose
+positive rates r_j that annihilate it successively:
+
+```text
+f_0=f, f_(j+1)=(d/dt+r_j)f_j, d_j=f_j(0), f_N=0,
+h_j=exp(-r_0 t)*...*exp(-r_j t),
+f(t)=sum_j d_j h_j(t), integral h_j=1/(r_0...r_j).   (CE1)
+```
+
+The star denotes causal time convolution. Each h_j is nonnegative.
+The reconstruction follows by solving the first-order equations backwards
+from f_N=0. It includes repeated rates and their polynomial factors.
+The checker reconstructs every coefficient independently and verifies the
+integrals both by (CE1) and by exact exponential-polynomial integration.
+
+Split b=b_plus-b_minus and a=a_plus-a_minus according to the signs of
+d_j. All four functions are nonnegative. With L=c-b_minus-a_minus,
+
+```text
+F(t,theta)-L(t)
+ =theta b_plus+(1-theta)b_minus
+  +theta^2 a_plus+(1-theta^2)a_minus >=0.            (CE2)
+```
+
+For m2 there is exactly one negative datum in each of the b and a
+cascades. They are both at order four, with total negative masses
+
+```text
+integral b_minus=211/30847998720,
+integral a_minus=5729/689489006976.
+```
+
+Their combined integral is less than0.3 percent of integral c. Thus even
+perfect timing of the favorable early contribution cannot pay the later
+self-pressure cost. Exact lower margins for EVERY schedule are
+
+| Shape | eta=integral L | Approximation |
+|---|---|---:|
+| m2 | 379575675594414491/69783259618809741312000 | 5.439351467e-6 |
+| m4 | 2425387668477001/199951519253004288000000 | 1.212987867e-8 |
+
+For m4, L=c. For m2 the lower bound need not equal the optimal control
+value; its strict positivity suffices. In Bellman terms, define
+`V(t)=integral_t^infinity L(s)ds`. Then V(infinity)=0 and
+`V'(t)+F(t,theta)>=0` for every allowed action. Integrating yields
+`integral F(t,theta(t))>=V(0)=eta`. This is a lower bound on unavoidable
+excess, not a reserve that pays the actual nonlinear flow.
+
+### Uniform passage to actual flows and one common violating time
+
+The analytic construction (PG5) gives an exponentially decaying, globally
+regular actual solution for sufficiently small lambda. The exact spatial
+integrals of s^2, s*p_mix and p_mix^2, with gradients on both factors,
+are even holomorphic functions of lambda. Here s=p_w and
+p_mix=mixed_pressure(v,w).
+The half-period translation reverses u0 for both even integers m=2,4.
+Uniform Cauchy bounds on those three coefficients therefore give fixed
+r,M>0, from the original shape and the known small-data construction, with
+
+```text
+|C_theta(infinity)-K_theta-lambda^8 integral F(t,theta(t))dt|
+ <=M lambda^10, |lambda|<=r, EVERY measurable theta in[0,1].  (CE3)
+```
+
+No derivative bound or regularity of theta is used. One freezes an
+arbitrary bounded measurable schedule in the expansion; the remainder
+bound is independent of that choice. Hence the conclusion also covers
+weights selected from the datum, amplitude or evolving solution.
+Choose nonzero lambda small enough that M lambda^2<=eta/4. Then
+`C_theta(infinity)-K_theta>=3 eta lambda^8/4` simultaneously for all
+these schedules.
+
+There is also a COMMON finite violating time, independent of the schedule.
+The same mild construction bounds w by a constant times lambda^2 in
+an exponentially weighted Sobolev space. Thus, since the heat pressure
+vanishes, there are fixed C,beta>0 such that
+
+```text
+C_theta(infinity)-C_theta(T)<=C lambda^6 exp(-beta T)
+```
+
+uniformly in theta. Choosing the right side at most eta lambda^8/4 gives
+
+```text
+C_theta(T_lambda)>K_theta, for EVERY measurable theta in[0,1]. (CE4)
+```
+
+The time depends on the original amplitude and shape, not on an unknown
+future norm. Restoring viscosity nu uses epsilon=lambda/nu and physical
+time t=s/nu: costs scale by nu^3, so the lower excess scales as
+lambda^8/nu^5. This proves a statement for each nu>0 at sufficiently
+small lambda/nu. It does not claim a viscosity-independent amplitude range.
+
+### Consequence for the physical control problem
+
+A bound on observation-change work, such as (JG6), remains valid. It does
+not repair this leading forecast: even schedules with unlimited switching
+freedom fail the comparison. The full pressure source equation (JG4) and
+its nonlinear signed work remain the right physical obligations for a
+larger geometric or history reserve. This result does not exclude such
+reserves, spatial or matrix observations, weights outside[0,1], or other
+stochastic controls. It supplies no singular solution.
+
+Run `python3 -O labs/pressure_control_envelope.py`. It reuses the full
+amplitude recurrence, checks agreement with the preceding pressure-profile
+archive, reconstructs all positive and negative kernels, and verifies the
+control identity and exact margins. The existing joint-pressure checker
+still produces the same results after extracting its shared profile
+function. Both actual-flow and Bellman interpretations above are analytic;
+no Lean declarations or axioms change.

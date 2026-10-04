@@ -30,7 +30,8 @@ def scale_field(c, field):
     return {k: e.scale(c, a) for k, a in field.items() if c and a}
 
 
-def histories(m, weights):
+def pressure_profiles(m, weights):
+    """Complete leading stock and next coefficient profiles (constant, linear, quadratic)."""
     initial = weighted_datum(m, weights)
     heat = {q: tuple({(sum(k*k for k in q), 0): Q(str(row[q].y))}
                      if q in row else {} for row in initial) for q in set().union(*initial)}
@@ -67,6 +68,13 @@ def histories(m, weights):
         require(e.derivative(integrated) == profile and e.jet(integrated, 0) == 0
                 and integrated.get((0, 0), Q(0)) == e.integral_infinity(profile),
                 'Independent antiderivative checks every full-time coefficient')
+    return stock, pressure_pair(mixed[3], mixed[3]), profiles
+
+
+def histories(m, weights):
+    stock, leading_rate, profiles = pressure_profiles(m, weights)
+    coefficients = [e.integral_infinity(a) for a in profiles]
+    constant, linear, quadratic = profiles
     c, b, a = coefficients
     schedules = []
     if weights[0] == Q(1, 4):
@@ -92,7 +100,7 @@ def histories(m, weights):
             for kind in ('decay', 'rise'):
                 theta = {(rho, 0): Q(1)} if kind == 'decay' else {(0, 0): Q(1), (rho, 0): Q(-1)}
                 square = e.multiply(theta, theta)
-                leading = e.multiply(square, pressure_pair(mixed[3], mixed[3]))
+                leading = e.multiply(square, leading_rate)
                 correction = e.add(constant, e.multiply(theta, linear), e.multiply(square, quadratic))
                 values = e.integral_infinity(leading), e.integral_infinity(correction)
                 require(values[0] > 0 and values[1] > 0,
