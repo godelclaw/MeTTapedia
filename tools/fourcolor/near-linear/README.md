@@ -12,14 +12,37 @@ regardless of which Kempe commands are chosen or how long they run.
 The proof has two branching choices, three contradictory leaves and 81
 local triangle deductions. It checks the literal graph and initial
 colouring, and proves that every reconstruction changes a vertex farther
-than two edges from every deleted vertex. A separate full colouring keeps
-all vertices outside radius three fixed. The latter is an endpoint witness;
-no physical history confined to radius three is claimed.
+than two edges from every deleted vertex. The separate full colouring in
+that module keeps all vertices outside radius three fixed.
 
 | Allowed neighbourhood | Total vertices, including the seven deleted | Full endpoint keeping its exterior fixed |
 | --- | ---: | --- |
 | Radius two | 35 | Impossible |
-| Radius three | 57 | Explicit checked witness |
+| Radius three | 57 | Full reconstruction after two checked physical switches |
+
+[LocalRepairHistory](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/LocalRepairHistory.lean)
+now supplies an actual history for the same starting colouring. One switch
+uses colours 0/2 on seven vertices; the other uses 0/3 on three vertices.
+Both complete components lie within radius three, and no edge connects
+their supports. Every intermediate colouring fixes the farther exterior.
+The endpoint reconstructs all seven deleted vertices.
+
+The reusable [separated-chain law](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/SeparatedChains.lean)
+proves that connected, saturated supports with no common vertex or
+connecting edge remain actual components after either switch. The two
+physical switches commute, even when their colour pairs overlap. Both
+orders in this fixture have checked two-step GSLT histories reaching the
+same full colouring. Chain lengths and the ambient graph are unrestricted
+in the generic theorem. Reuse invokes that theorem; no repair search is
+repeated. The finite consumer supplies just the two chains and seven core
+colours in addition to the existing graph and starting colouring.
+
+The [history replay](local-repair-history-audit.json) checks both orders
+against the full spherical exterior. This proves a successful enlarged
+repair for one supplied colouring, not a universal radius-three bound.
+Geometry guaranteeing usable supports, or a successful alternative when
+they interact, remains open. The [history receipt](local-repair-history-measurements.json)
+records the new proof costs and dependency audit.
 
 The [independent replay](local-repair-radius-audit.json) identifies the Lean
 graph with the existing spherical D0092 occurrence. Its degrees are 5–7,
@@ -45,8 +68,10 @@ complete-proof dependency counts are unchanged. The
 
 ```sh
 python3 tools/fourcolor/near-linear/audit_local_repair_radius.py
+python3 tools/fourcolor/near-linear/audit_local_repair_history.py
 cd lean/mettapedia
 lake build Mettapedia.GraphTheory.FourColor.LocalRepairRadiusAudit
+lake build Mettapedia.GraphTheory.FourColor.LocalRepairHistoryAudit
 ```
 
 ## Physical repair counts survive clique attachments

@@ -1,0 +1,105 @@
+{
+  "classification": "CHECKED_TWO_ORDER_PHYSICAL_RECONSTRUCTION",
+  "vertices": 162,
+  "exterior_vertices": 155,
+  "restored_vertices": 7,
+  "ball_sizes": [
+    7,
+    18,
+    35,
+    57
+  ],
+  "histories": [
+    [
+      {
+        "pair": [
+          0,
+          2
+        ],
+        "root": 13,
+        "support": [
+          13,
+          16,
+          45,
+          46,
+          102,
+          104,
+          106
+        ]
+      },
+      {
+        "pair": [
+          0,
+          3
+        ],
+        "root": 51,
+        "support": [
+          51,
+          118,
+          120
+        ]
+      }
+    ],
+    [
+      {
+        "pair": [
+          0,
+          3
+        ],
+        "root": 51,
+        "support": [
+          51,
+          118,
+          120
+        ]
+      },
+      {
+        "pair": [
+          0,
+          2
+        ],
+        "root": 13,
+        "support": [
+          13,
+          16,
+          45,
+          46,
+          102,
+          104,
+          106
+        ]
+      }
+    ]
+  ],
+  "same_full_endpoint": true,
+  "physical_steps_in_each_history": 2,
+  "intermediate_states_fixed_outside_radius_three": true,
+  "reconstruction_changes_radius_three_shell": true,
+  "source_geometry": {
+    "centre_charges": [
+      0,
+      0,
+      0
+    ],
+    "short_cycles_checked": 1815,
+    "kernel_certified": false
+  },
+  "lean": {
+    "generic_law": "KempeSeparatedChains.Certificate.commute",
+    "consumer": "LocalRepairHistory.reconstruction",
+    "locality": "LocalRepairHistory.both_orders_fixed"
+  },
+  "pins": {
+    "local-repair-history-example.json": "551b23cf00510d2e9420a26ae58b8e9a0d5b15528a36de45a442d23b00a672f0",
+    "local-repair-radius-example.json": "386c49c1e6032648c9f1ccbea5742b2b5bce6cf72aa0c6372e7de494d3330825",
+    "LocalRepairHistory.lean": "e9da0faaabc524a82a19d9afdeacf245c39b6b64239064a0712b81c9567e5342",
+    "SeparatedChains.lean": "4c11c04fc0b0e75e57d1ecaba18cc4a1963619b3b329f42f5946b7df0f9fe760"
+  },
+  "verifier_sha256": "cb9b96c90b6c9e0ea0fb685e849487ff3d3eb82776c5d0a8cb1c34295a728ff4",
+  "limits": [
+    "The supplied colouring and occurrence are fixed; no universal radius-three repair theorem.",
+    "No uniform occurrence supply, whole-ball flatness, or minimal-counterexample classification.",
+    "Separation of the two supports is a proved hypothesis, not a property of arbitrary repairs.",
+    "No catalogue dependency removal or complete-proof cost saving."
+  ]
+}

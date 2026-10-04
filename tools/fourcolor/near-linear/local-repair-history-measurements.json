@@ -1,0 +1,84 @@
+{
+  "classification": "CHECKED_SEPARATED_COMPONENT_RECONSTRUCTION",
+  "mathematics": {
+    "generic": "Two saturated connected chains with disjoint supports and no connecting edge remain actual components after either switch; their physical switches commute. Ambient graph, palette, and chain lengths are unrestricted.",
+    "consumer": "The supplied exterior from the radius-two obstruction repairs in two physical switches supported inside radius three. Both orders reach the same full colouring and every intermediate state fixes the farther exterior.",
+    "input": "local-repair-history-example.json",
+    "radius_lower_bound": "LocalRepairRadius.no_local_extension; no full endpoint fixing the exterior outside radius two.",
+    "spatial_semantics": "Every changed exterior vertex in both histories has a verified route of at most three graph edges from the deleted core; this is not only membership in a named finite set."
+  },
+  "audit": {
+    "roots": 14,
+    "dependency_declarations": 3806,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "repair_tables_used": false
+  },
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.SeparatedChains",
+      "source_bytes": 4688,
+      "source_sha256": "4c11c04fc0b0e75e57d1ecaba18cc4a1963619b3b329f42f5946b7df0f9fe760",
+      "olean_bytes": 249024,
+      "olean_sha256": "7028388e23c2984200cd4273694e1ece81afde76966a4dd7e95f12f7052976ee",
+      "frontend_seconds_rounded": 2.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.LocalRepairHistory",
+      "source_bytes": 8687,
+      "source_sha256": "e9da0faaabc524a82a19d9afdeacf245c39b6b64239064a0712b81c9567e5342",
+      "olean_bytes": 289416,
+      "olean_sha256": "96b48a45a9c2b3a40abd08366c4d7862512edde90f9a0c559b31dede961b42fc",
+      "frontend_seconds_rounded": 20.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.LocalRepairHistoryAudit",
+      "source_bytes": 2812,
+      "source_sha256": "6cfbc2e32214d63da11f2212eed09a121ab35fb17801f4f7ca8e9fae2f7cdcb4",
+      "olean_bytes": 3376,
+      "olean_sha256": "1866a4f994827a3122347c1c6ed09e2a810736b266696dd11148e4ad775921f5",
+      "frontend_seconds_rounded": 4.5
+    }
+  ],
+  "new_lean_source_bytes": 16187,
+  "cost_scope": "Successful incremental frontend times rounded by Lake; imported modules excluded. No whole-proof runtime saving is claimed.",
+  "program": {
+    "verifier": "audit_local_repair_history.py",
+    "result": "local-repair-history-audit.json",
+    "vertices": 162,
+    "exterior_vertices": 155,
+    "support_sizes": [
+      7,
+      3
+    ],
+    "orders_checked": 2,
+    "physical_steps_in_each_order": 2,
+    "kempe_history_search_on_replay": false
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "new_member_checks_removed": 0
+  },
+  "gates": {
+    "new": "lake build Mettapedia.GraphTheory.FourColor.LocalRepairHistoryAudit",
+    "new_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true
+  },
+  "limits": [
+    "No universal radius-three or two-switch repair bound.",
+    "No supply theorem for the two supports or compatible starting colouring.",
+    "Spherical geometry and source recognition remain program evidence.",
+    "The compact compositional proof still needs coverage, progress and reconstruction for its intended graph class."
+  ]
+}
