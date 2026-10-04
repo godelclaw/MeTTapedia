@@ -42363,3 +42363,337 @@ extension. The next physical obligation is to enclose the reference cost,
 residual and inherited velocity errors so that (GA4) and (PG8) apply to an
 actual flow. Arbitrary geometries and arbitrary-data R3/T3 continuation
 remain open. No Lean declarations or axioms change.
+
+## Original-heat interactions have an arbitrary-data payment
+
+There is a useful derivative cancellation in (GA2). It also separates an
+arbitrary flow's pressure bill into two parts paid from the original datum
+and one remaining self-interaction. The cancellation is classical: the Lie
+bracket of solenoidal vector fields is solenoidal. The existing Lean module
+`MettapediaNS.SelectedPressureCotangent` already proves
+`velocityBracket_solenoidal`, `pressure_increment` and
+`pressure_variation_work` for actual whole-space smooth L2 fields. The new
+time-integrated consequences below are analytic and are not new Lean results.
+
+### Mixed pressure does not require a derivative of the unknown remainder
+
+Let Q be the orthogonal gradient projection, P=I-Q, and let v,w be smooth
+solenoidal fields on R3 or T3, with the displayed norms finite. Write
+`g_a=grad p_a=-Q(a dot grad a)` for the canonical pressure gradient of a.
+The scalar pressure is defined up to its usual additive constant. Expanding
+the divergence gives
+
+```text
+div(v dot grad w-w dot grad v)=0,
+Q(v dot grad w)=Q(w dot grad v),
+g_(v+w)=g_v+g_w+g_mix,
+g_mix=-2 Q(w dot grad v),
+||g_mix||2 <= 2 ||grad v||infinity ||w||2.             (HR1)
+```
+
+The second-derivative terms vanish by incompressibility; the two first-
+derivative contractions agree after exchanging their indices. Orthogonal
+projection is an L2 contraction, proving the last inequality. This retains
+both mixed interactions, including their common pressure contribution.
+In particular, (GA2)--(GA3) may replace `V0 Y+V1 X` by
+`min(V0 Y+V1 X,2 V1 X)`. The quadratic remainder term and its diffusion
+cost remain present.
+
+### A payment valid for every available prefix of arbitrary smooth data
+
+Fix positive viscosity nu, a finite horizon H, and one original smooth
+solenoidal datum u0. Let u be any available smooth unforced NS prefix from
+that datum. Define once, from the original time,
+
+```text
+v(t)=exp(nu t Delta)u0,   w(t)=u(t)-v(t),
+E0=||u0||2^2, E1=||grad u0||2^2,
+B=||u0||infinity, A=||grad u0||infinity.
+```
+
+All four initial norms are finite for the intended smooth data. The heat
+semigroup preserves solenoidality and contracts these norms. The unforced
+energy inequality gives `||u(t)||2<=sqrt(E0)`, so `||w(t)||2<=2sqrt(E0)`.
+Consequently, on every available prefix with t<=H,
+
+```text
+||g_v(t)||2^2 <= B^2 E1,
+||g_mix(t)||2^2 <= 16 A^2 E0.
+
+R_heat(t)=(H-t) B^2 E1,
+R_mix(t)=16(H-t) A^2 E0.                             (HR2)
+```
+
+These are nonnegative original-data reserves whose decreases pay the
+respective costs on every subinterval. They do not assume a small datum,
+a future norm of u, or a bound on grad w. They remain the same reserves
+when prefixes are composed. One can sharpen them by integrating the known
+heat-flow rates from t to H; that future heat curve is explicitly determined
+by u0, not by the unknown nonlinear continuation.
+
+For `C_a(T)=integral_0^T ||g_a||2^2` and T<=H, Minkowski gives
+
+```text
+sqrt(C_u(T)) <= B sqrt(H E1)+4 A sqrt(H E0)+sqrt(C_w(T)),
+C_u(T) <= 3H B^2 E1+48H A^2 E0+3 C_w(T).            (HR3)
+```
+
+The reverse triangle inequality also bounds sqrt(C_w) by sqrt(C_u) plus
+the same two known terms. Thus finiteness of the remaining self-pressure
+bill is equivalent to finiteness of the full bill, up to costs already
+paid. This isolates the open term; it does not prove that term is small.
+
+For a mean-zero smooth datum on the normalized period-2pi torus, the heat
+and mixed bills even have all-time payments without smallness. Set
+`B_W=sum_(k!=0)|u0_hat(k)|` and `A_W=sum_(k!=0)|k||u0_hat(k)|`.
+Fourier decay gives `||v||infinity<=B_W exp(-nu t)`,
+`||grad v||infinity<=A_W exp(-nu t)` and
+`||grad v||2^2<=E1 exp(-2nu t)`. Hence the remaining reserves can be
+
+```text
+R_heat(t)=B_W^2 E1 exp(-4nu t)/(4nu),
+R_mix(t)=8 A_W^2 E0 exp(-2nu t)/nu.                  (HR4)
+```
+
+These Wiener sums are finite for smooth data. The periodic statement is
+in the fixed zero-mean frame; the finite-horizon statement (HR2) needs no
+such restriction. No all-time payment for C_w follows from (HR4).
+
+### The generated motion is not an independently unforced solution
+
+Subtracting the original heat equation from the full projected NS equation
+gives exactly
+
+```text
+w_t+P(v dot grad w+w dot grad v+w dot grad w)
+  =nu Delta w-P(v dot grad v),  w(0)=0.              (HR5)
+```
+
+The apparent source is prescribed by the original heat parents, and both
+couplings remain. This is an identity inside one unforced fluid, not a
+license to insert an arbitrary force. Its energy equation is
+
+```text
+(1/2)(||w||2^2)' + nu||grad w||2^2
+ =-integral w dot (w dot grad v)
+  -integral w dot (v dot grad v).
+```
+
+Transport by v and by w cancels in this equation. It does not make the
+two displayed terms disappear, nor does energy alone control g_w. If the
+pressure split is used in the stochastic history, all three pressure
+pieces are sampled along the same actual u-driven paths. Replacing those
+paths by paths driven only by w would change the observation.
+
+The original quarter-parent datum supplies a concrete test:
+
+```text
+U=(sin(y)/4-4sin(z),sin(z),sin(x+4y)), u(0)=lambda U.
+```
+
+Its complete heat history has zero canonical pressure: the two z-shear
+components retain their ratio -4:1, annihilating the directional derivative
+of the oblique receiver. Nonetheless
+`w'(0)=-lambda^2 P(U dot grad U)` is nonzero. The full rational Fourier
+calculation gives
+
+```text
+kappa=||grad p_(-P(U dot grad U))||2^2
+     =1815523/3162378240 > 0,
+||g_w(t)||2^2=lambda^8 kappa t^4+O(t^5),
+C_w(t)=lambda^8 kappa t^5/5+O(t^6).                 (HR6)
+```
+
+The leading coefficient is independent of positive viscosity, because the
+heat derivative cancels in w'(0). Local smooth NS existence and Taylor
+continuity transfer the exact coefficient to a positive actual interval,
+for each fixed lambda>0 and nu>0. This refutes a zero allowance inferred
+solely from w(0)=0. It does not refute an allowance using the full original
+fluid, an arbitrary-data regularity claim, or eventual depletion.
+
+`heat_remainder_pressure.py` checks every generated remainder jet through
+third order against (HR5), at three positive viscosities. Independent
+canonical-pressure and gradient-projection calculations check (HR1),
+including nonzero brackets and increasingly oscillatory solenoidal
+remainders. All Fourier products retain their complete outputs.
+
+### The first generated parents do not pay their successors
+
+A stronger test gives the initially empty remainder its complete first
+generated allowance. At viscosity one and initial velocity lambda U above,
+expand the actual mild solution, with the full projected nonlinearity:
+
+```text
+u=lambda V1+lambda^2 V2+lambda^3 V3+lambda^4 V4+...,
+v=lambda V1, w=lambda^2 V2+lambda^3 V3+lambda^4 V4+...,
+p_w=lambda^4 P4+lambda^5 P5+lambda^6 P6+...,
+P4=p_(V2),
+P5=polarized_pressure(V2,V3),
+P6=polarized_pressure(V2,V4)+p_(V3).
+```
+
+Each Vj solves its complete heat-Duhamel recurrence with zero generated
+initial state. No projected-out mode, original-parent return or pressure
+coupling is discarded. The proposed first-generated-parent allowance is
+
+```text
+K_first=lambda^8 A8,
+A8=integral_0^infinity ||grad P4||2^2
+  =951225157394627/6398448616096137216000000.
+```
+
+Exact exponential-polynomial integration through the entire viscous decay
+finds a positive next correction:
+
+| Contribution at degree ten | Integral |
+|---|---:|
+| New pressure, `||grad P5||2^2` | approximately 2.868763821e-12 |
+| Retained return, `2 grad P4 dot grad P6` | approximately -2.609826869e-12 |
+| Complete sum A10 | approximately 2.589369518e-13 |
+
+The birth term exceeds the favorable return by approximately9.92% of the
+return's magnitude. The entire degree-nine profile vanishes. Full rationals
+and profile digests are in `pressure_gradient_certificate_results.json`.
+Independent physical time jets check the complete generated velocities
+through order three and their self-pressure through order four. Exact
+antiderivatives provide a second check of the infinite-time integrals.
+
+The global small-data holomorphic mild construction used for (PG5) supplies
+the physical remainder here as well. On a sufficiently small complex
+lambda disc it gives `||w(t)||Hs<=C|lambda|^2 exp(-t/4)`. Consequently
+the canonical self-pressure gradient is O(lambda^4) with uniform decay.
+Its bilinear space-time square is holomorphic and uniformly integrable.
+The half-period translation (pi,pi,pi) changes U to -U and preserves the
+cost, so its amplitude series is even. Cauchy bounds therefore give fixed
+r,M>0, determined by this original shape and the Sobolev estimates, such that
+
+```text
+C_w(infinity)=lambda^8[A8+lambda^2 A10+R4(lambda)],
+|R4(lambda)|<=M lambda^4,  |lambda|<=r.              (GS1)
+```
+
+For nonzero sufficiently small real lambda with `M lambda^2<A10/2`,
+this exceeds K_first. Since the cost is accumulated monotonically, it
+exceeds that same original allowance at some finite time on the actual
+globally regular unforced solution. This is an analytic counterexample to
+K_first, not a singularity and not a counterexample to a larger allowance.
+The positive-viscosity rescaling already used for (PG5) transfers the
+example to each nu>0 at sufficiently small lambda/nu.
+
+This is the same quarter-parent shape whose complete total-pressure stock
+is paid in (PG6). There is no contradiction: total pressure contains signed
+cross correlations between the pieces in (HR1), whereas this test isolates
+the remainder's own nonnegative cost. The useful obstruction is precise:
+depletion of the first generated parents does not prevent their successors
+from exceeding those parents' forecast. A renewed reserve must retain and
+pay that successor contribution.
+
+### The remaining bill has a concrete continuation consumer
+
+The target is an explicit finite `K_w(u0,nu,H)` such that
+`C_w(T)<=K_w` for every available prefix from the same u0, T<=H.
+Defining it as the unknown supremum of those costs is not a payment proof.
+By (HR3) such a bound supplies the periodic stochastic consumer (PG1),
+then the L4/enstrophy continuation bound (636), on the actual u history.
+
+For R3 it supplies a standard pressure-gradient regularity criterion.
+In particular, Yong Zhou's
+[On regularity criteria in terms of pressure for the Navier--Stokes equations in R3](https://doi.org/10.1090/S0002-9939-05-08312-7),
+Theorem 1.1, applies to the L2-in-time, L2-in-space pressure gradient
+case for the stated smooth initial data. This is reuse of a published
+conditional criterion, not a claim of a new criterion or of a formal import.
+
+A direct smooth-prefix estimate makes the uniform quantifiers explicit.
+Let y=||u||4^4, Z=||grad(|u|^2)||2, G=||grad p||2 and let S be a fixed
+homogeneous R3 Sobolev constant `||f||6<=S||grad f||2`. Multiplication of
+NS by `4|u|^2 u`, integration by parts, interpolation and Young give
+
+```text
+y'+2nu Z^2 <=4G||u||6^3
+ <=4 S^(3/4) G y^(3/8) Z^(3/4),
+y' <=16 S^(6/5) nu^(-3/5) G^(8/5) y^(3/5),
+y(t)^(2/5) <= y(0)^(2/5)
+ +(32/5) S^(6/5) nu^(-3/5) H^(1/5) C_u(t)^(4/5).   (HR7)
+```
+
+The last step uses a positive regularization of y if necessary and time
+Holder. These deliberately nonoptimal constants do not involve a future
+solution norm. A uniform C_u bound thus gives `||u||4<=M` on every prefix.
+The usual gradient-energy estimate is
+`E1'(t)<=C nu^(-7) M^8 E1(t)`, with fixed interpolation constant C;
+Gronwall yields `E1(t)<=E1(0)exp(C nu^(-7)H M^8)`.
+This has precisely the uniform-prefix form required by the already proved
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` in
+`MettapediaNS.WholeSpaceEnstrophyContinuation`. The estimates connecting
+this new pressure split to that theorem remain analytic, not Lean-certified.
+
+The open physical estimate is (HR5)'s self-pressure payment beyond the
+controlled regimes. The paid mixed term removes one derivative loss but
+does not bound the repeated creation, concentration or mutual renewal of
+the generated parents. No unforced singularity is constructed here.
+
+## Enclosing a finite-amplitude pressure prefix
+
+`pressure_gradient_certificate.py` reuses the existing exact reconstructed
+Bernstein reference, arithmetic balls, enclosed Fourier transforms and
+relative-vorticity comparison. It constructs only velocity and its complete
+quadratic pressure; every quadratic convolution output fits strictly inside
+the enlarged grid. The exact reference is the solenoidal, real projection
+of the supplied control points, not the rounded computed midpoint.
+
+The checker integrates the full pressure polynomial by signed Fourier
+pairings, includes all coefficient error radii, encloses the complete NS
+residual in L2 and H1, and applies (GA4) with the sharper (HR1) comparison.
+All endpoint errors, error dissipation and spent pressure costs survive
+composition. An exact original-datum check rejects a rounded substitute.
+The arithmetic assumptions are those stated in `pressure_prefix_certificate`;
+the PDE comparison is analytic and the computation is not Lean-certified.
+
+The first bounded probes at amplitude2 and viscosity1 identified a spatial
+obstruction. On n32, halving the slab from1/64 to1/128 changes its L2 residual
+bound from3.77050e-4 to1.53730e-4. A midpoint diagnostic places more than
+99.7% of the squared residual outside the retained velocity band, dominated
+by modes with absolute coordinates(3,12,1). These are numerical diagnostics
+of the stored midpoint, not independent interval bounds.
+
+Retaining that harmonic with n48, at h=1/128, reduces the full residual
+bound to1.24800e-6. The first physical pressure cost is enclosed by
+
+```text
+1.47708414e-7 <= C(1/128) <= 1.47757559e-7.
+```
+
+This is a short actual-prefix enclosure under the stated arithmetic model
+and analytic transfer, not the all-time payment (GA1). Its gradient bound
+is still far above the PG8 tail threshold. No numerical tail endpoint from
+the earlier sweep is inserted into this enclosure.
+
+Two consecutive n48 slabs retain the identical projected reference at
+their common endpoint and give
+
+```text
+9.57424759e-7 <= C(1/64) <= 9.57686446e-7,
+||u-v||2 <= 1.983291e-8,
+||grad(u-v)||2 <= 2.561235e-7.
+```
+
+The second slab inherits both errors and both accumulated cost bounds.
+Its actual gradient bound is7.295313, still above1/26. The run stops at
+this bounded test; later returns and entry into the paid tail are pending.
+
+Independent rational fixtures check every pressure and residual polynomial
+coefficient, including conversion errors, and its exact pressure cost
+`92450399225/151983054913536`. A high-precision independent scalar check
+verifies the fractional powers, dissipation allowance and inherited costs.
+The archive `pressure_gradient_certificate_results.json` records the tests
+and the bounded prefix. Reproduce with
+
+```sh
+python3 -O labs/heat_remainder_pressure.py
+python3 -O labs/pressure_gradient_certificate.py
+python3 -O labs/pressure_gradient_certificate.py --prefix --n 48 --amplitude 2 --dt .0009765625 --h .0078125 --final .015625
+```
+
+No Lean declarations or axioms change. These results neither extend the
+analytic small-amplitude theorem to all amplitudes nor pay arbitrary
+generated histories.

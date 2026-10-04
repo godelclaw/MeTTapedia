@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [original-heat pressure separation](labs/README.md#original-heat-interactions-have-an-arbitrary-data-payment)
+pays the heat pressure and every mixed pressure interaction with the generated
+motion from the full initial datum, on each prescribed horizon and without
+smallness. The solenoidal Lie-bracket identity already present in the Lean
+library removes a derivative from the mixed term. Pressure produced by the
+generated motion itself remains unpaid. Its first complete feedback exceeds
+the allowance predicted from the first generated parents, even though their
+return is depleting. A uniform small-data remainder turns this into failure
+of that particular stock on actual regular flows. The general payment,
+stock failure and continuation connection are analytic, not new Lean certificates.
+A [short pressure-cost enclosure](labs/README.md#enclosing-a-finite-amplitude-pressure-prefix)
+uses the same cancellation and retains the complete nonlinear residual.
+
 The [finite-amplitude pressure-gradient test](labs/README.md#finite-amplitude-histories-of-the-joint-pressure-gradient-stock)
 retains the same original allowance while increasing the strength of the
 three interacting parents. A bounded numerical sweep preserves the observed

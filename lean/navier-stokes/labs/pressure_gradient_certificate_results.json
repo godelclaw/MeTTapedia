@@ -1,0 +1,278 @@
+{
+  "scope": "Analytic pressure payment and comparison with exact fixtures; bounded prefix under the stated arithmetic model; not Lean-certified",
+  "source_sha256": {
+    "pressure_gradient_certificate.py": "daf3c19d76a37c51a398ad98b1e4a4f0d8d3bdb9fc06bd09f1abce37b5775974",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "pressure_gradient_amplitude.py": "54619f7475bb3bb81256be9c29b07e8421e177d13661174587cab188f08b6c9c",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "pressure_oblique_return.py": "e96b250cd78d8f2de1c77e8e086dba019d0415e8cfc957849315d1efd25415ef",
+    "pressure_operator_enclosure.py": "84e940cf74978b4978b297e127e31a1fc096ea8b6f125debe24b89e2bfa084d6",
+    "pressure_polynomial_enclosure.py": "eb82ca967c92a1209b6dacc356f3389646b4af92ef5b4701935fc0f9b9a26b2d",
+    "pressure_prefix_certificate.py": "0df5b7eb03c1b5dddb94fe5236229815ba7f9257bd444ed3a0135d82e4383c7b",
+    "pressure_vorticity_control.py": "64e98ee89b459fb306593feb5f0c70555c8f9bc214c5e2410f8791d3caa1869d",
+    "pressure_history_control.py": "5617e381d97e51e7c94f8322f61482465220296dab713a0dff62d4f019e91a15",
+    "paired_stretching_history.py": "5c4375eda70db811d404a6a710445d2334117f9e8f24d1159dc774340fd4f8c0"
+  },
+  "exact_checks": {
+    "status": "Exact reconstructed-reference pressure and residual checks passed",
+    "exact_reference_cost": "92450399225/151983054913536",
+    "reference_cost_enclosure": {
+      "lower": 0.0006082941221017216,
+      "upper": 0.0006082941255499074,
+      "arithmetic_L2_time_radius": 3.406495209393166e-11
+    },
+    "residual_details": {
+      "epsilon0": {
+        "bound": 52.851414998734896,
+        "stored_center_bound": 52.85141499839245,
+        "coefficient_radius_sum": 3.424390151003704e-10
+      },
+      "epsilon1": {
+        "bound": 221.28406832705832,
+        "stored_center_bound": 221.2840683187546,
+        "coefficient_radius_sum": 8.303704817067628e-09
+      }
+    },
+    "grids": {
+      "fft": 32,
+      "output": 30,
+      "velocity_band": 7
+    },
+    "scalar": {
+      "status": "Independent scalar cost comparison passed",
+      "control": {
+        "X": 9.386556727224128e-10,
+        "Y": 3.025824609760904e-08,
+        "Xmax": 9.386556727224128e-10,
+        "Ymax": 3.056082855858513e-08,
+        "cost_upper": 0.3750000009386593,
+        "cost_lower": 0.18749999933626763,
+        "interval_cost_upper": 0.12500000093865932,
+        "interval_cost_lower": 0.062499999336267646,
+        "pressure_error_radius": 1.327464703248258e-09,
+        "error_dissipation_upper": 9.454323955375638e-16
+      }
+    },
+    "scope": "Stated binary64 arithmetic model and analytic comparison; not Lean-certified"
+  },
+  "heat_remainder": {
+    "mixed": [
+      {
+        "frequency": 1,
+        "mixed_cost": "80/9",
+        "fixed_bound": "5043/8",
+        "error_energy": "3/2"
+      },
+      {
+        "frequency": 4,
+        "mixed_cost": "12800/561",
+        "fixed_bound": "5043/8",
+        "error_energy": "3/2"
+      },
+      {
+        "frequency": 16,
+        "mixed_cost": "2170880/70161",
+        "fixed_bound": "5043/8",
+        "error_energy": "3/2"
+      }
+    ],
+    "actual_history": [
+      {
+        "viscosity": "2/7",
+        "generated_rate_t4": "1815523/3162378240",
+        "generated_integral_t5": "1815523/15811891200",
+        "pressure_modes": 24
+      },
+      {
+        "viscosity": "1",
+        "generated_rate_t4": "1815523/3162378240",
+        "generated_integral_t5": "1815523/15811891200",
+        "pressure_modes": 24
+      },
+      {
+        "viscosity": "3",
+        "generated_rate_t4": "1815523/3162378240",
+        "generated_integral_t5": "1815523/15811891200",
+        "pressure_modes": 24
+      }
+    ],
+    "generated_stock": {
+      "exact": {
+        "leading": "951225157394627/6398448616096137216000000",
+        "birth": "1542487163387736641025771629800483943320822970123394362266841184816186489921860887565173314378449903116981/537683566777706916053685323987211368592778546703441843271855283143605415749211954219550581909532900054794240000000000",
+        "return": "-11155876056359360295403106534733587773900438924287336032645430140679896793455183572433001206851/4274565561898037294450328767496535227460674618290828028609506885140215475731226343601617240064000000000000",
+        "correction": "121958124113885622910118866795708880891346160988911664736663729042102043461954100872954662857956469295815122391/470995442109649038265426809946397524276742784668023527796337460739994241184431122983348608307553405222283902976000000000000"
+      },
+      "approximate": {
+        "leading": 1.4866496778636236e-10,
+        "birth": 2.868763820757503e-12,
+        "return": -2.6098268689101148e-12,
+        "correction": 2.5893695184738846e-13
+      },
+      "birth_over_depletion": "9458222788460923535441826479610607443654622288202629550547816777055892318902866590372129729105779115932704095800/8604515919663724175070994412040645277415199161280247897391170673761178014669187884261447089100083830861998239063",
+      "profile_sha256": {
+        "leading": "9a324afc32c7f6e6a7ead78e474fa6384891d9855df2b82218b22c8b1457bef3",
+        "correction": "05b673d08a2429b64729055f4c250f3e9e0161451d2105555418e66bc0df9caa"
+      },
+      "scope": "Complete amplitude coefficients; actual small-data stock failure uses the uniform analytic remainder"
+    },
+    "scope": "Exact full Fourier/PDE jets; all-prefix payment and local Taylor transfer are analytic"
+  },
+  "coarse_residual_probes": [
+    {
+      "n": 32,
+      "h": 0.015625,
+      "dt": 0.0009765625,
+      "epsilon0": 0.00037704926472071514,
+      "epsilon1": 0.004679044056025622,
+      "reference_cost": {
+        "lower": 9.575553817366256e-07,
+        "upper": 9.575554344584763e-07,
+        "arithmetic_L2_time_radius": 1.3358034970063467e-11
+      }
+    },
+    {
+      "n": 32,
+      "h": 0.0078125,
+      "dt": 0.0009765625,
+      "epsilon0": 0.000153729381778112,
+      "epsilon1": 0.0019077464527366623,
+      "reference_cost": {
+        "lower": 1.477329781934333e-07,
+        "upper": 1.4773299277309485e-07,
+        "arithmetic_L2_time_radius": 9.44230340458004e-12
+      }
+    }
+  ],
+  "coarse_probe_note": "Only unchanged reference/residual quantities are retained. The earlier pressure-control outputs used the coarser GA2 comparison.",
+  "prefix": [
+    {
+      "n": 48,
+      "amplitude": 2.0,
+      "nu": 1.0,
+      "dt": 0.0009765625,
+      "h": 0.0078125,
+      "final": 0.015625,
+      "original_stock": "116161/2333128050",
+      "scope": "Complete interval enclosures under the stated arithmetic model; analytic PDE transfer"
+    },
+    {
+      "time": 0.0078125,
+      "status": "interval accepted",
+      "row": {
+        "S": 8.026178929137398,
+        "Splus": 7.90116916524973,
+        "V0": 10.882319665149263,
+        "V1": 17.54814918271861,
+        "V2": 45.08862907669346,
+        "D": 45.08862907669346,
+        "reference_H1": 8.37506792983463,
+        "final_H1": 7.727718065679916,
+        "epsilon0": 1.2479947004497146e-06,
+        "epsilon1": 1.0387236341911344e-05
+      },
+      "reference_cost": {
+        "lower": 1.4773297555562845e-07,
+        "upper": 1.477329954138001e-07,
+        "arithmetic_L2_time_radius": 1.2785250207192982e-11
+      },
+      "residual_details": {
+        "epsilon0": {
+          "bound": 1.2479947004497146e-06,
+          "stored_center_bound": 1.246929813424259e-06,
+          "coefficient_radius_sum": 1.0648870254555233e-09
+        },
+        "epsilon1": {
+          "bound": 1.0387236341911344e-05,
+          "stored_center_bound": 1.0331903188939047e-05,
+          "coefficient_radius_sum": 5.533315297229577e-08
+        }
+      },
+      "grids": {
+        "fft": 64,
+        "output": 62,
+        "velocity_band": 15
+      },
+      "control": {
+        "X": 1.0300115012651661e-08,
+        "Y": 9.174719879372685e-08,
+        "Xmax": 1.0300115012651661e-08,
+        "Ymax": 9.266467078166413e-08,
+        "cost_upper": 1.4775755865865041e-07,
+        "cost_lower": 1.4770841435429798e-07,
+        "interval_cost_upper": 1.4775755865865041e-07,
+        "interval_cost_lower": 1.4770841435429798e-07,
+        "pressure_error_radius": 3.1952065567244615e-08,
+        "error_dissipation_upper": 1.7108247680062865e-14
+      },
+      "actual_H1_upper": 7.727718157427115,
+      "actual_cost_upper_over_stock": 0.0029677542781658016,
+      "cost_plus_tail_upper_over_stock": 12105146076.437185,
+      "initial_endpoint_sha256": "dbf8bdc99b4cdc71658d8a4891009801183c9300be3d0822bf16b3f629db2f53",
+      "final_endpoint_sha256": "a033b94eb4314f121c36c685f3f3a09e3f2277806f899711f0ef672d60eb569f",
+      "elapsed": 19.727584716049023
+    },
+    {
+      "time": 0.015625,
+      "status": "interval accepted",
+      "row": {
+        "S": 7.632003501513118,
+        "Splus": 7.3090964702084396,
+        "V0": 10.660183931926262,
+        "V1": 16.837768996354146,
+        "V2": 42.410885046577754,
+        "D": 42.410885046577754,
+        "reference_H1": 7.843877320488077,
+        "final_H1": 7.295312276830382,
+        "epsilon0": 1.092014487967925e-06,
+        "epsilon1": 1.8080072705930428e-05
+      },
+      "reference_cost": {
+        "lower": 8.098225898682999e-07,
+        "upper": 8.098226345789219e-07,
+        "arithmetic_L2_time_radius": 1.212719396068735e-11
+      },
+      "residual_details": {
+        "epsilon0": {
+          "bound": 1.092014487967925e-06,
+          "stored_center_bound": 1.0909747794981294e-06,
+          "coefficient_radius_sum": 1.0397084697954996e-09
+        },
+        "epsilon1": {
+          "bound": 1.8080072705930428e-05,
+          "stored_center_bound": 1.802604786908806e-05,
+          "coefficient_radius_sum": 5.4024836842364905e-08
+        }
+      },
+      "grids": {
+        "fft": 64,
+        "output": 62,
+        "velocity_band": 15
+      },
+      "control": {
+        "X": 1.9832903855967244e-08,
+        "Y": 2.561234819979534e-07,
+        "Xmax": 1.9832903855967244e-08,
+        "Ymax": 2.5868471681793296e-07,
+        "cost_upper": 9.57686445242302e-07,
+        "cost_lower": 9.574247591906903e-07,
+        "interval_cost_upper": 8.099288865836516e-07,
+        "interval_cost_lower": 8.097163448363924e-07,
+        "pressure_error_radius": 5.903341905361835e-08,
+        "error_dissipation_upper": 9.423830819579148e-14
+      },
+      "actual_H1_upper": 7.295312532953864,
+      "actual_cost_upper_over_stock": 0.01923541557407051,
+      "cost_plus_tail_upper_over_stock": 9614806428.251053,
+      "initial_endpoint_sha256": "a033b94eb4314f121c36c685f3f3a09e3f2277806f899711f0ef672d60eb569f",
+      "final_endpoint_sha256": "35ee7ce57c8e84f83a07c482404c67f2a24451a6bfcd98dcd7126eee0e5acc23",
+      "elapsed": 40.562118846108206
+    },
+    {
+      "status": "finite prefix enclosed; tail payment pending",
+      "elapsed": 40.56232621707022
+    }
+  ]
+}
