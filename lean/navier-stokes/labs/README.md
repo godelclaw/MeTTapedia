@@ -39871,3 +39871,151 @@ A complete small oblique interval also gives identical coefficient centers,
 radii, field majorants, reconstructed endpoint balls and final norm
 enclosures. This storage change does not alter the arithmetic model or
 certify the stronger amplitude-eight history by itself.
+
+## Unequal oblique parents and cancellation of the integrated return
+
+The common-amplitude oblique test fixes the relative strengths of its
+three parents. `pressure_oblique_parents.py` instead retains the family
+
+```text
+U_(a,b,c) = (a sin y-4b sin z, b sin z, c sin(x+4y)).
+```
+
+It is divergence-free and has zero initial canonical pressure. The
+calculation uses the full Euclidean NS projection and viscosity; the
+coordinate shear is not treated as a symmetry of the Euclidean equation.
+All three parent strengths belong to the original datum and remain fixed
+parameters of its actual evolution, rather than replacement parameters
+at later times.
+
+### Why there are three coefficient functions
+
+Each missing-parent plane has a literal pressure-free triangular flow.
+When a=0, the direction (-4,1,0) is orthogonal to the receiver wave vector
+(1,4,0): the vertical heat flow passively transports the horizontal
+component in that direction. When b=0, a horizontal shear transports
+the vertical component. When c=0, the second component is a heat shear
+transporting the first. These descriptions remain valid with viscosity
+and imply identically zero canonical pressure on each plane.
+
+In the analytic amplitude expansion, pressure consequently contains the
+factor abc, and its fourth accumulated moment contains (abc)^4. Translating
+y, z or x by a half period reverses respectively a, b or c without
+changing the integrated observation. After removing (abc)^4, the next
+amplitude coefficient is therefore an even homogeneous quadratic form.
+There are no mixed ab, ac or bc terms. This determines its basis; the
+coefficient computation is not extrapolation from a few sampled flows.
+
+At viscosity one and abc nonzero, write the amplitude expansion of the
+complete pressure-impulse moment for initial datum epsilon U_(a,b,c) as
+
+```text
+Phi(t)/(abc)^4
+ = epsilon^12 A(t)
+   + epsilon^14 [a^2 B_a(t)+b^2 B_b(t)+c^2 B_c(t)]
+   + higher amplitude orders.
+```
+
+A is the original matched cubic-pressure forecast. The B functions use
+the complete viscous velocity, pressure and conditional-moment recurrences
+through this amplitude degree. They are finite exponential polynomials,
+not finite-mode approximations of the full nonlinear flow. An unused
+parent triple checks every time coefficient of the reconstructed form.
+Higher amplitude orders are not discarded in any claimed actual-flow
+bound; no such bound is asserted by this coefficient calculation.
+
+### Initial depletion and full-history payment are distinct observations
+
+The Euler calibration's normalized t^10 coefficient has the same
+parent-weight basis, with coefficients d_a,d_b,d_c. Independent conditional
+moments check the material calculation. Two additional positive-viscosity
+fixtures compare the complete NS moments with their matched viscous cubic
+forecasts; they retain diffusion and give the same first difference.
+This initial coefficient is distinct from beta_i=lim_(t->infinity)B_i(t):
+
+| original parent | initial coefficient d_i | integrated viscous coefficient beta_i |
+| :--- | ---: | ---: |
+| a | +0.01087356028 | +6.878463243e-13 |
+| b | -0.00175722665 | -2.183596807e-14 |
+| c | -0.00609444719 | -5.125728650e-15 |
+
+The signs are exact rational results; decimal values are displayed only
+for readability. Equal strengths recover the previously computed positive
+integrated correction. Increasing a with b,c fixed increases this
+normalized correction, whereas increasing b or c decreases it. The factor
+(abc)^4 must still be restored when comparing unnormalized costs.
+
+With b=c=1, set
+
+```text
+R = -(beta_b+beta_c)/beta_a,
+0.03919 < R < 0.03920,              a = sqrt(R).
+```
+
+Then the integrated degree-fourteen correction is exactly zero. All
+three parents remain nonzero; this is not a pressure-free reduction.
+The corresponding initial normalized coefficient is approximately
+-0.00742546, so vanishing of the integrated correction does not mean
+that its full time history vanishes.
+
+Let B_* denote this cancelled coefficient function. Exact differentiation
+of the complete exponential polynomial gives
+
+```text
+B_*(t) = d_* t^10+O(t^11),            d_* < 0,
+lim exp(6t) B_*(t) = -c_*,            c_* > 0,
+lim exp(6t) B_*'(t) = 6c_* > 0,
+lim B_*(t) = 0.
+```
+
+Here c_* is approximately 9.69909417e-15. Thus the SAME correction initially
+decreases and eventually increases back toward zero. Its initial favorable
+sign cannot justify monotonic depletion. The zero limiting contribution
+belongs to the degree-fourteen coefficient, not to the exact nonlinear
+flow's complete pressure history.
+
+There is a qualitative actual-flow consequence with an explicit remaining
+scope. Fix this original shape, viscosity one, and two finite times t_-<t_+
+at which B_*' is respectively negative and positive. Such times exist by
+the checked origin and late-time limits. The small-data analytic construction
+used above gives global smooth unforced solutions for sufficiently small
+epsilon. On the fixed interval [0,t_+], analytic dependence of the full NS
+solution and its conditional moment equations gives
+
+```text
+Delta_epsilon(t) = Phi_epsilon(t)-(abc)^4 epsilon^12 A(t),
+Delta_epsilon'(t)/(abc)^4
+ = epsilon^14 B_*'(t)+epsilon^16 R_epsilon'(t),
+sup_(0<=t<=t_+) |R_epsilon'(t)| <= C.
+```
+
+C is fixed on a small amplitude neighborhood of this original shape.
+It can be obtained on the prescribed finite interval by the Sobolev mild
+fixed-point estimate for NS, followed by the triangular advection-diffusion
+moment equations. On a sufficiently small complex amplitude ball these
+maps are analytic with uniform bounds; their Cauchy remainder and the even
+amplitude symmetry give the displayed C1 remainder. This uses bounds from
+the original shape and chosen interval, not a bound on an unknown future
+large-data solution.
+Choose epsilon small enough that epsilon^2 C is less than half the smaller
+of the two strict derivative margins. Then Delta_epsilon'(t_-)<0 and
+Delta_epsilon'(t_+)>0 on one actual unforced positive-viscosity history.
+This compact-interval analytic transfer retains all higher generated
+parents. It is not Lean-certified, does not identify an exact repeated
+fluid state, and does not determine the sign of Delta_epsilon at infinity.
+
+This provides a precise next test of a proposed extension of the corrected
+stock: at this ratio the allowance
+`(abc)^4 [epsilon^12 alpha+2 epsilon^14 max(beta,0)]`
+contains no first correction. The next complete integrated coefficient,
+and a uniform actual-flow remainder, determine whether that extension
+fails or survives here. Its sign is not supplied by the cancellation
+alone. Neither outcome would decide every possible full-datum allowance
+or arbitrary-data regularity.
+
+Run `python3 -O labs/pressure_oblique_parents.py` for the initial and
+positive-viscosity checks. Add `--integrated` to recompute the complete
+viscous histories, including the independently checked original unit
+stock. The output retains exact rational coefficients and the complete
+cancelled time profile. These results are exact algebra and analytic
+coefficient identification, not new Lean certificates.
