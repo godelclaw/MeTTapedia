@@ -39549,3 +39549,198 @@ the original impulse across transitions. The present result supplies an
 explicit physical transition and a failed decay-profile bound. Uniform
 payment under repeated interacting transitions, concentration and arbitrary
 original data remains the missing estimate.
+
+## Relative vorticity controls a retained pressure history
+
+`pressure_vorticity_control.py` supplies a second physical comparison for
+(788), and passes its dissipation bound into the existing pressure-history
+consumer (789)--(794). It uses the complete velocity difference, including
+its curvature work, viscosity and residual. The identities and scalar
+arithmetic have independent exact and high-precision checks. The transfer
+to actual solutions is analytic; no new Lean theorem is claimed here.
+
+This is an application of the a posteriori strong-solution framework of
+[Chernyshenko, Constantin, Robinson and Titi](https://arxiv.org/abs/math/0607181).
+Their robustness result explains how a sufficiently accurate approximation
+can certify an actual strong solution. It does not make every approximation
+accurate enough, or supply a bound for every initial datum. The comparison
+below retains the extra pressure-history account needed by this laboratory.
+
+### Complete relative-vorticity identity
+
+Work on the normalized period-2pi torus. Let u be an actual smooth,
+mean-zero, unforced NS solution at viscosity nu>0. Let v be a smooth,
+mean-zero, solenoidal reference, with the full projected residual
+
+```text
+r = v_t + P_Leray(v.grad v) - nu Delta v.
+w=u-v, eta=curl w, Omega=curl v,
+X=||w||2, Y=||grad w||2=||eta||2, Z=||Delta w||2.
+```
+
+The residual is an error of the reference, not a force inserted into u.
+Let epsilon0 and epsilon1 bound its L2 and homogeneous H1 norms. Let
+Sminus and Splus bound the largest eigenvalues of -sym grad v and
+sym grad v, respectively, and set
+
+```text
+V2 = sum_k |k|^2 |vhat(k)|.
+```
+
+In particular `||grad Omega||infinity,Frobenius<=V2`. Taking curl of the
+full error equation gives
+
+```text
+eta_t + (v+w).grad eta
+ = eta.grad v + Omega.grad w + eta.grad w
+   - w.grad Omega + nu Delta eta - curl r.             (844)
+```
+
+The two curvature terms cannot simply be discarded. Write
+
+```text
+I = integral eta.(Omega.grad w),
+J = integral eta.(w.grad Omega).
+```
+
+Periodic integration by parts, self-adjointness of curl, and
+`div Omega=0` give the exact cancellation
+
+```text
+2 I = integral sum_(i,j,k,l)
+        w_i epsilon_ijk (partial_j Omega_l)(partial_l w_k).
+|I| <= (1/2)V2 X Y,       |J| <= V2 X Y.               (845)
+```
+
+Indeed, moving curl from w to `Omega.grad w` produces the displayed
+commutator plus `integral w.(Omega.grad eta)=-I`. For the bound, fix l:
+the contraction in i,j,k is a cross product of w with `partial_l w`.
+Its norm is at most `|w| |partial_l w|`. Cauchy--Schwarz in l and space
+proves (845), with no separate uncontrolled derivative of eta.
+
+Transport by v+w cancels in the enstrophy integral. Reference stretching
+costs at most Splus Y^2. The error's own stretching equals
+`integral (w.grad w).Delta w`; the same Agmon/Young estimate used in
+(788) bounds it by `nu Z^2/2+kappa Y^6`, where
+`kappa=27(26pi)^2/(32nu^3)`. The residual work is at most epsilon1 Y.
+Consequently
+
+```text
+(1/2)(Y^2)' + (nu/2)Z^2
+ <= Splus Y^2 + (3/2)V2 X Y + kappa Y^6 + epsilon1 Y,
+Y' <= (Splus-nu/2)Y + (3/2)V2 X + kappa Y^5 + epsilon1. (846)
+```
+
+The norm comparison at Y=0 follows by the usual regularization of Y.
+The original L2 comparison `X'<=(Sminus-nu)X+epsilon0` is unchanged.
+This trades the doubled compression rate in (788) for the stretching
+rate, at the price of a larger explicit curvature coefficient. Either
+inequality may be better. In particular it is not valid to take Splus
+from (846) and retain the smaller curvature coefficient from (788).
+
+### The same dissipation pays the same pressure account
+
+For nonnegative comparison bounds x,y, retain both complete sources:
+
+```text
+M(x,y) = min(2Sminus y^2+V2 xy,
+             Splus y^2+(3/2)V2 xy) + kappa y^6+epsilon1 y.
+E(t) = [Y(0)^2+2 integral_0^t M(x(s),y(s)) ds]/nu.
+integral_0^t Z^2 <= E(t).                              (847)
+```
+
+Each source is a valid upper bound at the same physical time. Taking their
+minimum therefore preserves the bound. Both are increasing in x,y, so
+supersolutions can be inserted without choosing incompatible coefficients.
+The comparison starts with Y(0)=0 when reference and actual datum coincide.
+A test initialized with a nonzero gradient error must retain its Y(0)^2
+contribution as well.
+
+Insert this E into (789). All integrals A0,A1,A2, the stochastic trajectory
+error, conditional moments I,Q,T and fourth-moment error still inherit
+their original values across every seam. No pressure impulse is reset.
+`pressure_history_certificate.propagate` accepts the two new physical
+comparison callbacks. Its default complete scalar output is exactly
+unchanged from the preceding implementation.
+
+On each scalar subinterval, the implementation obtains a supersolution
+from either complete linear branch after bounding the nonlinear term by
+kappa B^5. It accepts B only if the resulting endpoint and initial value
+are both strictly below B. The linear upper expression is monotone or
+convex in time, so its maximum is at an endpoint. This closes the
+whole-subinterval bootstrap. Scalar subdivisions are powers of two and
+cover the same exact time interval. All arithmetic in the pressure account
+is rational on the supplied bounds; exponentials and final conversions
+are rounded outward as before.
+
+### A stronger history exposes the resolution requirement
+
+Use the same datum `8*(sin y-4sin z,sin z,sin(x+4y))`, viscosity one,
+and original corrected stock `K=6.129654718562507`. The complete grid-48
+reference uses integrator step 1/1024 and shared quintic intervals of
+length 1/64. Replaying its saved whole-interval majorants, with four
+identical scalar subdivisions for both comparisons, gives:
+
+| interval endpoint | original Y bound | relative-vorticity Y bound | original pressure upper bound | improved pressure upper bound |
+| ---: | ---: | ---: | ---: | ---: |
+| 1/64 | 0.00111632 | 0.000811043 | 0.0000280455 | 0.0000161537 |
+| 1/32 | 0.00590141 | 0.00291854 | 0.0157848 | 0.00305394 |
+| 3/64 | 0.0227527 | 0.00744205 | 3.01429 | 0.121055 |
+| 1/16 | 0.0768661 | 0.0165937 | 489.739 | 2.82918 |
+
+These are outward scalar calculations on floating, unenclosed reference
+majorants. They are feasibility results, not actual-solution enclosures.
+At 5/64 the original gradient bootstrap fails, while the new gradient
+bound remains finite at 0.0344867. Its pressure impulse bound is already
+2.31037; its fourth power alone exceeds K. Thus the new comparison still
+does not certify the desired pressure payment through the first observed
+receiver sign at 1/8. This failure is not a lower bound on the actual cost.
+
+Endpoint diagnostics identify a substantial spatial residual. At an
+interpolation endpoint the time derivative equals the Galerkin tangent,
+so the enlarged-grid velocity residual measures the discarded physical
+quadratic outputs, up to floating arithmetic. Increasing spatial resolution
+with the same integrator step gives:
+
+| grid | time | full velocity L2 residual | full velocity H1 residual |
+| ---: | ---: | ---: | ---: |
+| 48 | 1/64 | 1.06450e-3 | 1.76381e-2 |
+| 64 | 1/64 | 3.53452e-7 | 7.99850e-6 |
+| 96 | 1/64 | 5.54877e-13 | 1.87123e-11 |
+| 48 | 1/16 | 5.55348e-4 | 9.46154e-3 |
+| 64 | 1/16 | 1.18298e-6 | 2.68987e-5 |
+| 96 | 1/16 | 8.83326e-12 | 2.91739e-10 |
+
+The finest values approach the floating accuracy floor; they are not
+rigorous error radii. Halving only the quintic interval preserves the
+endpoint spatial residual. It reduces some interior interpolation error,
+but cannot remove those generated spatial outputs. Resolving the original
+modes or obtaining agreement of a few output values is insufficient for
+this derivative-sensitive physical comparison.
+
+### Checks and use
+
+Run `python3 -O labs/pressure_vorticity_control.py` for exact fixtures of
+(844)--(845), including nonconstant vorticity, nonzero commutator and
+curvature work, positive viscosity and nonzero residual work. The full
+projected NS tangent is computed independently before checking its
+relative enstrophy balance. Four high-precision scalar fixtures check
+outward endpoints, both branch choices, the dissipation source, and
+retention of the earlier pressure history. No checks rely on Python
+assertions.
+
+Run `python3 -O labs/pressure_vorticity_control.py --spatial-probe` to
+reproduce the spatial table. Optional `--grids 48 64 96` chooses its grids.
+This velocity diagnostic reconstructs canonical pressure but does not
+evolve the conditional pressure moments. The full sixteen-field comparison
+uses `pressure_history_slabs.probes` with the stated oblique datum.
+Pass its saved JSON-lines output to
+`python3 -O labs/pressure_vorticity_control.py --replay saved.jsonl` to
+compare both controls without recomputing the reference. The replay checks
+consecutive interval coverage; it does not certify its input majorants.
+
+The result is a physical comparison improvement with an existing
+strong-prefix and pressure-history consumer. It supplies no universal
+initial reserve for interacting parents. The arbitrary-data signed-renewal
+hypothesis remains open, and the stronger oblique sign-return history
+remains numerical until a complete physical enclosure succeeds.

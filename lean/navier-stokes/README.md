@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [relative-vorticity comparison](labs/README.md#relative-vorticity-controls-a-retained-pressure-history)
+retains an exact curl/transport cancellation and lowers the growth loss
+available to the existing physical error bound. Its full curvature work
+and dissipation feed the same inherited pressure history. Exact algebra
+and outward scalar checks support the analytic estimate. Replaying the
+stronger oblique history improves the comparison substantially, but does
+not yet certify its payment; spatial residuals from generated modes are
+an identified obstruction to that verification. This is not a fluid
+counterexample or an arbitrary-data reserve.
+
 The [slow-parent calculation](labs/README.md#a-fast-receiver-leaves-a-slower-pressure-parent)
 identifies a four-step transfer from an oblique receiver into a slowly
 decaying mode. On actual sufficiently small unforced flows, its new

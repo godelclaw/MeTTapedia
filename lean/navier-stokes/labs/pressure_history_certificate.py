@@ -34,23 +34,28 @@ def root4(q):
     return root2(root2(q))
 
 
-def propagate(old, row, h, nu):
+def propagate(old, row, h, nu, velocity_step=control_step, enstrophy_source=None):
     """Outward version of the physical comparison (788)--(794).
 
     All nonnegative polynomial arithmetic is exact rational arithmetic on
     the supplied binary64 bounds. Roots are checked by squaring; the path
     exponential uses a Taylor remainder enclosure. Original errors are zero;
     all later errors and cumulative accounts must be passed in via old.
+    Optional callbacks must supply valid velocity and enstrophy comparisons
+    for the same physical error; their analytic hypotheses are not checked here.
     """
     require(h > 0 and nu > 0 and np.isfinite(h+nu), 'Positive finite physical parameters')
     require(all(np.isfinite(row[k]) and row[k] >= 0 for k in MAJORANTS)
             and all(np.isfinite(v) and v >= 0 for v in old.values()),
             'Finite nonnegative comparison inputs')
-    vel = control_step(old['X'], old['Y'], row, h, nu)
+    vel = velocity_step(old['X'], old['Y'], row, h, nu)
     x, y = Q(vel['Xmax']), Q(vel['Ymax'])
     r, o, hq, nq = {k: Q(row[k]) for k in MAJORANTS}, {k: Q(v) for k, v in old.items()}, Q(h), Q(nu)
     kappa = 27*(26*Q(22, 7))**2/(32*nq**3)
-    rhs = 2*hq*(2*r['S']*y*y+r['D']*x*y+kappa*y**6+r['epsilon1']*y)
+    source = (2*r['S']*y*y+r['D']*x*y+kappa*y**6+r['epsilon1']*y
+              if enstrophy_source is None else enstrophy_source(x, y, r, kappa))
+    require(source >= 0, 'Nonnegative upper bound for the physical enstrophy source')
+    rhs = 2*hq*source
     dissipation = (o['Y']**2+rhs)/nq
     energy_rhs = o['energy_rhs']+rhs
     A0 = o['V0_squared']+hq*r['V0']**2
