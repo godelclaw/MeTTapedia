@@ -1,0 +1,162 @@
+{
+  "classification": "CHECKED_FOREST_RECONSTRUCTION_WITH_THREE_SOURCE_CONSUMERS",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue catalogue (MIT), source decoding inherited from the pinned Gonthier/Emery bridge; finite-forest list propagation proved locally.",
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.TriangleStripLists",
+        "source_sha256": "daf122e99868d2b7b68dc58a2e626ea60d9b755cb2d3dd890cb07f819f0c5293",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.633,
+        "olean_bytes": 251488,
+        "olean_sha256": "d353dbaa9ee504c0e6568e00238965dcfe1e2a8e1295e9189893dd3eb55da7b0"
+      },
+      {
+        "module": "MettapediaFourColor.TriangleStripListsAudit",
+        "source_sha256": "972feaffd4412b4c36ceb32213a836666a593be9f35208d5f3f4fdbff4f454f2",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.384,
+        "olean_bytes": 2600,
+        "olean_sha256": "91b39ebe0e9623f789afaf5d58438697ae3870dc392b4a9ef2bf1f9f15ea82ce"
+      }
+    ]
+  },
+  "main_library": {
+    "module": "Mettapedia.GraphTheory.Kempe.ForestLists",
+    "build_passed": true,
+    "frontend_seconds": 1.7,
+    "olean_bytes": 171640
+  },
+  "proof_sources": [
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/Kempe/ForestLists.lean",
+      "bytes": 6356,
+      "sha256": "1a3a6e32f5c522d0853fcd6ae974c8dd57312d9aba80731261794014b17224a9"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/TriangleStripLists.lean",
+      "bytes": 6167,
+      "sha256": "daf122e99868d2b7b68dc58a2e626ea60d9b755cb2d3dd890cb07f819f0c5293"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/TriangleStripListsAudit.lean",
+      "bytes": 2259,
+      "sha256": "972feaffd4412b4c36ceb32213a836666a593be9f35208d5f3f4fdbff4f454f2"
+    }
+  ],
+  "audit": {
+    "roots": 10,
+    "dependency_declarations": 6641,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false
+  },
+  "program": {
+    "classification": "BOUNDED_PROGRAM_CROSSCHECK",
+    "sources": [
+      {
+        "source": "D0092",
+        "source_sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+        "ring": 11,
+        "core": 7,
+        "anchors": [
+          0,
+          2
+        ],
+        "joint_choices_per_input": 16,
+        "maximum_observed_sweeps": 4,
+        "inputs": 7381,
+        "colourable": 1303,
+        "successful_anchor_assignments": 1568
+      },
+      {
+        "source": "D0063",
+        "source_sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d",
+        "ring": 10,
+        "core": 7,
+        "anchors": [
+          1,
+          3
+        ],
+        "joint_choices_per_input": 16,
+        "maximum_observed_sweeps": 4,
+        "inputs": 2461,
+        "colourable": 622,
+        "successful_anchor_assignments": 732
+      },
+      {
+        "source": "D0099",
+        "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+        "ring": 11,
+        "core": 8,
+        "anchors": [
+          1,
+          6
+        ],
+        "joint_choices_per_input": 16,
+        "maximum_observed_sweeps": 4,
+        "inputs": 7381,
+        "colourable": 1587,
+        "successful_anchor_assignments": 1948
+      }
+    ],
+    "total_inputs": 17223,
+    "total_reconstructions": 4248,
+    "lean_anchor_source_sha256": "daf122e99868d2b7b68dc58a2e626ea60d9b755cb2d3dd890cb07f819f0c5293",
+    "universal_four_sweep_bound_claimed": false,
+    "reducibility_claimed": false,
+    "coverage_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "all_boundary_table_exported": false
+  },
+  "scope": {
+    "general": "Finite forest with arbitrary colour lists and edge support; extends to arbitrary graphs with jointly pinned cycle-breaking sets.",
+    "sources": [
+      "D0092",
+      "D0063",
+      "D0099"
+    ],
+    "anchors_per_source": 2,
+    "exterior": "Arbitrary actual exterior colouring, exact induced occurrence, every crossing edge retained.",
+    "output": "Full ambient colouring preserving exterior and joint anchor values.",
+    "limits": [
+      "Support and nonemptiness must be checked for the chosen anchor assignment.",
+      "No useful Kempe move or successful anchor assignment is guaranteed.",
+      "Two anchors are proved for these sources, not for all planar graphs.",
+      "No universal four-sweep bound, strict reduction, geometric supply or coverage theorem."
+    ]
+  },
+  "compression": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_replaced": 336,
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "existing_strip_source_contracts_retained": 54,
+    "net_artifact_size_saving_claimed": false,
+    "whole_proof_kernel_saving_claimed": false
+  },
+  "validation": {
+    "forest_library": "lake build Mettapedia.GraphTheory.Kempe.ForestLists",
+    "source_and_audit": "lake build kernelTriangleStripLists",
+    "classical_regression": "lake build kernelComplete",
+    "main_lane": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "program": "python3 tools/fourcolor/near-linear/audit_triangle_strip_lists.py",
+    "all_passed": true
+  }
+}

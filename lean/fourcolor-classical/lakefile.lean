@@ -1268,3 +1268,17 @@ target kernelStripChainRepair pkg : Unit := do
         "KempeBalancedBlock", "KempeShortBlock", "StripChainRepair", "StripChainRepairAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay joint anchor propagation and exterior reconstruction for three cores. -/
+target kernelTriangleStripLists pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/triangle-strip-lists",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "TriangleStripLists", "TriangleStripListsAudit"]
+      cwd := pkg.dir
+      env := env }

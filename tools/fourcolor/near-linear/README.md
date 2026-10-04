@@ -1,5 +1,42 @@
 # Near-linear Four Colour catalogue bridges
 
+## Joint anchor propagation reconstructs three source cores
+
+[`ForestLists`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ForestLists.lean)
+proves that nonempty colour lists with support across every edge of a finite
+forest admit a common colouring. The result extends to a graph whose cycles
+are broken by a jointly pinned set: keep those colours fixed, propagate
+inequality constraints, and reconstruct the forest. It applies to arbitrary
+finite lists and imposes no bound on the number of anchors.
+
+[`TriangleStripLists`](../../../lean/fourcolor-classical/MettapediaFourColor/TriangleStripLists.lean)
+consumes the already proved two-anchor forest geometry of D0092, D0063 and
+D0099. Its finite guard checks propagation, edge support and nonemptiness.
+The same theorem applies to arbitrary input lists on all three cores.
+`occurrence_extension` reconstructs a colouring in any graph containing an
+exact induced occurrence, fixing the entire coloured exterior and retaining
+the two shared anchor colours. Every crossing edge is included in the lists.
+
+The [independent program check](audit_triangle_strip_lists.py) decodes the
+pinned sources and tests 17,223 canonical boundary inputs against the existing
+exact ear-elimination solver. It tries all sixteen joint anchor assignments
+per input and reconstructs all 4,248 successful assignments into actual full
+source colourings. At most four propagation sweeps were observed; that bound
+is program evidence, not a universal Lean theorem. Only aggregate results are
+saved in the [audit receipt](triangle-strip-lists-audit.json).
+
+Replay `lake build kernelTriangleStripLists` and
+`python3 tools/fourcolor/near-linear/audit_triangle_strip_lists.py`.
+The [measurement receipt](triangle-strip-lists-measurements.json) separates the
+general proof, the source consumers and the finite discovery check.
+
+This supplies a common extension test and reconstruction theorem. It does
+not show that a selected Kempe move makes the guard succeed, that arbitrary
+boundary colourings can be repaired, or that suitable pieces occur throughout
+the intended planar class. The existing 54 critical-chain source contracts
+remain; no catalogue entry, original certificate dependency or whole-proof
+kernel cost is credited as removed.
+
 ## Coordinated repair of both critical-chain boundaries
 
 [`StripChainRepair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripChainRepair.lean)
