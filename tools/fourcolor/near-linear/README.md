@@ -1,5 +1,72 @@
 # Near-linear Four Colour catalogue bridges
 
+## A physical limit of fixed-pair progress, with a successful mixed-pair repair
+
+[`StripPhaseObstruction`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPhaseObstruction.lean)
+resolves a limitation of the preceding abstract matching tests: **one
+actual exterior simultaneously prevents strict hole-count progress for
+every fixed colour pair**. The exterior has 23 vertices and eleven ordered
+ports attached to the eight-vertex D0099 core. Initially, at least two core
+vertices must be left uncoloured, and two suffice. After any number of
+switches of any one fixed vertex-colour pair, at least two omissions are
+still necessary, even allowing arbitrary recolouring of the core and
+arbitrary choices of omitted vertices.
+
+The general [phase boundary theorem](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/PhaseBoundary.lean)
+uses initial bichromatic routes to retain the common choice at linked
+ports. It applies at arbitrary graph, palette and boundary size, and at
+arbitrary phase length. The source consumer needs only the specified port
+colours and routes; it is not restricted to this literal exterior. Five
+small list-colouring obstructions suffice: every allowed endpoint contains
+two disjoint uncolourable pieces. Finite checks cover 48 normal forms,
+with at most five vertices in a checked piece.
+
+This exterior nevertheless has a **three-switch repair**, using different
+pairs in succession. Lean checks each entire component, constructs the
+proof-relevant GSLT history, and supplies the final colouring of all 31
+vertices. It also checks the exact original core edges and complete stars.
+
+```
+initial exterior    switch (0,1)    switch (0,2)    switch (0,3)
+       2 holes  ---------->  2  ---------->  2  ---------->  0
+                                                            |
+                                                 full reconstruction
+```
+
+Lean proves the lower bounds at the first three states, the initial
+two-hole witness and the final reconstruction. The independent program
+also checks the upper bounds at the intermediate states, so that the
+displayed minimum-hole counts are exact. It finds no one- or two-switch
+repair on this exterior. That shortest-history assertion is program
+validation, separate from the Lean three-switch construction.
+
+[`StripPhaseDisk`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPhaseDisk.lean)
+proves planarity of the exterior rotation, the simple ordered boundary,
+and Kempe closure of its actual graph trace, using the existing disk Euler
+and planar closure theorems. The independent program checks that gluing the
+source gives a triangulated sphere; that whole-graph embedding has not
+been separately certified in this module. Its minimum degree is three.
+Thus this example **does not establish failure under the stronger
+minimal-counterexample hypotheses**.
+
+Replay with `lake build kernelStripPhase`. The
+[kernel receipt](strip-phase-measurements.json) records 19 audit roots,
+standard axioms only, and about 54 frontend seconds for three modules
+including imports. No complete Four Colour theorem or large repair table
+is used. The [program receipt](strip-phase-audit.json),
+[fixture](strip-phase-example.json) and [verifier](audit_strip_phase.py)
+retain the independent checks, including all 80 batches of switches on
+both complementary vertex-colour pairs with one fixed XOR difference.
+That stronger batch result is currently program evidence only.
+
+The failed assertion is universal strict decrease of the minimum number
+of holes in one fixed-pair phase on arbitrary planar exteriors. The
+successful history shows why a continuation may need to change colour
+pairs and temporarily keep the same number of holes. A structural law
+justifying such continuations for all inputs remains open, as do geometric
+supply, strict ambient reduction and universal coverage. No catalogue entry
+or original certificate dependency is removed.
+
 ## Coordinated repairs retain one exterior matching
 
 [`recover_stable`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeChromogramMatching.lean)

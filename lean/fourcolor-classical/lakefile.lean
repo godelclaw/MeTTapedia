@@ -1183,3 +1183,17 @@ target kernelRetainedMatching pkg : Unit := do
         "RetainedMatchingAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay physical phase obstruction and mixed-pair reconstruction. -/
+target kernelStripPhase pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-phase",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripPhaseObstruction", "StripPhaseDisk", "StripPhaseAudit"]
+      cwd := pkg.dir
+      env := env }

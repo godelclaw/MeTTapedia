@@ -1,0 +1,129 @@
+{
+  "classification": "CHECKED_PHYSICAL_OBSTRUCTION_TO_STRICT_FIXED_PAIR_PROGRESS_WITH_MIXED_PAIR_REPAIR",
+  "source": "D0099.conf",
+  "source_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "attribution": [
+    "Yuta Inoue D0099, MIT catalogue",
+    "Gonthier/Emery source semantics and planar hypermap Euler theorem"
+  ],
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripPhaseObstruction",
+        "source_sha256": "26607f3de84df88f7177af7f5765e1627af910515d083c4b780baf4bf012dc83",
+        "exit_code": 0,
+        "frontend_wall_seconds": 38.319,
+        "olean_bytes": 1285168,
+        "olean_sha256": "6877af5c40342d43eddd7bba281caec9737533a938bb31385a258e984e571cff"
+      },
+      {
+        "module": "MettapediaFourColor.StripPhaseDisk",
+        "source_sha256": "f141b93057fef9d1f9d9848c63b7a15d5f9da35e0294371ba159571b7afe46db",
+        "exit_code": 0,
+        "frontend_wall_seconds": 9.382,
+        "olean_bytes": 512120,
+        "olean_sha256": "3b400cf41221315c8c5cc1235c1e5509971e078eb464d1adfeb9dea141692d9d"
+      },
+      {
+        "module": "MettapediaFourColor.StripPhaseAudit",
+        "source_sha256": "87819b0f6a749cffbe66e8c413c18cd50337b392721df33cd145ef9de47e8794",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.751,
+        "olean_bytes": 2592,
+        "olean_sha256": "d33ef3e4bb5c3afb879714de7a2a717db2dc4c5d5c6a91f668c8a43b360cdb50"
+      }
+    ]
+  },
+  "proof_sources": [
+    {
+      "path": "lean/mettapedia/Mettapedia/GraphTheory/Kempe/PhaseBoundary.lean",
+      "bytes": 2898,
+      "sha256": "3a2ffe65baaf70c0057bea3cf383a42f61f751f51d0f136e0da715e6bec6ba79"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripPhaseObstruction.lean",
+      "bytes": 15747,
+      "sha256": "26607f3de84df88f7177af7f5765e1627af910515d083c4b780baf4bf012dc83"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripPhaseDisk.lean",
+      "bytes": 4490,
+      "sha256": "f141b93057fef9d1f9d9848c63b7a15d5f9da35e0294371ba159571b7afe46db"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripPhaseAudit.lean",
+      "bytes": 3009,
+      "sha256": "87819b0f6a749cffbe66e8c413c18cd50337b392721df33cd145ef9de47e8794"
+    }
+  ],
+  "total_proof_source_bytes": 26144,
+  "audit": {
+    "roots": 19,
+    "dependency_declarations": 12494,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "large_repair_tables_used": false,
+    "required_semantics": [
+      "Arbitrary-length physical fixed-pair history",
+      "Initial bichromatic routes on the same exterior",
+      "Exact source edges and complete core stars",
+      "Planar disk rotation with ordered boundary",
+      "Actual connected closed component switches",
+      "Faithful GSLT history",
+      "Complete 31-vertex colouring reconstruction"
+    ]
+  },
+  "formal_results": [
+    "Arbitrary proper fixed-pair history endpoints have a joint boundary normal form from retained initial routes; graph, palette, boundary and history sizes are unrestricted.",
+    "For the D0099 port colours and retained route profile, every fixed-pair phase leaves at least two necessary core omissions, for every interior recolouring and choice of omitted vertices.",
+    "An explicit 23-vertex exterior realizes all six route profiles simultaneously; reversed and equal pairs are included.",
+    "The exterior rotation is planar, its boundary has eleven distinct ordered ports, and its actual trace is Kempe-closed.",
+    "Two omitted core vertices suffice initially. The first two moves of the exhibited mixed-pair history still require at least two omissions.",
+    "Three actual component switches give a GSLT history and reconstruct a proper colouring of the whole 31-vertex graph."
+  ],
+  "finite_checks_retained": {
+    "boundary_normal_forms": 48,
+    "local_conflict_shapes": 5,
+    "largest_conflict_vertices": 5,
+    "explicit_exterior_vertices": 23,
+    "explicit_physical_switches": 3,
+    "stored_source_colouring_table": false
+  },
+  "program_receipt": "strip-phase-audit.json",
+  "program_only": [
+    "Exact minimum-hole profile 2,2,2,0 (Lean proves the lower bounds at the first three states, an initial upper bound and final full reconstruction).",
+    "No single or double physical switch suffices on this exterior: 199 distinct states checked.",
+    "All 80 batches switching both complementary vertex-colour pairs of one XOR difference preserve the two-hole lower bound.",
+    "The glued 31-vertex graph is a triangulated sphere with minimum degree three."
+  ],
+  "limits": [
+    "The example has degree-three vertices and does not certify an obstruction in the minimal-counterexample subclass.",
+    "Mixed-pair repair succeeds here; unrestricted repair and compact compositional proof are not refuted.",
+    "A mixed-pair structural continuation for arbitrary source inputs, strict ambient reduction, geometric supply and universal coverage remain open.",
+    "No runtime bound or compression of the complete proof is claimed."
+  ],
+  "regression": {
+    "classical": "lake build kernelStripPhase kernelComplete",
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "passed": true
+  },
+  "new_catalogue_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "new_member_checks_removed": 0,
+  "whole_proof_kernel_savings_claimed": false
+}
