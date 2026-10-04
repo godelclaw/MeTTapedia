@@ -1,5 +1,56 @@
 # Near-linear Four Colour catalogue bridges
 
+## A physical trap for preserving joint anchor choices
+
+[`StripAnchorTrap`](../../../lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrap.lean)
+constructs a twelve-vertex planar disk exterior of D0099. With core vertices
+1 and 6 retained as anchors, its initial boundary has four compatible joint
+anchor choices after omitting one other core vertex, but has no full source
+colouring. The count refers to complete compatible partial colourings;
+it does not multiply independent marginal possibilities.
+
+Every phase using one colour pair, of any finite length, either returns to
+the same full exterior colouring up to a palette permutation, or remains
+blocked with fewer one-hole anchor choices. Retained bichromatic routes
+exhaust the possible endpoints, including the interior vertex of the exterior.
+[`StripAnchorTrapHistory`](../../../lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrapHistory.lean)
+then proves that any number of phases preserving those choices cannot
+finish. Immediate completion is explicitly allowed by the policy. Starting
+here, the lexicographic score which first minimizes omitted non-anchor
+vertices and then maximizes optimal anchor choices therefore stalls.
+
+There is nevertheless a certified two-switch escape. Swap colours 0 and 1
+on the component containing vertices 0, 1, 4 and 11. The boundary now has
+only one one-hole anchor choice. Swapping colours 1 and 3 at the newly
+isolated port 7 then permits a complete colouring. Actual component
+certificates produce a typed GSLT history, and the final witness colours
+the whole twenty-vertex graph. All source core stars and ordered port
+attachments are retained.
+
+[`StripAnchoredExtension`](../../../lean/fourcolor-classical/MettapediaFourColor/StripAnchoredExtension.lean)
+proves the common pinned triangle-elimination law for arbitrary boundaries,
+omission sets and anchor colours. Its witnesses reconstruct actual induced
+source colourings. Palette bijections preserve the joint-choice count.
+The history argument consumes these exact semantics; it does not enumerate
+long histories.
+
+The [independent verifier](audit_strip_anchor_trap.py) instead enumerates
+omission sets and searches partial colourings directly. It checks all 38
+component batches under all 24 palette permutations, the two-switch escape,
+and the glued sphere. Exterior planarity is proved in Lean; whole-sphere
+geometry and the numerical minimum-hole cost arrays remain program checks.
+
+Replay `lake build kernelStripAnchorTrap` in the classical package and
+`python3 tools/fourcolor/near-linear/audit_strip_anchor_trap.py`.
+The [audit](strip-anchor-trap-audit.json) and
+[measurements](strip-anchor-trap-measurements.json) record scope and costs.
+The glued graph has vertices of degree three. This refutes the stated
+greedy policy on arbitrary planar exteriors, not a claim restricted to minimal
+counterexamples, unrestricted Kempe repair, or compositional proofs in
+general. No uniform progress theorem, geometric supply, strict reduction
+or catalogue deletion follows. Counts remain 633 coverage entries and 629
+original configuration certificates.
+
 ## Physical list obstruction and a compact endpoint rule
 
 [`StripPhysicalListTransport`](../../../lean/fourcolor-classical/MettapediaFourColor/StripPhysicalListTransport.lean)

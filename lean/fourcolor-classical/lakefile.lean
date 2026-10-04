@@ -1340,3 +1340,18 @@ target kernelStripPhysicalListTransport pkg : Unit := do
         "StripPhysicalListTransportAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay a physical trap for monotone joint choices and its two-switch escape. -/
+target kernelStripAnchorTrap pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-anchor-trap",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripAnchoredExtension", "StripAnchorTrap", "StripAnchorTrapHistory",
+        "StripAnchorTrapAudit"]
+      cwd := pkg.dir
+      env := env }

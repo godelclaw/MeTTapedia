@@ -1,0 +1,215 @@
+{
+  "classification": "PHYSICAL_NONWORSENING_ANCHOR_TRAP_WITH_TWO_SWITCH_ESCAPE",
+  "source": "D0099",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
+  "exterior_vertices": 12,
+  "whole_vertices": 20,
+  "anchors": [
+    1,
+    6
+  ],
+  "initial_score": [
+    1,
+    -4
+  ],
+  "initial_costs": [
+    99,
+    99,
+    99,
+    99,
+    2,
+    1,
+    99,
+    99,
+    1,
+    1,
+    99,
+    99,
+    2,
+    1,
+    99,
+    99
+  ],
+  "component_batches": [
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "components": 2,
+      "subsets": 4
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "components": 2,
+      "subsets": 4
+    },
+    {
+      "pair": [
+        0,
+        3
+      ],
+      "components": 4,
+      "subsets": 16
+    },
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "components": 1,
+      "subsets": 2
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "components": 3,
+      "subsets": 8
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "components": 2,
+      "subsets": 4
+    }
+  ],
+  "batch_score_counts": [
+    {
+      "score": [
+        1,
+        -4
+      ],
+      "count": 12
+    },
+    {
+      "score": [
+        1,
+        -3
+      ],
+      "count": 2
+    },
+    {
+      "score": [
+        1,
+        -2
+      ],
+      "count": 4
+    },
+    {
+      "score": [
+        1,
+        -1
+      ],
+      "count": 10
+    },
+    {
+      "score": [
+        2,
+        -4
+      ],
+      "count": 8
+    },
+    {
+      "score": [
+        2,
+        -3
+      ],
+      "count": 2
+    }
+  ],
+  "palette_only_batches": 12,
+  "palette_permutations_checked": 24,
+  "escape": [
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "support": [
+        0,
+        1,
+        4,
+        11
+      ],
+      "before": [
+        1,
+        -4
+      ],
+      "after": [
+        1,
+        -1
+      ]
+    },
+    {
+      "pair": [
+        1,
+        3
+      ],
+      "support": [
+        7
+      ],
+      "before": [
+        1,
+        -1
+      ],
+      "after": [
+        0,
+        -1
+      ]
+    }
+  ],
+  "exterior_degrees": [
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
+    5,
+    6,
+    7
+  ],
+  "whole_degrees": [
+    3,
+    3,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    6,
+    6,
+    6,
+    6,
+    6,
+    7,
+    8,
+    9
+  ],
+  "evidence": "Lean proves exterior planarity, all-phase obstruction, arbitrary-history invariance, exact anchored reconstruction and the physical two-switch escape. Exact numerical minimum-hole costs and whole-sphere geometry are independent program checks.",
+  "limits": [
+    "This is one actual exterior of D0099, with low-degree vertices.",
+    "Minimal-counterexample hypotheses are not established.",
+    "The obstruction concerns the specified nonworsening rank, not unrestricted repair.",
+    "No universal coverage, strict reduction or catalogue deletion is established."
+  ],
+  "fixture_sha256": "d79e7f08102a551e28fa0b2f9120c1bc167c5701da56042dd6ec6a6d6742c664",
+  "verifier_sha256": "da6a3fc6bec5d3879fbc17a339e79313ab4352bc731e46061005451c6a1c4a37"
+}

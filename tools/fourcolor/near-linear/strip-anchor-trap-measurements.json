@@ -1,0 +1,117 @@
+{
+  "classification": "CHECKED_PHYSICAL_ANCHOR_TRAP_AND_ESCAPE",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Pinned Yuta Inoue D0099 (MIT); source semantics inherit Gonthier/Emery. Physical obstruction, anchored elimination and history argument proved locally.",
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripAnchoredExtension",
+        "source_sha256": "85a2c6d74b084c4f49a94e34ebd0f9c20de61dce8cde6ec02721c2599eeb8b40",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.423,
+        "olean_bytes": 416992,
+        "olean_sha256": "092a0b1c46628be3f7f73b078cc646d7861846933180668ada02bbb110e18856"
+      },
+      {
+        "module": "MettapediaFourColor.StripAnchorTrap",
+        "source_sha256": "7e40b9b483558a7ebb8047942ffbd84e4474fa01217048b3658157d9505e3fb7",
+        "exit_code": 0,
+        "frontend_wall_seconds": 27.548,
+        "olean_bytes": 981544,
+        "olean_sha256": "0982391230de1b67f1942d4c3b6032f66d6bced7a01544023f5106f216eabd76"
+      },
+      {
+        "module": "MettapediaFourColor.StripAnchorTrapHistory",
+        "source_sha256": "7c2bd4377fd05ed01aade10182accd43e8612b72e629f0e99ed880df4b64b822",
+        "exit_code": 0,
+        "frontend_wall_seconds": 11.96,
+        "olean_bytes": 322640,
+        "olean_sha256": "0cd884cc8b45ccb9d37ac7c492354769368bfb6a0c14b0006c667554c93e8be2"
+      },
+      {
+        "module": "MettapediaFourColor.StripAnchorTrapAudit",
+        "source_sha256": "e8027796433a757c297f5ae9228ebd05a5da96cd971df6d409857540b4c3479a",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.819,
+        "olean_bytes": 2600,
+        "olean_sha256": "08c2ae5808c4243b028144778a7b1565311354e44941bd16435206e25dea09b6"
+      }
+    ]
+  },
+  "proof_sources": [
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripAnchoredExtension.lean",
+      "bytes": 6585,
+      "sha256": "85a2c6d74b084c4f49a94e34ebd0f9c20de61dce8cde6ec02721c2599eeb8b40"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrap.lean",
+      "bytes": 7679,
+      "sha256": "7e40b9b483558a7ebb8047942ffbd84e4474fa01217048b3658157d9505e3fb7"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrapHistory.lean",
+      "bytes": 9732,
+      "sha256": "7c2bd4377fd05ed01aade10182accd43e8612b72e629f0e99ed880df4b64b822"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrapAudit.lean",
+      "bytes": 3565,
+      "sha256": "e8027796433a757c297f5ae9228ebd05a5da96cd971df6d409857540b4c3479a"
+    }
+  ],
+  "proof_and_audit_bytes": 27561,
+  "frontend_seconds": 47.75,
+  "audit": {
+    "roots": 20,
+    "dependency_declarations": 11848,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "bulk_repair_tables": false,
+    "complete_four_colour_theorem": false
+  },
+  "gates": {
+    "kernelStripAnchorTrap": true,
+    "kernelComplete": true,
+    "FourColorLane_and_ResearchCheckpoint": true
+  },
+  "claims": {
+    "exterior_planarity": "Lean checked",
+    "joint_partial_colourings_and_palette_invariance": "Lean checked for arbitrary boundaries and omission sets",
+    "all_fixed_pair_phases": "Lean checked without a length bound",
+    "all_guarded_mixed_pair_histories": "Lean checked without a length bound",
+    "escape": "two physical switches, four joint choices to one, then full reconstruction",
+    "actual_glued_colouring": "Lean checked on twenty vertices",
+    "whole_sphere_geometry": "independent program check"
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_replaced": 336,
+    "additional_coverage_entries_removed": 0,
+    "additional_original_certificates_removed": 0,
+    "whole_proof_kernel_seconds_saved": 0
+  },
+  "scope": [
+    "The physical trap concerns one D0099 exterior with twelve vertices.",
+    "The glued graph contains degree-three vertices; minimal-counterexample geometry is not established.",
+    "Each guarded phase uses one pair and may have arbitrary finite length. Pairs may change between phases.",
+    "A phase may finish immediately; otherwise it must not decrease the joint one-hole choice count.",
+    "The invariant orbit has minimum non-anchor defect one, so lexicographic minimum-defect/maximum-optimal-choice progress is obstructed.",
+    "Unrestricted two-switch repair succeeds. This is not a refutation of compositional proofs.",
+    "No universal repair, geometric supply, strict reduction or global compression is claimed."
+  ]
+}
