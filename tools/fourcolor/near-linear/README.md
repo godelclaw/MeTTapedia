@@ -1,5 +1,48 @@
 # Near-linear Four Colour catalogue bridges
 
+## Both conditional-choice loops have composed repairs
+
+[`StripLoopContinuation`](../../../lean/fourcolor-classical/MettapediaFourColor/StripLoopContinuation.lean)
+adds the second D0063 loop repair to the first repair described below. Four
+stages compose the balanced-block, short-block and majority arguments.
+Their continuations retain the same exterior and reconstruct genuine source
+and exterior colourings agreeing at every one of the ten ordered ports.
+The exterior trace predicate is explicitly assumed Kempe closed and to
+contain the initial input. This proves repair for two fixed inputs; it does
+not prove all-input D0063 reducibility, geometric supply or strict reduction.
+
+[`StripLoopMatching`](../../../lean/fourcolor-classical/MettapediaFourColor/StripLoopMatching.lean)
+selects a successful component or a compatible pair using a six-of-ten
+majority and a balanced remainder. The general `restrict_pair` theorem in
+[`KempeShortBlock`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeShortBlock.lean)
+retains the original matching under any exact cyclic reading of a component's
+complement. Both the existing D0099 short-block repair and this D0063 selector
+consume it. No matching-layout enumeration is used by the new selector.
+
+Twenty finite terminal contracts search sixteen joint anchor choices and
+invoke the shared forest reconstruction theorem. Three more contracts invoke
+an earlier stage. These 23 source-specific contracts remain explicit; the
+four-stage proof is not a uniform source-progress theorem. No complete source
+colouring table is stored.
+
+The [independent check](audit_strip_loop_continuation.py) reconstructs all
+20 terminal source witnesses and checks 75 matching layouts. A separate
+program-only test searches the abstract matching game on all 2,461 canonical
+D0063 inputs. Restricting every intermediate state's smallest conflicting
+core to at most three vertices leaves 81 of 1,769 inputs unresolved. Allowing
+size four repairs all 2,247 inputs in that domain. The unrestricted finite
+game repairs all 2,461 inputs. Different adverse matching responses are not
+asserted to coexist in a physical exterior; these counts do not establish
+an impossibility theorem or an unbounded-family progress measure.
+
+Replay `lake build kernelStripLoopContinuation` and
+`python3 tools/fourcolor/near-linear/audit_strip_loop_continuation.py`.
+The [audit receipt](strip-loop-continuation-audit.json) and
+[measurement receipt](strip-loop-continuation-measurements.json) separate
+kernel proofs, program evidence and costs. The earlier 54 D0099 source
+contracts remain. No catalogue entry, original certificate dependency or
+whole-proof resource saving is credited.
+
 ## Conditional choice loops and a shared forest repair
 
 [`ListImplication`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ListImplication.lean)

@@ -1296,3 +1296,18 @@ target kernelStripChoiceLoops pkg : Unit := do
         "StripChoiceLoops", "StripChoiceLoopRepair", "StripChoiceLoopAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the composed matching selector for the remaining choice loop. -/
+target kernelStripLoopContinuation pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-loop-continuation",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeShortBlock", "StripLoopMatching", "StripLoopContinuation",
+        "StripLoopContinuationAudit"]
+      cwd := pkg.dir
+      env := env }

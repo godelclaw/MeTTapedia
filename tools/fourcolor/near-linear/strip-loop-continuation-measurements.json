@@ -1,0 +1,257 @@
+{
+  "classification": "CHECKED_COMPOSED_LOOP_CONTINUATION",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Pinned Yuta Inoue catalogue (MIT); source decoding and Kempe semantics inherit the Gonthier/Emery bridge. Matching restriction and the composed forest repair are proved locally.",
+  "kernel": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeShortBlock",
+        "source_sha256": "90bf3bdcc1cf7eded5dadcf6ef6098b16d2683d511146e1a129312803a47f018",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.177,
+        "olean_bytes": 486008,
+        "olean_sha256": "fe2c97bbfd466fb95f96ce19950ec00eb3b47cdd7d352864b9916aaabc707a2f"
+      },
+      {
+        "module": "MettapediaFourColor.StripLoopMatching",
+        "source_sha256": "49f5561d12dbfe0b622140d2908e694677b58d2e837aeebd337c883d365364fe",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.301,
+        "olean_bytes": 273576,
+        "olean_sha256": "914d44e674c10d6c108ed0ec9b8fff4342e3addffafa6036f01f1650b0ffa687"
+      },
+      {
+        "module": "MettapediaFourColor.StripLoopContinuation",
+        "source_sha256": "980843985ef876453e87e85d363d93de30ef7800c965c1f9812501786f94615d",
+        "exit_code": 0,
+        "frontend_wall_seconds": 24.142,
+        "olean_bytes": 607816,
+        "olean_sha256": "0515956b5ffcc06cb09ea339bab66fd996cce5b063874d362b617d4e15a223e6"
+      },
+      {
+        "module": "MettapediaFourColor.StripLoopContinuationAudit",
+        "source_sha256": "821c8653844d3ce4d34be3d1b6c8d76f3fcd1c30754fa82eb8acd6939a082dd3",
+        "exit_code": 0,
+        "frontend_wall_seconds": 4.707,
+        "olean_bytes": 2600,
+        "olean_sha256": "b6630ff5d4f100408085b19cd67a4210fa73e5b76c207776e8796702a43af565"
+      }
+    ]
+  },
+  "proof_sources": [
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/KempeShortBlock.lean",
+      "bytes": 8949,
+      "sha256": "90bf3bdcc1cf7eded5dadcf6ef6098b16d2683d511146e1a129312803a47f018"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripLoopMatching.lean",
+      "bytes": 4925,
+      "sha256": "49f5561d12dbfe0b622140d2908e694677b58d2e837aeebd337c883d365364fe"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripLoopContinuation.lean",
+      "bytes": 7878,
+      "sha256": "980843985ef876453e87e85d363d93de30ef7800c965c1f9812501786f94615d"
+    },
+    {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/StripLoopContinuationAudit.lean",
+      "bytes": 3145,
+      "sha256": "821c8653844d3ce4d34be3d1b6c8d76f3fcd1c30754fa82eb8acd6939a082dd3"
+    }
+  ],
+  "new_proof_and_audit_source_bytes": 15948,
+  "frontend_seconds_including_shared_module": 35.327,
+  "audit": {
+    "roots": 17,
+    "dependency_declarations": 8124,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false
+  },
+  "program": {
+    "classification": "CHECKED_COMPOSED_LOOP_REPAIR_WITH_PROGRAM_PHASE_TEST",
+    "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "source_sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d",
+    "stages": [
+      {
+        "stage": 0,
+        "word": "1111223333",
+        "active_ports": 6,
+        "matching_crosschecks": 5,
+        "direct_forest_contracts": 3,
+        "earlier_stage_references": []
+      },
+      {
+        "stage": 1,
+        "word": "1222222221",
+        "active_ports": 10,
+        "matching_crosschecks": 42,
+        "direct_forest_contracts": 10,
+        "earlier_stage_references": []
+      },
+      {
+        "stage": 2,
+        "word": "1222332221",
+        "active_ports": 8,
+        "matching_crosschecks": 14,
+        "direct_forest_contracts": 3,
+        "earlier_stage_references": [
+          1
+        ]
+      },
+      {
+        "stage": 3,
+        "word": "1222331112",
+        "active_ports": 8,
+        "matching_crosschecks": 14,
+        "direct_forest_contracts": 4,
+        "earlier_stage_references": [
+          0,
+          2
+        ]
+      }
+    ],
+    "total_matching_crosschecks": 75,
+    "phase_test_program_only": {
+      "canonical_inputs": 2461,
+      "smallest_conflict_histogram": {
+        "3": 782,
+        "2": 365,
+        "0": 622,
+        "5": 145,
+        "4": 478,
+        "7": 17,
+        "6": 52
+      },
+      "tests": [
+        {
+          "maximum_smallest_conflict": 3,
+          "domain": 1769,
+          "layers": [
+            622,
+            782,
+            832,
+            867,
+            890,
+            905,
+            924,
+            952,
+            987,
+            1012,
+            1050,
+            1086,
+            1135,
+            1228,
+            1331,
+            1417,
+            1449,
+            1492,
+            1566,
+            1586,
+            1592,
+            1611,
+            1629,
+            1649,
+            1676,
+            1688
+          ],
+          "unresolved": 81
+        },
+        {
+          "maximum_smallest_conflict": 4,
+          "domain": 2247,
+          "layers": [
+            622,
+            858,
+            1014,
+            1228,
+            1556,
+            1917,
+            2125,
+            2235,
+            2247
+          ],
+          "unresolved": 0
+        },
+        {
+          "maximum_smallest_conflict": 7,
+          "domain": 2461,
+          "layers": [
+            622,
+            952,
+            1226,
+            1609,
+            2088,
+            2354,
+            2447,
+            2461
+          ],
+          "unresolved": 0
+        }
+      ],
+      "scope": "Abstract matching game: each round selects a colour pair and a subset of one supplied noncrossing matching. Adverse responses from different rounds or queries are not asserted to coexist in a physical exterior.",
+      "interpretation": "Keeping the smallest conflicting core at size at most three can trap the game; size at most four suffices for every input in that bounded domain. This is not a monotone rank or an unbounded-family theorem."
+    },
+    "matching_layout_table_exported": false,
+    "source_colouring_table_exported": false,
+    "source_guard_search_domain": 16,
+    "source_guard_sweeps": 4,
+    "all_input_reducibility_kernel_claimed": false,
+    "new_coverage_entries_removed": 0,
+    "new_original_certificates_removed": 0,
+    "lean_sources": {
+      "KempeShortBlock.lean": "90bf3bdcc1cf7eded5dadcf6ef6098b16d2683d511146e1a129312803a47f018",
+      "StripLoopMatching.lean": "49f5561d12dbfe0b622140d2908e694677b58d2e837aeebd337c883d365364fe",
+      "StripLoopContinuation.lean": "980843985ef876453e87e85d363d93de30ef7800c965c1f9812501786f94615d"
+    }
+  },
+  "scope": {
+    "generic": "Exact restriction of one supplied noncrossing matching after removing a whole component, allowing cyclic reindexing.",
+    "consumers": [
+      "Existing D0099 short-block repair",
+      "D0063 majority-cut selector with a balanced remainder"
+    ],
+    "repair": "Both fixed D0063 conditional-choice inputs have compatible source and exterior colourings. The second input composes four stages with twenty direct forest guards and three earlier-stage references.",
+    "exterior": "An actual graph whose ordered boundary trace predicate is explicitly Kempe closed and contains the initial trace. Reconstructed source and exterior colourings agree on all ten ordered ports.",
+    "retained_finite_contracts": 23,
+    "existing_D0099_contracts_retained": 54,
+    "limits": [
+      "No uniform source-progress theorem or all-input D0063 reducibility is kernel claimed.",
+      "The finite conflict-size game is program evidence; adverse responses are not asserted physically jointly realizable.",
+      "No geometric supply, strict ambient reduction, executable physical recolouring history or runtime bound.",
+      "The old large repair data files remain in the repository but are absent from these dependency closures."
+    ]
+  },
+  "compression": {
+    "coverage_entries": 633,
+    "original_certificates": 629,
+    "member_checks_replaced": 336,
+    "new_catalogue_entries_removed": 0,
+    "new_original_certificate_dependencies_removed": 0,
+    "net_artifact_size_saving_claimed": false,
+    "whole_proof_kernel_saving_claimed": false
+  },
+  "validation": {
+    "source_and_audit": "lake build kernelStripLoopContinuation",
+    "shared_consumer_regression": "lake build kernelStripChainRepair",
+    "classical_regression": "lake build kernelComplete",
+    "main_lane": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "program": "python3 tools/fourcolor/near-linear/audit_strip_loop_continuation.py",
+    "all_passed": true
+  }
+}

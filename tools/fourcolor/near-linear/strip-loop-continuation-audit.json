@@ -1,0 +1,137 @@
+{
+  "classification": "CHECKED_COMPOSED_LOOP_REPAIR_WITH_PROGRAM_PHASE_TEST",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "source_sha256": "d231a65aabea1df62b0d319999ec656d350f3da43a35d6f7db79274af7bebf8d",
+  "stages": [
+    {
+      "stage": 0,
+      "word": "1111223333",
+      "active_ports": 6,
+      "matching_crosschecks": 5,
+      "direct_forest_contracts": 3,
+      "earlier_stage_references": []
+    },
+    {
+      "stage": 1,
+      "word": "1222222221",
+      "active_ports": 10,
+      "matching_crosschecks": 42,
+      "direct_forest_contracts": 10,
+      "earlier_stage_references": []
+    },
+    {
+      "stage": 2,
+      "word": "1222332221",
+      "active_ports": 8,
+      "matching_crosschecks": 14,
+      "direct_forest_contracts": 3,
+      "earlier_stage_references": [
+        1
+      ]
+    },
+    {
+      "stage": 3,
+      "word": "1222331112",
+      "active_ports": 8,
+      "matching_crosschecks": 14,
+      "direct_forest_contracts": 4,
+      "earlier_stage_references": [
+        0,
+        2
+      ]
+    }
+  ],
+  "total_matching_crosschecks": 75,
+  "phase_test_program_only": {
+    "canonical_inputs": 2461,
+    "smallest_conflict_histogram": {
+      "3": 782,
+      "2": 365,
+      "0": 622,
+      "5": 145,
+      "4": 478,
+      "7": 17,
+      "6": 52
+    },
+    "tests": [
+      {
+        "maximum_smallest_conflict": 3,
+        "domain": 1769,
+        "layers": [
+          622,
+          782,
+          832,
+          867,
+          890,
+          905,
+          924,
+          952,
+          987,
+          1012,
+          1050,
+          1086,
+          1135,
+          1228,
+          1331,
+          1417,
+          1449,
+          1492,
+          1566,
+          1586,
+          1592,
+          1611,
+          1629,
+          1649,
+          1676,
+          1688
+        ],
+        "unresolved": 81
+      },
+      {
+        "maximum_smallest_conflict": 4,
+        "domain": 2247,
+        "layers": [
+          622,
+          858,
+          1014,
+          1228,
+          1556,
+          1917,
+          2125,
+          2235,
+          2247
+        ],
+        "unresolved": 0
+      },
+      {
+        "maximum_smallest_conflict": 7,
+        "domain": 2461,
+        "layers": [
+          622,
+          952,
+          1226,
+          1609,
+          2088,
+          2354,
+          2447,
+          2461
+        ],
+        "unresolved": 0
+      }
+    ],
+    "scope": "Abstract matching game: each round selects a colour pair and a subset of one supplied noncrossing matching. Adverse responses from different rounds or queries are not asserted to coexist in a physical exterior.",
+    "interpretation": "Keeping the smallest conflicting core at size at most three can trap the game; size at most four suffices for every input in that bounded domain. This is not a monotone rank or an unbounded-family theorem."
+  },
+  "matching_layout_table_exported": false,
+  "source_colouring_table_exported": false,
+  "source_guard_search_domain": 16,
+  "source_guard_sweeps": 4,
+  "all_input_reducibility_kernel_claimed": false,
+  "new_coverage_entries_removed": 0,
+  "new_original_certificates_removed": 0,
+  "lean_sources": {
+    "KempeShortBlock.lean": "90bf3bdcc1cf7eded5dadcf6ef6098b16d2683d511146e1a129312803a47f018",
+    "StripLoopMatching.lean": "49f5561d12dbfe0b622140d2908e694677b58d2e837aeebd337c883d365364fe",
+    "StripLoopContinuation.lean": "980843985ef876453e87e85d363d93de30ef7800c965c1f9812501786f94615d"
+  }
+}

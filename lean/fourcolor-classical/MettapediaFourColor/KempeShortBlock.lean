@@ -57,35 +57,52 @@ theorem skip_cycles (t : Fin (2 * k + 1)) (a b c : Fin (2 * k))
   · exact Or.inr (Or.inl ⟨skip_strictMono t hbc, skip_strictMono t hca⟩)
   · exact Or.inr (Or.inr ⟨skip_strictMono t hca, skip_strictMono t hab⟩)
 
-/-- Deleting a whole component retains an actual noncrossing matching. -/
-theorem delete_pair (mate : Fin (2 * k + 2) → Fin (2 * k + 2))
+/-- An exact ordered reading of the complement of one component inherits
+the same matching. The reading may rotate the remaining cyclic coordinates. -/
+theorem restrict_pair {m : ℕ} (mate : Fin n → Fin n)
     (hinv : Function.Involutive mate) (hfree : ∀ i, mate i ≠ i)
-    (hplanar : IsNoncrossingMatching mate)
-    (t : Fin (2 * k + 1)) (hedge : mate t.castSucc = t.succ) :
-    ∃ small : Fin (2 * k) → Fin (2 * k),
-      (∀ i, skip t (small i) = mate (skip t i)) ∧
+    (hplanar : IsNoncrossingMatching mate) (a b : Fin n) (hedge : mate a = b)
+    (embed : Fin m → Fin n) (inject : Function.Injective embed)
+    (avoids : ∀ i, embed i ≠ a ∧ embed i ≠ b)
+    (covers : ∀ v, v ≠ a → v ≠ b → ∃ i, embed i = v)
+    (order : ∀ i j x y,
+      ¬ ChordsCross (embed i) (embed x) (embed j) (embed y) → ¬ ChordsCross i x j y) :
+    ∃ small : Fin m → Fin m,
+      (∀ i, embed (small i) = mate (embed i)) ∧
       Function.Involutive small ∧ (∀ i, small i ≠ i) ∧ IsNoncrossingMatching small := by
   classical
-  have reverse : mate t.succ = t.castSucc := by rw [← hedge, hinv]
-  have covered (i) : ∃ j, skip t j = mate (skip t i) := by
-    apply skip_covers
+  have reverse : mate b = a := by rw [← hedge, hinv]
+  have covered (i) : ∃ j, embed j = mate (embed i) := by
+    apply covers
     · intro h
-      exact (skip_avoids t i).2 (hinv.injective (h.trans reverse.symm))
+      exact (avoids i).2 (hinv.injective (h.trans reverse.symm))
     · intro h
-      exact (skip_avoids t i).1 (hinv.injective (h.trans hedge.symm))
+      exact (avoids i).1 (hinv.injective (h.trans hedge.symm))
   choose small lift using covered
   refine ⟨small,lift,?_,?_,?_⟩
   · intro i
-    apply (skip_strictMono t).injective
+    apply inject
     rw [lift, lift, hinv]
   · intro i h
     have he := lift i
     rw [h] at he
     exact hfree _ he.symm
   · intro a b
-    apply KempeBalancedBlock.noncross_of_cyclic (skip t) (skip_cycles t)
+    apply order a b
     rw [lift, lift]
     exact hplanar _ _
+
+/-- Deleting a whole adjacent component retains an actual noncrossing matching. -/
+theorem delete_pair (mate : Fin (2 * k + 2) → Fin (2 * k + 2))
+    (hinv : Function.Involutive mate) (hfree : ∀ i, mate i ≠ i)
+    (hplanar : IsNoncrossingMatching mate)
+    (t : Fin (2 * k + 1)) (hedge : mate t.castSucc = t.succ) :
+    ∃ small : Fin (2 * k) → Fin (2 * k),
+      (∀ i, skip t (small i) = mate (skip t i)) ∧
+      Function.Involutive small ∧ (∀ i, small i ≠ i) ∧ IsNoncrossingMatching small :=
+  restrict_pair mate hinv hfree hplanar _ _ hedge (skip t)
+    (skip_strictMono t).injective (skip_avoids t) (skip_covers t)
+    (KempeBalancedBlock.noncross_of_cyclic (skip t) (skip_cycles t))
 
 /-- Either the short block supplies an ear, or one outside ear determines
 the entire remaining matching. The cut is allowed at every outside position. -/
