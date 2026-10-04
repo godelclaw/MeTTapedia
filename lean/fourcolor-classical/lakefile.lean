@@ -1265,6 +1265,6 @@ target kernelStripChainRepair pkg : Unit := do
         "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
         "--package", ".", "--output", ".lake/strip-chain-repair",
         "--library-output", ".lake/build/lib/lean", "--modules",
-        "KempeBalancedBlock", "StripChainRepair", "StripChainRepairAudit"]
+        "KempeBalancedBlock", "KempeShortBlock", "StripChainRepair", "StripChainRepairAudit"]
       cwd := pkg.dir
       env := env }

@@ -1,5 +1,5 @@
 {
-  "classification": "CHECKED_ARBITRARY_WIDTH_BALANCED_SELECTION_AND_TWO_INPUT_RECONSTRUCTION",
+  "classification": "CHECKED_BALANCED_AND_ONE_SHORT_SELECTION_WITH_TWO_INPUT_RECONSTRUCTION",
   "source": "D0099.conf",
   "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
   "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
@@ -20,25 +20,33 @@
         "module": "MettapediaFourColor.KempeBalancedBlock",
         "source_sha256": "cac5edb58c4b1acd00baec0805df8a47e02a1c33e79a7ee43326600c04797486",
         "exit_code": 0,
-        "frontend_wall_seconds": 8.051,
+        "frontend_wall_seconds": 8.364,
         "olean_bytes": 2364800,
         "olean_sha256": "f89f8ddc603ba40db30855bb35dc9b070e01334e9221b99e082e077e5218961d"
       },
       {
-        "module": "MettapediaFourColor.StripChainRepair",
-        "source_sha256": "2d99fba1a6fa59c8f9070fceb2c82b82fb3ead23a8c0d5a75cb8d9ffa825e876",
+        "module": "MettapediaFourColor.KempeShortBlock",
+        "source_sha256": "c436c586116ba3f0933d75d7f0b28e99c4cdc00f3c23251ca08f7ddc81a0fab2",
         "exit_code": 0,
-        "frontend_wall_seconds": 23.958,
-        "olean_bytes": 1403400,
-        "olean_sha256": "de3ea429c592eb7e8d9e9705940c933b03ec3a13d7c7b8aff0bffdccb981d6c0"
+        "frontend_wall_seconds": 3.242,
+        "olean_bytes": 480688,
+        "olean_sha256": "3705417f8296dc3deb19a11b4b84143e58288597f7fd173f7745781728a07f62"
+      },
+      {
+        "module": "MettapediaFourColor.StripChainRepair",
+        "source_sha256": "ea87d2deaad495dda1d10a34084b0097d886149bd130729c498a5f50abb16417",
+        "exit_code": 0,
+        "frontend_wall_seconds": 18.539,
+        "olean_bytes": 1732920,
+        "olean_sha256": "6aa7cbed0a2b36e25be8988b0a1f7dee4044f529f160bae6a148cbd449d58f60"
       },
       {
         "module": "MettapediaFourColor.StripChainRepairAudit",
-        "source_sha256": "8bc97218e8f4a3788501b1d1aa7d60252302da5110e807fa884acf988c19655f",
+        "source_sha256": "5053cf92413d8c0aec71360f4894b312047301ab699fb535f19698efea0fa8ce",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.359,
-        "olean_bytes": 3600,
-        "olean_sha256": "d644ae3d625f6a320eeed3e2e4cbc333864e735f05604ca99ce8977ba713eb14"
+        "frontend_wall_seconds": 5.764,
+        "olean_bytes": 3984,
+        "olean_sha256": "2e1294ec18de3dd9d4b61f1dd7c5a4ec44805c986629a4fe099539f8ea190fcf"
       }
     ]
   },
@@ -49,22 +57,27 @@
       "sha256": "cac5edb58c4b1acd00baec0805df8a47e02a1c33e79a7ee43326600c04797486"
     },
     {
+      "path": "lean/fourcolor-classical/MettapediaFourColor/KempeShortBlock.lean",
+      "bytes": 8020,
+      "sha256": "c436c586116ba3f0933d75d7f0b28e99c4cdc00f3c23251ca08f7ddc81a0fab2"
+    },
+    {
       "path": "lean/fourcolor-classical/MettapediaFourColor/StripChainRepair.lean",
-      "bytes": 11902,
-      "sha256": "2d99fba1a6fa59c8f9070fceb2c82b82fb3ead23a8c0d5a75cb8d9ffa825e876"
+      "bytes": 14976,
+      "sha256": "ea87d2deaad495dda1d10a34084b0097d886149bd130729c498a5f50abb16417"
     },
     {
       "path": "lean/fourcolor-classical/MettapediaFourColor/StripChainRepairAudit.lean",
-      "bytes": 3230,
-      "sha256": "8bc97218e8f4a3788501b1d1aa7d60252302da5110e807fa884acf988c19655f"
+      "bytes": 3941,
+      "sha256": "5053cf92413d8c0aec71360f4894b312047301ab699fb535f19698efea0fa8ce"
     }
   ],
-  "total_new_proof_source_bytes": 22354,
-  "frontend_wall_seconds_including_imports": 36.368,
+  "total_new_proof_source_bytes": 34159,
+  "frontend_wall_seconds_including_imports": 35.909,
   "initial_proof_only_frontend_seconds": 33.463,
   "audit": {
-    "roots": 16,
-    "dependency_declarations": 6337,
+    "roots": 22,
+    "dependency_declarations": 7108,
     "allowed_axioms": [
       "propext",
       "Classical.choice",
@@ -77,7 +90,10 @@
     "At arbitrary width, a noncrossing perfect matching either contains an adjacent pair in the first half-block or equals the reverse-coordinate matching.",
     "The rigid case admits any finite batch of its components, retaining the same exterior before invoking a continuation.",
     "Cyclic order on triples transports the noncrossing condition.",
-    "Seven strip stage selections use the uniform balanced-block law; four retain finite partner exclusion.",
+    "Seven strip stage selections use the balanced-block law; three use the one-short law; one retains finite partner exclusion.",
+    "At arbitrary width, a block of k among 2k+2 active ports either has an internal ear or an outside adjacent pair whose deletion forces the reverse matching.",
+    "Deleting a whole adjacent component preserves the actual matching and noncrossing; both the removed and remaining components retain the same exterior.",
+    "All twelve outside-pair continuations in the three new consumers reuse existing source contracts.",
     "Both critical-chain boundaries lie in the Kempe co-closure of genuine complete source colourings.",
     "Eleven finite stage laws compose through earlier stages and exact symbolic triangle reconstruction.",
     "Paired component choices retain the same exterior matching.",
@@ -95,7 +111,7 @@
   "program_receipt": "strip-chain-repair-audit.json",
   "limits": [
     "The arbitrary-width result selects components; the source repair consumers still concern two specified boundaries.",
-    "Seven concrete coordinate instances and all 54 source contracts remain.",
+    "Ten concrete coordinate instances and all 54 source contracts remain.",
     "Same-exterior reconstruction assumes that the exterior trace predicate is Kempe closed.",
     "No physical recolouring-history or runtime bound is claimed.",
     "No geometric supply, strict graph reduction or catalogue removal is added.",
@@ -112,19 +128,22 @@
   "whole_proof_kernel_savings_claimed": false,
   "selection_comparison": {
     "before_finite_stage_exclusions": 11,
-    "after_finite_stage_exclusions": 4,
+    "after_finite_stage_exclusions": 1,
     "stages_supplied_by_uniform_law": [
       0,
       1,
       2,
       3,
       4,
+      5,
+      7,
       8,
-      9
+      9,
+      10
     ],
-    "cyclic_coordinate_instances_retained": 7,
-    "cyclic_triple_positions_checked": 3776,
-    "ear_source_contracts_reused": 21,
+    "cyclic_coordinate_instances_retained": 10,
+    "cyclic_triple_positions_checked": 5312,
+    "ear_source_contracts_reused": 27,
     "rigid_case_contracts_reused": 7,
     "source_contracts_before_and_after": {
       "single": 40,
@@ -133,8 +152,23 @@
     "old_proof_and_audit_bytes": 11251,
     "old_replay_frontend_seconds": 43.339,
     "old_olean_bytes": 1003736,
-    "current_olean_bytes": 3771800,
-    "interpretation": "Seven finite selection subproblems are discharged by an arbitrary-width theorem. New general proofs and coordinate obligations increase source and artifact size. Single replay timings do not establish a whole-proof speedup."
+    "current_olean_bytes": 4582392,
+    "interpretation": "Ten finite selection subproblems are discharged by arbitrary-width structural theorems. New general proofs and coordinate obligations increase source and artifact size. Single replay timings do not establish a whole-proof speedup.",
+    "stages_supplied_by_balanced_law": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      8,
+      9
+    ],
+    "stages_supplied_by_one_short_law": [
+      5,
+      7,
+      10
+    ],
+    "one_short_continuations_reused": 12
   },
   "program_balanced_test": {
     "consumers": [
@@ -188,12 +222,171 @@
         "nested_batch_size": 1
       }
     ],
-    "residual_stages": [
+    "stages_not_balanced": [
       5,
       6,
       7,
       10
     ],
     "abstract_matchings_tested_through_16_ports": 2055
+  },
+  "previous_balanced_checkpoint": {
+    "proof_source_bytes": 22354,
+    "frontend_seconds": 36.368,
+    "olean_bytes": 3771800,
+    "finite_stage_exclusions": 4
+  },
+  "program_short_test": {
+    "consumers": [
+      {
+        "stage": 5,
+        "active_ports": 8,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "outside_pair_batches": [
+          {
+            "cut": 3,
+            "components": [
+              [
+                7,
+                3
+              ]
+            ]
+          },
+          {
+            "cut": 4,
+            "components": [
+              [
+                7,
+                3
+              ]
+            ]
+          },
+          {
+            "cut": 5,
+            "components": [
+              [
+                7,
+                10
+              ]
+            ]
+          },
+          {
+            "cut": 6,
+            "components": [
+              [
+                7,
+                10
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "stage": 7,
+        "active_ports": 8,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "outside_pair_batches": [
+          {
+            "cut": 3,
+            "components": [
+              [
+                1,
+                6
+              ]
+            ]
+          },
+          {
+            "cut": 4,
+            "components": [
+              [
+                0,
+                1
+              ],
+              [
+                6,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 5,
+            "components": [
+              [
+                1,
+                2
+              ],
+              [
+                6,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 6,
+            "components": [
+              [
+                1,
+                4
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "stage": 10,
+        "active_ports": 8,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "outside_pair_batches": [
+          {
+            "cut": 3,
+            "components": [
+              [
+                2,
+                3
+              ]
+            ]
+          },
+          {
+            "cut": 4,
+            "components": [
+              [
+                1,
+                2
+              ],
+              [
+                5,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 5,
+            "components": [
+              [
+                3,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 6,
+            "components": [
+              [
+                3,
+                9
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "residual_stages": [
+      6
+    ],
+    "abstract_matchings_tested_through_16_ports": 2055,
+    "without_internal_ear": 36
   }
 }

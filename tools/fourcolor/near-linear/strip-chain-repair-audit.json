@@ -2,7 +2,7 @@
   "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
   "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
   "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
-  "lean_source_sha256": "2d99fba1a6fa59c8f9070fceb2c82b82fb3ead23a8c0d5a75cb8d9ffa825e876",
+  "lean_source_sha256": "ea87d2deaad495dda1d10a34084b0097d886149bd130729c498a5f50abb16417",
   "stages": [
     {
       "index": 0,
@@ -226,13 +226,166 @@
         "nested_batch_size": 1
       }
     ],
-    "residual_stages": [
+    "stages_not_balanced": [
       5,
       6,
       7,
       10
     ],
     "abstract_matchings_tested_through_16_ports": 2055
+  },
+  "short_selection": {
+    "consumers": [
+      {
+        "stage": 5,
+        "active_ports": 8,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "outside_pair_batches": [
+          {
+            "cut": 3,
+            "components": [
+              [
+                7,
+                3
+              ]
+            ]
+          },
+          {
+            "cut": 4,
+            "components": [
+              [
+                7,
+                3
+              ]
+            ]
+          },
+          {
+            "cut": 5,
+            "components": [
+              [
+                7,
+                10
+              ]
+            ]
+          },
+          {
+            "cut": 6,
+            "components": [
+              [
+                7,
+                10
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "stage": 7,
+        "active_ports": 8,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "outside_pair_batches": [
+          {
+            "cut": 3,
+            "components": [
+              [
+                1,
+                6
+              ]
+            ]
+          },
+          {
+            "cut": 4,
+            "components": [
+              [
+                0,
+                1
+              ],
+              [
+                6,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 5,
+            "components": [
+              [
+                1,
+                2
+              ],
+              [
+                6,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 6,
+            "components": [
+              [
+                1,
+                4
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "stage": 10,
+        "active_ports": 8,
+        "block_ports": 3,
+        "ear_contracts": 2,
+        "outside_pair_batches": [
+          {
+            "cut": 3,
+            "components": [
+              [
+                2,
+                3
+              ]
+            ]
+          },
+          {
+            "cut": 4,
+            "components": [
+              [
+                1,
+                2
+              ],
+              [
+                5,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 5,
+            "components": [
+              [
+                3,
+                9
+              ]
+            ]
+          },
+          {
+            "cut": 6,
+            "components": [
+              [
+                3,
+                9
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "residual_stages": [
+      6
+    ],
+    "abstract_matchings_tested_through_16_ports": 2055,
+    "without_internal_ear": 36
   },
   "totals": {
     "stages": 11,
@@ -248,5 +401,5 @@
     "No physical recolouring-history or runtime bound is claimed.",
     "No geometric supply, strict graph reduction or catalogue removal is added."
   ],
-  "verifier_sha256": "14681d44e3f05581f8e4146b68ca230c527c0897b82bb7ebd397f6d674c236ad"
+  "verifier_sha256": "151811a4f376639eb942b4dded5523e14722840de205ddad202660a7f5bf2d18"
 }

@@ -135,6 +135,62 @@ def verify(here):
             nested = all(a+b == 2*k-1 for a,b in matching)
             require(ear or nested, 'Balanced-block dichotomy failed')
 
+    short_map = ast.literal_eval(re.search(r'def shortStage[^!]+!(\[[^\]]+\])', text)[1])
+    short_pos_text = text.split('def shortPositions', 1)[1].split('def shortRank', 1)[0]
+    short_positions = ast.literal_eval(short_pos_text.split(':=', 1)[1].replace('!', '').strip())
+    short_moves_text = text.split('def shortMoves', 1)[1].split('theorem short_coordinates', 1)[0]
+    short_cases = []
+    for u,t,value in re.findall(r'\| (\d+|_), (\d+|_) => (\[[^\]]*\])', short_moves_text):
+        decoded = ast.literal_eval(re.sub(r'some\s+(\d+)', r'\1', value).replace('none', 'None'))
+        short_cases.append((u,t,decoded))
+    require(short_map == [5,7,10] and len(short_positions) == 3, 'Short-block domain differs')
+    require('decide (∃ t, shortStage t = s) ||' in text, 'Residual checker does not skip short stages')
+    short_structural = []
+    for u,s in enumerate(short_map):
+        pos = short_positions[u]
+        require(len(pos) == 8 and len(set(pos)) == 8, 'Short coordinates are not injective')
+        require(set(pos) == {i for i,c in enumerate(words[s]) if c != fixed[s]}, 'Short active ports differ')
+        for a,b,x,y in product(range(8), repeat=4):
+            require(not crosses(a,x,b,y) or crosses(pos[a],pos[x],pos[b],pos[y]),
+                    'Short cyclic order not preserved')
+        for i in range(2):
+            require((pos[i],pos[i+1]) in singles[s] or (pos[i+1],pos[i]) in singles[s],
+                    'A short-block ear lacks a source contract')
+        batches = []
+        for t in range(3,7):
+            chosen = next((batch for a,b,batch in short_cases
+                           if a in ('_',str(u)) and b in ('_',str(t))), None)
+            require(chosen is not None and len(chosen) > 0, 'No outside-pair continuation')
+            def skip(i):
+                return i if i < t else i+2
+            pairs = [(pos[t],pos[t+1]) if i is None else (pos[skip(i)],pos[skip(5-i)])
+                     for i in chosen]
+            components = {tuple(sorted(p)) for p in pairs}
+            known_single = any(components == {tuple(sorted(p))} for p in singles[s])
+            known_double = any(components == {tuple(sorted((anchors[s][r],p))),
+                                             tuple(sorted((anchors[s][v],q)))}
+                               for r,v,p,q in doubles[s])
+            require(known_single or known_double, 'Outside-pair batch lacks an existing source contract')
+            batches.append({'cut':t, 'components':pairs})
+        short_structural.append({'stage':s,'active_ports':8,'block_ports':3,
+                                 'ear_contracts':2,'outside_pair_batches':batches})
+
+    short_checked = no_ear = 0
+    for k in range(8):
+        n = 2*k+2
+        for matching in pairings(n):
+            short_checked += 1
+            if any(b == a+1 and b < k for a,b in matching):
+                continue
+            no_ear += 1
+            exterior = [(a,b) for a,b in matching if a >= k]
+            require(len(exterior) == 1 and exterior[0][1] == exterior[0][0]+1,
+                    'Outside pair is not uniquely adjacent')
+            t = exterior[0][0]
+            ports = [i for i in range(n) if i not in (t,t+1)]
+            expected = {tuple(sorted((ports[i],ports[2*k-1-i]))) for i in range(2*k)} | {(t,t+1)}
+            require(set(matching) == expected, 'Outside pair does not determine the remaining matching')
+
     require(words[8] == tuple(map(int,'12211121113')) and
             words[10] == tuple(map(int,'12333313331')), 'Consumers differ')
     for s in (8,10):
@@ -146,8 +202,11 @@ def verify(here):
         'attribution': 'Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.',
         'lean_source_sha256': sha256(source.read_bytes()).hexdigest(),
         'stages': stages,
-        'balanced_selection': {'consumers': structural, 'residual_stages': [5,6,7,10],
+        'balanced_selection': {'consumers': structural, 'stages_not_balanced': [5,6,7,10],
                                'abstract_matchings_tested_through_16_ports': abstract_checked},
+        'short_selection': {'consumers':short_structural, 'residual_stages':[6],
+                            'abstract_matchings_tested_through_16_ports':short_checked,
+                            'without_internal_ear':no_ear},
         'totals': {'stages': len(stages), 'single_contracts': sum(map(len,singles)),
                    'paired_contracts': sum(map(len,doubles)),
                    'noncrossing_matchings_checked': sum(s['matchings_checked'] for s in stages),

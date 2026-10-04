@@ -13,7 +13,9 @@ one, since the initial trace admits no full source extension.
 Eleven finite stages retain forty single-component and fourteen paired-component
 source contracts. Seven stages now use the arbitrary-width
 [`KempeBalancedBlock`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeBalancedBlock.lean)
-law. Only stages 5, 6, 7 and 10 retain the joint partner-exclusion computation.
+law. Three further stages use
+[`KempeShortBlock`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeShortBlock.lean).
+Only stage 6 retains the joint partner-exclusion computation.
 No interior-colouring table or all-boundaries closure table is stored.
 
 For a noncrossing perfect matching on `2k` active ports, consider a consecutive
@@ -23,11 +25,23 @@ is fixed. The repair consumer can therefore switch any specified finite batch
 of those components while retaining the original exterior. Ear and batch
 continuations can themselves invoke previously proved repairs.
 
+For a block of `k` among `2k+2` active ports, the outside block has a
+majority. It therefore contains an adjacent matched pair. Deleting that
+whole component leaves the balanced case: an internal ear, or a completely
+determined remaining matching. The new consumer retains the removed pair
+and all remaining components in the same exterior. A selected batch may
+combine the outside pair with a remaining component before continuing.
+
 The seven consumers have six, eight or ten active ports. Their cyclic
 coordinates, ear contracts and rigid-case continuations are checked separately.
 Cyclic order on triples transports noncrossing by a general lemma. The finite
 source-extension contracts remain; this replaces matching-selection searches,
 not complete source-reducibility certificates.
+
+The three one-short consumers have eight active ports. Six ear contracts
+and twelve outside-pair continuations reuse existing source repairs. The
+general theorem does not enumerate those matchings; the three coordinate
+instances and their continuation choices remain finite obligations.
 
 ```
 fixed-boundary forced-chain obstruction
@@ -46,7 +60,7 @@ Replay with `lake build kernelStripChainRepair`. The
 checking cost and the dependency audit, including the general selection law. The
 [independent verifier](audit_strip_chain_repair.py) reads the Lean stage
 data and checks all 201 stage matching layouts and the terminal source
-reconstructions. It also tests the general dichotomy on all 2,055 noncrossing
+reconstructions. It also tests each general dichotomy on all 2,055 noncrossing
 matchings through sixteen ports; its [receipt](strip-chain-repair-audit.json)
 retains the source pin and hashes.
 
