@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint strain/swirl perspective](labs/README.md#a-joint-strain-and-swirl-perspective-cancels-direct-amplification)
+cancels direct quadratic amplification using a positive density transported
+by the same actual axisymmetric fluid. Its physical-volume diffusion is
+nonnegative, including an axis loss. Paying the remaining signed pressure
+work would give an angular-velocity Serrin continuation bound. An exact
+Gaussian test shows why the pressure needs retained orientation and hidden
+parents: identical scalar measurements and energy can give opposite local
+rates. The pressure-history payment remains open. These equations, tests
+and conditional continuation arguments are analytic with exact checks,
+not new Lean certificates or a general three-dimensional regularity proof.
+
 The [generated core-inflow test](labs/README.md#generated-core-inflow-can-be-strong-while-its-signed-history-is-paid)
 separates the pointwise inflow cap from the signed core cost it was meant
 to control. An actual pure-swirl flow can generate arbitrarily strong

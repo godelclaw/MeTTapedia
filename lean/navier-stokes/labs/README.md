@@ -48385,3 +48385,244 @@ pairing equation with its boundary fluxes. The uniform
 Sobolev interval, trace bounds and nonlinear remainders are analytic
 arguments, not numerically certified intervals or new Lean theorems.
 No Lean declarations or axioms change.
+
+## A joint strain and swirl perspective cancels direct amplification
+
+`joint_swirl_perspective.py` carries the generated meridional parent in
+(CI20) together with the swirl. A positive density evolved by the same
+actual fluid cancels their direct quadratic reactions in a joint
+measurement. Diffusion has a favorable sign. The remaining pressure work
+has a concrete continuation consumer and an actual-flow sign test; its
+arbitrary-history payment remains open. This is an axisymmetric
+whole-space calculation, not a theorem for general three-dimensional or
+periodic data.
+
+### The density follows the complete fluid
+
+Let u be an actual smooth axisymmetric unforced NS prefix at nu>0, with
+a regular axis, and set
+
+```text
+m=-u_r/r, b=u_theta/r, P=p_r/r,
+v=(u_r,u_z), D_t=partial_t+v.grad,
+L5=partial_rr+(3/r)partial_r+partial_zz.
+D_t m=nu L5 m+m^2-b^2+P,
+D_t b=nu L5 b+2mb.                                    (JP1)
+```
+
+P is the full canonical pressure derivative, not a separately selected
+control. The quotients extend smoothly to the axis. Equation (JP1) retains
+all current meridional motion; it does not restart from a pure-swirl seed.
+
+Fix kappa,ell>0 from the original datum. Construct one positive scalar h
+on each available prefix by
+
+```text
+h0=kappa ell^-2 (1+|x|^2/ell^2)^-3,
+D_t h=nu L5 h+2mh.
+h_t+div5(v5 h)=nu Delta5 h,
+v5=(u_r x_h/r,u_z), div5 v5=-2m.                       (JP2)
+```
+
+This reuses the conservative lifted source law from
+[the source-entropy construction](#an-actual-source-law-with-funded-action-and-entropy).
+It is an auxiliary density along the actual drift; no force is applied
+to the fluid. It need not dominate |b|. On a compact smooth prefix,
+parabolic uniqueness preserves the same h across every temporal seam.
+The circulation maximum principle and lifted mass conservation give
+
+```text
+0<r^2h<=G=4 kappa/27  for r>0,
+M=int_R5 h=pi^3 kappa ell^3/2.                         (JP3)
+```
+
+Positivity of h includes the axis, where r^2h=0. For rho=h/M the actual
+forward sampling law has drift v5 and diffusivity nu. Its action obeys
+
+```text
+int_0^T int_R5 rho |v5|^2
+ <=pi G H E0/M,                 T<=H, E0=||u0||_2^2.   (JP4)
+```
+
+This follows from `int5 h|v5|^2=pi int3 r^2h|v_mer|^2`
+and the unforced kinetic-energy identity. The density has a polynomial
+tail; a finite Gaussian-reference relative entropy is not assumed.
+Finite action does not itself pay the pressure work below.
+
+### Reaction cancellation and physical-volume diffusion
+
+Define the nonnegative perspective and its relative gradients by
+
+```text
+Q=(m^2+b^2)/h,
+S=|grad m-m grad log h|^2+|grad b-b grad log h|^2.
+(D_t-nu L5)Q=2mP/h-(2nu/h)S.                          (JP5)
+```
+
+The terms m^2-b^2, 2mb and the density production 2mh cancel exactly.
+The Hessian of the perspective supplies both nonnegative squares. This
+uses the evolving density, rather than freezing its initial profile or
+averaging the interacting quantities separately.
+
+Use physical three-dimensional volume `dx=2pi r dr dz`, not lifted
+five-dimensional volume, for the critical stock. With adequate spatial
+decay, integration of L5 produces an axis loss:
+
+```text
+int_R3 L5 f dx=-4pi int_axis f dz.
+R=int_R3 Q^(3/2) dx,
+W=3 int_R3 sqrt(Q) mP/h dx,
+D=3nu int_R3 sqrt(Q) S/h dx
+    +(4nu/3) int_R3 |grad Q^(3/4)|^2 dx
+    +4pi nu int_axis Q^(3/2) dz.
+R'+D=W,                    D>=0.                     (JP6)
+```
+
+The axis term must not be discarded as if L5 were the physical Laplacian.
+At Q=0 the gradient expressions have their continuous zero extension;
+the map `(m,b) -> (m^2+b^2)^(3/2)` is C2. Regularization and spatial
+cutoffs justify the identity whenever its stated integrals and boundary
+limits exist.
+
+For smooth rapidly decaying initial velocity, R(0) is finite. A sufficient
+prefix-local decay class for (JP6) is m,b,P and their needed derivatives
+bounded by a prefix-dependent constant times `<x>^-5`, with h comparable
+to `<x>^-6` and `|grad h|<=C <x>^-6`. Then Q=O(`<x>^-4`), and all
+displayed volume terms are integrable. Such bounds are used only to
+justify integration, not as an original-data allowance. In applying this
+identity to a larger initial-data class, its weighted integrability and
+boundary limits must be established as well.
+
+Under NS similarity, m,b,h and Q have degree two, and R is invariant.
+Multiplying h by a positive constant rescales R,D,W by its minus
+three-halves power; it does not make the continuation bound below cheaper.
+
+### A precise conditional continuation consumer
+
+The circulation envelope gives the pointwise physical coercivity
+
+```text
+u_r^2+u_theta^2=r^2(m^2+b^2)<=G Q.                    (JP7)
+```
+
+Suppose, for the same original datum, h0, nu and H, one finite K>=0
+is proved to satisfy
+
+```text
+int_0^T [W-D/2]<=K
+for EVERY available smooth prefix T<=H.               (JP8)
+```
+
+This is the missing pressure-history estimate, not a result of the
+cancellation. Put B=R(0)+K. Equation (JP6) then gives
+`sup R<=B` and `int |grad Q^(3/4)|^2<=3B/(2nu)`.
+For a Sobolev constant C_S defined by
+`||f||_6^2<=C_S ||grad f||_2^2`, physical parabolic interpolation yields
+
+```text
+int_0^T int_R3 |u_theta|^5
+ <=G^(5/2) int_0^T int_R3 Q^(5/2)
+ <=[3 C_S/(2nu)] G^(5/2) B^(5/3).                     (JP9)
+```
+
+Thus (JP8), together with the stated realization and integration
+hypotheses, supplies the angular-velocity Serrin condition. The external
+analytic consumer is
+[Chen, Fang and Zhang, Theorem 1.1](https://arxiv.org/html/1505.00905v1),
+with d=0 and p=q=5: for axisymmetric divergence-free H2 initial data,
+this condition prevents loss of regularity. Positive viscosity is handled
+by the usual change of time and velocity units. This invocation is not a
+new Lean theorem or a transfer to arbitrary non-axisymmetric data.
+The product `G^(5/2) B^(5/3)` is unchanged under constant rescaling of h.
+
+### The denominator must retain tails and zeros
+
+Setting h=b is generally inadmissible, even before any evolution. Take
+the smooth finite-energy divergence-free initial field with
+
+```text
+chi=z exp(-R_s^2), R_s^2=r^2+z^2,
+u_r=-r chi_z, u_z=2chi+r chi_r,
+b=exp(-3R_s^2), m=(1-2z^2)exp(-R_s^2).
+m^2/b=(1-2z^2)^2 exp(R_s^2).                          (JP10)
+```
+
+Its proposed initial stock is infinite despite b>0. The positive
+polynomial density (JP2) gives a finite initial stock for this datum and
+also handles sign-changing swirl without division by b.
+
+There is a related history warning even for pure Gaussian swirl. The
+complete generated parent from (CI1) has equatorial tail
+`m1(R_s,0) ~ -3sqrt(2pi)/(64 R_s^5)`. Its square divided by the original
+Gaussian swirl is not integrable. The same algebraic tail holds on an
+open equatorial cone. Consequently a spatially integrated Taylor argument
+using that denominator cannot assume a finite quadratic parent coefficient.
+This is a statement about the coefficient, not a substitution of a
+truncated jet for the actual later solution. With (JP2), that parent
+contributes Q of order `R_s^-4`, whose three-halves moment is integrable.
+
+### An actual hidden parent reverses the pressure work
+
+Reuse the smooth Gaussian pressure family from
+[the axial-deformation test](#canonical-pressure-with-unchanged-initial-axis-data):
+
+```text
+chi=z(a+C r^4)exp(-r^2-z^2),
+u_r=-r chi_z, u_z=2chi+r chi_r, u_theta=B_s r exp(-r^2-z^2).
+P(0)=p_xx(0)
+ =-12a^2/7+8aC/385+4B_s^2/5+64C^2/455.                (JP11)
+```
+
+The pressure is calculated from the complete three-dimensional Poisson
+source. The existing heat-resolvent calculation and an independent
+spherical-harmonic computation, including its local contact term, agree.
+These are actual unforced initial data at every nu>0, with no prescribed
+pressure or body force.
+
+Set a=B_s=kappa=ell=1. Varying C leaves the complete initial axis
+velocity, m, b and their relevant local diffusion traces unchanged.
+At the origin, for every C,
+
+```text
+m=b=h=1, Q=2, grad m=grad b=grad h=grad Q=0, L5 Q=12.
+2mP/h=-64/35       for C=0,
+2mP/h=592/715>0    for C=3.                            (JP12)
+```
+
+Therefore no universal pointwise domination of this pressure work by a
+finite multiple of the local relative-gradient dissipation can hold:
+the latter vanishes at the tested point. Smoothness retains the failure
+in a neighborhood for any fixed proposed coefficient. Changing C changes
+the full initial energy, which a full-datum allowance is allowed to see.
+
+There is also a loss of information in Q alone. Reverse the complete
+C=3 datum, replacing u0 by -u0 and retaining the same h0. Both flows
+have identical entire initial fields Q0,h0, identical initial kinetic
+energy and canonical pressure. The retained orientation m/h reverses.
+At viscosity nu=1/100 their actual local rates at the origin are
+
+```text
+partial_t Q_plus(0,0)=3389/3575>0,
+partial_t Q_minus(0,0)=-2531/3575<0.                   (JP13)
+```
+
+The advective term is zero there and the complete diffusion contributes
+12nu to both rates. Thus Q and h alone are not an autonomous exact fluid
+summary. A bound may still dominate both histories; its payment cannot
+be inferred from a favorable pressure sign. Neither (JP12) nor (JP13)
+refutes the integrated original-datum allowance (JP8).
+
+For a forced fluid, (JP5) has the additional term
+`2(-m f_r+b f_theta)/(r h)`, as well as its actual changed pressure.
+The unforced energy payment (JP4) also needs the force's kinetic work.
+The reaction cancellation alone therefore does not exclude a forced
+construction or an internally sustained pressure history.
+
+Run `python3 -O labs/joint_swirl_perspective.py`. The exact checks cover
+the physical equations, perspective cancellation, diffusion and axis
+coefficients, envelope normalization, conditional interpolation constants,
+denominator failure and complete pressure tests. Parabolic construction,
+spatial integration, continuation and local persistence remain analytic.
+No Lean declarations or axioms change. The next estimate is (JP8) with
+the same evolving h and the complete signed pressure, without resetting
+the parent state.

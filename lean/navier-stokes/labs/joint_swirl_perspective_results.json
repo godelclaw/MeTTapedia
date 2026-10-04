@@ -1,0 +1,45 @@
+{
+  "identity": {
+    "Q": "(m^2+b^2)/h",
+    "law": "(D_t-nu L5)Q=2m(p_r/r)/h-(2nu/h)(|grad m-m grad log h|^2+|grad b-b grad log h|^2)",
+    "axis_loss": "4 pi nu integral_axis Q^(3/2) dz",
+    "full_diffusion": "3nu integral sqrt(Q)/h times the two squares + (4nu/3) integral |grad Q^(3/4)|^2 + axis_loss",
+    "force_entry": "2(-m f_r+b f_theta)/(r h)"
+  },
+  "envelope": {
+    "initial_envelope": "h0=kappa ell^-2 (1+|x|^2/ell^2)^-3",
+    "mass": "M=pi^3 kappa ell^3/2",
+    "circulation_max": "G=4 kappa/27",
+    "stochastic_action": "integral_0^T E_rho |v5|^2 <= pi G H E0/M, rho=h/M",
+    "coercivity": "u_r^2+u_theta^2 <= G Q",
+    "remaining_budget": "integral_0^T [W_pressure-D/2] <= K(original datum,nu,H,kappa,ell) for every same-datum prefix",
+    "conditional_swirl_L5": "3*B**(5/3)*CS*G**(5/2)/(2*nu)",
+    "continuation": "Chen-Fang-Zhang Theorem 1.1, d=0 and p=q=5, analytic consumer only"
+  },
+  "denominator": {
+    "failed_choice": "h=b: m0=(1-2z^2)exp(-R^2), b0=exp(-3R^2) already gives infinite stock",
+    "generated_parent_tail": "m1(R,0) ~ -3 sqrt(2pi)/(64 R^5)",
+    "jet_scope": "For pure Gaussian swirl, the quadratic parent term divided by b0 has a divergent spatial coefficient; no interchange of time expansion and integral is claimed.",
+    "polynomial_repair": "m1=O(R^-5), h0~R^-6 gives Q_parent=O(R^-4), whose three-halves moment is integrable."
+  },
+  "actual_pressure": {
+    "family": "chi=z(a+C r^4) exp(-R^2), u_r=-r chi_z, u_z=2chi+r chi_r, u_theta=B r exp(-R^2)",
+    "canonical_P_origin": "-4*(-1001*B**2 - 176*C**2 - 26*C*a + 2145*a**2)/5005",
+    "parameters": "a=B=1; compare C=0 with C=3",
+    "unchanged": "m=b=h=1, Q=2, all first gradients zero, L5 Q=12 at the origin",
+    "pressure_work_C0": "-64/35",
+    "pressure_work_C3": "592/715",
+    "reversed_datum": "u0 and -u0 have identical full fields Q0 and h0, identical kinetic energy and pressure, but different retained orientation m/h.",
+    "rates_at_nu_one_over_one_hundred": {
+      "positive": "3389/3575",
+      "negative": "-2531/3575"
+    },
+    "failed_assertion": "2mP/h <= any finite constant times the local relative-gradient dissipation, for all smooth unforced data",
+    "scope": "Smooth finite-energy unforced initial data at every nu>0. This pointwise failure does not refute an integrated signed full-datum allowance."
+  },
+  "limitation": "Exact algebra and Gaussian pressure only; parabolic construction, integration, continuation and short-time persistence are analytic. Arbitrary-history pressure payment remains open.",
+  "source_sha256": {
+    "joint_swirl_perspective.py": "f8f453fbe0138dce7df12e3520c919307ec99cebcf4f63e43cae4e56498992bd",
+    "axis_deformation_pressure.py": "8cc03e720cbefe3650fd99359a7bd5cc31bb75b9d44a5c67da82ec155a3da264"
+  }
+}
