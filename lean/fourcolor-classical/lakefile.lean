@@ -1282,3 +1282,17 @@ target kernelTriangleStripLists pkg : Unit := do
         "TriangleStripLists", "TriangleStripListsAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay conditional-colour loops and their majority/forest repair consumer. -/
+target kernelStripChoiceLoops pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-choice-loops",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripChoiceLoops", "StripChoiceLoopRepair", "StripChoiceLoopAudit"]
+      cwd := pkg.dir
+      env := env }

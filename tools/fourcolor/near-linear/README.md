@@ -1,5 +1,47 @@
 # Near-linear Four Colour catalogue bridges
 
+## Conditional choice loops and a shared forest repair
+
+[`ListImplication`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ListImplication.lean)
+composes colour implications along arbitrary-length paths while retaining
+one colouring witness. Two exact D0063 boundaries consume this theorem in
+[`StripChoiceLoops`](../../../lean/fourcolor-classical/MettapediaFourColor/StripChoiceLoops.lean):
+every residual list is nonempty and supported across each edge, but either
+choice at core vertex zero forces its opposite around a path. This proves
+nonextension in the complete decoded source with the fixed ordered boundary.
+It identifies information that independent local support loses.
+
+[`StripChoiceLoopRepair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripChoiceLoopRepair.lean)
+repairs the first boundary. Five consecutive active ports among eight form a
+majority, guaranteeing an adjacent whole component in the noncrossing
+matching. All four possible adjacent choices satisfy the joint two-anchor
+forest guard. The general forest theorem reconstructs the interior, and the
+source colouring is aligned with an actual colouring of the same exterior
+at all ten ports. The exterior trace predicate is explicitly assumed Kempe
+closed and to contain the initial input. Only eight anchor-colour values
+are stored; no complete source-colouring or matching-layout table is stored.
+
+The [program check](audit_strip_choice_loops.py) independently checks the
+implication paths and all four reconstructed source colourings. Its bounded
+census finds 27 minimal nonextension inputs across D0092, D0063 and D0099.
+Only ten admit a guaranteed direct repair by choosing one colour-pair query
+and then a batch from every possible noncrossing matching for that query.
+The other seventeen refute that abstract one-query contract. The census
+does not assert that adverse matchings for different queries occur in one
+physical exterior, and it does not exclude repair through intermediate
+nonextending states or stronger geometric hypotheses. The census and
+minimality of the two displayed inputs are program evidence, not Lean claims.
+
+Replay `lake build kernelStripChoiceLoops` and
+`python3 tools/fourcolor/near-linear/audit_strip_choice_loops.py`.
+The [audit receipt](strip-choice-loops-audit.json) and
+[measurement receipt](strip-choice-loops-measurements.json) separate these
+claims and their costs. The twelve-root dependency audit checks both the
+obstructions and the positive repair, including its forest reconstruction
+and common exterior. Complete source reducibility, geometric supply and
+strict ambient reduction remain open for this result. No catalogue entry,
+original certificate dependency or whole-proof resource saving is credited.
+
 ## Joint anchor propagation reconstructs three source cores
 
 [`ForestLists`](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/ForestLists.lean)

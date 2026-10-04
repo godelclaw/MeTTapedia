@@ -1,0 +1,140 @@
+{
+  "classification": "KERNEL_OBSTRUCTIONS_AND_ONE_REPAIR_WITH_PROGRAM_CENSUS",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "loops": [
+    {
+      "boundary": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        2,
+        0,
+        3,
+        2,
+        3
+      ],
+      "residual_lists": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2
+        ]
+      ],
+      "implication_lengths": [
+        8,
+        5
+      ],
+      "every_single_core_deletion_extends_program_checked": true
+    },
+    {
+      "boundary": [
+        0,
+        1,
+        3,
+        1,
+        3,
+        0,
+        3,
+        2,
+        3,
+        2
+      ],
+      "residual_lists": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "implication_lengths": [
+        6,
+        5
+      ],
+      "every_single_core_deletion_extends_program_checked": true
+    }
+  ],
+  "successful_reconstruction_guards": 4,
+  "source_anchor_colour_values": 8,
+  "noncrossing_matchings_checked": 14,
+  "program_only_critical_census": [
+    {
+      "source": "D0092",
+      "canonical_inputs": 7381,
+      "minimal_nonextension_inputs": 4,
+      "one_query_single_component": 3,
+      "one_query_two_components": 3,
+      "one_query_arbitrary_batch": 3
+    },
+    {
+      "source": "D0063",
+      "canonical_inputs": 2461,
+      "minimal_nonextension_inputs": 17,
+      "one_query_single_component": 3,
+      "one_query_two_components": 5,
+      "one_query_arbitrary_batch": 5
+    },
+    {
+      "source": "D0099",
+      "canonical_inputs": 7381,
+      "minimal_nonextension_inputs": 6,
+      "one_query_single_component": 2,
+      "one_query_two_components": 2,
+      "one_query_arbitrary_batch": 2
+    }
+  ],
+  "program_scope": "Choose one of three colour-pair queries; a fresh adverse noncrossing matching is supplied; choose a batch from that matching. Different queries are not asserted to be simultaneously realized by one physical exterior.",
+  "full_source_repair_claimed": false,
+  "coverage_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0,
+  "strategy_table_exported": false,
+  "lean_sources": {
+    "StripChoiceLoops.lean": "63c975cfe6fc0aefa0bb2e4eb52c70105e9e0e0787792b669e8b9446ef755046",
+    "StripChoiceLoopRepair.lean": "76f789885e9bc40ea3421b7882fe5f04fa1a1d5bca5475769b84fbf58cfcf104"
+  }
+}
