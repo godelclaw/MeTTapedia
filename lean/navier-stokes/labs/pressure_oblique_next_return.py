@@ -52,15 +52,19 @@ def fixtures():
     return dict(status='Complete lower histories and the established degree-sixteen fixture agree')
 
 
-def case(a):
-    require(a in (1, 2, 3, 4), 'The prepared interpolation and validation parents')
-    weights = (a, 1, 1)
+def case_weights(weights):
+    """One complete three-parent history, normalized by its joint factor."""
+    factor = joint_factor(weights)
     velocity, pressure = physical_fields(weights, 16)
     coefficients, counts = observed_history(velocity, pressure, 16)
-    factor = joint_factor(weights)
     normalized = {degree: e.scale(1/factor, value) for degree, value in coefficients.items()}
-    return dict(a=a, normalized={str(n): e.encode(v) for n, v in normalized.items()},
+    return dict(weights=tuple(weights), normalized={str(n): e.encode(v) for n, v in normalized.items()},
                 required_modes=counts)
+
+
+def case(a):
+    require(a in (1, 2, 3, 4), 'The prepared interpolation and validation parents')
+    return dict(case_weights((a, 1, 1)), a=a)
 
 
 def interpolate(values, nodes, x):

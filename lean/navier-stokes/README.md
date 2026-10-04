@@ -36,15 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
-The [cancelled-return payment](labs/README.md#a-cancelled-first-return-still-leaves-a-finite-original-payment)
-tests parent strengths whose first integrated pressure correction is zero.
-The next complete correction is strictly negative. A uniform analytic
-remainder then shows that the original cubic-pressure stock pays every
-time for this fixed shape at sufficiently small amplitude, despite the
-earlier depletion and recovery. A strict inequality on the three parent
-strengths supplies an adjacent family with the same payment. These are
-analytic small-data results supported by exact coefficients, not new Lean
-theorems or an arbitrary-data continuation bound.
+The [complete cancellation boundary](labs/README.md#the-complete-cancellation-boundary-retains-the-original-payment)
+now has a strictly negative next pressure correction for every ratio of
+the remaining two parents. The preceding correction also has a negative
+late tail throughout that boundary. A uniform analytic remainder then
+pays the original cubic-pressure stock for every time, for each fixed
+shape at sufficiently small amplitude. Together with the strict-sign
+cases, this classifies the leading stock throughout the three-parent
+family in the small-amplitude regime. Exact full-history coefficients
+support the analytic result; it is not a new Lean theorem or an
+arbitrary-data continuation bound.
 
 The [stronger oblique prefix](labs/README.md#arithmetic-enclosure-of-the-stronger-oblique-prefix)
 now has a positive generated velocity receiver and paid pressure history

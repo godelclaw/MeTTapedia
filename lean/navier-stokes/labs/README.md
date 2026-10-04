@@ -40221,9 +40221,9 @@ uniform degree-16 remainder is absorbed on a late tail, and the positive
 forecast gap pays the remaining compact interval exactly as above.
 Thus the original leading stock `(abc)^4 lambda^12 alpha/nu^8` pays every
 time for sufficiently small |lambda|/nu, with a threshold allowed to
-depend on the fixed shape. The new degree-16 calculation includes the
-specific equality case a^2=R, b=c=1. It does not classify the entire
-beta=0 boundary.
+depend on the fixed shape. This degree-16 calculation includes the
+specific equality case a^2=R, b=c=1. The next section extends it to the
+entire beta=0 boundary.
 
 For beta>0, the same uniform expansion instead makes the original
 leading stock insufficient at a finite time for sufficiently small
@@ -40244,3 +40244,131 @@ four parent cases and the cancellation result. For separate computations,
 filenames and checks the full polynomial reconstruction. Saved records
 must come from those computations; assembly alone is not an independent
 verification of the underlying NS coefficients.
+
+## The complete cancellation boundary retains the original payment
+
+The unequal-parent test gives a strictly favorable next integrated return
+on the ENTIRE cancellation boundary. This completes the small-amplitude
+classification of the original leading pressure stock within this
+three-parent family. The amplitude restriction remains essential to the
+argument; no arbitrary-data regularity conclusion follows.
+
+Retain the physical periodic datum
+
+```text
+U_(a,b,c) = (a sin y - 4b sin z, b sin z, c sin(x+4y)),
+u0 = epsilon U_(a,b,c),               nu=1, abc nonzero.
+```
+
+The observation Phi is the fourth moment of the accumulated stochastic
+pressure impulse from time zero, with uniform original position. It is
+not the cubic vorticity-stretching functional. Write
+
+```text
+Phi_epsilon(t)/(abc)^4
+ = epsilon^12 A(t) + epsilon^14 B_(a,b,c)(t)
+   + epsilon^16 C_(a,b,c)(t) + epsilon^18 W_epsilon(t),
+B_(a,b,c) = a^2 B_a + b^2 B_b + c^2 B_c,
+beta_i = lim_(t->infinity) B_i(t).
+```
+
+The previously identified beta_a is positive and beta_b,beta_c are
+negative. Put rb=-beta_b/beta_a and rc=-beta_c/beta_a. The complete
+first integrated correction cancels exactly on
+
+```text
+a^2 = rb b^2 + rc c^2,
+rb approximately 0.03174541653005286,
+rc approximately 0.007451851479831501.
+```
+
+### Complete coefficient and late-tail checks
+
+Analytic pressure divisibility by abc, independent parent sign changes
+by physical translations, and homogeneous degree give
+
+```text
+C_(a,b,c) = C_a a^4 + C_b b^4 + C_c c^4
+           + C_ab a^2 b^2 + C_ac a^2 c^2 + C_bc b^2 c^2.
+```
+
+The six coefficient FUNCTIONS retain all exponential-polynomial time
+dependence. Six full NS/moment calculations identify them; two unused
+parent triples validate every time coefficient. Each calculation retains
+all velocity and pressure through the required degree seven, and every
+auxiliary moment dependency needed for the requested degree-sixteen mean.
+The lower complete degree-twelve and degree-fourteen profiles also agree.
+This uses the exact observation argument of the preceding section, with
+no closed physical mode truncation or reset of the original moments.
+
+Substitution of the cancellation relation yields
+
+```text
+Gamma_boundary(b,c) = lim C_(a,b,c) = p b^4 + q b^2 c^2 + r c^4,
+
+-81027/10^20 < p < -81026/10^20,
+-21431/10^20 < q < -21430/10^20,
+-17829/10^22 < r < -17828/10^22.
+```
+
+All three brackets are checked using rational arithmetic. Every nonzero
+pair b,c therefore gives Gamma_boundary<0. Setting b=c=1 recovers the
+previous cancellation calculation in every time coefficient, including
+its integrated value approximately -1.0263540882882232e-15.
+
+The late sign of B must be checked separately: a negative next integrated
+coefficient would not by itself pay an earlier positive tail. The exact
+profiles have no positive decay rate below six. Only B_a has a rate-six
+term, with no polynomial prefactor and coefficient
+
+```text
+d approximately -2.4744311695954695e-13 < 0,
+lim_(t->infinity) exp(6t) B_(a,b,c)(t) = a^2 d < 0
+                  on the cancellation boundary.
+```
+
+Thus B is eventually strictly negative for EVERY fixed boundary shape.
+No sign at intermediate times is assumed. The code checks this full-tail
+condition as well as the integrated quartic's sign.
+
+### Actual-flow conclusion and scope
+
+Fix any abc nonzero on this boundary. The uniform analytic small-data
+remainder of the preceding section gives sup_t |W_epsilon(t)|<=M for
+an original-shape amplitude neighborhood. Let gamma=-Gamma_boundary>0.
+The exact coefficient limits select a finite T0 for which B<0 and
+C<=-gamma/2 thereafter. Requiring epsilon^2 M<=gamma/4 pays that tail.
+On [0,T0], the positive forecast gap alpha-A(T0) absorbs the bounded
+corrections after decreasing the original amplitude threshold. This proves
+the same all-time leading-stock bound for every fixed boundary shape.
+
+Together with the strict-sign cases, for each fixed abc nonzero:
+
+| First integrated correction | Actual small-amplitude conclusion |
+| --- | --- |
+| beta_a a^2+beta_b b^2+beta_c c^2 <= 0 | There is epsilon0>0 such that Phi_epsilon(t) <= (abc)^4 epsilon^12 alpha for all t>=0 and all 0<abs(epsilon)<=epsilon0. |
+| beta_a a^2+beta_b b^2+beta_c c^2 > 0 | For every sufficiently small nonzero epsilon, this exact leading stock is exceeded at some finite time. A larger full-datum allowance remains possible. |
+
+Here alpha is the same complete cubic-pressure stock as before. The
+threshold may depend on the parent shape and is not numerically evaluated;
+there is no asserted uniform threshold over degenerating parent ratios.
+If a parent is exactly zero, the separate literal triangular solution has
+zero pressure impulse. Arbitrary positive viscosity and integer spatial
+rescaling transfer exactly as in the preceding section.
+
+The physical lesson is limited but positive: changing the balance of
+these interacting parents does not break the original allowance at its
+small-amplitude cancellation boundary. The complete subsequent feedback
+and the earlier late tail both have the needed signs. Finite amplitudes,
+additional geometries and payment for the sufficient signed-renewal
+criterion remain open. The actual-flow transfer is analytic, supported
+by exact coefficients; no new Lean declaration or axiom is involved.
+
+Run `python3 -O labs/pressure_oblique_boundary.py` to compute all eight
+histories and the classification. Alternatively save the JSON output of
+`--weights A B C` for the six triples
+`(1,1,1), (2,1,1), (3,1,1), (1,2,1), (1,3,1), (1,1,2)` and the unused
+triples `(4,1,1), (1,1,3)`, then pass those eight filenames to `--assemble`.
+Assembly checks the saved coefficients, not their provenance. The
+independent full-recurrence fixtures remain available through
+`pressure_oblique_next_return.py --fixtures`.
