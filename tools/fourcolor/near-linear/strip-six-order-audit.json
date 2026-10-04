@@ -1,0 +1,92 @@
+{
+  "classification": "FIXED_PAIR_ORDER_OBSTRUCTION_AND_SILENT_DETACHMENT",
+  "source": "D0099.conf",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "geometry": {
+    "vertices": 41,
+    "edges": 117,
+    "faces": 78,
+    "minimum_degree": 5
+  },
+  "first_phase_whole_states": 4,
+  "second_phase_bit_assignments": 64,
+  "distinct_terminal_boundary_words": 26,
+  "all_terminal_words_fail": true,
+  "hidden_component": [
+    18
+  ],
+  "detached_component": [
+    7,
+    11,
+    19,
+    28,
+    31
+  ],
+  "old_active_exits": [
+    [
+      28,
+      18
+    ]
+  ],
+  "new_active_exits": [],
+  "both_core_formulas_checked": true,
+  "whole_colouring_reconstructed": true,
+  "short_cycle_census_program_only": {
+    "vertices": 41,
+    "faces": 78,
+    "minimum_degree": 5,
+    "cycles_by_length": {
+      "3": 78,
+      "4": 117,
+      "5": 255
+    },
+    "shore_counts": [
+      {
+        "length": 3,
+        "side_vertices": [
+          0,
+          38
+        ],
+        "cycles": 78
+      },
+      {
+        "length": 4,
+        "side_vertices": [
+          0,
+          37
+        ],
+        "cycles": 117
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          0,
+          36
+        ],
+        "cycles": 234
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          1,
+          35
+        ],
+        "cycles": 21
+      }
+    ],
+    "obstructing_cycles": 0,
+    "first_obstruction": null
+  },
+  "limits": [
+    "The fixed pair order is obstructed; another order repairs this sphere.",
+    "Supply of a suitable silent component and detached set remains open.",
+    "No strict reduction, catalogue removal or universal coverage is claimed."
+  ],
+  "fixture_sha256": "cbfb2ad0d1402f3da4fb8a6588f96f93fd6d08fb5824d27ea6bfde96dd6d208d",
+  "lean_sources": {
+    "StripSixDetachment.lean": "a117379d62e120e9aa4118554fb0b15f2730dcb9a7132652e5ba80546f2b4ce8",
+    "StripSixOrderExample.lean": "108f1725075088f8f71d56c05dd9d36c0291675561c0f5f8dcb0cf850a30781a",
+    "StripSixOrderAudit.lean": "4bc0bd6449f7d1d27df52dc2c3d91bb678115456567a3aebdf364a1fce98d2eb"
+  },
+  "verifier_sha256": "04d63ecff4e3f1f072cbc0fcb8bc4438965a97b5366a1df98a434f9ddcfedc0e"
+}

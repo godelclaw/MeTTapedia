@@ -6237,5 +6237,31 @@
     "additional_catalogue_entries_removed": 0,
     "additional_original_certificate_dependencies_removed": 0,
     "whole_proof_kernel_savings_claimed": false
+  },
+  "strip_six_pair_order_experiment": {
+    "classification": "CHECKED_FIXED_PAIR_ORDER_OBSTRUCTION_AND_SILENT_DETACHMENT",
+    "report": "../near-linear/strip-six-order-measurements.json",
+    "obstruction": "A 41-vertex spherical source occurrence admits no extending zero/one then one/three phase, of any lengths.",
+    "repair_law": "A silent three/zero switch removes old active exits of a connected three/two set. Both port-six boundary forms use a common source formula.",
+    "actual_consumer": "One silent vertex detaches a five-vertex component; two physical switches reconstruct the whole sphere.",
+    "new_boundary_repair_table_bytes": 0,
+    "new_lean_source_bytes": 29030,
+    "spherical_fixture_json_bytes": 15230,
+    "audit": {
+      "roots": 10,
+      "transitive_dependency_declarations": 11802,
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    "remaining": [
+      "Supply a suitable silent component and detached set, or a different compatible repair.",
+      "Other boundary domains, occurrence supply, strict reduction, compact coverage and termination."
+    ],
+    "additional_catalogue_entries_removed": 0,
+    "additional_original_certificate_dependencies_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
   }
 }

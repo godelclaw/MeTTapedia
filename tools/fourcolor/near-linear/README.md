@@ -1,5 +1,41 @@
 # Near-linear Four Colour catalogue bridges
 
+## A failed pair order and a silent detachment
+
+[`StripSixOrderExample`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixOrderExample.lean)
+certifies a 41-vertex triangulated sphere with the original port-six joint
+connections and missing-colour condition. **No zero/one phase followed by
+a one/three phase extends the source**, regardless of their lengths or
+choices of components. Original bichromatic routes determine four whole
+first-phase states. Routes in those states exhaust the second-phase
+boundary possibilities, all of which fail the symbolic source constraint.
+This rules out the proposed pair order on this domain, not all repairs.
+
+[`StripSixDetachment`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixDetachment.lean)
+provides a different repair. A three/zero component misses every boundary
+port. Switching it removes all active exits from a connected three/two
+set meeting the boundary only at port seven, without introducing a new
+active exit. The existing detachment theorem proves that the set becomes
+an actual component. Switching that component admits one shared core
+formula for both port-six boundary forms. The exterior, first component
+and chain sizes are unrestricted; the old-state exit conditions remain
+explicit hypotheses.
+
+On the same sphere, a silent singleton removes the only active exit from
+a five-vertex set. The general theorem supplies the second component and
+a source colouring, which is glued to the exterior to colour the whole
+sphere. No precomputed second component or final colouring is assumed.
+
+Replay `lake build kernelStripSixOrder`. The [independent verifier](audit_strip_six_order.py)
+checks source degrees and cyclic order, all phase normal forms, the old
+exit conditions and whole reconstruction. Its short-cycle census remains
+program evidence. The [receipt](strip-six-order-measurements.json) records
+the ten-root dependency audit and replay cost.
+
+The remaining geometric question is how to supply a suitable silent
+component and detached set, or another compatible repair. No new strict
+reduction, catalogue removal or universal coverage is claimed.
+
 ## One component replaces an entire fixed-pair repair phase
 
 [`StripSixPhaseChoice`](../../../lean/fourcolor-classical/MettapediaFourColor/StripSixPhaseChoice.lean)

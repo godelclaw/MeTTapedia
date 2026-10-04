@@ -1,0 +1,74 @@
+{
+  "classification": "CHECKED_FIXED_PAIR_ORDER_OBSTRUCTION_AND_SILENT_DETACHMENT",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripSixDetachment",
+      "source_sha256": "a117379d62e120e9aa4118554fb0b15f2730dcb9a7132652e5ba80546f2b4ce8",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.328,
+      "olean_bytes": 135912,
+      "olean_sha256": "8953740d1611b63809b58ec8550313847fb251f4183f9f9688d159c3dd3b8749"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixOrderExample",
+      "source_sha256": "108f1725075088f8f71d56c05dd9d36c0291675561c0f5f8dcb0cf850a30781a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 20.975,
+      "olean_bytes": 2407784,
+      "olean_sha256": "22f7dda48055d8f6c96c62827b6e677df2a5267f3c4a7bd756ad478cf475977a"
+    },
+    {
+      "module": "MettapediaFourColor.StripSixOrderAudit",
+      "source_sha256": "4bc0bd6449f7d1d27df52dc2c3d91bb678115456567a3aebdf364a1fce98d2eb",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.225,
+      "olean_bytes": 2600,
+      "olean_sha256": "8a2f93384c9e57887fb975fbb56a0fb64db5f262772d6fd68baee978573312f8"
+    }
+  ],
+  "frontend_wall_seconds_total": 28.528,
+  "timing_scope": "Three new modules with dependencies built; no whole-proof speedup claimed.",
+  "new_lean_source_bytes": 29030,
+  "new_boundary_repair_table_bytes": 0,
+  "spherical_fixture_json_bytes": 15230,
+  "first_phase_whole_states": 4,
+  "second_phase_bit_assignments": 64,
+  "distinct_terminal_boundary_words": 26,
+  "audit": {
+    "roots": 10,
+    "transitive_dependency_declarations": 11802,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "The actual 41-vertex triangulated sphere has minimum degree five, exact source core stars, the specified initial boundary and original joint connections.",
+    "No zero/one phase followed by a one/three phase can extend the source, irrespective of phase lengths or component choices.",
+    "A shared detachment theorem handles both port-six boundary forms using old-state exit and no-entry conditions.",
+    "The general theorem permits arbitrary exterior, first component and chain sizes; supply of its hypotheses remains separate.",
+    "The 41-vertex consumer uses a silent singleton to remove the only active exit of a five-vertex set, then reconstructs a whole colouring through two physical switches."
+  ],
+  "program_only": [
+    "The complete cyclic source order and short-cycle census are independently replayed from the fixture; no new Lean theorem excluding all obstructing short cycles is claimed.",
+    "The example was reduced from 52 to 41 vertices by a bounded search; minimality is not claimed."
+  ],
+  "remaining": [
+    "Supply a suitable silent component and detached set, or a different compatible repair.",
+    "Other boundary domains, occurrence supply, strict reduction, compact coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "additional_catalogue_entries_removed": 0,
+  "additional_original_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripSixOrder kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_six_order.py"
+  ],
+  "evidence_record": "strip-six-order-audit.json"
+}

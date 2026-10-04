@@ -1468,3 +1468,16 @@ target kernelStripSixPhaseChoice pkg : Unit := do
         "--library-output", ".lake/build/lib/lean", "--modules", "StripSixPhaseChoice", "StripSixPhaseExample", "StripSixPhaseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the two-phase order obstruction and silent detachment repair. -/
+target kernelStripSixOrder pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-six-order",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripSixDetachment", "StripSixOrderExample", "StripSixOrderAudit"]
+      cwd := pkg.dir
+      env := env }
