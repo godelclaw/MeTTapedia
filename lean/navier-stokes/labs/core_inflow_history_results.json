@@ -1,0 +1,34 @@
+{
+  "pressure": {
+    "pressure": "p0=-(2+r partial_r)psi, psi=(-Delta5)^-1(beta^2)",
+    "acceleration": "f_r=-r psi_zz, f_z=(2+r partial_r)psi_z",
+    "radial_flux": "psi_prime(R)=-R^-4 integral_0^R sigma^4 F(sigma) d sigma",
+    "family_sign": "P1,rho=-integral_(r<rho) r^2 z^2/R^2 F_prime(R) psi_prime(R) dr dz <=0 when F_prime<=0"
+  },
+  "gaussian": {
+    "inward_kernel": "tau**(3/2)*(4*tau*z**2 - 1)*exp(tau*(-2*r**2 - 2*z**2))/2",
+    "center_inward_strain": "-1/5",
+    "pointwise_inflow_lower": "13/20480",
+    "cutoff_P1": "P1,rho < -min(rho^3,1)/5832",
+    "full_pairing": "-pi*(-1/2 + 3*pi/16)/32",
+    "explanation": "Pointwise inflow is positive near the axial front, but the swirl-weighted pairing is negative inside every radial cutoff."
+  },
+  "interval": {
+    "actual_family": "u_A(t,x)=A v_(nu/A)(A t,x), A>=nu",
+    "interval": "0<t<=delta/A, uniform delta determined by the one base datum",
+    "crossing_window": "delta/(2A)<=t<=delta/A",
+    "signed_core_charge": "at least alpha A^2 delta^2/(18432 nu) for the paid radii with rho0=1",
+    "scope": "Uniform local estimates are analytic. Any prescribed radius is treated by NS spatial scaling; a different datum-selected smaller radius is not refuted. No recurrent cascade or global continuation is established."
+  },
+  "evolution": {
+    "density": "m s^2",
+    "reaction": "4m^2 s^2-s^4/r^2+(p_r/r)s^2",
+    "viscous_flux": "J=s^2 grad(m)+2m s grad(s)+(m s^2/r)e_r",
+    "viscous_defect": "2s^2 m_r/r-4s grad(m).grad(s)-2m|grad(s)|^2-m s^2/r^2",
+    "moving_boundary": "rho_prime integral_z m s^2 at r=rho; this term is additional if the core pairing is differentiated"
+  },
+  "source_sha256": {
+    "core_inflow_history.py": "c346eeb7b954a387e13aa31de9eecccc78d11eedaaf6d46befc8a565da16f9cc"
+  },
+  "limitation": "Exact initial response and algebra; the uniform actual NS interval and all-cutoff remainder bounds remain analytic, not Lean-certified."
+}

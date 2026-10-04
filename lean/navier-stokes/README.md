@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [generated core-inflow test](labs/README.md#generated-core-inflow-can-be-strong-while-its-signed-history-is-paid)
+separates the pointwise inflow cap from the signed core cost it was meant
+to control. An actual pure-swirl flow can generate arbitrarily strong
+inward motion inside every radius permitted by the prescribed energy rule,
+while its swirl-weighted core compression remains favorable. A uniform
+local argument retains this favorable sign simultaneously for all radial
+cutoffs. It extends the first-return sign for radially decreasing swirl
+profiles to the actual joint-stock consumer. The interval is local in
+rescaled time; later renewal and arbitrary-data continuation remain open.
+The calculation and interval proof are analytic with exact checks.
+
 The [critical circulation/swirl test](labs/README.md#coupled-circulation-and-swirl-stocks-can-grow-while-energy-falls)
 shows both scale-invariant stocks increasing together on an actual unforced
 axisymmetric history. No nonnegative constant weighting makes their sum

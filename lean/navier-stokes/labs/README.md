@@ -48104,3 +48104,284 @@ all axis and nodal diffusion losses, kinetic transfer, simultaneous
 positive derivatives, Hardy remainder and the exact exterior-reserve
 square. The interval, maximum-principle and integrated-history arguments
 remain analytic. No Lean declarations or axioms change.
+
+## Generated core inflow can be strong while its signed history is paid
+
+`core_inflow_history.py` tests propagation of the sufficient pointwise
+inflow cap (CS14) under the energy-paid radius policy (CS11). The cap
+can fail on an actual unforced history starting with NO meridional
+motion. Nevertheless, the signed core compression in (CS13) remains
+strictly favorable on the same interval, simultaneously at every radial
+cutoff. The distinction matters: local inward motion does not itself
+decide the weighted cost that the reserve must pay.
+
+This reuses the full pressure response calculated in
+`axis_deformation_pressure.py` and extends the earlier radial swirl
+first-return sign to the core-history consumer. The cylindrical equations,
+local smooth existence and Sobolev estimates are established background;
+see also [Wei, equations (1.1)--(1.5)](https://arxiv.org/html/1508.03318v1).
+The new interval argument is analytic, not Lean-certified. It neither
+constructs recurrent singular behavior nor proves arbitrary-data regularity.
+
+### A family law for the complete first parent
+
+Let the initial velocity be pure swirl,
+
+```text
+u_*(x,y,z)=beta(R)*(-y,x,0), R=sqrt(x^2+y^2+z^2),
+s_*=r beta(R), r=sqrt(x^2+y^2), F(R)=beta(R)^2.        (CI1)
+```
+
+Assume beta(R) is a smooth radial Schwartz profile, F is nonincreasing,
+and F is not identically zero. The literal Cartesian field is smooth,
+divergence free and finite energy. Initially u_r=u_z=0 everywhere.
+In five radial dimensions let psi=(-Delta_5)^(-1)F, with decay at infinity.
+Its radial flux is
+
+    psi'(R)=-R^(-4) integral_0^R sigma^4 F(sigma) d sigma<=0. (CI2)
+
+The full initial meridional acceleration f, at any positive viscosity,
+has the canonical three-dimensional pressure and components
+
+```text
+p0=-(2+r partial_r)psi,
+f_r=r F-partial_r p0=-r psi_zz,
+f_z=-partial_z p0=(2+r partial_r)psi_z,
+Delta_3 p0=2F+r partial_r F.                          (CI3)
+```
+
+Indeed the complete self-advection of (CI1) is -r F e_r. The displayed
+pressure makes f divergence free, decays at infinity, and has exactly
+the required Poisson source. Thus it is the actual pressure, not an
+assigned exterior Hessian. The initial viscous term is purely azimuthal
+and contributes no meridional acceleration. Also
+`(partial_z f_r-partial_r f_z)/r=partial_z F`, the full swirl source.
+
+Write m=-u_r/r for inward radial strain. Then m(0)=0 and m_t(0)=psi_zz.
+For the actual compression observation at any radial cutoff rho>0,
+
+```text
+P_rho(t)=integral_(0<r<rho,z in R) m(t,r,z)s(t,r,z)^2 dr dz,
+P1,rho=P_rho'(0)=integral_(r<rho) r^2 F psi_zz dr dz
+ =-integral_(r<rho) r^2 z^2/R^2 F'(R)psi'(R) dr dz<0. (CI4)
+```
+
+Integration by parts is only in z, so there is no omitted radial-cutoff
+boundary term. Both radial derivatives in the product are nonpositive.
+Strictness follows from nontriviality and decay of F. The same argument
+works with any fixed nonnegative bounded radial observation weight, with
+strictness when it observes a region of strict depletion. It does not
+give a pointwise sign for m_t: the favorable statement is its JOINT
+pairing with the swirl that it acts on.
+
+### The Gaussian has inward motion and favorable weighted compression
+
+For beta(R)=exp(-R^2), the five-dimensional heat resolvent yields
+
+```text
+m1(r,z)=psi_zz(r,z)
+ =(1/2) integral_0^1 tau^(3/2)(4z^2 tau-1)
+                      exp(-2(r^2+z^2)tau) d tau.      (CI5)
+```
+
+At the center, m1(0,0)=-1/5 is outward. At z=1 and 0<=r<=1/2,
+the same complete response satisfies
+
+    m1(r,1)>13/5120, (r^2 m1)|_(r=1/2,z=1)>13/20480.     (CI6)
+
+The second expression is the coefficient of r(-u_r), namely r^2 m1.
+For a direct rational sign proof, the absolute negative integral in
+(CI5) before its factor 1/2 is at most 1/80. Its positive contribution
+on tau in[3/4,1] exceeds 9/512: use tau^(3/2)>=9/16,
+4tau-1>=2, and exp(-5/2)>1/16. The latter follows from e<3 and
+3^5<16^2. The remaining part of the integral is nonnegative.
+
+In contrast, integrating the joint observation over z gives
+
+```text
+P1,rho=-sqrt(pi)/(2sqrt(2)) integral_0^1 [tau/(1+tau)]^(3/2)
+                   integral_0^rho r^2 exp(-2(1+tau)r^2) dr d tau<0,
+P1,infinity=pi(8-3pi)/512<0.                          (CI7)
+```
+
+Thus EVERY cumulative radial cutoff has the favorable sign, although
+an axial front has positive local inflow. On tau in[1/2,1] and
+r in[0,min(rho,1)], elementary bounds give the useful uniform margin
+
+    -P1,rho>min(rho^3,1)/5832.                        (CI8)
+
+One may use sqrt(pi)/(2sqrt(2))>1/2, [tau/(1+tau)]^(3/2)>1/6,
+exp(-2(1+tau)r^2)>1/81, and integral_0^a r^2 dr=a^3/3.
+This quantitative margin prevents a vanishing small-cutoff margin from
+being hidden by a cutoff-independent Taylor error.
+
+### Retaining the sign on one actual nonlinear interval
+
+Let v_epsilon be the actual unforced NS solution from u_* at viscosity
+0<epsilon<=1. Choose a fixed sufficiently high integer m, for example
+m>=8. Differentiated Sobolev energy gives
+
+```text
+d/dtau ||v_epsilon||Hm^2+2epsilon||grad v_epsilon||Hm^2
+                                      <=C_m||v_epsilon||Hm^3. (CI9)
+```
+
+Local existence and this bound supply a common positive interval with
+uniform high Sobolev bounds, determined by the ONE base datum. Applying
+the same argument at higher orders bounds v_tau in H^(m-2) and v_tautau
+in H^(m-4). The complete nonlinear and pressure terms are retained.
+There is no small-amplitude hypothesis. At time zero the radial component
+of v_tau is f_r from (CI3), independently of epsilon. It follows that
+
+```text
+m_epsilon(tau)=tau m1+O(tau^2) in Linfinity,
+v_epsilon(tau)-u_*=O(tau) in H3,                      (CI10)
+```
+
+uniformly in epsilon. To justify division by r, evaluate at (r,0,z):
+axisymmetry gives v_x(0,0,z)=0, so v_x/r is the average of partial_x v_x
+along the radial segment. The same observation applies to the complete
+Taylor remainder. No singular coefficient is estimated by 1/r times an
+unweighted error.
+
+There are TWO complementary integral controls. First, writing
+beta_epsilon=s_epsilon/r, the codimension-two Sobolev trace estimate gives
+
+```text
+sup_r ||beta_epsilon(r,.)||L2_z<=C||v_epsilon||H3,
+sup_r ||beta_epsilon(r,.)-beta_*(r,.)||L2_z<=C tau.    (CI11)
+```
+
+This follows by applying the same radial-segment average to v_y and
+using sup_(x,y)||partial_x v_y(x,y,.)||L2_z<=C||v||H3.
+Consequently the error in integral m beta^2 dz is O(tau^2), uniformly
+in r. Integrating r^2 dr to rho<=1 gives an O(tau^2 rho^3) error.
+
+Second, for all radii together,
+
+    integral s^2 dr dz<=||s||L2(R3)||s/r||L2(R3)/(2pi),
+
+and both physical norms are controlled by H1 of the full velocity.
+The same inequality controls a difference of angular velocities. Combined
+with (CI10), it bounds the absolute integrated error by O(tau^2).
+Together these prove, with a finite base-datum constant C,
+
+```text
+|P_rho(v_epsilon(tau))-tau P1,rho|
+                         <=C tau^2 min(rho^3,1) for EVERY rho>0. (CI12)
+```
+
+Choose delta>0 so that the preceding uniform bounds hold and
+C delta<=1/11664. Then on the SAME actual solution,
+
+    P_rho(v_epsilon(tau))<=-tau min(rho^3,1)/11664<0
+       for all 0<tau<=delta, all rho>0, all 0<epsilon<=1. (CI13)
+
+For a general profile in (CI1), its radial pairing density divided by r^2
+has a strictly negative limit at r=0 and is continuous there. This supplies
+a margin c rho^3 for small cutoffs. Larger cutoffs contain that negative contribution; the
+global error bound then gives the same conclusion on a profile-dependent
+uniform interval. Thus the mechanism is a family law, not a single
+Gaussian sign check. The explicit constants here concern the Gaussian.
+
+### Arbitrarily strong cap crossing while the core history is paid
+
+Fix the physical viscosity nu>0. For A>=nu set
+
+    u_A(t,x)=A v_(nu/A)(A t,x).                       (CI14)
+
+This is an ACTUAL unforced solution at viscosity nu, with its pressure
+scaled by A^2. Its initial datum is pure swirl and has zero inflow at
+every point. The uniform interval is 0<=t<=delta/A. Shrink delta using
+the local energy bound so that E(v_epsilon(tau))/E(u_*)>=9/16 throughout.
+Then for the prescribed policy rho0=1 and ANY 0<=p<1/2,
+
+    rho(t)>=[E(u_A(t))/E(u_A(0))]^p>=3/4.             (CI15)
+
+The point (r,z)=(1/2,1) is inside EVERY permitted core, including any
+larger, adaptively chosen radius. By (CI6) and the uniform pointwise
+Taylor bound, shrink delta again so that, with c_*=13/20480,
+
+    r(-u_A,r)(t,1/2,1)>=A(At)c_*/2.                 (CI16)
+
+For any prescribed M>0, choose A>=8Mnu/(delta c_*), as well as A>=nu.
+Then throughout delta/(2A)<=t<=delta/A the left side exceeds Mnu.
+Taking A also large enough puts this entire interval below any prescribed
+positive horizon. Thus the initially satisfied pointwise cap need not
+propagate under this radius policy. NS spatial similarity transfers the
+example to any prescribed rho0>0. It does NOT rule out choosing a different,
+smaller initial radius for the particular datum, nor does it produce
+repeated crossings at later, progressively smaller scales.
+
+The actual signed core observation gives the opposite verdict. By (CI13),
+
+    P_rho(u_A(t))<=-A^4 t min(rho^3,1)/11664<0.       (CI17)
+
+Therefore Xi_core from (CS13) is negative on the entire interval, at
+every radial cutoff and every alpha>=1. For radii permitted by (CI15),
+
+    -integral_0^(delta/A) Xi_core dt
+                            >=alpha A^2 delta^2/(18432nu). (CI18)
+
+The original C+alpha Y/nu already pays the full compression during this
+interval, because (CI13) also holds at rho=infinity. Combining (CS9)
+with (CI17) gives the explicit depletion
+
+    R_alpha(0)-R_alpha(delta/A)>=alpha A^2 delta^2/(7776nu),
+    R_alpha(0)=alpha pi A^2/(16nu).                   (CI19)
+
+The displayed nonnegative diffusion losses can also be retained on the
+left. This is one finite original allowance on one actual evolving flow.
+No reserve is reset when the cap is crossed. Both the paid core cost and
+the allowance grow with the original amplitude; no energy-only bound
+or indefinite continuation is inferred.
+
+### The remaining history question
+
+This example shows why (CS14) is too restrictive to be a necessary test
+of the proposed mechanism. The signed core cost (CS13) can remain paid
+despite strong local inflow. Its favorable sign depends on the joint
+distribution of swirl and its generated parent, not on the maximum inflow.
+
+The geometry does evolve: the parent f in (CI3) becomes nonzero, and the
+original radial pure-swirl description ceases to be the current state.
+The uniform interval proof retains that change, but supplies no invariant
+that restarts (CI4) at its endpoint. Later returns must include those
+existing parents, the altered swirl and their full pressure. Paying that
+arbitrary history, and connecting it to a complete continuation criterion,
+remain the open obligations.
+
+Their complete evolution is concrete. For the ACTUAL current fields put
+m=-u_r/r, s=u_theta and v=(u_r,u_z). The radial NS equation gives
+
+    (partial_t+v.grad)m=nu Delta_5 m+m^2-s^2/r^2+p_r/r. (CI20)
+
+Combining this with the swirl equation, retaining div_2 v=m, gives
+
+```text
+partial_t(ms^2)+div_2[v ms^2-nu J]
+ =4m^2 s^2-s^4/r^2+(p_r/r)s^2+nu D,
+J=s^2 grad(m)+2m s grad(s)+(m s^2/r)e_r,
+D=2s^2 m_r/r-4s grad(m).grad(s)-2m|grad(s)|^2-m s^2/r^2. (CI21)
+```
+
+All gradients here are meridional. The centrifugal contribution -s^4/r^2
+is favorable, but the positive m^2 term, the actual pressure response,
+and the signed viscous derivatives must be treated together. Integrating
+to a fixed radius rho retains the boundary flux
+`integral_z [rho m^2 s^2+nu J_r]_(r=rho) dz`.
+Differentiating a moving-core pairing additionally costs
+`rho'(t) integral_z(ms^2)_(r=rho(t)) dz`.
+These fluxes were unnecessary when merely splitting the cost in (CS13);
+they are essential when estimating its future evolution. The next
+physical target is their combined signed history, not another restart
+from radial initial data.
+
+Run `python3 -O labs/core_inflow_history.py`. The checker verifies the
+canonical pressure equations, radial flux identity, full Gaussian heat
+kernel, opposite pointwise and weighted signs, all-cutoff margin,
+amplitude scaling, finite history-charge constants and the complete later
+pairing equation with its boundary fluxes. The uniform
+Sobolev interval, trace bounds and nonlinear remainders are analytic
+arguments, not numerically certified intervals or new Lean theorems.
+No Lean declarations or axioms change.
