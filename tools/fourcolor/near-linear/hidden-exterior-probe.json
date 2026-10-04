@@ -1,0 +1,113 @@
+{
+  "classification": "BOUNDED_PROGRAM_EVIDENCE",
+  "source": {
+    "configuration": "D0092",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "attribution": "Yuta Inoue, 2026; MIT"
+  },
+  "verifier_sha256": "cc9140ba2b90d26046ed8d96e6a1cd7a83a5a6f5e02f3edd057b854639958bbb",
+  "one_hidden_vertex": [
+    {
+      "word_index": 0,
+      "colouring_exterior_pairs": 3280,
+      "hidden_vertex_degrees": {
+        "3": 1800,
+        "4": 1082,
+        "5": 291,
+        "6": 87,
+        "7": 18,
+        "8": 2
+      },
+      "minimum_physical_steps": {
+        "1": 455,
+        "2": 2804,
+        "3": 21
+      },
+      "maximum_visited_palette_classes": 71
+    },
+    {
+      "word_index": 1,
+      "colouring_exterior_pairs": 3326,
+      "hidden_vertex_degrees": {
+        "3": 1791,
+        "4": 1090,
+        "5": 325,
+        "6": 98,
+        "7": 19,
+        "8": 3
+      },
+      "minimum_physical_steps": {
+        "2": 3146,
+        "3": 180
+      },
+      "maximum_visited_palette_classes": 104
+    }
+  ],
+  "sample_seed": 401019,
+  "larger_samples": [
+    {
+      "hidden_vertices": 2,
+      "trials": 300,
+      "minimum_physical_steps": {
+        "1": 9,
+        "2": 275,
+        "3": 16
+      },
+      "maximum_visited_palette_classes": 68
+    },
+    {
+      "hidden_vertices": 4,
+      "trials": 300,
+      "minimum_physical_steps": {
+        "1": 15,
+        "2": 268,
+        "3": 17
+      },
+      "maximum_visited_palette_classes": 120
+    },
+    {
+      "hidden_vertices": 8,
+      "trials": 300,
+      "minimum_physical_steps": {
+        "1": 11,
+        "2": 279,
+        "3": 10
+      },
+      "maximum_visited_palette_classes": 167
+    },
+    {
+      "hidden_vertices": 16,
+      "trials": 300,
+      "minimum_physical_steps": {
+        "1": 14,
+        "2": 278,
+        "3": 8
+      },
+      "maximum_visited_palette_classes": 289
+    },
+    {
+      "hidden_vertices": 32,
+      "trials": 300,
+      "minimum_physical_steps": {
+        "1": 20,
+        "2": 277,
+        "3": 3
+      },
+      "maximum_visited_palette_classes": 330
+    }
+  ],
+  "checks": [
+    "Oriented spherical triangulation",
+    "Exact unchanged source core stars",
+    "Proper complete exterior colouring",
+    "Actual component-history replay",
+    "Exact ear elimination and full ambient colouring"
+  ],
+  "limits": [
+    "No universal three-switch theorem.",
+    "Larger samples can include repeated graphs or colourings; trial counts are not distinct graph counts.",
+    "No claim of minimal-counterexample connectivity or geometric occurrence supply.",
+    "Shortest-depth search quotients by global colour permutation on the entire exterior, not boundary summaries."
+  ]
+}

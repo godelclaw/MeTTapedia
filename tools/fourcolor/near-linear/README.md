@@ -1,5 +1,48 @@
 # Near-linear Four Colour catalogue bridges
 
+## Physical repair counts survive clique attachments
+
+[CliquePhysicalLift](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/CliquePhysicalLift.lean)
+proves that a hidden patch attached only along a retained clique cannot
+merge distinct retained two-colour components. Each retained component
+switch lifts to one actual switch; a whole GSLT history lifts with exactly
+the same length. The initial full colouring is supplied. The patch's size,
+interior graph and colouring-fibre connectivity are unrestricted.
+
+[CoreCliqueRepair](../../../lean/fourcolor-classical/MettapediaFourColor/CoreCliqueRepair.lean)
+consumes this law for both core-profile boundary words. Starting from any
+proper colouring of a clique-attached enlargement whose retained
+eleven-port colouring is one of those two words, one or two switches produce an exterior colouring
+and a matching D0092 source colouring. Two switches remain necessary for
+the second word. Exact occurrence, source-star and exterior-coverage data
+then reconstruct the whole ambient colouring, restoring seven vertices.
+Graph isomorphisms transport both actual components and switch counts.
+The existing icosahedral cap provides a second checked consumer: its nine
+hidden vertices add no switches to any retained physical history.
+
+This is a structural repair theorem for an explicit attachment class. It
+does not show that arbitrary exteriors decompose into clique attachments,
+or establish occurrence supply in minimal counterexamples. The clique
+hypothesis is essential to the component argument; general attachments
+can join distinct retained components.
+
+The independent [hidden-exterior test](hidden-exterior-probe.json) checks
+all 6,606 compatible colouring/exterior pairs among simple eleven-port
+disk triangulations with one additional vertex and the two fixed words,
+and 1,500 seeded trials with 2–32 additional vertices. Every tested case
+repairs within three physical switches. The larger trials may repeat
+graphs and are not an exhaustive census. All histories are replayed on
+actual components and checked against full ambient colourings; no general
+three-switch theorem follows. The [receipt](core-clique-repair-measurements.json)
+separates these program observations from the Lean theorem and costs.
+Coverage and complete-assembly dependency counts are unchanged.
+
+```sh
+python3 tools/fourcolor/near-linear/probe_hidden_exterior.py
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.CoreCliqueRepairAudit
+```
+
 ## One boundary requires a change of colour pair
 
 [CorePairChangeObstruction](../../../lean/fourcolor-classical/MettapediaFourColor/CorePairChangeObstruction.lean)

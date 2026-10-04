@@ -1,0 +1,114 @@
+{
+  "classification": "CHECKED_COUNT_PRESERVING_CLIQUE_REPAIR",
+  "source": {
+    "configuration": "D0092",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "attribution": "Yuta Inoue, 2026; MIT"
+  },
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.CliquePhysicalLift",
+      "source_bytes": 4785,
+      "source_sha256": "857f0e021f88fba824df8d30ff5d83104c2feee79d9ac595f5643bb790be2ff4",
+      "olean_bytes": 156800,
+      "olean_sha256": "6aaf9d1f33f3d2e449f111a0d16b84e576b4db60965562ff72dbeb948f45c5c2",
+      "frontend_seconds_rounded": 2.8
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Kempe.HistoryIso",
+      "source_bytes": 2716,
+      "source_sha256": "8838cc32a7e75f5758433e4ba60d569d4965997563ddfcc845743a9d9b439309",
+      "olean_bytes": 150872,
+      "olean_sha256": "373e4aea8dbb71e18e4cf693e2a04793a0905ee4ddee4e91827fc2ff86d21272",
+      "frontend_seconds_rounded": 2.7
+    },
+    {
+      "module": "MettapediaFourColor.CoreCliqueRepair",
+      "source_bytes": 4902,
+      "source_sha256": "61ac250636a21ed526bf8e50451febf273ace42f73e65a2da23aa60e5672dd17",
+      "olean_bytes": 158288,
+      "olean_sha256": "6bec356496bdfdb03e5d0d7136a7110dd4d53f02a80571e8cce00301ddae6063",
+      "frontend_seconds_rounded": 2.9
+    },
+    {
+      "module": "MettapediaFourColor.CoreCliqueRepairAudit",
+      "source_bytes": 2893,
+      "source_sha256": "8a1cebbe75ea2d5ad6cb8ca8fe808a6f2487633b772ed18f295f651d31195d4c",
+      "olean_bytes": 3584,
+      "olean_sha256": "37bc0664f4ad18aec6423b8767611c65c3bd366f1829425736d96f5784cf3c7e",
+      "frontend_seconds_rounded": 3.9
+    }
+  ],
+  "new_lean_source_bytes": 15296,
+  "new_repair_table_bytes": 0,
+  "cost_scope": "Rounded successful incremental module frontend times; imported libraries and existing changed consumer modules are excluded. No whole-assembly savings claimed.",
+  "mathematics": {
+    "component": "A hidden patch attached only along a retained clique cannot merge distinct retained bichromatic components.",
+    "history": "From every supplied full starting colouring, any retained physical GSLT history lifts with exactly the same number of switches. No finiteness bound on the patch is needed.",
+    "source_consumer": "Both core-profile input words repair on every clique-attached enlargement of the specified eleven-port exterior: one step for the first word, two for the second. Source and exterior witnesses agree on every port.",
+    "optimality": "Every successful repair for the second word takes at least two physical switches, including in these enlargements.",
+    "ambient": "Given the exact source occurrence, complete core stars and full exterior coverage, reconstruct a colouring of the whole ambient graph. Exactly seven vertices were deleted.",
+    "second_consumer": "The existing twelve-vertex icosahedral cap has nine hidden vertices and a triangular seam; every retained physical history lifts with equal length.",
+    "compatibility": "The existing whole-map gluing theorem is generalized from Color to any palette, using the same proof.",
+    "limits": [
+      "A proper full colouring of the enlarged exterior is an input, not proved to exist by the lifting theorem.",
+      "The attached exterior must have the stated clique interface and retained graph isomorphism.",
+      "No theorem supplies this decomposition or the D0092 occurrence throughout the intended graph class.",
+      "Planarity of an arbitrary selected attachment is not claimed.",
+      "The component theorem is not claimed for general non-clique attachments."
+    ]
+  },
+  "audit": {
+    "roots": 9,
+    "dependency_declarations": 4754,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "repair_tables_used": false,
+    "complete_four_colour_theorem_used": false,
+    "required_dependencies": [
+      "Actual retained-component restriction",
+      "GSLT history length",
+      "Graph-isomorphism component transport",
+      "Previously proved physical source repair",
+      "Source fixed-pair lower bound",
+      "Whole-map witness gluing and exact seven-vertex decrease",
+      "Icosahedral seam clique and attachment"
+    ]
+  },
+  "program_evidence": {
+    "script": "probe_hidden_exterior.py",
+    "results": "hidden-exterior-probe.json",
+    "one_hidden_vertex_pairs": 6606,
+    "larger_trials": 1500,
+    "largest_hidden_size": 32,
+    "all_tested_repair_within_three": true,
+    "kernel_checked": false,
+    "limits": [
+      "No universal three-switch theorem.",
+      "Larger samples can include repeated graphs or colourings; trial counts are not distinct graph counts.",
+      "No claim of minimal-counterexample connectivity or geometric occurrence supply.",
+      "Shortest-depth search quotients by global colour permutation on the entire exterior, not boundary summaries."
+    ]
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build MettapediaFourColor.CoreCliqueRepairAudit",
+    "new_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true
+  }
+}

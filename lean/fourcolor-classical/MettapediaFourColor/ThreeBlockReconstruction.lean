@@ -23,13 +23,13 @@ variable {V W : Type*} [Fintype V] [DecidableEq V]
 noncomputable section
 
 /-- Exact source stars and exterior coverage suffice for witness gluing. -/
-theorem reconstruct
+theorem reconstruct {α : Type*}
     (covers : ∀ v, s.Exterior v → ∃ w, e.embedding w = v)
     (stars : ∀ i : Fin 18, 11 ≤ i.val → ∀ v, G.Adj (s.point i) v →
       ∃ j, s.point j = v ∧ upper.graph.Adj i j)
-    (D : H.Coloring Color) (k : upper.graph.Coloring Color)
+    (D : H.Coloring α) (k : upper.graph.Coloring α)
     (agree : ∀ j : Fin 11, k (j.castAdd 7) = D (e.ports j)) :
-    ∃ K : G.Coloring Color,
+    ∃ K : G.Coloring α,
       (∀ w, K (e.embedding w) = D w) ∧ (∀ i, K (s.point i) = k i) := by
   classical
   have core {v : V} (h : ¬s.Exterior v) :
@@ -37,7 +37,7 @@ theorem reconstruct
     simp only [Patch.Exterior, not_forall, not_not] at h
     obtain ⟨i, hi, eq⟩ := h
     exact ⟨i, hi, eq.symm⟩
-  let f (v : V) : Color := if h : s.Exterior v then D (covers v h).choose else k (core h).choose
+  let f (v : V) : α := if h : s.Exterior v then D (covers v h).choose else k (core h).choose
   have exterior_read (w : W) : f (e.embedding w) = D w := by
     have h := e.outside w
     dsimp only [f]

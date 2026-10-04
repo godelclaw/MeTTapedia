@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.Kempe.CliqueLift
+import Mettapedia.GraphTheory.Kempe.CliquePhysicalLift
 import Lean.Util.CollectAxioms
 
 /-!
@@ -59,6 +60,19 @@ theorem repair_lifts {α : Type*} [DecidableEq α]
       (Set.empty_subset _) attachment C D).mp (by simpa using path)
   exact ⟨E, hE, ReflTransGen.mono (fun _ _ step => step.kempeStep) _ _ history⟩
 
+/-- The nine hidden vertices also preserve the exact count of a retained
+physical history; no additional preparation steps are needed. -/
+theorem physical_repair_lifts {α : Type*} [DecidableEq α]
+    (C : graph.Coloring α) (D : (graph.induce (↑hidden)ᶜ).Coloring α)
+    (path : Mettapedia.GraphTheory.FourColor.KempeChainCertificate.History
+      (C.restrictInduce (↑hidden)ᶜ) D) :
+    ∃ E : graph.Coloring α,
+      ∃ lifted : Mettapedia.GraphTheory.FourColor.KempeChainCertificate.History C E,
+        E.restrictInduce (↑hidden)ᶜ = D ∧ lifted.length = path.length := by
+  apply KempeCliquePhysicalLift.history_lifts (↑hidden)ᶜ seam seam_clique _ path C rfl
+  intro x hx y hy edge
+  exact attachment x (by simpa using hx) y hy edge
+
 end SimpleGraph.KempeCliqueFill
 
 open Lean Elab Command SimpleGraph
@@ -68,7 +82,7 @@ run_cmd do
     ``KempeCliqueLift.lifts_steps, ``KempeCliqueLift.history_iff,
     ``KempeCliqueFill.seam_clique, ``KempeCliqueFill.attachment,
     ``KempeCliqueFill.colours_proper, ``KempeCliqueFill.degree_five,
-    ``KempeCliqueFill.repair_lifts]
+    ``KempeCliqueFill.repair_lifts, ``KempeCliqueFill.physical_repair_lifts]
   let allowed := [``propext, ``Classical.choice, ``Quot.sound]
   let forbidden := [`sorryAx, `Lean.ofReduceBool, `FourColor.Bulk,
     `FourColor.fourColorTheorem, `FourColor.WheelRepairData,
