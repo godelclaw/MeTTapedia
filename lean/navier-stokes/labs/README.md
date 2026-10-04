@@ -39282,3 +39282,270 @@ Run `python3 -O labs/pressure_oblique_stock.py`; the existing
 against its earlier orthogonal consumers. Coefficients, sign certificates
 and Brownian integrals are exact. The uniform remainder, actual-solution
 identification and all-time comparisons are analytic, not Lean-certified.
+
+## A fast receiver leaves a slower pressure parent
+
+`pressure_oblique_slow_parent.py` identifies a later physical interaction
+that the original cubic pressure forecast cannot represent. The same
+oblique datum as (820) generates a slow velocity mode, which interacts
+with an original parent to produce a slow pressure tail. The coefficient
+identities are exact. A uniform small-data decay argument below transfers
+them to actual globally regular unforced solutions. This is an analytic
+result, not a new Lean certificate.
+
+The conclusion is deliberately different from the integrated stock result
+(837). No fixed multiple of the original **instantaneous** pressure forecast
+bounds the actual pressure gradient for all time. Nevertheless the finite
+corrected **integrated** allowance in (836)--(837) remains valid in its
+proved small-amplitude range. Neither conclusion decides arbitrary-data
+regularity.
+
+### The complete equation generates a descending chain
+
+Use viscosity one and the normalized period-2pi torus. The original field is
+
+```text
+u(0)=epsilon U,
+U=(sin y-4 sin z, sin z, sin(x+4y)).
+```
+
+Write the actual viscous amplitude expansion as `u=sum epsilon^m U_m`.
+For `q_j=(1,4-j,0)`, let `i c_j(t)` be the vertical Fourier coefficient
+of `U_(j+1)` at q_j. The full NS recurrence gives
+
+```text
+c_0(t)=-(1/2)exp(-17t),
+c_j'+[1+(4-j)^2]c_j=(1/2)exp(-t)c_(j-1),
+c_j(0)=0,                                  1<=j<=4.    (838)
+```
+
+No lower amplitude degree contains q_j. Both other velocity components
+at this first degree vanish. These assertions are checked against the
+complete velocity, including pressure projection and every generated
+mode. The scalar chain is the resulting identity, not a replacement of
+NS by a passive model. In particular c_j<0 at every positive time, by
+successive positive heat convolutions. The diffusion rates are
+17,10,5,2,1.
+
+At the last step the exact field is
+
+```text
+c_4(t)=-exp(-t)/92160+exp(-3t)/46080-exp(-7t)/64512
+       +exp(-13t)/184320-exp(-21t)/1290240,
+lim_(t->infinity) exp(t)c_4(t)=-1/92160.                (839)
+```
+
+An independent full physical time-jet calculation gives
+`partial_t^4 uhat_3(0,(1,0,0))=-i epsilon^5/32`, agreeing with
+(838). The new mode has a much longer lifetime than the original receiver.
+
+### Its pressure is a genuine subsequent return
+
+Pressure degree six needs only velocity degrees one through five:
+`p_6=sum_(a+b=6) P(U_a tensor U_b)`, where P is canonical pressure
+recovery. At `q=(1,0,1)` the checker finds
+
+```text
+p_m(q)=0 for m<6,
+lim_(t->infinity) exp(2t) p_6(t,q)=-1/46080.            (840)
+```
+
+It independently recovers this coefficient from the first-eigenmode
+limits of all the velocity coefficients. There are exactly four nonzero
+pressure coefficients at rate two, at `(+-1,0,+-1)`, all equal to
+`-1/46080`. In real form their leading contribution is
+`-epsilon^6 exp(-2t) cos(x)cos(z)/11520`.
+
+This return pairs the generated vertical `sin x` with the original
+horizontal `-4 sin z`. The original cubic pressure has frequencies
+`(+-1,+-3,+-1)` and `(+-1,+-5,+-1)`, with the x/y signs matched,
+and all of its time rates are at least eleven. Thus a history summary
+retaining only that cubic source misses a slower descendant of the very
+same unforced datum.
+
+### Transfer to actual solutions, uniformly in late time
+
+Here is the analytic obligation that prevents a finite Taylor polynomial
+from being mistaken for the actual late-time flow. Fix a sufficiently
+large integer Sobolev index, for example s=40, and use the mean-zero
+solenoidal mild equation at viscosity one. Its heat estimate has the form
+
+```text
+||exp(t Delta) P_Leray div F||_(H^s)
+ <= C (1+t^(-1/2)) exp(-t) ||F||_(H^s).
+```
+
+The H^s algebra estimate makes the mild map a contraction in
+`sup_(t>=0) exp(t)||u(t)||_(H^s)` on a fixed small complex ball of
+initial data. The bound is uniform on a smaller ball, and the solution
+is holomorphic in epsilon there. This uses initial norms and the heat
+kernel estimate; it assumes no future bound for the target solution.
+It is the same small-data mechanism used in the preceding stock result.
+For example, the time-convolution factor is bounded by four:
+`integral_0^t [1+(t-s)^(-1/2)]exp(-s)ds<=4`. Splitting at t-s=1
+proves this bound. If C is four times the heat and algebra constants,
+the weighted solution ball of radius 1/(4C) is contractive for initial
+norm at most 1/(8C). This specifies a sufficient amplitude radius from
+the fixed norm of U alone; a smaller radius gives uniform Cauchy bounds.
+
+Let Pi_1 project onto the six frequencies with |q|^2=1 and write
+`N(u)=-P_Leray div(u tensor u)`. The convergent expression
+
+```text
+V(epsilon)=Pi_1 u(0)+integral_0^infinity exp(s)Pi_1 N(u(s))ds
+```
+
+defines the first-mode asymptote. The mild equation then gives
+
+```text
+u(t)=exp(-t)V(epsilon)+O((1+t)exp(-2t)) in H^s.         (841)
+```
+
+Indeed N(u)=O(exp(-2t)) in H^(s-1). In the first eigenspace the
+remaining source integral costs O(exp(-2t)); on its complement the heat
+rate is at least two, so the convolution costs at most
+O((1+t)exp(-2t)). All estimates are uniform on a smaller amplitude disk.
+Consequently V is holomorphic and its amplitude coefficients are the
+limits of the complete coefficient equations. Translation by (pi,pi,pi)
+reverses U, so V is odd in epsilon.
+
+Equations (839)--(841), together with canonical pressure recovery, imply
+
+```text
+Vhat_3(epsilon,(1,0,0))=-i epsilon^5/92160+O(epsilon^7),
+lim_(t->infinity) exp(2t) phat(t,(1,0,1))
+                    =-epsilon^6/46080+O(epsilon^8).    (842)
+```
+
+Pressure recovery is a continuous quadratic map on H^s; thus the limit
+in (842) follows from (841) for the full pressure, not a pressure series
+truncated at degree six. The exact lower-degree calculation and uniform
+holomorphy identify its leading coefficient. For all sufficiently small
+nonzero real epsilon it is nonzero. The amplitude threshold is supplied
+by the small-data estimates and the analytic remainder; it is not
+numerically evaluated here.
+
+Let `g_gen=epsilon^3 grad p_3` be the original matched Brownian cubic
+forecast of the preceding section. For every such fixed epsilon,
+
+```text
+||grad p(t)||_2 >= c_epsilon exp(-2t)  for large t,
+||g_gen(t)||_2 <= C |epsilon|^3 exp(-11t) for t>=1,
+||grad p(t)||_2 / ||g_gen(t)||_2 -> infinity.            (843)
+```
+
+The first inequality uses just the nonzero Fourier coefficient in (842).
+The second follows directly from the explicit eight cubic coefficients.
+Their faster terms are a polynomial times exp(-19t), so they are bounded
+by a constant times exp(-11t) on t>=1. Rescaling to arbitrary positive
+viscosity replaces t by nu*t and multiplies pressure by nu^2.
+The same obstruction holds for the L4 pressure-gradient norm used in
+impulse estimates: the actual L4 norm dominates its L2 norm, whereas
+the finite Fourier forecast also has an L4 upper bound of rate eleven.
+
+Thus even an arbitrarily large constant depending on the full datum and
+viscosity cannot repair this particular all-time pointwise decay profile.
+A constant also depending on a prescribed finite horizon is not refuted.
+Nor is a larger integrated pressure stock: these actual small flows are
+already paid by (837). The conclusion identifies lost history, not a
+singularity or an endlessly regenerated energy source.
+
+### A resolution check for the history observation
+
+The numerical consumer evolves all three velocities, the original
+conditional impulse, all six second moments, the three contracted third
+moments and the integrated fourth moment. It reuses the full physical
+operator in `reciprocal_pressure_payment.make_flow`; no amplitude series
+is used to evolve these numerical histories.
+
+The first coarse screen exposed a specific observation error. A grid of
+24 retains |q_j|<8. Every original cubic pressure mode fits, but some
+intermediate second-moment frequencies do not. The independent Brownian
+quartet calculation in `pressure_oblique_stock.py` now checks
+
+| Intermediate component cutoff | Contributing ordered quartets | Fraction of the exact leading stock |
+| --- | ---: | ---: |
+| abs(q_j)<8 | 156 of 216 | 0.9585102736093485 |
+| abs(q_j)<12 | 216 of 216 | 1 exactly |
+
+Every omitted quartet has a strictly positive time integral. The lost
+modes have y-frequency eight or ten. Therefore the first row's apparent
+depletion is an exact projection loss, even as the amplitude tends to
+zero. A visible-field resolution test alone would miss it. Retaining all
+leading quartets does not certify later nonlinear moments; spatial and
+temporal refinement remain necessary.
+The first and third partial frequency sums are already pressure modes;
+the intermediate pair sum is the extra information needed here.
+
+At viscosity one, numerical histories were tested through time 1.5 against
+the same original stock `K=epsilon^12 alpha+2epsilon^14 beta`. The stock
+was fixed before every run; it was not fitted to the observed trajectory.
+The largest sampled ratios on grid 36 are
+
+| epsilon | Phi/K | Phi/(epsilon^12 alpha) | time step |
+| ---: | ---: | ---: | ---: |
+| 1/8 | 0.99776842 | 1.00224326 | 1/256 |
+| 1/4 | 0.99120814 | 1.00898981 | 1/256 |
+| 1/2 | 0.96682377 | 1.03620067 | 1/256 |
+| 1 | 0.89200043 | 1.14803148 | 1/256 |
+| 2 | 0.74892795 | 1.60878765 | 1/256 |
+| 4 | 0.51773642 | 2.89543209 | 1/512 |
+| 8 | 0.18283752 | 3.54155017 | 1/512 |
+
+These are sampled Fourier-Galerkin values without a continuum enclosure.
+They support retaining the integrated candidate after rejecting the
+pointwise forecast. They do not prove that candidate outside its existing
+small-data theorem, even at the displayed amplitudes. A certified prefix
+must still pass its complete inherited moments into a justified tail.
+
+At amplitude 1/4 and time 1, increasing the grid from 36 to 48 at step 1/256
+changes Phi by less than 2.7e-8 relatively. Halving the time step on grid 36
+changes it by less than 3.6e-7 relatively. The exact positive B coefficient
+is recovered after the intermediate moment modes are retained.
+
+At amplitude 8 the grid-48 run reaches the same final time with largest
+sampled Phi/K equal to 0.1828365433. Increasing the grid from 36 to 48
+changes Phi by at most 2.1e-5 relatively at the sampled times. Halving
+the time step on grid 36 changes Phi by at most 1.1e-7 relatively
+through time 1/2. The full enlarged-grid spatial residual is also
+reported; these diagnostics are not continuum error enclosures.
+
+The strongest screen also retains an evolving sign change in the generated
+receiver. On grid 48 with step 1/512, the real sine coefficient
+`-2 Im uhat_3(t,(1,0,0))` is approximately
+
+| time | generated receiver coefficient |
+| ---: | ---: |
+| 1/8 | 0.00499725095 |
+| 1/4 | -0.03311629416 |
+| 1/2 | 0.02908250041 |
+
+Grid 36 with step 1/1024 gives the same signs and values within 6e-9
+at these observations. This is a recurring sign of one Fourier observation,
+not recurrence of the full state. It lies outside the analytic small-data
+asymptotic assertion (842), so there is no contradiction with that assertion.
+Both numerical histories retain all previously accumulated moments.
+
+### Reproduction and remaining boundary
+
+Run the exact slow-parent check with
+`python3 -O labs/pressure_oblique_slow_parent.py`. It verifies the full
+chain, the independent physical time jet and the pressure recovered from
+all first-mode limits. Run `python3 -O labs/pressure_oblique_stock.py` for
+the exact stock and intermediate-quartet checks. Python optimization does
+not disable their explicit algebraic checks.
+
+For numerical discovery, save the latter JSON output to a chosen file and
+pass it as `--coefficients` to
+`python3 labs/pressure_oblique_slow_parent.py --prefix`. Optional flags
+select `--n`, `--nu`, `--amplitude`, `--dt`, `--final` and `--residuals`.
+Without the cache option the stock is recomputed from the exact recurrence.
+The supplied cached file defines the numerical comparison; it is not a
+proof premise or a replacement for running the exact checker.
+
+The physical lesson is that generated parents can outlive the geometry
+that produced them. A compositional reserve must retain those parents and
+the original impulse across transitions. The present result supplies an
+explicit physical transition and a failed decay-profile bound. Uniform
+payment under repeated interacting transitions, concentration and arbitrary
+original data remains the missing estimate.

@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [slow-parent calculation](labs/README.md#a-fast-receiver-leaves-a-slower-pressure-parent)
+identifies a four-step transfer from an oblique receiver into a slowly
+decaying mode. On actual sufficiently small unforced flows, its new
+pressure tail eventually exceeds every fixed multiple of the original
+cubic pressure forecast. The integrated corrected stock above that
+forecast still pays these small flows. This separates failure of a decay
+profile from failure of an accumulated allowance. Stronger-amplitude
+numerical histories test the latter without resetting their moments;
+they remain unenclosed. The arbitrary-data payment is open.
+
 The [complete oblique stock calculation](labs/README.md#an-adverse-return-consumes-additional-original-pressure-stock)
 shows that the adverse correction persists over the whole viscous clock.
 For actual sufficiently small flows, the exact cubic forecast's total

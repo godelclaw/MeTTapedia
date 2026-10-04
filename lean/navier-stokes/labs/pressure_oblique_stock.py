@@ -57,6 +57,8 @@ def brownian_stock(pressure):
     amplitudes = {q: e.scale(-1, a) for q, a in pressure.items()}
     total = Q(0)
     contractions = []
+    retained = {8: Q(0), 12: Q(0)}
+    counts = {8: 0, 12: 0}
     for a, b, c in itertools.product(pressure, repeat=3):
         d = tuple(-x-y-z for x, y, z in zip(a, b, c))
         if d not in pressure:
@@ -68,10 +70,23 @@ def brownian_stock(pressure):
         integral = e.heat_convolution(amplitudes[a], dot(a, a))
         integral = e.heat_convolution(e.multiply(amplitudes[b], integral), dot(ab, ab))
         integral = e.heat_convolution(e.multiply(amplitudes[c], integral), dot(d, d))
-        total += 8*contraction*e.integral_infinity(e.multiply(amplitudes[d], integral))
+        contribution = 8*contraction*e.integral_infinity(e.multiply(amplitudes[d], integral))
+        require(contribution > 0, 'Every retained time integral is strictly positive')
+        total += contribution
+        for cutoff in retained:
+            if max(map(abs, ab)) < cutoff:
+                retained[cutoff] += contribution
+                counts[cutoff] += 1
     require(len(contractions) == 216 and min(contractions) == 283,
             'Exhaustive exact support and contraction check')
-    return total, dict(quartets=len(contractions), minimum_contraction=min(contractions))
+    require(counts == {8: 156, 12: 216} and retained[12] == total,
+            'Intermediate moment support determines the leading-stock resolution')
+    require(Q(9585, 10000) < retained[8]/total < Q(9586, 10000),
+            'The smaller intermediate box loses more than four percent of the exact stock')
+    return total, dict(quartets=len(contractions), minimum_contraction=min(contractions),
+                       intermediate_cutoffs={cutoff: dict(quartets=counts[cutoff],
+                           stock=str(retained[cutoff]), fraction=str(retained[cutoff]/total))
+                           for cutoff in retained})
 
 
 def check():
