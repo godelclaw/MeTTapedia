@@ -40067,3 +40067,180 @@ viscous histories, including the independently checked original unit
 stock. The output retains exact rational coefficients and the complete
 cancelled time profile. These results are exact algebra and analytic
 coefficient identification, not new Lean certificates.
+
+## A cancelled first return still leaves a finite original payment
+
+The next complete return has a strictly NEGATIVE integrated coefficient
+at the cancellation ratio above. Consequently the original cubic-pressure
+stock pays this fixed shape for every time at sufficiently small amplitude.
+This is a positive result for an actual history that has early depletion
+and later recovery. It is not a payment theorem for arbitrary amplitudes.
+
+### Exact evaluation of the required history
+
+`pressure_moment_observation.py` evaluates only the auxiliary moment modes
+needed by the requested mean coefficients, while retaining the COMPLETE
+physical velocity and pressure at the required amplitude orders. This is
+an exact finite-order observation, not a closed finite-mode fluid model.
+
+For moment order j and amplitude degree n, its equation contains transport
+by u_a against the lower degree n-a, and pressure sources g_b against
+moment order j-1 and degree n-b. A requested output mode q needs every
+parent mode q-k for each source mode k. Starting with all modes paired
+with pressure in the final means, the routine closes the needed sets
+backward under both kinds of edge. Transport strictly decreases amplitude
+degree; a pressure edge also decreases moment order. The heat equation
+preserves each Fourier mode.
+
+Induction on moment order and then amplitude degree proves that every
+retained mode has the same source and zero original initial value as in
+the full recurrence. Its heat solution is therefore identical. Every
+requested mean uses only retained modes. The expansion is about zero
+velocity; a nonzero background is explicitly rejected because it requires
+a different dependency argument. No later interval restarts the moments.
+
+The independent checks compare every degree-12 and degree-14 time
+coefficient with the full, unfiltered recurrence for two parent choices.
+An established orthogonal degree-16 fixture checks both its initial time
+coefficient and its exact integrated value. All exponential-polynomial
+time dependence is retained; there is no time grid in this calculation.
+
+For b=c=1, the normalized degree-16 coefficient is quadratic in a^2.
+This follows from the same analytic divisibility, translation symmetries
+and homogeneous degree used for the previous return. Three parent values
+identify the quadratic. A fourth unused value agrees with EVERY time
+coefficient, not just the infinite-time limit.
+
+Let R be the exact cancellation ratio from the preceding section and put
+U_* = U_(sqrt(R),1,1). For viscosity one and initial datum epsilon U_*,
+write the complete expansion as
+
+```text
+Phi_epsilon(t)/R^2
+ = epsilon^12 A(t) + epsilon^14 B_*(t)
+   + epsilon^16 C_*(t) + epsilon^18 W_epsilon(t).
+```
+
+The exact calculation gives
+
+```text
+lim C_*(t) = Gamma,
+-10264/10^19 < Gamma < -10263/10^19,
+Gamma approximately -1.0263540882882232e-15.
+```
+
+The earlier B_* has zero limit and a strictly negative late tail.
+The additional coefficient C_* is the complete next return, including
+changed velocity, canonical pressure, transport, diffusion and the joint
+conditional moments. It is not a square of an isolated favorable term.
+
+### Actual all-time payment at the cancellation shape
+
+For this fixed original shape, the existing complex small-data NS
+construction and triangular moment equations give a uniform analytic
+amplitude expansion on the entire half-line. On a sufficiently small
+amplitude disc, the decaying velocity and pressure majorants bound the
+moment equations uniformly in time. Their even amplitude symmetry and
+Cauchy remainder then give
+
+```text
+sup_(t>=0) |W_epsilon(t)| <= M.
+```
+
+As in (834), the complex extension is through the polynomial moment
+PDEs, not a nonholomorphic modulus. The radius and M are fixed from the
+original shape and viscosity. They are not assumed bounds on an unknown
+large-data solution. All higher generated parents remain in the remainder.
+
+Put gamma=-Gamma>0. The explicit coefficient limits select a finite T0
+such that B_*(t)<0 and C_*(t)<=-gamma/2 for every t>=T0. Choose epsilon
+inside the analytic radius with epsilon^2 M<=gamma/4. Then on that tail,
+
+```text
+Phi_epsilon(t)/R^2
+ <= epsilon^12 A(t) - (gamma/4) epsilon^16
+ < epsilon^12 alpha.
+```
+
+On [0,T0], let delta=alpha-A(T0)>0. The strict gap follows from the
+previously checked increasing forecast and its positive remaining tail.
+Let M_B and M_C bound the absolute coefficient functions on this compact
+interval. They can be bounded directly from the finite exponential
+polynomials. Further require
+
+```text
+epsilon^2 M_B + epsilon^4 M_C + epsilon^6 M <= delta.
+```
+
+This pays the whole compact interval as well. Consequently there is a
+fixed epsilon0>0 such that the ACTUAL unforced solution satisfies
+
+```text
+Phi_epsilon(t) <= R^2 epsilon^12 alpha,
+0 < |epsilon| <= epsilon0,             every t>=0.
+```
+
+The proof uses no sign assumption for B_* at intermediate times. Later
+recovery is allowed; the complete remaining history is paid. The amplitude
+threshold is not evaluated numerically and may be very small.
+
+Restoring arbitrary viscosity nu>0 and original datum lambda U_* gives
+
+```text
+Phi_(lambda,nu)(t) <= R^2 lambda^12 alpha/nu^8,
+0 < |lambda| <= epsilon0 nu,           every t>=0.
+```
+
+There is also an exact scale transfer. For any positive integer kappa,
+the periodic datum `lambda U_*(kappa x)` has the bound
+
+```text
+Phi_(lambda,nu,kappa)(t) <= R^2 lambda^12 alpha/(nu^8 kappa^8),
+0 < |lambda| <= epsilon0 nu kappa,     every t>=0.
+```
+
+Indeed `u(t,x)=nu kappa v(nu kappa^2 t,kappa x)`, where v has viscosity
+one and initial amplitude epsilon=lambda/(nu kappa). The transformed
+stochastic path has the same viscosity-one law, and its pressure impulse
+is multiplied by nu kappa. The integer covering of the torus preserves
+the normalized spatial average, so the fourth moment is multiplied by
+(nu kappa)^4. This gives an unbounded frequency family with the same
+dimensionless smallness requirement; it does not remove that requirement.
+
+### An adjacent family and the remaining boundary
+
+The preceding joint-parent calculation also yields a family statement.
+For any fixed abc nonzero with
+
+```text
+beta(a,b,c) = beta_a a^2 + beta_b b^2 + beta_c c^2 < 0,
+```
+
+the complete first correction tends to a strictly negative number. Its
+uniform degree-16 remainder is absorbed on a late tail, and the positive
+forecast gap pays the remaining compact interval exactly as above.
+Thus the original leading stock `(abc)^4 lambda^12 alpha/nu^8` pays every
+time for sufficiently small |lambda|/nu, with a threshold allowed to
+depend on the fixed shape. The new degree-16 calculation includes the
+specific equality case a^2=R, b=c=1. It does not classify the entire
+beta=0 boundary.
+
+For beta>0, the same uniform expansion instead makes the original
+leading stock insufficient at a finite time for sufficiently small
+nonzero amplitude. This concerns that exact allowance; a larger
+full-datum stock remains possible. The first integrated correction
+therefore separates two genuine payment regimes within this family,
+while the equality boundary requires the next complete return.
+
+The actual-flow transfer and all-time payment above are ANALYTIC,
+supported by exact algebra. They are not new Lean certificates and do
+not discharge the arbitrary-data signed-renewal hypothesis. The small-data
+solution construction is established independently of this pressure payment.
+
+Run `python3 -O labs/pressure_oblique_next_return.py --fixtures` for the
+independent recurrence checks. The command without flags computes all
+four parent cases and the cancellation result. For separate computations,
+`--a 1` through `--a 4` produce JSON records; `--assemble` takes those four
+filenames and checks the full polynomial reconstruction. Saved records
+must come from those computations; assembly alone is not an independent
+verification of the underlying NS coefficients.
