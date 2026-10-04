@@ -39861,3 +39861,13 @@ propagated quantities and inherited tail output. The amplitude-eight
 complete-polynomial feasibility run remains a separate calculation with
 unenclosed operator coefficients; this helper does not upgrade its old
 records into certificates.
+
+The arithmetic operator now also stores physical transform centers as
+owning real arrays and releases each advection coefficient after its last
+residual consumer. The complete spatial support, sixteen residual time
+coefficients and every error radius remain present. Independent rational
+operator and field fixtures agree exactly with the previous implementation.
+A complete small oblique interval also gives identical coefficient centers,
+radii, field majorants, reconstructed endpoint balls and final norm
+enclosures. This storage change does not alter the arithmetic model or
+certify the stronger amplitude-eight history by itself.

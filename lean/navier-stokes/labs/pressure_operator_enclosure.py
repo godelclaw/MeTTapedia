@@ -136,7 +136,8 @@ class OperatorEnclosure:
 
     def physical(self, a):
         center, radius = self.fft.physical(resize(a.center, self.fft.n), a.radius)
-        return Ball(center, radius, True)
+        # Retain real storage only; the exact target and radius are unchanged.
+        return Ball(center.copy(), radius, True)
 
     def spectral(self, a, quadratic=False):
         center, radius = self.fft.fourier(a.center, a.radius)
@@ -239,6 +240,7 @@ class OperatorEnclosure:
             metadata['majorants'] = self.reference_bounds(fields['u'], pressure,
                                                           gradients['u'][0], endpoints, raw)
         del gradients
+        del physical['u']
         gp = [self.physical(a) for a in pressure]
         output, errors = [], {key: [] for key in ('epsilon0', 'epsilon1', 'rI', 'rQ', 'rT', 'rPhi')}
         norm_key = {'u': 'epsilon0', 'I': 'rI', 'Q': 'rQ', 'T': 'rT'}
@@ -271,6 +273,8 @@ class OperatorEnclosure:
                 else:
                     value = Ball(np.zeros(row[..., block].shape, complex), 0.)
                 row[..., block] = value.center
+                if k < 11:
+                    advection[key][k] = None
                 radius = value.radius
                 if key == 'u':
                     errors['epsilon1'].append(mul(sqrt_upper(Q(12*self.band**2)), radius))
