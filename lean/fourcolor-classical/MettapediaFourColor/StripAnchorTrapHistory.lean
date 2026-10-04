@@ -1,4 +1,5 @@
 import MettapediaFourColor.StripAnchorTrap
+import MettapediaFourColor.StripGuardedOrbit
 
 /-!
 # Arbitrary histories at the physical anchor trap
@@ -61,37 +62,8 @@ def Guard (C D : exterior.Coloring Color) : Prop :=
 theorem pointwise_stays {C D : exterior.Coloring Color} (hc : Orbit C)
     (a b : Color) (hp : ∀ v, D v = C v ∨ D v = Equiv.swap a b (C v))
     (guard : Guard C D) : Orbit D := by
-  obtain ⟨g,hg⟩ := hc
-  have hp' : ∀ v, rename g.symm D v = state 0 v ∨
-      rename g.symm D v = Equiv.swap (g.symm a) (g.symm b) (state 0 v) := by
-    intro v
-    rcases hp v with h | h
-    · left
-      change g.symm (D v) = values 0 v
-      rw [h,hg v,Equiv.symm_apply_apply]
-    · right
-      change g.symm (D v) = _
-      rw [h,g.symm.injective.map_swap,hg v,Equiv.symm_apply_apply]
-      rfl
-  rcases base_barrier (g.symm a) (g.symm b) (rename g.symm D) hp' with good | bad
-  · obtain ⟨k,hk⟩ := good
-    refine ⟨k.trans g,fun v => ?_⟩
-    have h := congrArg g (hk v)
-    change g (g.symm (D v)) = g (k (values 0 v)) at h
-    change D v = g (k (values 0 v))
-    simpa only [Equiv.apply_symm_apply] using h
-  · have noFull : ¬ Full (read D) := by
-      have hn := bad.1
-      change ¬ Full (fun i => g.symm (read D i)) at hn
-      simpa only [full_map] using hn
-    have small : (choices (read D)).card < 4 := by
-      have hn := bad.2
-      change (choices (fun i => g.symm (read D i))).card < 4 at hn
-      simpa only [count_map] using hn
-    have count := (orbit_profile ⟨g,hg⟩).2
-    rcases guard with done | more
-    · exact False.elim (noFull done)
-    · omega
+  exact StripGuardedOrbit.pointwise_stays port (state 0) 4 base_profile base_barrier
+    hc a b hp guard
 
 /-- A step may contain any finite number of switches of its selected pair. -/
 def PreservesChoices (C D : exterior.Coloring Color) : Prop :=

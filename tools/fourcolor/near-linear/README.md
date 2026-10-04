@@ -1,5 +1,43 @@
 # Near-linear Four Colour catalogue bridges
 
+## A guarded-choice trap on a small spherical triangulation
+
+[`StripStrongAnchorTrap`](../../../lean/fourcolor-classical/MettapediaFourColor/StripStrongAnchorTrap.lean)
+proves the same policy obstruction on a 24-vertex sphere whose degrees lie
+between five and seven. Its induced 16-vertex exterior surrounds the exact
+D0099 core, with complete source stars and ordered ports. The initial
+colouring has four joint anchor choices after omitting one non-anchor core
+vertex. Any fixed-pair phase either remains in its full palette orbit or
+loses such choices without extending. Consequently any finite history
+which allows completion but otherwise preserves the count cannot finish.
+
+[`StripGuardedOrbit`](../../../lean/fourcolor-classical/MettapediaFourColor/StripGuardedOrbit.lean)
+proves this history implication once, for an arbitrary graph and number of
+phases. Both this example and the earlier twelve-vertex exterior consume
+it. The endpoint check uses six colour pairs and at most four component
+bits; no table of long histories is supplied.
+
+Two actual component switches escape. The first exchanges colours zero
+and one on six exterior vertices and reduces the joint choices from four
+to three. The second exchanges zero and two at the newly isolated port one.
+A reconstructed witness then colours all 24 vertices. Thus the guarded
+strategy fails while a short compositional repair succeeds.
+
+The independent [audit](strip-strong-anchor-trap-audit.json) also examines
+all 257 simple cycles of lengths three through five in the actual oriented
+sphere. Every triangle and quadrilateral has an empty shore; each pentagon
+has at most one vertex on its smaller shore. **This complete short-cycle
+census is program evidence, not yet a Lean theorem.** Zero-charge flatness
+is not asserted. The result does not refute unrestricted repair or compact
+compositional proofs.
+
+Replay `lake build kernelStripStrongAnchorTrap` in the classical package
+and `python3 tools/fourcolor/near-linear/audit_strip_strong_anchor_trap.py`.
+The [receipt](strip-strong-anchor-trap-measurements.json) records kernel
+checks separately from the geometric census. No reduction, occurrence
+supply or catalogue deletion is credited. Coverage remains 633 entries
+and 629 original configuration certificates.
+
 ## Minimum degree five does not rescue the guarded anchor policy
 
 [`StripAnchorTrapTransport`](../../../lean/fourcolor-classical/MettapediaFourColor/StripAnchorTrapTransport.lean)

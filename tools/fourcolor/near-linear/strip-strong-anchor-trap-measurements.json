@@ -1,0 +1,89 @@
+{
+  "classification": "CHECKED_SPHERICAL_POLICY_OBSTRUCTION_WITH_PROGRAM_CHECKED_SHORT_CYCLES",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripGuardedOrbit",
+      "source_sha256": "c98b61d401ea7617f22579bec62b69705d9bec6238d9bfff44261dcdf5fa6edd",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.133,
+      "olean_bytes": 117624,
+      "olean_sha256": "1c990ccfc5078b91adb928455ce050bb07dd36b1dc3ca96df361249c9902de41"
+    },
+    {
+      "module": "MettapediaFourColor.StripAnchorTrapHistory",
+      "source_sha256": "71e18996d802bd7ffa65166b02399664658b44a818d6d078312c6596f6be43e7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 12.171,
+      "olean_bytes": 283752,
+      "olean_sha256": "012a7223100686195d1e67d34f47ab9bbc3bfc0abedf65311d4c7ce7d6fb3525"
+    },
+    {
+      "module": "MettapediaFourColor.StripAnchorTrapAudit",
+      "source_sha256": "e8027796433a757c297f5ae9228ebd05a5da96cd971df6d409857540b4c3479a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.845,
+      "olean_bytes": 2600,
+      "olean_sha256": "08c2ae5808c4243b028144778a7b1565311354e44941bd16435206e25dea09b6"
+    },
+    {
+      "module": "MettapediaFourColor.StripStrongAnchorTrap",
+      "source_sha256": "ba04cdf59a577876dd473f02f0bf98012f4845935bdbd9923e508c5df3fc1916",
+      "exit_code": 0,
+      "frontend_wall_seconds": 40.477,
+      "olean_bytes": 1479512,
+      "olean_sha256": "171eb259155798df1a766c949752d3959ae64e9b7499fe3b77cd10ea85080e09"
+    },
+    {
+      "module": "MettapediaFourColor.StripStrongAnchorTrapAudit",
+      "source_sha256": "40f1303e2acbaef1fab06e1a2b4808049fd42f138cf9e45bf3cc638f9955c245",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.404,
+      "olean_bytes": 2720,
+      "olean_sha256": "00dba8898e1b72b1e78cd2f4af71298482e285d9451292ed6caacd42a63954ed"
+    }
+  ],
+  "frontend_wall_seconds_total": 65.03,
+  "new_lean_source_bytes": 22341,
+  "fixture_bytes": 8012,
+  "audit_roots": 16,
+  "transitive_dependency_declarations": 11764,
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "shared_history_consumers": [
+    "StripAnchorTrap.pointwise_stays",
+    "StripStrongAnchorTrap.history_nonextension"
+  ],
+  "kernel_proved": [
+    "Arbitrary-graph palette covariance lifts one endpoint barrier to every finite guarded history.",
+    "Both physical trap examples consume this common invariant.",
+    "The new 24-vertex sphere has an induced 16-vertex exterior, exact D0099 core stars, and degrees five through seven.",
+    "No finite guarded history reconstructs an ambient colouring fixing its final exterior.",
+    "Two actual mixed-pair component switches reconstruct all 24 vertices, first reducing one-hole joint anchor choices from four to three."
+  ],
+  "program_evidence": [
+    "Independent direct omission search checks all 40 component batches under every palette permutation.",
+    "All 257 simple cycles of length three through five have the required small facial shore: empty below length five, at most one vertex at length five."
+  ],
+  "open": [
+    "Lean certification of the short-cycle census and its geometric interpretation.",
+    "A general progress law allowing preparatory loss of choices.",
+    "Occurrence supply, strict reduction, compact universal coverage and termination."
+  ],
+  "coverage_entries": 633,
+  "original_certificate_dependencies": 629,
+  "member_checks_replaced": 336,
+  "credited_compression": false,
+  "additional_catalogue_entries_removed": 0,
+  "additional_certificate_dependencies_removed": 0,
+  "whole_proof_kernel_seconds_saved": 0,
+  "replay_commands": [
+    "lake build kernelStripStrongAnchorTrap",
+    "lake build kernelStripAnchorPadding kernelComplete",
+    "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "python3 tools/fourcolor/near-linear/audit_strip_strong_anchor_trap.py"
+  ],
+  "evidence_record": "strip-strong-anchor-trap-audit.json"
+}

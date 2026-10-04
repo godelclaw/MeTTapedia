@@ -1351,7 +1351,7 @@ target kernelStripAnchorTrap pkg : Unit := do
         "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
         "--package", ".", "--output", ".lake/strip-anchor-trap",
         "--library-output", ".lake/build/lib/lean", "--modules",
-        "StripAnchoredExtension", "StripAnchorTrap", "StripAnchorTrapHistory",
+        "StripAnchoredExtension", "StripAnchorTrap", "StripGuardedOrbit", "StripAnchorTrapHistory",
         "StripAnchorTrapAudit"]
       cwd := pkg.dir
       env := env }
@@ -1367,5 +1367,20 @@ target kernelStripAnchorPadding pkg : Unit := do
         "--package", ".", "--output", ".lake/strip-anchor-padding",
         "--library-output", ".lake/build/lib/lean", "--modules",
         "StripAnchorTrapTransport", "StripAnchorPadding", "StripAnchorPaddingAudit"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay the shared guarded-orbit invariant and its spherical counterexample. -/
+target kernelStripStrongAnchorTrap pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-strong-anchor-trap",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripGuardedOrbit", "StripAnchorTrapHistory", "StripAnchorTrapAudit",
+        "StripStrongAnchorTrap", "StripStrongAnchorTrapAudit"]
       cwd := pkg.dir
       env := env }

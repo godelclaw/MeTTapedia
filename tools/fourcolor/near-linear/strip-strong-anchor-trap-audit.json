@@ -1,0 +1,115 @@
+{
+  "classification": "SPHERICAL_GUARDED_ANCHOR_TRAP_WITH_STRONG_CYCLE_CENSUS",
+  "source": "D0099",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue D0099 catalogue, MIT; source semantics from Gonthier/Emery.",
+  "whole_vertices": 24,
+  "exterior_vertices": 16,
+  "whole_degree_counts": {
+    "5": 15,
+    "6": 6,
+    "7": 3
+  },
+  "component_batches": 40,
+  "palette_only_batches": 12,
+  "palette_permutations_checked": 24,
+  "cycle_census": {
+    "vertices": 24,
+    "faces": 44,
+    "minimum_degree": 5,
+    "cycles_by_length": {
+      "3": 44,
+      "4": 66,
+      "5": 147
+    },
+    "shore_counts": [
+      {
+        "length": 3,
+        "side_vertices": [
+          0,
+          21
+        ],
+        "cycles": 44
+      },
+      {
+        "length": 4,
+        "side_vertices": [
+          0,
+          20
+        ],
+        "cycles": 66
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          0,
+          19
+        ],
+        "cycles": 132
+      },
+      {
+        "length": 5,
+        "side_vertices": [
+          1,
+          18
+        ],
+        "cycles": 15
+      }
+    ],
+    "obstructing_cycles": 0,
+    "first_obstruction": null
+  },
+  "escape": [
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "support": [
+        0,
+        1,
+        2,
+        10,
+        12,
+        14
+      ]
+    },
+    {
+      "pair": [
+        0,
+        2
+      ],
+      "support": [
+        1
+      ]
+    }
+  ],
+  "scores": [
+    [
+      1,
+      -4
+    ],
+    [
+      1,
+      -3
+    ],
+    [
+      0,
+      -1
+    ]
+  ],
+  "evidence": {
+    "lean": "Sphere rotation, minimum degree five, exact source stars, shared arbitrary-history obstruction and physical two-switch reconstruction.",
+    "program": "Exact omission costs; complete facial-shore census of all 257 simple cycles of length three through five."
+  },
+  "limits": [
+    "The short-cycle census has no Lean semantic bridge yet.",
+    "No zero-charge flatness premise is established.",
+    "Only the stated guarded policy is refuted; two unrestricted switches succeed.",
+    "No strict reduction, universal coverage or catalogue deletion is established."
+  ],
+  "fixture_sha256": "9267a00f9af83d9b5099c0f39b187911d5ad20e2bf20cce1cd0c85dcc6ede889",
+  "lean_sha256": "ba04cdf59a577876dd473f02f0bf98012f4845935bdbd9923e508c5df3fc1916",
+  "verifier_sha256": "837208c060bd49f4eda9f822c87c0cb3e207649282c7e5b5b2228c333af805cc"
+}
