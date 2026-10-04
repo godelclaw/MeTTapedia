@@ -1,0 +1,113 @@
+{
+  "evidence": "Independent finite replay; the corresponding statements are Lean checked.",
+  "fixture_sha256": "5a75824e403058be7153e043bd040fb2202624044a9c66d5c04fbeaa6b1e7968",
+  "ambient_vertices": 18,
+  "ambient_darts": 96,
+  "exterior_vertices": 11,
+  "exterior_edges": 19,
+  "same_initial_core_lists": true,
+  "initial_profile_masks": [
+    7,
+    1,
+    1,
+    3,
+    8,
+    1,
+    12
+  ],
+  "components": [
+    [
+      2,
+      4
+    ],
+    [
+      2
+    ]
+  ],
+  "after": [
+    [
+      0,
+      1,
+      3,
+      2,
+      0,
+      1,
+      3,
+      2,
+      3,
+      2,
+      1
+    ],
+    [
+      0,
+      1,
+      3,
+      2,
+      1,
+      3,
+      1,
+      2,
+      3,
+      2,
+      1
+    ]
+  ],
+  "after_profiles": [
+    [
+      7,
+      8,
+      1,
+      3,
+      1,
+      1,
+      12
+    ],
+    [
+      7,
+      1,
+      1,
+      3,
+      1,
+      1,
+      12
+    ]
+  ],
+  "first_reconstructed_colouring": [
+    0,
+    1,
+    3,
+    2,
+    0,
+    1,
+    3,
+    2,
+    3,
+    2,
+    1,
+    2,
+    3,
+    0,
+    1,
+    0,
+    0,
+    3
+  ],
+  "preparation_component": [
+    4,
+    5,
+    6
+  ],
+  "physical_history_lengths": [
+    1,
+    2
+  ],
+  "both_initial_colourings_repaired": true,
+  "second_conflict": {
+    "edge": [
+      12,
+      13
+    ],
+    "forced_colour": 0
+  },
+  "scope": "Failure of a deterministic rooted-switch update from core lists alone. No claim about impossibility of richer repair interfaces or compact coverage."
+}

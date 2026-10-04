@@ -1,5 +1,55 @@
 # Near-linear Four Colour catalogue bridges
 
+## Core lists preserve extension but lose a physical repair choice
+
+[The core-profile counterexample](../../../lean/fourcolor-classical/MettapediaFourColor/CoreProfileSwitchObstruction.lean)
+uses two colourings of the same eleven-vertex exterior in an
+[eighteen-vertex spherical triangulation](../../../lean/fourcolor-classical/MettapediaFourColor/CoreProfileSwitchGeometry.lean).
+The full D0092 core reading and the exact induced exterior are checked.
+The two colourings give identical available colours at each of the seven
+core vertices, hence the same joint relation of internal assignments.
+`extension_iff_relation` proves that this relation is sufficient for
+reconstructing a colouring when the exterior is held fixed.
+
+The same rooted operation behaves differently:
+
+```text
+same seven core lists; swap colours 0 and 3 at boundary vertex 2
+             /                                      \
+    component {2,4}                             component {2}
+             |                                      |
+    full colouring exists                  adjacent core vertices
+                                           both forced to colour 0
+```
+
+`no_deterministic_quotient` consumes the shared GSLT nonfactorization
+criterion: the updated core profile cannot be computed from the old
+profile alone. Even whether the result extends is undetermined by that
+summary. This is a concrete source-patch instance of the distinction
+between static extension data and physical repair dynamics. It does not
+supersede the earlier, different obstruction for current boundary words
+and component partitions in `KempeBoundaryObservation`.
+
+There is a constructive repair. In the second colouring, switching colours
+1 and 3 on the component `{4,5,6}` yields the first colouring. The successful
+0/3 switch then applies. [The preparation theorem](../../../lean/fourcolor-classical/MettapediaFourColor/CoreProfilePreparedRepair.lean)
+composes the actual component witnesses through the existing GSLT history
+type and reconstructs the full colouring. The two inputs use one and two
+physical steps respectively; no repair search is repeated on application.
+
+These are two specified colourings, not arbitrary-exterior reducibility
+or a geometric supply theorem. The example is not asserted to satisfy
+minimal-counterexample connectivity restrictions. No catalogue entry or
+original certificate is removed, and no impossibility of a richer
+compositional proof is claimed. The [receipt](core-profile-switch-measurements.json)
+records the small finite fixture, dependency audit and build costs.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_core_profile_switch.py
+cd lean/fourcolor-classical
+lake build MettapediaFourColor.CoreProfileSwitchAudit
+```
+
 ## A composed repair covers all eight three-run choices
 
 [ThreeBlockRepairTransfer](../../../lean/fourcolor-classical/MettapediaFourColor/ThreeBlockRepairTransfer.lean)
