@@ -39792,3 +39792,72 @@ magnitude) in the tested fixture. Running
 `python3 -O labs/pressure_history_slabs.py` checks the full polynomial
 against an independently evaluated operator, including all pressure-moment
 slots and off-node residual values.
+
+### Original oblique data and a reconstructed receiver
+
+`pressure_history_certificate.py --oblique-amplitude A` now applies the
+complete arithmetic enclosure to the datum
+
+```text
+u0 = A*(sin y-4sin z, sin z, sin(x+4y)),
+I0 = Q0 = T0 = Phi0 = 0,       kinetic energy = 19 A^2/4.
+```
+
+The helper `pressure_oblique_certificate.py` checks the original Fourier
+coefficients exactly and rejects altered initial fields or preloaded
+pressure moments. Subsequent intervals still share all sixteen stored
+endpoint fields. The relative-vorticity comparison subdivides its scalar
+step when necessary, carrying the previous velocity errors, pressure
+moments and trajectory costs into each subinterval. The reciprocal
+example's fixed small-gradient tail is not applied to this different
+datum. No general oblique tail theorem is added here.
+
+The observed generated receiver is
+
+```text
+a(u) = 2 mean(u_3 sin x),       |a(u)-a(v)| <= sqrt(2) ||u-v||_2,
+v = PH(raw),
+a(v) = Im raw(-1,0,0)_3 - Im raw(1,0,0)_3.
+```
+
+Here the raw Fourier coefficients are normalized stored dyadics, H is
+Hermitian reconstruction, and P is the Leray projection with zero mean.
+At this particular mode, P fixes the third component. Thus the displayed
+center is an exact rational number even if the raw endpoint is not
+Hermitian. Its error interval is rounded outward using the physical L2
+comparison. The factor sqrt(2) is sharp: a vertical sine perturbation
+attains the corresponding Parseval bound. This observation is of the
+same reconstructed velocity used by the residual enclosure.
+
+An adversarial fixture has raw positive-mode coefficient 7-3i and
+negative-mode coefficient 11+5i. The reconstructed sine coefficient is
+8; reading only minus twice the positive imaginary part would give 6.
+Additional longitudinal coefficients and the removed mean cannot affect
+this particular receiver. The fixture explains why the conjugate partner
+must be retained; it is not evidence of such a discrepancy in the
+already tested nearly Hermitian numerical histories.
+
+The complete enclosure consumer passes two consecutive small intervals
+with A=1/4, viscosity one, grid 16, integrator step 1/8192 and interval
+1/4096. At time 1/2048 its physical pressure fourth-moment upper bound is
+1.49746e-33 and its H1 upper bound is 1.04138. Its receiver interval still
+contains zero. This checks the original-data, reconstruction and inherited
+comparison path on actual finite-prefix bounds under the existing
+analytic and arithmetic assumptions. It does not establish the stronger
+amplitude-eight receiver sign, its proposed stock payment, or an
+arbitrary-data history estimate. No new Lean declaration is involved.
+
+Reproduce the exact checks and the small full-operator gate with:
+
+```sh
+python3 -O labs/pressure_oblique_certificate.py
+python3 -O labs/pressure_history_certificate.py --prefix --n 16 --nu 1 \
+  --dt .0001220703125 --h .000244140625 --final .00048828125 \
+  --oblique-amplitude .25
+```
+
+The existing reciprocal scalar checks retain exactly the same fourteen
+propagated quantities and inherited tail output. The amplitude-eight
+complete-polynomial feasibility run remains a separate calculation with
+unenclosed operator coefficients; this helper does not upgrade its old
+records into certificates.

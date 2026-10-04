@@ -174,19 +174,26 @@ def digest(a):
     return hashlib.sha256(a.tobytes(order='C')).hexdigest()
 
 
-def run(n, nu, dt, h, final):
+def run(n, nu, dt, h, final, *, oblique_amplitude=None):
     require(n >= 12 and n % 2 == 0 and min(nu, dt, h, final) > 0,
             'Even retained grid and positive physical/time parameters')
     steps, slabs = round(h/dt), round(final/h)
     require(steps >= 1 and slabs >= 1 and steps*Q(dt) == Q(h)
             and slabs*Q(h) == Q(final), 'Exact integral time steps and consecutive slabs')
-    flow, operator = make_flow(n, nu, 1.), OperatorEnclosure(n)
+    if oblique_amplitude is None:
+        flow = make_flow(n, nu, 1.)
+        datum_name = '(sin y+sin z,sin x,sin x)'
+    else:
+        import pressure_oblique_certificate as oblique
+        flow = oblique.make_flow(n, nu, oblique_amplitude)
+        datum_name = str(oblique_amplitude)+'*(sin y-4sin z,sin z,sin(x+4y))'
+    operator = OperatorEnclosure(n)
     state, controls = flow.initial.copy(), initial_controls()
     first, second = jets(flow, state)
     previous, maximum_phi = None, 0.
     start = time.time()
     yield dict(n=n, nu=nu, dt=dt, h=h, final=final,
-               datum='(sin y+sin z,sin x,sin x)',
+               datum=datum_name,
                scope='Complete interval and arithmetic enclosures; analytic comparison, not Lean-certified')
     for slab in range(slabs):
         initial, f0, j0 = state.copy(), first, second
@@ -195,7 +202,10 @@ def run(n, nu, dt, h, final):
         first, second = jets(flow, state)
         raw = [a/n**3 for a in bernstein(initial, state, f0, first, j0, second, h)]
         if previous is None:
-            initial_identity(raw[0])
+            if oblique_amplitude is None:
+                initial_identity(raw[0])
+            else:
+                oblique.initial_identity(raw[0], oblique_amplitude)
         else:
             require(np.array_equal(previous, raw[0]), 'Every field shares its exact stored interval endpoint')
         initial_hash, final_hash = digest(raw[0]), digest(raw[-1])
@@ -205,7 +215,10 @@ def run(n, nu, dt, h, final):
         del residual
         row = dict(metadata.pop('majorants'), **{k: v['bound'] for k, v in bounds.items()})
         try:
-            controls = propagate(controls, row, h, nu)
+            if oblique_amplitude is None:
+                controls = propagate(controls, row, h, nu)
+            else:
+                controls, substeps = oblique.propagate_substeps(controls, row, h, nu)
         except (ArithmeticError, OverflowError) as ex:
             yield dict(time=rational_upper((slab+1)*Q(h)), status='comparison failed',
                        reason=str(ex), row=row, previous_control=controls, elapsed=time.time()-start)
@@ -218,7 +231,10 @@ def run(n, nu, dt, h, final):
                       initial_endpoint_sha256=initial_hash, final_endpoint_sha256=final_hash,
                       actual_phi_upper=upper, maximum_actual_phi_upper=maximum_phi,
                       actual_final_H1_upper=gradient, elapsed=time.time()-start)
-        if nu == .25 and gradient <= 1/64 and maximum_phi <= 4:
+        if oblique_amplitude is not None:
+            record['receiver'] = oblique.receiver_interval(raw[-1], controls['X'])
+            record['scalar_substeps'] = substeps
+        if oblique_amplitude is None and nu == .25 and gradient <= 1/64 and maximum_phi <= 4:
             record['tail'] = fixed_tail(gradient, maximum_phi)
             yield record
             yield dict(status='original heat stock paid for all time', elapsed=time.time()-start)
@@ -236,10 +252,13 @@ if __name__ == '__main__':
     parser.add_argument('--dt', type=float, default=1/128)
     parser.add_argument('--h', type=float, default=1/16)
     parser.add_argument('--final', type=float, default=1/8)
+    parser.add_argument('--oblique-amplitude', type=float,
+                        help='Use the oblique datum and inherited relative-vorticity comparison')
     args = parser.parse_args()
     arithmetic_check()
     if args.prefix:
-        for record in run(args.n, args.nu, args.dt, args.h, args.final):
+        for record in run(args.n, args.nu, args.dt, args.h, args.final,
+                          oblique_amplitude=args.oblique_amplitude):
             print(json.dumps(record), flush=True)
     else:
         print(json.dumps(scalar_checks(), indent=2))
