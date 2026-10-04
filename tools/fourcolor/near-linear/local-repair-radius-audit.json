@@ -1,0 +1,93 @@
+{
+  "classification": "CHECKED_LOCALITY_OBSTRUCTION_AND_PROGRAM_SWITCH_BOUND",
+  "source_geometry": {
+    "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "upstream_path": "D/D0092.conf",
+    "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "license": "MIT; see LICENSE",
+    "license_sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+  },
+  "radius_obstruction": {
+    "vertices": 162,
+    "exterior_vertices": 155,
+    "ball_sizes": [
+      7,
+      18,
+      35,
+      57
+    ],
+    "triangle_refutation": {
+      "nodes": 5,
+      "triangle_steps": 81,
+      "branches": 2,
+      "leaves": 3
+    },
+    "centre_charges": [
+      0,
+      0,
+      0
+    ],
+    "short_cycles_checked": 1815,
+    "lean_graph_and_colours_match": true,
+    "endpoint_fixing_radius_three": true,
+    "physical_history_confined_to_radius_three_claimed": false
+  },
+  "three_switch_obstruction": {
+    "vertices": 162,
+    "exterior_vertices": 155,
+    "ambient_degrees": {
+      "5": 60,
+      "6": 54,
+      "7": 48
+    },
+    "short_cycles_checked": 1820,
+    "obstructing_short_cycles": 0,
+    "source_core_stars_and_rotations_preserved": true,
+    "original_centre_charges": [
+      -4,
+      0,
+      -2
+    ],
+    "minimum_physical_steps": 3,
+    "new_palette_classes_by_depth": [
+      24,
+      378
+    ],
+    "history": [
+      [
+        0,
+        1,
+        2,
+        67
+      ],
+      [
+        0,
+        2,
+        0,
+        45
+      ],
+      [
+        0,
+        3,
+        6,
+        49
+      ]
+    ],
+    "kernel_checked": false
+  },
+  "pins": {
+    "local-repair-radius-example.json": "386c49c1e6032648c9f1ccbea5742b2b5bce6cf72aa0c6372e7de494d3330825",
+    "three-switch-strong-example.json": "0d051b9a242f9d757da9a4d9e3ad83cbce264934f4b8708b74ae2828bfc4428d",
+    "LocalRepairRadius.lean": "073ef82fd7178183f736fa7256b28b2e19d63ebbeed4c8ce7bf88bca77f7ec25"
+  },
+  "verifier_sha256": "54cb268d8882993fb5a5ac92826e1ea3d4eabdd25da26a8b609c298182601725",
+  "limits": [
+    "No unbounded repair-radius or switch-count lower bound.",
+    "The obstructions concern the supplied starting colourings; other starting colourings or selected pieces remain possible.",
+    "The modified three-switch sphere need not retain the original flat centres.",
+    "No failure of adaptive larger-region repair, alternative reduction, or compact compositional proofs.",
+    "No whole-ball flatness, minimal-counterexample status, occurrence supply, or catalogue reduction.",
+    "Spherical geometry and the three-switch lower bound remain independent program checks."
+  ]
+}

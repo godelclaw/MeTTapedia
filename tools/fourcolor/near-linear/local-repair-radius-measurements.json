@@ -1,0 +1,145 @@
+{
+  "classification": "CHECKED_RADIUS_TWO_ENDPOINT_OBSTRUCTION",
+  "source": {
+    "repository": "https://github.com/near-linear-4ct/reducible-configurations",
+    "revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+    "upstream_path": "D/D0092.conf",
+    "sha256": "cc8286c01ce19b57b793a4eb1b28633d66cd210ea2a313dd0ba3e7d07231ea14",
+    "license": "MIT; see LICENSE",
+    "license_sha256": "13b55d75c9cafc3dd3d883fddfdce87ec62cb06a5162f80fad76fa3b0dc428c0"
+  },
+  "mathematics": {
+    "negative": "No full colouring of the explicit 162-vertex graph agrees with the supplied proper punctured colouring outside the radius-two neighbourhood of the seven deleted vertices. Every reconstruction changes a vertex farther than two edges from every deleted vertex.",
+    "positive": "A full proper colouring exists that agrees with the initial exterior everywhere outside radius three. This is an endpoint, not a claimed physical history confined to that ball.",
+    "proof": "Two branching choices, three contradictory leaves, 81 local triangle deductions. Finite incidence and colour checks; no colouring-search or SAT oracle is used by Lean.",
+    "geometry": "The program identifies the Lean graph and colours with the spherical D0092 fixture, checks degrees 5..7, three flat centres and all 1,815 short cycles. Those geometry assertions remain program evidence.",
+    "additional_program_obstruction": "A modified sphere with degrees 5..7, the same source stars and cyclic order, and no obstructing short cycles needs exactly three physical switches. All paths of length at most two are checked modulo global palette symmetry; an explicit three-step path reconstructs a whole colouring.",
+    "limits": [
+      "No unbounded repair-radius or switch-count lower bound.",
+      "The modified three-switch sphere has original-centre charges -4,0,-2; it does not refute a bound under stronger flatness assumptions.",
+      "No claim against adaptive larger regions, different decompositions, or compact compositional Four Colour proofs.",
+      "Occurrence supply and coverage remain open.",
+      "Other supplied exterior colourings or different selected pieces remain possible."
+    ]
+  },
+  "audit": {
+    "roots": 8,
+    "dependency_declarations": 3473,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "repair_tables_used": false
+  },
+  "modules": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.LocalRepairRadius",
+      "source_bytes": 43900,
+      "source_sha256": "073ef82fd7178183f736fa7256b28b2e19d63ebbeed4c8ce7bf88bca77f7ec25",
+      "olean_bytes": 3047264,
+      "olean_sha256": "2735f462a74b055d028478aa7e975f9af752ee91e74e3948035cb88e65970917",
+      "frontend_seconds_rounded": 37.0
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.LocalRepairRadiusAudit",
+      "source_bytes": 2472,
+      "source_sha256": "12f3dbb9f07b0ef83944d8d9f410a29ca467e718cd204d9066f131ec2c8c6f20",
+      "olean_bytes": 3376,
+      "olean_sha256": "9d6e7b511da683a26adf63e74964ce650056e7ba96a2a9d614d20c26114e4e05",
+      "frontend_seconds_rounded": 2.2
+    }
+  ],
+  "new_lean_source_bytes": 46372,
+  "cost_scope": "Successful incremental frontend times rounded by Lake; imported libraries excluded. A finite obstruction proof, not a reduction in complete-proof kernel costs.",
+  "program": {
+    "verifier": "audit_local_repair_radius.py",
+    "results": "local-repair-radius-audit.json",
+    "radius_proof": {
+      "vertices": 162,
+      "exterior_vertices": 155,
+      "ball_sizes": [
+        7,
+        18,
+        35,
+        57
+      ],
+      "triangle_refutation": {
+        "nodes": 5,
+        "triangle_steps": 81,
+        "branches": 2,
+        "leaves": 3
+      },
+      "centre_charges": [
+        0,
+        0,
+        0
+      ],
+      "short_cycles_checked": 1815,
+      "lean_graph_and_colours_match": true,
+      "endpoint_fixing_radius_three": true,
+      "physical_history_confined_to_radius_three_claimed": false
+    },
+    "three_switch": {
+      "vertices": 162,
+      "exterior_vertices": 155,
+      "ambient_degrees": {
+        "5": 60,
+        "6": 54,
+        "7": 48
+      },
+      "short_cycles_checked": 1820,
+      "obstructing_short_cycles": 0,
+      "source_core_stars_and_rotations_preserved": true,
+      "original_centre_charges": [
+        -4,
+        0,
+        -2
+      ],
+      "minimum_physical_steps": 3,
+      "new_palette_classes_by_depth": [
+        24,
+        378
+      ],
+      "history": [
+        [
+          0,
+          1,
+          2,
+          67
+        ],
+        [
+          0,
+          2,
+          0,
+          45
+        ],
+        [
+          0,
+          3,
+          6,
+          49
+        ]
+      ],
+      "kernel_checked": false
+    }
+  },
+  "counts": {
+    "coverage_entries": 633,
+    "original_configuration_certificates": 629,
+    "replaced_member_checks": 336,
+    "new_entries_removed": 0,
+    "new_certificates_removed": 0,
+    "new_member_checks_removed": 0,
+    "whole_proof_kernel_savings_claimed": false
+  },
+  "gates": {
+    "new": "lake build Mettapedia.GraphTheory.FourColor.LocalRepairRadiusAudit",
+    "new_passed": true,
+    "main": "lake build FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint",
+    "main_passed": true,
+    "classical": "lake build kernelComplete",
+    "classical_passed": true
+  }
+}

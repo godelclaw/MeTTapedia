@@ -1,5 +1,54 @@
 # Near-linear Four Colour catalogue bridges
 
+## A repair must reach outside radius two
+
+[LocalRepairRadius](../../../lean/mettapedia/Mettapedia/GraphTheory/FourColor/LocalRepairRadius.lean)
+checks a proper colouring of a 155-vertex exterior obtained by deleting
+seven vertices from an explicit 162-vertex graph. No full colouring agrees
+with that exterior outside the radius-two neighbourhood of the deleted
+core. This rules out arbitrary recolouring confined to that neighbourhood,
+regardless of which Kempe commands are chosen or how long they run.
+
+The proof has two branching choices, three contradictory leaves and 81
+local triangle deductions. It checks the literal graph and initial
+colouring, and proves that every reconstruction changes a vertex farther
+than two edges from every deleted vertex. A separate full colouring keeps
+all vertices outside radius three fixed. The latter is an endpoint witness;
+no physical history confined to radius three is claimed.
+
+| Allowed neighbourhood | Total vertices, including the seven deleted | Full endpoint keeping its exterior fixed |
+| --- | ---: | --- |
+| Radius two | 35 | Impossible |
+| Radius three | 57 | Explicit checked witness |
+
+The [independent replay](local-repair-radius-audit.json) identifies the Lean
+graph with the existing spherical D0092 occurrence. Its degrees are 5–7,
+the three selected centres have zero charge, and all 1,815 short cycles
+satisfy the checked separation conditions. These geometric facts remain
+program evidence, separate from the Lean endpoint obstruction.
+
+The replay also checks a [modified exterior](three-switch-strong-example.json)
+requiring exactly three physical switches. Complete source stars and cyclic
+orders, degrees 5–7 and the short-cycle conditions are preserved. Exhaustive
+search through depth two visits 24 and 378 new complete-colouring classes
+modulo global palette permutations; none extends. The supplied three-switch
+history reconstructs a full colouring. This lower bound is program checked.
+The original centres now have charges `-4,0,-2`, so it does not refute a
+two-switch claim under stronger flatness assumptions.
+
+These results constrain fixed locality and step-count contracts. They do
+not establish unbounded lower bounds, failure of adaptive larger-region
+repair, or impossibility of a compact compositional proof. Other initial
+colourings and selected pieces remain possible. Coverage and
+complete-proof dependency counts are unchanged. The
+[receipt](local-repair-radius-measurements.json) records proof costs and scope.
+
+```sh
+python3 tools/fourcolor/near-linear/audit_local_repair_radius.py
+cd lean/mettapedia
+lake build Mettapedia.GraphTheory.FourColor.LocalRepairRadiusAudit
+```
+
 ## Physical repair counts survive clique attachments
 
 [CliquePhysicalLift](../../../lean/mettapedia/Mettapedia/GraphTheory/Kempe/CliquePhysicalLift.lean)
