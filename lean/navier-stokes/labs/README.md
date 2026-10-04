@@ -48830,3 +48830,197 @@ axis terms, all three diffusion contributions, kinetic energy, amplitude
 scaling, the flat-envelope limit and both absorption squares. Actual
 local existence, weighted integration, comparison and limiting arguments
 remain analytic. No Lean declarations or axioms change.
+
+## The generated pressure tail has a finite history payment
+
+`pressure_tail_history.py` separates an actual generated pressure component
+from the remaining history in (JP8). The leading distant potential field
+has an original-energy payment even when its coefficient changes sign.
+The same field shows that the squared relaxation (IP8) can be infinite
+while the original stock and signed pressure work are finite. These are
+analytic whole-space axisymmetric results with exact coefficient checks.
+
+### Identify the component from the complete fluid
+
+For an actual smooth unforced axisymmetric solution, let
+
+```text
+E_ij(t)=int_R3 u_i(t,x)u_j(t,x) dx,
+E(t)=trace(E_ij(t))<=E0,
+E_ij=diag(a,a,c), delta=c-a,
+A(t)=int_0^t delta(s) ds, A(0)=0.
+-E(t)/2<=delta(t)<=E(t), |A(t)|<=E0 t.                (PT1)
+```
+
+The zero off-diagonal entries and equal horizontal entries follow from
+rotation symmetry. The sign of delta is not prescribed. All components
+of velocity, including swirl, contribute to these moments.
+
+We reuse [Brandolese and Vigneron, Theorem 1.2](https://arxiv.org/html/0706.1489v1):
+for Schwartz initial data, the leading far velocity and
+pressure are determined by the integrated and instantaneous energy tensors.
+With canonical decaying pressure, `N(x)=1/(4pi|x|)`, and `rho=|x|`, their
+axisymmetric specialization is
+
+```text
+p_lead=delta(t) partial_zz N,
+u_lead=-A(t) grad(partial_zz N),
+p=p_lead+O_T(rho^-4), u=u_lead+O_T(rho^-5).          (PT2)
+```
+
+The rapidly decaying original heat flow is included in the remainder.
+Positive viscosity changes the actual energy history, but introduces no
+extra factor into these physical-time coefficients. The leading velocity
+is curl free and divergence free away from the origin. It is an exterior
+profile, not a separate global solution or a replacement for the core.
+
+Write `mu=z/rho`. The pressure and radial-quotient shapes are
+
+```text
+partial_zz N=G(mu)rho^-3, G(mu)=(3mu^2-1)/(4pi),
+F(r,z)=(partial_r partial_zz N)/r
+      =F_ang(mu)rho^-5, F_ang(mu)=3(1-5mu^2)/(4pi),
+m_lead=A(t)F(r,z), P_lead=delta(t)F(r,z).             (PT3)
+```
+
+Here m and P have the same definitions as (JP1). On any closed cone away
+from the axis, the actual m equals m_lead plus `O_T(rho^-6)`, while b is
+`O_T(rho^-6)`. For P, one also needs the differentiated pressure expansion.
+It follows directly from the canonical Newtonian integral: split the
+stress `u_i u_j` at distance rho/2, expand the separated kernel using its
+finite first spatial moment, and use local Taylor subtraction near the
+kernel singularity. The weighted smooth bounds give
+`grad p=delta grad(partial_zz N)+O_T(rho^-5)`.
+This supplies P on the cone; it is not an unjustified differentiation of
+an arbitrary big-O remainder.
+
+### The inherited density keeps its leading tail
+
+Let `h0=(1+rho^2)^(-s)` with s>5/2 and evolve the same density (JP2).
+On a compact smooth prefix from the Gaussian data below,
+
+```text
+h(t,x)=h0(x)+O_T(<x>^(-2s-2)),
+h(t,x)/h0(x) -> 1 as rho -> infinity.                (PT4)
+```
+
+Indeed, the equation for h-h0 has source
+`nu L5 h0-v.grad h0+2m h0`. Its diffusion term is of order
+`<x>^(-2s-2)`; velocity and m have at least fourth-order decay, so the
+other terms decay faster. Comparison with a time-dependent multiple of
+`(1+rho^2)^(-s-1)` bounds both signs of the difference. Bounded drift and
+potential on this prefix suffice for the comparison. Their constants
+justify (PT4); they are not claimed as an original-data continuation bound.
+A general fixed initial tail `h0~L rho^(-2s)` retains the same coefficient
+L>0 under the corresponding bounds.
+
+### A smooth flow makes the squared diagnostic infinite
+
+Take the complete Gaussian datum V in (IP1). Its energy tensor is exactly
+
+```text
+E_zz(0)=pi^(3/2)sqrt(2)/8,
+E_xx(0)=E_yy(0)=pi^(3/2)11sqrt(2)/64,
+delta(0)=-pi^(3/2)3sqrt(2)/64<0.                     (PT5)
+```
+
+Thus delta(t)<0 and A(t)<0 for all sufficiently small positive times.
+This conclusion uses continuity of the actual solution's energy tensor.
+It holds at every fixed positive viscosity.
+
+Use the s=10/3 density from (IP2), and the fixed smooth radial subtraction
+in (IP7). On the cone `|mu|<=1/4`, both angular coefficients in (PT3) stay
+away from zero: `F_ang>=33/(64pi)` and `-G>=13/(64pi)`. The subtraction
+`exp(-r^2/ell^2)p_axis(z)` is exponentially small there. Equations
+(PT2)--(PT5) therefore imply, for each sufficiently small t>0 and all
+sufficiently large rho on this cone,
+
+```text
+|m(t,x)|>=c_t rho^-5,
+|p_tilde(t,x)|>=c_t rho^-3,
+h(t,x)<=C_t rho^(-20/3),
+(sqrt(Q)/h)(p_tilde/r)^2 >= c_t rho^-3.               (PT6)
+```
+
+Physical shell volume supplies rho^2 d rho, so the nonnegative integral
+V_p in (IP8) diverges logarithmically. At time zero it is finite, because
+the initial velocity is Gaussian. The actual fluid remains smooth on the
+entire interval used here.
+
+In contrast R,W,D from (JP6) stay finite on a sufficiently short interval.
+The local weighted construction used for (IP3) bounds m,b and the needed
+space/time derivatives by `C_T <x>^-4/(1+r)`. The quotient equation bounds
+P in the same class. With h comparable to `<x>^(-20/3)`, bounded logarithmic
+derivatives and their corresponding differentiated bounds, the volume
+integrands have an integrable majorant `C_T <x>^-2/(1+r)^3`; the axis term
+has an integrable second-order bound in z. This is the same actual local
+integration argument, not a spatial integral of a truncated time series.
+
+The conical radial power of V_p is `rho^(3s-11) d rho`, whereas the leading
+signed work has power `rho^(3s-13) d rho`. The squared estimate has lost
+useful decay. The original s=3 observer is below the diagnostic threshold
+and is not refuted by (PT6). This result neither constructs a singularity
+nor refutes a full-datum allowance for the original signed work.
+
+### An explicit payment for the leading signed history
+
+Fix a physical radius R0>0 from the original datum, and use the inherited
+coefficient L in (PT4). Define the exterior leading-profile stock using
+`h_tail=L rho^(-2s)`, only on rho>R0. For 5/2<s<4,
+
+```text
+C_ang=int_S2 |F_ang|^3 dOmega
+     =27(75+2sqrt(5))/(175pi^2),
+C=C_ang R0^(3s-12) / [L^(3/2)(12-3s)],
+R_lead=int_(rho>R0) |m_lead|^3/h_tail^(3/2)=C|A|^3,
+W_lead=3C|A| A delta=R_lead'.                        (PT7)
+```
+
+For s=10/3, `C=C_ang/(2L^(3/2)R0^2)` is finite. This W_lead is exactly the
+spatial integral of the leading signed pressure pairing of (PT3), with
+its original tail coefficient. The full actual work is still W.
+
+For one prescribed horizon H, put
+
+```text
+B(t)=C[(|A(t)|+E0(H-t))^3-|A(t)|^3]>=0,
+B(0)=C(E0 H)^3,
+B'+W_lead<=0 almost everywhere on every prefix.      (PT8)
+```
+
+To verify this, set q=|A| and tau=H-t. Almost everywhere q'=v with
+v<=E0, including the standard almost-everywhere chain rule through zeros.
+Then `B'+W_lead=3C(q+E0 tau)^2(v-E0)<=0`.
+At t=H the correction is zero for every finite state A; no existence of
+the actual solution up to H is assumed in proving the prefix inequality.
+Equivalently, relax the observed anisotropy rate to any control in
+[-E0,E0]. Its reachable terminal magnitude is at most q+E0 tau. The
+actual fluid lies in that relaxation by (PT1); no claim that every such
+control is a realizable fluid, or an external force, is needed.
+
+The correction attaches to the actual physical stock:
+
+```text
+(R+B)'+D <= W-W_lead.                                (PT9)
+```
+
+Thus a bound on `int_0^T [W-W_lead-D/2]` gives the same continuation
+consumer as (JP8), with initial allowance increased by the explicit
+finite quantity C(E0 H)^3. A and the original E0,H are inherited across
+all temporal seams. Integrating (PT8) over successive segments telescopes;
+no new allowance is issued when the pressure coefficient changes sign.
+
+The residual contains the full interior work, the actual pressure/velocity
+remainders, their cross terms, and the difference between h and its leading
+tail. It is not assumed favorable or small. In particular, (PT2) does not
+provide a datum-fixed remainder bound uniformly toward an unknown terminal
+time. Paying this residual, and treating arbitrary non-axisymmetric and
+periodic flows, remain open. The result pays one physically identified
+history component; it does not prove the arbitrary-history budget.
+
+Run `python3 -O labs/pressure_tail_history.py`. Exact checks cover the full
+initial tensor, angular shapes, harmonicity, conical constants, spherical
+cubic integral, density diffusion order, radial exponents and nonnegative
+Bellman correction. The imported asymptotic theorem, local comparison,
+actual diagnostic divergence and continuation use remain analytic, not
+new Lean certificates. No Lean declarations or axioms change.

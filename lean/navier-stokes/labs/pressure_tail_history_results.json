@@ -1,0 +1,40 @@
+{
+  "moments": {
+    "Ezz_over_pi_three_halves": "sqrt(2)/8",
+    "Exx_over_pi_three_halves": "11*sqrt(2)/64",
+    "initial_delta_over_pi_three_halves": "-3*sqrt(2)/64",
+    "physical_bound": "-E(t)/2 <= delta(t)=Ezz(t)-Exx(t) <= E(t) <= E0",
+    "memory": "A(t)=integral_0^t delta(s) ds; abs(A(t))<=E0*t"
+  },
+  "geometry": {
+    "pressure_shape": "(-r**2 + 2*z**2)/(4*pi*(r**2 + z**2)**(5/2))",
+    "parent_shape": "3*(r**2 - 4*z**2)/(4*pi*(r**2 + z**2)**(7/2))",
+    "angular_cubic_integral": "(54*sqrt(5) + 2025)/(175*pi**2)",
+    "profile": "p_lead=delta(t)*partial_zz N; u_lead=-A(t)*grad(partial_zz N); m_lead=A(t)*F",
+    "leading_stock_coefficient": "cutoff**(3*exponent - 12)*(54*sqrt(5) + 2025)/(175*pi**2*L**(3/2)*(12 - 3*exponent))",
+    "scope": "The profile is used outside one fixed positive radius; all actual interior and remainder terms stay in the residual."
+  },
+  "tail_orders": {
+    "density": "h0=(1+R^2)^(-s); h(t)-h0=O_T(R^(-2s-2)) on a compact smooth prefix",
+    "pressure_square_radial_power": "3*exponent - 11",
+    "signed_work_radial_power": "3*exponent - 13",
+    "threshold": "s=10/3: V_p is infinite at every sufficiently small positive time for the actual coupled Gaussian datum, while R, W and D remain finite.",
+    "scope": "Actual asymptotics and comparison establish the lower bound; these algebraic checks alone do not certify a PDE solution. The original s=3 observer is not refuted by this tail test."
+  },
+  "payment": {
+    "correction": "B(t)=C*((abs(A(t))+E0*(H-t))^3-abs(A(t))^3)>=0",
+    "paid_work": "W_lead(t)=3*C*abs(A(t))*A(t)*delta(t)",
+    "inequality": "B_prime+W_lead<=0 almost everywhere",
+    "original_allowance": "B(0)=C*(E0*H)^3",
+    "physical_consumer": "(R+B)_prime+D <= W-W_lead",
+    "composition": "A and the original E0,H are inherited at every seam; integrated payments telescope.",
+    "limitation": "The complete pressure remainder W-W_lead and arbitrary-history continuation are not bounded here."
+  },
+  "source_sha256": {
+    "pressure_tail_history.py": "c66900509505240ed7c8d653beee1c68153b8258a69f0a5892c3e49e8cd2f267",
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b",
+    "circulation_source_reserve.py": "12366fd5dc83962c0f7deb40ebc42939bfcfb4d4d01249b61aca79537a96d926",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37"
+  }
+}

@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-tail history](labs/README.md#the-generated-pressure-tail-has-a-finite-history-payment)
+uses the established whole-space asymptotic profile to identify a generated
+pressure component from the actual energy tensor. An explicit nonnegative
+Bellman correction pays its complete signed history from the original
+energy, retaining the accumulated tensor across every segment. The full
+pressure remainder is still unpaid. The same analysis shows that the
+squared pressure diagnostic can become infinite on a smooth unforced flow
+while its original signed work stays finite. This failure concerns the
+exponent-10/3 density; the original exponent-three choice avoids it.
+The PDE arguments are analytic with exact algebraic checks, not new Lean
+certificates or an arbitrary-data regularity theorem.
+
 The [integrated pressure test](labs/README.md#whole-space-pressure-can-increase-the-joint-stock)
 shows that the joint strain/swirl stock can increase on an actual unforced
 history even after all viscous and axis losses, while kinetic energy falls.
