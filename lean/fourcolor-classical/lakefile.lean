@@ -1110,3 +1110,17 @@ target kernelTwoRoundRepair pkg : Unit := do
         "KempeFiniteDecoder", "StripTwoRoundRepair", "TwoRoundRepairAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay exact strip relations and their boundary-update obstruction. -/
+target kernelStripResponse pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-response",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripResponseSummary", "StripResponseAudit"]
+      cwd := pkg.dir
+      env := env }

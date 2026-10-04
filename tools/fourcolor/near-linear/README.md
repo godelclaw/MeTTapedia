@@ -1,5 +1,50 @@
 # Near-linear Four Colour catalogue bridges
 
+## Exact current relations can forget the response to a repair
+
+[`StripResponseSummary.terminal_iff`](../../../lean/fourcolor-classical/MettapediaFourColor/StripResponseSummary.lean)
+proves exact ear elimination for arbitrary boundary colours of D0099.
+Six binary joins retain common interior witnesses and every surviving
+edge constraint. Their terminal relation is inhabited exactly when the
+internal colouring constraints have a solution. Source adjacency and all
+boundary attachments are checked against the complete decoded graph.
+
+The same module proves `not_update_congruence`: two boundary colourings
+have identical evaluated relations at all six stages, yet the same
+boundary update makes one extend to the full source and the other fail.
+They differ only at boundary vertex 2, with indices starting at zero.
+
+```
+input edge trace       all six retained relations     after the same update
+11121232111            equal                          12121232121: extends
+12221232111            equal                          11221232121: cannot extend
+```
+
+The update adds colour 3 on boundary vertices 2 through 9. On the edge
+trace it switches precisely edges 1 and 9. Both inputs support the same
+noncrossing matching layout, and `same_chord_update` proves that switching
+this whole chord preserves each input's own chromogram. No particular
+physical exterior realizing the matching is constructed. The extending
+answer reuses an existing complete source colouring; the failure is
+proved from the empty terminal relation, including trace normalization.
+There is no new colouring-witness payload.
+
+This distinguishes two contracts for an interface: preserving extension
+at its current input, and preserving the response to future operations.
+The first does not imply the second. The obstruction concerns evaluated
+retained relations; the raw messages before intersection already differ.
+It does not rule out keeping the boundary observations, symbolic relation
+expressions, or another sufficient summary. In particular, the uniform
+elimination theorem remains available after a boundary update.
+
+Replay with `lake build kernelStripResponse`. The
+[kernel receipt](strip-response-measurements.json) records fourteen audited
+roots, standard axioms only, and about 10.2 seconds including imports.
+The [independent replay](audit_strip_response.py) compares exact ear
+elimination with a separate source-colouring search and checks the whole
+chord update. The result removes no catalogue dependency and establishes
+neither full source reducibility nor geometric supply.
+
 ## Two repair stages compose through the same exterior
 
 [`StripTwoRoundRepair.source_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripTwoRoundRepair.lean)

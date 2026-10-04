@@ -1,0 +1,79 @@
+{
+  "classification": "KERNEL_CHECKED_OBSTRUCTION_TO_EVALUATED_RELATION_SUMMARY",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.StripResponseSummary",
+        "source_sha256": "fc37ece50bbb7371ebb990f4970760674c7bfcbcbfcc2b2f6000a48743699ad7",
+        "exit_code": 0,
+        "frontend_wall_seconds": 6.533,
+        "olean_bytes": 649176,
+        "olean_sha256": "cd176f2bb8085ef8ccf0196aaf62545c62307a1f183d032986518bc8e7b4ebca"
+      },
+      {
+        "module": "MettapediaFourColor.StripResponseAudit",
+        "source_sha256": "5c4a8c2c4c8c5a4ee64ba78ba353e2bc7ae2e9b296484eeb0655ca4498bda365",
+        "exit_code": 0,
+        "frontend_wall_seconds": 3.667,
+        "olean_bytes": 2600,
+        "olean_sha256": "fbd61ac3457ae1a8e2f792c7631c94061c0be5124788ca0435cc84b9ec3bc94a"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripResponseSummary.lean",
+      "bytes": 9996,
+      "sha256": "fc37ece50bbb7371ebb990f4970760674c7bfcbcbfcc2b2f6000a48743699ad7"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripResponseAudit.lean",
+      "bytes": 3075,
+      "sha256": "5c4a8c2c4c8c5a4ee64ba78ba353e2bc7ae2e9b296484eeb0655ca4498bda365"
+    }
+  ],
+  "frontend_seconds_including_imports": 10.2,
+  "audit": {
+    "roots": 14,
+    "dependency_declarations": 4294,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "coversRec_used": false,
+    "interval_search_used": false
+  },
+  "proved": {
+    "exact_core_elimination_for_arbitrary_source_boundary": true,
+    "complete_source_edges_checked": true,
+    "complete_source_boundary_attachments_checked": true,
+    "identical_evaluated_retained_relations": 6,
+    "distinguishing_boundary_vertices": 1,
+    "opposite_full_source_extension_answers_after_same_update": true,
+    "whole_chord_update_preserves_each_chromogram": true,
+    "new_colour_witness_bytes": 0
+  },
+  "independent_program": "strip-response-audit.json",
+  "limits": [
+    "The source is D0099; arbitrary-width elimination or a repair strategy is not established by this module.",
+    "The two inputs have equal retained relations; raw messages differ.",
+    "The matching layout is shared, but its chromogram depends on the input. No common physical exterior is constructed.",
+    "Symbolic relations and richer summaries are not ruled out.",
+    "No geometric supply, strict reduction, whole-proof size or runtime saving is claimed."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0
+}
