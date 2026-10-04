@@ -42697,3 +42697,223 @@ python3 -O labs/pressure_gradient_certificate.py --prefix --n 48 --amplitude 2 -
 No Lean declarations or axioms change. These results neither extend the
 analytic small-amplitude theorem to all amplitudes nor pay arbitrary
 generated histories.
+
+## Retaining mixed pressure does not universally repair the original stock
+
+The preceding generated-self forecast fails while a total-pressure forecast
+can still succeed on the same geometry. The next test retains their joint
+information explicitly. Set v=exp(nu t Delta)u0, w=u-v as in (HR5), and
+write the scalar canonical pressures as
+
+```text
+s=p_w, m=polarized_pressure(v,w), p_u=p_v+m+s,
+q_theta=s+theta m,
+C_theta(T)=integral_0^T ||grad q_theta||2^2.           (JG1)
+```
+
+Theta changes an observation, not the fluid equation. It is first a real
+constant chosen from the original datum. For |theta|<=L, the omitted
+pressure has an original-data payment from (HR2):
+
+```text
+sqrt(C_u(T)) <=sqrt(C_theta(T))+B sqrt(H E1)
+              +4(1+L)A sqrt(H E0), T<=H.
+```
+
+For theta in[0,1], the sharper factor1 replaces1+L. This holds also for a
+spatially constant time-dependent theta(t) in that interval, simply by
+Minkowski and |1-theta|<=1. No derivative of theta is needed for this
+comparison alone. Deriving an evolution estimate for q_theta does require
+that derivative, as calculated below. Thus a paid joint observation remains
+a sufficient pressure-clock target for both existing continuation consumers.
+
+### An exact quadratic law for every constant weight
+
+At viscosity one, use the original family
+`U=(a sin y-m b sin z,b sin z,c sin(x+m y))` and u0=lambda U.
+All three tested shapes have a pressure-free heat history. Write Mj for
+the complete degree-j mixed-pressure coefficient and Sj for the complete
+degree-j self-pressure coefficient. In particular S3=0, S4=p_(V2), and
+S5=polarized_pressure(V2,V3). The degree-six stock is
+
+```text
+K_theta=theta^2 lambda^6 A6,
+A6=integral_0^infinity ||grad M3||2^2.
+```
+
+The next complete cost coefficient is a quadratic polynomial in theta:
+
+```text
+C_theta(infinity)=theta^2 lambda^6 A6+lambda^8 B(theta)
+                   +O(lambda^10(1+theta^2)),
+B(theta)=c0+c1 theta+c2 theta^2,
+c0=integral ||grad S4||2^2,
+c1=2 integral (grad M4 dot grad S4+grad M3 dot grad S5),
+c2=integral (||grad M4||2^2+2 grad M3 dot grad M5).    (JG2)
+```
+
+Every integral covers the entire viscous decay. The degree-seven profile
+vanishes identically. All velocity fields through degree four, their
+pressure outputs through degree five and their returns are retained.
+`joint_generated_pressure.py` checks reconstruction of the full pressure,
+the entire polynomial time profile at unused positive and negative weights,
+and the infinite-time integral by independent antiderivatives.
+
+| Original shape | c0 | c1 | c2 |
+|---|---:|---:|---:|
+| m=4, (a,b,c)=(1/4,1,1) | 1.486649678e-10 | 5.147422028e-11 | -5.582326393e-10 |
+| m=2, (a,b,c)=(1,1,1) | 5.454500509e-6 | 3.212009964e-5 | 6.157521780e-5 |
+| m=4, (a,b,c)=(1,1,1) | 1.212987867e-8 | 6.973035961e-8 | 1.394313437e-7 |
+
+Values in this table are approximations; all sign tests use the exact
+rationals in `joint_generated_pressure_results.json`.
+
+For the quarter-parent shape, B(1/2)>0, while B is strictly decreasing
+and negative throughout[3/5,1]. In fact
+`B(3/5)` is approximately-2.141425019e-11. The uniform small-data
+remainder gives an actual all-prefix payment by K_theta simultaneously
+for theta in[3/5,1], at sufficiently small nonzero lambda. Half retention
+instead fails at some finite time, for sufficiently small lambda.
+
+This repair has a specific mechanism: c1 is positive, so the mixed/self
+cross contribution raises the cost. The favorable term is c2, the complete
+return within the evolving mixed-pressure history. The calculation does
+not justify a generally favorable sign for mixed/self correlation.
+
+### Two shapes defeat every datum-chosen constant weight
+
+For each equal-parent shape above, let
+`D=c0 c2-c1^2/4` and `T=c0+c2`. Exact arithmetic gives c0,c2,D>0.
+The elementary identity
+
+```text
+T B(theta)-D(1+theta^2)
+ =(c0+(c1/2)theta)^2+((c1/2)+c2 theta)^2
+```
+
+proves `B(theta)>=eta(1+theta^2)` for every real theta, with eta=D/T>0.
+The certified eta is approximately1.162720933e-6 for m2 and
+3.138695450e-9 for m4. This covers all real constant weights, not just
+the sampled values or convex combinations.
+
+For clarity, the actual-flow remainder is uniform in this unbounded
+parameter. The global small-data holomorphic construction from (PG5)
+applies to the same original basis fields. Each of the three coefficients
+of the EXACT quadratic dependence on theta has an even, uniformly bounded
+amplitude expansion. Cauchy estimates therefore give fixed r,M>0 with
+
+```text
+|C_theta(infinity)-theta^2 lambda^6 A6-lambda^8 B(theta)|
+ <=M lambda^10(1+theta^2),  |lambda|<=r, theta real.  (JG3)
+```
+
+Choose `0<|lambda|<=r` and `M lambda^2<eta/2`. Then the same actual
+globally regular solution satisfies
+
+```text
+for every real constant theta,
+C_theta(infinity)>theta^2 lambda^6 A6.
+```
+
+Monotone accumulation gives a finite violating prefix for each theta.
+The violating time need not be uniform in theta. The weight may depend
+on the complete original datum and amplitude: uniformity in (JG3)
+still rules it out. Positive-viscosity rescaling transfers the statement
+to each nu>0, at sufficiently small lambda/nu.
+
+This refutes repair of this particular leading stock by a constant scalar
+pressure weight. It does not refute larger original-data allowances,
+other joint geometric resources or arbitrary-data regularity.
+
+### The actual pressure evolution retains diffusion and observer work
+
+Let `T(F)=(-Delta)^(-1) partial_i partial_j F_ij`, with the usual mean-zero
+periodic convention, and `B(a,b)=T(a tensor b+b tensor a)`. Put
+`N=P(u dot grad u)`. The complete unforced equation gives
+`(partial_t-nu Delta)w=-N`; no independent dynamics is assigned to w.
+For spatially constant C1 theta(t), define
+
+```text
+S_theta=-B(w+theta v,N)
+ -2nu T(sum_k [partial_k w tensor partial_k w
+       +theta(partial_k v tensor partial_k w
+              +partial_k w tensor partial_k v)]).
+
+(partial_t-nu Delta)q_theta=S_theta+theta' m.        (JG4)
+```
+
+Both thermal product terms are essential. If the velocity equation had
+a projected external force Pf, its contribution here would be
+`+B(w+theta v,Pf)`. In the present unforced calculation that term is zero;
+the nonlinear source N, including all internally generated parents,
+remains. Its absence does not by itself pay S_theta.
+
+On the torus, integration by parts gives the exact identity
+
+```text
+(1/2)(||q_theta||2^2)' +nu||grad q_theta||2^2
+ =<q_theta,S_theta>+theta'<q_theta,m>.               (JG5)
+```
+
+Adding transport by the actual u to both sides leaves this integrated
+identity unchanged, since its scalar energy work is zero. It does not
+replace the actual stochastic paths by heat paths or remainder-only paths.
+
+Exact physical time jets verify (JG4) through its third derivative and
+(JG5) through its second derivative, including nonzero dissipation, for
+two original shapes and positive viscosities. The independent pressure
+construction and differentiated tensor formula agree. A linear weight
+theta(t)=3/5+t/7 has nonzero observer work: its second time derivative
+at zero is85/365904 for the quarter-parent shape at nu2/7, and39/847 for
+the equal-parent m2 shape at nu1. These are actual local-history fixtures;
+the linear weight is not claimed to remain in[0,1] for all time.
+
+### Prescribed changes of observation can be paid, but source work remains
+
+On the normalized period-2pi torus, q_theta and m have zero mean. Let
+`A(t)=||grad v(t)||infinity`, determined entirely by the original heat
+curve. Poincare, (HR1), the original energy bound and Young give
+
+```text
+|theta'<q_theta,m>|
+ <=(nu/2)||grad q_theta||2^2
+   +(8E0/nu) A(t)^2 |theta'|^2.                    (JG6)
+```
+
+For a prescribed schedule, the remaining integral of the last term from
+t to H is a nonnegative original-data reserve. For a feedback schedule
+with a prescribed bound |theta'|<=L, the simpler reserve
+`(8E0/nu) A(0)^2 L^2 (H-t)` pays it. A derivative bound depending on
+the unknown future would not supply this payment.
+
+Combining (JG5)--(JG6), a bound on signed source work
+`integral_0^T <q_theta,S_theta> <=J(u0,nu,H)` and a known bound
+`integral_0^T A(t)^2 |theta'|^2<=V(u0,nu,H)` would give
+
+```text
+C_theta(T)<=2J/nu+16E0 V/nu^2, T<=H,               (JG7)
+```
+
+because q_theta(0)=0. This is a conditional consumer. The required
+arbitrary-data source-work estimate is not proved by the identity.
+If theta(t) stays in[0,1], (JG1) then transfers the bound to the full
+pressure clock; a different range needs its own prescribed finite bound.
+
+For a bounded test of time scheduling, use theta(t)=exp(-rho t) or
+1-exp(-rho t), with rho in{1,2,4,8}, on each equal-parent shape. They
+stay in[0,1] and have a finite observer-change payment. At nu1 the known
+heat Wiener bound gives
+`integral A(t)^2 |theta'|^2<=A_W^2 rho^2/[2(1+rho)]`.
+Exact full-time integration finds a strictly positive next correction in
+all sixteen cases, relative to each schedule's OWN leading allowance
+`lambda^6 integral theta(t)^2 ||grad M3(t)||2^2`.
+The uniform small-data remainder for this finite collection transfers
+each failure to actual globally regular flows at a finite time.
+This bounded result does not rule out other time schedules or feedback laws.
+
+Run `python3 -O labs/joint_generated_pressure.py`. The archive records
+all rational coefficients, coercivity bounds, time-profile hashes,
+schedule integrals and full evolution fixtures. No Lean declarations or
+axioms change. The next physical obligation is a datum-controlled payment
+for the complete signed source work in (JG7), with generation and geometry
+retained; adjusting a scalar leading forecast has not supplied it.

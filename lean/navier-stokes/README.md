@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint generated-pressure test](labs/README.md#retaining-mixed-pressure-does-not-universally-repair-the-original-stock)
+retains a controllable fraction of the mixed pressure in the generated
+pressure observation. It repairs one shape's leading allowance on a whole
+interval of weights, while two other actual regular-flow families defeat
+every constant real weight, including a weight chosen from the datum.
+Sixteen prescribed time schedules also fail their respective leading
+allowances. The complete pressure evolution identifies the observer-change
+cost and gives it a separate original-data payment; the nonlinear source
+work remains open. These are analytic results with exact checks, not new
+Lean certificates or singularity constructions.
+
 The [original-heat pressure separation](labs/README.md#original-heat-interactions-have-an-arbitrary-data-payment)
 pays the heat pressure and every mixed pressure interaction with the generated
 motion from the full initial datum, on each prescribed horizon and without

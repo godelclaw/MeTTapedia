@@ -1,0 +1,328 @@
+{
+  "histories": [
+    {
+      "m": 4,
+      "weights": [
+        "1/4",
+        "1",
+        "1"
+      ],
+      "leading_mixed_stock": "116161/149320195200",
+      "weight_polynomial": [
+        "951225157394627/6398448616096137216000000",
+        "3880664863761454562567728777007051/75390454532967670084130420731527403929600000",
+        "-28892666712765352249155222249130286135838049/51757394103018363220672595027501485219066675200000000"
+      ],
+      "polynomial_approximate": [
+        1.4866496778636236e-10,
+        5.147422028162026e-11,
+        -5.582326392873864e-10
+      ],
+      "profile_sha256": [
+        "9a324afc32c7f6e6a7ead78e474fa6384891d9855df2b82218b22c8b1457bef3",
+        "f3b9137a4a26dd2f0e66de597582e80be546c1d62f48f7ed9482c45cd54aab3c",
+        "dde40e4bd20fce65da0c4e2da050b597149a5a8c8a9e98963cfa14396a9b743c"
+      ],
+      "certificate": {
+        "paid_weight_interval": [
+          "3/5",
+          "1"
+        ],
+        "negative_margin": "1965988694493048002200128716088902736139/91807496280364628956776988483577205227520000000000",
+        "half_retention_correction": "135971982845128300710819520927752545567/3902316106762547883865010086328877554073600000000"
+      },
+      "prescribed_schedules": []
+    },
+    {
+      "m": 2,
+      "weights": [
+        "1",
+        "1",
+        "1"
+      ],
+      "leading_mixed_stock": "1901/1960200",
+      "weight_polynomial": [
+        "119177783/21849440256000",
+        "107053374324382060837/3332909160489673949184000",
+        "2725895848517521782910397/44269365924204094230036480000"
+      ],
+      "polynomial_approximate": [
+        5.454500509104483e-06,
+        3.212009963951543e-05,
+        6.157521779699017e-05
+      ],
+      "profile_sha256": [
+        "256022fcca05228b4d22b356667210f8deae4fa803926dcc36468c602740ce7b",
+        "424f373013edc49835052b683b6ad9e34de49e3c435b1bb275eb158f8795f1f1",
+        "c7a9ba214464bd402216a75c04f263d6ef2345fc6f2ce83984ac9b83daefafb1"
+      ],
+      "certificate": {
+        "all_real_weights_fail": true,
+        "eta": "8363093764645900594509758803227480226655557/7192692181895851186550226693981554713643188224000",
+        "eta_approximate": 1.1627209330180949e-06,
+        "inequality": "B(theta)>=eta*(1+theta^2)"
+      },
+      "prescribed_schedules": [
+        {
+          "kind": "decay",
+          "rho": 1,
+          "leading_stock": "4613/7603200",
+          "next_correction": "1219248997572386196825443631149786683185619189/26561895740297682583078593976819544086118400000000",
+          "correction_approximate": 4.5902182942561384e-05,
+          "weighted_variation_per_AW_squared": "1/4"
+        },
+        {
+          "kind": "rise",
+          "rho": 1,
+          "leading_stock": "4262968961/72914421888000",
+          "next_correction": "119491865172916775545914568053364919707071053900952301/3843333528489284033346269622191968818127052279808000000000",
+          "correction_approximate": 3.109068320174803e-05,
+          "weighted_variation_per_AW_squared": "1/4"
+        },
+        {
+          "kind": "decay",
+          "rho": 2,
+          "leading_stock": "30201683/74169655560",
+          "next_correction": "10938952921711287774718413599/416264668557088975761250713600000",
+          "correction_approximate": 2.6278840718404753e-05,
+          "weighted_variation_per_AW_squared": "2/3"
+        },
+        {
+          "kind": "rise",
+          "rho": 2,
+          "leading_stock": "155279071/949371591168",
+          "next_correction": "1832959876540006101584026898137/34272457711200325671009642086400000",
+          "correction_approximate": 5.3482008555837835e-05,
+          "weighted_variation_per_AW_squared": "2/3"
+        },
+        {
+          "kind": "decay",
+          "rho": 4,
+          "leading_stock": "35481913/168353345160",
+          "next_correction": "18414050800082603838273287/1441609241756152297008660480000",
+          "correction_approximate": 1.2773260788513546e-05,
+          "weighted_variation_per_AW_squared": "8/5"
+        },
+        {
+          "kind": "rise",
+          "rho": 4,
+          "leading_stock": "2427262654/6628912965675",
+          "next_correction": "194961979422440090535399986311/2492542378996387321527973969920000",
+          "correction_approximate": 7.821812020742483e-05,
+          "weighted_variation_per_AW_squared": "8/5"
+        },
+        {
+          "kind": "decay",
+          "rho": 8,
+          "leading_stock": "64975897/826829289000",
+          "next_correction": "3659428575325169686945536884336787481/521218392910077152831853887653478400000000",
+          "correction_approximate": 7.020912203220177e-06,
+          "weighted_variation_per_AW_squared": "32/9"
+        },
+        {
+          "kind": "rise",
+          "rho": 8,
+          "leading_stock": "1810915140824/2888838182104875",
+          "next_correction": "73219455470772366858068862403060130909/781827589365115729247780831480217600000000",
+          "correction_approximate": 9.365166497927035e-05,
+          "weighted_variation_per_AW_squared": "32/9"
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "weights": [
+        "1",
+        "1",
+        "1"
+      ],
+      "leading_mixed_stock": "116161/9332512200",
+      "weight_polynomial": [
+        "2425387668477001/199951519253004288000000",
+        "328562719094494501318255853128148801/4711903408310479380258151295720462745600000",
+        "56379710982479306297299369727029229897053447/404354641429830962661504648652355353273958400000000"
+      ],
+      "polynomial_approximate": [
+        1.2129878670279518e-08,
+        6.973035960690573e-08,
+        1.3943134369155761e-07
+      ],
+      "profile_sha256": [
+        "590494753d1ef97cdb7f87d6dbf20253c7e67aeceb8f6242707ce5e2e88ae641",
+        "260afd0cb512a283ba17b8d2bb192075c4f8bcf13f56519367be81e7cf5dff88",
+        "3f76d6bb747ff3442cda8cfd4689b27039644dad36b89b8016998bbc997ef874"
+      ],
+      "certificate": {
+        "all_real_weights_fail": true,
+        "eta": "36254012494569862872713669051110642635701273910470420328090697184901975023685331/11550662709198027353693548817445890650528857162474051480519248770180979315366166528000000",
+        "eta_approximate": 3.1386954504090968e-09,
+        "inequality": "B(theta)>=eta*(1+theta^2)"
+      },
+      "prescribed_schedules": [
+        {
+          "kind": "decay",
+          "rho": 1,
+          "leading_stock": "201743/19160064000",
+          "next_correction": "10327608830014747298815876587182509640632406035415916955640862281497340479986946836305495786393/62937949408181537328185215154745830451215848525328963412319726222453696717342547406322453708800000000",
+          "correction_approximate": 1.6409191794660254e-07,
+          "weighted_variation_per_AW_squared": "1/4"
+        },
+        {
+          "kind": "rise",
+          "rho": 1,
+          "leading_stock": "169481749556537323/1559968136946450975744000",
+          "next_correction": "73898133985711043881402280109854310899410486457474113601213865847893710237081245926858129383387431729163609/2510617216755085326114196206781768566331770974711548172810877723348457251536196586936904670144702405515673600000000",
+          "correction_approximate": 2.943424967077326e-08,
+          "weighted_variation_per_AW_squared": "1/4"
+        },
+        {
+          "kind": "decay",
+          "rho": 2,
+          "leading_stock": "13472015603/1498385393505000",
+          "next_correction": "4904620119945603740955976601956350509402719092712620732611858423231/38938455291295283473866125545362144102368014245996587304285351444480000000",
+          "correction_approximate": 1.2595826113939437e-07,
+          "weighted_variation_per_AW_squared": "2/3"
+        },
+        {
+          "kind": "rise",
+          "rho": 2,
+          "leading_stock": "564332481297583/1488060519220154880000",
+          "next_correction": "7262915754801672887088169146071703052447113397229607645624509300768118666971/144483575710960107958049305486194747635246604585622065348933108276316707225600000000",
+          "correction_approximate": 5.026810638553936e-08,
+          "weighted_variation_per_AW_squared": "2/3"
+        },
+        {
+          "kind": "decay",
+          "rho": 4,
+          "leading_stock": "7919033113/1179224171686440",
+          "next_correction": "6679712453642998708395355999515778433769519512617873877690203/82869529996854429870241078568503651540754164118877794073575424000000",
+          "correction_approximate": 8.060516879842987e-08,
+          "weighted_variation_per_AW_squared": "8/5"
+        },
+        {
+          "kind": "rise",
+          "rho": 4,
+          "leading_stock": "8940196895468262262/7574298158963451984193125",
+          "next_correction": "32838431499376112184126353018730882665056951570448770742673609998243041/364575313205499162821935255694599460536365940960764380395166873891635200000000",
+          "correction_approximate": 9.00731078323621e-08,
+          "weighted_variation_per_AW_squared": "8/5"
+        },
+        {
+          "kind": "decay",
+          "rho": 8,
+          "leading_stock": "63909454547/15810238951741080",
+          "next_correction": "203566430566984662606834016540534174333996870972313293678777/4843868845942299833691487069696106523014027887122798933442560000000",
+          "correction_approximate": 4.2025586786378806e-08,
+          "weighted_variation_per_AW_squared": "32/9"
+        },
+        {
+          "kind": "rise",
+          "rho": 8,
+          "leading_stock": "145267883578808/47499886650637107225",
+          "next_correction": "695868439667800392946925885257480498333344128003085416703479/4767155990916064315963341346872865016993443735064293067980800000000",
+          "correction_approximate": 1.4597140118632475e-07,
+          "weighted_variation_per_AW_squared": "32/9"
+        }
+      ]
+    }
+  ],
+  "evolution": [
+    {
+      "m": 4,
+      "viscosity": "2/7",
+      "cases": [
+        {
+          "theta0": "3/5",
+          "theta_rate": "0",
+          "work_derivatives": [
+            "0",
+            "17/34848",
+            "-8683/762300"
+          ],
+          "dissipation_derivatives": [
+            "0",
+            "0",
+            "57/4400"
+          ],
+          "observer_work_derivatives": [
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "theta0": "3/5",
+          "theta_rate": "1/7",
+          "work_derivatives": [
+            "0",
+            "17/34848",
+            "-3623/338800"
+          ],
+          "dissipation_derivatives": [
+            "0",
+            "0",
+            "57/4400"
+          ],
+          "observer_work_derivatives": [
+            "0",
+            "0",
+            "85/365904"
+          ]
+        }
+      ]
+    },
+    {
+      "m": 2,
+      "viscosity": "1",
+      "cases": [
+        {
+          "theta0": "3/5",
+          "theta_rate": "0",
+          "work_derivatives": [
+            "0",
+            "117/1210",
+            "-9198/3025"
+          ],
+          "dissipation_derivatives": [
+            "0",
+            "0",
+            "189/275"
+          ],
+          "observer_work_derivatives": [
+            "0",
+            "0",
+            "0"
+          ]
+        },
+        {
+          "theta0": "3/5",
+          "theta_rate": "1/7",
+          "work_derivatives": [
+            "0",
+            "117/1210",
+            "-61461/21175"
+          ],
+          "dissipation_derivatives": [
+            "0",
+            "0",
+            "189/275"
+          ],
+          "observer_work_derivatives": [
+            "0",
+            "0",
+            "39/847"
+          ]
+        }
+      ]
+    }
+  ],
+  "scope": "Exact complete histories and PDE jets; uniform small-data and arbitrary-flow comparison arguments are analytic",
+  "source_sha256": {
+    "joint_generated_pressure.py": "15941ce8ebf61930126b851737dae4abde221a88d1dc926fad78ce9c548a9a72",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "paired_stretching_history.py": "5c4375eda70db811d404a6a710445d2334117f9e8f24d1159dc774340fd4f8c0",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715"
+  }
+}
