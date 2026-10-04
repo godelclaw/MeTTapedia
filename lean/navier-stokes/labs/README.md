@@ -45346,3 +45346,193 @@ original pressure functional independently, and checks actual tangents
 at two positive viscosities. Its archive is
 `zero_intrinsic_capacity_results.json`. These are exact symbolic and
 rational calculations; no Lean declarations or axioms change.
+
+## A later return defeats both heat-window and weight controls
+
+The previous obstruction fixed the initial heat window before choosing
+its adverse datum. This section permits the window to be chosen AFTER
+the datum, and allows both window and weight to change arbitrarily along
+the history. A single actual unforced solution still defeats every
+nonnegative policy in this reserve family. The argument retains the
+initial viscous loss and the complete later nonlinear return.
+
+### The proposed control family and a necessary condition
+
+For the whole fluid retain (IC1), and allow arbitrary finite-valued
+controls delta(t)>=0 and alpha(t)>=0:
+
+    W(t)=||u(t)||4^4/4+R_delta(t)(u(t))
+                                +alpha(t)J_delta(t)(u(t)),
+    R_delta(w)=nu^-1 integral_0^delta [P4(H_s w)]_+ ds,
+    J_delta(w)=nu^-2 integral_0^delta s[S(H_s w)]_+ ds,
+    S(w)=DP4(w)[N(w)].                                  (AW1)
+
+These are auxiliary observer controls, not forces applied to the fluid.
+They may depend on the complete datum and history; even access to the
+future will not change the obstruction below. No differentiability is
+assumed. Since both corrections are nonnegative, always
+
+    W(t)>=||u(t)||4^4/4.
+
+If both initial capacities vanish for EVERY window, then
+W(0)=||u(0)||4^4/4 for every initial choice. Any subsequent fourth-moment
+gain therefore disproves monotonicity for all these policies together.
+This comparison already includes jumps or changes in the controls: it
+does not omit their derivatives by assuming the controls are constant.
+
+### A balanced first return with a positive later return
+
+On the normalized period-2pi torus use the entire polynomial family
+
+    V_m=(2,1,-1)cos(y+z)+(-2,-1,-1)cos(y-z)
+                                       +(1,1,m)cos(x-y).
+    r=m^2, f(r)=5r^2-153r+372.                          (AW2)
+
+Every V_m is real, smooth, mean zero and divergence free, with
+-Delta V_m=2V_m. Choose
+
+    r_*=(153+sqrt(15969))/10, m_*=sqrt(r_*), V=V_m*.
+
+The value r_* is the unique root of f in (27,28):
+f(27)=-114, f(28)=8 and f'(r)>0 there. This gives an exact algebraic
+specification of the datum, without numerical root finding.
+
+Let v^0 be the ACTUAL local Euler evolution of V_m and set
+p_m(tau)=P4(v^0(tau)). Full time differentiation gives
+
+    p_m(0)=0,
+    p_m'(0)=f(r)/18,
+    p_m''(0)=0,
+    p_m'''(0)=K(r),
+    K(r)=-(198450r^3+6222475r^2-453762911r+1498877472)
+                                                    /793800. (AW3)
+
+These are derivatives along the full nonlinear equation. They include
+the changing velocity, canonical pressure and newly generated parents;
+V_m+tau N(V_m) is not substituted for the evolution. The velocity
+derivatives through order four retain 6, 10, 34, 72 and 132 Fourier
+modes, respectively. Independently differentiating the fourth moment
+through order four reproduces the pressure-work derivatives.
+
+Exact Bernstein coefficients on r in[27,28] give
+
+    K(r)>2400,
+    Y(r)=||V_m||4^4=3r^2/8+19r/2+185/2,
+    D(r)=D4(V_m)=2Y(r)=3r^2/4+19r+185<=1305.         (AW4)
+
+The initial pressure work vanishes by spatial parity. All input modes
+have the same heat decay, so at the chosen root, for EVERY s>=0,
+
+    P4(H_s V)=0,
+    S(H_s V)=exp(-12s)f(r_*)/18=0.                   (AW5)
+
+Thus both initial capacities are exactly zero for every window, even
+though the complete later return in (AW3) is strictly positive.
+These are integrated work identities, not claims of zero pressure.
+
+### Retaining positive viscosity and controlling the actual remainder
+
+Let v^mu solve unforced NS from V with viscosity 0<=mu<=1, and write
+X_mu(tau)=||v^mu(tau)||4^4/4. The actual initial derivative is
+
+    X_mu'(0)=-mu D(r_*).
+
+For mu=0, (AW3) gives X_0''(0)=X_0'''(0)=0 and
+X_0''''(0)=K(r_*). A common local Sobolev bound supplies a controlled
+Taylor remainder uniformly in mu. Explicitly, with N0=||V||_H20, the
+standard local estimate
+
+    (1/2)partial_tau ||v^mu||_H20^2
+        +mu||grad v^mu||_H20^2 <=C||v^mu||_H20^3
+
+gives a common T0 in(0,1] and ||v^mu||_H20<=2N0. These constants
+depend on the fixed datum and Sobolev constants. Differentiating the
+projected equation bounds five time derivatives, losing at most two
+spatial derivatives each time. The pressure multiplier and polynomial
+moment then have bounded required derivatives. Initial time jets depend
+polynomially on mu. Consequently, for a fixed C>=1,
+
+    |X_mu(tau)-X_mu(0)+mu D(r_*)tau-K(r_*)tau^4/24|
+          <=C(mu tau^2+tau^5), 0<=tau<=T0.             (AW6)
+
+No unknown global solution norm defines C or T0. This is the same
+local Sobolev mechanism used in (613). For a published framework with a
+viscosity-independent interval on the torus, see the constant-density
+case of [Danchin's inviscid-limit theorem](https://afst.centre-mersenne.org/articles/10.5802/afst.1133/).
+The estimate here retains the actual time jets rather than inferring
+their signs merely from convergence to Euler.
+
+Choose
+
+    mu_* = min((T0/4)^3,C^(-3)),
+    0<mu<=mu_*, tau_*=4mu^(1/3).
+
+The leading terms in (AW6), divided by mu^(4/3), exceed
+
+    -4(1305)+4^4(2400)/24=20380.
+
+The remainder is at most 1040 C mu^(5/3), and
+C mu^(1/3)<=1. Hence
+
+    X_mu(tau_*)-X_mu(0)>=19000mu^(4/3)>0.             (AW7)
+
+The same actual flow initially DECREASES its fourth moment, then raises
+it above its original value. Positive viscosity is present throughout.
+Total kinetic energy obeys its usual decreasing energy identity.
+
+For any prescribed physical nu>0 and horizon H>0, start u from lambda V
+and use u(t)=lambda v^(nu/lambda)(lambda t). Taking lambda sufficiently
+large that nu/lambda<=mu_* and t_*<=H gives
+
+    t_*=4nu^(1/3)lambda^(-4/3),
+    ||u(t_*)||4^4/4-||u(0)||4^4/4
+                 >=19000nu^(4/3)lambda^(8/3)>0.       (AW8)
+
+For example the second restriction is
+lambda>=(4nu^(1/3)/H)^(3/4). The first is lambda>=nu/mu_*.
+The finite constants C,T0 and sufficient amplitude threshold have not
+been numerically evaluated. The uniform local PDE estimate and transfer
+are analytic, not Lean-certified or a numerical enclosure.
+
+### One datum defeats all the tested policies
+
+At u(0)=lambda V, (AW5) gives R_delta(0)=J_delta(0)=0 for EVERY
+initial window. At the later time both corrections remain nonnegative,
+whether or not they themselves have grown. Therefore (AW8) implies
+
+    W(t_*)-W(0)>=19000nu^(4/3)lambda^(8/3)>0          (AW9)
+
+for EVERY nonnegative finite-valued policy in (AW1). The same datum and
+same time work for all policies. The initial cutoff may be selected
+after reading the full datum; later cutoffs may shrink, grow or reset.
+Weights may change arbitrarily. Thus these freedoms do not repair
+monotonicity of this particular reserve.
+
+The obstruction is not confined to an exact first-return balance.
+Fix nu, a sufficiently large lambda and the strict gain time in (AW8).
+Local continuous dependence preserves that gain for m in a sufficiently
+small neighborhood of m_*. On its lower side, f(m^2)<0, while spatial
+parity still makes P4(H_s V_m)=0. Both initial positive-part capacities
+therefore remain zero. This yields a one-sided interval of shape
+parameters, including rational ones, with the same policy obstruction.
+The interval's width is not numerically evaluated; this is an analytic
+continuity consequence, not an assertion about arbitrary perturbations.
+
+The failed assertion is universal MONOTONICITY of (AW1), even with both
+controls. This does not refute a different reserve that assigns positive
+initial resources to these interactions, a finite integrated allowance
+from the full original datum, or arbitrary-data global regularity. It
+does not establish infinitely repeated renewal or a singularity. The
+example concerns fourth-moment pressure work; it is not a counterexample
+to the cubic vorticity budget in `JointCubicRenewal`.
+
+The next physical estimate must pay the complete later interactions
+even when both first-stage heat capacities vanish. The surviving target
+remains the signed all-prefix budget (RW11), with its distinct actual
+filtered-remainder equation and existing continuation consumer.
+
+Run `python3 -O labs/adaptive_heat_reserve.py`. The archive
+`adaptive_heat_reserve_results.json` contains complete time jets,
+independent moment checks, exact root isolation and Bernstein signs,
+two positive-viscosity tangents, and the rebound arithmetic. No Lean
+declarations or axioms change.

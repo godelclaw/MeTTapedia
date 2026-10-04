@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [adaptive heat-reserve obstruction](labs/README.md#a-later-return-defeats-both-heat-window-and-weight-controls)
+allows the initial window to be selected from the complete datum and both
+window and weight to change throughout the history. One smooth periodic
+datum has zero initial heat-work and intrinsic capacities at every heat
+age. Its fourth moment nevertheless exceeds its initial value along an
+actual unforced viscous solution. Every nonnegative correction in the tested
+family therefore fails to make the reserve nonincreasing. The complete
+later return and viscous loss are retained. This is an analytic local
+result with exact Fourier checks; an independent initial-data allowance
+and arbitrary-history regularity remain open.
+
 The [zero intrinsic-capacity test](labs/README.md#a-zero-intrinsic-capacity-cannot-be-repaired-by-changing-its-weight)
 rules out adaptive scalar weights for the latest correction on a prescribed
 heat window. Three equal-wavelength input waves have negative intrinsic

@@ -1,0 +1,65 @@
+{
+  "polarization": "m=sqrt((153+sqrt(15969))/10)",
+  "root_polynomial": "5*r**2 - 153*r + 372",
+  "root_interval": [
+    27,
+    28
+  ],
+  "pressure_work_jets": [
+    "0",
+    "(5*eps**4 - 153*eps**2 + 372)/18",
+    "0",
+    "-(198450*eps**6 + 6222475*eps**4 - 453762911*eps**2 + 1498877472)/793800"
+  ],
+  "velocity_jet_modes": [
+    6,
+    10,
+    34,
+    72,
+    132
+  ],
+  "later_return_polynomial": "-(198450*r**3 + 6222475*r**2 - 453762911*r + 1498877472)/793800",
+  "later_return_bernstein": [
+    "7701485/2646",
+    "6615075611/2381400",
+    "2092172599/793800",
+    "492922309/198450"
+  ],
+  "later_return_lower": "2400",
+  "squared_L2": "r/2 + 7",
+  "fourth_moment": "3*r**2/8 + 19*r/2 + 185/2",
+  "quartic_diffusion": "3*r**2/4 + 19*r + 185",
+  "diffusion_upper": "1305",
+  "rebound": {
+    "normalized_time": "4*mu^(1/3)",
+    "leading_gain_lower": "20380",
+    "remainder_coefficient": 1040,
+    "gain_lower": "19000*mu^(4/3)",
+    "conditions": "T0<=1, C>=1, 0<mu<=min((T0/4)^3,C^(-3))"
+  },
+  "actual_tangents": [
+    {
+      "viscosity": "1",
+      "moment_first": "-3*r**2/4 - 19*r - 185",
+      "moment_second": "113*r**2/18 + 287*r/2 + 4502/3",
+      "squared_L2_rate": "-2*r - 28"
+    },
+    {
+      "viscosity": "2/7",
+      "moment_first": "-3*r**2/14 - 38*r/7 - 370/7",
+      "moment_second": "677*r**2/882 + 383*r/98 + 20798/147",
+      "squared_L2_rate": "-4*r/7 - 8"
+    }
+  ],
+  "scope": "Exact complete Fourier time jets and algebraic-polarization sign certificates. The actual positive-viscosity rebound, uniform local remainder, and obstruction for all nonnegative heat-window and scalar-weight policies are analytic, not Lean-certified. Other initial-data reserves and global regularity are not refuted.",
+  "source_sha256": {
+    "adaptive_heat_reserve.py": "d2394c42a1303eb363117531f63b523625dd0537797dc54749fdb92cba9a8b19",
+    "heat_work_reserve.py": "61c8ce228687243d32cc8f26b69607110d34465e8cef2b37638063c1331c8ba2",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "generated_fourth_moment.py": "d47d02f7394262547fb88ce659254aa55ba6be6decf1a0ae142186a7a2dc6a35",
+    "heat_remainder_pressure.py": "f6fe6bd9b8c4aec904f8f294251914196477faa9c26ec8e72143c24c09ac3222",
+    "pressure_quadratic_storage.py": "cb78e2a84c4ee19091dc1ec8e687abec7e2c85d1a41dac007ee3c6eb5f1ea0dc",
+    "pressure_gradient_stock.py": "2a90dec6eb65d67191d3131bd38a5537f26d5a6777bf03ddad3a57e338e29883"
+  }
+}
