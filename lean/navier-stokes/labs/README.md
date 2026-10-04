@@ -43697,3 +43697,267 @@ polynomial checks are archived in `joint_heat_cancellation_results.json`.
 The local existence, Sobolev remainder and actual heat-tail bound above
 are analytic, not newly Lean-certified. No Lean declarations or axioms
 change.
+
+## Original heat parents have a payment in the heat-work reserve
+
+`heat_work_parent_payment.py` checks the identities used below. The
+previous mixed-pressure estimate (FM3) pays the fourth moment Y; it does
+not automatically pay the derivative of the new reserve R_nu. That new
+payment is established here analytically, including both commutators
+created by transporting and heating a field. The bounds apply on every
+available smooth unforced prefix on R3 and on the fixed mean-zero torus.
+No smallness or bound on the unknown future is assumed.
+
+### Setting and the derivative at zero work
+
+Retain v=H_(nu t)u0, w=u-v, H_s=exp(s Delta), and define
+
+    N(w)=-P[(w.grad)w],
+    B_v(w)=-P[(v.grad)w+(w.grad)v], g=N(v),
+    w_t=nu Delta w+N(w)+B_v(w)+g,
+    Y=||w||4^4, V=Y/4+R_nu(w).                        (HP1)
+
+R_nu is precisely (HW1), not a forecast along an unknown NS history.
+All fields are smooth with the stated Sobolev decay; on the torus the
+velocity has zero mean, after a Galilean change if necessary. The source
+g is determined by the original datum. It is not an external force.
+Let D R_nu(w)[h] denote the RIGHT directional derivative. For
+F(s)=P4(H_s w) it is
+
+    D R_nu(w)[h]=nu^(-1) integral_0^infinity
+        sigma_(F(s))(DP4(H_s w)[H_s h]) ds,
+    sigma_x(y)=y if x>0, 0 if x<0, and max(y,0) if x=0.
+
+In particular sigma_x is 1-Lipschitz. For any two smooth directions,
+
+    |D R_nu(w)[h+k]-D R_nu(w)[h]|
+       <=nu^(-1) integral |DP4(H_s w)[H_s k]| ds.       (HP2)
+
+This remains valid when the entire heat-work profile is zero. It avoids
+assuming additivity of the derivative at that boundary. Heat decay gives
+the required dominated convergence for smooth data and directions on
+each available compact time interval. These local smooth norms justify
+differentiation only; none appears in the final original-data constants.
+
+Write Q=I-P and keep its actual L4 operator constant C_Q. With
+r(z)=|z|^2 z and p(z,b)=K(z tensor b+b tensor z), where
+K(T)=(-Delta)^(-1) partial_i partial_j T_ij, the exact variation is
+
+    DP4(z)[b]=-integral (|z|^2 b+2(z.b)z).grad p_z
+                  +integral div(r(z)) p(z,b).         (HP3)
+
+For solenoidal z, the L2 projection and tensor-pressure bounds imply
+
+    |DP4(z)[b]|<=7 ||z||infinity ||z||4^2
+                        ||grad z||4 ||b||4.           (HP4)
+
+Indeed the two terms in (HP3) have bounds with factors 3 and 4,
+respectively. No derivative of b is needed. This formula and bound are
+also valid for a nonsolenoidal variation b; that matters when splitting
+transport from its solenoidal correction.
+
+### The known source is paid by the existing fourth moment
+
+For a solenoidal source k, put z=H_s w, h=H_s k. The Lie-bracket pressure
+identity gives grad p(z,h)=-2Q[(z.grad)h]. The unsimplified variation then
+has the sharper bound
+
+    |DP4(z)[h]|<=||w||4^4 [3 C_d s^(-1/2)||H_s k||infinity
+                              +2 C_Q||grad H_s k||infinity]. (HP5)
+
+Here ||grad H_s w||4<=C_d s^(-1/2)||w||4. At 0<s<=1, heat contracts
+the infinity norms of k and grad k. At s>=1, the whole-space heat bounds
+are ||H_s k||infinity<=C s^(-3/4)||k||2 and
+||grad H_s k||infinity<=C s^(-5/4)||k||2. The same bounds, with fixed
+domain constants, hold for mean-zero k on the torus by exponential decay.
+Thus both large-age contributions are bounded by an integrable s^(-5/4).
+Consequently (HP2) gives
+
+    |D R_nu(w)[h+g]-D R_nu(w)[h]|
+       <=C nu^(-1)(||g||infinity+||grad g||infinity+||g||2)Y
+       <=C nu^(-1)||u0||H4^2 Y.                      (HP6)
+
+The last inequality uses ||N(v)||H3<=C||v||H4^2, Sobolev embedding,
+and heat contraction. It does not assume an L-infinity bound for the
+Leray projection. All constants C here and below depend only on the
+fixed domain, Fourier normalization and stated standard norm estimates.
+
+### Removing the transport derivative from the mixed contribution
+
+A direct norm of B_v(w) would introduce an uncontrolled derivative of w.
+Instead retain its transport structure. Define the Fourier first absolute
+moment W(v), with the Fourier normalization included in the integral:
+
+    W(v)=sum_k |k||v_hat(k)| on the torus,
+    W(v)=integral |xi||v_hat(xi)| dxi on R3.
+
+Cauchy-Schwarz gives W(v)<=C||v||H4, and ||grad v||infinity<=W(v).
+In particular W(v(t))<=W(u0)=W0. These are original-data quantities.
+
+The pressure multiplier is m(eta)=-eta tensor eta/|eta|^2, m(0)=0.
+Its normalized-vector difference satisfies
+
+    |eta| ||m(eta+ell)-m(eta)||_F <=4|ell|.            (HP7)
+
+For nonzero eta and eta+ell this follows from
+||hat(eta+ell)-hat(eta)||<=2|ell|/|eta| and the two rank-one projector
+terms. If eta=0 the left side is zero; if eta+ell=0 the inequality
+is immediate. In the Fourier transform of [v.grad,K]T the other factor
+is i(v_hat(ell).eta). Young's convolution inequality and Plancherel
+therefore give, with the consistent normalization,
+
+    ||[v.grad,K]T||2<=C_K W(v)||T||2.                 (HP8)
+
+No derivative of T remains. This proof works for the Fourier sum and
+the Fourier integral; it needs the stronger, data-controlled W(v), not
+an unproved Lipschitz-only commutator estimate.
+
+For z=H_s w and the transport variation b=-(v.grad)z, differentiating
+pressure gives the exact identity
+
+    delta p+(v.grad)p_z=[v.grad,K](z tensor z).
+
+Transport integration by parts in P4 yields
+
+    DP4(z)[-(v.grad)z]
+      =integral div(r(z)) [v.grad,K](z tensor z)
+            +integral r(z).(grad v)^T grad p_z.       (HP9)
+
+Both the pressure commutator and the deformation of the pressure gradient
+are retained. Equations (HP8)--(HP9) bound this by
+C W(v)||z||infinity ||z||4^3||grad z||4 in absolute value.
+
+There is also a heat commutator. Incompressibility gives
+
+    B_v(w)=-(v.grad)w+L_v(w),
+    L_v(w)=-(w.grad)v+2Q[(w.grad)v],
+    ||L_v(w)||4<=(1+2C_Q)||grad v||infinity||w||4,
+
+    H_s B_v(w)=-(v.grad)H_s w+H_s L_v(w)-[H_s,v.grad]w.
+
+Integration by parts in the heat kernel and div v=0 show
+
+    ||[H_s,v.grad]w||4<=3||grad v||infinity||w||4.      (HP10)
+
+Indeed the velocity difference is at most ||grad v||infinity |y|, and
+integral |y||grad G_s(y)| dy=3 for the three-dimensional Gaussian.
+For the torus, use periodic extensions and the same Gaussian integral.
+This bound holds at every heat age and does not differentiate w.
+
+Apply (HP4) to the last two terms and (HP9) to the first. Heat smoothing
+now gives the entire-integral bound
+
+    integral_0^infinity |DP4(H_s w)[H_s B_v(w)]| ds
+      <=C W(v)(||w||4^5+||w||2 ||w||4^4).             (HP11)
+
+At s<=1 use ||H_s w||infinity<=C s^(-3/8)||w||4 and the gradient
+bound s^(-1/2), giving s^(-7/8)||w||4^5. At s>=1 use instead
+||H_s w||infinity<=C s^(-3/4)||w||2, giving
+s^(-5/4)||w||2||w||4^4. The integrals are 8 and 4, respectively.
+Mean-zero periodic heat obeys these large-age bounds as well. In
+particular there is no omitted tail and no whole-space spectral gap.
+
+### Kinetic energy pays the fifth-power term
+
+For an actual unforced flow, ||w||2<=2||u0||2=:E on every available
+prefix, by the existing kinetic-energy bound and heat contraction.
+Apply Sobolev and interpolation to f=|w|^2. On R3,
+
+    ||f||2<=C||f||1^(2/5)||grad f||2^(3/5),
+    ||grad f||2^2<=2D4(w),
+    ||w||4^5<=C||w||2^2 D4(w)^(3/4).                 (HP12)
+
+On the fixed torus the same argument adds C||w||2^5, from the mean of f.
+Combining (HP2), (HP11), (HP12) and Young's inequality, for every eta>0,
+
+    |D R_nu(w)[h+B_v(w)]-D R_nu(w)[h]|
+      <=eta nu D4(w)+C eta^(-3)nu^(-7)W0^4 E^8
+           +C nu^(-1)W0 E^5+C nu^(-1)W0 E Y.         (HP13)
+
+The E^5 term is only needed on the torus but may harmlessly be retained
+on R3. The exact Young constant can be taken as 27/256 before the fixed
+norm constants: a x^(3/4)<=b x+(27/256)a^4/b^3 for a,b>0.
+This is a payment from viscosity and the original energy, not an assertion
+that the mixed derivative is nonpositive.
+
+### A remaining self-renewal budget with a continuation consumer
+
+Set Gamma_nu(w)=D R_nu(w)[N(w)], as in (HW4), and take eta=1/4 in (HP13).
+Combine the exact Y balance (FM2), heat payment (HW3), (HP6), (HP13),
+and F0 Y^(3/4)<=3Y/(4H)+H^3 F0^4/4 for a prescribed H>0. There are
+finite nonnegative constants L,C0 fixed from u0,nu,H such that
+
+    d_right V/dt
+       <=-(3nu/4)D4-[P4(w)]_-+Gamma_nu(w)+4LV+C0.     (HP14)
+
+For example, with S4=||u0||H4, A0,F0 as in (FM3), and fixed constants
+large enough for the preceding estimates, one can use
+
+    L=(1+2C_Q)A0+3/(4H)+C nu^(-1)(S4^2+W0 E),
+    C0=H^3 F0^4/4+C nu^(-7)W0^4 E^8+C nu^(-1)W0 E^5.
+
+Take sigma(t)=exp(-4Lt), installed once at the original time. Since
+w(0)=0 and V>=Y/4>=0, it suffices to prove a finite K=K(u0,nu,H)>=0,
+uniform over EVERY available smooth prefix from that same datum, with
+
+    integral_0^T sigma(t)[Gamma_nu(w(t))-(nu/2)D4(w(t))]dt
+        <=K, for all T<=H.                           (HP15)
+
+Then integration of (HP14) gives
+
+    sigma(T)V(T)+(nu/4)integral_0^T sigma D4<=K+C0 H,
+    Y(T)<=4 exp(4LH)(K+C0 H).                        (HP16)
+
+Along each smooth prefix the reserve is locally absolutely continuous;
+the dominated directional formula also justifies this integration at
+zero-profile states. Constants in (HP16) do not use a bound on the
+future solution. The same L4-to-gradient-energy estimate and existing
+Lean continuation consumer identified after (FM6) apply. This new
+physical reduction is analytic, not a new Lean theorem.
+
+The stronger joint cancellation remains usable: before (HP13), retain
+D R_nu(w)[N(w)+B_v(w)] as ONE direction and use only the source bound
+(HP6). That gives a joint-budget alternative without taking separate
+positive parts. Equation (HP15) is a sufficient target which pays the
+mixed term absolutely; it does not assert equivalence to a joint budget.
+Automatic pointwise self-payment was already refuted in (HW6)--(HW12).
+The all-prefix allowance K in (HP15) is OPEN. No original-parent payment
+here proves arbitrary-data regularity or rules out repeated self-renewal.
+
+### Adversarial checks and exact scope
+
+The 32-scale shear/receiver construction from (HW10) has 22 original
+modes and a complete 130-mode source A=N(U). Its exact P4(A) is positive
+(approximately 10.30706628), so R_nu(A)>0 by heat continuity. For the
+actual original flow, w(t)=tA+O(t^2) and g(t)=A+O(t), even with positive
+viscosity. Homogeneity and local directional bounds imply
+
+    R_nu(w(t))=t^5 R_nu(A)+O(t^6),
+    D R_nu(w(t))[g(t)]=5t^4 R_nu(A)+O(t^5).
+
+The leading new capacity is therefore supplied by the original source.
+The estimate (HP6) includes it. No independent unforced equation for w
+is imposed, and no exact numerical value or all-heat-age sign for R(A)
+is asserted.
+
+A separate field-level test explains why energy is needed in (HP13).
+For U=(sin y-2sin z,sin z,sin(x+2y)), set v=U, w=lambda U, lambda>0.
+Then R_nu(w)=0 and B_v(w)=2lambda N(U), but
+
+    D R_nu(w)[B_v(w)]=218lambda^5/(3465nu)>0.
+
+Thus a fixed multiple of Y(w), even supplemented by a fixed multiple
+of D4(w), cannot pay all such field pairs: both are only degree four
+in lambda. This pair is NOT claimed to occur as an original-heat and
+actually generated remainder at one time. It is a coercivity test of
+a field inequality. The actual estimate (HP13) explicitly retains the
+original kinetic-energy bound and so is not refuted by that scaling.
+
+Run `python3 -O labs/heat_work_parent_payment.py`. The checker retains
+both commutators, verifies the multiplier convolution independently,
+checks nonsolenoidal transport variations, the source's complete
+positive-viscosity tangent, one-sided selector edge cases and the exact
+Young/heat integral algebra. Results and source hashes are in
+`heat_work_parent_payment_results.json`. The general estimates and
+actual-flow interval arguments are analytic; no Lean declarations or
+axioms change.

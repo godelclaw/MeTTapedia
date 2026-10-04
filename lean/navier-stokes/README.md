@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [heat-work parent payment](labs/README.md#original-heat-parents-have-a-payment-in-the-heat-work-reserve)
+controls the original source and every mixed parent contribution to the
+new reserve, on both whole space and the mean-zero torus. It retains the
+transport-pressure and heat commutators. Heat smoothing, the original
+kinetic-energy bound and a fraction of quartic diffusion pay these terms
+on every available prefix, without smallness. A finite-horizon allowance
+for nonlinear renewal by the generated motion remains open. The general
+estimates are analytic, supported by exact identities, not new Lean
+certificates.
+
 The [joint cyclic cancellation](labs/README.md#complete-cyclic-parents-deplete-the-first-generated-heat-work)
 retains the full evolving parents in an arbitrary-strength three-shear
 family. Their complete first pressure-work response is strictly depleting,
