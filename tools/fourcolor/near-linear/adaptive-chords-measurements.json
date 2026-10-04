@@ -1,0 +1,112 @@
+{
+  "classification": "KERNEL_CHECKED_ADAPTIVE_INTERVAL_REPAIR_WITH_TWO_SOURCE_CONSUMERS",
+  "statement": "If unsuccessful pair choices admit no noncrossing interval matching, a supplied matching contains a successful chord. Switching that chord preserves its original chromogram and reconstructs a supplied terminal witness.",
+  "kernel_replay": {
+    "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+    "compiler_options": [
+      "-Dpp.unicode.fun=true",
+      "-DautoImplicit=false",
+      "-DrelaxedAutoImplicit=false",
+      "-Dweak.linter.mathlibStandardSet=true",
+      "-DmaxSynthPendingDepth=3"
+    ],
+    "native_code_generation": false,
+    "completed": true,
+    "modules": [
+      {
+        "module": "MettapediaFourColor.KempeIntervalMatching",
+        "source_sha256": "7100de87289fed6fa3215651798c7d8c7d501394180d69953508547eef8e404e",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.059,
+        "olean_bytes": 638352,
+        "olean_sha256": "34d4460c91aee9d6cde0d763de21bfcfa340e16dfcaf71a6fa18fe81bf8c723e"
+      },
+      {
+        "module": "MettapediaFourColor.KempeIntervalRepair",
+        "source_sha256": "506c967b0696d3b7ca049dbb3174104313931a892447b4bc1de82afb7deea317",
+        "exit_code": 0,
+        "frontend_wall_seconds": 1.63,
+        "olean_bytes": 183360,
+        "olean_sha256": "f3df26ef87896b1d13d266bf458eb3002217dccb99dfbfc742b4e14d485b8239"
+      },
+      {
+        "module": "MettapediaFourColor.StripIntervalRepair",
+        "source_sha256": "e1b77e1fc2b063810be4b82150161f777f776b5448c292d3900a1887a2a18a04",
+        "exit_code": 0,
+        "frontend_wall_seconds": 5.276,
+        "olean_bytes": 293704,
+        "olean_sha256": "846c217d5855c55d2680cd2073f2effcd50d6357279d8ccdb2ce4fb13dec4940"
+      },
+      {
+        "module": "MettapediaFourColor.IntervalRepairAudit",
+        "source_sha256": "e181ea06265e306523da36e6b8088963712d1b07ce5fa33517ffcb68794018bb",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.463,
+        "olean_bytes": 2600,
+        "olean_sha256": "d2a371a0cc0138c2d75ded645bba51b3ce0a8dd2094485271fb849f0b2146a21"
+      }
+    ]
+  },
+  "source_files": [
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeIntervalMatching.lean",
+      "bytes": 5800,
+      "sha256": "7100de87289fed6fa3215651798c7d8c7d501394180d69953508547eef8e404e"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/KempeIntervalRepair.lean",
+      "bytes": 4440,
+      "sha256": "506c967b0696d3b7ca049dbb3174104313931a892447b4bc1de82afb7deea317"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/StripIntervalRepair.lean",
+      "bytes": 4158,
+      "sha256": "e1b77e1fc2b063810be4b82150161f777f776b5448c292d3900a1887a2a18a04"
+    },
+    {
+      "file": "lean/fourcolor-classical/MettapediaFourColor/IntervalRepairAudit.lean",
+      "bytes": 2429,
+      "sha256": "e181ea06265e306523da36e6b8088963712d1b07ce5fa33517ffcb68794018bb"
+    }
+  ],
+  "audit": {
+    "roots": 12,
+    "dependency_declarations": 3917,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "complete_four_colour_theorem_used": false,
+    "bulk_repair_tables_used": false,
+    "enumerated_matching_signatures_used": false,
+    "required_dependencies": [
+      "Interval induction using noncrossing geometry",
+      "Original matching and chromogram retained",
+      "Actual D0099 graph colourings",
+      "Kernel checked interval rejection"
+    ]
+  },
+  "replay_frontend_seconds_including_imports": 11.428,
+  "source_consumers": {
+    "source": "D0099",
+    "specified_successful_inputs": 2,
+    "full_source_colour_witnesses": 8,
+    "flat_colour_bytes": 152,
+    "successful_pair_choices_each": 4,
+    "counterexample_matchings_for_fixed_anchor": 3,
+    "crossing_matching_obstruction": true,
+    "scope": "Every supplied noncrossing involution with the stated fixed ports. The consumer constructs a whole source colouring matching the original chromogram."
+  },
+  "independent_program": "adaptive-chords-audit.json",
+  "scope_limits": [
+    "Full source and parent game closures remain program evidence.",
+    "No universal chromogram-to-matching decoding theorem is added here.",
+    "No geometric occurrence supply or strict ambient reduction is added.",
+    "The nine-edge observation minimum concerns one fixed parent-choice interface only.",
+    "No net certificate size or whole-proof runtime savings established."
+  ],
+  "new_coverage_entries_removed": 0,
+  "new_original_certificate_dependencies_removed": 0,
+  "whole_proof_runtime_savings_claimed": false
+}

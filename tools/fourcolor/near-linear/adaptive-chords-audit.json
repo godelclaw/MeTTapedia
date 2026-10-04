@@ -1,0 +1,467 @@
+{
+  "evidence": "General interval theorem and two source consumers Lean checked; full closure and observation results are independent program evidence.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "Yuta Inoue, 2026, MIT licence; Gonthier/Emery chromogram semantics.",
+  "canonical_inputs": 7381,
+  "policies": [
+    {
+      "policy": "anchored",
+      "source_stages": [
+        1587,
+        1766,
+        1854,
+        1915,
+        1941,
+        1960,
+        1968,
+        1978,
+        1985,
+        1990,
+        1993
+      ],
+      "parent_stages": [
+        [
+          1299,
+          1440,
+          1506,
+          1550,
+          1569,
+          1572
+        ],
+        [
+          1302,
+          1431,
+          1479,
+          1498,
+          1507,
+          1513,
+          1517,
+          1522,
+          1524,
+          1525
+        ]
+      ],
+      "combined_stages": [
+        1940,
+        1980,
+        2000,
+        2006,
+        2014,
+        2024,
+        2032,
+        2037
+      ],
+      "remaining_source_inputs": 5344
+    },
+    {
+      "policy": "hall",
+      "source_stages": [
+        1587,
+        1851,
+        1955,
+        2033,
+        2084,
+        2129,
+        2148,
+        2163,
+        2181,
+        2200,
+        2216,
+        2229,
+        2245,
+        2265,
+        2286,
+        2302,
+        2316,
+        2346,
+        2381,
+        2423,
+        2471,
+        2521,
+        2592,
+        2703,
+        2846,
+        3054,
+        3307,
+        3641,
+        4092,
+        4670,
+        5269,
+        5736,
+        6015,
+        6122,
+        6163,
+        6179,
+        6181
+      ],
+      "parent_stages": [
+        [
+          1299,
+          1517,
+          1597,
+          1651,
+          1665,
+          1673,
+          1677,
+          1681,
+          1687,
+          1698,
+          1713,
+          1715
+        ],
+        [
+          1302,
+          1490,
+          1531,
+          1550,
+          1560,
+          1576,
+          1589,
+          1597,
+          1603,
+          1607,
+          1609
+        ]
+      ],
+      "combined_stages": [
+        2111,
+        2187,
+        2227,
+        2255,
+        2284,
+        2326,
+        2373,
+        2420,
+        2471,
+        2543,
+        2651,
+        2779,
+        2949,
+        3190,
+        3511,
+        3971,
+        4574,
+        5208,
+        5712,
+        5993,
+        6118,
+        6161,
+        6181
+      ],
+      "remaining_source_inputs": 1200
+    },
+    {
+      "policy": "adaptive",
+      "source_stages": [
+        1587,
+        2112,
+        2512,
+        2939,
+        3424,
+        4084,
+        5014,
+        6141,
+        6943,
+        7264,
+        7348,
+        7381
+      ],
+      "parent_stages": [
+        [
+          1299,
+          1712,
+          1936,
+          2119,
+          2250,
+          2370,
+          2504,
+          2654,
+          2807,
+          2972,
+          3169,
+          3411,
+          3647,
+          3917,
+          4202,
+          4551,
+          4934,
+          5306,
+          5709,
+          6074,
+          6271,
+          6323,
+          6328
+        ],
+        [
+          1302,
+          1693,
+          1926,
+          2097,
+          2211,
+          2289,
+          2357,
+          2427,
+          2514,
+          2586,
+          2647,
+          2705,
+          2774,
+          2831,
+          2888,
+          2943,
+          3004,
+          3053,
+          3079,
+          3095,
+          3114,
+          3129,
+          3140,
+          3146,
+          3147
+        ]
+      ],
+      "combined_stages": [
+        6648,
+        7034,
+        7302,
+        7381
+      ],
+      "remaining_source_inputs": 0
+    },
+    {
+      "policy": "two_chords",
+      "source_stages": [
+        1587,
+        2655,
+        3722,
+        4914,
+        6264,
+        7157,
+        7333,
+        7381
+      ],
+      "parent_stages": [
+        [
+          1299,
+          2132,
+          2649,
+          3151,
+          3698,
+          4295,
+          4837,
+          5417,
+          5862,
+          6220,
+          6320,
+          6328
+        ],
+        [
+          1302,
+          2095,
+          2654,
+          2981,
+          3147,
+          3316,
+          3439,
+          3528,
+          3553,
+          3557
+        ]
+      ],
+      "combined_stages": [
+        6777,
+        7305,
+        7381
+      ],
+      "remaining_source_inputs": 0
+    }
+  ],
+  "parent_selection_observations": {
+    "exclusive_parent_inputs": [
+      2703,
+      206
+    ],
+    "layers": [
+      {
+        "observed_edges": 1,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 2,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 3,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 4,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 5,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 6,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 7,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 8,
+        "sufficient_subsets": 0
+      },
+      {
+        "observed_edges": 9,
+        "sufficient_subsets": 1
+      }
+    ],
+    "minimal_sufficient_edge_subsets": [
+      [
+        0,
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    ],
+    "seam_pattern_classes": 14,
+    "all_seam_classes_ambiguous": true,
+    "seam_counterexample": [
+      [
+        1,
+        2,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        3,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        3,
+        1,
+        1
+      ]
+    ],
+    "scope": "Nonadaptive choice between the computed parent winning sets, excluding direct source inputs; fixed subsets of edge colours observed up to one common palette permutation."
+  },
+  "kernel_consumers": [
+    {
+      "side": "false",
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        2,
+        2,
+        2,
+        3,
+        1
+      ],
+      "active_positions": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "successful_pairs": [
+        [
+          3,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ]
+      ],
+      "source_witness_bytes": 76,
+      "input_nonextension_program_checked": true,
+      "good_pairs_exact_for_direct_extension": true
+    },
+    {
+      "side": "true",
+      "word": [
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        3,
+        2,
+        2,
+        2,
+        1
+      ],
+      "active_positions": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "successful_pairs": [
+        [
+          3,
+          5
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "source_witness_bytes": 76,
+      "input_nonextension_program_checked": true,
+      "good_pairs_exact_for_direct_extension": true
+    }
+  ],
+  "limits": [
+    "Full D0099 repair and the parent fixed points are not Lean certified here.",
+    "The observation minimum does not bound symbolic summaries, adaptive inspection or other repair strategies.",
+    "Two-round combined repair uses substantial parent strategies; it is not a total depth or cost bound.",
+    "No geometric occurrence supply, strict reduction or catalogue compression follows."
+  ],
+  "verifier_sha256": "d25aef7195fa571cc6d3a2875bd2d1e525f1a4654119636547fdeffc2d844b85"
+}

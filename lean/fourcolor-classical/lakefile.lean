@@ -1067,3 +1067,18 @@ target kernelBoundaryFan pkg : Unit := do
         "BoundaryFanAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay adaptive repair through noncrossing interval exclusion. -/
+target kernelIntervalRepair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/interval-repair",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "KempeIntervalMatching", "KempeIntervalRepair", "StripIntervalRepair",
+        "IntervalRepairAudit"]
+      cwd := pkg.dir
+      env := env }

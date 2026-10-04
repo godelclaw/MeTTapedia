@@ -1,5 +1,61 @@
 # Near-linear Four Colour catalogue bridges
 
+## Adaptive chord choice uses noncrossing geometry
+
+[`KempeIntervalMatching`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeIntervalMatching.lean)
+proves an interval exclusion rule at arbitrary boundary length. If the
+unsuccessful pair choices cannot form a noncrossing matching, any supplied
+noncrossing exterior matching contains a successful chord. An active first
+port splits its interval at its partner; fixed ports are skipped. The proof
+uses that both resulting intervals remain closed under the same matching.
+
+[`KempeIntervalRepair.answer`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeIntervalRepair.lean)
+then switches that one whole chord and retains the original chromogram.
+The successful terminal predicate can contain an actual graph colouring.
+This permits choosing a chord after inspecting its connections; it does not
+require one predetermined anchor to work for every matching.
+
+[`StripIntervalRepair.source_repair`](../../../lean/fourcolor-classical/MettapediaFourColor/StripIntervalRepair.lean)
+certifies two exact D0099 input words against every supplied noncrossing
+matching with the appropriate fixed ports. Four full source colourings per
+word, 152 flat bytes in total, witness the successful choices. Three explicit
+noncrossing matchings show that no one anchor covers the certified choices.
+A crossing matching avoids all four successful pairs, so the geometry is
+essential. These are matching-parametrized source repairs; no complete source
+repair, new occurrence supply or strict ambient reduction is claimed.
+Replay with `lake build kernelIntervalRepair`; the
+[kernel receipt](adaptive-chords-measurements.json) records twelve audited roots.
+
+The independent [policy comparison](audit_adaptive_chords.py) exposes work
+hidden in the earlier two-round result:
+
+| Allowed response | Source closure alone | Two parent closures | Source closure using parents |
+| --- | ---: | ---: | ---: |
+| One predetermined anchor | 1,993 | 1,572 / 1,525 | 2,037 |
+| Partner-counting Hall obstruction | 6,181 | 1,715 / 1,609 | 6,181 |
+| One adaptively chosen chord | 7,381 | 6,328 / 3,147 | 7,381 |
+| One or two jointly chosen chords | 7,381 | 6,328 / 3,557 | 7,381 |
+
+All counts are program evidence over 7,381 canonical input classes. The
+adaptive single-chord interval test is cross-checked against explicit
+noncrossing matching enumeration. Computing its parent sets takes 22 and
+24 rounds; the direct source closes in 11 rounds. The two-chord version
+takes 11 and 9 parent rounds before its final two source rounds. A short
+final continuation therefore does not establish total proof compression.
+
+The same [program receipt](adaptive-chords-audit.json) tests nonadaptive
+parent selection from fixed subsets of observed boundary edges. Every
+four-edge seam pattern is ambiguous; no subset of eight or fewer edges
+always selects a winning parent. Exactly one nine-edge subset suffices.
+This result concerns the computed parent winning sets, with direct source
+inputs excluded. It does not bound adaptive inspection, symbolic summaries,
+other strategies, or compositional proofs in general.
+
+The remaining task is to derive shared structural conditions that make the
+interval test reject, and to connect broader repair domains to strict
+reduction and geometric supply. The full game closures are not Lean-certified
+here, and no catalogue or certificate dependency is removed.
+
 ## A uniform fan law transfers repairs through two exact parents
 
 [`KempeBoundaryFan`](../../../lean/fourcolor-classical/MettapediaFourColor/KempeBoundaryFan.lean)
