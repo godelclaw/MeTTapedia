@@ -53785,3 +53785,208 @@ neutral reconstruction, uniform multiplier inequalities and the polynomial
 composition/clock identities. Infinite-dimensional energy estimates, the
 norm comparison, the local NS consequence, and the continuation implication
 remain analytic. No Lean declarations or axioms change.
+
+## Transverse parents create an exponential receiver response
+
+The preceding polynomial response uses a shared layer direction. Changing
+the horizontal orientation within those layers is allowed; combining
+different layer directions is a further operation. The checker
+`crossed_parent_response.py` tests a proposed extension: a fixed-degree
+polynomial in parent amplitude times elapsed time bounds the gradient
+response of a vertical receiver to two transverse first-harmonic parents.
+That extension fails, even on globally smooth unforced flows. A finite
+exponential reserve, already established in the planar-parent calculation,
+pays the same histories. No claim about arbitrary full-datum allowances
+or a singularity follows from the polynomial obstruction.
+
+The underlying hyperbolic transport mechanism is classical. See Kiselev,
+Roquejoffre and Ryzhik, [Appetizers in Nonlinear PDEs, the passive-scalar
+examples in section 3.5](https://virtualmath1.stanford.edu/~ryzhik/STANFORD/STANF272-17/book-split-chapt1and12.pdf).
+Here the relevant observations are an integrated gradient norm, an actual
+positive-viscosity NS realization, and its effect on the proposed parent
+composition. Earlier cellular-flow examples in this lab already supply
+the physical family and its exponential upper payment.
+
+### The actual unforced family and the precise proposed extension
+
+On the normalized period-2pi torus, let A,nu>0 and put
+
+```text
+V=(sin y,sin x), a(t)=A exp(-nu t),
+u=(a(t)V,theta(t,x,y)), p=a(t)^2 cos x cos y,
+theta_t+a(t)V.grad theta=nu Delta theta,
+theta(0,x,y)=sin(x-y).                                  (CP1)
+```
+
+Horizontal nonlinear acceleration cancels the displayed pressure gradient;
+Delta V=-V. The vertical equation is exactly the remaining NS equation.
+The receiver supplies no horizontal feedback because all z derivatives
+vanish. These are unforced three-component flows, in a restricted class
+independent of one coordinate, and have a smooth solution for all time.
+In particular theta is physical vertical velocity, not an extra tracer
+silently substituted for the fluid.
+
+The statement being tested would bound
+
+```text
+||grad theta(H)||_2 <= C(1+AH)^d ||theta(0)||_Hs            (CP2)
+```
+
+for a fixed finite s, C and d, uniformly over A,H>0. Even at any fixed
+positive viscosity this is false: A and H can be chosen together to
+defeat every such C,d. Initial receiver norms are fixed in this test.
+It is not a claim that the full initial velocity, which also contains
+the large parents, has a bounded norm across the counterexample family.
+Nor does it refute a coefficient allowed arbitrary dependence on A/nu.
+
+At the stagnation point, the two separate shear generators for a
+transported gradient are
+
+```text
+B1=[0 0; -1 0], B2=[0 -1; 0 0],
+B1^2=B2^2=0, but (B1+B2)^2=I.                           (CP3)
+```
+
+Thus each separate generator has a polynomial exponential, while their
+sum has eigenvalues +1 and -1. The growing direction is (1,-1). This
+pointwise check diagnoses the interaction; the next argument establishes
+growth on a set of positive measure, as required for (CP2).
+
+### A shrinking patch still gives exponential integrated growth
+
+First solve the inviscid reference Theta_tau+V.grad Theta=0, with the
+same fixed initial receiver. Set a=(x+y)/2, b=(x-y)/2 in this paragraph,
+and use delta=1/4. Material coordinates and their scalar gradient obey
+
+```text
+a'=sin a cos b, b'=-cos a sin b,
+g=(partial_a Theta,partial_b Theta),
+g'=[-c -h; h c]g, c=cos a cos b, h=sin a sin b.           (CP4)
+```
+
+For a prescribed reference time L>0, take initial labels
+|a(0)|<=delta exp(-L), |b(0)|<=delta. Since |a'|<=|a| and b is
+contracted while |a|,|b|<=delta, these labels stay in that square
+through time L. Inside it,
+
+```text
+c>=15/16, |h|<=1/16, g_a(0)=0, g_b(0)>=7/4.
+```
+
+For k=g_a/g_b, the exact equation is k'=-2ck-h(1+k^2).
+The cone |k|<=1/4 is invariant: its inward margin is at least
+2(15/16)(1/4)-(1/16)(1+1/16)=103/256>0.
+Within that cone g_b'/g_b=c+hk>=59/64. In particular g_b stays
+positive, so the quotient argument cannot encounter a zero denominator.
+
+The flow preserves area. Its initial patch has physical x,y area
+8delta^2 exp(-L), and |grad_xy Theta|^2=(g_a^2+g_b^2)/2.
+After normalization by (2pi)^2 this gives
+
+```text
+||grad Theta(L)||_2^2 >= 49/(256pi^2) exp(27L/32),
+||grad Theta(0)||_2^2=1.                                 (CP5)
+```
+
+The exponent includes the loss of patch volume; it is not inferred
+from stretching at a single material point. No resetting or relabelling
+of the receiver occurs during this interval.
+
+### Quantitative transfer to positive viscosity
+
+Rescale the actual physical time by tau=A t and set epsilon=nu/A.
+The physical receiver in (CP1), denoted Theta_epsilon in this clock,
+satisfies
+
+```text
+partial_tau Theta_epsilon+exp(-epsilon tau)V.grad Theta_epsilon
+ =epsilon Delta Theta_epsilon.
+```
+
+For d=Theta_epsilon-Theta the exact difference equation has zero initial
+data and source
+
+```text
+(1-exp(-epsilon tau)) V.grad Theta+epsilon Delta Theta.   (CP6)
+```
+
+The reference is explicit smooth transport, independent of the unknown
+viscous solution. Its derivative norm
+M3^2=sum_{|alpha|<=3}||partial^alpha Theta||_2^2 obeys
+M3'<=32M3 and M3(0)=sqrt(5). To check a generous constant directly,
+each commutator at order m contributes at most
+sqrt(2)(2^m-1)M3. Cauchy--Schwarz over the m+1 planar derivatives
+gives coefficient sqrt(450)<32. Transport cancels exactly.
+
+Also ||V.grad Theta||_H1<=4M3 and ||Delta Theta||_H1<=2M3.
+The gradient operator norm of V is at most one; the H1 transport
+estimate for d, retaining the favorable diffusion, therefore yields
+
+```text
+||d(L)||_H1 <= epsilon B_L,
+B_L=3L(4L+2)exp(33L).                                   (CP7)
+```
+
+This follows by Gronwall from the source bound
+epsilon(4tau+2)sqrt(5)exp(32tau); the zero norm is handled by the
+usual positive regularization. All constants come from the fixed
+reference and L, not from the subsequent NS history.
+
+Choose, before evolving, a positive epsilon small enough that
+
+```text
+epsilon B_L <= [7/(32pi)] exp(27L/64).
+```
+
+The right side is half the lower bound for the reference gradient
+norm. Equations (CP5)--(CP7) imply for the actual unforced flow
+
+```text
+||grad theta(L/A)||_2^2 >=49/(1024pi^2)exp(27L/32).        (CP8)
+```
+
+For any fixed nu>0 choose A=nu/epsilon and H=L/A. Then AH=L.
+The square root of (CP8) exceeds every fixed polynomial in L for
+sufficiently large L, while the initial receiver and all its fixed
+Sobolev norms remain unchanged. This proves the failure of (CP2).
+Further decreasing epsilon can make H lie in any prescribed positive
+time window. It increases the original parent energy; it does not
+produce unbounded growth on one fixed-data viscous history.
+
+### The same physical histories have a finite original reserve
+
+Reuse the earlier planar-parent payment. In physical time put
+
+```text
+Y=||grad theta||_2^2, D=||Delta theta||_2^2,
+G=-mean partial_i theta partial_i(aV_j) partial_j theta,
+r(t)=A exp(-nu t)/nu, W=Y(exp(2r)-1).
+Y'=2G-2nu D, |G|<=a(t)Y, r'=-a(t),
+W'+2|G|+2nu(exp(2r)-1)D<=0.                             (CP9)
+```
+
+Here G is also the complete physical cubic vorticity stretching of
+(CP1), since the horizontal planar enstrophy has no stretching source.
+Consequently 2 integral_s^t |G|<=W(s)-W(t) for every compatible interval.
+The original reserve W(0)=exp(2A/nu)-1 is finite. Moreover
+
+```text
+Y(t)<=exp[(2A/nu)(1-exp(-nu t))-2nu t],
+||grad u(t)||_2^2<= [A^2+exp(2A/nu)]exp(-2nu t).           (CP10)
+```
+
+Large finite amplification is thus compatible with one finite original
+resource and eventual decay. The return loop in (CP3) changes the form
+of the response cost; it does not create externally supplied energy.
+For the unrestricted 3D problem the corresponding parents can themselves
+receive renewed input. Paying that complete internal history remains
+the open HR13/PD9d/QH14 obligation. This example supplies no new payment
+for that source and no whole-space finite-energy realization.
+
+Run `python3 -O labs/crossed_parent_response.py`. Eight exact Fourier
+fixtures retain all generated modes and canonical pressure, including
+nonzero internal stretching. The checker also verifies the rotated
+gradient equation, cone margin, volume-adjusted exponent, reference
+derivative constants and reserve algebra. These finite identities do
+not certify the continuum arguments (CP5)--(CP10) in Lean. No Lean
+declarations or axioms change.

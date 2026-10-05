@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [transverse-parent response test](labs/README.md#transverse-parents-create-an-exponential-receiver-response)
+shows why polynomial responses for separate shear families cannot simply
+be combined. Two transverse parents in an exact unforced periodic flow
+produce receiver gradient growth exceeding every fixed polynomial in
+amplitude times horizon, on suitable finite positive-viscosity intervals.
+The example is globally smooth and paid by the existing exponential
+planar-parent reserve. It identifies a necessary joint response cost;
+it does not refute a full-datum allowance or the one-axis bound below.
+The continuum argument is analytic with exact algebraic checks.
+
 The [finite parent-response bound](labs/README.md#finite-response-to-a-changing-parent-with-the-nonlinear-input-retained)
 controls the full response to a periodic first-harmonic parent whose
 amplitude and orientation may change throughout the history. Retaining

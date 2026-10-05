@@ -1,0 +1,92 @@
+{
+  "physical_fixtures": [
+    {
+      "label": "fixed transverse phase",
+      "amplitude": "1",
+      "gradient_squared": "1",
+      "stretching": "0",
+      "diffusion": "2",
+      "generated_vertical_modes": 8
+    },
+    {
+      "label": "fixed transverse phase",
+      "amplitude": "3/2",
+      "gradient_squared": "1",
+      "stretching": "0",
+      "diffusion": "2",
+      "generated_vertical_modes": 8
+    },
+    {
+      "label": "oblique receiver",
+      "amplitude": "1",
+      "gradient_squared": "5/2",
+      "stretching": "0",
+      "diffusion": "25/2",
+      "generated_vertical_modes": 8
+    },
+    {
+      "label": "oblique receiver",
+      "amplitude": "3/2",
+      "gradient_squared": "5/2",
+      "stretching": "0",
+      "diffusion": "25/2",
+      "generated_vertical_modes": 8
+    },
+    {
+      "label": "mixed phases",
+      "amplitude": "1",
+      "gradient_squared": "23/18",
+      "stretching": "0",
+      "diffusion": "43/18",
+      "generated_vertical_modes": 10
+    },
+    {
+      "label": "mixed phases",
+      "amplitude": "3/2",
+      "gradient_squared": "23/18",
+      "stretching": "0",
+      "diffusion": "43/18",
+      "generated_vertical_modes": 10
+    },
+    {
+      "label": "retained generated phase",
+      "amplitude": "1",
+      "gradient_squared": "35/32",
+      "stretching": "1/8",
+      "diffusion": "77/32",
+      "generated_vertical_modes": 20
+    },
+    {
+      "label": "retained generated phase",
+      "amplitude": "3/2",
+      "gradient_squared": "35/32",
+      "stretching": "3/16",
+      "diffusion": "77/32",
+      "generated_vertical_modes": 20
+    }
+  ],
+  "geometry": {
+    "cone_margin": "103/256",
+    "pointwise_gradient_exponent": "59/64",
+    "inviscid_gradient_squared_lower_bound": "49/(256*pi^2)*exp(27*s/32)",
+    "positive_viscosity_gradient_squared_lower_bound": "49/(1024*pi^2)*exp(27*s/32)",
+    "reference_error_majorant": "epsilon*3*s*(4*s+2)*exp(33*s)",
+    "single_shear_nilpotence_index": 2,
+    "joint_generator_square": "identity"
+  },
+  "finite_payment": {
+    "reserve": "Y*(exp(2*r)-1)",
+    "remaining_parent_strain": "r=A*exp(-nu*t)/nu",
+    "payment": "V'+2*abs(G)+2*nu*(exp(2*r)-1)*D<=0"
+  },
+  "scope": "Transverse parent composition requires more than a viscosity-uniform fixed-degree polynomial receiver response. The actual unforced 2D3C examples are globally smooth and paid by the existing full-datum exponential reserve. No arbitrary-data 3D payment or whole-space result is asserted.",
+  "status": "Exact algebraic checks passed; interval, norm and PDE arguments remain analytic, not Lean-certified.",
+  "source_sha256": {
+    "crossed_parent_response.py": "6ea0354bd85e10e1235681a511e29ce4034b1e4862b23a6432b5b20c03a9b852",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02",
+    "viscous_pressure_regeneration.py": "146ce0bfcdbd3f62e7620df1c9233c20c5766db114c1801ece9bf75bdc4609cd"
+  }
+}
