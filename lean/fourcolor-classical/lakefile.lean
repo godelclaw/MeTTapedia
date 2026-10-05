@@ -1736,3 +1736,17 @@ target kernelFourFan pkg : Unit := do
         "BoundaryFourFanRepair", "StripFanProgram", "StripFanReconstruction", "StripFanAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the majority closing law for adjacent insertions. -/
+target kernelAlternatingPair pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/alternating-pair",
+        "--library-output", ".lake/build/lib/lean", "--modules", "AlternatingPairRepair",
+        "StripPairCompletion", "StripPairAudit"]
+      cwd := pkg.dir
+      env := env }

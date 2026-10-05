@@ -5565,3 +5565,41 @@ Replay `lake build kernelFourFan`. The
 [receipt](../classical/strip-fan-measurements.json) records the five modules,
 sixteen-root audit, source hashes and measured checking costs. No matching
 table or interior-colouring table is stored.
+
+## Adjacent completion and the limit of one-component repair
+
+`AlternatingPairRepair` closes the two adjacent vertices remaining after
+six insertions, for a stated alternating pattern on the eight-port
+interface. Five consecutive active ports form a majority, so every
+noncrossing exterior matching contains an adjacent component in that
+block. Four local colour calculations show that each possible selected
+component frees compatible colours for both new vertices.
+
+`StripPairCompletion.from_program` connects this law to all edges of the
+actual D0099 source. Under the intermediate trace guard, it reconstructs
+a complete source colouring agreeing with a changed colouring of the
+same exterior. Palette relabellings are allowed. Supply or reachability
+of the guard remains an explicit obligation; this is not a universal
+D0099 repair theorem.
+
+The same module checks an exact ten-port obstruction: one noncrossing
+matching defeats every single-component exchange in the displayed
+palette. This identifies a limit of extending the majority method to
+longer alternating boundaries. It says nothing against several exchanges,
+another palette, a different decomposition, or a stronger geometric
+hypothesis. No physical realization of this obstruction is claimed.
+
+The independent `audit_strip_fan_repair.py --backward` experiment carries
+the exact insertion relations backwards from the final vertex. Kempe
+pruning at each intermediate interface leaves no obstruction at the
+initial boundary. The last 810 classes disappear in rounds of 378, 270
+and 162. These rounds are program evidence; their strategy table is not
+exported or credited as a structural Lean proof. The eight-port majority
+law certifies the first nontrivial backward elimination. The program also
+realizes its guard on the actual source with the two vertices omitted.
+
+Replay `lake build kernelAlternatingPair`. The
+[receipt](../classical/alternating-pair-measurements.json) records the
+three modules, thirteen-root audit, costs and exact scope. Counts remain
+633 coverage entries, 629 original certificates and 336 replaced
+discharging checks. No new catalogue reduction is claimed.

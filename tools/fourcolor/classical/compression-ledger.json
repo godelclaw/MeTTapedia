@@ -6749,5 +6749,35 @@
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0,
     "remaining": "Restore the final vertex while retaining the construction history and compatible exterior choices. Prove strict reduction and geometric supply before crediting coverage."
+  },
+  "strip_adjacent_completion": {
+    "status": "kernel checked guarded complete source reconstruction and scoped width obstruction",
+    "receipt": "alternating-pair-measurements.json",
+    "repair": "FourColor.AlternatingPairRepair.repair",
+    "source_consumer": "FourColor.StripPairCompletion.from_program",
+    "obstruction": "FourColor.AlternatingPairRepair.long_colours_fail",
+    "scope": {
+      "closing": "Every Kempe-closed exterior containing the alternating eight-port trace, up to palette relabelling, admits a changed colouring and two colours satisfying all joint constraints for the adjacent insertions.",
+      "source": "For any exterior with the D0099 boundary edges and initial Kempe closure, the displayed trace guard after six insertions yields a complete source colouring compatible with a changed colouring of the same exterior.",
+      "limit": "For the displayed ten-port trace and noncrossing matching, every single component exchange in the displayed palette leaves the two-colour constraint unsatisfiable. Multi-component, multi-palette and alternative-decomposition repairs remain possible."
+    },
+    "guarded_core_vertices_restored": 8,
+    "intermediate_boundary_size": 8,
+    "stored_repair_matching_tables": 0,
+    "stored_interior_colourings": 0,
+    "backward_experiment": {
+      "status": "program evidence only",
+      "final_unresolved": 0,
+      "remaining_initial_classes_before_final_closure": 810,
+      "final_closure_rounds": [
+        378,
+        270,
+        162
+      ]
+    },
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "remaining": "Prove a small structural account of the remaining backward pruning rounds or another guard-supply law. The current trace guard is not known to be universally reachable."
   }
 }
