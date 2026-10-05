@@ -6556,5 +6556,34 @@
     "catalogue_entries_removed": 0,
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0
+  },
+  "strip_flexibility_progress_criterion": {
+    "status": "kernel checked monotone-score obstruction with existing compatible repair",
+    "receipt": "strip-flexibility-measurements.json",
+    "kernel_result": "For either critical-chain input and each nonzero difference colour, an admissible matching makes every batch of its chords weakly decrease all six relation cardinalities. Any monotone score of these cardinalities therefore fails to guarantee strict one-round growth in the universal matching model.",
+    "preserved_positive_result": "Both critical-chain inputs have compatible source/exterior repair through StripChainRepair.compatible_changed.",
+    "program_control": {
+      "boundary_classes": 7381,
+      "direct_extensions": 1587,
+      "newly_repaired_per_round": [
+        1068,
+        1067,
+        1192,
+        1350,
+        893,
+        176,
+        48
+      ],
+      "unresolved": 0,
+      "evidence": "Independent finite program check, not a Lean all-boundary repair."
+    },
+    "next_constraint": "A structural termination argument must allow neutral or decreasing flexibility steps, use a nonmonotone score, or retain information beyond relation cardinalities.",
+    "new_stored_matchings": 6,
+    "new_core_colouring_witnesses": 0,
+    "new_repair_stages": 0,
+    "credited_compression": false,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
   }
 }

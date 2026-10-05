@@ -2674,3 +2674,58 @@ does not refute compositional reducibility or compact coverage. It rules
 out a specific unconditional input-supply shortcut. Measurements and
 source hashes are in `strip-contraction-supply-measurements.json`; no
 compression or catalogue reduction is credited.
+
+## Compatible repairs can defeat greedy flexibility scores
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelStripFlexibility
+```
+
+`StripFlexibilityBarrier` tests a proposed structural progress measure for
+the D0099 core: the cardinalities of the six exact elimination relations.
+Both inputs of `StripCriticalChain` start with sizes `(3,2,2,2,1,0)` and
+already have compatible repair theorems in `StripChainRepair`.
+
+For each input and each of the three nonzero Kempe difference colours,
+the new theorem supplies an admissible noncrossing matching. Every subset
+of its whole chords preserves the original matching chromogram and weakly
+decreases every relation size. The terminal relation stays empty, so none
+of these one-round outcomes extends to the source. Only six matchings are
+stored; there is no new table of core-colouring witnesses or repair stages.
+
+`no_greedy_score` is uniform over every monotone function from the six
+cardinalities to any preordered score space. Such a score cannot guarantee
+strict improvement against every admissible matching. This includes
+positive weighted sums and monotone lexicographic scores.
+`repair_despite_barrier` pairs this obstruction with the existing repair
+of both inputs. The audit also checks the existing actual-exterior
+consumer, which reconstructs compatible source and exterior colourings.
+
+These are boundary-contract obstructions in the universal matching model.
+No simultaneous realization of the three adversarial matchings by one
+physical exterior is asserted. Neutral steps, temporary decreases,
+nonmonotone scores and more informative summaries remain possible.
+The result does not refute compositional repair.
+
+An independent program also tests the complete finite boundary domain:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_strip_flexibility.py --full-domain
+```
+
+Of 7,381 boundary classes modulo colour renaming, 1,587 extend directly.
+Iterating the exact rule “choose a palette, then for every noncrossing
+matching choose a batch reaching an earlier layer” repairs the remaining
+classes in seven layers, with sizes 1,068, 1,067, 1,192, 1,350, 893, 176 and
+48. The program inspects 238,457 matching layouts. Each of six tested
+simple scores stalls on some inputs; the full iteration leaves none.
+This is finite program evidence, not a Lean certificate for all boundary
+classes, a physical-switch bound or geometric coverage in arbitrary maps.
+
+The useful distinction is between a terminating staged repair and a repair
+that must increase local flexibility at every stage. The former remains
+available for the two certified inputs; the latter fails under the stated
+model. Measurements and source hashes are in
+`strip-flexibility-measurements.json`. No coverage entry, original
+certificate dependency or complete-assembly check is removed.

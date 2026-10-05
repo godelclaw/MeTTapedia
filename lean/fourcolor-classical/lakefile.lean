@@ -1638,3 +1638,17 @@ target kernelStripContractionSupply pkg : Unit := do
         "StripContractionSupply", "StripContractionSupplyAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay joint-relation flexibility bounds against compatible repair. -/
+target kernelStripFlexibility pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-flexibility",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripFlexibilityBarrier", "StripFlexibilityAudit"]
+      cwd := pkg.dir
+      env := env }
