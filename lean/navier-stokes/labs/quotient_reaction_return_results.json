@@ -1,0 +1,369 @@
+{
+  "candidate": "The full nonlinear return DP(u)[N(u)] at P(u)=0, including the constrained optimal-dual Hessian.",
+  "fixtures": [
+    {
+      "phase": 0,
+      "frozen_coefficient": "-775/968",
+      "source_norm_squared": "37825/52272",
+      "vertical_first_coefficient_norm_squared": "101/17424",
+      "pressure_coefficient_modes": [
+        0,
+        20,
+        62
+      ],
+      "nonlinear_modes": [
+        0,
+        20,
+        52
+      ],
+      "acceleration_modes": [
+        0,
+        24,
+        72
+      ],
+      "certificates": [
+        {
+          "neumann_step": 0,
+          "metric_lower": "27239479832557/33753036949632",
+          "metric_upper": "2629893865/3253618368",
+          "return_lower": "19648088087/3068457904512",
+          "return_upper": "24982465/3253618368",
+          "residual_squared": "43039122953/16876518474816",
+          "residual_modes": 36
+        },
+        {
+          "neumann_step": 1,
+          "metric_lower": "22258024721558167/27548615066708736",
+          "metric_upper": "3654385719712901/4522906951250688",
+          "return_lower": "2222627883739037/303034765733796096",
+          "return_upper": "33256703990501/4522906951250688",
+          "residual_squared": "71426713135/1942530549575616",
+          "residual_modes": 44
+        },
+        {
+          "neumann_step": 2,
+          "metric_lower": "559089579142366608664204952233/691973381083971202376541308928",
+          "metric_upper": "47566987991778008966129/58872602536619504016384",
+          "return_lower": "5081965154683053042490577833/691973381083971202376541308928",
+          "return_upper": "4756561479102239392219/647598627902814544180224",
+          "residual_squared": "525430090229997362052485/345986690541985601188270654464",
+          "residual_modes": 52
+        }
+      ],
+      "coercive_completion": {
+        "heat_cross": {
+          "plus": [
+            {
+              "neumann_step": 0,
+              "metric_lower": "112806636510349/33753036949632",
+              "metric_upper": "10921119229/3253618368",
+              "return_lower": "112806636510349/33753036949632",
+              "return_upper": "10921119229/3253618368",
+              "residual_squared": "489054371297/16876518474816",
+              "residual_modes": 36
+            },
+            {
+              "neumann_step": 1,
+              "metric_lower": "11544031661946851/3443576883338592",
+              "metric_upper": "15163666002856997/4522906951250688",
+              "return_lower": "11544031661946851/3443576883338592",
+              "return_upper": "15163666002856997/4522906951250688",
+              "residual_squared": "10092882232879/16835264762988672",
+              "residual_modes": 44
+            },
+            {
+              "neumann_step": 2,
+              "metric_lower": "2319859061114983118092391992033/691973381083971202376541308928",
+              "metric_upper": "197372512050055753699877/58872602536619504016384",
+              "return_lower": "2319859061114983118092391992033/691973381083971202376541308928",
+              "return_upper": "197372512050055753699877/58872602536619504016384",
+              "residual_squared": "6523413263296511507697701/345986690541985601188270654464",
+              "residual_modes": 52
+            }
+          ],
+          "minus": [
+            {
+              "neumann_step": 0,
+              "metric_lower": "346974472613/30994524288",
+              "metric_upper": "33548461/2987712",
+              "return_lower": "346974472613/30994524288",
+              "return_upper": "33548461/2987712",
+              "residual_squared": "1057261801/15497262144",
+              "residual_modes": 36
+            },
+            {
+              "neumann_step": 1,
+              "metric_lower": "520313959110025/46378139842944",
+              "metric_upper": "46597930033933/4153266254592",
+              "return_lower": "520313959110025/46378139842944",
+              "return_upper": "46597930033933/4153266254592",
+              "residual_squared": "177557613361/139134419528832",
+              "residual_modes": 44
+            },
+            {
+              "neumann_step": 2,
+              "metric_lower": "7128995023657775937255147593/635420919269027734046410752",
+              "metric_upper": "105902245743926038105/9439250045954706432",
+              "return_lower": "7128995023657775937255147593/635420919269027734046410752",
+              "return_upper": "105902245743926038105/9439250045954706432",
+              "residual_squared": "14380230078362290793437/317710459634513867023205376",
+              "residual_modes": 52
+            }
+          ],
+          "cross_lower": "-5443632179718890214113137789637/2767893524335884809506165235712",
+          "cross_upper": "-164957878673790047911119879971/83875561343511660894126219264"
+        },
+        "heat_derivative_lower": "-11034533225443458600728807836817/1383946762167942404753082617856",
+        "heat_derivative_upper": "-1576357969665533952529857937339/197706680309706057821868945408",
+        "nonlinear_derivative": "Exactly zero by the central symmetry, not just to this order."
+      }
+    },
+    {
+      "phase": 1,
+      "frozen_coefficient": "-4261/2904",
+      "source_norm_squared": "72673/52272",
+      "vertical_first_coefficient_norm_squared": "17525/17424",
+      "pressure_coefficient_modes": [
+        0,
+        28,
+        94
+      ],
+      "nonlinear_modes": [
+        0,
+        28,
+        88
+      ],
+      "acceleration_modes": [
+        0,
+        36,
+        108
+      ],
+      "certificates": [
+        {
+          "neumann_step": 0,
+          "metric_lower": "55907423831251/33753036949632",
+          "metric_upper": "5397728935/3253618368",
+          "return_lower": "580186212233/3068457904512",
+          "return_upper": "623738623/3253618368",
+          "residual_squared": "88616140439/16876518474816",
+          "residual_modes": 60
+        },
+        {
+          "neumann_step": 1,
+          "metric_lower": "365457189092219699/220388920533669888",
+          "metric_upper": "30000916869453221/18091627805002752",
+          "return_lower": "462918510340297777/2424278125870368768",
+          "return_upper": "3455315603228453/18091627805002752",
+          "residual_squared": "2404628008075/31080488793209856",
+          "residual_modes": 76
+        },
+        {
+          "neumann_step": 2,
+          "metric_lower": "146876206264948141819629535484945/88572592778748313904197287542784",
+          "metric_upper": "12496132912583659064237899/7535693124687296514097152",
+          "return_lower": "16914836488692437430585237199889/88572592778748313904197287542784",
+          "return_upper": "15830233234281725287798841/82892624371560261655068672",
+          "residual_squared": "115987268740237384155983113/44286296389374156952098643771392",
+          "residual_modes": 92
+        }
+      ],
+      "coercive_completion": {
+        "nonlinear_cross": {
+          "plus": [
+            {
+              "neumann_step": 0,
+              "metric_lower": "53348921406476437603/10586032484586983424",
+              "metric_upper": "321662082958933/63777427249536",
+              "return_lower": "53348921406476437603/10586032484586983424",
+              "return_upper": "321662082958933/63777427249536",
+              "residual_squared": "41837771379097469/5293016242293491712",
+              "residual_modes": 76
+            },
+            {
+              "neumann_step": 1,
+              "metric_lower": "4381780330577219093355875/868949939626257711366144",
+              "metric_upper": "7153158668715960099125/1418528352934655778816",
+              "return_lower": "4381780330577219093355875/868949939626257711366144",
+              "return_upper": "7153158668715960099125/1418528352934655778816",
+              "residual_squared": "94019137834417185625/1013774929563967329927168",
+              "residual_modes": 92
+            },
+            {
+              "neumann_step": 2,
+              "metric_lower": "269234881295085487535149423486009696186099/53391621282134799860263113485680625319936",
+              "metric_upper": "13194883948558028339469176315407/2616659631733561128199602044928",
+              "return_lower": "269234881295085487535149423486009696186099/53391621282134799860263113485680625319936",
+              "return_upper": "13194883948558028339469176315407/2616659631733561128199602044928",
+              "residual_squared": "76931558009723935200785554921011485/26695810641067399930131556742840312659968",
+              "residual_modes": 108
+            }
+          ],
+          "minus": [
+            {
+              "neumann_step": 0,
+              "metric_lower": "41239366572464137939/10586032484586983424",
+              "metric_upper": "35539675159345/9111061035648",
+              "return_lower": "41239366572464137939/10586032484586983424",
+              "return_upper": "35539675159345/9111061035648",
+              "residual_squared": "53755519076905421/5293016242293491712",
+              "residual_modes": 76
+            },
+            {
+              "neumann_step": 1,
+              "metric_lower": "23718187755495220653879173/6082649577383803979563008",
+              "metric_upper": "5531399008584016662383/1418528352934655778816",
+              "return_lower": "23718187755495220653879173/6082649577383803979563008",
+              "return_upper": "5531399008584016662383/1418528352934655778816",
+              "residual_squared": "150397771014264806377/1013774929563967329927168",
+              "residual_modes": 92
+            },
+            {
+              "neumann_step": 2,
+              "metric_lower": "208193152627700196779107199071162958593699/53391621282134799860263113485680625319936",
+              "metric_upper": "10203303807423620073031243308283/2616659631733561128199602044928",
+              "return_lower": "208193152627700196779107199071162958593699/53391621282134799860263113485680625319936",
+              "return_upper": "10203303807423620073031243308283/2616659631733561128199602044928",
+              "residual_squared": "120240429855738023961067223532301997/26695810641067399930131556742840312659968",
+              "residual_modes": 108
+            }
+          ],
+          "cross_lower": "61041608426955435018018263347623205290403/213566485128539199441052453942722501279744",
+          "cross_upper": "61041805598943300479977425200401658603885/213566485128539199441052453942722501279744"
+        },
+        "nonlinear_derivative_lower": "61041608426955435018018263347623205290403/106783242564269599720526226971361250639872",
+        "nonlinear_derivative_upper": "61041805598943300479977425200401658603885/106783242564269599720526226971361250639872"
+      }
+    },
+    {
+      "phase": -1,
+      "frozen_coefficient": "-4261/2904",
+      "source_norm_squared": "72673/52272",
+      "vertical_first_coefficient_norm_squared": "17525/17424",
+      "pressure_coefficient_modes": [
+        0,
+        28,
+        94
+      ],
+      "nonlinear_modes": [
+        0,
+        28,
+        88
+      ],
+      "acceleration_modes": [
+        0,
+        36,
+        108
+      ],
+      "certificates": [
+        {
+          "neumann_step": 0,
+          "metric_lower": "55907423831251/33753036949632",
+          "metric_upper": "5397728935/3253618368",
+          "return_lower": "580186212233/3068457904512",
+          "return_upper": "623738623/3253618368",
+          "residual_squared": "88616140439/16876518474816",
+          "residual_modes": 60
+        },
+        {
+          "neumann_step": 1,
+          "metric_lower": "365457189092219699/220388920533669888",
+          "metric_upper": "30000916869453221/18091627805002752",
+          "return_lower": "462918510340297777/2424278125870368768",
+          "return_upper": "3455315603228453/18091627805002752",
+          "residual_squared": "2404628008075/31080488793209856",
+          "residual_modes": 76
+        },
+        {
+          "neumann_step": 2,
+          "metric_lower": "146876206264948141819629535484945/88572592778748313904197287542784",
+          "metric_upper": "12496132912583659064237899/7535693124687296514097152",
+          "return_lower": "16914836488692437430585237199889/88572592778748313904197287542784",
+          "return_upper": "15830233234281725287798841/82892624371560261655068672",
+          "residual_squared": "115987268740237384155983113/44286296389374156952098643771392",
+          "residual_modes": 92
+        }
+      ],
+      "coercive_completion": {
+        "nonlinear_cross": {
+          "plus": [
+            {
+              "neumann_step": 0,
+              "metric_lower": "41239366572464137939/10586032484586983424",
+              "metric_upper": "35539675159345/9111061035648",
+              "return_lower": "41239366572464137939/10586032484586983424",
+              "return_upper": "35539675159345/9111061035648",
+              "residual_squared": "53755519076905421/5293016242293491712",
+              "residual_modes": 76
+            },
+            {
+              "neumann_step": 1,
+              "metric_lower": "23718187755495220653879173/6082649577383803979563008",
+              "metric_upper": "5531399008584016662383/1418528352934655778816",
+              "return_lower": "23718187755495220653879173/6082649577383803979563008",
+              "return_upper": "5531399008584016662383/1418528352934655778816",
+              "residual_squared": "150397771014264806377/1013774929563967329927168",
+              "residual_modes": 92
+            },
+            {
+              "neumann_step": 2,
+              "metric_lower": "208193152627700196779107199071162958593699/53391621282134799860263113485680625319936",
+              "metric_upper": "10203303807423620073031243308283/2616659631733561128199602044928",
+              "return_lower": "208193152627700196779107199071162958593699/53391621282134799860263113485680625319936",
+              "return_upper": "10203303807423620073031243308283/2616659631733561128199602044928",
+              "residual_squared": "120240429855738023961067223532301997/26695810641067399930131556742840312659968",
+              "residual_modes": 108
+            }
+          ],
+          "minus": [
+            {
+              "neumann_step": 0,
+              "metric_lower": "53348921406476437603/10586032484586983424",
+              "metric_upper": "321662082958933/63777427249536",
+              "return_lower": "53348921406476437603/10586032484586983424",
+              "return_upper": "321662082958933/63777427249536",
+              "residual_squared": "41837771379097469/5293016242293491712",
+              "residual_modes": 76
+            },
+            {
+              "neumann_step": 1,
+              "metric_lower": "4381780330577219093355875/868949939626257711366144",
+              "metric_upper": "7153158668715960099125/1418528352934655778816",
+              "return_lower": "4381780330577219093355875/868949939626257711366144",
+              "return_upper": "7153158668715960099125/1418528352934655778816",
+              "residual_squared": "94019137834417185625/1013774929563967329927168",
+              "residual_modes": 92
+            },
+            {
+              "neumann_step": 2,
+              "metric_lower": "269234881295085487535149423486009696186099/53391621282134799860263113485680625319936",
+              "metric_upper": "13194883948558028339469176315407/2616659631733561128199602044928",
+              "return_lower": "269234881295085487535149423486009696186099/53391621282134799860263113485680625319936",
+              "return_upper": "13194883948558028339469176315407/2616659631733561128199602044928",
+              "residual_squared": "76931558009723935200785554921011485/26695810641067399930131556742840312659968",
+              "residual_modes": 108
+            }
+          ],
+          "cross_lower": "-61041805598943300479977425200401658603885/213566485128539199441052453942722501279744",
+          "cross_upper": "-61041608426955435018018263347623205290403/213566485128539199441052453942722501279744"
+        },
+        "nonlinear_derivative_lower": "-61041805598943300479977425200401658603885/106783242564269599720526226971361250639872",
+        "nonlinear_derivative_upper": "-61041608426955435018018263347623205290403/106783242564269599720526226971361250639872"
+      }
+    }
+  ],
+  "inverse_certificate": "On |k_h|^2=2, A=-div((I+F0 tensor F0)grad)>=2. Trial energy minus ||residual||2^2/2 <= exact Hessian <= trial energy.",
+  "balanced_symmetry": "C u=-R u(Rx), R=diag(-1,-1,1). C fixes the exact balanced datum; P(Cu)=-P(u), and heat commutes with C. Thus P(u0)=DP(u0)[Delta u0]=0 exactly.",
+  "physical_consequence": "For every nu>0 and A>0 and sufficiently small positive epsilon, the actual unforced local solution has P(0)=0 and P(t)>0 for all sufficiently small positive t. The small epsilon threshold and time interval are analytic existence statements, not numerical enclosures.",
+  "clock_test": "C_H=J+(H-t)P has C_H(0)=J(u0)>0 but increases initially for A^2=8000nu/(7H epsilon^2), for sufficiently small epsilon. This rejects this first-order signed forecast, not all history corrections.",
+  "coercive_completion": "With A_geo=H_u(N,N), S_H=J+(H-t)P+(3/4)(H-t)^2 A_geo >= J/2. It pays half-diffusion on a short actual interval of the balanced family for every positive amplitude, viscosity and horizon. The phase +1 has D A_geo[N]>0, so sufficiently large amplitude defeats this same payment for every fixed positive viscosity and horizon.",
+  "completion_scope": "The constrained Hessian and its third variation are used only near smooth nonvanishing optimizers. All generated-mode metric bounds include the full inverse residual. No arbitrary-history payment or global Hessian regularity is claimed.",
+  "status": "Exact Fourier/rational residual checks passed. Elliptic coercivity, analytic dependence and local-PDE consequences are analytic, not Lean-certified.",
+  "limitation": "The observable is optimized cubic work. This does not prove positive net cubic growth, positive vorticity stretching, repeated renewal, blowup, or failure of a full-datum allowance.",
+  "source_sha256": {
+    "quotient_reaction_return.py": "f34acfad8f3d7c0678c9b3858e58aef68d324329c5fb2a6cec4d29c866f45fc1",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02"
+  }
+}

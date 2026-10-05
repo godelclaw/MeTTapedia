@@ -53114,3 +53114,402 @@ source hashes, exact coefficients, sharp derivative constants, nodal
 shear and constant-flow calibrations, and complete remainder parameters.
 The arbitrary signed history bound (QH14) remains the missing physical
 estimate. No Lean declarations or axioms change in this calculation.
+
+## A balanced fluid generates positive optimized work through its changing dual
+
+`quotient_reaction_return.py` computes the complete next return of the
+optimized cubic work from (OG5) and (QH3). The response of the optimizer
+is essential: omitting it predicts a negative coefficient, whereas the
+complete coefficient is strictly positive. A symmetry-balanced family
+turns this into an actual unforced positive-time statement at every
+positive viscosity. The result tests a local geometric brake and two
+signed history corrections. A coercive second-order completion repairs
+the balanced example, but a different phase regenerates that correction
+itself. This is not a regularity or blowup claim.
+
+### The constrained Hessian retains the changing geometry
+
+Use the normalized period-2pi torus, N(u)=-Pi[(u.grad)u], and the exact
+quotient J, optimizer w and solenoidal dual F=|w|w. Near a smooth optimizer
+with |w| bounded below, the elliptic implicit function theorem used in
+(OG5a) makes the optimizer smooth in a sufficiently strong Holder space.
+All derivatives below are taken in that neighborhood. This local step
+does not reintroduce a nonvanishing hypothesis into (QH1)--(QH15).
+
+For a smooth solenoidal physical direction a put
+
+```text
+M=|w|I+w tensor w/|w|,
+b_a=div(Ma), A_M=-div(M grad),
+A_M psi_a=b_a,
+w_a=a+grad psi_a, F_a=M w_a,
+H_u(a,b)=int w_a.M w_b.                              (QR1)
+```
+
+Potentials have mean zero. The uniformly elliptic equation gives
+div F_a=0 and Pi w_a=a, so this is the actual derivative of the optimal
+representative. It follows that H is the symmetric Hessian of J and
+
+```text
+H_u(a,a)=min_psi int (a+grad psi).M(a+grad psi)
+        =int a.Ma-<b_a,A_M^(-1)b_a> >=0.              (QR2)
+```
+
+This is an elliptic Schur complement retaining the joint coefficient M.
+It is not an arbitrary covariance input or an independently chosen fluid
+force. The variation of the optimizer is eliminated with reconstruction.
+
+For P(u)=DJ(u)[N(u)], actual unforced velocity tangent
+h=nu Delta u+N(u), and Dq from (QH1), the complete derivatives are
+
+```text
+P'=H_u(h,N(u))+<F,DN(u)[h]>,
+Dq'=-H_u(h,Delta u)-<F,Delta h>,
+J''=H_u(h,h)+<F,nu Delta h+DN(u)[h]>.                (QR3)
+```
+
+Here DN(u)[a]=-Pi[(a.grad)u+(u.grad)a]. The pressure variation and every
+new nonlinear output are included. In particular the purely nonlinear
+return is
+
+```text
+R(u)=DP(u)[N(u)]=H_u(N(u),N(u))+<F,DN(u)[N(u)]>.     (QR4)
+```
+
+The first term is nonnegative. Keeping only the second term would freeze
+the measuring field while the actual fluid changes it.
+
+### Full return coefficients around an explicit physical reference
+
+Retain (OG7), now allowing sigma=0 as well as +/-1:
+
+```text
+F0=(cos z,sin z,0),
+G_sigma=(2sin x sin y sin z,2cos x cos y sin z,
+                                             2sigma sin x sin y),
+F_epsilon=F0+epsilon G_sigma,
+w_epsilon=F_epsilon/(F_epsilon.F_epsilon)^(1/4),
+u_epsilon=Pi w_epsilon.                              (QR5)
+```
+
+For sufficiently small |epsilon| these are smooth exact optimizers.
+The two proper rotation symmetries used in (OG7) still force zero mean.
+The sigma=0 physical velocity is genuinely three-dimensional: its first
+vertical coefficient has squared L2 norm 101/17424. A horizontal dual
+field does not imply a horizontal projected velocity.
+
+Write u_epsilon=F0+epsilon u1+O(epsilon^2), let
+L a=DN(F0)[a], and n=L u1. Since N(F0)=0 and |F0|=1,
+
+```text
+R(u_epsilon)=epsilon^2 R2_sigma+O(epsilon^3),
+R2_sigma=H_F0(n,n)+C_sigma,
+C_sigma=<G_sigma-u1,Ln>-||n||2^2.                   (QR6)
+```
+
+To see why no second-order source is dropped, expand
+N(u_epsilon)=epsilon n+epsilon^2 n2+O(epsilon^3). The pairing
+<F0,Ln2> vanishes for every n2. Differentiating the exact kinetic-energy
+cancellation <u,N(u)>=0 gives
+<F0,DN(u1)[n]>=-<u1,Ln>-||n||2^2, yielding (QR6).
+The checker also evaluates the full n2 and full acceleration directly,
+including their canonical pressure, and verifies this cancellation.
+
+The exact frozen-dual coefficients and certified full returns are
+
+| sigma | C_sigma with the dual held fixed | Complete R2_sigma |
+| --- | --- | --- |
+| 0 | -775/968 | strictly between 7/1000 and 8/1000 |
+| +1 | -4261/2904 | strictly between 19/100 and 1/5 |
+| -1 | -4261/2904 | strictly between 19/100 and 1/5 |
+
+Thus the moving-dual contribution reverses the frozen prediction in
+all three fixtures. The +/- fixtures start with opposite P by (OG9),
+yet have the same positive leading nonlinear return. These are statements
+about the complete optimized work P, not the cubic vorticity-stretching
+integral or the kinetic-energy transfer.
+
+### The inverse operator is bounded, not truncated away
+
+At the base M0=I+F0 tensor F0. All horizontal Fourier modes in n and
+b_n satisfy |k_h|^2=2. On each invariant block the full operator is
+
+```text
+A_M0=-partial_z^2+2+(k_x cos z+k_y sin z)^2 >=2.     (QR7)
+```
+
+Let A0=-partial_z^2+3 and B=A_M0-A0. Form the three-term trial potential
+
+```text
+phi=A0^(-1)b-A0^(-1)B A0^(-1)b
+                       +(A0^(-1)B)^2 A0^(-1)b,
+r=b-A_M0 phi,
+Q_phi=int (n+grad phi).M0(n+grad phi).                (QR8)
+```
+
+These finite Fourier products and their full residual are rational.
+Completing the quadratic variational problem gives the exact identity
+Q_phi-H_F0(n,n)=<r,A_M0^(-1)r>. Consequently (QR7) proves
+
+```text
+Q_phi-||r||2^2/2 <= H_F0(n,n) <= Q_phi.              (QR9)
+```
+
+There is no assumption that the true potential is a finite Fourier sum.
+The residual bound controls every omitted vertical frequency. Nor is
+the physical velocity evolved in a finite-dimensional closed model.
+For sigma=0 the complete second-order source has 52 wave vectors and
+its next acceleration has 72; the checker retains them all. The exact
+fractions in the archive establish the strict enclosures in the table.
+Elliptic coercivity and (QR9) are analytic proofs; the code verifies their
+finite inputs and residual identities, not an infinite operator in Lean.
+
+### Balanced work is recreated by unforced evolution
+
+The sigma=0 family has an exact additional symmetry. For
+R=diag(-1,-1,1), define C v(x)=-R v(Rx). Direct substitution in (QR5)
+gives C F_epsilon=F_epsilon and hence C u_epsilon=u_epsilon. Leray
+projection and the optimizer commute with this transformation; heat
+commutes with it as well. Meanwhile
+
+```text
+N(Cu)=-C N(u),
+P(Cu)=-P(u),
+P(u_epsilon)=0,
+P(exp(s Delta)u_epsilon)=0 for every s>=0.           (QR10)
+```
+
+The optimizer's equivariance follows from its unique convex minimum,
+not a factorization of separate fields. Differentiating the last identity
+at zero yields DP(u_epsilon)[Delta u_epsilon]=0 exactly. Thus the viscous
+part of the first P derivative vanishes at this datum; it has not been
+estimated away. N(u_epsilon) is nonzero and lies in the opposite symmetry
+class, so the actual nonlinear tangent breaks the initial balance.
+
+The elliptic implicit function theorem makes R(u_epsilon) smooth (indeed
+real analytic) in epsilon near zero. Equation (QR6), with the strict
+coefficient enclosure, therefore gives a number epsilon_*>0 such that
+
+```text
+R(u_epsilon)>=(7/2000)epsilon^2, 1/2<=Dq(u_epsilon)<=2,
+                     0<epsilon<epsilon_*.           (QR11)
+```
+
+This is a qualitative analytic remainder bound. No explicit numerical
+value of epsilon_* is claimed. It depends only on the fixed dimensionless
+family and the local elliptic neighborhood, not on an unknown future
+fluid. All subsequent choices are made before evolving the data.
+
+For ANY nu>0 and A>0 take U0=A u_epsilon, sigma=0. Local smooth unforced
+NS existence and (QR10)--(QR11) give
+
+```text
+P(U0)=0,
+(d/dt)P(U(t)) at zero=A^5 R(u_epsilon)
+                         >=(7/2000)A^5 epsilon^2>0. (QR12)
+```
+
+For some positive datum-dependent interval, shrinking it inside any
+prescribed H>0 if needed, continuity then proves
+
+```text
+P(U(t))>=(7/4000)A^5 epsilon^2 t>0.                 (QR13)
+```
+
+This is an actual unforced positive-viscosity history with all generated
+parents. It is not an inviscid calculation substituted for that history.
+Initially J'=-nu A^3 Dq(u_epsilon)<0, so the new positive work must not
+be described as proved net cubic growth. Neither a repeated cycle nor a
+singularity is established.
+
+### A first-order signed forecast fails while still positive
+
+One concrete attempt to pay the current reaction from a horizon clock is
+
+```text
+C_H(t)=J(U(t))+(H-t)P(U(t)),
+C_H'=-nu Dq(U(t))+(H-t)P'(U(t)).                    (QR14)
+```
+
+The clock cancels P but retains its complete evolution. This is a proposed
+first-order correction, not a claim of globally positive or coercive
+storage. On the balanced example it starts at J(U0)>0 and, by (QR13),
+actually dominates J on a short interval inside H. Thus positivity cannot
+remove the following local failure.
+
+Fix any nu,H>0, choose 0<epsilon<epsilon_*, and prescribe the original
+amplitude by A^2=8000nu/(7H epsilon^2). Equations (QR11)--(QR14) imply
+
+```text
+C_H'(0)>=-2nu A^3+H A^5(7/2000)epsilon^2
+         =2nu A^3>0,
+C_H(t)-C_H(0)>=nu A^3 t
+                         on a short positive interval. (QR15)
+```
+
+In particular the proposed half-diffusion payment
+C_H(t)+(nu/2)int_0^t Dq<=C_H(0) fails there. This rejects this correction's
+automatic payment, not an added finite allowance from the full initial
+datum, another history correction, or global regularity. The amplitude,
+parameter threshold and interval are analytic choices; no numerically
+enclosed finite-time simulation is claimed.
+
+There is a precise reason the moving dual cannot simply be discarded.
+Convexity gives the nonnegative Bregman difference
+
+```text
+B_(u0)(v)=J(v)-J(u0)-<F(u0),v-u0> >=0.              (QR16)
+```
+
+Replacing J by its frozen affine part loses control of the physical
+velocity. For the balanced datum F(u0) is horizontal. The smooth
+solenoidal direction v=(0,0,sin x) is orthogonal to it, so this affine
+part is constant on u0+a v as |a| grows, whereas J grows cubically by
+the Leray norm comparison. These are admissible states, not a claimed
+trajectory from one fixed datum. Retaining only dynamically reachable
+states would require precisely the additional history estimate at issue.
+
+### A coercive completion pays the balanced return
+
+The omitted Hessian suggests a constructive completion. Define the
+nonnegative metric of the generated motion, and retain the original
+deadline H:
+
+```text
+A_geo(u)=H_u(N(u),N(u)), tau=H-t,
+S_H(t)=J(u)+tau P(u)+(3/4)tau^2 A_geo(u).           (QR17)
+```
+
+Positive-amplitude homogeneity of J gives
+H_u(u,u)=6J(u) and H_u(u,N)=2P(u). Cauchy in the positive Hessian yields
+P^2<=(3/2)J A_geo, and Young's inequality then gives
+
+```text
+|tau P|<=(1/2)J+(3/4)tau^2 A_geo,
+S_H >= J/2.                                        (QR18)
+```
+
+This corrects the sign problem of the first-order forecast on
+the stated smooth, nonvanishing-optimizer domain. It does not assert
+that the constrained Hessian extends through arbitrary optimizer zeros.
+The original-data value S_H(0) is finite for each of the fixtures here.
+
+Put B=<F,DN(u)[N]>, V=DP(u)[Delta u], and
+h=nu Delta u+N. The complete derivative is
+
+```text
+S_H'=-nu Dq+tau[B-(1/2)A_geo+nu V]
+                                  +(3/4)tau^2 A_geo',
+A_geo'=D^3J[h,N,N]+2H_u(N,DN(u)[h]).                (QR19)
+```
+
+Thus the completion pays for the first Hessian return while introducing
+the evolution of that Hessian and its generated parents. These terms
+cannot be suppressed. Explicitly, with the lifted directions from (QR1),
+
+```text
+D^3J[a,b,c]=int T_w(w_a,w_b,w_c),
+T_w(a,b,c)=[(w.a)(b.c)+(w.b)(a.c)+(w.c)(a.b)]/|w|
+                             -(w.a)(w.b)(w.c)/|w|^3. (QR20)
+```
+
+To derive this formula, differentiate (QR1). Derivatives of the lifted
+directions are gradients; their pairings with M w_b or M w_c vanish by
+the respective divergence constraint. The remaining derivative of M
+is exactly the displayed third derivative of |w|^3/3. The checker verifies
+all ten independent tensor entries off zero.
+
+For the balanced family C u=u, A_geo(Cu)=A_geo(u), whereas N(Cu)=-C N(u).
+Consequently D A_geo(u)[N(u)]=0 exactly at this datum. Also V=0 by (QR10).
+Its complete heat derivative has expansion
+
+```text
+Z(u_epsilon):=D A_geo(u_epsilon)[Delta u_epsilon]
+ =epsilon^2 Z2+O(epsilon^3),
+Z2=-5H_F0(n,n)+2H_F0(n,L(Delta+1)u1),
+                         -8 < Z2 < -7.             (QR21)
+```
+
+The factor -5 follows from A_geo's degree-five amplitude homogeneity:
+Delta u_epsilon=-u_epsilon+epsilon(Delta+1)u1+O(epsilon^2).
+The third-variation term for the remaining direction is O(epsilon^3).
+To certify the mixed Hessian, apply (QR9) separately to n+m and n-m,
+then use H(n,m)=[H(n+m,n+m)-H(n-m,n-m)]/4. Here m=L(Delta+1)u1.
+All horizontal blocks still have |k_h|^2=2; the same full inverse error
+bound applies. The archived rational interval for Z2 lies between
+-7.973236 and -7.973215.
+
+Since B(u_epsilon)=-(775/968)epsilon^2+O(epsilon^3), for sufficiently
+small positive epsilon we have B<0 and Z<0. At U0=A u_epsilon, for
+EVERY A,nu,H>0, (QR19) now gives S_H'(0)<-nu Dq(U0). Smooth dependence
+and local unforced existence yield a T>0, T<=H, such that
+
+```text
+S_H(t)+(nu/2)int_s^t Dq <= S_H(s),
+                              0<=s<=t<=T.           (QR22)
+```
+
+This is a positive actual-history repair of (QR15), including all
+positive amplitudes and viscosities. The same deadline and current
+physical state are retained at each seam. The interval T is existential
+and datum-dependent, not an arbitrary-horizon bound. Nonlinear motion
+immediately leaves the balanced class, so the zero nonlinear derivative
+at the initial datum cannot be assumed at later times.
+
+### A different phase regenerates the completion itself
+
+Testing (QR17) against the earlier +/- phases is essential. Their
+complete nonlinear source-metric derivative is
+
+```text
+W(u_epsilon):=D A_geo(u_epsilon)[N(u_epsilon)]
+ =epsilon^2 W2_sigma+O(epsilon^3),
+W2_sigma=2H_F0(n,Ln),
+57/100 < W2_plus < 58/100,
+-58/100 < W2_minus < -57/100.                       (QR23)
+```
+
+The third-variation term is O(epsilon^3); the displayed coefficient
+retains the full nonlinear acceleration. The same polarization and
+inverse-residual calculation certifies both strict signs. Independently,
+C exchanges the two exact phases and gives W(Cu)=-W(u), explaining
+the sign reversal without declaring their histories independent.
+
+Fix sufficiently small epsilon>0 in the plus family, so W(u_epsilon)>0.
+For every fixed nu,H>0, the original amplitude A can be chosen large
+enough that (QR19) increases initially. Indeed its exact amplitude
+dependence, with Dq,B,A_geo,V,W,Z evaluated at u_epsilon, is
+
+```text
+S_H'(0)=-nu A^3 Dq
+        +H[A^5(B-A_geo/2)+nu A^4 V]
+        +(3/4)H^2[A^6 W+nu A^5 Z],
+lim_(A->infinity) A^(-6)S_H'(0)=(3/4)H^2 W>0.       (QR24)
+```
+
+All coefficients in (QR24) are finite and depend only on the original
+smooth datum; neither the viscous terms nor the changing optimizer
+have been omitted. Equation (QR18) still guarantees S_H>=J/2. Local
+existence and continuity give an actual positive-time failure of (QR22)
+for this phase and amplitude. No explicit amplitude threshold or interval
+length is claimed here.
+
+The failure is now more specific than a sign defect of a proposed stock:
+a positive, coercive correction pays one generated return but can itself
+be regenerated by the full unforced dynamics. It rules out automatic
+half-diffusion payment by (QR17) for arbitrary data, not a finite larger
+allowance from the full datum, another correction, or global regularity.
+It also does not prove that every finite-order correction must fail.
+The next physical obligation is payment for W and the complete heat
+term Z over compatible histories, or a different correction that
+controls them together without assuming their signs persist.
+
+Run `python3 -O labs/quotient_reaction_return.py`. The archive records
+the exact frozen coefficients, full pressure/source outputs, symmetry
+checks, third-variation entries and rational inverse-residual enclosures
+for all three phases, including the constructive completion's heat and
+nonlinear derivatives.
+Analytic dependence, local NS existence and the interval conclusions
+remain analytic, not Lean-certified. The arbitrary-data physical history
+payment in (PD9d) or (QH14) remains open. No Lean declarations or axioms
+change in this calculation.

@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete quotient-return test](labs/README.md#a-balanced-fluid-generates-positive-optimized-work-through-its-changing-dual)
+retains the evolving optimizer when differentiating the cubic work. An
+exact elliptic residual bounds its full response. A balanced periodic 3D
+datum has zero initial work and zero viscous contribution to its first
+work derivative, yet actual unforced evolution generates positive work
+on a short interval. Freezing the optimizer predicts the wrong sign.
+A first-order signed history forecast fails locally while remaining
+positive. A coercive second-order completion repairs that balanced
+example at every positive amplitude and viscosity, but a different
+phase regenerates the completion itself and defeats its payment at
+large amplitude. This concerns the chosen cubic observation, not a
+blowup or a failure of every full-datum allowance. The results are
+analytic with exact rational checks, not new Lean certificates.
+
 The [quotient heat payment](labs/README.md#heat-dissipation-of-the-optimal-quotient-without-a-nondegenerate-gauge)
 removes the smooth, nonvanishing optimizer assumption from the cubic
 continuation observation on R3 and T3. A heat-semigroup comparison controls
