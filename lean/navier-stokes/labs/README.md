@@ -56932,3 +56932,227 @@ inequality uses the analytic spectral and Cauchy arguments above;
 checking finite fixtures alone would not prove it. The all-prefix PDE
 identification and conditional continuation remain analytic, not new
 Lean-certified declarations. No new axiom is introduced.
+
+## Shared viscous history retains the creation of new gradients
+
+The arbitrary tensor jets in the local convexity test after (MA8) need
+not be reachable from C(0)=0. This section instead uses the same actual
+NS history for memory, gradients and pressure. It identifies a constraint
+they always satisfy, an actual failure of its source-free simplification,
+and a paid part of the stronger time cost in (MA6). The constraint is an
+application of the classical variance/Jensen identity to the actual
+transport-diffusion propagator, not a new general probability theorem.
+All continuum claims here are analytic, with exact algebra checked by
+`shared_gradient_history.py`; they are not newly Lean-certified.
+
+### A common history gives a matrix inequality with its full source
+
+Retain the domains, smooth unforced prefixes and original memory of
+(MA1). Let P_(r,t) be the actual scalar advection-diffusion propagator,
+acting entrywise. It is positivity preserving, preserves constants and
+mass, and satisfies the evolution/semigroup identity. For fixed 0<=s<t
+and age a=t-s, put
+
+```text
+B=grad u,  G=B B^T,  F=D B=-B^2-Hess p,
+C_(s,t)=2nu integral_s^t P_(r,t)G(r) dr,
+J_(s,t)=integral_s^t [(r-s)/a] P_(r,t)F(r) dr,
+Bbar_(s,t)=(1/a)integral_s^t P_(r,t)B(r) dr.
+
+B(t)=Bbar_(s,t)+J_(s,t).                              (GH1)
+```
+
+The last equality follows by averaging the actual Duhamel formula
+B(t)=P_(r,t)B(r)+integral_r^t P_(q,t)F(q)dq over r. Fubini gives
+the factor (q-s)/a. In particular J keeps both nonlinear deformation
+and the canonical pressure Hessian; the latter ensures tr F=0 together
+with tr(B^2)+Delta p=0. This is not an independently prescribed force.
+
+At fixed (t,x), choose r uniformly in [s,t] and then a past location
+from the actual kernel P_(r,t)(x,dy). The expectation of B(r,y) is
+Bbar, and its matrix second moment is C_(s,t)/(2nu a). Therefore
+
+```text
+C_(s,t)/(2nu a)-Bbar Bbar^T
+ = expectation[(B(r,y)-Bbar)(B(r,y)-Bbar)^T] >=0,
+
+C_(s,t)>=2nu a [B(t)-J_(s,t)][B(t)-J_(s,t)]^T.        (GH2)
+```
+
+This is a joint space/time law; all off-diagonal covariance is retained.
+The drift is the same actual NS velocity throughout. Each compact smooth
+prefix supplies the needed regular linear propagator without assuming
+continuation beyond it. Full C(t)=P_(s,t)C(s)+C_(s,t); its earlier memory
+is not reset. Noncommuting gradients and changing directions are allowed.
+
+If F vanishes throughout the window, then J=0. Actual decaying shears
+u=(f(t,y),0,g(t,y)), with f,g solving heat, satisfy B^2=0 and p=0;
+they therefore obey C_(s,t)>=2nu a G(t). For general unforced flows,
+that source-free statement fails even though memory and gradients
+come from one physical history.
+
+### An actual cyclic flow defeats the source-free relation
+
+On the 2pi-periodic torus start the actual unforced equation from
+U=(sin y,sin z,sin x), with normalized energy 3/2. At the origin,
+
+```text
+B0=[[0,1,0],[0,0,1],[1,0,0]], G0=I,
+p0=0 everywhere, partial_j B0(0)=0, F0(0)=-B0^2.
+```
+
+Let L0=nu Delta-U.grad. The original zero-memory initial condition gives
+C_t(0)=2nu G0 and C_tt(0)=2nu[G_t(0)+L0 G0]. The full actual gradient
+equation gives (D G)(0,0)=-(B0+B0^T). Consequently
+
+```text
+[C(t)-2nu t G(t)](0)=nu t^2(B0+B0^T)+o(t^2),
+n=(1,-1,0):
+n^T[C(t)-2nu t G(t)](0)n=-2nu t^2+o(t^2)<0.          (GH3)
+```
+
+This holds on a sufficiently short nonzero actual interval for EVERY
+nu>0, by smooth local existence and the differentiated memory equation.
+The full NS tangent is used; the displayed modes are not assumed to
+remain a closed finite set. Pressure initially vanishes, but its later
+generation is not suppressed. Retaining J_(0,t)=-(t/2)B0^2+o(t) cancels
+the offending second-order term in the corrected difference in (GH2).
+
+There is also a compact finite-energy whole-space version; no periodic
+field is asserted to be L2 on R3. A bounded periodic vector potential is
+V=-(cos z,cos x,cos y), with curl V=U. Choose a fixed smooth cutoff
+0<=chi<=1, equal to one on the unit ball and zero outside the ball of
+radius two. For R>=1 set
+
+```text
+u_R=curl[chi(x/R)V(x)],   gamma=||grad chi||infinity,
+M_chi=3[(1+gamma)^2+1],   K_chi=2754 M_chi.
+```
+
+Then u_R is smooth, compactly supported and solenoidal, and agrees
+with U throughout the radius-R ball. Its canonical pressure Hessian
+at the origin need not vanish. It does, however, satisfy
+
+```text
+||Hess p_R(0)||op <= K_chi/R^2.                       (GH4)
+```
+
+To see this, subtract the canonical periodic stress response, whose
+pressure is zero. The stress difference vanishes on the radius-R ball
+and each of its components is bounded by M_chi. The pressure Hessian
+kernel away from zero is a fourth derivative of 1/(4pi|x|). Its
+three terms have absolute coefficient bounds 105,6*15,3*3, totaling
+204, so each kernel entry is <=204/(4pi|x|^5). Summing nine stress
+components, integrating the tail and bounding a three-by-three operator
+norm by three times its largest entry gives 3*9*204/2=2754.
+The stress difference vanishes near the receiver, so no singular local
+term appears. The far tail is absolutely integrable even for the
+bounded periodic stress being subtracted.
+
+Choose the original radius R>=max(1,2sqrt(K_chi)). All local B and
+spatial-gradient values in (GH3) are unchanged. The second-order
+coefficient gains nu(P_R B0^T+B0 P_R), where P_R=Hess p_R(0).
+Since |n|^2=2 and ||B0||op=1, its directional absolute value is at
+most 4nu||P_R||op<=nu. The full coefficient is therefore <=-nu<0.
+Smooth whole-space local existence proves a genuine unforced interval
+violating the same matrix inequality. This counterexample uses finite
+original resources; it does not demonstrate indefinite renewal or blowup.
+
+### Initial energy pays the time-averaged part of the critical cost
+
+Return to an arbitrary actual smooth prefix on either domain. Keep
+the full inherited A(C)=C/sqrt(k^2+|C|^2) and original k from (MA1).
+Fix an original age delta>0. For t>=delta let J_delta=J_(t-delta,t) and
+define the nonnegative physical creation cost
+
+```text
+L_delta(t)=int (I-A(C(t))):J_delta(t)J_delta(t)^T,
+m_delta(t)=[E(t-delta)-E(t)]/(nu delta), E=||u||2^2.
+```
+
+Using (GH1), the matrix inequality
+(X+Y)(X+Y)^T<=2XX^T+2YY^T, and (GH2), gives
+
+```text
+H_k(t)<=m_delta(t)+2L_delta(t).                       (GH5)
+```
+
+Indeed I-A is positive semidefinite and <=I, so its pairing with
+C_(t-delta,t) is at most tr C_(t-delta,t). After spatial integration,
+the latter trace is exactly E(t-delta)-E(t). No simultaneous
+diagonalization or independent assignment of J and C is made.
+
+The unforced energy identity proves, on every available prefix T>=delta,
+
+```text
+0<=m_delta<=E0/(nu delta),
+integral_delta^T m_delta(t)dt<=E0/nu,
+integral_delta^T m_delta(t)^2dt<=E0^2/(nu^2 delta).     (GH6)
+```
+
+For the middle inequality, m_delta=(2/delta)integral_(t-delta)^t Z(r)dr.
+Each dissipated-energy element occurs in windows of total length at
+most delta. Fubini and 2nu integral Z<=E0 give the stated allowance.
+Thus overlapping windows are accounted for once, rather than granted
+a fresh reserve at each observation. This bound has no factor growing
+with the number of windows or with T.
+
+The initial time window can also be paid using original inputs. Let
+Z0=||grad u0||2^2>0 and use the fixed domain S in (MA5). Since H_k<=Z,
+the same actual equation gives Z'<=c Z^3, where
+
+```text
+c=151875 S^3/(16nu^3),
+delta=1/(4c Z0^2)=4nu^3/(151875 S^3 Z0^2).            (GH7)
+```
+
+Comparison implies Z(t)^2<=2Z0^2 on every available prefix with
+0<=t<=delta. This uses a datum-fixed differential comparison, not an
+unknown future maximum. Hence integral_0^min(T,delta) H_k^2<=2delta Z0^2.
+When Z0=0 the finite-energy whole-space flow is zero; the periodic
+flow is constant after uniqueness and its conserved mean can be removed.
+That case has H_k=0 and requires no division by Z0.
+
+Combining (GH5)--(GH7) yields the UNCONDITIONAL reduction
+
+```text
+integral_0^T H_k(t)^2dt
+ <= K0+8 integral_delta^T L_delta(t)^2dt,
+K0=2delta Z0^2+2E0^2/(nu^2 delta).                   (GH8)
+```
+
+The late integral is defined as zero when T<delta. This estimate holds
+for each actual smooth prefix; it does not assert that its remaining
+right-hand side is bounded uniformly as the prefix approaches a possible
+singular time. In particular the still-OPEN source theorem is
+
+```text
+integral_delta^T L_delta(t)^2dt
+ <=K_creation(u0,nu,Tstar,k,delta)                    (GH9)
+```
+
+with one finite original-data constant on EVERY same-datum smooth
+prefix T<=Tstar. Such a theorem would give (MA6) with K=K0+8K_creation,
+and therefore the existing continuation consumers on R3 and T3.
+The local time, regularizer and windows do not change in response to
+an uncontrolled future gradient. At seams, the parents already present
+in B(r), the full C and the source weights must all be inherited.
+
+This narrows the proposed payment to gradients created by the actual
+coupled deformation/pressure history. It does not prove that those
+gradients cannot repeatedly renew. A forced equation adds grad f to F
+and 2int u.f to the kinetic energy identity; bounded kinetic work alone
+would not control the new gradient-source contribution to J. The matrix
+identity itself is not a test distinguishing forced from unforced flows.
+The open bound (GH9) must use the actual unforced source F, retaining
+both its pressure and deformation terms.
+
+Run `python3 -O labs/shared_gradient_history.py`. The exact checker
+retains the full cyclic NS tangent, verifies the memory second jet at
+two positive viscosities and the correction's leading cancellation,
+checks a universal matrix covariance identity and the source-age moments,
+verifies every independent fourth Newton derivative, and checks the
+local-time and overlapping-window constants. Whole-space localization,
+positive-time existence, propagator Jensen/Fubini and the continuation
+implication are analytic arguments above, not consequences of finite
+fixtures alone. No Lean declarations or axioms change.

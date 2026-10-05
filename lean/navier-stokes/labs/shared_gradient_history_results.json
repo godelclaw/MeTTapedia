@@ -1,0 +1,49 @@
+{
+  "actual_history": {
+    "B_at_origin": "Matrix([[0, 1, 0], [0, 0, 1], [1, 0, 0]])",
+    "F_at_origin": "Matrix([[0, 0, -1], [-1, 0, 0], [0, -1, 0]])",
+    "all_nu_positive_failure": "n^T[C(t)-2*nu*t*B(t)B(t)^T]n=-2*nu*t^2+o(t^2)",
+    "datum": "(sin y,sin z,sin x)",
+    "direction": "(1,-1,0)",
+    "initial_energy": "3/2",
+    "positive_viscosity_checks": [
+      {
+        "nu": "1",
+        "source_corrected_t2": "zero matrix",
+        "unrepaired_directional_t2": "-2"
+      },
+      {
+        "nu": "2/7",
+        "source_corrected_t2": "zero matrix",
+        "unrepaired_directional_t2": "-4/7"
+      }
+    ],
+    "scope": "actual smooth periodic NS on a short interval; not a singularity construction"
+  },
+  "certification": "exact algebra; PDE, covariance and all-prefix estimates analytic, not Lean-certified",
+  "continuation": {
+    "OPEN": "bound integral L_delta^2 by a finite original-data constant on every same-datum prefix",
+    "conditional_gradient_bound": "Z(t)<=Z0*exp(c*(K0+8*K_creation))",
+    "delta": "4*nu**3/(151875*S**3*Z0**2)",
+    "paid_cost_K0": "(23066015625*E0**2*S**6*Z0**2 + 16*nu**8)/(303750*S**3*nu**5)",
+    "unconditional_estimate": "integral H_k^2 <= K0 + 8*integral_delta^T L_delta^2",
+    "weighted_creation_cost": "L_delta(t)=integral (I-A(C(t))):J_delta(t)J_delta(t)^T"
+  },
+  "joint_variance": {
+    "J": "integral_start^end [(r-start)/age]*P_(r,end) F(r) dr",
+    "joint_constraint": "C_recent >= 2*nu*age*(B-J)(B-J)^T",
+    "source": "F=-B^2-Hess p",
+    "source_free_case": "J=0 for actual decaying shears",
+    "source_moments": "age**3*c2/4 + age**2*c1/3 + age*c0/2"
+  },
+  "source_sha256": "baff36becbd863ba59b85f0c4e4c7edcf902ddbdcd200953d5ada4c82f2e4982",
+  "whole_space": {
+    "M_chi": "3*((1+||grad chi||infinity)^2+1)",
+    "compact_datum": "u_R=curl(chi(x/R)*potential)",
+    "directional_second_coefficient": "<=-nu<0 for every nu>0",
+    "potential": "-(cos z,cos x,cos y)",
+    "pressure_bound": "||Hess p_R(0)||op <= 2754*M_chi/R^2",
+    "radius": "R>=max(1,2*sqrt(2754*M_chi))",
+    "scope": "analytic compact finite-energy R3 NS localization; no singularity claim"
+  }
+}

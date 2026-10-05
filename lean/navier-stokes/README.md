@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [shared gradient-history estimate](labs/README.md#shared-viscous-history-retains-the-creation-of-new-gradients)
+uses the actual common transport-diffusion history to relate stress memory
+to the velocity gradient. The relation must retain newly created gradients:
+a cyclic unforced example defeats the source-free heat relation, both
+periodically and after a controlled compact whole-space localization.
+The exact repair separates an averaged-history cost paid by initial energy
+from a weighted deformation-and-pressure source cost. A finite bound on
+that remaining source cost would imply the memory-alignment continuation
+criterion. It remains open. These are analytic results with exact checks;
+no new Lean PDE theorem or arbitrary-data regularity claim is added.
+
 The [memory-alignment stretching bound](labs/README.md#the-stress-memory-deficit-controls-actual-vorticity-stretching)
 connects the actual viscous stress memory to ordinary vorticity stretching.
 A smooth tensor reserve pays the time integral of a nonnegative deficit;
