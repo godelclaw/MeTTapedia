@@ -1722,3 +1722,17 @@ target kernelStripProtectedEnds pkg : Unit := do
         "StripProtectedEndsRepair", "StripProtectedEndsGeometry", "StripProtectedEndsAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay four-neighbour insertion and source reconstruction. -/
+target kernelFourFan pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/four-fan",
+        "--library-output", ".lake/build/lib/lean", "--modules", "KempeFourFan",
+        "BoundaryFourFanRepair", "StripFanProgram", "StripFanReconstruction", "StripFanAudit"]
+      cwd := pkg.dir
+      env := env }

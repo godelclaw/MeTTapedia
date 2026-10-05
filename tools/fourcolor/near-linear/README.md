@@ -5522,3 +5522,46 @@ reductions with a new geometric consumer, not a new primitive reduction or
 catalogue deletion. Compact coverage and termination remain open; the
 counts remain 633 coverage entries, 629 original certificate dependencies
 and 336 replaced independent discharging checks.
+
+## Seven source vertices through shared boundary insertions
+
+`KempeFourFan` and `BoundaryFourFanRepair` implement the four-neighbour
+Kempe argument on a joint boundary relation. A new vertex joins four
+consecutive boundary vertices. If those vertices use all four colours,
+one supplied boundary component exchange frees a colour. The resulting
+colouring covers the entire old graph as well as the new vertex. An exact
+split-and-merge identity preserves the complete joint trace relation and
+its Kempe closure for subsequent operations.
+
+`StripFanProgram` applies the three- and four-neighbour laws seven times:
+
+```text
+core vertex:       0  3  1  7  5  6  4
+old neighbours:    3  4  3  3  4  4  4
+boundary length:  11 10 10 10  9  8  7
+```
+
+`StripFanReconstruction.compatible` reconstructs the actual induced D0099
+source with core vertex 2 omitted and a compatible colouring of the same
+exterior. It applies to every initial exterior colouring under the stated
+closure and boundary-edge hypotheses. Earlier colours may change; every
+retained source edge remains properly coloured. `from_reading` obtains
+closure from an actual source reading in a connected spherical
+triangulation. `disk_consumer` applies it to the previously certified
+23-vertex planar exterior.
+
+The independent `audit_strip_fan.py` checks every insertion against the
+pinned source, including cyclic order, intermediate boundaries and exact
+agreement with all 36 edges of the retained source. The final seven-port
+boundary is exactly the omitted vertex's neighbourhood.
+
+The final degree-seven insertion remains open. Restoring seven of eight
+vertices does not mean that seven eighths of the reducibility argument is
+finished: the last insertion carries the unresolved repair obligation.
+This result adds no strict reduction, coverage theorem or certificate
+replacement. Counts remain 633 /629 /336.
+
+Replay `lake build kernelFourFan`. The
+[receipt](../classical/strip-fan-measurements.json) records the five modules,
+sixteen-root audit, source hashes and measured checking costs. No matching
+table or interior-colouring table is stored.

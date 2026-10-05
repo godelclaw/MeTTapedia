@@ -1,0 +1,283 @@
+{
+  "status": "kernel checked seven-vertex construction with actual-source and geometric consumers",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "D0099: Yuta Inoue near-linear catalogue, MIT. Kempe semantics reuse Gonthier/Emery.",
+  "local_theorem": "FourColor.BoundaryFourFanRepair.colourable",
+  "construction": "FourColor.StripFanProgram.colourable",
+  "source_reconstruction": "FourColor.StripFanReconstruction.compatible",
+  "actual_map_consumer": "FourColor.StripFanReconstruction.from_reading",
+  "concrete_disk_consumer": "FourColor.StripFanReconstruction.disk_consumer",
+  "quantifiers": {
+    "insertion": "For any coloured graph whose ordered boundary trace relation is Kempe closed, recolour the whole old graph and insert a vertex adjacent to four consecutive boundary vertices.",
+    "construction": "For any colourable exterior with the D0099 boundary edges and a Kempe-closed ordered trace relation, seven fixed insertions restore the source except core vertex 2. No condition on starting boundary colours is required.",
+    "geometry": "An actual D0099 reading in a connected spherical triangulation supplies exterior closure; every exterior colouring admits a compatible colouring of the retained induced source."
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.KempeFourFan",
+      "source_sha256": "f66dfa0ebee847c2162d72f7085f9fdf00facc54c49acb11157d1321677b8242",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.027,
+      "olean_bytes": 384880,
+      "olean_sha256": "bc52cbcdb26ef78abce13878847e3d17ebbdb20b0f4804be4dac2ef327a1b276",
+      "source_bytes": 7809
+    },
+    {
+      "module": "MettapediaFourColor.BoundaryFourFanRepair",
+      "source_sha256": "071741b8de01b5253d0513209bf2300546cafc5af405fc0f17d6c6c19c9a8f7d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.121,
+      "olean_bytes": 390912,
+      "olean_sha256": "c8e94409860364953b6e2ccb372af2c5397cb8f4580ae2b8638da6f15d627cab",
+      "source_bytes": 8256
+    },
+    {
+      "module": "MettapediaFourColor.StripFanProgram",
+      "source_sha256": "3d1d8cec5d90793ae210eaccab3ea1088d5bcbc2fd2e6f8b53897d963a7ef60c",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.833,
+      "olean_bytes": 470736,
+      "olean_sha256": "ecd52e3b43df77a3422158cfcd69834e4bc7b0a6f79096c455186fa6288fb472",
+      "source_bytes": 14853
+    },
+    {
+      "module": "MettapediaFourColor.StripFanReconstruction",
+      "source_sha256": "203dc913057d7107c8db76f7396d232f39bbf86d72cfbbb65302b434b374eb1f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 11.572,
+      "olean_bytes": 1295584,
+      "olean_sha256": "345d73f636865c390f0029581c282bc4977059058af2127d408d4c1b139482fa",
+      "source_bytes": 5440
+    },
+    {
+      "module": "MettapediaFourColor.StripFanAudit",
+      "source_sha256": "2235323c64df1d39c5f1ba1d96059ad2ca2836c38577a2db1fa29b0e1be0ff69",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.197,
+      "olean_bytes": 2600,
+      "olean_sha256": "e96ed2bbe051518141f6ca7fb69f06d8a8e89f0492d4271284c58cdf0fe66436",
+      "source_bytes": 3127
+    }
+  ],
+  "frontend_seconds_with_prebuilt_dependencies": 32.75,
+  "new_lean_source_bytes": 39485,
+  "audit": {
+    "roots": 16,
+    "transitive_declarations": 13201,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excludes": [
+      "complete Four Colour endpoints",
+      "original bulk certificates",
+      "WheelRepairData",
+      "ExceptionalRepairData",
+      "ResidualSeedRepairData",
+      "DiamondProfileData"
+    ]
+  },
+  "inserted_core_vertices": [
+    0,
+    3,
+    1,
+    7,
+    5,
+    6,
+    4
+  ],
+  "insertion_arities": [
+    3,
+    4,
+    3,
+    3,
+    4,
+    4,
+    4
+  ],
+  "remaining_core_vertex": 2,
+  "remaining_degree": 7,
+  "stored_matchings": 0,
+  "stored_interior_colouring_witnesses": 0,
+  "independent_program_replay": {
+    "status": "exact source, cyclic-order and boundary checks passed",
+    "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+    "insertions": [
+      {
+        "core_vertex": 0,
+        "arity": 3,
+        "rotation": 6,
+        "old_neighbours": [
+          6,
+          7,
+          8
+        ],
+        "boundary": [
+          6,
+          11,
+          8,
+          9,
+          10,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "core_vertex": 3,
+        "arity": 4,
+        "rotation": 9,
+        "old_neighbours": [
+          4,
+          5,
+          6,
+          11
+        ],
+        "boundary": [
+          4,
+          14,
+          11,
+          8,
+          9,
+          10,
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "core_vertex": 1,
+        "arity": 3,
+        "rotation": 1,
+        "old_neighbours": [
+          14,
+          11,
+          8
+        ],
+        "boundary": [
+          14,
+          12,
+          8,
+          9,
+          10,
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      {
+        "core_vertex": 7,
+        "arity": 3,
+        "rotation": 4,
+        "old_neighbours": [
+          10,
+          0,
+          1
+        ],
+        "boundary": [
+          10,
+          18,
+          1,
+          2,
+          3,
+          4,
+          14,
+          12,
+          8,
+          9
+        ]
+      },
+      {
+        "core_vertex": 5,
+        "arity": 4,
+        "rotation": 1,
+        "old_neighbours": [
+          18,
+          1,
+          2,
+          3
+        ],
+        "boundary": [
+          18,
+          16,
+          3,
+          4,
+          14,
+          12,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "core_vertex": 6,
+        "arity": 4,
+        "rotation": 7,
+        "old_neighbours": [
+          9,
+          10,
+          18,
+          16
+        ],
+        "boundary": [
+          9,
+          17,
+          16,
+          3,
+          4,
+          14,
+          12,
+          8
+        ]
+      },
+      {
+        "core_vertex": 4,
+        "arity": 4,
+        "rotation": 6,
+        "old_neighbours": [
+          12,
+          8,
+          9,
+          17
+        ],
+        "boundary": [
+          12,
+          15,
+          17,
+          16,
+          3,
+          4,
+          14
+        ]
+      }
+    ],
+    "retained_source_vertices": 18,
+    "retained_source_edges": 36,
+    "omitted_core_vertex": 2,
+    "final_boundary_length": 7,
+    "no_extra_source_edges": true,
+    "limits": [
+      "Program evidence; Lean separately certifies colouring reconstruction.",
+      "The final degree-seven insertion and geometric supply remain open."
+    ]
+  },
+  "compression_credit": {
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
+  },
+  "limits": [
+    "The final degree-seven insertion is open; seven of eight restored vertices is not a measure of reducibility-proof completion.",
+    "Earlier interior colours and exterior colours may change. The theorem preserves proper colourability and shared witnesses, not fixed boundary colours.",
+    "The source-edge and cyclic-order program check is independent evidence; Lean certifies source colouring reconstruction.",
+    "The theorem gives a compatible source colouring with one vertex omitted, not a new strict reduction, occurrence-supply theorem or global coverage."
+  ]
+}

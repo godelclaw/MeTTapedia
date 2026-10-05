@@ -6719,5 +6719,35 @@
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0,
     "remaining": "Broaden the protected preparation and prove a structural continuation for bridge vertices 2 and 4. Safe-palette intersection, termination and geometric supply remain explicit obligations."
+  },
+  "strip_fan_construction": {
+    "status": "kernel checked seven-vertex construction with actual-source and geometric consumers",
+    "receipt": "strip-fan-measurements.json",
+    "uniform_law": "FourColor.BoundaryFourFanRepair.colourable",
+    "construction": "FourColor.StripFanProgram.colourable",
+    "actual_map_consumer": "FourColor.StripFanReconstruction.from_reading",
+    "scope": {
+      "insertion": "For any coloured graph whose ordered boundary trace relation is Kempe closed, recolour the whole old graph and insert a vertex adjacent to four consecutive boundary vertices.",
+      "construction": "For any colourable exterior with the D0099 boundary edges and a Kempe-closed ordered trace relation, seven fixed insertions restore the source except core vertex 2. No condition on starting boundary colours is required.",
+      "geometry": "An actual D0099 reading in a connected spherical triangulation supplies exterior closure; every exterior colouring admits a compatible colouring of the retained induced source."
+    },
+    "core_vertices_restored": 7,
+    "core_vertices_remaining": 1,
+    "remaining_degree": 7,
+    "insertion_arities": [
+      3,
+      4,
+      3,
+      3,
+      4,
+      4,
+      4
+    ],
+    "new_stored_matchings": 0,
+    "new_stored_core_colourings": 0,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "remaining": "Restore the final vertex while retaining the construction history and compatible exterior choices. Prove strict reduction and geometric supply before crediting coverage."
   }
 }
