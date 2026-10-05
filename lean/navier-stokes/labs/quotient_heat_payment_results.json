@@ -1,0 +1,155 @@
+{
+  "candidate": "J(u)=min_{Pi w=u} integral |w|^3/3; F=|w|w; Dq=-<F,Delta u>.",
+  "heat_geometry": {
+    "transformed_field": "z=|w|^(1/2)w",
+    "gradient_bound": "integral |grad z|^2 <= (9/8) Dq",
+    "dual_bound": "integral |grad F|^2/|w| <= 2 Dq; zero integrand at w=0",
+    "coarse_coefficient": "kappa=54 C_Pi,3^2 ||kernel_l||_2^2 E0/nu"
+  },
+  "calibrations": {
+    "nodal_shear": "u=A exp(-nu t) sin(z)e1; optimizer w=u vanishes on planes; P=0 and J_prime=-nu Dq.",
+    "constant_flow": "For nonzero constant u on T3, Dq=0 while J>0. The periodic Sobolev L2 term cannot be dropped.",
+    "zero_flow": "u=w=F=0 gives J=Dq=P=0; no inverse magnitude or division by energy is used."
+  },
+  "physical_fixtures": [
+    {
+      "sign": 1,
+      "full": [
+        "0",
+        "0",
+        "1/12"
+      ],
+      "diffusion": [
+        "1",
+        "0",
+        "61/16"
+      ],
+      "cutoffs": [
+        {
+          "ell": "1/2",
+          "fine": [
+            "0",
+            "0",
+            "-2707/44100"
+          ],
+          "coarse": [
+            "0",
+            "0",
+            "3191/22050"
+          ]
+        },
+        {
+          "ell": "1",
+          "fine": [
+            "0",
+            "0",
+            "-89/4608"
+          ],
+          "coarse": [
+            "0",
+            "0",
+            "473/4608"
+          ]
+        },
+        {
+          "ell": "2",
+          "fine": [
+            "0",
+            "0",
+            "21848/342225"
+          ],
+          "coarse": [
+            "0",
+            "0",
+            "26683/1368900"
+          ]
+        }
+      ]
+    },
+    {
+      "sign": -1,
+      "full": [
+        "0",
+        "0",
+        "-1/12"
+      ],
+      "diffusion": [
+        "1",
+        "0",
+        "61/16"
+      ],
+      "cutoffs": [
+        {
+          "ell": "1/2",
+          "fine": [
+            "0",
+            "0",
+            "2707/44100"
+          ],
+          "coarse": [
+            "0",
+            "0",
+            "-3191/22050"
+          ]
+        },
+        {
+          "ell": "1",
+          "fine": [
+            "0",
+            "0",
+            "89/4608"
+          ],
+          "coarse": [
+            "0",
+            "0",
+            "-473/4608"
+          ]
+        },
+        {
+          "ell": "2",
+          "fine": [
+            "0",
+            "0",
+            "-21848/342225"
+          ],
+          "coarse": [
+            "0",
+            "0",
+            "-26683/1368900"
+          ]
+        }
+      ]
+    }
+  ],
+  "remainders": [
+    {
+      "epsilon": "1/4294967296",
+      "C3_strict_upper": "10000000",
+      "exact_previous_C3": "46593315130642621086268739/5188146770730811392",
+      "minimum_absolute_coefficient": "89/4608",
+      "amplitude_over_nu": "340010386766614455386112/89",
+      "bound": "|P_fine-sign*c_ell*epsilon^2| <= 10000000 epsilon^3",
+      "physical_consequence": "At ell=1 with sign=-1 and the stated amplitude, P_fine-nu Dq/4 >= (3/2)nu A^3 initially and on a short actual interval with a smaller margin.",
+      "limitation": "The full nonlinear work is negative on that fixture. This rejects automatic fine-work absorption, not the complete coarse-paid bound or any finite original-data allowance."
+    },
+    {
+      "epsilon": "1/4294967296",
+      "C3_strict_upper": "10000000",
+      "exact_previous_C3": "46593315130642621086268739/5188146770730811392",
+      "minimum_absolute_coefficient": "89/4608",
+      "amplitude_over_nu": "340010386766614455386112/89",
+      "bound": "|P_fine-sign*c_ell*epsilon^2| <= 10000000 epsilon^3",
+      "physical_consequence": "At ell=1 with sign=-1 and the stated amplitude, P_fine-nu Dq/4 >= (3/2)nu A^3 initially and on a short actual interval with a smaller margin.",
+      "limitation": "The full nonlinear work is negative on that fixture. This rejects automatic fine-work absorption, not the complete coarse-paid bound or any finite original-data allowance."
+    }
+  ],
+  "status": "Exact algebra and Fourier/remainder constants passed; variational, semigroup, Sobolev and local-PDE arguments are analytic, not Lean-certified.",
+  "open": "One finite original-data allowance for the signed fine work on every same-datum prefix remains unproved on both domains.",
+  "source_sha256": {
+    "quotient_heat_payment.py": "2f23171675d1c98b75a4d76bb006f849e7d69e7671510040d7375aa4970673cc",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02"
+  }
+}

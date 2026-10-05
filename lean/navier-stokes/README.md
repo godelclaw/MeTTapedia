@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [quotient heat payment](labs/README.md#heat-dissipation-of-the-optimal-quotient-without-a-nondegenerate-gauge)
+removes the smooth, nonvanishing optimizer assumption from the cubic
+continuation observation on R3 and T3. A heat-semigroup comparison controls
+its weighted spatial derivatives even at zeros. Every interaction with a
+fixed-scale smoothed velocity factor is bounded by diffusion and linear
+stock growth, with a coefficient fixed by the original energy. One signed
+fine-history estimate remains.
+Exact three-dimensional fixtures show that the remaining work can have
+either sign, and its sign can change with the chosen smoothing scale.
+The arbitrary-history allowance remains open. These are analytic results
+with exact algebraic checks, not new Lean certificates.
+
 The [optimal cubic gradient test](labs/README.md#optimal-gradient-removal-leaves-signed-physical-renewal)
 removes the preceding covector overcharge by minimizing over every gradient
 representative of the physical velocity. This correction succeeds on the

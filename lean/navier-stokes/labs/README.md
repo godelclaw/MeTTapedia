@@ -52654,6 +52654,8 @@ The latter is a conditional statement for representatives with the stated
 regularity. It supplies (JP11)'s existing order-one continuation consumer.
 Neither the full-original-datum allowance K on every prefix nor sufficient
 regularity of arbitrary time-dependent minimizers is established here.
+The later analysis (QH1)--(QH15) removes this optimizer-regularity
+requirement from the continuation observation; its history payment stays open.
 The physical pressure-deformation target (PD9d) remains the main open target.
 
 For the exact pressure-free shear in (RC14), w=u is optimal because
@@ -52814,3 +52816,301 @@ the exact coefficients, remainder constants and source hash. Convex
 optimality, the complete analytic remainder argument and the physical
 positive-time consequence remain analytic, not Lean-certified. No Lean
 declaration or axiom changes.
+
+## Heat dissipation of the optimal quotient without a nondegenerate gauge
+
+`quotient_heat_payment.py` checks the constants and physical fixtures for
+an extension of (OG1)--(OG6). The optimizer need not stay smooth or away
+from zero. A heat-semigroup comparison supplies the derivative control
+needed by the continuation criterion on both R3 and T3. The full nonlinear
+balance still has a signed, unpaid term. A fixed spatial decomposition
+bounds every interaction with a smoothed velocity factor by diffusion
+and controlled linear stock growth, identifying the remaining all-prefix
+estimate precisely.
+
+The quotient construction retains the attribution in (OG1). The arguments
+below use its variational definition directly; they do not import the
+preprint's stochastic or rigidity assertions. All new functional-analytic
+and PDE conclusions in this section are analytic, not Lean-certified.
+
+### A physical derivative that does not divide by the optimizer
+
+On R3, or the normalized period-2pi torus, let Pi be the actual bounded
+Leray projection. Work with an actual smooth unforced NS prefix with
+u, Delta u and u_t in L3, continuously in time. Smooth whole-space data
+in the lane's all-derivatives-L2 class have this regularity on each
+available smooth prefix. Define
+
+```text
+I(w)=int |w|^3/3,
+J(u)=min_{Pi w=u} I(w),
+F(u)=|w(u)|w(u),
+Dq(u)=-int F(u).Delta u.                              (QH1)
+```
+
+The affine constraint is closed in L3 and nonempty. Reflexivity, weak
+lower semicontinuity and strict convexity give one minimizer. Variation
+against ker Pi shows that F annihilates every gradient in that kernel,
+equivalently Pi F=F in L^(3/2). The projection is self-adjoint under the
+L3/L^(3/2) pairing. This argument uses distributions and does not require
+a differentiable potential or a positive lower bound for |w|.
+
+The Fenchel lower bound (OG3) and the feasible trial w(u)+h give, for
+solenoidal h in L3,
+
+```text
+0 <= J(u+h)-J(u)-int F(u).h
+  <= C[||w(u)||3 ||h||3^2+||h||3^3].                  (QH2)
+```
+
+For the upper bound, the Hessian of |v|^3/3 has norm at most 2|v|;
+integrate its Taylor remainder and use Holder. Thus J is Frechet
+differentiable on the solenoidal L3 space, with derivative F under its
+dual pairing. The minimizers depend continuously on u: a bounded sequence
+u_n converging in L3 has bounded minimizers; weak compactness identifies
+every weak limit with the unique minimizer at u. Their norms converge
+by (QH2), so uniform convexity upgrades this to strong L3 convergence.
+Consequently F is continuous into L^(3/2). In particular (QH1) is finite
+and continuous on the stated physical prefixes.
+
+Writing N(u)=-Pi[(u.grad)u], the actual NS equation and (QH2) give
+
+```text
+J'(u(t))+nu Dq(u(t))=P(u(t)),
+P(u)=-int F.(u.grad)u=int F.(u cross curl u).          (QH3)
+```
+
+The pressure pairing vanishes because Pi F=F. Pressure still determines
+the actual NS tangent and the nonlocal optimizer. An externally forced
+equation would have the additional term int F.f; no auxiliary control
+is substituted for that physical force. Where the optimizer is smooth,
+the old calculation gives Dq=D(w) from (OG5). No such identification is
+needed at a rough optimizer or its zeros.
+
+### Heat smoothing proves the missing weighted regularity
+
+Put S_s=exp(s Delta), with auxiliary heat time s and no factor of nu.
+It commutes with Pi. Therefore S_s w(u) is a feasible representative
+of S_s u, and
+
+```text
+J(S_s u)<=I(S_s w)<=I(w)=J(u),
+0<=I(w)-I(S_s w)<=J(u)-J(S_s u)
+                    =s Dq(u)+o(s).                  (QH4)
+```
+
+The last equality follows from (QH2) and the L3 heat-generator derivative
+of the smooth physical u, not a derivative of w. It proves Dq>=0.
+For positive auxiliary times v=S_s w, the heat entropy identity is
+
+```text
+I(w)-I(S_s w)=int_0^s D(S_tau w) d tau,
+D(v)=int |v||grad v|^2+sum_j(v.partial_j v)^2/|v|.     (QH5)
+```
+
+The integrand at v=0 is zero. Heat smoothing from L3 gives the needed
+integrability; integrate first between positive times and pass to zero
+by strong L3 continuity. Spatial integration by parts on R3 is justified
+by cutoff approximation with the same integrable quantities.
+
+For z_v=|v|^(1/2)v and r=|v|, the pointwise identities are
+
+```text
+|partial_j z_v|^2=r|partial_j v|^2+(5/4)r|partial_j r|^2,
+D(v)>=(8/9)int |grad z_v|^2.                         (QH6)
+```
+
+Indeed the difference is (1/9)r(|partial_j v|^2-|partial_j r|^2),
+which is nonnegative. These relations also hold at zero by the C1
+chain rule for v -> |v|^(1/2)v.
+
+Combining (QH4)--(QH6), choose auxiliary times tau_n decreasing to zero
+whose dissipations do not exceed Dq+o(1). The transformed fields converge
+strongly in L2 to z=|w|^(1/2)w, since S_tau w converges strongly in L3.
+They are bounded in H1, so weak compactness and lower semicontinuity give
+
+```text
+z=|w|^(1/2)w in H1,
+int |grad z|^2 <=(9/8)Dq,
+int |z|^2=3J.                                      (QH7)
+```
+
+This proves precisely the regularity that the continuation calculation
+uses. It neither asserts smoothness of w nor solves a degenerate elliptic
+control equation through a zero.
+
+One also obtains the derivative needed for the physical work. Write
+F=|z|^(1/3)z and r=|z|^(2/3)=|w|. Its weak chain rule, obtained first
+with bounded truncations, yields F in W^(1,3/2) and
+
+```text
+int |grad F|^2/r <=(16/9)int |grad z|^2<=2Dq.         (QH8)
+```
+
+At z=0 the derivative of z -> |z|^(1/3)z is zero; the weighted integrand
+there is defined as zero. Away from zero its derivative is
+|z|^(1/3)[I+(1/3)zhat tensor zhat], whose squared norm is at most
+(16/9)|z|^(2/3). No inverse magnitude is assumed bounded.
+
+Let C_Pi,p denote the projection's Lp norm. Sobolev, applied to z, gives
+with C9=C_Pi,9^3 C_S,
+
+```text
+||u||9^3<=C9 (9/8)Dq                           on R3,
+||u||9^3<=C9[(9/8)Dq+3J]                       on T3. (QH9)
+```
+
+Here C_S is the homogeneous Sobolev constant on R3, and the corresponding
+inhomogeneous constant on the fixed torus. Pi w=u is first a distributional
+identity; (QH7) puts w in L9, so boundedness of Pi there justifies (QH9).
+The torus L2 term is essential: a constant physical flow has positive J
+and zero Dq. As another exact calibration, w=u=A exp(-nu t)sin(z)e1
+vanishes on planes but satisfies J'=-nu Dq and equality in the gradient
+factor 9/8 in (QH7). The zero flow needs no exceptional division.
+
+### Paying all coarse couplings with a coefficient fixed by the original data
+
+Choose one length ell>0 at the original start and keep it at all seams.
+For exact Fourier tests use the positive Bessel smoother
+
+```text
+L_ell=(I-ell^2 Delta)^(-2)
+     =int_0^infinity s exp(-s) exp(s ell^2 Delta) ds,
+u_lo=L_ell u, u_hi=u-u_lo.                           (QH10)
+```
+
+Its kernel k_ell is positive with mass one, and belongs to L2 on both
+domains. The latter follows from its multiplier (1+ell^2|xi|^2)^(-2)
+and Plancherel (or the square-summable periodic multiplier). Thus L_ell
+contracts each Lp, while I-L_ell has L3 norm at most two. The unforced
+energy law gives
+
+```text
+||u_lo(t)||infinity<=B_ell=||k_ell||2 sqrt(E0),
+E0=||u0||2^2.                                      (QH11)
+```
+
+Integration by parts using (QH8) yields the exact split
+
+```text
+P=int sum_ij (partial_j F_i)u_i u_j=P_coarse+P_fine,
+P_coarse=int grad F:[u_lo tensor u+u_hi tensor u_lo],
+P_fine=int grad F:[u_hi tensor u_hi].                (QH12)
+```
+
+All terms use the SAME optimizer and actual fluid. This is a split of
+the observation, not a closed evolution for either band. Since
+||u||3<=C_Pi,3||w||3 and ||u_hi||3<=2||u||3, weighted Cauchy--Schwarz
+and Holder give
+
+```text
+|P_coarse|<=sqrt(2Dq) B_ell ||w||3^(1/2)
+                          (||u||3+||u_hi||3)
+           <=3sqrt(6) C_Pi,3 B_ell sqrt(J Dq)
+           <=(nu/4)Dq+kappa J,
+kappa=54 C_Pi,3^2 ||k_ell||2^2 E0/nu.                (QH13)
+```
+
+Every constant here is known from the original energy, viscosity, domain
+and fixed smoothing length. There is no amplitude or near-reference
+smallness assumption. The coefficient grows as the chosen length shrinks;
+no uniform limit ell ->0 is asserted.
+
+In particular J'+(3nu/4)Dq<=kappa J+P_fine. This controls the coarse
+couplings in the joint estimate; it is not a separate finite bound on
+their time integral while the fine work is left uncontrolled.
+
+The exact remaining history question is now
+
+```text
+int_0^t exp(-kappa s)[P_fine(u(s))-(nu/4)Dq(u(s))] ds
+ <=K_fine(u0,nu,H,ell),
+for EVERY available same-datum prefix and EVERY t<=T<=H. (QH14)
+```
+
+This estimate is OPEN. It asks for one finite bound from the original
+datum, not the supremum over an uncontrolled future. Combining (QH3) and
+(QH13), the integrating factor gives, conditional on (QH14),
+
+```text
+J(t)+(nu/2)int_0^t Dq <=B_H,
+B_H=exp(kappa H)[J(u0)+K_fine],
+int_0^T||u||9^3 <=(9C9/(4nu))B_H                 on R3,
+int_0^T||u||9^3 <=C9[9/(4nu)+3H]B_H              on T3. (QH15)
+```
+
+Use (JP11) to obtain the common order-one bound for the existing
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` and
+`FourierTameContinuation.exists_tameSolutionOn_of_orderOne` consumers.
+For the Fourier consumer take a fixed sufficiently high Sobolev order
+so its tame prefixes have the physical regularity used above. Conversion
+between the period-2pi and period-1 conventions changes fixed constants.
+These identifications are still analytic; no new Lean bridge is claimed.
+Unlike (OG6), (QH15) does not require separately proving smoothness or
+nonvanishing of every optimizer. The original datum, ell, kappa, deadline
+and accumulated signed integral all persist through a composition seam.
+The pressure-deformation target (PD9d) remains an alternative open target;
+no equivalence of its fine source and (QH14) is asserted.
+
+### The residual sign depends on the joint geometry and the chosen scale
+
+Retain the exact full fields (OG7), including their complete binomial
+normalization and physical projection. The checker expands (QH12) on
+these actual smooth data, retaining every generated Fourier output:
+
+```text
+P=sigma epsilon^2/12+O(epsilon^3),
+P_fine=sigma c_ell epsilon^2+O(epsilon^3),
+c_(1/2)=-2707/44100, c_1=-89/4608,
+c_2=21848/342225.                                  (QH16)
+```
+
+These are coefficients of an exact datum, not a Galerkin evolution.
+The sign of the separated fine work changes with ell even when the
+underlying physical field is held fixed. The full P is unchanged; the
+complementary coarse work restores it exactly, before and after the
+physical pressure projection. Thus a sign attached to an isolated band
+is not an intrinsic direction of energy or geometric transfer.
+
+The full remainder is controlled, not just formally displayed. In the
+weighted Wiener algebra of (OG10)--(OG12), I-L_ell contracts the norm
+and maps F0 to c F0 for a scalar 0<=c<=1. The cancellation
+int F0.[(F0.grad)v+(v.grad)F0]=0 holds for every v. Hence the SAME
+remainder majorant applies to the filtered nonlinear work:
+
+```text
+|P_fine-sigma c_ell epsilon^2|<=10^7 epsilon^3,
+epsilon=2^(-32),
+10^7 epsilon <(1/2)min_ell |c_ell|=89/9216.          (QH17)
+```
+
+Explicitly, with a,g,Cu,V,v1 from the earlier proof, the error is bounded
+by [a Cu(V+v1)+2g a Cu+g V^2]epsilon^3<10^7 epsilon^3.
+The filter decreases each of the required norms, including the full
+infinite-series remainder. This proves all the signs in (QH16) for the
+exact data. Their Dq equals the smooth-optimizer D and is at most 69/50.
+
+For ell=1, sigma=-1, put c_min=89/4608 and choose from the original
+datum A=4nu/(c_min epsilon^2). The actual local unforced solution from
+U0=A u_- then satisfies at its initial time
+
+```text
+P_fine(U0)-(nu/4)Dq(U0)>=(3/2)nu A^3>0.             (QH18)
+```
+
+The chosen amplitude is deliberately very large and conservative; this is
+an analytic sign witness, not a moderate-amplitude numerical experiment.
+Continuity preserves a smaller positive margin on a positive interval.
+It follows that (QH14) with K_fine=0 fails there, even with the complete
+viscosity and an exponential weight. Crucially, the FULL nonlinear P
+on this datum is negative. This example rejects automatic absorption of
+the separated fine work; it does not refute the complete coarse-paid
+bound, any additional finite original-data allowance, or global regularity.
+The sign witnesses are periodic; the variational and payment arguments
+(QH1)--(QH15) apply on both domains.
+
+Run `python3 -O labs/quotient_heat_payment.py`. Its archive records the
+source hashes, exact coefficients, sharp derivative constants, nodal
+shear and constant-flow calibrations, and complete remainder parameters.
+The arbitrary signed history bound (QH14) remains the missing physical
+estimate. No Lean declarations or axioms change in this calculation.
