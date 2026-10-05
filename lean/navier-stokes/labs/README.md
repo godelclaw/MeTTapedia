@@ -52535,3 +52535,282 @@ reserve algebra, both heat commutators, exact source splitting, six full
 NS jets, the localized swirl source and the all-time shear formulas.
 The local/continuation PDE results, scalar comparison and all-prefix
 reserve arguments are analytic. No new Lean declaration or axiom is added.
+
+## Optimal gradient removal leaves signed physical renewal
+
+`optimal_cubic_gauge.py` tests a stronger repair of (RC12)--(RC15): minimize
+the cubic stock over ALL gradient representatives of the actual velocity.
+The harmless shear overcharge disappears, but a fully optimized stock can
+still increase along an actual unforced periodic NS solution. This tests
+an instantaneous correction, not a finite allowance for complete histories.
+
+The quotient observation is consistent with the gauge quotient in Section
+7.1 of [Mahithitarmmatorn's mean--covariance preprint](https://arxiv.org/html/2608.16915v1#S7.SS1).
+Only its elementary projection-norm comparison is used here and is proved
+below. The preprint's other stochastic and rigidity claims are not imported.
+The optimality test, explicit pair and complete remainder calculation here
+are separate from that conditional continuation criterion. No novelty claim
+is made for quotient norms or convex duality.
+
+### The exact optimizer removes every gradient ambiguity
+
+Use the normalized period-2pi torus, the actual Leray projection Pi and
+periodic gradients. Define
+
+```text
+J(u)=inf_{Pi w=u} (1/3)int |w|^3,
+||u||3^3/(3 C_Pi,3^3)<=J(u)<=||u||3^3/3.            (OG1)
+```
+
+The lower bound applies Pi to each representative; w=u gives the upper
+bound. The affine constraint is closed in L3, so the direct method and
+strict convexity give a unique minimizer. If a smooth w satisfies
+
+```text
+Pi w=u, F=|w|w, div F=0,                            (OG2)
+```
+
+it is that exact minimizer: the first variation against every periodic
+gradient vanishes, and convexity proves global minimality. In particular
+this minimizes the mean covector's cubic size over its entire gradient
+class, not a chosen finite family of gauges.
+
+For any divergence-free test field F, Young's inequality gives the dual
+lower bound
+
+```text
+J(v)>=int F.v-(2/3)int |F|^(3/2).                   (OG3)
+```
+
+Equality holds at u=Pi w when (OG2) holds. For a smooth divergence-free velocity curve
+through this u, (OG3) and the admissible trial representative
+w+v(t)-u give matching first variations:
+
+```text
+(d/dt)J(v(t)) at v(0)=u = int F.v_t(0).             (OG4)
+```
+
+The upper Taylor remainder is quadratic for the smooth bounded fields
+used below. This argument does not presume any regularity of the future
+optimizers. The optimizer is an observation of the fluid, not a force.
+
+### What remains after optimizing the observation
+
+Where a smooth family of optimizers exists, let r=|w|, g=w-u and
+omega=curl u. On the SAME actual unforced history put
+
+```text
+D(w)=int r|grad w|^2 + sum_j(w.partial_j w)^2/r,
+P(w,u)=-int F.(u.grad)u
+       =int F.(u cross omega)
+       =int r g.(u cross omega),
+J'(u)+nu D(w)=P(w,u).                              (OG5)
+```
+
+The diffusion integrand is extended by zero at w=0. Pair the actual NS
+equation with F. Pressure contributes zero because div F=0. Since w-u
+is a gradient, int F.Delta u=int F.Delta w=-D(w). The usual identity
+(u.grad)u=grad(|u|^2/2)-u cross omega gives the remaining geometric
+work. Thus pressure has not been independently removed from the evolution:
+it is retained in the physical projection and the optimal nonlocal g.
+
+Equivalently, the covector equation for this varying representative has a
+gradient right-hand side. Its pairing with F vanishes, while transport
+cancels by div u=0. This yields the same reaction
+P=-int |w|w^T(grad u)^T w. Its sign is not fixed by minimization.
+
+The admissible gradient control is concrete. Where r stays bounded away
+from zero, put U=grad u, M=r I+w tensor w/r and
+C=nu Delta w-(u.grad)w-U^T w. Differentiating div(|w|w)=0 gives
+
+```text
+w_t=C+grad eta,
+div(M grad eta)=-div(M C),
+v^T M v=r|v|^2+(w.v)^2/r.                         (OG5a)
+```
+
+The periodic elliptic equation determines eta up to a constant. Projecting
+the first equation gives the actual NS tangent by the existing covector
+reconstruction, and the second preserves optimality. This is a local
+identification of the control while the optimizer is smooth and nonzero,
+not an arbitrary forcing policy or a global nondegeneracy claim. The exact
+fixtures below check the projected tangents as well as their scalar work.
+For the nonvanishing initial examples below, this local family exists:
+apply the implicit function theorem to div(|u+grad phi|(u+grad phi))=0
+on mean-zero periodic potentials. Its phi derivative is the uniformly
+elliptic operator div(M grad), invertible modulo constants. Smooth local
+NS evolution therefore supplies a smooth optimal lift for a short time.
+
+This observation has a concrete continuation use. Sobolev applied to
+r^(3/2), followed by the L9 bound for Pi, gives on the fixed torus
+
+```text
+||u||9^3<=C(D(w)+3J(u)).
+J(u(t))+(nu/2)int_0^t D(w)<=K for EVERY 0<=t<=T<=H
+  ==> int_0^T||u||9^3<=C(2K/nu+3HK), T<=H.          (OG6)
+```
+
+The latter is a conditional statement for representatives with the stated
+regularity. It supplies (JP11)'s existing order-one continuation consumer.
+Neither the full-original-datum allowance K on every prefix nor sufficient
+regularity of arbitrary time-dependent minimizers is established here.
+The physical pressure-deformation target (PD9d) remains the main open target.
+
+For the exact pressure-free shear in (RC14), w=u is optimal because
+div(|u|u)=0. Direct integration gives
+J=4A^3 exp(-3nu t)/(9pi) and J'=-nu D. Thus the gradient overcharge of
+(RC14) is completely removed by this correction.
+
+### Two explicit three-dimensional fields with the same stock and diffusion
+
+For sigma=+1 or -1 define the divergence-free dual fields
+
+```text
+F0=(cos z,sin z,0),
+G_sigma=(2 sin x sin y sin z, 2 cos x cos y sin z,
+                                            2 sigma sin x sin y),
+F_sigma=F0+epsilon G_sigma,
+w_sigma=F_sigma/(F_sigma.F_sigma)^(1/4),
+u_sigma=Pi w_sigma.                                (OG7)
+```
+
+For the small positive epsilon fixed below, F_sigma never vanishes.
+All these fields are smooth. The identity |w_sigma|w_sigma=F_sigma
+proves exact optimality, not just approximate stationarity. They have
+zero mean. One can see this without a series expansion: F_sigma is
+equivariant under (x,y,z)->(x,-y,-z) with vector rotation diag(1,-1,-1),
+and under (x,y,z)->(-x,y,pi-z) with diag(-1,1,-1). Its normalization
+and Pi preserve these symmetries; their fixed-vector spaces intersect
+only at zero.
+
+Changing sigma reflects only the third component of F_sigma and w_sigma,
+at the SAME spatial point. Therefore
+
+```text
+|w_+|=|w_-| pointwise, J(u_+)=J(u_-), D(w_+)=D(w_-). (OG8)
+```
+
+This reflection is not a simultaneous reflection of the spatial variables;
+it need not commute with Pi or NS evolution. No equality of the two
+physical kinetic energies is asserted.
+
+Write h=F0.G_sigma, j=|G_sigma|^2; both are independent of sigma. The
+exact first coefficients of the smooth datum are
+
+```text
+w=F0+epsilon w1+epsilon^2 w2+O(epsilon^3),
+w1=G-(h/2)F0,
+w2=(-j/4+5h^2/8)F0-(h/2)G,
+u=F0+epsilon Pi w1+epsilon^2 Pi w2+O(epsilon^3),
+P_sigma=sigma epsilon^2/12+O(epsilon^3),
+D_sigma=1+(61/16)epsilon^2+O(epsilon^3).             (OG9)
+```
+
+Every Fourier output in these coefficients is retained. The checker
+computes the canonical pressure independently and compares the projected
+NS tangent, the covector reaction and the vorticity cross product.
+It also checks the complete tangent at nu=1 and nu=2/7. The first optimal
+gradient correction is nonzero, with squared L2 norm 7/528.
+These are expansions of an EXACT datum, not a truncated evolution.
+
+### A complete remainder bound fixes the datum before evolution
+
+The sign in (OG9) can be certified at an explicit epsilon. Use the weighted
+componentwise Wiener majorant
+
+```text
+W(v)=sum_(i,k)(1+|k|_1)(|Re vhat_i(k)|+|Im vhat_i(k)|).
+```
+
+Its scalar version is an algebra norm; the vector version bounds the
+pointwise vector and gradient Frobenius norms. The real Leray multiplier
+has componentwise norm at most 3, so W(Pi v)<=3W(v). For (OG7), exact
+coefficient summation gives
+
+```text
+a=W(F0)=4, g0=W(G)=22, b0=W(h)=13, c0=W(j)=28,
+epsilon0=1/512, W(Pi w1)=889/33<27.                 (OG10)
+```
+
+For |epsilon|<=epsilon0 let zeta=2epsilon h+epsilon^2 j. Then
+W(zeta)<=|epsilon|(2b0+epsilon0 c0)<1/2. The absolute coefficients
+of (1+zeta)^(-1/4) are at most one; hence the tail after 1-zeta/4
+has W norm at most 2W(zeta)^2. It follows that
+
+```text
+W(w-F0-epsilon w1)<=C_w epsilon^2,
+C_w=a c0/4+g0 b0/2+epsilon0 g0 c0/4
+                     +2(a+epsilon0 g0)(2b0+epsilon0 c0)^2<5700,
+C_u=3C_w<17100,
+v1=W(Pi w1), V=v1+epsilon0 C_u<61,
+W(u-F0-epsilon Pi w1)<=C_u epsilon^2.              (OG11)
+```
+
+For every v, int F0.[(F0.grad)v+(v.grad)F0]=0: F0 transports itself
+trivially and has constant magnitude. Insert u=F0+v into
+P=-int(F0+epsilon G).(u.grad)u and use (OG11). This gives the full,
+untruncated bound
+
+```text
+|P_sigma-sigma epsilon^2/12|<=C3 |epsilon|^3,
+C3=a C_u(V+v1)+2g0 a C_u+g0 V^2<10^7.             (OG12)
+```
+
+Choose epsilon=2^(-28). Then 10^7 epsilon<1/24, so
+P_+>=epsilon^2/24 and P_-<=-epsilon^2/24.
+Also W(w-F0)<=60epsilon<1/10. Since |F0|=|grad F0|=1 and
+F0.partial_j F0=0, the complete diffusion is bounded by
+
+```text
+D(w)<= (11/10)^3+(21/100)^2/(9/10)=69/50<2.         (OG13)
+```
+
+This proves the signs of the exact fields, including all higher Fourier
+modes of their normalization. The constants are deliberately conservative;
+they are not numerical measurements of a time evolution.
+
+### Actual unforced growth defeats every instantaneous gradient policy
+
+Fix ANY nu>0 and set A=96nu/epsilon^2. Use the actual smooth mean-zero
+initial velocity U0=A u_+ from (OG7). Its exact cubic optimizer is
+A w_+, with dual A^2 F_+. Local smooth NS existence applies. Equations
+(OG4), (OG12) and (OG13) give
+
+```text
+(d/dt)J(U(t)) at zero=A^4 P_+-nu A^3 D_+
+                    >=2nu A^3>0.                 (OG14)
+```
+
+More directly, apply the fixed dual lower bound (OG3) to this actual NS
+solution and expand its smooth local tangent. The O(t^2) remainder has
+a finite constant determined by this smooth original datum and nu.
+For every prescribed H>0, sufficiently small 0<t<=T<=H therefore satisfy
+
+```text
+J(U(t))-J(U0)>=nu A^3 t>0.                         (OG15)
+```
+
+No future optimizer, Galerkin flow or external force is used in this
+argument. Physical kinetic energy still decreases. The explicit
+amplitude is large: A/nu=6917529027641081856. This is a conservative
+analytic witness, not a claim about a moderate-amplitude experiment.
+
+For ANY time-dependent gradient policy with representative m(t) satisfying
+Pi m(t)=U(t) and starting at the cubic minimum, its cubic stock is at
+least J(U(t)). Thus no such policy makes that stock nonincreasing on
+this initial interval. Even optimal instantaneous gradient removal cannot
+eliminate this physical nonlinear contribution. The minus family has
+the same optimized initial stock and diffusion and a negative nonlinear
+contribution; these scalar measurements alone do not determine its sign.
+
+This refutes monotonicity without an additional allowance. It does NOT
+refute a finite full-datum allowance, a correction retaining additional
+history, or arbitrary-data regularity. In particular it constructs only
+a finite burst, not indefinitely renewed growth. The R3 localization of
+this particular pair is not established here.
+
+Run `python3 -O labs/optimal_cubic_gauge.py`. The results archive records
+the exact coefficients, remainder constants and source hash. Convex
+optimality, the complete analytic remainder argument and the physical
+positive-time consequence remain analytic, not Lean-certified. No Lean
+declaration or axiom changes.

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [optimal cubic gradient test](labs/README.md#optimal-gradient-removal-leaves-signed-physical-renewal)
+removes the preceding covector overcharge by minimizing over every gradient
+representative of the physical velocity. This correction succeeds on the
+exact shear, but its minimum can increase on an actual smooth unforced 3D
+history. Two explicit periodic families have the same optimized stock and
+diffusion cost and opposite nonlinear feedback. A complete analytic
+remainder bound fixes the initial parameters before the evolution. This
+rules out automatic decrease under instantaneous gauge optimization;
+finite full-datum history payment remains open. The new argument is
+analytic with exact checks, not Lean-certified.
+
 The [rotation-preserving covector calculation](labs/README.md#rotation-preserving-covector-histories-and-the-cost-of-a-gradient)
 reuses the existing physical covector reconstruction and separates rotation
 from strain without discarding either history. A scalar reserve pays the

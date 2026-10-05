@@ -1,0 +1,86 @@
+{
+  "datum": "F0=(cos z,sin z,0); G_sign=(2sin x sin y sin z,2cos x cos y sin z,2 sign sin x sin y); F=F0+epsilon G; w=F/(F.F)^(1/4); u=Pi w.",
+  "candidate": "J(u)=inf_{Pi w=u} integral |w|^3/3. The exact optimizer satisfies |w|w=F and div F=0.",
+  "shear_calibration": "For u=A exp(-nu t)sin(z)e1, w=u is optimal and J=4A^3 exp(-3nu t)/(9pi), J_prime=-nu D. The canonical covector overcharge is absent.",
+  "compatible_control": "For r=|w|>0, M=r I+w tensor w/r; C=nu Delta w-u.grad w-U^T w. The optimal gauge satisfies w_t=C+grad eta, div(M grad eta)=-div(M C). This control is a gradient, not a force on the projected fluid.",
+  "pair_invariance": "The two exact optimized fields have identical pointwise magnitudes and identical complete cubic diffusion, while their nonlinear responses have opposite signs.",
+  "fixtures": [
+    {
+      "sign": 1,
+      "nonlinear_coefficients": [
+        "0",
+        "0",
+        "1/12"
+      ],
+      "diffusion_coefficients": [
+        "1",
+        "0",
+        "61/16"
+      ],
+      "gradient_first_coefficient_norm_squared": "7/528",
+      "pressure_coefficient_modes": [
+        0,
+        28,
+        94
+      ],
+      "scope": "Expansion of the exact smooth datum and its full NS tangent; not a time-truncated NS model."
+    },
+    {
+      "sign": -1,
+      "nonlinear_coefficients": [
+        "0",
+        "0",
+        "-1/12"
+      ],
+      "diffusion_coefficients": [
+        "1",
+        "0",
+        "61/16"
+      ],
+      "gradient_first_coefficient_norm_squared": "7/528",
+      "pressure_coefficient_modes": [
+        0,
+        28,
+        94
+      ],
+      "scope": "Expansion of the exact smooth datum and its full NS tangent; not a time-truncated NS model."
+    }
+  ],
+  "remainders": [
+    {
+      "W_base": "4",
+      "W_G": "22",
+      "W_h": "13",
+      "W_j": "28",
+      "epsilon0": "1/512",
+      "C_w": "11870746651/2097152",
+      "C_u": "35612239953/2097152",
+      "W_u1": "889/33",
+      "C3": "46593315130642621086268739/5188146770730811392",
+      "epsilon": "1/268435456",
+      "amplitude_over_nu": "6917529027641081856",
+      "rigorous_bounds": "|P_sign-sign epsilon^2/12|<=C3 epsilon^3; D<=69/50<2",
+      "physical_growth": "For A=96nu/epsilon^2 and plus datum, J(u(t))-J(u0)>=nu A^3 t for all sufficiently small positive t.",
+      "scope": "Wiener-algebra and local-PDE remainder proofs are analytic; displayed constants and exact Fourier coefficients are checked."
+    },
+    {
+      "W_base": "4",
+      "W_G": "22",
+      "W_h": "13",
+      "W_j": "28",
+      "epsilon0": "1/512",
+      "C_w": "11870746651/2097152",
+      "C_u": "35612239953/2097152",
+      "W_u1": "889/33",
+      "C3": "46593315130642621086268739/5188146770730811392",
+      "epsilon": "1/268435456",
+      "amplitude_over_nu": "6917529027641081856",
+      "rigorous_bounds": "|P_sign-sign epsilon^2/12|<=C3 epsilon^3; D<=69/50<2",
+      "physical_growth": "For A=96nu/epsilon^2 and plus datum, J(u(t))-J(u0)>=nu A^3 t for all sufficiently small positive t.",
+      "scope": "Wiener-algebra and local-PDE remainder proofs are analytic; displayed constants and exact Fourier coefficients are checked."
+    }
+  ],
+  "status": "Exact checks passed. Convex minimization, full analytic remainders and actual positive-time histories are not Lean-certified.",
+  "limitation": "Refutes nonincrease of the optimized instantaneous cubic stock, including all gradient policies starting at its minimum. Does not refute a finite full-datum history allowance or global regularity.",
+  "source_sha256": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b"
+}
