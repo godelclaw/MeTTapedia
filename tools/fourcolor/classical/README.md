@@ -2518,3 +2518,35 @@ The forward geometric theorem is proved. Inverse recognition and occurrence
 coverage remain open. This changes source vertex colouring to target edge
 colouring; it does not establish an unconditional Tait-to-Tait reduction.
 Catalogue and original-certificate counts remain 633 and 629.
+
+## Joint repair of the two port-six boundary forms
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelStripSixJointRepair
+```
+
+`StripSixJointRepair` repairs both boundary forms in
+`StripSixConnection.input`. Sixteen local stages use the same
+`KempeRetainedMatching.two_anchor_coclosure` theorem. Each of the 82 selected
+continuations either enters an earlier stage or reconstructs the complete
+D0099 core through the existing symbolic ear relations. Paired choices keep
+one actual exterior matching. No table of complete colouring witnesses is
+introduced, and later theorem applications require no strategy synthesis.
+
+`StripSixJointRepair.classified_repair`, in `StripSixJointReconstruction`,
+consumes an actual zero/one component containing port six and excluding
+port eight, together with the existing boundary-list hypotheses. It needs no further zero/two separation
+guard. `disk_compatible` derives the exterior closure from a planar rotation
+with one ordered facial boundary and triangular remaining faces, using the
+Gonthier/Emery Kempe theorem. `disk_whole_repair` also consumes complete
+source-core stars and exact exterior coverage, reconstructs an ambient
+colouring, and proves that the exterior has strictly fewer vertices.
+
+The initial colouring must lie in the stated two-form domain. This is not
+an unconditional reduction for every smaller colouring, nor a theorem that
+every planar graph supplies this patch. No physical switch-count bound,
+near-linear runtime, catalogue deletion or complete-assembly dependency
+saving is claimed. The audit excludes complete Four Colour endpoints,
+original bulk certificates and the large wheel/exceptional repair tables.
+Measurements are recorded in `strip-six-joint-repair-measurements.json`.

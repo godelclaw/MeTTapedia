@@ -1,0 +1,89 @@
+{
+  "status": "kernel checked, local repair and conditional geometric reconstruction",
+  "source": {
+    "configuration": "D0099",
+    "file": "../near-linear/D0099.conf",
+    "sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82"
+  },
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "domain": "Both StripSixConnection.input forms, in the same arbitrary Kempe-closed exterior. Planar triangulated disk geometry discharges closure in disk_compatible and disk_whole_repair.",
+  "construction": {
+    "boundary_ports": 11,
+    "core_vertices": 8,
+    "local_stages": 16,
+    "selected_continuation_contracts": 82,
+    "shared_matching_law": "FourColor.KempeRetainedMatching.two_anchor_coclosure",
+    "source_reconstruction": "FourColor.StripSymbolicRepair.direct_coclosure",
+    "stored_complete_colouring_witnesses": 0,
+    "new_fixture_bytes": 0
+  },
+  "consumers": [
+    "FourColor.StripSixJointRepair.classified_repair",
+    "FourColor.StripSixJointRepair.disk_compatible",
+    "FourColor.StripSixJointRepair.whole_repair",
+    "FourColor.StripSixJointRepair.disk_whole_repair"
+  ],
+  "audit": {
+    "roots": 12,
+    "transitive_declarations": 12128,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excludes": [
+      "complete Four Colour endpoints",
+      "original bulk certificates",
+      "DiamondProfileData",
+      "ResidualSeedRepairData",
+      "WheelRepairData",
+      "ExceptionalRepairData"
+    ]
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.StripSixJointRepair",
+      "source_sha256": "e46ffb8fcf25fd8b9be5efd33293ae8be885d11f87c7707c9f5424d6fc79af45",
+      "exit_code": 0,
+      "frontend_wall_seconds": 29.552,
+      "olean_bytes": 910808,
+      "olean_sha256": "6e3376ffeaf9ae23b4345d1b229fe46f6366f51d44ae0432bfd34ad40668e140",
+      "source_bytes": 7678
+    },
+    {
+      "module": "MettapediaFourColor.StripSixJointReconstruction",
+      "source_sha256": "72e45b830b4d751ad76d17229e01ca894f09c53cd92a86b8e042b5cdad4aee3e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.277,
+      "olean_bytes": 211888,
+      "olean_sha256": "b2a143b05bc735f83f5b1a3cd3384482d426869db49706890711447d771223c9",
+      "source_bytes": 7590
+    },
+    {
+      "module": "MettapediaFourColor.StripSixJointAudit",
+      "source_sha256": "1dae8b1f119b809243581a4b2ad676e5461f81ef87ba003dcd7fc2899c348767",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.837,
+      "olean_bytes": 2608,
+      "olean_sha256": "b1aeb3a6dbcec0fc6cd84b099844abf5bf1538840c34677d56d403ba8f820f60",
+      "source_bytes": 3059
+    }
+  ],
+  "new_lean_bytes": 18327,
+  "frontend_seconds_with_prebuilt_dependencies": 37.666,
+  "gates": [
+    "kernelStripSixJointRepair",
+    "kernelComplete",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "scope": [
+    "The initial boundary class is explicit; its geometric supply is not proved here.",
+    "Complete source stars and exterior coverage are required for ambient reconstruction.",
+    "Strict exterior vertex decrease is proved; repair of every smaller colouring is not.",
+    "No physical recolouring-history length or near-linear runtime is established.",
+    "No new complete-assembly dependency removal or catalogue deletion is credited."
+  ],
+  "credited_compression": false,
+  "catalogue_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0
+}

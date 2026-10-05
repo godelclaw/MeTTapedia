@@ -6445,5 +6445,18 @@
       "new_lean_source_bytes": 9240,
       "frontend_seconds_for_new_modules": 35.43
     }
+  },
+  "strip_six_joint_repair": {
+    "record": "strip-six-joint-repair-measurements.json",
+    "status": "kernel checked",
+    "result": "Both port-six boundary forms admit compatible full source/exterior colourings through sixteen jointly retained matching stages. The planar-disk consumer reconstructs the ambient graph from complete source stars and exact exterior coverage, and proves strict exterior vertex decrease.",
+    "local_stages": 16,
+    "selected_continuation_contracts": 82,
+    "new_lean_bytes": 18327,
+    "stored_complete_colouring_witnesses": 0,
+    "limits": "Initial-class supply, repair of all smaller colourings, universal occurrence coverage and algorithmic bounds remain open.",
+    "credited_compression": false,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0
   }
 }
