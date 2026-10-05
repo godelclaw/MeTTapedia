@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [balanced-shell return law](labs/README.md#balanced-shells-generate-positive-stretching-through-internal-transfer)
+computes the complete first nonlinear feedback for an unbounded family
+of periodic initial data. Initial stretching vanishes, but newly generated
+shorter waves can make both stretching and the joint strain work positive.
+Their energy comes from the original waves. An explicit genuinely 3D
+example defeats zero-allowance integrated budgets on actual short viscous
+intervals, including the initially favorable diffusion. A finite allowance
+depending on the full datum remains possible. The shell law and interval
+arguments are analytic with exact Fourier checks, not new Lean proofs.
+
 The [joint strain-source estimate](labs/README.md#a-joint-strain-source-after-paying-complete-coarse-histories)
 combines directional observations into one positive quadratic stock on
 both R3 and T3. The original energy pays all coarse interactions, including

@@ -1,0 +1,158 @@
+{
+  "shell_fixtures": [
+    {
+      "label": "genuinely 3D seed",
+      "frequency_dilation": 1,
+      "initial_energy": "3/4",
+      "initial_stock": "9/4",
+      "initial_stock_diffusion": "9/2",
+      "initial_enstrophy_diffusion": "3",
+      "daughter_energy_by_squared_frequency": {
+        "2": "0",
+        "4": "0",
+        "6": "1/8"
+      },
+      "positive_response_term": "31/8",
+      "complete_parent_return": "-3/8",
+      "joint_source_return": "7/2",
+      "stretching_return": "1/2",
+      "heat_source_derivative": "0",
+      "generated_modes": 6
+    },
+    {
+      "label": "genuinely 3D seed",
+      "frequency_dilation": 2,
+      "initial_energy": "3/4",
+      "initial_stock": "171/4",
+      "initial_stock_diffusion": "342",
+      "initial_enstrophy_diffusion": "48",
+      "daughter_energy_by_squared_frequency": {
+        "8": "0",
+        "16": "0",
+        "24": "1/2"
+      },
+      "positive_response_term": "553/2",
+      "complete_parent_return": "-57/2",
+      "joint_source_return": "248",
+      "stretching_return": "8",
+      "heat_source_derivative": "0",
+      "generated_modes": 6
+    },
+    {
+      "label": "genuinely 3D seed",
+      "frequency_dilation": 4,
+      "initial_energy": "3/4",
+      "initial_stock": "2979/4",
+      "initial_stock_diffusion": "23832",
+      "initial_enstrophy_diffusion": "768",
+      "daughter_energy_by_squared_frequency": {
+        "32": "0",
+        "64": "0",
+        "96": "2"
+      },
+      "positive_response_term": "18242",
+      "complete_parent_return": "-1986",
+      "joint_source_return": "16256",
+      "stretching_return": "128",
+      "heat_source_derivative": "0",
+      "generated_modes": 6
+    },
+    {
+      "label": "fourth-shell receiver",
+      "frequency_dilation": 1,
+      "initial_energy": "3/4",
+      "initial_stock": "9/4",
+      "initial_stock_diffusion": "9/2",
+      "initial_enstrophy_diffusion": "3",
+      "daughter_energy_by_squared_frequency": {
+        "2": "0",
+        "4": "1/4",
+        "6": "0"
+      },
+      "positive_response_term": "13/4",
+      "complete_parent_return": "-3/4",
+      "joint_source_return": "5/2",
+      "stretching_return": "1/2",
+      "heat_source_derivative": "0",
+      "generated_modes": 4
+    },
+    {
+      "label": "mixed polarizations and phases",
+      "frequency_dilation": 1,
+      "initial_energy": "3/2",
+      "initial_stock": "9/2",
+      "initial_stock_diffusion": "9",
+      "initial_enstrophy_diffusion": "6",
+      "daughter_energy_by_squared_frequency": {
+        "2": "1/24",
+        "4": "4/81",
+        "6": "101/216"
+      },
+      "positive_response_term": "4945/324",
+      "complete_parent_return": "-181/108",
+      "joint_source_return": "2201/162",
+      "stretching_return": "319/162",
+      "heat_source_derivative": "0",
+      "generated_modes": 36
+    },
+    {
+      "label": "zero-interaction wave",
+      "frequency_dilation": 1,
+      "initial_energy": "1/4",
+      "initial_stock": "3/4",
+      "initial_stock_diffusion": "3/2",
+      "initial_enstrophy_diffusion": "1",
+      "daughter_energy_by_squared_frequency": {
+        "2": "0",
+        "4": "0",
+        "6": "0"
+      },
+      "positive_response_term": "0",
+      "complete_parent_return": "0",
+      "joint_source_return": "0",
+      "stretching_return": "0",
+      "heat_source_derivative": "0",
+      "generated_modes": 0
+    }
+  ],
+  "reflection_balanced": {
+    "initial_source": "0",
+    "heat_source_derivative": "0",
+    "positive_response_term": "41779747/1386000",
+    "complete_parent_return": "-611137/66000",
+    "full_return": "2894587/138600",
+    "initial_coarse_tangent_energy": "0"
+  },
+  "full_physical_jets": [
+    {
+      "viscosity": "1/3",
+      "joint_stock_excess_t2": "7/2",
+      "enstrophy_excess_t2": "1/2",
+      "heat_minus_actual_kinetic_energy_t3": "1/9"
+    },
+    {
+      "viscosity": "2",
+      "joint_stock_excess_t2": "7/2",
+      "enstrophy_excess_t2": "1/2",
+      "heat_minus_actual_kinetic_energy_t3": "2/3"
+    }
+  ],
+  "integrated_cost": {
+    "joint_budget_time": "t=9*nu/(7*A^2)",
+    "joint_budget_leading_excess": "exp(39*sqrt(3)*A*H)*81*nu^2/28",
+    "ordinary_budget_time": "t=12*nu/A^2",
+    "ordinary_budget_leading_excess": "36*nu^2",
+    "scope": "The asymptotics hold as A/nu tends to infinity for fixed viscosity and a fixed positive horizon, with uniform local remainders established analytically."
+  },
+  "scope": "Initial spectral balance can generate strictly positive stretching through actual internal energy transfer. The uniform first-return law and positive-viscosity intervals do not establish repeated indefinite renewal or refute a finite full-datum allowance.",
+  "status": "Exact full Fourier and rational checks passed. Uniform shell, PDE interval and small-viscosity-clock arguments remain analytic, not Lean-certified.",
+  "source_sha256": {
+    "shell_strain_return.py": "0bc46ef846e9ee0ba8498a09ee4056d66d3037304ce0449fdf29c037bbfbb28a",
+    "joint_strain_source.py": "d8b0f1e3ffd910303da6415bdd0bb74de06f6b2f811f0b9e78fb4accf587074b",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "helical_parent_response.py": "5b87c1740e83508235915c360a25df87450bba761ef8f321128f005a84d7f3d8",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02"
+  }
+}

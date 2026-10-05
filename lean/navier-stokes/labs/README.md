@@ -54236,3 +54236,209 @@ directional pressure cancellation. The checker also verifies the uniform
 multiplier inequalities and the complete original-clock reserve algebra.
 The energy estimates, interval consequences and continuation transfer
 remain analytic. No Lean declarations or axioms change.
+
+
+## Balanced shells generate positive stretching through internal transfer
+
+`shell_strain_return.py` tests whether zero initial joint strain work
+persists under the actual NS evolution. The answer is negative. A uniform
+first-return law identifies the energy transfer behind the failure for
+an unbounded family of periodic data. This uses differentiated classical
+energy identities, not a closed shell-model evolution. It does not prove
+indefinite renewal, blowup, or failure of a finite full-datum allowance.
+
+### The complete physical return, including pressure and parent feedback
+
+Retain the normalized period-2pi torus and JS1--JS4. To distinguish the
+metric from an amplitude, write B=I+Delta+Delta^2, with multiplier
+beta(K)=K^2-K+1, and P(v)=<Bv,N(v)>. Its full differential is
+
+```text
+DN(v)[h]=-Pi[(v.grad)h+(h.grad)v],
+DP(v)[h]=<Bh,N(v)>+<Bv,DN(v)[h]>.                    (SR1)
+```
+
+The second term is the change in the source produced by the original
+fluid. It cannot be discarded when measuring the new modes. The checker
+constructs its canonical pressure tangent from v tensor h+h tensor v
+and independently compares it with the Leray projection.
+
+For the reflection-balanced datum at the end of JS12, put h=Q N(v).
+Initially U=0 and v_t=nu Delta v+h. Exact computation gives
+
+```text
+P(v)=DP(v)[Delta v]=0,
+<Bh,N(v)>=41779747/1386000,
+<Bv,DN(v)[h]>=-611137/66000,
+dP(v(t))/dt at t=0 =2894587/138600>0.                (SR2)
+```
+
+Thus actual smooth unforced evolution produces positive work immediately
+after initial cancellation, for every positive viscosity. A second check
+polarizes the cubic strain formula JS4 to obtain the same derivative.
+The coarse tangent happens to vanish initially in this fixture; no claim
+of its continued absence is made for this reflection-balanced datum.
+
+### A uniform law for all polarizations on a family of initial shells
+
+Fix an integer n>=1. Allow any real divergence-free initial velocity v
+supported on frequencies k=n k0 with integer |k0|^2=2. All phases and
+polarizations are permitted. Write h=N(v) and let e_j be its squared L2
+norm on |k|^2=j n^2. The complete quadratic output has support only on
+
+```text
+|k|^2=2n^2, 4n^2, 6n^2.                              (SR3)
+```
+
+Indeed the sum of two original frequencies can have squared length
+0,2n^2,4n^2,6n^2 or8n^2. The mean output is zero by incompressibility.
+The last shell requires identical input frequencies, whose self-advection
+vanishes because each coefficient is perpendicular to its frequency.
+Leray projection creates no additional frequencies.
+
+Every original frequency has even coordinate sum. The corresponding
+translation symmetry x -> x+pi(1,1,1) persists by uniqueness of the actual
+smooth NS solution. Its Fourier support therefore remains in that infinite
+parity lattice. The mean is conserved and initially zero. Consequently
+the coarse field U=P_{|k|<=1}u is zero throughout every available prefix
+of these shell data. Later higher modes remain present; (SR3) describes
+only the initial nonlinear output, not an invariant finite-dimensional
+system.
+
+Let g(v)=<-Delta v,N(v)>=integral omega^T grad(v) omega be the physical
+vorticity stretching. Since Bv=beta(2n^2)v and -Delta v=2n^2 v,
+both P(v) and g(v) vanish initially. Their heat-direction derivatives
+also vanish: Delta v=-2n^2 v and both functionals are cubic. Differentiate
+the exact kinetic-energy cancellation <v,N(v)>=0 in direction h=N(v):
+
+```text
+<v,DN(v)[h]>=-||h||2^2.
+R := P'(0)=2n^2(6n^2-1)e_4+4n^2(8n^2-1)e_6 >=0,
+J := g'(0)=2n^2 e_4+4n^2 e_6 >=0,
+(6n^2-1)J <=R <=(8n^2-1)J.                           (SR4)
+```
+
+These are full physical derivatives for every nu>0. For example,
+R=sum_k[beta(|k|^2)-beta(2n^2)]|h_hat(k)|^2; the subtracted term is
+the complete parent feedback in SR1. The comparison differences are
+8n^4 e_6 and4n^4 e_4. Strict positivity requires e_4+e_6>0.
+A single wave has h=0, so strict positivity is not asserted universally.
+
+### An explicit genuinely three-dimensional flow starts the return
+
+Take
+
+```text
+v0=(1/2,-1/2,0) cos(x+y)
+  +(0,1/2,-1/2) sin(y+z)
+  +(-1/2,0,1/2) cos(x+z).                             (SR5)
+```
+
+Its three wavevectors span R3, with determinant2. Its entire nonlinear
+output lies on |k|^2=6 and has squared norm1/8. The exact values are
+
+```text
+||v0||2^2=3/4, Z(v0)=9/4, D(v0)=9/2,
+||Delta v0||2^2=3,
+positive response31/8 + complete parent feedback(-3/8) =R=7/2,
+J=1/2.                                                (SR6)
+```
+
+For the actual local solution from v0, compare its stocks with its own
+heat forecast u_heat(t)=exp(-2nu t)v0. Smooth time Taylor expansion and
+the full energy identities give
+
+```text
+Z(u(t))-Z(u_heat(t))=(7/2)t^2+O(t^3),
+||grad u(t)||2^2-||grad u_heat(t)||2^2=(1/2)t^2+O(t^3),
+||u_heat(t)||2^2-||u(t)||2^2=(nu/3)t^3+O(t^4).          (SR7)
+```
+
+At second order the original shell loses(e_4+e_6)t^2 relative to its
+heat forecast, and the new shells gain that amount. Kinetic energy
+therefore cancels at that order. More energy is dissipated at third
+order, while the derivative-sensitive stocks exceed their heat forecasts.
+This is internal transfer, with no external forcing. The first two
+identities also follow from Z'+2nu D=2P and
+(||grad u||2^2)'+2nu||Delta u||2^2=2g: each diffusion initially has
+the same first derivative as its heat forecast by shell orthogonality.
+The third follows by integrating the second in the kinetic-energy law.
+
+### Integrated failures retain the initially favorable diffusion
+
+A positive source derivative alone does not refute an integrated
+diffusion budget. To include that initial credit, fix nu>0 and H>0 and
+take initial datum A v0 as A tends to infinity. Set
+
+```text
+tau=A t, epsilon=nu/A, u(t)=A w_epsilon(tau),
+partial_tau w_epsilon=epsilon Delta w_epsilon+N(w_epsilon),
+w_epsilon(0)=v0.                                      (SR8)
+```
+
+There is a common short tau interval and uniform bounds for
+0<=epsilon<=1. For completeness, the incompressible H^12 energy estimate
+discards the favorable diffusion and gives y'<=C y^2 for
+y=||w_epsilon||H^12. Thus y<=2y(0) on a positive interval fixed by v0.
+The equation then bounds w_tau in H^10 and w_tautau in H^8 uniformly;
+Sobolev product estimates control the second derivatives of P and g
+and first derivatives of the two diffusion functionals. Consequently
+one constant C, fixed by v0, bounds the remainders in
+
+```text
+P(w_epsilon(tau))=(7/2)tau+O(C tau^2),
+g(w_epsilon(tau))=(1/2)tau+O(C tau^2),
+D(w_epsilon(tau))=9/2+O(C tau),
+||Delta w_epsilon(tau)||2^2=3+O(C tau).                (SR9)
+```
+
+This supplies actual positive-viscosity intervals and controlled
+remainders; it is not a long-time extrapolation of an initial jet.
+For JS9 the original energy is3A^2/4, so c=26M=39sqrt(3)A.
+At t_JS=9nu/(7A^2), substitution of SR9 into the entire integral gives
+
+```text
+2 integral_0^t_JS exp(c(H-s))[P(u(s))-(nu/4)D(u(s))]ds
+ =exp(cH)[81nu^2/28+O(nu^3/A)] >0                    (SR10)
+```
+
+for sufficiently large A, with nu,H fixed. In the tau variable the
+weight is exp(cH) exp(-39sqrt(3)tau); its variation is included in
+the remainder. The leading coefficient is
+(7/2)(9/7)^2-(9/4)(9/7)=81/28. In particular a lower bound
+exp(cH)81nu^2/56 holds after increasing A using only nu,H and the
+fixed local remainder constants.
+
+The original ordinary signed-renewal budget also needs a nonzero
+allowance. Here g(u(0))=0. At t_ord=12nu/A^2,
+
+```text
+2 integral_0^t_ord [g(u(s))-g(u(0))]ds
+  -nu integral_0^t_ord ||grad omega(u(s))||2^2 ds
+ =36nu^2+O(nu^3/A)>0.                                (SR11)
+```
+
+The leading coefficient is(1/2)12^2-3*12=36; eventually the excess
+is at least18nu^2. Incompressibility identifies
+||grad omega||2^2=||Delta u||2^2. Both times lie in the common local
+interval and below H for sufficiently large A. Neither argument resets
+the clock after the initial negative integrand.
+
+SR10--SR11 refute zero allowance even from these initially balanced
+data. The original datum and its resources grow with A, and a finite
+allowance depending on that datum remains possible. No arbitrary-horizon
+history bound, endlessly repeated return or finite-energy R3 realization
+has been proved here. The next physical obligation is to control the
+subsequent interactions of the generated waves without resetting the
+initial shell or dropping their phase information.
+
+Run `python3 -O labs/shell_strain_return.py`. Six complete shell fixtures
+include three integer dilations, fourth-shell generation, mixed phases
+and a zero-interaction wave. A seventh reflection-balanced fixture also
+checks independent strain polarization. Exact rational checks cover the
+full pressure differential, energy feedback, shell coefficients and
+integrated leading constants. The uniform shell argument, actual PDE
+intervals and remainder bounds remain analytic, not Lean-certified.
+Two positive-viscosity fixtures additionally check SR7 directly from the
+complete second and third NS time jets, independently of the shell formula.
+No Lean declarations or axioms change.
