@@ -39,7 +39,7 @@ def canonical(col):
     return tuple(labels.setdefault(col[v], len(labels)) for v in VERTICES)
 
 
-def analyze(inspect_components=None):
+def analyze(inspect_components=None, direct_extension=False):
     start = time.monotonic()
     source = verify_source(SOURCE)
     raw = (SOURCE / 'D0099.conf').read_bytes()
@@ -57,8 +57,10 @@ def analyze(inspect_components=None):
     words, indices = domain(10)
     initially_bad = {i for i, word in enumerate(words)
                      if eliminate(residual, 10, boundary(word))[0] is None}
-    bad, residual_rounds = trim(10, initially_bad)
-    assert (len(words), len(words) - len(initially_bad), len(bad)) == (2461, 513, 365)
+    bad, residual_rounds = ((initially_bad, []) if direct_extension
+                            else trim(10, initially_bad))
+    assert (len(words), len(words) - len(initially_bad)) == (2461, 513)
+    assert len(bad) == (1948 if direct_extension else 365)
     states = set()
     for i in bad:
         visible = dict(zip(PORTS, boundary(words[i])))
@@ -68,7 +70,7 @@ def analyze(inspect_components=None):
                 states.add(canonical(col))
     states = sorted(states)
     state_index = {s: i for i, s in enumerate(states)}
-    assert len(states) == 1377
+    assert len(states) == (7011 if direct_extension else 1377)
     choices = []
     component_choices = []
     matchings = answers = 0
@@ -155,6 +157,19 @@ def analyze(inspect_components=None):
         remaining -= removed
         rounds.append(len(removed))
         ranks.update((i, len(rounds)) for i in removed)
+    if direct_extension:
+        report = {
+            'evidence': 'Finite game with actual residual extension as its terminal condition.',
+            'source_sha256': SOURCE_SHA256,
+            'verifier_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
+            'prefix_states': len(states), 'matchings_composed': matchings,
+            'batch_assignments': answers, 'rounds': rounds, 'survivors': len(remaining),
+            'wall_seconds': time.monotonic() - start}
+        if inspect_components is not None:
+            report['selector_experiment'] = inspect_components({
+                'states': states, 'vertices': VERTICES, 'edges': edges,
+                'layouts': component_choices, 'ranks': ranks})
+        return report
     def profile(state, vertices):
         labels = {}
         col = dict(zip(VERTICES, state))

@@ -5690,3 +5690,52 @@ Replay `python3 tools/fourcolor/near-linear/audit_cap_selector.py` from the
 repository root. The [measurement](cap-selector-measurements.json) records
 source and verifier hashes and all tested observation subsets that succeed.
 No catalogue entry or original certificate dependency is removed.
+
+## Testing the controls against actual completion
+
+`audit_cap_completion.py` uses a stronger terminal condition: the six
+remaining D0099 core vertices must have an actual colouring extending the
+reconstructed prefix. Escaping the residual 365-state set is not counted as
+success. There are 7,011 canonical nonextending prefix colourings.
+
+| Allowed controls | Anchor chosen | States still stuck |
+| --- | --- | --- |
+| Three cap anchors | Before the matching | 6,223 |
+| Three cap anchors | After the matching | 5,873 |
+| All eighteen prefix-edge anchors, one component | Before the matching | 0 |
+| All eighteen prefix-edge anchors, one component | After the matching | 0 |
+
+All fifteen ways of adding one anchor to the original three still leave
+states stuck. A deletion search finds a sufficient seven-anchor pool and
+checks that no member of that pool can be removed. This is inclusion
+minimality for the tested game, not minimum cardinality. The unrestricted
+batch game terminates in nine rounds; the two successful single-component
+games take twenty-eight and eleven rounds, respectively. None of these
+numbers is a physical runtime bound.
+
+Remembering only the nine cap-side observations produces 144 coarse states
+for this larger domain. None can begin a guaranteed repair in the conservative
+quotient, even with all eighteen anchors available. The seven-observation
+interface similarly leaves all 84 of its coarse states. The earlier 51- and
+37-profile results therefore do not discharge the continuation obligation.
+
+The experiment also retains an exact right-hand response: the joint colours
+at source vertices 13 and 17 that admit common witnesses at vertices 16 and
+18. Its internal edges and boundary attachments are checked against the
+pinned source. Adding this response to the nine cap-side observations gives
+1,800 profiles, of which 1,455 remain stuck. Retaining the three right-hand
+colour lists instead gives 6,444 profiles and leaves 321 stuck. Retaining the
+whole opposite arc recovers the successful full-state game.
+
+These failures concern the stated fixed-anchor actions and a quotient that
+may forget and replace hidden completions at every step. They do not prove a
+physical obstruction or rule out policies retaining history. They do show
+that current extension possibilities alone are insufficient for this
+completion argument. A compositional interface must also account for the
+effect of the component updates, consistent with the earlier checked
+`StripResponseSummary.not_update_congruence` theorem.
+
+Replay `python3 tools/fourcolor/near-linear/audit_cap_completion.py` from the
+repository root. The [measurement](cap-completion-measurements.json) records
+the finite tests, hashes and limits. No strategy table, new Lean progress
+theorem, certificate replacement or coverage reduction is claimed.

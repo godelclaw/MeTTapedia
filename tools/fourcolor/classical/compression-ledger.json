@@ -6840,5 +6840,34 @@
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0,
     "remaining": "Prove a structural progress selector, compatible exterior answers and certified continuation. Geometry, strict reduction and coverage remain separate."
+  },
+  "cap_completion_control_experiment": {
+    "status": "Finite program experiment; no new Lean theorem or physical obstruction.",
+    "measurement": "../near-linear/cap-completion-measurements.json",
+    "source": "D0099",
+    "terminal_condition": "An actual colouring of all six residual core vertices extending the reconstructed prefix.",
+    "nonextending_prefix_states": 7011,
+    "three_anchor_survivors_before_matching": 6223,
+    "three_anchor_survivors_after_matching": 5873,
+    "all_eighteen_anchor_survivors": 0,
+    "single_anchor_additions_tested": 15,
+    "single_anchor_additions_completing_the_game": 0,
+    "nine_cap_observations": {
+      "profiles": 144,
+      "survivors": 144
+    },
+    "nine_cap_observations_plus_right_response": {
+      "profiles": 1800,
+      "survivors": 1455
+    },
+    "nine_cap_observations_plus_right_lists": {
+      "profiles": 6444,
+      "survivors": 321
+    },
+    "scope": "Memoryless policies over the stated observations; the conservative quotient may replace hidden completions at each step. No general impossibility follows.",
+    "conclusion": "The three-anchor residual escape does not supply completion. The tested cap-only and evaluated-response-only abstractions omit boundary-update dependencies required by this repair game.",
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
   }
 }

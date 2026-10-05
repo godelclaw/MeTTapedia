@@ -1,0 +1,511 @@
+{
+  "evidence": "Finite game with actual residual extension as its terminal condition.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "verifier_sha256": "c1a997027b47e07bb733d000cbe7ad1e185e83537efaf2e324fc2c6833ccacce",
+  "prefix_states": 7011,
+  "matchings_composed": 297357,
+  "batch_assignments": 5062674,
+  "rounds": [
+    1397,
+    931,
+    974,
+    1078,
+    1262,
+    772,
+    414,
+    181,
+    2
+  ],
+  "survivors": 0,
+  "wall_seconds": 53.55657978693489,
+  "selector_experiment": {
+    "anchor_before_matching": {
+      "cap": {
+        "rounds": [
+          546,
+          170,
+          49,
+          14,
+          7,
+          2
+        ],
+        "survivors": 6223
+      },
+      "all": {
+        "rounds": [
+          710,
+          327,
+          225,
+          184,
+          177,
+          142,
+          109,
+          111,
+          116,
+          136,
+          124,
+          112,
+          117,
+          123,
+          128,
+          118,
+          140,
+          173,
+          213,
+          243,
+          316,
+          397,
+          482,
+          613,
+          740,
+          563,
+          170,
+          2
+        ],
+        "survivors": 0
+      }
+    },
+    "anchor_after_matching": {
+      "all": {
+        "rounds": [
+          1013,
+          637,
+          577,
+          557,
+          617,
+          800,
+          944,
+          858,
+          664,
+          325,
+          19
+        ],
+        "survivors": 0
+      },
+      "cap": {
+        "rounds": [
+          671,
+          244,
+          97,
+          43,
+          27,
+          15,
+          16,
+          15,
+          9,
+          1
+        ],
+        "survivors": 5873
+      }
+    },
+    "single_additional_anchor_tests": [
+      {
+        "anchor": [
+          0,
+          1
+        ],
+        "survivors": 6099
+      },
+      {
+        "anchor": [
+          0,
+          10
+        ],
+        "survivors": 6097
+      },
+      {
+        "anchor": [
+          1,
+          2
+        ],
+        "survivors": 5914
+      },
+      {
+        "anchor": [
+          2,
+          3
+        ],
+        "survivors": 6143
+      },
+      {
+        "anchor": [
+          4,
+          5
+        ],
+        "survivors": 6208
+      },
+      {
+        "anchor": [
+          4,
+          14
+        ],
+        "survivors": 6144
+      },
+      {
+        "anchor": [
+          5,
+          6
+        ],
+        "survivors": 6218
+      },
+      {
+        "anchor": [
+          5,
+          14
+        ],
+        "survivors": 6159
+      },
+      {
+        "anchor": [
+          6,
+          7
+        ],
+        "survivors": 6210
+      },
+      {
+        "anchor": [
+          6,
+          11
+        ],
+        "survivors": 6155
+      },
+      {
+        "anchor": [
+          6,
+          14
+        ],
+        "survivors": 6155
+      },
+      {
+        "anchor": [
+          7,
+          8
+        ],
+        "survivors": 6197
+      },
+      {
+        "anchor": [
+          7,
+          11
+        ],
+        "survivors": 6144
+      },
+      {
+        "anchor": [
+          8,
+          11
+        ],
+        "survivors": 6123
+      },
+      {
+        "anchor": [
+          9,
+          10
+        ],
+        "survivors": 6170
+      }
+    ],
+    "greedy_sufficient_pool": [
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        14
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        9,
+        10
+      ]
+    ],
+    "greedy_scope": "Inclusion-minimal in the tested full-state game; not a minimum-cardinality claim.",
+    "coarse_tests": [
+      {
+        "cap_anchors": {
+          "observations": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 144,
+          "rounds": [],
+          "survivors": 144
+        },
+        "all_anchors": {
+          "observations": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 144,
+          "rounds": [],
+          "survivors": 144
+        }
+      },
+      {
+        "cap_anchors": {
+          "observations": [
+            3,
+            5,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 84,
+          "rounds": [],
+          "survivors": 84
+        },
+        "all_anchors": {
+          "observations": [
+            3,
+            5,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 84,
+          "rounds": [],
+          "survivors": 84
+        }
+      }
+    ],
+    "right_response_tests": [
+      {
+        "summary": "relation",
+        "observations": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          11,
+          14
+        ],
+        "profiles": 1800,
+        "rounds": [
+          265,
+          60,
+          15,
+          3,
+          2
+        ],
+        "survivors": 1455
+      },
+      {
+        "summary": "lists",
+        "observations": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          11,
+          14
+        ],
+        "profiles": 6444,
+        "rounds": [
+          673,
+          289,
+          177,
+          128,
+          112,
+          92,
+          63,
+          40,
+          45,
+          59,
+          38,
+          39,
+          35,
+          32,
+          37,
+          37,
+          48,
+          54,
+          46,
+          54,
+          70,
+          71,
+          89,
+          118,
+          111,
+          98,
+          116,
+          163,
+          208,
+          193,
+          207,
+          283,
+          383,
+          478,
+          561,
+          510,
+          304,
+          61,
+          1
+        ],
+        "survivors": 321
+      },
+      {
+        "summary": "tail",
+        "observations": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          11,
+          14
+        ],
+        "profiles": 7011,
+        "rounds": [
+          710,
+          327,
+          225,
+          184,
+          177,
+          142,
+          109,
+          111,
+          116,
+          136,
+          124,
+          112,
+          117,
+          123,
+          128,
+          118,
+          140,
+          173,
+          213,
+          243,
+          316,
+          397,
+          482,
+          613,
+          740,
+          563,
+          170,
+          2
+        ],
+        "survivors": 0
+      },
+      {
+        "summary": "relation",
+        "observations": [
+          3,
+          5,
+          7,
+          8,
+          9,
+          11,
+          14
+        ],
+        "profiles": 1225,
+        "rounds": [
+          131,
+          9,
+          3,
+          1
+        ],
+        "survivors": 1081
+      },
+      {
+        "summary": "lists",
+        "observations": [
+          3,
+          5,
+          7,
+          8,
+          9,
+          11,
+          14
+        ],
+        "profiles": 4097,
+        "rounds": [
+          280,
+          56,
+          25,
+          10,
+          5,
+          2,
+          1
+        ],
+        "survivors": 3718
+      },
+      {
+        "summary": "tail",
+        "observations": [
+          3,
+          5,
+          7,
+          8,
+          9,
+          11,
+          14
+        ],
+        "profiles": 4446,
+        "rounds": [
+          295,
+          60,
+          31,
+          14,
+          9,
+          8,
+          5,
+          1
+        ],
+        "survivors": 4023
+      }
+    ]
+  },
+  "completion_verifier_sha256": "d8751c585b087d907a13bd09243e31e987abc61bdd69235cece9c3c2a06279e1",
+  "total_wall_seconds": 69.4400471970439,
+  "limits": [
+    "This finite experiment is not a Lean repair theorem or a physical obstruction.",
+    "The adversary can choose a new abstract exterior matching at each step.",
+    "A single joined component can meet several original exterior components.",
+    "The three-anchor rule escapes the smaller residual set but does not supply full continuation.",
+    "No general lower bound on compositional proof size is established.",
+    "No catalogue entry, original certificate or coverage obligation is removed."
+  ]
+}

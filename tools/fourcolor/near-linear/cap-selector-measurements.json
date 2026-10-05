@@ -1,7 +1,7 @@
 {
   "evidence": "Finite program experiment, not a Lean proof.",
   "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
-  "cap_verifier_sha256": "07f64a91444ef5cf2cd90fb7b3904e4ad4cd27a317a98b491edab41055b53696",
+  "cap_verifier_sha256": "c1a997027b47e07bb733d000cbe7ad1e185e83537efaf2e324fc2c6833ccacce",
   "selector_verifier_sha256": "83426a4578c88427ea87d5011837ffcd29fca0a2003a41686ee064e31a96e46c",
   "retained_states": 1377,
   "full_profiles": 51,
