@@ -57156,3 +57156,240 @@ local-time and overlapping-window constants. Whole-space localization,
 positive-time existence, propagator Jensen/Fubini and the continuation
 implication are analytic arguments above, not consequences of finite
 fixtures alone. No Lean declarations or axioms change.
+
+## The created-gradient energy pays inherited parents and pressure
+
+The source in (GH1) contains pressure and all interacting parents.
+This section pays their mixed contributions in an unweighted energy
+of the actual created gradient, leaving a signed cubic self-reaction.
+The construction still uses the actual scalar viscous propagator;
+no evolution of an independent tensor is substituted for NS. The
+continuum estimates are analytic, with exact checks in
+`created_gradient_energy.py`, and are not new Lean-certified results.
+
+### The moving window and one original kinetic allowance
+
+Use the fixed delta from (GH7), or any smaller positive original value
+with the same local comparison bound. For t>=delta, write
+
+```text
+B=grad u, M=Bbar_(t-delta,t), J=B-M,
+Q_delta=P_(t-delta,t)B(t-delta), P_p=Hess p,
+Y=||J||2^2, D_J=||grad J||2^2, D_M=||grad M||2^2,
+A_E=E0/(2nu), E0=||u0||2^2.
+
+D M=(B-Q_delta)/delta,
+D J=-B^2-P_p-J/delta+(Q_delta-M)/delta.               (CJ1)
+```
+
+Differentiating the sliding integral in (GH1) gives both endpoints
+in (CJ1). The -J/delta term is part of this history decomposition,
+not a force added to the fluid. Discarding its accompanying endpoint
+term would change the equation. M and J have zero componentwise mean
+on the torus, since B does and the propagator preserves spatial mass.
+They are trace-free but need not themselves be spatial Jacobians.
+
+The same original kinetic energy bounds, on every available prefix,
+
+```text
+sup_(t>=delta) ||M(t)||2^2 <=A_E/delta,
+int_delta^T ||B||2^2 <=A_E,
+int_delta^T ||M||2^2 <=A_E,
+int_delta^T ||Q_delta||2^2 <=A_E,
+int_delta^T Y <=4A_E.                                (CJ2)
+```
+
+For M use contraction and Jensen inside its time average, followed by
+Fubini: each earlier Z=||B||2^2 occurs for at most delta time. For
+Q_delta use L2 contraction and translate the time variable. The J
+bound follows from |B-M|^2<=2|B|^2+2|M|^2. No estimate uses a future
+gradient supremum or independent copies of the initial allowance.
+
+Testing the actual M equation against M gives
+
+```text
+||M(T)||2^2+2nu int_delta^T D_M
+ =||M(delta)||2^2+(2/delta)int_delta^T <M,B-Q_delta>,
+X_M:=int_delta^T D_M <=5A_E/(2nu delta).              (CJ3)
+```
+
+Indeed the two space/time Cauchy bounds in the source are each at
+most A_E, and ||M(delta)||2^2<=A_E/delta. This pays the full spatial
+derivative of the average, including the effects of the actual drift.
+
+### Viscous smoothing controls the average in L3
+
+Choose a fixed domain constant S large enough for the scalar and tensor
+Sobolev/Nash estimates used here and in (MA5). The homogeneous estimates
+apply on R3; on T3 use componentwise mean-zero Poincare--Sobolev.
+The scalar advection-diffusion kernel obeys the drift-independent bound
+
+```text
+||P_(r,t)f||3 <=N[nu(t-r)]^(-1/4)||f||2,
+N=2(3S/4)^(1/4),                                    (CJ4)
+```
+
+for mean-zero input on T3 and general input on R3. For completeness,
+the Nash energy inequality gives the L1-to-L2 norm
+(3S/[4nu(t-r)])^(3/4). Apply the same argument to the adjoint
+incompressible propagator to get L2-to-Linfinity. On the torus the
+mean-zero projection costs at most two in L1; on R3 it is unnecessary.
+Interpolate output L2 and Linfinity to L3. The displayed common N is
+larger than needed in either case. Positivity of the scalar kernel
+and vector Cauchy give the same bound for Frobenius-valued tensors.
+No bound on the drift's size or derivatives enters this constant.
+
+Apply (CJ4) inside the actual M average and use
+int_0^delta tau^(-1/2)dtau=2sqrt(delta), together with int Z<=A_E:
+
+```text
+sup_(t>=delta)||M(t)||3
+ <=M_*:=N sqrt(E0)/(nu delta)^(3/4).                  (CJ5)
+```
+
+The integrability of that time singularity is important. This step
+does not assert a similarly uniform L6 or Linfinity bound for M.
+
+### Exact pressure cancellation and payment of every mixed term
+
+Let Q_J=-int J:J^2, where J^2 is matrix multiplication, and retain
+the entire physical pressure. In the integrated creation energy,
+
+```text
+Y'+2nu D_J+(2/delta)Y=2Q_J+W_mix+W_p+W_end,
+W_mix=-2int J:(JM+MJ+M^2),
+W_p=-2int J:P_p=2int M:P_p,
+W_end=(2/delta)<J,Q_delta-M>.                        (CJ6)
+```
+
+The pressure equality uses int B:Hess p=0 for the ACTUAL solenoidal
+velocity gradient B. It does not assert that J or M has this cancellation
+separately. Pressure remains in their evolution and can generate J.
+
+Let C_P be a fixed Calderon--Zygmund operator constant for
+P_p=Hess(-Delta)^(-1)tr(B^2) in L^(3/2) on the chosen domain, so
+||P_p||_(3/2)<=C_P||B||3^2. The periodic source has zero mean.
+Sobolev interpolation and (CJ2)--(CJ5) give, with
+X_J=int_delta^T D_J and X_M bounded by (CJ3),
+
+```text
+int_delta^T |W_mix|
+ <=M_* sqrt(S A_E)[8sqrt(X_J)+4sqrt(X_M)],
+int_delta^T |W_p|
+ <=2C_P M_* sqrt(S A_E)[sqrt(X_J)+sqrt(X_M)],
+int_delta^T |W_end|<=8A_E/delta.                     (CJ7)
+```
+
+For the first line, the two terms with two J factors cost
+4M_*||J||3^2<=4M_*sqrt(S)||J||2||grad J||2.
+The term with two M factors costs
+2M_*||J||2||M||6<=2M_*sqrt(S)||J||2||grad M||2.
+Integrate using int Y<=4A_E. For pressure, use
+||B||3^2<=sqrt(S)||B||2||grad B||2 and
+||grad B||2<=||grad J||2+||grad M||2. The endpoint bound uses the
+same L2-time allowances, retaining both M and the transported old B.
+These are estimates of complete signed work terms by their absolute
+time integrals, not separate assumptions about each parent's evolution.
+
+Define original-data constants
+
+```text
+X_M^*=5A_E/(2nu delta),
+a=M_*sqrt(S A_E)(8+2C_P),
+b=M_*sqrt(S A_E X_M^*)(4+2C_P)+8A_E/delta,
+B_cross=a^2/(2nu)+b.
+
+int_delta^T (|W_mix|+|W_p|+|W_end|)
+ <=(nu/2)X_J+B_cross.                               (CJ8)
+```
+
+This is the elementary inequality a sqrt(X_J)<=nu X_J/2+a^2/(2nu).
+Every constant depends on original data, positive viscosity, delta
+and fixed domain/operator constants. In particular B_cross has no
+unknown future field norm or factor counting composition seams.
+It pays pressure work only in this particular global energy balance;
+it is not a pointwise pressure estimate or payment of all earlier
+joint-pressure observables such as (MW9).
+
+### The remaining signed self-reaction has a direct continuation consumer
+
+The initial local comparison in (GH7) gives
+Y(delta)<=2sqrt(2)Z0+2A_E/delta<=I0, where
+I0=3Z0+2A_E/delta. Integrating (CJ6) and using (CJ8) proves
+
+```text
+Y(T)+(3nu/2)X_J+(2/delta)int_delta^T Y
+ <=I0+B_cross+2int_delta^T Q_J.                       (CJ9)
+```
+
+A sufficient, still-OPEN theorem is one finite original-data allowance
+K_self>=0 on every available same-datum prefix delta<=T<=Tstar:
+
+```text
+2int_delta^T [Q_J-(nu/2)D_J-Y/delta] <=K_self.        (CJ10)
+```
+
+If proved, it would give, for B_total=I0+B_cross+K_self,
+
+```text
+Y(T)+(nu/2)X_J<=B_total,
+Z(T)<=2B_total+2A_E/delta,
+int_delta^T L_delta^2<=4A_E B_total.                 (CJ11)
+```
+
+The second bound follows from B=J+M and (CJ2). The third uses
+L_delta<=Y and int Y<=4A_E, so it also supplies (GH9). Earlier
+times T<delta are already covered by (GH7). The Z0=0 case is the
+zero/constant flow and is handled without division. Thus the existing
+whole-space and periodic order-one continuation consumers apply if
+(CJ10) is established, with the same Fourier normalization discussed
+after (MA7). No equivalence of (CJ10) with the other open budgets is
+claimed. The unweighted observer is a stronger sufficient target than
+the weighted cost in (GH9), with a simpler energy law.
+
+Although J is trace-free, it need not be a Jacobian. In particular
+Q_J cannot simply be renamed physical vorticity stretching for J.
+Its definition through the complete NS history and its direct
+reconstruction of B are essential. A rank-one trace-free J has J^2=0,
+but its evolution need not remain in that geometry.
+
+### Actual creation can feed or deplete its own cubic reaction
+
+The remaining sign is not automatic. For a fixed smooth periodic datum,
+F0=-B0^2-Hess p0, smooth local evolution gives at the first window
+
+```text
+J_delta(delta)=(delta/2)F0+O(delta^2),
+Q_J(delta)=(delta^3/8)Q_F+O(delta^4),
+Q_F=-int F0:F0^2.                                  (CJ12)
+```
+
+For the triad v in (MA9), Q_F=-32117/924000<0. For a positive example,
+use the real divergence-free field whose positive Fourier modes have
+coefficient c times polarization v in the following table, with the
+conjugate coefficients at negative modes:
+
+| Wavevector | Polarization | c |
+| --- | --- | --- |
+| (1,0,1) | (1,2,-1) | (1+2i)/3 |
+| (0,1,1) | (2,1,-1) | (-2+i)/5 |
+| (1,1,0) | (1,-1,2) | (1-i)/7 |
+| (2,-1,1) | (1,1,-1) | (2+3i)/11 |
+
+Its exact value is Q_F=162768/29645>0. Both calculations retain
+canonical pressure and all generated Fourier outputs. For each fixed
+nu>0 choose a sufficiently small original delta satisfying (GH7).
+Then Q_J(delta) has the indicated strict sign, which persists on
+a nonzero interval by continuity of the actual solution and propagator.
+Thus universal nonpositive creation self-reaction is refuted. This
+does not refute (CJ10), including the case K_self=0: its viscous and
+aging costs have not been beaten by this sign test. It is not a
+singularity construction or an arbitrary-history allowance.
+
+Run `python3 -O labs/created_gradient_energy.py`. The checker verifies
+the sliding source/average identity with a nontrivial heat factor,
+the complete cubic split, Nash and interaction constants, the universal
+Young square, physical pressure cancellation and the full material
+gradient source at two positive viscosities, and both exact coefficients
+in (CJ12). The all-prefix estimates, actual local intervals and
+continuation argument remain analytic. No Lean declarations or axioms change.

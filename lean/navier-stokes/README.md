@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [created-gradient energy estimate](labs/README.md#the-created-gradient-energy-pays-inherited-parents-and-pressure)
+pays the moving-window terms, mixed-parent interactions and pressure work
+in one actual gradient-history energy balance. Drift-independent viscous
+smoothing controls the averaged parent from the original energy, while
+the exact full-gradient pressure cancellation transfers its work to that
+average. The remaining signed budget concerns the created tensor's own
+cubic reaction, with viscosity and window aging retained. Explicit actual
+local histories give both signs of that reaction. Its arbitrary-history
+allowance remains open; the new derivation is analytic with exact checks,
+not a Lean PDE proof or a global regularity theorem.
+
 The [shared gradient-history estimate](labs/README.md#shared-viscous-history-retains-the-creation-of-new-gradients)
 uses the actual common transport-diffusion history to relate stress memory
 to the velocity gradient. The relation must retain newly created gradients:

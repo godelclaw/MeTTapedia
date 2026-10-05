@@ -1,0 +1,49 @@
+{
+  "certification": "exact algebra; continuum statements analytic, not Lean-certified",
+  "clock": {
+    "D_J": "-B^2-Hess p-J/delta+(Q_delta-M)/delta",
+    "D_M": "(B-Q_delta)/delta",
+    "Q_delta": "P_(t-delta,t) B(t-delta)"
+  },
+  "physical_sources": {
+    "actual_local_statement": "J_delta(delta)=(delta/2)*F0+O(delta^2); Q_J(delta)=(delta^3/8)*Q_F+O(delta^4)",
+    "not_refuted": "a signed history allowance including viscosity and aging",
+    "refuted": "universal nonpositive creation self-reaction",
+    "rows": [
+      {
+        "Q_F": "162768/29645",
+        "coefficient_in_Q_J_at_first_window": "20346/29645",
+        "label": "positive first creation"
+      },
+      {
+        "Q_F": "-32117/924000",
+        "coefficient_in_Q_J_at_first_window": "-32117/7392000",
+        "label": "negative first creation"
+      }
+    ]
+  },
+  "reaction": {
+    "B_cross": "A*M_star**2*S*(2*C_P + 8)**2/(2*nu) + sqrt(10)*A*M_star*sqrt(S)*(2*C_P + 4)/(2*sqrt(delta)*sqrt(nu)) + 8*A/delta",
+    "OPEN": "2*integral (Q_J-nu*|grad J|_2^2/2-Y/delta)<=K_self on every same-datum prefix",
+    "a": "sqrt(A)*M_star*sqrt(S)*(2*C_P + 8)",
+    "b": "sqrt(10)*A*M_star*sqrt(S)*(2*C_P + 4)/(2*sqrt(delta)*sqrt(nu)) + 8*A/delta",
+    "conditional": "Y(T)+(nu/2)*X_J<=initial+B_cross+K_self",
+    "gradient_consumer": "Z(T)<=2*(initial+B_cross+K_self)+2*A/delta",
+    "initial_creation_bound": "2*A/delta + 3*Z0",
+    "self_reaction": "Q_J=-integral J:J^2",
+    "unconditional": "Y(T)+(3nu/2)*X_J+(2/delta)*integral Y <= initial+B_cross+2*integral Q_J"
+  },
+  "smoothing_and_energy": {
+    "A_energy": "E0/(2*nu)",
+    "M_star": "N*sqrt(E0)/(nu*delta)^(3/4)",
+    "average_diffusion": "integral |grad M|^2<=5*A_energy/(2*nu*delta)",
+    "common_N": "2*(3*S/4)^(1/4)",
+    "integrated_squares": {
+      "B": "A_energy",
+      "J": "4*A_energy",
+      "M": "A_energy",
+      "Q_delta": "A_energy"
+    }
+  },
+  "source_sha256": "776dee1d7e76de5c781b6e0e2177e581105d098600a7c805638c7bfb6430f145"
+}
