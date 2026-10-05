@@ -6869,5 +6869,33 @@
     "catalogue_entries_removed": 0,
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0
+  },
+  "two_cap_rechoice_and_selection": {
+    "status": "Lean-checked local palette laws and source obstruction; adaptive progress remains finite experimental evidence.",
+    "proof": "CapRechoice",
+    "audit": "CapRechoiceAudit",
+    "audited_roots": 7,
+    "lean_source_bytes": 10320,
+    "frontend_seconds_with_prebuilt_dependencies": 13.19,
+    "checked_claims": [
+      "A four-neighbour fan with repeated end colour forces the fourth palette value; identifying the two other neighbour colours releases an alternative.",
+      "A certified original exterior chord update changes only hidden boundary vertex 5 and leaves the selected diamond boundary unchanged.",
+      "The initial original boundary has no full source colouring.",
+      "After the update a full source colouring exists, while the unchanged cap witnesses still have no full extension.",
+      "Full extension therefore cannot be determined by the boundary of the selected remaining diamond alone."
+    ],
+    "experiment": "../near-linear/two-cap-choice-measurements.json",
+    "tested_original_boundary_classes": 3768,
+    "four_anchors_before_matching_survivors": 2950,
+    "four_anchors_after_matching_survivors": 0,
+    "joint_caps_before_matching_anchor_after_survivors": 0,
+    "excluded_original_words_without_cap_prefix": 2026,
+    "scope": "The update uses an abstract noncrossing exterior matching. No particular ambient realization, uniform progress selector, strict reduction or coverage is established.",
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "all_cap_choices_have_nonempty_vertex_lists_boundary_classes": 1443,
+    "individually_colourable_triangles_with_incompatible_joint_choices_prefixes": 470,
+    "compatible_marginals_but_incompatible_joint_choices_prefixes": 15
   }
 }

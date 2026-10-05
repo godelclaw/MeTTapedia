@@ -5739,3 +5739,67 @@ Replay `python3 tools/fourcolor/near-linear/audit_cap_completion.py` from the
 repository root. The [measurement](cap-completion-measurements.json) records
 the finite tests, hashes and limits. No strategy table, new Lean progress
 theorem, certificate replacement or coverage reduction is claimed.
+
+## Two caps: selecting a component and revising witnesses
+
+`audit_two_cap_choice.py` builds source vertices 11, 14, 18 and 16 by four
+boundary insertions, leaving the diamond on vertices 12, 13, 15 and 17.
+It checks complete old adjacency, cyclic order and the ordered nine-vertex
+boundary against D0099. The two caps share one original exterior matching;
+their colour choices are retained jointly.
+
+The experiment starts from 3,768 original boundary classes that admit both
+caps but no complete source colouring. Another 2,026 original classes admit
+no cap prefix and require preparation outside this test. A transition checks
+all 25 prefix edges. Its target succeeds only when the original boundary
+admits a full source colouring, allowing compatible new cap choices.
+
+| Choices before the exterior matching | Choices after it | Pruning rounds | Survivors |
+| --- | --- | --- | --- |
+| Palette and one of four anchors | Joint cap colours | 26 | 2,950 |
+| Palette | Joint cap colours and anchor | 18 | 0 |
+| Palette and joint cap colours | Anchor | 20 | 0 |
+
+The anchors are `(3,4)`, `(8,9)`, `(11,14)` and `(16,18)`. These are finite
+game results, not a symbolic progress proof or a physical runtime bound.
+Cap witnesses may be revised between rounds and at final reconstruction.
+In 1,443 of the tested boundary classes, every cap choice leaves at least one
+available colour at each remaining vertex, yet none colours the whole core.
+Thus freeing a single blocked vertex cannot explain all failures; joint
+constraints between the diamond vertices remain essential.
+Among the 6,762 retained cap colourings on these inputs, 470 leave both
+triangles individually colourable but with incompatible choices on their
+shared edge. Fifteen even have compatible separate vertex marginals. These
+counts concern cap colourings, not distinct configurations or repair laws.
+Replay with `python3 tools/fourcolor/near-linear/audit_two_cap_choice.py`;
+the [measurement](two-cap-choice-measurements.json) records hashes and scope.
+
+`CapRechoice.lean` separately certifies why witness revision matters. A fan
+whose neighbours have colours `(p,q,p,r)` forces the fourth colour `s`.
+Changing the second neighbour to `r` permits either `q` or `s`. Both palette
+laws are uniform. An exact source consumer has this sequence:
+
+```text
+original boundary: no full colouring
+                 |
+one exterior chord switch changes hidden vertex 5
+                 |
+same selected diamond boundary; fixed caps still do not extend
+                 |
+choose the newly available colour at cap vertex 14
+                 |
+full D0099 colouring with the updated original boundary
+```
+
+Both selected prefixes are genuine colourings of the retained source graph.
+The chord update is accepted by the same abstract exterior chromogram;
+realization by a particular surrounding graph is not asserted. The theorem
+`visible_boundary_insufficient` refutes determining full source extension
+solely from the boundary of the currently selected diamond. It does not
+refute an interface retaining all relevant cap choices and their updates.
+
+The seven-root dependency audit excludes the complete Four Colour theorem
+and the bulk repair tables. The proof and audit replay in 13.19 frontend
+seconds with prebuilt dependencies. No catalogue entry, original certificate
+dependency or complete-assembly check is removed. A structural adaptive
+selection law, strict ambient reduction and geometric supply remain open.

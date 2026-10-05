@@ -1763,3 +1763,16 @@ target kernelCapJoint pkg : Unit := do
         "--library-output", ".lake/build/lib/lean", "--modules", "CapJointTransport", "CapJointAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the cap-choice law and its source-level boundary-update obstruction. -/
+target kernelCapRechoice pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/cap-rechoice",
+        "--library-output", ".lake/build/lib/lean", "--modules", "CapRechoice", "CapRechoiceAudit"]
+      cwd := pkg.dir
+      env := env }

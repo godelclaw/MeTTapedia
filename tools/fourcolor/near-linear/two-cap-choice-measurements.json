@@ -1,0 +1,248 @@
+{
+  "boundary_states": 3768,
+  "direct_source_boundary_classes": 1587,
+  "all_components": {
+    "rounds": [
+      571,
+      441,
+      442,
+      475,
+      526,
+      560,
+      445,
+      229,
+      71,
+      8
+    ],
+    "survivors": 0,
+    "sample": []
+  },
+  "four_fixed_anchors": {
+    "rounds": [
+      186,
+      93,
+      67,
+      51,
+      48,
+      40,
+      36,
+      39,
+      48,
+      32,
+      34,
+      20,
+      14,
+      18,
+      14,
+      14,
+      21,
+      11,
+      9,
+      4,
+      4,
+      2,
+      2,
+      4,
+      4,
+      3
+    ],
+    "survivors": 2950,
+    "sample": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "four_anchors_after_matching": {
+    "rounds": [
+      377,
+      194,
+      147,
+      161,
+      191,
+      190,
+      165,
+      188,
+      225,
+      236,
+      248,
+      258,
+      303,
+      286,
+      299,
+      198,
+      84,
+      18
+    ],
+    "survivors": 0,
+    "sample": []
+  },
+  "cap_before_matching_anchor_after": {
+    "rounds": [
+      350,
+      167,
+      109,
+      107,
+      135,
+      134,
+      156,
+      161,
+      177,
+      198,
+      226,
+      255,
+      268,
+      288,
+      318,
+      319,
+      232,
+      120,
+      47,
+      1
+    ],
+    "survivors": 0,
+    "sample": []
+  },
+  "scope": "Finite original-boundary game; terminal means full source extension with compatible cap witnesses. No Lean theorem or physical obstruction.",
+  "layouts": 157399,
+  "component_tests": 1058466,
+  "local_saturation": {
+    "no_cap_choice_has_empty_list": 1443,
+    "every_cap_choice_has_empty_list": 1496,
+    "some_cap_choice_has_empty_list": 829
+  },
+  "diamond_obstructions_by_cap_colouring": {
+    "empty_triangle_relation": 2773,
+    "empty_vertex_list": 3519,
+    "shared_vertex_marginal_conflict": 455,
+    "joint_conflict_with_compatible_marginals": 15
+  },
+  "seconds": 15.347014867002144,
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "verifier_sha256": "b11210f580382dd2a5ecb83894a57cc052d699029b0daf380f689ed6793833c8",
+  "dependency_sha256": {
+    "audit_five_triangle_collapse.py": "658bf8b10afde2edb48dd6d6ca2aa23bdb28fea6e0a0f552b3b0e33c0fc79a5c",
+    "audit_strip_fan_repair.py": "2e742bf6eb91640793de9b8277a128f68912edf123b872f80877f41df66fc1a3",
+    "generate_exceptional_repair.py": "7719e67ccbaa31f8894750cc2da5bf10da5381e0810ca97600b7b74e0a6ba3ac",
+    "audit_diamond_sources.py": "6d18cbf85974f18bf70599aa43e4c7a78a9c63be953961bdad1e0823c34c2349",
+    "audit_strip_fan.py": "0eaceac52438d165669a05deb08e1c401e89216658319638bdf0fa714cb4aa14"
+  },
+  "insertions": [
+    {
+      "inserted_vertex": 11,
+      "neighbours": [
+        6,
+        7,
+        8
+      ],
+      "boundary": [
+        6,
+        11,
+        8,
+        9,
+        10,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "inserted_vertex": 14,
+      "neighbours": [
+        4,
+        5,
+        6,
+        11
+      ],
+      "boundary": [
+        4,
+        14,
+        11,
+        8,
+        9,
+        10,
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "inserted_vertex": 18,
+      "neighbours": [
+        10,
+        0,
+        1
+      ],
+      "boundary": [
+        10,
+        18,
+        1,
+        2,
+        3,
+        4,
+        14,
+        11,
+        8,
+        9
+      ]
+    },
+    {
+      "inserted_vertex": 16,
+      "neighbours": [
+        18,
+        1,
+        2,
+        3
+      ],
+      "boundary": [
+        18,
+        16,
+        3,
+        4,
+        14,
+        11,
+        8,
+        9,
+        10
+      ]
+    }
+  ],
+  "anchors": [
+    [
+      3,
+      4
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      11,
+      14
+    ],
+    [
+      16,
+      18
+    ]
+  ],
+  "joint_cap_choices_on_tested_states": 6762,
+  "excluded_original_words_without_cap_prefix": 2026,
+  "quantifiers": {
+    "four_fixed_anchors": "choose palette and anchor; for every original matching choose both cap witnesses jointly",
+    "four_anchors_after_matching": "choose palette; for every original matching choose both cap witnesses and anchor jointly",
+    "cap_before_matching_anchor_after": "choose palette and both cap witnesses; for every original matching choose anchor"
+  },
+  "limits": [
+    "Discovery computation, not a Lean progress theorem.",
+    "Cap colours may be reselected between rounds and at final extension.",
+    "Original words without a cap prefix still need fan preparation.",
+    "An abstract exterior matching may change each round; round counts are not physical runtime bounds.",
+    "No strategy table, certificate replacement, strict reduction or coverage theorem is produced."
+  ]
+}
