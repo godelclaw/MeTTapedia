@@ -49,9 +49,9 @@ run_cmd do
           todo := info.getUsedConstantsAsSet.toList ++ todo
     let required :=
       if root == ``ThreeBlockDiskBoundary.outside_planar then
-        [``ThreeBlockDiskBoundary.outside_connected,
-         ``ThreeBlockDiskBoundary.outside_triangular,
-         ``ThreeBlockDiskBoundary.deletion_dart_count,
+        [``PatchDisk.Reading.outside_connected,
+         ``PatchDisk.Reading.outside_triangular,
+         ``PatchDisk.Reading.deletion_dart_count,
          ``GraphTriangulationEuler.balance, ``GraphDiskEuler.planar,
          ``Hypermap.cubic_Euler, ``Hypermap.quasicubic_Euler]
       else if root == ``ThreeBlockDiskBoundary.repair_of_ambient then

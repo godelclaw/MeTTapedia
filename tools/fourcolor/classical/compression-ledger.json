@@ -6483,5 +6483,47 @@
     "catalogue_entries_removed": 0,
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0
+  },
+  "common_patch_deletion": {
+    "status": "kernel checked common core deletion and actual repair consumer",
+    "receipt": "patch-disk-measurements.json",
+    "common_theorem": "FourColor.PatchDisk.Reading.outside_planar",
+    "source_instances": [
+      {
+        "catalogue_id": "D0092",
+        "core_vertices": 7,
+        "boundary_ports": 11,
+        "removed_darts": 58
+      },
+      {
+        "catalogue_id": "D0099",
+        "core_vertices": 8,
+        "boundary_ports": 11,
+        "removed_darts": 64
+      }
+    ],
+    "consumers": [
+      "FourColor.ThreeBlockDiskBoundary.outside_planar",
+      "FourColor.PatchDiskRepair.d0099_repair"
+    ],
+    "derived": [
+      "Complete core stars",
+      "Ordered facial exterior boundary with distinct darts; vertices may repeat",
+      "Connected exterior and triangular remaining faces",
+      "Exact deletion vertex and dart counts",
+      "Planarity of the actual first-return exterior rotation",
+      "Kempe closure of the actual joint exterior boundary relation"
+    ],
+    "new_module_source_bytes": 43506,
+    "new_colouring_witness_table_bytes": 0,
+    "remaining": [
+      "Initial boundary-class supply",
+      "Repair of arbitrary smaller colourings",
+      "Geometric occurrence supply and compact coverage",
+      "Global termination for the intended graph class"
+    ],
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
   }
 }

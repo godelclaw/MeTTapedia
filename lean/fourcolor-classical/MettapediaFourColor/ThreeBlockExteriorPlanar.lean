@@ -1,3 +1,5 @@
+import MettapediaFourColor.PatchDiskPlanar
+import MettapediaFourColor.PatchDiskSources
 import MettapediaFourColor.GraphTriangulationEuler
 import MettapediaFourColor.ThreeBlockRemainingFaces
 import MettapediaFourColor.ThreeBlockExteriorConnected
@@ -27,25 +29,8 @@ variable {V : Type} [Fintype V] [DecidableEq V]
 
 include tri cyclic conn ambient
 
-theorem outside_planar : (SimpleGraphBridge.rotationHypermap (outsideRotation r)).Planar := by
-  classical
-  letI : Nontrivial V := ⟨⟨r.hom 0, r.hom 1,
-    fun h => (by decide : (0 : Fin 18) ≠ 1) (r.injective h)⟩⟩
-  letI : Nontrivial (keep r) := ⟨⟨port r 0, port r 1,
-    fun h => (by decide : (0 : Fin 11) ≠ 1) (port_injective r h)⟩⟩
-  have connected := outside_connected r cyclic conn
-  have counts := GraphTriangulationEuler.balance data cyclic conn
-    (GraphTriangulationEuler.covered conn) tri ambient
-  have vc : Nat.card V = Nat.card (keep r) + 7 := by
-    simpa only [Nat.card_eq_fintype_card] using deleted_count r tri
-  have dc := deletion_dart_count r cyclic
-  have len : (outsideRing r).length = 11 := List.length_ofFn
-  apply GraphDiskEuler.planar (outsideRotation r) (outside_cyclic r cyclic)
-    connected (GraphTriangulationEuler.covered connected) (outsideRing r)
-    (by intro h; have bad := congrArg List.length h; rw [len] at bad; contradiction)
-    (outside_boundary r tri) (outside_distinct r) (outside_triangular r tri cyclic)
-  rw [len]
-  omega
+theorem outside_planar : (SimpleGraphBridge.rotationHypermap (outsideRotation r)).Planar :=
+  PatchDisk.Reading.outside_planar (PatchDiskSources.of_d0092 r) tri cyclic conn ambient
 
 /-- The joint boundary relation is closed for every exterior colouring;
 no seed class or successful repair is assumed here. -/

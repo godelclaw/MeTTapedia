@@ -2575,8 +2575,56 @@ star premise from the cyclic reading and reconstructs the whole colouring,
 with a strictly smaller exterior.
 
 Exterior Kempe closure, exact exterior coverage and the initial two-form
-boundary domain remain hypotheses. Automatic exterior disk geometry for
-D0099 and universal occurrence supply are still open. This is a shared
+boundary domain remain hypotheses of this earlier consumer. The common
+deletion law below now supplies the first two from actual geometry.
+Universal occurrence supply is still open. This is a shared
 geometric argument and a strengthened repair consumer; no catalogue entry,
 original configuration certificate or complete-assembly check is removed.
 Replay measurements are in `cyclic-core-measurements.json`.
+
+## Common core deletion with identified boundary vertices
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelPatchDisk
+```
+
+`PatchDisk.Source` describes a finite source through its core rotations,
+short boundary fans, adjacent triangle tips and exact core-incident dart
+count. D0092 and D0099 satisfy this same contract. A reading preserves
+these turns in the ambient graph, keeps core vertices distinct, prevents
+boundary vertices from entering the core, and is injective on each core
+neighbourhood. Exact prescribed core degrees supply the last condition
+from cyclic star coverage. Boundary vertices need not all be distinct.
+
+`PatchDisk.Reading.outside_planar` derives the actual exterior geometry
+from a connected spherical triangulation and such a reading. Deleting the
+core retains a connected graph with the ordered facial boundary and
+triangular remaining faces. The proof identifies every removed dart and
+vertex, then transfers Euler balance. It is uniform in core size, boundary
+length and ambient size under the stated source contract.
+
+`PatchDiskRepair.d0099_repair` consumes this geometry in the existing
+two-form joint repair. It requires no separate exterior-planarity or
+Kempe-closure premise: an initial exterior colouring in the specified
+domain reconstructs a whole colouring agreeing with the repaired exterior,
+and the exterior is strictly smaller. The existing D0092 planar-exterior
+theorem now applies the same deletion law.
+
+`PatchDiskFoldedExample` checks an actual 19-vertex spherical triangulation
+where source ports zero and two coincide. The eight core vertices remain
+distinct. Deletion leaves eleven vertices and an eleven-dart facial
+boundary whose vertex list has a repeated entry. This is a geometric
+example, not a claim about minimal counterexamples or supply of a repair
+colouring.
+
+The sixteen-root audit checks the common geometry, both source adapters,
+actual reconstruction and the folded example. It excludes complete Four
+Colour endpoints, original bulk certificates and the large repair tables.
+The new finite checks concern small source rows and this example; no table
+of colouring witnesses is added. Costs and source hashes are recorded in
+`patch-disk-measurements.json`.
+
+Initial boundary-class supply, repair of arbitrary smaller colourings and
+universal occurrence coverage remain open. No catalogue entry, original
+configuration certificate or complete-assembly check is removed.

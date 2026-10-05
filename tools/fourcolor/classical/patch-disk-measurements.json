@@ -1,0 +1,201 @@
+{
+  "status": "kernel checked common core deletion and actual repair consumer",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "common_theorem": "FourColor.PatchDisk.Reading.outside_planar",
+  "source_contract": "Finite core rotations, short facial boundary fans, adjacent core tips and exact core-incident dart count; no ambient exterior conclusion is a field.",
+  "ambient_hypotheses": [
+    "Finite connected spherical triangulation with vertexwise cyclic rotation",
+    "Preserved source turns",
+    "Injective core and no boundary capture into the core",
+    "Local injectivity on core neighbourhoods, derivable from exact core degrees"
+  ],
+  "derived": [
+    "Complete core stars",
+    "Ordered facial exterior boundary with distinct darts; vertices may repeat",
+    "Connected exterior and triangular remaining faces",
+    "Exact deletion vertex and dart counts",
+    "Planarity of the actual first-return exterior rotation",
+    "Kempe closure of the actual joint exterior boundary relation"
+  ],
+  "sources": [
+    {
+      "catalogue_id": "D0092",
+      "core_vertices": 7,
+      "boundary_ports": 11,
+      "removed_darts": 58
+    },
+    {
+      "catalogue_id": "D0099",
+      "core_vertices": 8,
+      "boundary_ports": 11,
+      "removed_darts": 64
+    }
+  ],
+  "consumers": [
+    "FourColor.ThreeBlockDiskBoundary.outside_planar",
+    "FourColor.PatchDiskRepair.d0099_repair"
+  ],
+  "reconstruction": "The D0099 consumer reconstructs a whole colouring agreeing with a repaired exterior, and proves strict exterior vertex decrease, for either specified port-six boundary form.",
+  "folded_example": {
+    "theorem": "FourColor.PatchDiskFoldedExample.deleted_planar",
+    "ambient_vertices": 19,
+    "ambient_darts": 102,
+    "exterior_vertices": 11,
+    "identified_source_ports": [
+      0,
+      2
+    ],
+    "boundary_darts": 11,
+    "distinct_boundary_vertices": 10,
+    "scope": "Actual spherical geometry and closure; no minimal-counterexample or repair-colouring supply claim."
+  },
+  "audit": {
+    "roots": 16,
+    "transitive_declarations": 13238,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excludes": [
+      "complete Four Colour endpoints",
+      "original bulk certificates",
+      "WheelRepairData",
+      "ExceptionalRepairData",
+      "ResidualSeedRepairData",
+      "DiamondProfileData"
+    ]
+  },
+  "existing_d0092_audit": {
+    "roots": 15,
+    "transitive_declarations": 12891,
+    "status": "passed"
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.PatchDiskSource",
+      "source_sha256": "31caef73eff0c7c3e2e9d16c98c9dad00d117f37110180396c8693d6e83197d7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.278,
+      "olean_bytes": 476840,
+      "olean_sha256": "c42347444250040d870820579fef54df86f4792c1c4c06a3ecfe60331ad6a157",
+      "source_bytes": 5166
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskBoundary",
+      "source_sha256": "212c5c6ed07cbb99004fa38b8726ac6f85441a9840320422438de271f3b0741b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.46,
+      "olean_bytes": 410184,
+      "olean_sha256": "b889530463e7e284995e8b5fa63964ce88b7907c2e68b487a1b8f23b35ab37c4",
+      "source_bytes": 6665
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskSources",
+      "source_sha256": "cf43b8a0cedd3f44e9e77fb59d40ca6d4c15a760a0892ba7a78c83d69b93108a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 17.777,
+      "olean_bytes": 320136,
+      "olean_sha256": "7f7fdbd1ed984258c925a0b09c0ebee46771d290c8a542de87adb88e0bd795c4",
+      "source_bytes": 4746
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskRemaining",
+      "source_sha256": "ecd2293b199fae74f8d8a2a440526cf94fa4c0d8af2694bc30c72d6a8d69f435",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.311,
+      "olean_bytes": 298888,
+      "olean_sha256": "f25273288d049ffbdf57bfa39adbb3d3bd88c633f6b1e5f49f24abc8853a443c",
+      "source_bytes": 7469
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskCount",
+      "source_sha256": "d792fc1725e5064e7a0fd67b277b18603420848335753929c04ffa6483af4b34",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.272,
+      "olean_bytes": 272672,
+      "olean_sha256": "5a5f7eb7c576ed1ababb819025015c9f7344f1bd20a4740a872072cea60e793d",
+      "source_bytes": 5189
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskPlanar",
+      "source_sha256": "f6d04cd3c9c3b58818283cce893f841f0f6b4e188c9b8f0965c1995f5a74ae60",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.224,
+      "olean_bytes": 125080,
+      "olean_sha256": "31ab06e4bcfb40d8e0a8efa907ecbdad21f7550e5d6a09a8061c8424d55a2dda",
+      "source_bytes": 2674
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskRepair",
+      "source_sha256": "cde49c66b11da076343ba781a42c66669fe90d996fb9f20c1d82d57a54005541",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.191,
+      "olean_bytes": 47984,
+      "olean_sha256": "e69dc15621fe542a255497f3b092b7a0c58fed64431506467f92107f6a0c7275",
+      "source_bytes": 2245
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskFoldedExample",
+      "source_sha256": "6076f5fd5670094829233c7c93aedee9bfb2e10c44232fc0f77026c38244eff0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 20.395,
+      "olean_bytes": 337848,
+      "olean_sha256": "3511a777949841c6b1d8a695040618389838812cf67fac8f73fb3546b099d619",
+      "source_bytes": 5718
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockExteriorPlanar",
+      "source_sha256": "b2ae1a2881ebf419a79a21c6ea3d9d1ff99221558936d11ee07df0ca9a63bdd4",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.397,
+      "olean_bytes": 41296,
+      "olean_sha256": "f77f8a0d036b12bf264d012435d54da7e117bac485d96516aaecb2654a599ccf",
+      "source_bytes": 2560
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockExteriorPlanarExample",
+      "source_sha256": "cb52f11f473517c85881088a6c0ff9e12eaded05a2d22899e4c8fecef205c963",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.271,
+      "olean_bytes": 84744,
+      "olean_sha256": "219cf9fa6e02e563224ca8012e97d498709309286186cf553d76ae476263e5ab",
+      "source_bytes": 2441
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockExteriorAudit",
+      "source_sha256": "c95984c40cfb82091b24a0ad2a4becb114549a3b1b8bb2c26489bf46634fc51a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 7.964,
+      "olean_bytes": 3184,
+      "olean_sha256": "56e77134e08ba85886aa4073f36152ebd2c42ac2a459d130e3d7a29a362731eb",
+      "source_bytes": 3954
+    },
+    {
+      "module": "MettapediaFourColor.PatchDiskAudit",
+      "source_sha256": "f19200f9c6da473f41e2fab10594137dbd63594ebc34083717d92d48756a00d5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.235,
+      "olean_bytes": 2728,
+      "olean_sha256": "0fa9b3ac203d23235fce4dc7eb1f7c6ff7a596e139dbc452f02785a28a9c47e4",
+      "source_bytes": 3634
+    }
+  ],
+  "frontend_seconds_with_prebuilt_dependencies": 81.775,
+  "new_module_source_bytes": 43506,
+  "new_colouring_witness_table_bytes": 0,
+  "limits": [
+    "Initial two-form boundary class remains a hypothesis.",
+    "No repair of all smaller colourings or universal occurrence coverage is established.",
+    "No bound on physical switch history length or near-linear runtime is established.",
+    "No whole-proof source-size or kernel-time saving is claimed."
+  ],
+  "catalogue_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0,
+  "complete_assembly_checks_removed": 0,
+  "gates": {
+    "kernelPatchDisk": "passed",
+    "kernelComplete": "passed",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint": "passed"
+  }
+}

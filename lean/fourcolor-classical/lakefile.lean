@@ -1610,3 +1610,17 @@ target kernelCyclicCore pkg : Unit := do
         "StripCyclicReconstruction", "CyclicCoreAudit", "StripSixJointAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the common source contract for triangulated core deletion. -/
+target kernelPatchDisk pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/patch-disk",
+        "--library-output", ".lake/build/lib/lean", "--modules", "PatchDiskSource", "PatchDiskBoundary", "PatchDiskSources", "PatchDiskRemaining", "PatchDiskCount", "PatchDiskPlanar", "PatchDiskRepair", "PatchDiskFoldedExample",
+        "ThreeBlockExteriorPlanar", "ThreeBlockExteriorPlanarExample", "ThreeBlockExteriorAudit", "PatchDiskAudit"]
+      cwd := pkg.dir
+      env := env }
