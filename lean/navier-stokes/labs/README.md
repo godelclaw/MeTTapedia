@@ -56479,3 +56479,213 @@ this particular memory bound. It does not on its own distinguish the
 imported forced mechanism from unforced repeated renewal. Its useful
 restriction is on concentration of retained viscous memory; the signed
 joint physical source remains the open history problem.
+
+## Bounded-amplitude memory pressure fits the joint history balance
+
+`memory_receiver_amplitude.py` checks a use of (MC6) that does not assume
+the unpaid receiver norm in (MC8). For every pressure-amplitude ceiling
+fixed at the original start, the capped portion of actual memory-pressure
+work can be absorbed into arbitrarily small fractions of joint diffusion
+and the observed past joint stock, plus an explicit finite allowance.
+The remainder still includes large pressure amplitudes and the other
+recent sources. This is an analytic all-prefix estimate on R3 and T3;
+the checker certifies its constants, not its PDE identification in Lean.
+
+### Split the work without changing the physical pressure
+
+Keep the full actual fluid, C, C_recent, beta_hat, r, J and D of
+(AM1)--(AM14). In particular |u|<=r, J=int r^3 and
+
+```text
+D>=3nu int r|grad r|^2=(4nu/3)int |grad r^(3/2)|^2.
+```
+
+Prescribe kappa>0 using only the original datum and prescribed parameters;
+for example kappa=||u0||infinity^2+nu^2/L^2 is admissible. For the actual
+recent memory pressure P=(I-exp(L^2 Delta))R(C_recent), define
+
+```text
+P_cap=sign(P)min(|P|,kappa), P_tail=P-P_cap,
+W_cap=-3int P_cap u.grad r, W_tail=-3int P_tail u.grad r,
+W_recent=W_cap+W_tail.                               (MW1)
+```
+
+The cap is applied AFTER the complete pressure multiplier. Neither part
+is asserted to be the canonical pressure of an independently evolving
+fluid. This is an instantaneous algebraic split of a work pairing; we
+do not differentiate the cap or replace the receiver or pressure equation.
+All source generation and transport terms in (AM13) are unchanged.
+
+Let S be a common domain Sobolev constant in (MC5) and for the scalar
+field r^(3/2). Let C_Rw be its pressure weak-norm constant. On every
+available smooth prefix [0,T], T<=H, the previous result gives
+
+```text
+measure{|P|>a}<=Q a^(-5/3),
+Q=C_Rw^(5/3) S E0^(5/3)/nu                  on R3,
+Q=C_Rw^(5/3) S(1/nu+H) E0^(5/3)             on T3.   (MW2)
+```
+
+Layer-cake integration uses the same deterministic distribution bound
+for every amplitude, giving
+
+```text
+int_0^T int |P_cap|^(5/2)
+ <=(5/2)Q int_0^kappa a^(5/2-1-5/3)da
+ =3Q kappa^(5/6),
+||P_cap||_(L^(5/2) space-time)<=N_kappa
+                         =(3Q kappa^(5/6))^(2/5).  (MW3)
+```
+
+This allocates one explicit bound; it does not issue independent energy
+reserves to amplitude bands. No assumption on a minimum age, spatial
+frequency or pressure sign is used. The same estimate is valid for the
+full memory pressure when its work is being considered.
+
+### Use the complete receiver diffusion, rather than assume a receiver bound
+
+For this available prefix write
+
+```text
+M_T=sup_(0<=t<=T) J(t), X_T=int_0^T D(t),
+a=3S/(4nu),
+b=0 on R3, b=S H on T3.
+```
+
+Both M_T and X_T concern the observed prefix; they are not placed in the
+initial allowance. Parabolic Sobolev interpolation for r^(3/2) gives
+
+```text
+int_0^T int r^5 <= a M_T^(2/3) X_T+b M_T^(5/3).      (MW4)
+```
+
+The torus term is retained because r^(3/2) need not have zero mean.
+Cauchy--Schwarz with the complete radial diffusion, followed by Holder
+on joint space-time with exponents 5 and 5/4, gives
+
+```text
+int_0^T |W_cap|
+ <=sqrt(3/nu) X_T^(1/2) (int_0^T int r P_cap^2)^(1/2)
+ <=sqrt(3/nu) X_T^(1/2) ||r||_5^(1/2) N_kappa
+ <=sqrt(3/nu) N_kappa [a^(1/10) M_T^(1/15) X_T^(3/5)
+                         +b^(1/10) M_T^(1/6) X_T^(1/2)].    (MW5)
+```
+
+Zeros of r cause no singularity: |u|^2/r<=r, with value zero at r=0,
+and the integrated estimate follows by positive regularization. All
+quantities are finite on each smooth prefix. Their resulting constants
+are independent of its unknown future continuation.
+
+Each mixed term in square brackets is at most its coefficient times
+(M_T+X_T)^(2/3). Put
+
+```text
+K_cap=sqrt(3/nu)(a^(1/10)+b^(1/10)) N_kappa.
+```
+
+For every eta>0 fixed at the original start, maximizing K_cap x^(2/3)-eta x
+over x>=0 proves the useful absorbable bound
+
+```text
+int_0^T |W_cap| <= eta(M_T+X_T)+B_cap,
+B_cap=4 K_cap^3/(27eta^2)
+ =4(3/nu)^(3/2)(a^(1/10)+b^(1/10))^3
+                         (3Q)^(6/5) kappa/(27eta^2). (MW6)
+```
+
+For unequal desired stock/diffusion coefficients, choose eta to be
+their minimum. Every parameter in B_cap is fixed from the original
+resources. The complete receiver and its existing diffusion appear
+only in the small terms to be absorbed.
+
+In particular the whole-space allowance simplifies to
+
+```text
+B_cap=2^(7/5) C_Rw^2 S^(3/2) E0^2 kappa/(eta^2 nu^3). (MW7)
+```
+
+On the torus multiply this expression, using its own S and C_Rw, by
+(1+nu H)^(6/5)[1+(4nu H/3)^(1/10)]^3. Thus the allowance grows linearly
+with the chosen amplitude ceiling. If E0=0 the zero-mean fluid, memory
+and work vanish and the zero allowance is used directly.
+
+### The observed past maximum is absorbed in the continuation balance
+
+Keep the original c,d and nonnegative B_low in (AM12)--(AM14). Set
+Y=J+B_low and w(t)=exp(-ct). The exact remaining source is now
+
+```text
+R_tail=W_tail
+ +<B,K_L[-u tensor grad p_hi-grad p_hi tensor u]>
+ +<B,[u.grad,K_L](u tensor u+C_recent)>.
+
+Y'+(3/4)D<=cY+d+W_cap+R_tail.                       (MW8)
+```
+
+Here B is still the full receiver 3alpha^2 r beta_hat, including all old
+memory. The physical canonical p_hi and u are unchanged. A sufficient
+still-OPEN theorem is a finite original-data K_tail>=0 with
+
+```text
+int_0^T w(t)[R_tail(t)-D(t)/2]dt<=K_tail
+for EVERY available smooth prefix T<=H from the SAME datum.  (MW9)
+```
+
+To check that (MW9) really suffices, choose eta=exp(-cH)/8 in (MW6),
+once at the original start. Put
+A0=J(0)+B_low(0)+dH+B_cap+K_tail and
+Z_T=sup_(0<=s<=T) w(s)Y(s). Then X_T<=exp(cH)int_0^T wD and
+M_T<=exp(cH)Z_T. Multiplying (MW8) by w, integrating and using
+(MW6),(MW9), with 0<w<=1, gives
+
+```text
+w(T)Y(T)+(1/8)int_0^T wD<=A0+Z_T/8.                (MW10)
+```
+
+Apply the same inequality at every earlier endpoint s<=T and take the
+supremum; Z_s<=Z_T gives Z_T<=A0+Z_T/8, hence Z_T<=8A0/7. This step
+bounds the past maximum instead of presupposing it in a reserve.
+Return to (MW10) and use the original horizon:
+
+```text
+J(T)+(1/8)int_0^T D<=(8/7)exp(cH)A0,
+int_0^T ||u||9^3 <=[8a+b](8/7)exp(cH)A0.            (MW11)
+```
+
+The second line follows from the same inhomogeneous/homogeneous Sobolev
+bound, with b=SH or zero as above. Equation (JP11) now gives the required
+order-one bound. The receiving declarations remain
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` and
+`FourierTameContinuation.exists_tameSolutionOn_of_orderOne`; their
+all-prefix finite-bound hypotheses are not asserted without (MW9).
+The continuum argument here is analytic, not a new Lean theorem.
+
+At a seam retain the actual fluid, complete C, its recent/old decomposition,
+remaining B_low, original clock and the running maximum from the original
+start. Inequality (MW6) is used once on the entire prefix. Summing a fresh
+B_cap over a chosen subdivision would not be this estimate.
+
+### What remains and what the checks establish
+
+The bounded-amplitude part is absorbed without a minimum age or wavelength
+and without assigning an independent receiver. Large-amplitude memory
+pressure, fine-pressure generation and the transport commutator in (MW8)
+remain. Positive and negative contributions among those terms may still
+cancel; separate absolute bounds are not required by (MW9).
+
+For any already fixed smooth prefix, a sufficiently large kappa eliminates
+P_tail on that prefix. Choosing such a ceiling from an unknown future
+solution would not prove (MW9) with original-data constants. Nor can
+kappa be sent to infinity while ignoring the linear growth in (MW7).
+The result does not bound full memory-pressure work unconditionally,
+exclude the imported forced mechanism, or establish global regularity.
+
+Run `python3 -O labs/memory_receiver_amplitude.py`. The checker evaluates
+the full layer-cake integral and an extremal decreasing rearrangement,
+checks every interpolation exponent, independently maximizes the Young
+expression and verifies its nonnegative polynomial gap. It checks both
+domain allowances, their dependence on the prescribed ceiling, and the
+clock and running-maximum absorption constants. The rearrangement is an
+inequality calibration, not a constructed NS field. The actual memory
+identification is retained from (SM1), (AM13) and (MC1)--(MC9).
+No Lean declarations or axioms change.

@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [bounded-amplitude memory work estimate](labs/README.md#bounded-amplitude-memory-pressure-fits-the-joint-history-balance)
+uses the stress-memory concentration bound to absorb part of the actual joint
+memory-pressure work. For any original-data amplitude ceiling, this work
+costs small fractions of the existing diffusion and joint stock plus an
+explicit finite allowance. No minimum memory age or spatial wavelength
+is assumed. The continuation implication now leaves the excess above
+that ceiling together with fine-pressure generation and the full transport
+commutator. Those terms remain open. The estimate is analytic with exact
+constant checks; it adds no Lean certificate or global regularity claim.
+
 The [stress-memory concentration bound](labs/README.md#the-full-stress-memory-has-an-original-energy-concentration-bound)
 limits the space-time volume occupied by large viscous memory, including
 arbitrarily recent memory, on every available smooth unforced prefix.

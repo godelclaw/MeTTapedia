@@ -1,0 +1,30 @@
+{
+  "amplitude": {
+    "pressure_distribution_exponent": "5/3",
+    "capped_moment_exponent": "5/2",
+    "capped_moment_bound": "3*Q*kappa**(5/6)",
+    "mixed_terms": [
+      "M^(1/15)*X^(3/5)",
+      "M^(1/6)*X^(1/2)"
+    ],
+    "joint_degree": "2/3"
+  },
+  "absorption": {
+    "K_cap": "3**(9/10)*Q**(2/5)*kappa**(1/3)*(a**(1/10) + b**(1/10))/sqrt(nu)",
+    "B_cap": "4*3**(7/10)*Q**(6/5)*kappa*(a**(1/10) + b**(1/10))**3/(3*eta**2*nu**(3/2))",
+    "whole_space_allowance": "2*2**(2/5)*CR**2*E0**2*S**(3/2)*kappa/(eta**2*nu**3)",
+    "torus_multiplier": "(H*nu + 1)**(6/5)*(2**(1/5)*3**(9/10)*H**(1/10)*nu**(1/10)/3 + 1)**3",
+    "claim": "integral |W_cap| <= eta*(sup_past J + integral D) + B_cap",
+    "scope": "eta,kappa and all coefficients fixed before the unknown continuation"
+  },
+  "consumer": {
+    "eta": "exp(-H*c)/8",
+    "open_remainder": "F_comm + F_pressure + W_tail",
+    "open_budget": "integral exp(-c*t)*(R_tail-D/2) <= K_tail on every same-datum prefix",
+    "conditional_result": "J(T)+(1/8)*integral D <= (8/7)*exp(c*H)*A0",
+    "A0": "J(0)+B_low(0)+d*H+B_cap+K_tail",
+    "not_proved": "finite original-data K_tail; arbitrary-data regularity"
+  },
+  "source_sha256": "dff805cc5baf3ecaf57e622e6ebbf2776c5f9688a004fa042e66a113571abbca",
+  "certification": "exact inequality constants; continuum estimates analytic, not Lean-certified"
+}
