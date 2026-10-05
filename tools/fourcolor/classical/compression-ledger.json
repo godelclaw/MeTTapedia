@@ -6802,5 +6802,43 @@
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0,
     "remaining": "Prove a shared progress selector and its coverage, then integrate full source repair and strict reduction."
+  },
+  "retained_cap_selector_experiment": {
+    "status": "Finite program experiment; no new Lean progress theorem.",
+    "measurement": "../near-linear/cap-selector-measurements.json",
+    "source": "D0099",
+    "prefix_states": 1377,
+    "component_anchors": [
+      [
+        3,
+        4
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        11,
+        14
+      ]
+    ],
+    "observations": [
+      3,
+      5,
+      7,
+      8,
+      9,
+      11,
+      14
+    ],
+    "profiles": 37,
+    "decreasing_quotient_rounds": 16,
+    "survivors": 0,
+    "interface_scope": "A palette and anchor are selected before the matching, uniformly over all represented hidden completions. Progress is recomputed after projection.",
+    "negative_test": "All 84 six-vertex observation subsets fail for these memoryless fixed-anchor actions in the conservative quotient; no general impossibility follows.",
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "remaining": "Prove a structural progress selector, compatible exterior answers and certified continuation. Geometry, strict reduction and coverage remain separate."
   }
 }

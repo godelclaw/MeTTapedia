@@ -39,7 +39,7 @@ def canonical(col):
     return tuple(labels.setdefault(col[v], len(labels)) for v in VERTICES)
 
 
-def analyze():
+def analyze(inspect_components=None):
     start = time.monotonic()
     source = verify_source(SOURCE)
     raw = (SOURCE / 'D0099.conf').read_bytes()
@@ -70,12 +70,14 @@ def analyze():
     state_index = {s: i for i, s in enumerate(states)}
     assert len(states) == 1377
     choices = []
+    component_choices = []
     matchings = answers = 0
     closed_cycle_histogram = Counter()
     for state in states:
         col = dict(zip(VERTICES, state))
         labels = [col[a] ^ col[b] for a, b in edges]
         palettes = []
+        component_palettes = []
         for fixed in (1, 2, 3):
             active_old = [i for i in old_edges if labels[i] != fixed]
             active_new = {i for i in new_edges if labels[i] != fixed}
@@ -85,6 +87,7 @@ def analyze():
                 assert len(active) == 2
                 fixed_links.append(active)
             layouts = []
+            component_layouts = []
             for matching in pairings(len(active_old)):
                 network = {i: set() for i in range(len(edges)) if labels[i] != fixed}
                 for a, b in fixed_links + [[active_old[a], active_old[b]] for a, b in matching]:
@@ -112,7 +115,8 @@ def analyze():
                 for component in components:
                     masks += [mask | component for mask in masks]
                 outcomes = set()
-                for mask in masks:
+                single_targets = []
+                for selection, mask in enumerate(masks):
                     changed = [c ^ fixed if i in mask else c for i, c in enumerate(labels)]
                     old_word = [changed[i] for i in old_edges]
                     new_col = dict(enumerate(boundary(old_word)))
@@ -121,14 +125,24 @@ def analyze():
                     assert all(new_col[a] ^ new_col[b] == changed[i] for i, (a, b) in enumerate(edges))
                     trace = tuple(changed[i] for i in new_edges)
                     if indices[code(trace)] not in bad:
-                        outcomes.add(-1)
+                        target = -1
                     else:
-                        outcomes.add(state_index[canonical(new_col)])
+                        target = state_index[canonical(new_col)]
+                    outcomes.add(target)
+                    if inspect_components is not None and selection and not selection & (selection - 1):
+                        single_targets.append(target)
                 layouts.append(frozenset(outcomes))
+                if inspect_components is not None:
+                    assert len(single_targets) == len(components)
+                    component_layouts.append((components, single_targets))
                 matchings += 1
                 answers += len(masks)
             palettes.append(set(layouts))
+            if inspect_components is not None:
+                component_palettes.append(component_layouts)
         choices.append(palettes)
+        if inspect_components is not None:
+            component_choices.append(component_palettes)
 
     remaining = set(range(len(states)))
     ranks = {}
@@ -200,7 +214,7 @@ def analyze():
         quotient_rounds.append(len(removed))
     assert not remaining and not quotient_remaining
     assert len(signatures) == 51
-    return {'evidence': 'Program game evidence; the cap reconstruction law is separately Lean checked.',
+    report = {'evidence': 'Program game evidence; the cap reconstruction law is separately Lean checked.',
             'source_sha256': SOURCE_SHA256,
             'verifier_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
             'forgotten_cap_game': {'states': len(words), 'direct': len(words)-len(initially_bad),
@@ -224,6 +238,12 @@ def analyze():
                        'No strategy table is exported or counted as compression.',
                        'The Lean transport law does not certify the pruning or the 51-profile selector.',
                        'Actual progress, source completion, strict reduction and coverage remain separate obligations.']}
+    if inspect_components is not None:
+        report['selector_experiment'] = inspect_components({
+            'states': states, 'vertices': VERTICES, 'edges': edges,
+            'layouts': component_choices, 'observations': observed,
+            'profiles': signatures, 'projection': projection, 'ranks': ranks})
+    return report
 
 
 if __name__ == '__main__':

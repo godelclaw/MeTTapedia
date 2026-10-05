@@ -5648,3 +5648,45 @@ root for the experiment. The [receipt](../classical/cap-joint-measurements.json)
 records hashes, checking costs, experimental scope and remaining obligations.
 Coverage remains 633 configurations, with 629 original certificate
 dependencies and 336 replaced discharging checks.
+
+## Three component anchors and a smaller observation interface
+
+`audit_cap_selector.py` tests a stronger restriction on the retained-cap game:
+choose both the palette and a fixed component anchor before the exterior
+matching is known. The same choice must work for every represented hidden
+completion. The anchor selects one component of the network obtained by
+joining the original exterior matching to the five retained triangles.
+
+Three source edges suffice: `(3,4)`, `(8,9)` and the shared seam `(11,14)`.
+The seam handles three profiles for which no original-boundary anchor
+uniformly lowers the previously computed rank. Among the eighteen prefix
+edges, this is the unique smallest anchor pool for that particular rank.
+This minimality statement does not cover other progress measures or policies.
+
+Recomputing progress after hiding observations gives a smaller successful
+interface. The palette is specified as the XOR of two observed vertex colours;
+no arbitrary name for an unobserved colour is selected.
+
+| Observed vertices | Profiles | Decreasing rounds | Survivors |
+| --- | --- | --- | --- |
+| `3,4,5,6,7,8,9,11,14` | 51 | 8 | 0 |
+| `3,5,7,8,9,11,14` | 37 | 16 | 0 |
+
+The quotient adversary can choose any compatible hidden completion at every
+step. Four of the nine eight-vertex subsets work, and one of the thirty-six
+seven-vertex subsets works. None of the eighty-four six-vertex subsets works
+with these memoryless fixed-anchor actions in this conservative quotient.
+This failure does not exclude history-dependent or matching-dependent choices,
+other anchors, or stronger geometric information.
+
+These are finite program results. No strategy table is emitted, and no new
+Lean progress theorem, physical switch bound, source reduction or coverage
+claim follows. The next obligations are a structural selector argument,
+its accepted exterior answers, and certified continuation after escape from
+the residual set. `CapJointTransport` supplies the existing reconstruction
+consumer when its hypotheses are established.
+
+Replay `python3 tools/fourcolor/near-linear/audit_cap_selector.py` from the
+repository root. The [measurement](cap-selector-measurements.json) records
+source and verifier hashes and all tested observation subsets that succeed.
+No catalogue entry or original certificate dependency is removed.

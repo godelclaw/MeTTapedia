@@ -1,0 +1,259 @@
+{
+  "evidence": "Finite program experiment, not a Lean proof.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "cap_verifier_sha256": "07f64a91444ef5cf2cd90fb7b3904e4ad4cd27a317a98b491edab41055b53696",
+  "selector_verifier_sha256": "83426a4578c88427ea87d5011837ffcd29fca0a2003a41686ee064e31a96e46c",
+  "retained_states": 1377,
+  "full_profiles": 51,
+  "anchors": [
+    [
+      3,
+      4
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      11,
+      14
+    ]
+  ],
+  "minimum_anchor_pool_scope": "Fixed anchors lowering the original computed rank; all eighteen prefix edges tested.",
+  "minimum_anchor_pool_count": 1,
+  "observation_tests": [
+    {
+      "size": 9,
+      "subsets_tested": 1,
+      "minimum_survivors": 0,
+      "successful_subsets": [
+        {
+          "observations": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 51,
+          "rounds": [
+            10,
+            6,
+            4,
+            5,
+            5,
+            5,
+            10,
+            6
+          ],
+          "survivors": 0
+        }
+      ]
+    },
+    {
+      "size": 8,
+      "subsets_tested": 9,
+      "minimum_survivors": 0,
+      "successful_subsets": [
+        {
+          "observations": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            11
+          ],
+          "profiles": 46,
+          "rounds": [
+            9,
+            4,
+            1,
+            1,
+            2,
+            2,
+            4,
+            7,
+            6,
+            7,
+            3
+          ],
+          "survivors": 0
+        },
+        {
+          "observations": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            14
+          ],
+          "profiles": 46,
+          "rounds": [
+            9,
+            3,
+            2,
+            3,
+            3,
+            2,
+            4,
+            5,
+            6,
+            6,
+            3
+          ],
+          "survivors": 0
+        },
+        {
+          "observations": [
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 44,
+          "rounds": [
+            6,
+            3,
+            1,
+            1,
+            2,
+            2,
+            2,
+            3,
+            3,
+            6,
+            5,
+            3,
+            5,
+            2
+          ],
+          "survivors": 0
+        },
+        {
+          "observations": [
+            3,
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 43,
+          "rounds": [
+            7,
+            3,
+            3,
+            3,
+            5,
+            5,
+            6,
+            5,
+            4,
+            2
+          ],
+          "survivors": 0
+        }
+      ]
+    },
+    {
+      "size": 7,
+      "subsets_tested": 36,
+      "minimum_survivors": 0,
+      "successful_subsets": [
+        {
+          "observations": [
+            3,
+            5,
+            7,
+            8,
+            9,
+            11,
+            14
+          ],
+          "profiles": 37,
+          "rounds": [
+            4,
+            2,
+            1,
+            1,
+            2,
+            2,
+            1,
+            2,
+            2,
+            4,
+            5,
+            4,
+            2,
+            1,
+            2,
+            2
+          ],
+          "survivors": 0
+        }
+      ]
+    },
+    {
+      "size": 6,
+      "subsets_tested": 84,
+      "minimum_survivors": 8,
+      "successful_subsets": []
+    }
+  ],
+  "smallest_successful_interface": {
+    "observations": [
+      3,
+      5,
+      7,
+      8,
+      9,
+      11,
+      14
+    ],
+    "profiles": 37,
+    "rounds": [
+      4,
+      2,
+      1,
+      1,
+      2,
+      2,
+      1,
+      2,
+      2,
+      4,
+      5,
+      4,
+      2,
+      1,
+      2,
+      2
+    ],
+    "survivors": 0
+  },
+  "limits": [
+    "All quantifiers range over the retained D0099 prefix states and abstract matchings.",
+    "The adversary may choose a new hidden completion at each quotient step.",
+    "Six-observation failure concerns memoryless fixed-anchor actions in this conservative quotient.",
+    "It does not exclude history-dependent, matching-dependent or different geometric policies.",
+    "Sixteen quotient rounds are not a physical runtime or component-switch bound.",
+    "The progress ranks, domain and continuation are not Lean certified.",
+    "No catalogue entry or certificate dependency is removed."
+  ]
+}
