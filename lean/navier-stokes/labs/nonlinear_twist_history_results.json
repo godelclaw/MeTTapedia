@@ -1,0 +1,45 @@
+{
+  "twist_response": {
+    "fixed_input": "Matrix([[-y*exp(-x**2 - y**2 - 2*z**2)], [x*exp(-x**2 - y**2 - 2*z**2)], [0]])",
+    "input_L1": "sqrt(2)*pi**2/4",
+    "input_energy": "pi**(3/2)/8",
+    "heat_variances": "a=b=1/2",
+    "map": "(r,theta,z) -> (r,theta+L*exp(-r^2-2*z^2),z)",
+    "pre_terminal_heat_correction": "Matrix([[sqrt(3)*y*z*(-x**2 - y**2 + 6)*exp(-3*x**2/2 - 3*y**2/2 - 8*z**2/3)/9], [sqrt(3)*x*z*(x**2 + y**2 - 6)*exp(-3*x**2/2 - 3*y**2/2 - 8*z**2/3)/9], [0]])",
+    "terminal_heat_correction": "Matrix([[-8*sqrt(11)*y*z*(2*x**2 + 2*y**2 - 65)*exp(-3*x**2/5 - 3*y**2/5 - 8*z**2/11)/75625], [8*sqrt(11)*x*z*(2*x**2 + 2*y**2 - 65)*exp(-3*x**2/5 - 3*y**2/5 - 8*z**2/11)/75625], [0]])",
+    "output_second_component_at_1_0_1": "-504*sqrt(11)*L*exp(-73/55)/75625",
+    "retained_cost": "inf_c ||(theta-c)*grad Gamma_b||_L1",
+    "upper_bound": "||H_(a+b) curl v||_infinity + c_G*a^(-2)*retained_cost",
+    "scope": "Fixed whole-space Schwartz datum and two positive heat windows; arbitrary smooth twists are kinematic, not identified as unforced NS histories."
+  },
+  "physical_identification": {
+    "unprojected_acceleration": "Matrix([[x*exp(-2*x**2 - 2*y**2 - 4*z**2)], [y*exp(-2*x**2 - 2*y**2 - 4*z**2)], [0]])",
+    "curl_of_projected_acceleration": "Matrix([[8*y*z*exp(-2*x**2 - 2*y**2 - 4*z**2)], [-8*x*z*exp(-2*x**2 - 2*y**2 - 4*z**2)], [0]])",
+    "canonical_pressure_source": "(2-4*r^2)*exp(-2*r^2-4*z^2)",
+    "actual_initial_acceleration": "nu*Delta u0 + Pi[(x,y,0)*exp(-2*r^2-4*z^2)]",
+    "actual_minus_heat_parent_flow_map": "t^2*N(u0)/2 + O(t^3), on compact spatial sets",
+    "force_maintaining_heat_parent": "-N(exp(nu*t*Delta)*u0)",
+    "force_direct_kinetic_work": "0 pointwise",
+    "all_time_heat_parent_angle_bound": "|A|*(pi-2)/(8*nu)",
+    "physical_stretching_initial_derivative": "3*sqrt(2)*pi**(3/2)*(-34 + 11*pi)/128",
+    "calibration_status": "Previously established physical derivative rechecked with its full heat-resolvent and pressure calculation.",
+    "scope": "Actual short-time NS generates the missing meridional parent. Neither frozen nor heat-only swirl is an unforced solution."
+  },
+  "actual_winding_return": {
+    "actual_initial_geometry": "beta0=exp(-r^2-2*z^2), meridional velocity zero",
+    "parent": "chi1=int_0^infinity exp(s*L5)*d_z(beta0^2) ds, m1=d_z chi1",
+    "material_angle_defect": "Theta_NS-Theta_heat=(m1*beta0/3)*t^3+O(t^4)",
+    "equatorial_sign": "negative for every r>0",
+    "other_sign": "m1(1/2,2) >= exp(-3)/243-exp(-16) > 0",
+    "axis_tail_bound": "|chi1(0,z)| <= 3*sqrt(pi)/(64*z^4), z>0",
+    "scope": "Actual local unforced NS at every positive viscosity; refutes pointwise heat-angle domination, not a full-datum allowance or regularity."
+  },
+  "status": "Exact Jacobian, Gaussian heat, curl, force and physical parent-return checks passed.",
+  "scope": "Kinematic operator obstruction and analytic local NS calibration; no arbitrary-history bound or new Lean certificate.",
+  "source_sha256": {
+    "nonlinear_twist_history.py": "1400b623f6c5ebbc78c2af682f545909009a3724209f0d5247cc7ac4d98f805e",
+    "rotational_parent_generation.py": "10bb081306a46dcb473d23595be8767333568e7dcff4dbf49ec38a9b995eb5f7",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b"
+  }
+}

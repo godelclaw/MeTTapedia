@@ -55154,3 +55154,330 @@ transported parents and their shared signed work, and the physical
 residual identity. Gaussian integration, operator estimates and their
 continuum consequences remain analytic, not Lean-certified. No Lean
 declarations or axioms change.
+
+
+## Whole-space winding retains a cost beyond affine covariance
+
+`nonlinear_twist_history.py` tests the nonlinear extension left open by
+(AH12). The affine estimate (AH2) is valid, but its deformation-independent
+bound fails for arbitrary nonlinear volume-preserving maps even on R3,
+with one fixed Schwartz input and two fixed positive heat windows. The
+exact correction identifies a joint angle--circulation cost. The SAME
+initial datum also has an actual unforced NS calibration with generated
+meridional motion and positive stretching. These are different claims:
+the twisting history itself is kinematic, not an unforced NS solution.
+
+Differential rotation and its distinct poloidal/toroidal responses are
+classical induction mechanisms; see, for example,
+[Greiner-Mai, Ballani and Stromeyer, section 2](https://doi.org/10.1111/j.1365-246X.2004.02343.x).
+The calculation below tests a particular curl-history bound. It does not
+claim a new general differential-rotation mechanism or import a magnetic
+induction solution as a self-consistent fluid velocity.
+
+### A fixed whole-space input and the complete nonlinear map
+
+Use Cartesian coordinates, r^2=x^2+y^2, and set
+
+```text
+f=exp(-r^2-2z^2),       v=f(-y,x,0),
+||v||_1=pi^2/(2sqrt(2)), ||v||_2^2=pi^(3/2)/8.           (NT1)
+```
+
+This velocity is smooth, rapidly decaying and divergence free. Define
+Phi_L by rotating (x,y) through L f(r,z), leaving r,z unchanged. Its
+Cartesian formula is smooth through the axis. It is a global diffeomorphism
+with inverse Phi_(-L), determinant one, and an isotopy Phi_(sL) to the
+identity. In fact Phi_L is the exact time-L flow of the fixed vector
+field v. This last statement concerns the autonomous ODE with drift v;
+it does not say that v solves the time-independent unforced NS equation.
+
+For a divergence-free vector field B the pushforward convention is
+`Phi_*B=(D Phi B) composed with Phi^(-1)`. Write H_c=exp((c/2)Delta)
+for vector heat with covariance c I. Both windows are retained in
+
+```text
+R_L=H_a (Phi_L)_* H_b curl v,        a=b=1/2.             (NT2)
+```
+
+The preheated vector potential is
+
+```text
+H_b v=h_b(-y,x,0),
+h_b=(1+2b)^(-2)(1+4b)^(-1/2)
+          exp[-r^2/(1+2b)-2z^2/(1+4b)].                 (NT3)
+```
+
+Let B_b=curl(H_b v). It is axisymmetric and poloidal, meaning that
+its azimuthal component vanishes. The full Jacobian of an axisymmetric
+twist with angle theta(r,z), after factoring out its common rotation, is
+`I+(-y,x,0) tensor grad theta`. Thus the pushforward retains the extra
+azimuthal field
+
+```text
+(Phi_theta)_* B_b=B_b+(-y,x,0)(B_b.grad theta).
+(Phi_L)_* B_b=B_b+L Q,
+Q=z(r^2/3-2)exp(-3r^2/2-8z^2/3)(-y,x,0)/sqrt(3)
+                                      when b=1/2.     (NT4)
+```
+
+This is an exact identity at every L, not a small-angle Taylor expansion.
+Axisymmetry makes the common rotation disappear in the Eulerian vector
+formula; the spatial derivative of the angle remains. Applying the final
+heat window gives
+
+```text
+H_(1/2) Q=
+  [4(4r^2-130)z/(6875sqrt(11))]
+       exp(-3r^2/5-8z^2/11)(-y,x,0).
+(R_L)_2(1,0,1)=-[504 exp(-73/55)/(6875sqrt(11))] L.      (NT5)
+```
+
+The heat-only poloidal contribution has zero second component at this
+point. Hence ||R_L||_infinity is unbounded as |L| grows, with v,a,b all
+fixed. This rules out any finite deformation-independent constant times
+||v||_1 for this nonlinear whole-space class. It does not contradict
+(AH2), whose deformation is spatially linear. It also does not show
+unbounded actual NS vorticity: heat/map/heat is an auxiliary response,
+and the prescribed map must still be identified with physical dynamics.
+
+### A corrected bound keeps winding and circulation together
+
+For any sufficiently decaying smooth axisymmetric toroidal input v,
+write H_b v=v_(b,theta)e_theta and let
+Gamma_b=r v_(b,theta) be its circulation function. For any smooth
+axisymmetric twist angle theta, the same complete Jacobian gives
+
+```text
+(Phi_theta)_* curl(H_b v)
+ =curl(H_b v)+grad theta cross grad Gamma_b
+ =curl(H_b v)+curl(theta grad Gamma_b).                 (NT6)
+```
+
+All functions on the right are evaluated at the final point; r and z
+are unchanged by this map. The equivalent covector expression is
+`H_b v-Gamma_b grad theta`, whose curl gives the same correction.
+A constant angle is a rigid rotation and contributes zero curl.
+
+The Gaussian derivative has supremum c_G a^(-2), where
+`c_G=exp(-1/2)/(2pi)^(3/2)` as in (AH2). Therefore
+
+```text
+||H_a (Phi_theta)_* H_b curl v||_infinity
+ <=c_G (a+b)^(-2)||v||_1
+    +c_G a^(-2) inf_(c in R) ||(theta-c)grad Gamma_b||_1. (NT7)
+```
+
+The hypotheses include finiteness of these integrals and existence of
+the displayed convolutions. Schwartz input and a bounded smooth angle
+with polynomially bounded derivatives suffice. Convolving (NT6) and
+integrating its curl by parts proves the estimate. It retains the signed correction before
+taking norms and allows removal of a constant rotation. For (NT1),
+theta=L f makes the second cost grow linearly in |L|; its coefficient
+is positive because f is not constant on the support of grad Gamma_b.
+The linear order matches (NT5). Winding cannot be omitted merely because
+the map preserves volume and the two diffusion windows have positive size.
+
+Adjacent twists add their angle functions because each leaves r,z fixed.
+The circulation and accumulated angle must therefore be retained jointly.
+No claim is made that intervening heat commutes with this composition;
+an extra heat step changes the fields used in (NT6). General meridional
+motion changes r,z as well, and has not been removed by this formula.
+
+### The same fluid generates the parent that a frozen twist omits
+
+Now use v from (NT1) as the ORIGINAL datum for actual unforced NS at
+any nu>0. Let Pi be the whole-space Leray projection and N(v)=-Pi(v.grad v).
+The complete initial acceleration and its generated curl are
+
+```text
+v.grad v=-(x,y,0)f^2,
+N(v)=Pi[(x,y,0)f^2],
+Delta p=(2-4r^2)f^2,
+curl N(v)=-8z f^2(-y,x,0) !=0,
+u_t(0)=nu Delta v+N(v).                                (NT8)
+```
+
+The canonical decaying pressure is retained in Pi. Its gradient cannot
+remove the displayed curl. N(v) is the nonzero meridional acceleration:
+it changes radial and axial motion, which in turn changes later winding.
+Consequently the fixed autonomous drift used to construct Phi_L is not
+the actual evolving unforced velocity.
+
+This datum is exactly the one in the earlier
+[parent-generation calculation](#smooth-pure-swirl-creates-the-missing-parent).
+Rechecking its full heat-resolvent pressure calculation gives, for
+`g(t)=integral omega^T grad(u) omega`,
+
+```text
+g(0)=0,
+g'(0)=3sqrt(2) pi^(3/2)(11pi-34)/128 >0.                 (NT9)
+```
+
+Thus g(t)>0 on an actual short unforced viscous interval. The viscous
+initial tangent remains pure swirl and contributes zero to g'(0); the
+strict sign includes the complete nonlinear parent and pressure. This
+physical calibration is reused, not claimed as a new discovery here.
+Its local interval argument remains analytic. It demonstrates that
+retaining every original parent does not force physical stretching to
+cancel, unlike the shear example (AH13)--(AH15).
+
+An even more direct identification test compares the actual material
+map X(t) with the map X_heat(t) driven by the original heat-only velocity
+V(t)=exp(nu t Delta)v. On compact spatial sets, smooth local evolution
+and the material ODE give
+
+```text
+X(t,a)-X_heat(t,a)=(t^2/2)N(v)(a)+O(t^3).                (NT10)
+```
+
+Their initial velocities agree; their Eulerian time derivatives differ
+by N(v). The common material acceleration cancels in the difference.
+Thus even the heat-decaying parent misses actual spatial history at
+second order, before any assertion about long-time amplification.
+
+### Suppressing that parent can require force without kinetic work
+
+The heat-only velocity V is a smooth axisymmetric pure swirl at every
+time. With its canonical pressure, it satisfies the FORCED equation
+
+```text
+V_t+(V.grad)V+grad p=nu Delta V+F,
+F=-N(V),                    F.V=0 pointwise.            (NT11)
+```
+
+Indeed both the centrifugal term and grad p are meridional, whereas V
+is azimuthal. The force is nonzero: with
+h_t=(1+4nu t)^(-2)(1+8nu t)^(-1/2)
+exp[-r^2/(1+4nu t)-2z^2/(1+8nu t)],
+
+```text
+curl F=8z h_t^2(-y,x,0)/(1+8nu t).                      (NT12)
+```
+
+The same flow obeys the ordinary decreasing kinetic-energy identity,
+because the direct force work vanishes. Thus that identity alone cannot
+certify the unforced equation or justify freezing the parent. This is a
+smooth nonsingular forced calibration, not the imported blowup example.
+
+The original heat parent nevertheless has a finite winding allowance.
+For V_A(t)=A exp(nu t Delta)v its actual material angle is
+`theta_t(r,z)=A integral_0^t h_s(r,z)ds`. Positivity and the Gaussian
+maximum at the origin give the exact all-time estimate
+
+```text
+sup_(t>=0) ||theta_t||_infinity
+ <=|A| integral_0^infinity h_s(0,0)ds
+ =|A|(pi-2)/(8nu).                                    (NT13)
+```
+
+Substitution in (NT7), with the angle cost bounded by
+`|A|(pi-2)||grad Gamma_b||_1/(8nu)`, pays these entire nonlinear twisting
+histories for any fixed receiver and fixed a,b>0. The integral follows
+by y=sqrt(1+8nu s), giving `nu^(-1)integral_1^infinity(1+y^2)^(-2)dy`.
+This is a bound on the displayed heat/map/heat response driven by the
+heat-only parent, not on simultaneous viscous vorticity transport or
+on an unforced NS parent. The force identified in (NT11) remains present.
+
+### The actual generated parent changes winding in both directions
+
+There is a physical test of that missing identification at the next order.
+For the actual axisymmetric NS prefix from (NT1), let beta=u_theta/r,
+m=-u_r/r, v_mer=(u_r,u_z), and L5=partial_rr+(3/r)partial_r+partial_zz.
+The full equation is
+
+```text
+(partial_t+v_mer.grad)beta=nu L5 beta+2m beta.
+beta0=f, v_mer(0)=0, m(0)=0,
+beta1=nu L5 f,
+beta2=nu^2 L5^2 f-v1.grad f+2m1 f.                    (NT14)
+```
+
+Subscripts denote literal initial time derivatives. Write the complete
+pressure-corrected generated parent as
+`v1=(-r chi1_z,2chi1+r chi1_r)`, so m1=chi1_z. Follow an actual meridional
+label Y(t), with Y'=v_mer(t,Y), from r>0, and define its accumulated
+azimuthal angle by Theta_NS'=beta(t,Y(t)). Compare with the heat-parent
+angle from the same original label. Differentiating this material
+observation includes v1.grad f, which cancels its transport contribution
+in beta2. Thus, for every fixed nu>0,
+
+```text
+Theta_NS(t)-Theta_heat(t)=(m1 f/3)t^3+O(t^4).           (NT15)
+```
+
+Local smooth evolution supplies the remainder on compact label sets.
+All caloric terms are retained and cancel in this difference; the
+coefficient is independent of viscosity. Resetting the meridional label
+would miss the cancellation and yield a different coefficient.
+
+The same canonical heat-resolvent used for (NT9) gives
+
+```text
+chi1(r,z)=integral_0^infinity
+  -8z A^(-2) C^(-3/2) exp(-2r^2/A-4z^2/C) ds,
+A=1+8s, C=1+16s.                                     (NT16)
+```
+
+At z=0 its z derivative is strictly negative for every r, so the first
+angle correction depletes winding on the equatorial plane. However,
+chi1(0,z)<0 for z>0 and chi1(0,z) tends to zero as z tends to infinity.
+Explicitly, the change of variable C=1+16s gives
+
+```text
+|chi1(0,z)|
+ =2z integral_1^infinity (C+1)^(-2) C^(-3/2) exp(-4z^2/C)dC
+ <=2z integral_0^infinity C^(-7/2) exp(-4z^2/C)dC
+ =3sqrt(pi)/(64z^4),                       z>0.       (NT17)
+```
+
+The mean value theorem therefore gives chi1_z(0,z)>0 at some z>0.
+Continuity gives the same strict sign at nearby r>0, where the material
+angle is a genuine angular displacement. Since f>0, (NT15) proves
+strictly MORE rotation than the original heat parent at those labels
+on an actual short unforced viscous interval. Other labels rotate less.
+
+One explicit off-axis label is r=1/2,z=2. To verify its sign without
+numerical quadrature, set h=1/C and alpha=4z^2. Integrating the full
+resolvent derivative by parts gives
+
+```text
+m1(r,z)=8 integral_0^1
+  [h^(3/2)/(1+h)^3][1-2r^2 h/(1+h)]
+     exp[-alpha h-4r^2 h/(1+h)]dh - exp(-alpha-2r^2).
+m1(1/2,2) >= exp(-3)/243-exp(-16) >0.                 (NT18)
+```
+
+For this label the integral is nonnegative on its entire interval.
+Restrict it to h in [1/16,1/8]: the rational factors are at least
+8/729 and 3/4, respectively, and the exponential is at least exp(-3).
+The interval has length 1/16. The retained endpoint is no larger than
+exp(-16), and exp(13)>2^13>243 proves the strict final sign. Thus the
+positive correction occurs at a specified physical label, with a
+rationally bounded margin.
+
+Consequently pointwise domination by the original heat-angle forecast is
+false. This does not decide whether a larger finite allowance from the
+full datum bounds the actual winding, nor establish repeated amplification. Equation
+(NT7) is also not transferred unchanged to this actual map: meridional
+motion changes the circulation geometry used in its reconstruction.
+The useful next source to control is the joint evolving parent term 2m beta,
+together with the deformation of that circulation geometry. This is the
+reaction already retained by the [joint strain--swirl perspective](#a-joint-strain-and-swirl-perspective-cancels-direct-amplification),
+(JP1)--(JP8). Its evolving density cancels the direct reaction but leaves
+the full pressure-history work. The winding calculation does not supply
+that missing payment or justify restarting the parent from heat.
+
+For the main NS route, the remaining task is to control the coupled
+winding and meridional history generated by the actual equations. Neither
+(NT7) nor the mere presence of N(v) establishes a uniform finite allowance
+from the original datum. Arbitrary-data regularity on R3 and T3 remains
+open, with the original signed-renewal and joint-strain targets unchanged.
+
+Run `python3 -O labs/nonlinear_twist_history.py`. Exact checks verify the
+full spatial Jacobian, volume preservation, both vector heat equations,
+the circulation correction, the fixed-point lower bound, finite initial
+norms, the nonlinear curl and the force's complete momentum equation and
+zero work, the full material angle derivative and the resolvent tail
+bound. They also rerun the existing pressure-resolvent calculation for
+(NT9). Gaussian estimates, map reconstruction and local PDE statements
+remain analytic; no Lean declarations or axioms change.

@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [whole-space winding test](labs/README.md#whole-space-winding-retains-a-cost-beyond-affine-covariance)
+identifies a limit of the affine curl bound: a nonlinear twist produces
+arbitrarily large output from one fixed Schwartz input even with two
+fixed positive heat windows. A corrected estimate retains the winding
+angle together with the original circulation gradient. The same actual
+NS datum generates meridional motion: its first winding correction
+depletes the heat forecast at the equator and amplifies it at an explicit
+off-axis label. Suppressing that parent requires a nonzero force even
+when its direct kinetic work is zero. The map obstruction and actual
+local calibration have distinct scopes. These are analytic results with exact checks, not a new Lean
+certificate or an arbitrary-history bound.
+
 The [affine curl-history bound](labs/README.md#diffusion-at-both-ends-controls-affine-curl-histories)
 uses the joint Gaussian covariance to control arbitrary volume-preserving
 linear deformation between two viscous windows on R3. It supplies a finite
