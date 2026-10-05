@@ -6421,5 +6421,29 @@
       "new_lean_source_bytes": 13877,
       "frontend_seconds_for_new_modules": 12.055
     }
+  },
+  "strip_diamond_alternative": {
+    "receipt": "../near-linear/strip-diamond-alternative-measurements.json",
+    "classification": "SOURCE_SECTOR_SUPPLIES_EXISTING_DIAMOND_ALTERNATIVE",
+    "proved": [
+      "The pinned D0099 source supplies the three degree-five core vertices and the two cyclic turns around the edge to boundary port eight.",
+      "With boundary port degree five or six, the same actual source edge has the pentagonal or mixed diamond pattern.",
+      "In a graph-backed vertex-minimal Tait counterexample, both cases consume existing strict reductions and colouring reconstruction. Every surviving reading therefore has boundary port degree at least seven.",
+      "The existing 39-vertex phase-obstruction sphere consumes the general law and supplies the mixed pattern."
+    ],
+    "scope_limits": [
+      "A source graph homomorphism, exact core degrees and two actual cyclic turns remain hypotheses. Their supply in every residual flat neighbourhood is not proved.",
+      "The minimal-map consumer reuses the existing diamond reductions and shared joint profile certificate, including generic trace indexing. It uses no original configuration rank certificate or complete Four Colour endpoint.",
+      "The example certifies an actual mixed pattern. It does not separately construct a complete reduction of that fixture.",
+      "No new primitive reduction, universal strip repair, catalogue deletion, compact coverage or global termination theorem is claimed."
+    ],
+    "credit": {
+      "catalogue_entries_removed": 0,
+      "configuration_certificate_dependencies_removed": 0,
+      "new_graph_fixture_bytes": 0,
+      "new_repair_table_bytes": 0,
+      "new_lean_source_bytes": 9240,
+      "frontend_seconds_for_new_modules": 35.43
+    }
   }
 }

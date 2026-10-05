@@ -5493,3 +5493,32 @@ Replay `lake build kernelStripDegreeRelease`. The
 eight-root audit, source hashes and unchanged counts: 633 coverage entries,
 629 original certificate dependencies and 336 replaced independent
 discharging checks.
+
+## A strip boundary port supplies an alternative diamond
+
+`StripDiamondAlternative` retains the complete D0099 core degrees and the
+two cyclic turns around the edge from source vertex twelve to boundary
+port eight. The core vertex and both flanks have degree five. If the port
+has degree five or six, the same actual edge therefore supplies the
+pentagonal or mixed diamond pattern.
+
+The graph-backed vertex-minimal consumer transports that pattern through
+the actual facial dual and invokes the existing strict reduction and
+joint colouring reconstruction. Consequently every surviving reading has
+degree at least seven at port eight. Flatness and a selected Kempe repair
+are not hypotheses. This provides a geometric alternative when working
+on a strip; it does not establish repair of every surviving strip.
+
+The existing 39-vertex phase-obstruction sphere consumes the source law
+and supplies the mixed pattern. No new graph fixture or repair table is
+introduced. The established diamond reductions retain their shared joint
+profile certificate and generic trace indexing; no original configuration
+rank certificate or complete Four Colour endpoint is used.
+
+Replay `lake build kernelStripDiamondAlternative`. The
+[receipt](strip-diamond-alternative-measurements.json) records the source
+fingerprints, replay costs and dependency audit. This is reuse of existing
+reductions with a new geometric consumer, not a new primitive reduction or
+catalogue deletion. Compact coverage and termination remain open; the
+counts remain 633 coverage entries, 629 original certificate dependencies
+and 336 replaced independent discharging checks.

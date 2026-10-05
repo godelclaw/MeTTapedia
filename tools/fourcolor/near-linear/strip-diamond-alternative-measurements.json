@@ -1,0 +1,61 @@
+{
+  "classification": "SOURCE_SECTOR_SUPPLIES_EXISTING_DIAMOND_ALTERNATIVE",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripDiamondAlternative",
+      "source_sha256": "d304a797aeb7c221044623fdf6dbf6872a5056346dac67ed675259520e4bb45e",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.709,
+      "olean_bytes": 239584,
+      "olean_sha256": "abf876aa63c0d181f65ddfda5bdede90cf03ea2469a8a78beec7893d7f6aa289"
+    },
+    {
+      "module": "MettapediaFourColor.StripDiamondAlternativeExample",
+      "source_sha256": "96b20f6f16656ca788fc4514405a45cf26580ac2380bf90bcd8eac531a428859",
+      "exit_code": 0,
+      "frontend_wall_seconds": 19.059,
+      "olean_bytes": 253176,
+      "olean_sha256": "88a96361c25f4471eb25994bf8cc079abe4bd27d11119f895e960c84221fb68c"
+    },
+    {
+      "module": "MettapediaFourColor.StripDiamondAlternativeAudit",
+      "source_sha256": "9fd096435edfef63d63f245707fc271b7b3c5d1cdcf504c28a1fb39542b738e6",
+      "exit_code": 0,
+      "frontend_wall_seconds": 9.662,
+      "olean_bytes": 2608,
+      "olean_sha256": "57c0e83b82b95759a9ba42013c5e3e19d0eb421f465613506074f84f10fb14e6"
+    }
+  ],
+  "frontend_wall_seconds_total": 35.43,
+  "timing_scope": "Three new modules with dependencies already built. No whole-proof speedup claimed.",
+  "new_lean_source_bytes": 9240,
+  "new_graph_fixture_bytes": 0,
+  "new_boundary_repair_table_bytes": 0,
+  "audit": {
+    "roots": 8,
+    "transitive_dependency_declarations": 28718,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "The pinned D0099 source supplies the three degree-five core vertices and the two cyclic turns around the edge to boundary port eight.",
+    "With boundary port degree five or six, the same actual source edge has the pentagonal or mixed diamond pattern.",
+    "In a graph-backed vertex-minimal Tait counterexample, both cases consume existing strict reductions and colouring reconstruction. Every surviving reading therefore has boundary port degree at least seven.",
+    "The existing 39-vertex phase-obstruction sphere consumes the general law and supplies the mixed pattern."
+  ],
+  "scope_limits": [
+    "A source graph homomorphism, exact core degrees and two actual cyclic turns remain hypotheses. Their supply in every residual flat neighbourhood is not proved.",
+    "The minimal-map consumer reuses the existing diamond reductions and shared joint profile certificate, including generic trace indexing. It uses no original configuration rank certificate or complete Four Colour endpoint.",
+    "The example certifies an actual mixed pattern. It does not separately construct a complete reduction of that fixture.",
+    "No new primitive reduction, universal strip repair, catalogue deletion, compact coverage or global termination theorem is claimed."
+  ],
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificate_dependencies": 629,
+    "independent_discharging_checks_replaced": 336
+  }
+}

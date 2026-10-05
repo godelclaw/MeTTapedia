@@ -1566,3 +1566,18 @@ target kernelStripDegreeRelease pkg : Unit := do
         "StripDegreeReleaseExample", "StripDegreeReleaseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the source-sector alternative and its minimal-map consumer. -/
+target kernelStripDiamondAlternative pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-diamond-alternative",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripDiamondAlternative", "StripDiamondAlternativeExample",
+        "StripDiamondAlternativeAudit"]
+      cwd := pkg.dir
+      env := env }
