@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [phase-dependent second return](labs/README.md#a-phase-dependent-second-return-in-ordinary-stretching)
+follows the generated waves into their complete next feedback. Two periodic
+families have identical initial modal energies and identical first stretching
+forecasts, but a shared phase determines whether the actual correction
+depletes or amplifies stretching. The newer higher-derivative observer can
+increase even in the depleting case. An amplifying member also exceeds
+the full viscous credit over a controlled short interval. These analytic
+results and exact polynomial checks preserve the open full-history target;
+they are not new Lean certificates or a singularity construction.
+
 The [balanced-shell return law](labs/README.md#balanced-shells-generate-positive-stretching-through-internal-transfer)
 computes the complete first nonlinear feedback for an unbounded family
 of periodic initial data. Initial stretching vanishes, but newly generated

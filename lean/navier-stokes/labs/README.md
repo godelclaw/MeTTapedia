@@ -54442,3 +54442,201 @@ intervals and remainder bounds remain analytic, not Lean-certified.
 Two positive-viscosity fixtures additionally check SR7 directly from the
 complete second and third NS time jets, independently of the shell formula.
 No Lean declarations or axioms change.
+
+
+## A phase-dependent second return in ordinary stretching
+
+`shell_second_return.py` follows the SR5 waves into their complete next
+feedback. It reuses the full canonical-pressure time-jet checker and the
+first-Picard comparison method of (513)--(516). The observation here is
+ordinary physical vorticity stretching g, together with the newer joint
+work P from JS3. The two corrections can have opposite signs. Moreover,
+initial modal energies and the entire first stretching forecast can agree
+while a shared phase reverses the next correction. No generated mode is
+discarded, and the forecast is not claimed to be a separate NS solution.
+
+### The same-shell families and the original forecast
+
+Use normalized volume on the period-2pi torus. Retain the genuinely 3D
+field v0 from SR5. For a real parameter a and sigma in {+1,-1}, set
+
+```text
+q_sigma=(1/2,0,1/2)sin(x-z)
+         +sigma(0,1/2,1/2)cos(y-z),
+v=v_(a,sigma)=v0+a q_sigma,
+b=N(v), c=DN(v)[b], d=DN(v)[c]+2N(b).                 (ST1)
+```
+
+Every initial frequency has squared length2. The complete first output
+b has squared frequencies6 only. Exact convolution gives, for BOTH phases,
+
+```text
+E(v)=(3+2a^2)/4, ||Delta v||2^2=3+2a^2,
+g(v)=P(v)=0,
+J(a)=Dg(v)[b]=(a^2+1)(a^2+3)/6,
+DP(v)[b]=7J(a), ||b||2^2=J(a)/4.                      (ST2)
+```
+
+Changing sigma reverses the coefficient at just one conjugate frequency
+pair. Therefore every initial modal energy agrees, including all norms
+given by scalar Fourier multipliers. It changes a relation between
+interacting waves. The original three independent waves fix their
+translation phases; the relative change in q_sigma is not removed by
+a translation preserving those original coefficients.
+
+Fix nu>0 and actual initial datum A v, with A>0. The original heat field
+and its first full nonlinear iterate are explicitly
+
+```text
+v_heat(t)=A exp(-2nu t)v,
+d_nu(t)=[exp(-4nu t)-exp(-6nu t)]/(2nu),
+F(t)=v_heat(t)+A^2 d_nu(t)b.                           (ST3)
+```
+
+This retains every first-generation output. It solves the linear heat
+equation driven by N(v_heat), rather than the full nonlinear equation.
+The exact cubic polarization identities are
+g(b)=Dg(b)[v]=0, with the same equalities for P. Consequently
+
+```text
+g(F(t))=A^4 J(a)[exp(-8nu t)-exp(-10nu t)]/(2nu),
+P(F(t))=7g(F(t)),
+integral_0^infinity g(F(t))dt=A^4 J(a)/(80nu^2).        (ST4)
+```
+
+Thus both phase families have the SAME entire first stretching forecast,
+fixed by the original datum and with a finite explicit total integral.
+
+### Full feedback distinguishes depletion from amplification
+
+Let u(t) be the actual local smooth unforced NS evolution from A v.
+The first differences from its own forecast satisfy
+
+```text
+g(u(t))-g(F(t))=A^6 C_sigma(a)t^3+O(t^4),
+P(u(t))-P(F(t))=A^6 K_sigma(a)t^3+O(t^4),              (ST5)
+
+4320 C_+(a)=15a^6+358a^4+1636a^2-165,
+4320 C_-(a)=15a^6+358a^4+576a^2-165,
+4320 K_+(a)=1185a^6+13894a^4+39508a^2+1905,
+4320 K_-(a)=1185a^6+13894a^4+30888a^2+1905.            (ST6)
+```
+
+For fixed A,a,nu the remainder is on an actual positive-time interval.
+The displayed coefficients are independent of nu; all viscous terms
+through that order have been retained and cancel in the difference.
+The original parent feedback, the generated-source interaction N(b),
+and all pressure variations are included.
+
+For clarity, for either cubic observation W equal to g or P, the
+complete inviscid coefficient is
+
+```text
+(1/6)DW(v)[d]+(1/2)D^2W(v)[b,c].                      (ST7)
+```
+
+The pure cubic term W(b) appears equally in the actual and forecast
+expansions and is zero for this family. Also DW(v)[c]=0, eliminating
+the second-order difference. The checker proves the corresponding
+positive-viscosity identities as polynomials in a and nu, independently
+checks the advective NS recurrence at positive viscosities, and verifies
+the fourth-order differentiated energy balance. These are exact
+identities, not an interpolation of numerical samples.
+
+There are two distinct lessons. At a=0,
+
+```text
+C_+(0)=C_-(0)=-11/288,
+K_+(0)=K_-(0)=127/288.                                (ST8)
+```
+
+The complete next feedback depletes ordinary stretching relative to
+its original first forecast, while it amplifies the higher-derivative
+work. JS9 remains a valid sufficient criterion, but the sign of its
+correction is not the sign of the physical stretching correction. The
+initial comparison 5J<=R<=7J in SR4 does not extend to these corrections.
+In particular, for a=0 there is a short interval on which
+g(u)<=g(F), and its accumulated stretching is paid by (ST4). This is
+a local comparison, not permission to restart the same forecast later.
+
+For the positive phase, C_+(a) changes sign exactly once as |a| increases
+from zero: its numerator is strictly increasing as a polynomial in a^2,
+and the transition lies between3/10 and1/3. Both K polynomials are
+strictly positive at every real a. At a=1/3 the equal-resource pair gives
+
+```text
+C_+(1/3)=1289/262440>0,
+C_-(1/3)=-2933/131220<0.                              (ST9)
+```
+
+For every fixed A>0 and nu>0, these yield opposite strict comparisons
+on sufficiently short actual intervals. Initial modal energies, g(0),
+the complete first derivative of g, and its entire first forecast agree.
+Those observations alone therefore do not determine the next signed
+feedback. A conservative payment covering both phases is not excluded.
+
+### The missed return can exceed the whole viscous credit
+
+The amplifying sign alone does not show that diffusion fails to pay it.
+Choose the fixed member a=1/2,sigma=+1, for which
+
+```text
+C_+(1/2)=kappa=17063/276480,
+||Delta v||2^2=D0=7/2.                                (ST10)
+```
+
+Consider the precise proposed history inequality
+
+```text
+2 integral_0^t [g(u(s))-g(F(s))]ds
+    <=nu integral_0^t ||grad omega(u(s))||2^2 ds.       (ST11)
+```
+
+Together with (ST4), such a payment would control the unforecast
+stretching by viscosity. It is false even on a short interval of
+these actual smooth unforced flows, from the original time zero.
+
+Fix nu,H>0 and let A tend to infinity. With tau=A t and epsilon=nu/A,
+the actual rescaled solution w_epsilon has fixed initial v and viscosity
+epsilon. Its first iterate is the similarly rescaled F_epsilon. On one
+common short tau interval for0<=epsilon<=1, the H^12 energy estimate
+bounds w in H^12 and its jth time derivative in H^(12-2j), j<=4.
+The first iterate has uniform bounds directly from its finite heat
+formula. Sobolev products and Taylor's theorem therefore give
+
+```text
+g(w_epsilon(tau))-g(F_epsilon(tau))
+     =kappa tau^3+O(C tau^4),
+||Delta w_epsilon(tau)||2^2=D0+O(C tau),               (ST12)
+```
+
+with a constant fixed by v. No global bound on the unknown solution
+is assumed. Set tau_A=6epsilon^(1/3), so the physical time is
+t_A=6nu^(1/3)A^(-4/3). For sufficiently large A this is in the
+common local interval and below H. Substituting the COMPLETE integral
+in ST11, using ||grad omega||2^2=||Delta u||2^2, yields
+
+```text
+2 integral_0^t_A [g(u)-g(F)]-nu integral_0^t_A ||grad omega||2^2
+ =nu^(4/3)A^(2/3)[24309/1280+O((nu/A)^(1/3))]>0.     (ST13)
+```
+
+Indeed the leading factor is kappa*6^4/2-D0*6=24309/1280. The error
+comes from A^2 O(tau_A^5+epsilon tau_A^2); it is smaller than half
+the displayed positive coefficient for large enough A. Thus (ST11)
+fails with the initial diffusion included and the original clock intact.
+
+This rules out paying the entire missing return by this first forecast
+and viscosity alone. It does not rule out an additional allowance from
+the full datum: those initial resources change with A. Nor does it
+construct indefinitely repeated renewal, a singularity, or a whole-space
+finite-energy example. The decisive open task remains payment for
+subsequent compatible histories, including the phases that distinguish
+ST9. The original physical signed-renewal target and JS9 both remain open.
+
+Run `python3 -O labs/shell_second_return.py`. The archive retains both
+parameter-polynomial families, complete positive-viscosity Fourier jets,
+canonical pressures, identical modal energies, both sign certificates,
+and the full diffusion-subtracted leading constant. The PDE comparisons
+and uniform remainder arguments remain analytic, not Lean-certified.
+No Lean declaration or axiom changes.

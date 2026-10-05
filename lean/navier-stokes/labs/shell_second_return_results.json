@@ -1,0 +1,195 @@
+{
+  "family": "v_(a,phase)=v0+a*q_phase, all input modes have |k|^2=2",
+  "phase_families": [
+    {
+      "relative_phase": 1,
+      "symbolic_returns": [
+        {
+          "observer": "ordinary stretching",
+          "first_return": "(a**2 + 1)*(a**2 + 3)/6",
+          "mixed_third_jet": "-(30*a**6 + 671*a**4 + 1952*a**2 + 165)/4320",
+          "first_second_cross": "a**2*(15*a**4 + 343*a**2 + 1196)/1440",
+          "third_work_correction": "(15*a**6 + 358*a**4 + 1636*a**2 - 165)/4320",
+          "inviscid_energy_t4": "(15*a**6 + 358*a**4 + 1636*a**2 - 165)/8640"
+        },
+        {
+          "observer": "joint strain",
+          "first_return": "7*(a**2 + 1)*(a**2 + 3)/6",
+          "mixed_third_jet": "-7*(30*a**6 + 671*a**4 + 1952*a**2 + 165)/4320",
+          "first_second_cross": "(465*a**6 + 6197*a**4 + 17724*a**2 + 1020)/1440",
+          "third_work_correction": "(1185*a**6 + 13894*a**4 + 39508*a**2 + 1905)/4320",
+          "inviscid_energy_t4": "(1185*a**6 + 13894*a**4 + 39508*a**2 + 1905)/8640"
+        }
+      ],
+      "independent_physical_checks": [
+        {
+          "mixing_parameter": "0",
+          "viscosity": "1/3",
+          "work_corrections": [
+            "-11/288",
+            "127/288"
+          ],
+          "actual_jet_modes": [
+            6,
+            12,
+            30,
+            72
+          ],
+          "canonical_pressure_modes": [
+            12,
+            12,
+            30
+          ]
+        },
+        {
+          "mixing_parameter": "1/2",
+          "viscosity": "2/7",
+          "work_corrections": [
+            "17063/276480",
+            "810809/276480"
+          ],
+          "actual_jet_modes": [
+            10,
+            26,
+            94,
+            210
+          ],
+          "canonical_pressure_modes": [
+            34,
+            54,
+            158
+          ]
+        },
+        {
+          "mixing_parameter": "1/3",
+          "viscosity": "2",
+          "work_corrections": [
+            "1289/262440",
+            "392927/262440"
+          ],
+          "actual_jet_modes": [
+            10,
+            26,
+            94,
+            210
+          ],
+          "canonical_pressure_modes": [
+            34,
+            54,
+            158
+          ]
+        }
+      ]
+    },
+    {
+      "relative_phase": -1,
+      "symbolic_returns": [
+        {
+          "observer": "ordinary stretching",
+          "first_return": "(a**2 + 1)*(a**2 + 3)/6",
+          "mixed_third_jet": "-(30*a**6 + 671*a**4 + 1932*a**2 + 165)/4320",
+          "first_second_cross": "a**2*(15*a**4 + 343*a**2 + 836)/1440",
+          "third_work_correction": "(15*a**6 + 358*a**4 + 576*a**2 - 165)/4320",
+          "inviscid_energy_t4": "(15*a**6 + 358*a**4 + 576*a**2 - 165)/8640"
+        },
+        {
+          "observer": "joint strain",
+          "first_return": "7*(a**2 + 1)*(a**2 + 3)/6",
+          "mixed_third_jet": "-7*(30*a**6 + 671*a**4 + 1932*a**2 + 165)/4320",
+          "first_second_cross": "(465*a**6 + 6197*a**4 + 14804*a**2 + 1020)/1440",
+          "third_work_correction": "(1185*a**6 + 13894*a**4 + 30888*a**2 + 1905)/4320",
+          "inviscid_energy_t4": "(1185*a**6 + 13894*a**4 + 30888*a**2 + 1905)/8640"
+        }
+      ],
+      "independent_physical_checks": [
+        {
+          "mixing_parameter": "0",
+          "viscosity": "1/3",
+          "work_corrections": [
+            "-11/288",
+            "127/288"
+          ],
+          "actual_jet_modes": [
+            6,
+            12,
+            30,
+            72
+          ],
+          "canonical_pressure_modes": [
+            12,
+            12,
+            30
+          ]
+        },
+        {
+          "mixing_parameter": "1/2",
+          "viscosity": "2/7",
+          "work_corrections": [
+            "103/276480",
+            "672889/276480"
+          ],
+          "actual_jet_modes": [
+            10,
+            26,
+            94,
+            210
+          ],
+          "canonical_pressure_modes": [
+            30,
+            50,
+            144
+          ]
+        },
+        {
+          "mixing_parameter": "1/3",
+          "viscosity": "2",
+          "work_corrections": [
+            "-2933/131220",
+            "167371/131220"
+          ],
+          "actual_jet_modes": [
+            10,
+            26,
+            94,
+            210
+          ],
+          "canonical_pressure_modes": [
+            30,
+            50,
+            144
+          ]
+        }
+      ]
+    }
+  ],
+  "signs_and_integrated_test": {
+    "transition_bracket": "3/10 < critical |a| < 1/3",
+    "ordinary_seed_correction": "-11/288",
+    "joint_seed_correction": "127/288",
+    "adverse_parameter": "1/2",
+    "adverse_correction": "17063/276480",
+    "physical_interval": "t=6*nu^(1/3)*A^(-4/3)",
+    "integrated_excess_leading_coefficient": "24309/1280",
+    "integrated_excess_scale": "nu^(4/3)*A^(2/3)",
+    "first_forecast_integral": "A^4*J(a)/(80*nu^2)"
+  },
+  "same_resource_pair": {
+    "mixing_parameter": "1/3",
+    "positive_correction": "1289/262440",
+    "negative_correction": "-2933/131220",
+    "retained_equalities": "Every initial modal energy, the first stretching return, and the entire first-Picard stretching forecast agree."
+  },
+  "status": "Exact polynomial and full Fourier checks passed. No new Lean certificate.",
+  "scope": "Actual local viscous NS comparisons, with all generated parents. No indefinite renewal or failure of every full-datum allowance is asserted.",
+  "source_sha256": {
+    "shell_second_return.py": "f06c29b01130415aa4da96285a5de5b1bbae11c5a2794ec5c262ece7ab7c0f7c",
+    "shell_strain_return.py": "0bc46ef846e9ee0ba8498a09ee4056d66d3037304ce0449fdf29c037bbfbb28a",
+    "joint_strain_source.py": "d8b0f1e3ffd910303da6415bdd0bb74de06f6b2f811f0b9e78fb4accf587074b",
+    "cyclic_pressure_history.py": "5410012809607489ddb1f807902422a15d334e3323eb99b56e29318b04e0d715",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "helical_parent_response.py": "5b87c1740e83508235915c360a25df87450bba761ef8f321128f005a84d7f3d8",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02"
+  }
+}
