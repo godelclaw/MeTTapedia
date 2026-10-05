@@ -36,6 +36,19 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [centrifugal parent-return law](labs/README.md#centrifugal-amplification-of-a-self-generated-parent)
+constructs smooth unforced periodic data with no initial meridional
+parent whose first complete nonlinear return amplifies the generated
+parent's energy relative to its original caloric forecast. The sign is
+the classical Rayleigh angular-momentum discriminant. Reflection parity
+retains the complete viscous evolution in the short-time comparison,
+and an explicit compact pressure reconstructs the actual initial parent.
+This rules out universal first-return depletion for organized pure swirl
+in the periodic setting. It leaves the previous radial whole-space
+depletion theorem, a finite full-datum allowance, and the arbitrary-history
+question intact. The derivation is analytic with exact algebraic checks;
+it is not a new Lean certificate or a singularity construction.
+
 The [local reserve classification](labs/README.md#classifying-local-convex-reserves-that-cancel-the-parent-reaction)
 determines every smooth, convex, degree-one strain/swirl reserve that
 exactly cancels the coupled reaction with the existing evolving density.

@@ -1,0 +1,35 @@
+{
+  "jets": {
+    "setting": "Any orthogonal reflection commuting with heat and the full Leray nonlinearity; initial velocity is reflection-odd.",
+    "parent": "P_even u(t), P_even=(I+R)/2",
+    "forecast": "Z(t)=integral_0^t exp(nu(t-s)Delta)N(exp(nu s Delta)u0) ds",
+    "third_derivative_difference": "DN(u0)DN(u0)N(u0)+D2N[N(u0),N(u0)]",
+    "energy_coefficient": "C/3, C=<N(u0),DN(u0)DN(u0)N(u0)>; <N,D2N[N,N]>=0 by incompressible kinetic cancellation",
+    "terms_after_projection": 2,
+    "scope": "Free-algebra identities checked; reflection equivariance, PDE smoothness and Hilbert Taylor passage are analytic."
+  },
+  "physical": {
+    "domain": "T3=(R/(2pi Z))^3, circular data supported transversely in r<5/2<pi",
+    "source": "b0^2=f0(r)+eps*a(r)*cos(kz), a=(chi_second+3chi_prime/r-k^2chi)/k",
+    "canonical_pressure": "p0(r)+eps*(2chi+r chi_prime)*cos(kz)/k, p0_prime=r*f0; subtract its mean",
+    "generated_parent": "N(u0)=eps*(-k r chi cos(kz),0,(2chi+r chi_prime)sin(kz)) in cylindrical components",
+    "exact_return": "C=-2pi^2 eps^2 k^2 integral r^3 chi^2*(4f0+r f0_prime) dr",
+    "growing_example": "f0=r^-6 on supp chi: C=4pi^2 eps^2 k^2 integral r^-3 chi^2 dr>0",
+    "depleting_example": "f0=1 on supp chi: C=-8pi^2 eps^2 k^2 integral r^3 chi^2 dr<0",
+    "generality": "Any smooth nonzero compact circular swirl has an annulus with decreasing squared angular momentum, permitting the growing construction."
+  },
+  "explicit": {
+    "profile": "chi=exp(-1/((r-1)(2-r))) on 1<r<2, zero elsewhere",
+    "base": "b_base=psi(r)*r^-3, psi smooth, equal one on [1,2], supported in (1/2,5/2)",
+    "parameters": "k=1, eps=1/10000",
+    "ratio_bound": "|eps*a/f0|<=3008/10000<1/2 on the modulation support; zero outside",
+    "lower_bound_C": "pi**2*exp(-32/3)/267968750",
+    "conclusion": "The actual even-parent energy exceeds its original caloric forecast on a nonzero short interval at every fixed nu>0.",
+    "not_claimed": "No uniform time window, repeated renewal, growing total kinetic energy, whole-space realization, or singularity follows."
+  },
+  "status": "Analytic actual unforced periodic history theorem with exact pressure, parity, integral and positivity checks; not a new Lean certificate.",
+  "source_sha256": {
+    "centrifugal_parent_return.py": "9ecfe288dd742d3b2ec34debe79eca828e8d71b8ac2c83ea826305ced571b4e4",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37"
+  }
+}

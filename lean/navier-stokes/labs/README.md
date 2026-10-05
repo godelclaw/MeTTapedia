@@ -55748,3 +55748,238 @@ gradients, and the reused complete integrated pressure calculation.
 The classification at zero swirl, global convexity,
 parabolic comparison, integration and continuation consequences remain
 analytic arguments in this section. No Lean declarations or axioms change.
+
+## Centrifugal amplification of a self-generated parent
+
+`centrifugal_parent_return.py` and
+`centrifugal_parent_return_results.json` give exact checks for the following
+analytic short-time result. Smooth unforced data on the fixed torus can
+start with pure swirl and no meridional parent, then amplify their first
+self-generated parent relative to its original caloric forecast. The sign
+is determined by the radial angular-momentum profile. The construction
+retains the complete Leray projection and every viscous term in the
+comparison; it does not substitute a linearized or truncated evolution.
+
+The underlying centrifugal mechanism is classical. Rayleigh's
+angular-momentum discriminant, in the notation used by
+[Billant and Gallaire, *Generalized Rayleigh criterion for non-axisymmetric
+centrifugal instabilities* (2005)](https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/abs/generalized-rayleigh-criterion-for-nonaxisymmetric-centrifugal-instabilities/EBD5A1C0273A1D8616C5F1FC75085DCF),
+is `r^(-3) partial_r(r^4 Omega^2)`. Their inviscid instability criterion
+is not used as a theorem about viscous NS here. The calculation below
+independently identifies that discriminant in an actual short-time
+viscous parent-energy comparison.
+
+### Reflection isolates the complete return
+
+On `T3=(R/(2pi Z))^3`, use the unnormalized Lebesgue L2 inner product.
+Let `J=diag(1,-1,1)`, and let `R` be reflection acting on vector fields:
+
+```text
+(Ru)(x)=J u(Jx), P_even=(I+R)/2,
+L=nu Delta, N(u)=-Pi[(u.grad)u],
+B(a,b)=-(1/2)Pi[(a.grad)b+(b.grad)a].                 (CF1)
+```
+
+Here Pi is the full periodic Leray projection and nu>0. Reflection is an
+orthogonal involution, commutes with L and Pi, and satisfies
+`R B(a,b)=B(Ra,Rb)`. These are actual torus symmetries; continuous
+rotations of the square periodic cell are not assumed.
+
+For a smooth solenoidal initial field U with `RU=-U`, let u be the
+actual local smooth unforced solution, and define the original forecast
+
+```text
+H(t)=exp(tL)U,
+Z(t)=integral_0^t exp((t-s)L)N(H(s)) ds,
+W=N(U), A=DN(U)=2B(U, .).                           (CF2)
+```
+
+H is odd and Z is even. Direct differentiation of `u'=Lu+N(u)` gives
+
+```text
+(P_even u)^(j)(0)=Z^(j)(0), j=0,1,2,
+(P_even u-Z)'''(0)=A A W+2B(W,W).                   (CF3)
+```
+
+For completeness, the even terms of the third actual derivative are
+`L^2 W+L A LU+A L^2 U+2B(LU,LU)+A A W+2B(W,W)`.
+The first four are exactly Z'''(0). All other terms of the actual third
+derivative are odd. Thus the absence of L in the difference follows
+from parity, not a zero-viscosity approximation. The checker expands
+the generic quadratic equation in a free symmetric bilinear algebra.
+
+Periodic integration by parts gives `<W,B(W,W)>=0`. Hilbert-space
+Taylor expansion therefore yields
+
+```text
+C=<W,A A W>,
+||P_even u(t)||2^2-||Z(t)||2^2=(C/3)t^4+o(t^4).      (CF4)
+```
+
+Indeed Z(t)=tW+O(t^2), and the difference of the fields starts with the
+third derivative divided by 6. Smooth periodic data admit enough local
+Sobolev regularity for these differentiations and the L2 remainder.
+For C>0, the strict positive comparison consequently holds for every
+sufficiently small t>0, at each fixed positive viscosity. No interval
+length uniform in the datum or viscosity is claimed.
+
+### Compact cylindrical data and their complete pressure
+
+Inside the transverse square use `r=sqrt(x^2+y^2)`. Choose a smooth radial
+base angular velocity b_base, supported in `1/2<r<5/2<pi`, and a nonzero
+smooth chi with support contained in [1,2], with `f0=b_base^2>0` on a
+neighborhood of that support. Choose an integer k>=1 and set
+
+```text
+a(r)=[chi''(r)+3chi'(r)/r-k^2 chi(r)]/k,
+f(r,z)=f0(r)+epsilon a(r)cos(kz),
+b(r,z)=b_base(r) sqrt(1+epsilon [a/f0](r)cos(kz)),
+U=(-y b,x b,0)=r b e_theta.                         (CF5)
+```
+
+The ratio a/f0 extends by zero outside the modulation region. Take
+`|epsilon| ||a/f0||infinity<1/2`. Then U is smooth, solenoidal,
+mean-zero and periodic; it vanishes near the transverse edges. It is
+reflection-odd and has no initial radial or axial velocity. The explicit
+bump below has support closure [1,2]; b_base stays positive on a
+neighborhood of that closed interval.
+
+The complete canonical initial pressure, up to its constant mean, is
+
+```text
+p0(r)=-integral_r^infinity s f0(s) ds,
+p1(r,z)=[2chi(r)+r chi'(r)]cos(kz)/k,
+p(U)=p0+epsilon p1-mean(p0),
+W=N(U)=epsilon V,
+V_r=-k r chi cos(kz), V_theta=0,
+V_z=(2chi+r chi')sin(kz).                           (CF6)
+```
+
+The function p0 is constant near the axis and zero outside the base
+support; p1 has compact transverse support and zero axial mean. Thus
+these formulas define a smooth periodic pressure. The checker verifies
+`div V=0` and the two p1 identities below; the p0 identity follows by
+differentiating its defining integral:
+
+```text
+r a cos(kz)e_r-grad p1=V,
+Delta p1=(2a+r a')cos(kz), grad p0=r f0 e_r.         (CF7)
+```
+
+Consequently `r f e_r-grad p(U)=epsilon V` is the full solenoidal
+nonlinear acceleration. The pressure is the periodic Poisson solution
+with the stated mean, not a selected part of its source or a freely
+chosen external field. In particular the first parent is generated by
+U itself.
+
+### The exact return coefficient
+
+For a cylindrical toroidal field U and meridional W, the mixed Poisson
+source `trace(grad U grad W+grad W grad U)` vanishes pointwise. The first
+returned field T=AW is therefore toroidal and is exactly
+
+```text
+T_theta=-r(W.grad b)-2W_r b,
+2b T_theta=r f2,
+f2=-W.grad f-4W_r f/r,
+C=<W,DN(U)T>=integral_T3 W_r r f2 dx.               (CF8)
+```
+
+The checker retains the cylindrical basis derivatives in both gradient
+matrices. In the last pairing only a gradient is removed, using div W=0.
+The self-parent term `2B(W,W)` in (CF3) is also retained until its kinetic
+cancellation in (CF4); it is not omitted from the equation.
+
+Substituting (CF5)--(CF6) into (CF8) and integrating over the entire axial
+period gives the exact identity
+
+```text
+D_R(r)=4f0+r f0'=r^(-3) partial_r(r^4 f0),
+C=-2pi^2 epsilon^2 k^2
+       integral_0^infinity r^3 chi(r)^2 D_R(r) dr.  (CF9)
+```
+
+The axial averages of all cubic-in-epsilon terms vanish: their factors
+are cos(kz)^3 or cos(kz)sin(kz)^2. Integrating over 0<=z<=2pi gives the
+same quadratic coefficient for every integer k. The transverse angular
+integration contributes the other factor 2pi. No asymptotic expansion
+in epsilon is needed for (CF9).
+
+The base angular momentum is `Gamma0=r^2 b_base`. Thus the complete
+first parent return amplifies wherever the modulation is supported in
+a region of decreasing Gamma0^2, and depletes in a region of increasing
+Gamma0^2. Two exact choices on the modulation support are
+
+```text
+f0=r^(-6): C= 4pi^2 epsilon^2 k^2 integral r^(-3)chi^2 dr>0,
+f0=1:      C=-8pi^2 epsilon^2 k^2 integral r^3 chi^2 dr<0. (CF10)
+```
+
+More generally every nonzero smooth compact circular base has an annulus
+where `partial_r(Gamma0^2)<0` and f0>0. To see this, Gamma0^2 is positive
+somewhere and returns to zero outside its support. The mean value theorem
+and continuity give an open interval of strict negative derivative,
+where the nonnegative function cannot be zero. Choose chi in a smaller
+annulus there and apply the same formulas. For every sufficiently small
+nonzero epsilon the resulting datum has C>0. This supplies a family of
+amplifying perturbations arbitrarily close to each such base. It is a
+short-time comparison, not a nonlinear long-time instability theorem.
+
+### An explicit positive coefficient
+
+Let psi be any smooth radial cutoff equal to one on [1,2] and supported
+in (1/2,5/2). Put
+
+```text
+b_base=psi(r)r^(-3), k=1, epsilon=1/10000,
+chi(r)=exp[-1/((r-1)(2-r))] for 1<r<2,
+chi(r)=0 otherwise.                               (CF11)
+```
+
+This is a smooth compact bump; all its derivatives vanish at the
+endpoints. With tau=(r-1)(2-r), use |tau'|<=1, tau''=-2 and
+`tau^(-j)exp(-1/tau)<=j!` for positive tau. They give
+`|chi'|<=2`, `|chi''|<=40`, and `|a|<=47`.
+As f0>=1/64 on [1,2],
+`|epsilon a/f0|<=3008/10000<1/2`, proving the source positivity used
+in (CF5). Derivatives of the base cutoff are outside this modulation
+region and are still included in p0.
+
+On 5/4<=r<=7/4 one has tau>=3/16 and r^(-3)>=64/343. Therefore
+
+```text
+integral r^(-3)chi^2 dr >= (32/343)exp(-32/3),
+C >= (128pi^2 epsilon^2/343)exp(-32/3)>0.            (CF12)
+```
+
+Combined with (CF4), this is an analytic actual unforced periodic
+counterexample to universal first-return depletion for organized pure
+swirl. It does not contradict the radial whole-space theorem (96), whose
+spatial geometry and domain differ. No localization argument transferring
+(CF12) to R3 is claimed.
+
+### What the comparison measures
+
+The generated parent at positive time is exactly P_even u. It need not
+remain cylindrical or meridional: the periodic cell does not preserve
+all rotations, and all its later generated components remain in the
+projection. Z always refers to the same original heat evolution; it is
+never reset using later data and is not asserted to solve an independent
+unforced NS equation.
+
+The total kinetic energy still satisfies
+`(1/2)partial_t ||u||2^2=-nu ||grad u||2^2`. Parent amplification is
+internal redistribution. In particular (CF4) is not a claim that the
+ordinary cubic vorticity stretching has either sign, nor a proof of
+repeated amplification. The remaining history problem must allow this
+positive first return and bound its compatible successors from the
+full initial datum. The arbitrary-data R3/T3 continuation targets remain
+open.
+
+Run `python3 -O labs/centrifugal_parent_return.py`. The checks cover the
+complete quadratic evolution jets, reflection parities, compact pressure
+reconstruction, meridional divergence, mixed Poisson source, toroidal
+return, axial integration, Rayleigh identity and explicit positivity
+bounds. The smooth cutoff construction, periodic local solution, Taylor
+remainder, integration by parts and family-level mean value argument
+remain analytic. No Lean declarations or axioms change.
