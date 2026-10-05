@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [matched pressure-history test](labs/README.md#identical-local-fluid-and-pressure-can-hide-different-parent-decay)
+constructs two compact unforced data with identical velocity and pressure
+throughout a core region, and identical scalar integer isotropic Sobolev
+norms, whose next pressure responses differ. Permuting the widths of
+equal-energy remote vortices preserves their initial pressure footprint
+while changing their viscous decay. The missing first-response information
+is the parents' directional gradient-dissipation tensor. Its initial
+pressure response has an explicit bound in terms of total parent
+dissipation at fixed separation. Actual short-time vorticity comparisons
+retain the full NS evolution; later geometry and repeated renewal remain
+open. These are analytic results with exact algebraic checks.
+
 The [local-gradient reserve obstruction](labs/README.md#internal-pressure-obstructs-a-universal-local-gradient-reserve)
 uses actual compact unforced data to show that a fixed smooth function
 of the current local velocity gradient, nonincreasing for every such

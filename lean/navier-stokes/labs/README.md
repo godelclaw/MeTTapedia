@@ -57870,3 +57870,220 @@ reused from the earlier compact fluid constructions. Smooth cutoffs,
 local NS existence, the functional-rigidity proof and time remainders
 are analytic, not consequences of the finite checks alone. No Lean
 declarations or axioms change.
+
+## Identical local fluid and pressure can hide different parent decay
+
+The pressure term in (CG10) depends on interacting parents. Including the
+current pressure in a local state does not determine its next response:
+the compact examples below have identical initial velocity and canonical
+pressure on an open core region, and identical scalar integer isotropic
+Sobolev norms, but different next pressure-Hessian rates. The difference
+is an oriented viscous-dissipation tensor of the surrounding fluid.
+Its first response has a quantitative payment from actual dissipation.
+
+This reuses the exact exterior pressure and first pressure-history law in
+[Swirl pressure histories](#swirl-pressure-histories-rotation-dissipation-and-geometry-defects).
+`hidden_width_history.py` checks the new finite identities. The compact
+realization, physical derivatives and positive-time comparisons are
+analytic, not new Lean theorems. In contrast to the earlier opposite-
+velocity examples (TR4) and (WH12), these data agree in their entire
+initial observed velocity field as well as their observed pressure.
+
+### Match the full local observations and scalar initial resources
+
+Fix nu>0 and a smooth radial cutoff chi(r)=psi(r^2), equal to one
+near zero and supported in r<1. Add a central smooth compact radial
+swirl u_c=chi_c(|x|)(e_z cross x). Its profile is constant b>0
+near the origin. Surround it by counter-rotating pairs centred at
++/-L e_i with respective axes +/-e_i. Every pair has total energy E>0.
+Choose support radii below L/4 and core radius below L/2, so all supports
+are disjoint. Energy means the squared L2 norm, without a factor 1/2.
+
+For a packet of width a and amplitude alpha,
+
+```text
+u_a,n(x)=alpha chi(|x|/a)(n cross x),
+||u_a,n||2^2=alpha^2 a^5 C0,
+||u_a,n||_(dot H^k)^2=alpha^2 a^(5-2k) Ck,
+gamma(a)=2nu I1/(a^2 I0),
+I0=int_0^infinity r^4 chi(r)^2 dr,
+I1=int_0^infinity r^4 chi'(r)^2 dr,
+C0=(8pi/3)I0,                 C1=(8pi/3)I1.          (PHW1)
+```
+
+Here k is a nonnegative integer and the derivative norm is rotationally
+invariant. The gradient-norm identity follows by angular integration
+and integration of the compact total derivative (r^3 chi^2)'. Set each
+packet's amplitude so its energy is E/2. The pair then has derivative
+norm squared E(Ck/C0)a^(-2k) and gamma E=2nu||grad u_pair||2^2.
+
+Choose a0 sufficiently small, set gamma=2nu I1/(a0^2 I0), and for
+sigma=+1 or -1 assign widths and decay rates as follows:
+
+```text
+r_sigma=(2+sigma,2,2-sigma),
+a_sigma,i=a0/sqrt(r_sigma,i),
+gamma_sigma,i=gamma r_sigma,i.                       (PHW2)
+```
+
+Only the assignment of three widths to the three fixed axes changes.
+For every integer k>=0 the two combined data have identical full scalar
+Sobolev norms. The remote contribution is exactly
+
+```text
+E(Ck/C0)a0^(-2k)(1^k+2^k+3^k).                      (PHW3)
+```
+
+Disjoint supports remove local derivative cross terms. The common core
+adds the same contribution, and rotations preserve each packet norm.
+In particular parent energy is 3E and parent kinetic dissipation is
+6E gamma in both configurations. Fractional nonlocal norms are not
+asserted to match; directional derivative tensors need not match.
+
+For a packet centred at y with axis n and energy e, its exact exterior
+canonical pressure is
+
+```text
+p_packet(x)=-e[3(n.(x-y))^2-|x-y|^2]/(8pi|x-y|^5).  (PHW4)
+```
+
+This is independent of radial width at fixed energy, axis and centre.
+Since the initial velocity supports are disjoint, the full initial
+stress and hence canonical pressure are sums of their individual
+contributions. Thus the two data have EXACTLY the same u0 and p0
+throughout the open core region, including every local spatial jet.
+Their first local velocity time derivatives agree there by the full NS
+equation. The pressure is normalized by its decay at infinity.
+
+### Full compatible pressure rates differ
+
+Let p_sigma be the pressure of the actual local unforced solution from
+each combined datum and p_c that of the isolated core solution. Write
+
+```text
+H_sigma(t)=Hess p_sigma(t,0)-Hess p_c(t,0),
+c=3/(2pi L^5),          R x=e_z cross x,
+H_i=cE(I-3e_i e_i^T),   H_sigma(0)=sum_i H_i=0.       (PHW5)
+```
+
+The previously derived COMPLETE first pressure-excess law gives
+
+```text
+H_sigma'(0)=-sum_i gamma_sigma,i H_i
+              +(2b/5)(H_sigma(0)R-RH_sigma(0))
+           =3sigma cE gamma diag(1,0,-1).             (PHW6)
+```
+
+The law includes nonlinear pressure coupling. The paired remote
+velocity is even, its gradient is odd, and the complete initial pressure
+is even. Consequently the remote nonlinear pressure-source derivative
+is odd and has zero Hessian response at the origin. On the radial core,
+only the degree-two part of the external harmonic pressure contributes
+to the central Hessian rate; it gives the displayed commutator. Here
+that term vanishes because H_sigma(0)=0, even though the full external
+pressure need not be constant in the core. The heat response of each
+parent is -gamma_sigma,i H_i. No later radial invariance is assumed.
+
+The initial pressure footprints agree, but their directional cancellations
+decay at different rates. This excludes a single-valued autonomous
+pressure evolution determined by just these matched observations, even
+if all the scalar initial norms (PHW3) are supplied. It does not exclude
+upper bounds based on those norms or a boundary relation retaining all
+compatible continuations.
+
+### The difference reaches actual local vorticity
+
+The pressure Hessian of the isolated plateau core initially equals
+P_c=b^2 diag(4/5,4/5,2/5). Its first time derivative at the origin is
+zero: the pure-swirl nonlinear pressure-source derivative vanishes,
+and the heat derivative depends on the profile at the constant plateau.
+Write B_j=partial_t^j grad u at the initial origin and
+omega_j=partial_t^j omega there. The full positive-viscosity equations give
+
+```text
+B_0=bR, omega_0=2b e_z,
+B_1=-B_0^2-P_c=(b^2/5)diag(1,1,-2),
+B_2=-B_1 B_0-B_0 B_1-H_sigma'(0),
+omega_1=0, omega_2=B_1 omega_0,
+omega_3=B_2 omega_0+B_0 omega_2.                      (PHW7)
+```
+
+These are Eulerian derivatives at the fixed origin. The required spatial
+terms vanish for specific reasons: B_0 and omega_0 are constant throughout
+the plateau; omega_1 vanishes there; B_1=-B_0^2-Hess p0 is harmonic there
+because -Delta p0=tr(B_0^2) is constant. Hence Delta B_1=Delta omega_2=0.
+At the origin u0=0 and grad B_0=grad omega_0=0, so the remaining
+differentiated transport terms vanish as well. Pressure has not been
+discarded; its time derivative is exactly the differing term in (PHW7).
+
+For W_sigma(t)=|omega_sigma(t,0)|^2 and W_c the isolated-core observation,
+the result is
+
+```text
+W_sigma(0)=4b^2, W_sigma'(0)=0,
+W_sigma''(0)=-16b^4/5=W_c''(0),
+W_sigma'''(0)=24sigma b^2 cE gamma, W_c'''(0)=0,
+W_sigma(t)-W_c(t)=4sigma b^2 cE gamma t^3+o(t^3).    (PHW8)
+```
+
+Classical smooth local existence gives one positive common interval
+for these three fixed data. The strict leading coefficients in (PHW8)
+give opposite signs relative to the isolated core on a sufficiently
+small positive subinterval. Both full observations initially decrease
+from their common starting value because their second derivative is
+negative. Thus positive excess in the plus case means less depletion
+than the isolated core, not initial absolute vorticity growth. No
+uniform lower bound on the comparison interval is claimed.
+
+### Retain oriented dissipation and pay its first response
+
+For arbitrary energies E_i and positive decay rates gamma_i in the same
+initial counter-rotating radial construction, retain
+
+```text
+D=sum_i gamma_i E_i n_i n_i^T >=0,
+Q=tr D=sum_i gamma_i E_i=2nu||grad u_parents||2^2,
+H'(0)-(2b/5)(H(0)R-RH(0))=c(3D-QI).                (PHW9)
+```
+
+The axes can be any orthonormal frame. Since 0<=D<=QI, the response obeys
+
+```text
+-cQI <= c(3D-QI) <= 2cQI,
+||H'(0)-(2b/5)(H(0)R-RH(0))||op
+ <=2cQ=6nu||grad u_parents||2^2/(pi L^5).            (PHW10)
+```
+
+The constant 2 in the tensor bound is attained by a single pair; taking
+its axis parallel to the core axis also makes the commutator zero.
+The information lost by taking only the trace is physical. Rotational
+symmetry of each radial swirl and its zero axial velocity give
+
+```text
+G_parents=int grad u_parents (grad u_parents)^T
+         =(QI-D)/(4nu),
+c(3D-QI)=4c nu[(tr G_parents)I-3G_parents].          (PHW11)
+```
+
+For the matched twins G_parents=(E gamma/(4nu))diag(4-sigma,4,4+sigma).
+The total dissipation agrees, while its orientation changes the response.
+Thus a first-step boundary summary can retain this joint tensor instead
+of an arbitrary external force. A summary retaining only the scalar
+resource may still use the rigorous response range (PHW10).
+
+Equations (PHW9)--(PHW11) are an INITIAL physical response and payment.
+The real evolution immediately creates other velocity components, so
+iterating these formulas with independent decaying packets would discard
+the actual nonlinear geometry defect. The established fixed-separation
+far-pressure bound remains valid; moving or concentrating parents and
+their complete signed history remain the open continuation task in
+(CG5), (CJ10) and the original renewal budget. This construction does
+not refute a finite allowance depending on the full initial datum,
+realize arbitrary prescribed forcing histories, or produce blowup.
+
+Run `python3 -O labs/hidden_width_history.py`. Exact checks cover radial
+dissipation and scaling, the exterior Newtonian Hessian, all six width
+assignments, the complete local vorticity jets and the positive-tensor
+payment. These checks support the analytic argument; they do not by
+themselves certify compact cutoffs, PDE existence or Taylor remainders.
+No Lean declarations or axioms change.
