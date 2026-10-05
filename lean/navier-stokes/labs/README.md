@@ -56689,3 +56689,246 @@ clock and running-maximum absorption constants. The rearrangement is an
 inequality calibration, not a constructed NS field. The actual memory
 identification is retained from (SM1), (AM13) and (MC1)--(MC9).
 No Lean declarations or axioms change.
+
+## The stress-memory deficit controls actual vorticity stretching
+
+The previous tensor reserves pay geometric source and diffusion costs,
+but do not identify a memory eigenvector with the physical vorticity.
+The following estimate connects a smooth version of that reserve directly
+to ordinary stretching, without such an identification. It yields a
+sufficient continuation condition with an explicit remaining time exponent.
+The continuum statements in this section are analytic. The accompanying
+`memory_alignment_stretching.py` checks the algebra, complete periodic NS
+tangent and constants; it does not certify the PDE arguments in Lean.
+
+### The actual memory and its nonnegative deficit
+
+Work on an available smooth unforced prefix on R3 or T3, with the same
+finite-energy and derivative hypotheses as the existing continuation
+consumers. Write
+
+```text
+B_ij=partial_j u_i,  G=B B^T,  omega=curl u,
+D=partial_t+u.grad-nu Delta,   D C=2nu G,   C(0)=0.
+
+s=sqrt(k^2+|C|_F^2),  Phi_k(C)=s-k,  A(C)=C/s,
+h=(I-A):G,  H_k(t)=int h(t,x) dx.                     (MA1)
+```
+
+Here k>0 is fixed from the original datum and parameters, not a future
+maximum or a quantity reset at a composition seam. C is the actual full
+viscous memory from (SM1), positive semidefinite by its matrix source
+representation. Consequently A is positive semidefinite, |A|_F<1 and
+0<=h<=|B|_F^2. Colon and norms in this section are Frobenius operations.
+This smooth norm is different from the capped primitive in (MC1).
+
+For a symmetric matrix increment V,
+
+```text
+Hess Phi_k(C)[V,V]=|V|^2/s-(C:V)^2/s^3 >=0.
+
+R_k(t)=||u(t)||2^2+int Phi_k(C(t)),
+R_k(T)+2nu int_0^T H_k(t)dt
+ +nu int_0^T int sum_j Hess Phi_k(C)[partial_j C,partial_j C]
+ = E0=||u0||2^2.                                      (MA2)
+```
+
+Indeed the local parabolic derivative of |u|^2+Phi_k(C) is
+-2 div(pu)-2nu h-nu sum_j Hess Phi_k(C)[partial_j C,partial_j C].
+The radial and transverse Hessian eigenvalues are k^2/s^3 and 1/s.
+Thus the full tensor diffusion, including changes of direction, remains.
+For whole-space integration, 0<=Phi_k(C)<=|C|_F<=tr C and the original
+mass bound int tr C<=E0 justify cutoffs as in the preceding entropy
+calculation. On each compact smooth prefix the transport and diffusion
+boundary errors vanish; pu is in L1 by the canonical pressure L2 bound.
+No future uniform derivative bound enters the allowance E0. On the torus
+integration is immediate. In particular int_0^T H_k<=E0/(2nu).
+
+In an eigenframe c1>=c2>=c3>=0 of C, h is exactly
+
+```text
+h=(1-c1/s)|B|^2
+  +sum_(i=2,3) [(c1-ci)/s] |e_i^T B|^2.                (MA3)
+```
+
+This formula does not differentiate the frame and remains meaningful
+through repeated eigenvalues. A large rank-one memory discounts new
+gradients in the same output direction, while retaining gradients in
+other directions. If c2>=alpha c1 with alpha>0 and c1>0, then
+h>=[1-1/sqrt(1+alpha^2)]|B|^2. Broad memory therefore does not provide
+the same discount. Neither the memory direction nor a chosen frame is
+assumed to be the vorticity direction.
+
+### A pointwise bridge to the physical cubic stretching
+
+For EVERY trace-free real 3 by 3 B and EVERY positive semidefinite A
+with |A|_F<=1, put h=(I-A):B B^T and let omega be the curl represented
+by B. Then
+
+```text
+|omega^T B omega|^2 <=75 |B|_F^4 h.                     (MA4)
+```
+
+Here is a direct proof. Choose a top unit eigenvector n of A, only at
+the point being considered. Its second eigenvalue is at most 1/sqrt(2),
+so I-A>=(1/4)(I-n tensor n). Set B_perp=(I-n tensor n)B,
+v=B^T n and a=n.B n. Since tr B=0,
+a=-tr B_perp and a^2<=2|B_perp|^2. Decompose
+
+```text
+N=n tensor (v-a n),  Q=B-N,
+N:Q=0,  |Q|^2=|B_perp|^2+a^2<=12h.
+```
+
+N is an incompressible rank-one shear. If omega_N=curl N and
+rho=curl Q, then N omega_N=0 and omega_N^T N=0. Therefore the ENTIRE
+cubic, not just one parent contribution, satisfies
+
+```text
+omega^T B omega=omega^T Q omega+rho^T N rho,
+|omega^T Q omega|<=2|B|^2 |Q|,
+|rho^T N rho|<=(|N|/2)|rho|^2<=|N||Q|^2
+              <=(|B|^2/2)|Q|.
+```
+
+The factor one half uses orthogonality of the two vectors defining N;
+the last inequality uses N:Q=0. Squaring the resulting
+(5/2)|B|^2|Q| proves (MA4). Only incompressibility is used in this
+algebraic step. The actual NS hypotheses enter in (MA1)--(MA2) and below.
+The same pointwise argument applies even if the memory frame turns or
+the two tensors fail to commute.
+
+Pure incompressible shear has zero cubic stretching. In contrast,
+B equal to a rotation through 120 degrees about the third axis has
+tr B=0, B B^T=I and omega^T B omega=3. This is a matrix calibration,
+not a proposed finite-energy affine NS history. It explains why a
+direction-turning cost alone would miss the isotropic-source sector.
+
+### The stronger time bound would close the existing consumers
+
+Write Z=||B||2^2=||omega||2^2 and D2=||grad B||2^2=||Delta u||2^2.
+Let S be a fixed domain Sobolev constant such that ||B||6^2<=S D2.
+On R3 this is the homogeneous inequality. On T3 it is the vector-valued
+Poincare--Sobolev inequality for B, whose entries have zero spatial mean;
+no zero-mean assertion is made about |B|. Holder and interpolation give
+
+```text
+|g(t)|=|int omega^T B omega|
+ <=sqrt(75) ||B||4^2 sqrt(H_k)
+ <=sqrt(75) S^(3/4) Z^(1/4) D2^(3/4) H_k^(1/2).
+
+Z'+nu D2 <= [151875 S^3/(16nu^3)] H_k^2 Z.             (MA5)
+```
+
+The second line uses the actual unforced balance Z'+2nu D2=2g.
+For a=C Z^(1/4) H_k^(1/2), with C=2sqrt(75)S^(3/4), the maximum
+of a x^3-nu x^4 over x>=0 is 27a^4/(256nu^3); x=D2^(1/4).
+This gives the displayed constant without assuming a bounded future Z.
+
+A sufficient, still-OPEN theorem is the following precise quantifier:
+for each admissible original datum u0, nu>0 and horizon Tstar, choose
+k>0 and a finite K from those original inputs such that
+
+```text
+int_0^T H_k(t)^2 dt <=K(u0,nu,Tstar,k)                 (MA6)
+```
+
+on EVERY available smooth prefix T<=Tstar from that SAME datum, with
+C evolved from the same original zero memory. Gronwall would then give
+
+```text
+Z(t)<=Z(0) exp[151875 S^3 K/(16nu^3)].                 (MA7)
+```
+
+This supplies `WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound`.
+For the unit torus, the Fourier consumer uses (1+|q|)^2 rather than
+the homogeneous gradient weight: every finite-mode order-one sum is
+at most 2E0+Z/(2pi^2), by Parseval and (1+|q|)^2<=2(1+|q|^2).
+It therefore supplies the bound in
+`FourierTameContinuation.exists_tameSolutionOn_of_orderOne`, after
+the existing identification of smooth periodic histories with their
+Fourier evolutions. Remove a conserved periodic mean by the usual
+Galilean change if necessary; all gradients and (MA1) are transported
+with it. S and physical derivative factors use the chosen domain.
+
+(MA2) pays an L1 time norm; (MA6) requires an L2 time norm. That gap
+is not filled by the change of notation or by positivity of the reserve.
+H_k<=Z also shows that this is a sufficient geometric refinement of
+an ordinary gradient criterion, not an unconditional stronger estimate.
+This section does not assert (MA6), its equivalence to (MW9), or global
+regularity. A proof of either sufficient physical estimate remains useful.
+
+### The complete deficit evolution and an actual increasing interval
+
+Let P=Hess p, B_j=partial_j B, C_j=partial_j C and
+G_j=B_j B^T+B B_j^T. The actual differentiated equation and the full
+parabolic chain rule are
+
+```text
+D B=-B^2-P,
+D G=-B G-G B^T-P B^T-B P-2nu sum_j B_j B_j^T,
+
+A'[V]=V/s-C(C:V)/s^3,
+A''[V,V]=-2V(C:V)/s^3-C|V|^2/s^3+3C(C:V)^2/s^5,
+
+D h=(I-A):D G -2nu Hess Phi_k(C)[G,G]
+    +nu sum_j A''[C_j,C_j]:G
+    +2nu sum_j A'[C_j]:G_j.                           (MA8)
+```
+
+Weighted B-gradient diffusion and the source-square Hessian are
+nonpositive contributions. Pressure, strain and the last two spatial
+terms must remain; neither their sum nor H_k' is known to be negative.
+For example the scalar restriction h(c,b)=(1-c/sqrt(1+c^2))b^2 of
+this same joint functional has second directional derivative
+-1792/3125 at (c,b)=(3/4,1) in direction (1,32/25).
+Thus joint convexity cannot simply be invoked to sign its diffusion.
+This local algebraic test does not claim that these jets occur on a
+memory history started at zero. The following distinct example is an
+ACTUAL smooth unforced history.
+
+On the 2pi-periodic torus with normalized volume, use the complete
+Leray-projected datum
+
+```text
+v=Pi[e1(cos(x+y)+cos(x-y+z)+sin(2x+z))],
+||v||2^2=41/60, Z(v)=2, D2(v)=13/2,
+g(v)=13/60, int |(grad v)(grad v)^T|^2=1217/300.        (MA9)
+```
+
+For u0=a v, choose the explicit original k=a^2, equivalently
+k=(60/41)E0 in this normalization. At time zero, A=0 and grad C=0.
+Integrating (MA8), or directly differentiating (MA1), gives
+
+```text
+H_k(0)=2a^2,
+H_k'(0)=2g(u0)-2nu D2(u0)-(2nu/k)int|G0|^2
+       =(13/30)a^3-(3167/150)nu a^2.
+
+a=50nu: H_k'(0)=(4150/3)nu^3>0.                       (MA10)
+```
+
+Smooth local NS existence and the linear memory equation make H_k'
+continuous at zero, so H_k strictly increases on a nonzero actual
+unforced interval for each nu>0. All nonlinear Fourier outputs,
+canonical pressure and viscosity are retained. This is not an exact
+finite-mode solution: only its exact initial tangent is used, together
+with the analytic local existence/continuity argument. The given
+numbers are for the 2pi torus; coordinate rescaling gives other periods.
+
+The refuted assertion is automatic monotonicity of this deficit for
+every prescribed original k, including k=a^2. The example does not
+refute another datum-chosen k, a corrected reserve, or the finite
+full-datum allowance in (MA6). It also does not construct singularity
+or externally sustained forcing. At a history seam inherit the actual
+u,C,k and remaining R_k; (MA2) telescopes, without another initial E0.
+
+Run `python3 -O labs/memory_alignment_stretching.py`. The checker verifies
+the universal shear-splitting polynomial identities, smooth norm
+derivatives, a noncommuting full chain-rule fixture, the complete
+physical G evolution at two positive viscosities, (MA9)--(MA10), and
+the universal Young square certificate for (MA5). The universal matrix
+inequality uses the analytic spectral and Cauchy arguments above;
+checking finite fixtures alone would not prove it. The all-prefix PDE
+identification and conditional continuation remain analytic, not new
+Lean-certified declarations. No new axiom is introduced.

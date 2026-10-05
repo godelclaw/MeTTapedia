@@ -36,6 +36,16 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [memory-alignment stretching bound](labs/README.md#the-stress-memory-deficit-controls-actual-vorticity-stretching)
+connects the actual viscous stress memory to ordinary vorticity stretching.
+A smooth tensor reserve pays the time integral of a nonnegative deficit;
+a bound on the time integral of its square would give the existing
+continuation criteria on both domains. The full deficit evolution retains
+pressure and mixed spatial derivatives. An explicit smooth unforced periodic
+datum makes the deficit initially increase, ruling out automatic monotonicity
+for the stated datum-fixed regularizer. The stronger time estimate remains
+open. The derivation is analytic with exact checks, not a Lean PDE proof.
+
 The [bounded-amplitude memory work estimate](labs/README.md#bounded-amplitude-memory-pressure-fits-the-joint-history-balance)
 uses the stress-memory concentration bound to absorb part of the actual joint
 memory-pressure work. For any original-data amplitude ceiling, this work

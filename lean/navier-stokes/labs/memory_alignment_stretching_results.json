@@ -1,0 +1,46 @@
+{
+  "actual_periodic_datum": {
+    "D0": "13/2",
+    "H_prime_zero": "13*amp**3/30 - 3167*amp**2*nu/150",
+    "Z0": "2",
+    "at_amp_50nu": "4150*nu^3/3 > 0",
+    "energy": "41/60",
+    "g0": "13/60",
+    "integral_G_squared": "1217/300",
+    "prescribed_original_k": "amp^2",
+    "scope": "actual smooth periodic NS initially increases H; no failure of a full-datum integrated allowance"
+  },
+  "certification": "exact algebra; continuum claims analytic, not Lean-certified",
+  "chain_rule": {
+    "noncommuting_chain_value": "-473272923056/8122034375",
+    "retained": [
+      "strain",
+      "pressure Hessian",
+      "weighted gradient diffusion",
+      "source-square Hessian",
+      "memory Hessian gradient term",
+      "mixed source gradient"
+    ]
+  },
+  "continuation": {
+    "OPEN_time_cost": "integral H^2 <= K(u0,nu,horizon,k) on every same-datum prefix",
+    "conditional_gradient_bound": "Z(t)<=Z0*exp(151875*S^3*K/(16*nu^3))",
+    "domains": "R3 and T3; periodic gradients have zero spatial mean",
+    "paid_time_cost": "integral H <= E0/(2*nu)"
+  },
+  "shear_split": {
+    "hypotheses": "trace B=0; A positive semidefinite; Frobenius norm A<=1; h=(I-A):BB^T",
+    "isotropic_source_stretching": "3",
+    "orthogonal_remainder_bound": "|Q|^2<=12*h",
+    "universal_bound": "|omega^T B omega|^2 <= 75*|B|^4*h"
+  },
+  "smooth_norm": {
+    "A": "C/sqrt(k^2+|C|^2)",
+    "Phi": "sqrt(k^2+|C|^2)-k",
+    "initial_reserve": "E0",
+    "local_joint_curvature": "-1792/3125",
+    "paid": "2*nu*integral H + nu*integral HessPhi[grad C,grad C] <= E0",
+    "reserve": "E+integral Phi"
+  },
+  "source_sha256": "a96aa7b448fcc082a663fa2b59b0b4d685de98fa0356b66ebbac3454e96025c5"
+}
