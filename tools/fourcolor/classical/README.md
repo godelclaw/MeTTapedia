@@ -2820,3 +2820,42 @@ The twelve-root audit excludes complete Four Colour endpoints and the
 large repair tables. `strip-diamond-phase-measurements.json` records source
 hashes, replay costs and the unchanged compression counts. No catalogue
 entry or original certificate dependency is removed by this result.
+
+## Triangle support, exact gluing and a repaired obstruction
+
+`StripTriangleConsistency.compose_iff` composes the two D0099 halves on
+their common vertices 2 and 4. For every boundary, a shared pair in both
+interface relations is equivalent to a complete core colouring.
+`source_iff` reconstructs the actual decoded source when its boundary is proper.
+
+The boundary trace `12212233312` distinguishes this joint interface from
+iterated triangle support. Every retained colour has a compatible assignment
+on every incident triangle, and all eight vertex domains remain nonempty.
+Nevertheless the left half permits only the interface pair `(2,1)` while
+the right half permits `(3,1)` or `(3,2)`. Lean proves nonextension and the
+failure of local triangle support as a sufficient gluing condition.
+
+`StripTriangleConsistencyRepair.compatible_changed` supplies the positive
+control: this same boundary has a complete repair in any compatible
+Kempe-closed exterior. A half-block matching law selects one of four
+successful exchanges: `(6,7)`, `(7,8)`, `(8,10)` or `(7,4)`. The reconstructed
+source and exterior colourings agree at every ordered port. The boundary
+trace must change.
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelStripTriangleConsistency
+```
+
+The independent program `audit_strip_triangle_consistency.py` compares
+triangle filtering with direct source colouring on all 7,381 canonical
+proper boundaries. It finds 1,587 direct extensions, 5,793 local rejections
+and this one surviving obstruction. That census is program evidence;
+Lean proves the specific obstruction, the uniform composition theorem and
+its compatible repair. The fifteen-root audit excludes the complete Four
+Colour theorem and the large repair tables. Measurements are recorded in
+`strip-triangle-consistency-measurements.json`.
+
+This adds a precise limitation and a repaired example. Universal D0099
+repair and geometric supply remain open. The coverage and configuration
+certificate counts remain 633 and 629; no compression credit is assigned.

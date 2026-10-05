@@ -6652,5 +6652,24 @@
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0,
     "remaining": "A shared continuation for the remaining four core vertices and geometric coverage."
+  },
+  "strip_triangle_support_obstruction": {
+    "status": "kernel checked exact composition, local-support obstruction and compatible repair",
+    "receipt": "strip-triangle-consistency-measurements.json",
+    "uniform_theorem": "FourColor.StripTriangleConsistency.source_iff",
+    "obstruction": "FourColor.StripTriangleConsistency.local_support_not_sufficient",
+    "repair": "FourColor.StripTriangleConsistencyRepair.compatible_changed",
+    "scope": {
+      "composition": "For every proper D0099 boundary, intersecting the two joint interface relations is equivalent to a complete source colouring with that boundary.",
+      "obstruction": "One proper boundary has nonempty supported domains on all six source core triangles but has no complete extension.",
+      "repair": "For that boundary, every compatible Kempe-closed exterior admits a changed colouring compatible with a complete source colouring."
+    },
+    "explicit_counterexample_boundary_classes": 1,
+    "stored_matchings": 0,
+    "stored_interior_colouring_witnesses": 0,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "remaining": "Generalize compatible repair to a structurally described domain and establish geometric supply. The local-support counterexample rules out a unary interface shortcut."
   }
 }

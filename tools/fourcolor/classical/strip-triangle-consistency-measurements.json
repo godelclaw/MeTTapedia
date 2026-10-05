@@ -1,0 +1,180 @@
+{
+  "status": "kernel checked exact composition, local-support obstruction and compatible repair",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "D0099: Yuta Inoue near-linear catalogue, MIT. Source and Kempe semantics reuse Gonthier/Emery.",
+  "uniform_theorem": "FourColor.StripTriangleConsistency.source_iff",
+  "obstruction": "FourColor.StripTriangleConsistency.local_support_not_sufficient",
+  "positive_control": "FourColor.StripTriangleConsistencyRepair.compatible_changed",
+  "quantifiers": {
+    "composition": "For every proper D0099 boundary, intersecting the two joint interface relations is equivalent to a complete source colouring with that boundary.",
+    "obstruction": "One proper boundary has nonempty supported domains on all six source core triangles but has no complete extension.",
+    "repair": "For that boundary, every compatible Kempe-closed exterior admits a changed colouring compatible with a complete source colouring."
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.StripTriangleConsistency",
+      "source_sha256": "d2f5f3711345a2bbfe19edc798d22f8553d38d1742f2cd3ad986b2cf4f4bfabb",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.256,
+      "olean_bytes": 450256,
+      "olean_sha256": "f2fc00e7ac24b419b854e6b882fa4b3fb7876a2656d3713a3853be845e9e89c1",
+      "source_bytes": 7574
+    },
+    {
+      "module": "MettapediaFourColor.StripTriangleConsistencyRepair",
+      "source_sha256": "58930473539d3cc62f51ccb09ff29352460e6a6871aecda3175e1df9f033b29b",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.432,
+      "olean_bytes": 307448,
+      "olean_sha256": "55a1d38dc303eacc77401d043b3f7ac9631c9c6b92c02920a260bb0c311cc57e",
+      "source_bytes": 4276
+    },
+    {
+      "module": "MettapediaFourColor.StripTriangleConsistencyAudit",
+      "source_sha256": "86751ae6ce767641bebdf2fe6a705cadc8b4714662d98a2ad080d45ae6607ab7",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.92,
+      "olean_bytes": 2608,
+      "olean_sha256": "778c101fe44f836307a977183a4a1e3225b4545395a1ef8d1b3f47ac5b126b42",
+      "source_bytes": 3328
+    }
+  ],
+  "frontend_seconds_with_prebuilt_dependencies": 11.608,
+  "audit": {
+    "roots": 15,
+    "transitive_declarations": 6482,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excludes": [
+      "complete Four Colour endpoints",
+      "original bulk certificates",
+      "WheelRepairData",
+      "ExceptionalRepairData",
+      "ResidualSeedRepairData",
+      "DiamondProfileData"
+    ]
+  },
+  "explicit_counterexample_boundary_classes": 1,
+  "stored_matchings": 0,
+  "stored_interior_colouring_witnesses": 0,
+  "symbolic_repair_exchange_checks": 4,
+  "independent_program_replay": {
+    "status": "independent triangle-support census passed",
+    "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+    "proper_boundary_classes": 7381,
+    "program_only_counts": {
+      "extends": 1587,
+      "rejected_by_triangle_support": 5793,
+      "nonextending_fixed_points": 1
+    },
+    "maximum_filter_sweeps": 6,
+    "kernel_counterexample": {
+      "edgeword": "12212233312",
+      "boundary": [
+        0,
+        1,
+        3,
+        1,
+        0,
+        2,
+        0,
+        3,
+        0,
+        3,
+        2
+      ],
+      "domains": [
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          3
+        ]
+      ]
+    },
+    "left_interface": [
+      [
+        2,
+        1
+      ]
+    ],
+    "right_interface": [
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        2
+      ]
+    ],
+    "positive_control": {
+      "successful_exchanges": [
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          7,
+          4
+        ]
+      ],
+      "noncrossing_matchings": 14,
+      "single_exchange_per_matching": true
+    },
+    "limits": [
+      "The census is not a Lean classification theorem.",
+      "Failure fixes the boundary; Kempe repair is not refuted.",
+      "Compatible full-source repair is proved for this one boundary only.",
+      "No universal source repair, strict reduction or geometric coverage is claimed."
+    ]
+  },
+  "compression_credit": {
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
+  },
+  "limits": [
+    "The full census is program evidence, not a Lean classification theorem.",
+    "A repair for this input does not establish repair for every boundary.",
+    "Geometric supply, a new strict reduction, and compact global coverage remain open."
+  ]
+}

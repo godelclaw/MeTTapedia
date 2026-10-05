@@ -1694,3 +1694,17 @@ target kernelStripDiamondContinuation pkg : Unit := do
         "StripDiamondPhaseGeometry", "StripDiamondPhaseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay exact two-half composition and the triangle-support obstruction. -/
+target kernelStripTriangleConsistency pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-triangle-consistency",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripTriangleConsistency", "StripTriangleConsistencyRepair", "StripTriangleConsistencyAudit"]
+      cwd := pkg.dir
+      env := env }
