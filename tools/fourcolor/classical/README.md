@@ -2859,3 +2859,51 @@ Colour theorem and the large repair tables. Measurements are recorded in
 This adds a precise limitation and a repaired example. Universal D0099
 repair and geometric supply remain open. The coverage and configuration
 certificate counts remain 633 and 629; no compression credit is assigned.
+
+## Protecting one repaired end while repairing the other
+
+`StripProtectedEnds.safe_exists` proves that every proper colourable left
+end triangle has a nonzero palette preserving its colourability under any
+suffix exchange of its five boundary observations. This does not guarantee
+that the palette also satisfies the other end's repair conditions.
+
+`StripProtectedEnds.repair` supplies a shared repair for an alternating
+right-end family when that intersection condition holds. Its boundary
+observations at positions `(9,10,0,1,2,3)` have the form `(x,y,x,y,x,z)`.
+The palette satisfies `f != 0`, `f != x+y`, and either `z=y` or `f=x+z`,
+with `x != y` and `x != z`. A component exchange anchored at edge 9 restores
+the right end for every partner supplied by the exterior matching. The
+safe-palette hypothesis retains left-end colourability.
+
+The two end witnesses reconstruct the actual source with only core
+vertices 2 and 4 omitted. `compatible` aligns every ordered boundary port
+with a colouring of the same exterior; previously chosen interior colours
+may change. `from_reading` supplies exterior closure from an actual D0099
+reading in a connected spherical triangulation. The repair conditions on
+the boundary remain explicit. Two concrete boundary forms consume the
+same theorem.
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelStripProtectedEnds
+```
+
+The thirteen-root dependency audit excludes complete Four Colour endpoints
+and the large repair tables. `strip-protected-ends-measurements.json` records
+17,465 bytes of new Lean source and 25.269 seconds of frontend checking with
+prebuilt dependencies. Small finite palette checks remain; no boundary
+strategy table or interior colouring table is stored.
+
+The independent `audit_strip_protected_ends.py` census finds 176 canonical
+boundary classes satisfying the family and protection conditions. Its
+optional `--phase-game` test finds that all 6,288 left-colourable classes
+can reach the 4,503 both-end-colourable classes while retaining the left
+end, and all 4,503 can reach full extension while retaining both ends.
+Those finite matching games are discovery evidence, not Lean termination
+theorems. Their invariants hold at batch endpoints; they do not provide a
+bound on physical component switches.
+
+The new theorem is a conditional six-vertex restoration. General protected
+preparation, restoration of the two bridge vertices, strict reduction and
+geometric supply remain open. No coverage configuration or original
+certificate dependency is removed; the counts remain 633 and 629.

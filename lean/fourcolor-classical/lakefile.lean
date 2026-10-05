@@ -1708,3 +1708,17 @@ target kernelStripTriangleConsistency pkg : Unit := do
         "StripTriangleConsistency", "StripTriangleConsistencyRepair", "StripTriangleConsistencyAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay palette protection and the alternating end repair. -/
+target kernelStripProtectedEnds pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-protected-ends",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripProtectedEnds",
+        "StripProtectedEndsRepair", "StripProtectedEndsGeometry", "StripProtectedEndsAudit"]
+      cwd := pkg.dir
+      env := env }

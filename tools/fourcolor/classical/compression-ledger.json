@@ -6671,5 +6671,53 @@
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0,
     "remaining": "Generalize compatible repair to a structurally described domain and establish geometric supply. The local-support counterexample rules out a unary interface shortcut."
+  },
+  "strip_protected_ends": {
+    "status": "kernel checked protected end repair with actual-map consumer",
+    "receipt": "strip-protected-ends-measurements.json",
+    "theorem": "FourColor.StripProtectedEnds.repair",
+    "actual_map_consumer": "FourColor.StripProtectedEnds.from_reading",
+    "scope": {
+      "protection": "Every proper colourable five-port left end has a nonzero palette preserving its colourability under every suffix exchange.",
+      "repair": "For every proper D0099 boundary and palette satisfying Family and Safe, every compatible Kempe-closed exterior admits a changed colouring compatible with all six end-triangle vertices.",
+      "geometry": "An actual D0099 reading in a connected spherical triangulation supplies exterior closure. Family and Safe remain explicit hypotheses on its exterior colouring."
+    },
+    "core_vertices_restored": 6,
+    "core_vertices_remaining": 2,
+    "boundary_classes_in_program_census": 176,
+    "new_stored_example_boundaries": 2,
+    "new_stored_matchings": 0,
+    "new_core_colouring_witnesses": 0,
+    "continuation_game": {
+      "status": "program evidence only",
+      "prepare_preserving_left": {
+        "initial": 4503,
+        "layers": [
+          1476,
+          309
+        ],
+        "unresolved": 0
+      },
+      "complete_preserving_both": {
+        "initial": 1587,
+        "layers": [
+          705,
+          552,
+          508,
+          471,
+          305,
+          161,
+          114,
+          89,
+          11
+        ],
+        "unresolved": 0
+      },
+      "scope": "Choose a palette; every noncrossing matching must admit a batch to an earlier layer. The invariant holds at layer endpoints, not necessarily after each component of a batch. No physical switch bound is proved."
+    },
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "remaining": "Broaden the protected preparation and prove a structural continuation for bridge vertices 2 and 4. Safe-palette intersection, termination and geometric supply remain explicit obligations."
   }
 }
