@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint strain-source estimate](labs/README.md#a-joint-strain-source-after-paying-complete-coarse-histories)
+combines directional observations into one positive quadratic stock on
+both R3 and T3. The original energy pays all coarse interactions, including
+the coarse fluid's own nonlinear output, through an exponential reserve.
+The remaining work is one explicit strain contraction; pressure and the
+antisymmetric velocity gradient cancel in that pairing. An exact triad
+still has positive work above its allotted diffusion. Its signed history
+bound remains open, while the conditional continuation implication is
+checked against the existing Lean consumers. The estimates are analytic
+with exact algebraic fixtures, not new Lean certificates.
+
 The [transverse-parent response test](labs/README.md#transverse-parents-create-an-exponential-receiver-response)
 shows why polynomial responses for separate shear families cannot simply
 be combined. Two transverse parents in an exact unforced periodic flow

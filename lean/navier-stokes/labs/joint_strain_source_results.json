@@ -1,0 +1,163 @@
+{
+  "fixtures": [
+    {
+      "label": "adverse triad",
+      "energy": "41/60",
+      "stock": "311/60",
+      "diffusion": "19",
+      "internal_strain_work": "17/12",
+      "parent_self_work": "0",
+      "parent_linear_work": "0",
+      "generated_coarse_modes": 0,
+      "directional_transport_commutator1_commutator2_pressure": [
+        [
+          "19/120",
+          "53/120",
+          "23/60",
+          "-53/60"
+        ],
+        [
+          "-1/120",
+          "-1/24",
+          "1/60",
+          "1/60"
+        ],
+        [
+          "1/15",
+          "2/15",
+          "4/15",
+          "13/15"
+        ]
+      ]
+    },
+    {
+      "label": "opposite triad",
+      "energy": "41/60",
+      "stock": "311/60",
+      "diffusion": "19",
+      "internal_strain_work": "-17/12",
+      "parent_self_work": "0",
+      "parent_linear_work": "0",
+      "generated_coarse_modes": 0,
+      "directional_transport_commutator1_commutator2_pressure": [
+        [
+          "-19/120",
+          "-53/120",
+          "-23/60",
+          "53/60"
+        ],
+        [
+          "1/120",
+          "1/24",
+          "-1/60",
+          "-1/60"
+        ],
+        [
+          "-1/15",
+          "-2/15",
+          "-4/15",
+          "-13/15"
+        ]
+      ]
+    },
+    {
+      "label": "orientation balanced",
+      "energy": "17/10",
+      "stock": "127/10",
+      "diffusion": "45",
+      "internal_strain_work": "0",
+      "parent_self_work": "0",
+      "parent_linear_work": "0",
+      "generated_coarse_modes": 0,
+      "directional_transport_commutator1_commutator2_pressure": [
+        [
+          "0",
+          "3/20",
+          "-3/10",
+          "-39/20"
+        ],
+        [
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "-3/20",
+          "3/10",
+          "39/20"
+        ]
+      ]
+    },
+    {
+      "label": "complete cyclic parents",
+      "energy": "3/2",
+      "stock": "0",
+      "diffusion": "0",
+      "internal_strain_work": "0",
+      "parent_self_work": "0",
+      "parent_linear_work": "0",
+      "generated_coarse_modes": 0
+    },
+    {
+      "label": "parents with high receiver",
+      "energy": "131/60",
+      "stock": "311/60",
+      "diffusion": "19",
+      "internal_strain_work": "17/12",
+      "parent_self_work": "0",
+      "parent_linear_work": "0",
+      "generated_coarse_modes": 4
+    },
+    {
+      "label": "parents with opposite receiver",
+      "energy": "131/60",
+      "stock": "311/60",
+      "diffusion": "19",
+      "internal_strain_work": "-17/12",
+      "parent_self_work": "0",
+      "parent_linear_work": "0",
+      "generated_coarse_modes": 4
+    },
+    {
+      "label": "retained generated modes",
+      "energy": "99/64",
+      "stock": "9/64",
+      "diffusion": "9/32",
+      "internal_strain_work": "0",
+      "parent_self_work": "9/16",
+      "parent_linear_work": "0",
+      "generated_coarse_modes": 6
+    },
+    {
+      "label": "nonzero parent linear work",
+      "energy": "25/12",
+      "stock": "37/12",
+      "diffusion": "17/2",
+      "internal_strain_work": "0",
+      "parent_self_work": "0",
+      "parent_linear_work": "1/4",
+      "generated_coarse_modes": 6
+    }
+  ],
+  "comparison": {
+    "metric": "A=I+Delta+Delta^2",
+    "coarse_derivative_bound": "M=3*sqrt(E0)",
+    "linear_rate": "26*M",
+    "coarse_source_rate": "169*M^2*E0/nu",
+    "reserve": "exp(26*M*(H-t))*Z+C0*(exp(26*M*(H-t))-1)/(26*M)",
+    "OPEN": "2*integral_0^t exp(26*M*(H-s))*(P(v)-nu*D(v)/4) ds <= one finite original-data K",
+    "adverse_threshold": "A>57*nu/17",
+    "adverse_excess_at_A_4nu": "44*nu^3/3"
+  },
+  "scope": "A single pressure-free strain source remains after an original-data exponential reserve pays every coarse contribution on R3 and T3. Its arbitrary-history bound remains open. No continuum or Lean theorem is certified by these finite identities.",
+  "source_sha256": {
+    "joint_strain_source.py": "d8b0f1e3ffd910303da6415bdd0bb74de06f6b2f811f0b9e78fb4accf587074b",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "helical_parent_response.py": "5b87c1740e83508235915c360a25df87450bba761ef8f321128f005a84d7f3d8",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02"
+  }
+}

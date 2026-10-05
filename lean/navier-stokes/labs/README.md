@@ -53990,3 +53990,249 @@ gradient equation, cone margin, volume-adjusted exponent, reference
 derivative constants and reserve algebra. These finite identities do
 not certify the continuum arguments (CP5)--(CP10) in Lean. No Lean
 declarations or axioms change.
+
+
+## A joint strain source after paying complete coarse histories
+
+`joint_strain_source.py` applies the classical differentiated NS energy
+identities to a joint observation of the actual high-frequency fluid.
+This trades the one-axis polynomial response for an original-data
+exponential allowance. In exchange, it replaces the five directional
+source works by one explicit strain contraction, with no norm division
+and no explicit pressure term. The estimate applies on R3 and T3.
+The nonlinear signed history is still an open obligation; this is not
+an a priori arbitrary-data continuation bound.
+
+### Actual low and high fluid, with all feedback retained
+
+Use the Fourier convention with multiplier -|xi|^2 for Delta on R3,
+and normalized means on the period-2pi torus. Remove the conserved
+periodic mean by the original Galilean convention if needed. On any
+available smooth unforced prefix, set
+
+```text
+P_lo=1_{|xi|<=1}, Q=I-P_lo, U=P_lo u, v=Q u,
+N(w)=-Pi[(w.grad)w],
+L_U v=-Pi[(U.grad)v+(v.grad)U],
+U_t=nu Delta U+P_lo[N(U)+L_U v+N(v)],
+v_t=nu Delta v+Q[N(U)+L_U v+N(v)].                  (JS1)
+```
+
+These are the exact equations of the same fluid. In particular U is
+not prescribed, assumed to decay autonomously, or kept on a closed
+finite-mode evolution. The projection is used in L2; no false Lp
+boundedness of a sharp ball multiplier is needed.
+
+Let E0=||u0||2^2 and M=3sqrt(E0). Fourier Cauchy--Schwarz and the actual
+energy inequality give, throughout every such prefix,
+
+```text
+||U||infinity, ||grad U||infinity,F, ||Hess U||infinity,F,
+||Delta U||infinity, ||grad Delta U||infinity,F <=M,
+||U||2, ||grad U||2<=sqrt(E0).                       (JS2)
+```
+
+On the torus there are seven frequencies in the unit ball, and sqrt(7)<3.
+On R3, Plancherel with measure dxi/(2pi)^3 gives constant
+sqrt(volume(B1)/(2pi)^3)<1. Each stated derivative multiplier has tensor
+norm at most one on that ball. The same proof bounds Laplacian derivatives
+directly, without replacing their multiplier by a componentwise sum.
+Thus (JS2) requires no derivative of the unknown parent coefficients.
+
+### A positive joint stock and the exact nonlinear geometry
+
+Write A=I+Delta+Delta^2 and define
+
+```text
+Z(v)=<v,Av>=||v||2^2-||grad v||2^2+||Delta v||2^2,
+D(v)=-<Av,Delta v>
+    =||grad v||2^2-||Delta v||2^2+||grad Delta v||2^2,
+P(v)=<Av,N(v)>.                                      (JS3)
+```
+
+For K=|xi|^2>1 the stock multiplier z(K)=K^2-K+1 obeys
+
+```text
+z>=1, z>=K, 4z>=3K^2, Kz>=z.
+```
+
+The last three differences are respectively (K-1)^2,
+(K-2)^2 and (K-1)z, with the indicated factors. Consequently
+Z>=||grad v||2^2, Z>=||v||2^2, ||Delta v||2^2<=4Z/3 and D>=Z.
+This retains the modes that a single directional Rayleigh metric loses.
+
+Because div(Av)=0, the entire canonical pressure pairing vanishes.
+The transport contribution to kinetic energy also vanishes. Twice
+integrating by parts gives the exact remaining work
+
+```text
+S=(grad v+(grad v)^T)/2,
+T_ij=sum_k (partial_k v_i)(partial_k v_j)
+       -(Delta v_i)(Delta v_j)
+       -2 sum_k (Delta v_k)(partial_ij v_k),
+P(v)=integral S:T.                                   (JS4)
+```
+
+For clarity, the second-derivative energy contributes
+-<Delta v,(Delta v.grad)v>
+-2 sum_k <Delta v,(partial_k v.grad)partial_k v>.
+The subtracted first-derivative energy contributes
++sum_k <partial_k v,(partial_k v.grad)v>.
+The remaining advective terms cancel by incompressibility. The Hessian
+in the second term is symmetric in its spatial indices, so every
+antisymmetric part of grad v cancels. This proves (JS4), without
+discarding pressure from the NS equation or estimating it separately.
+
+T is symmetric; only its trace-free part contributes because tr S=0.
+It is not asserted to be positive or favorably aligned with S. Pressure
+still governs the subsequent evolution of S and T. Differentiating
+(JS4) must retain that pressure again; this cancellation is a statement
+about the complete instantaneous work, not about an autonomous geometry.
+
+### An original-energy allowance pays all the coarse terms
+
+The isotropic operator A commutes with Q and Pi. Orthogonality therefore
+removes Q from its pairing with v, leaving the exact balance
+
+```text
+Z'+2nu D=2<Av,L_U v>+2<Av,N(U)>+2P(v).              (JS5)
+```
+
+Here both coarse terms must be paid. Put E=||v||2^2,
+E1=||grad v||2^2 and E2=||Delta v||2^2. Differentiating the two
+transport products in L_U, canceling the undifferentiated U transport,
+and using (JS2) gives
+
+```text
+|<v,L_Uv>| <=M E,
+|<-Delta v,L_Uv>| <=M[2E1+sqrt(E E1)],
+|<Delta^2 v,L_Uv>|
+ <=M[3E2+3sqrt(E2 E1)+sqrt(E2 E)].
+```
+
+These bounds include Hess U and grad Delta U; neither pressure nor a
+derivative of the changing parent is silently omitted. Young's inequality
+and (JS3) then yield
+
+```text
+|<Av,L_Uv>|<=M(2E+4E1+5E2)<=13M Z.                 (JS6)
+```
+
+The coarse self-interaction N(U) has Fourier support in |xi|<=2.
+On this ball z(|xi|^2)<=13, and the L2 Leray norm is at most one.
+Consequently
+
+```text
+|<Av,N(U)>|<=13||v||2 ||N(U)||2
+           <=13M sqrt(E0 Z),
+2|<Av,N(U)>|<=nu Z+C0, C0=169M^2 E0/nu.
+Z'+nu D<=26M Z+C0+2P(v).                            (JS7)
+```
+
+The last line uses D>=Z to absorb the complete coarse self-interaction.
+In particular its generated high modes have not been declared absent.
+All constants are fixed by the original datum and viscosity.
+
+For the original horizon H define
+
+```text
+c=26M, w_H(t)=exp(c(H-t)),
+Gamma_H(t)=C0 integral_t^H w_H(s) ds,
+R_H(t)=w_H(t)Z(v(t))+Gamma_H(t)>=0.
+R_H'+nu w_H D<=2w_H P.                              (JS8)
+```
+
+For c>0, Gamma_H=C0[exp(c(H-t))-1]/c. If E0=0 the physical flow is
+zero and every source and reserve is zero. Alternatively the integral
+definition has no division by c. The clock derivative pays the linear
+coarse response, and Gamma_H' pays the additive self-interaction cost.
+This is one allowance across the whole history. At a seam retain the
+full fluid, original split, E0, H and accumulated signed work.
+
+### The precise remaining estimate and its continuation consumer
+
+Retain half of the remaining diffusion in (JS8). A sufficient theorem is:
+
+```text
+For every original smooth datum u0, nu>0 and H>0, one finite
+K=K(u0,nu,H)>=0 bounds, on EVERY same-datum smooth prefix,
+
+2 integral_0^t w_H(s)[P(v(s))-(nu/4)D(v(s))] ds <=K,
+                                                0<=t<=H. (JS9)
+```
+
+This is OPEN. It is a signed bound on the tensor contraction in (JS4)
+along the actual evolving fluid, not a definition of K by an uncontrolled
+future supremum. Conditional on (JS9), (JS8) gives
+
+```text
+R_H(t)+(nu/2)integral_0^t w_H D<=R_H(0)+K,
+||grad u(t)||2^2=||grad U(t)||2^2+||grad v(t)||2^2
+               <=E0+R_H(0)+K.                       (JS10)
+```
+
+Together with the full energy bound, this controls the order-one energy
+of every available prefix by one original-data constant. It has the
+quantifiers required by
+`WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound` and
+`FourierTameContinuation.exists_tameSolutionOn_of_orderOne`. For the
+periodic consumer, Parseval bounds every finite frequency sum; take a
+fixed sufficiently high tame Sobolev order for the preceding derivatives,
+and account for the fixed period-2pi/unit-torus conversion. The physical
+identifications are analytic, not a new Lean bridge.
+
+This is an alternative sufficient target to HR13, PD9d and QH14. No
+equivalence of their unpaid sources is asserted. Its advantage for a
+geometry calculation is the single explicit contraction without pressure
+work or denominators. Its drawback is the higher-derivative observation
+and the larger exponential coarse allowance. Neither feature proves
+the missing signed estimate.
+
+For an externally forced momentum equation, (JS5) has the additional
+work 2<Av,Q f_external>, and the original-energy bound used in (JS2)
+also needs its own justification. The coarse estimate alone does not
+exclude a forced construction. Any argument for (JS9) must use the
+actual unforced evolution of its strain and derivative stress.
+
+### Pressure cancellation does not remove genuine positive input
+
+Use the exact HR14 datum
+
+```text
+k=(1,1,0), l=(1,-1,1), n=(2,0,1),
+v0=Pi[e1(cos(k.x)+cos(l.x)+sin(n.x))].
+Z(v0)=311/60, D(v0)=19, P(v0)=17/12.                 (JS11)
+```
+
+Every original mode is above the cutoff. At time zero, the three
+directional Rayleigh works are 1/10,-1/60,4/3. Their pressure parts
+are -53/60,1/60,13/15: these cancel in the sum, while the complete
+sum stays positive at 17/12. Thus pressure was responsible for much
+of the third component's work, but it was not the only obstruction.
+
+For actual initial velocity A v0 and any nu>0,
+
+```text
+P(A v0)-(nu/4)D(A v0)=A^2[(17/12)A-(19/4)nu]>0
+                                      if A>57nu/17.  (JS12)
+```
+
+At A=4nu the excess is exactly44nu^3/3. Smooth local existence and
+continuity preserve a strict positive excess on a short physical
+interval. Thus (JS9) with K=0 fails. A finite full-datum allowance
+remains possible. The full Z derivative itself is positive for
+A>228nu/17. No prolonged cascade or singularity is constructed.
+
+An orientation-balanced datum v0-Rv0, where R exchanges the first
+and third axes and vector components, has Z=127/10, D=45 and P=0
+initially. The cancellation is joint; these values alone do not
+determine later work. All generated pressure and frequency outputs
+are retained in the checks.
+
+Run `python3 -O labs/joint_strain_source.py`. Eight full Fourier fixtures
+verify the metric, exact stress contraction, actual coarse/high split,
+nonzero coarse self-interaction, generated coarse feedback and the
+directional pressure cancellation. The checker also verifies the uniform
+multiplier inequalities and the complete original-clock reserve algebra.
+The energy estimates, interval consequences and continuation transfer
+remain analytic. No Lean declarations or axioms change.
