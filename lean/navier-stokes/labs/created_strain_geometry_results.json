@@ -1,0 +1,47 @@
+{
+  "algebra": {
+    "integrated_correction": "-integral tr(J^2 M+J M^2+M^3/3)",
+    "planar_cubic": "0",
+    "pointwise": "-J:J^2=-4*det(sym J)+tr(J^3)/3",
+    "spectral_remainder_when_lambda2_nonnegative": "4*lambda2^3"
+  },
+  "certification": "exact identities and constants; continuum estimates analytic, not Lean-certified",
+  "constants": {
+    "C_R": "16*A*Mstar**2*S/nu + 7*sqrt(10)*A*Mstar*sqrt(S)/(3*sqrt(delta)*sqrt(nu))",
+    "OPEN": "control the positive middle-strain excess along every actual compatible history",
+    "a_R": "2*sqrt(A)*Mstar*sqrt(S)",
+    "b_R": "7*sqrt(10)*A*Mstar*sqrt(S)/(6*sqrt(delta)*sqrt(nu))",
+    "baseline_lambda2": "1/(2delta)",
+    "conditional": "Y(T)+nu X_J<=C0 exp(4 integral b)",
+    "correction_payment": "2 integral |R_Betchov|<=nu X_J/4+C_R",
+    "critical_excess_threshold": "nu/(16S)"
+  },
+  "cyclic_source": {
+    "Q_F": "0 pointwise",
+    "first_window": {
+      "Q_J": "O(delta^4)",
+      "Q_geometry": "delta^3/64+O(delta^4)",
+      "R_Betchov": "-delta^3/64+O(delta^4)",
+      "middle_strain_at_origin": "delta/4+O(delta^2)"
+    },
+    "integral_det_sym_F": "-1/32",
+    "integral_tr_F3": "-3/8",
+    "not_refuted": "the signed created-strain history allowance or arbitrary-data regularity",
+    "refuted": "applying the integrated zero trace-cube identity to J as if it were a Jacobian",
+    "sym_F_origin_eigenvalues": [
+      "-1",
+      "1/2",
+      "1/2"
+    ]
+  },
+  "evolution": {
+    "D_rho_plus_3rho_over_delta": "2|sigma|^4/3+4|sigma a|^2-4|sigma|^2|a|^2/3-4tr(sigma^2 K)+8nu sum_k tr(sigma (partial_k sigma)^2)",
+    "D_sigma": "-dev(sigma^2+Omega^2)-sigma/delta+K",
+    "K": "-dev(sym(JM+MJ+M^2)+Hess p)+sym(Q_delta-M)/delta",
+    "diffusion_algebraic_signs": [
+      "-6",
+      "2"
+    ]
+  },
+  "source_sha256": "2723d430eaf123beafad99308eff755bc4decdfa5b8580a2b3c29da2e4b7f44b"
+}

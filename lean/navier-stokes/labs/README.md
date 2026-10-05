@@ -57393,3 +57393,239 @@ Young square, physical pressure cancellation and the full material
 gradient source at two positive viscosities, and both exact coefficients
 in (CJ12). The all-prefix estimates, actual local intervals and
 continuation argument remain analytic. No Lean declarations or axioms change.
+
+## Created strain geometry with its full history correction
+
+The created tensor J in (CJ1) is trace-free but need not be a velocity
+gradient. Its cubic energy production nevertheless admits a strain
+representation once a nonzero correction is retained. This section
+pays that correction, derives an actual geometric evolution, and gives
+a sufficient history condition with explicit diffusion and aging costs.
+The propagation of this condition for arbitrary initial data remains open.
+All continuum claims here are analytic, with exact checks in
+`created_strain_geometry.py`; no new Lean PDE theorem is asserted.
+
+This uses the classical Betchov identity already formalized in
+`MettapediaNS.WholeSpaceBetchov` and the established middle-strain
+approach; see [Miller's strain criterion](https://arxiv.org/abs/1710.05569).
+Its novelty is not a new general middle-eigenvalue criterion. The task
+here is accounting for the actual viscous-history subtraction and its
+non-gradient correction. Miller's [strain self-amplification model](https://arxiv.org/abs/1910.05415)
+also supplies a relevant limitation: that model blows up while retaining
+an enstrophy identity and the strain constraint space. An energy identity
+alone cannot justify discarding terms of the full NS evolution.
+
+### The exact geometric split and its paid correction
+
+Keep every definition and original-data constant from (CJ1)--(CJ9), on
+R3 or the periodic domain. Write Sigma=sym J, Omega=skew J. For any
+real trace-free three-by-three J,
+
+```text
+-J:J^2=-4 det Sigma+(1/3)tr(J^3).
+Q_geom=-4 integral det Sigma,
+R_Bet=(1/3)integral tr(J^3),
+Q_J=Q_geom+R_Bet.                                      (CG1)
+```
+
+Indeed, if Omega v=a cross v, then
+`J:J^2=tr(Sigma^3)-a^T Sigma a` and
+`tr(J^3)=tr(Sigma^3)+3a^T Sigma a`, while
+`tr(Sigma^3)=3det Sigma`. These are pointwise identities. For a
+trace-free two-by-two block embedded in three dimensions both the
+cubic self-production and the strain determinant vanish, even when
+the block is neither symmetric nor rank one. This is an algebraic
+calibration, not an assertion of preserved geometry in general 3D.
+
+Betchov applies to the FULL actual gradient B=J+M:
+`integral tr(B^3)=0`. The complete cyclic expansion therefore yields
+
+```text
+R_Bet=-integral tr(J^2 M+J M^2+M^3/3).                 (CG2)
+```
+
+It does not imply R_Bet=0. The same inherited-history bounds that pay
+(CJ8) now give, for every available prefix,
+
+```text
+integral_delta^T |R_Bet|
+ <=M_* sqrt(S A_E)[2sqrt(X_J)+(7/3)sqrt(X_M^*)].        (CG3)
+```
+
+Here S is the fixed Sobolev/Nash constant, not the strain tensor.
+For the first term use
+`integral |J|^2|M|<=M_*||J||3^2`, then interpolation and
+`integral ||J||2^2<=4A_E`. For the second use
+`integral |J||M|^2<=M_*||J||2||M||6` and the paid M diffusion.
+For the last use
+`integral |M|^3<=M_*||M||2||M||6`, with coefficient 1/3.
+The resulting coefficients are 2, 2 and 1/3. No future supremum of J
+or count of overlapping windows enters this payment.
+
+Set
+
+```text
+a_R=2M_*sqrt(S A_E),
+b_R=(7/3)M_*sqrt(S A_E X_M^*),
+C_R=4a_R^2/nu+2b_R,
+C0=I0+B_cross+C_R.
+
+2integral_delta^T |R_Bet| <=(nu/4)X_J+C_R,
+Y(T)+(5nu/4)X_J+(2/delta)integral_delta^T Y
+ <=C0+2integral_delta^T Q_geom.                       (CG4)
+```
+
+The first estimate is the square
+`nu(x-4a_R/nu)^2/4>=0`, with x=sqrt(X_J); the second follows
+from (CJ9) and (CG1). The constants are finite from the original datum,
+viscosity, delta and fixed domain constants. Pressure still affects
+the actual geometry, even though its work in (CJ6) was already paid.
+
+One sufficient OPEN signed geometric budget is
+
+```text
+2integral_delta^T [Q_geom-(nu/2)D_J-Y/delta]<=K_geom,
+Y(T)+(nu/4)X_J<=C0+K_geom.                            (CG5)
+```
+
+K_geom must be finite from the full original datum and prescribed
+horizon, uniformly over every available same-datum smooth prefix.
+The consequence controls `Z(T)<=2(C0+K_geom)+2A_E/delta` and
+`integral L_delta^2<=4A_E(C0+K_geom)`. Thus it gives the existing
+whole-space and periodic continuation consumers, with the normalization
+and early-time conditions of (CJ11). It is a sufficient alternative,
+not an established arbitrary-history bound or a claimed equivalence
+with the other open budgets. Signed determinant cancellations remain
+available in (CG5).
+
+### An explicit geometric regime paid by diffusion and window aging
+
+Let lambda2 be the middle eigenvalue of Sigma, with ascending ordering.
+Trace-free symmetric algebra gives
+
+```text
+-4det Sigma <=2max(lambda2,0)|Sigma|^2.                (CG6)
+```
+
+When lambda2>=0, put the eigenvalues equal to `(-b-c,b,c)` with
+c>=b>=0. The right side minus the left side is exactly `4b^3`.
+When lambda2<0, the determinant is nonnegative, so (CG6) also holds.
+
+For an actual available history, let b(t)>=0 and define its spatial
+excess above the original window threshold by
+
+```text
+r_delta(x,t)=(lambda2(Sigma(x,t))-1/(2delta)-b(t))_+.
+```
+
+Suppose, on every such same-datum prefix, there is such a measurable b
+with a uniform original-data bound Lambda and
+
+```text
+integral_delta^T b(t)dt<=Lambda,
+||r_delta(t)||_(3/2)<=nu/(16S) for almost every t.      (CG7)
+```
+
+This is a hypothesis still to be derived or tested, not a consequence
+of kinetic energy alone. From (CG6), |Sigma|<=|J| and the componentwise
+mean-zero Sobolev inequality on T3 (homogeneous Sobolev on R3),
+
+```text
+2Q_geom <=(2/delta+4b)Y+(nu/4)D_J,
+Y(T)+nu X_J<=C0 exp(4integral_delta^T b)
+            <=C0 exp(4Lambda).                       (CG8)
+```
+
+The baseline coefficient cancels exactly against the aging term in
+(CG4); the spatial excess costs at most
+`4||r_delta||_(3/2)||Sigma||6^2<=nu D_J/4`.
+Integral Gronwall gives the last line, including the integrated
+diffusion. This is a concrete original-data continuation bound IF
+(CG7) is established for arbitrary histories. A finite allowance for
+an integrable temporal excess is retained rather than assumed zero.
+There is no hypothesis that every instantaneous strain be depleting.
+
+The L^(3/2) condition has the gradient-scale critical exponent. Small
+spatial volume by itself does not prove it. Neither this condition nor
+(CG5) is inferred from a selected model, a finite first return, or
+an auxiliary stochastic control unrelated to the fluid.
+
+### What actually changes the created strain geometry
+
+The full equation, with dev A=A-tr(A)I/3, is
+
+```text
+D Sigma=-dev(Sigma^2+Omega^2)-Sigma/delta+K,
+K=-dev(sym(JM+MJ+M^2)+Hess p)
+                         +sym(Q_delta-M)/delta.      (CG9)
+```
+
+It follows from (CJ1), using the physical pressure trace
+`Delta p=-tr(B^2)`. Every existing parent, canonical pressure and
+both moving-window endpoints remain. This is not an autonomous
+restricted-Euler or strain-only model.
+
+For the pointwise signed density rho=-4det Sigma and Omega v=a cross v,
+the exact chain rule is
+
+```text
+D rho+3rho/delta
+ =(2/3)|Sigma|^4+4|Sigma a|^2-(4/3)|Sigma|^2|a|^2
+   -4tr(Sigma^2 K)
+   +8nu sum_j tr(Sigma (partial_j Sigma)^2).           (CG10)
+```
+
+The quartic identity `tr(Sigma^4)=|Sigma|^4/2` holds in dimension
+three for symmetric trace-free Sigma. The last line includes the full
+second derivative of the cubic observation. Its sign is not automatic:
+for Sigma=diag(-2,1,1), trace-free symmetric derivative matrices
+`diag(-2,1,1)` and `diag(0,1,-1)` give respective traces -6 and 2.
+These are algebraic sign checks, not assertions that independently
+prescribed jets are reachable NS states.
+
+In particular the geometry equation contains
+`4tr(Sigma^2 dev(Hess p))`. Payment of the pressure pairing in
+(CJ6) does not bound this differently weighted expression. Establishing
+(CG5) or (CG7) must use the compatible evolution of these terms; it
+cannot delete them on the ground that their earlier energy work was
+paid. No favorable sign for (CG10) is asserted.
+
+### An actual cyclic history needs the non-gradient correction
+
+Take the smooth periodic datum
+`u0=(sin y,sin z,sin x)` from (GH3). Its initial canonical pressure
+is zero. Set F0=-B0^2-Hess p0=-B0^2. Full Fourier calculation gives
+
+```text
+-integral F0:F0^2=0, in fact F0:F0^2=0 pointwise,
+integral tr(F0^3)=-3/8,
+integral det(sym F0)=-1/32.
+```
+
+For each fixed nu>0, choose a sufficiently small original delta
+consistent with (GH7). Actual smooth local evolution and its viscous
+propagator give `J_delta(delta)=delta F0/2+O(delta^2)`, hence
+
+```text
+Q_geom(delta)= delta^3/64+O(delta^4),
+R_Bet(delta)=-delta^3/64+O(delta^4),
+Q_J(delta)=O(delta^4).                               (CG11)
+```
+
+Moreover at the spatial origin `sym F0` has eigenvalues
+`(-1,1/2,1/2)`. Thus `lambda2(Sigma(0,delta))=delta/4+O(delta^2)>0`.
+The created tensor can exhibit expansive middle strain while its
+leading cubic self-production cancels. The nonzero R_Bet persists
+on a nonzero actual interval by continuity. This refutes applying
+zero integrated trace cube to J as if it were a Jacobian. It does
+not refute (CG5), (CG7), or the full original-data allowance, and
+it is not a singularity construction. No sign of the fourth-order
+remainder is inferred from the leading cancellation.
+
+Run `python3 -O labs/created_strain_geometry.py`. It checks the general
+matrix identities, the full strain equation, determinant chain rule,
+absorption constants, and the complete physical cyclic source at
+nu=1 and nu=2/7. All Fourier products keep every generated mode.
+Continuum integration, the actual local interval and continuation
+remain analytic arguments; the fixtures alone do not certify them.
+No Lean declarations or axioms change.

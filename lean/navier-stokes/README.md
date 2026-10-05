@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [created-strain geometry estimate](labs/README.md#created-strain-geometry-with-its-full-history-correction)
+transfers the created-gradient budget to a signed strain determinant,
+paying the non-gradient correction from the inherited-history bounds.
+It identifies a precise geometric regime in which diffusion and window
+aging control every prefix. Propagating that regime for arbitrary data
+remains open. A smooth cyclic NS example shows why the correction must
+be retained: it cancels the apparent geometric production at leading
+order. The complete geometry equation retains pressure, rotation,
+parent interactions and signed spatial-derivative terms. These results
+are analytic with exact checks, not new Lean PDE theorems.
+
 The [created-gradient energy estimate](labs/README.md#the-created-gradient-energy-pays-inherited-parents-and-pressure)
 pays the moving-window terms, mixed-parent interactions and pressure work
 in one actual gradient-history energy balance. Drift-independent viscous
