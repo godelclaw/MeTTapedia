@@ -51138,3 +51138,259 @@ previous exact rational gap (VD9) is reused. The propagator argument,
 physical short intervals and continuation consequences remain analytic.
 No Lean declarations or axioms change. The arbitrary-history estimate
 (SM14), including the fine memory-pressure work, remains the crux.
+
+## The first nonlinear memory-pressure return has both signs
+
+`fine_memory_pressure_return.py` follows the actual memory in (SM1) beyond
+its initial cancellation. On two unbounded families of thin periodic
+parents, at the same fixed cutoff, the first nonzero fine memory-pressure
+work has opposite signs. The enlarged observation initially decreases on
+both families. Positive work therefore needs payment even after that
+successful repair; it does not by itself imply growth of the complete
+observation or defeat the full-datum allowance (SM14).
+
+All velocity and memory jets are those of the actual unforced equations.
+Exact Fourier and trigonometric checks support the analytic limiting and
+short-time arguments below. They are not new Lean certificates.
+
+### The first contribution which can survive the initial symmetry
+
+For this test fix nu=1. Write R(T)=(-Delta)^(-1)partial_i partial_j T_ij,
+so p=R(u tensor u), beta=K_L(u tensor u), and K_L=grad Q_L as before.
+The complete initial NS tangent and first two memory derivatives are
+
+```text
+u_t=u_E+Delta u, u_E=-u.grad u-grad p,
+C0=0, C1=C_t(0)=2G,
+C2=C_tt(0)=-u.grad C1+Delta C1+2G_t,
+(G_t)_ij=sum_k [(partial_k u_t,i)(partial_k u_j)
+                         +(partial_k u_i)(partial_k u_t,j)].    (FR1)
+```
+
+In particular C2 contains the transported old source and newly generated
+parents. It is not obtained by prescribing a second memory tensor.
+Let beta_hat_t=K_L[(u tensor u)_t+C1]. With r=|(u,sqrt(2)beta)| at t=0,
+
+```text
+W_mem(0)=0,
+W_mem'(0)=-3int r u.Delta K_L C1,
+W_mem''(0)=-3int [2(r_t u+r u_t).Delta K_L C1
+                                     +r u.Delta K_L C2],
+r_t=(u.u_t+2beta.beta_hat_t)/r.                     (FR2)
+```
+
+At a zero of r, use the continuous derivative of the map
+z -> |z| z_velocity in the product r_t u+r u_t. That map is C1, including
+at zero. Since K_L C starts at zero, its first-order expansion suffices
+for the second-order expansion of W_mem; no unjustified second derivative
+of |z| at zero is required.
+
+Use the family from (VD1), now retaining its two amplitudes:
+
+```text
+X=nx,
+psi=(A/n)sin(X)sin(y)+(B/(2n))sin(2X)cos(y),
+u_n=(psi_y,-psi_x,0)=(V(X,y)/n,W(X,y),0),
+u0=c u_n, A>B>0.                                   (FR3)
+```
+
+A shift y -> y+pi negates u_n and leaves its pressure and C1 unchanged.
+Thus W_mem'(0)=0 exactly. The viscous part of C2 is even under this shift,
+whereas its Euler part is odd. The terms of W_mem'' involving only viscous
+tangents integrate to zero; all remaining terms use the full Euler tangent
+and the Euler-generated part C2_E. Nonlinearity is essential to this first
+return. This is an initial symmetry, not an invariant restriction imposed
+on subsequent solutions.
+
+### The thin-parent limit retains the fast pressure currents
+
+Angle brackets below average only over X, with normalized measure.
+Let Acal=V partial_X+W partial_y. The full canonical pressure in (VD1) has
+
+```text
+p=p0(y)+n^(-2)p2(X,y)+O(n^(-4)),
+p0=(A^2-B^2)cos(2y)/4,
+p2=A^2 cos(2X)/4+B^2 cos(4X)/16
+                  +(AB/4)sin(2y)[-9cos(X)+cos(3X)/9].          (FR4)
+```
+
+The remainders are uniform with every fixed number of derivatives in
+(X,y). The leading Euler tangent is
+
+```text
+W_E=-Acal W-partial_y p0,
+V_E=-Acal V-partial_X p2,
+partial_X V_E+partial_y W_E=0,
+< W >=< W_E >=0.                                    (FR5)
+```
+
+The checker verifies the horizontal pressure contribution as well as
+incompressibility. The actual tangent is
+(u_E)_x=V_E/n+O(n^(-3)), (u_E)_y=W_E+O(n^(-2)).
+It is not a frozen parent evolution.
+
+To give the limiting currents explicitly, let H invert -partial_X^2
+on nonzero X modes, discarding only the X mean, and put
+
+```text
+Txx=(partial_X V)^2,
+Txy=(partial_X V)(partial_X W),
+Tyy=(partial_X W)^2,
+P1=2H[partial_XX Txx+2partial_Xy Txy+partial_yy Tyy],
+Uxx=-2Acal Txx+4(partial_X V)(partial_X V_E),
+Uxy=-2Acal Txy+2(partial_X V_E)(partial_X W)
+                         +2(partial_X V)(partial_X W_E),
+Uyy=-2Acal Tyy+4(partial_X W)(partial_X W_E),
+P2=H[partial_XX Uxx+2partial_Xy Uxy+partial_yy Uyy].   (FR6)
+```
+
+P1 and P2 are the leading *fast* pressure components R(C1) and R(C2_E).
+They are not all of those pressures. Their slow components can be O(n^2)
+and must be retained until the cancellations below are justified. Define
+
+```text
+J1=< W P1 >, J1E=< W_E P1 >, J2=< W P2 >,
+p_E0=-2< W W_E > with its constant mode removed,
+b=-(A^2-B^2)(1-q^4)sin(2y)/8, q=exp(-L^2),
+b_E=partial_y(-partial_yy)^(-1)(I-exp(L^2 partial_yy))p_E0.
+                                                               (FR7)
+```
+
+Here b and b_E are the slow vertical components of beta and its Euler
+tangent. Their fast remainders are O(n^(-3)). The slow Euler component
+converges to b_E with error O(n^(-2)). All fields have fixed finite support
+in (X,y); the assertions follow from (FR4), the product rules (FR1), and
+1/(n^2 m^2+k^2)=1/(n^2 m^2)+O(n^(-4)) for m nonzero.
+In particular the fast parts of R(C1),R(C2_E) converge to P1,P2 with
+O(n^(-2)) error. The fast heat factors vanish exponentially for fixed L.
+
+There is a concrete way to control the apparently large slow terms in
+(FR2). Choose c=n^3, and define
+
+```text
+rho_n=sqrt(|beta|^2+|u_n|^2/(2c^2)),
+h_n=(beta.beta_E+u_n.u_E/(2c^2))/rho_n,
+b_E,n=(slow part of beta_E)_y.                      (FR8)
+```
+
+Uniformly in (X,y),
+
+```text
+|rho_n-|b||=O(n^(-3)),
+|b| |h_n-sign(b)b_E,n|=O(n^(-3)).                   (FR9)
+```
+
+For the second estimate, normalize the two vectors
+z=(u_n/(sqrt(2)c),beta), z0=(0,b e_y), and pair them with
+v=(u_E/(sqrt(2)c),beta_E), v0=(0,b_E,n e_y).
+Use |z0||z/|z|-z0/|z0||<=2|z-z0|, with the zero cases interpreted
+continuously in the weighted expression. The perturbations of both
+vectors are O(n^(-3)) after removing their slow components. This handles
+the zeros of sin(2y) without assuming a positive lower bound for |b|.
+
+The exact slow part of R(C1) is
+
+```text
+[(A^2-4B^2)n^2-A^2+B^2]cos(2y)/2.                  (FR10)
+```
+
+Consequently (Delta K_L C1)_slow is a constant of size O(n^2) times
+b e_y. The slow part of Delta K_L C2_E is O(n^2) and vertical. Their
+leading pairings in (FR2) vanish by the exact zero X means of u_y and
+(u_E)_y. Estimates (FR9) bound their remaining integrated contributions
+by O(1/n). Thus no large slow parent has been silently discarded.
+
+For the remaining fast terms, horizontal pressure gradients have a
+factor n, canceled by u_x or (u_E)_x. All resulting integrands are bounded
+uniformly. Away from the measure-zero zeros of b, h_n tends to
+sign(b)b_E; dominated convergence applies. Finally,
+<V partial_X P+W partial_y P>=partial_y<WP>, and likewise for V_E,W_E.
+Substitution into the complete (FR2) gives
+
+```text
+lim_(n->infinity) W_mem''(0; n^3 u_n)/(sqrt(2)n^18)
+ =Q_(A,B)(q)
+ =3 average_y [2sign(b)b_E partial_y J1
+                   +2|b|partial_y J1E+|b|partial_y J2].        (FR11)
+```
+
+This is a simultaneous scaling with c=n^3, justified by (FR9), rather
+than an exchange of two unproved limits. Viscosity is positive and fixed;
+the actual full equations supply every derivative in (FR11).
+
+### Two exact signs at the same cutoff
+
+For A=3,B=2, the exact currents are
+
+```text
+p_E0=(27/8)sin(y)-(81/8)sin(3y),
+partial_y J1=-45sin(y)+(243/2)sin(3y),
+partial_y J1E=120cos(2y)+364cos(4y),
+partial_y J2=-(1355/2)cos(2y)+(2465/2)cos(4y),
+Q_(3,2)(q)=(-13851q^9+19605q^4+12393q-18147)/(8pi). (FR12)
+```
+
+The three terms in (FR11) keep separate the change of the observation's
+weight, the change of velocity, and the generated second memory pressure.
+Their signs need not agree. For A=11,B=10 the same computation gives
+
+```text
+Q_(11,10)(q)=
+ [-187770825q^9+85033543q^4+168005475q-65268193]/(24pi).
+                                                               (FR13)
+```
+
+Fix L^2=log(2), so q=1/2, for both families. Exact integration on the four
+half-pi intervals, where sign(sin(2y)) is constant, gives
+
+```text
+Q_(3,2)(1/2)   = -5505147/(4096pi) <0,
+Q_(11,10)(1/2)=4041796445/(4096pi) >0.                (FR14)
+```
+
+For each family, (FR11) and the strict limit imply that all sufficiently
+large finite n have the corresponding sign of W_mem''(0). No explicit
+threshold n is asserted. Local smooth existence for the actual NS data
+and the actual linear memory equation gives
+
+```text
+W_mem(t)=(1/2)W_mem''(0)t^2+o(t^2).                 (FR15)
+```
+
+Hence there are actual positive short intervals with negative memory work
+in the first family and positive work in the second. In both cases the
+same initial parity and source cancellation as (SM15)--(SM16) give
+J_hat'(0)=-D_hat(0)<0. By continuity there is a common short interval in
+each case on which J_hat still decreases. Positive memory work is one
+contribution to the complete balance, not a positive complete balance.
+
+These planar fields are admissible initial data for three-dimensional NS.
+At a fixed positive time where the work has a strict sign, sufficiently
+small genuinely three-dimensional smooth solenoidal perturbations retain
+that sign by local continuous dependence of u and its generated C. Their
+initial parity need not survive. No uniform interval length or arbitrary
+later sign is claimed.
+
+The failed assertion is that W_mem is automatically nonpositive on every
+actual history for this fixed cutoff. A finite allowance from the full
+initial datum, or a more suitable datum-dependent observation, remains
+possible. The depleting family supplies a positive geometric calibration;
+the other family shows why relative parent strengths and changing
+receivers must remain in the history bound. The complete signed source
+W_mem+F_hat-D_hat/2 in (SM14) is still unpaid.
+
+The planar base histories have omega=(0,0,omega_3) and partial_z u=0,
+so their actual vortex stretching is identically zero. The equations and
+local uniqueness preserve that planar symmetry. Positive W_mem is thus a
+contribution of the pressure observation, not positive vortex stretching.
+A successful estimate may exploit its cancellation with other terms in
+the complete balance instead of paying it separately. The perturbation
+argument above transfers the memory-work sign, not a claim about the sign
+of the perturbed vorticity stretching.
+
+Run `python3 -O labs/fine_memory_pressure_return.py`. Six complete Fourier
+jet fixtures retain the transported memory, viscous terms and generated
+Euler parents. The limiting currents, sign integrals and rational values
+(FR14) are checked exactly. The all-n estimates, continuous dependence and
+physical interval conclusions are analytic; no Lean declarations or axioms
+change, and no arbitrary-data continuation claim is made.

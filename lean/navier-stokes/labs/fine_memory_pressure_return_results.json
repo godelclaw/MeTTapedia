@@ -1,0 +1,142 @@
+{
+  "limiting_returns": [
+    {
+      "A": 3,
+      "B": 2,
+      "slow_Euler_pressure": "27*sin(y)/8 - 81*sin(3*y)/8",
+      "slow_beta_Euler": "27*q**9*cos(3*y)/8 - 27*q*cos(y)/8 + 27*cos(y)/8 - 27*cos(3*y)/8",
+      "current_derivatives": [
+        "-45*sin(y) + 243*sin(3*y)/2",
+        "120*cos(2*y) + 364*cos(4*y)",
+        "-1355*cos(2*y)/2 + 2465*cos(4*y)/2"
+      ],
+      "three_integrated_contributions": [
+        "-729*(q - 1)*(19*q**8 + 19*q**7 + 19*q**6 + 19*q**5 + 19*q**4 + 19*q**3 + 19*q**2 + 19*q + 2)/(8*pi)",
+        "910*(q - 1)*(q + 1)*(q**2 + 1)/pi",
+        "12325*(q - 1)*(q + 1)*(q**2 + 1)/(8*pi)"
+      ],
+      "limit": "-13851*q**9/(8*pi) + 19605*q**4/(8*pi) + 12393*q/(8*pi) - 18147/(8*pi)",
+      "at_q_half": "-5505147/(4096*pi)",
+      "sign": "depleting"
+    },
+    {
+      "A": 11,
+      "B": 10,
+      "slow_Euler_pressure": "1815*sin(y)/8 - 5445*sin(3*y)/8",
+      "slow_beta_Euler": "1815*q**9*cos(3*y)/8 - 1815*q*cos(y)/8 + 1815*cos(y)/8 - 1815*cos(3*y)/8",
+      "current_derivatives": [
+        "-3025*sin(y) + 16335*sin(3*y)/2",
+        "121000*cos(2*y)/3 + 1101100*cos(4*y)/9",
+        "-489843*cos(2*y)/2 + 860361*cos(4*y)/2"
+      ],
+      "three_integrated_contributions": [
+        "-3294225*(q - 1)*(19*q**8 + 19*q**7 + 19*q**6 + 19*q**5 + 19*q**4 + 19*q**3 + 19*q**2 + 19*q + 2)/(8*pi)",
+        "3853850*(q - 1)*(q + 1)*(q**2 + 1)/(3*pi)",
+        "18067581*(q - 1)*(q + 1)*(q**2 + 1)/(8*pi)"
+      ],
+      "limit": "-62590275*q**9/(8*pi) + 85033543*q**4/(24*pi) + 56001825*q/(8*pi) - 65268193/(24*pi)",
+      "at_q_half": "4041796445/(4096*pi)",
+      "sign": "positive memory work"
+    }
+  ],
+  "complete_jets": [
+    {
+      "n": 2,
+      "A": 3,
+      "B": 2,
+      "p_C1_modes": 14,
+      "p_C2_Euler_modes": 48,
+      "p_C2_viscous_modes": 14,
+      "n_squared_coefficient_errors": [
+        "136/5",
+        "69/5",
+        "1898/15",
+        "53220721072162021/28586039307150"
+      ],
+      "error_scope": "Exact finite jet comparisons; the all-n asymptotic estimate is derived analytically from the fixed-support Fourier multiplier."
+    },
+    {
+      "n": 7,
+      "A": 3,
+      "B": 2,
+      "p_C1_modes": 14,
+      "p_C2_Euler_modes": 48,
+      "p_C2_viscous_modes": 14,
+      "n_squared_coefficient_errors": [
+        "1182664/23585",
+        "596526/23585",
+        "16252217/70755",
+        "5001492692456165405233060820353/936649955427995881976943000"
+      ],
+      "error_scope": "Exact finite jet comparisons; the all-n asymptotic estimate is derived analytically from the fixed-support Fourier multiplier."
+    },
+    {
+      "n": 16,
+      "A": 3,
+      "B": 2,
+      "p_C1_modes": 14,
+      "p_C2_Euler_modes": 48,
+      "p_C2_viscous_modes": 14,
+      "n_squared_coefficient_errors": [
+        "2002432/37505",
+        "1009536/37505",
+        "27487247/112515",
+        "2032535742462706109002420048951301024/331165976093072535791132448300375"
+      ],
+      "error_scope": "Exact finite jet comparisons; the all-n asymptotic estimate is derived analytically from the fixed-support Fourier multiplier."
+    },
+    {
+      "n": 2,
+      "A": 11,
+      "B": 10,
+      "p_C1_modes": 14,
+      "p_C2_Euler_modes": 48,
+      "p_C2_viscous_modes": 14,
+      "n_squared_coefficient_errors": [
+        "1496/3",
+        "253",
+        "20710/9",
+        "338102491233400519/1905735953810"
+      ],
+      "error_scope": "Exact finite jet comparisons; the all-n asymptotic estimate is derived analytically from the fixed-support Fourier multiplier."
+    },
+    {
+      "n": 7,
+      "A": 11,
+      "B": 10,
+      "p_C1_modes": 14,
+      "p_C2_Euler_modes": 48,
+      "p_C2_viscous_modes": 14,
+      "n_squared_coefficient_errors": [
+        "13009304/14151",
+        "2187262/4717",
+        "177981931/42453",
+        "6353722913764611458606608531967/12488666072373278426359240"
+      ],
+      "error_scope": "Exact finite jet comparisons; the all-n asymptotic estimate is derived analytically from the fixed-support Fourier multiplier."
+    },
+    {
+      "n": 16,
+      "A": 11,
+      "B": 10,
+      "p_C1_modes": 14,
+      "p_C2_Euler_modes": 48,
+      "p_C2_viscous_modes": 14,
+      "n_squared_coefficient_errors": [
+        "22026752/22503",
+        "3701632/7501",
+        "301099549/67509",
+        "12912874388841634077137191903153882592/22077731739538169052742163220025"
+      ],
+      "error_scope": "Exact finite jet comparisons; the all-n asymptotic estimate is derived analytically from the fixed-support Fourier multiplier."
+    }
+  ],
+  "physical_setup": "nu=1, L^2=log(2), u0=n^3 u_n(A,B), C(0)=0; actual unforced NS and its actual stress memory",
+  "jet": "W_mem(0)=W_mem_prime(0)=0; W_mem_second=-3 integral [2(r_prime u+r u_prime).Delta K_L C1+r u.Delta K_L C2]",
+  "limit": "lim_(n->infinity) W_mem_second(0)/(sqrt(2)n^18) is the stated strict-sign coefficient",
+  "physical_consequence": "For sufficiently large finite n, the two families have opposite memory-work signs on actual positive short intervals. Both augmented observations initially decrease.",
+  "planar_limit": "The base histories have zero vortex stretching. Positive W_mem is a pressure-observer contribution, not positive stretching or growth of the full observation.",
+  "OPEN": "Payment of W_mem+F_hat-D_hat/2 over every arbitrary-data history remains open; positive local work does not refute a finite full-datum allowance.",
+  "status": "Exact Fourier and integral checks passed. The asymptotic and actual-history arguments remain analytic, not Lean-certified.",
+  "source_sha256": "79fe7783949e50878099098cbe448b44f0d6bd2b78f22929e4782711f0e48536"
+}
