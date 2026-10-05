@@ -1776,3 +1776,17 @@ target kernelCapRechoice pkg : Unit := do
         "--library-output", ".lake/build/lib/lean", "--modules", "CapRechoice", "CapRechoiceAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay d-calculus boundary observations and their source reconstruction. -/
+target kernelBoundaryDistinction pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/boundary-distinction",
+        "--library-output", ".lake/build/lib/lean", "--modules", "BoundaryDistinction",
+        "BoundaryDistinctionAudit"]
+      cwd := pkg.dir
+      env := env }

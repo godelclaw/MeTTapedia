@@ -6897,5 +6897,45 @@
     "all_cap_choices_have_nonempty_vertex_lists_boundary_classes": 1443,
     "individually_colourable_triangles_with_incompatible_joint_choices_prefixes": 470,
     "compatible_marginals_but_incompatible_joint_choices_prefixes": 15
+  },
+  "boundary_distinction_transport": {
+    "status": "Lean-checked exact observer transport with actual D0099 reconstruction; component selection and coverage remain open.",
+    "upstream_revision": "3b432626d1b8ca6c7f3ec8b9b69b15431023a34b",
+    "upstream_modules": [
+      "Cybernetics.DistinctionCalculus.Basic",
+      "Cybernetics.DistinctionCalculus.PreservationGrade"
+    ],
+    "proof": "BoundaryDistinction",
+    "general_transport": "Mettapedia.Cybernetics.DistinctionCalculus.PartitionedBoundary",
+    "audit": "BoundaryDistinctionAudit",
+    "audited_roots": 13,
+    "audited_declarations": 5569,
+    "new_transport_consumer_audit_bytes": 22092,
+    "total_lean_bytes_including_reused_upstream_core": 35742,
+    "local_frontend_seconds_with_prebuilt_dependencies": 7.713,
+    "checked_claims": [
+      "Any exact predictive refinement of the six evaluated relation snapshot separates the retained counterexample inputs.",
+      "Crisp snapshot-to-next-extension preservation needs defect at least one on the same accepted source update.",
+      "The selected two-cap seam does not determine full source extension.",
+      "Neighbour-colour sets indexed by fixed update regions transform exactly under arbitrary maps constant on each region.",
+      "Coarsening takes unions of retained region sets and commutes with maps uniform on each coarse region.",
+      "A common refinement supports both the retained interval update and the hidden-vertex cap exchange on the actual source.",
+      "The exact transport law composes through every finite history of admitted operations at arbitrary boundary width.",
+      "A completed region-labelled profile means one shared interior colouring and reconstructs the full D0099 source when its boundary is proper."
+    ],
+    "experiment": "../near-linear/boundary-distinction-measurements.json",
+    "proper_boundary_colourings_with_first_port_zero": 44286,
+    "distinct_partitioned_profiles": 39543,
+    "largest_profile_fibre": 3,
+    "distinct_common_refinement_profiles": 44040,
+    "largest_common_refinement_fibre": 2,
+    "naive_boundary_bits_with_first_port_fixed": 20,
+    "naive_partitioned_mask_bits": 64,
+    "naive_common_refinement_mask_bits": 128,
+    "new_colouring_witness_table_bytes": 0,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "scope": "Exact update and reconstruction contract for fixed partitions, including a common refinement for two actual source updates. No universal Kempe selector, interface-width bound, strict ambient reduction or geometric supply. The common refinement retains almost all boundary distinctions in the measured cohort. The census is not credited as a bit or kernel saving."
   }
 }

@@ -1,0 +1,36 @@
+{
+  "evidence": "Finite report census; transport and source reconstruction separately Lean checked.",
+  "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+  "dcalculus_revision": "3b432626d1b8ca6c7f3ec8b9b69b15431023a34b",
+  "proper_boundary_colours_with_first_port_zero": 44286,
+  "partitioned_profiles": 39543,
+  "common_refinement_profiles": 44040,
+  "unpartitioned_profiles": 39543,
+  "largest_partitioned_fibre": 3,
+  "partitioned_fibre_sizes": {
+    "1": 35286,
+    "2": 3771,
+    "3": 486
+  },
+  "common_refinement_fibre_sizes": {
+    "1": 43794,
+    "2": 246
+  },
+  "naive_boundary_colour_bits_with_first_port_fixed": 20,
+  "naive_partitioned_mask_bits": 64,
+  "naive_common_refinement_mask_bits": 128,
+  "evaluated_relation_snapshot_predicts_updated_extension": false,
+  "source_witnesses_reused": true,
+  "new_colouring_witness_table_bytes": 0,
+  "catalogue_entries_removed": 0,
+  "certificate_dependencies_removed": 0,
+  "verifier_sha256": "c7090964614d85e8584116b38055f55b1b889aff6f1835878cfcdd9b7ea53c13",
+  "seconds": 1.1784022130304947,
+  "limits": [
+    "The exact update domain keeps one fixed partition of boundary vertices.",
+    "Kempe repair requires the actual selected component and its admissibility.",
+    "No smaller bit representation, kernel saving, strict reduction or coverage is established.",
+    "The census fixes boundary vertex 0 to colour 0 and retains labelled palette values.",
+    "The two source inputs have their own abstract chromograms; no common physical exterior is constructed."
+  ]
+}

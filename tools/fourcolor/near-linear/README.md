@@ -5803,3 +5803,58 @@ and the bulk repair tables. The proof and audit replay in 13.19 frontend
 seconds with prebuilt dependencies. No catalogue entry, original certificate
 dependency or complete-assembly check is removed. A structural adaptive
 selection law, strict ambient reduction and geometric supply remain open.
+
+## Boundary distinctions and exact update transport
+
+`BoundaryDistinction.lean` applies the distinction calculus to two checked
+D0099 obstructions. The six evaluated elimination relations agree on two
+inputs whose full-extension answers differ after the same allowed boundary
+update. Any report that predicts that next answer must distinguish those
+inputs. With crisp d-calculus observers, their separation forces a defect of
+at least one; no positive preservation grade resolves the lost distinction.
+The selected two-cap seam has a second nonfactorization witness, inherited
+from `CapRechoice` and its actual full-source reconstruction.
+
+The positive transport law is uniform in boundary width. For each interior
+vertex, `PartitionedBoundary.lean` retains the set of neighbour colours in
+each independently updated region. Applying one colour map per region
+transports those sets by image. The observation square closes exactly, and
+the same statement holds for every finite history of these operations.
+Coarsening takes unions of region reports and commutes with an update
+uniform on each coarse region. A common refinement supports both the
+interval update from `StripResponseSummary` and the hidden-vertex exchange
+from `CapRechoice`, together with every admitted composition of them.
+For D0099, completion means one common colouring of all eight interior
+vertices satisfying every internal edge and attachment. A completed profile
+reconstructs the full decoded source whenever the updated boundary is
+proper. Existence of a completed profile is not assumed or guaranteed by
+the transport law.
+
+The `Basic` and `PreservationGrade` modules are exact copies from the
+MIT-licensed [MeTTapedia revision 3b432626d](https://github.com/zariuq/MeTTapedia/tree/3b432626d1b8ca6c7f3ec8b9b69b15431023a34b/lean/mettapedia/Mettapedia/Cybernetics/DistinctionCalculus).
+The exact-square contract uses the existing GSLT `Factors` API, also used by
+that revision's `Scope/UpdateSquares.lean`. The full upstream scope module
+is not imported by this application.
+
+Replay `kernelBoundaryDistinction` after building
+`Mettapedia.Cybernetics.DistinctionCalculus.PartitionedBoundary`. The
+thirteen-root audit visits 5,569 declarations, admits only the standard
+three axioms and excludes the
+complete Four Colour theorem and bulk repair tables. The local consumer and
+audit take 7.713 frontend seconds with prebuilt dependencies; the three new
+proof and audit files contain 22,092 bytes. Including the two reused upstream
+modules, the five Lean files contain 35,742 bytes. There is no new colouring
+table.
+
+The [finite census](boundary-distinction-measurements.json), replayed with
+`python3 tools/fourcolor/near-linear/audit_boundary_distinction.py`, finds
+39,543 two-region profiles among 44,286 proper labelled boundaries with
+vertex 0 fixed to colour 0. Their largest fibre has three inputs. The common
+refinement for both updates has 44,040 profiles, with fibres of at most two
+inputs: supporting the second operation retains almost all boundary
+distinctions in this cohort. The naive representations use 64 and 128 mask
+bits, respectively, versus 20 original colour bits. The census establishes
+no bit or runtime saving. Exact transport applies to the stated fixed
+partitions; arbitrary Kempe selections require their own region and
+compatibility theorem. No catalogue entry, original certificate, strict
+reduction or coverage obligation is removed.
