@@ -1,7 +1,8 @@
 # Ben Goertzel proof-attempt formalization index
 
-Four Colour entry updated: 2026-09-28. Other entries retain their own earlier
-status and are not reassessed by this update.
+Four Colour entry updated: 2026-09-28. Navier–Stokes entry updated: 2026-10-05.
+Other entries retain their own earlier status and are not reassessed by these
+updates.
 
 For the current Four Colour work, start with the
 [compositional proof-plan guide](fourcolor-compositional/README.md).
@@ -27,7 +28,7 @@ stored in structure fields or passed as named premises.
 |---|---|---|---|
 | Four Colour, compositional programme | Open pieces, compatible colouring histories, boundary counting and strict reconstruction; originally a corridor/finite-base proposal | Complete classical reconstruction checked for finite noncrossing plane drawings and exact source GSLT constructions. All 633 configurations remain; 231 independent discharging checks are replaced. The original uniform corridor supply and first configuration-family compression remain separate research questions. | [current proof plan](fourcolor-compositional/README.md), [companion source](goertzel_4cp.tex), [historical PDF](goertzel_4cp.pdf) |
 | P versus NP, v13 | An upper–lower clash in polytime-capped conditional description length on a gauge-buffered locked SAT ensemble; CD evidence normalization, an Atomic Evidence Budget, boundary mixing, and fixed-clock incompressibility oppose the self-reduction upper bound under `P = NP` | The adaptive gauge-product law and substantial mechanical scaffolding are checked. The exact faithful M4 target is nevertheless machine-checked uninhabited: D.8 message rigidity, D.31 public-syntax neutrality, D.48 opposite-phase coupling, Definition 7.4 support-wide pair neutrality, and full public observability are jointly inconsistent on a nonempty target. The route requires revision; no separation is proved. | [source](goertzel_pnp.tex), [PDF](goertzel_pnp.pdf) |
-| Navier–Stokes, v7 | Lift Navier–Stokes to heat flow on `SDiff(T³)`, apply a Cole–Hopf transform, push the gradient down at the identity, and control Beale–Kato–Majda through identity carré-du-champ energy | The original local adjoint hypothesis H1 is refuted in a normalized Fourier shear model. A stochastic-Lagrangian repair has a checked conditional BKM skeleton, but its pancake closure requires the still-open pointwise scale-local strain budget `ScaleLocalPancakeStrainBudget`. | [source](goertzel_ns.tex), [PDF](goertzel_ns.pdf) |
+| Navier–Stokes, SG–Cole–Hopf and stochastic-geometric repair | Stochastic viscosity, geometric depletion and control of complete histories; originally a heat lift to `SDiff(T³)` with an identity-energy bound | The H1 adjoint bound fails in the audited shear model. Actual local evolution and conditional continuation are checked on both domains. Compatible whole-space histories and distinction observers are Lean-certified. Analytic coupled-parent calculations pay the leading return and show a depleting next correction; the full arbitrary-data history payment remains open. | [current overview](goertzel_ns.pdf), [source](goertzel_ns.tex) |
 | Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | The natural finite Wilson-polynomial extraction has norm one, but v14's range-only `P_ext` data cannot transfer that bound. The advertised recursion constant is not derived; its two ledgers disagree and several factor inferences fail as written. OUR hypercubic boundary-cochain repair continues the same Wilson/RG/KP/OS proof programme and defines the coordinate-free joint invariant relation space. Its covariant-commutator rows needed the Leibniz rule: the earlier joint space contains a vector with nonzero background value, while every corrected relation vanishes on every gauge background and the corrected space has certified rank at least `11558`. It is not yet a complete census, conditioning certificate, RG bound, or continuum construction. Numerical evidence indicates that the stopping-scale step cannot be instantiated in the weak-coupling regime the bootstrap provides; on the hierarchical lattice, where the flow is exact, four-dimensional U(1) confines as well, so that lattice cannot model the missing crossing. The missing crossing input is stated in Lean, proved sufficient for exponential clustering uniformly in the volume, and shown to fail at β = ∞ for four-dimensional U(1) and five-dimensional gauge fields; proving it for four-dimensional SU(2) is open; at strong coupling it is proved for Wilson-type measures uniformly in the volume. A necessary condition testable at finite coupling is proved: a twist-compatible crossing family has vanishing twist free energy on large tori. Monte Carlo finds it vanishing for four-dimensional SU(2) and not for four-dimensional U(1) or five-dimensional SU(2), where the centre twist is classically costly (U(1)) or weak coupling persists (SU(2), whose twist eaters make it classically free). | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
 
 ## Four-Color route
@@ -83,20 +84,37 @@ at least one manuscript role.
 
 ## Navier–Stokes route
 
-V7 proposes a lift–linearize–push-down pipeline. A positive heat datum on the
-volume-preserving diffeomorphism group evolves under a sum-of-squares generator;
-the logarithmic Cole–Hopf transform gives a group-level HJB potential; its frame
-gradient is evaluated at the identity to produce a divergence-free velocity;
-and a uniform identity-energy estimate is intended to close the
-Beale–Kato–Majda vorticity criterion.
+The [current overview](goertzel_ns.pdf) opens with the stochastic-geometric
+mechanism, the exact signed-renewal continuation target, actual compatible
+histories and the remaining physical estimate. The detailed earlier SG audit
+and microlocal derivations are retained as appendices.
 
-The formal countermodel shows that v7's local `H^m → H^m` adjoint bound H1
-loses control even inside every positive chart radius. The repair lane instead
-uses cotangent/stochastic-Lagrangian transport and a microlocal
-vorticity-stretching analysis. Its algebra, conditional pushdown, frozen-strain
-obstruction, and plane-wave null-structure canaries are checked. The remaining
-pin is not merely “regularity is hard”: it is the self-consistent pointwise
-scale-local inequality represented by `ScaleLocalPancakeStrainBudget`.
+V7 proposes a lift–linearize–push-down pipeline: heat on the volume-preserving
+diffeomorphism group, a logarithmic Cole–Hopf/HJB potential, a frame-gradient
+pushdown and identity-energy control of vorticity. Its local adjoint H1 bound
+fails in the audited Fourier shear model. The repaired route retains stochastic
+Lagrangian transport, geometric feedback and history control without relying
+on that bound. Actual local solutions, pressure, uniqueness and conditional
+continuation are now available separately on the torus and whole space.
+
+The recent coupled-parent benchmark retains every generated output and the
+canonical pressure. Its original heat source has zero self-nonlinearity, yet
+actual parent interactions generate positive stretching. The complete leading
+return has a finite original-data payment; the next amplitude correction is
+strictly depleting in every parent channel. An actual-flow comparison follows
+in a precisely stated small-amplitude finite-interval regime. These physical
+results are analytic with exact arithmetic checks, not newly Lean-certified
+PDE estimates.
+
+The distinction application connects a datum-fixed margin below observer
+saturation to whole-space continuation. It also certifies an algebraic
+obstruction to exact prediction from an energy/source summary. The physical
+identification shows why directional parent information matters. A summary
+preserving a valid upper cost bound can still suffice. The complete evolving
+higher return, concentration and arbitrary-data history payment remain open.
+Detailed derivations and checks are in the
+[NS integration guide](../../lean/navier-stokes/README.md) and
+[lab catalogue](../../lean/navier-stokes/labs/README.md).
 
 ## Yang–Mills route
 

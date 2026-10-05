@@ -14,6 +14,14 @@ imported by the Navier–Stokes semigroup module, and the GSLT linear boundary
 reduction and compatibility theorems in `Mettapedia.GSLT.Dynamics`. Its costed
 history interface uses the existing `GSLT.Core.LooseRelationEquipment`.
 
+The [stochastic-geometry overview](../../papers/benxiv/goertzel_ns.pdf)
+([source](../../papers/benxiv/goertzel_ns.tex)) gives the current mathematical
+trajectory: actual compatible histories, signed continuation contracts,
+original-parent payment, the coupled depleting correction and the open
+arbitrary-data history estimate. Its appendices retain the earlier SG and
+microlocal derivations. Detailed derivations and exact checks remain in the
+[lab catalogue](labs/README.md).
+
 ## Pinned dependencies
 
 - OpenAI/NavierStokesAndEuler:

@@ -1,12 +1,13 @@
 \documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{booktabs}
+\usepackage{array}
+\usepackage{xurl}
 \usepackage{hyperref}
 \usepackage{listings}
 \geometry{margin=1in}
@@ -19,6 +20,7 @@
   showstringspaces=false,
   frame=single,
   framesep=4pt,
+  escapeinside={(*@}{@*)},
   xleftmargin=2pt,
   aboveskip=8pt,
   belowskip=8pt,
@@ -43,172 +45,440 @@
 \newcommand{\CAd}{C_{\mathrm{Ad}}}
 \newcommand{\Cphi}{C_\varphi}
 
-\title{Machine-Checked Status of the SG--Cole--Hopf Route to\\
-3D Navier--Stokes Global Regularity:\\
-H1 Obstruction, Stochastic-Lagrangian Repair, and Pancake Closure}
+\title{Stochastic Geometry and Compatible Histories in\\
+Three-Dimensional Navier--Stokes:\\
+Formal Results, Analytic Mechanisms and the Open Budget}
 \author{The MeTTapedia formalization effort}
-\date{September 2026}
+\date{October 5, 2026}
 
 \begin{document}
 \maketitle
 \sloppy
 
 \begin{abstract}
-Ben Goertzel's manuscript \emph{Global Regularity of 3D Navier--Stokes via
-SG--Cole--Hopf Program} (v7) reduces global regularity of the 3D incompressible
-Navier--Stokes equation on $\mathbb{T}^3$ to a uniform-in-time identity-energy
-bound on the volume-preserving diffeomorphism group
-$\SG=\SDiff(\mathbb{T}^3)$.  The June 2026 MeTTapedia formalization found that
-the route's original local adjoint hypothesis (H1) is false in a normalized
-Fourier-mode shear model: inside every positive $\Hm$ chart radius there are
-area-preserving shears of fixed $\Hm$ displacement size whose adjoint
-$\Hm\to\Hm$ ratio is $\sqrt{1+(\varepsilon k)^2}$ and therefore unbounded.
-That refutation remains intact.
+Ben Goertzel's Navier--Stokes programme connects stochastic viscosity,
+geometric depletion of vorticity stretching, and control of complete
+histories. This note records the current mathematical implementation of that
+programme. The original SG--Cole--Hopf adjoint hypothesis fails in the audited
+Fourier shear model. The repaired approach retains stochastic-Lagrangian
+transport and geometric feedback, while making the remaining payment estimate
+an obligation about actual unforced solutions.
 
-This September revision records the follow-up repair campaign in full.  The
-corrected route does not rely on the false $\Hm\to\Hm$ adjoint bound; it
-replaces it with a stochastic-Lagrangian/cotangent transport skeleton and a
-microlocal vorticity-stretching gate.  The machine-checked surface now
-comprises: the evasion contrast showing the H1-breaking shear family leaves
-pointwise Jacobians untouched; the one-form transport calculus with the exact
-frame-Laplacian identity; the divergence-free non-exact witness that forces
-the gauge; the stochastic-Lagrangian pushdown deriving Navier--Stokes with a
-fully explicit pressure; the conditional BKM chain with its gate consumers;
-nonzero exact inhabitants and end-to-end canaries; the frozen-strain pancake
-obstruction with its exact peak-amplification law; the plane-wave
-Biot--Savart null structure claimed in the pancake-closure proposal; and the
-dyadic absorption step that would turn the pancake-sector estimate into a
-common BKM envelope.  The September field-transfer work additionally constructs
-the coherent/misaligned projection for arbitrary complex periodic Fourier
-coefficients, transfers the coherent stretching estimate to those coefficients,
-proves the exact square-dyadic cone lattice count, and verifies the anisotropic
-$L^1$ kernel mechanism that preserves the receiver's $L^\infty$ norm.  It also
-proves the estimate at continuous real frequencies and for arbitrary projected
-amplitudes, constructs the exact periodic operator-kernel realization on finite
-Fourier fields, transports the cancellation to every frozen oriented strain
-frame, and now transports the full square-dyadic periodized kernel and its
-cardinality-free $C/N$ endpoint uniformly to those frames.  Complexifying the
-frame and conjugating both inputs and the output gives a physical-frame bound;
-uniformity then permits an arbitrary frame choice at each output point without
-a frame-derivative loss at this $L^\infty$ kernel endpoint.  A separate exact
-variable/frozen split and a spectral-gap perturbation theorem remain available
-for formulations that differentiate the symbol.  The physical finite-sector
-stretching sum is now proved to equal this coherent annular kernel action plus
-the exact three-term misalignment remainder, both in an arbitrary frozen frame
-and in the full pointwise frame constructed from the strain.  This frame maps
-the most expanding eigenvector to the coherent reference $e_x$ and the most
-compressive eigenvector to the axial reference $e_z$.  Hence the
-coherent term has a cardinality-free $C/N$ bound without an abstract split
-hypothesis.  A further checked projection argument bounds the exact complex
-Fourier misalignment coefficient by its energy transverse to the expanding
-line.  This estimate sums over the genuine finite pancake sector without a
-mode-count loss, and finite Parseval identifies the right-hand side with a
-physical-space $L^2$ transverse-energy integral for a frozen full strain
-frame.  A sign-invariant line-projector perturbation theorem further controls
-freezing error by $4\varepsilon/\mathrm{gap}$ times the full $L^2$ energy,
-with an explicit small frozen-top-gap alternative.  On the separated branch,
-a homogeneous spectral-gap estimate now converts the frozen transverse
-energy into the integrated top Rayleigh defect, without normalizing vorticity
-at its zeros.  Finite aggregation of the coercive cells and generic
-hard-set/smooth-weight bounded-overlap integral estimates are also checked.
-The concrete cover now permits a different frozen strain on each of its 125
-cells: on the separated branch the complete arbitrary-data misalignment
-energy is bounded by the sum of localized frozen Rayleigh defects plus one
-fixed-cover projector-oscillation error.  The sign-invariant expanding-line
-projector is quantitatively locally Lipschitz wherever the top eigenvalue is
-simple, so a continuous strain field gives a continuous, measurable
-transverse-energy density on every separated-gap region without choosing an
-eigenvector sign.
-The top-gap collision band is further resolved by the stable complementary
-cluster: if the bottom gap remains open, the expanding two-plane projector is
-locally Lipschitz and measurable; if both adjacent gaps are small, trace-free
-strain forces the whole spectrum to be small and yields a direct small-rate
-stretching bound.  On the stable-plane branch, the sign-invariant energy in
-the contracting line now satisfies an exact direction-evolution law and a
-bottom-gap-weighted residence inequality.  Its only undischarged forcing
-channels are the non-strain direction forcing and motion of the contracting
-line.
-The direction evolution has now also been attached to the exact hard
-square-dyadic pancake block.  Coefficientwise time differentiability gives the
-termwise derivative of its finite Fourier reconstruction, coordinatewise real
-part is realized as a continuous real-linear map, and a nonzero factorization
-of that same block obeys the exact strain-plus-residual direction law.  The
-residual is displayed explicitly as the reconstructed block derivative minus
-pure strain stretching; transport, viscosity, interscale transfer, and
-localization commutators must be controlled there.  This removes the invalid
-shortcut of using coherence of the total vorticity direction as if it
-automatically controlled the projected block.
-The pair-indexed phase-suppressed Biot--Savart stretching polynomial is now
-also collected over equal output frequencies into a canonical coefficient
-field.  A subsequent unit-torus normalization restores the Fourier phases:
-curl inversion contributes $-(2\pi i)^{-1}$ and differentiation contributes
-$2\pi i$, so the physical strain--vorticity coefficient is the \emph{negative}
-of the phase-suppressed symbol.  This sign identity, the right-hand-side
-transport coefficient, viscosity, and the resulting finite vorticity RHS are
-all checked before they enter the two-channel block residual.
-Finally, the hard shell-and-cone selector is proved invariant under
-$k\mapsto-k$.  Hence physical conjugate symmetry
-$\widehat\omega(-k)=\overline{\widehat\omega(k)}$ makes the selected complex
-reconstruction exactly real-valued.  The real block in the direction law is
-therefore the actual physical pancake block, not a lossy projection.  The
-unit-torus Biot--Savart, strain, transport, and viscous symbols are furthermore
-proved to preserve conjugate symmetry, and a finite-pair reindexing theorem
-shows that the complete finite vorticity RHS preserves the real Fourier
-subspace.
-The frequency-support part of the analytic localization bridge is now closed:
-for fixed normalized cutoff margins, a four-chart multiplier is constructed
-which is exactly coherent on every leaked output mode and has a uniform
-inverse-kernel $L^1$ bound.  For finite-band cutoffs this multiplier is now
-transferred through square-dyadic scaling, rotation, periodization, and
-physical frames, and applied exactly to the localized products.  The concrete
-localization layer is now closed as well: a compactly supported smooth bump is
-periodized, its Fourier coefficients are proved absolutely summable, its 125
-translated three-torus cells admit one common finite approximation, and the
-actual smooth-cell interaction differs from the coherent finite convolution
-by an explicit $O(\varepsilon/N)$ error.  Complete ordinary dyadic shells are
-also constructed for arbitrary Fourier data, split exactly into pancake and
-nonpancake shares, and reconciled with the square-dyadic multiplier scales.
-For componentwise $L^2$ fields their shell energies form a summable series;
-the zero-mode energy plus that series is exactly the physical $L^2$ energy.
-At the finite dynamical level, the physical velocity equation now supplies
-the exact kinetic-energy identity and the vorticity equation used by the
-misalignment estimates.  Exchange symmetry makes every interaction with at
-least one fixed-cutoff low input affordable from that energy identity.
-The resulting integrated estimate retains the signed high-high remainder;
-it does not assume separate energy, enstrophy, or time-integrability budgets.
-Existence and invariant-subspace preservation of the coefficient paths are
-not supplied by this a priori bridge.
-The moving-localization energy is now formulated with the positive
-noncommuting sandwich $C^*PC$, with transport and diffusion domains explicit.
-Its material directional rate $F=\dot P+[B,P]$ is proved off-diagonal:
-the quadratic transfer pairs the coherent and misaligned amplitudes.
-The exact identities are specialized to the physical finite Fourier
-operators, but do not bound $F$ for the actual strain-eigenframe path.
-An intrinsic weighted alternative now has a checked evolution identity:
-the lost-stretching energy $\lambda_{\max}\|w\|^2-\langle w,Sw\rangle$
-has negative squared-residual damping plus explicit anisotropic forcing.
-The largest eigenvalue is constructed from the strain; absolute continuity
-permits integration through spectral collisions without an inverse-gap
-constant.  This does not bound the forcing integral or convert weighted
-defect control into the unweighted multiscale misalignment budget.
-The remaining smooth projector collar, space--time treatment of the small-gap
-branch, and conversion from this $L^2$/defect control to the scale-local
-endpoint budget remain open.  The
-latest audit also isolates why the proposed pancake closure does
-not yet prove the Millennium statement: its high-low split covers all aperture
-angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
-the quantitative budget it set out to prove.  The surviving open input is the
-leading route-specific pointwise-in-time Lean predicate
-\texttt{ScaleLocalPancakeStrainBudget}, a sharpened version of the earlier
-\texttt{StochasticStretchingEstimate}.  Identification of the new hard
-dyadic blocks with the route's dynamical misalignment functional, the stated
-non-pancake sector estimates, the smooth projector passage, and the final BKM
-continuation plumbing are additional explicit obligations.  Thus the status
-is neither a completed
-Navier--Stokes proof nor a vague ``hard analytic gap'': it is a conditional
-route with a named, scale-local, machine-audited leading analytic pin and a
-finite list of surrounding formalization obligations.
+Local solutions, uniqueness, pressure reconstruction and conditional
+continuation are checked in Lean in the stated periodic and whole-space
+classes. Compatible whole-space solution segments have additive signed costs;
+one nonnegative reserve would bound all their continuations. Analytic
+calculations provide finite payments for original heat parents and several
+controlled interaction classes. A coupled periodic family generates positive
+self-stretching, has a paid leading return, and has a strictly depleting next
+amplitude coefficient. Its complete higher return remains uncontrolled.
+Distinction observers connect a uniform margin below saturation to
+continuation, and expose directional information lost by coarse summaries.
+The arbitrary-data finite-horizon history estimate remains open. Earlier
+formal derivations are retained as appendices, with their original hypotheses
+and model boundaries.
 \end{abstract}
+
+\setcounter{tocdepth}{1}
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{The mechanism and the present mathematical target}
+\label{sec:current-route}
+
+Consider unforced incompressible Navier--Stokes,
+\[
+ \partial_t u+(u\cdot\nabla)u+\nabla p=\nu\Delta u,
+ \qquad \nabla\cdot u=0,\qquad \nu>0,
+\]
+with admissible smooth initial velocity $u_0$. The intended conclusion is
+global regularity in both the periodic and whole-space settings. The exact
+datum classes and the maps to the official statements are specified in
+\texttt{FourierOfficialTheorems} and
+\texttt{MettapediaNS.WholeSpaceOfficialStatement}. A periodic construction
+does not, by itself, establish a whole-space assertion.
+
+The mechanism is a question about renewed geometry. A thin or coherent
+configuration may stretch, rotate and transfer energy. What needs a bound is
+the accumulated effect when the surrounding fluid repeatedly recreates that
+configuration. Stochastic transport describes viscosity without deleting the
+deformation; a geometric estimate measures the dangerous stretching; a
+history reserve must pay for its renewal from the full original datum.
+\[
+ \text{original fluid}
+ \longrightarrow \text{compatible evolving geometry}
+ \longrightarrow \text{signed history payment}
+ \longrightarrow \text{continuation}.
+\]
+The last implication is available. The uniform physical payment is the open
+step. A formal ledger, an initial-time sign, or a bounded comparison score
+alone does not supply it.
+
+\subsection{A sufficient estimate with the quantifiers visible}
+
+Write $\omega=\nabla\times u$ and
+\[
+ E_1(t)=\|\nabla u(t)\|_2^2,\qquad
+ E_2(t)=\|\nabla\omega(t)\|_2^2,\qquad
+ g(t)=\int\omega(t)^\mathsf T\nabla u(t)\omega(t).
+\]
+For smooth solenoidal whole-space fields, these are the order-one and
+order-two energies and the physical stretching mass in the formal
+development. We also write $g(v)$ for the same spatial cubic contraction
+applied to a solenoidal field $v$. The exact balance is
+\[
+ E_1(t)+2\nu\int_0^t E_2(s)\,ds
+ =E_1(0)+2\int_0^t g(s)\,ds.
+\]
+One sufficient target is
+\begin{equation}\label{eq:current-renewal}
+ 2\int_0^t [g(s)-g(0)]\,ds
+ \le \nu\int_0^t E_2(s)\,ds+K(u_0,\nu,H).
+\end{equation}
+The requirement is
+\[
+ \forall u_0,\nu>0,H>0\quad
+ \exists K<\infty\quad
+ \forall\text{ available smooth prefixes from }u_0,
+ \quad 0\le t\le T\le H.
+\]
+The allowance must be controlled from the original datum, viscosity and
+prescribed horizon before the prefixes are considered. It cannot assume a
+bound on their unknown future. Under this condition the energy balance gives
+\[
+ E_1(t)\le E_1(0)+2|g(0)|H+K.
+\]
+The whole-space implication is Lean-certified in
+\path{JointCubicRenewal.hasNSEvolution_of_signed_renewal}.
+The periodic development separately has order-one and vorticity-integral
+continuation theorems. The estimate in
+\eqref{eq:current-renewal} is not proved for arbitrary data.
+
+\section{Actual histories, stochastic transport and boundary summaries}
+\label{sec:current-histories}
+
+\subsection{Composition keeps the fluid that pays}
+
+\texttt{WholeSpaceHistoryBridge} uses actual unforced solution segments.
+Their endpoints contain the full velocity, and their clocks stay inside one
+prescribed horizon. At order $n$, the signed cost is the integrated physical
+energy production, proved equal to
+\[
+ \operatorname{cost}(u_s\leadsto u_t)=E_n(u_t)-E_n(u_s).
+\]
+Segments with the same complete seam velocity concatenate into an actual
+solution. Their costs add. A nonnegative reserve satisfying
+\[
+ \operatorname{cost}(\gamma)+R(t,u_t)\le R(s,u_s)
+\]
+would therefore give $E_n(u_t)\le E_n(u_0)+R(0,u_0)$ for every prefix.
+Intermediate reserves cancel; a newly generated parent receives no fresh
+initial allowance. These implications and the actual segment composition
+are Lean-certified. Constructing a reserve for order one is still open.
+
+An eliminated region or set of modes may look like a force on the observed
+component. Its boundary history must nevertheless be generated by the
+remaining fluid's own equation. GSLT and Kron-style reduction are useful when
+they preserve compatible boundary histories and reconstruct their genuine
+interiors. Matching a pattern label or scalar energy is insufficient to
+justify physical composition.
+
+\subsection{The stochastic and control roles}
+
+The Constantin--Iyer repair transports momentum one-forms through a noisy,
+volume-preserving flow and recovers velocity by averaging and projection.
+The covector pushdown has a checked conditional NS equation with an explicit
+pressure. The periodic lane also constructs actual solution trajectories,
+inverse maps, Jacobians and measure preservation path by path for continuous
+additive noise. The Brownian path measure and the stochastic-calculus
+identification are not fully formalized by these pathwise constructions.
+
+Bellman/HJB reasoning can seek an upper bound on the costs attainable along
+actual fluid histories. A relaxed control system is useful only after its
+domination of those physical costs is proved. It need not make every auxiliary
+optimizer a realizable fluid, and an auxiliary sampling control is not an
+external force in the NS equation. Schr\"odinger-bridge terminology does not
+remove the identification or domination obligation.
+
+Joint stochastic information must be retained: an expectation of a product
+is not generally a product of expectations. Source deformation, covariance,
+pressure and the evolution of hidden parents remain part of the physical
+defect. The earlier scale-local pancake budgets are possible sufficient
+routes to the payment, not already discharged hypotheses.
+
+\section{A coupled-parent benchmark: growth, payment and depletion}
+\label{sec:current-benchmark}
+
+All norms and integrals in this section use the normalized period-$2\pi$
+torus. Take real $A,B,C$ and
+\[
+ u_0=(A\cos y+B\cos z,0,C\cos x),\qquad
+ h(t)=e^{-\nu t}u_0,\qquad b=u-h.
+\]
+Here $h$ is the heat evolution of the \emph{full original datum}, throughout
+the same history. For $N(v)=-\mathbb P[(v\cdot\nabla)v]$, its source is
+\[
+ n(t)=N(h(t))=ACe^{-2\nu t}\sin x\cos y\,e_z.
+\]
+Every $n(t)$ has $N(n(t))=0$ and $g(n(t))=0$. That source space is not
+invariant under interaction with the other parents. Actual pressure generates
+the initially absent transverse component:
+\[
+ \partial_t^2 u_y(0)=-\tfrac23 ABC\cos x\sin y\sin z.
+\]
+The generated remainder then has a genuine positive local interval,
+\begin{equation}\label{eq:current-onset}
+ g(b(t))=\frac{8393}{2903040}A^4B^2C^4t^7+O(t^8)
+ \qquad(ABC\ne0).
+\end{equation}
+This is an analytic statement about actual local unforced solutions for any
+fixed amplitudes and positive viscosity, supported by exact PDE derivatives.
+It is not a blowup or an indefinite-renewal construction.
+
+\subsection{The entire leading coefficient has a finite price}
+
+For unit viscosity, the complete degree-ten amplitude coefficient is
+$A^4B^2C^4G_{10}(t)$. Every convolution output and the canonical pressure are
+retained. An exact scalar differential cascade proves $G_{10}(t)>0$ for
+$t>0$, and termwise integration gives
+\[
+ C_{10}=\int_0^\infty G_{10}(s)\,ds
+ =\frac{415522849111}{1911826022400000000}.
+\]
+At general viscosity define
+\[
+ G_{\rm lead}(t)=A^4B^2C^4\nu^{-7}G_{10}(\nu t),\qquad
+ T_{10}(s)=\int_s^\infty G_{10}(r)\,dr.
+\]
+The leading coefficient has a complete viscous lifetime; this is not a claim
+that a finite-amplitude nonlinear solution equals that coefficient.
+
+There is an explicit original-parent payment. Set
+$S=|A|+|B|+|C|$, $E_0=\|u_0\|_2^2$ and
+\[
+ \begin{aligned}
+ \chi(t)&=\exp[(5S/\nu)e^{-\nu t}],\qquad \chi_0=\chi(0),\\
+ \mathcal B(t)&=\frac{A^2C^2}{16\nu^2}e^{-4\nu t},\\
+ E_*&=\min\{4E_0,e^{2S/\nu}A^2C^2/(16\nu^2)\},\\
+ F(t)&=E_*\frac S\nu e^{-\nu t}+2\mathcal B(t),\\
+ J_{\rm parent}(t)&=\chi(t)[\|\nabla b(t)\|_2^2+F(t)].
+ \end{aligned}
+\]
+The analytic original-heat estimate pays the source and mixed-parent terms
+on every available prefix and gives
+\[
+ J_{\rm parent}'+\tfrac32\nu\chi D_b\le2\chi g(b),
+ \qquad D_b=\|\nabla\operatorname{curl}b\|_2^2.
+\]
+Add the nonnegative remaining allowance
+\[
+ R_{10}(t)=2\chi_0A^4B^2C^4\nu^{-8}T_{10}(\nu t).
+\]
+Its derivative pays $2\chi G_{\rm lead}$ over the full lifetime. With the
+\emph{exact} defect $\eta=g(b)-G_{\rm lead}$ and
+$J_{\rm total}=J_{\rm parent}+R_{10}$, one obtains
+\begin{equation}\label{eq:current-defect}
+ J_{\rm total}'+\tfrac32\nu\chi D_b\le2\chi\eta.
+\end{equation}
+This inequality does not assume that $\eta$ is small. The sufficient remaining
+estimate for this benchmark is
+\begin{equation}\label{eq:current-higher-payment}
+ 2\int_0^t\chi\eta\,ds
+ \le\nu\int_0^t\chi D_b\,ds+K(u_0,\nu,H),\qquad t\le T\le H,
+\end{equation}
+with one original-data allowance for all same-datum prefixes. It would bound
+$\|\nabla b\|_2^2$ and hence the complete gradient energy. This estimate is
+open; its arbitrary-data analogue remains the larger objective.
+
+\subsection{The next complete correction is depleting}
+
+The complete degree-twelve coefficient at unit viscosity has three channels,
+\[
+ G_{12}(A,B,C;t)=A^4B^2C^4
+       [A^2F_A(t)+B^2F_B(t)+C^2F_C(t)].
+\]
+Exact differential cascades prove
+\[
+ F_A(t)<0,\qquad F_B(t)<0,\qquad F_C(t)<0
+ \qquad\text{for every }t>0.
+\]
+Thus this correction depletes the positive leading return whenever
+$ABC\ne0$. These are all-time signs of complete amplitude coefficients,
+proved by rational arithmetic identities and scalar Duhamel comparison,
+rather than by a sampled time grid.
+
+For fixed $A,B,C$, $\nu>0$, and $0<t_0\le t\le t_1<\infty$, the actual
+solution with datum $\lambda u_0$ satisfies, for sufficiently small $\lambda$,
+\[
+ g(b_\lambda(t))=\lambda^{10}G_{\rm lead}(t)
+   +\lambda^{12}\nu^{-9}G_{12}(A,B,C;\nu t)
+   +O_{A,B,C,\nu,t_1}(\lambda^{14}),
+\]
+uniformly on that interval. Analytic dependence and strict negativity give an
+actual comparison below the leading forecast for
+$0<|\lambda|<\lambda_*(A,B,C,\nu,t_0,t_1)$ when $ABC\ne0$.
+No numerical value of $\lambda_*$ is supplied. There is no conclusion uniform
+as $t_0\downarrow0$, $t_1\uparrow\infty$, or amplitudes become large.
+The complete higher remainder in \eqref{eq:current-defect} is still unpaid.
+
+\section{Distinction observers: what the interface must remember}
+\label{sec:current-observers}
+
+The d-calculus application connects an observer to a continuation quantity.
+For $M>0$ define
+\[
+ d_M(x,y)=\min\{1,|x-y|/M\},\qquad
+ \operatorname{score}_M(u)=d_M(E_1(u),0).
+\]
+Lean proves the metric law and, for $q<1$, the equivalence
+\[
+ \operatorname{score}_M(u)\le q
+ \quad\Longleftrightarrow\quad E_1(u)\le qM.
+\]
+At energy at least $M$, the score is exactly one. A bound by one therefore
+does not control energy. The continuation theorem requires $M$ and $q<1$
+fixed before every same-datum prefix on the prescribed horizon. Given a
+nonnegative signed reserve, $Z=E_1(u_0)+R(0,u_0)$ supplies
+$M=Z+1$, $q=Z/(Z+1)<1$, uniformly over every time of a prefix. These
+implications are certified in \texttt{MettapediaNS.DistinctionHistory}; the
+arbitrary-flow reserve is not.
+
+The physical benchmark separates a predictive summary from an upper bound.
+The parent triples $(2,1,1)$ and $(1,1,2)$ have the same normalized energy,
+all scalar isotropic integer derivative energies, complete original heat
+source and leading return. Nevertheless their next signed costs differ:
+\[
+ G_{12}(2,1,1;t)-G_{12}(1,1,2;t)
+ =48[F_A(t)-F_C(t)]<0\quad(t>0).
+\]
+For their actual local solutions at fixed positive viscosity,
+\[
+ g(b_{(2,1,1)}(t))-g(b_{(1,1,2)}(t))
+ =-\frac{75692097}{11000\,9!}t^9+O_\nu(t^{10}).
+\]
+The local PDE identification is analytic with exact independent checks.
+Lean separately certifies the rational polynomial obstruction: the ninth-jet
+readout does not factor through the energy/source/leading-work summary.
+Retaining the ordered parent squares separates this particular pair; it is
+not asserted to give a complete predictive state for arbitrary flows.
+
+Exact prediction from the coarse summary fails, while a common upper
+comparison at degree twelve survives because every channel is depleting.
+A cost-dominating summary can therefore be sufficient for control. It still
+needs an original-data price and an estimate valid as geometry, scales and
+parents change.
+
+\section{What the tests establish and what remains open}
+\label{sec:current-obligations}
+
+The calculations give positive mechanisms and precise restrictions:
+\begin{itemize}
+ \item Decaying shear and triangular systems have actual stretching histories
+       with finite original-data payments. These do not cover mutually
+       amplifying parents of arbitrary size.
+ \item Kinetic exchange between components has an exact signed balance.
+       It does not decide the sign of derivative-weighted amplification;
+       complete spherical-cutoff examples retain amplifying memory.
+ \item Concentrated actual unforced bursts refute energy-only allowances
+       uniform over the tested data and prescribed cutoffs. An allowance
+       depending on the full datum, or a different datum-chosen cutoff,
+       remains possible.
+ \item A fixed smooth reserve depending only on the current local gradient
+       cannot be universally nonincreasing in the tested whole-space class,
+       unless it is constant. Nonlocal pressure and hidden parents must be
+       accounted for. This does not rule out a history reserve.
+ \item The imported OpenAI construction supplies forced singular solutions
+       under its stated hypotheses. The full-field obstruction is
+       Lean-certified; the frequency-tail analysis is analytic. Finite direct
+       forcing work does not make the force irrelevant to the organization of
+       the flow. No unforced blowup or general impossibility of internal
+       realization has been established.
+\end{itemize}
+
+The next physical estimate concerns the complete defect in
+\eqref{eq:current-defect}, not another isolated favorable coefficient.
+It must retain directional parent information, pressure and joint memory,
+derive their evolution along actual solutions, and compare their signed cost
+with the full diffusion. A successful estimate must survive concentration,
+changing geometry and repeated parent renewal outside a controlled
+neighborhood of a known regular flow. Extending the benchmark payment to
+arbitrary data and both domains is unproved.
+
+\section{Evidence and source map}
+\label{sec:current-evidence}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.29\linewidth}>{\raggedright\arraybackslash}p{0.35\linewidth}>{\raggedright\arraybackslash}p{0.27\linewidth}}
+\toprule
+Result & Evidence & Remaining boundary \\
+\midrule
+Local actual evolution; pressure; uniqueness
+ & Lean, separately on $\mathbb T^3$ and $\mathbb R^3$
+ & No arbitrary-data global bound \\
+Continuation and official statements
+ & Lean implications from named finite-horizon bounds
+ & Their arbitrary-data hypotheses \\
+Noisy trajectories and Jacobians
+ & Periodic pathwise Lean construction; conditional covector pushdown
+ & Brownian measure and stochastic identification \\
+Compatible signed histories
+ & Actual whole-space segments and reserve consumers in Lean
+ & Nonnegative order-one reserve \\
+Original heat and coupled returns
+ & Analytic PDE estimates and exact coefficient/sign checks
+ & Complete higher nonlinear history \\
+Distinction observer and summary obstruction
+ & Lean observer/continuation and rational non-factorization;
+   analytic PDE identification
+ & Uniform nonsaturation and sufficient evolving summary \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The current source entry points are:
+\begingroup
+\raggedright
+\begin{itemize}
+ \item \path{lean/navier-stokes/README.md}: actual solution classes,
+       continuation criteria, imported libraries and current mechanisms.
+ \item \path{lean/navier-stokes/MettapediaNS/JointCubicRenewal.lean},
+       \path{WholeSpaceHistoryBridge.lean} and \path{DistinctionHistory.lean}:
+       the formal contracts used above.
+ \item \path{lean/navier-stokes/labs/README.md}: complete analytic derivations,
+       especially the original-heat payment (254)--(257), coupled return
+       CCR1--CCR10 and distinction application DCH1--DCH10.
+ \item \path{coupled_caloric_return.py} and
+       \path{distinction_coupled_history.py}, with their result archives in
+       the same lab directory: exact recurrence and sign certificates.
+ \item The companion \href{../ns_forced_tail_budget.pdf}{tail-budget paper}:
+       forced obstructions, unforced concentration and separated-sector
+       payments, with their distinct hypotheses.
+\end{itemize}
+
+\endgroup
+
+At the 5 October 2026 checkpoint, the combined NS and live-source gate
+completed 11,927 jobs. Its 1,458 axiom reports, including the seven new
+distinction application reports, use only \texttt{propext},
+\texttt{Classical.choice} and \texttt{Quot.sound}. The exact coupled-return
+and distinction checkers passed. These checks certify the stated formal
+implications and computational identities; they do not convert the analytic
+PDE arguments or the open payment into Lean theorems.
+
+\appendix
+\clearpage
+\section*{Earlier formal derivations}
+\addcontentsline{toc}{section}{Earlier formal derivations}
+
+The appendices preserve the June--September SG audit, the cotangent repair
+and the microlocal pancake development. They establish useful identities,
+model obstructions and conditional routes. Their listings record that stage
+of the formalization; current Lean source and its audit are authoritative.
+The present trajectory and open estimate are stated in
+Sections~\ref{sec:current-route}--\ref{sec:current-evidence}.
 
 \section{The problem and the role of hypothesis (H1)}
 \label{sec:problem}
@@ -332,7 +602,7 @@ local-boundedness argument conflates topological-group continuity of
 composition with the operator-norm estimate \eqref{eq:H1} that the route
 actually needs.
 
-\section{The Fourier-mode shear model and the checked $\neg$(H1) theorems}
+\section{The Fourier-mode shear model and the checked \texorpdfstring{$\neg$}{not}(H1) theorems}
 \label{sec:lean}
 
 We make the derivative-loss obstruction precise and machine-checkable in a clean
@@ -400,7 +670,7 @@ theorem benH1ModeAdjointRatio_unbounded {epsilon C : Real}
     (hepsilon : 0 < epsilon) :
     Not (forall k : Nat, benH1ModeAdjointRatio epsilon k <= C) := by
   intro hbound
-  obtain ⟨k, hk⟩ := exists_nat_gt (C / epsilon)
+  obtain (*@$\langle$@*)k, hk(*@$\rangle$@*) := exists_nat_gt (C / epsilon)
   have hC_lt : C < epsilon * (k : Real) := by
     have hmul := mul_lt_mul_of_pos_left hk hepsilon
     field_simp [ne_of_gt hepsilon] at hmul
@@ -531,17 +801,18 @@ the gate appears first as the coarse input
 \texttt{StochasticStretchingEstimate}, and in the dyadic refinement as the
 scale-local predicate \texttt{ScaleLocalPancakeStrainBudget}.
 
-This section records the \emph{whole} machine-checked surface of the repair
-campaign, layer by layer, not only the current crux.  All Lean listings below
-are structurally verbatim from the sources (declaration names, hypotheses,
-and conclusions exactly as checked), with Unicode notation transliterated to
-ASCII for typesetting; the Lean sources are normative.  Table~\ref{tab:surface}
-summarizes the layers.
+This section records the machine-checked surface of the earlier repair
+campaign, including its conditional interfaces. The listings record the
+declaration names, hypotheses and conclusions at that stage, with Unicode
+notation transliterated to ASCII for typesetting. Current Lean source and its
+audit are normative. Table~\ref{tab:surface} summarizes these layers.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \small
-\begin{tabular}{lll}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.32\linewidth}>{\raggedright\arraybackslash}p{0.43\linewidth}>{\raggedright\arraybackslash}p{0.19\linewidth}}
 \toprule
 Layer (module) & Headline results & Scope label \\
 \midrule
@@ -550,7 +821,7 @@ Evasion (\texttt{ShearJacobianBounds}) & same family: pointwise Jacobian $\le\va
 One-forms (\texttt{OneFormFrameCalculus}) & frame-Laplacian identity $\sum_i L^2_{E_i}=\Delta$ & exact identity \\
 Exactness (\texttt{OneFormExactness}) & div-free smooth non-exact witness & exact witness \\
 Gradients (\texttt{GradientOneForm}) & Cartan formula; self-transport identity & exact identities \\
-Pushdown (\texttt{ConstantinIyerRepresentation}) & NS with explicit pressure from transport & conditional (interface) \\
+Pushdown (\path{ConstantinIyerRepresentation}) & NS with explicit pressure from transport & conditional (interface) \\
 Instances (\texttt{DecayingShearInstance}, regression) & nonzero exact inhabitant; rest canaries & exact instances \\
 Gate (\texttt{VorticityStretchingGate}) & pointwise common envelope from named pin & conditional \\
 Countermodel (\texttt{FrozenStrainModel}) & exact pancake solution; no uniform depletion & model refutation \\
@@ -1259,7 +1530,7 @@ and identification of these concrete finite projectors with the actual
 Littlewood--Paley coherent share, are still required.
 
 The modules \texttt{PancakeComplexMisalignmentExpansion},
-\texttt{PancakeComplexCoherentPDEIdentification}, and
+\path{PancakeComplexCoherentPDEIdentification}, and
 \texttt{PancakePhysicalMisalignmentSplit} close the algebraic split
 behind that remaining analytic task.  The former expands the actual complex
 Biot--Savart stretching interaction into the coherent--coherent term and the
@@ -1891,8 +2162,8 @@ outgoing stretching otherwise.  Combining the two shows that the entire
 material nonlinear commutator consists only of transport-plus-stretching
 interactions crossing the boundary of $B$; interactions staying within the
 same hard block cancel from this residual exactly.
-The module — now completed as
-\texttt{PancakeMovingBlockEvolution} — verifies that this commutator is the
+The module --- now completed as
+\texttt{PancakeMovingBlockEvolution} --- verifies that this commutator is the
 one actually produced by a moving observation point, rather than merely a
 formal coefficient subtraction.  It differentiates both factors in
 \[
@@ -4802,305 +5073,56 @@ damping toward the plane but does not select a coherent line inside it.
 Controlling those intervals requires a projector/cluster formulation or a
 genuine time-integrated cancellation, and remains part of the dynamical pin.
 
-\section{Status and scope}
+\section{Formal scope of the earlier derivations}
 \label{sec:scope}
 
-We state the scope of this finding exactly.
+The H1 obstruction remains a theorem about the explicit normalized Fourier
+shear model in \texttt{BenH1Break}. Its Sobolev ratio is derived analytically
+and checked independently. It is not a complete Lean construction of the
+volume-preserving diffeomorphism group or its Sobolev charts. The derivative
+loss nevertheless identifies the failure in the manuscript's local adjoint
+bound; the repaired history route does not rely on that bound.
 
-\paragraph{What is established from the original audit.} Hypothesis~(H1) of
-v7 --- a uniform
-$\Hm\to\Hm$ operator bound \eqref{eq:H1} on the adjoint / push-forward $\Ad_g$
-over an $\Hm$ chart-neighborhood of the identity --- is \emph{false} in the
-normalized Fourier-mode shear model of Section~\ref{sec:lean}. The refutation is
-machine-checked (no \texttt{sorry}, elementary) in
-\texttt{Mettapedia.FluidDynamics.NavierStokes.BenH1Break}, and the underlying
-norms are independently derived from the Sobolev-weight structure in the
-companion numeric lab. The model faithfully captures the mechanism that defeats
-v7's local-boundedness argument: the adjoint \eqref{eq:adg} loses one derivative
-($g\in\Hm\Rightarrow Dg\in H^{m-1}$), so on a fixed-radius $\Hm$ chart the
-operator norm is unbounded along high-wavenumber shears.
+The cotangent identities and conditional pushdown retain their stated
+hypotheses. In particular, the averaged transport equation is supplied as an
+input; a Brownian expectation theorem is not obtained merely by constructing
+pathwise flows. The prescribed-strain examples are model results. The coherent
+Fourier estimates and projector identities retain their finite-sector,
+regularity, gap and localization hypotheses.
 
-\paragraph{What is not established.} This is a refutation of (H1)
-\emph{in a model} --- a single analytic Fourier-mode family together with the
-linearized commutator action --- not a from-Mathlib-Sobolev-first-principles
-theorem about $\SDiff^m(\mathbb{T}^3)$. The model uses the exact push-forward
-formula \eqref{eq:adg} on an explicit shear family and the standard Fourier
-$\Hm$ norm; it does not formalize the full diffeomorphism-group functional
-analysis. The mechanism (derivative loss) is captured faithfully, but the
-strength of the conclusion is ``checked in this model,'' not ``checked over the
-entire chart from Mathlib's Sobolev theory.''
+The scale-local pancake route is still conditional on its dynamical strain
+and misalignment estimates, including the residual forcing, collision sectors
+and all-scale aggregation. Those are obligations for that architecture,
+not an assertion that all routes must use the same pointwise budget.
+Actual continuation theorems are now available separately on both domains;
+what they require is the arbitrary-data finite-horizon bound described in
+Section~\ref{sec:current-route}.
 
-\paragraph{Consequence for v7.} Because every quantitative step of the
-SG--Cole--Hopf program inherits the constant $\CAd$ from \eqref{eq:H1} ---
-through \eqref{eq:prop65}, \eqref{eq:logbound}, and \eqref{eq:vort} --- the
-falsity of~(H1) as stated means the route does \emph{not}, as written, establish
-global regularity. v7 reduces 3D Navier--Stokes global regularity to~(H1)
-(equivalently, to a uniform curvature / Bakry--\'Emery-type bound), and that
-reduction target does not hold uniformly in the form required.
-
-\paragraph{What the repair establishes.} The stochastic-Lagrangian repair is
-not refuted by the H1 countermodel, and that evasion is itself a checked
-theorem (Section~\ref{sec:evasion}).  Machine-checked without \texttt{sorry}
-across the campaign: the one-form calculus with the exact frame-Laplacian
-identity; the divergence-free non-exact witness forcing the gauge; the
-pushdown theorem producing Navier--Stokes with the explicit pressure
-$p=\partial_tW+\tfrac12\langle u,u\rangle+\langle u,\nabla W\rangle-\nu\Delta W$
-from the averaged transport hypothesis; the gate consumers and the assembled
-conditional route; nonzero exact inhabitants (decaying shear with balanced
-gauge) and end-to-end rest canaries for both the coarse and the refined
-route; the frozen-strain exact solution with its unbounded-amplification and
-coverage-gap theorems; the aperture dichotomy--budget equivalence with both
-gap-band failure theorems and the Gr\"onwall-saturation bound; the
-single-mode Biot--Savart null structure; and the dyadic absorption algebra
-with explicit constants.  The theorem
-\texttt{stochasticLagrangian\_conditional\_route\_of\_pancakeBudget} records
-that the route closes if the scale-local pancake strain budget and the
-non-pancake sector estimates are supplied.
-
-\paragraph{Scope of the new pieces.}  The same honesty discipline as for the
-H1 model applies.  The frozen-strain results are theorems about a linear
-prescribed-strain model, labeled as such; the aperture theorems are exact
-inequalities between the model's threshold parameters; the plane-wave null
-structure is an identity for one exact Fourier mode (sector aggregation is
-exactly the open budget); the averaged transport equation enters the
-pushdown as a hypothesis field (no stochastic calculus is formalized); and
-the coercive/residual sector estimates are named interfaces consumed from
-the source analysis, not re-proved.  None of these statements is a claim
-about general Navier--Stokes solutions beyond what its label says.
-
-\paragraph{Verification metadata.}  The named campaign modules contain no
-\texttt{sorry}, \texttt{admit}, or unsafe definitions.  Selected load-bearing
-theorems carry explicit machine axiom audits; the remaining newly added
-headlines, including the finite Parseval misalignment-energy bridge, are
-checked by the Navier--Stokes live surface and the same explicit audit
-boundary.  The live surface builds green.  Earlier
-conditional route theorems retain their instantiation canaries demonstrating
-that their stated hypotheses are simultaneously satisfiable.  This is a
-claim about proof integrity, not about discharge of the explicitly open
-analytic hypotheses.
-
-\paragraph{What remains open.} We make no claim to have proved the Millennium
-Navier--Stokes statement.  The latest pancake-closure proposal fails as a
-complete proof because its aperture split requires the pointwise scale-local
-condition $\gamma\le\nu\lambda_q$, and that condition is exactly the burden of
-the unresolved self-consistent strain estimate.  After the September 2026
-refinement (Section~\ref{sec:coherence}), the open analytic input is
-\texttt{MisalignmentStrainBudget} together with the dynamical identification
-and aggregation of the now-concrete hard dyadic coherent/misaligned transfer,
-which jointly reproduce
-\texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
-\texttt{StochasticStretchingEstimate}).  A successful completion must control
-dynamical coherence inside the stable expanding-plane part of the collision
-band (the separated line/plane projectors are measurable and the
-triple-collision strain is small), pass from the hard
-selector to the intended smooth
-projector, identify the now-exact hard-block physical split with the route's
-scale-local misalignment functional, aggregate the
-proved frozen-cell/small-gap projector alternative and convert its $L^2$
-control to the endpoint scale budget, and
-prove a dynamical,
-time-integrated control of the vorticity-direction misalignment share, strong
- enough to cover the gap band identified above.  The finite four-sign
-annular partition and its exact periodic physical transference are proved;
-the remaining identification may not assign the aperture gain to the
-projection.
-Section
-\ref{sec:direction-dynamics} further shows that a pressure-Hessian route must
-carry inverse strain-eigenvalue-gap information or an equivalent
-time-integrated cancellation; pressure-Hessian size alone cannot close the
-pin.  The spatial essential-supremum BKM integrand is now constructed and
-measurable, its integral is controlled by the common pointwise majorant, and
-the passage to an open terminal interval is proved under a uniform bound on
-shorter-horizon envelope integrals.  What remains at that junction is proving
-the uniform analytic bound and applying an actual formal continuation
-theorem for the chosen solution class; finite-time integrability alone does
-not establish global regularity.
+The current parent-reserve and coupled-return calculations in
+Section~\ref{sec:current-benchmark} are analytic PDE estimates with exact
+computational certificates. The observer and polynomial obstruction in
+Section~\ref{sec:current-observers} have the explicitly stated Lean boundary.
+No arbitrary-data global-regularity theorem follows from these conditional
+interfaces or from the favorable finite-order corrections.
 
 \section*{Provenance}
-The manuscript discussed is Ben Goertzel, \emph{Global Regularity of 3D
-Navier--Stokes via SG--Cole--Hopf Program}, version v7, together with the
-subsequent pancake-closure repair proposal audited in July 2026.  The
-formalization, Fourier-mode model, repaired conditional route, pancake
-adjudication, and numeric lab are work of the MeTTapedia formalization
-effort.  The repaired-route development comprises, under
-\texttt{Mettapedia.FluidDynamics.NavierStokes}: \texttt{BenH1Break},
-\texttt{OneFormFrameCalculus}, \texttt{OneFormExactness},
-\texttt{GradientOneForm}, \texttt{FrozenStrainModel},
-\texttt{ApertureCoverageDichotomy}, \texttt{PlaneWaveSelfStrain}, and the
-\texttt{StochasticLagrangian} layer (\texttt{PullbackOneForm},
-\texttt{ShearJacobianBounds}, \texttt{ConstantinIyerRepresentation},
-\texttt{VorticityStretchingGate}, \texttt{DecayingShearInstance},
-\texttt{DyadicPancakeClosure}, \texttt{PancakeCoherentPairEstimate},
-\texttt{PancakeRealCoherentPairEstimate}, \texttt{PancakeConeOperatorKernel},
-\texttt{PancakePeriodicCoherentSplit},
-\texttt{PancakePeriodicComplexStretch},
-\texttt{PancakePeriodicOperatorKernel}, \texttt{PancakeFrameCovariance},
-\texttt{PancakeVariableFrameCommutator}, and
-\texttt{PancakeEigenframePerturbation},
-\texttt{PancakeAlignmentDynamics}, \texttt{PancakeStrainSpectralFrame},
-\texttt{PancakeSmoothCoherentSymbol},
-\texttt{PancakeSmoothCoherentAperture},
-\texttt{PancakeCoherentStretchFactorization},
-\texttt{PancakeSmoothCoherentStretchSymbol}, and
-\texttt{PancakeBilinearKernelScaling}, and
-\texttt{PancakeUniformKernelFamily}, and
-\texttt{PancakeBilinearPeriodization},
-\texttt{PancakeFiniteFourierBilinearTransfer},
-\texttt{PancakeDyadicKernelScaling},
-\texttt{PancakeSquareDyadicFiniteTransfer}, and
-\texttt{PancakeFrozenFrameKernelTransfer}, and
-\texttt{PancakePhysicalFrameKernelTransfer}, through the later annular,
-full-strain-frame, coercivity, cell-aggregation, finite-localization, and
-\texttt{PancakeBufferedAnnularMultiplier}, buffered physical-transfer, and
-\texttt{PancakeLocalizedBufferedTransfer}, bilinear stability, and buffered
-localization-stability, smooth-cutoff Fourier-tail,
-\texttt{PancakeConcreteSmoothCellCutoff},
-\texttt{PancakeConcreteSpatialCoverTransfer}, and
-\texttt{PancakeArbitraryDataBlocks} and
-\texttt{PancakeArbitraryDataMisalignment}, and
-\texttt{PancakeConcreteCoverEnergy},
-\texttt{PancakeConcreteWeightedFreezing}, and
-\texttt{PancakeSpectralProjectorRegularity}, and
-\texttt{PancakeSpectralClusterDichotomy}, and
-\texttt{PancakeExpandingPlaneResidence}, and
-\texttt{PancakeDyadicDirectionEvolution}, and
-\texttt{PancakeFourierStretchingEvolution}, and
-\texttt{PancakePeriodicVorticityEquation}, and
-\texttt{PancakeBlockReality}, and
-\texttt{PancakeMaterialTransportCommutator}, and
-\texttt{PancakeMovingBlockEvolution}, and
-\texttt{PancakeHardBoundaryObstruction}, and
-\texttt{PancakeEvolvingFilter}, and
-\texttt{PancakeSignedTransportEnergy}, and
-\texttt{PancakeFrequencyProjectorCommutator}, and
-\texttt{PancakeViscousMisalignmentAbsorption}, and
-\texttt{PancakeSameSectorDissipation}, and
-\texttt{PancakeIncomingLowSourceEnergy}, and
-\texttt{PancakeExchangeSymmetricCurl}, and
-\texttt{PancakeLowTouchEnergy}, and
-\texttt{PancakeGalerkinKineticEnergy}, and
-\texttt{PancakeGalerkinVorticityBridge}, and
-\texttt{PancakeLocalizedQuadraticEnergy}, and
-\texttt{PancakeMaterialProjectorTangent}, and
-\texttt{PancakeFiniteLocalizedEvolution}, and
-\texttt{PancakeTopEigenvalueDerivative}, and
-\texttt{PancakeSpectralDefectEvolution}, and
-\texttt{PancakeSpectralDefectBudget}, and
-\texttt{PancakeFourierPressureStrain}, and
-\texttt{PancakeFilteredStrainDynamics}, and
-\texttt{PancakeLowPressureBudget}, and
-\texttt{PancakePressureAnisotropyBudget}, and
-\texttt{PancakeFourierMaterialPaths}, and
-\texttt{PancakeSpatialStrainEvolution}, and
-\texttt{PancakePhysicalSpectralDefect}, and
-\texttt{PancakePhysicalDefectODEBudget}, and
-\texttt{PancakePlanarSpectralDefect}, and
-\texttt{PancakePlanarDiffusion}, and
-\texttt{PancakePeriodicDiffusionWitness}, and
-\texttt{PancakeTwoShearDiffusion}, and
-\texttt{PancakePeriodicMean}, and
-\texttt{PancakeTwoShearFiniteTime}, and
-\texttt{PancakeTwoShearSpatialMean}, and
-\texttt{PancakeTwoShearHeatWitness}, and
-\texttt{PancakeRegularizedDiffusion}, and
-\texttt{PancakeFourierStrainGradient}, and
-\texttt{PancakeLowDiffusionBudget}, and
-\texttt{PancakeSpectralFiniteDifference}, and
-\texttt{PancakeRegularizedMaterialRate}, and
-\texttt{PancakeHaarDiffusionIncrement}, and
-\texttt{PancakeCentralDifferenceLimit}, and
-\texttt{PancakeFourierTranslationCurve}, and
-\texttt{PancakeWeakDiffusionLimit}, and
-\texttt{PancakeMappedFourierDiffusion}, and
-\texttt{PancakePhysicalDiffusionLimit}, and
-\texttt{PancakeLaplacianDiffusion}, and
-\texttt{PancakePhysicalLaplacian}, and
-\texttt{PancakePhysicalViscousSplit}, and
-\texttt{PancakeMaterialDiffusionBudget}, and
-\texttt{PancakeMeasurableMaterialRate}, and
-\texttt{PancakeFrozenMaterialDerivative}, and
-\texttt{PancakeSpacetimeSpectralDifferentiability}, and
-\texttt{PancakeAEMaterialRate}, and
-\texttt{PancakeMaterialSpatialEstimate}, and
-\texttt{PancakeCompactMeanDerivative}, and
-\texttt{PancakeLocallyLipschitzEnergy}, and
-\texttt{PancakeHaarTransportRate}, and
-\texttt{PancakePeriodicLipschitz}, and
-\texttt{PancakePeriodicWeakDerivative}, and
-\texttt{PancakeWeakIncompressibleTransport}, and
-\texttt{PancakePhysicalTransportCancellation}, and
-\texttt{PancakeMaterialChainRule}, and
-\texttt{PancakeAEMaterialChainRule}, and
-\texttt{PancakeMeanMaterialBalance}, and
-\texttt{PancakePhysicalMeanBalance}, and
-\texttt{PancakeParametricForcing}, and
-\texttt{PancakeEulerianAlignmentBudget}, and
-\texttt{PancakeWeightedWeakTransport}, and
-\texttt{PancakeWeightedMatrixTransport}, and
-\texttt{PancakeWeightedOperatorTransport}, and
-\texttt{PancakePhysicalWeightedTransport}, and
-\texttt{PancakeVorticityTransportSplit}, and
-\texttt{PancakeSignedTransportForcing}, and
-\texttt{PancakeReducedMaterialBudget}, and
-\texttt{PancakeReducedForcingContinuity}, and
-\texttt{PancakeReducedEulerianBudget}, and
-\texttt{PancakeWeightVariationGradient}, and
-\texttt{PancakeWeightVariationCutoff}, and
-\texttt{PancakeAnisotropyDepletion}, and
-\texttt{PancakeTopSpaceTransport}, and
-\texttt{PancakePhysicalNonlinearReconstruction}, and
-\texttt{PancakeRetainedProjectionDefect}, and
-\texttt{PancakeFiniteFourierOrthogonality}, and
-\texttt{PancakeProjectionEnergyCancellation}, and
-\texttt{PancakeProjectionWeightOscillation}, and
-\texttt{PancakeProjectionMaterialBudget}, and
-\texttt{PancakeRealFourierProjection}, and
-\texttt{PancakeLocalizedProjectionBoundary}, and
-\texttt{PancakeCutoffBoundarySupport}, and
-\texttt{PancakeQuadraticProjectionLocalization}, and
-\texttt{PancakeBoundaryEnergy}, and
-\texttt{PancakeBoundaryTimeBudget}, and
-\texttt{PancakeWeightedBoundaryAssembly}, and
-\texttt{PancakeSpectralResidualDepletion}, and
-\texttt{PancakeWeightedBoundaryDepletion}, and
-\texttt{PancakeBoundaryFreezingError}, and
-\texttt{PancakePhysicalBoundaryDepletion}, and
-\texttt{PancakeBoundaryFreezingVariance},
-\texttt{PancakeSummableOutputTail},
-\texttt{PancakeExteriorReconstructionTail},
-\texttt{PancakeCurlOutputTail},
-\texttt{PancakeZeroModeCurlBridge},
-\texttt{PancakeDiscardedNonlinearLimit},
-\texttt{PancakeSmoothSpectralEnvelope},
-\texttt{PancakeSmoothProjectionPairing},
-\texttt{PancakeSmoothProjectionTimeLimit},
-\texttt{PancakeInteractionTruncationTail},
-\texttt{PancakeInfinitePairReconstruction},
-\texttt{PancakeZeroSafeInteractionTail},
-\texttt{PancakeFullNonlinearConsistency},
-\texttt{PancakeParametricInfiniteCurl},
-\texttt{PancakeFullNonlinearTimeLimit},
-\texttt{PancakeInfiniteFourierDerivative},
-\texttt{PancakeIndexedFourierMoments},
-\texttt{PancakeInfiniteSpatialCurl},
-\texttt{PancakeInfiniteFourierProduct},
-\texttt{PancakeInfiniteRealCurl},
-\texttt{PancakeFullAnalyticNonlinearity},
-\texttt{PancakeLatticeDecayEnvelope},
-\texttt{PancakePhysicalFourierDerivative},
-\texttt{PancakeContinuousCoordinateJet},
-\texttt{PancakePhysicalSixthDecay},
-\texttt{PancakeCompactJetEnvelope},
-\texttt{PancakePhysicalFieldReconstruction},
-\texttt{PancakePhysicalFamilyConsistency}, and
-\texttt{SpatialBKMIntegrand}, and
-\texttt{PancakeAdaptiveStrainCover}, and
-\texttt{PancakeAdaptiveFourierPartition}, and
-\texttt{PancakeQuadraticFourierSupport}, and
-\texttt{PancakeAdaptiveFourierFreezing} modules), each with a regression companion where
-applicable.  The aperture module is retained as an explicitly attenuated
-analytic model; the exact coherent projection no-go above prevents its use as
-the desired field-transfer estimate.
+
+The original route is Ben Goertzel's \emph{Global Regularity of 3D
+Navier--Stokes via SG--Cole--Hopf Program}, v7, with the subsequent
+pancake-closure proposal. The SG audit, conditional cotangent repair,
+microlocal development and later history calculations are work of the
+MeTTapedia formalization effort. The reconstruction uses the
+Constantin--Iyer stochastic-Lagrangian approach; the continuation criteria
+retain the Beale--Kato--Majda and Leray analytic foundations.
+
+The integration reuses OpenAI/NavierStokesAndEuler and the
+Alp\"oge--Buckmaster \texttt{fluid\_lean} libraries with their attribution and
+licenses. OpenAI's imported singularity construction is forced. The d-calculus
+tolerance is reused unchanged from MeTTapedia revision
+\texttt{3b432626d}; the history application reuses the existing GSLT
+signed-boundary and non-factorization theorems. The current source map and
+certification boundaries are given in Section~\ref{sec:current-evidence}.
+
 Background references: J.~T. Beale, T.~Kato, A.~Majda, \emph{Comm.\ Math.\
 Phys.}\ \textbf{94} (1984), 61--66; P.~Constantin, G.~Iyer, \emph{Comm.\
 Pure Appl.\ Math.}\ \textbf{61} (2008), 330--345; D.~Ebin, J.~Marsden,
