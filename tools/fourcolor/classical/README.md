@@ -2778,3 +2778,45 @@ repair certificates. Source and replay measurements are in
 `strip-end-phase-measurements.json`. This is partial restoration, not a new
 complete source reduction; coverage remains 633 entries with 629 original
 configuration certificate dependencies. No compression credit is assigned.
+
+
+## Composing the triangle phase with an adjacent diamond repair
+
+`StripDiamondPhase.repair` restores core vertices 0, 1, 2 and 3 for every
+proper D0099 boundary. It first consumes the end-triangle theorem, then
+adds the fourth vertex through a joint repair. The second phase retains
+the same exterior predicate and may change the triangle's colours.
+`compatible` reconstructs one source colouring agreeing with a genuine
+exterior colouring at every ordered port. `from_reading` obtains exterior
+closure from the spherical triangulation, including identified ports.
+
+Failure to extend the first triangle has three equality patterns on the
+six consecutive ports 3 through 8. Up to colour renaming, these are
+`010231`, `010230` and `012020`. If ports 8 and 3 agree, exchange at edge
+4 with difference `b(4) + b(6)`; otherwise use edge 3 with difference
+`b(3) + b(6)`. Each choice works for every distinct matching partner.
+The classification and local release laws use bounded kernel computation
+on six boundary observations; they store no complete boundary words, matchings or core
+colouring witnesses.
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelStripDiamondPhase
+lake build kernelStripDiamondContinuation
+```
+
+The independent replay checks the local predicate against the actual
+source adjacency over all 7,381 boundary classes. The 548 inputs with a
+colourable triangle but an uncolourable diamond fall into the three
+patterns; all 5,480 partner updates pass. Replay it with:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_strip_diamond_phase.py
+```
+
+This is a two-stage partial repair. Four core vertices remain; a full
+repair with a structural progress argument and geometric coverage is open.
+The twelve-root audit excludes complete Four Colour endpoints and the
+large repair tables. `strip-diamond-phase-measurements.json` records source
+hashes, replay costs and the unchanged compression counts. No catalogue
+entry or original certificate dependency is removed by this result.

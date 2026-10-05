@@ -6635,5 +6635,22 @@
     "catalogue_entries_removed": 0,
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0
+  },
+  "strip_uniform_diamond_phase": {
+    "status": "kernel checked two-stage partial repair with actual-map consumer",
+    "receipt": "strip-diamond-phase-measurements.json",
+    "theorem": "FourColor.StripDiamondPhase.repair",
+    "actual_map_consumer": "FourColor.StripDiamondPhase.from_reading",
+    "scope": "Every proper D0099 boundary admits compatible restoration of core vertices 0, 1, 2 and 3 against every Kempe-closed exterior. Both phases use the same exterior predicate. Actual source readings in spherical triangulations supply closure; boundary ports may coincide.",
+    "core_vertices_restored": 4,
+    "core_vertices_remaining": 4,
+    "local_equality_patterns": 3,
+    "anchor_rules": 2,
+    "new_stored_boundary_words": 0,
+    "new_stored_matchings": 0,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "remaining": "A shared continuation for the remaining four core vertices and geometric coverage."
   }
 }

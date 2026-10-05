@@ -1,0 +1,116 @@
+{
+  "status": "kernel checked two-stage partial repair with actual-map consumer",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "D0099: Yuta Inoue near-linear catalogue, MIT. Decoding and Kempe semantics reuse Gonthier/Emery.",
+  "theorems": [
+    "FourColor.StripDiamondPhase.classify",
+    "FourColor.StripDiamondPhase.release",
+    "FourColor.StripDiamondPhase.second",
+    "FourColor.StripDiamondPhase.repair",
+    "FourColor.StripDiamondPhase.compatible",
+    "FourColor.StripDiamondPhase.from_reading",
+    "FourColor.StripDiamondPhase.disk_consumer"
+  ],
+  "quantifiers": "Every proper D0099 boundary admits compatible restoration of core vertices 0, 1, 2 and 3 against every Kempe-closed exterior. Both phases use the same exterior predicate. Actual source readings in spherical triangulations supply closure; boundary ports may coincide.",
+  "source_core_vertices": 8,
+  "restored_core_vertices": 4,
+  "remaining_core_vertices": 4,
+  "local_equality_patterns": 3,
+  "anchor_rules": 2,
+  "modules": [
+    {
+      "module": "MettapediaFourColor.StripDiamondPhase",
+      "source_sha256": "530d74056a6d54fb3e9f9f45f4575e0b85a9bb4cc09c97d0a915c53951d70f0a",
+      "exit_code": 0,
+      "frontend_wall_seconds": 85.208,
+      "olean_bytes": 370208,
+      "olean_sha256": "5318927933f0a065ef260ff9a4d02300ebcfaa975bf3270848bd1c3b3ccae6b2",
+      "source_bytes": 4865
+    },
+    {
+      "module": "MettapediaFourColor.StripDiamondRepair",
+      "source_sha256": "31d2b4cf6adcf27e01c08e70c7b561e56d38a7558747e76234b2fe66ffc928fd",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.945,
+      "olean_bytes": 475144,
+      "olean_sha256": "cedb822e33280526b201e5d2cf96b2205a2d318a16c5955b97d8b620bdfe95f1",
+      "source_bytes": 8257
+    },
+    {
+      "module": "MettapediaFourColor.StripDiamondPhaseGeometry",
+      "source_sha256": "f7cf4e715c5cc51df276973e76f078ee31638c17d744c011a9cc3a40ff1abf09",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.405,
+      "olean_bytes": 39768,
+      "olean_sha256": "34f769d72154b2ab6140c66083fe0c2ea6122c512d86b5ec744d537a701fecfe",
+      "source_bytes": 2446
+    },
+    {
+      "module": "MettapediaFourColor.StripDiamondPhaseAudit",
+      "source_sha256": "9278a2c07387e0d56aec495b35d1b7361e80cd9461bdf0e7e99b741ce9770006",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.969,
+      "olean_bytes": 2608,
+      "olean_sha256": "516f5750e0c42f09ac663e391d120bd1bb4c71ebcce3da717944fd4c5c8a443b",
+      "source_bytes": 2775
+    }
+  ],
+  "frontend_seconds_with_prebuilt_dependencies": 97.527,
+  "audit": {
+    "roots": 12,
+    "transitive_declarations": 13170,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excludes": [
+      "complete Four Colour endpoints",
+      "original bulk certificates",
+      "WheelRepairData",
+      "ExceptionalRepairData",
+      "ResidualSeedRepairData",
+      "DiamondProfileData"
+    ]
+  },
+  "new_stored_boundary_words": 0,
+  "new_stored_matchings": 0,
+  "new_stored_core_colouring_witnesses": 0,
+  "independent_program_replay": {
+    "status": "independent diamond continuation replay passed",
+    "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+    "proper_boundary_classes": 7381,
+    "left_ready_diamond_blocked": 548,
+    "local_pattern_counts": {
+      "(0, 1, 0, 2, 3, 1)": 182,
+      "(0, 1, 0, 2, 3, 0)": 183,
+      "(0, 1, 2, 0, 2, 0)": 183
+    },
+    "local_assignments": 4096,
+    "local_failed_assignments": 72,
+    "local_partner_checks": 720,
+    "whole_boundary_partner_checks": 5480,
+    "stored_boundary_words": 0,
+    "stored_matchings": 0,
+    "restored_core_vertices": 4,
+    "remaining_core_vertices": 4,
+    "limits": [
+      "Partial source repair only; no complete reduction or coverage claim."
+    ]
+  },
+  "limits": [
+    "Only four core vertices are restored. This is not a new complete reduction.",
+    "The second phase can recolour the first triangle; no fixed-colour prefix guarantee.",
+    "No occurrence supply, catalogue removal or algorithmic runtime claim."
+  ],
+  "catalogue_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0,
+  "complete_assembly_checks_removed": 0,
+  "gates": {
+    "kernelStripDiamondPhase": "passed",
+    "kernelStripDiamondContinuation": "passed",
+    "kernelComplete": "passed",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint": "passed"
+  }
+}

@@ -1666,3 +1666,31 @@ target kernelStripEndPhase pkg : Unit := do
         "StripEndPhase", "StripEndPhaseGeometry", "StripEndPhaseAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the adjacent diamond continuation of the end-triangle phase. -/
+target kernelStripDiamondPhase pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-diamond-phase",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripDiamondPhase"]
+      cwd := pkg.dir
+      env := env }
+
+/-- Replay composition of the end-triangle and diamond phases. -/
+target kernelStripDiamondContinuation pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-diamond-continuation",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripDiamondRepair",
+        "StripDiamondPhaseGeometry", "StripDiamondPhaseAudit"]
+      cwd := pkg.dir
+      env := env }
