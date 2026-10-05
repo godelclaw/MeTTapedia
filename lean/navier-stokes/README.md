@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [coupled caloric return](labs/README.md#a-non-self-interacting-heat-source-generates-a-paid-coupled-return)
+follows a periodic family whose original heat source has zero
+self-nonlinearity at every time. Actual pressure nevertheless generates
+a transverse parent, and the full heat remainder develops positive
+self-stretching at seventh order in time. Its complete leading joint
+amplitude coefficient is positive over all time and has an exact finite
+payment. A positive remaining tail augments the existing original-parent
+reserve; the higher nonlinear return is retained as an explicit open
+history estimate. These are exact coefficient calculations and analytic
+PDE consequences, not arbitrary-data closure or new Lean theorems.
+
 The [complete spherical-cutoff test](labs/README.md#complete-spherical-cutoffs-also-permit-amplifying-memory)
 shows that derivative-weighted first memory can amplify even with an
 ordinary frequency ball. An exact parameter family supplies a positive

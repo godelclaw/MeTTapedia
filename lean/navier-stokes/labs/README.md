@@ -59130,3 +59130,226 @@ NS jets, reality, divergence, shell transfers, nested cutoffs, the
 Galerkin discrepancy and the triangular clock. Local PDE intervals and
 the all-time triangular estimate remain analytic, not Lean-certified.
 No Lean declarations or axioms change.
+
+## A non-self-interacting heat source generates a paid coupled return
+
+The next coupled calculation uses the original-heat reserve (254)--(257),
+which already pays the original-parent and mixed terms on both domains.
+It does not replace that result with another weaker parent estimate.
+The remaining observation is exactly `g(b)`, where `b=u-h` and h is the
+heat evolution of the original datum throughout the same history.
+
+A simple periodic family has a non-self-interacting original heat source
+at EVERY time, yet the actual generated remainder develops positive
+self-stretching. The first complete joint amplitude coefficient is also
+positive at every time and has an exact finite total cost. Its remaining
+tail can be added to the original reserve. Higher nonlinear returns,
+including their large-amplitude history, remain unpaid.
+
+### Original parents, a shear source, and a new pressure parent
+
+On the normalized period-2pi torus take arbitrary real A,B,C and
+
+```text
+u0=(A cos y+B cos z,0,C cos x),
+h(t)=exp(-nu t)u0,
+b=u-h, b(0)=0,
+n(t)=N(h(t))=AC exp(-2nu t)sin x cos y e_z.          (CCR1)
+```
+
+All initial frequencies have radius one. Every n(t) is vertical and
+independent of z, so `N(n(t))=0` and `g(n(t))=0`. Even the entire linear
+space of such vertical fields has zero self-nonlinearity. This does
+not make it invariant under interaction with the other fluid parents.
+The exact original source capacity and norm integral are
+
+```text
+Ctilde_nu(u0)=nu^(-1)int_0^infinity ||n(t)||2^2 dt
+            =A^2 C^2/(16nu^2),
+S0=int_0^infinity ||n(t)||2 dt=|AC|/(4nu).           (CCR2)
+```
+
+The canonical initial pressure and its FULL time derivative are
+
+```text
+p0=BC sin x sin z,
+p_t(0)=-2nu p0-(2/3)ABC cos x cos y sin z,
+u_y(0)=partial_t u_y(0)=0,
+partial_t^2 u_y(0)=-(2/3)ABC cos x sin y sin z.      (CCR3)
+```
+
+Thus the initially missing transverse velocity is generated at second
+order, even though the initial transverse pressure force is zero.
+Its gradient energy is `A^2 B^2 C^2 t^4/24+O(t^5)`. These are actual
+unforced NS derivatives, including pressure and positive viscosity.
+For example, the complete remainder equation contains `DN(h)[b]` as
+well as n and N(b); that mixed operation leaves the vertical source
+space. A source grammar that retains only repeated applications of
+N to n would miss this physical transition.
+
+### The actual generated remainder first stretches itself at order seven
+
+For the original heat subtraction in (CCR1), the complete local expansion
+is
+
+```text
+g(b(t))=(8393/2903040) A^4 B^2 C^4 t^7+O(t^8).      (CCR4)
+```
+
+This holds for every fixed A,B,C and nu>0, with the remainder controlled
+on its local smooth existence interval. If ABC!=0 it gives a strictly
+positive actual interval. The coefficient is independent of viscosity;
+viscosity remains in the complete evolution and higher time terms.
+No statement of blowup, unlimited repetition, or failure of a finite
+full-datum allowance follows from this positive burst.
+
+The cancellation of the lower terms is substantive. Subtracting only
+the original y-shear leaves some original cellular parents in the
+remainder, whose cubic stretching can start earlier. Formula (CCR4)
+uses the FULL original heat field, so the measured term is precisely
+the generated self-work left open by (257).
+
+Here is a structural check on the joint factor. For each finite smooth
+interval near zero amplitudes, the solution map is analytic. When A=0,
+the original cellular flow has N(h)=0 and u=h; when C=0 the original
+field is a shear and again u=h. Thus b is divisible by AC and its cubic
+stretching by A^3 C^3. Translating each coordinate by pi independently
+changes the sign of exactly one original amplitude while leaving the
+integrated observation unchanged. The observation is therefore even in
+A, B and C. When B=0, the actual solution is triangular, b stays vertical
+and independent of z, and g(b)=0 throughout. Consequently the first
+possible joint amplitude factor is A^4 B^2 C^4, of total degree ten.
+This argument does not assume that a large-amplitude Taylor series
+converges over an arbitrary future interval.
+
+### Complete leading interaction over its entire viscous lifetime
+
+Use unit viscosity first. Expand the actual solution map under a common
+initial-amplitude parameter lambda. The complete recurrence for each
+amplitude degree is
+
+```text
+U1(t)=exp(t Delta)u0,
+U_m(t)=int_0^t exp((t-s)Delta)
+           P_sol[-sum_(i+j=m) (U_i.grad)U_j](s) ds,
+U_m(0)=0 for m>=2.                                 (CCR5)
+```
+
+There is no spatial Galerkin cutoff. Each finite amplitude coefficient
+has finite Fourier support, and every convolution output is retained.
+The heat denominators include resonances exactly. Degrees two through
+six suffice for the degree-ten cubic observation. For unit A,B,C, their
+mode counts are 4,14,40,90,156; the original degree-one field has six modes.
+
+The result is an exponential polynomial G10 with 22 nonzero rational
+terms `c_(r,j)t^j exp(-r t)`, rates r in {4,6,8,10,12,14}. Its full
+coefficients are in `coupled_caloric_return_results.json`. The lower
+even coefficients of degrees six and eight vanish identically, and
+translation symmetry removes the odd degrees. The exact conclusions are
+
+```text
+G10(t)>0 for every t>0,
+G10^(j)(0)=0 for j=0,...,6,
+G10^(7)(0)=8393/576,
+C10=int_0^infinity G10(t)dt
+   =415522849111/1911826022400000000.                (CCR6)
+```
+
+An exact positive differential cascade certifies the all-time sign.
+Starting with F0=G10, apply `F_(j+1)=(d/dt+r_j)F_j`, with rates
+
+```text
+14 repeated4 times, 12 repeated5 times, 10 repeated8 times,
+8 repeated5 times, 6 repeated4 times, 4 repeated2 times.
+```
+
+All 28 initial values are nonnegative, some strictly positive, and the
+terminal exponential polynomial is exactly zero. Solving the scalar
+first-order equations backward from that terminal function proves
+nonnegativity of every preceding function on the entire half-line;
+the positive initial values give G10(t)>0 for t>0. This is a finite
+rational certificate, not positivity inferred from numerical sampling.
+Termwise integration gives C10 in (CCR6).
+
+For general positive viscosity the complete leading history is
+
+```text
+G_lead(t)=A^4 B^2 C^4 nu^(-7)G10(nu t),
+int_0^infinity G_lead(t)dt=A^4 B^2 C^4 nu^(-8)C10.   (CCR7)
+```
+
+The scaling follows from u(t)=nu v(nu t) with initial amplitudes divided
+by nu. Its initial seventh-order coefficient agrees with (CCR4).
+At time-derivative order seven the cubic remainder has amplitude degree
+at most ten. The lower amplitude cancellations and (CCR6) therefore
+also establish (CCR4) at arbitrary fixed amplitudes, without extending
+the amplitude series beyond its justified domain.
+
+### A positive remaining allowance and the precise unpaid continuation
+
+Let S=|A|+|B|+|C|. In the existing original-parent reserve (256), choose
+ell=1 and the initial-data derivative envelopes
+
+```text
+Gbar(t)=Lbar(t)=S exp(-nu t),
+chi(t)=exp[(5S/nu)exp(-nu t)], chi0=exp(5S/nu),
+J_parent=chi[Y+F], Y=||grad b||2^2.
+```
+
+The quantities E_star,F and their source payment remain exactly those
+in (255)--(257), with source capacity (CCR2). In particular, on every
+available actual smooth prefix,
+
+```text
+J_parent'+(3nu/2)chi D_b<=2chi g(b).
+```
+
+Write `Tail10(s)=int_s^infinity G10(r)dr`, an explicit nonnegative
+exponential polynomial with derivative -G10. Define
+
+```text
+R10(t)=2chi0 A^4 B^2 C^4 nu^(-8)Tail10(nu t)>=0,
+R10'=-2chi0 G_lead<=-2chi G_lead,
+R10(0)=2chi0 A^4 B^2 C^4 nu^(-8)C10.                (CCR8)
+```
+
+This allowance comes entirely from the original datum and viscosity.
+It pays the complete leading coupled return across its whole lifetime,
+with no reset at later segment boundaries. Define the EXACT remaining
+work on an actual flow by
+
+```text
+eta(t)=g(b(t))-G_lead(t), J_total=J_parent+R10>=0.
+J_total'+(3nu/2)chi D_b<=2chi eta.                   (CCR9)
+```
+
+This inequality is valid on every available smooth prefix, for arbitrary
+amplitudes; it does not assume that eta is small. Under a common small
+amplitude lambda, eta starts at degree twelve on each fixed finite
+horizon, but no uniform large-amplitude or all-time remainder bound is
+asserted. The original cooling term and the excess payment
+`-2(chi0-chi)G_lead` are favorable and may be retained.
+
+The still-open sufficient estimate is
+
+```text
+2int_0^t chi(s)eta(s)ds
+ <=nu int_0^t chi(s)D_b(s)ds+K(u0,nu,H), t<=H,       (CCR10)
+```
+
+with ONE finite original-data K before every same-datum smooth prefix.
+If proved, (CCR9) bounds Y by J_total(0)+K, hence bounds the complete
+physical gradient using `||grad u||2^2<=2||grad u0||2^2+2Y` and feeds the
+existing order-one continuation theorem. Positivity and payment of G10
+alone do not prove (CCR10). The new physical family is periodic; the
+general parent reserve and the full research target still include R3.
+
+Run `python3 -O labs/coupled_caloric_return.py`. The complete amplitude
+recurrence, independent literal vorticity contraction, 28-step positive
+cascade and tail integral use exact rational arithmetic. Independent
+Gaussian-rational NS jets at nu=1 and 2/7 reconstruct all time derivatives
+through order five and the seventh-order stretching onset, retaining
+pressure and every mode. A changed-parent-amplitude fixture checks the
+joint factor independently. The local PDE bridge and continuation
+estimates are analytic, not newly Lean-certified. No Lean declarations
+or axioms change.
