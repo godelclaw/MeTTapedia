@@ -1,0 +1,49 @@
+{
+  "tensor_cap": {
+    "outer_hessian_eigenvalues": [
+      "0",
+      "k/r",
+      "k/r"
+    ],
+    "outer_cap_square_eigenvalues": [
+      "0",
+      "k^2/r^2",
+      "k^2/r^2"
+    ],
+    "noncommuting_source_margin": "-23/2 + 22*sqrt(3)"
+  },
+  "reserve": {
+    "memory_distribution": "S*(1/nu + torus_only_H)*E0^(5/3)*k^(-5/3)",
+    "gradient_distribution": "2*A^(3/8)*(E0/nu)^(5/8)*level^(-5/4)",
+    "pressure_receiver_space": "L^(5/2,1) of joint space-time",
+    "reserve": "k*E + integral Phi_k(|C|), with original value k*E0"
+  },
+  "actual_history": {
+    "memory_source_commutator_squared": "3036867360921/1099511627776",
+    "spatial_transverse_gradient_squared": "22948228258414425/12375810826829824",
+    "scope": "globally smooth unforced unequal-wave shear; canonical and memory pressure vanish"
+  },
+  "scaling": {
+    "actual_NS": "u_lambda=lambda*u(lambda^2*t,lambda*x); C_lambda=lambda^2*C",
+    "original_energy_exponent": -1,
+    "space_time_measure_exponent": -5,
+    "rows": [
+      {
+        "q": "5/3",
+        "memory_weak_norm_over_energy_exponent": "0"
+      },
+      {
+        "q": "2",
+        "memory_weak_norm_over_energy_exponent": "1/2"
+      },
+      {
+        "q": "3",
+        "memory_weak_norm_over_energy_exponent": "4/3"
+      }
+    ],
+    "critical_work_exponent": 0,
+    "scope": "fixed viscosity on R3; no fixed-energy or same-datum counterexample claimed"
+  },
+  "source_sha256": "fba4ee0a57bf9bc379396d21de679bec1ed98e7c10e8d0492fa5e10a77c8810e",
+  "certification": "exact algebra; continuum estimates remain analytic, not Lean-certified"
+}

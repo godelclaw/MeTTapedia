@@ -56252,3 +56252,230 @@ certificate, source-positive parameter remainder algebra and the full
 viscous interval margins. Smooth dependence, local Sobolev estimates,
 Taylor remainders and the actual PDE interval conclusions remain analytic.
 No Lean declarations or axioms change.
+
+## The full stress memory has an original-energy concentration bound
+
+`stress_memory_concentration.py` checks a quantitative restriction on the
+actual tensor C of (SM1). Even newly generated memory has a space-time
+distribution bound independent of an age cutoff and of unknown future
+velocity derivatives. The estimate retains changing tensor directions.
+It gives a bound for one factor in the memory-pressure work (AM13), not
+a payment of that work or of the other recent sources.
+
+The proof reuses classical truncation and parabolic Sobolev estimates.
+For the scalar method and its primitive, see
+[Prignet, *Existence and uniqueness of entropy solutions of parabolic
+problems with L1 data*, Sections 1--2](https://prignet.perso.math.cnrs.fr/pdf/parabolique.pdf),
+building on Boccardo--Gallouet. Here the smooth actual NS equation,
+incompressible drift, full tensor cap and original energy give the
+following direct argument. These continuum conclusions are analytic;
+the checker verifies their algebra and an actual shear calibration.
+
+### A tensor cap retains transverse diffusion
+
+Work on any available smooth unforced prefix [0,T], T<=H, on R3 or the
+normalized period-2pi torus, with nu>0 and the same finite-energy Sobolev
+hypotheses as (SM1). In the periodic case remove the original conserved
+mean by the corresponding moving frame. Keep
+
+```text
+scriptL C=2nu G, C(0)=0, G=sum_j partial_j u tensor partial_j u,
+E=||u||2^2, E'=-2nu int tr G, E0=E(0),
+C>=0, int |C|<=int tr C=E0-E.                         (MC1)
+```
+
+The norms and pairings for tensors are Frobenius. For any k>0 fixed at
+the original start, use the convex C^(1,1) function and its gradient
+
+```text
+Phi_k(C)=|C|^2/2                  if |C|<=k,
+         k|C|-k^2/2              if |C|>=k,
+T_k(C)=C                        if |C|<=k,
+       k C/|C|                  if |C|>=k.
+```
+
+For |C|=r>k decompose any increment V into components parallel and
+perpendicular to C. The complete identities are
+
+```text
+D2 Phi_k(C)[V,V]=(k/r)|V_perp|^2,
+|D T_k(C)V|^2=(k/r)^2 |V_perp|^2,
+D2 Phi_k(C)[V,V]-|D T_k(C)V|^2
+                       =k(r-k)|V_perp|^2/r^2>=0.     (MC2)
+```
+
+Inside the ball both quadratic forms equal |V|^2. The primitive and
+its first derivative agree at r=k. The weak chain rule, or smooth
+convex approximation, gives the integrated formulas across that seam.
+This argument controls tensor-direction derivatives, which would be
+lost by retaining only gradients of tr C.
+
+Since C,G are positive semidefinite, so is T_k(C), and
+0<=T_k(C)<=k I. Thus tr((k I-T_k(C))G)>=0 even when C and G do not
+commute. Incompressibility cancels the integrated transport. The reserve
+
+```text
+R_k(t)=k E(t)+int Phi_k(C(t))>=0, R_k(0)=k E0,
+
+R_k(T)+nu int_0^T sum_j int D2 Phi_k(C)[partial_j C,partial_j C]
+ +2nu int_0^T int tr((k I-T_k(C))G)=k E0.             (MC3)
+```
+
+In particular
+
+```text
+sup_(t<=T) ||T_k(C(t))||2^2<=k E0,
+int_0^T ||grad T_k(C)||2^2<=k E0/nu.                 (MC4)
+```
+
+The first bound uses |T_k(C)|^2<=k|C|, not a zero-mean assertion for
+memory. For R3, spatial cutoffs and 0<=Phi_k(C)<=k tr C justify the
+transport and diffusion integrations. Smooth-prefix bounds justify
+the intermediate operations; none enters the constants in (MC4).
+At a composition seam inherit C and E. Equation (MC3) telescopes with
+that same reserve. Bounds at different k observe the same energy;
+their individual initial allowances cannot be added without a new proof.
+
+### Large memory cannot fill arbitrary space-time volume
+
+Choose a domain constant S with
+||v||6^2<=S||grad v||2^2 on R3, and
+||v||6^2<=S(||grad v||2^2+||v||2^2) on the torus.
+The inequalities apply to tensor fields by the scalar norm inequality.
+Spatial interpolation followed by (MC4) gives
+
+```text
+int_0^T int |T_k(C)|^(10/3)
+ <=[sup_t ||T_k(C)||2^2]^(2/3) int_0^T ||T_k(C)||6^2
+ <=A k^(5/3),
+A=S E0^(5/3)/nu                         on R3,
+A=S (1/nu+H) E0^(5/3)                  on T3.       (MC5)
+```
+
+Here and below measure is the product of physical time and spatial
+volume, not probability along one selected trajectory. Since |T_k(C)|=k
+where |C|>k, this proves for every k>0 and every same-datum prefix
+
+```text
+measure{(t,x): 0<t<T, |C(t,x)|>k}<=A k^(-5/3),
+||C||_(L^(5/3,infinity)([0,T]xspace))<=A^(3/5).      (MC6)
+```
+
+The weak-Lp norm convention is sup_(k>0) k measure{|f|>k}^(1/p).
+This is not a uniform strong-L^(5/3) estimate. The extra H in (MC5)
+is necessary for this torus argument because the memory has a constant
+mode. If E0=0, the original fluid and C vanish and all conclusions are
+immediate.
+
+There is also a bound for the full spatial tensor gradient. Write
+B0=E0/nu. For any level ell>0 and cap k>0, split according to |C|>k
+and use (MC4) on the complement:
+
+```text
+measure{|grad C|>ell}<=A k^(-5/3)+B0 k/ell^2.
+```
+
+With k=(A ell^2/B0)^(3/8), when E0>0, this becomes
+
+```text
+measure{|grad C|>ell}
+ <=2 A^(3/8) B0^(5/8) ell^(-5/4).                   (MC7)
+```
+
+On R3 the coefficient is 2 S^(3/8) E0^(5/4)/nu. This controls all
+tensor derivatives, including changing directions. It does not control
+a pressure Hessian or give a pointwise gradient bound.
+
+### The pressure pairing exposes the remaining receiver cost
+
+For the actual positive recent memory of (AM4), 0<=C_recent<=C.
+The Frobenius norm is monotone on this positive cone:
+|A+B|^2=|A|^2+2 tr(AB)+|B|^2>=|A|^2 for A,B>=0.
+Hence (MC6) also bounds C_recent, uniformly in the prescribed age delta.
+No gradient bound for C_recent is inferred from (MC7).
+
+Let P_recent=(I-exp(L^2 Delta))R(C_recent), with the same full pressure
+multiplier R as in (AM5). Spatial multiplier bounds at exponents on
+either side of 5/3, Fubini and interpolation give a domain constant
+C_Rw such that
+
+```text
+||P_recent||_(L^(5/3,infinity) space-time)<=C_Rw A^(3/5).
+```
+
+The constant is independent of L: the heat filter has Lp norm at most
+two and the pressure multiplier has the existing domain Lp bounds.
+It is also independent of the actual drift and memory age. With
+||f||_(L^(q,1))=int_0^infinity s^(1/q) f*(s) ds/s,
+the rearrangement inequality now gives the complete memory work
+
+```text
+int_0^T |W_recent(t)|dt
+ <=3 C_Rw A^(3/5)
+       ||u.grad r||_(L^(5/2,1)([0,T]xspace)),
+W_recent=-3 int P_recent u.grad r.                   (MC8)
+```
+
+The receiver r is the full six-component norm in (AM1). Taking absolute
+values in (MC8) is a sufficient bound and can lose useful cancellation.
+The L^(5/2,1) receiver norm has NOT been paid by original data. Also
+the fine-pressure generation and recent commutator in (AM13) remain.
+Thus (MC8) is a concrete consumer of the new memory bound, not a proof
+of (AM15). The existing whole-space and periodic order-one continuation
+theorems still require their all-prefix finite bounds.
+
+### Actual scaling identifies the concentration gap
+
+On R3, standard NS scaling at unchanged viscosity preserves the full
+memory equation and its original zero initial value:
+
+```text
+u_lambda(t,x)=lambda u(lambda^2 t,lambda x),
+C_lambda(t,x)=lambda^2 C(lambda^2 t,lambda x),
+E0_lambda=lambda^(-1)E0.                             (MC9)
+```
+
+On the rescaled available interval [0,T/lambda^2], the weak-Lq norm of
+C scales by lambda^(2-5/q). Dividing by E0_lambda gives
+lambda^(3-5/q), neutral precisely at q=5/3. Therefore a uniform bound
+||C||_(L^(q,infinity))<=constant(nu,H) E0 for q>5/3 cannot hold for
+all actual whole-space data: take any nonconstant admissible smooth
+datum and a short available interval. Its positive memory is nonzero,
+since C_t(0)=2nu G0, so that weak norm is positive. Scaling with
+lambda tending to infinity puts the intervals inside one prescribed H
+and contradicts the stronger bound. The full datum varies in this test;
+it is not an obstruction to every full-datum allowance or a singularity.
+
+For the complete pressure multiplier, or with L scaled to L/lambda,
+the full receiver has r_lambda=lambda r. Thus the memory factor in
+(MC8) scales like lambda^(-1), while its receiver norm scales like
+lambda. Their product and the integrated pressure work are invariant.
+This diagnostic retains both factors: small occupied space-time volume
+alone does not force small critical work. No fixed-cutoff counterexample
+or same-datum infinite renewal is inferred from these scaling identities.
+
+### Calibration and certification boundary
+
+The checker uses the exact unforced periodic shear
+u=(a exp(-nu t)sin y,0,b exp(-4nu t)cos(2y)). Its canonical pressure
+is zero, and C=exp(nu t Delta)(u0 tensor u0)-u tensor u is its actual
+retained memory for every t>=0. The unequal modes give noncommuting
+C and newly generated G, and a nonzero transverse spatial derivative
+of C. Every tensor component satisfies (MC1), and the integrated trace
+equals E0-E. Its memory pressure also vanishes: this calibration checks
+the tensor diffusion, not a dangerous pressure return.
+
+Run `python3 -O labs/stress_memory_concentration.py`. It independently
+differentiates the cap, its Hessian, the shear and every memory component;
+it checks source positivity in noncommuting directions, reserve signs,
+interpolation and distribution exponents, and the actual scaling laws.
+The source hash is recorded with the output. The continuum prefix,
+truncation, Sobolev and Lorentz estimates remain analytic, not certified
+by this checker or by Lean. No Lean declarations or axioms change.
+
+The estimate uses the unforced energy inequality and incompressibility.
+A forced flow satisfying the same energy inequality would also obey
+this particular memory bound. It does not on its own distinguish the
+imported forced mechanism from unforced repeated renewal. Its useful
+restriction is on concentration of retained viscous memory; the signed
+joint physical source remains the open history problem.

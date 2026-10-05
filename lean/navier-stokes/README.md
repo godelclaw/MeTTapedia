@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [stress-memory concentration bound](labs/README.md#the-full-stress-memory-has-an-original-energy-concentration-bound)
+limits the space-time volume occupied by large viscous memory, including
+arbitrarily recent memory, on every available smooth unforced prefix.
+A capped tensor reserve retains changes of direction and gives weak
+space-time bounds for both the full memory and its gradient. The bound
+also controls the memory-pressure factor in a joint work pairing; the
+required receiver norm remains unpaid. Actual NS scaling explains why
+small occupied volume alone cannot supply the continuation estimate.
+This reuses classical truncation estimates and is analytic with exact
+checks, not a new Lean certificate or a global regularity result.
+
 The [full enstrophy return](labs/README.md#parent-depletion-can-coexist-with-growing-full-enstrophy)
 connects the swirl calculation to the ordinary stretching budget. For an
 entire annular-profile family, the kinetic parent return is depleted but
