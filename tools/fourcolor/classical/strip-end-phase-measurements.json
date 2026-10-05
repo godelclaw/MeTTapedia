@@ -1,0 +1,132 @@
+{
+  "status": "kernel checked uniform first phase; second phase remains program evidence",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "catalogue_revision": "c2ce7a96e35256201526e2abb51a39d04a588b53",
+  "attribution": "D0099: Yuta Inoue near-linear catalogue, MIT. Source decoding and Kempe semantics reuse Gonthier/Emery.",
+  "theorems": [
+    "FourColor.StripEndPhase.release",
+    "FourColor.StripEndPhase.repair",
+    "FourColor.StripEndPhase.compatible",
+    "FourColor.StripEndPhase.from_reading",
+    "FourColor.StripEndPhase.disk_consumer"
+  ],
+  "quantifiers": "Every proper D0099 boundary assignment admits compatible restoration of core vertices 0, 1 and 3 against every Kempe-closed exterior. An actual reading in a spherical triangulation supplies the closure, without a selected starting word. Boundary ports may coincide.",
+  "source_core_vertices": 8,
+  "restored_core_vertices": 3,
+  "remaining_core_vertices": 5,
+  "proof_cases": "Partner before anchor, immediately after anchor, or later. The fixed anchor is boundary edge 4 and the difference colour is b(4)+b(6).",
+  "modules": [
+    {
+      "module": "MettapediaFourColor.StripEndPhase",
+      "source_sha256": "225c3273e2ffe3e6b5f7acb8de15709be70c9c528e1f57506a87856c469fbd10",
+      "exit_code": 0,
+      "frontend_wall_seconds": 8.33,
+      "olean_bytes": 725296,
+      "olean_sha256": "c25dfd06d524a5d769292eb7d321bf34d8f48a99fa7d4964b9182673fa074032",
+      "source_bytes": 10669
+    },
+    {
+      "module": "MettapediaFourColor.StripEndPhaseGeometry",
+      "source_sha256": "e91cb7b99528a7dbd1190284710339a37d0a933426c00e522cd9ac8a97d6d793",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.467,
+      "olean_bytes": 39688,
+      "olean_sha256": "99471dcf87c3e0ab72dfa73dfcb785dd9d07503e4e64a02116672f98ef079571",
+      "source_bytes": 2417
+    },
+    {
+      "module": "MettapediaFourColor.StripEndPhaseAudit",
+      "source_sha256": "0f3df460e8d54b31c63c7c24e8a1fa0a60143a5404df581c820e2cba019da4dc",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.875,
+      "olean_bytes": 2600,
+      "olean_sha256": "9ba554e8f7f385ea67b24bf91b6be68e6da8c4de88e1dd43c6a6bccbea5b9ae9",
+      "source_bytes": 2448
+    }
+  ],
+  "frontend_seconds_with_prebuilt_dependencies": 16.672,
+  "audit": {
+    "roots": 10,
+    "transitive_declarations": 13123,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excludes": [
+      "complete Four Colour endpoints",
+      "original bulk certificates",
+      "WheelRepairData",
+      "ExceptionalRepairData",
+      "ResidualSeedRepairData",
+      "DiamondProfileData"
+    ]
+  },
+  "new_stored_boundary_words": 0,
+  "new_stored_matchings": 0,
+  "new_core_colouring_witnesses": 0,
+  "independent_program_replay": {
+    "status": "independent first-phase replay passed",
+    "source": "D0099.conf",
+    "source_sha256": "932265e50ca2493734dc03f20b4259d6506e968b6cbd8bc16b48f9f53083ae82",
+    "proper_boundary_classes": 7381,
+    "initial_left_failures": 1093,
+    "distinct_partner_updates": 10930,
+    "five_port_assignments": 1024,
+    "obstructed_five_port_assignments": 48,
+    "local_partner_region_checks": 288,
+    "stored_boundary_words": 0,
+    "stored_core_colourings": 0,
+    "limits": [
+      "Only the left triangle is restored by the Lean first-phase law.",
+      "No new full-source reduction or geometric coverage follows."
+    ],
+    "continuation_game": {
+      "status": "program evidence; no Lean second-phase theorem",
+      "noncrossing_layouts": 238457,
+      "direct_extensions": 1587,
+      "unrestricted_layers": [
+        1068,
+        1067,
+        1192,
+        1350,
+        893,
+        176,
+        48
+      ],
+      "unrestricted_unresolved": 0,
+      "left_feasible_classes": 6288,
+      "left_preserving_layers": [
+        938,
+        868,
+        1003,
+        1118,
+        645,
+        116,
+        13
+      ],
+      "left_preserving_unresolved": 0,
+      "last_unrestricted_layer_classes": 48,
+      "last_layer_one_batch_release": {
+        "left": 48,
+        "right": 20,
+        "both": 8
+      },
+      "scope": "Existential palette, universal noncrossing matching, existential batch to an earlier layer. The restricted game keeps the left triangle feasible at every stage. Separate triangle feasibility does not imply a whole-core colouring."
+    }
+  },
+  "limits": [
+    "Only the end triangle is restored. No full-source reduction is established by this result.",
+    "The continuation game retains feasibility of the left triangle, not its particular colours.",
+    "The finite second-phase rank is not a compact structural theorem or a Lean certificate.",
+    "No geometric occurrence supply, catalogue removal or algorithmic runtime claim."
+  ],
+  "catalogue_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0,
+  "complete_assembly_checks_removed": 0,
+  "gates": {
+    "kernelStripEndPhase": "passed",
+    "kernelComplete": "passed",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint": "passed"
+  }
+}

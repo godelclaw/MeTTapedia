@@ -2729,3 +2729,52 @@ available for the two certified inputs; the latter fails under the stated
 model. Measurements and source hashes are in
 `strip-flexibility-measurements.json`. No coverage entry, original
 certificate dependency or complete-assembly check is removed.
+
+## A uniform first phase for all D0099 boundary colourings
+
+`StripEndPhase.repair` restores the left core triangle for every proper
+boundary assignment. When this triangle cannot be coloured, its two outer
+vertices have the same forced colour. The exchange at boundary edge four,
+with difference `b(4) + b(6)`, removes that conflict for every possible
+partner. A partner before the anchor repeats one attachment colour; the
+next partner changes the forced colour; every later partner repeats another
+attachment colour. These three cases give one argument over arbitrary
+boundary assignments. No complete boundary-word or core-colouring table
+is stored.
+
+The proof recovers the matching supplied by the exterior, retains its
+chromogram, and reconstructs a genuine colouring of the induced source
+containing all eleven ports and core vertices 0, 1 and 3. The source and
+exterior witnesses agree at every port. `StripEndPhase.from_reading`
+derives exterior closure from an actual source reading in a spherical
+triangulation; it requires no selected initial boundary word and allows
+boundary identifications. `disk_consumer` applies the same law to the
+previously certified physical disk. Five core vertices remain to restore.
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelStripEndPhase
+```
+
+The independent first-phase replay checks all 1,093 initially obstructed
+classes among the 7,381 proper boundary classes, including every distinct
+anchor partner. The optional continuation experiment asks whether the
+remaining repair can keep the left triangle colourable at each stage:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_strip_end_phase.py --phase-game
+```
+
+All 6,288 left-feasible classes succeed in that finite matching game:
+1,587 extend directly, and seven further layers contain 938, 868, 1,003,
+1,118, 645, 116 and 13 classes. This is program evidence for a staged
+continuation, not a Lean second-phase proof or a bound on physical Kempe
+switches. A compact structural explanation of the remaining phases is open.
+In particular, colourability of the two end triangles separately does not
+assert a compatible colouring of the entire core.
+
+The ten-root audit excludes complete Four Colour endpoints and large
+repair certificates. Source and replay measurements are in
+`strip-end-phase-measurements.json`. This is partial restoration, not a new
+complete source reduction; coverage remains 633 entries with 629 original
+configuration certificate dependencies. No compression credit is assigned.

@@ -1652,3 +1652,17 @@ target kernelStripFlexibility pkg : Unit := do
         "StripFlexibilityBarrier", "StripFlexibilityAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the uniform first phase of end-triangle repair. -/
+target kernelStripEndPhase pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-end-phase",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripEndPhase", "StripEndPhaseGeometry", "StripEndPhaseAudit"]
+      cwd := pkg.dir
+      env := env }

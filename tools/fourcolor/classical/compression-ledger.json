@@ -6585,5 +6585,55 @@
     "catalogue_entries_removed": 0,
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0
+  },
+  "strip_uniform_end_phase": {
+    "status": "kernel checked uniform first phase; second phase remains program evidence",
+    "receipt": "strip-end-phase-measurements.json",
+    "theorem": "FourColor.StripEndPhase.repair",
+    "actual_map_consumer": "FourColor.StripEndPhase.from_reading",
+    "scope": "Every proper D0099 boundary assignment admits compatible restoration of core vertices 0, 1 and 3 against every Kempe-closed exterior. An actual reading in a spherical triangulation supplies the closure, without a selected starting word. Boundary ports may coincide.",
+    "core_vertices_restored": 3,
+    "core_vertices_remaining": 5,
+    "new_stored_boundary_words": 0,
+    "new_stored_matchings": 0,
+    "new_core_colouring_witnesses": 0,
+    "continuation_program_evidence": {
+      "status": "program evidence; no Lean second-phase theorem",
+      "noncrossing_layouts": 238457,
+      "direct_extensions": 1587,
+      "unrestricted_layers": [
+        1068,
+        1067,
+        1192,
+        1350,
+        893,
+        176,
+        48
+      ],
+      "unrestricted_unresolved": 0,
+      "left_feasible_classes": 6288,
+      "left_preserving_layers": [
+        938,
+        868,
+        1003,
+        1118,
+        645,
+        116,
+        13
+      ],
+      "left_preserving_unresolved": 0,
+      "last_unrestricted_layer_classes": 48,
+      "last_layer_one_batch_release": {
+        "left": 48,
+        "right": 20,
+        "both": 8
+      },
+      "scope": "Existential palette, universal noncrossing matching, existential batch to an earlier layer. The restricted game keeps the left triangle feasible at every stage. Separate triangle feasibility does not imply a whole-core colouring."
+    },
+    "remaining": "A shared compatible repair law for the remaining five vertices, with a proved phase decrease; geometric occurrence supply and global coverage.",
+    "credited_compression": false,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
   }
 }
