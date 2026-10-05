@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [rotation-preserving covector calculation](labs/README.md#rotation-preserving-covector-histories-and-the-cost-of-a-gradient)
+reuses the existing physical covector reconstruction and separates rotation
+from strain without discarding either history. A scalar reserve pays the
+coarse strain couplings in a continuation norm; the joint fine history
+remains open. An exact identity shows that accumulated quadratic covector
+strain input is gradient storage plus its diffusion. Even a pressure-free
+decaying shear has positive such work, with an explicit finite allowance.
+Thus auxiliary covector growth cannot be identified with dangerous fluid
+stretching. The new estimates and actual-flow examples are analytic with
+exact checks, not new Lean certificates.
+
 The [pressure-deformation source payment](labs/README.md#pressure-deformation-has-a-finite-source-payment-but-a-critical-concentration-gap)
 constructs a nonnegative original-energy reserve for the full space-time
 L1 magnitude of the actual pressure-deformation source. It retains its

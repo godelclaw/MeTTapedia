@@ -1,0 +1,97 @@
+{
+  "algebra": {
+    "lift": "scriptL chi=p-|u|^2/2, chi(0)=0; m=u+grad chi; scriptL m+U^T m=0; Pi m=u",
+    "rotating_operator": "B=scriptL-Omega, U=S+Omega; Bm=-Sm",
+    "domination": "|R_(a,t)v|<=P_(a,t)|v|, by the regularized norm comparison; the PDE comparison is analytic.",
+    "gradient_leakage": "B grad chi=grad(scriptL chi)-S grad chi; R does not independently preserve gradients."
+  },
+  "constants": {
+    "P_chi": "(3/2) C_S^(3/4) H^(1/4) E0/(2nu)^(3/4)",
+    "M_H_squared": "H E0+P_chi^2/(2nu), bounding integral ||m||2^2",
+    "M_low": "J_ell sqrt(E0)+K_ell P_chi",
+    "paid_critical_source": "H^(1/6)[K_ell sqrt(E0) M_H+M_low sqrt(E0/(2nu))]",
+    "compatible_reserve": "R_X=(H-t)E+Q_chi/(2nu), R_Z=E/(2nu); R_A=sqrt(2)(H-t)^(1/4)[a^(3/2) R_X^(3/4)+b^(3/2) R_Z^(3/4)], a=K_ell sqrt(E0), b=M_low; R_A_prime+||S_lo m+S_hi m_lo||_(9/5)^(3/2)<=0.",
+    "kernels": "J_ell=||heat_kernel_(ell^2)||_(9/5); K_ell=||grad heat_kernel_(ell^2)||_(9/5)",
+    "OPEN": "Full-datum L3_t L9_x payment of Pi integral R_(a,t)[S_hi m_hi](a)da, with actual joint history retained."
+  },
+  "exact_shear": {
+    "actual_velocity": "(A exp(-nu t) sin z,0,0); canonical p=0; vortex stretching=0",
+    "chi": "-A**2*(1 - exp(-2*nu*t))/(8*nu) + A**2*(exp(-2*nu*t) - exp(-4*nu*t))*cos(2*z)/(8*nu)",
+    "gradient_energy": "A**4*(exp(-2*nu*t) - exp(-4*nu*t))**2/(32*nu**2)",
+    "strain_work_D": "-A**4*(exp(-4*nu*t) - exp(-6*nu*t))/(16*nu)",
+    "integral_0_infinity_minus_D": "A^4/(192nu^2)",
+    "remaining_reserve": "A**4*(exp(-4*nu*t)/4 - exp(-6*nu*t)/6)/(16*nu**2)",
+    "finite_example": "A=16nu, t=log(2)/(2nu): original energy128nu^2, physical energy64nu^2, covector energy192nu^2.",
+    "interpretation": "The positive covector strain work creates and diffuses a gradient removed by velocity reconstruction. It is not dangerous stretching or external forcing."
+  },
+  "whole_space_seed": {
+    "datum": "(-y,x,0) exp(-|x|^2)",
+    "Delta_Bernoulli": "2(x^2+y^2)(5-4|x|^2) exp(-2|x|^2), not identically zero",
+    "consequence": "The actual whole-space covector return has D_prime(0)=-||grad(p0-|u0|^2/2)||2^2<0, at every positive viscosity.",
+    "scaling": "For actual NS concentration, chi_lambda=chi(lambda^2 t,lambda x), m_lambda=lambda m(lambda^2 t,lambda x); the retained gradient is not reset."
+  },
+  "actual_jets": [
+    {
+      "datum": "genuine 3D",
+      "nu": "1",
+      "pressure_modes": 16,
+      "Bernoulli_modes": 23,
+      "strain_work_at_zero": "0",
+      "strain_work_derivative": "-3761933313988/23728302675",
+      "returned_work_over_t2_limit": "1880966656994/23728302675",
+      "scope": "Complete NS and canonical covector jets, not a truncated time evolution; interval conclusions use smooth local theory."
+    },
+    {
+      "datum": "genuine 3D",
+      "nu": "2/7",
+      "pressure_modes": 16,
+      "Bernoulli_modes": 23,
+      "strain_work_at_zero": "0",
+      "strain_work_derivative": "-3761933313988/23728302675",
+      "returned_work_over_t2_limit": "1880966656994/23728302675",
+      "scope": "Complete NS and canonical covector jets, not a truncated time evolution; interval conclusions use smooth local theory."
+    },
+    {
+      "datum": "initially pressure-free cyclic",
+      "nu": "1",
+      "pressure_modes": 0,
+      "Bernoulli_modes": 7,
+      "strain_work_at_zero": "0",
+      "strain_work_derivative": "-9/4",
+      "returned_work_over_t2_limit": "9/8",
+      "scope": "Complete NS and canonical covector jets, not a truncated time evolution; interval conclusions use smooth local theory."
+    },
+    {
+      "datum": "initially pressure-free cyclic",
+      "nu": "2/7",
+      "pressure_modes": 0,
+      "Bernoulli_modes": 7,
+      "strain_work_at_zero": "0",
+      "strain_work_derivative": "-9/4",
+      "returned_work_over_t2_limit": "9/8",
+      "scope": "Complete NS and canonical covector jets, not a truncated time evolution; interval conclusions use smooth local theory."
+    },
+    {
+      "datum": "pressure-free shear",
+      "nu": "1",
+      "pressure_modes": 0,
+      "Bernoulli_modes": 3,
+      "strain_work_at_zero": "0",
+      "strain_work_derivative": "-1/8",
+      "returned_work_over_t2_limit": "1/16",
+      "scope": "Complete NS and canonical covector jets, not a truncated time evolution; interval conclusions use smooth local theory."
+    },
+    {
+      "datum": "pressure-free shear",
+      "nu": "2/7",
+      "pressure_modes": 0,
+      "Bernoulli_modes": 3,
+      "strain_work_at_zero": "0",
+      "strain_work_derivative": "-1/8",
+      "returned_work_over_t2_limit": "1/16",
+      "scope": "Complete NS and canonical covector jets, not a truncated time evolution; interval conclusions use smooth local theory."
+    }
+  ],
+  "status": "Exact checks passed. Propagator domination, reserve bounds, physical histories and continuation are analytic, not Lean-certified.",
+  "source_sha256": "83b8c976c7ab3e8b035f68e73252ae9f76e1f400fe92e0f96a43753957f23ef3"
+}

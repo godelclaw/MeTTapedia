@@ -52284,3 +52284,254 @@ source identity, four complete NS jet fixtures, localized swirl identities
 and critical scaling exponents. Its JSON records the source hash. The
 pressure/propagator analysis, actual intervals and all-prefix estimates are
 analytic. No Lean declaration, axiom or global regularity claim is added.
+
+## Rotation-preserving covector histories and the cost of a gradient
+
+`corotating_covector_payment.py` tests a strain-based alternative to the
+pressure-deformation observation (PD1). Rotation is kept in a propagator
+with scalar norm domination. A reserve derived from the original energy
+pays its coarse strain couplings in the critical source norm. The remaining
+joint fine-strain history is still open.
+
+The physical covector construction is reused from the
+[Constantin--Iyer representation](https://arxiv.org/abs/math/0511067) and
+the existing `MettapediaNS.CovectorFluidBridge`, especially
+`projected_covectorRhs`, `nonlinear_pushdown` and
+`actual_curl_reconstruction`. The new scalar construction, propagator
+comparison, estimates and physical-time identities below are analytic;
+the existing Lean reconstruction algebra does not certify those new steps.
+
+### An actual scalar lift, with all pressure retained
+
+On any available smooth unforced R3 or normalized period-2pi T3 prefix,
+use the original-data Galilean convention of (JP1). Set
+
+```text
+scriptL=partial_t+u.grad-nu Delta,
+U=grad u, S=(U+U^T)/2, Omega=(U-U^T)/2,
+e=|u|^2/2, b=p-e,
+scriptL chi=b, chi(0)=0, m=u+grad chi.
+scriptL m+U^T m=0, m(0)=u0, Pi m=u, curl m=omega.     (RC1)
+```
+
+Here p is the full canonical pressure. The Bernoulli scalar chi differs
+from the pressure potential q in (PD1); these histories must not be
+identified. No spatial mean of chi is discarded. The gradient identity
+scriptL grad chi=grad(scriptL chi)-U^T grad chi, together with
+U^T u=grad e, proves (RC1) directly from the actual NS equation.
+The original chi and m persist at every composition seam.
+
+The pressure multiplier bound used in (PD4) yields
+
+```text
+||b||2<=3||u||4^2/2<=(3/2)C_S^(3/4) E^(1/4) Z^(3/4),
+r_chi(t)=(3/2)C_S^(3/4)(2nu)^(-3/4)(H-t)^(1/4)E(t),
+Q_chi=(||chi||2+r_chi)^2,
+Q_chi'+2nu||grad chi||2^2<=0,
+P_chi=r_chi(0), Q_chi(0)=P_chi^2.                    (RC2)
+```
+
+This is the same proved scalar-norm payment as (PD5)--(PD6), now with
+the complete Bernoulli source and factor 3/2. Positive regularization
+handles zero norms; endpoint bounds follow from integrated limits.
+Orthogonality of solenoidal fields and gradients gives
+
+```text
+||m||2^2=E+||grad chi||2^2,
+int_0^T ||m||2^2<=M_H^2:=H E0+P_chi^2/(2nu).         (RC3)
+```
+
+This is an all-prefix integral bound from original resources. It does not
+assert a uniform instantaneous bound on ||m||2 or its higher norms.
+
+### Rotation is transported exactly, without magnitude growth
+
+Let R_(a,t) solve (scriptL-Omega)v=0 for the actual u and Omega. These
+coefficients belong to the given smooth prefix, rather than independent
+controls. For r_epsilon=sqrt(|v|^2+epsilon^2), the equation gives
+
+```text
+scriptL r_epsilon
+ =-nu sum_k [(|v|^2+epsilon^2)|partial_k v|^2
+                       -(v.partial_k v)^2]/r_epsilon^3<=0,
+|R_(a,t)v_a|<=P_(a,t)|v_a|.                          (RC4)
+```
+
+The numerator is the sum of squared two-component minors and
+epsilon^2|partial_k v|^2. Skew symmetry gives v.Omega v=0 exactly.
+Scalar parabolic comparison and the limit epsilon->0 prove the second
+line. Thus R inherits all scalar Lp contractions and Nash smoothing
+bounds used in (PD9), with no norm of the unknown rotation coefficient
+in their constants. A stochastic representation may carry the same local
+rotations as orthogonal matrix weights along the actual diffusion; no
+factorization of those weights from the path or other parents is needed.
+
+The complete covector equation consequently has the reconstruction
+
+```text
+m(t)=R_(0,t)u0-int_0^t R_(a,t)[S(a)m(a)]da,
+u(t)=Pi R_(0,t)u0-Pi int_0^t R_(a,t)[S(a)m(a)]da.     (RC5)
+```
+
+Rotation still changes the orientation presented to later strain and
+influences the physical strain evolution. It has not been deleted from
+the fluid. The projection remains outside the history operator: in fact
+
+```text
+(scriptL-Omega)grad psi=grad(scriptL psi)-S grad psi. (RC6)
+```
+
+Therefore R does not generally preserve gradient fields, and projecting
+its inputs independently would omit the last term in (RC6). Adding the
+full strain operator restores the gradient invariance of the covector
+equation already proved in `CovectorFluidBridge`.
+
+### A critical coarse-strain payment with a compatible reserve
+
+Fix ell>0 originally. Let T_ell=exp(ell^2 Delta) and split S and m into
+their smoothed and remaining parts. The exact source decomposition is
+
+```text
+S m=F_c+F_f, F_c=S_lo m+S_hi m_lo, F_f=S_hi m_hi.
+J_ell=||k_ell||_(9/5), K_ell=||grad k_ell||_(9/5),
+M_lo=J_ell sqrt(E0)+K_ell P_chi.
+sup_t||S_lo||18<=K_ell sqrt(E0), sup_t||m_lo||18<=M_lo,
+int_0^T||S_hi||2^2<=E0/(2nu).                       (RC7)
+```
+
+Young's convolution inequality proves the first two bounds from u and
+chi, using (RC2). On R3, J_ell=J_1 ell^(-4/3) and
+K_ell=K_1 ell^(-7/3); on T3 use the periodized heat kernels. The high
+remainder is an L2 contraction and symmetrization does not increase the
+Frobenius norm. Spatial Holder and time Holder, exactly as in (PD9c), give
+
+```text
+||F_c||_(L^(3/2)_t L^(9/5)_x)<=A_c,
+A_c=H^(1/6)[K_ell sqrt(E0)M_H+M_lo sqrt(E0/(2nu))].   (RC8)
+```
+
+There is also an explicit nonnegative remaining reserve. Put h=H-t,
+G=||grad chi||2^2, a=K_ell sqrt(E0), d=M_lo, all coefficients fixed from
+the original resources. Then
+
+```text
+R_X=h E+Q_chi/(2nu),  R_X'<=-E-G=-||m||2^2,
+R_Z=E/(2nu), R_Z'=-Z,
+R_c=sqrt(2)h^(1/4)[a^(3/2)R_X^(3/4)+d^(3/2)R_Z^(3/4)],
+R_c'+||F_c||_(9/5)^(3/2)<=0.                        (RC9)
+```
+
+For any R>=0 with R'<=-X, differentiation and weighted Young give
+(h^(1/4)R^(3/4))'<=-X^(3/4). Use also
+||F_c||_(9/5)<=a sqrt(E+G)+d sqrt(Z) and
+(x+y)^(3/2)<=sqrt(2)(x^(3/2)+y^(3/2)). Positive regularization and
+integrated limits cover zeros. Thus the original value R_c(0) pays the
+whole critical coarse-source cost across compatible seams. No new H or
+new chi is installed at a later seam.
+
+By (RC4), the same B_H as in (PD9) converts this source payment to a
+critical impulse payment. If W_f=Pi int_0^t R_(a,t)F_f(a)da, then
+
+```text
+||u||_(L3_t L9_x)
+ <=C_Pi H^(1/3)||u0||9+B_H A_c+||W_f||_(L3_t L9_x). (RC10)
+```
+
+One may replace A_c by R_c(0)^(2/3). A full-original-datum bound for the
+last term on EVERY available same-datum prefix would give (JP11)'s
+order-one estimate and the existing R3/T3 continuation consumers.
+That fine-history bound remains OPEN, as does the pressure-deformation
+bound (PD9d). These are distinct sufficient observations; neither
+unpaid bound follows from the coarse reserve.
+
+For later work on their actual evolution, write A=I-T_ell and
+B=scriptL-Omega. The exact filtered equations include
+
+```text
+B(A m)=-A(Sm)+[u.grad,A]m-[Omega,A]m,
+scriptL(A S)=-A(S^2+Omega^2+Hess p)+[u.grad,A]S.      (RC11)
+```
+
+The brackets are operator commutators. Neither heat filter is commuted
+through the unknown drift or rotation. Pressure, rotation's contribution
+to strain, and all old parents remain. The source split in (RC7) is not
+a closed equation for an isolated band.
+
+### An exact all-history identity distinguishes covector work from fluid stretching
+
+Define D_m(t)=int m^T S m. The full covector equation and skew symmetry
+give (1/2)(||m||2^2)'+nu||grad m||2^2=-D_m. In addition to (RC3),
+solenoidal/gradient orthogonality gives
+||grad m||2^2=Z+||Hess chi||2^2. Subtracting actual kinetic energy balance
+proves the exact identity
+
+```text
+-D_m=(1/2)(||grad chi||2^2)'+nu||Hess chi||2^2,
+-int_0^T D_m=||grad chi(T)||2^2/2
+                      +nu int_0^T||Hess chi||2^2>=0. (RC12)
+```
+
+This is an identity on the original actual history, not an independently
+constructed ledger. The signed integrated work creates gradient storage
+and pays its diffusion; Pi removes that gradient when reconstructing u.
+There is no conclusion that the physical vorticity stretches positively.
+In particular, since chi(0)=0 and chi_t(0)=b0,
+
+```text
+D_m(0)=0, D_m'(0)=-||grad(p0-|u0|^2/2)||2^2.         (RC13)
+```
+
+Thus the first returned covector strain work is amplifying whenever this
+gradient is nonzero, independently of positive viscosity. This refutes
+automatic nonpositive covector strain production, not a finite full-datum
+history allowance. The exact checker retains all pressure modes and the
+changing drift in six complete NS/covector jet fixtures.
+
+The whole-space datum from (PD11) also satisfies
+Delta(p0-e0)=2(x^2+y^2)(5-4|x|^2)exp(-2|x|^2), which is not zero.
+Consequently its Bernoulli gradient is nonzero and (RC13) gives the
+strict return on an actual short unforced interval. Under actual NS
+concentration, chi_lambda(t,x)=chi(lambda^2 t,lambda x) and
+m_lambda=lambda m(lambda^2 t,lambda x); the gradient history is retained.
+
+### A complete regular-flow calibration and its finite payment
+
+For any A,nu>0 the exact global periodic shear is
+
+```text
+u(t)=(A exp(-nu t)sin z,0,0), p=0, omega.grad u=0,
+chi=-A^2(1-exp(-2nu t))/(8nu)
+       +A^2[exp(-2nu t)-exp(-4nu t)]cos(2z)/(8nu),
+G=||grad chi||2^2=A^4[exp(-2nu t)-exp(-4nu t)]^2/(32nu^2),
+D_m=-A^4[exp(-4nu t)-exp(-6nu t)]/(16nu)<0, t>0.     (RC14)
+```
+
+The original pressure potential q and its source F in (PD1) are identically
+zero on this flow. Nevertheless the canonical covector has positive
+strain input throughout its evolution. At A=16nu and t=log(2)/(2nu),
+the original kinetic energy is 128nu^2, the current kinetic energy is
+64nu^2, and the covector energy is 192nu^2. Physical energy has halved
+while the auxiliary energy is fifty percent above its original value.
+
+The extra work is finite and paid explicitly:
+
+```text
+R_shear(t)=A^4[exp(-4nu t)/4-exp(-6nu t)/6]/(16nu^2)>=0,
+R_shear'=D_m,
+-int_0^infinity D_m=R_shear(0)=A^4/(192nu^2).         (RC15)
+```
+
+This holds for all positive amplitudes and viscosities, not only small
+perturbations. It supplies a calibration for any proposed control of
+covector amplification. Charging it as physical dangerous stretching
+would be an overestimate. Conversely, deleting its retained gradient
+from the canonical covector would change the original history and spoil
+the reconstruction identities. The useful observation is the compatible,
+projected history in (RC10), rather than the sign of D_m alone.
+
+Run `python3 -O labs/corotating_covector_payment.py`. The checker verifies
+the physical scalar lift, complete Kato diffusion squares, critical
+reserve algebra, both heat commutators, exact source splitting, six full
+NS jets, the localized swirl source and the all-time shear formulas.
+The local/continuation PDE results, scalar comparison and all-prefix
+reserve arguments are analytic. No new Lean declaration or axiom is added.
