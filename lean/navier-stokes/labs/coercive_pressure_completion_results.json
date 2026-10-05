@@ -1,0 +1,44 @@
+{
+  "algebra": {
+    "K": "-dev(JM+MJ+M^2)+(Q_delta-M)/delta",
+    "Phi": "k^2 |J|^2+|J|^4-theta*k*tr(J^3)",
+    "aging": "grad Phi(J):J >= 5k^2 |J|^2/4+13|J|^4/4",
+    "coercivity": "3/4 (k^2 |J|^2+|J|^4) <= Phi <= 5/4 (k^2 |J|^2+|J|^4)",
+    "diffusion": "Hess Phi(J)[H,H] >= (k^2+|J|^2)|H|^2",
+    "inherited": "(2k^2+4|J|^2) J:K-3theta*k*tr(J^2 K)",
+    "parameters": "k>0 and 0<=theta<=1/2, fixed from the original datum",
+    "pressure": "-(2k^2+4|J|^2) J:A+3theta*k*tr(J^2 A)",
+    "self_reaction": "-(2k^2+4|J|^2) J:J^2+(theta*k/2)(tr J^2)^2"
+  },
+  "certification": "exact algebra and full NS tangents; continuum claims analytic, not Lean-certified",
+  "history_exponents": {
+    "D4": "integral |J|^2 |grad J|^2",
+    "K3": "integral ||Q_delta||3^2 <= N^2 A_E/sqrt(nu delta)",
+    "coefficient": "integral a <= explicit original-data Astar in README.md",
+    "history_payment": "|integral dPhi(J)[K]| <= nu D4/2+a(t)(1+R)",
+    "remaining": "signed self-reaction plus weighted pressure, with aging and diffusion retained"
+  },
+  "physical": {
+    "amplitude": "a=16nu for every fixed nu>0",
+    "classical_joint_pressure": "-4790048/165165",
+    "coefficients": {
+      "C2": "768/65",
+      "C4": "96982884832/45090045",
+      "C4_pressure": "-314203808/20495475",
+      "C4_self": "162790222016/75150075",
+      "D2": "206084096/1156155",
+      "D4": "21137811378269312/1336694384025"
+    },
+    "complete_rate": "k^2 a^2(a C2-nu D2)+a^4(a C4-nu D4)>0 for every k>0",
+    "datum": "-signed_viscous_pressure.interacting_datum()",
+    "interval_scope": "analytic common positive interval for both moments, hence every k and theta",
+    "not_refuted": "a finite full-datum allowance or a genuinely history-dependent reserve",
+    "positive_margins": [
+      "2496512/231231",
+      "8287703518414976/445564794675"
+    ],
+    "q_square": "2395024/55055",
+    "theta": "the integrated trace-cube correction vanishes for the full gradient at every time"
+  },
+  "source_sha256": "69c51f5e71847eda9d91b0496d25c817e342de0efa57866853ee6f114f63a158"
+}

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [convex pressure completion](labs/README.md#convex-completion-pays-history-inputs-but-retains-self-amplification)
+adds a positive quadratic/quartic stock to the joint cubic pressure correction.
+Its complete diffusion and window aging are favorable, and all inherited
+inputs have an explicit original-data history payment. The remaining signed
+self-reaction and weighted pressure budget would imply continuation, but is
+open. An actual unforced periodic flow increases every member of the tested
+full-gradient completion family while both pressure and viscosity oppose
+that growth. This rules out automatic monotonicity of that family, including
+datum-selected parameters; it does not rule out a finite history allowance.
+The derivation is analytic with exact checks, not a new Lean PDE theorem.
+
 The [joint created-pressure estimate](labs/README.md#joint-strain-and-rotation-retain-a-classical-pressure-cancellation)
 transfers a classical pressure homogeneity identity to the actual created
 gradient, retaining its inherited-parent correction. It bounds the joint

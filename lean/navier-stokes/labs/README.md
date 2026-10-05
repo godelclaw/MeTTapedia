@@ -58269,3 +58269,234 @@ gradient/pressure divergence and selector flux, the Betchov null integral,
 and physical first-window coefficients at nu=1 and nu=2/7. The all-prefix
 estimate and actual positive intervals remain analytic, not kernel
 certificates. No Lean declarations or axioms change.
+
+## Convex completion pays history inputs but retains self-amplification
+
+The joint cubic correction in (GPC9) can be completed to a positive,
+convex observation. Its diffusion and moving-window aging then have
+definite signs. The complete actual-history equation below pays the
+inherited inputs with original-data constants. It retains an open signed
+nonlinear budget, and an explicit physical test rules out automatic
+monotonicity of the corresponding full-gradient reserve. This is a
+calibration of this completion, not a classification of history reserves.
+All continuum results here are analytic; `coercive_pressure_completion.py`
+checks the matrix identities, interpolation powers and full Fourier tangents.
+
+### Positive stock with its full diffusion
+
+Fix k>0 and 0<=theta<=1/2 from the original datum. For a trace-free real
+matrix J put r=|J|, with Frobenius norm, and
+
+```text
+Phi(J)=k^2 r^2+r^4-theta k tr(J^3),
+(3/4)(k^2 r^2+r^4)<=Phi(J)<=(5/4)(k^2 r^2+r^4).     (CPC1)
+```
+
+Indeed |tr(J^3)|<=r^3 by matrix Cauchy--Schwarz and submultiplicativity,
+and k r^3<=(k^2 r^2+r^4)/2. The complete second variation is
+
+```text
+Hess Phi(J)[H,H]=(2k^2+4r^2)|H|^2+8(J:H)^2
+                                  -6theta k tr(J H^2)
+                 >=(k^2+r^2)|H|^2,
+dPhi(J)[J]>=5k^2 r^2/4+13r^4/4.                    (CPC2)
+```
+
+For the Hessian use |tr(J H^2)|<=r|H|^2 and
+`2k^2+4r^2-3kr-(k^2+r^2)=(k-3r/2)^2+3r^2/4`.
+For aging the remainder is at least `3r^2(k-r)^2/4`.
+These bounds apply to arbitrary trace-free perturbations, including the
+actual spatial derivatives; they do not freeze the matrix orientation.
+
+### Complete balance for the actual created history
+
+Retain B=J+M and every endpoint in (CJ1), with one original delta. Write
+q_J=tr(J^2), A=dev(Hess p), and
+
+```text
+K=-dev(JM+MJ+M^2)+(Q_delta-M)/delta,
+D J=-dev(J^2)-A-J/delta+K,
+R(t)=int Phi(J), D4=int |J|^2 |grad J|^2,
+
+R'+Age/delta+nu int sum_l Hess Phi(J)[partial_l J,partial_l J]
+  =N+P+U,
+Age=int [2k^2 r^2+4r^4-3theta k tr(J^3)],
+N=int [-(2k^2+4r^2)J:J^2+(theta k/2)q_J^2],
+P=int [-(2k^2+4r^2)J:A+3theta k tr(J^2 A)],
+U=int [(2k^2+4r^2)J:K-3theta k tr(J^2 K)].           (CPC3)
+```
+
+Here D is the physical transport-diffusion operator. The quartic trace
+identity for trace-free three-by-three matrices gives
+`3tr[J^2 dev(J^2)]=q_J^2/2`. In particular the same cubic correction
+that contributes favorable joint pressure also contributes a positive
+self-reaction. Pressure is canonical, and K contains every inherited
+interaction and both window endpoints. There is no independent matrix
+model or prescribed effective force.
+
+### All inherited inputs have an explicit history payment
+
+This stronger observation still permits a finite original-data payment
+for U. Enlarge the fixed domain constant S so that
+`||J||12^4<=S(4D4+||J||4^4)` on the normalized torus; on R3 the
+homogeneous estimate omits the last term. The inhomogeneous torus term
+is necessary because |J|^2 does not have zero mean.
+
+Use the constants A_E, N and M_* from (CJ2)--(CJ5), and set
+
+```text
+m=M_*, m0=sqrt(A_E/delta), q2(t)=||Q_delta(t)||2,
+q3(t)=||Q_delta(t)||3,
+int_delta^T q2^2<=A_E,
+int_delta^T q3^2<=B3:=N^2 A_E/sqrt(nu delta).         (CPC4)
+```
+
+The last bound applies (CJ4) at the fixed age delta and then integrates
+the original gradient energy. It does not require a future gradient
+supremum. Put
+
+```text
+C=max(1,4/(3k^2),4/3,4S),
+L=(2k^2+4+3k/2) C max(1,1/delta), epsilon=nu/6,
+T0=1+R, X=D4+T0.
+```
+
+Coercivity gives `||J||2^2,||J||4^4<=C T0` and
+`||J||12^4<=C X`. Holder and interpolation bound |U| by
+
+```text
+L[(2m+m^2+q2+m0)T0+2m T0^(1/2)X^(1/2)
+     +m^2 T0^(1/8)X^(5/8)+(q3+m)T0^(5/8)X^(1/8)].  (CPC5)
+```
+
+To see every term, use
+`|dPhi(J)[K]|<=(2k^2+4+3k/2)(r+r^3)|K|` and
+`|K|<=2r|M|+|M|^2+(|Q_delta|+|M|)/delta`.
+The needed spatial norms are respectively
+`m||J||3^2`, `m||J||6^4`, `m^2||J||3`,
+`m^2||J||9^3`, `(q2+m0)||J||2/delta`, and
+`(q3+m)||J||_(9/2)^3/delta`.
+The interpolation powers are retained in (CPC5); lower powers of T0
+were increased using T0>=1, after spatial integration.
+
+Apply Young with powers 1/2, 5/8 and 1/8 to the three X terms. Each
+costs epsilon X. It follows that
+
+```text
+|U|<=(nu/2)D4+a(t)(1+R),
+a(t)=nu/2+L(2m+m^2+m0+q2)+(2Lm)^2/epsilon
+     +(Lm^2)^(8/3)epsilon^(-5/3)
+     +[L(q3+m)]^(8/7)epsilon^(-1/7).                (CPC6)
+```
+
+For a prescribed H>0 and every available T<=H, a finite bound fixed
+before the prefix is
+
+```text
+int_delta^T a <= A_* :=
+H[nu/2+L(2m+m^2+m0)+(2Lm)^2/epsilon
+    +(Lm^2)^(8/3)epsilon^(-5/3)
+    +2L^(8/7)epsilon^(-1/7)m^(8/7)]
+ +L sqrt(H A_E)
+ +2L^(8/7)epsilon^(-1/7)H^(3/7)B3^(4/7).           (CPC7)
+```
+
+This uses `(q3+m)^(8/7)<=2(q3^(8/7)+m^(8/7))` and time Holder.
+No new stock is allocated per window. The inherited payment holds on
+both domains. It does not pay the terms N and P.
+
+### A sufficient remaining budget, with a continuation consumer
+
+By (CPC2), (CPC3) and (CPC6),
+
+```text
+R'+Age/delta+nu k^2 D_J+(nu/2)D4<=N+P+a(t)(1+R).
+```
+
+One sufficient OPEN condition is a finite K0>=0, controlled by the full
+original datum, viscosity and H, such that every same-datum prefix obeys
+
+```text
+int_delta^T [N+P-Age/delta-(nu/4)D4]<=K0.            (CPC8)
+```
+
+Integral Gronwall then gives
+
+```text
+R(T)+nu k^2 int_delta^T D_J+(nu/4)int_delta^T D4
+  <=(1+R(delta)+K0)exp(A_*)-1,
+||B(T)||2^2<=8R(T)/(3k^2)+2A_E/delta.               (CPC9)
+```
+
+Choose the original delta inside a datum-controlled smooth local interval.
+If L0 bounds ||B||4 on that interval, contraction gives ||J(delta)||4<=2L0,
+so `R(delta)<=(5/4)(k^2 I0+16L0^4)` with I0 from (CJ9).
+Both local constants come from the local construction for the full datum,
+not an assumption about its unknown continuation. Thus (CPC9), if (CPC8)
+is proved, reaches the same whole-space and periodic order-one continuation
+consumers as (CJ11). The all-prefix nonlinear bound (CPC8) is not established.
+
+### Actual growth despite helpful pressure and viscosity
+
+A full-gradient test prevents reading the favorable pressure in isolation.
+Let v be the real mean-zero periodic field with positive Fourier modes
+`v_hat(k)=c w`, and conjugate negative modes:
+
+| k | w | c |
+|---|---|---|
+| (1,0,1) | (1,2,-1) | (1+2i)/3 |
+| (0,1,1) | (2,1,-1) | (-2+i)/5 |
+| (1,1,0) | (1,-1,2) | (1-i)/7 |
+| (2,-1,1) | (1,1,-1) | (2+3i)/11 |
+| (1,1,2) | (2,0,-1) | (2-3i)/13 |
+
+This reuses `signed_viscous_pressure.interacting_datum()`. Every k.w=0.
+For w0=-v, B0=grad w0 and its canonical P0=Hess p0, define
+
+```text
+C2=-2int B0:B0^2=768/65,
+C4_self=-4int |B0|^2 B0:B0^2=162790222016/75150075,
+C4_pressure=-4int |B0|^2 B0:P0=-314203808/20495475,
+C4=C4_self+C4_pressure=96982884832/45090045,
+D2=2int |grad B0|^2=206084096/1156155,
+D4_0=4int sum_l[|B0|^2|partial_l B0|^2
+                 +2(B0:partial_l B0)^2]
+     =21137811378269312/1336694384025.               (CPC10)
+```
+
+Fix ANY nu>0 and use the actual datum u0=a w0 with a=16nu. Full unforced
+NS differentiation gives, for Z=||grad u||2^2 and W=||grad u||4^4,
+
+```text
+Z'(0)=a^2(a C2-nu D2)>0,
+W'(0)=a^4(a C4-nu D4_0)>0,
+16C2-D2=2496512/231231>0,
+16C4-D4_0=8287703518414976/445564794675>0.            (CPC11)
+```
+
+Pressure assists depletion: C4_pressure<0, quadratic pressure work is
+zero, and the classical joint pressure is
+`4int tr(B0^2 dev P0)=-4790048/165165<0`.
+The complete diffusion is also dissipative. Nevertheless nonlinear
+self-amplification exceeds these losses.
+
+For the full gradient, the existing Betchov identity gives at EVERY smooth
+time `int Phi(grad u)=k^2 Z+W`, independently of theta. Hence a common
+positive local interval has increasing completed reserve for EVERY k>0
+and 0<=theta<=1/2, including parameters chosen from this full datum.
+Both moment derivatives are initially strict and continuous, so the
+interval can be chosen independently of those parameters. After shrinking
+it if needed, pressure still assists depletion. Positive local existence
+and this interval implication are analytic; the checker certifies the
+complete tangents at nu=1 and 2/7 and the exact general scaling formula.
+
+This refutes automatic monotonicity of this full-gradient completion even
+with helpful pressure and convex diffusion. It is not a substitution of
+B for the actual non-gradient J in (CPC3), not a counterexample to (CPC8),
+and not a singularity or an obstruction to a finite full-datum allowance.
+The finite burst must be retained in any proposed history payment.
+
+Run `python3 -O labs/coercive_pressure_completion.py`. All nonlinear Fourier
+products and canonical pressure outputs are retained. No Lean declarations
+or axioms change; the actual-history estimates and continuation implication
+remain analytic rather than new kernel-certified PDE theorems.
