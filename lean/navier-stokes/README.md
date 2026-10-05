@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [local reserve classification](labs/README.md#classifying-local-convex-reserves-that-cancel-the-parent-reaction)
+determines every smooth, convex, degree-one strain/swirl reserve that
+exactly cancels the coupled reaction with the existing evolving density.
+On the entire ratio line it recovers only the original joint perspective,
+up to scale. Bounded ratio ranges permit concave reweightings and favorable
+additional diffusion, but every member retains the same-sign pressure work.
+An actual smooth datum defeats pointwise absorption of that work by the
+chain-rule dissipation throughout this class. For any fixed reweighting,
+the earlier integrated growth example also persists for sufficiently
+large original density normalization. This leaves a datum-dependent
+choice and a finite history allowance open. The classification and PDE
+consequences are analytic with exact symbolic checks, not new Lean
+certificates; a full-datum integrated pressure allowance remains open.
+
 The [whole-space winding test](labs/README.md#whole-space-winding-retains-a-cost-beyond-affine-covariance)
 identifies a limit of the affine curl bound: a nonlinear twist produces
 arbitrarily large output from one fixed Schwartz input even with two

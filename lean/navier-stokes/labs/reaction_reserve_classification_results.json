@@ -1,0 +1,62 @@
+{
+  "physical_equations": {
+    "Q": "(m^2+b^2)/h",
+    "law": "(D_t-nu L5)Q=2m(p_r/r)/h-(2nu/h)(|grad m-m grad log h|^2+|grad b-b grad log h|^2)",
+    "axis_loss": "4 pi nu integral_axis Q^(3/2) dz",
+    "full_diffusion": "3nu integral sqrt(Q)/h times the two squares + (4nu/3) integral |grad Q^(3/4)|^2 + axis_loss",
+    "force_entry": "2(-m f_r+b f_theta)/(r h)"
+  },
+  "classification": {
+    "domain": "h>0, b/h in an open interval I containing 0; all real m",
+    "hypotheses": "F is C2, convex, degree-one homogeneous, positive when (m,b)!=0, and exactly cancels (m^2-b^2,2mb,2mh)",
+    "family": "F=(m^2+b^2)/(h*g(b/h)), g>0 and g concave on I",
+    "global_ratio_consequence": "If I=R, positive concave g is constant; F is a positive multiple of the existing joint perspective.",
+    "determinant": "-(2*x**2 + 2*y**2)*Derivative(g(y), (y, 2))/g(y)**3 + 4*(-y*Derivative(g(y), y) + g(y))**2/g(y)**4",
+    "scope": "Symbolic identities support the analytic classification, including its separate continuity argument at b=0."
+  },
+  "diffusion": {
+    "density": "H=h*g(y), y=b/h; (D-nu L5)H=2mH-nu*h*g_second(y)*|grad y|^2",
+    "full_law": "(D-nu L5)F=2mP/H-(2nu/H)(|grad m-m grad log H|^2+|grad b-b grad log H|^2)+nu*h*g_second(y)*(m^2+b^2)*|grad y|^2/H^2",
+    "pressure": "2mP/H retains its sign for every admissible g",
+    "conditional_consumer": "R_g=int_R3 F^(3/2); retain full diffusion and the physical axis loss. The same all-prefix signed-pressure allowance gives the JP9 swirl L5 estimate with G replaced by g_max*G.",
+    "bounded_example": "g=2-y^2 on (-1,1), |b/h|<=1/2: Q/2<=F<=4Q/7; the extra diffusion term is nonpositive.",
+    "limitation": "H has additional production, so its mass is not the conserved mass of h."
+  },
+  "pressure": {
+    "reused_canonical_pressure": "-4*(-1001*B**2 - 176*C**2 - 26*C*a + 2145*a**2)/5005",
+    "datum": "chi=z(1+3r^4)exp(-R^2), b=exp(-R^2), h0=kappa(1+R^2)^-3",
+    "origin": "m=b=1, h=kappa, all first gradients vanish; P=296/715",
+    "pressure_work": "592/(715*g_value*kappa)",
+    "domain_control": "0<b0/h0<=27/(exp(2)*kappa). Choose kappa once so this closed range lies in I; comparison of the common b,h equation retains it.",
+    "failed_assertion": "A universal pointwise bound of 2mP/H by any finite multiple of the full chain-rule diffusion, for every smooth unforced datum.",
+    "not_refuted": "An integrated allowance depending on the full original datum; nonlocal, history-dependent, nonhomogeneous or nonexactly-cancelling reserves."
+  },
+  "nonconcave": {
+    "failed_choice": "g(y)=1+y^2 on R; reaction cancellation survives, convexity does not",
+    "datum": "chi=2z exp(-R^2), b=z exp(-R^2), h0=(1+R^2)^-3",
+    "hessian_at_x_two_y_zero": "Matrix([[2, 0], [0, -6]])",
+    "canonical_P_origin": "-34/5",
+    "full_parabolic_defect": "4P+6nu = -136/5+6nu at the origin",
+    "conclusion": "Diffusion contributes positive 6nu on genuine smooth initial data. This statement isolates that contribution and does not assert positive total defect at every viscosity."
+  },
+  "integrated": {
+    "reused_exact_pressure_W": "pi**(3/2)*(-20189482811/1174405120 + 45*sqrt(2)*log(1 + sqrt(2))/32)",
+    "reused_exact_diffusion": "157154*sqrt(3)/243",
+    "original_family": "u0=-A V, h0=(1+|x|^2)^(-10/3), A>=100 nu",
+    "rescaling": "h_kappa=kappa*h_star; normalized F_kappa=(1/kappa)*Q_star/g(b/(kappa*h_star))",
+    "integrated_limit": "kappa^(3/2)*R_g_kappa_prime(0) -> g(0)^(-3/2)*(W_star(0)-D_star(0)) > 0",
+    "quantifier": "For every fixed admissible g and every nu>0, the actual datum u0=-A V with A>=100nu and sufficiently large original kappa gives increasing integrated stock on a short interval.",
+    "justification": "The C2 coefficient limit is checked algebraically. Gaussian decay, pressure decay, dominated convergence and the local interval consequence are analytic.",
+    "limitation": "Refutes automatic monotonicity for all permitted initial density normalizations. It does not exclude a specially selected datum-dependent normalization, a different g selected with it, or a positive full-datum allowance."
+  },
+  "status": "Analytic classification and PDE statements with exact symbolic fixtures; arbitrary-history pressure payment remains open. No new Lean certificate.",
+  "source_sha256": {
+    "reaction_reserve_classification.py": "69c091d9ae0023f01a9a6d9c9717324c6caa843583d759b16b5e4fe87edc979d",
+    "joint_swirl_perspective.py": "f8f453fbe0138dce7df12e3520c919307ec99cebcf4f63e43cae4e56498992bd",
+    "axis_deformation_pressure.py": "8cc03e720cbefe3650fd99359a7bd5cc31bb75b9d44a5c67da82ec155a3da264",
+    "circulation_source_reserve.py": "12366fd5dc83962c0f7deb40ebc42939bfcfb4d4d01249b61aca79537a96d926",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37",
+    "rotational_joint_enstrophy.py": "cee79dfbd358db371ab5977a21198a7442613b74b2dfd7042102b7eda2e1710b",
+    "integrated_swirl_pressure.py": "83d92980e1d503ccd4513ee66ccca02c29fcf43a3f66b662909a1fa4eb6228e1"
+  }
+}

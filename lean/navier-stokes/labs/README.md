@@ -55481,3 +55481,270 @@ zero work, the full material angle derivative and the resolvent tail
 bound. They also rerun the existing pressure-resolvent calculation for
 (NT9). Gaussian estimates, map reconstruction and local PDE statements
 remain analytic; no Lean declarations or axioms change.
+
+## Classifying local convex reserves that cancel the parent reaction
+
+`reaction_reserve_classification.py` classifies a specified family of
+local reserves for the actual coupled strain/swirl equations (JP1).
+Every member retains favorable diffusion but also a signed input from
+the complete physical pressure. This is an analytic family theorem with
+exact symbolic checks, not a new Lean certificate or an exclusion of
+nonlocal history-dependent reserves.
+
+### The exact family and its domain
+
+Retain the same actual axisymmetric unforced whole-space prefix and the
+same positive evolving density as in (JP1)--(JP2):
+
+```text
+m=-u_r/r, b=u_theta/r, P=p_r/r,
+D_t=partial_t+(u_r,u_z).grad, L5=partial_rr+3/r partial_r+partial_zz,
+(D_t-nu L5)m=m^2-b^2+P,
+(D_t-nu L5)b=2mb,
+(D_t-nu L5)h=2mh,                    h>0.             (RC1)
+```
+
+These equations extend smoothly to the regular axis. The pressure is
+the canonical NS pressure, and h follows the complete current drift
+without being reset at temporal seams.
+
+Let I be an open interval containing zero. On the convex cone
+`Omega_I={(m,b,h):h>0,b/h in I}`, with every real m allowed, suppose F
+is C2, convex, positively homogeneous of degree one in (m,b,h), positive
+when `(m,b)!=(0,0)`, and satisfies
+
+```text
+(m^2-b^2) F_m+2mb F_b+2mh F_h=0.                     (RC2)
+```
+
+Then, and conversely, there is a positive concave C2 function g on I with
+
+```text
+F(m,b,h)=(m^2+b^2)/[h g(b/h)].                       (RC3)
+```
+
+On `I=R`, g must be constant, so F is a positive multiple of the existing
+joint perspective Q in (JP5). All the hypotheses matter: homogeneity,
+the full strain range, convexity and exact cancellation are restrictions
+on this family, not properties imposed on every possible reserve.
+
+To prove the classification, homogeneity gives `F=h phi(x,y)`, where
+`x=m/h,y=b/h`. The normalized reaction is
+`h'=2h^2 x,x'=-h(x^2+y^2),y'=0`, hence
+
+```text
+2x phi-(x^2+y^2) phi_x=0,
+partial_x [phi/(x^2+y^2)]=0              when y!=0.   (RC4)
+```
+
+Thus `phi=(x^2+y^2)k(y)` for nonzero y. Define
+`k(y)=phi(1,y)/(1+y^2)` also at zero; it is positive and C2 on I.
+Continuity as y tends to zero extends the formula to all x, including
+`phi(0,0)=0`. This rules out unrelated coefficients on the two halves
+of the zero-swirl line. Set `g=1/k`.
+
+The complete convexity calculation is
+
+```text
+phi_xx=2/g,
+det Hess(phi)=4(g-y g')^2/g^4-2(x^2+y^2)g''/g^3,      (RC5)
+d^2F=(1/h) (dm-x dh, db-y dh)
+                  Hess(phi) (dm-x dh, db-y dh)^T.     (RC6)
+```
+
+If g'' is positive anywhere, sufficiently large |x| makes the determinant
+negative there. If g'' is nonpositive everywhere, the first minor is
+positive and the determinant nonnegative, so both Hessians are positive
+semidefinite. This proves the equivalence with concavity. A positive
+concave function on R is constant: any nonzero tangent slope bounds it
+above by a line that becomes negative at one end of R. This proves
+uniqueness without restricting F to a rational or polynomial ansatz.
+
+### The full physical diffusion and the continuation consumer
+
+Put `y=b/h`, `H=h g(y)` and `F=(m^2+b^2)/H`. Along the actual evolution,
+
+```text
+(D_t-nu L5)y=2nu grad(log h).grad y,
+(D_t-nu L5)H=2mH-nu h g''(y)|grad y|^2.              (RC7)
+```
+
+The extra density production is nonnegative for concave g. In particular,
+H generally does not have the conserved lifted mass of h. With
+
+```text
+S_g=|grad m-m grad log H|^2+|grad b-b grad log H|^2,
+E_g=(2nu/H)S_g-nu h g''(y)(m^2+b^2)|grad y|^2/H^2 >=0,
+(D_t-nu L5)F=2mP/H-E_g,                              (RC8)
+```
+
+every classified reserve cancels the direct reaction and has favorable
+diffusion, including all derivatives of the evolving weight. Its
+pressure input has the same sign as mP throughout the family.
+
+Nonconstant choices exist on bounded ratio intervals. For example,
+`g(y)=2-y^2` on `I=(-1,1)` has g''=-2. If `|b0|<=h0/2`, comparison
+for the common linear equation of b and h gives `|b|<=h/2` on every
+smooth prefix. Therefore
+
+```text
+7/4<=g(b/h)<=2,            Q/2<=F<=4Q/7.              (RC9)
+```
+
+This adds favorable ratio-gradient diffusion with fixed comparison
+constants. More generally, an original closed ratio range J compactly
+contained in I remains invariant. Let g_min>0 and g_max<infinity be the
+minimum and maximum of g on J.
+
+Under the realization, decay and integration hypotheses of (JP6), use
+physical three-dimensional volume and retain the axis term:
+
+```text
+R_g=int_R3 F^(3/2),       W_g=3 int_R3 sqrt(F) mP/H,
+D_g=(3/2) int_R3 sqrt(F) E_g
+       +(4nu/3) int_R3 |grad F^(3/4)|^2
+       +4pi nu int_axis F^(3/2).
+R_g'+D_g=W_g,                         D_g>=0.         (RC10)
+```
+
+Use the same zero-set extension and regularization as in (JP6). On J,
+g and its first two derivatives are bounded and g is bounded away from
+zero; the prefix-local decay assumptions there also justify these extra
+terms. Since `r^2h<=G`, we have `u_r^2+u_theta^2<=g_max G F`.
+If a single original-data K pays `int_0^T(W_g-D_g/2)<=K` for every
+same-datum prefix `T<=H_time`, put `B_g=R_g(0)+K`. Then (JP9) gives
+
+```text
+int_0^T int_R3 |u_theta|^5
+ <=[3 C_S/(2nu)] (g_max G)^(5/2) B_g^(5/3).           (RC11)
+```
+
+This preserves the named axisymmetric continuation consumer of (JP9).
+The pressure allowance remains a hypothesis. Neither cancellation nor
+concavity supplies it, and this is not a transfer to arbitrary
+non-axisymmetric or periodic data.
+
+### An actual pressure obstruction for every member
+
+Reuse the complete whole-space pressure calculation (JP11):
+
+```text
+chi=z(1+3r^4)exp(-r^2-z^2),
+u_r=-r chi_z, u_z=2chi+r chi_r, b=exp(-r^2-z^2),
+h0=kappa(1+r^2+z^2)^(-3),                   kappa>0.
+At the origin: m=b=1, h=kappa,
+grad m=grad b=grad h=0, P=296/715.                    (RC12)
+```
+
+These are smooth Schwartz divergence-free initial velocities for actual
+unforced NS at every nu>0. The heat-resolvent and independent spherical
+harmonic pressure calculations, including the Newtonian contact term,
+are rerun by the checker. The fixture fits every interval I above:
+
+```text
+0<b0/h0<=27/[exp(2) kappa].                           (RC13)
+```
+
+The upper endpoint follows by maximizing `exp(-a)(1+a)^3` at a=2.
+Choose kappa once so this closed range lies in I. Comparison of b and h
+preserves the range along the actual smooth history. At the origin,
+
+```text
+E_g=0,     2mP/H=592/[715 kappa g(1/kappa)]>0.         (RC14)
+```
+
+Thus no member admits a universal pointwise bound `2mP/H<=C E_g` for
+finite C and all smooth unforced data. The strict defect persists in a
+neighborhood for each fixed candidate and coefficient. This concerns
+the chain-rule dissipation E_g; the separate term nu L5 F need not
+vanish at the fixture.
+
+For `I=R`, uniqueness also means that a change within this class only
+rescales the integrated monotonicity failure already proved in
+(IP2)--(IP4). For bounded I, (RC14) is a pointwise result. A separate
+rescaling argument below transfers the earlier integrated obstruction.
+
+### Nonconcave weights can reverse the diffusion sign
+
+The globally positive choice `g(y)=1+y^2` still cancels the reaction,
+but it has
+
+```text
+Hess[(x^2+y^2)/(1+y^2)] at (x,y)=(2,0)=diag(2,-6).    (RC15)
+```
+
+The negative direction occurs in an actual smooth divergence-free datum:
+
+```text
+chi=2z exp(-r^2-z^2), b=z exp(-r^2-z^2),
+u_r=-r chi_z, u_z=2chi+r chi_r,
+h0=(1+r^2+z^2)^(-3).
+At the origin: m=2, b=0, h=1,
+grad m=grad h=0, partial_z b=1, partial_r b=0,
+P=-34/5,
+(D_t-nu L5)F=4P+6nu=-136/5+6nu.                     (RC16)
+```
+
+The complete pressure is checked by two independent Gaussian formulas.
+Diffusion contributes positive 6nu at every positive viscosity; the
+total defect is not asserted positive for every nu. Diffusion can
+increase a poorly chosen observation while still dissipating kinetic
+energy.
+
+### Integrated growth also survives any fixed concave reweighting
+
+Fix an admissible g on I and nu>0. Reuse the actual datum `u0=-A V`
+from (IP1)--(IP4), with A>=100nu, and its original positive density
+`h_star,0=(1+|x|^2)^(-10/3)`. The exact calculation there gives
+`W_star(0)-D_star(0)>3pi^(3/2)A^4>0`. Scale only the auxiliary initial
+density by kappa; linearity preserves `h_kappa=kappa h_star` along the
+same actual fluid. Set `Q_star=(m^2+b^2)/h_star`. Then
+
+```text
+F_kappa=(1/kappa) Q_star/g(b/(kappa h_star)),
+kappa^(3/2) R_g,kappa'(0)
+ ->g(0)^(-3/2) [W_star(0)-D_star(0)]>0
+                         as kappa tends to infinity. (RC17)
+```
+
+For these Gaussian initial velocities, b0/h_star,0 and its derivatives
+are bounded and decay. Thus sufficiently large kappa places its entire
+range in one fixed compact subinterval of I around zero. There, g and
+its first two derivatives are bounded and g stays positive. The
+normalized F, its state gradient and its state Hessian converge to those
+of Q_star/g(0). All initial stock, pressure and diffusion integrands are
+dominated by integrable polynomial-Gaussian bounds; the pressure itself
+has the canonical decay retained in (IP2). Dominated convergence applies
+also to the physical axis term. This proves (RC17).
+
+Consequently every fixed g admits a sufficiently large original kappa
+for which its integrated stock increases on an actual short unforced
+interval. The interval argument uses the weighted local regularity and
+integration justification already stated after (IP4), together with
+comparison to keep the ratio in that compact interval. No uniform
+interval length over kappa or A is claimed. The checker reruns the exact
+pressure integral and all three diffusion terms from (IP2).
+
+The quantifiers are essential. This disproves monotonicity uniformly
+over all permitted original density normalizations. It does not exclude
+a specially selected datum-dependent normalization, or a g chosen jointly
+with that normalization. In particular it does not refute a positive
+allowance that pays this finite increase from the full original datum.
+
+The next physical task remains a signed pressure-history estimate using
+the full original datum and the same evolving parents. This theorem
+excludes automatic payment and monotonicity under the stated universal
+quantifiers. Nonlocal or
+history-dependent state, nonhomogeneous reserves, and controlled reaction
+defects remain possible. It neither refutes an integrated original-data
+allowance nor constructs a singular flow. The full R3/T3 objective and
+the original signed-renewal and joint-strain targets remain open.
+
+Run `python3 -O labs/reaction_reserve_classification.py`. The checks cover
+the physical equations, normalized reaction, perspective Hessian and
+determinant, full parabolic weight derivatives, critical diffusion
+coefficient, both canonical pressure fixtures and their actual spatial
+gradients, and the reused complete integrated pressure calculation.
+The classification at zero swirl, global convexity,
+parabolic comparison, integration and continuation consequences remain
+analytic arguments in this section. No Lean declarations or axioms change.
