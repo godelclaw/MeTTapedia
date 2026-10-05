@@ -53513,3 +53513,275 @@ Analytic dependence, local NS existence and the interval conclusions
 remain analytic, not Lean-certified. The arbitrary-data physical history
 payment in (PD9d) or (QH14) remains open. No Lean declarations or axioms
 change in this calculation.
+
+## Finite response to a changing parent, with the nonlinear input retained
+
+`helical_parent_response.py` replaces successive derivatives of the QR
+forecast by a finite response calculation. The starting point is the
+classical pressure elimination behind the Orr--Sommerfeld and Squire
+systems; see [Waleffe's 2011 shear-stability lectures](https://gfd.whoi.edu/wp-content/uploads/sites/18/2018/03/wally4_131266.pdf).
+The time-dependent two-component parent, full physical residual source,
+and observation below are derived directly. No steady-shear spectral
+stability result is used to assert nonlinear regularity.
+
+The positive result controls every history of the selected parent whose
+amplitude is bounded by the original kinetic energy. That parent may
+rotate, receive energy, and be renewed. The response has a finite
+polynomial bound. The remaining fluid's self-interaction is an explicit
+internal input; its arbitrary-data payment remains open.
+
+### An actual fluid split with no independent force
+
+Work on the normalized period-2pi torus. Let u be any smooth, zero-mean,
+unforced NS prefix with viscosity nu>0 and initial energy E0=||u0||2^2.
+Let P1 be the orthogonal projection onto the horizontal vector fields
+with Fourier frequencies (0,0,+/-1), and put
+
+```text
+U=P1 u, v=u-U, N(v)=-Pi[(v.grad)v],
+f=(I-P1)N(v),
+L_U v=-Pi[(U.grad)v+(v.grad)U].                      (HR1)
+```
+
+Here U=(a(t)cos z+b(t)sin z,0), with a,b horizontal vectors. In
+particular U_zz=-U, N(U)=0, and P1 L_U v=0. The complete equations are
+
+```text
+U_t=nu Delta U+P1 N(v),
+v_t=nu Delta v+L_U v+f.                            (HR2)
+```
+
+The residual can contain arbitrary modes, including horizontal means at
+higher vertical frequencies. Its vertical horizontal mean is zero by
+incompressibility and the zero total mean. The forcing f in (HR2) is an
+internally generated source in a split of the same unforced fluid; it is
+not an external control applied to the momentum equation.
+
+Orthogonality and the full kinetic-energy inequality give, on every
+same-datum prefix,
+
+```text
+||U||infinity, ||U_z||infinity, ||U_zz||infinity
+          <=sqrt(2)||U||2<=M0:=sqrt(2E0).            (HR3)
+```
+
+No derivative of the unknown parent coefficients is needed. In fact the
+estimates below hold for any time-dependent first-harmonic U satisfying
+(HR3), so they dominate all such physically compatible parent histories.
+This relaxation does not assert that every allowed U is physically realizable.
+
+### Pressure elimination exposes a finite chain
+
+On the nonzero horizontal Fourier modes write kappa=|k_h|,
+K=kappa^2-partial_z^2=-Delta, C=I-K^(-1), and let
+
+```text
+w=v3, q=K w, eta=(curl v)3,
+beta=U1,z partial_y w-U2,z partial_x w,
+g_q=K f3, g_eta=(curl f)3.
+
+q_t=-U.grad_h(Cq)-nu Kq+g_q,
+eta_t=-U.grad_h eta-nu Keta+beta+g_eta.              (HR4)
+```
+
+For example the linear pressure satisfies
+Delta p_linear=-2 U_z.grad_h w. Substituting it in the vertical momentum
+equation cancels the two U_z.grad_h w_z terms; U_zz=-U gives the first
+line of (HR4). Thus pressure is eliminated by its equation, not dropped.
+Differentiating the second line also retains both U_z.grad_h eta and
+beta_z. The full source f still includes canonical pressure and every
+nonlinear output.
+
+For integer frequencies K>=1, so C>=0. Its kernel consists exactly of
+|k_h|=1, k_z=0. Let P0 project q onto these neutral modes. Use five actual
+nonnegative observations:
+
+```text
+r=||C^(1/2)q||2, a=||P0 q||2, y=||eta||2,
+zeta=||(-Delta_h)^(-1/2)partial_z eta||2,
+m=||partial_z mean_h v||2.                         (HR5)
+```
+
+The neutral component cannot be omitted. For v=(0,0,sin x), r=0 although
+||grad v||2^2=1/2; a^2=1/2 retains precisely the missing information.
+On all remaining modes |k|^2>=2. Fourier reconstruction gives
+
+```text
+||grad v||2^2
+ =sum_(k_h!=0) |q_k|^2/|k_h|^2+y^2+zeta^2+m^2
+ <=2r^2+a^2+y^2+zeta^2+m^2.                        (HR6)
+```
+
+In particular this observation controls an actual continuation norm.
+It requires no nonvanishing quotient optimizer and no horizontal parity
+restriction. Zero observations are handled by norm absolute continuity.
+
+The parent cancels completely in the r equation:
+Re<Cq,U.grad_h(Cq)>=0. The neutral component is driven by r, and the two
+vorticity observations follow it. For source components define
+
+```text
+g_a=P0 g_q,
+g_z=(-Delta_h)^(-1/2)partial_z g_eta,
+g_m=partial_z mean_h f.
+```
+
+Their signed works are
+
+```text
+phi_r=Re<Cq,g_q>/r,
+phi_a=Re<P0 q,g_a>/a,
+phi_y=Re<eta,g_eta>/y,
+phi_z=Re<(-Delta_h)^(-1/2)partial_z eta,g_z>/zeta,
+phi_m=Re<partial_z mean_h v,g_m>/m,                  (HR7)
+```
+
+with zero assigned when the denominator is zero. The norms are absolutely
+continuous on compact smooth prefixes; their derivative is zero almost
+everywhere on their zero sets. Therefore the following inequalities hold
+almost everywhere, including those sets. Alternatively each phi can be
+bounded above by the corresponding source norm (by ||C^(1/2)g_q||2 for
+phi_r), which gives a direct unsigned version.
+
+With M(t)=max(||U||infinity,||U_z||infinity)<=M0,
+
+```text
+r'    <=-nu r + phi_r,
+a'    <=-nu a + M r + phi_a,
+y'    <=-nu y + M(r+a) + phi_y,
+zeta' <=-nu zeta + M(2r+a+y) + phi_z,
+m'    <=-nu m + phi_m.                             (HR8)
+```
+
+The sharper damping rates for r and m are 2nu and 4nu; (HR8) deliberately
+uses the common lower rate. To check the source coefficients, split
+w=P0w+(I-P0)w. The nonneutral Fourier multipliers give
+||grad_h(I-P0)w||2<=r,
+||(I-P0)w||2,||w_z||2<=r/sqrt(2).
+The neutral part contributes a, and horizontal Riesz transforms have
+vector norm one. These bounds yield respectively M(r+a) and M(2r+a+y).
+P0[U.grad_h(Cq)] has norm at most Mr because only |k_h|=1 contributes.
+All estimates are uniform over the unbounded set of vertical frequencies.
+
+### A positive reserve for every selected-parent history
+
+For X=(r,a,y,zeta)^T the parent comparison matrix is
+
+```text
+        [0 0 0 0]
+T=      [1 0 0 0],       T^4=0.
+        [1 1 0 0]
+        [2 1 1 0]                                      (HR9)
+```
+
+This is a comparison of actual field norms, not a finite-dimensional
+fluid truncation. Its finite depth is why repeated parent action can be
+summed exactly: exp(bT)=I+bT+b^2 T^2/2+b^3 T^3/6. It retains all four
+components under composition, and exp(bT)exp(cT)=exp((b+c)T).
+
+Fix the original horizon H and use the original-data clock b=M0(H-t).
+With terminal row (2,1,1,1), the backward weights are
+
+```text
+alpha_r=2+4b+(3/2)b^2+b^3/6,
+alpha_a=1+2b+b^2/2,
+alpha_y=1+b,
+R_H=alpha_r r+alpha_a a+alpha_y y+zeta+m,
+Phi_H=alpha_r phi_r+alpha_a phi_a+alpha_y phi_y
+                                      +phi_z+phi_m. (HR10)
+```
+
+All weights are nonnegative and finite from the original energy and H.
+Their derivative is -M0 times their product with T. Substituting (HR8)
+therefore cancels every parent coupling, with favorable slack M0-M(t):
+
+```text
+R_H'+nu R_H<=Phi_H,
+R_H(t)+nu int_s^t R_H<=R_H(s)+int_s^t Phi_H,
+                         0<=s<=t<=min(T_prefix,H).  (HR11)
+```
+
+This is the positive physical response result. No parent amplitude,
+orientation, or energy-transfer sign is frozen; no original reserve is
+reset at a seam. If the residual self-interaction is absent, R_H decreases
+for every allowed parent history. More generally replacing the signed
+works by their explicit source-norm bounds gives a finite input/output
+estimate. This last assertion does not assume those norms already have
+an original-data bound in the nonlinear fluid.
+
+For the selected parent and the remainder, orthogonal Fourier supports
+and (HR6) give
+
+```text
+||grad u(t)||2^2<=E0+R_H(t)^2.                       (HR12)
+```
+
+Consequently the precise remaining sufficient history estimate is
+
+```text
+For every original smooth datum u0, nu>0, H>0, there is one finite K>=0,
+controlled from u0,nu,H, such that EVERY same-datum available prefix obeys
+             int_0^t Phi_H <=K, 0<=t<=H.             (HR13)
+```
+
+If proved, (HR11)--(HR12) yield the common bound
+||grad u||2^2<=E0+[R_H(0)+K]^2. Together with kinetic energy, Parseval
+controls every finite order-one Fourier sum. This is the analytic
+hypothesis consumed by
+`FourierTameContinuation.exists_tameSolutionOn_of_orderOne`, after the
+fixed period-2pi/unit-torus normalization. The proposed implication and
+(HR13) are not a new Lean certificate. The latter is OPEN; finite initial
+R_H alone does not establish it. The main PD9d and alternative QH14
+targets remain unchanged.
+
+### The internally generated input can be positive
+
+The checks use both orientations of U and the three QR phase fields,
+treated as exact smooth polynomial remainders, plus a higher mean and
+unit-horizontal-frequency fixtures. For the +/- QR remainders the full
+nonlinearity generates both first and third vertical-harmonic means.
+The former enters U_t; the latter remains in m and f. Matching the first
+harmonic alone would discard actual new fluid history.
+
+An explicit adverse datum has initially U=0:
+
+```text
+k=(1,1,0), l=(1,-1,1), n=k+l=(2,0,1),
+v=Pi[e1(cos(k.x)+cos(l.x)+sin(n.x))].
+E_v=41/60, r_v^2=29/15,
+<Cq,K N(v)3>=4/3, -<Cq,Delta q>=9.                 (HR14)
+```
+
+All products, including modes outside these three waves, are retained.
+For original datum A v and any positive nu, the actual unforced initial
+rate is
+
+```text
+(d/dt)r^2 at zero = (8/3)A^3-18nu A^2.
+```
+
+It is positive whenever A>27nu/4 and persists on a short actual smooth
+interval. At the initial time the selected parent and its derivative
+are both zero. Thus the positive input is residual fluid self-interaction, not
+a hidden externally maintained parent.
+
+Even the full R_H cannot simply discard Phi_H: on this datum a=m=0,
+r,y,zeta>0, and the positive nonlinear contribution to r' is
+A^2(4/3)/sqrt(29/15). For fixed nu,H>0, the cubic coefficient in alpha_r
+makes this an order-A^5 positive term in R_H'(0), whereas the clock and
+viscous terms and the other components have at most order A^4. Thus R_H
+increases at sufficiently large original amplitude. This refutes zero
+input payment, not a finite full-datum signed allowance in (HR13).
+Neither repeated uncontrolled renewal nor a singularity is established.
+
+The parent comparison is periodic and tied to its first vertical harmonic.
+On R3 arbitrarily small nonzero horizontal frequencies make C indefinite;
+the present argument supplies no whole-space extension. The periodic
+proof does retain its exact neutral kernel rather than assuming it away.
+
+Run `python3 -O labs/helical_parent_response.py`. The archive includes nine
+complete physical fixtures, the generated means, exact adverse coefficients,
+neutral reconstruction, uniform multiplier inequalities and the polynomial
+composition/clock identities. Infinite-dimensional energy estimates, the
+norm comparison, the local NS consequence, and the continuation implication
+remain analytic. No Lean declarations or axioms change.

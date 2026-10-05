@@ -1,0 +1,329 @@
+{
+  "fixtures": [
+    {
+      "label": "phase 0, parent 0",
+      "stocks": {
+        "r_squared": "73/264",
+        "neutral_squared": "0",
+        "y_squared": "19/16",
+        "z_squared": "23/32",
+        "mean_squared": "0",
+        "gradient_squared": "33/16"
+      },
+      "input_modes": 16,
+      "nonlinear_output_modes": 44,
+      "generated_parent_norm_squared": "0",
+      "generated_mean_modes": []
+    },
+    {
+      "label": "phase 0, parent 1",
+      "stocks": {
+        "r_squared": "73/264",
+        "neutral_squared": "0",
+        "y_squared": "19/16",
+        "z_squared": "23/32",
+        "mean_squared": "0",
+        "gradient_squared": "33/16"
+      },
+      "input_modes": 16,
+      "nonlinear_output_modes": 44,
+      "generated_parent_norm_squared": "0",
+      "generated_mean_modes": []
+    },
+    {
+      "label": "phase 1, parent 0",
+      "stocks": {
+        "r_squared": "601/264",
+        "neutral_squared": "0",
+        "y_squared": "19/16",
+        "z_squared": "23/32",
+        "mean_squared": "0",
+        "gradient_squared": "65/16"
+      },
+      "input_modes": 20,
+      "nonlinear_output_modes": 80,
+      "generated_parent_norm_squared": "185/576",
+      "generated_mean_modes": [
+        [
+          0,
+          0,
+          -3
+        ],
+        [
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "label": "phase 1, parent 1",
+      "stocks": {
+        "r_squared": "601/264",
+        "neutral_squared": "0",
+        "y_squared": "19/16",
+        "z_squared": "23/32",
+        "mean_squared": "0",
+        "gradient_squared": "65/16"
+      },
+      "input_modes": 20,
+      "nonlinear_output_modes": 80,
+      "generated_parent_norm_squared": "185/576",
+      "generated_mean_modes": [
+        [
+          0,
+          0,
+          -3
+        ],
+        [
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "label": "phase -1, parent 0",
+      "stocks": {
+        "r_squared": "601/264",
+        "neutral_squared": "0",
+        "y_squared": "19/16",
+        "z_squared": "23/32",
+        "mean_squared": "0",
+        "gradient_squared": "65/16"
+      },
+      "input_modes": 20,
+      "nonlinear_output_modes": 80,
+      "generated_parent_norm_squared": "185/576",
+      "generated_mean_modes": [
+        [
+          0,
+          0,
+          -3
+        ],
+        [
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "label": "phase -1, parent 1",
+      "stocks": {
+        "r_squared": "601/264",
+        "neutral_squared": "0",
+        "y_squared": "19/16",
+        "z_squared": "23/32",
+        "mean_squared": "0",
+        "gradient_squared": "65/16"
+      },
+      "input_modes": 20,
+      "nonlinear_output_modes": 80,
+      "generated_parent_norm_squared": "185/576",
+      "generated_mean_modes": [
+        [
+          0,
+          0,
+          -3
+        ],
+        [
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "label": "retained higher mean",
+      "stocks": {
+        "r_squared": "601/264",
+        "neutral_squared": "0",
+        "y_squared": "19/16",
+        "z_squared": "23/32",
+        "mean_squared": "13/2",
+        "gradient_squared": "169/16"
+      },
+      "input_modes": 24,
+      "nonlinear_output_modes": 132,
+      "generated_parent_norm_squared": "185/576",
+      "generated_mean_modes": [
+        [
+          0,
+          0,
+          -3
+        ],
+        [
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "label": "retained neutral mode",
+      "stocks": {
+        "r_squared": "0",
+        "neutral_squared": "1/2",
+        "y_squared": "0",
+        "z_squared": "0",
+        "mean_squared": "0",
+        "gradient_squared": "1/2"
+      },
+      "input_modes": 2,
+      "nonlinear_output_modes": 0,
+      "generated_parent_norm_squared": "0",
+      "generated_mean_modes": []
+    },
+    {
+      "label": "general periodic frequencies and mean",
+      "stocks": {
+        "r_squared": "37/20",
+        "neutral_squared": "1/2",
+        "y_squared": "0",
+        "z_squared": "0",
+        "mean_squared": "13/2",
+        "gradient_squared": "19/2"
+      },
+      "input_modes": 10,
+      "nonlinear_output_modes": 32,
+      "generated_parent_norm_squared": "1/32",
+      "generated_mean_modes": [
+        [
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    }
+  ],
+  "comparison": {
+    "gap_weights": [
+      "1+3b+b^2/2",
+      "1+b",
+      "1"
+    ],
+    "full_matrix": [
+      [
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      [
+        "1",
+        "0",
+        "0",
+        "0"
+      ],
+      [
+        "1",
+        "1",
+        "0",
+        "0"
+      ],
+      [
+        "2",
+        "1",
+        "1",
+        "0"
+      ]
+    ],
+    "full_weights": [
+      "2+4b+3b^2/2+b^3/6",
+      "1+2b+b^2/2",
+      "1+b",
+      "1"
+    ],
+    "full_nilpotence_index": 4
+  },
+  "adverse": {
+    "unit_mode_stock": "0",
+    "unit_mode_vertical_norm_squared": "1/2",
+    "neutral_repair": {
+      "r_squared": "0",
+      "neutral_squared": "1/2",
+      "y_squared": "0",
+      "z_squared": "0",
+      "mean_squared": "0",
+      "gradient_squared": "1/2"
+    },
+    "nonlinear_rayleigh_square_rate": "8/3",
+    "rayleigh_square": "29/15",
+    "rayleigh_diffusion": "9",
+    "adverse_energy": "41/60",
+    "adverse_stocks": {
+      "r_squared": "29/15",
+      "neutral_squared": "0",
+      "y_squared": "1",
+      "z_squared": "1/4",
+      "mean_squared": "0",
+      "gradient_squared": "2"
+    },
+    "scope": "The triad is actual smooth initial data with the full NS tangent, not a closed three-mode evolution."
+  },
+  "scope": "For arbitrary smooth zero-mean periodic data, retaining neutral modes lets the reserve pay every first-vertical-harmonic parent history from original energy, up to its explicit residual nonlinear source cost. This is not a bound for that source or arbitrary-data regularity, and no whole-space extension is proved.",
+  "status": "Exact Fourier/rational and polynomial checks passed. Infinite-mode estimates and physical-history consequences are analytic, not Lean-certified.",
+  "source_sha256": {
+    "helical_parent_response.py": "5b87c1740e83508235915c360a25df87450bba761ef8f321128f005a84d7f3d8",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02"
+  }
+}

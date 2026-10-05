@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [finite parent-response bound](labs/README.md#finite-response-to-a-changing-parent-with-the-nonlinear-input-retained)
+controls the full response to a periodic first-harmonic parent whose
+amplitude and orientation may change throughout the history. Retaining
+neutral modes gives a positive reserve with cubic polynomial weights
+fixed by the original energy and horizon. It applies to arbitrary smooth
+periodic prefixes and retains all residual self-interaction as an explicit
+signed input. A bound on that input would give order-one continuation;
+its arbitrary-data payment remains open. Exact fixtures include parent
+feedback, generated higher means and positive internal input. This is an
+analytic result with rational checks, not a new Lean certificate or a
+whole-space extension.
+
 The [complete quotient-return test](labs/README.md#a-balanced-fluid-generates-positive-optimized-work-through-its-changing-dual)
 retains the evolving optimizer when differentiating the cubic work. An
 exact elliptic residual bounds its full response. A balanced periodic 3D
