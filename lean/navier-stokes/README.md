@@ -36,6 +36,20 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [pressure-deformation source payment](labs/README.md#pressure-deformation-has-a-finite-source-payment-but-a-critical-concentration-gap)
+constructs a nonnegative original-energy reserve for the full space-time
+L1 magnitude of the actual pressure-deformation source. It retains its
+complete evolution, including the mixed diffusion term. That reserve also
+pays every source coupling with at least one fixed-scale smoothed gradient
+in the critical continuation norm, leaving an exact joint fine-gradient
+interaction. A localized unforced swirl and exact NS scaling show why
+that payment alone cannot
+control the critical history observation, even at a fixed pressure cutoff.
+The initially pressure-free cyclic datum generates a solenoidal pressure
+return at third order. A stronger, precisely stated source norm would
+suffice for continuation; its arbitrary-data payment remains open.
+These are analytic results with exact checks, not new Lean certificates.
+
 The [recent-pressure reconstruction](labs/README.md#recent-pressure-deformation-histories-reconstruct-the-actual-fluid)
 bounds the transported incoming fluid and coarse-pressure history over a
 fixed time window using original resources. The remaining divergence-free

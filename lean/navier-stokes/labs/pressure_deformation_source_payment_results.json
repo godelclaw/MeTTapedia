@@ -1,0 +1,82 @@
+{
+  "reserve": {
+    "pressure": "||p_hi||2 <= C_S^(3/4) E^(1/4) Z^(3/4)",
+    "remaining_pressure": "r_p=C_S^(3/4)(2nu)^(-3/4)(H-t)^(1/4)E(t); -r_p_prime>=||p_hi||2",
+    "scalar_stock": "Q=(||q||2+r_p)^2; Q_prime+2nu||grad q||2^2<=0",
+    "source_reserve": "R_F=sqrt(E Q)/(2nu); R_F_prime+||(grad u)^T grad q||1<=0",
+    "initial_allowance": "R_F(0)=C_S^(3/4) H^(1/4) E0^(3/2)/(2nu)^(7/4)",
+    "zero_sets": "The norm and geometric-mean derivatives are interpreted by positive regularization and passage to the limit; the analytic proof states this explicitly.",
+    "OPEN": "An L1 space-time source payment is not the L3_t L9_x solenoidal impulse payment needed for continuation."
+  },
+  "full_source_evolution": {
+    "equation": "scriptL F=(grad u)^T grad p_hi-(Hess p)grad q-2[(grad u)^T]^2 grad q-2nu sum_k (partial_k grad u)^T partial_k grad q",
+    "retained": "Canonical full pressure Hessian, high pressure input, changing deformation and complete product-diffusion term; no sign is assumed for these terms."
+  },
+  "physical_jets": [
+    {
+      "datum": "genuine 3D pressure datum",
+      "nu": "1",
+      "pressure_modes": 16,
+      "pressure_tangent_modes": 48,
+      "pressure_second_tangent_modes": 124,
+      "first_projected_derivative_norm_squared": "18727720425746473/259176340684800",
+      "norm_squared_time_order": 4,
+      "norm_squared_leading_coefficient": "18727720425746473/1036705362739200",
+      "retained": "All Fourier outputs, canonical pressure variations, evolving drift derivatives and viscosity; these are actual PDE jets, not a truncated trajectory."
+    },
+    {
+      "datum": "genuine 3D pressure datum",
+      "nu": "2/7",
+      "pressure_modes": 16,
+      "pressure_tangent_modes": 48,
+      "pressure_second_tangent_modes": 124,
+      "first_projected_derivative_norm_squared": "18727720425746473/259176340684800",
+      "norm_squared_time_order": 4,
+      "norm_squared_leading_coefficient": "18727720425746473/1036705362739200",
+      "retained": "All Fourier outputs, canonical pressure variations, evolving drift derivatives and viscosity; these are actual PDE jets, not a truncated trajectory."
+    },
+    {
+      "datum": "initially pressure-free cyclic datum",
+      "nu": "1",
+      "pressure_modes": 0,
+      "pressure_tangent_modes": 8,
+      "pressure_second_tangent_modes": 32,
+      "first_projected_derivative_norm_squared": "6739911225117/1511828488192",
+      "norm_squared_time_order": 6,
+      "norm_squared_leading_coefficient": "748879025013/6047313952768",
+      "retained": "All Fourier outputs, canonical pressure variations, evolving drift derivatives and viscosity; these are actual PDE jets, not a truncated trajectory."
+    },
+    {
+      "datum": "initially pressure-free cyclic datum",
+      "nu": "2/7",
+      "pressure_modes": 0,
+      "pressure_tangent_modes": 8,
+      "pressure_second_tangent_modes": 32,
+      "first_projected_derivative_norm_squared": "6739911225117/1511828488192",
+      "norm_squared_time_order": 6,
+      "norm_squared_leading_coefficient": "748879025013/6047313952768",
+      "retained": "All Fourier outputs, canonical pressure variations, evolving drift derivatives and viscosity; these are actual PDE jets, not a truncated trajectory."
+    }
+  ],
+  "localized_swirl": {
+    "datum": "u0=(-y,x,0) exp(-x^2-y^2-z^2)",
+    "Poisson": "Delta p0=2 exp(-2|x|^2)(1-2(x^2+y^2))",
+    "return": "(grad u0)^T grad phi=2 exp(-|x|^2) phi_rho (y,-x,0), already solenoidal",
+    "nonzero": "For canonical decaying p0, and its nontrivial high-pass version, phi_rho is not identically zero. Hence the actual projected impulse has a nonzero second derivative.",
+    "boundary": "The pressure existence, decay, injectivity of the high filter, local solution and Taylor remainder are analytic obligations explained in README.md."
+  },
+  "scaling": {
+    "physical_scaling": "u_lambda(t,x)=lambda u(lambda^2 t,lambda x), same positive viscosity",
+    "matched_filter": "L_lambda=L/lambda; q_lambda=q(lambda^2 t,lambda x), F_lambda=lambda^3 F(lambda^2 t,lambda x)",
+    "source_mass": "integral_0^(T/lambda^2) ||F_lambda||1 =lambda^-2 integral_0^T ||F||1",
+    "critical_cost": "integral_0^(T/lambda^2) ||V_lambda||9^3 =integral_0^T ||V||9^3>0",
+    "sufficient_source_cost": "A full-datum bound on integral ||F||_(9/5)^(3/2) would pay integral ||V||9^3 by drift-independent smoothing and one-dimensional fractional integration. This stronger source bound is OPEN.",
+    "paid_coarse_source": "||U_lo^T g+U_hi^T g_lo||_(L^(3/2)_t L^(9/5)_x)<=2 K_ell H^(1/6) sqrt(E0) P_H/sqrt(2nu), P_H=r_p(0), K_ell=||grad heat_kernel_(ell^2)||_(9/5).",
+    "remaining_joint_source": "F_fine=U_hi^T g_hi; retain its exact correlations and the same actual transport. Its critical payment is OPEN.",
+    "fixed_filter_extension": "For a fixed physical L, the rescaled base cutoff is lambda L. The WH4--WH5 coarse bound gives convergence to the nonzero full-pressure impulse.",
+    "refuted": "A universal comparison of critical cost with C times any positive power of total source mass, including at fixed physical cutoff.",
+    "not_refuted": "An allowance depending on the full initial datum; global regularity; a finite bound with additional quantitative concentration information."
+  },
+  "status": "Exact algebra and full NS jets passed. Physical reserves, actual intervals and concentration arguments are analytic, not Lean-certified.",
+  "source_sha256": "1f6d5e331fea46ef14ca2764eea930e3b20e3fdd1de21dc09113b7494a27b46d"
+}
