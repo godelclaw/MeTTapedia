@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [aged joint-memory estimate](labs/README.md#aged-stress-memory-is-absorbed-up-to-linear-joint-stock-growth)
+controls old memory's fine pressure work and complete transport commutator,
+plus coarse canonical-pressure generation, by one quarter of the joint
+diffusion and a linear function of the joint stock. Its coefficients are
+fixed by original resources and a prescribed positive memory age. A fixed
+integrating factor leaves an explicit recent-memory/fine-pressure history
+estimate sufficient for continuation. That estimate remains open: older
+parents still influence the current velocity and generate new stress.
+The argument is analytic with exact algebra and full Fourier jet checks;
+it is not a new Lean certificate or an unconditional stock bound.
+
 The [first nonlinear memory-pressure return](labs/README.md#the-first-nonlinear-memory-pressure-return-has-both-signs)
 has opposite signs on two thin-parent families at the same fixed cutoff.
 Both enlarged observations initially decrease, but one family subsequently

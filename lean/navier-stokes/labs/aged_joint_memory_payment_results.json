@@ -1,0 +1,137 @@
+{
+  "scalar_checks": {
+    "old_norms": "m_infinity=E0*N_delta; m2=E0*N_delta^(1/2); m3=E0*N_delta^(2/3)",
+    "interpolation": [
+      "||r||6^3<=J^(1/4)*(a*D+b*J)^(3/4)",
+      "||r||4^2<=J^(5/12)*(a*D+b*J)^(1/4)"
+    ],
+    "young_coefficients": [
+      "27*k^4/(256*epsilon^3)",
+      "3*k^(4/3)/(4^(4/3)*epsilon^(1/3))"
+    ],
+    "affine_tangents": [
+      {
+        "theta": "1/3",
+        "gap_factor": "x/3 + 2/3"
+      },
+      {
+        "theta": "5/9",
+        "gap_factor": "5*x**7/9 + 10*x**6/9 + 5*x**5/3 + 20*x**4/9 + 16*x**3/9 + 4*x**2/3 + 8*x/9 + 4/9"
+      },
+      {
+        "theta": "2/3",
+        "gap_factor": "2*x/3 + 1/3"
+      }
+    ],
+    "diffusion_remaining": "3/4 before the open recent-source payment; 1/4 after it",
+    "clock": "exp(-c*t), c fixed from original resources, never a future norm",
+    "conditional_bound": "J(T)+(1/4)*integral_0^T D <= exp(c*H)*(J(0)+B_low(0)+d*H+K_recent)"
+  },
+  "coefficients_and_symbols": {
+    "epsilon": "1/16",
+    "c0": "432*a**3*s1**4 + b**(3/4)*s1",
+    "v1": "48*C_R**2*m3**2/nu",
+    "v2": "3*2**(2/3)*a**(1/3)*(s2**(4/3) + s3**(4/3))/4",
+    "v3": "b**(1/4)*(s2 + s3)",
+    "c": "16*C_R**2*m3**2/(S**(2/3)*nu) + 432*a**3*s1**4 + b**(3/4)*s1 + 2*b**(1/4)*(s2 + s3)/(3*S**(1/3)) + 5*2**(2/3)*a**(1/3)*(s2**(4/3) + s3**(4/3))/(12*S**(4/9))",
+    "d": "32*C_R**2*S**(1/3)*m3**2/nu + 2**(2/3)*S**(5/9)*a**(1/3)*(s2**(4/3) + s3**(4/3))/3 + S**(2/3)*b**(1/4)*(s2 + s3)/3",
+    "symbols": "L2 symbol norms: R norm 1; K norm h/|xi|; grad K and K div norm h, 0<=h<=min(1,L^2|xi|^2)."
+  },
+  "physical_jet_fixtures": [
+    {
+      "name": "A=3,B=2,n=2",
+      "checks": [
+        {
+          "memory_jet": 1,
+          "memory_pressure_modes": 14,
+          "commutator_modes": 92,
+          "nonzero_joint_receiver": true
+        },
+        {
+          "memory_jet": 2,
+          "memory_pressure_modes": 62,
+          "commutator_modes": 232,
+          "nonzero_joint_receiver": true
+        }
+      ],
+      "scope": "Exact initial memory jets and unrestricted weak identities, not a finite-time truncation or entropy quadrature."
+    },
+    {
+      "name": "A=3,B=2,n=3",
+      "checks": [
+        {
+          "memory_jet": 1,
+          "memory_pressure_modes": 14,
+          "commutator_modes": 92,
+          "nonzero_joint_receiver": true
+        },
+        {
+          "memory_jet": 2,
+          "memory_pressure_modes": 62,
+          "commutator_modes": 232,
+          "nonzero_joint_receiver": true
+        }
+      ],
+      "scope": "Exact initial memory jets and unrestricted weak identities, not a finite-time truncation or entropy quadrature."
+    },
+    {
+      "name": "A=11,B=10,n=2",
+      "checks": [
+        {
+          "memory_jet": 1,
+          "memory_pressure_modes": 14,
+          "commutator_modes": 92,
+          "nonzero_joint_receiver": true
+        },
+        {
+          "memory_jet": 2,
+          "memory_pressure_modes": 62,
+          "commutator_modes": 232,
+          "nonzero_joint_receiver": true
+        }
+      ],
+      "scope": "Exact initial memory jets and unrestricted weak identities, not a finite-time truncation or entropy quadrature."
+    },
+    {
+      "name": "A=11,B=10,n=3",
+      "checks": [
+        {
+          "memory_jet": 1,
+          "memory_pressure_modes": 14,
+          "commutator_modes": 92,
+          "nonzero_joint_receiver": true
+        },
+        {
+          "memory_jet": 2,
+          "memory_pressure_modes": 62,
+          "commutator_modes": 232,
+          "nonzero_joint_receiver": true
+        }
+      ],
+      "scope": "Exact initial memory jets and unrestricted weak identities, not a finite-time truncation or entropy quadrature."
+    },
+    {
+      "name": "genuine three-dimensional datum",
+      "checks": [
+        {
+          "memory_jet": 1,
+          "memory_pressure_modes": 16,
+          "commutator_modes": 162,
+          "nonzero_joint_receiver": true
+        },
+        {
+          "memory_jet": 2,
+          "memory_pressure_modes": 58,
+          "commutator_modes": 520,
+          "nonzero_joint_receiver": true
+        }
+      ],
+      "scope": "Exact initial memory jets and unrestricted weak identities, not a finite-time truncation or entropy quadrature."
+    }
+  ],
+  "analytic_result": "For any fixed age delta>0, old-memory fine work, its full transport commutator, and coarse canonical-pressure generation are bounded by D/4+c*J+d on every available smooth unforced prefix.",
+  "constants": "c,d depend only on E0,nu,L,delta, a prescribed positive stock scale and domain constants.",
+  "OPEN": "A same-original-datum finite bound for the weighted signed recent-memory/fine-pressure remainder; old parents still influence the current velocity and newly generated stress.",
+  "status": "Exact checks passed; actual propagator estimates, PDE inequalities and conditional continuation are analytic, not Lean-certified.",
+  "source_sha256": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02"
+}

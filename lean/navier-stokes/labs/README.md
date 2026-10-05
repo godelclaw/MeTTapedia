@@ -51394,3 +51394,291 @@ Euler parents. The limiting currents, sign integrals and rational values
 (FR14) are checked exactly. The all-n estimates, continuous dependence and
 physical interval conclusions are analytic; no Lean declarations or axioms
 change, and no arbitrary-data continuation claim is made.
+
+## Aged stress memory is absorbed up to linear joint-stock growth
+
+`aged_joint_memory_payment.py` supports an analytic estimate for the
+complete observation (SM10)--(SM14). Fix a positive memory age at the
+original start. Old memory's fine pressure work, its entire transport
+commutator, and coarse canonical-pressure generation can be bounded by
+one quarter of the joint diffusion plus a linear function of the joint
+stock. The coefficients use original resources, not unknown future norms.
+The remaining signed estimate concerns recent memory and fine pressure.
+It stays open. In particular, the result does not bound the stock
+unconditionally or prevent old parents from generating new stress.
+
+The proof reuses the actual propagator and Nash bounds from
+[old stochastic memory](#old-stochastic-memory-and-a-recent-parent-pressure-remainder),
+the full positive stress memory (SM1)--(SM2), joint diffusion (JP3), and
+the coarse-work reserve (SM13). No auxiliary fluid control is introduced.
+All PDE estimates below are analytic; the checker verifies exact algebra
+and complete Fourier identities, not the continuum estimates in Lean.
+
+### The complete source and its joint weak form
+
+Use the domains, canonical pressure and periodic zero-mean velocity frame
+of (JP1). Work on each available smooth unforced prefix, with the same
+nu>0, H>0, L>0 and original datum. For this section write J,D,r,beta_hat
+for the enlarged quantities in (SM12). Define
+
+```text
+alpha=sqrt(2)/nu, z=(u,alpha beta_hat), r=|z|, J=int r^3,
+M=u tensor u+C, beta_hat=K_L M,
+A=3r u, B=3alpha^2 r beta_hat, Xi=K_L^* B.
+```
+
+The compact source identity is
+
+```text
+scriptL beta_hat=K_L[-u tensor grad p-grad p tensor u]
+                         +[u.grad,K_L]M.                   (AM1)
+```
+
+It includes receiver deformation: differentiating [u.grad,Q_L]M gives
+[u.grad,K_L]M+(grad u)^T beta_hat, which cancels the explicitly retained
+deformation in (SM10). Thus (AM1) omits no gradient-of-velocity term.
+The tensor Xi is symmetric. Integration by parts gives the complete weak
+form of the source pairing F=<B,scriptL beta_hat>:
+
+```text
+F=2 int p div(Xi u)+int B.(u.grad beta_hat)
+                              +int (u.grad Xi):M.           (AM2)
+```
+
+Here p is still the pressure of u tensor u, not of M. Since the integral
+of u.grad(r^3) vanishes, the middle term equals -int A.(u.grad u).
+Consequently an equivalent balance before moving fine pressure into
+the diffusion block is
+
+```text
+J'+D_diag=int p div(A+2Xi u)+int (u.grad Xi):M
+                                      -int A.(u.grad u),
+D_diag=nu sum_j int (partial_j z)^T (D2|z|^3) partial_j z.   (AM3)
+```
+
+D_diag differs from the coercive mixed block D used below. The exact
+conversion is the velocity equation (SM11); no pressure term is declared
+to cancel merely because its spatial mean vanishes. The identities extend
+through z=0 because |z|^3 is C2. Spatial cutoffs justify the whole-space
+pairings on the stated smooth finite-energy Sobolev prefixes.
+
+### Old memory has drift-independent bounds
+
+Prescribe 0<delta<H. For t>=delta let
+
+```text
+C_old(t)=P_(t-delta,t)C(t-delta), C_recent=C-C_old;
+C_old(t)=0 for t<delta.
+```
+
+Both tensors are positive semidefinite. The propagator composes along
+the actual history, and int tr C<=E0=||u0||2^2. The earlier scalar Nash
+and adjoint estimates give
+
+```text
+N_delta=(sqrt(3)/pi^2)(nu delta)^(-3/2)                 on R3,
+N_delta=54 max(1,[3/(nu delta)]^(3/2))                  on T3,
+||C_old||infinity<=m_infinity=E0 N_delta,
+||C_old||2<=m2=E0 N_delta^(1/2),
+||C_old||3<=m3=E0 N_delta^(2/3).                       (AM4)
+```
+
+All tensor norms use the pointwise Frobenius norm. Positivity implies
+|C_old|<=tr C_old, whose L1 norm is at most E0; apply the scalar smoothing
+bound to its trace and interpolate. These are estimates on the actual
+transported memory, not on a Fourier truncation that may lose positivity.
+No derivative bound on C_old or the unknown drift is used. We split its
+instantaneous contribution to (SM12), without differentiating a separate
+old-memory energy; hence there is no unaccounted moving-age boundary term.
+
+Put R(T)=(-Delta)^(-1)partial_i partial_j T_ij, with zero mode zero on
+the torus. For a domain constant C_R, standard multiplier bounds give
+||R(T)||3<=C_R||T||3. One reference is
+[Tao's multiplier notes](https://www.math.ucla.edu/~tao/247a.1.06f/notes4.pdf),
+Theorem 4.4; the periodic bound follows by the transference statement Q12,
+after a smooth modification near zero preserving every nonzero lattice
+value. C_R includes the finite tensor contraction. Heat contraction then
+gives ||(I-exp(L^2 Delta))R(C_old)||3<=2C_R m3.
+Plancherel and the complete symbol also give
+
+```text
+||grad K_L T||2<=||T||2,
+||K_L div V||2<=||V||2,
+||K_L T||2<=L||T||2.                                 (AM5)
+```
+
+In the second inequality V has one additional transport index. The
+symbol norms are bounded by 1,1,L, respectively: write
+h=1-exp(-L^2|xi|^2), so 0<=h<=min(1,L^2|xi|^2) and h/|xi|<=L.
+These estimates do not assert an L-infinity bound for a Riesz transform.
+
+### Fine old work uses the actual radial diffusion
+
+Set P_old=(I-exp(L^2 Delta))R(C_old). Incompressibility and (AM5) give
+
+```text
+W_old=-3 int r u.Delta K_L C_old
+     =-3 int P_old u.grad r,
+|W_old|<=sqrt(3/nu) D^(1/2) J^(1/6) ||P_old||3
+       <=epsilon D+[3 C_R^2 m3^2/(epsilon nu)]J^(1/3). (AM6)
+```
+
+The first bound uses D>=3nu int r|grad r|^2 from (JP3), |u|<=r,
+and Holder on int r P_old^2. Thus two spatial derivatives of the pressure
+primitive have been paid in a pairing; no estimate on Delta C_old is needed.
+
+### The full old transport commutator also fits the same stock
+
+The nonlinear receiver satisfies |B|<=3alpha r^2. Keep both terms in
+the commutator. Since u.grad C_old=div(u tensor C_old), (AM5) gives
+
+```text
+F_comm,old=<B,[u.grad,K_L]C_old>,
+|F_comm,old|<=s1 ||r||6^3+s2 ||r||4^2,
+s1=3alpha m2, s2=3alpha m_infinity sqrt(E0).           (AM7)
+```
+
+Indeed the first pairing is bounded by ||B u||2||grad K_L C_old||2;
+the second by ||B||2||u C_old||2. Moving the derivative inside K_L div
+avoids the unavailable gradient bound for the transported memory.
+
+There is another coarse term distinct from the already-paid W_low:
+the source generated by canonical p_low inside (AM1). Its bound is
+
+```text
+F_p,low=<B,K_L[-u tensor grad p_low-grad p_low tensor u]>,
+|F_p,low|<=s3 ||r||4^2,
+s3=6alpha L M_L E0^(3/2),                            (AM8)
+```
+
+using ||grad p_low||infinity<=M_L E0 from (JP6). The force driving u
+remains the full canonical pressure; (AM8) only estimates this part of
+the observation's evolution.
+
+Let a=3C_S/(4nu), b=0 on R3, and a=3C_I/(4nu), b=C_I on T3. Joint
+diffusion and the appropriate homogeneous/inhomogeneous Sobolev bound give
+
+```text
+||r||9^3<=aD+bJ,
+||r||6^3<=J^(1/4)(aD+bJ)^(3/4),
+||r||4^2<=J^(5/12)(aD+bJ)^(1/4).                     (AM9)
+```
+
+The periodic bJ term is essential: r^(3/2) need not have zero mean.
+For each of the last two powers use (x+y)^theta<=x^theta+y^theta.
+Young's inequalities with their exact constants are
+
+```text
+k J^(1/4)D^(3/4)<=epsilon D+27k^4 J/(256epsilon^3),
+k J^(5/12)D^(1/4)<=epsilon D
+             +[3k^(4/3)/(4^(4/3)epsilon^(1/3))]J^(5/9).       (AM10)
+```
+
+For an explicit combined bound fix epsilon=1/16 and define
+
+```text
+c0=27s1^4 a^3/(256epsilon^3)+s1 b^(3/4),
+v1=3C_R^2 m3^2/(epsilon nu),
+v2=3a^(1/3)(s2^(4/3)+s3^(4/3))/(4^(4/3)epsilon^(1/3)),
+v3=(s2+s3)b^(1/4).
+```
+
+Equations (AM6)--(AM10) imply
+
+```text
+|W_old|+|F_comm,old|+|F_p,low|
+ <=D/4+c0 J+v1 J^(1/3)+v2 J^(5/9)+v3 J^(2/3).        (AM11)
+```
+
+There are four diffusion charges: old work, the two old commutator terms,
+and coarse pressure generation. Choose a positive stock scale S from the
+original data and prescribed parameters. Concavity gives
+J^theta<=theta S^(theta-1)J+(1-theta)S^theta. Thus the right side is
+D/4+cJ+d, with the explicit finite nonnegative constants
+
+```text
+c=c0+(v1/3)S^(-2/3)+(5v2/9)S^(-4/9)+(2v3/3)S^(-1/3),
+d=(2v1/3)S^(1/3)+(4v2/9)S^(5/9)+(v3/3)S^(2/3).       (AM12)
+```
+
+For nonzero data one may take S=J(0)>0. Zero energy gives the zero flow
+and is handled separately. There is no small-amplitude, near-planar or
+reference-flow hypothesis. The constants deteriorate as delta tends to
+zero; (AM11) does not absorb arbitrarily fresh memory uniformly in its age.
+
+### A precise remaining history estimate and its continuation consumer
+
+Set p_hi=p-p_low. By linearity, the exact unestimated remainder is
+
+```text
+R_new=W_recent
+ +<B,K_L[-u tensor grad p_hi-grad p_hi tensor u]>
+ +<B,[u.grad,K_L](u tensor u+C_recent)>,
+W_recent=-3 int r u.Delta K_L C_recent.               (AM13)
+```
+
+The receiver B always uses the full beta_hat, including old memory. Both
+p_hi and u are those of the actual solution with all earlier parents.
+In particular this is not a finite-memory evolution model or permission
+to restart the fluid at age delta.
+
+With B_low the full reserve from (SM13), put Y=J+B_low>=0. Then
+
+```text
+Y'+(3/4)D<=cY+d+R_new.                              (AM14)
+```
+
+A sufficient still-OPEN estimate is one finite K_recent>=0 such that
+
+```text
+int_0^T exp(-ct)[R_new(t)-D(t)/2]dt<=K_recent
+for EVERY available smooth prefix from the SAME original datum,
+T<=H, with nu,H,L,delta,S fixed at the original start.          (AM15)
+```
+
+The coefficient c in the weight is already fixed by (AM12), not fitted
+to the unknown solution. Multiplying (AM14) by exp(-ct) and integrating
+would give, with A0=J(0)+B_low(0)+dH+K_recent,
+
+```text
+exp(-cT)Y(T)+(1/4)int_0^T exp(-ct)D(t)dt<=A0,
+J(T)+(1/4)int_0^T D(t)dt<=exp(cH)A0,
+int_0^T ||u||9^3dt<=(4a+bH)exp(cH)A0.                (AM16)
+```
+
+The order-one estimate (JP11) then gives a datum-fixed bound on every
+prefix, as required by `hasNSEvolution_of_orderOne_bound` on R3 and
+`exists_tameSolutionOn_of_orderOne` on T3. This analytic connection uses
+the exact quantifiers of those existing Lean declarations; it does not
+prove (AM15) or add a new Lean theorem. A bound for one chosen trajectory,
+or a supremum over the unknown future without a proof of finiteness,
+would not discharge these hypotheses.
+
+At a composition seam inherit the full fluid, C, the propagator/history
+needed to identify C_recent, the remaining B_low, and the original clock
+exp(-ct). Multiplication of clock factors is consistent; initial reserves
+are not granted again. An older parent may drive a new stress contribution,
+which belongs to C_recent and remains in (AM13). Controlling that repeated
+generation, together with fine pressure, is the physical issue still open.
+
+### Checks and scope
+
+Run `python3 -O labs/aged_joint_memory_payment.py`. Exact checks verify
+the interpolation powers, sharp Young coefficients, global affine
+majorants, diffusion allocation and integrating-factor identity. Complete
+first and second memory jets are computed for both return-sign families
+(FR14) at n=2,3 and for a genuine three-dimensional solenoidal datum.
+The adjoint, weak pressure, weak transport, compact deformation and memory
+split identities retain every generated Fourier output at L^2=log(2).
+The polynomial test receivers exercise identities valid for every receiver;
+they are not substituted for the nonlinear entropy receiver in an estimate.
+The second jets are derivatives of actual NS memory at time zero, not a
+positive finite-time approximation or a closed cascade simulation.
+
+These checks support the derivation; the Nash propagator, Lp multiplier,
+PDE inequalities and continuation bridge remain analytic. The previous
+positive-return example is consistent with (AM11), which permits positive
+work and linear growth. The new result isolates a portion of the complete
+source at arbitrary amplitude. It establishes neither total monotonicity
+nor a finite allowance for (AM15), and it makes no novelty claim for the
+standard analytic tools it reuses.
