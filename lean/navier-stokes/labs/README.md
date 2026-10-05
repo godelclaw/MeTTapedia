@@ -59353,3 +59353,194 @@ pressure and every mode. A changed-parent-amplitude fixture checks the
 joint factor independently. The local PDE bridge and continuation
 estimates are analytic, not newly Lean-certified. No Lean declarations
 or axioms change.
+
+## Distinction observers separate exact history cost from a paid upper comparison
+
+The distinction calculus supplies quantitative, observer-relative comparison
+laws. For fluid histories its observation must be connected to an actual
+continuation quantity, and any summary must retain the information its future
+cost uses. The following application has both a formal consumer and a physical
+test. It reuses the original tolerance definition from MeTTapedia upstream
+revision `3b432626d`, attributed there to Goertzel's distinction calculus.
+
+### An actual gradient-energy observer, with an explicit saturation margin
+
+For positive M define a real-valued tolerance on energy reports by
+
+```text
+d_M(x,y)=min(1,|x-y|/M), similarity_M(x,y)=1-d_M(x,y).
+score_M(u)=d_M(||grad u||2^2,0).                    (DCH1)
+```
+
+`MettapediaNS.DistinctionHistory` instantiates
+`Cybernetics.DistinctionCalculus.Tolerance` and proves the metric law. For
+q<1 the exact equivalence is
+
+```text
+score_M(u)<=q  iff  ||grad u||2^2<=q M.             (DCH2)
+```
+
+If the gradient energy reaches M, the score is exactly one regardless of how
+much larger the energy becomes. Therefore an arbitrary bound by one gives no
+continuation estimate. One finite M and one margin q<1 must be fixed from the
+original datum, viscosity and horizon BEFORE every available same-datum smooth
+prefix. Under those quantifiers, the existing whole-space order-one criterion
+proves global evolution. That implication is Lean-certified; deriving the
+uniform margin for arbitrary data remains open. The scalar observer is a
+continuation readout, not a complete predictive fluid state.
+
+The existing physical `WholeSpaceHistoryBridge.WindowStep` witnesses and
+`BoundaryBellman.Bounds` supply a concrete instance when a nonnegative reserve
+is available. With Z=initial gradient energy+initial reserve, choose
+
+```text
+M=Z+1, q=Z/(Z+1)<1.                                (DCH3)
+```
+
+Lean proves the resulting score bound from the actual signed physical cost.
+Compatible segments keep their full common velocity at the seam; their costs
+add and intermediate reserves cancel. This application reuses that composition
+law and does not give each new segment another initial payment. The new
+continuation adapter is whole-space; the general observer and the periodic
+physical test below also serve the broader two-domain research target.
+
+### Complete higher return from the same original parents
+
+Keep the actual periodic family (CCR1), its full original heat field h and
+its generated remainder b=u-h. At unit viscosity the complete next coefficient
+is
+
+```text
+G12(A,B,C;t)=A^4 B^2 C^4
+              [A^2 F_A(t)+B^2 F_B(t)+C^2 F_C(t)].  (DCH4)
+```
+
+The factor and the three channels follow from the separate half-period
+translation symmetries, the zero generated field when A=0 or C=0, and the
+zero self-work in the triangular case B=0. Eight velocity amplitude degrees
+suffice for this cubic coefficient. Their complete Fourier mode counts are
+6,4,14,40,90,156,264,384. No spatial cutoff or feedback output is discarded.
+The canonical pressure is retained at every degree.
+
+Four independent original amplitude choices isolate the channels, and the
+literal vorticity contraction independently checks each result. Exact positive
+differential cascades applied to -F_A,-F_B,-F_C prove
+
+```text
+F_A(t)<0, F_B(t)<0, F_C(t)<0 for every t>0.          (DCH5)
+```
+
+Their cascade lengths are 56,45,49, respectively. All initial cascade values
+are nonnegative, a later value is strictly positive, and the final function
+vanishes exactly. The same backward scalar Duhamel argument as (CCR6) proves
+the signs over the complete half-line. These are rational arithmetic
+certificates, not signs inferred from a time grid. The channel ninth time
+derivatives are
+
+```text
+F_A^(9)(0)=-150354011/950400,
+F_B^(9)(0)=-18702523/129600,
+F_C^(9)(0)=-35270591/2376000;                       (DCH6)
+F_i^(j)(0)=0 for j=0,...,8.
+```
+
+The exact functions, integrals and sign certificates are archived in
+`distinction_coupled_history_results.json`. At arbitrary positive viscosity
+the degree-twelve coefficient scales as nu^(-9)G12(A,B,C;nu*t); its total
+integral scales as nu^(-10).
+
+Consequently the complete next nonlinear correction to the positive leading
+forecast is strictly depleting whenever ABC!=0. It requires no
+additional positive coefficient payment. This is a statement about a full
+finite derivative of the actual solution map, not a bound on the sum of its
+uncomputed derivatives.
+
+### A genuine finite-interval comparison, with its precise smallness domain
+
+For fixed A,B,C with ABC!=0, fixed nu>0, and any fixed compact interval
+0<t0<=t<=t1, use the actual solution with datum lambda*u0. Small-data existence
+and analytic dependence on lambda on the prescribed finite interval give
+
+```text
+g(b_lambda(t))
+ =lambda^10 A^4 B^2 C^4 nu^(-7)G10(nu*t)
+  +lambda^12 A^4 B^2 C^4 nu^(-9)
+       [A^2 F_A(nu*t)+B^2 F_B(nu*t)+C^2 F_C(nu*t)]
+  +O_(A,B,C,nu,t1)(lambda^14).                     (DCH7)
+```
+
+The remainder is uniform on that compact time interval. The continuous
+coefficient in (DCH5) has a strictly negative maximum there. Hence there is
+one positive lambda_* depending on A,B,C,nu,t0,t1 such that, whenever
+0<|lambda|<lambda_*, the actual generated self-work is strictly below the
+leading caloric forecast throughout the interval. This is an analytic PDE
+comparison on a class of genuine unforced histories. It retains all parents
+and their nonlinear feedback. No explicit value of lambda_* is certified here;
+there is no uniform conclusion as t0 approaches zero, t1 tends to infinity,
+or the amplitude leaves that small-data neighborhood.
+
+The exact remaining physical defect eta in (CCR9) still includes every higher
+return. Neither (DCH5) nor (DCH7) supplies its arbitrary-data payment (CCR10).
+
+### Equal original shadows, different actual signed costs
+
+Compare the original parent triples
+
+```text
+left=(A,B,C)=(2,1,1), right=(1,1,2).                (DCH8)
+```
+
+They have the same normalized kinetic energy 3. Because all original modes
+have radius one, all scalar isotropic integer derivative energies agree.
+Their COMPLETE original heat sources agree at every age, including phases:
+AC=2 in (CCR1). Source capacity is 1/(4nu^2). Their degree-ten self-work
+forecasts also agree, since A^4 B^2 C^4=16. Nevertheless
+
+```text
+G12(left;t)-G12(right;t)=48[F_A(t)-F_C(t)]<0
+                                           for every t>0,
+(F_A-F_C)^(9)(0)=-25230699/176000.                  (DCH9)
+```
+
+A fourth 56-step exact cascade proves this strict difference. In particular,
+the degree-twelve ninth-jet difference is -75692097/11000. The existing
+`GSLT.Core.NonFactorization.NonTrivialFiber` turns these two explicit triples
+into a Lean-certified obstruction to recovering that polynomial jet from
+the energy/source/leading-work shadow. Its physical identification is analytic
+with independent exact checks, not a new Lean derivation of the PDE jets.
+
+There is also an actual short-time statement at the displayed fixed amplitudes,
+for every fixed positive viscosity. At time-jet order nine the cubic remainder
+has amplitude degree at most twelve. The lower possible degrees vanish or
+have the same joint factor. Thus
+
+```text
+g(b_left(t))-g(b_right(t))
+ =-[75692097/(11000*9!)]t^9+O_nu(t^10).             (DCH10)
+```
+
+This gives a genuine local difference of signed self-work without an amplitude
+smallness restriction. Both evolutions are smooth on a common local interval.
+It does not refute a common finite allowance for the two data. The source and
+energy summary loses information needed for EXACT prediction of cost, while
+the shared UPPER comparison at degree twelve survives by (DCH5). Retaining
+the ordered parent squares separates this particular obstruction; it is not
+claimed to close an arbitrary fluid history.
+
+### Verification and the next physical obligation
+
+Run `python3 -O labs/distinction_coupled_history.py`. It checks the complete
+amplitude equations and pressure, independent literal vorticity contraction,
+channel reconstruction, four sign cascades, the full original source shadow,
+and an independent actual positive-viscosity ninth time jet. The imported
+`Basic.lean` is unchanged from the named upstream revision. The Lean observer
+adapter and polynomial factorization control are included in UpstreamAudit.
+The physical coefficient signs and interval arguments remain analytic with
+exact arithmetic verification.
+
+The next required estimate concerns the complete remaining eta in (CCR9),
+with its full viscosity and signed history on every same-datum prefix. A
+summary may preserve a valid upper cost bound without predicting every cost
+exactly. Any proposed upper bound still needs an original-data price and
+control as scales and nonlinear returns increase. Another finite coefficient
+alone cannot establish that history payment.

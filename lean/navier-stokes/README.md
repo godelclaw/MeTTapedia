@@ -36,6 +36,15 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [distinction-history application](labs/README.md#distinction-observers-separate-exact-history-cost-from-a-paid-upper-comparison)
+connects a real-valued d-calculus observer to actual gradient energy and the
+existing signed history reserve. Lean certifies that a datum-fixed uniform
+margin below observer saturation implies whole-space continuation. A complete
+coupled-parent calculation gives a strictly depleting next nonlinear correction
+in every parent channel, while equal energy/source summaries conceal different
+signed costs. The physical comparison is analytic with exact certificates;
+the higher nonlinear remainder and arbitrary-history reserve remain open.
+
 The [coupled caloric return](labs/README.md#a-non-self-interacting-heat-source-generates-a-paid-coupled-return)
 follows a periodic family whose original heat source has zero
 self-nonlinearity at every time. Actual pressure nevertheless generates

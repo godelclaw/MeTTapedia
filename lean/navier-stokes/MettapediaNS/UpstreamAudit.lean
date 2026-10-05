@@ -1,3 +1,4 @@
+import MettapediaNS.DistinctionHistory
 import MettapediaNS.EnergyCubeReceiverReserve
 import MettapediaNS.WholeSpaceParentFeedback
 import MettapediaNS.ShearFluctuationReserve
@@ -1605,3 +1606,10 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.heat_allowance_bound
 #print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.interval_payment
 #print axioms Mettapedia.FluidDynamics.NavierStokes.EnergyCubeReceiverReserve.actual_reserve_derivative
+#print axioms Mettapedia.FluidDynamics.NavierStokes.DistinctionHistory.energyTolerance_metric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.DistinctionHistory.energyScore_le_iff
+#print axioms Mettapedia.FluidDynamics.NavierStokes.DistinctionHistory.energyScore_saturated
+#print axioms Mettapedia.FluidDynamics.NavierStokes.DistinctionHistory.energyScore_le_of_reserve
+#print axioms Mettapedia.FluidDynamics.NavierStokes.DistinctionHistory.hasNSEvolution_of_distinction_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.DistinctionHistory.CoupledParents.ninthJet_not_factors
+#print axioms Mettapedia.FluidDynamics.NavierStokes.DistinctionHistory.CoupledParents.cost_difference
