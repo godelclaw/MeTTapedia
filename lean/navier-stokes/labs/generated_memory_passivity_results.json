@@ -1,0 +1,58 @@
+{
+  "absolute_weighted_payment": {
+    "critical_C_squared": 61480082398,
+    "finite_horizon_reserve": "4*C*(H-t)*E^(3/2)",
+    "gradient_C_squared": 48920293775230,
+    "mean_zero_periodic_reserve": "4*C*E^(3/2)/(3*nu)",
+    "nonzero_retained_modes": 137062
+  },
+  "actual_viscous_jet_checks": [
+    {
+      "amplitude": "3",
+      "complete_first_modes": 20,
+      "complete_second_modes": 60,
+      "nu": "1"
+    },
+    {
+      "amplitude": "6/7",
+      "complete_first_modes": 20,
+      "complete_second_modes": 60,
+      "nu": "2/7"
+    }
+  ],
+  "all_prefix_kinetic_payment": "Integral transfer = E_hidden(0)-E_hidden(t)-2*nu*Integral Z_hidden",
+  "complete_nonlinear_modes": 12,
+  "critical_memory_derivative": "4500000",
+  "full_balance_checks": [
+    {
+      "gradient_defect": "0",
+      "gradient_transfer": "0",
+      "kinetic_transfer": "0",
+      "nu": "1"
+    },
+    {
+      "gradient_defect": "3240000",
+      "gradient_transfer": "2115000",
+      "kinetic_transfer": "-1800",
+      "nu": "1"
+    },
+    {
+      "gradient_defect": "-6480000",
+      "gradient_transfer": "-4230000",
+      "kinetic_transfer": "3600",
+      "nu": "1"
+    }
+  ],
+  "gradient_memory_derivative": "211500000",
+  "hidden_source_modes": 2,
+  "kinetic_memory_derivative": "-180000",
+  "projection": "P retains |k|<=32 except (0,0,+/-25); Q retains that pair and every frequency outside the band",
+  "scope": "Exact full Fourier algebra; positive actual intervals, uniform local scaling and all-prefix estimates analytic, not Lean-certified",
+  "shell_kinetic_derivatives": {
+    "15": "-1620000",
+    "20": "1440000"
+  },
+  "sobolev_order_s_derivative": "1440000*20^(2*s)-1620000*15^(2*s); positive for every s>=1/2",
+  "source_energy": "90000",
+  "source_sha256": "021cffc4fa5e520e98a7697fa822fc39135b3d94b5d41cbcb41ed15ea2403ad3"
+}

@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [generated-memory payment](labs/README.md#kinetic-memory-is-passive-but-derivative-weighted-feedback-can-amplify)
+separates kinetic passivity from the stronger observations needed for
+continuation. An exact all-prefix kinetic balance pays the net feedback
+from an initially empty component. A coherent three-dimensional example
+nevertheless has positive feedback at every Sobolev order at or above the
+critical half derivative. Its fixed finite frequency interface has one
+omitted pair; no sign claim for a pure spherical cutoff is refuted.
+For every fixed bounded band, an explicit original-energy reserve pays
+the absolute weighted feedback on both domains. The cost grows with
+bandwidth, leaving the all-scale history estimate open. These results
+are analytic with exact checks, not new Lean PDE theorems.
+
 The [generated-mode return](labs/README.md#generated-modes-grow-while-their-first-parent-return-is-depleting)
 follows the convex-completion datum through actual nonlinear generation.
 The first feedback into its original modes depletes their kinetic,

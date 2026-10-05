@@ -58674,3 +58674,227 @@ field and full pressure. Favorable return into one fixed family does not
 pay every family's gradient growth. The finite-datum allowance remains
 open; neither these short histories nor the later numerical turnover
 decides arbitrary-data regularity. No Lean declarations or axioms change.
+
+## Kinetic memory is passive but derivative-weighted feedback can amplify
+
+The negative kinetic return in (GFR3) is structural: it follows from
+nonlinear energy cancellation, without a special depletion geometry.
+The corresponding first-memory identity is equation (6) in
+[Hald and Stinis's t-model analysis](https://arxiv.org/pdf/math/0610255),
+and their equation (10) uses it to obtain energy decay in the reduced
+model. The following calculation keeps the actual NS history throughout.
+It does not identify the reduced model with the full fluid.
+
+An all-prefix kinetic payment survives arbitrary subsequent exchanges.
+Its derivative-weighted counterpart has an explicit geometric defect.
+Reusing the coherent helical datum (497), that defect permits a positive
+first return into every critical-or-stronger Sobolev observation of the
+retained fluid. A finite original-energy reserve still pays this work
+for each fixed bounded band. The cutoff dependence, rather than a
+universal negative sign, is the remaining obstacle to this payment.
+
+### Exact kinetic payment with the same hidden state at every seam
+
+Let P be a fixed real scalar orthogonal Fourier projection, Q=I-P.
+It commutes with derivatives and the Leray projection. On smooth unforced
+R3 or periodic histories, with the integrability needed for energy
+pairings, put
+
+```text
+p=P u, r=Q u, N(u)=-P_sol[(u.grad)u],
+C=P[N(p+r)-N(p)], T0=2<p,C>,
+E_p=||p||2^2, E_r=||r||2^2, Z_p=||grad p||2^2,
+Z_r=||grad r||2^2.
+
+E_p'+2nu Z_p=T0, E_r'+2nu Z_r=-T0,
+int_a^b T0=E_r(a)-E_r(b)-2nu int_a^b Z_r.             (GMP1)
+```
+
+The proof uses `<p,N(p)>=0`, orthogonality and the complete total energy
+identity. In particular, when r(0)=0,
+
+```text
+-E(0)<=int_0^t T0<=0                                (GMP2)
+```
+
+on every available smooth prefix. This is net work, not absolute work;
+positive transfers at later times can spend energy stored earlier in r.
+Composition retains E_r at the shared seam. It cannot restart with an
+empty hidden state. An external force contributes `2<r,Qf>` to the
+hidden equation, making explicit which input would alter this payment.
+
+### The exact defect at a continuation-sensitive observation
+
+For s>=0 define
+
+```text
+M_s(v)=||Lambda^s v||2^2, D_s(v)=||Lambda^(s+1)v||2^2,
+G_s(v)=2<Lambda^(2s)v,N(v)>,
+T_s=2<Lambda^(2s)p,C>, Lambda=sqrt(-Delta).
+
+M_s(r)'+2nu D_s(r)+T_s=G_s(u)-G_s(p),
+int_0^t T_s=M_s(r(0))-M_s(r(t))-2nu int_0^t D_s(r)
+                         +int_0^t [G_s(u)-G_s(p)].   (GMP3)
+```
+
+The retained equation is
+`M_s(p)'+2nu D_s(p)=G_s(p)+T_s`. No pressure has been discarded from
+the evolution; its gradient cancels only in the solenoidal pairings.
+At s=0 both G terms vanish. At s=1, G_1(v) is twice the ordinary
+vorticity-stretching integral. Thus the unpaid difference in (GMP3)
+concerns the actual physical observation used by continuation, not an
+independent source assigned to the complement.
+
+### A coherent child drains kinetic energy while amplifying derivatives
+
+Take the real, mean-zero datum w from (497), with the four positive
+wave vectors and coefficients
+
+```text
+(12,0,16):  (16,20i,-12)/2,
+(-12,0,9):  (9,15i,12)/2,
+(0,12,16): -i(-20i,16,-12)/2,
+(0,-12,9): (-15i,9,12)/2,                            (GMP4)
+```
+
+and conjugate coefficients at the negative wave vectors. Their span is
+three-dimensional. Every original coefficient has positive helicity,
+and the original shell radii are 15 and 20.
+
+Here P retains `|k|<=32` EXCEPT `(0,0,+/-25)`. Q retains that omitted
+pair and all frequencies outside the band. This is a fixed finite
+interface with a hole, not a pure spherical low-pass projection.
+All twelve nonzero outputs of N(w) lie strictly inside radius 32.
+Consequently b=QN(w) consists exactly of the omitted conjugate pair,
+and
+
+```text
+curl b=-25b, ||b||2^2=90000,
+L=P DN(w)[b],
+2<w,L>=-180000,
+2<Lambda w,L>=4500000,
+2<grad w,grad L>=211500000.                         (GMP5)
+```
+
+The source and its return include canonical pressure. The individual
+retained shells receive kinetic first-return coefficients
+
+```text
+radius15: -1620000, radius20: 1440000.
+d_s:=2<Lambda^(2s)w,L>
+    =1440000*20^(2s)-1620000*15^(2s)>0, s>=1/2.     (GMP6)
+```
+
+The radius-15 parents pay both the new child and the radius-20 parents.
+The retained fluid loses kinetic energy overall, while its more heavily
+weighted observations gain. Helicity checks the critical coefficient:
+`2<curl w,L>+2<curl b,b>=0`, and `curl w=Lambda w` initially.
+For s>=1/2, `(20/15)^(2s)>=4/3>9/8`, proving the sign in (GMP6).
+
+For actual NS with u(0)=a w, every fixed a>0 and nu>0,
+`C(0)=0`, `C'(0)=a^3 L`. Hence
+
+```text
+T_0(t)=-180000 a^4 t+O(t^2),
+T_s(t)=d_s a^4 t+O(t^2), s>=1/2.                    (GMP7)
+```
+
+For each fixed s this gives a positive actual local interval with
+positive integrated derivative-weighted feedback, despite r(0)=0.
+No common interval uniform over all Sobolev orders is asserted.
+The full first and second NS jets contain 20 and 60 modes; outputs
+outside P remain in the physical hidden field, rather than being deleted.
+This refutes universal derivative-weighted passivity for such interfaces.
+It does not decide a sign conjecture restricted to pure spherical cutoffs.
+
+Viscosity alone also cannot absorb this feedback with a fixed multiple
+and zero allowance. To make the quantifiers explicit, fix nu>0, s>=1/2
+and B>=0. Let v_epsilon start from w with viscosity epsilon in (0,1].
+Local H^m energy estimates, for m>s+6, give a common smooth interval
+and sufficient time-derivative bounds depending on w and m. Dissipation
+has a favorable sign, so those local constants are uniform in epsilon.
+After shortening the interval, for some fixed tau>0 and M<infinity,
+
+```text
+T_s(v_epsilon)(q)>=d_s q/2 on [0,tau],
+D_s(P v_epsilon)(q)<=M on [0,tau].
+```
+
+Set epsilon=nu/a and u(t)=a v_epsilon(a t). This solves NS at the
+prescribed viscosity from a w. For a>=nu,
+
+```text
+int_0^(tau/a) T_s(u)>=a^2 d_s tau^2/4,
+B nu int_0^(tau/a) D_s(Pu)<=B nu a M tau.            (GMP8)
+```
+
+Choosing `a>4 B nu M/(d_s tau)` makes the first quantity exceed the
+second. These are analytic uniform-local arguments, not consequences
+of a finite numerical time sample. The full initial Sobolev resource
+also grows like a^2, so no finite full-datum allowance is refuted.
+Other terms in the complete stretching budget are still present;
+(GMP8) does not refute (CPC8), (CG5) or (CJ10).
+
+### A finite-band repair paid from the original fluid
+
+A signed allowance can replace the false negative-sign requirement.
+Suppose P is any fixed scalar Fourier projection supported in |k|<=K.
+With normalized period-2pi measure, put
+
+```text
+C_(P,s)^2=sum_(k retained) |k|^(4s+2).
+```
+
+On R3 with unitary Fourier transform, a valid constant for any such
+projection is
+`C_(K,s)=K^(2s+5/2)/(pi sqrt(2(4s+5)))`, obtained by integrating the
+same radial weight over the ball. Fourier Cauchy--Schwarz and integration
+by parts give
+
+```text
+||grad Lambda^(2s)p||infinity<=C_(P,s) sqrt(E),
+T_s=2int grad Lambda^(2s)p:(u tensor u-p tensor p),
+|T_s|<=4 C_(P,s) E^(3/2), E=||u||2^2.               (GMP9)
+```
+
+The R3 expression uses its stated constant in place of C_(P,s).
+This is the elementary Bernstein estimate combined with the actual
+energy law; neither projection is asserted to evolve autonomously.
+For a prescribed horizon H define the nonnegative physical reserve
+
+```text
+R_H(t)=4 C_(P,s)(H-t)E(t)^(3/2),
+R_H'+|T_s|<=0,
+int_0^T |T_s|<=4 C_(P,s)H E(0)^(3/2), T<=H.         (GMP10)
+```
+
+For E>0, the surplus derivative is exactly
+`-12nu C_(P,s)(H-t)sqrt(E)Z<=0`; zero initial energy is the zero flow.
+On the mean-zero torus, Z>=E gives the all-time alternative
+
+```text
+R_infinity=4 C_(P,s)E^(3/2)/(3nu),
+R_infinity'+|T_s|<=0.                              (GMP11)
+```
+
+The same reserve carries through every compatible seam, using the full
+fluid's energy rather than separate replenishable parent stocks. For
+the fixed interface in (GMP4)--(GMP6), exact lattice sums give
+`C_(P,1/2)^2=61480082398` and `C_(P,1)^2=48920293775230`.
+Thus the very example with positive weighted feedback has a finite
+original-data payment over its whole available history.
+
+For a full band the constants grow at order `K^(2s+5/2)`. This payment
+cannot be extended to all frequencies by taking K to infinity, and a
+moving projection introduces additional derivative terms. Bounded-band
+estimates are also consistent with energy-bounded forced histories;
+the distinguishing unforced mechanism must control the remaining fine
+geometry and renewal. No arbitrary-history continuation bound follows
+from the finite-band result alone.
+
+Run `python3 -O labs/generated_memory_passivity.py`. Exact checks cover
+the coherent child, shell exchange, full positive-viscosity jets, complete
+kinetic and gradient-defect identities, lattice constants and reserve
+derivatives. The analytic local intervals, uniform-local scaling and
+all-prefix estimates are not Lean-certified. No Lean declarations or
+axioms change.
