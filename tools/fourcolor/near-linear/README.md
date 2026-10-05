@@ -5463,3 +5463,33 @@ Replay `lake build kernelRuleFanSevenCluster`. The
 audit. The existing shared diamond profile and classical configuration 7
 remain in the initial fan reduction; the full D3009 repair remains an
 explicit premise. No new repair certificate or coverage entry is removed.
+
+## Degree-bounded supply of the neighbouring release
+
+`StripDegreeRelease` derives the neighbour condition used by the physical
+two-switch release. At a vertex of exterior degree at most four, a
+colour-one neighbour, two distinct colour-three neighbours and a nontrivial
+zero/two connection exhaust the four neighbour positions. The connection
+supplies a colour-two neighbour, so the colour-one neighbour is unique.
+The common corner's colour follows from properness and the missing-colour
+premise. The existing `KempeNeighborRelease` theorem then supplies the two
+physical switches and a compatible colouring of the complete D0099 source.
+
+The general embedding lemma derives the exterior degree bound from an
+ambient degree-five vertex and an omitted core neighbour. The existing
+41-vertex spherical occurrence consumes it. Its new reconstruction theorem
+quantifies over every exterior colouring with the specified boundary,
+missing-colour and joint-connection hypotheses. It does not depend on the
+earlier saved colouring's neighbour check or reconstruction theorem.
+
+The exterior degree bound and common-corner observations remain explicit
+hypotheses. Flatness is not used to assume them. The graph and its components
+have no size bound, and no additional repair table or graph fixture is added.
+The result supplies a local repair branch; it establishes no new strict
+reduction, universal coverage, catalogue removal or global termination.
+
+Replay `lake build kernelStripDegreeRelease`. The
+[receipt](strip-degree-release-measurements.json) records the three modules,
+eight-root audit, source hashes and unchanged counts: 633 coverage entries,
+629 original certificate dependencies and 336 replaced independent
+discharging checks.

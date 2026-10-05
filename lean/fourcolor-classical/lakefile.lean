@@ -1552,3 +1552,17 @@ target kernelStripExteriorFan pkg : Unit := do
         "StripExteriorFan", "StripExteriorFanExample", "StripExteriorFanAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay degree-bounded supply of the neighbouring release. -/
+target kernelStripDegreeRelease pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-degree-release",
+        "--library-output", ".lake/build/lib/lean", "--modules", "StripDegreeRelease",
+        "StripDegreeReleaseExample", "StripDegreeReleaseAudit"]
+      cwd := pkg.dir
+      env := env }

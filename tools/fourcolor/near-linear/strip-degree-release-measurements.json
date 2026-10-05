@@ -1,0 +1,61 @@
+{
+  "classification": "DEGREE_BOUND_SUPPLIES_NEIGHBOUR_RELEASE",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_modules": [
+    {
+      "module": "MettapediaFourColor.StripDegreeRelease",
+      "source_sha256": "239749632320fb04b4dd9725a7d04b700568dcc180542888a1296822a3470332",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.831,
+      "olean_bytes": 547208,
+      "olean_sha256": "1513bb7aba9957e4855f1401acc6262d158b53cdb6b54fe13d2288cb0c9b9e84"
+    },
+    {
+      "module": "MettapediaFourColor.StripDegreeReleaseExample",
+      "source_sha256": "b56ab164243c32faf3eb6b564a5e04c1d1f09f2a038a1de411b6349f032268c1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.188,
+      "olean_bytes": 69080,
+      "olean_sha256": "bda12750c16cc0d570dea57937829af89a25b9993a5c573d6948c486ff4886dc"
+    },
+    {
+      "module": "MettapediaFourColor.StripDegreeReleaseAudit",
+      "source_sha256": "00038b02e8ee26c0db3b0e0a253f4727e680b7b4fd7ac4033f7a244a0f1ef2b3",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.036,
+      "olean_bytes": 2608,
+      "olean_sha256": "afcbeb3e60c6fd18ea5c737c47952c695f5a0b56465b7ddb26ea4ba4bd494b4f"
+    }
+  ],
+  "frontend_wall_seconds_total": 12.055,
+  "timing_scope": "Three new modules with dependencies already built. No whole-proof speedup claimed.",
+  "new_lean_source_bytes": 13877,
+  "new_graph_fixture_bytes": 0,
+  "new_boundary_repair_table_bytes": 0,
+  "audit": {
+    "roots": 8,
+    "transitive_dependency_declarations": 5778,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "proved": [
+    "An exterior embedding omitting an ambient neighbour has strictly smaller degree at that vertex.",
+    "At exterior degree at most four, two distinct colour-three neighbours, a colour-one neighbour and an actual nontrivial zero/two connection force the colour-one neighbour to be unique.",
+    "The common corner has colour three by properness and the missing-colour premise. The unique neighbour supplies the existing physical two-step release and complete D0099 source reconstruction.",
+    "The reused spherical occurrence has ambient degree five and an omitted core neighbour. Its reconstruction theorem quantifies over every exterior colouring satisfying the stated boundary, missing-colour and joint-connection hypotheses."
+  ],
+  "scope_limits": [
+    "The exterior degree bound, common-corner observations, missing colour and actual connection remain explicit hypotheses.",
+    "No flatness-to-degree-five implication is assumed or proved. No arbitrary flat-neighbourhood repair is claimed.",
+    "The general theorem bounds no exterior or component size. Its graph is finite.",
+    "No new strict ambient reduction, catalogue deletion, coverage theorem or global termination theorem is claimed."
+  ],
+  "counts": {
+    "coverage_entries": 633,
+    "original_certificate_dependencies": 629,
+    "independent_discharging_checks_replaced": 336
+  }
+}

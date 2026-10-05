@@ -6397,5 +6397,29 @@
       "Strict reduction, compact coverage and termination."
     ],
     "measurements": "../near-linear/strip-exterior-fan-measurements.json"
+  },
+  "strip_degree_release": {
+    "receipt": "../near-linear/strip-degree-release-measurements.json",
+    "classification": "DEGREE_BOUND_SUPPLIES_NEIGHBOUR_RELEASE",
+    "proved": [
+      "An exterior embedding omitting an ambient neighbour has strictly smaller degree at that vertex.",
+      "At exterior degree at most four, two distinct colour-three neighbours, a colour-one neighbour and an actual nontrivial zero/two connection force the colour-one neighbour to be unique.",
+      "The common corner has colour three by properness and the missing-colour premise. The unique neighbour supplies the existing physical two-step release and complete D0099 source reconstruction.",
+      "The reused spherical occurrence has ambient degree five and an omitted core neighbour. Its reconstruction theorem quantifies over every exterior colouring satisfying the stated boundary, missing-colour and joint-connection hypotheses."
+    ],
+    "scope_limits": [
+      "The exterior degree bound, common-corner observations, missing colour and actual connection remain explicit hypotheses.",
+      "No flatness-to-degree-five implication is assumed or proved. No arbitrary flat-neighbourhood repair is claimed.",
+      "The general theorem bounds no exterior or component size. Its graph is finite.",
+      "No new strict ambient reduction, catalogue deletion, coverage theorem or global termination theorem is claimed."
+    ],
+    "credit": {
+      "catalogue_entries_removed": 0,
+      "configuration_certificate_dependencies_removed": 0,
+      "new_graph_fixture_bytes": 0,
+      "new_repair_table_bytes": 0,
+      "new_lean_source_bytes": 13877,
+      "frontend_seconds_for_new_modules": 12.055
+    }
   }
 }
