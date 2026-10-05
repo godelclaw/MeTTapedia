@@ -55983,3 +55983,272 @@ return, axial integration, Rayleigh identity and explicit positivity
 bounds. The smooth cutoff construction, periodic local solution, Taylor
 remainder, integration by parts and family-level mean value argument
 remain analytic. No Lean declarations or axioms change.
+
+## Parent depletion can coexist with growing full enstrophy
+
+`centrifugal_enstrophy_return.py` connects the preceding cylindrical
+construction to the ordinary vorticity-stretching budget. A negative
+kinetic parent return does not force the full fluid to stay below its
+heat-only enstrophy forecast. For a family with angular velocity
+proportional to `r^(-p)` on the active annulus, both signs can be decided:
+parent return changes sign at p=2, whereas the initial stretching
+derivative is strictly positive for every p>=1 and sufficiently small
+nonzero axial modulation. The complete feedback into the original swirl
+is retained in this comparison.
+
+The geometric input is the same classical centrifugal structure credited
+in (CF9). This calculation distinguishes its effect on two different
+observations; it is not a new general instability criterion. The results
+are analytic statements about actual periodic NS, supported by exact
+algebraic checks, not new Lean certificates.
+
+### The whole fluid's continuation observation
+
+Use (CF1)--(CF6), including the complete pressure and the same fixed torus
+with unnormalized volume. Write
+
+```text
+E(u)=||grad u||2^2=||curl u||2^2,
+D(u)=||Delta u||2^2=||grad curl u||2^2,
+g(u)=<-Delta u,N(u)>=integral omega^T grad(u) omega,
+E'=2g-2nu D,
+G=||grad W||2^2+<-Delta U,DN(U)W>, W=N(U).           (CRIT1)
+```
+
+A finite original-data bound for E on every available prefix is the
+existing order-one continuation target. The two terms in G respectively
+retain the generated field and its feedback into the original field.
+Measuring the first alone gives a different answer.
+
+Reflection preserves g as a scalar cubic functional. Hence g(H(t))=0
+for every odd heat field H(t)=exp(nu t Delta)U, giving both g(U)=0 and
+`Dg(U)[nu Delta U]=0`. The exact physical derivative is therefore
+
+```text
+g'(0)=G for every nu>0,
+E(u(t))-E(H(t))=G t^2+o(t^2).                        (CRIT2)
+```
+
+For the second identity, expand the actual velocity through order two:
+`u'(0)=LU+W` and
+`u''(0)=L^2U+LW+DN(U)LU+DN(U)W`. Odd/even orthogonality removes the
+cross terms involving W and LU, LW and U, and DN(U)LU and U. The
+remaining second Taylor coefficient is exactly (CRIT1). The checker
+verifies this for any reflection-invariant self-adjoint metric and
+then specializes the interpretation to -Delta. The local PDE Taylor
+passage is analytic, with smooth periodic initial data.
+
+These are different observations at different orders: parent kinetic
+return in (CF4) first appears at t^4; the full enstrophy departure in
+(CRIT2) appears at t^2. No equality between their coefficients is assumed.
+
+### Exact second variation in the original axial modulation
+
+Choose the compact base equal to `b_base=r^(-p)` on a neighborhood of
+[1,2], with p>=1. Keep the bump chi, integer k>=1 and source a from
+(CF5). The original modulation epsilon is chosen small enough that
+`|epsilon| ||a/f0||infinity<1/2`, where f0=b_base^2. Define
+
+```text
+L4 chi=chi''+3chi'/r,
+D_k chi=L4 chi-k^2 chi, a=D_k chi/k,
+G(epsilon)=epsilon^2 G2+O(epsilon^4),
+G2=pi^2 p integral [r^3(D_k chi)^2
+                         -2(2-p)k^2 r chi^2] dr.    (CRIT3)
+```
+
+The error is a static initial-parameter expansion, not a time or
+viscosity limit. To derive the coefficient, on the modulation support put
+`b0=r^(-p)`, `h=a/(2b0)`, and `B=chi(2b0+r b0')`. Then
+`b=b0+epsilon h cos(kz)+O(epsilon^2)` and
+`curl V=-k r a sin(kz)e_theta`, where W=epsilon V.
+The full axial integral of the second coefficient in (CRIT1), divided
+by 2pi^2, has radial density
+
+```text
+I=r^3 {k^2 a^2
+       -k L4(b0)[r chi h'+(4chi+r chi')h]
+       -k(L4 h-k^2h)B}.                             (CRIT4)
+```
+
+All occurrences of b0 outside the modulation support pair with zero
+W and zero DN(U)W. Thus derivatives of the transverse base cutoff have
+not been omitted from a nonzero term.
+
+For an explicit integration-by-parts certificate set
+
+```text
+I_mid=r^3 {k^2a^2+k h[r chi (L4 b0)'-(L4 B-k^2B)]},
+P1=-k(L4 b0)r^4 chi h-k r^3(h'B-h B'),
+P2=(r^2/2)(chi')^2+2r chi chi'+2chi^2
+                                      -(k^2r^2/2)chi^2.
+I-I_mid=P1',
+I_mid-(p/2)[r^3(D_k chi)^2-2(2-p)k^2r chi^2]
+                                      =p(2-p)P2'.   (CRIT5)
+```
+
+The compact smooth chi and its derivatives vanish at both endpoints,
+so the boundary primitives integrate to zero. This proves (CRIT3)
+from the full physical response, rather than a selected source term.
+
+Axial translation by pi/k takes U_epsilon to U_(-epsilon), and g and
+its physical derivative are invariant under that translation. Thus G
+is even. On a fixed source-positive epsilon interval it is smooth:
+the square root has a positive denominator wherever the modulation is
+supported. This justifies the fourth-order error in (CRIT3).
+
+### A positive square certificate and the sign separation
+
+The radial Hardy identity with the same compact endpoints gives
+
+```text
+G2=pi^2 p integral [r^3(L4 chi)^2
+       +2k^2 r^3(chi'+chi/r)^2
+       +2(p-1)k^2 r chi^2+k^4 r^3 chi^2] dr
+   >=pi^2 p k^4 integral r^3 chi^2 dr>0.             (CRIT6)
+```
+
+For direct verification, the integrand in (CRIT3) minus the bracket
+in (CRIT6) is the derivative of
+`-2k^2(r^3 chi chi'+r^2 chi^2)`. Every remaining term in (CRIT6) is
+nonnegative for p>=1, and the last is positive for nonzero chi.
+For the exponential bump (CF11), the middle annulus [5/4,7/4] supplies
+`G2>=125pi^2 p k^4 exp(-32/3)/128`.
+
+There is a finite initial-data choice ensuring that the strict sign
+survives the remainder. Fix eps_dom>0 with
+`eps_dom ||a/f0||infinity<=1/2`, and set
+
+```text
+M=(1/24) sup_{|e|<=eps_dom} |d_e^4 G(e)| < infinity,
+0<|epsilon|<min(eps_dom,sqrt(G2/[2(1+M)]))
+              implies G(epsilon)>=G2 epsilon^2/2>0. (CRIT7)
+```
+
+M is a supremum over an explicit compact family of initial profiles,
+not the unknown future solution. Taylor's formula and evenness give
+`|G(epsilon)-G2 epsilon^2|<=M epsilon^4`. This fixes a smooth physical
+datum before evolving it. No numerical value of epsilon beyond this
+profile-dependent bound is asserted.
+
+Meanwhile (CF9) is exact at every permitted epsilon and gives
+
+```text
+C_parent=4pi^2 epsilon^2 k^2(p-2)
+                       integral r^(3-2p)chi^2 dr.   (CRIT8)
+```
+
+Consequently on actual short positive-viscosity histories:
+
+| Annular exponent | Kinetic parent return relative to Z | Full enstrophy relative to H |
+|---|---|---|
+| 1<=p<2 | Strictly depleted at order t^4 | Strictly amplified at order t^2 |
+| p=2 | Fourth-order coefficient zero | Strictly amplified at order t^2 |
+| p>2 | Strictly amplified at order t^4 | Strictly amplified at order t^2 |
+
+This concerns the active annulus, not a globally Rayleigh-stable compact
+base. Every nontrivial compact circular base also has an outer region
+of decreasing squared angular momentum, as noted after (CF10).
+
+Initially E'(0)=-2nu D(U)<0. A positive comparison with heat is not by
+itself a claim that E is already increasing from time zero. The next
+step establishes actual growth after an initially dissipative interval.
+
+### An actual viscous interval exceeds the zero-allowance renewal budget
+
+Fix one datum U from (CRIT7), so G>0 and D0=D(U)>0. At viscosity
+eta in (0,1], let v_eta be its actual local unforced evolution.
+Standard periodic Sobolev estimates at a sufficiently high fixed order
+(for example H^10) give one tau0>0 and constants Cg, CD finite from U,
+uniform for eta in (0,1], such that
+
+```text
+|g(v_eta(tau))-G tau|<=Cg tau^2,
+|D(v_eta(tau))-D0|<=CD tau, 0<=tau<=tau0.            (CRIT9)
+```
+
+Here is the required uniformity argument. The high-order energy
+inequality bounds the H^10 norm on a common local interval by dropping
+the favorable viscous dissipation. The quadratic equation then bounds
+the first two time derivatives in lower Sobolev norms uniformly for
+0<eta<=1. Differentiating the cubic g twice and D once uses only these
+bounded norms. Their initial values are g=0, g'=G and D=D0, with the
+heat-direction derivative zero exactly as in (CRIT2). Taylor's formula
+gives (CRIT9). This local argument requires no global inviscid or
+viscous existence assumption.
+
+Let K=2D0/G, R=(2/3)Cg K^3+CD K^2/2, R1=Cg K^2+CD K, and choose
+
+```text
+eta_star=min(1,tau0/K,(2D0^2/G)/[2(1+R)],
+                                      D0/[2(1+R1)])>0.
+```
+
+For any fixed physical nu>0 and sufficiently large amplitude A with
+eta=nu/A<eta_star, the exact scaling
+`u_A(t)=A v_eta(A t)` gives actual initial datum A U and viscosity nu.
+Set `t_A=K nu/A^2`. Integrating (CRIT9) through tau=K eta yields
+
+```text
+2 integral_0^t_A g(u_A(s))ds
+       -nu integral_0^t_A D(u_A(s))ds
+       >=nu^2 D0^2/G>0,
+d_t E(u_A(t_A))>=nu A^2 D0>0.                       (CRIT10)
+```
+
+Indeed before scaling the first left side is bounded below by
+`eta^2[G K^2-D0 K-eta R]`, with `G K^2-D0 K=2D0^2/G`;
+the enstrophy derivative is at least `2eta D0-2eta^2 R1`.
+The physical integral scales by A^2 and the derivative by A^3.
+The selected eta_star gives both displayed positive margins. This is
+an actual nonzero time interval calculation with complete viscosity,
+not an initial-time comparison substituted for integrated work.
+
+Since g(A U)=0, (CRIT10) refutes the periodic zero-allowance version of
+`2 integral[g(s)-g(0)]<=nu integral D`. In particular p=1 retains a
+negative parent-return coefficient while supplying such a violation.
+The same local estimates also bound the parent remainder in (CF4)
+by Pe tau^5 and the enstrophy remainder in (CRIT2) by Ee tau^3,
+uniformly for 0<eta<=1. For the parent bound, expand the velocity
+through order three in L2 with a uniformly bounded fourth derivative;
+its leading even term is tau W. H^10 supplies these lower-order time
+derivative bounds. The heat forecast has the same uniform bounds.
+For C_parent<0, further decrease eta_star to be at most
+
+```text
+(-C_parent)/[6K(1+Pe)] and G/[2K(1+Ee)].             (CRIT11)
+```
+
+Then at the SAME time t_A the parent energy is below its original
+caloric forecast, the full enstrophy is above heat, and both positive
+inequalities in (CRIT10) hold. The first two signs follow respectively
+from `C_parent/3+Pe tau<=C_parent/6<0` and
+`G-Ee tau>=G/2>0` at tau=K eta. All constants were fixed from U
+on the common local interval; neither evolution is restarted.
+A positive allowance depending on the full datum A U remains possible.
+
+### Relation to the existing formal continuation targets
+
+`JointCubicRenewal.renewalPath_apply` is exactly g(0)-g(t), and
+`hasNSEvolution_of_signed_renewal` requests the same signed expression
+with an original-data allowance, on every available prefix in R3.
+That theorem is not directly instantiated by this periodic construction.
+The periodic order-one consumer is
+`StochasticLagrangian.FourierTameContinuation.exists_tameSolutionOn_of_orderOne`.
+Thus E in (CRIT1) is an existing continuation observation, but neither
+(CRIT2) nor (CRIT10) establishes its arbitrary-horizon bound or transfers
+the counterexample to R3.
+
+The retained physical obligation is a finite allowance for the full
+stretching history, including the derivative cost of the original swirl
+and every generated parent. A kinetic parent sign alone cannot supply
+it. Total kinetic energy still decreases. No repeated renewal, singular
+solution, or impossibility of a full-datum reserve is claimed.
+
+Run `python3 -O labs/centrifugal_enstrophy_return.py`. The checker reruns
+(CF)'s complete pressure and reflection identities, verifies the full
+quadratic observation, both radial adjoint primitives, the Hardy square
+certificate, source-positive parameter remainder algebra and the full
+viscous interval margins. Smooth dependence, local Sobolev estimates,
+Taylor remainders and the actual PDE interval conclusions remain analytic.
+No Lean declarations or axioms change.

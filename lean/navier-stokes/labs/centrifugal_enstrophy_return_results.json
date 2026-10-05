@@ -1,0 +1,62 @@
+{
+  "previous_jets": {
+    "setting": "Any orthogonal reflection commuting with heat and the full Leray nonlinearity; initial velocity is reflection-odd.",
+    "parent": "P_even u(t), P_even=(I+R)/2",
+    "forecast": "Z(t)=integral_0^t exp(nu(t-s)Delta)N(exp(nu s Delta)u0) ds",
+    "third_derivative_difference": "DN(u0)DN(u0)N(u0)+D2N[N(u0),N(u0)]",
+    "energy_coefficient": "C/3, C=<N(u0),DN(u0)DN(u0)N(u0)>; <N,D2N[N,N]>=0 by incompressible kinetic cancellation",
+    "terms_after_projection": 2,
+    "scope": "Free-algebra identities checked; reflection equivariance, PDE smoothness and Hilbert Taylor passage are analytic."
+  },
+  "previous_pressure": {
+    "domain": "T3=(R/(2pi Z))^3, circular data supported transversely in r<5/2<pi",
+    "source": "b0^2=f0(r)+eps*a(r)*cos(kz), a=(chi_second+3chi_prime/r-k^2chi)/k",
+    "canonical_pressure": "p0(r)+eps*(2chi+r chi_prime)*cos(kz)/k, p0_prime=r*f0; subtract its mean",
+    "generated_parent": "N(u0)=eps*(-k r chi cos(kz),0,(2chi+r chi_prime)sin(kz)) in cylindrical components",
+    "exact_return": "C=-2pi^2 eps^2 k^2 integral r^3 chi^2*(4f0+r f0_prime) dr",
+    "growing_example": "f0=r^-6 on supp chi: C=4pi^2 eps^2 k^2 integral r^-3 chi^2 dr>0",
+    "depleting_example": "f0=1 on supp chi: C=-8pi^2 eps^2 k^2 integral r^3 chi^2 dr<0",
+    "generality": "Any smooth nonzero compact circular swirl has an annulus with decreasing squared angular momentum, permitting the growing construction."
+  },
+  "full_observer": {
+    "operator": "Any self-adjoint metric commuting with reflection, specialized to -Delta.",
+    "coefficient": "G=<W,-Delta W>+<U,-Delta DN(U)W>, W=N(U)",
+    "physical_stretching": "g(U)=0 and g_prime(0)=G for every nu>0",
+    "enstrophy_comparison": "||grad u(t)||2^2-||grad exp(nu*t*Delta)U||2^2=G*t^2+o(t^2)",
+    "scope": "The algebra checks the complete time jets; the PDE Taylor remainder and integrations by parts remain analytic."
+  },
+  "annular": {
+    "base": "b_base=r^(-p) on the compact annular modulation support; unchanged CF pressure reconstruction",
+    "coefficient": "G(eps)=eps^2*G2+O(eps^4)",
+    "G2": "pi^2*p*integral [r^3*(chi_second+3chi_prime/r-k^2*chi)^2-2*(2-p)*k^2*r*chi^2] dr",
+    "positive_form": "pi^2*p*integral [r^3*(chi_second+3chi_prime/r)^2+2*k^2*r^3*(chi_prime+chi/r)^2+2*(p-1)*k^2*r*chi^2+k^4*r^3*chi^2] dr",
+    "lower_bound": "G2>=pi^2*p*k^4*integral r^3*chi^2 dr>0 for p>=1, k>=1, chi nonzero",
+    "parent_coefficient": "C=4pi^2*eps^2*k^2*(p-2)*integral r^(3-2p)*chi^2 dr",
+    "sign_separation": "1<=p<2: C<0 but G>0 for every sufficiently small nonzero eps; p=2: C=0 but G>0; p>2: C>0 and G>0",
+    "remainder": "G is even and smooth in eps on a fixed source-positive compact parameter interval; no time or viscosity limit is used in this coefficient."
+  },
+  "parameter_window": {
+    "parameter_interval": "Pick eps_dom with eps_dom*||a/f0||infinity<=1/2.",
+    "remainder_bound": "M=(1/24)*sup_{|eps|<=eps_dom}|d_eps^4 G(eps)|<infinity, computed from the original compact profiles only.",
+    "choice": "0<|eps|<min(eps_dom,sqrt(G2/(2*(1+M)))) implies G(eps)>=G2*eps^2/2>0.",
+    "bump_bound": "For the CF compact exponential bump, G2>=125*pi^2*p*k^4*exp(-32/3)/128.",
+    "distinction": "This static initial-parameter choice does not define a budget by taking a supremum over an unknown future solution."
+  },
+  "interval": {
+    "datum": "Fix any smooth reflection-odd U with G>0; scale it to amplitude*U at fixed viscosity nu>0.",
+    "constants": "D0=||Delta U||2^2>0, K=2*D0/G; on a common local interval, |g(v_eta(tau))-G*tau|<=Cg*tau^2 and |D(v_eta(tau))-D0|<=CD*tau.",
+    "local_scope": "v_eta is the actual unforced solution at viscosity eta in (0,1]; uniform local Sobolev estimates fix tau0,Cg,CD from U.",
+    "threshold": "eta_star=min(1,tau0/K,(2*D0^2/G)/(2*(1+R)),D0/(2*(1+R1))), R=(2/3)*Cg*K^3+CD*K^2/2, R1=Cg*K^2+CD*K.",
+    "time": "eta=nu/amplitude<eta_star, t_amplitude=K*nu/amplitude^2",
+    "signed_budget": "2*integral_0^t_amplitude g(u)-nu*integral_0^t_amplitude D(u)>=nu^2*D0^2/G>0; g(u(0))=0",
+    "actual_growth": "d_t ||grad u||2^2 at t_amplitude >=nu*amplitude^2*D0>0",
+    "same_endpoint": "For C_parent<0, uniform parent and full-enstrophy Taylor errors Pe*tau^5 and Ee*tau^3 permit eta_star also <=(-C_parent)/(6*K*(1+Pe)) and <=G/(2*K*(1+Ee)). Then parent energy is below its original forecast and full enstrophy is above heat at t_amplitude.",
+    "limit": "Refutes zero allowance on an actual short prefix; no counterexample to a finite allowance depending on the full scaled datum."
+  },
+  "status": "Analytic actual periodic NS comparison with exact algebraic fixtures; no new Lean certificate and no arbitrary-history payment.",
+  "source_sha256": {
+    "centrifugal_enstrophy_return.py": "0468464354d937c0ef2ce16fce47f4a0094d6bcdfb8f2f0e5b9cd144d8ba6f5e",
+    "centrifugal_parent_return.py": "9ecfe288dd742d3b2ec34debe79eca828e8d71b8ac2c83ea826305ced571b4e4",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37"
+  }
+}

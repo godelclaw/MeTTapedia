@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [full enstrophy return](labs/README.md#parent-depletion-can-coexist-with-growing-full-enstrophy)
+connects the swirl calculation to the ordinary stretching budget. For an
+entire annular-profile family, the kinetic parent return is depleted but
+the full enstrophy exceeds its original heat forecast. After scaling the
+initial amplitude, an actual unforced periodic interval exceeds the
+zero-allowance renewal budget and has increasing enstrophy. The parent
+depletion and full-fluid growth can hold at the same endpoint, with all
+pressure, viscosity and original-field feedback retained. Thus a favorable
+parent sign alone does not pay the continuation observation. A finite
+allowance depending on the full datum remains open. These are analytic
+actual-history statements with exact checks, not new Lean certificates.
+
 The [centrifugal parent-return law](labs/README.md#centrifugal-amplification-of-a-self-generated-parent)
 constructs smooth unforced periodic data with no initial meridional
 parent whose first complete nonlinear return amplifies the generated
