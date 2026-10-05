@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [recent-pressure reconstruction](labs/README.md#recent-pressure-deformation-histories-reconstruct-the-actual-fluid)
+bounds the transported incoming fluid and coarse-pressure history over a
+fixed time window using original resources. The remaining divergence-free
+pressure impulse is exactly an evolving pressure-deformation interaction,
+with all propagators belonging to the same actual flow. A bound on its
+accumulated L9 norm would give the existing continuation criterion.
+Complete short-time jets exhibit a nonzero such return in unforced 3D
+data: a transported pressure gradient need not stay a gradient. The
+arbitrary-history allowance remains open; these analytic results and
+exact checks are not new Lean certificates.
+
 The [aged joint-memory estimate](labs/README.md#aged-stress-memory-is-absorbed-up-to-linear-joint-stock-growth)
 controls old memory's fine pressure work and complete transport commutator,
 plus coarse canonical-pressure generation, by one quarter of the joint

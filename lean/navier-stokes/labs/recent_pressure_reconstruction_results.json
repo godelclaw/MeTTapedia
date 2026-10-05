@@ -1,0 +1,92 @@
+{
+  "bounds": {
+    "smoothing_powers": [
+      {
+        "theta": "7/18",
+        "age_power": "7/12",
+        "integral": "12*N0**(7/18)*delta**(5/12)/(5*nu**(7/12))"
+      },
+      {
+        "theta": "1/18",
+        "age_power": "1/12",
+        "integral": "12*N0**(1/18)*delta**(11/12)/(11*nu**(1/12))"
+      }
+    ],
+    "D_L_squared_R3": "3*sqrt(2)/(128*pi**(3/2)*L**5)",
+    "velocity_bound": "||u(t)+V_hi,delta(t)||9<=A_delta, with A_delta fixed from original data.",
+    "consumer": "integral ||u||9^3 <=4H*A_delta^3+4*integral ||V_hi,delta||9^3",
+    "OPEN": "A finite original-data bound for the displayed recent solenoidal pressure history, on every compatible prefix."
+  },
+  "intertwining": {
+    "potential": "scriptL q_s=p_hi, q_s(s)=0",
+    "impulse": "scriptL I_s=grad p_hi, I_s(s)=0",
+    "defect": "scriptL(I_s-grad q_s)=(grad u)^T grad q_s",
+    "projection": "Pi I_s(t)=Pi integral_s^t P_(a,t)[(grad u(a))^T grad q_s(a)] da",
+    "compatibility": "Both propagators, pressure and deformation belong to the same actual solution; s is fixed while deriving the identity."
+  },
+  "physical_jets": [
+    {
+      "datum": "A3 B2 n2",
+      "nu": "1",
+      "pressure_modes": 14,
+      "pressure_tangent_modes": 58,
+      "returned_vector_modes": 88,
+      "second_return_norm_squared": "3205948510514761796619133490232520070318228191286511/64848834108879905552869004349531510695393792884736",
+      "impulse_norm_squared_over_t4_limit": "3205948510514761796619133490232520070318228191286511/259395336435519622211476017398126042781575171538944",
+      "actual_interval": "The projected recent pressure impulse is nonzero for all sufficiently small positive times; this is not a claim of growing kinetic energy or singularity."
+    },
+    {
+      "datum": "A3 B2 n2",
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "pressure_tangent_modes": 58,
+      "returned_vector_modes": 88,
+      "second_return_norm_squared": "3205948510514761796619133490232520070318228191286511/64848834108879905552869004349531510695393792884736",
+      "impulse_norm_squared_over_t4_limit": "3205948510514761796619133490232520070318228191286511/259395336435519622211476017398126042781575171538944",
+      "actual_interval": "The projected recent pressure impulse is nonzero for all sufficiently small positive times; this is not a claim of growing kinetic energy or singularity."
+    },
+    {
+      "datum": "A11 B10 n2",
+      "nu": "1",
+      "pressure_modes": 14,
+      "pressure_tangent_modes": 58,
+      "returned_vector_modes": 88,
+      "second_return_norm_squared": "12569239017749643153541091748790593044158128430846210995/64848834108879905552869004349531510695393792884736",
+      "impulse_norm_squared_over_t4_limit": "12569239017749643153541091748790593044158128430846210995/259395336435519622211476017398126042781575171538944",
+      "actual_interval": "The projected recent pressure impulse is nonzero for all sufficiently small positive times; this is not a claim of growing kinetic energy or singularity."
+    },
+    {
+      "datum": "A11 B10 n2",
+      "nu": "2/7",
+      "pressure_modes": 14,
+      "pressure_tangent_modes": 58,
+      "returned_vector_modes": 88,
+      "second_return_norm_squared": "12569239017749643153541091748790593044158128430846210995/64848834108879905552869004349531510695393792884736",
+      "impulse_norm_squared_over_t4_limit": "12569239017749643153541091748790593044158128430846210995/259395336435519622211476017398126042781575171538944",
+      "actual_interval": "The projected recent pressure impulse is nonzero for all sufficiently small positive times; this is not a claim of growing kinetic energy or singularity."
+    },
+    {
+      "datum": "genuine three-dimensional datum",
+      "nu": "1",
+      "pressure_modes": 16,
+      "pressure_tangent_modes": 48,
+      "returned_vector_modes": 146,
+      "second_return_norm_squared": "18727720425746473/259176340684800",
+      "impulse_norm_squared_over_t4_limit": "18727720425746473/1036705362739200",
+      "actual_interval": "The projected recent pressure impulse is nonzero for all sufficiently small positive times; this is not a claim of growing kinetic energy or singularity."
+    },
+    {
+      "datum": "genuine three-dimensional datum",
+      "nu": "2/7",
+      "pressure_modes": 16,
+      "pressure_tangent_modes": 48,
+      "returned_vector_modes": 146,
+      "second_return_norm_squared": "18727720425746473/259176340684800",
+      "impulse_norm_squared_over_t4_limit": "18727720425746473/1036705362739200",
+      "actual_interval": "The projected recent pressure impulse is nonzero for all sufficiently small positive times; this is not a claim of growing kinetic energy or singularity."
+    }
+  ],
+  "status": "Exact checks passed; propagator bounds, actual positive-time consequences and the continuation bridge are analytic, not Lean-certified.",
+  "scope": "Actual histories are reconstructed with every incoming parent. The recent-history allowance remains open; this is not a closed finite-memory model.",
+  "source_sha256": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70"
+}
