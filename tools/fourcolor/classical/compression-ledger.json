@@ -6525,5 +6525,36 @@
     "catalogue_entries_removed": 0,
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0
+  },
+  "single_contraction_boundary_supply": {
+    "status": "kernel checked obstruction; independent program census",
+    "receipt": "strip-contraction-supply-measurements.json",
+    "theorem": "FourColor.StripContractionSupply.no_domain_supplier",
+    "refuted_assertion": "There exists one internal edge contraction such that every quotient colouring directly extends to D0099 or matches one of the selected 27 repair stages, modulo edge palettes and with ordered ports fixed.",
+    "finite_witnesses": {
+      "boundary_words": 3,
+      "internal_edges": 13,
+      "source_vertices": 19,
+      "quotient_vertices": 18,
+      "interior_colour_digits": 91
+    },
+    "program_boundary_census": {
+      "proper_colour_classes": 7381,
+      "direct_extension_classes": 1587,
+      "nonextension_classes": 5794,
+      "nonextension_in_before_list_domain": 5,
+      "nonextension_outside_selected_stages": 5767
+    },
+    "consequence": "Single internal contraction alone cannot eliminate the starting-domain hypothesis for the selected repair library. Broader repair or a justified different supply mechanism remains required.",
+    "limits": [
+      "No obstruction to further Kempe recolouring or another replacement.",
+      "No obstruction to choosing a suitable smaller colouring.",
+      "No universal ambient-realization or compact-coverage claim.",
+      "The finite boundary census is program evidence, not a kernel theorem."
+    ],
+    "credited_compression": false,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
   }
 }

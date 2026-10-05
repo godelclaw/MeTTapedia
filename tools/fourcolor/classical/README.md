@@ -2628,3 +2628,49 @@ of colouring witnesses is added. Costs and source hashes are recorded in
 Initial boundary-class supply, repair of arbitrary smaller colourings and
 universal occurrence coverage remain open. No catalogue entry, original
 configuration certificate or complete-assembly check is removed.
+
+## Limits of single-contraction boundary supply
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelStripContractionSupply
+```
+
+The D0099 reconstruction above still needs a suitable starting boundary.
+`StripContractionSupply.no_domain_supplier` tests one proposed way to obtain
+it: choose an internal edge, contract it, and use a colouring of the smaller
+graph. The theorem excludes every one of the thirteen internal edges as
+a guarantee that **all** smaller colourings enter the selected repair
+domain. That domain is exactly direct source extension or one of the
+sixteen `StripSixJointRepair` and eleven `StripChainRepair` stages, allowing
+edge-colour permutations with the ordered ports fixed.
+
+Three boundary words suffice for the obstruction. For each contraction,
+the proof constructs a proper colouring of the actual eighteen-vertex
+`SimpleGraph.map` quotient of the nineteen-vertex source. The quotient
+identifies precisely the chosen edge endpoints. Its boundary does not
+extend to the source while fixed and does not match any selected stage.
+Only ninety-one interior-colour digits are stored. The twelve-root audit
+checks the source, quotient, extension semantics and domain exclusion;
+it excludes the complete theorem, bulk certificates, large repair tables
+and the repair-stage proofs themselves.
+
+An independent replay also enumerates the source boundary modulo vertex
+colour renaming, keeping port order. There are 7,381 proper classes:
+1,587 extend directly and 5,794 do not. The `StripSingletonRepair.before`
+list domain contains seven proper classes, of which five do not extend.
+Of all nonextending classes, 5,767 lie outside the selected twenty-seven
+stages. These census counts are program checks, separate from the Lean
+obstruction. Replay them with:
+
+```sh
+python3 tools/fourcolor/near-linear/audit_strip_contraction_supply.py
+```
+
+The result does not exclude further Kempe recolouring, another replacement,
+or a successful choice of smaller colouring. It does not assert that these
+witnesses occur in every admissible ambient geometry. In particular, it
+does not refute compositional reducibility or compact coverage. It rules
+out a specific unconditional input-supply shortcut. Measurements and
+source hashes are in `strip-contraction-supply-measurements.json`; no
+compression or catalogue reduction is credited.

@@ -1624,3 +1624,17 @@ target kernelPatchDisk pkg : Unit := do
         "ThreeBlockExteriorPlanar", "ThreeBlockExteriorPlanarExample", "ThreeBlockExteriorAudit", "PatchDiskAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay the obstruction to supplying repair inputs by a single core contraction. -/
+target kernelStripContractionSupply pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/strip-contraction-supply",
+        "--library-output", ".lake/build/lib/lean", "--modules",
+        "StripContractionSupply", "StripContractionSupplyAudit"]
+      cwd := pkg.dir
+      env := env }
