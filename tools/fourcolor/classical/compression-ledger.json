@@ -6779,5 +6779,28 @@
     "original_certificate_dependencies_removed": 0,
     "complete_assembly_checks_removed": 0,
     "remaining": "Prove a small structural account of the remaining backward pruning rounds or another guard-supply law. The current trace guard is not known to be universally reachable."
+  },
+  "retained_cap_transport": {
+    "receipt": "cap-joint-measurements.json",
+    "source": "D0099",
+    "theorem": "FourColor.CapJointTransport.lift_chromogram",
+    "consumer": "FourColor.CapJointTransport.source_consumer",
+    "retained_triangles": 5,
+    "retained_edges": 11,
+    "new_lean_source_bytes": 11155,
+    "frontend_seconds_with_prebuilt_dependencies": 8.153,
+    "audit_roots": 7,
+    "scope": "Uniform compatible reconstruction of two insertions from a face-respecting selection and an accepted exterior answer.",
+    "experiment": {
+      "unconstrained_residual_states": 365,
+      "prefix_states": 1377,
+      "visible_profiles": 51,
+      "survivors_with_retained_cap": 0,
+      "lean_progress_theorem": false
+    },
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0,
+    "remaining": "Prove a shared progress selector and its coverage, then integrate full source repair and strict reduction."
   }
 }

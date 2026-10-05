@@ -1750,3 +1750,16 @@ target kernelAlternatingPair pkg : Unit := do
         "StripPairCompletion", "StripPairAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay component transport through the retained five-triangle cap. -/
+target kernelCapJoint pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/cap-joint",
+        "--library-output", ".lake/build/lib/lean", "--modules", "CapJointTransport", "CapJointAudit"]
+      cwd := pkg.dir
+      env := env }

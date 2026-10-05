@@ -5603,3 +5603,48 @@ Replay `lake build kernelAlternatingPair`. The
 three modules, thirteen-root audit, costs and exact scope. Counts remain
 633 coverage entries, 629 original certificates and 336 replaced
 discharging checks. No new catalogue reduction is claimed.
+
+## Retained triangles constrain the repair game
+
+The first two D0099 insertions create five triangles between the original
+eleven-edge boundary and the ten-edge residual boundary. Forgetting those
+triangles admits exterior matchings that need not respect the construction.
+
+`CapJointTransport` retains all eleven edges of this cap. A single triangle
+law proves that a selection constant on the two active edges of each face
+preserves the face equations and nonzero edge colours. `reconstruct` then
+builds both inserted vertices over an arbitrary actual exterior colouring,
+preserving every old vertex and all eleven edge observations.
+`lift_chromogram` obtains that exterior colouring from an accepted answer
+to the original exterior chromogram. `source_consumer` identifies the
+constructed graph with `StripFanProgram.graph2`.
+
+This is a uniform transport theorem for the two-insertion construction.
+The component selection must respect the faces, and its old boundary word
+must be accepted by the same exterior. Existence of a selection making
+progress is a separate obligation.
+
+The independent experiment `audit_cap_joint.py` composes each original
+eleven-port noncrossing matching with the five actual triangles. It checks
+the induced noncrossing paths, includes closed components, and reconstructs
+the changed vertex colours on every source-prefix edge. Results:
+
+| Observation retained | Experimental result |
+| --- | --- |
+| Ten-port boundary alone | 365 states survive the residual repair game |
+| Boundary plus constructed cap | All 1,377 canonical prefix states escape that residual set |
+| Nine observed vertex colours | 51 profiles still suffice for a palette choice handling every represented hidden completion |
+
+The last game uses eight decreasing rounds, with profile counts
+`10, 6, 4, 5, 5, 5, 10, 6`. Its transition sets and progress argument are
+program evidence, not a certified Lean selector. In particular, the checked
+transport theorem does not certify the experiment's pruning, its residual
+set, or universal D0099 repair. No physical move bound or geometric coverage
+claim follows from the eight rounds.
+
+Replay `lake build kernelCapJoint` for the transport and dependency audit,
+and `python3 tools/fourcolor/near-linear/audit_cap_joint.py` from the repository
+root for the experiment. The [receipt](../classical/cap-joint-measurements.json)
+records hashes, checking costs, experimental scope and remaining obligations.
+Coverage remains 633 configurations, with 629 original certificate
+dependencies and 336 replaced discharging checks.
