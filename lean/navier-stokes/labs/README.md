@@ -54873,3 +54873,284 @@ rank-one tensor coefficient and the separation/scaling identities. The
 Schwartz construction, uniform periodization and local-PDE interval
 arguments are analytic, not Lean-certified. No Lean declarations or
 axioms change; the arbitrary-data R3/T3 goal remains open.
+
+
+## Diffusion at both ends controls affine curl histories
+
+The spatial separation obstruction (SA1)--(SA10) leaves a history
+question: can diffusion control the response to a changing deformation,
+rather than its instantaneous strain alone? The following positive
+whole-space estimate answers this for a spatially affine response. It
+allows arbitrary noncommuting changes of strain over time. Its extension
+to actual nonlinear NS histories still needs a source estimate.
+`affine_curl_history.py` checks the matrix algebra and an exact physical
+calibration of that missing identification.
+
+The Gaussian evolution and covariance formula are classical; see
+[Da Prato and Lunardi, *Ornstein--Uhlenbeck operators with time periodic
+coefficients*, equations (1.4)--(1.5)](https://people.dmi.unipr.it/alessandra.lunardi/Files/Ale24luglio.pdf).
+Only their finite-time linear Gaussian representation is used here, not
+an invariant-measure theorem or a stability assumption. The curl/cofactor
+estimate below is derived explicitly. No novelty claim about Gaussian
+linear-flow theory is intended.
+
+### One joint covariance pays an arbitrary linear deformation
+
+Let J be a real three-by-three matrix with det J=1, let C be positive
+definite, and write G_C for the centered Gaussian density on R3 with
+covariance C. Define the vector response
+
+```text
+T_(J,C) Omega(x)=J integral G_C(x-Jy) Omega(y) dy.
+```
+
+For v smooth and integrable and for a,b>0, the condition
+
+```text
+                    C >= a I + b J J^T                     (AH1)
+```
+
+implies the uniform bound
+
+```text
+||T_(J,C) curl v||_infinity <= c_G ||v||_1/(a b),
+c_G=exp(-1/2)/(2pi)^(3/2).                                 (AH2)
+```
+
+No norm of J occurs on the right. Deterministic translations only shift
+the Gaussian center and leave the bound unchanged. All vector norms are
+Euclidean and ||v||_1 is the integral of that norm. Schwartz data suffice for the
+initial derivation; extension to an integrable v is understood through
+the smoothed distributional curl.
+
+To prove it, integrate the input curl by parts. With z=x-Jy and using
+J[(J^T h) cross v]=h cross(J^(-T)v), the exact kernel is
+
+```text
+T_(J,C) curl v(x)
+ =-integral G_C(z) (C^(-1)z) cross(J^(-T)v(y)) dy.           (AH3)
+```
+
+This is the point where incompressibility and the curl structure matter.
+Let s1>=s2>=s3>0 be the singular values of J; their product is one.
+From (AH1), monotonicity of the determinant on positive matrices gives
+
+```text
+lambda_min(C)>=a,
+det C >= product_i(a+b si^2) >= a b^2 s1^2 s2^2
+                                      =a b^2/s3^2.        (AH4)
+```
+
+Set r=|C^(-1/2)z|. Then |C^(-1)z|<=r/sqrt(a),
+||J^(-T)||=1/s3, and sup_(r>=0) r exp(-r^2/2)=exp(-1/2).
+Substitution into (AH3) proves (AH2). The complete covariance compensates
+for large deformation; estimating the deformation separately would lose
+this cancellation. The estimate is not claimed to have an optimal constant.
+
+For example, let H_b=exp((b/2)Delta), apply H_b to the input curl, push
+it forward by J, and then apply H_a. Its covariance is exactly
+C=aI+bJJ^T, so (AH2) controls every such history. Additional independent
+Gaussian covariance is also allowed by (AH1).
+
+### Continuously acting viscosity and compatible composition
+
+Let A(t) be a prescribed continuous trace-zero matrix, depending on time
+but not space. Let J(t,s) solve partial_t J=A(t)J, J(s,s)=I. The solution
+operator of
+
+```text
+partial_t Omega+(A(t)x).grad Omega=A(t)Omega+nu Delta Omega
+```
+
+is T_(J(t,s),C(t,s)), with
+
+```text
+C(t,s)=2nu integral_s^t J(t,r)J(t,r)^T dr,
+partial_t C=A C+C A^T+2nu I.                                (AH5)
+```
+
+This also follows from dX=A(t)X dt+sqrt(2nu)dW. The prescribed matrix is
+deterministic; conditioning a general NS path on its own random gradient
+does not automatically give this Gaussian law. Nor is every prescribed
+A(t) asserted to be an unforced affine NS velocity.
+
+Two adjacent intervals compose by the exact rule
+
+```text
+(J2,C2) composed with (J1,C1)
+            =(J2 J1, C2+J2 C1 J2^T).                       (AH6)
+```
+
+Thus earlier noise is transported by the later deformation. Keeping
+only J or resetting C at a seam would change the response. This rule is
+associative and applies to arbitrarily many compatible affine intervals.
+It is a concrete boundary summary with a named analytic consumer, (AH2).
+
+Suppose the interval has length at least 2d and ||A||<=M on its first
+and last d units. No bound on A in the intervening portion is needed
+for the following estimate. Singular-value bounds on each endpoint
+window, followed by integration in (AH5), give
+
+```text
+C(t,s)>=a_d I+a_d J(t,s)J(t,s)^T,
+a_d=nu(1-exp(-2Md))/M     if M>0,
+a_d=2nu d                if M=0.                           (AH7)
+```
+
+Indeed, on the first window J(t,r)=J(t,s)J(r,s)^(-1), whose covariance
+contribution is at least
+2nu integral_0^d exp(-2Mq)dq times JJ^T. The last window supplies the
+same multiple of I. Their interiors are disjoint. Equations (AH2) and
+(AH7) therefore pay the entire intervening affine deformation by
+c_G ||v||_1/a_d^2, however strongly its matrices fail to commute.
+
+There is also a full finite-horizon bound for the source-free affine
+response with Omega(0)=curl v when ||A(t)||<=M throughout [0,H].
+Choose 0<2d<=H. For early
+times, the Gaussian has mass one and ||J(t,0)||<=exp(Mt); for later times
+apply (AH7). This gives
+
+```text
+integral_0^H ||Omega(t)||_infinity dt
+ <=2d exp(2Md)||curl v||_infinity
+                  +(H-2d)c_G ||v||_1/a_d^2.               (AH8)
+```
+
+For M>0 and H>=2/M, d=1/M makes the second coefficient proportional to
+H M^2/nu^2, rather than an exponential in MH. The whole interval and its
+interacting matrix history are covered. For shorter horizons take d=H/2.
+This is a finite reserve for the affine response with its stated initial
+L1 resource and bound M; these are not proved resources for the full NS
+remainder. In particular an arbitrary smooth L2 datum need not be L1.
+Taking M from the unknown future strain would leave a conditional bound,
+not an allowance controlled by the original fluid data.
+
+### The exact physical source that an affine reduction must retain
+
+For an actual smooth unforced whole-space NS prefix u, omega=curl u,
+and any prescribed trace-zero A(t), the vorticity equation gives exactly
+
+```text
+partial_t omega+(A(t)x).grad omega
+ =A(t)omega+nu Delta omega+curl F_A,
+F_A=(u-A(t)x) cross omega.                                 (AH9)
+```
+
+Consequently, whenever the displayed fields have the decay and
+integrability required for Duhamel,
+
+```text
+omega(t)=T_(t,0)curl u0
+                  +integral_0^t T_(t,s)curl F_A(s) ds.     (AH10)
+```
+
+The first term is paid by (AH8). Under the uniform M bound, for t>=2d,
+(AH2) also controls sources older than 2d by
+
+```text
+||integral_0^(t-2d) T_(t,s)curl F_A(s) ds||_infinity
+          <=c_G a_d^(-2) integral_0^(t-2d)||F_A(s)||_1 ds. (AH11)
+```
+
+These statements do not discard pressure from the NS evolution: curl
+eliminates its gradient in the vorticity equation, while u is still the
+actual pressure-coupled solution. F_A contains the complete nonlinear
+spatial mismatch, not an optional external force. Its history cost and
+the recent sources remain unpaid. General localization would introduce
+further cutoff terms, which are not asserted to vanish here. A choice of
+A following one material trajectory does not set F_A to zero.
+
+Thus (AH8) by itself supplies neither hypothesis of the existing physical
+continuation theorems. The missing estimate must control this residual
+and the near-time response from the full original data, while preserving
+joint cancellations between its parents.
+
+### A nonlinear periodic map defeats a deformation-independent extension
+
+The whole-space affine bound cannot simply be promoted to arbitrary
+volume-preserving material maps on the torus. On normalized T3 let
+
+```text
+Phi_L(x,y,z)=(x+L sin y,y,z),       det D Phi_L=1,
+v0=(sin z,0,0),                    curl v0=(0,cos z,0).
+```
+
+Apply H_b to curl v0, push forward by Phi_L, and then apply H_a, with
+H_c=exp((c/2)Delta) on T3. Because the input is independent of x, its
+complete output is
+
+```text
+(L exp(-a-b/2) cos y cos z, exp(-(a+b)/2) cos z,0).          (AH12)
+```
+
+For fixed a,b>0 its supremum diverges with L, whereas ||v0||_1=2/pi
+is fixed. These maps are isotopic to the identity and can be actual
+material maps: the unforced shear U=A exp(-nu t)sin y e1 has this map
+at time T when L=A(1-exp(-nu T))/nu. The heat/map/heat observation in
+(AH12) is nevertheless not the simultaneous viscous NS evolution.
+Nor does this periodic example disprove an extension restricted to
+localized nonlinear whole-space maps; that would require its own argument.
+Both spatial dependence and the periodic setting must remain explicit.
+
+### Following both original parents removes a false physical bill
+
+There is a completely explicit simultaneous-viscosity calibration. For
+any real A,B and nu>0, the periodic field
+
+```text
+u(t)=exp(-nu t)(A sin y+B sin z)e1,       p=0,
+omega(t)=(0,B exp(-nu t)cos z,-A exp(-nu t)cos y)           (AH13)
+```
+
+solves the full unforced NS equation globally: its advection vanishes
+and each velocity component solves heat. Its energy is
+(A^2+B^2)exp(-2nu t)/2 and its physical stretching g is zero.
+
+Transport the two original vorticity contributions using the SAME full
+operator partial_t+u.grad-(grad u)-nu Delta. Their exact solutions are
+
+```text
+c(t)=A B t exp(-2nu t)cos y cos z,
+m(t)=(c(t), B exp(-nu t)cos z,0),
+n(t)=(-c(t),0,-A exp(-nu t)cos y),
+m(0)=curl(B sin z e1),             n(0)=curl(A sin y e1),
+m(t)+n(t)=omega(t).                                       (AH14)
+```
+
+Both contributions are solenoidal, retain viscosity, and have a newly
+generated first component. For A,B>0 its amplitude peaks at AB/(2e nu).
+Each contribution separately has positive integrated stretching
+
+```text
+mean m^T grad(u)m = mean n^T grad(u)n
+                         =A^2 B^2 t exp(-4nu t)/4,
+integral_0^infinity mean m^T grad(u)m dt=A^2 B^2/(64nu^2),
+mean [m^T grad(u)n+n^T grad(u)m]
+                         =-A^2 B^2 t exp(-4nu t)/2.        (AH15)
+```
+
+The signed cross terms cancel both positive individual terms exactly.
+For fixed B,nu and any positive horizon, the first component of m grows
+without bound across the family A->infinity, although m(0) is unchanged.
+A receiver-only allowance would miss its parent resource; the full original
+velocity does retain A. These are transported pieces of one actual vorticity
+field, not separate NS fluids with independent energy reserves. Their
+individual growth does not demonstrate growth of the total field, much
+less a singularity.
+Conversely, dropping their cross terms would turn a zero physical
+stretching history into a spurious positive bill. Keeping the complete
+original parents therefore has a concrete beneficial effect here.
+
+The next history estimate must combine the actual residual source in
+(AH9) with joint reconstruction, rather than extend (AH2) by assuming
+spatially varying deformations have an affine Gaussian kernel. The
+arbitrary-data R3/T3 signed budget remains open.
+
+Run `python3 -O labs/affine_curl_history.py`. Exact checks cover four
+volume-preserving matrix fixtures, all principal minors of the covariance
+certificate, the curl/cofactor identity, noncommuting covariance
+composition, a continuous shear covariance, the full NS equation, both
+transported parents and their shared signed work, and the physical
+residual identity. Gaussian integration, operator estimates and their
+continuum consequences remain analytic, not Lean-certified. No Lean
+declarations or axioms change.

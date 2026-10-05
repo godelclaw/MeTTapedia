@@ -1,0 +1,79 @@
+{
+  "matrix_and_covariance": {
+    "fixtures": [
+      {
+        "J": "Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])",
+        "covariance_determinant": "515533/101871",
+        "cofactor_certificate_minors": [
+          "480883/101871",
+          "480883/101871",
+          "480883/101871",
+          "231248459689/10377700641",
+          "231248459689/10377700641",
+          "231248459689/10377700641",
+          "111203453040625387/1057186741999311"
+        ]
+      },
+      {
+        "J": "Matrix([[16, 0, 0], [0, 1/2, 0], [0, 0, 1/8]])",
+        "covariance_determinant": "7233015463/26078976",
+        "cofactor_certificate_minors": [
+          "7232980813/26078976",
+          "7197533863/26078976",
+          "6665309863/26078976",
+          "52059624331996770619/680112989208576",
+          "48210058351778658619/680112989208576",
+          "47973793446330390769/680112989208576",
+          "346993527524132861690969315197/17736650322858712498176"
+        ]
+      },
+      {
+        "J": "Matrix([[1, 8, 0], [0, 1, 0], [0, 0, 1]])",
+        "covariance_determinant": "9973933/101871",
+        "cofactor_certificate_minors": [
+          "9939283/101871",
+          "7721683/101871",
+          "9939283/101871",
+          "76671152733289/10377700641",
+          "98789346554089/10377700641",
+          "76747992573289/10377700641",
+          "762056284952382891787/1057186741999311"
+        ]
+      },
+      {
+        "J": "Matrix([[1, 7, 0], [0, 1, 5], [0, 0, 1]])",
+        "covariance_determinant": "121600693/101871",
+        "cofactor_certificate_minors": [
+          "121566043/101871",
+          "119868193/101871",
+          "78253543/101871",
+          "14571843074067799/10377700641",
+          "9511502810677849/10377700641",
+          "9305071889007799/10377700641",
+          "1130994771838978238149357/1057186741999311"
+        ]
+      }
+    ],
+    "shear_covariance_determinant": "2*nu**3*t**3*(gamma**2*t**2 + 12)/3",
+    "endpoint_variance": "nu*(1 - exp(-2*M*d))/M",
+    "kernel_constant": "exp(-1/2)/(2*pi)^(3/2)",
+    "bound": "||T_(J,C) curl v||_infinity <= kernel_constant*||v||_1/(a*b)",
+    "hypotheses": "det J=1, a>0, b>0, C >= a I + b J J^T"
+  },
+  "shared_shear": {
+    "actual_velocity": "Matrix([[(A*sin(y) + B*sin(z))*exp(-nu*t)], [0], [0]])",
+    "actual_vorticity": "Matrix([[0], [B*exp(-nu*t)*cos(z)], [-A*exp(-nu*t)*cos(y)]])",
+    "shared_generated_component": "A*B*t*exp(-2*nu*t)*cos(y)*cos(z)",
+    "individual_stretching_mean": "A**2*B**2*t*exp(-4*nu*t)/4",
+    "individual_stretching_integral": "A**2*B**2/(64*nu**2)",
+    "complete_stretching": "0",
+    "component_peak_amplitude": "A*B/(2*exp(1)*nu)",
+    "nonlinear_split_output": "Matrix([[L*exp(-alpha - beta/2)*cos(y)*cos(z)], [exp(-alpha/2 - beta/2)*cos(z)], [0]])",
+    "scope": "The full shear is actual NS. Its transported pieces and the heat/map/heat operator are auxiliary observations, not independent NS solutions."
+  },
+  "status": "Exact matrix, covariance, full NS, component and physical-defect checks passed.",
+  "scope": "Gaussian operator estimates and continuum consequences are analytic; no new Lean certificate or arbitrary-data regularity bound.",
+  "source_sha256": {
+    "affine_curl_history.py": "9db37a42d5c11aa94726ecc50aa5eeef74df347254490056d664acde1917edca"
+  }
+}

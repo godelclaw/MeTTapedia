@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [affine curl-history bound](labs/README.md#diffusion-at-both-ends-controls-affine-curl-histories)
+uses the joint Gaussian covariance to control arbitrary volume-preserving
+linear deformation between two viscous windows on R3. It supplies a finite
+history allowance for a prescribed affine response. The exact bridge to
+NS retains a nonlinear spatial residual whose payment remains open.
+An actual periodic shear also shows why shared parents matter: two
+transported initial vorticity pieces each acquire positive stretching
+work, while their cross terms cancel it completely in the physical total.
+The operator bound is analytic with exact algebraic checks, not a new
+Lean certificate or an arbitrary-flow continuation estimate.
+
 The [sharp separation exponent](labs/README.md#the-sharp-separation-exponent-for-energy-only-viscous-absorption)
 locates the limit of the existing energy-only absorption rule. Complete
 triads with smallest frequency at most a small multiple of the middle
