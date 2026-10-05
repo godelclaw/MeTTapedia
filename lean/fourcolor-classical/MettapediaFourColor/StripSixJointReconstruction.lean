@@ -65,10 +65,13 @@ theorem disk_compatible {W : Type} [Fintype W] [DecidableEq W]
   exact ⟨D,k,agree⟩
 
 /-- Exact source stars and exterior coverage turn the local repair into a
-colouring of the whole graph, preserving the entire repaired exterior. -/
-theorem whole_repair {V W : Type*} [Fintype V] [Fintype W]
+colouring of the whole graph, preserving the entire repaired exterior.
+Boundary identifications are allowed and their shared colours are retained. -/
+theorem whole_repair_of_core_injective {V W : Type*} [Fintype V] [Fintype W]
     {G : SimpleGraph V} {H : SimpleGraph W}
-    (f : input0099.graph →g G) (injective : Function.Injective f)
+    (f : input0099.graph →g G)
+    (injective : Set.InjOn f {i : Fin 19 | 11 ≤ i.val})
+    (no_capture : ∀ a : Fin 19, ¬11 ≤ a.val → f a ∉ f '' {i : Fin 19 | 11 ≤ i.val})
     (e : H ↪g G)
     (outside : ∀ w, e w ∉ f '' {i : Fin 19 | 11 ≤ i.val})
     (covers : ∀ v, v ∉ f '' {i : Fin 19 | 11 ≤ i.val} → ∃ w, e w = v)
@@ -97,21 +100,39 @@ theorem whole_repair {V W : Type*} [Fintype V] [Fintype W]
     obtain ⟨b,rfl⟩ := covers w hw
     rw [read,read]
     exact D.valid (e.map_adj_iff.mp edge)
-  have no_capture (a) (ha : a ∉ interior) : f a ∉ f '' interior := by
-    rintro ⟨i,hi,eq⟩
-    exact ha (injective eq ▸ hi)
   have agreement (a) (ha : a ∉ interior) : k a = assignment (f a) := by
     have h : a.val < 11 := by change ¬11 ≤ a.val at ha; omega
     let i : Fin 11 := ⟨a.val,h⟩
     have same : port i = a := Fin.ext rfl
     rw [← same, ← boundary, read]
     exact agree i
-  obtain ⟨K,_,hK⟩ := PatchBoundaryGluing.reconstruct f interior injective.injOn
+  obtain ⟨K,_,hK⟩ := PatchBoundaryGluing.reconstruct f interior injective
     no_capture stars k assignment valid agreement
   refine ⟨?_,D,K,fun w => (hK _ (outside w)).trans (read w)⟩
   apply Fintype.card_lt_of_injective_of_notMem e e.injective (b := f 11)
   rintro ⟨w,hw⟩
   exact outside w ⟨11,by decide,hw.symm⟩
+
+/-- The globally injective specialization of the boundary-identification theorem. -/
+theorem whole_repair {V W : Type*} [Fintype V] [Fintype W]
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (f : input0099.graph →g G) (injective : Function.Injective f)
+    (e : H ↪g G)
+    (outside : ∀ w, e w ∉ f '' {i : Fin 19 | 11 ≤ i.val})
+    (covers : ∀ v, v ∉ f '' {i : Fin 19 | 11 ≤ i.val} → ∃ w, e w = v)
+    (stars : ∀ i : Fin 19, 11 ≤ i.val → ∀ v, G.Adj (f i) v →
+      ∃ j, input0099.graph.Adj i j ∧ f j = v)
+    (ports : Fin 11 → W) (boundary : ∀ i, e (ports i) = f (port i))
+    (closed : KempeClosed (GraphTrace H (List.ofFn ports)))
+    (s : Bool) (C : H.Coloring Color)
+    (initial : ∀ i, C (ports i) = StripSixConnection.input s i) :
+    Fintype.card W < Fintype.card V ∧
+      ∃ D : H.Coloring Color, ∃ K : G.Coloring Color, ∀ w, K (e w) = D w := by
+  apply whole_repair_of_core_injective f injective.injOn ?_ e outside covers stars
+    ports boundary closed s C initial
+  intro a ha
+  rintro ⟨i,hi,eq⟩
+  exact ha (injective eq ▸ hi)
 
 /-- A complete planar-disk consumer: closure is derived from its rotation,
 then the repaired source and exterior reconstruct the ambient graph. -/

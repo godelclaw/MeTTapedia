@@ -1595,3 +1595,18 @@ target kernelStripSixJointRepair pkg : Unit := do
         "StripSixJointReconstruction", "StripSixJointAudit"]
       cwd := pkg.dir
       env := env }
+
+/-- Replay shared cyclic core coverage and reconstruction with identified boundary vertices. -/
+target kernelCyclicCore pkg : Unit := do
+  let env ← getAugmentedEnv
+  Job.async do
+    proc {
+      cmd := "python3"
+      args := #["../../tools/fourcolor/classical/replay_family.py",
+        "--reference", "../externals/fourcolor", "--mettapedia", "../mettapedia",
+        "--package", ".", "--output", ".lake/cyclic-core",
+        "--library-output", ".lake/build/lib/lean", "--modules", "CyclicCoreStars",
+        "ThreeBlockDiskStars", "StripCyclicReading", "StripSixJointReconstruction",
+        "StripCyclicReconstruction", "CyclicCoreAudit", "StripSixJointAudit"]
+      cwd := pkg.dir
+      env := env }

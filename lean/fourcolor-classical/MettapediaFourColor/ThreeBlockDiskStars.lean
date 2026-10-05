@@ -1,4 +1,5 @@
 import MettapediaFourColor.ThreeBlockDiskBoundary
+import MettapediaFourColor.CyclicCoreStars
 
 /-! # Complete core rows exclude extra ambient edges
 
@@ -30,26 +31,9 @@ omit [DecidableEq V] in
 theorem core_stars (cyclic : data.IsVertexwiseCyclic)
     (i : Fin 18) (hi : 11 ≤ i.val) (v : V) (hv : G.Adj (r.hom i) v) :
     ∃ j, r.hom j = v ∧ upper.graph.Adj i j := by
-  obtain ⟨j, hj⟩ := core_nonempty i hi
-  let start : G.Dart := ⟨(r.hom i, r.hom j), r.hom.map_rel hj⟩
-  have powers : ∀ n : ℕ, ∃ k, ∃ hk : upper.graph.Adj i k,
-      (data.vertexRotation ^ n) start = ⟨(r.hom i, r.hom k), r.hom.map_rel hk⟩ := by
-    intro n
-    induction n with
-    | zero => exact ⟨j, hj, rfl⟩
-    | succ n ih =>
-      obtain ⟨k, hk, hpow⟩ := ih
-      obtain ⟨l, hl, turn⟩ := core_predecessor i k hi hk
-      obtain ⟨_, _, step⟩ := r.turn i l k turn
-      refine ⟨l, hl, ?_⟩
-      rw [pow_succ', Equiv.Perm.mul_apply, hpow]
-      exact step
-  have same := (cyclic (r.hom i)).2
-    (show start.fst = r.hom i from rfl)
-    (show (⟨(r.hom i, v), hv⟩ : G.Dart).fst = r.hom i from rfl)
-  obtain ⟨n, hn⟩ := same.exists_nat_pow_eq
-  obtain ⟨k, hk, hpow⟩ := powers n
-  rw [hn] at hpow
-  exact ⟨k, (congrArg (fun d => d.snd) hpow).symm, hk⟩
+  apply CyclicCoreStars.covers data cyclic r.hom i (core_nonempty i hi) ?_ v hv
+  intro j hj
+  obtain ⟨k, hk, turn⟩ := core_predecessor i j hi hj
+  exact ⟨k, hk, r.turn i k j turn⟩
 
 end FourColor.ThreeBlockDiskBoundary

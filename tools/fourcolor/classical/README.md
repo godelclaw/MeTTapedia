@@ -2550,3 +2550,33 @@ near-linear runtime, catalogue deletion or complete-assembly dependency
 saving is claimed. The audit excludes complete Four Colour endpoints,
 original bulk certificates and the large wheel/exceptional repair tables.
 Measurements are recorded in `strip-six-joint-repair-measurements.json`.
+
+## Cyclic core coverage with shared boundary vertices
+
+```sh
+cd lean/fourcolor-classical
+lake build kernelCyclicCore
+```
+
+`CyclicCoreStars.covers` proves a common geometric law: a nonempty source
+neighbourhood closed under the actual cyclic vertex rotation covers every
+ambient neighbour. It needs no injectivity or degree equality. The existing
+D0092 star theorem and `StripCyclicReading.Reading.core_stars` for D0099
+both consume it. The source-specific checks only verify that the decoded
+rows have the required predecessors.
+
+`StripSixJointRepair.whole_repair_of_core_injective` weakens the former
+global injectivity hypothesis: core vertices remain distinct and boundary
+vertices stay outside the core, but boundary vertices may coincide.
+Agreement with the same actual exterior colouring retains the resulting
+equal-colour constraints. The original globally injective theorem is a
+specialization. `StripCyclicReading.Reading.whole_repair` derives the core
+star premise from the cyclic reading and reconstructs the whole colouring,
+with a strictly smaller exterior.
+
+Exterior Kempe closure, exact exterior coverage and the initial two-form
+boundary domain remain hypotheses. Automatic exterior disk geometry for
+D0099 and universal occurrence supply are still open. This is a shared
+geometric argument and a strengthened repair consumer; no catalogue entry,
+original configuration certificate or complete-assembly check is removed.
+Replay measurements are in `cyclic-core-measurements.json`.

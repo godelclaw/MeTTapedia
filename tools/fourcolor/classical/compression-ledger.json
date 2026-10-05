@@ -6458,5 +6458,30 @@
     "credited_compression": false,
     "catalogue_entries_removed": 0,
     "original_certificate_dependencies_removed": 0
+  },
+  "cyclic_core_reconstruction": {
+    "status": "kernel checked shared geometric law and strengthened reconstruction",
+    "receipt": "cyclic-core-measurements.json",
+    "common_law": "FourColor.CyclicCoreStars.covers",
+    "consumers": [
+      "FourColor.ThreeBlockDiskBoundary.core_stars",
+      "FourColor.StripCyclicReading.Reading.core_stars",
+      "FourColor.StripCyclicReading.Reading.whole_repair"
+    ],
+    "strengthened_contract": {
+      "derived": "Complete ambient core stars from the preserved cyclic source rows.",
+      "weakened": "Global source injectivity is replaced by core injectivity and no boundary vertex mapping into the core.",
+      "preserved": "Actual whole-graph colouring, agreement with the repaired exterior, and strict exterior vertex decrease.",
+      "remaining": [
+        "Exact exterior coverage",
+        "Exterior Kempe closure",
+        "Initial two-form boundary class",
+        "Geometric supply of occurrences"
+      ]
+    },
+    "new_fixture_bytes": 0,
+    "catalogue_entries_removed": 0,
+    "original_certificate_dependencies_removed": 0,
+    "complete_assembly_checks_removed": 0
   }
 }

@@ -1,0 +1,120 @@
+{
+  "status": "kernel checked shared geometric law and strengthened reconstruction",
+  "joint_repair_base_commit": "9e67bc51b5f3a458ea00f856550ff38a3f6b5cdf",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "theorem": "FourColor.CyclicCoreStars.covers",
+  "domain": "Any finite ambient graph with vertexwise cyclic rotation and a nonempty source neighbourhood closed under preserved predecessor corners.",
+  "consumers": [
+    "FourColor.ThreeBlockDiskBoundary.core_stars",
+    "FourColor.StripCyclicReading.Reading.core_stars",
+    "FourColor.StripCyclicReading.Reading.whole_repair"
+  ],
+  "strengthened_contract": {
+    "derived": "Complete ambient core stars from the preserved cyclic source rows.",
+    "weakened": "Global source injectivity is replaced by core injectivity and no boundary vertex mapping into the core.",
+    "preserved": "Actual whole-graph colouring, agreement with the repaired exterior, and strict exterior vertex decrease.",
+    "remaining": [
+      "Exact exterior coverage",
+      "Exterior Kempe closure",
+      "Initial two-form boundary class",
+      "Geometric supply of occurrences"
+    ]
+  },
+  "audit": {
+    "roots": 6,
+    "transitive_declarations": 6116,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "excludes": [
+      "complete Four Colour endpoints",
+      "original bulk certificates",
+      "WheelRepairData",
+      "ExceptionalRepairData",
+      "ResidualSeedRepairData",
+      "DiamondProfileData"
+    ]
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.CyclicCoreStars",
+      "source_sha256": "6feeaba0191df1268517853387c367e15fd4cdce9217b0da2158b85eb917cf8d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.872,
+      "olean_bytes": 86544,
+      "olean_sha256": "4a3fdf4d29cd6fb124e624da2cdef165c7d70c777c982f0a4a379182c1083331",
+      "source_bytes": 1778
+    },
+    {
+      "module": "MettapediaFourColor.ThreeBlockDiskStars",
+      "source_sha256": "597711c79a2eac463f1c2f6e05dfe46f538fc8c278b8c4221e3ac018232e0f1f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.375,
+      "olean_bytes": 35520,
+      "olean_sha256": "b52239a0b85993fa2c956594183c6105cd0d02d859fe5e0615b6c4964ba337d1",
+      "source_bytes": 1491
+    },
+    {
+      "module": "MettapediaFourColor.StripCyclicReading",
+      "source_sha256": "ec5ac76906db84bdbeec9b76d671debe80d8219b719e3107e21e69877c13adb3",
+      "exit_code": 0,
+      "frontend_wall_seconds": 6.046,
+      "olean_bytes": 116720,
+      "olean_sha256": "0a74bf88be6db644fee87a473d4300a11f89a8afee6a7ae2970ead219a428dba",
+      "source_bytes": 1999
+    },
+    {
+      "module": "MettapediaFourColor.StripSixJointReconstruction",
+      "source_sha256": "a1d8dbaa60ed82658714ec9cce5b35f52a420a77b00d156869e2ee118fdf0f6d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.296,
+      "olean_bytes": 224576,
+      "olean_sha256": "657fa1abbb6e285dea4fe461df7a5833e259a08f34e0468c5799e53ad13b30ba",
+      "source_bytes": 8756
+    },
+    {
+      "module": "MettapediaFourColor.StripCyclicReconstruction",
+      "source_sha256": "4a789f7b9e11c513aa2137afc7f7e06cd8340d598b0dfaadde1aec9cadfb1f13",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.067,
+      "olean_bytes": 32784,
+      "olean_sha256": "b24bda2a2c5fc574324ebe905650e9e147035cea7e26ccb884df0bf26ccc9d7e",
+      "source_bytes": 1724
+    },
+    {
+      "module": "MettapediaFourColor.CyclicCoreAudit",
+      "source_sha256": "72c206bf11e200e17648ab1649a6b642589920a3deb03b55650d4cad9da5a2c1",
+      "exit_code": 0,
+      "frontend_wall_seconds": 3.813,
+      "olean_bytes": 2728,
+      "olean_sha256": "474c7b0acae2de327a230a4d7e9aaf4961afcec94494ec3e9c1ac39dbd93813d",
+      "source_bytes": 2204
+    },
+    {
+      "module": "MettapediaFourColor.StripSixJointAudit",
+      "source_sha256": "1dae8b1f119b809243581a4b2ad676e5461f81ef87ba003dcd7fc2899c348767",
+      "exit_code": 0,
+      "frontend_wall_seconds": 4.832,
+      "olean_bytes": 2608,
+      "olean_sha256": "b1aeb3a6dbcec0fc6cd84b099844abf5bf1538840c34677d56d403ba8f820f60",
+      "source_bytes": 3059
+    }
+  ],
+  "frontend_seconds_with_prebuilt_dependencies": 29.301,
+  "new_fixture_bytes": 0,
+  "gates": [
+    "kernelCyclicCore",
+    "kernelComplete",
+    "FourColorLane Mettapedia.GraphTheory.FourColor.ResearchCheckpoint"
+  ],
+  "scope": [
+    "The boundary-identification theorem retains one shared exterior colouring; independent port choices do not suffice.",
+    "Automatic exterior disk geometry for D0099 remains open.",
+    "No universal coverage, physical switch bound, catalogue reduction or whole-assembly check removal is claimed."
+  ],
+  "catalogue_entries_removed": 0,
+  "original_certificate_dependencies_removed": 0,
+  "complete_assembly_checks_removed": 0
+}
