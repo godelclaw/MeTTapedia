@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [local-gradient reserve obstruction](labs/README.md#internal-pressure-obstructs-a-universal-local-gradient-reserve)
+uses actual compact unforced data to show that a fixed smooth function
+of the current local velocity gradient, nonincreasing for every such
+flow, must be constant. It reuses the exact internal-pressure response
+of disjoint fluid packets. Two explicit data with the same local core,
+energy and integer isotropic Sobolev norms have opposite initial strain
+geometry changes; their created strain and complete cubic production
+also have opposite leading signs. This rules out the stated local
+monotonic shortcut, while leaving history reserves and finite full-datum
+allowances open. The theorem is analytic with exact algebraic checks.
+
 The [created-strain geometry estimate](labs/README.md#created-strain-geometry-with-its-full-history-correction)
 transfers the created-gradient budget to a signed strain determinant,
 paying the non-gradient correction from the inherited-history bounds.

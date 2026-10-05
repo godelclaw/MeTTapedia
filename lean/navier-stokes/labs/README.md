@@ -57629,3 +57629,244 @@ nu=1 and nu=2/7. All Fourier products keep every generated mode.
 Continuum integration, the actual local interval and continuation
 remain analytic arguments; the fixtures alone do not certify them.
 No Lean declarations or axioms change.
+
+## Internal pressure obstructs a universal local-gradient reserve
+
+The geometry law (CG10) retains a weighted pressure term even after
+pressure work in the creation-energy balance has been paid. This section
+tests a possible local simplification of that law. A single smooth
+function of the current local velocity gradient cannot be a nonconstant
+pointwise nonincreasing reserve for all unforced whole-space flows.
+The obstruction uses actual compact fluid data and canonical pressure.
+It is not based on assigning a pressure history independently of NS.
+
+The construction reuses the compact-swirl pressure response, the
+`SwirlPressureHistory.pressure_cone_certificate` algebra, and the
+compact strain/swirl pressure calculation in `transverse_strain_history.py`.
+The functional theorem, realizability and short-time consequences below
+are analytic. `local_gradient_obstruction.py` checks their finite algebra;
+it does not add a Lean PDE or functional-rigidity theorem.
+
+### Arbitrary instantaneous symmetric pressure response from actual parents
+
+Let B be any real trace-free three-by-three matrix. For a smooth compact
+cutoff chi equal to one near the origin, the field
+
+```text
+u_core=curl[-chi(|x|^2) x cross (Bx)/3]                 (LG1)
+```
+
+is smooth, compactly supported and divergence-free. Where chi=1 it
+is exactly Bx. Thus at the origin u_core=0, grad u_core=B, and all
+positive-order spatial derivatives of grad u_core vanish. Its canonical
+pressure Hessian P_core satisfies tr P_core=-tr(B^2).
+
+Place compact counter-rotating swirl pairs outside the core as in the
+earlier boundary-response construction. A pair centered at +/-L n,
+with axes +/-n and total energy E, has exact response
+
+```text
+H_pair=c E(I-3nn^T),               c=3/(2pi L^5).
+```
+
+For a symmetric trace-free H with eigenvalues h_i and orthonormal
+axes n_i, choose any cap m>=max_i h_i and energies
+
+```text
+E_i=(m-h_i)/(3c)>=0,       sum_i E_i=m/c.
+sum_i H_pair,i=H.                                      (LG2)
+```
+
+The pairs can have one common radial profile and sufficiently small
+support radius that all six packets and the core are disjoint.
+Their stress tensors then add exactly, without cross terms. Hence
+Hess p_total(0)=P_core+H. This changes no local velocity jet in the
+core. The parent energy is finite, but generally depends on H and L.
+Orthogonal diagonalization does not assert an independently adjustable
+fluid variable: it specifies explicit original packet data.
+
+Every combined datum starts a smooth local unforced NS solution for
+any prescribed nu>0. At the initial origin its exact gradient rate is
+
+```text
+D B=partial_t B=-B^2-P_core-H,
+D=partial_t+u.grad-nu Delta.                          (LG3)
+```
+
+The viscous and spatial transport terms vanish in the initial affine
+plateau. In particular, the strain's trace-free symmetric rate can
+be changed arbitrarily at this instant through surrounding unforced
+fluid. Later pressure is determined by the coupled evolution. Neither
+(LG2) nor (LG3) realizes an arbitrary prescribed pressure trajectory.
+
+### Rigidity of a universal gradient-only subsolution
+
+Fix nu>0. Let Phi be a C2 real function on the vector space of trace-free
+three-by-three matrices, the same function for every initial datum.
+Suppose that every smooth unforced whole-space solution from compact
+smooth solenoidal data obeys
+
+```text
+D[Phi(grad u)]<=0                                      (LG4)
+```
+
+at its initial points. It is enough to assume this for the affine-core
+data (LG1) with the disjoint parents (LG2). Then **Phi is constant**.
+No nonnegativity or convexity assumption is needed for this conclusion.
+
+Here is the full argument. At the initial origin the spatial chain
+terms of Phi vanish, so (LG3) gives
+
+```text
+dPhi_B[-B^2-P_core-H]<=0 for every symmetric trace-free H.
+```
+
+For any such matrix T one may take H=tT with arbitrary real t, using
+nonnegative parent allocations (LG2) for each choice. The inequality
+is affine in t, so dPhi_B[T]=0. This holds at every trace-free B.
+Integrating along affine lines in the symmetric part shows
+
+```text
+Phi(S+Omega)=Phi(Omega),
+S symmetric trace-free, Omega skew-symmetric.          (LG5)
+```
+
+Write Omega v=a cross v and f(a)=Phi(Omega). The skew part of the actual
+unforced gradient source satisfies
+
+```text
+D Omega=-(S Omega+Omega S),          D a=S a.           (LG6)
+```
+
+Pressure is symmetric. Consequently (LG4) and (LG5) imply
+`df_a[S a]<=0` for every symmetric trace-free S. If a is nonzero, every
+vector z can be written S a. An explicit choice, w=a.a and alpha=a.z, is
+
+```text
+S=(z a^T+a z^T)/w-alpha I/(2w)-alpha aa^T/(2w^2).
+S=S^T,           tr S=0,           S a=z.              (LG7)
+```
+
+Using both z and -z proves df_a=0 for a!=0. On each nonzero ray f is
+therefore constant, and continuity at the origin gives f(a)=f(0).
+This proves the claimed rigidity, including at zero vorticity.
+
+Equivalently, for every nonconstant C2 Phi there is an actual compact
+unforced datum where D[Phi(grad u)] is strictly positive initially.
+Since the local velocity and spatial gradient of Phi vanish there,
+its ordinary time derivative is positive as well. Smooth local
+existence and continuity give an actual nonzero time interval of
+increase at that observation point. This is not just a sign assigned
+to an abstract pressure control or to incompatible local jets.
+
+The quantifiers matter. The theorem concerns one instantaneous
+local-gradient function shared by all compact data. It does not
+exclude datum-dependent reserves, explicit spatial or temporal terms,
+spatial integrals, pressure or hidden-parent state, or compatible
+stochastic histories. In particular J in (CJ1) is a history tensor,
+not covered by this classification. A finite full-datum integrated
+allowance is not refuted. Whole-space examples suffice to obstruct
+this proposed universal shortcut for a route covering both domains;
+no periodic packet-realization theorem is asserted here.
+
+### Same core and scalar norms, opposite geometric histories
+
+For a concrete example relevant to (CG10), use the existing nested
+compact strain/swirl construction with
+
+```text
+S=diag(1,1,-2),       omega=(0,0,2),
+Omega v=(omega cross v)/2,         B=S+Omega.
+```
+
+The strain cutoff is constant on the entire swirl support, and both
+are constant near the origin. Its exact canonical pressure there is
+
+```text
+P_core=diag(-32/35,-32/35,-76/35).
+```
+
+This is the previously derived complete compact pressure formula,
+including the strain, swirl and their cross term. Add the remote response
+
+```text
+H_kappa=(32/35-kappa)S,             kappa in {+1,-1}.
+F0=-B^2-P_core-H_kappa=kappa S-2Omega.
+partial_t S(0,0)=kappa S,
+partial_t omega(0,0)=S omega=(0,0,-4).                 (LG8)
+```
+
+Both flows have the same initial local vorticity compression. Their
+strain geometry differs. For rho=-4det S and Q=|S|^2 at the initial
+origin,
+
+```text
+rho=8,      partial_t rho=24kappa,
+Q=6,        partial_t Q=12kappa.                     (LG9)
+```
+
+All local spatial derivatives of B vanish initially, so the full
+positive-viscosity equations have exactly these rates for every nu>0.
+In particular `rho_kappa(t,0)=8+24kappa t+O(t^2)` along the actual
+solutions, giving opposite changes on nonzero short intervals.
+
+The two parent configurations can have the SAME total energy. With
+c from (LG2), choose cap m=67/35 and the following pair energies:
+
+| kappa | c E_1 | c E_2 | c E_3 |
+| --- | --- | --- | --- |
+| +1 | 2/3 | 2/3 | 61/105 |
+| -1 | 0 | 0 | 67/35 |
+
+Every energy is nonnegative and both totals are
+`67/(35c)=134pi L^5/105`. Use identical packet radii and radial profiles.
+For every integer k>=0 the rotationally invariant homogeneous Sobolev
+quantity `||u||_(dot H^k)^2` is proportional to packet energy with the
+same shape constant. Disjoint supports remove derivative cross terms,
+while rotation and translation preserve those norms. Adding the common
+core therefore gives identical full energies and every such integer
+Sobolev norm in the two data. This also gives equal initial kinetic-energy
+dissipation. No equality of fractional nonlocal Sobolev norms is claimed.
+The shared scalar norms do not determine the sign of the local response;
+this does not prevent upper bounds depending on those norms.
+
+### The first created geometry can have the opposite cubic sign
+
+Use the SAME sufficiently small original window delta for the two
+histories, no larger than their common (GH7) bound. Their initial
+energies and gradient norms agree, and both have smooth local evolution.
+At the origin the actual first-window expansion is
+`J_delta(delta)=delta F0/2+O(delta^2)`. Direct matrix algebra gives
+
+```text
+-4det(sym F0)=8kappa^3,
+tr(F0^3)/3=-2kappa^3-8kappa,
+-F0:F0^2=6kappa^3-8kappa.
+```
+
+For kappa=+1 and -1, respectively, this becomes
+
+```text
+rho_created(delta,0)= kappa delta^3+O(delta^4),
+tr(J_delta(delta,0)^3)/3=-(5kappa/4)delta^3+O(delta^4),
+-J_delta:J_delta^2=-(kappa/4)delta^3+O(delta^4).        (LG10)
+```
+
+These are POINTWISE densities, not the spatial integrals Q_geom and
+Q_J. The strain determinant and the complete created cubic have
+opposite leading signs in both histories. All strict signs persist
+for sufficiently small delta and on nonzero neighborhoods by continuity.
+The history correction in (CG1) accounts for the difference exactly.
+This strengthens the warning against reading created amplification
+from strain geometry alone. Its integrated correction payment (CG4)
+remains valid. Neither (CG5), (CG7) nor the original-datum allowance
+is disproved, and no sustained forcing or singularity is constructed.
+
+Run `python3 -O labs/local_gradient_obstruction.py`. It checks the
+arbitrary affine extension, positive pressure allocation, full axial
+strain action, both physical gradient rates, the common energy, and
+the complete first-created cubic split. The pressure formulas are
+reused from the earlier compact fluid constructions. Smooth cutoffs,
+local NS existence, the functional-rigidity proof and time remainders
+are analytic, not consequences of the finite checks alone. No Lean
+declarations or axioms change.

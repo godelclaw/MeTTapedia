@@ -1,0 +1,65 @@
+{
+  "affine_core": {
+    "compact_extension": "curl[-chi(|x|^2) x cross (Bx)/3]",
+    "local_gradient_derivatives": "all positive spatial orders vanish on the plateau",
+    "local_velocity": "B x",
+    "trace_B": "0"
+  },
+  "analytic_rigidity": "a fixed C2 function of the local trace-free velocity gradient with nonpositive generator on every unforced compact-data history is constant",
+  "certification": "exact algebra; compact NS realization and functional theorem analytic, not Lean-certified",
+  "not_excluded": "datum-dependent allowances, spatial or history reserves, and the created tensor J",
+  "opposite_histories": {
+    "core_pressure": [
+      "-32/35",
+      "-32/35",
+      "-76/35"
+    ],
+    "core_strain": "diag(1,1,-2)",
+    "core_vorticity": "(0,0,2)",
+    "rows": [
+      {
+        "first_created_correction_coefficient": "-5/4",
+        "first_created_cubic_coefficient": "-1/4",
+        "first_created_geometry_coefficient": "1",
+        "kappa": 1,
+        "pair_energies_times_c": [
+          "2/3",
+          "2/3",
+          "61/105"
+        ],
+        "strain_determinant_rate": 24
+      },
+      {
+        "first_created_correction_coefficient": "5/4",
+        "first_created_cubic_coefficient": "1/4",
+        "first_created_geometry_coefficient": "-1",
+        "kappa": -1,
+        "pair_energies_times_c": [
+          "0",
+          "0",
+          "67/35"
+        ],
+        "strain_determinant_rate": -24
+      }
+    ],
+    "same_remote_energy": "67/(35c)=134pi L^5/105",
+    "scope": "actual initial jets and analytic short intervals; no prescribed later pressure"
+  },
+  "pressure_cone": {
+    "nonnegative_under": "cap>=max_i lambda_i",
+    "pair_constant": "c=3/(2pi L^5)",
+    "pair_energies": [
+      "(cap - lambda1)/(3*c)",
+      "(cap - lambda2)/(3*c)",
+      "(cap + lambda1 + lambda2)/(3*c)"
+    ],
+    "total_energy": "cap/c"
+  },
+  "source_sha256": "7e50868351a3b8d392396c8be2f4743cb33334ba79d2e4baefb48544d1cb6b89",
+  "strain_action": {
+    "S": "(z a^T+a z^T)/w-(a dot z)I/(2w)-(a dot z)aa^T/(2w^2)",
+    "conclusion": "S symmetric, tr S=0, S a=z",
+    "domain": "a dot a>0",
+    "w": "a dot a"
+  }
+}
