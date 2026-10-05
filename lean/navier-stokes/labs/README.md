@@ -58500,3 +58500,177 @@ Run `python3 -O labs/coercive_pressure_completion.py`. All nonlinear Fourier
 products and canonical pressure outputs are retained. No Lean declarations
 or axioms change; the actual-history estimates and continuation implication
 remain analytic rather than new kernel-certified PDE theorems.
+
+## Generated modes grow while their first parent return is depleting
+
+The datum in (CPC10) supplies a test beyond its initial growth rate.
+New modes extract kinetic energy from the original modes, and their
+first complete feedback depletes the original gradient observation too.
+Nevertheless the full gradient energy exceeds the forecast obtained by
+deleting those generated modes. A finite actual-history enclosure also
+separates growth of the full observation from loss in the original modes.
+This tests whether favorable parent feedback alone pays (CPC8), (CG5)
+or (CJ10); none of those arbitrary-history budgets is proved here.
+
+`convex_parent_return.py` checks exact complete Fourier jets.
+`convex_reserve_history.py` supplies discovery trajectories, and
+`convex_history_certificate.py` reuses the continuous-residual comparison
+(729)--(742). Analytic local-existence and comparison arguments remain
+distinct from exact algebra, numerical discovery and Lean certification.
+
+### A fixed projection with every generated output retained
+
+Use normalized volume on the period-2pi torus. Let w0=-v from (CPC10),
+I its ten signed Fourier modes, and Pi the orthogonal projection onto I.
+The support is invariant under conjugation. Pi commutes with derivatives,
+the Laplacian and the Leray projection. Define the full NS nonlinearity
+N(w)=-P_Leray[(w.grad)w] and
+
+```text
+s=(1-Pi)N(w0), L=Pi DN(w0)[s].                       (GFR1)
+```
+
+There are 28 nonzero modes in s. All products and the full canonical
+pressure are computed before Pi is applied. For the actual unforced
+solution with u(0)=a w0, a>0 and nu>0 fixed, write p=Pi u, r=(1-Pi)u.
+Then r(0)=0 and r'(0)=a^2 s. The generated-to-original contribution in
+the actual parent equation is
+
+```text
+C(t)=Pi[N(p+r)-N(p)], C(0)=0, C'(0)=a^3 L.           (GFR2)
+```
+
+The parent p evolves throughout this calculation; it is not frozen.
+Viscosity remains in both evolution equations, but contributes nothing
+to C'(0) because r(0)=0. Exact unit-amplitude pairings are
+
+```text
+2<w0,L> = -3343336/231231 = -2||s||2^2,
+2<grad w0,grad L> = -233930128/3468465,
+4 int |grad w0|^2 grad w0:grad L
+    = -2950089092699776/481209978249,
+2||grad s||2^2 = 147931792/1156155.                  (GFR3)
+```
+
+Thus the generated feedback contributes negative kinetic, gradient and
+quartic-gradient work on a positive actual local interval. The respective
+leading work rates are the first three coefficients in (GFR3) multiplied
+by a^4 t, a^4 t and a^6 t. Their remainders are O(t^2), with constants
+depending on the fixed datum and viscosity. These are feedback signs;
+they do not assert that every total parent derivative is negative.
+The kinetic identity is also a check that generation is paid by the
+original modes, without introducing an external energy source.
+
+### What an original-support closure misses
+
+For comparison only, let v_I solve the finite-dimensional ODE
+
+```text
+v_I'=nu Delta v_I+Pi N(v_I), v_I(0)=a w0.             (GFR4)
+```
+
+This is an original-support Galerkin reference, not another full NS
+solution. For fixed a and nu, smooth local evolution gives
+
+```text
+p(t)-v_I(t)=(a^3 t^2/2)L+O(t^3),
+r(t)=a^2 t s+O(t^2),
+Z_NS(t)-Z_I(t)
+  =(104932624/3468465)a^4 t^2+O(t^3)>0,              (GFR5)
+```
+
+for all sufficiently small positive t, where Z=||grad u||2^2.
+Indeed twice the quadratic coefficient is
+`2<grad w0,grad L>+2||grad s||2^2=209865248/3468465>0`.
+The generated gradient contribution outweighs the depleting original-mode
+return. This is a comparison of actual PDE evolution with its explicitly
+truncated reference; it does not assume that the reference is physical.
+
+Both systems obey E'=-2nu Z for E=||u||2^2, since orthogonal projection
+preserves the finite-dimensional energy cancellation. Consequently
+
+```text
+E_NS(t)-E_I(t)
+  =-(209865248/10405395)nu a^4 t^3+O(t^4)<0.          (GFR6)
+```
+
+The extra gradient growth consumes more kinetic energy. Complete NS jets
+through order three independently check these comparisons at nu=1 and
+nu=2/7, with a=16nu. Equations (GFR1)--(GFR3) give the displayed scaling
+for every fixed a>0 and nu>0. The positive intervals and their remainders
+follow analytically from smooth local existence, not from finite jets
+alone. No uniform interval over all amplitudes is claimed.
+
+### A finite actual-history enclosure
+
+At nu=1, a=16, the exact initial gradient energy is
+`Z0=8167768064/1156155`, approximately 7064.5960654. All of it initially
+lies in I. The complete-residual verifier accepts 15 consecutive slabs
+of length 1/1024 through t=15/1024, using retained grid 32 and reference
+time step 1/8192. Outward-rounded endpoint ranges are
+
+| Actual observation at t=15/1024 | Lower bound | Upper bound |
+|---|---:|---:|
+| Full gradient energy | 7510.20 | 7576.00 |
+| Original-support gradient energy | 6776.65 | 6839.16 |
+| Generated-complement gradient energy | 724.96 | 745.51 |
+
+In particular the full endpoint observation exceeds its initial value,
+while the original-support observation is smaller. This endpoint
+statement does not assert monotonicity throughout the interval.
+
+The reference curve is the exact Hermitian/Leray projection (739) of
+stored dyadic Bernstein coefficients. Initial binary64 coefficients
+approximate the rational datum, so their exact rational L2 and gradient
+errors are included from the first slab. The initial bounds are
+`2.969e-15` and `4.766e-15`; projection contracts both errors.
+All subsequent errors carry through identical shared endpoints.
+Residual verification retains the full generated output outside the
+simulation box and bounds the infinite-dimensional actual error using
+the existing physical comparison. No unseen modes are set to zero.
+
+For each of the three fixed orthogonal projections, the verifier computes
+the reference coefficient norm with exact rational squares. If eta is
+the carried gradient error plus the reconstruction's arithmetic radius,
+the actual projected gradient energy lies in
+
+```text
+[max(0,||grad Pi_j v||2-eta)^2,
+          (||grad Pi_j v||2+eta)^2].                 (GFR7)
+```
+
+Rationally checked square-root bounds and outward scalar arithmetic
+enclose these endpoints. The arithmetic assumptions are those documented
+for `pressure_prefix_certificate.py`: IEEE binary64 round-to-nearest,
+explicit enclosed FFTs, outward norm bounds and no overflow. This is an
+analytic/computational PDE enclosure, not a Lean kernel certificate.
+It does not enclose quartic gradients or separate pressure/transfer signs.
+
+The attempted next slab, ending at 1/64, failed the scalar gradient
+bootstrap. The accepted 15-slab prefix was rerun to successful completion
+and is archived in `convex_history_certificate_results.json`. This
+comparison failure is not evidence of a physical singularity.
+
+### Discovery beyond the certified prefix
+
+`convex_reserve_history_results.json` retains numerical runs on grids
+32 and 64 with time steps 1/2048 and 1/4096, through time 1/8. They show
+a rise and later fall in total gradient energy as its share shifts away
+from the original support. The late turnover is numerical evidence only.
+The coarse run has substantial discarded quartic-observer work, which
+the script reports explicitly; its quartic trajectory cannot be promoted
+to a PDE theorem from agreement of the gradient observations.
+
+From the package directory, reproduce the exact and enclosed tests with
+
+```sh
+python3 -O labs/convex_parent_return.py
+python3 labs/convex_history_certificate.py --n 32 --nu 1 --dt .0001220703125 --h .0009765625 --final .0146484375
+```
+
+The next physical obligation is to control what the generated modes do
+when they become parents themselves, retaining the original evolving
+field and full pressure. Favorable return into one fixed family does not
+pay every family's gradient growth. The finite-datum allowance remains
+open; neither these short histories nor the later numerical turnover
+decides arbitrary-data regularity. No Lean declarations or axioms change.

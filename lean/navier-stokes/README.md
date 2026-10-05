@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [generated-mode return](labs/README.md#generated-modes-grow-while-their-first-parent-return-is-depleting)
+follows the convex-completion datum through actual nonlinear generation.
+The first feedback into its original modes depletes their kinetic,
+gradient and quartic-gradient observations, while the newly generated
+modes more than offset the gradient loss. A complete-residual computation
+encloses a finite actual unforced prefix whose full gradient energy exceeds
+its initial value even though the original modes' share has fallen.
+The reference with generated modes deleted is explicitly a Galerkin model;
+its discrepancy from the full flow is calculated, not assumed away.
+These are analytic and computational results, not new Lean PDE theorems.
+Repeated renewal and the arbitrary-history allowance remain open.
+
 The [convex pressure completion](labs/README.md#convex-completion-pays-history-inputs-but-retains-self-amplification)
 adds a positive quadratic/quartic stock to the joint cubic pressure correction.
 Its complete diffusion and window aging are favorable, and all inherited

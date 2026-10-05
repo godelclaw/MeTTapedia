@@ -1,0 +1,17 @@
+{
+  "actual_short_time_comparison": {
+    "gradient": "Z_NS-Z_reference=(104932624/3468465)*a^4*t^2+O(t^3)>0",
+    "kinetic": "E_NS-E_reference=-(209865248/10405395)*nu*a^4*t^3+O(t^4)<0"
+  },
+  "certification": "exact complete jets; local PDE intervals and remainders analytic, not Lean-certified",
+  "first_generated_modes": 28,
+  "generated_gradient_second_rate": "147931792/1156155",
+  "kinetic_return": "-3343336/231231",
+  "original_modes": 10,
+  "parent_gradient_return": "-233930128/3468465",
+  "parent_quartic_return": "-2950089092699776/481209978249",
+  "physical_scope": "actual unforced periodic NS for every fixed nu>0 and amplitude a>0",
+  "reference_scope": "original-support Galerkin reference, not a full NS solution",
+  "source_sha256": "794fed6395c3faaed53d0abaa2723ee0c8d5e2ae01a485dd290bc1661e4ae140",
+  "total_gradient_second_rate_excess": "209865248/3468465"
+}
