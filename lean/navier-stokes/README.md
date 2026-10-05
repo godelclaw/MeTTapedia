@@ -36,13 +36,25 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [complete spherical-cutoff test](labs/README.md#complete-spherical-cutoffs-also-permit-amplifying-memory)
+shows that derivative-weighted first memory can amplify even with an
+ordinary frequency ball. An exact parameter family supplies a positive
+return at every prescribed positive Sobolev order, with pressure and
+all generated outputs retained in actual three-dimensional NS jets.
+Its triangular member has an explicit all-time gradient payment; adding
+the third-direction coupling creates a transverse parent that the
+triangular payment does not control. This refutes a sign shortcut while
+retaining the need for a finite full-history allowance. The results are
+analytic with exact checks, not new Lean PDE theorems.
+
 The [generated-memory payment](labs/README.md#kinetic-memory-is-passive-but-derivative-weighted-feedback-can-amplify)
 separates kinetic passivity from the stronger observations needed for
 continuation. An exact all-prefix kinetic balance pays the net feedback
 from an initially empty component. A coherent three-dimensional example
 nevertheless has positive feedback at every Sobolev order at or above the
 critical half derivative. Its fixed finite frequency interface has one
-omitted pair; no sign claim for a pure spherical cutoff is refuted.
+omitted pair; that calculation alone does not refute a sign claim for a
+pure spherical cutoff. The next test above supplies that missing case.
 For every fixed bounded band, an explicit original-energy reserve pays
 the absolute weighted feedback on both domains. The cost grows with
 bandwidth, leaving the all-scale history estimate open. These results

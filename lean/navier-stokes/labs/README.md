@@ -58898,3 +58898,235 @@ kinetic and gradient-defect identities, lattice constants and reserve
 derivatives. The analytic local intervals, uniform-local scaling and
 all-prefix estimates are not Lean-certified. No Lean declarations or
 axioms change.
+
+## Complete spherical cutoffs also permit amplifying memory
+
+The interface hole in (GMP4) is not required for positive weighted
+feedback. A short exact family shows how two retained components can
+partially cancel at a shared hidden source while its return amplifies
+the more heavily weighted component. This holds for a complete spherical
+cutoff and for actual three-dimensional unforced NS jets with nonzero
+pressure. Every positive Sobolev order admits such a first return.
+
+The zero-coupling member is an exact triangular NS flow whose full
+gradient history has a finite original-data payment. Thus the positive
+return is compatible with a paid history. The same initial memory
+calculation persists when pressure generates a new transverse component;
+the autonomous-parent payment does not persist without an additional
+estimate. This separates a failed sign shortcut from the open history
+mechanism. Kinetic first-memory damping remains the classical identity
+credited in (GMP1)--(GMP2).
+
+### An actual family with a complete frequency ball
+
+Use normalized measure on the period-2pi torus. Let delta>0, c>0,
+epsilon real, and write
+
+```text
+w=(cos y+delta cos(2y)+epsilon cos z,
+   0,
+   cos x(1-c delta cos y)),
+P=P_(|k|<=2), Q=I-P, N(v)=-P_sol[(v.grad)v],
+b=QN(w), L=P DN(w)[b].                              (SMR1)
+```
+
+This datum is real, smooth, mean-zero and divergence-free. Every initial
+mode lies in the retained ball: the shell radii are 1, sqrt(2) and 2.
+For epsilon!=0 its wave vectors span three-space. The canonical initial
+pressure, normalized to zero mean, is exactly
+
+```text
+p_w=epsilon sin x sin z(1-(2/3)c delta cos y),
+Delta p_w=-tr((grad w)^2),
+N(w)_y=-(2/3)epsilon c delta sin x sin y sin z.       (SMR2)
+```
+
+The initially absent transverse component therefore starts growing when
+epsilon c delta!=0. This is internal pressure feedback, not an imposed
+force. For u(0)=a w, its initial time derivative is a^2 times (SMR2);
+the viscous contribution to that zero component is initially zero.
+
+The complete hidden source and retained return are
+
+```text
+b=e_z sin x[delta(1-c/2)cos(2y)-(c delta^2/2)cos(3y)],
+L=-e_z cos x[delta^2(1-c/2)/2
+               +(delta/2)(1-c/2-c delta^2/2)cos y].  (SMR3)
+```
+
+These formulas are independent of epsilon. Its additional initial
+nonlinear outputs lie at radius sqrt(3), inside P. Its interactions with
+b lie at radii sqrt(6) and sqrt(11), outside P, and remain in the full
+fluid. Consequently they do not contribute to L. Neither set is deleted
+from the physical equation.
+
+The individual kinetic exchange coefficients are
+
+```text
+A1=2<w_(radius1),L>=-delta^2(1-c/2)/2,
+A2=2<w_(radius sqrt(2)),L>
+       =c delta^2(1-c/2-c delta^2/2)/4,
+A4=2<w_(radius2),L>=0,
+A1+A2=-2||b||2^2
+      =-(delta^2/8)[(2-c)^2+c^2 delta^2].            (SMR4)
+```
+
+For any radial observation multiplier m, its weighted coefficient is
+
+```text
+d_m=2<m(Lambda)w,L>
+   =(delta^2/4)[(1-c/2)(c m(sqrt(2))-2m(1))
+                       -(c^2 delta^2/2)m(sqrt(2))]. (SMR5)
+```
+
+Suppose `0<m(1)<m(sqrt(2))`. Put
+
+```text
+r=m(1)/m(sqrt(2)), c=1+r,
+delta=(1-r)/(2(1+r)).
+Then d_m=3m(sqrt(2))(1-r)^4/[128(1+r)^2]>0.          (SMR6)
+```
+
+This is a formula for actual real trigonometric data, not a choice of
+independent abstract sources. In particular m(rho)=rho^(2s) gives a
+positive first return for every prescribed s>0. The datum may depend
+on s; the claim is not that one datum works uniformly as s tends to zero.
+At s=0, the negative identity in (SMR4) remains valid.
+
+### A small rational example and its nested cutoffs
+
+Take c=3/2, delta=1/10. For any epsilon the exact coefficients are
+
+```text
+A1=-1/800, A2=291/320000, A4=0,
+d_s=(291*2^s-400)/320000,
+d_0=-109/320000,
+d_(1/2)=(291sqrt(2)-400)/320000>0,
+d_1=91/160000>0.                                    (SMR7)
+```
+
+The strict radical comparison is rationally checked by
+`2*291^2-400^2=9362>0`. The same fixed datum has d_s>0 for every
+s>=1/2. Epsilon=0 gives the triangular calibration below; epsilon=1
+or 5 gives a literal three-dimensional datum with generated pressure
+feedback. No small-epsilon approximation is used in (SMR3)--(SMR7).
+
+Keeping this same datum and enlarging the complete ball gives:
+
+| Squared cutoff radius | Hidden source shells, squared radii | Kinetic coefficient | Gradient coefficient |
+| --- | --- | --- | --- |
+| 4 | 5 and 10 | -109/320000 | 91/160000 |
+| 5 | 10 | -9/320000 | -9/160000 |
+| 10 | none initially | 0 | 0 |
+
+Each row uses every nonlinear output outside that ball. The zero in the
+last row is an initial-source statement, not absence of later generation.
+In particular, replacing a selected mode pair by a standard nested
+spherical decomposition does not establish weighted passivity.
+All cutoffs with `2<=K<sqrt(5)` give the first row. For every integer n>=1,
+the datum w(nx,ny,nz) and cutoff 2n reproduce the mechanism. Its Sobolev
+coefficient is n^(2s+2)d_s; this scaling statement does not assert a
+cutoff-independent allowance or fixed-energy blowup.
+
+### The first return belongs to an actual viscous history
+
+For any fixed a>0 and nu>0, take the local smooth unforced NS evolution
+from a w. Define p=Pu, r=Qu, C=P[N(u)-N(p)] and
+`T_s=2<Lambda^(2s)p,C>` as in (GMP3). Since r(0)=0 and P commutes
+with the Laplacian, the complete equation gives
+
+```text
+r'(0)=a^2 b, C(0)=0, C'(0)=a^3 L,
+T_s(t)=a^4 d_s t+O(t^2).                            (SMR8)
+```
+
+Smooth local existence in a sufficiently high Sobolev space and time
+differentiation justify the remainder for each fixed datum, nu and s.
+Positive d_s therefore gives a genuine positive local time interval
+and positive integrated memory work. This is an analytic conclusion,
+not an inference from a sampled numerical trajectory. The ordinary
+viscous decay and all other resolved nonlinear terms remain in the
+complete Sobolev balance. Positive T_s alone is not a claim that the
+full norm increases at t=0.
+
+An explicit comparison also identifies what discarding the hidden
+history changes. Let v solve the finite-dimensional Galerkin reference
+`v'=nu Delta v+P N(v)`, v(0)=a w. This reference is not a full NS flow.
+The actual retained field has
+
+```text
+p(t)-v(t)=(a^3/2)L t^2+O(t^3),
+M_s(p(t))-M_s(v(t))=(a^4/2)d_s t^2+O(t^3),
+M_s(u(t))-M_s(v(t))
+       =a^4[||Lambda^s b||2^2+d_s/2]t^2+O(t^3).     (SMR9)
+```
+
+For epsilon=1 or 5 the full initial, first and second jets have 12,
+28 and 92 modes. All are retained in the exact checks, including the
+canonical pressure. The epsilon=0 counts are 10, 18 and 26.
+
+The uniform-local amplitude argument in (GMP8) applies here with d_s
+from (SMR6) or (SMR7): for each fixed positive order and viscosity,
+positive integrated memory work can exceed any fixed multiple of its
+viscous term when the allowance is zero. The full initial resources
+also grow with a. No allowance depending on the full datum, no
+existential datum-selected cutoff, and none of (CPC8), (CG5) or (CJ10)
+is refuted by this local comparison.
+
+### The same amplification inside a completely paid history
+
+For epsilon=0 the entire evolution has the exact triangular form
+
+```text
+u=(V(y,t),0,W(x,y,t)), p=0,
+V=a[exp(-nu t)cos y+delta exp(-4nu t)cos(2y)],
+W_t+V W_x=nu Delta W,
+W(0)=a cos x(1-c delta cos y).                       (SMR10)
+```
+
+This reuses the stochastic triangular mechanism in the
+[paid parent-history calculation](#physical-curl-and-a-paid-triangular-parent-history),
+with both heat harmonics retained. The scalar uniformly parabolic
+problem constructs the actual smooth solution for all time. Its
+transport/stretching calculation also gives a direct bound on all
+frequencies. Set Z_W=||grad W||2^2, D_W=||Delta W||2^2, and
+
+```text
+kappa(t)=a[exp(-nu t)+2delta exp(-4nu t)],
+J(t)=a[exp(-nu t)+(delta/2)exp(-4nu t)]/nu.
+
+Z_W'+2nu D_W=-2int V_y W_x W_y<=kappa Z_W,
+J'=-kappa,
+R(t)=exp(J(t))Z_W(t), R'+2nu exp(J)D_W<=0.           (SMR11)
+```
+
+The inequalities use `2|W_x W_y|<=|W_x|^2+|W_y|^2` and
+`||V_y||infinity<=kappa`. In particular
+
+```text
+sup_(t>=0)||grad u(t)||2^2
+ <=a^2(1/2+2delta^2)
+   +exp[a(1+delta/2)/nu]*a^2(1+c^2 delta^2)/2.        (SMR12)
+```
+
+Every constant comes from the original datum and viscosity. The same
+remaining shear J(t) is carried through every seam. This bound controls
+the complete gradient energy; it does not assign a fresh reserve to
+each band or require every first return to be negative. It is a
+calibration in a known regular class, not new arbitrary-data regularity.
+
+For epsilon!=0, (SMR2) explicitly creates the transverse parent that
+breaks this autonomous heat/shear description. The first memory return
+alone cannot certify its subsequent payment. The next physical task is
+to control the generated transverse pressure and deformation terms in
+a joint history reserve, rather than reuse (SMR11) after its hypotheses
+cease to hold. The full original-data, all-prefix estimate for arbitrary
+flows on both R3 and T3 remains open.
+
+Run `python3 -O labs/spherical_memory_return.py`. The symbolic calculation
+uses a full convolution and Leray projection for arbitrary c, delta and
+epsilon. Independent Gaussian-rational fixtures check complete viscous
+NS jets, reality, divergence, shell transfers, nested cutoffs, the
+Galerkin discrepancy and the triangular clock. Local PDE intervals and
+the all-time triangular estimate remain analytic, not Lean-certified.
+No Lean declarations or axioms change.

@@ -1,0 +1,189 @@
+{
+  "exact_fixtures": [
+    {
+      "actual_jets": [
+        {
+          "complete_mode_counts": [
+            10,
+            18,
+            26
+          ],
+          "nu": "1",
+          "pressure_mode_counts": [
+            0,
+            0
+          ]
+        },
+        {
+          "complete_mode_counts": [
+            10,
+            18,
+            26
+          ],
+          "nu": "2/7",
+          "pressure_mode_counts": [
+            0,
+            0
+          ]
+        }
+      ],
+      "critical": "-1/800 + 291*sqrt(2)/320000",
+      "epsilon": "0",
+      "gradient": "91/160000",
+      "initial_energy": "1617/1600",
+      "initial_gradient_energy": "33/32",
+      "kinetic": "-109/320000",
+      "nested_cutoffs": [
+        {
+          "gradient": "91/160000",
+          "hidden_modes": 8,
+          "kinetic": "-109/320000",
+          "radius_squared": 4
+        },
+        {
+          "gradient": "-9/160000",
+          "hidden_modes": 4,
+          "kinetic": "-9/320000",
+          "radius_squared": 5
+        },
+        {
+          "gradient": "0",
+          "hidden_modes": 0,
+          "kinetic": "0",
+          "radius_squared": 10
+        }
+      ],
+      "spatial_rank": 2
+    },
+    {
+      "actual_jets": [
+        {
+          "complete_mode_counts": [
+            12,
+            28,
+            92
+          ],
+          "nu": "1",
+          "pressure_mode_counts": [
+            12,
+            56
+          ]
+        },
+        {
+          "complete_mode_counts": [
+            12,
+            28,
+            92
+          ],
+          "nu": "2/7",
+          "pressure_mode_counts": [
+            12,
+            56
+          ]
+        }
+      ],
+      "critical": "-1/800 + 291*sqrt(2)/320000",
+      "epsilon": "1",
+      "gradient": "91/160000",
+      "initial_energy": "2417/1600",
+      "initial_gradient_energy": "49/32",
+      "kinetic": "-109/320000",
+      "nested_cutoffs": [
+        {
+          "gradient": "91/160000",
+          "hidden_modes": 8,
+          "kinetic": "-109/320000",
+          "radius_squared": 4
+        },
+        {
+          "gradient": "-9/160000",
+          "hidden_modes": 4,
+          "kinetic": "-9/320000",
+          "radius_squared": 5
+        },
+        {
+          "gradient": "0",
+          "hidden_modes": 0,
+          "kinetic": "0",
+          "radius_squared": 10
+        }
+      ],
+      "spatial_rank": 3
+    },
+    {
+      "actual_jets": [
+        {
+          "complete_mode_counts": [
+            12,
+            28,
+            92
+          ],
+          "nu": "1",
+          "pressure_mode_counts": [
+            12,
+            56
+          ]
+        },
+        {
+          "complete_mode_counts": [
+            12,
+            28,
+            92
+          ],
+          "nu": "2/7",
+          "pressure_mode_counts": [
+            12,
+            56
+          ]
+        }
+      ],
+      "critical": "-1/800 + 291*sqrt(2)/320000",
+      "epsilon": "5",
+      "gradient": "91/160000",
+      "initial_energy": "21617/1600",
+      "initial_gradient_energy": "433/32",
+      "kinetic": "-109/320000",
+      "nested_cutoffs": [
+        {
+          "gradient": "91/160000",
+          "hidden_modes": 8,
+          "kinetic": "-109/320000",
+          "radius_squared": 4
+        },
+        {
+          "gradient": "-9/160000",
+          "hidden_modes": 4,
+          "kinetic": "-9/320000",
+          "radius_squared": 5
+        },
+        {
+          "gradient": "0",
+          "hidden_modes": 0,
+          "kinetic": "0",
+          "radius_squared": 10
+        }
+      ],
+      "spatial_rank": 3
+    }
+  ],
+  "scope": "Full Fourier identities exact; actual local intervals and all-time triangular estimate analytic, not Lean-certified",
+  "source_sha256": "6bdf241d030b99299d38b3d912cb4a3b5f672bab1e29109e6fd54b8d164e8351",
+  "symbolic_family": {
+    "generated_transverse": "-2*epsilon*c*delta*sin(x)*sin(y)*sin(z)/3",
+    "hidden_source": "e_z sin(x)[delta(1-c/2)cos(2y)-c delta^2 cos(3y)/2]",
+    "positive_choice": "r=m(1)/m(sqrt(2)) in (0,1), c=1+r, delta=(1-r)/(2(1+r))",
+    "positive_work": "3*m(sqrt(2))*(1-r)^4/(128*(1+r)^2)",
+    "pressure": "epsilon*(-2*c*delta*cos(y)/3 + 1)*sin(x)*sin(z)",
+    "shell_coefficients": {
+      "1": "delta**2*(c - 2)/4",
+      "2": "-c*delta**2*(c*delta**2 + c - 2)/8",
+      "4": "0"
+    },
+    "weighted_coefficient": "-c**2*delta**4*m2/8 - c**2*delta**2*m2/8 + c*delta**2*m1/4 + c*delta**2*m2/4 - delta**2*m1/2"
+  },
+  "triangular_all_prefix_payment": {
+    "initial_allowance": "exp(a*(1+delta/2)/nu)*a^2*(1+c^2*delta^2)/2",
+    "reserve": "exp(a*(exp(-nu*t)+delta*exp(-4nu*t)/2)/nu)*Z_W(t)",
+    "scope": "epsilon=0 exact triangular NS, every a>0 and nu>0; no all-time assertion for epsilon!=0"
+  }
+}
