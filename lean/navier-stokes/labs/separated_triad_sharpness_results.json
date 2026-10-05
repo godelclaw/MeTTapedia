@@ -1,0 +1,83 @@
+{
+  "fixtures": [
+    {
+      "carrier": 8,
+      "alignment_integral": "1/256",
+      "complete_stretching": "8/65",
+      "stretching_over_carrier_squared": "1/520",
+      "predicted_limit": "1/512",
+      "parent_energy_work": "-1/1040",
+      "receiver_energy_work": "1/1040",
+      "energy": "9161/16640",
+      "diffusion": "143939/64",
+      "full_source_modes": 112,
+      "pressure_modes": 82
+    },
+    {
+      "carrier": 16,
+      "alignment_integral": "1/256",
+      "complete_stretching": "128/257",
+      "stretching_over_carrier_squared": "1/514",
+      "predicted_limit": "1/512",
+      "parent_energy_work": "-1/1028",
+      "receiver_energy_work": "1/1028",
+      "energy": "36233/65792",
+      "diffusion": "2296067/64",
+      "full_source_modes": 112,
+      "pressure_modes": 82
+    },
+    {
+      "carrier": 32,
+      "alignment_integral": "1/256",
+      "complete_stretching": "2048/1025",
+      "stretching_over_carrier_squared": "2/1025",
+      "predicted_limit": "1/512",
+      "parent_energy_work": "-1/1025",
+      "receiver_energy_work": "1/1025",
+      "energy": "144521/262400",
+      "diffusion": "36709379/64",
+      "full_source_modes": 112,
+      "pressure_modes": 82
+    },
+    {
+      "carrier": 64,
+      "alignment_integral": "1/256",
+      "complete_stretching": "32768/4097",
+      "stretching_over_carrier_squared": "8/4097",
+      "predicted_limit": "1/512",
+      "parent_energy_work": "-4/4097",
+      "receiver_energy_work": "4/4097",
+      "energy": "577673/1048832",
+      "diffusion": "587239427/64",
+      "full_source_modes": 112,
+      "pressure_modes": 82
+    }
+  ],
+  "symbolic_packet_N_greater_than_6": {
+    "stretching": "N**4/(512*(N**2 + 1))",
+    "energy": "(141*N**2 + 137)/(256*(N**2 + 1))",
+    "diffusion": "(35*N**4 + 9*N**2 + 3)/64",
+    "parent_energy_work": "-N**2/(1024*(N**2 + 1))"
+  },
+  "tensor_and_scaling": {
+    "complete_rank_one_coefficient": "G_11",
+    "unit_energy_dilation": "u(x)=lambda^(3/2)*w_N(lambda*x)",
+    "cross_work_scale": "lambda^(9/2)*N^2",
+    "diffusion_scale": "lambda^4*N^4",
+    "carrier_choice": "N=lambda^(beta-1), max(1,1/alpha)<beta<5/4",
+    "work_diffusion_ratio_scale": "lambda^(5/2-2*beta)",
+    "scope": "Scaling algebra only; the Schwartz packet and physical interval are analytic."
+  },
+  "status": "Exact Fourier, pressure, all-receiver and scaling checks passed.",
+  "scope": "No new Lean proof. No arbitrary-history budget or singularity construction.",
+  "source_sha256": {
+    "separated_triad_sharpness.py": "4119761d27388211b93c3f5bce472a6c51af0b55ca8cfad934096c75233a9221",
+    "optimal_cubic_gauge.py": "a3990ad9d57ff2bd494266466745a519fb0533e32275482a745c7e6f8b15689b",
+    "helical_parent_response.py": "5b87c1740e83508235915c360a25df87450bba761ef8f321128f005a84d7f3d8",
+    "pressure_history_source.py": "d3310b3afa4bdf02edf9eee8f523edfea9b04f51d1e5f27c01e41c01634a6e42",
+    "recent_pressure_reconstruction.py": "c52be4b8fbe9523698448756fc66aa22898eab7df3837229dd532690e4906c70",
+    "aged_joint_memory_payment.py": "73f612911c47cacaa1472ba418c0b2b5bdcd294e4de72dabe1d349bb097d3f02",
+    "viscous_pressure_regeneration.py": "146ce0bfcdbd3f62e7620df1c9233c20c5766db114c1801ece9bf75bdc4609cd",
+    "rotational_curl_reserve.py": "01e7f7df7dd04b965a3b98899385ca6be93563a5d6ced5460bc6ecc4382aba37"
+  }
+}

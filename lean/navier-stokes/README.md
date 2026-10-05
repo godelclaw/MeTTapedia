@@ -36,6 +36,18 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [sharp separation exponent](labs/README.md#the-sharp-separation-exponent-for-energy-only-viscous-absorption)
+locates the limit of the existing energy-only absorption rule. Complete
+triads with smallest frequency at most a small multiple of the middle
+frequency to the power 4/5 are paid by viscosity. Any larger exponent
+fails uniformly for unit-energy smooth data on R3 and the fixed T3:
+concentration lets a parent strain stretch finer packets faster than that
+credit pays. An exact calibration tracks equal and opposite energy
+transfer from parent to receiver.
+The construction and actual short-time consequence are analytic with
+exact algebraic checks. They do not refute a full-datum history allowance
+or establish a singularity, and they are not new Lean certificates.
+
 The [phase-dependent second return](labs/README.md#a-phase-dependent-second-return-in-ordinary-stretching)
 follows the generated waves into their complete next feedback. Two periodic
 families have identical initial modal energies and identical first stretching

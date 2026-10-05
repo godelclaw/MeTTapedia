@@ -54640,3 +54640,236 @@ canonical pressures, identical modal energies, both sign certificates,
 and the full diffusion-subtracted leading constant. The PDE comparisons
 and uniform remainder arguments remain analytic, not Lean-certified.
 No Lean declaration or axiom changes.
+
+
+## The sharp separation exponent for energy-only viscous absorption
+
+The all-scale estimate (281)--(282) already pays complete interactions
+with smallest frequency L at most a small multiple of P^(4/5), where P
+is the middle frequency. The exponent cannot be increased in a uniform
+spatial estimate using only the energy envelope. This identifies a precise
+limit of that estimate; it does not settle the signed history budget.
+`separated_triad_sharpness.py` checks the complete polarized interaction
+underlying the argument, including pressure and all receiving roles.
+
+Fix alpha>4/5 and c,nu,delta>0. On either R3 or the fixed period-2pi T3,
+let S_(alpha,c) select the complete triads k+p+q=0 satisfying
+
+```text
+0 < L <= P/2,       L <= c P^alpha,
+T_S(u)=<-Delta u,N_S(u)>,       D(u)=||Delta u||2^2.          (SA1)
+```
+
+The selector is permutation invariant. There are smooth real solenoidal
+unit-energy data for which
+
+```text
+                         T_S(u)/(nu D(u)) -> +infinity.     (SA2)
+```
+
+On R3 the data are Schwartz; on T3 they may be chosen as trigonometric
+polynomials. Thus no fixed positive c, however small, permits
+|T_S|<=delta nu D for all such data when alpha>4/5. Together with (282),
+this makes 4/5 the optimal exponent for this energy-only spatial rule.
+No claim about an optimal numerical constant is made.
+
+### The complete polarized interaction has positive work
+
+Write Pi for Leray projection, n=e2, a=e3 and xi=e1. Choose a nonzero
+real Schwartz envelope chi whose Fourier transform is smooth, radial,
+nonnegative and supported in the unit ball, positive in its interior.
+Set F=xi partial_xi(chi^2). Its solenoidal projection is nonzero on an
+open set away from frequency zero: in Fourier variables it is a nonzero
+multiple of i k1 Pi(k)e1 on generic points of the ball of radius two.
+Choose a nonzero nonnegative even smooth multiplier eta supported in an annulus
+inside that set together with its reflection, and put
+
+```text
+U=-eta(D) Pi F,
+I=integral chi^2 partial_1 U_1
+ =-<F,U>=integral eta(k)|Pi(k) F_hat(k)|^2 dk > 0,
+W_N=Pi[chi(x)e3 cos(N x2)],       v_N=U+W_N.                 (SA3)
+```
+
+The cutoff may be supported in two reflected neighborhoods within the
+annulus; it need not be radial. All Fourier normalizations in (SA3) are
+unitary. U is a fixed real Schwartz solenoidal field with support bounded
+away from zero. W_N has two Fourier packets within distance one of
++/-N e2. For large N these supports are disjoint from U.
+
+Uniform expansion of the Leray multiplier on the two high packets gives
+
+```text
+W_N=chi e3 cos(N x2)+r_N,
+||partial^j r_N||_p=O(N^(j-1)),
+||W_N||2^2 -> ||chi||2^2/2,          D(v_N)=O(N^4).           (SA4)
+```
+
+For the derivative estimates used here, 1<=p<=infinity and j is fixed.
+More explicitly the complex positive-packet envelope A_N has Fourier
+transform Pi(N e2+eta)e3 chi_hat(eta). All its Schwartz seminorms are
+uniformly bounded, and those of A_N-chi e3 are O(1/N). Modulation then
+gives (SA4), including the spatial decay needed below.
+
+It is essential to compute the complete cubic work. For a solenoidal
+field, integration by parts gives
+
+```text
+g(v)=integral omega^T grad(v) omega
+    =-integral sum_(i,j,k) (partial_k v_i)(partial_k v_j)(partial_j v_i).
+```
+
+With a trace-zero low gradient G and high gradient h a tensor n, the
+coefficient of h^2 in this complete expression is
+
+```text
+        -a^T G a - n^T G n = xi^T G xi.                    (SA5)
+```
+
+The third placement vanishes because a and n are orthogonal. Thus the
+other receiving roles do not cancel the leading positive alignment in
+(SA3). Fourier support rules out both three-high triads and two-low,
+one-high triads. The two-high, one-low cross work is
+
+```text
+T_cross(v_N)=g(v_N)-g(U)-g(W_N)
+           =N^2 integral chi^2 sin^2(N x2) partial_1 U_1+O(N)
+           =(I/2)N^2+O(N),               g(W_N)=0.          (SA6)
+```
+
+The oscillatory part of the displayed integral is exactly zero for all
+sufficiently large N, by compact Fourier support. The error comes from
+the bounded lower-order envelope gradients and the Leray correction,
+not from omitted pressure or a discarded receiving mode.
+
+### Concentration fixes the sharp exponent
+
+Normalize w_N=v_N/||v_N||2. Its normalizing factor tends to a finite
+positive number. For lambda tending to infinity, let
+
+```text
+u_(lambda,N)(x)=lambda^(3/2) w_N(lambda x),
+||u_(lambda,N)||2^2=1,
+T_cross(u_(lambda,N)) >= C1 lambda^(9/2) N^2,
+D(u_(lambda,N)) <= C2 lambda^4 N^4.                         (SA7)
+```
+
+The positive constants are independent of sufficiently large N and
+lambda. Every mixed triad has L between two fixed positive multiples
+of lambda and P between lambda(N-1) and lambda(N+1). Choose
+
+```text
+max(1,1/alpha) < beta < 5/4,       N=floor(lambda^(beta-1)).  (SA8)
+```
+
+Such a beta exists exactly when alpha>4/5. Consequently every mixed
+triad eventually satisfies (SA1): L/P tends to zero and L/P^alpha tends
+to zero. Its full work is retained. Selected pure-low work is bounded
+in absolute value by C lambda^(9/2), using its fixed compact Fourier
+support and the absolute trilinear integral, irrespective of the mask.
+This is lower order than the positive mixed contribution. There are no
+pure-high contributions. Therefore
+
+```text
+T_S(u_(lambda,N))/(nu D(u_(lambda,N)))
+             >= C3 nu^(-1) lambda^(5/2-2 beta) -> infinity. (SA9)
+```
+
+Even an increasing ratio between the fine and coarse frequencies is
+insufficient by itself. Concentration increases the local strain while
+preserving the total energy. The valid smaller region (281) remains paid.
+
+### The same construction on a fixed torus
+
+Take integer lambda and the integer N in (SA8), and periodize the
+unnormalized packets:
+
+```text
+V_(lambda,N)(x)=sum_(m in Z3) lambda^(3/2)
+                         v_N(lambda(x+2pi m)).
+```
+
+The sum and all derivatives converge by the Schwartz estimates in
+(SA4). Fourier coefficients are constant multiples of
+lambda^(-3/2) v_N_hat(k/lambda); thus the low and high support conditions,
+including absence of three-high and two-low/one-high triads, hold exactly.
+The zero mode vanishes. The resulting field is a trigonometric polynomial.
+
+Here is the needed uniformity as N grows with lambda. Extract the
+carrier exp(i lambda N x2) from the high term. Integer lambda N makes
+its phase identical on all periodic images. The remaining envelope and
+all its fixed-order weighted derivatives are uniformly Schwartz in N.
+Products involving distinct images are O(lambda^(-M)) for any prescribed
+M after rescaling to the y=lambda x cell. Restoring the derivative
+factors gives errors O(lambda^(9/2-M) N^2) for the mixed work and
+O(lambda^(4-M) N^4) for diffusion. In particular, normalized torus volume
+introduces just the fixed factor (2pi)^(-3) in the leading whole-space
+integrals. The energy tends to (2pi)^(-3)(||U||2^2+||chi||2^2/2)>0.
+
+For the selected pure-low term, compact Fourier support contains O(lambda^3)
+modes with coefficients O(lambda^(-3/2)); the absolute cubic sum is
+O(lambda^(9/2)). This bound is uniform in the possibly changing sharp
+mask. Normalize V by its actual torus L2 norm. These estimates reproduce
+(SA7)--(SA9) with different fixed positive constants. No growing torus,
+periodic surrogate for a whole-space solution, or truncated evolution is used.
+
+### Exact calibration and actual unforced intervals
+
+An independent finite Fourier family makes the physical interaction
+explicit. On T3 put epsilon=1/4 and
+
+```text
+chi=1+epsilon(cos x+cos y+cos z),
+U=epsilon^2 (sin x(cos y+cos z), -cos x sin y, -cos x sin z),
+W_N=(0, epsilon N sin z sin(Ny)/(N^2+1),
+        [1+epsilon(cos x+cos y)+epsilon N^2 cos z/(N^2+1)]cos(Ny)).
+```
+
+These are exactly U=-Pi[e1 partial_1(chi^2)] and
+W_N=Pi[chi e3 cos(Ny)]. For every integer N>6, normalized torus integration
+and the complete projected nonlinearity give
+
+```text
+I=1/256,
+g(U+W_N)=N^4/[512(N^2+1)],
+||U+W_N||2^2=(141N^2+137)/[256(N^2+1)],
+D(U+W_N)=(35N^4+9N^2+3)/64,
+<U,N(U+W_N)>=-N^2/[1024(N^2+1)],
+<W_N,N(U+W_N)>=+N^2/[1024(N^2+1)].                         (SA10)
+```
+
+The parent loses exactly the energy received by the finer packet, while
+the complete stretching is positive. Symbolic angle integration proves
+(SA10): products have slow y-frequency at most six, so for N>6 their
+physical averages equal the independent averages over y and Ny. Separate
+Gaussian-rational Fourier checks at N=8,16,32,64 verify the same values,
+all generated source modes, canonical pressure, masked energy cancellation,
+and equality of selected projected work with selected vorticity stretching.
+This trigonometric calibration is not itself the concentrated family
+proving (SA2); that family is the analytic construction above.
+
+Each constructed unit-energy datum generates an actual smooth unforced
+NS solution on a positive local interval. A fixed bounded triad mask
+makes the stretching trilinear functional continuous on H^s for s>5/2:
+one derivative Fourier L1 factor and two derivative L2 factors bound it.
+D is continuous on H^2. Hence any strict initial inequality
+T_S(u0)>delta nu D(u0) persists on a sufficiently short actual interval,
+and its time integral is strictly positive there. No common lower bound
+on these intervals as lambda increases is asserted.
+
+The failed claim is the enlarged spatial absorption rule (SA1), even
+when applied along actual local solutions. It is not the signed-renewal
+budget involving g(t)-g(0), nor a claim that every such datum is reachable
+as the special remainder u-H_(nu t)u0. A finite allowance depending on
+the full original datum, or a stronger estimate using that remainder's
+actual generation history, remains possible. There is no singularity or
+indefinite renewal construction here. The next physical obligation is
+control of the unpaid interactions over their compatible histories,
+including their concentration and joint geometric alignment.
+
+Run `python3 -O labs/separated_triad_sharpness.py`. The archive contains
+four full Fourier fixtures, an exact symbolic packet family, the complete
+rank-one tensor coefficient and the separation/scaling identities. The
+Schwartz construction, uniform periodization and local-PDE interval
+arguments are analytic, not Lean-certified. No Lean declarations or
+axioms change; the arbitrary-data R3/T3 goal remains open.
