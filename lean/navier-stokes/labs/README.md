@@ -58087,3 +58087,185 @@ assignments, the complete local vorticity jets and the positive-tensor
 payment. These checks support the analytic argument; they do not by
 themselves certify compact cutoffs, PDE existence or Taylor remainders.
 No Lean declarations or axioms change.
+
+## Joint strain and rotation retain a classical pressure cancellation
+
+The pressure term in the created-strain equation (CG10) has a useful
+global cancellation when strain and rotation are kept together. The
+underlying gradient-pressure identity is classical; see Carbone and
+Wilczek, [section 5 of *Only two Betchov homogeneity constraints exist
+for isotropic turbulence*](https://doi.org/10.1017/jfm.2022.680).
+The application here keeps the non-Jacobian created tensor's inherited
+correction and gives an estimate on every available smooth prefix.
+It does not establish the open geometric budget (CG5).
+
+The derivation, spatial integration and actual-history comparisons below
+are analytic. `created_pressure_cancellation.py` checks the algebra,
+complete Fourier identities and physical source without mode truncation.
+No statistical isotropy assumption is needed for the deterministic
+spatial identities on the periodic domain or the whole space.
+The classical identity is kinematic: its sign alone does not distinguish
+an unforced evolution from a forced field with the same canonical
+velocity pressure. The full unforced history enters through (CJ1)--(CJ5).
+
+### The complete gradient and its pressure
+
+Use B_ij=partial_j u_i, q=tr(B^2), P=Hess p and A=dev P=P+qI/3.
+Pressure is canonical, so -Delta p=q. Smooth periodic integration uses
+normalized volume; whole-space integration uses Lebesgue measure and
+the smooth Sobolev fields of the existing solution class. Commuting
+derivatives and div u=0 give the column-divergence identity
+
+```text
+sum_j partial_j (B^2)_ji=(1/2)partial_i q,
+int tr(B^2 P)=-(1/2)int q^2,
+||P||2^2=||q||2^2,       ||A||2^2=(2/3)||q||2^2,
+4 int tr(B^2 A)=-||A||2^2.                          (GPC1)
+```
+
+For the second line integrate P_ij(B^2)_ji once, use the first line,
+then integrate the resulting grad p.grad q. The pressure equation fixes
+the sign. The Hessian norm identity follows by two integrations by parts
+or the Fourier multiplier; the periodic source has zero mean. Smooth
+Sobolev integrability justifies cutoff removal on R3. These are identities
+for the actual velocity gradient, not arbitrary trace-free matrices.
+
+### Transfer to the complete common history
+
+Keep the actual B=J+M, fixed original delta, and original-data M_* from
+(CJ1)--(CJ5). Define C=JM+MJ+M^2. No spatial-Jacobian property is assigned
+to J or M. The exact transfer is
+
+```text
+4 int tr(J^2 A)=-||A||2^2-4 int tr(C A).             (GPC2)
+```
+
+All terms use the same fluid pressure and common viscous history.
+For the domain Sobolev constant S used in (CJ4)--(CJ7),
+
+```text
+||C||2 <=||M||3(2||J||6+||M||6)
+       <=M_* sqrt(S)(2sqrt(D_J)+sqrt(D_M)).
+4 int tr(J^2 A)+(1/2)||A||2^2
+       <=40 S M_*^2(D_J+D_M).                       (GPC3)
+```
+
+To verify the coefficient, put z=||A||2 and
+b=M_*sqrt(S)(2sqrt(D_J)+sqrt(D_M)). Then
+4zb<=z^2/2+8b^2 and (2sqrt(D_J)+sqrt(D_M))^2<=5(D_J+D_M).
+This bounds the absolute inherited correction while preserving half the
+favorable joint pressure square. The already proved parent estimates give
+
+```text
+4 int_delta^T int tr(J^2 A)+(1/2)int_delta^T ||A||2^2
+ <=40 S M_*^2(X_J+X_M^*),
+X_M^*=5 A_E/(2nu delta), A_E=E0/(2nu),
+M_*=N sqrt(E0)/(nu delta)^(3/4).                    (GPC4)
+```
+
+Every coefficient is fixed from original data, viscosity, delta and
+domain constants, and the estimate holds on every available smooth prefix.
+There is no charge per composition seam. X_J remains the created-gradient
+cost targeted by (CJ10); (GPC4) does NOT prove its uniform finiteness.
+The coefficient 40 S M_*^2 is not asserted to fit any available viscous
+credit automatically. This is a signed pressure estimate in the stated
+balance, not a bound on absolute pressure variation or on every pressure
+receiver.
+
+### The remaining directional alignment is explicit
+
+Let Sigma=sym J, Omega=skew J, and Omega v=a cross v. Since A is symmetric
+and trace-free, the pressure contribution in (CG10) satisfies
+
+```text
+tr(J^2 A)=tr(Sigma^2 A)+a^T A a,
+P_geom=4 int tr(Sigma^2 A),
+P_geom+4 int a^T A a+(1/2)||A||2^2
+ <=40 S M_*^2(D_J+D_M).                             (GPC5)
+```
+
+Thus the created strain cannot be separated from the created rotation's
+alignment with the deviatoric pressure. The right side's inherited cost
+is explicit, but a sufficient signed estimate for the remaining alignment
+and the other terms of (CG10) is still missing. The vector a is the axial
+part of the actual history tensor J; it is not asserted to be the
+vorticity of an independently evolving velocity field.
+
+### Spatial selection retains a nonzero flux
+
+The cancellation has the exact local form
+
+```text
+4 tr(B^2 A)+|A|^2=div V,
+V=(4B^2+P-qI)grad p.
+4 int w tr(J^2 A)+int w|A|^2
+ =-4 int w tr(C A)-int grad w.V.                    (GPC6)
+```
+
+To derive it, use the first line of (GPC1) and
+div[(P+qI)grad p]=|P|^2-q^2. The formula holds at each time for smooth
+weights w with the required integrability. If w evolves, any temporal
+reserve based on it must additionally retain its time and transport
+derivatives. In particular the unweighted cancellation cannot be applied
+unchanged on an adaptively selected dangerous region.
+
+For the actual periodic datum in the table after (CJ12), the positive
+fixed selector w=1-(1/2)cos(-6x+y-3z) gives exactly
+
+```text
+int w[4tr(B^2 A)+|A|^2]=288/847,
+int grad w.V=-288/847.                              (GPC7)
+```
+
+Its values lie between 1/2 and 3/2. This checks a nonzero boundary cost
+using the full canonical pressure, rather than a freely chosen Hessian.
+
+### Actual created pressure can be positive
+
+For the same datum, the initial full-gradient pressure contribution is
+4int tr(B0^2 A0)=-21001504/800415. Let
+F0=-B0^2-P0 be its complete material gradient source. At the first actual
+window, smooth local NS evolution gives J_delta(delta)=delta F0/2+O(delta^2)
+and A(delta)=A0+O(delta). Complete Fourier products give
+
+```text
+int tr[(sym F0)^2 A0]=5378704/800415>0,
+int tr[(skew F0)^2 A0]=-91904/38115<0,
+int tr(F0^2 A0)=62704/14553>0.                       (GPC8)
+```
+
+Consequently P_geom(delta) equals delta^2 times the first coefficient
+plus O(delta^3), while 4int tr(J_delta(delta)^2 A(delta)) equals delta^2
+times the third coefficient plus O(delta^3). For every fixed nu>0 choose
+a sufficiently small original delta also satisfying (GH7). These signs
+hold on the actual history and persist on a nonzero interval after that
+first window by continuity. Both positive-viscosity source checks retain
+all pressure and transport outputs. This refutes automatic nonpositive
+created-pressure work, even after adding the rotation contribution.
+It does not refute (GPC3), which retains the inherited terms, or (CG5).
+
+### Cancelling the pressure does not by itself provide a reserve
+
+There is a specific coercivity trap. The cubic expression whose pressure
+variation is precisely the joint term in (GPC2) is
+
+```text
+-4det Sigma-4a^T Sigma a=-(4/3)tr(J^3).              (GPC9)
+```
+
+For J=B=grad u its spatial integral is identically zero by the existing
+Betchov theorem, even for nonzero fluid. Its apparent pressure dissipation
+is exactly balanced by the integrated deviatoric self-reaction:
+4int tr[B^2 dev(B^2)]=(2/3)int q^2=||A||2^2.
+For the actual created J, (GPC9) is -4 times the history correction R_Bet
+already retained in (CG1); it is not the positive creation energy Y.
+Thus the cancellation alone does not construct a nonnegative reserve
+controlling continuation. Coercivity and the complete evolving geometry
+must still be proved for any proposed use of this correction.
+
+Run `python3 -O labs/created_pressure_cancellation.py`. Checks cover
+noncommuting matrix corrections, the exact Young squares, the full
+gradient/pressure divergence and selector flux, the Betchov null integral,
+and physical first-window coefficients at nu=1 and nu=2/7. The all-prefix
+estimate and actual positive intervals remain analytic, not kernel
+certificates. No Lean declarations or axioms change.

@@ -36,6 +36,17 @@ desired global regularity conclusion.
 
 ## Boundary reduction and hidden histories
 
+The [joint created-pressure estimate](labs/README.md#joint-strain-and-rotation-retain-a-classical-pressure-cancellation)
+transfers a classical pressure homogeneity identity to the actual created
+gradient, retaining its inherited-parent correction. It bounds the joint
+strain-and-rotation pressure work by explicit gradient costs and a favorable
+pressure square. Selecting a spatial region adds an exact boundary flux.
+A complete NS example gives positive created-pressure work, so the inherited
+correction cannot be discarded. The pressure-cancelling cubic combination
+is a null integral for the full gradient and supplies no coercivity there.
+The arbitrary-history geometry bound remains open; the new application is
+analytic with exact checks, not a new Lean PDE theorem.
+
 The [matched pressure-history test](labs/README.md#identical-local-fluid-and-pressure-can-hide-different-parent-decay)
 constructs two compact unforced data with identical velocity and pressure
 throughout a core region, and identical scalar integer isotropic Sobolev

@@ -1,0 +1,43 @@
+{
+  "absorption": {
+    "OPEN": "created-rotation alignment and the complete coercive geometric history budget",
+    "integrated": "4 int_time int_space tr(J^2 A)+(1/2)int_time ||A||2^2 <=40 S Mstar^2(X_J+X_M_star)",
+    "paid_parent": "X_M_star=5 A_E/(2nu delta), Mstar=N sqrt(E0)/(nu delta)^(3/4)",
+    "pointwise_in_time": "4 int tr(J^2 A)+(1/2)||A||2^2 <=40 S Mstar^2(D_J+D_M)"
+  },
+  "algebra": {
+    "correction": "C=JM+MJ+M^2",
+    "full_gradient": "its spatial integral vanishes by Betchov when J=grad u",
+    "null_functional_warning": "-4det Sigma-4a^T Sigma a=-(4/3)tr(J^3)",
+    "strain_rotation_split": "tr(J^2 A)=tr(Sigma^2 A)+a^T A a"
+  },
+  "certification": "exact checks; integrated PDE estimates and history intervals analytic, not Lean-certified",
+  "classical_source": "Carbone and Wilczek (2022), section 5, doi:10.1017/jfm.2022.680",
+  "physical_fixture": {
+    "actual_first_window_coefficients_over_delta_squared": {
+      "created_rotation_pressure": "-91904/38115",
+      "created_strain_pressure": "5378704/800415",
+      "joint_created_pressure": "62704/14553"
+    },
+    "datum": "pressure_history_source.fixture()",
+    "deviatoric_pressure_square": "21001504/800415",
+    "full_gradient_joint_pressure": "-21001504/800415",
+    "scope": "actual initial NS source and analytic first-window interval; no autonomous pressure model",
+    "selected_flux": {
+      "boundary_flux": "-288/847",
+      "cosine_amplitude": "-1/2",
+      "positive_selected_density": "288/847",
+      "wave": [
+        -6,
+        1,
+        -3
+      ],
+      "weight_range": "[1/2,3/2]"
+    },
+    "viscosities_checked": [
+      "1",
+      "2/7"
+    ]
+  },
+  "source_sha256": "2b0937d8d3f88fd57baa83dd4b2d9b787a2e305e2ef6c99aa10167cbf801bad0"
+}
