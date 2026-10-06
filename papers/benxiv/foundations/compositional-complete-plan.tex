@@ -1,8 +1,10 @@
-\section{Current proof plan: a completed classical reconstruction}
+\section{The audited classical endpoint and its compositional presentation}
 \label{sec:complete-compositional-plan}
 
-\textbf{Status: 28 September 2026.}
-The complete assembly is kernel-checked in commit \texttt{b99eaf006}.
+\textbf{Status: 6 October 2026.}
+The original complete assembly was checked in commit \texttt{b99eaf006};
+the current endpoint consumes the later shared repair and degree-seven
+replacements described below.
 Its central theorem for graphs is
 \path{FourColor.CompositionalComplete.colorable_of_planeDrawing}:
 every finite simple graph supplied with a noncrossing path drawing in the
@@ -56,12 +58,17 @@ choice. No executable Kempe-move sequence is claimed, and no theorem requires
 every partial colouring to survive every next operation.
 
 \paragraph{What the complete proof consumes.}
-All 633 configuration certificates remain. Semantic rotation, reflection
-and paired-charge transport replace 231 independent discharging checks at
-arities nine through eleven: 11,363 become 11,132, with 218 finite input
-identities or classifications counted separately. All 32 discharging-rule
-labels remain. No configuration-family reducibility saving, smaller
-unavoidable catalogue, runtime improvement or artifact-size saving is claimed.
+All 633 coverage configurations remain. Shared diamond repair and
+boundary-split transfer replace four original certificate dependencies,
+leaving 629 and retaining a shared finite core certificate. Semantic
+rotation, reflection and paired-charge transport replace 231 independent
+discharging checks at arities nine through eleven: 11,363 become 11,132,
+with 218 finite input identities or classifications counted separately.
+The degree-seven regional replacement reduces 112 member checks to seven
+and sixteen fits to one, giving 105 further member-check replacements and
+336 in total. All 32 discharging-rule labels remain. No smaller unavoidable
+catalogue, credited whole-proof runtime saving or artifact-size saving is
+claimed.
 \path{MettapediaFourColor.CompleteAudit} follows the graph, construction and
 sweep endpoints, checks their geometric and shared-proof dependencies, and
 rejects the original unconditional theorem and 236 superseded checker
@@ -69,16 +76,17 @@ declarations. The audited axiom set is
 \(\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}\).
 
 \paragraph{Where the original programme continues.}
-The tube, facial-sweep, Kempe-recomposition and support theorems are available
-as uniform candidates for further compression. Literal zigzag tubes now have
+The tube, cap, prism, facial-sweep, Kempe-recomposition and support theorems
+are available as uniform candidates for further compression. Literal zigzag tubes have
 the sufficient support-stabilization bound \(2k(k-1)\) at circumference
 \(k\geq3\), hence 40 rings at circumference five. This does not prove that
 every target contains such a tube. The current boundary-triangle subdivision
 theorem decomposes all four-colourings into an old-colouring branch and a
-contracted-colouring branch with two fresh-colour choices. To remove a family
-of configuration checks, its catalogue realizations and the reducibility
-transport through both branches must still be proved and consumed by the
-complete assembly.
+contracted-colouring branch with two fresh-colour choices. The integrated
+diamond and split-transfer consumers retain both branches and their shared
+choices. Further replacements require their own exact catalogue
+realizations and repair transport; the split theorem alone is not universal
+reducibility.
 
 The independent corridor/finite-base proposal remains recorded in
 Section~\ref{sec:compositional-proof-spine}; proving the classical repair
@@ -86,4 +94,12 @@ does not establish its distinctive premises. The concise
 \href{fourcolor-compositional/README.md}{proof-plan guide} maps the original
 levels and playbook phases to the current Lean modules, records the reusable
 graph-representation and MeTTa results, and links the measured compression
-ledger. It is the entry point for the current development.
+ledger. The current overview in
+Sections~\ref{sec:current-overview}--\ref{sec:current-evidence} includes the
+later source repairs and distinction-interface results.
+
+\paragraph{Code provenance.}
+Emery's \href{https://github.com/corun1024/4ct/tree/3db71e0a786a1f19be04c5266fe3d06fed216885}{MIT-licensed port}
+is pinned at \path{3db71e0a786a1f19be04c5266fe3d06fed216885}.
+The distinction observer and grade definitions are reused unchanged from
+the \href{https://github.com/zariuq/MeTTapedia/tree/3b432626d1b8ca6c7f3ec8b9b69b15431023a34b/lean/mettapedia/Mettapedia/Cybernetics/DistinctionCalculus}{MIT-licensed MeTTapedia revision 3b432626d}.

@@ -40,12 +40,17 @@ proof note. The older Kauffman--$\mathrm{WC}^{*}$ development is an alternative
 source branch; progress there does not discharge a direct-Count premise.
 Neither is a missing premise of the completed classical assembly.
 
-\begin{center}
+\begingroup
 \small
-\begin{tabular}{@{}p{0.08\textwidth}p{0.45\textwidth}p{0.34\textwidth}@{}}
+\begin{longtable}{@{}p{0.08\textwidth}p{0.45\textwidth}p{0.34\textwidth}@{}}
 \toprule
 Node & Direct Count spine & Present status \\
 \midrule
+\endfirsthead
+\toprule
+Node & Direct Count spine & Present status \\
+\midrule
+\endhead
 $D_0$ & Tait reduction and least-counterexample normal form & the genuine
 spherical headline, least-counterexample selection, semantic two-sidedness,
 simple-graph backing, reverse Tait construction, cyclic five-edge-connectivity,
@@ -115,8 +120,8 @@ audit give the headline directly, without the vertex-count bound \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
 conditional Theorem~\ref{thm:direct-count-reductive-assembly} \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}
+\endgroup
 
 \paragraph{One-sided colour support in physical descent.}
 Write $S_{\rm old}$ and $S_{\rm new}$ for the sets of boundary words realized
@@ -1261,7 +1266,10 @@ fixed, it proves
  |F(M)|\le
  (W+7)^{(((12+2W)(W+7)+1)L)-1}
  \quad\text{or}\quad
- M\text{ contains a radius-one clean hexagonal geodesic block of length }L.
+ \begin{gathered}
+ M\text{ contains a radius-one clean hexagonal}\\
+ \text{geodesic block of length }L.
+ \end{gathered}
 \]
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24WeightedOrbitFaceCorridor.orbitFace_card_le_weightedThreshold_or_exists_cleanHexCorridor}
 The first alternative is not a finite base: its right-hand side contains the

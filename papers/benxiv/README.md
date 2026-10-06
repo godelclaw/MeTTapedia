@@ -1,32 +1,32 @@
 # Ben Goertzel proof-attempt formalization index
 
-Four Colour entry updated: 2026-09-28. Navier–Stokes entry updated: 2026-10-05.
+Four Colour entry updated: 2026-10-06. Navier–Stokes entry updated: 2026-10-05.
 Other entries retain their own earlier status and are not reassessed by these
 updates.
 
-For the current Four Colour work, start with the
-[compositional proof-plan guide](fourcolor-compositional/README.md).
-It maps Goertzel and Fable's three-level plan to the completed classical
-reconstruction, reusable GSLT results and remaining compression questions.
-The [companion source](goertzel_4cp.tex) opens with the same repaired plan;
-its existing PDF is an earlier historical snapshot.
+The [Four Colour overview](goertzel_4cp.pdf) opens with the compositional
+mechanism, checked family reductions, the open geometric coverage theorem
+and the latest distinction-interface results. Earlier derivations and
+dated route audits remain in appendices. The [source](goertzel_4cp.tex) and
+[proof-plan guide](fourcolor-compositional/README.md) link this account to
+the exact formal statements and compression ledger.
 
 This is the living index for MeTTapedia's formal review of Ben Goertzel's proof
 attempts concerning the Four-Color Theorem, P versus NP, three-dimensional
 Navier–Stokes global regularity, and the four-dimensional Yang–Mills mass gap.
 It records both the ideas in Ben's manuscripts and the current formal verdict.
 
-None of the four companion documents is a primary mathematical source. Ben's
-original manuscripts define the proposed routes; the companions record what
-the formalization has verified, refuted, reduced, or left open. A clean Lean
-axiom audit certifies a theorem's implication, not the truth of hypotheses
-stored in structure fields or passed as named premises.
+The original manuscripts define the proposed routes. The companions record
+their derivations and the current formal results; the exact source statements
+and declared hypotheses govern every checked claim. A clean Lean axiom audit
+certifies a theorem's implication, not the truth of hypotheses stored in
+structure fields or passed as named premises.
 
 ## At a glance
 
 | Route | Original proof idea | Current formal verdict | Companion |
 |---|---|---|---|
-| Four Colour, compositional programme | Open pieces, compatible colouring histories, boundary counting and strict reconstruction; originally a corridor/finite-base proposal | Complete classical reconstruction checked for finite noncrossing plane drawings and exact source GSLT constructions. All 633 configurations remain; 231 independent discharging checks are replaced. The original uniform corridor supply and first configuration-family compression remain separate research questions. | [current proof plan](fourcolor-compositional/README.md), [companion source](goertzel_4cp.tex), [historical PDF](goertzel_4cp.pdf) |
+| Four Colour, compositional programme | Open pieces, shared colouring witnesses, uniform reductions and geometric recognition | Complete classical reconstruction checked for finite noncrossing plane drawings and exact source GSLT constructions. Coverage retains 633 configurations and 629 original certificate dependencies; shared arguments replace four certificates and 336 discharging computations. Exact distinction transport supports two source repairs, while its measured information cost warns against assuming a compact interface. Universal family supply and termination remain open. | [current overview](goertzel_4cp.pdf), [source](goertzel_4cp.tex), [proof plan](fourcolor-compositional/README.md) |
 | P versus NP, v13 | An upper–lower clash in polytime-capped conditional description length on a gauge-buffered locked SAT ensemble; CD evidence normalization, an Atomic Evidence Budget, boundary mixing, and fixed-clock incompressibility oppose the self-reduction upper bound under `P = NP` | The adaptive gauge-product law and substantial mechanical scaffolding are checked. The exact faithful M4 target is nevertheless machine-checked uninhabited: D.8 message rigidity, D.31 public-syntax neutrality, D.48 opposite-phase coupling, Definition 7.4 support-wide pair neutrality, and full public observability are jointly inconsistent on a nonempty target. The route requires revision; no separation is proved. | [source](goertzel_pnp.tex), [PDF](goertzel_pnp.pdf) |
 | Navier–Stokes, SG–Cole–Hopf and stochastic-geometric repair | Stochastic viscosity, geometric depletion and control of complete histories; originally a heat lift to `SDiff(T³)` with an identity-energy bound | The H1 adjoint bound fails in the audited shear model. Actual local evolution and conditional continuation are checked on both domains. Compatible whole-space histories and distinction observers are Lean-certified. Analytic coupled-parent calculations pay the leading return and show a depleting next correction; the full arbitrary-data history payment remains open. | [current overview](goertzel_ns.pdf), [source](goertzel_ns.tex) |
 | Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | The natural finite Wilson-polynomial extraction has norm one, but v14's range-only `P_ext` data cannot transfer that bound. The advertised recursion constant is not derived; its two ledgers disagree and several factor inferences fail as written. OUR hypercubic boundary-cochain repair continues the same Wilson/RG/KP/OS proof programme and defines the coordinate-free joint invariant relation space. Its covariant-commutator rows needed the Leibniz rule: the earlier joint space contains a vector with nonzero background value, while every corrected relation vanishes on every gauge background and the corrected space has certified rank at least `11558`. It is not yet a complete census, conditioning certificate, RG bound, or continuum construction. Numerical evidence indicates that the stopping-scale step cannot be instantiated in the weak-coupling regime the bootstrap provides; on the hierarchical lattice, where the flow is exact, four-dimensional U(1) confines as well, so that lattice cannot model the missing crossing. The missing crossing input is stated in Lean, proved sufficient for exponential clustering uniformly in the volume, and shown to fail at β = ∞ for four-dimensional U(1) and five-dimensional gauge fields; proving it for four-dimensional SU(2) is open; at strong coupling it is proved for Wilson-type measures uniformly in the volume. A necessary condition testable at finite coupling is proved: a twist-compatible crossing family has vanishing twist free energy on large tori. Monte Carlo finds it vanishing for four-dimensional SU(2) and not for four-dimensional U(1) or five-dimensional SU(2), where the centre twist is classically costly (U(1)) or weak coupling persists (SU(2), whose twist eaters make it classically free). | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
@@ -39,6 +39,15 @@ classical coverage argument reuses Robertson–Sanders–Seymour–Thomas throug
 Gonthier–Werner and Emery. The complete theorem consumes actual colouring
 reconstruction and the shared discharging proofs; it does not prove the
 manuscript's distinct bounded-width or generating-base assertions.
+
+The latest source application proves that equal evaluated relation snapshots
+can have different extension answers after the same update. Its common
+region-labelled interface transports both admitted repairs and every finite
+composition exactly, retaining one shared interior colouring for full-source
+reconstruction. The independent census finds 44,040 such reports among 44,286
+labelled proper boundaries, so this interface is not credited as compression.
+The next repair obligation is component routing with its hidden update choices
+retained. These local results remove no further coverage entry.
 
 The earlier v23 stage remains useful background:
 

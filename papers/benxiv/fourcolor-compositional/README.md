@@ -1,6 +1,40 @@
 # Compositional Four Colour: proof plan and current results
 
-Updated 3 October 2026. Original complete assembly: `b99eaf006`.
+Updated 6 October 2026. Original complete assembly: `b99eaf006`.
+The [living PDF](../goertzel_4cp.pdf) and [source](../goertzel_4cp.tex)
+now give the current overview before the retained technical appendices.
+The latest checked mathematical milestone is `9e84df4c8`.
+
+## Current account
+
+- The audited classical endpoint retains 633 coverage configurations and 629
+  original certificate dependencies. Four dependencies and 336 independent
+  discharging computations have shared replacements; no coverage entry has
+  been removed.
+- Actual colouring witnesses compose on a common seam. Uniform tube, cap,
+  prism and diamond laws have literal reconstruction consumers under their
+  stated hypotheses. Some retain finite repair certificates; these costs are
+  distinct from structural compression.
+- The new [general distinction law](../../../lean/mettapedia/Mettapedia/Cybernetics/DistinctionCalculus/PartitionedBoundary.lean)
+  supports exact region-labelled updates, coarsening and common refinement.
+  Its [D0099 consumer](../../../lean/fourcolor-classical/MettapediaFourColor/BoundaryDistinction.lean)
+  reconstructs the full source through every admitted finite history.
+  One shared interior witness and proper final boundary remain explicit.
+- The [independent report census](../../../tools/fourcolor/near-linear/boundary-distinction-measurements.json)
+  has 44,040 common-refinement profiles among 44,286 labelled proper
+  boundaries. It is evidence of information growth, not a minimum-interface
+  lower bound or a compression saving.
+- Geometric supply, a progress-making compatible component selector and
+  termination for the complete intended class remain open. The next local
+  routing law must retain the correlation between a component's residual
+  exit and its hidden boundary updates.
+
+## Detailed development
+
+The records below retain their specific theorem scopes and historical
+milestones. The current overview above separates the integrated endpoint,
+local family results, conditional coverage and finite experiments.
+
 The current assembly additionally consumes a shared joint-profile certificate
 for the diamond cores and a general boundary-split law transferring repair from
 configuration 2 to configuration 1, and configuration 6 to configuration 3.

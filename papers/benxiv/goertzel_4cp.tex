@@ -8,9 +8,22 @@
 \usepackage{amsthm}
 \usepackage{booktabs}
 \usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{xurl}
+\usepackage{longtable}
+\usepackage{newunicodechar}
 \usepackage{listings}
 \usepackage{statusledger}
 \geometry{margin=1in}
+\bookmarksetup{depth=1}
+\hypersetup{
+  pdftitle={Compositional Colouring and the Four Colour Theorem},
+  pdfauthor={The MeTTapedia formalization effort},
+  pdfsubject={Verified reconstructions, interface limits and geometric coverage}
+}
+\newunicodechar{—}{---}
+\newunicodechar{“}{\textquotedblleft}
+\newunicodechar{”}{\textquotedblright}
 
 \lstdefinestyle{lean}{
   basicstyle=\ttfamily\small,
@@ -64,7 +77,10 @@
     {₂}{{$_2$}}1
     {₃}{{$_3$}}1
     {₄}{{$_4$}}1
-    {₅}{{$_5$}}1,
+    {₅}{{$_5$}}1
+    {—}{{---}}3
+    {“}{{\textquotedblleft}}1
+    {”}{{\textquotedblright}}1,
 }
 \lstset{style=lean}
 
@@ -86,50 +102,62 @@
 \newcommand{\colorset}{\{r,b,p\}}
 \newcommand{\Sym}{\operatorname{Sym}}
 
-\title{A Living Machine-Checked Companion to Goertzel and Fable's\\
-Reductive--Compositional Route to the Four-Color Theorem:\\
-\large Proven Structure, Refuted Shortcuts, and the Closure Frontier}
+\title{Compositional Colouring and the Four Colour Theorem:\\
+\large Verified Reconstructions, Interface Limits and Geometric Coverage}
 \author{The MeTTapedia formalization effort}
-\date{Living revision: 28 September 2026}
+\date{6 October 2026}
 
 \begin{document}
 \maketitle
 \sloppy
 
 \begin{abstract}
-The compositional programme now has a complete classical reconstruction in
-Lean. Open graph pieces carry actual colouring witnesses; serial gluing
-composes those witnesses and their finite counts. The completed assembly
-proves four-colourability for finite simple graphs with noncrossing drawings
-in the plane, including empty and disconnected graphs, and supplies
-compatible GSLT colouring histories for exact constructions of every
-bridgeless spherical cubic source map.
+Goertzel and Fable's programme seeks a compact Four Colour proof from
+uniform graph constructions, reductions and compatible colouring
+witnesses. This document separates its checked local mechanisms from the
+open geometric coverage theorem. Actual witnesses compose through ordered
+interfaces; uniform tube, cap, prism and diamond laws reconstruct genuine
+colourings under their proved hypotheses.
 
-The global coverage argument reuses the classical unavoidable configurations
-and discharging proof of Robertson, Sanders, Seymour and Thomas through the
-Gonthier--Werner formalization and Chris Emery's Lean port. All 633
-configuration certificates remain. Uniform charge-transport lemmas replace
-231 independent discharging computations in the complete proof, with 218
-finite input identities counted separately. The final axiom and dependency
-audits pass; no configuration-family removal or runtime saving is claimed.
+An audited complete classical Lean assembly reuses Robertson--Sanders--
+Seymour--Thomas, Gonthier--Werner and Chris Emery's port. It retains 633
+coverage configurations and 629 original certificate dependencies.
+Shared arguments replace four certificate dependencies and 336 independent
+discharging computations. These are proof-dependency replacements, not a
+smaller unavoidable catalogue.
 
-This is a repair of the programme, not a verification of its original
-uniform-corridor and finite-generating-base assertions. Those assertions
-remain separate research targets. Section~\ref{sec:complete-compositional-plan}
-gives the current proof plan and its relation to the compositional note's
-three levels. The rest of the document preserves the detailed v23 and
-Goertzel/Fable development: positive results, refuted shortcuts, conditional
-bridges and later repairs. Dates and open-status statements in those older
-sections describe their particular routes. The reusable witness semantics,
-graph-representation transports, physical tube reductions, facial geometry
-and Kempe theory continue to support both compression and applications
-outside Four Colour.
+The latest distinction-calculus application proves exact boundary
+observation and reconstruction through finite histories of admitted
+updates. Two source counterexamples show why static seam information can
+fail. A common interface supports both repairs, but an independent census
+shows that it retains almost all tested boundary distinctions. Compact
+interfaces, progress-making repair choices, geometric supply and
+termination remain the decisive research obligations. The overview gives
+the current evidence and its limits; earlier derivations and dated route
+audits are retained in the technical appendices.
 \end{abstract}
 
-\input{foundations/compositional-complete-plan}
-
+\setcounter{tocdepth}{1}
+\clearpage
 \tableofcontents
+\clearpage
 
+\input{foundations/compositional-current-overview}
+
+\clearpage
+\section*{Technical appendices}
+\addcontentsline{toc}{section}{Technical appendices}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{-1}}
+These appendices retain the earlier foundations, detailed constructions and
+dated audits. Their internal status statements concern the specified
+routes and hypotheses. The present programme-wide account is in
+Sections~\ref{sec:current-overview}--\ref{sec:current-evidence};
+the classical endpoint appendix below has also been updated. Retaining a
+historical failed step does not reinstate it as a current proof premise.
+
+\appendix
+
+\input{foundations/compositional-complete-plan}
 \input{foundations/compositional-proof-spine}
 \input{foundations/map-euler-foundations}
 \input{foundations/graph-backed-presentation}
@@ -202,11 +230,17 @@ then identify its annular embedding with the five ordered cap stubs.
 The following items are green Lean developments.  Their scope matters: several
 are consumers of a crosscut pair rather than constructors of one.
 
-\begin{center}\small
-\begin{tabular}{@{}p{0.34\linewidth}p{0.57\linewidth}@{}}
+\begingroup
+\small
+\begin{longtable}{@{}p{0.34\linewidth}p{0.57\linewidth}@{}}
 \toprule
 Layer & Kernel-checked content and boundary \\
 \midrule
+\endfirsthead
+\toprule
+Layer & Kernel-checked content and boundary \\
+\midrule
+\endhead
 Finite profiles and L7 & A generic finite carrier, decidable equality, exact
 cardinality formulae, and finite-profile pigeonhole machinery. \\
 Relational transfer & Open-tangle relations, heterogeneous transfer words,
@@ -264,8 +298,8 @@ verified checker at interface bounds $2$ and $3$ and program-checked at $4$; it
 is useful only at a width that $D_1$ supplies
 (Section~\ref{sec:finite-fork-code}). \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}
+\endgroup
 
 The local/global distinction is now also explicit in the kernel.  The four
 theorems \texttt{firstFace\_ne\_innerHole},
@@ -1629,7 +1663,7 @@ reported closed.
 
 The complete adjacent-append alternative is now packaged at exactly this
 strength in
-\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendCyclicObstruction}.
+\path{GoertzelV24ClosedWebSelectedLocalRailAppendCyclicObstruction}.
 After loop erasure, either both selected rails extend, or an actual
 cross-track collision returns its facial-dual triangle together with a
 deletion component away from the outer root which contains a primal cycle.
@@ -1653,7 +1687,7 @@ separated pair: simultaneous uncrossing, the endpoint permutation, mutual
 separation, and the two literal end caps remain open.
 
 The repaired path also reaches the source-facing crossing representation.
-\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendRerouteTransversal}
+\path{GoertzelV24ClosedWebSelectedLocalRailAppendRerouteTransversal}
 chooses an actual shared primal edge at every dual step from the step's local
 adjacency witness, without restoring global shared-edge uniqueness.  Its
 endpoints are still corridor side faces rather than the two hole faces, so it
@@ -1737,7 +1771,7 @@ is that a length-two walk has only one interior support position: two
 distinct support faces which both avoid its finish must include its start,
 and dually two distinct faces in its support tail must include its finish.
 
-\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendResidueCoordinates}
+\path{GoertzelV24ClosedWebSelectedLocalRailAppendResidueCoordinates}
 applies this fact to all six oriented residues.  In each same-track case,
 either the original cross-collision face or the same-track collision face is
 the forced start or finish of the length-two rail.  In each centre case,
@@ -1769,7 +1803,7 @@ discharged without a cyclic-cut or embedding premise; only the two cases in
 which a successor continuation revisits the previous centre remain open.
 
 Those last two centre-revisit cases are now constructive as well, in
-\texttt{GoertzelV24ClosedWebSelectedLocalRailAppendResidueCenterReroute}.
+\path{GoertzelV24ClosedWebSelectedLocalRailAppendResidueCenterReroute}.
 For a length-two successor rail, the cross face and the previous centre are
 the two tail positions.  If the cross face is the outgoing endpoint, Lean
 truncates the old crossed rail at that face and sends the other rail through
@@ -2189,7 +2223,7 @@ crosscut pair, or close L1.
 
 The parity-matched half of that finite repair table is now deterministic.
 In
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleCollisionClearance},
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleCollisionClearance},
 a straight repair of a first/first or second/second collision forces the
 opposite repaired rail to avoid the collision face; after an endpoint
 exchange, the analogous statement holds for first/second and second/first
@@ -2256,14 +2290,14 @@ or third centre, a dual triangle on the first/second or third/fourth centre
 pair, or a dual square spanning the first/third or second/fourth centre pair.
 This is the exact rotor/centre/square input interface; no reduction or reroute
 is claimed at this point.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementCycles} turns
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementCycles} turns
 each of the four non-centre shapes into a literal simple closed facial-dual
 walk of length three or four.  The walk contains the collision face, and Lean
 proves that its complete support stays in the annular interior.  Thus the bad
 branch now returns either one of two named centres or a proof-relevant short
 interior dual cycle; applying the rotor or square reduction remains the next
 step.  The companion module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSeparator}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSeparator}
 turns each such short dual cycle into literal primal separator data.  One
 actual shared primal edge is selected at every dual step; the selected set has
 cardinality exactly three or four, is disjoint from both named hole
@@ -2518,7 +2552,7 @@ one more successor cell, making the collision internal, or a separately proved
 far-end exclusion; it is not obtained by renaming the first--third theorem.
 
 The first adjacent band is now consumed exhaustively in
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementFirstBandResolution}.
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementFirstBandResolution}.
 The theorem reopens the exact source-piece provenance instead of classifying
 only by an abstract common-neighbour relation.  Its seven middle atoms yield
 exactly three outcomes: the displayed second-cell centre, a literal
@@ -2685,7 +2719,7 @@ advancing a repaired bounded window.
 
 The repaired window can now be attached to an older frozen prefix as well.
 The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementFrozenPrepend}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementFrozenPrepend}
 uses the prefix's interior-only certificate and the repair's three source
 packets to prove all four old/new support separations.  It then appends both
 simple rails, allowing precisely their two common splice endpoints, and moves
@@ -2745,7 +2779,7 @@ length iteration, both annular end caps, the separated crosscut pair, and L1
 remain open.
 
 That span reconciliation is now machine-shaped as well.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixCommonSpan}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixCommonSpan}
 constructs the support-certified canonical four-cell transition on the shifted
 cells $2$--$5$ beside the raw seam classification.  Two equality receipts
 prove that the future transition's first trace is the stored suffix's later
@@ -2759,7 +2793,7 @@ complete selected rail piece, not only at a terminal face.  Appending both
 wholesale would therefore double-count literal source geometry.
 
 The rolling cut is now constructed on the correct side of that overlap.
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedPrefix}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedPrefix}
 extends the genuinely frozen old prefix through only the first live local
 pair, derives all four old/new support separations from the stored source gap,
 and transports its terminal faces across the proved successor-frame
@@ -2772,7 +2806,7 @@ frozen rail or from the literal first live pair.  This receipt is essential
 for localizing any collision found by the following append; merely choosing
 an inhabitant of the weaker prefix type would not preserve that information.
 The matching bounded append is now fail-closed as well.
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedAppend}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedAppend}
 runs the retained-support classifier between the constructed shared-cut prefix
 and the constructed cells~$2$--$5$ future.  A successful future yields a
 simple two-rail assembly in its literal ordered or exchanged far-end order.
@@ -2794,7 +2828,7 @@ while the stronger shared-prefix field retains the source-support provenance
 needed by its collision consumer.
 
 That consumer now localizes every newly retained prefix/future collision.
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollision}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollision}
 uses the future packet's exact terminal-window provenance on the singleton
 support containing the collision face.  The old state's frozen
 \texttt{dropLast} invariant excludes that face from either arbitrarily long
@@ -2807,7 +2841,7 @@ already internal to the four-cell future remain a separate exact branch.
 
 The two bounded residues are now returned through one interface rather than
 left in parallel prose.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionBands}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionBands}
 proves that every constructed shared-prefix transition either succeeds or
 retains one of two proof-relevant finite packets.  An internal future
 collision is promoted to the existing exact four-cell collision band,
@@ -2828,7 +2862,7 @@ iteration, an end cap, a crosscut constructor, or closure of L1.
 
 The surviving three-cell residue is now normalized in the source ladder's
 own geometric vocabulary.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowGeometry}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowGeometry}
 keeps the exact first-live and terminal-window support receipt and proves that
 its shared face is exactly one of three kinds: the displayed second centre, a
 first--second adjacent dual triangle, or a first--third distance-two square.
@@ -2842,7 +2876,7 @@ crosscuts, and L1 closure remain open.
 
 The non-centre alternative is now physical rather than merely facial-dual.
 The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowSeparator}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowSeparator}
 selects one primal crossing at every step of the short cycle.  The resulting
 cut has cardinality three or four, is disjoint from both named hole
 boundaries, and its deletion disconnects the annular carrier.  A genuine
@@ -2856,7 +2890,7 @@ case is not eliminated here, and neither the star nor bond witness has yet
 been converted into a mutually separated two-rail repair.
 
 The acyclic component alternatives are now constructive as well.
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowComponent}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowComponent}
 replaces the singleton count by an actual primal vertex lying in the chosen
 component and incident to every selected crossing, and replaces the
 two-vertex count by an actual \texttt{SquareBondRealization}: two distinct
@@ -2873,7 +2907,7 @@ repair.
 
 The corresponding track provenance is now retained rather than reconstructed
 after localization.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowTrackOrigin}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowTrackOrigin}
 proves that each newly retained collision has one of exactly two literal
 origins: old first rail versus future second rail, or old second rail versus
 future first rail.  In both cases the future occurrence remains in the tail of
@@ -2897,7 +2931,7 @@ valid two-rail assembly.  The terminal-window specialization and its use in
 the endpoint-matching argument were the next open steps.
 
 That specialization is now machine-checked in
-\texttt{GoertzelV24ClosedWebSelectedLocalRailTracedFourCellTrackSupport}.
+\path{GoertzelV24ClosedWebSelectedLocalRailTracedFourCellTrackSupport}.
 Every successful canonical four-cell transition retains either the ordered
 terminal-track pairing or the crossed pairing, and the classifier-built
 transition is packaged with this certificate.  Thus the future rail named by
@@ -2910,7 +2944,7 @@ has yet been repaired, and neither companion separation nor C--5/L1 closure is
 claimed.
 
 That remote-continuation elimination is now complete in
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowExactTrackOrigin}.
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowExactTrackOrigin}.
 For every newly retained collision, the exact alternatives are now old-first
 against the shifted future's literal first-window second track, or old-second
 against its literal first-window first track.  The future membership remains
@@ -2927,7 +2961,7 @@ of a simple path is either the terminal endpoint or has a strict internal
 index with literal predecessor and successor vertices; their two incident
 adjacencies and pairwise distinctions follow from the path invariant.  The
 source-local specialization
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowPointedOrigin}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowPointedOrigin}
 attaches exactly this dichotomy to the future occurrence in the retained
 collision packet.  The terminal case is deliberately not discarded.  This
 turns anonymous support membership into the proof-relevant coordinate needed
@@ -2949,7 +2983,7 @@ open.
 
 The edge receipt has now been lifted through the actual canonical four-cell
 classifier as well.  The extension of
-\texttt{GoertzelV24ClosedWebSelectedLocalRailTracedFourCellTrackSupport}
+\path{GoertzelV24ClosedWebSelectedLocalRailTracedFourCellTrackSupport}
 proves, in each of its four straight/swapped input cases, that every successful
 output edge retains the corresponding ordered or crossed terminal-track
 origin.  A generic rebase lemma records that changing only a walk's typed
@@ -2959,7 +2993,7 @@ edges at the pointed collision, and only then compare them with the
 square-bond endpoint triangle.
 
 That remote edge alternative is now excluded in
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowPointedEdgeOrigin}.
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementBoundedSuffixSharedCollisionFirstWindowPointedEdgeOrigin}.
 For either retained cross-track collision, source separation forces both the
 incoming and outgoing edge of every strict internal occurrence into the
 corresponding literal first terminal-window track.  The terminal endpoint is
@@ -3050,7 +3084,7 @@ endpoint triangle; this does not yet construct the arbitrary-length crosscuts
 required by the splice.
 
 The first branch-independent propagation layer is now kernel-checked in
-\texttt{GoertzelV24ClosedWebSelectedLocalRailConstructionTraceEdgeReceipt}.
+\path{GoertzelV24ClosedWebSelectedLocalRailConstructionTraceEdgeReceipt}.
 It packages the exact terminal-edge alternatives---an old selected forward
 step, a successor selected forward step, or a named old-centre connector---as
 a walk invariant and proves that copying, append, prefix/suffix truncation,
@@ -4088,7 +4122,7 @@ the false stronger claim that either pointed rail edge is itself one of the
 two collision-adjacent square sides.
 
 The acyclic square residue now consumes both of those anchors.  In
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareSourceRungIncidence},
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareSourceRungIncidence},
 the realized two-vertex bond is proved to meet the second literal
 centre-to-centre rung, while the earlier anchor theorem supplies the first.
 This is an unconditional graph-level incidence fact obtained from the exact
@@ -4098,7 +4132,7 @@ bypass; that finite source-coordinate comparison remains the live L1 atom.
 
 The two independent rung incidences are now retained as one finite source
 packet.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareSourceRungAllocation}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareSourceRungAllocation}
 classifies the literal first and second rungs into exactly four cases: both
 meet the first bond endpoint, both meet the second, or they split in either
 orientation.  It then constructs the two exact endpoint triangles, preserves
@@ -4110,7 +4144,7 @@ meets the bond, so no bypass, rolling iteration, end cap, or L1 closure is
 claimed.
 
 The complementary square-boundary packet is now equally explicit.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareSourceRungRemainder}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareSourceRungRemainder}
 proves that the two literal consecutive source rungs occupy distinct steps of
 the selected simple dual four-cycle and that deleting them leaves exactly two
 selected primal crossings.  This is a cardinality and provenance theorem, not
@@ -4120,7 +4154,7 @@ identification, companion separation, rolling iteration, both end caps, the
 separated-crosscut constructor, and L1 remain open.
 
 Those two remaining edges now have exact square coordinates.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareCollisionSideCrossings}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareCollisionSideCrossings}
 proves that the remainder is precisely the selected crossing pair at square
 steps two and three---the third-centre--collision side and the
 collision--first-centre side.  Thus no anonymous two-edge set remains in the
@@ -4131,7 +4165,7 @@ iteration, end cap, separated-crosscut constructor, or L1 closure follows
 from the coordinate theorem alone.
 
 The four-edge boundary now also has a single exact normal form.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareCrossingPacket}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareCrossingPacket}
 proves that the selected crossing set is precisely the first source rung, the
 second source rung, and the two collision-adjacent crossings above.  This
 eliminates an implicit set-reconstruction step from every later consumer.  It
@@ -4140,7 +4174,7 @@ endpoint triangles' additional internal bond, so the local source comparison
 and all subsequent rail-repair obligations remain open.
 
 The endpoint table for that normal form is now finite and exact.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareEndpointAllocation}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareEndpointAllocation}
 first classifies the two collision-side crossings by which endpoint of the
 realized bond they meet.  Combining that four-way allocation with the earlier
 four-way source-rung allocation appears to create sixteen cases.  Local
@@ -4154,7 +4188,7 @@ separated-crosscut constructor, and L1 therefore remain open.
 
 The six cases now have an exact geometric consequence rather than a diagrammatic
 one.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareCornerResolution}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareCornerResolution}
 proves that two distinct packet edges sharing a source corner force precisely
 one of three alternatives: the corner is the first bond endpoint, it is the
 second bond endpoint, or it is exterior and the two edges are exactly the two
@@ -4168,7 +4202,7 @@ exterior fan as an explicit obstruction.  No companion separation, iteration,
 end cap, separated-crosscut constructor, or L1 closure is claimed here.
 
 The third arm at such a corner is now classified as well.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareThirdEdgeResolution}
+\path{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareThirdEdgeResolution}
 proves that a third distinct incident edge either meets the selected
 two-vertex residue at the identified endpoint, or, in either exterior-fan
 orientation, avoids both endpoints.  The latter conclusion is forced by
@@ -4186,7 +4220,7 @@ unordered orientation is forced: on entry the predecessor is the centre, and
 on exit the successor is the centre.  A simple rail therefore cannot carry
 old-centre receipts on both sides of the collision, since its predecessor and
 successor would coincide
-(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeCenterCoordinate}).
+(\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeCenterCoordinate}).
 The public statement excludes even the simultaneous existence of both
 old-centre receipts, rather than depending on a particular stored origin tag.
 The remaining finite comparison concerns the old- and successor-forward
@@ -4196,7 +4230,7 @@ still open.
 Each surviving forward receipt now exposes the complete primal star at its
 source corner.  The two consecutive displayed Cell--3 boundary arms and the
 crossed third edge are pairwise distinct, and all three meet that corner
-(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeForwardCornerCoordinate}).
+(\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeForwardCornerCoordinate}).
 This uses the receipt's local three-dart fibre rather than global cubicity of
 the opened carrier.  Thus the remaining coordinate comparison has been
 narrowed again: it must identify the appropriate two boundary arms with the
@@ -4209,7 +4243,7 @@ assuming it.  The two displayed arms of a forward receipt are exactly the
 face-cycle edges at its two non-rung side slots.  Boundary simplicity of the
 certified interior hexagon therefore makes each arm different from both the
 incoming and outgoing selected rungs of that placement
-(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeForwardArmRungExclusion}).
+(\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeForwardArmRungExclusion}).
 Thus the next comparison cannot simply rename the two arms as the two source
 rungs.  It must use the actual mixed/collision-side square coordinates, or
 prove component-boundary incidence directly.  This is a checked exclusion,
@@ -4219,7 +4253,7 @@ The complete square packet rules out the stronger arm attachment as well.
 For an old-forward receipt based at the second Cell--3 placement, neither
 boundary arm is any of the canonical first--third square's four selected
 crossings
-(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquarePacketExclusion}).
+(\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquarePacketExclusion}).
 The two rung alternatives are the non-rung exclusions above.  Each of the two
 remaining collision-side crossings already belongs to the two consecutive
 faces of the square; since a primal edge is incident with at most two facial
@@ -4237,7 +4271,7 @@ packet would then force both arms, already excluded from the four-edge
 boundary, to equal the single internal bond---a contradiction.  Hence the
 corner lies outside the component, and the crossed third edge cannot be the
 internal bond
-(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquareComponentExclusion}).
+(\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquareComponentExclusion}).
 For this origin, membership of the third edge in the endpoint-triangle packet
 is therefore exactly membership in the source-square boundary, equivalently
 the intrinsic condition that its other endpoint meets the selected two-vertex
@@ -4247,7 +4281,7 @@ third edge.  It does not yet prove that incidence or construct the bypass,
 rolling repair, end caps, separated crosscuts, or L1.
 
 That remaining endpoint is now literal rather than existential.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquareFarEndpoint}
+\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquareFarEndpoint}
 names the endpoint of the crossed third edge opposite the source corner and
 proves the exact unordered endpoint equation.  Since the source corner is
 outside the selected component, membership of the third edge in the
@@ -4263,7 +4297,7 @@ square, an old-forward origin based at the second Cell--3 placement makes the
 collision face one of that placement's side faces.  It is therefore adjacent
 to the second corridor centre, the opposite vertex of the four-cycle.  Lean
 now proves that this is the literal missing diagonal of the source square
-(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquareChord}).
+(\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquareChord}).
 For each of the incoming and outgoing pointed edges, and jointly for the pair,
 the result is fail-closed: either this chord is exhibited or the corresponding
 proof-relevant origin is not old-forward.  Thus the actual old-forward branch
@@ -4279,7 +4313,7 @@ forbids old-centre origins on both sides of the same non-centre collision.
 Consequently Lean reduces the table to precisely three rows:
 successor/successor, successor/old-centre, and
 old-centre/successor
-(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareOriginReduction}).
+(\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareOriginReduction}).
 This is an exhaustive local classification, not yet a consumption of the
 chord or a construction of the rolling repair, end caps, separated
 crosscuts, or L1.
@@ -4288,14 +4322,14 @@ The primal crossing of that diagonal is now retained without conflating two
 different displayed edges.  The old-forward third edge locates the collision
 side face; the edge that actually crosses the second-centre--collision
 diagonal is the centre-to-side edge at that slot.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareChordCrossing}
+\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareChordCrossing}
 returns the exact slot, face equality, shared-interior-edge witness, and chord
 proof together.  Constructing the selected chord triangles and consuming the
 source reduction remain open.
 
 The chord branch has now been turned into selected separator geometry.
 Using the generic four-cycle chord theorem,
-\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareChordTriangles}
+\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareChordTriangles}
 constructs two simple length-three facial-dual cycles.  On each cycle the new
 chord step crosses the exact centre-to-side primal edge, while every old step
 inherits the corresponding selected crossing of the canonical source square.
@@ -4334,7 +4368,7 @@ rolling iteration, end caps, separated crosscuts, and L1 remain open.
 
 The bypass alternative now reaches the whole selected rail rather than ending
 as a local walk.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareBypassSplice}
+\path{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareBypassSplice}
 feeds each of the three constructed two-hop bypasses to the generic interior
 cross-splice.  Its output is a simple rail with the original endpoints, with
 the collision face removed from its support, and with every new support face
@@ -4358,7 +4392,7 @@ geometric obligation before this repair can enter the rolling pair assembly.
 
 The centre-avoidance premise now has an exact source-local discharge on the
 non-collision branch.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailTerminalRightCenterAvoidance}
+\path{GoertzelV24ClosedWebSelectedLocalRailTerminalRightCenterAvoidance}
 traces every old terminal-track support face back to a selected side slot and
 proves that either exact terminal track avoids the successor Cell--3 centre
 whenever the two displayed consecutive centres share at most one interior
@@ -4370,10 +4404,10 @@ collision to reduce or bypass before the whole rolling pair is constructed.
 
 The mirror terminal calculation and the four-cell provenance layer now carry
 that local exclusion to the actual companion candidates.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailTerminalPreviousCenterAvoidance}
+\path{GoertzelV24ClosedWebSelectedLocalRailTerminalPreviousCenterAvoidance}
 proves that either exact terminal track also avoids the immediately preceding
 Cell--3 centre under the analogous one-shared-edge bound.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailFourCellMiddleCenterAvoidance}
+\path{GoertzelV24ClosedWebSelectedLocalRailFourCellMiddleCenterAvoidance}
 then observes that the first terminal window avoids its right centre and the
 last terminal window avoids its previous centre---the same middle face---and
 uses the already-proved terminal-window support provenance to exclude that
@@ -4385,7 +4419,7 @@ classification: neither cardinality bound is asserted globally, and each
 double-edge complement remains a named collision branch.
 
 That premise now reaches the actual repaired pair.  Module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailFourCellSourceSquareCompanionSeparation}
+\path{GoertzelV24ClosedWebSelectedLocalRailFourCellSourceSquareCompanionSeparation}
 handles all four proof-relevant cases: straight or swapped successful future,
 with either its first or its second rail repaired.  The old successful pair's
 support disjointness supplies the unchanged part; the middle-centre theorem
@@ -4398,7 +4432,7 @@ construct the separated crosscut pair.
 
 The good branch now returns an assembly rather than a detached repair
 certificate.  The module
-\texttt{GoertzelV24ClosedWebSelectedLocalRailFourCellSourceSquareRepairOutcome}
+\path{GoertzelV24ClosedWebSelectedLocalRailFourCellSourceSquareRepairOutcome}
 reconstructs the complete two-rail object after the splice: the repaired rail
 retains its original endpoints and is simple, the untouched rail is unchanged,
 and their full supports are disjoint.  All four cases are explicit ---
@@ -4719,7 +4753,7 @@ to the tracked colour pair, that every indexed boundary fragment contains a
 displayed port, and that every capped fragment length is positive.  It proves a
 second lossless codec on profiles satisfying those laws and computes its exact
 four-fragment carrier as $78419184$.  Module
-\texttt{GoertzelV24FramedCorridorBoundarySemanticPrefixProfileRepeat} proves
+\path{GoertzelV24FramedCorridorBoundarySemanticPrefixProfileRepeat} proves
 these laws for the literal source prefix and lowers the separated repeat demand
 to $313676737$.
 
@@ -4813,7 +4847,7 @@ with the connectivity law before a reachable-state closure is authoritative.
 
 The graph-dependent connectivity carrier has now also been eliminated.
 Module
-\texttt{GoertzelV24FramedCorridorPrefixFiniteConnectivityCoordinates}
+\path{GoertzelV24FramedCorridorPrefixFiniteConnectivityCoordinates}
 proves a canonical equivalence between its eight literal edges and
 $\operatorname{Fin}2\mathbin{\sqcup}\operatorname{Fin}6$: the two old cut
 edges followed by the six cyclic Cell-boundary edges.  The two blocks remain
@@ -5239,7 +5273,7 @@ finite local code; no reachable closure or new threshold is claimed.
 
 The facial rebase code is now aligned with the actual successor profile in
 module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceCoordinates}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceCoordinates}.
 The shared carrier in
 \texttt{GoertzelV24BoundedFaceSeamFamilyCode} stores an exact fragment count
 and one bounded support-graph code for each genuine fragment, rather than
@@ -5346,7 +5380,7 @@ old profile's named interface.  The facial analogue remains equally
 load-bearing, and neither is inferred from carrier finiteness alone.
 
 The semantic target of that quotient is now explicit.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFullProfileRelation}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFullProfileRelation}
 packages the two graph-derived profiles on either side of a literal source
 rebase into one joint relation.  Edge colours and tracked connectivity are
 recorded together with face continuation, boundary-port incidence, capped
@@ -5391,7 +5425,7 @@ exact complete-profile decoder.
 
 The tracked historical range is now bounded by the source geodesic rather
 than merely named.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedLocality}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedLocality}
 first proves that every literal input crossing lies on its Cell's centre
 face and every literal output crossing lies on the successor centre face.
 Edge adjacency in the cubic two-sided rotation system then forces the two
@@ -5405,7 +5439,7 @@ the incoming profile; bounded locality is not yet full profile factorization.
 
 That bounded historical range is now packaged at the literal seam, for both
 connectivity and face progress.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedAttachment}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedAttachment}
 orients every tracked rebase adjacency and proves that its old endpoint has
 exactly one of three source roles: an input crossing of the current Cell, an
 output crossing of the current Cell, or an output crossing of the immediately
@@ -5462,7 +5496,7 @@ generic alternative: a finite-interface component either meets a named
 persistent port, in which case the stored port relation determines its move,
 or it meets no such port, in which case one finite residual-component bit
 retains it.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseResidualProfileFactor}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseResidualProfileFactor}
 specializes this statement to all three tracked colour pairs on the at-most-six
 old rebase roles.  Combined with the actual incoming profile's two-port
 relation, the new code recovers literal old-prefix reachability with no
@@ -5492,7 +5526,7 @@ No reachable-closure count, numerical $V_0$, or base verification follows at
 this checkpoint.
 
 The tracked switch equation is now finite on both sides.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedStepCode}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedStepCode}
 transports the at-most-eight-edge switch through its carrier equivalence and
 stores, for each of the three tracked colour pairs, the old-prefix component
 relation as a Boolean matrix on those finite coordinates.  The two local
@@ -5509,7 +5543,7 @@ numerical $V_0$ or base verification.
 
 The old-role part of that finite state is now connected to the preceding
 profile rather than merely extracted twice.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedStepState}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedStepState}
 assigns every one of the at-most-six literal old attachment roles its exact
 coordinate in the eight-edge switch.  On any two such coordinates, Lean
 identifies the switch code's old component bit with the already proved
@@ -5534,7 +5568,7 @@ still separate, so this checkpoint does not yet supply a reachable-closure
 count, a numerical $V_0$, or the bounded-base verification.
 
 The facial switch now has the same exact local bound.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteSwitch}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteSwitch}
 orients every occurrence-sensitive seam adjacency: one endpoint is one of the
 six possible old attachment roles and the other lies in the two-edge rebase
 region.  Since two-sidedness makes the face-position-to-primal-edge map
@@ -5569,7 +5603,7 @@ verification follows at this checkpoint.
 
 The face state now also has a coordinate system stable across ambient faces.
 Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceDartCarrier}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceDartCarrier}
 replaces an edge-only global address by the actual dart occurrences over the
 literal eight-edge switch.  There are at most sixteen such occurrences, and
 the two sides of one primal edge remain distinct.  For every face root, Lean
@@ -5589,7 +5623,7 @@ connectivity directly on literal darts, proves it equivalent to the earlier
 root-relative cyclic-position graph, and shows that the canonical dart
 representatives of two predecessor boundary fragments are connected exactly
 when their fragment coordinates are equal.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceResidualProfileFactor}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceResidualProfileFactor}
 then extracts, on the at-most-sixteen switch occurrences, an exact finite
 alternative: a component either meets one named predecessor face port, or it
 is retained by a port-free residual bit.  Lean proves that this residual-or-port
@@ -5621,12 +5655,12 @@ distinguish an active singleton from a dart or edge absent from graph support.
 The residual attachment relation, however, is deliberately support-sensitive:
 both an interface coordinate and its persistent port must actually occur in
 the graph.  Generic module
-\texttt{GoertzelV24SimpleGraphSupportedPortResidualFactorContraction} therefore
+\path{GoertzelV24SimpleGraphSupportedPortResidualFactorContraction} therefore
 adds finite interface- and port-activity tables to the existing residual code
 and proves that its canonical extraction records literal support membership
 exactly.  Modules
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSupportedState} and
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSupportedState}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSupportedState} and
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSupportedState}
 specialize the refinement to the stable facial dart carrier and to all three
 tracked-colour predecessor states.  Forgetting activity recovers the previous
 residual codes definitionally, while every facial switch coordinate reads its
@@ -5639,7 +5673,7 @@ verification are still open.
 
 The support bit now participates in an exact finite successor calculation,
 rather than merely being retained for future use.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSupportedStep}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSupportedStep}
 extends the finite facial rebase letter by one Boolean activity table.  Its
 output coordinate is active exactly when that occurrence was active in the
 old prefix, occurs in the newly displayed regional factor, or occurs in the
@@ -5657,7 +5691,7 @@ verification remain open.
 
 Successor face identity is now aligned with the same stable occurrence
 coordinates.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorState}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorState}
 maps every canonical boundary fragment of the successor cut injectively to a
 dart occurrence over the finite rebase switch.  Lean proves that the
 successor profile's face-continuation bit is true exactly when the two mapped
@@ -5672,7 +5706,7 @@ open.
 
 The successor port-incidence coordinate is now finite and exact as well.
 Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorPortIncidence}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorPortIncidence}
 proves that a successor fragment contains one of the two newly displayed
 crossing ports precisely when its canonical switch occurrence reaches some
 occurrence over that named port edge in the finite facial step closure.  The
@@ -5685,7 +5719,7 @@ measurement, numerical $V_0$, and bounded-base verification remain open.
 
 The successor cap-at-five coordinate now has an exact geometric update law.
 Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorCap}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorCap}
 splits each successor face fragment into its old-prefix occurrence slice and
 the slice contributed by the two newly displayed rebase edges.  Lean proves
 that the stored capped length is their two capped cardinalities, minus the
@@ -5702,7 +5736,7 @@ remain open.
 
 The predecessor contribution to that law is now retained by a finite state
 rather than left as an ambient-history query.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceCappedState}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceCappedState}
 assigns to every stable switch occurrence both exact old-region presence and
 the cap at five of its full old-prefix component.  The distinction is
 load-bearing: a one-position regional factor is physically present but is
@@ -5720,7 +5754,7 @@ numerical $V_0$, and bounded-base verification remain open.
 
 The predecessor weights can now be consumed without counting the same old
 face once per switch occurrence.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceComponentRepresentatives}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceComponentRepresentatives}
 turns the finite old-component relation into a partition, chooses the least
 occurrence of each component as its canonical representative, and retains
 exactly the representatives of physically present components.  Lean proves
@@ -5734,7 +5768,7 @@ recurrence, reachable-closure measurement, numerical $V_0$, and bounded-base
 verification remain open.
 
 The resulting finite old-prefix sum is now executable as well.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceComponentCapSum}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceComponentCapSum}
 retains the active canonical old components connected to one successor switch
 occurrence, adds each stored component cap exactly once, and caps the total at
 five.  Lean proves that every active reachable occurrence contributes through
@@ -5753,13 +5787,13 @@ The generic module
 union of three graph factors, every point of the first factor reachable from
 a selected output has a selected first-factor anchor whenever every genuine
 factor switch is selected.  Its source specialization in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldFactorAnchor}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldFactorAnchor}
 uses the old prefix, the newly displayed two-edge region, and the facial seam
 as those three factors.  Consequently every old-prefix occurrence inside a
 successor face fragment reaches an old-component anchor on the finite rebase
 switch, and the exact finite closure connects the successor coordinate to
 that anchor.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldFactorFragment}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldFactorFragment}
 then decodes every present coordinate to its literal old regional connected
 component and proves equality between the stored component-position set and
 the fragment's actual cyclic positions.  Thus no contributing old face
@@ -5772,13 +5806,13 @@ reachable-closure measurement, numerical $V_0$, and bounded-base verification
 remain open.
 
 That predecessor adequacy statement is now proved.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFactorRepresentativeEquiv}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFactorRepresentativeEquiv}
 constructs an exact equivalence between the contributing canonical finite
 representatives and the literal old-prefix factor fragments inside each
 successor face.  Surjectivity uses the three-factor selected-anchor theorem;
 injectivity uses equality of literal connected components and the uniqueness
 of the finite canonical representative.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldCapAdequacy}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldCapAdequacy}
 then transports the individual capped weights and their finite sum across that
 equivalence.  Lean proves that the decoder's predecessor sum is exactly the
 cap at five of the successor fragment's literal old-prefix occurrence slice,
@@ -5790,7 +5824,7 @@ and bounded-base verification remain open.
 
 The predecessor decoder has now been inserted into the successor equation.
 Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePredecessorCap}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePredecessorCap}
 replaces the literal old-prefix slice in the inclusion--exclusion law by the
 finite canonical-component cap sum.  The equality is exact, including the
 isolated-singleton case; it does not query the unbounded prefix after the
@@ -5799,7 +5833,7 @@ stage are the newly displayed two-edge slice and its genuine overlap with the
 old region.
 
 Those last two terms now have a finite exact decoder as well.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteLocalCaps}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteLocalCaps}
 stores the local and overlap contributions as two functions into
 \texttt{Fin 6}, indexed by the actual successor fragments.  Every literal
 rebase supplies such a finite table, and Lean proves that the successor
@@ -5812,7 +5846,7 @@ composing it with the distinct literal Cell letter, remains open; no reachable
 closure, numerical $V_0$, or bounded-base verification is claimed yet.
 
 The port-incidence law is now graph-free after extraction as well.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePortLabels}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePortLabels}
 attaches two finite port-label bits to each occurrence coordinate of the
 at-most-eight-position facial switch.  Its decoder says that a successor
 fragment contains a displayed port exactly when the fragment's canonical
@@ -5827,7 +5861,7 @@ letter, reachable-closure measurement, numerical $V_0$, and bounded-base
 verification remain open.
 
 The one-hot table itself is now compressed without loss in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePortPositions}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePortPositions}.
 For a facial switch with $n\leq 8$ occurrence coordinates, each displayed
 port is stored as either one coordinate or absence.  The exact code count is
 therefore $(n+1)^2\leq 81$, rather than the $2^{2n}$ possibilities of an
@@ -5839,7 +5873,7 @@ not yet provide the joint heterogeneous transition or its reachable closure.
 
 The successor face-continuation field has now received the same exact finite
 treatment.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteContinuation}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteContinuation}
 uses the already-proved fact that a graph-derived continuation relation is
 equality of ambient orbit-face labels, hence an equivalence relation.  It
 stores the canonical upper-triangular equivalence code and proves that the
@@ -5853,7 +5887,7 @@ the distinct literal Cell letter remain open.  No reachable count, numerical
 $V_0$, or bounded-base verification is claimed.
 
 Those three coordinates are now packaged in one finite receipt.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteFaceReceipt}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteFaceReceipt}
 stores, for each successor fragment, its finite component step, distinguished
 output coordinate, two compact port positions, and capped predecessor
 contribution; the receipt also stores the canonical face-equivalence code and
@@ -5868,7 +5902,7 @@ letter, reachable-closure measurement, numerical $V_0$, and bounded-base
 verification remain open.
 
 The finite face ABI is now joined to the already-proved tracked decoder in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteOutputReceipt}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteOutputReceipt}.
 The resulting code stores the two successor crossing colours, the finite
 tracked component step, and the complete finite face receipt.  Five adequacy
 theorems recover every field of the literal successor profile: edge colour,
@@ -5882,7 +5916,7 @@ $V_0$, and bounded-base verification remain open.
 
 The remaining tracked matrix has now been given an exhaustive literal
 coordinate presentation rather than a padded one.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSwitchRoles}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSwitchRoles}
 proves that every position of the at-most-eight-edge switch is named either by
 one of the at-most-six old-prefix attachment roles or by one of the two newly
 displayed successor crossings.  The resulting map onto switch coordinates is
@@ -5897,7 +5931,7 @@ measuring their reachable closure, deriving $V_0$, and verifying the bounded
 base remain open.
 
 The new-coordinate remainder now has a sharp exact boundary.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSwitchCoverage}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSwitchCoverage}
 proves that, if every newly displayed successor crossing which was already in
 the old prefix coincides with one of the recorded old attachment roles, then
 the complete old-component matrix is precisely identity plus the incoming
@@ -5915,7 +5949,7 @@ conditional exact decoder does not yet produce the heterogeneous recurrence,
 reachable closure, numerical $V_0$, or bounded-base verification.
 
 The module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteOutputDecoder}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteOutputDecoder}
 now turns the complete finite rebase receipt into one graph-free successor
 profile.  The dependent face count is carried by the letter itself, and Lean
 proves that every literal source rebase decodes exactly to its actual serial
@@ -5929,7 +5963,7 @@ reachable closure, numerical $V_0$, or finite-base claim.
 
 The dependent predecessor coordinate has also been stabilized without
 inventing geometry.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseOldAttachmentSlots}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseOldAttachmentSlots}
 uses six named slots: two current inputs, two current outputs, and two outputs
 of the immediately preceding Cell.  Actual source roles embed injectively and
 round-trip through a partial decoder.  At the first offset the two predecessor
@@ -5939,7 +5973,7 @@ fixed carrier while preserving the source distinction between an unavailable
 predecessor and an inactive but real contact.
 
 Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedState}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedState}
 then transports the complete support-sensitive tracked predecessor code for
 all three colour pairs onto those six slots.  Missing slots have false
 activity, attachment, and residual-component bits; persistent-port activity
@@ -5950,7 +5984,7 @@ uniform finite type without padded geometry.  Computing its successor under
 the literal Cell-plus-rebase letter is the remaining tracked recurrence step.
 
 The first exact interpretation of that stable state is provided by
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedStep}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedStep}.
 Against the complete incoming serial profile, its residual-or-port relation
 recovers literal old-prefix tracked reachability on every pair of the six
 actual predecessor roles.  This closes the old/old block without retaining
@@ -5959,7 +5993,7 @@ slots do not name the two successor crossings whose old-prefix component
 relations are queried by the boundary-rebase decoder.
 
 Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedSwitchState}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedSwitchState}
 therefore adds exactly those two crossings, producing a fixed eight-slot
 tracked switch state.  The extension is lossless rather than speculative:
 dependent source roles round-trip through the stable names, and the incoming
@@ -5975,7 +6009,7 @@ corresponding stable transport for capped facial state.  No reachable count,
 numerical $V_0$, or bounded-base verification is inferred yet.
 
 The coordinate slide needed by that recurrence is now exact in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedSwitchSuccessorSlots}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedSwitchSuccessorSlots}.
 Four current slots have literal successors: the two Cell outputs become the
 successor's predecessor outputs, while the two crossings exposed by the
 current rebase become its current inputs.  Lean proves that these four pairs
@@ -5989,7 +6023,7 @@ from the heterogeneous Cell-plus-rebase receipt remains the next semantic
 recurrence obligation.
 
 The carrier on which that update must run is fixed in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionSlots}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionSlots}.
 Two consecutive eight-slot switches are not treated as sixteen unrelated
 names.  Their four inherited edges are shared, so the transition carrier has
 exactly twelve slots: all eight current names plus the four genuinely fresh
@@ -6003,7 +6037,7 @@ remain absent.  This is the stable carrier for the next finite tracked update,
 not yet that update itself.
 
 The semantic region traversed by that update is now exact as well.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionRegion}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionRegion}
 proves that the successor outgoing-prefix region is the union of the current
 prefix with precisely two local pieces: the current boundary rebase and the
 successor literal Cell.  Its tracked graph consequently factors as the
@@ -6016,7 +6050,7 @@ that contraction is the remaining tracked-recurrence obligation before any
 reachable-mode count is meaningful.
 
 That transition is also expanded in its literal source order in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionFactorization}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionFactorization}.
 The successor tracked prefix is exactly the five-factor union of the current
 prefix graph, the boundary-rebase graph, the rebase seam, the successor Cell
 graph, and the Cell-input seam.  The eventual finite replay may therefore
@@ -6025,7 +6059,7 @@ postulating a new homogeneous transition.  Contracting both seams onto the
 twelve stable slots remains open.
 
 The source names are now realized as one actual finite edge carrier in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionFiniteSwitch}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionFiniteSwitch}.
 The carrier is the image of the twelve stable transition names, so names that
 denote the same literal edge are quotiented rather than falsely declared
 distinct.  At the initial offset, each unavailable predecessor name is sent
@@ -6041,7 +6075,7 @@ $V_0$ is claimed by this carrier theorem; contracting the five factors and
 their two seams onto it remains the next semantic step.
 
 The tracked output half of one boundary rebase is now history-free in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedStepDecoder}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedStepDecoder}.
 The decoder takes only the incoming complete profile, the stable
 support-sensitive eight-slot state, the literal local two-factor code, and
 the quotient-aware coordinate-to-slot map.  It reconstructs the formerly
@@ -6057,7 +6091,7 @@ base verification can be claimed.
 
 That history-free tracked decoder now passes through the complete profile
 interface in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFiniteOutputDecoder}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFiniteOutputDecoder}.
 The module replaces only the tracked subreceipt of the existing literal
 finite-output decoder and proves that the resulting output is still exactly
 the source successor profile in all five coordinates: boundary colours,
@@ -6070,7 +6104,7 @@ residual states remains open; this theorem does not supply a reachable-state
 count, a numerical $V_0$, or a bounded-base verification.
 
 That facial history has now been placed on a fixed carrier in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedState}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedState}.
 The literal rebase switch contains at most sixteen face-dart occurrences.
 Lean embeds every real occurrence into a named \texttt{Fin 16} slot and uses a
 partial decoder, so an unused slot is distinguished from an inactive but
@@ -6086,7 +6120,7 @@ the literal heterogeneous Cell-plus-rebase letter.  No reachable-state count,
 numerical $V_0$, or bounded-base verification is claimed at this checkpoint.
 
 The first of those two obligations is now discharged in
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedStep}.
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedStep}.
 For every displayed face coordinate, Lean identifies the cardinality of its
 predecessor face-component support with the root-free dart-component
 cardinality stored in the stable state.  Consequently the stable component cap
@@ -6095,9 +6129,9 @@ it is not merely an upper bound and it is independent of the chosen displayed
 dart.
 
 Modules
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedStepDecoder},
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedState}, and
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedStepDecoder}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedStepDecoder},
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedState}, and
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedStepDecoder}
 then turn that identification into a graph-free finite interface.  The exact
 predecessor face receipt is decoded from a common carrier of sixteen occurrence
 slots and four boundary-fragment slots together with the literal local
@@ -6118,13 +6152,13 @@ route-native bounded-base verification follows yet.
 
 The fixed facial state now reaches the complete successor profile rather than
 stopping at an internal component decoder.  Modules
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedStepExact}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedStepExact}
 and
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedReceipt}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedReceipt}
 prove that the fixed occurrence and predecessor-port coordinates reconstruct
 each complete successor-face row: continuation, port incidence, and capped
 face progress all agree exactly with the literal source receipt.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFixedFiniteOutputDecoder}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFixedFiniteOutputDecoder}
 then combines that facial reconstruction with the already stable tracked
 decoder.  For every literal heterogeneous Cell--rebase step, the resulting
 finite letter decodes to exactly the actual successor profile in all five
@@ -6146,7 +6180,7 @@ connectivity and occurrence-sensitive facial continuation, that the residual
 seam from a left region into a union of two right regions is contained in the
 supremum of the two seams obtained by adjoining those regions in order.
 Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionSeam}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionSeam}
 specializes this fact to one literal source step: first the boundary rebase,
 then the successor Cell.  Every tracked turn of the combined transition seam
 is supported on the union of the quotient-aware twelve-edge transition switch
@@ -6164,7 +6198,7 @@ remain open.
 The overlap in that presentation is now handled exactly rather than silently
 treated as disjoint.  Modules
 \texttt{GoertzelV24TerminalProfileExclusiveRegionFactorization} and
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableExclusiveTransition}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableExclusiveTransition}
 assign every transition edge already present in the accumulated prefix to the
 old factor, retain the set difference as the genuinely new local factor, and
 recompute both the tracked and occurrence-sensitive facial seams.  Lean proves
@@ -6183,7 +6217,7 @@ frontier turns into the fixed transition roles.  This is a sharper recurrence
 obligation, not a reachable-state count or a numerical $V_0$.
 
 That classification is now exact.  Module
-\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableExclusiveSeamClassification}
+\path{GoertzelV24FramedCorridorSerialBoundaryRebaseStableExclusiveSeamClassification}
 proves, for tracked connectivity and separately for literal face-cycle
 occurrences, that every exclusive residual turn has one of three forms.  It
 either touches one of the two named rebase edges, belongs to the ordinary
@@ -6344,7 +6378,7 @@ its joint-\texttt{Count} adequacy are not yet proved; neither are the reachable
 closure, numerical $V_0$, or bounded base.
 
 The tracked predecessor state on that switch is now finite and exact.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedState}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedState}
 stores the nonzero colour and actual predecessor-region membership of each
 of the four roles, together with a support-sensitive component code for each
 of the three tracked colour pairs.  Its adequacy theorem identifies the
@@ -6375,7 +6409,7 @@ the numerical $V_0$, and the bounded base.
 
 The additional residual datum needed by edge deletion is now explicit as
 well.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceResidualState}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceResidualState}
 enumerates the pre-rebase two-edge cut's actual boundary fragments in at most
 four fixed slots.  Each switch occurrence records which old fragment it
 attaches to and whether it lies in a component meeting no old fragment.  Lean
@@ -6393,7 +6427,7 @@ bounded base remain open.
 
 The complete finite facial collar of the boundary rebase is now bounded.
 Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollar}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollar}
 starts from the at most four changed primal edges, retains their at most eight
 literal dart occurrences, and adjoins the immediate predecessor and successor
 of every occurrence under the face permutation.  The resulting computation
@@ -6410,7 +6444,7 @@ bounded base remain open.
 
 The collar now carries an exact semantic recurrence rather than merely a
 locality bound.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollarRecurrence}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollarRecurrence}
 decomposes the successor regional face graph into the unchanged core and a
 canonical local residual whose support lies wholly inside the at-most-
 twenty-four-dart collar.  Between any two collar darts, successor reachability
@@ -6424,7 +6458,7 @@ open, as do the combined five-coordinate recurrence, joint-\texttt{Count}
 adequacy, reachable closure, the numerical $V_0$, and the bounded base.
 
 The same facial recurrence now has a single bounded code.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollarCode}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollarCode}
 transports the inherited whole-core component relation and the local successor
 residual through one common carrier with at most twenty-four coordinates.  A
 Boolean tag selects the core or local graph, and Lean proves both decoding
@@ -6439,7 +6473,7 @@ bounded base remain open.
 
 The actual successor boundary fragments now enter that bounded code without
 an ambient-face shortcut.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollarFragment}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollarFragment}
 gives the at most four occurrence-sensitive fragments fixed slots and proves
 that each canonical fragment dart lies in the collar, because the two
 displayed successor crossings are literal rebase edges.  Most importantly,
@@ -6453,7 +6487,7 @@ numerical $V_0$, and the bounded base remain open.
 
 Those distinct facial observations are now packaged in a single finite
 receipt.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteFaceReceipt}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteFaceReceipt}
 combines the at-most-twenty-four-coordinate collar code with four padded
 successor-fragment rows.  For every actual fragment Lean recovers its occupied
 slot and collar coordinate, ambient orbit-face continuation, incidence with
@@ -6467,7 +6501,7 @@ numerical $V_0$, and the bounded base remain open.
 
 The receipt is now tied back to the literal profile rather than certified only
 internally.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteFaceReceiptProfile}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteFaceReceiptProfile}
 uses the canonical actual-fragment enumeration and proves that its embedding
 into the four receipt slots agrees with all three facial coordinates of the
 successor terminal-aware bounded profile: ambient-face continuation, incidence
@@ -6479,7 +6513,7 @@ closure, deriving the numerical $V_0$, and verifying the bounded base remain
 open.
 
 The tracked half has now been aligned to the same side of the rebase.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSuccessorTrackedProfile}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSuccessorTrackedProfile}
 extracts a finite tracked state from the next terminal-aware input region,
 rather than pairing the successor facial receipt with an older pre-rebase
 state.  Its port-role map names the two successor crossings and seam terminal
@@ -6491,7 +6525,7 @@ five-coordinate packet, positive-\texttt{Count} adequacy, reachable closure,
 the numerical $V_0$, and bounded-base verification remain open.
 
 The two time-aligned halves are now one finite successor packet.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteProfileReceipt}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteProfileReceipt}
 pairs the successor tracked state with the successor facial receipt and
 constructs that packet from every literal source rebase.  Its five fieldwise
 decoder theorems recover exactly the actual bounded profile's crossing
@@ -6504,7 +6538,7 @@ which predecessor/successor packet pairs have positive literal
 $V_0$, and bounded-base verification.
 
 The fieldwise packet now has one graph-free dependent output decoder.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteOutputDecoder}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteOutputDecoder}
 packages the actual successor fragment count with the joint receipt and
 decodes a complete terminal-aware bounded profile.  Lean proves a single
 structure equality: every literal source rebase supplies such a finite letter,
@@ -6575,7 +6609,7 @@ already an edge adjacency, whereas a degree-one boundary-stub bounce repeats
 one edge and cannot cross between the two exclusive regional factors.  Thus
 the open carrier's stubs do not create hidden residual communication.  The
 tracked two-portal relation is now encoded exactly in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedSeamFamilyCode}.
+\path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedSeamFamilyCode}.
 Lean first weakens the old cubic neighborhood estimate to its actual premise,
 at most three incident rotation edges at every vertex.  The annular boundary
 axioms discharge it with degree one at the ten stubs and degree three
@@ -6612,7 +6646,7 @@ compression.  Module
 \texttt{GoertzelV24TerminalAwareProfileCompression} reconstructs every
 crossing diagonal from its displayed colour, retains the terminal diagonals,
 and stores each symmetric tracked or facial relation only once.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialTerminalProfileCompression}
+\path{GoertzelV24ClosedWebLocalLayerSerialTerminalProfileCompression}
 proves that the actual opened-source predecessor profiles satisfy these laws
 and that equality of their compressed codes reconstructs equality of all five
 raw coordinates.  At the occurrence-sensitive four-fragment bound the
@@ -6716,7 +6750,7 @@ numerical $V_0$, and bounded base remain open.
 
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
-\texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
+\path{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
 constructs, for every input and every output whose asserted tracked strands
 have the colours named by their tracked pair, an abstract letter decoding that
 input to that output.  Conversely every admitted abstract transition satisfies
@@ -6907,7 +6941,7 @@ verified.  No bulk base enumeration is claimed or begun here.
 
 The tracked half of one literal opened-source transition now also has a
 single finite coordinate system.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedTransitionCarrier}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedTransitionCarrier}
 takes the at-most-six-edge Cell region, its at-most-fourteen-edge residual
 seam neighborhood, and the retained shared rung, and places their union in a
 carrier of at most twenty-one literal edges.  The two incoming crossings, two
@@ -6922,7 +6956,7 @@ open.
 
 The accumulated-prefix contribution has now been put on that same fixed
 carrier without truncating paths to the local neighbourhood.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedPrefixAttachmentState}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedPrefixAttachmentState}
 records, for each tracked colour pair, which of the twenty-one slots are
 active, which attach to the terminal-aware input's three named ports (the two
 crossings and the retained rung), and which lie in the same component meeting
@@ -6937,7 +6971,7 @@ result to the outgoing profile.  The facial recurrence and the heterogeneous
 reachable closure remain separate open steps.
 
 The tracked three-factor closure is now finite as well.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedFiniteClosure}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedFiniteClosure}
 first proves that every nontrivial switch among the accumulated prefix, the
 literal Cell, and their residual seam occurs on the common twenty-one-edge
 carrier.  It then transports the complete component closure to finite
@@ -6960,7 +6994,7 @@ split, before any finite encoding is imposed.  Module
 new facial adjacencies created when a prefix region and one Cell region are
 adjoined; their union is proved to be exactly the prefix face graph, the Cell
 face graph, and this residual seam.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceDartFactorization}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceDartFactorization}
 specializes that identity to every actual opened-source Cell and proves the
 corresponding iff for complete facial reachability.  Using literal darts is
 important: predecessor fragments and local Cell occurrences can be named from
@@ -6976,7 +7010,7 @@ That common carrier is now explicit.  The generic module
 face-permutation neighbourhood of a finite edge set has at most six literal
 darts per edge, counting both occurrences even on a one-sided boundary face.
 Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceTransitionCarrier}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceTransitionCarrier}
 then proves that every residual-seam adjacency of an actual source Cell
 touches one of its two named outgoing crossings.  The darts over the at-most
 six Cell edges and the closed neighbourhood of those crossings therefore form
@@ -6991,7 +7025,7 @@ continuation, port incidence, and capped progress in the outgoing profile.
 
 The accumulated facial predecessor has now been summarized without replacing
 its global components by paths induced on the local carrier.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFacePrefixAttachmentState}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFacePrefixAttachmentState}
 uses the actual occurrence-sensitive fragments of the terminal-aware incoming
 cut as persistent ports; there are at most four.  It records on fixed
 $24\times4$ coordinates the exact predecessor component relation, attachment
@@ -7019,7 +7053,7 @@ and capped progress must be projected jointly before this becomes the facial
 half of a full one-Cell support letter.
 
 The first outgoing facial decoder is now proved.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteOutputFragment}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteOutputFragment}
 sends every actual, occurrence-sensitive regional fragment of the pre-rebase
 output cut to its canonical cut-dart occurrence in the common
 twenty-four-slot carrier.  Lean proves that two such output fragments are
@@ -7035,7 +7069,7 @@ connectivity and crossed-edge colours does the source-faithful one-Cell
 support letter exist.
 
 Outgoing port incidence is finite as well.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteOutputPort} first
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteOutputPort} first
 proves an occurrence-sensitive regional fact: an edge belongs to a fragment
 exactly when one of its two literal dart occurrences reaches that fragment's
 canonical dart.  It then indexes those two occurrences by $\operatorname{Fin}
@@ -7083,10 +7117,10 @@ and the combined one-Cell support letter remain open.
 
 The first exact half of that representative sum is now machine checked.
 Modules
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFinitePredecessorRepresentatives},
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteNewEdgeRepresentatives},
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFinitePredecessorRepresentatives},
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteNewEdgeRepresentatives},
 and
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteNewEdgeAdequacy}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteNewEdgeAdequacy}
 choose one canonical live slot for each represented predecessor component and
 one canonical live slot for each genuinely new Cell edge reaching the selected
 output fragment.  The latter selector is proved, by an explicit equivalence,
@@ -7101,7 +7135,7 @@ an exact deduplication theorem, not yet the complete facial decoder, the
 five-field support letter, a reachable-state count, or a numerical $V_0$.
 
 The old-component sum now has its required non-overlap theorem.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFinitePredecessorDisjoint}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFinitePredecessorDisjoint}
 first follows each outgoing fragment's canonical cut edge into the second
 literal layer and proves that the fragment's ambient face is an annular
 interior face.  Thus its cyclic boundary is simple locally, without the false
@@ -7116,7 +7150,7 @@ already exact new-Cell edge cardinality at cap five.  The full five-field
 letter and its reachable closure are not claimed yet.
 
 The old/new support split and capped-length computation are now exact.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteOldEdgeAdequacy}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteOldEdgeAdequacy}
 proves first that every old-prefix edge in a selected output component has an
 anchor on the fixed transition carrier.  This includes singleton old
 components, whose presence cannot be recovered from graph support alone.
@@ -7134,7 +7168,7 @@ positive-support relation or reachable-state closure is claimed.
 
 Ambient face continuation is now finite and exact on the opened source.
 Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteAmbientContinuation}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteAmbientContinuation}
 follows each outgoing fragment through its canonical cut edge into the second
 literal two-step layer.  Its ambient orbit face is therefore one of exactly
 three named roles: first endpoint, central corridor face, or second endpoint.
@@ -7174,7 +7208,7 @@ proposition-valued local graph by an explicit Boolean adjacency table on the
 same dependent finite carrier.  Reconstructing a simple graph from the table
 is proved to recover the original graph, so its executable reachability query
 is equivalent to the proof-facing component relation.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteStepReflection} then
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFiniteStepReflection} then
 reflects both complete one-step unions used by the letter: the tracked
 two-colour predecessor/Cell/seam step and the facial
 predecessor/Cell/seam step.  In each case Lean proves an iff with the original
@@ -7204,7 +7238,7 @@ base remain open.
 
 The two law certificates used by the capped-face decoder are now executable
 rather than hidden proof arguments.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteCapSemanticReflection}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFiniteCapSemanticReflection}
 checks, over the fixed twenty-four-slot carrier, that predecessor connectivity
 is an equivalence relation on which presence and stored cap are constant.  For
 each output component it also checks that the stored primal-edge equality
@@ -7231,7 +7265,7 @@ heterogeneous reachable table, its measured state count, the derived $V_0$,
 and the bounded base remain open.
 
 That joint Boolean predicate is now proved exact.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteBoolSupportLetter}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFiniteBoolSupportLetter}
 retains the complete source-indexed finite letter and evaluates all five
 outgoing coordinates in one decision: crossed-edge colour, tracked
 two-colour connectivity, ambient face continuation, fragment--port incidence,
@@ -7246,7 +7280,7 @@ table.  Converse equivalence with positive entries of the manuscript's
 verification remain open.
 
 The boundary rebase's output half is now executable too.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteBoolOutput}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteBoolOutput}
 observes that the rebase state has no persistent ports, so its remaining
 proposition-valued tracked-connectivity query is exactly the stored residual
 Boolean bit after the explicit activity and colour guards.  Lean proves this
@@ -7260,7 +7294,7 @@ $V_0$, and bounded-base verification remain open.
 
 The tracked predecessor side of that rebase is now factored at the correct
 boundary.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedInputAttachmentState}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedInputAttachmentState}
 observes that the four changing switch roles are not the two crossings shown
 by the old zero-terminal profile.  It therefore retains those two crossings
 as persistent ports.  An exact finite residual code proves that the complete
@@ -7277,9 +7311,9 @@ alternating reachable table, the numerical $V_0$, and the bounded-base audit
 remain open.
 
 The tracked rebase recurrence is now finite as well as exact.  Modules
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedCoreRecurrence}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedCoreRecurrence}
 and
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedCollarCode}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedCollarCode}
 prove, for each tracked colour pair, that the successor graph is precisely the
 union of the unchanged-core component relation and a canonical local
 residual.  The residual cannot leak arbitrarily far: every edge it touches is
@@ -7296,7 +7330,7 @@ reachable table, its measured state count, the numerical $V_0$, and the
 route-native bounded-base audit are not claimed yet.
 
 The two finite collar recurrences are now executable as well.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteStepReflection}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteStepReflection}
 reflects the at-most-twenty-eight-edge tracked collar and the
 at-most-twenty-four-dart facial collar to Boolean adjacency tables, computes
 the directed closure of the inherited-core and local-residual steps, and
@@ -7311,7 +7345,7 @@ the heterogeneous reachable table, measured state count, numerical $V_0$,
 and bounded-base audit remain open.
 
 The output receipt itself is now a native finite value.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteBoolReceipt}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteBoolReceipt}
 replaces its last proof-facing field---the facial collar family---by a Boolean
 adjacency table, while retaining the finite fragment occupancy, coordinates,
 continuation, port incidence, and capped lengths.  Its decoder is proved equal
@@ -7324,7 +7358,7 @@ the alternating reachable closure remain the next obligations, followed by
 the measured state count, numerical $V_0$, and bounded-base verification.
 
 That joint rebase predicate is now executable and source-sound.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteBoolSupportLetter}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFiniteBoolSupportLetter}
 retains the zero-terminal predecessor and terminal-aware successor as the two
 endpoints of a finite letter.  One Boolean decision checks that the successor
 is the complete five-coordinate receipt, that every guarded tracked bit agrees
@@ -7389,7 +7423,7 @@ reachable table or a numerical $V_0$ is claimed.
 
 The tracked part of that arbitrary-witness seam is now closed at the source's
 combined-profile level.  Module
-\texttt{GoertzelV24AnnularCrosscutComplementCombinedConnectivityOfBoundary}
+\path{GoertzelV24AnnularCrosscutComplementCombinedConnectivityOfBoundary}
 removes the global-cubicity premise from the earlier combined-connectivity
 calibration.  Directly from a boundary-rooted literal open-Cell colouring,
 Lean proves that the four-port combined profile satisfies the exact finite
@@ -7404,7 +7438,7 @@ coordinate and remain the last local semantic comparison before the complete
 positive-support relation and reachable table can be certified.
 
 That local semantic package is now complete.  Module
-\texttt{GoertzelV24AnnularCrosscutComplementCombinedFacialSemanticsOfBoundary}
+\path{GoertzelV24AnnularCrosscutComplementCombinedFacialSemanticsOfBoundary}
 reads the other three fields from the same boundary-rooted literal colouring:
 two fragments continue precisely when they name the same ambient face, a port
 belongs to a fragment precisely when its literal edge occurs in that regional
@@ -8525,15 +8559,17 @@ different deleted adjacent pairs remains the next local collar problem.
 
 \paragraph{Historical snapshot.}
 This section records the companion's 21 July 2026 v23/v24 status.  It is kept
-for provenance and should not be read as the present closure ledger; the
-controlling August status is Section~\ref{sec:current}.
+for provenance and should not be read as the present closure ledger. The
+current programme-wide account is in Sections~\ref{sec:current-overview}--
+\ref{sec:current-evidence}; Section~\ref{sec:current} retains the later
+detailed route history.
 
 We state the scope exactly. The full route is a ladder $S0,\dots,S9$ (Gate-2, then
-v23 \S9 and \S3); the table records each step's manuscript reference and current
-Lean status.
+v23 \S9 and \S3); the table records each step's manuscript reference and its
+Lean status at that date.
 
 \begin{center}\small
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}p{0.05\linewidth}p{0.28\linewidth}p{0.17\linewidth}p{0.40\linewidth}@{}}
 \toprule
 Step & Content & v23 ref & Lean status \\
 \midrule
@@ -8788,7 +8824,7 @@ agreement of the two displayed colour words is not silently promoted to
 agreement on the whole overlap.
 
 The tracked-connectivity coordinate of that splice is now closed in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellSplicedTrackedFiniteClosure}.
+\path{GoertzelV24ClosedWebLocalLayerSerialCellSplicedTrackedFiniteClosure}.
 The underlying three-factor theorem has first been generalized: for any
 colour function and any cumulative finite state whose input profile and
 attachment record recover the realized prefix graph, pre-rebase reachability
@@ -8801,7 +8837,7 @@ the two displayed output colours.  This is an arbitrary compatible Cell
 witness result, not merely an ambient-colouring specialization.
 
 The remaining three facial coordinates are now joined to it in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellSplicedFiniteSupportLetter}.
+\path{GoertzelV24ClosedWebLocalLayerSerialCellSplicedFiniteSupportLetter}.
 They require no second transition construction: face continuation, port
 incidence, and capped face length are independent of the edge colouring, so
 the proved occurrence-sensitive twenty-four-slot facial carrier and its
@@ -8816,7 +8852,7 @@ cumulative transition can be enumerated.
 That compatibility has now itself been factored through finite data, without
 assuming a smaller geometric overlap than the source construction proves.
 The module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility}
 assigns each edge of the common transition carrier to one of twenty-one stable
 slots and stores a partial colour table: \texttt{some c} exactly when the slot
 represents an edge retained by the selected region, and \texttt{none} for an
@@ -8831,7 +8867,7 @@ with no hidden boundary-only or non-isolation assumption.
 
 The tracked part of that transition has now been rebuilt from the same finite
 data rather than retained as a prefix-specialized receipt.  The module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedColorCode}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedColorCode}
 separates the local letter into an uncoloured twenty-one-slot adjacency code,
 the prefix partial colour table, and the Cell partial colour table.  Their
 finite splice gives the Cell colouring precedence on the literal overlap and
@@ -8848,7 +8884,7 @@ following boundary rebase; no reachable-closure count is yet claimed.
 
 The same reconstruction is now executable in the native Boolean transfer
 representation.  The module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedBoolColorCode}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedBoolColorCode}
 checks prefix--Cell colour compatibility by enumerating all twenty-one stable
 carrier slots, and proves that this Boolean test is equivalent to the exact
 proof-facing compatibility predicate.  From the uncoloured local geometry and
@@ -8874,7 +8910,7 @@ and prefix--Cell seam dynamically.  Lean proves that this native Boolean code
 is literally the reflection of the proof-facing reconstruction, including its
 carrier and named coordinates, and that every compatible literal source
 splice satisfies the resulting executable five-field predicate.  The module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellCountNativeFactorization} then
+\path{GoertzelV24ClosedWebLocalLayerSerialCellCountNativeFactorization} then
 uses the literal definition of \texttt{Count}: every positive entry produces
 an open-Cell Tait colouring, hence a nonzero outgoing word and a physical
 native factor; whenever that witness agrees with the cumulative prefix on the
@@ -8894,10 +8930,10 @@ green.
 
 The colour-parametric rebase and the first complete alternating factor are now
 green.  The modules
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedColorParametric},
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric},
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedColorParametric},
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric},
 and
-\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric}
+\path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric}
 recompute the rebase collar at an arbitrary nonzero local colouring.  Lean
 identifies its tracked closure exactly, decodes all five successor-profile
 fields (edge colours, tracked connectivity, face continuation, port--fragment
@@ -8906,7 +8942,7 @@ supported.  The earlier ambient receipt is therefore a specialization, not a
 hidden premise of the executable transition.
 
 The module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseNativeFactorization}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseNativeFactorization}
 then composes that rebase with the physical Cell factor.  Every positive
 literal five-field \texttt{Count} entry supplies a Cell colouring nonzero on
 the complete literal Cell carrier; whenever it agrees with the cumulative
@@ -8922,7 +8958,7 @@ count, numerical $V_0$, base certificate, or headline theorem is claimed here.
 
 The remaining compatibility premise is now internal to the executable letter.
 Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExecutableFactorization}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExecutableFactorization}
 defines the native acceptance bit by comparing the cumulative state's and the
 physical Cell factor's partial colour tables at all twenty-one stable carrier
 slots.  For every literal source Cell, Lean proves an equivalence: the complete
@@ -8938,11 +8974,11 @@ closure.
 The target of that executable letter is now a state of the same cumulative
 type as its source, rather than only a decoded boundary-profile receipt.
 Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialTrackedPrefixAttachmentColorParametric}
+\path{GoertzelV24ClosedWebLocalLayerSerialTrackedPrefixAttachmentColorParametric}
 evaluates the twenty-one-slot tracked prefix-attachment state at an arbitrary
 colour function and proves its exact finite reachability reconstruction.  The
 following module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialColoredCumulativeStateForColor}
+\path{GoertzelV24ClosedWebLocalLayerSerialColoredCumulativeStateForColor}
 packages, at the literal prefix/Cell splice colouring, the next cut's boundary
 profile, tracked attachments, facial attachments, and partial carrier colours.
 Lean proves definitionally that the boundary rebase's decoded output is the
@@ -8955,7 +8991,7 @@ claimed.
 
 The moving carrier at the next Cell is now connected to its predecessor by an
 exact finite change of coordinates.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseCarrierTransport}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseCarrierTransport}
 decodes each of the next twenty-one slots either as one predecessor slot or as
 one of the four named boundary-rebase roles, with the rebase role taking
 precedence when an edge has both descriptions.  Lean proves that this finite
@@ -9048,7 +9084,7 @@ generic module \texttt{GoertzelV24InterfaceDeletionComponentFactorUpdate}
 proves that adjoining a graph supported wholly on a bounded interface changes
 only literal interface adjacency: equality and attachment through components
 strictly outside the interface remain unchanged.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseState}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseState}
 specializes this law to the actual twenty-one-edge Cell carrier.  It Boolean-ORs
 the already-verified finite Cell and residual-seam adjacency tables into the
 cumulative deletion-stable prefix state, proves that this code presents the
@@ -9062,7 +9098,7 @@ The generic module
 arbitrary named coordinates are reachable after a mask precisely when they
 denote the same ambient edge (the isolated reflexive case), or both survive
 and the finite closure connects them.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseTotal}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseTotal}
 specializes this theorem and retains the two old outgoing crossings as literal
 coordinates of the current Cell carrier.
 
@@ -9077,7 +9113,7 @@ fresh roles and aliases, and to leave exactly the tracked core.  The generic
 module \texttt{GoertzelV24InterfaceDeletionComponentFactorTotalGraph} turns
 the resulting finite total relation into a literal component graph without
 changing reachability.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedCoreState} then
+\path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedCoreState} then
 decodes this graph through the two old output crossings into the existing
 finite tracked-core state and proves exactness on all four semantic roles.
 Thus the expanded deletion-safe code now reaches the input type of the proved
@@ -9094,7 +9130,7 @@ coordinates retained by the smaller interface and proves that the resulting
 graph is exactly the exterior graph of that interface.  Its partial-map form
 also handles padded target carriers, provided an unmapped target coordinate is
 inactive.  Module
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedSource}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedSource}
 constructs the literal partial map from the successor carrier to the
 predecessor-plus-role interface.  Returned coordinates are proved to denote
 the same ambient edge, and the clean-corridor past-overlap theorem proves that
@@ -9122,7 +9158,7 @@ chain.  The partial-map proof includes inactive padded coordinates rather than
 assuming them away.
 
 The source specialization in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedSource} now
+\path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedSource} now
 therefore proves that contracting the exact predecessor-plus-role code gives
 an exact three-row primitive-step code on the literal successor carrier.  This
 closes the graph-theoretic associativity-of-contraction junction.  The rolling
@@ -9130,7 +9166,7 @@ construction has now advanced through the next exact seam.  The generic update
 law in \texttt{GoertzelV24InterfaceDeletionComponentFactorUpdate} identifies
 the updated three rows with the exact code of the union graph field by field,
 and
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseState}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseState}
 specializes that equality to the cumulative predecessor and the positive
 literal Cell receipt.  The expanded-source module then gives an executable,
 alias-safe partial coordinate map from the predecessor carrier plus four
@@ -9142,7 +9178,7 @@ shortcut.  A role edge absent from the predecessor carrier need not be
 inactive in the pre-rebase tracked graph: the clean-corridor past-overlap
 theorem leaves the literal switch case real.  Thus ``fresh role is inactive''
 is not used as an assumption.  The replacement in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedReceipt} carries
+\path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedReceipt} carries
 the complete mask-independent exterior receipt on the old coordinates plus
 the four role occurrences.  It has at most twenty-five occurrences, records
 aliases through its equality row, and is packaged as one closed finite type
@@ -9185,7 +9221,7 @@ closure count is authoritative until that recurrence and its realizable
 initial states are executable.
 
 The tracked half of that fixed-width recurrence is now exact in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellUniformTrackedRecurrence}.
+\path{GoertzelV24ClosedWebLocalLayerSerialCellUniformTrackedRecurrence}.
 The uniform carrier is transported to injective finite coordinates, and one
 closed update performs precisely the source operation: it masks every
 coordinate naming one of the four switch edges and then Boolean-ORs the local
@@ -9198,7 +9234,7 @@ is a finset; equivalence with the source's semantic-role deletion is proved
 before the update.  The result is also packaged in the source-independent
 finite type \texttt{BoundedInterfaceExteriorFamilyCode 49 TrackedColorPair}.
 The facial half is now exact as well in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceRecurrence}.
+\path{GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceRecurrence}.
 Its coordinates are the literal darts of the fixed at-most-forty-eight-dart
 interaction carrier.  Lean proves that the coordinate mask selects exactly
 all dart occurrences over the four switch edges; masking the cumulative
@@ -9231,7 +9267,7 @@ The graph-free closure used by both recurrences is now isolated in
 closure in the three-row code is exactly ambient graph reachability whenever
 the finite coordinates are injective, and that this statement is natural
 under coordinate equivalence.  Named successor coordinates are supplied by
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellUniformSuccessorCoordinates}:
+\path{GoertzelV24ClosedWebLocalLayerSerialCellUniformSuccessorCoordinates}:
 every successor port is located in the forty-nine-edge tracked carrier, every
 canonical face fragment and both dart occurrences over each port are located
 in the forty-eight-dart facial carrier, and all coordinates decode to the
@@ -9240,7 +9276,7 @@ actual occurrence-sensitive fragment--port incidence relation rather than an
 arbitrary Boolean over-approximation.
 
 The former assembly junction is crossed by
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellUniformSuccessorLetter}.  Its
+\path{GoertzelV24ClosedWebLocalLayerSerialCellUniformSuccessorLetter}.  Its
 single finite dependent record stores the two exact graph-free recurrence
 codes, the three named port colours, and the two residual finite face fields
 which connectivity alone cannot determine.  Tracked connectivity is decoded
@@ -9255,7 +9291,7 @@ reachable-closure count must wait for those two obligations; no earlier
 diagnostic count is authoritative.
 
 One semantic correction is now explicit in
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellUniformSuccessorColorParametric}.
+\path{GoertzelV24ClosedWebLocalLayerSerialCellUniformSuccessorColorParametric}.
 The preceding successor letter was exact only at the ambient closed-web
 colouring, whereas a positive literal \texttt{Count} witness may supply a
 different Cell colouring.  The new theorem accepts an arbitrary colouring
@@ -9275,7 +9311,7 @@ from literal interface adjacency together with the diagonal exterior bit,
 projects an exact exterior code onto a smaller padded interface with named
 ports, and proves that exact padded states are invariant under finite
 coordinate equivalence.  The source specialization
-\texttt{GoertzelV24ClosedWebLocalLayerSerialCellUniformTrackedTargetCode}
+\path{GoertzelV24ClosedWebLocalLayerSerialCellUniformTrackedTargetCode}
 contracts the fixed at-most-forty-nine-edge successor code onto the literal
 next rolling carrier.  A target coordinate absent from the larger carrier is
 proved isolated using the established past-Cell overlap theorem; inactivity is
@@ -9290,12 +9326,12 @@ and the first certified reachable closure remain open.
 
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
-The August revision preserves the accumulated July audit and its negative
-results, and adds Section~\ref{sec:current} as the controlling status for the
-current Goertzel/Fable reductive--compositional development.  Future revisions
-should update that section when a closure obligation changes status and append
-failed constructions to Appendix~\ref{app:graveyard}, rather than erasing the
-reason they were abandoned.
+The retained technical material records the accumulated v23, v24 and later
+Goertzel/Fable audits, including negative results and the reasons particular
+steps were abandoned. Section~\ref{sec:current} is the detailed record of the
+original reductive route. The current compositional programme, completed
+classical reconstruction and open coverage target are summarized in
+Sections~\ref{sec:current-overview}--\ref{sec:current-evidence}.
 
 The manuscript discussed is Ben Goertzel, \emph{A Human-Readable,
 Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}, version~v23. The
@@ -9314,8 +9350,6 @@ Necklace}, July 2026). Lean listings are ASCII
 transliterations of the source declarations (the sources are normative); every
 headline was checked with \texttt{\#print axioms}. Per-declaration source links
 are omitted pending publication of the development tree.
-
-\appendix
 
 \section{A graveyard of superseded sub-routes}
 \label{app:graveyard}
@@ -9441,7 +9475,7 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         \texttt{Count} factorization.  The repair is now explicit:
         \texttt{GoertzelV24DeletionSensitivePortResidualFactorContraction}
         gives the exact finite one-mask core receipt, and
-        \texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseDeletionSensitiveTrackedCore}
+        \path{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseDeletionSensitiveTrackedCore}
         proves that selecting all four literal switch roles restricts the
         pre-rebase tracked graph to exactly the core already consumed by the
         successor recurrence.  At the ambient coloring its residual code is
@@ -9457,14 +9491,14 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         every deletion mask is recovered by closure over the surviving
         coordinates.  Its size is polynomial in the interface width and is
         independent of the number of masks.  Module
-        \texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePrefixState}
+        \path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePrefixState}
         instantiates this factor on the literal at-most-twenty-one-edge Cell
         carrier for every tracked color pair and proves exact source-prefix
         reachability under every mask.  That recurrence is now proved rather
         than assumed:
         \texttt{GoertzelV24InterfaceDeletionComponentFactorUpdate} shows that
         an interface-supported local graph updates only direct adjacency, and
-        \texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseState}
+        \path{GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseState}
         applies the law to the existing finite Cell and seam codes.  The
         resulting state reconstructs the literal pre-rebase graph after every
         deletion mask.  The apparent shortcut ``the four roles are four
@@ -9474,7 +9508,7 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         coordinates is presentation-sensitive.  The attempted induced mask on
         only the old carrier would therefore require an unjustified active-role
         coverage premise.  Module
-        \texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedInterface}
+        \path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedInterface}
         uses the exact replacement: the old coordinates and the four semantic
         role occurrences form the two summands of one finite interface.  The
         mask selects the role summand, so fresh roles and aliases are handled
@@ -9483,7 +9517,7 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         the existing tracked core; its total finite closure computes the core
         relation on the two old output crossings.  The generic component-graph
         presentation and the source decoder in
-        \texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedCoreState}
+        \path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedCoreState}
         now package that same exact relation as the pre-existing finite tracked
         core state, with exact adequacy on all four roles.  This closes the
         representation seam but not, by itself, the rolling recurrence.  The
@@ -9494,7 +9528,7 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         That smaller partial expansion is therefore retained only as a
         conditional lemma, not promoted to the executable letter.  The exact
         repair is the bounded-lookahead receipt in
-        \texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedReceipt}.
+        \path{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedReceipt}.
         It carries the complete predecessor-plus-role exterior code in a closed
         finite type of at most twenty-five occurrences, uses the equality row
         to delete aliases, and proves that its graph-free role-masked relation
@@ -9512,13 +9546,16 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         available.
 \end{description}
 
-\appendix
-\section{Generated status ledger for the controlling foundations}
+\section{Citation audit for the retained derivations}
 \label{sec:generated-status-ledger}
-The inline badges in the controlling spine and foundation sections are the
-source of truth.  This table is generated from them by
-\texttt{tools/check\_status.py}; every \textsc{verified} entry is rejected if
-its named Lean declaration is absent or its module contains an admitted hole.
-\input{foundations/status-ledger}
+The per-result badges in the retained derivations identify their claimed
+verification status. The
+\href{foundations/status-ledger.tex}{generated citation catalogue}
+records those markers separately. The source audit
+\texttt{tools/check\_status.py} rejects a verified marker when its named
+declaration is absent from tracked Lean source or its module contains a
+proof hole. This checks citations, not the equivalence of prose and theorem
+statements or a new kernel replay. The current source map and evidence
+boundaries are in Section~\ref{sec:current-evidence}.
 
 \end{document}

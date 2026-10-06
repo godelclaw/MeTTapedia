@@ -1,0 +1,359 @@
+\section{The mechanism and the two mathematical targets}
+\label{sec:current-overview}
+
+Goertzel and Fable's compositional idea is to explain how a planar map can
+be built, simplified and coloured through a small collection of structural
+laws. A piece has an ordered interface. Its possible colourings retain the
+choices shared with neighbouring pieces. A reduction makes a smaller map;
+a reconstruction transports a compatible colouring back to the original.
+The intended architecture is
+\[
+\begin{gathered}
+\text{embedded map}
+\ \longrightarrow\ \text{recognize a reducible piece}
+\ \longrightarrow\ \text{smaller embedded map}\\
+\longrightarrow\ \text{colour the smaller map}
+\ \longrightarrow\ \text{reconstruct the original colouring}.
+\end{gathered}
+\]
+The recognition step is mathematical: it must be proved for every map in
+the intended class. Naming a constructor or an interface does not guarantee
+that such a piece occurs.
+
+There are two distinct targets. The classical Four Colour theorem is
+already available in the audited Lean assembly. For a finite simple graph
+$G$ supplied with a noncrossing path drawing in the real plane,
+\[
+                  G\text{ admits a proper colouring by four colours}.
+\]
+The theorem includes disconnected graphs, isolated vertices and the empty
+graph. Its declaration is
+\path{FourColor.CompositionalComplete.colorable_of_planeDrawing}.
+The same assembly supplies compatible GSLT construction histories for
+every bridgeless spherical cubic source map, retaining its vertices,
+edges and cyclic order. Parallel source edges are not silently removed.
+
+The classical coverage and reducibility mathematics is reused from
+Robertson, Sanders, Seymour and Thomas, through the Gonthier--Werner
+formalization and Chris Emery's Lean port. The new reconstruction and shared
+arguments modify this assembly; they do not make its classical foundations
+new. Ben's stronger explanatory target remains open: replace extensive
+independent obligations by a few uniform family laws, with proved geometric
+supply and termination.
+
+\section{What composition already proves}
+\label{sec:current-witnesses}
+
+\subsection{Compatible solutions really stitch together}
+
+Write $W(P;x,y)$ for actual colouring witnesses of a piece $P$ with boundary
+values $x,y$. Serial gluing has the witness equivalence
+\[
+ W(P;Q;x,z)\ \simeq\
+       \coprod_y W(P;x,y)\times W(Q;y,z).
+\]
+A colouring of the composite is obtained from two witnesses agreeing on
+the \emph{same} seam $y$. Conversely, restriction recovers that pair.
+Nonemptiness gives relational composition; finite cardinality gives the
+boundary-matrix multiplication law. Existence, counting and a recorded
+recolouring history are different statements.
+
+This is also the central constraint on interacting insertions. A joint
+relation $R\subseteq C^I$ must retain its common choices. Replacing it by the
+product of its coordinate projections can admit tuples with no joint
+witness. The coupled diamond repair keeps both insertion choices together.
+Its finite core certificate and a general boundary-split transfer supply
+configurations 1--4 in the complete classical assembly. Four original
+certificate dependencies are absent from its endpoint; a shared finite
+certificate remains.
+
+\subsection{Uniform laws with actual reconstruction}
+
+The reductions below connect colouring semantics to literal graph
+operations. Their geometry and hypotheses are part of the statements.
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.25\linewidth}p{0.66\linewidth}@{}}
+\toprule
+Family & Checked contribution \\
+\midrule
+Literal zigzag tubes &
+Uniform support and physical shortening results retain exterior witnesses.
+A supplied tube can be shortened; these laws do not assert that every map
+contains a suitable tube. \\
+Even-width padded caps &
+One cyclic-choice argument reconstructs smaller cycle colourings while
+fixing the exterior. The even-width domain is explicit; odd widths require
+additional reasoning. \\
+Prism rungs &
+The shared physical repair applies at every admitted rim width, with
+proved original and smaller geometry and strict vertex decrease. \\
+Diamonds and facial chains &
+Shared reconstruction handles interacting insertions. Facial readings,
+prescribed degrees and cyclic order recognize concrete occurrences; their
+consumers reconstruct actual ambient colourings. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These are instances of the proposed mechanism, not consequences of a
+generic compositional label. They differ in what they reuse: some
+arguments are structural, some retain a classical base certificate, and
+some use a new finite certificate. The wheel repair, for example, has a
+checked source certificate reused across six ordered boundary variations.
+No separate repair table is added for those six targets, but no classical
+coverage entry is removed. The large wheel and exceptional repair data are
+costs of those local results, not evidence of a compact complete proof.
+
+The complete source-construction theorem is existential. It guarantees
+successful compatible choices along a valid complete sweep. It does not
+say that every arbitrary partial colouring extends at every next step,
+nor does it supply a new executable colouring algorithm.
+
+\section{Geometric coverage is the decisive missing theorem}
+\label{sec:current-coverage}
+
+The classical proof supplies a reducible configuration by discharging:
+charge is redistributed, and the catalogue closes the surviving local
+cases. Replacing several repair certificates leaves this coverage theorem
+in place. Fewer repair arguments and fewer enumerated coverage obligations
+are separate achievements.
+
+The 2026 paper by Inoue, Kawarabayashi, Miyashita, Mohar, Thomassen and
+Thorup supplies a particularly relevant research target. Its
+\href{https://arxiv.org/abs/2603.24880v3}{near-linear algorithm} finds many
+reductions or short obstructing cycles and uses an all-D-reducible
+catalogue. Our experiments use the pinned catalogue revision
+\texttt{c2ce7a96e35256201526e2abb51a39d04a588b53}, with its attribution and
+licence retained. Its 8,200 files and 1,681 underlying internal graph
+shapes are a reproducible inventory, not 1,681 certified repair families:
+prescribed degrees and exterior attachments were omitted by that grouping.
+
+In this work, flatness means \emph{zero final charge under specified
+discharging rules}. It does not imply Euclidean flatness, bounded width or
+a pumping theorem. Two overlapping neighbourhoods can jointly reveal a
+reducible piece that neither local view supplies alone. The Lean work
+retains their alignment and shared vertices instead of combining two
+independent pictures.
+
+The local coverage assembly is checked as an implication from named supply
+laws. Its radius-twelve conclusion preserves the supplied occurrence and
+observations when the centre changes. Actual consumers recognize several
+diamond, chain, fan, tripod and exceptional geometries under stated facial
+and degree hypotheses. The full supply laws are not thereby established.
+In particular, a continuation to another degree-seven centre can return
+to an earlier observed vertex. Such a return needs a certified reduction,
+a separator argument, or a decreasing invariant.
+
+An integrated uniform coverage result must therefore connect
+\[
+\begin{gathered}
+\text{ambient facial and degree data}
+\ \longrightarrow\ \text{a complete embedded occurrence}\\
+\longrightarrow\ \text{compatible repair}
+\ \longrightarrow\ \text{strict reduction in the same graph class}.
+\end{gathered}
+\]
+Vertex collisions, extra ambient edges, ordered ports and cyclic turns
+cannot be discarded at the occurrence boundary. Local reducibility also
+does not prove compatibility of simultaneous repairs sharing exterior
+Kempe components. The newer algorithm's scheduling and cost bounds remain
+separate obligations; its near-linear runtime is not claimed for this
+formalization.
+
+\section{Distinction calculus: retain what an operation can reveal}
+\label{sec:current-distinctions}
+
+\subsection{Two concrete failures of a static interface}
+
+The decoded configuration D0099 has eleven ordered boundary vertices and
+eight interior vertices. Its symbolic elimination uses six relations,
+each retaining the \emph{same boundary as an argument}. A proper boundary
+and an inhabited terminal relation reconstruct a colouring of the entire
+nineteen-vertex source graph.
+
+Evaluating those relations once and then forgetting the boundary is
+insufficient for later updates. Two checked inputs have the same six
+evaluated relations, yet the same accepted boundary operation makes one
+extendible and the other nonextendible. If $S$ is this snapshot, $U$ the
+operation and $E$ the extension answer, then
+\[
+ S(b_0)=S(b_1),\qquad E(Ub_0)\ne E(Ub_1).
+\]
+No function of $S(b)$ alone can predict $E(Ub)$. Every exact predictive
+refinement must separate these two inputs. For crisp distinction observers,
+the snapshot-to-updated-answer comparison requires defect at least one.
+A preservation grade cannot recover information already forgotten.
+
+A second checked example has identical visible diamond seams but
+different full-source extension answers. After the boundary repair, the
+source extends by choosing a different cap witness. Keeping the old cap
+colouring frozen still fails. The larger piece must retain the option to
+revise that hidden choice.
+
+These examples refute the specified interfaces. They do not construct an
+uncolourable planar graph, and do not prove that every compact interface
+must fail. The snapshot inputs have their own abstract exterior
+chromograms; this comparison constructs no common physical exterior.
+
+\subsection{One exact interface for both operations}
+
+Let $N(v)$ be the boundary neighbours of an interior vertex $v$, and let
+$\rho:B\to K$ partition the boundary into regions. Record
+\[
+ P_b(v,k)=\{\,b(i):i\in N(v),\ \rho(i)=k\,\}.
+\]
+An admitted update applies one colour map $f_k$ throughout each region:
+$b'(i)=f_{\rho(i)}(b(i))$. The general Lean theorem proves
+\[
+                         P_{b'}(v,k)=f_k[P_b(v,k)].
+\]
+The observation square commutes exactly. Set images compose, so the same
+identity holds through every finite history of admitted updates, at
+arbitrary boundary width. Coarsening takes unions of region reports and
+commutes with maps uniform on the coarse regions. A common refinement
+supports two operation partitions.
+
+For D0099 that common refinement admits both the earlier interval update
+and the hidden-vertex cap exchange. A completed report means
+\[
+\exists h:\text{interior}\to C,\quad
+\begin{cases}
+h\text{ satisfies every interior edge constraint},\\
+h(v)\notin P_b(v,k)\quad\text{for every }v,k.
+\end{cases}
+\]
+There is one shared $h$, not independently selected colours for different
+constraints. With a proper final boundary, completion is equivalent to a
+full source colouring fixing all its ports. Exact transport observes
+supplied operations; it neither selects a useful Kempe component nor
+guarantees that the completed report is inhabited.
+
+\subsection{The measured information cost}
+
+The proof and its thirteen-root audit replay in 7.713 frontend seconds with
+dependencies already built. The three new general, consumer and audit
+files contain 22,092 bytes and no new table of colouring witnesses.
+An independent finite program measures the report fibres:
+\begin{center}
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Report on labelled proper boundaries with first colour fixed & Count \\
+\midrule
+Boundary colourings & 44,286 \\
+Two-region neighbour-colour reports & 39,543 \\
+Common refinement supporting both updates & 44,040 \\
+\bottomrule
+\end{tabular}
+\end{center}
+The naive encodings use 20 original boundary-colour bits, 64 two-region
+mask bits, or 128 common-refinement mask bits. They are not optimal
+encodings. Nonetheless the common report retains almost every boundary
+distinction in this cohort. Supporting more operations can consume most
+of the hoped-for information saving. This is an experiment about these
+reports, not a lower bound for every possible compositional proof.
+
+\section{The remaining crux and ways the route could fail}
+\label{sec:current-crux}
+
+The central risk is compact coverage: useful local laws may accumulate
+without a short reason why every map supplies one. A second risk is
+interface growth: exact compatibility may require increasingly detailed
+exterior information. A third is failure of progress: a sequence of
+locally valid repairs can revisit an earlier state without reducing the
+map. Renaming a catalogue, storing a large strategy table, or bounding
+each isolated operation would not settle these issues.
+
+The earlier audits already isolate specific false shortcuts. Finite
+generation does not imply a finite exact counting image. Local Kempe
+reachability does not automatically lift every move through a serial
+composition. Recurrent states need not have a self-loop. None of these
+counterexamples rules out a sound restricted family theorem or a different
+coverage mechanism.
+
+The next local obligation is concrete. Adjacent cap triangles route a
+chosen component of the original noncrossing exterior matching. Removing
+their adjacent pairs can join the partners of two different exterior
+chords; this is more than deleting an already matched pair. The routing
+law must preserve the original exterior and the relation between the
+residual exit and hidden boundary updates. It must then reconstruct the
+\emph{whole} source with compatible cap choices.
+
+The bounded program test has three successful base forms, covering 33
+original noncrossing matchings. Twelve related forms still need
+intermediate states outside the tested family. These are discovery
+results, not a Lean routing theorem or a proof that the family is
+repair-closed. A useful next theorem explains the successful routes
+structurally and identifies the extra invariant needed by the residual
+forms. If that invariant grows into a per-state strategy table, the
+decomposition or the operation domain needs revision.
+
+Full closure requires all three global ingredients: geometric supply of
+the admitted families, a valid well-founded reduction, and compatible
+reconstruction. The completed classical theorem provides a reliable
+baseline while these independent obligations remain open.
+
+\section{Evidence, accounting and source map}
+\label{sec:current-evidence}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.58\linewidth}p{0.32\linewidth}@{}}
+\toprule
+Quantity & Current checked account \\
+\midrule
+Coverage configurations retained & 633; none removed \\
+Original configuration certificate dependencies & 629 retained; four replaced \\
+Published classical discharging-rule labels & 32 retained \\
+Independent discharging computations replaced & 336: 231 at arities 9--11,
+105 in a degree-seven region \\
+Degree-seven regional member checks & 112 become 7; sixteen fits become one \\
+Finite diamond chromogram-cover obligations & 100 replaced by shared laws;
+classification checks remain \\
+New distinction-interface colouring table & None \\
+New coverage gain from the distinction interface & None \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The complete endpoint and selected repair consumers have dependency audits
+against \texttt{propext}, \texttt{Classical.choice} and
+\texttt{Quot.sound}. The distinction consumer excludes the complete Four
+Colour theorem and the bulk repair tables from its dependencies.
+Reported frontend timings are local replay measurements, not runtime
+bounds for a colouring algorithm or credited whole-proof savings.
+
+The evidence has three levels. A Lean theorem proves its stated conclusion
+under its actual hypotheses. A checked conditional assembly still requires
+its named supply laws. An independent program census or finite repair game
+is exploratory evidence unless a separate semantic and kernel bridge is
+provided.
+
+The concise source map is:
+\begin{itemize}
+\item \texttt{Complete} and \texttt{CompleteAudit}: the graph theorem,
+source histories and classical dependency audit.
+\item \texttt{DiamondFamilyReducibility}: the shared diamond and
+boundary-split replacements consumed by the complete endpoint.
+\item \texttt{LocalCoverageAssembly} and \texttt{FlatNeighborhoodCoverage}:
+conditional supply assembly and its actual-map consumers.
+\item \texttt{StripSourceExtension}, \texttt{CapJointTransport} and
+\texttt{CapRechoice}: full-source reconstruction, compatible cap updates
+and the need to revise hidden witnesses.
+\item \texttt{PartitionedBoundary}, \texttt{BoundaryDistinction} and
+\texttt{BoundaryDistinctionAudit}: exact region transport, the two
+interface failures and their actual source application.
+\end{itemize}
+
+Exact metrics and replay receipts are in
+\path{tools/fourcolor/classical/compression-ledger.json} and
+\path{tools/fourcolor/near-linear/boundary-distinction-measurements.json}.
+The latest checked mathematical milestone is commit \texttt{9e84df4c8}.
+The \href{fourcolor-compositional/README.md}{integration guide} gives the
+longer theorem map and links to the retained source files.
+
+The pinned code sources are recorded in
+Appendix~\ref{sec:complete-compositional-plan}. The 2026 paper and its
+programs supply mathematics to verify; they are not Lean axioms or
+automatically imported coverage theorems.
