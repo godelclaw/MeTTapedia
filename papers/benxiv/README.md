@@ -1,8 +1,7 @@
 # Ben Goertzel proof-attempt formalization index
 
-Four Colour entry updated: 2026-10-06. Navier–Stokes entry updated: 2026-10-05.
-Other entries retain their own earlier status and are not reassessed by these
-updates.
+Four Colour and Yang–Mills entries updated: 2026-10-06. Navier–Stokes entry
+updated: 2026-10-05. The P-versus-NP entry retains its earlier status.
 
 The [Four Colour overview](goertzel_4cp.pdf) opens with the compositional
 mechanism, checked family reductions, the open geometric coverage theorem
@@ -29,7 +28,7 @@ structure fields or passed as named premises.
 | Four Colour, compositional programme | Open pieces, shared colouring witnesses, uniform reductions and geometric recognition | Complete classical reconstruction checked for finite noncrossing plane drawings and exact source GSLT constructions. Coverage retains 633 configurations and 629 original certificate dependencies; shared arguments replace four certificates and 336 discharging computations. Exact distinction transport supports two source repairs, while its measured information cost warns against assuming a compact interface. Universal family supply and termination remain open. | [current overview](goertzel_4cp.pdf), [source](goertzel_4cp.tex), [proof plan](fourcolor-compositional/README.md) |
 | P versus NP, v13 | An upper–lower clash in polytime-capped conditional description length on a gauge-buffered locked SAT ensemble; CD evidence normalization, an Atomic Evidence Budget, boundary mixing, and fixed-clock incompressibility oppose the self-reduction upper bound under `P = NP` | The adaptive gauge-product law and substantial mechanical scaffolding are checked. The exact faithful M4 target is nevertheless machine-checked uninhabited: D.8 message rigidity, D.31 public-syntax neutrality, D.48 opposite-phase coupling, Definition 7.4 support-wide pair neutrality, and full public observability are jointly inconsistent on a nonempty target. The route requires revision; no separation is proved. | [source](goertzel_pnp.tex), [PDF](goertzel_pnp.pdf) |
 | Navier–Stokes, SG–Cole–Hopf and stochastic-geometric repair | Stochastic viscosity, geometric depletion and control of complete histories; originally a heat lift to `SDiff(T³)` with an identity-energy bound | The H1 adjoint bound fails in the audited shear model. Actual local evolution and conditional continuation are checked on both domains. Compatible whole-space histories and distinction observers are Lean-certified. Analytic coupled-parent calculations pay the leading return and show a depleting next correction; the full arbitrary-data history payment remains open. | [current overview](goertzel_ns.pdf), [source](goertzel_ns.tex) |
-| Yang–Mills, v14 | Wilson lattice regularization; multiscale extended-extraction RG bootstrap; stopping-scale KP polymer expansion and clustering; glue back to fine scales; OS reconstruction and nontriviality | The natural finite Wilson-polynomial extraction has norm one, but v14's range-only `P_ext` data cannot transfer that bound. The advertised recursion constant is not derived; its two ledgers disagree and several factor inferences fail as written. OUR hypercubic boundary-cochain repair continues the same Wilson/RG/KP/OS proof programme and defines the coordinate-free joint invariant relation space. Its covariant-commutator rows needed the Leibniz rule: the earlier joint space contains a vector with nonzero background value, while every corrected relation vanishes on every gauge background and the corrected space has certified rank at least `11558`. It is not yet a complete census, conditioning certificate, RG bound, or continuum construction. Numerical evidence indicates that the stopping-scale step cannot be instantiated in the weak-coupling regime the bootstrap provides; on the hierarchical lattice, where the flow is exact, four-dimensional U(1) confines as well, so that lattice cannot model the missing crossing. The missing crossing input is stated in Lean, proved sufficient for exponential clustering uniformly in the volume, and shown to fail at β = ∞ for four-dimensional U(1) and five-dimensional gauge fields; proving it for four-dimensional SU(2) is open; at strong coupling it is proved for Wilson-type measures uniformly in the volume. A necessary condition testable at finite coupling is proved: a twist-compatible crossing family has vanishing twist free energy on large tori. Monte Carlo finds it vanishing for four-dimensional SU(2) and not for four-dimensional U(1) or five-dimensional SU(2), where the centre twist is classically costly (U(1)) or weak coupling persists (SU(2), whose twist eaters make it classically free). | [source](goertzel_ym.tex), [PDF](goertzel_ym.pdf) |
+| Yang–Mills, Wilson/RG route | Exact integration of short-distance fluctuations; weak-to-strong entrance; spatial polymer clustering; observable transport and OS reconstruction | Actual SU(2) scale-two Haar blocking, finite-depth composition and spatial contraction are checked on an explicit strong-coupling interval. Eliminated Maxwell fluctuations have a volume-independent gap `1/4096` modulo gauge, with the Wilson quadratic normalization and Gaussian covariance bound. Exact transport retains discarded covariances: their spatial control along the weak-coupling trajectory, entrance, and the nontrivial continuum construction remain open. Detailed extraction audits and numerical diagnostics are retained in appendices. | [current overview](goertzel_ym.pdf), [source](goertzel_ym.tex) |
 
 ## Four-Color route
 
@@ -127,32 +126,43 @@ Detailed derivations and checks are in the
 
 ## Yang–Mills route
 
-V14 begins with finite Wilson lattice gauge theory, runs an RG flow intended to
-contract irrelevant activities while following asymptotic freedom, obtains
-physical-scale clustering from a KP polymer expansion, transfers clustering
-back through the RG maps, and invokes OS reconstruction to obtain a continuum
-Hamiltonian and spectral gap. Extended extraction through canonical dimension
-16 is intended to offset polymer recombination losses.
+The [current overview](goertzel_ym.pdf) leads with the mechanism: integrate
+short-distance fluctuations exactly, reach a controlled spatial interaction
+regime, transport the original observables, then construct the continuum
+quantum field theory. The [source](goertzel_ym.tex) links each current claim
+to its Lean statement. Earlier extraction audits and stopping-scale numerical
+diagnostics remain in appendices.
 
-The formalization now distinguishes three different statements:
+For the actual SU(2) ordered-product block map, the formalization proves:
 
-1. the scalar inequality for a supplied recursion constant, which is checked;
-2. a concrete finite Wilson-polynomial extraction, for which coefficient-majorant
-   truncation is gauge invariant and norm one; and
-3. the actual v14 action-sector extraction and Wilson RG map, for which the
-   necessary basis, dual jets, conditioning, and weighted analytic estimates
-   have not been supplied.
+- Exact Haar measure transport, generated densities and observables, and
+  agreement of direct and staged integration at every finite depth.
+- Spatial interaction contraction by `4 exp(-2)` inside radius `1/2`, with
+  explicit Wilson entry threshold `1 / (128 exp(32 + 4η))`, uniformly in
+  volume and depth for fixed `η > 0`.
+- The complete covariance transport identity, including discarded scale
+  contributions, and a depth-independent total variance budget. Fixed-depth
+  conditional spatial estimates are also available at strong coupling.
+- A volume-uniform gap `1/4096` for the Maxwell quadratic form on eliminated
+  fields modulo fiber-preserving gauge transformations, together with its
+  actual Wilson action normalization and conditional Gaussian size bounds.
+- A conditional stopping-scale bridge giving physical decay rate
+  `m = η / rMax`, with entrance and observable transport as separate inputs.
 
-Range alone does not control a projection norm. Union-support recombination is
-norm one, while `14` is a rooted local branching count rather than a universal
-contact bound. The F.5 and Appendix-O factor ledgers disagree, and neither
-derives `C_true`. OUR repairs are a continuation of Ben's proof programme,
-not a separate endpoint: the repaired finite target preserves the same Wilson
-lattice, RG, KP, glue, and OS dependency chain while repairing its false
-coordinate bridges. Its joint invariant relation submodule now has a
-certificate of rank at least `11558`; the next substantive work is a complete
-joint census and conditioning certificate, Wilson-to-cochain dual jets, and
-the connected Wilson cumulant/KP bound in the same norm.
+The current crux is spatial control of discarded covariances and transported
+means under the actual generated measures at weak coupling. The quadratic
+gap does not establish nonlinear background or large-field control. Entrance
+from a weak-coupling cutoff sequence and a nontrivial continuum/OS
+construction remain open. Compact-group strong-coupling transfer gaps and
+site reflection positivity are proved lattice inputs, not a continuum gap.
+
+The v14 extraction audit remains relevant: the advertised factor ledgers
+disagree, range alone does not bound an extraction projection, and the
+complete coupled physical quotient and its conditioning are not yet
+supplied. The proved strong-coupling contraction does not validate that
+separate weak-coupling recursion constant. See the
+[formal module index](../../lean/mettapedia/Mettapedia/QuantumTheory/YangMills/README.md)
+for the detailed theorem map.
 
 ## Status discipline
 
