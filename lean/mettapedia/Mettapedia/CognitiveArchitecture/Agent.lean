@@ -15,6 +15,7 @@ import Mettapedia.CognitiveArchitecture.Agent.AddressedEffects
 import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildView
 import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildReplay
 import Mettapedia.CognitiveArchitecture.Agent.RelationalAtlas
+import Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation
 
 /-!
 # General agent-architecture interfaces
